@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbZKZHI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbZKZHVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759015AbZKZHI2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 02:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758990AbZKZHI1
+	id S1753076AbZKZHVo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 02:21:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZKZHVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 02:08:27 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60514 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758813AbZKZHIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 02:08:23 -0500
-Message-ID: <4B0E2951.9050800@cn.fujitsu.com>
-Date: Thu, 26 Nov 2009 15:08:01 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 26 Nov 2009 02:21:44 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:34125 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbZKZHVn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 02:21:43 -0500
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 9/9] tracing: Restore original format of sched events
-References: <4B0E2807.4060102@cn.fujitsu.com>
-In-Reply-To: <4B0E2807.4060102@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <aec7e5c30911252247i344f5bf3pb0240b9c23878bf5@mail.gmail.com>
+References: <20091125082603.25618.57438.sendpatchset@rxone.opensource.se> 
+	<fa686aa40911251415q624f3610n92cbc20437b12bf6@mail.gmail.com> 
+	<aec7e5c30911252247i344f5bf3pb0240b9c23878bf5@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 26 Nov 2009 00:21:29 -0700
+X-Google-Sender-Auth: 6e0ab085b1387b67
+Message-ID: <fa686aa40911252321t3111a8e8w9afc22ef1f262424@mail.gmail.com>
+Subject: Re: [PATCH] spi: Allow using spi_bitbang_setup() with custom 
+	txrx_bufs()
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: spi-devel-general@lists.sourceforge.net, dbrownell@users.sourceforge.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The original format for sched_stat_iowait and sched_stat_sleep:
+On Wed, Nov 25, 2009 at 11:47 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
+> Hi Grant,
+>
+> On Thu, Nov 26, 2009 at 7:15 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+>> On Wed, Nov 25, 2009 at 1:26 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
+>>>        /* per-word shift register access, in hardware or bitbanging */
+>>> -       cs->txrx_word = bitbang->txrx_word[spi->mode & (SPI_CPOL|SPI_CPHA)];
+>>> -       if (!cs->txrx_word)
+>>> -               return -EINVAL;
+>>> +       if (bitbang->txrx_bufs == spi_bitbang_bufs) {
+>>> +               cs->txrx_word = bitbang->txrx_word[spi->mode & mode_mask];
+>>> +               if (!cs->txrx_word)
+>>> +                       return -EINVAL;
+>>> +       }
+>>
+>> Hmmm... this smells like an ugly hack to me.  It seems to me that if
+>> some bitbang backend drivers don't want this code, then it should be
+>> encoded into a callback so it can be overridden.  Thoughts.
+>
+> Yeah, it's far from clean. I want to make use of spi_bitbang_setup()
+> in my MSIOF driver, but I want to avoid dummy txtx_word[] callbacks
+> that will be unused since i'm using a driver specific
+> bitbang->txrx_bufs function.
+>
+> I guess the attached patch is slightly cleaner? I like the idea of
+> letting bitbang drivers use shared code for
+> spi_bitbang_setup()/spi_bitbang_cleanup() with their private
+> setup_transfer() function which in turn calls
+> spi_bitbang_setup_transfer(). My impression is that there's quite a
+> bit of duplicated setup()/cleanup() code.
 
-  $ cat events/sched/sched_stat_iowait/format
-  ...
-  print fmt: "comm=%s pid=%d delay=%Lu [ns]", ...
-  $ cat events/sched/sched_stat_sleep/format
-  ...
-  print fmt: "comm=%s pid=%d delay=%Lu [ns]", ...
+This is certainly less ugly.  But with the points brought up in the
+other thread, I want to have a close look at spi-bitbang before I
+start applying stuff.  It seems nasty.  Give me a few days.
 
-But commit commit 75ec29ab848a7e92a41aaafaeb33d1afbc839be4
-("tracing: Convert some sched trace events to DEFINE_EVENT and _PRINT")
-broke the format:
+g.
 
-  $ cat events/sched/sched_stat_iowait/format
-  print fmt: "task: %s:%d iowait: %Lu [ns]", ...
-  $ cat events/sched/sched_stat_sleep/format
-  print fmt: "task: %s:%d sleep: %Lu [ns]", ...
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/trace/events/sched.h |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
-
-diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
-index 238f74b..7f67d27 100644
---- a/include/trace/events/sched.h
-+++ b/include/trace/events/sched.h
-@@ -355,23 +355,17 @@ DEFINE_EVENT(sched_stat_template, sched_stat_wait,
-  * Tracepoint for accounting sleep time (time the task is not runnable,
-  * including iowait, see below).
-  */
--DEFINE_EVENT_PRINT(sched_stat_template, sched_stat_sleep,
--		   TP_PROTO(struct task_struct *tsk, u64 delay),
--		   TP_ARGS(tsk, delay),
--		   TP_printk("task: %s:%d sleep: %Lu [ns]",
--			     __entry->comm, __entry->pid,
--			     (unsigned long long)__entry->delay));
-+DEFINE_EVENT(sched_stat_template, sched_stat_sleep,
-+	     TP_PROTO(struct task_struct *tsk, u64 delay),
-+	     TP_ARGS(tsk, delay));
- 
- /*
-  * Tracepoint for accounting iowait time (time the task is not runnable
-  * due to waiting on IO to complete).
-  */
--DEFINE_EVENT_PRINT(sched_stat_template, sched_stat_iowait,
--		   TP_PROTO(struct task_struct *tsk, u64 delay),
--		   TP_ARGS(tsk, delay),
--		   TP_printk("task: %s:%d iowait: %Lu [ns]",
--			     __entry->comm, __entry->pid,
--			     (unsigned long long)__entry->delay));
-+DEFINE_EVENT(sched_stat_template, sched_stat_iowait,
-+	     TP_PROTO(struct task_struct *tsk, u64 delay),
-+	     TP_ARGS(tsk, delay));
- 
- /*
-  * Tracepoint for accounting runtime (time the task is executing
 -- 
-1.6.3
-
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
