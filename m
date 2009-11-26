@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760571AbZKZOqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbZKZOqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760571AbZKZOqQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 09:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760559AbZKZOqI
+	id S1760586AbZKZOqp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 09:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760561AbZKZOqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 09:46:08 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:35408 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754648AbZKZOqF convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 09:46:44 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:40483 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760558AbZKZOql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 09:46:05 -0500
+	Thu, 26 Nov 2009 09:46:41 -0500
+Message-ID: <4B0E94D4.5090800@panasas.com>
+Date: Thu, 26 Nov 2009 16:46:44 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091125 Remi/fc10 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <aec7e5c30911252350r717393e8sd476fa7e3aeb301f@mail.gmail.com>
-References: <20091125082603.25618.57438.sendpatchset@rxone.opensource.se> 
-	<fa686aa40911251415q624f3610n92cbc20437b12bf6@mail.gmail.com> 
-	<aec7e5c30911252247i344f5bf3pb0240b9c23878bf5@mail.gmail.com> 
-	<fa686aa40911252321t3111a8e8w9afc22ef1f262424@mail.gmail.com> 
-	<aec7e5c30911252350r717393e8sd476fa7e3aeb301f@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 26 Nov 2009 07:45:51 -0700
-X-Google-Sender-Auth: 3b3c3b7e68fc7ac1
-Message-ID: <fa686aa40911260645i50bf0c35g93b4146952a5f82e@mail.gmail.com>
-Subject: Re: [PATCH] spi: Allow using spi_bitbang_setup() with custom 
-	txrx_bufs()
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: spi-devel-general@lists.sourceforge.net, dbrownell@users.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: "J. Bruce Fields" <bfields@citi.umich.edu>,
+       linux-parisc <linux-parisc@vger.kernel.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Helge Deller <deller@gmx.de>,
+       "James E.J. Bottomley" <jejb@parisc-linux.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       sparclinux <sparclinux@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       NFS list <linux-nfs@vger.kernel.org>,
+       pNFS Mailing List <pnfs@linux-nfs.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] parsic: remove unused nfsd #includes
+References: <4B0C1EB7.50508@panasas.com> <4B0C1F1A.8070605@panasas.com>
+In-Reply-To: <4B0C1F1A.8070605@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Nov 2009 14:46:48.0168 (UTC) FILETIME=[48191E80:01CA6EA7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 12:50 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
-> On Thu, Nov 26, 2009 at 4:21 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->> On Wed, Nov 25, 2009 at 11:47 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
->>> On Thu, Nov 26, 2009 at 7:15 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
->>>> On Wed, Nov 25, 2009 at 1:26 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
->>>>>        /* per-word shift register access, in hardware or bitbanging */
->>>>> -       cs->txrx_word = bitbang->txrx_word[spi->mode & (SPI_CPOL|SPI_CPHA)];
->>>>> -       if (!cs->txrx_word)
->>>>> -               return -EINVAL;
->>>>> +       if (bitbang->txrx_bufs == spi_bitbang_bufs) {
->>>>> +               cs->txrx_word = bitbang->txrx_word[spi->mode & mode_mask];
->>>>> +               if (!cs->txrx_word)
->>>>> +                       return -EINVAL;
->>>>> +       }
->>>>
->>>> Hmmm... this smells like an ugly hack to me.  It seems to me that if
->>>> some bitbang backend drivers don't want this code, then it should be
->>>> encoded into a callback so it can be overridden.  Thoughts.
->>>
->>> Yeah, it's far from clean. I want to make use of spi_bitbang_setup()
->>> in my MSIOF driver, but I want to avoid dummy txtx_word[] callbacks
->>> that will be unused since i'm using a driver specific
->>> bitbang->txrx_bufs function.
->>>
->>> I guess the attached patch is slightly cleaner? I like the idea of
->>> letting bitbang drivers use shared code for
->>> spi_bitbang_setup()/spi_bitbang_cleanup() with their private
->>> setup_transfer() function which in turn calls
->>> spi_bitbang_setup_transfer(). My impression is that there's quite a
->>> bit of duplicated setup()/cleanup() code.
->>
->> This is certainly less ugly.  But with the points brought up in the
->> other thread, I want to have a close look at spi-bitbang before I
->> start applying stuff.  It seems nasty.  Give me a few days.
->
-> Sure, I plan on posting a V2 of the MSIOF driver. I plan to keep the
-> dummy txrx_word() function for now - this to disconnect the cleanup
-> from the driver integration, hope that sounds like a good plan.
+On 11/24/2009 11:27 PM, Grant Grundler wrote:
+> On Tue, Nov 24, 2009 at 07:58:15PM +0200, Boaz Harrosh wrote:
+>> Some arch files had unneeded #includes directives from linux/nfsd/*.
+>> Some vfs files had unneeded #includes directives from linux/nfsd/*.
+> ...
+>> patches:
+>> [PATCH 1/5] parsic: remove unused nfsd #includes
+>> 	Some kind soul, please compile with this patch? compile
+>> 	is all that's needed.
+> 
+> Boaz,
+> linux-2.6 compiles for parisc with this patch. Please add:
+>     Tested-by: Grant Grundler <grundler@parisc-linux.org>
+> 
+> thanks,
+> grant
+> 
 
-Works for me.  Now I just need to find someone with the time to
-refactor spi-bitbang.  :-)
+CCing registered parsic maintainers. Could we please get an ACK on
+this patch, and cary this through the nfsd tree?
 
-g.
+Thanks 
+Boaz
 
+On 11/24/2009 07:59 PM, Boaz Harrosh wrote:
+> 
+> Some unused includes removed.
+> 
+> This patch is in an effort to cleanup nfsd headers and move
+> private definitions to source directory.
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> ---
+>  arch/parisc/kernel/sys_parisc32.c |    6 ------
+>  1 files changed, 0 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/parisc/kernel/sys_parisc32.c b/arch/parisc/kernel/sys_parisc32.c
+> index 561388b..4a8ca63 100644
+> --- a/arch/parisc/kernel/sys_parisc32.c
+> +++ b/arch/parisc/kernel/sys_parisc32.c
+> @@ -26,13 +26,7 @@
+>  #include <linux/shm.h>
+>  #include <linux/slab.h>
+>  #include <linux/uio.h>
+> -#include <linux/nfs_fs.h>
+>  #include <linux/ncp_fs.h>
+> -#include <linux/sunrpc/svc.h>
+> -#include <linux/nfsd/nfsd.h>
+> -#include <linux/nfsd/cache.h>
+> -#include <linux/nfsd/xdr.h>
+> -#include <linux/nfsd/syscall.h>
+>  #include <linux/poll.h>
+>  #include <linux/personality.h>
+>  #include <linux/stat.h>
 
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
