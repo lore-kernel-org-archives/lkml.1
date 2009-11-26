@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932272AbZKZIM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759528AbZKZIOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932272AbZKZIM4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759481AbZKZIMz
+	id S1759528AbZKZIOF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759491AbZKZIOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:12:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40880 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Nov 2009 03:14:05 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:40336 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759480AbZKZIMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:12:55 -0500
-Date: Thu, 26 Nov 2009 09:12:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Tejun Heo <tj@kernel.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: linux-next: manual merge of the workqueues tree with the tip tree
-Message-ID: <20091126081237.GA31034@elte.hu>
-References: <20091126190018.88a6dd77.sfr@canb.auug.org.au>
+	id S1759481AbZKZIOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:14:04 -0500
+Date: Thu, 26 Nov 2009 09:14:09 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: czoccolo@gmail.com, Vivek Goyal <vgoyal@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cfq: Make use of service count to estimate the rb_key
+	offset
+Message-ID: <20091126081409.GL8742@kernel.dk>
+References: <4B0E1E2F.9080604@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091126190018.88a6dd77.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <4B0E1E2F.9080604@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi Tejun,
+On Thu, Nov 26 2009, Gui Jianfeng wrote:
+> Hi Jens, Czoccolo
 > 
-> Today's linux-next merge of the workqueues tree got a conflict in
-> kernel/sched.c between commit eae0c9dfb534cb3449888b9601228efa6480fdb5
-> ("sched: Fix and clean up rate-limit newidle code") from the tip tree and
-> commit 710c15b748f5ce9c573cc047f419cf007a677a9a ("sched: refactor
-> try_to_wake_up() and implement try_to_wake_up_local()") from the
-> workqueues tree.
+> For the moment, different workload cfq queues are put into different
+> service trees. But CFQ still uses "busy_queues" to estimate rb_key 
+> offset when inserting a cfq queue into a service tree. I think this 
+> isn't appropriate, and it should make use of service tree count to do 
+> this estimation. This patch is for for-2.6.33 branch.
 
-Tejun,
+Makes sense, we've before discussed that using ->busy_queues isn't very
+good, as it's not a stable count. service_tree count isn't that much
+better, but for for-2.6.33 it does make more sense.
 
-Please submit scheduler patches to the scheduler tree. Such level of 
-refactoring of a critical scheduler component needs to go through the 
-regular scheduler channels. This is a frequently modified piece of code 
-and conflicts are likely in the future.
+-- 
+Jens Axboe
 
-Thanks,
-
-	Ingo
