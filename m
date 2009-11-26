@@ -1,110 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbZKZQUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760777AbZKZQWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760772AbZKZQUN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:20:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760758AbZKZQUL
+	id S1760777AbZKZQWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:22:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760688AbZKZQWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:20:11 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:44476 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755854AbZKZQUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:20:10 -0500
-Date: Thu, 26 Nov 2009 16:20:12 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/9] ksm: fix mlockfreed to munlocked
-Message-ID: <20091126162011.GG13095@csn.ul.ie>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils> <Pine.LNX.4.64.0911241638130.25288@sister.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0911241638130.25288@sister.anvils>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 26 Nov 2009 11:22:36 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50236 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760677AbZKZQWf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 11:22:35 -0500
+Subject: Re: Missing recalculation of scheduler tunables in case of cpu hot
+ add/remove
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Holger.Wolf@de.ibm.com, epasch@de.ibm.com
+In-Reply-To: <4B0EA88E.3030205@linux.vnet.ibm.com>
+References: <4B0EA88E.3030205@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 17:22:25 +0100
+Message-ID: <1259252545.31676.210.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 04:40:55PM +0000, Hugh Dickins wrote:
-> When KSM merges an mlocked page, it has been forgetting to munlock it:
-> that's been left to free_page_mlock(), which reports it in /proc/vmstat
-> as unevictable_pgs_mlockfreed instead of unevictable_pgs_munlocked (and
-> whinges "Page flag mlocked set for process" in mmotm, whereas mainline
-> is silently forgiving).  Call munlock_vma_page() to fix that.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+On Thu, 2009-11-26 at 17:10 +0100, Christian Ehrhardt wrote:
+> We might store the corresponding 1cpu values in hidden variables and 
+> rescale the effective ones on every cpu add/remove.
+> Additionally there would be the need for some logic to update the 
+> corresponding 1cpu values every time a user sets new values via the proc 
+> interface. 
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+If you're going to do something like that, setting it based on the
+number of cpus in the root_domain might be a better solution.
 
-> ---
-> Is this a fix that I ought to backport to 2.6.32?  It does rely on part of
-> an earlier patch (moved unlock_page down), so does not apply cleanly as is.
-> 
->  mm/internal.h |    3 ++-
->  mm/ksm.c      |    4 ++++
->  mm/mlock.c    |    4 ++--
->  3 files changed, 8 insertions(+), 3 deletions(-)
-> 
-> --- ksm0/mm/internal.h	2009-11-14 10:17:02.000000000 +0000
-> +++ ksm1/mm/internal.h	2009-11-22 20:39:56.000000000 +0000
-> @@ -105,9 +105,10 @@ static inline int is_mlocked_vma(struct
->  }
->  
->  /*
-> - * must be called with vma's mmap_sem held for read, and page locked.
-> + * must be called with vma's mmap_sem held for read or write, and page locked.
->   */
->  extern void mlock_vma_page(struct page *page);
-> +extern void munlock_vma_page(struct page *page);
->  
->  /*
->   * Clear the page's PageMlocked().  This can be useful in a situation where
-> --- ksm0/mm/ksm.c	2009-11-14 10:17:02.000000000 +0000
-> +++ ksm1/mm/ksm.c	2009-11-22 20:39:56.000000000 +0000
-> @@ -34,6 +34,7 @@
->  #include <linux/ksm.h>
->  
->  #include <asm/tlbflush.h>
-> +#include "internal.h"
->  
->  /*
->   * A few notes about the KSM scanning process,
-> @@ -762,6 +763,9 @@ static int try_to_merge_one_page(struct
->  	    pages_identical(page, kpage))
->  		err = replace_page(vma, page, kpage, orig_pte);
->  
-> +	if ((vma->vm_flags & VM_LOCKED) && !err)
-> +		munlock_vma_page(page);
-> +
->  	unlock_page(page);
->  out:
->  	return err;
-> --- ksm0/mm/mlock.c	2009-11-14 10:17:02.000000000 +0000
-> +++ ksm1/mm/mlock.c	2009-11-22 20:39:56.000000000 +0000
-> @@ -99,14 +99,14 @@ void mlock_vma_page(struct page *page)
->   * not get another chance to clear PageMlocked.  If we successfully
->   * isolate the page and try_to_munlock() detects other VM_LOCKED vmas
->   * mapping the page, it will restore the PageMlocked state, unless the page
-> - * is mapped in a non-linear vma.  So, we go ahead and SetPageMlocked(),
-> + * is mapped in a non-linear vma.  So, we go ahead and ClearPageMlocked(),
->   * perhaps redundantly.
->   * If we lose the isolation race, and the page is mapped by other VM_LOCKED
->   * vmas, we'll detect this in vmscan--via try_to_munlock() or try_to_unmap()
->   * either of which will restore the PageMlocked state by calling
->   * mlock_vma_page() above, if it can grab the vma's mmap sem.
->   */
-> -static void munlock_vma_page(struct page *page)
-> +void munlock_vma_page(struct page *page)
->  {
->  	BUG_ON(!PageLocked(page));
->  
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
