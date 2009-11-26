@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbZKZWGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbZKZWHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbZKZWGN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 17:06:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZKZWGM
+	id S1753164AbZKZWHx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 17:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZKZWHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 17:06:12 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:56301 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752933AbZKZWGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 17:06:11 -0500
-Date: 26 Nov 2009 23:05:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: mchehab@redhat.com
-Cc: dmitry.torokhov@gmail.com
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: khc@pm.waw.pl
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: superm1@ubuntu.com
-Message-ID: <BDccCqq3jFB@christoph>
-In-Reply-To: <4B0EEC21.9010001@redhat.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+	Thu, 26 Nov 2009 17:07:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33228 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752884AbZKZWHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 17:07:52 -0500
+Message-ID: <4B0EFC30.80208@redhat.com>
+Date: Thu, 26 Nov 2009 20:07:44 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+W9AkzAytfc/0D8++Lf882py3Sesd/3z0RanP
- L6p6TMqlqX2m+AyS4OjNPu6rI67ar7bZJQXpMBUopzOOGxJlm2
- rtkjm1AaB7Y0jjS2UNPwmvrqVlfWwtt
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <200910200956.33391.jarod@redhat.com>	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>	<4B0ED238.6060306@redhat.com> <m3pr75rpqa.fsf@intrepid.localdomain>	<4B0EED7D.90204@redhat.com> <m3ljhtrn83.fsf@intrepid.localdomain>
+In-Reply-To: <m3ljhtrn83.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mauro,
+Krzysztof Halasa wrote:
+> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+> 
+>> No. All the other API functions there work with 32 bits for scancodes.
+> 
+> We don't need them, do we? We need a new ioctl for changing key mappings
+> anyway (a single ioctl for setting the whole table I think), and we can
+> have arbitrary length of scan codes there.
 
-on 26 Nov 09 at 18:59, Mauro Carvalho Chehab wrote:
-> Christoph Bartelmus wrote:
-[...]
->>> lircd supports input layer interface. Yet, patch 3/3 exports both devices
->>> that support only pulse/space raw mode and devices that generate scan
->>> codes via the raw mode interface. It does it by generating artificial
->>> pulse codes.
->>
->> Nonsense! There's no generation of artificial pulse codes in the drivers.
->> The LIRC interface includes ways to pass decoded IR codes of arbitrary
->> length to userspace.
+Why do you want to replace everything into a single shot? Had you ever tried
+to replace a scancode table with the current API?
 
-> I might have got wrong then a comment in the middle of the
-> imon_incoming_packet() of the SoundGraph iMON IR patch:
+$ wc ./keycodes/dib0700_rc_keys
+ 216  432 3541 ./keycodes/dib0700_rc_keys
 
-Indeed, you got it wrong.
-As I already explained before, this device samples the signal at a  
-constant rate and delivers the current level in a bit-array. This data is  
-then condensed to pulse/space data.
+This is the biggest table we have: 216 scancodes. It has codes for several 
+different IR's bound together into the same table.
 
-Christoph
+Let's replace the entire table (tested on a dib8076 reference design device):
+
+$ time ./keytable ./keycodes/dib0700_rc_keys
+
+real    0m0.029s
+user    0m0.000s
+sys     0m0.027s
+
+Don't you think that 29ms to replace 216 codes to be fast enough, especially since
+you only need to do it once after plugging a device?
+
+Also, if you want to control your device with two different IR controllers, the better
+is to allow adding new keycodes there, instead of just allowing the replacement
+of the entire table.
+
+Maybe we'll need some extensions there, for example to extend the size of the dynamic
+table, but I don't see any timing issue here.
+
+Cheers,
+Mauro
