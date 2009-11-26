@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZKZHGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbZKZHHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbZKZHGi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 02:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758671AbZKZHGh
+	id S1758867AbZKZHHT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 02:07:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZKZHHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 02:06:37 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58079 "EHLO song.cn.fujitsu.com"
+	Thu, 26 Nov 2009 02:07:19 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53303 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758662AbZKZHGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 02:06:36 -0500
-Message-ID: <4B0E28E6.7060609@cn.fujitsu.com>
-Date: Thu, 26 Nov 2009 15:06:14 +0800
+	id S1758671AbZKZHHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 02:07:18 -0500
+Message-ID: <4B0E290F.7030909@cn.fujitsu.com>
+Date: Thu, 26 Nov 2009 15:06:55 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
+CC: "Theodore Ts'o" <tytso@mit.edu>, Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 6/9] tracing: Convert some block events to DEFINE_EVENT
+Subject: [PATCH 7/9] tracing: Convert some jbd2 events to DEFINE_EVENT
 References: <4B0E2807.4060102@cn.fujitsu.com>
 In-Reply-To: <4B0E2807.4060102@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -27,336 +27,119 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use TRACE_EVENT_TEMPLATE to remove duplicate code:
+Use TRACE_EVENT_TEMPLATE to remove duplicate code:
 
    text    data     bss     dec     hex filename
-  53570    3284     184   57038    dece block/blk-core.o.old
-  43702    3284     144   47130    b81a block/blk-core.o
+  34903    1693     448   37044    90b4 fs/jbd2/journal.o.old
+  31931    1693     416   34040    84f8 fs/jbd2/journal.o
 
-12 events are converted:
+Four events are converted:
 
-  block_rq: block_rq_insert, block_rq_issue
-  block_rq_with_error: block_rq_{abort, requeue, complete}
-  block_bio: block_bio_{backmerge, frontmerge, queue}
-  block_get_rq: block_getrq, block_sleeprq
-  block_unplug: block_unplug_timer, block_unplug_io
+  jbd2_commit: jbd2_start_commit,
+               jbd2_commit_{locking, flushing, logging}
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- include/trace/events/block.h |  202 +++++++++---------------------------------
- 1 files changed, 42 insertions(+), 160 deletions(-)
+ include/trace/events/jbd2.h |   63 +++++++-----------------------------------
+ 1 files changed, 11 insertions(+), 52 deletions(-)
 
-diff --git a/include/trace/events/block.h b/include/trace/events/block.h
-index 00405b5..0dcb775 100644
---- a/include/trace/events/block.h
-+++ b/include/trace/events/block.h
-@@ -8,7 +8,7 @@
- #include <linux/blkdev.h>
- #include <linux/tracepoint.h>
- 
--TRACE_EVENT(block_rq_abort,
-+TRACE_EVENT_TEMPLATE(block_rq_with_error,
- 
- 	TP_PROTO(struct request_queue *q, struct request *rq),
- 
-@@ -40,41 +40,28 @@ TRACE_EVENT(block_rq_abort,
- 		  __entry->nr_sector, __entry->errors)
+diff --git a/include/trace/events/jbd2.h b/include/trace/events/jbd2.h
+index 3c60b75..a1abcf4 100644
+--- a/include/trace/events/jbd2.h
++++ b/include/trace/events/jbd2.h
+@@ -30,7 +30,7 @@ TRACE_EVENT(jbd2_checkpoint,
+ 		  jbd2_dev_to_name(__entry->dev), __entry->result)
  );
  
--TRACE_EVENT(block_rq_insert,
-+DEFINE_EVENT(block_rq_with_error, block_rq_abort,
+-TRACE_EVENT(jbd2_start_commit,
++TRACE_EVENT_TEMPLATE(jbd2_commit,
  
- 	TP_PROTO(struct request_queue *q, struct request *rq),
+ 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
  
--	TP_ARGS(q, rq),
-+	TP_ARGS(q, rq)
+@@ -53,73 +53,32 @@ TRACE_EVENT(jbd2_start_commit,
+ 		  __entry->sync_commit)
+ );
+ 
+-TRACE_EVENT(jbd2_commit_locking,
++DEFINE_EVENT(jbd2_commit, jbd2_start_commit,
+ 
+ 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
+ 
+-	TP_ARGS(journal, commit_transaction),
+-
+-	TP_STRUCT__entry(
+-		__field(	dev_t,	dev			)
+-		__field(	char,	sync_commit		  )
+-		__field(	int,	transaction		  )
+-	),
+-
+-	TP_fast_assign(
+-		__entry->dev		= journal->j_fs_dev->bd_dev;
+-		__entry->sync_commit = commit_transaction->t_synchronous_commit;
+-		__entry->transaction	= commit_transaction->t_tid;
+-	),
+-
+-	TP_printk("dev %s transaction %d sync %d",
+-		  jbd2_dev_to_name(__entry->dev), __entry->transaction,
+-		  __entry->sync_commit)
++	TP_ARGS(journal, commit_transaction)
+ );
+ 
+-TRACE_EVENT(jbd2_commit_flushing,
++DEFINE_EVENT(jbd2_commit, jbd2_commit_locking,
+ 
+ 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
+ 
+-	TP_ARGS(journal, commit_transaction),
+-
+-	TP_STRUCT__entry(
+-		__field(	dev_t,	dev			)
+-		__field(	char,	sync_commit		  )
+-		__field(	int,	transaction		  )
+-	),
+-
+-	TP_fast_assign(
+-		__entry->dev		= journal->j_fs_dev->bd_dev;
+-		__entry->sync_commit = commit_transaction->t_synchronous_commit;
+-		__entry->transaction	= commit_transaction->t_tid;
+-	),
+-
+-	TP_printk("dev %s transaction %d sync %d",
+-		  jbd2_dev_to_name(__entry->dev), __entry->transaction,
+-		  __entry->sync_commit)
++	TP_ARGS(journal, commit_transaction)
+ );
+ 
+-TRACE_EVENT(jbd2_commit_logging,
++DEFINE_EVENT(jbd2_commit, jbd2_commit_flushing,
+ 
+ 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
+ 
+-	TP_ARGS(journal, commit_transaction),
++	TP_ARGS(journal, commit_transaction)
 +);
  
 -	TP_STRUCT__entry(
--		__field(  dev_t,	dev			)
--		__field(  sector_t,	sector			)
--		__field(  unsigned int,	nr_sector		)
--		__field(  unsigned int,	bytes			)
--		__array(  char,		rwbs,	6		)
--		__array(  char,         comm,   TASK_COMM_LEN   )
--		__dynamic_array( char,	cmd,	blk_cmd_buf_len(rq)	)
+-		__field(	dev_t,	dev			)
+-		__field(	char,	sync_commit		  )
+-		__field(	int,	transaction		  )
 -	),
-+DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
++DEFINE_EVENT(jbd2_commit, jbd2_commit_logging,
  
 -	TP_fast_assign(
--		__entry->dev	   = rq->rq_disk ? disk_devt(rq->rq_disk) : 0;
--		__entry->sector    = blk_pc_request(rq) ? 0 : blk_rq_pos(rq);
--		__entry->nr_sector = blk_pc_request(rq) ? 0 : blk_rq_sectors(rq);
--		__entry->bytes     = blk_pc_request(rq) ? blk_rq_bytes(rq) : 0;
-+	TP_PROTO(struct request_queue *q, struct request *rq),
- 
--		blk_fill_rwbs_rq(__entry->rwbs, rq);
--		blk_dump_cmd(__get_str(cmd), rq);
--		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+-		__entry->dev		= journal->j_fs_dev->bd_dev;
+-		__entry->sync_commit = commit_transaction->t_synchronous_commit;
+-		__entry->transaction	= commit_transaction->t_tid;
 -	),
-+	TP_ARGS(q, rq)
-+);
++	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
  
--	TP_printk("%d,%d %s %u (%s) %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev),
--		  __entry->rwbs, __entry->bytes, __get_str(cmd),
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+DEFINE_EVENT(block_rq_with_error, block_rq_complete,
-+
-+	TP_PROTO(struct request_queue *q, struct request *rq),
-+
-+	TP_ARGS(q, rq)
+-	TP_printk("dev %s transaction %d sync %d",
+-		  jbd2_dev_to_name(__entry->dev), __entry->transaction,
+-		  __entry->sync_commit)
++	TP_ARGS(journal, commit_transaction)
  );
  
--TRACE_EVENT(block_rq_issue,
-+TRACE_EVENT_TEMPLATE(block_rq,
- 
- 	TP_PROTO(struct request_queue *q, struct request *rq),
- 
-@@ -86,7 +73,7 @@ TRACE_EVENT(block_rq_issue,
- 		__field(  unsigned int,	nr_sector		)
- 		__field(  unsigned int,	bytes			)
- 		__array(  char,		rwbs,	6		)
--		__array(  char,		comm,   TASK_COMM_LEN   )
-+		__array(  char,         comm,   TASK_COMM_LEN   )
- 		__dynamic_array( char,	cmd,	blk_cmd_buf_len(rq)	)
- 	),
- 
-@@ -108,68 +95,18 @@ TRACE_EVENT(block_rq_issue,
- 		  __entry->nr_sector, __entry->comm)
- );
- 
--TRACE_EVENT(block_rq_requeue,
-+DEFINE_EVENT(block_rq, block_rq_insert,
- 
- 	TP_PROTO(struct request_queue *q, struct request *rq),
- 
--	TP_ARGS(q, rq),
--
--	TP_STRUCT__entry(
--		__field(  dev_t,	dev			)
--		__field(  sector_t,	sector			)
--		__field(  unsigned int,	nr_sector		)
--		__field(  int,		errors			)
--		__array(  char,		rwbs,	6		)
--		__dynamic_array( char,	cmd,	blk_cmd_buf_len(rq)	)
--	),
--
--	TP_fast_assign(
--		__entry->dev	   = rq->rq_disk ? disk_devt(rq->rq_disk) : 0;
--		__entry->sector    = blk_pc_request(rq) ? 0 : blk_rq_pos(rq);
--		__entry->nr_sector = blk_pc_request(rq) ? 0 : blk_rq_sectors(rq);
--		__entry->errors	   = rq->errors;
--
--		blk_fill_rwbs_rq(__entry->rwbs, rq);
--		blk_dump_cmd(__get_str(cmd), rq);
--	),
--
--	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev),
--		  __entry->rwbs, __get_str(cmd),
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->errors)
-+	TP_ARGS(q, rq)
- );
- 
--TRACE_EVENT(block_rq_complete,
-+DEFINE_EVENT(block_rq, block_rq_issue,
- 
- 	TP_PROTO(struct request_queue *q, struct request *rq),
- 
--	TP_ARGS(q, rq),
--
--	TP_STRUCT__entry(
--		__field(  dev_t,	dev			)
--		__field(  sector_t,	sector			)
--		__field(  unsigned int,	nr_sector		)
--		__field(  int,		errors			)
--		__array(  char,		rwbs,	6		)
--		__dynamic_array( char,	cmd,	blk_cmd_buf_len(rq)	)
--	),
--
--	TP_fast_assign(
--		__entry->dev	   = rq->rq_disk ? disk_devt(rq->rq_disk) : 0;
--		__entry->sector    = blk_pc_request(rq) ? 0 : blk_rq_pos(rq);
--		__entry->nr_sector = blk_pc_request(rq) ? 0 : blk_rq_sectors(rq);
--		__entry->errors    = rq->errors;
--
--		blk_fill_rwbs_rq(__entry->rwbs, rq);
--		blk_dump_cmd(__get_str(cmd), rq);
--	),
--
--	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev),
--		  __entry->rwbs, __get_str(cmd),
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->errors)
-+	TP_ARGS(q, rq)
- );
- 
- TRACE_EVENT(block_bio_bounce,
-@@ -228,7 +165,7 @@ TRACE_EVENT(block_bio_complete,
- 		  __entry->nr_sector, __entry->error)
- );
- 
--TRACE_EVENT(block_bio_backmerge,
-+TRACE_EVENT_TEMPLATE(block_bio,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
- 
-@@ -256,63 +193,28 @@ TRACE_EVENT(block_bio_backmerge,
- 		  __entry->nr_sector, __entry->comm)
- );
- 
--TRACE_EVENT(block_bio_frontmerge,
-+DEFINE_EVENT(block_bio, block_bio_backmerge,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
- 
--	TP_ARGS(q, bio),
--
--	TP_STRUCT__entry(
--		__field( dev_t,		dev			)
--		__field( sector_t,	sector			)
--		__field( unsigned,	nr_sector		)
--		__array( char,		rwbs,	6		)
--		__array( char,		comm,	TASK_COMM_LEN	)
--	),
--
--	TP_fast_assign(
--		__entry->dev		= bio->bi_bdev->bd_dev;
--		__entry->sector		= bio->bi_sector;
--		__entry->nr_sector	= bio->bi_size >> 9;
--		blk_fill_rwbs(__entry->rwbs, bio->bi_rw, bio->bi_size);
--		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
--	),
--
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_ARGS(q, bio)
- );
- 
--TRACE_EVENT(block_bio_queue,
-+DEFINE_EVENT(block_bio, block_bio_frontmerge,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
- 
--	TP_ARGS(q, bio),
-+	TP_ARGS(q, bio)
-+);
- 
--	TP_STRUCT__entry(
--		__field( dev_t,		dev			)
--		__field( sector_t,	sector			)
--		__field( unsigned int,	nr_sector		)
--		__array( char,		rwbs,	6		)
--		__array( char,		comm,	TASK_COMM_LEN	)
--	),
-+DEFINE_EVENT(block_bio, block_bio_queue,
- 
--	TP_fast_assign(
--		__entry->dev		= bio->bi_bdev->bd_dev;
--		__entry->sector		= bio->bi_sector;
--		__entry->nr_sector	= bio->bi_size >> 9;
--		blk_fill_rwbs(__entry->rwbs, bio->bi_rw, bio->bi_size);
--		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
--	),
-+	TP_PROTO(struct request_queue *q, struct bio *bio),
- 
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_ARGS(q, bio)
- );
- 
--TRACE_EVENT(block_getrq,
-+TRACE_EVENT_TEMPLATE(block_get_rq,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
- 
-@@ -341,33 +243,18 @@ TRACE_EVENT(block_getrq,
- 		  __entry->nr_sector, __entry->comm)
- );
- 
--TRACE_EVENT(block_sleeprq,
-+DEFINE_EVENT(block_get_rq, block_getrq,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
- 
--	TP_ARGS(q, bio, rw),
-+	TP_ARGS(q, bio, rw)
-+);
- 
--	TP_STRUCT__entry(
--		__field( dev_t,		dev			)
--		__field( sector_t,	sector			)
--		__field( unsigned int,	nr_sector		)
--		__array( char,		rwbs,	6		)
--		__array( char,		comm,	TASK_COMM_LEN	)
--	),
-+DEFINE_EVENT(block_get_rq, block_sleeprq,
- 
--	TP_fast_assign(
--		__entry->dev		= bio ? bio->bi_bdev->bd_dev : 0;
--		__entry->sector		= bio ? bio->bi_sector : 0;
--		__entry->nr_sector	= bio ? bio->bi_size >> 9 : 0;
--		blk_fill_rwbs(__entry->rwbs,
--			    bio ? bio->bi_rw : 0, __entry->nr_sector);
--		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
--	),
-+	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
- 
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_ARGS(q, bio, rw)
- );
- 
- TRACE_EVENT(block_plug,
-@@ -387,7 +274,7 @@ TRACE_EVENT(block_plug,
- 	TP_printk("[%s]", __entry->comm)
- );
- 
--TRACE_EVENT(block_unplug_timer,
-+TRACE_EVENT_TEMPLATE(block_unplug,
- 
- 	TP_PROTO(struct request_queue *q),
- 
-@@ -406,23 +293,18 @@ TRACE_EVENT(block_unplug_timer,
- 	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
- );
- 
--TRACE_EVENT(block_unplug_io,
-+DEFINE_EVENT(block_unplug, block_unplug_timer,
- 
- 	TP_PROTO(struct request_queue *q),
- 
--	TP_ARGS(q),
-+	TP_ARGS(q)
-+);
- 
--	TP_STRUCT__entry(
--		__field( int,		nr_rq			)
--		__array( char,		comm,	TASK_COMM_LEN	)
--	),
-+DEFINE_EVENT(block_unplug, block_unplug_io,
- 
--	TP_fast_assign(
--		__entry->nr_rq	= q->rq.count[READ] + q->rq.count[WRITE];
--		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
--	),
-+	TP_PROTO(struct request_queue *q),
- 
--	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
-+	TP_ARGS(q)
- );
- 
- TRACE_EVENT(block_split,
+ TRACE_EVENT(jbd2_end_commit,
 -- 
 1.6.3
 
