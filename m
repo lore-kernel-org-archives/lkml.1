@@ -1,119 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZKZPru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbZKZPuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760628AbZKZPru (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 10:47:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbZKZPrs
+	id S1756499AbZKZPuY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 10:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbZKZPuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 10:47:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13608 "EHLO mx1.redhat.com"
+	Thu, 26 Nov 2009 10:50:23 -0500
+Received: from cantor.suse.de ([195.135.220.2]:41814 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756432AbZKZPrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 10:47:45 -0500
-Message-ID: <4B0EA3AA.5070003@redhat.com>
-Date: Thu, 26 Nov 2009 10:50:02 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: linux-kernel@vger.kernel.org, dhowells@redhat.com,
-       hidehiro.kawai.ez@hitachi.com, lethal@linux-sh.org, mingo@elte.hu,
-       oleg@redhat.com, roland@redhat.com, vapier@gentoo.org,
-       Takahiro Yasui <tyasui@redhat.com>
-Subject: Re: + binfmt-introduce-coredump-parameter-structure.patch added to
- -mm tree
-References: <200911202212.nAKMCF2v012068@imap1.linux-foundation.org> <20091126174835.5A73.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091126174835.5A73.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1750919AbZKZPuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 10:50:22 -0500
+Subject: Re: [PATCH] enclosure: fix oops while iterating enclosure_status
+ array
+From: James Bottomley <James.Bottomley@suse.de>
+To: Jeff Mahoney <jeffm@jeffreymahoney.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <1258753394.2889.315.camel@mulgrave.site>
+References: <4B05E183.4010301@jeffreymahoney.com>
+	 <1258753394.2889.315.camel@mulgrave.site>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 09:50:20 -0600
+Message-Id: <1259250620.7584.28.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kosaki-san,
-
-KOSAKI Motohiro wrote:
-> Hi Hiramatsu-san,
+On Fri, 2009-11-20 at 16:43 -0500, James Bottomley wrote:
+> *really* (promise) adding linux-scsi to the cc list this time.
 > 
->>
->> The patch titled
->>      binfmt: introduce coredump parameter structure
->> has been added to the -mm tree.  Its filename is
->>      binfmt-introduce-coredump-parameter-structure.patch
->>
->> Before you just go and hit "reply", please:
->>    a) Consider who else should be cc'ed
->>    b) Prefer to cc a suitable mailing list as well
->>    c) Ideally: find the original patch on the mailing list and do a
->>       reply-to-all to that, adding suitable additional cc's
->>
->> *** Remember to use Documentation/SubmitChecklist when testing your code ***
->>
->> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
->> out what to do about this
->>
->> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
->>
->> ------------------------------------------------------
->> Subject: binfmt: introduce coredump parameter structure
->> From: Masami Hiramatsu <mhiramat@redhat.com>
->>
->> These patches are for fixing coredump mm->flags consistency issue.
->>
->> ---
->> 1787         if (mm->core_state || !get_dumpable(mm)) {  <- (1)
->> 1788                 up_write(&mm->mmap_sem);
->> 1789                 put_cred(cred);
->> 1790                 goto fail;
->> 1791         }
->> 1792
->> [...]
->> 1798         if (get_dumpable(mm) == 2) {    /* Setuid core dump mode */ <-(2)
->> 1799                 flag = O_EXCL;          /* Stop rewrite attacks */
->> 1800                 cred->fsuid = 0;        /* Dump root private */
->> 1801         }
->> ---
->>
->> Since dumpable bits are not protected by lock, there is a chance to change
->> these bits between (1) and (2).
->>
->> To solve this issue, this patch copies mm->flags to
->> coredump_params.mm_flags at the beginning of do_coredump() and uses it
->> instead of get_dumpable() while dumping core.  This series also introduce
->> coredump parameter structure for simplify bimfmt->core_dump interface.
->>
->>
->>
->> This patch:
->>
->> Introduce coredump parameter data structure (struct coredump_params) for
->> simplifying binfmt->core_dump() arguments.  This also cleanup DUMP_WRITE()
->> in elf_core_dump() by style issue.
+> Patch looks fine to me, though, thanks.
 > 
+> James
 > 
-> This patch break ia64 because arch specific ELF_CORE_EXTRA_PHDRS and 
-> ELF_CORE_WRITE_EXTRA_DATA still use DUMP_WRITE. I expect this patch 
-> break uml too.
+> On Thu, 2009-11-19 at 19:23 -0500, Jeff Mahoney wrote:
+> > enclosure_status is expected to be a NULL terminated array of strings
+> >  but isn't actually NULL terminated. When writing an invalid value to
+> >  /sys/class/enclosure/.../.../status, it goes off the end of the array
+> >  and Oopses.
+> > 
+> >  This patch uses the array size instead.
+> > 
+> > Reported-by: Artur Wojcik <artur.wojcik@intel.com>
+> > Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+> > ---
+> >  drivers/misc/enclosure.c |    5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > --- a/drivers/misc/enclosure.c
+> > +++ b/drivers/misc/enclosure.c
+> > @@ -412,8 +412,9 @@ static ssize_t set_component_status(stru
+> >  	struct enclosure_component *ecomp = to_enclosure_component(cdev);
+> >  	int i;
+> >  
+> > -	for (i = 0; enclosure_status[i]; i++) {
+> > -		if (strncmp(buf, enclosure_status[i],
+> > +	for (i = 0; i < ARRAY_SIZE(enclosure_status); i++) {
+> > +		if (enclosure_status[i] &&
+> > +		    strncmp(buf, enclosure_status[i],
+> >  			    strlen(enclosure_status[i])) == 0 &&
+> >  		    (buf[strlen(enclosure_status[i])] == '\n' ||
+> >  		     buf[strlen(enclosure_status[i])] == '\0'))
 
-$ grep -r DUMP_WRITE arch/*/include
-arch/ia64/include/asm/elf.h:            DUMP_WRITE(&phdr, sizeof(phdr));       \
-arch/ia64/include/asm/elf.h:                    DUMP_WRITE((void *) gate_phdrs[\
+Actually, it's not fine ... it's giving this error:
 
-Oops, certainly, that's a problem.
-IMHO, we should not do like that, all parameter required by a macro should be
-specified explicitly, since it reduces readability so much...
-I think we'd better make those macros inline function, check it's return value
-for error handling.
+drivers/misc/enclosure.c: In function 'set_component_status':
+drivers/misc/enclosure.c:453: warning: array subscript is above array bounds
 
-What would you think about it?
+It's another place where there's an assumption that the array is zero
+terminated.
 
-Thank you,
+I think the actual best fix is simply to make the assumption true, like
+the patch below.
 
--- 
-Masami Hiramatsu
+James
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+---
 
-e-mail: mhiramat@redhat.com
+diff --git a/drivers/misc/enclosure.c b/drivers/misc/enclosure.c
+index e9eae4a..1eac626 100644
+--- a/drivers/misc/enclosure.c
++++ b/drivers/misc/enclosure.c
+@@ -391,6 +391,7 @@ static const char *const enclosure_status [] = {
+ 	[ENCLOSURE_STATUS_NOT_INSTALLED] = "not installed",
+ 	[ENCLOSURE_STATUS_UNKNOWN] = "unknown",
+ 	[ENCLOSURE_STATUS_UNAVAILABLE] = "unavailable",
++	[ENCLOSURE_STATUS_MAX] = NULL,
+ };
+ 
+ static const char *const enclosure_type [] = {
+diff --git a/include/linux/enclosure.h b/include/linux/enclosure.h
+index 90d1c21..9a33c5f 100644
+--- a/include/linux/enclosure.h
++++ b/include/linux/enclosure.h
+@@ -42,6 +42,8 @@ enum enclosure_status {
+ 	ENCLOSURE_STATUS_NOT_INSTALLED,
+ 	ENCLOSURE_STATUS_UNKNOWN,
+ 	ENCLOSURE_STATUS_UNAVAILABLE,
++	/* last element for counting purposes */
++	ENCLOSURE_STATUS_MAX
+ };
+ 
+ /* SFF-8485 activity light settings */
+
 
