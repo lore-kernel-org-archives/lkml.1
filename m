@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751318AbZKZSMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751319AbZKZSNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751318AbZKZSMG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:12:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbZKZSME
+	id S1751319AbZKZSNH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:13:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZKZSNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:12:04 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:3965 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751186AbZKZSMC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:12:02 -0500
-Message-ID: <4B0EC52B.2070805@ru.mvista.com>
-Date: Thu, 26 Nov 2009 21:12:59 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 26 Nov 2009 13:13:05 -0500
+Received: from khc.piap.pl ([195.187.100.11]:56893 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973AbZKZSNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 13:13:04 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Christoph Bartelmus <lirc@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDcbizrJjFB@christoph> <4B0EABF8.9000902@redhat.com>
+Date: Thu, 26 Nov 2009 19:13:08 +0100
+In-Reply-To: <4B0EABF8.9000902@redhat.com> (Mauro Carvalho Chehab's message of
+	"Thu, 26 Nov 2009 14:25:28 -0200")
+Message-ID: <m3r5rlupcb.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_it8213: MWDMA0 is unsupported
-References: <200911261728.36433.bzolnier@gmail.com> <4B0EB986.2010801@ru.mvista.com> <200911261900.11506.bzolnier@gmail.com> <200911261903.01199.bzolnier@gmail.com>
-In-Reply-To: <200911261903.01199.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
->>>>>MWDMA0 timings cannot be met with the PIIX based controller
->>>>>programming interface.
->>>
->>>>>This change should be safe as this is how we have been doing
->>>>>things in IDE it8213 host driver for years.
->>>
->>>>>Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>>>>---
->>>>>Verified with the documentation (similar case as with pata_efar).
+> 1) the developer that adds the hardware also adds the IR code. He has
+> the hardware and the IR for testing, so it means a faster development
+> cycle than waiting for someone else with the same hardware and IR to
+> recode it on some other place. You should remember that not all
+> developers use lirc;
 
->>>>Uhhh, no...
+It's fine, but please - no keymaps in the kernel (except for fixed
+receivers, i.e. the ones which can only work with their own dedicated
+remote, and which don't pass RC5/etc. code).
 
->>>>Too many damn drivers.
-
->>>>Too much damn duplication.
-
->>>>Too much damn subtle differences here and there.
-
->>>>The hardware is probably fine for MWMDA0 when it comes to pata_{efar,it8213},
->>>>it just not documented properly in the data sheet.
-
->>>    How so with pata_efar? The active/recovery bitfields are still 2-bit 
->>>wide, no?
-
->>Yes but when TIMEx bit is disabled we are using XFER_PIO_SLOW timings.
-
-    600 ns cycle vs spec'ed 480 ns? Is it really worth it?
-
->>All data sheets including original Intel ones are a complete crap when it
->>comes to explicitly documenting this behavior.
-
-> OTOH all drivers set TIMEx for MWDMA0 currently.. ?
-
-    ... which would give a grossly overclocked timing.
-
-> --
-> Bartlomiej Zolnierkiewicz
-
-MBR, Sergei
+The existing keymaps (those which can be used with lirc) have to be
+moved to userspace as well.
+-- 
+Krzysztof Halasa
