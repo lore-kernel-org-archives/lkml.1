@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760228AbZKZQQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760755AbZKZQTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760228AbZKZQQF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:16:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZKZQQE
+	id S1760755AbZKZQTx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760677AbZKZQTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:16:04 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:57931 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1755859AbZKZQQD (ORCPT
+	Thu, 26 Nov 2009 11:19:51 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48459 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760283AbZKZQTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:16:03 -0500
-Message-ID: <4B0EA9FC.1000208@ru.mvista.com>
-Date: Thu, 26 Nov 2009 19:17:00 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/86] pata_efar: MWDMA0 is unsupported
-References: <20091125170218.5446.13513.sendpatchset@localhost> <20091126151546.6c891014@lxorguk.ukuu.org.uk> <4B0E9FB9.8050508@ru.mvista.com> <200911261640.39208.bzolnier@gmail.com>
-In-Reply-To: <200911261640.39208.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 26 Nov 2009 11:19:49 -0500
+Subject: Re: Missing recalculation of scheduler tunables in case of cpu hot
+ add/remove
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Holger.Wolf@de.ibm.com, epasch@de.ibm.com
+In-Reply-To: <4B0EA88E.3030205@linux.vnet.ibm.com>
+References: <4B0EA88E.3030205@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Nov 2009 17:19:42 +0100
+Message-ID: <1259252382.31676.207.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, 2009-11-26 at 17:10 +0100, Christian Ehrhardt wrote:
 
-Bartlomiej Zolnierkiewicz wrote:
+> What I consider more important at the moment is that there is no hook to 
+> recalculate these values in case cpu hot add/remove takes place.
+> As an example someone could boot a machine with one online cpu and get 
+> the low non scaled defaults, later on driven by load the system 
+> activates more and more processors. Therefore the system could end up 
+> having  a large amount of cpus with non recalculated scheduler tunables.
 
->>>>>>MWDMA0 timings cannot be met with the PIIX based controller
->>>>>>programming interface.
+This is virt junk that's playing dumb games with hotplug isn't it?
 
->>>>>The efar documentation makes no reference to not being capable of MWDMA0,
->>>>>so where does this come from ? No MWDMA0 is an Intel erratum it appears.
+Normal machines simply don't change their numbers of cpus, if they
+hotplug its usually for things like suspend or actual replacement of a
+faulty piece of kit, in which case there's little point in adjusting
+things.
 
->>>>No MWDMA0 support is a common issue on all 'PIIX-like' controllers.
+Aside from that, we probably should put an upper limit in place, as I
+guess large cpu count machines get silly large values.
 
->>>>In case of this chipset while the (preliminary) documentation claims MWDMA0
->>>>support on the 'FEATURES' page the later 'programming guide' part describes
->>>>only PIO0-4, SWDMA2, MWDMA1-2 and UDMA0-4 transfer modes as supported.
-
->>>Cool - I only have the original docs.
-
->>    Hm, me too... perhaps worth putting in Jeff's documentation archive?
-
-> Me too?  I just have what 'The Good Uncle Google' has..
-
-    Well, I've googled for it and was unable to find any valid links even to 
-my preliminary version anymore. Perhaps I haven't looked hard enough...
-
-> --
-> Bartlomiej Zolnierkiewicz
-
-MBR, Sergei
