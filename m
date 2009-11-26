@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbZKZNhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbZKZNms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760041AbZKZNhc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 08:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbZKZNhc
+	id S1754647AbZKZNms (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 08:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbZKZNmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 08:37:32 -0500
-Received: from mail.gmx.net ([213.165.64.20]:35197 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753306AbZKZNhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 08:37:31 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19P2xw5SrBPoz/qjKSbhVu8jO0hs7WbF4GPC3GsiV
-	cljlRd94X2Q0Am
-Subject: Re: [PATCH-RFC] cfq: Disable low_latency by default for 2.6.32
-From: Mike Galbraith <efault@gmx.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Tobias Oetiker <tobi@oetiker.ch>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <200911261420.57121.bzolnier@gmail.com>
-References: <20091126121945.GB13095@csn.ul.ie>
-	 <1259240937.7371.15.camel@marge.simson.net>
-	 <200911261420.57121.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Thu, 26 Nov 2009 14:37:31 +0100
-Message-Id: <1259242651.6622.5.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+	Thu, 26 Nov 2009 08:42:47 -0500
+Received: from lazybastard.de ([212.112.238.170]:56080 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752539AbZKZNmr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 08:42:47 -0500
+Date: Thu, 26 Nov 2009 14:42:46 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Alex Dubov <oakad@yahoo.com>,
+       arnd@arndb.de, tglx@linutronix.de
+Subject: Re: Plan for adding XD support in mtd layer
+Message-ID: <20091126134245.GM10944@logfs.org>
+References: <1258894713.4127.4.camel@maxim-laptop> <1259106610.28219.34.camel@maxim-laptop> <20091125104027.GB10944@logfs.org> <1259155258.4875.17.camel@maxim-laptop> <20091125153458.GC10944@logfs.org> <1259165866.10147.35.camel@maxim-laptop> <20091125205942.GF10944@logfs.org> <1259191365.15916.31.camel@maxim-laptop> <20091126082715.GG10944@logfs.org> <1259240574.19687.42.camel@maxim-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1259240574.19687.42.camel@maxim-laptop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 14:20 +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 26 November 2009 02:08:57 pm Mike Galbraith wrote:
-> > On Thu, 2009-11-26 at 12:19 +0000, Mel Gorman wrote:
-> > > (cc'ing the people from the page allocator failure thread as this might be
-> > > relevant to some of their problems)
-> > > 
-> > > I know this is very last minute but I believe we should consider disabling
-> > > the "low_latency" tunable for block devices by default for 2.6.32.  There was
-> > > evidence that low_latency was a problem last week for page allocation failure
-> > > reports but the reproduction-case was unusual and involved high-order atomic
-> > > allocations in low-memory conditions. It took another few days to accurately
-> > > show the problem for more normal workloads and it's a bit more wide-spread
-> > > than just allocation failures.
-> > > 
-> > > Basically, low_latency looks great as long as you have plenty of memory
-> > > but in low memory situations, it appears to cause problems that manifest
-> > > as reduced performance, desktop stalls and in some cases, page allocation
-> > > failures. I think most kernel developers are not seeing the problem as they
-> > > tend to test on beefier machines and without hitting swap or low-memory
-> > > situations for the most part. When they are hitting low-memory situations,
-> > > it tends to be for stress tests where stalls and low performance are expected.
-> > 
-> > Ouch.  It was bad desktop stalls under heavy write that kicked the whole
-> > thing off.
+On Thu, 26 November 2009 15:02:54 +0200, Maxim Levitsky wrote:
+>
+> This one I have, and there is a brief description of the CIS format,
+> which seems to indicate that its contents are predefined.
+
+That is my understanding, yes.  Essentially an xD card is just nand
+flash in cheap packaging with the first block filled by CIS/IDI.
+
+> I am afraid not.
 > 
-> The problem is that 'desktop' means different things for different people
-> (for some kernel developers 'desktop' is more like 'a workstation' and for
-> others it is more like 'an embedded device').
+> 
+> My plan is to create one 'meta' mtd driver for all XD controllers, and
+> plug in small drivers.
+> 
+> The meta driver and small driver will share the ->priv structure.
+> 
+> I need a way to pass the ID from mtd driver to FTL, and to userspace via
+> mtdchar.
 
-The stalls I'm talking about were reported for garden variety desktop
-PC.  I reproduced them on my supermarket special Q6600 desktop PC.  That
-problem has been with us roughly forever, but I'd hoped it had been
-cured.  Guess not.
+You can also add a ->priv field to struct xD_data.  Or you can have it
+contain the mtd_info, and use container_of to access the xD information.
 
-As an idle speculation, I wonder if the sync vs async slice ratios may
-not have been knocked out of kilter a bit by giving more to sync.
+But those are details.  Feel free to write the code either way.  We can
+sort out which method to use later.
 
-	-Mike
+Jörn
 
+-- 
+Audacity augments courage; hesitation, fear.
+-- Publilius Syrus
