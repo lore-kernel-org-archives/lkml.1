@@ -1,100 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751406AbZKZFbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751529AbZKZFiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751406AbZKZFbL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 00:31:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbZKZFbJ
+	id S1751529AbZKZFiP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 00:38:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZKZFiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 00:31:09 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:55459 "EHLO
+	Thu, 26 Nov 2009 00:38:14 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:40387 "EHLO
 	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbZKZFbI (ORCPT
+	with ESMTP id S1750951AbZKZFiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 00:31:08 -0500
+	Thu, 26 Nov 2009 00:38:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=MypxMLEwIdSyBFNrKbPcugU3q/oTSuDYoEW+5W4w8Qcy3mb2yL+CQeqROwfJoPKCif
-         KC/G3rIY5KV/IE7ZYkmDrNps5Om1E5iveELWQ1ZJoCOZkx8tkxuJQiKKXCCRUktuCvMJ
-         3rE8BufuHkf8lJGMZO0qIZkeS6YeoXaSZbvv8=
-Date: Wed, 25 Nov 2009 21:31:09 -0800
+        b=nao5BZeOIqUM4HZjFzk/FzfV0tr7B5IMv05zBBaolnYlbGjzpO99ReqTwmSKi871ar
+         IO3lX+T5bS9A2oxEd1WIRmgm6Jr4b1wrerdNckF23ukUNK4nnrN2n3V5e5yPa8qSKxrX
+         F5RqCuVvuDKbv1Mia9VxxnbfbmMG3aZQBfnIo=
+Date: Wed, 25 Nov 2009 21:38:13 -0800
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jarod Wilson <jarod@wilsonet.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
        Mauro Carvalho Chehab <mchehab@redhat.com>,
        Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
        Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
        linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
        Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091126053109.GE23244@core.coreip.homeip.net>
-References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com>
+Subject: Re: IR raw input is not sutable for input system
+Message-ID: <20091126053813.GF23244@core.coreip.homeip.net>
+References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <1259105571.28219.20.camel@maxim-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B0B6321.3050001@wilsonet.com>
+In-Reply-To: <1259105571.28219.20.camel@maxim-laptop>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 11:37:53PM -0500, Jarod Wilson wrote:
-> On 11/23/2009 12:37 PM, Dmitry Torokhov wrote:
->> On Mon, Nov 23, 2009 at 03:14:56PM +0100, Krzysztof Halasa wrote:
->>> Mauro Carvalho Chehab<mchehab@redhat.com>  writes:
->>>
->>>> Event input has the advantage that the keystrokes will provide an unique
->>>> representation that is independent of the device.
->>>
->>> This can hardly work as the only means, the remotes have different keys,
->>> the user almost always has to provide customized key<>function mapping.
->>>
->>
->> Is it true? I would expect the remotes to have most of the keys to have
->> well-defined meanings (unless it is one of the programmable remotes)...
+On Wed, Nov 25, 2009 at 01:32:51AM +0200, Maxim Levitsky wrote:
+> Folks, I really want to tell everyone that doing all the mapping from
+> raw codes to keypresses in kernel is wrong.
+
+Why is this wrong? Doing simple translation is easy and it does not
+require having all the tables for all possible remotes in the kernel. We
+have appropriate interfaces to load keymaps at runtime (for the devices
+whose drivers support this feature).
+
+> This idea keeps showing up, because many users think that remotes send
+> some universal codes that you can just 'parse' and feed back to input
+> system.
 >
-> Its the cases like programmable universal remotes that really throw  
-> things for a loop. That, and people wanting to use random remote X that  
-> came with the amp or tv or set top box, with IR receiver Y.
 
-Right, but still the keys usually do have the well-defined meaning, teh
-issue is in mapping raw code to the appropriate keycode. This can be
-done either by lirc config file (when lirc is used) or by some other
-means.
+Well, they send some data that can be parsed and thus fed to whatever we
+want to feed it.
 
-> ...
->>> We need to handle more than one RC at a time, of course.
->>>
->>>> So, the basic question that should be decided is: should we create a new
->>>> userspace API for raw IR pulse/space
->>>
->>> I think so, doing the RCx proto handling in the kernel (but without
->>> RCx raw code<>  key mapping in this case due to multiple controllers
->>> etc.). Though it could probably use the input layer as well(?).
->>>
->>
->> I think if the data is used to do the primary protocol decoding then it
->> should be a separate interface that is processed by someone and then fed
->> into input subsystem (either in-kernel or through uinput).
->>
->> Again, I would prefer to keep EV_KEY/KEY_* as the primary event type for
->> keys and buttons on all devices.
->
-> Current lircd actually inter-operates with the input subsystem quite  
-> well for any and all supported remotes if their keys are mapped in their  
-> respective lircd.conf file using standard input subsystem key names, and  
-> the lirc daemon started with the --uinput param. lircd decodes the raw  
-> IR, finds the mapping in its config, and happily passes it along to 
-> uinput.
+ 
+> Its not the case.
+> There are many protocols, I know that by experimenting with my universal
+> remote. There are many receivers, and all have different accuracy.
+> Most remotes aren't designed to be used with PC, thus user has to invent
+> mapping between buttons and actions.
+> Its is not possible to identify remotes accurately, many remotes send
+> just a 8 bit integer that specifies the 'model' thus many remotes can
+> share it.
+> Some don't send anything.
+> 
+> There are some weird remotes that send whole packet of data will all
+> kind of states.
+> 
+> Think about it, video capture device is also an input device, a scanner
+> is an input device too, sound card can work as input device too.
 
-Right.
+You are stretching. There are no button presses involved with sound (not
+unless you go all the way down to keys on a piano ;) )
 
-I guess the question is what is the interface we want the regular
-userspace (i.e. not lircd) to use. Right now programs has to use 2
-intercfaces - one lirc for dealing with remotes that are not using
-the standard event interface and evdev for remotes using it as well
-as the rest of the input devices.
+> But we aren't doing any parsing, even we don't support deflating of many
+> proprietary and standard video/image encoding formats.
+> We let userspace do it.
+> 
+> Kernel job is to take the information from device and present it to
+> userspace using uniform format, that is kernel does 1:1 translating, but
+> doesn't parse the data.
+
+Should we return to the times where we had raw PS/2 data streams sent to
+userspace, separately from HID and other formats? I don't think it is a
+good idea.
+
+> Uniform format doesn't mean kernel always converts to one format, its
+> not like sound card always recording in 32 bit 96000 Khz format, even if
+> underlying device doesn't support that.
+> 
+> 
+> So, device that decode IR code are presented to userspace as pure input
+> devices. I agree that creating fake raw codes from that is bad.
+> 
+> But devices that send raw data pass it to lirc.
+> lirc is well capable to decode it, and its not hard to add
+> auto-detection based on existing configuration drivers, so IR devices
+> will work with absolutely no configuration.
+> All you will have to do is ensure that lirc is installed.
+> Then udev can even start it automatically.
+> Then as soon as you press a key, lirc can scan its config database, and
+> find a config file to use. combine that with a GUI for unknown remotes
+> and you get an awesome usability.
+> 
+
+Why can't the same be done in kernalspace though?
+
+> Also don't forget that there are pure userspace drivers. They won't have
+> access to in-kernel decoder so they will still have to parse protocols,
+> so will have code duplication, and will still need lirc thus.
+> 
+> 
+> So why to burden the kernel with protocols, etc..
+
+We do burden it with TCP, shall we take it out?
 
 -- 
 Dmitry
