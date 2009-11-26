@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbZKZTGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752359AbZKZTIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752294AbZKZTGW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 14:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZKZTGW
+	id S1752359AbZKZTIs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 14:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZKZTIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 14:06:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60844 "EHLO mx1.redhat.com"
+	Thu, 26 Nov 2009 14:08:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13477 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752153AbZKZTGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 14:06:21 -0500
-Message-ID: <4B0ED19B.9030409@redhat.com>
-Date: Thu, 26 Nov 2009 17:06:03 -0200
+	id S1752188AbZKZTIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 14:08:46 -0500
+Message-ID: <4B0ED238.6060306@redhat.com>
+Date: Thu, 26 Nov 2009 17:08:40 -0200
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
 To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jarod Wilson <jarod@redhat.com>,
+CC: Jarod Wilson <jarod@redhat.com>,
        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
        linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
        linux-input@vger.kernel.org, linux-media@vger.kernel.org,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
 Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
  Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>	<4B0AB60B.2030006@s5r6.in-berlin.de> <4B0AC8C9.6080504@redhat.com>	<m34oolrnwd.fsf@intrepid.localdomain> <4B0E71B6.4080808@redhat.com> <m3my29up3y.fsf@intrepid.localdomain>
-In-Reply-To: <m3my29up3y.fsf@intrepid.localdomain>
+References: <200910200956.33391.jarod@redhat.com>	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
+In-Reply-To: <m3iqcxuotd.fsf@intrepid.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,29 +33,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Krzysztof Halasa wrote:
 > Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 > 
->> Technically, it is not hard to port this solution to the other
->> drivers, but the issue is that we don't have all those IR's to know
->> what is the complete scancode that each key produces. So, the hardest
->> part is to find a way for doing it without causing regressions, and to
->> find a group of people that will help testing the new way.
+>> The issue I see is to support at the same time NEC and RC5 protocols. While
+>> this may work with some devices, for others, the hardware won't allow.
 > 
-> We don't want to "port it" to other drivers. We need to have a common
-> module which does all RCx decoding. The individual drivers should be as
-> simple as possible, something that I outlined in a previous mail.
+> Sure. We can handle it for the "simple" devices at least.
+> 
+>>> I think the mapping should be: key = proto + group + raw code, while
+>>> key2 could be different_proto + different group (if any) + another code.
+>> This may work for protocols up to RC5, that uses either 8 or 16 bits.
+>> However, RC6 mode 6 codes can be 32 bits, and we have "only" 32 bits
+>> for a scancode. So, we don't have spare bits to represent a protocol, 
+>> if we consider RC6 mode 6 codes as well.
+> 
+> I don't see this limitation. The number of bits should depend on the
+> protocol.
 
-With the current 7bits mask applied to almost all devices, it is probably not very
-useful for those who want to use generic IRs. We really need to port the solution
-we've done on dvb-usb to the other drivers, allowing them to have the entire
-scancode at the tables while keep supporting table replacement. 
+see include/linux/input.h:
 
-The issue is that we currently have only 7bits of the scan codes produced by the IR's.
-So, we need to re-generate the keycode tables for each IR after the changes got applied.
+struct input_event {
+        struct timeval time;
+        __u16 type;
+        __u16 code;
+        __s32 value;
+};
 
-With respect to a common module, unfortunately most of the work should be done on
-each driver, since the code that communicates with the hardware is specific to each
-device. There is a common code (at ir-common.ko) with helper decoding routines.
+extending the value to more than 32 bits require some changes at the input layer,
+probably breaking kernel API.
 
-Please feel free to send us contributions to improve the current code.
+> 
+>> See above. Also, several protocols have a way to check if a keystroke were
+>> properly received. When handling just one protocol, we can use this to double
+>> check the key. However, on a multiprotocol mode, we'll need to disable this
+>> feature.
+> 
+> I don't think so. We can pass the space/mark data to all (configured,
+> i.e. with active mapping) protocol handlers at once. Should a check
+> fail, we ignore the data. Perhaps another protocol will make some sense
+> out of it.
+
+What happens if it succeeds on two protocol handlers?
 
 Cheers,
 Mauro.
