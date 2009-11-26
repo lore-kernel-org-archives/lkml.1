@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZKZPcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZKZPdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbZKZPcR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 10:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbZKZPcQ
+	id S1756193AbZKZPdg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 10:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbZKZPdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 10:32:16 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:41666 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1752690AbZKZPcQ (ORCPT
+	Thu, 26 Nov 2009 10:33:35 -0500
+Received: from stinky.trash.net ([213.144.137.162]:56921 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755310AbZKZPde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 10:32:16 -0500
-Message-ID: <4B0E9FB9.8050508@ru.mvista.com>
-Date: Thu, 26 Nov 2009 18:33:13 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 26 Nov 2009 10:33:34 -0500
+Message-ID: <4B0E9FD0.4040107@trash.net>
+Date: Thu, 26 Nov 2009 16:33:36 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/86] pata_efar: MWDMA0 is unsupported
-References: <20091125170218.5446.13513.sendpatchset@localhost>	<20091125170415.5446.15073.sendpatchset@localhost>	<20091125172552.6817e3da@lxorguk.ukuu.org.uk>	<200911261553.58941.bzolnier@gmail.com> <20091126151546.6c891014@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091126151546.6c891014@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Arnd Bergmann <arnd@arndb.de>
+CC: David Miller <davem@davemloft.net>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       virtualization@lists.linux-foundation.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Anna Fischer <anna.fischer@hp.com>, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mark Smith <lk-netdev@lk-netdev.nosense.org>,
+       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
+       Jens Osterkamp <jens@linux.vnet.ibm.com>,
+       Patrick Mullaney <pmullaney@novell.com>,
+       Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH 1/4] veth: move loopback logic to common location
+References: <1259024166-28158-1-git-send-email-arnd@arndb.de> <m1aayb6bfg.fsf@fess.ebiederm.org> <4B0C2824.5010502@trash.net> <200911261621.28298.arnd@arndb.de>
+In-Reply-To: <200911261621.28298.arnd@arndb.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Arnd Bergmann wrote:
+> On Tuesday 24 November 2009, Patrick McHardy wrote:
+>> Eric W. Biederman wrote:
+>>> I don't quite follow what you intend with dev_queue_xmit when the macvlan
+>>> is in one namespace and the real physical device is in another.  Are
+>>> you mentioning that the packet classifier runs in the namespace where
+>>> the primary device lives with packets from a different namespace?
+>> Exactly. And I think we should make sure that the namespace of
+>> the macvlan device can't (deliberately or accidentally) cause
+>> misclassification.
+> 
+> This is independent of my series and a preexisting problem, right?
 
-Alan Cox wrote:
+Correct.
 
->>On Wednesday 25 November 2009 06:25:52 pm Alan Cox wrote:
+> Which fields do you think need to be reset to maintain namespace
+> isolation for the outbound path in macvlan?
 
->>>On Wed, 25 Nov 2009 18:04:15 +0100
->>>Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+In addition to those already handled, I'd say
 
->>>>From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>>>Subject: [PATCH] pata_efar: MWDMA0 is unsupported
+- priority: affects qdisc classification, may refer to classes of the
+  old namespace
+- ipvs_property: might cause packets to incorrectly skip netfilter hooks
+- nf_trace: might trigger packet tracing
+- nf_bridge: contains references to network devices in the old NS,
+  also indicates packet was bridged
+- iif: index is only valid in the originating namespace
+- tc_index: classification result, should only be set in the namespace
+  of the classifier
+- tc_verd: RTTL etc. should begin at zero again
+- probably secmark.
 
->>>>MWDMA0 timings cannot be met with the PIIX based controller
->>>>programming interface.
-
->>>The efar documentation makes no reference to not being capable of MWDMA0,
->>>so where does this come from ? No MWDMA0 is an Intel erratum it appears.
-
->>No MWDMA0 support is a common issue on all 'PIIX-like' controllers.
-
->>In case of this chipset while the (preliminary) documentation claims MWDMA0
->>support on the 'FEATURES' page the later 'programming guide' part describes
->>only PIO0-4, SWDMA2, MWDMA1-2 and UDMA0-4 transfer modes as supported.
-
-> Cool - I only have the original docs.
-
-    Hm, me too... perhaps worth putting in Jeff's documentation archive?
-
-MBR, Sergei
