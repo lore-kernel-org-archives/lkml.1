@@ -1,178 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbZKZECM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932654AbZKZEKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758550AbZKZECM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Nov 2009 23:02:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758451AbZKZECM
+	id S932654AbZKZEKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Nov 2009 23:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932311AbZKZEKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Nov 2009 23:02:12 -0500
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:38828 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752097AbZKZECK (ORCPT
+	Wed, 25 Nov 2009 23:10:48 -0500
+Received: from mail-px0-f180.google.com ([209.85.216.180]:38825 "EHLO
+	mail-px0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932223AbZKZEKq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Nov 2009 23:02:10 -0500
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-05.arcor-online.net 8CEAA332A53
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Andy Walls <awalls@radix.net>
-Cc: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-In-Reply-To: <1259206290.3060.50.camel@palomino.walls.org>
-References: <BDZb9P9ZjFB@christoph> <m3skc25wpx.fsf@intrepid.localdomain>
-	 <E6F196CB-8F9E-4618-9283-F8F67D1D3EAF@wilsonet.com>
-	 <1259206290.3060.50.camel@palomino.walls.org>
-Content-Type: text/plain
-Date: Thu, 26 Nov 2009 05:00:18 +0100
-Message-Id: <1259208018.3229.16.camel@pc07.localdom.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Nov 2009 23:10:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=I/qShdjpiWhFynb+avTk9VpUmLCynmj+j5ck7WoK9oX88zp8p+F9Yls1eM9wT/TCga
+         pwHOoSPMag1/iztBQ/Gh7HDrYXbihipi5im7+WwT7DRklTTbZfN+VHlS4KfsHvSZTaeD
+         XNfhcXKl+AES9mSFzEYyEnMmFv6kGwWou1FM4=
+Date: Wed, 25 Nov 2009 20:10:47 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       Richard Purdie <rpurdie@rpsys.net>, lm-sensors@lm-sensors.org,
+       linux-input@vger.kernel.org, linux-laptop@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>, sfr@linuxcare.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] [loongson] yeeloong2f: add platform specific support
+Message-ID: <20091126041047.GC23244@core.coreip.homeip.net>
+References: <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com> <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9ef5a0038ec5e9b584be8c960693c434a323620a.1258803311.git.wuzhangjin@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Wu,
 
-Am Mittwoch, den 25.11.2009, 22:31 -0500 schrieb Andy Walls:
-> On Wed, 2009-11-25 at 13:07 -0500, Jarod Wilson wrote:
-> > On Nov 25, 2009, at 12:40 PM, Krzysztof Halasa wrote:
-> > 
-> > > lirc@bartelmus.de (Christoph Bartelmus) writes:
-> > > 
-> > >> I'm not sure what two ways you are talking about. With the patches posted  
-> > >> by Jarod, nothing has to be changed in userspace.
-> > >> Everything works, no code needs to be written and tested, everybody is  
-> > >> happy.
-> > > 
-> > > The existing drivers use input layer. Do you want part of the tree to
-> > > use existing lirc interface while the other part uses their own
-> > > in-kernel (badly broken for example) code to do precisely the same
-> > > thing?
-> > 
-> > Took me a minute to figure out exactly what you were talking about. You're referring to the current in-kernel decoding done on an ad-hoc basis for assorted remotes bundled with capture devices, correct?
-> > 
-> > Admittedly, unifying those and the lirc driven devices hasn't really been on my radar.
-> 
-> It has been on mine.  I have been somewhat against the input subsystem
-> route for unification because it neglects transmitters and appears to
-> trade the userspace complexity we already have (i.e. LIRC configuration)
-> for another new (and hence less documented) configuration complexity for
-> end users.
-> 
-> My strategy for unification goes something like this:
-> 
-> 1. Get lirc_dev and the needed supporting headers in the kernel.  I will
-> concede LIRC is not perfect or beautiful, but I'll assert it is feature
-> complete for all the end user use cases that matter.
-> 
-> 2. Encapsulate all the various IR controller hardware handling in
-> V4L-DVB into v4l_subdevice objects and provide a uniform interface to IR
-> hardware internally via v4l2_subdev_ir_ops.  The exact nature of the IR
-> hardware is then mostly abstracted away: I2C bus microcontroller,
-> register block, GPIO line control of discretes devices, etc. can all be
-> accessed in a somewhat unifrom manner.
-> 
-> 3. In conjunction with 2, common IR handling routines that exist in
-> various drivers already can be broken out: RC-5 protocol handling, etc.
-> 
-> 4. Develop an internal interface so the v4l2_subdev object instance for
-> the IR hardware is exposed through a bridge driver's v4l2_device object.
-> 
-> 5. Develop the needed layer between lirc_dev and the v4l2_device object
-> to connect things up.
-> 
-> 
-> That unifies all the IR cats and dogs in V4L-DVB at the low levels and
-> glues them in a consistent manner to something up top (i.e. lirc_dev)
-> that already handles Rx, Tx, protocols, keymapping, etc.
-> 
-> My primary desire is to encapsulate or remove the complexity we
-> currently have in kernel with all the ad-hoc IR hardware handling and
-> get it unifrom and layered.  
-> 
-> The upper level glue to userspace doesn't have to be lirc_dev, but why
-> not?  It's there and the end users are familiair with it.  I have
-> set-top boxes, I need IR Tx.
-> 
-> 
-> 
-> > > We can have a good code for both, or we can end up with "badly broken"
-> > > media drivers and incompatible, suboptimal existing lirc interface
-> > > (though most probably much better in terms of quality, especially after
-> > > Jarod's work).
-> > 
-> > Well, is there any reason most of those drivers with
-> > currently-in-kernel-but-badly-broken decoding can't be converted to
-> > use the lirc interface if its merged into the kernel? 
-> 
-> I think all the V4L-DVB IR hardware can be.  I have not done sufficient
-> research on the Serial, USB and other devices to say personally.
-> 
-> 
-> > And/or, everything could converge on a new in-kernel decoding infra
-> > that wasn't badly broken. Sure, there may be two separate ways of
-> > doing essentially the same thing for a while, but meh. The lirc way
-> > works NOW for an incredibly wide variety of receivers, transmitters,
-> > IR protocols, etc.
-> 
-> Also LIRC has had years of requirements collection and refinement of use
-> cases.  Anything new implementation will likely end up converging to the
-> feature set LIRC already has implemented.
-> 
-> 
-> 
-> > I do concur that Just Works decoding for bundled remotes w/o having to
-> > configure anything would be nice, and one way to go about doing that
-> > certainly is via in-kernel IR decoding. But at the same time, the
-> > second you want to use something other than a bundled remote, things
-> > fall down, and having to do a bunch of setkeycode ops seems less
-> > optimal than simply dropping an appropriate lircd.conf in place.
-> 
-> 
-> >From a big picture perspective I would never see the OS kenrel as a good
-> place to address usability issues.  It seems more logical to fix
-> usability issues with a decent GUI application and good documentation.
-> (LIRC needs a configuration GUI!).  Expecting IR usability problems to
-> be eased by the kernel and command line utilties is - well -
-> optimistic. 
-> 
-> I'll add that there are too many factors that can be permuted by the end
-> user and OEM -- protocols, remote layouts, button codes, PC IR Rx/Tx
-> hardware, and Set top boxes feeding PC video capture devices -- that
-> generating defaults that "Just Work" is a generally unsolvable problem.
-> 
-> 
-> Regards,
-> Andy
-> 
+Overall impression - several drivers crammed into one module, I wonder
+if it could be split somewhat. Some input-related concerns below.
 
-It has something that seemingly can be discussed endlessly.
+On Sat, Nov 21, 2009 at 08:08:40PM +0800, Wu Zhangjin wrote:
+> +
+> +/* hotkey input subdriver */
+> +
+> +static struct input_dev *yeeloong_hotkey_dev;
+> +static int event, status;
+> +
+> +struct key_entry {
+> +	char type;		/* See KE_* below */
+> +	int event;		/* event from SCI */
+> +	u16 keycode;		/* KEY_* or SW_* */
+> +};
+> +
+> +enum { KE_KEY, KE_SW, KE_END };
 
-By all good pros and cons, it takes much too long to see anything
-forthcoming soon.
+I am going to post the sparse keymap library shortly, this driver could
+use it too...
 
-To remind, we had eleven 2.6.x test kernels, nothing on lirc came even
-close to it, and on 2.6.6 some first sign of life again ... IIRC.
+> +
+> +static struct key_entry yeeloong_keymap[] = {
+> +	{KE_SW, EVENT_LID, SW_LID},
+> +	/* SW_VIDEOOUT_INSERT? not included in hald-addon-input! */
+> +	{KE_KEY, EVENT_CRT_DETECT, KEY_PROG1},
+> +	/* Seems battery subdriver should report it */
+> +	{KE_KEY, EVENT_OVERTEMP, KEY_PROG2},
 
-Including 2.5.x, how long is that?
+Does not seem to be an input event?
 
-By all sympathy, it was a big peace of crap for much too long, simply
-ignoring the kernel development, and I don't have any tears for it
-getting dropped that time.
+> +	/*{KE_KEY, EVENT_AC_BAT, KEY_BATTERY},*/
+> +	{KE_KEY, EVENT_CAMERA, KEY_CAMERA},	/* Fn + ESC */
+> +	{KE_KEY, EVENT_SLEEP, KEY_SLEEP},	/* Fn + F1 */
+> +	/* Seems not clear? not included in hald-addon-input! */
+> +	{KE_KEY, EVENT_BLACK_SCREEN, KEY_PROG3},	/* Fn + F2 */
 
-We _need_ to live without it, that is the only reason for the IR input
-layer in kernel, and not any other way round.
+Do you mean "lock screen"?
 
-Gerd can of course tell better, but that is how I have it and there was
-a lot of work because of such lamers not coming by in time then.
+> +	{KE_KEY, EVENT_DISPLAY_TOGGLE, KEY_SWITCHVIDEOMODE},	/* Fn + F3 */
+> +	{KE_KEY, EVENT_AUDIO_MUTE, KEY_MUTE},	/* Fn + F4 */
+> +	{KE_KEY, EVENT_WLAN, KEY_WLAN},	/* Fn + F5 */
+> +	{KE_KEY, EVENT_DISPLAY_BRIGHTNESS, KEY_BRIGHTNESSUP},	/* Fn + up */
+> +	{KE_KEY, EVENT_DISPLAY_BRIGHTNESS, KEY_BRIGHTNESSDOWN},	/* Fn + down */
+> +	{KE_KEY, EVENT_AUDIO_VOLUME, KEY_VOLUMEUP},	/* Fn + right */
+> +	{KE_KEY, EVENT_AUDIO_VOLUME, KEY_VOLUMEDOWN},	/* Fn + left */
+> +	{KE_END, 0}
+> +};
+> +
 
-Cheers,
-Hermann
+...
 
+> +
+> +static ssize_t
+> +ignore_store(struct device *dev,
+> +	     struct device_attribute *attr, const char *buf, size_t count)
+> +{
+> +	return count;
+> +}
+> +
+> +static ssize_t
+> +show_hotkeystate(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%d %d\n", event, status);
+> +}
+> +
+> +static DEVICE_ATTR(state, 0444, show_hotkeystate, ignore_store);
 
+Why do you need "ignore_store" and not just use NULL? Also why do you
+need to export the state at all?
 
+> +
+> +static struct attribute *hotkey_attributes[] = {
+> +	&dev_attr_state.attr,
+> +	NULL
+> +};
+> +
+> +static struct attribute_group hotkey_attribute_group = {
+> +	.attrs = hotkey_attributes
+> +};
+> +
+> +static int camera_set(int status)
+> +{
+> +	int value;
+> +	static int camera_status;
+> +
+> +	if (status == 2)
+> +		/* resume the old camera status */
+> +		camera_set(camera_status);
+> +	else if (status == 3) {
+> +		/* revert the camera status */
+> +		value = ec_read(REG_CAMERA_CONTROL);
+> +		ec_write(REG_CAMERA_CONTROL, value | (1 << 1));
+> +	} else {/* status == 0 or status == 1 */
+> +		status = !!status;
+> +		camera_status = ec_read(REG_CAMERA_STATUS);
+> +		if (status != camera_status)
+> +			camera_set(3);
+> +	}
+> +	return ec_read(REG_CAMERA_STATUS);
+> +}
+> +
+> +#define I8042_STATUS_REG	0x64
+> +#define I8042_DATA_REG		0x60
+> +#define i8042_read_status() inb(I8042_STATUS_REG)
+> +#define i8042_read_data() inb(I8042_DATA_REG)
+> +#define I8042_STR_OBF		0x01
+> +#define I8042_BUFFER_SIZE	16
+> +
+> +static void i8042_flush(void)
+> +{
+> +	int i;
+> +
+> +	while ((i8042_read_status() & I8042_STR_OBF)
+> +		&& (i < I8042_BUFFER_SIZE)) {
+> +		udelay(50);
+> +		i8042_read_data();
+> +		i++;
+> +	}
+> +}
+> +
+> +static int yeeloong_hotkey_init(struct device *dev)
+> +{
+> +	int ret;
+> +	struct key_entry *key;
+> +
+> +	/* flush the buffer of keyboard */
+> +	i8042_flush();
 
+Why??? Why does this driver tries to touch stuff that does not belong to
+it?
 
+> +
+> +	/* setup the system control interface */
+> +	setup_sci();
 
+No failures?
+
+> +
+> +	yeeloong_hotkey_dev = input_allocate_device();
+> +
+> +	if (!yeeloong_hotkey_dev)
+> +		return -ENOMEM;
+
+Error unwinding?
+
+> +
+> +	yeeloong_hotkey_dev->name = "HotKeys";
+> +	yeeloong_hotkey_dev->phys = "button/input0";
+> +	yeeloong_hotkey_dev->id.bustype = BUS_HOST;
+> +	yeeloong_hotkey_dev->dev.parent = dev;
+> +
+> +	for (key = yeeloong_keymap; key->type != KE_END; key++) {
+> +		switch (key->type) {
+> +		case KE_KEY:
+> +			set_bit(EV_KEY, yeeloong_hotkey_dev->evbit);
+> +			set_bit(key->keycode, yeeloong_hotkey_dev->keybit);
+> +			break;
+> +		case KE_SW:
+> +			set_bit(EV_SW, yeeloong_hotkey_dev->evbit);
+> +			set_bit(key->keycode, yeeloong_hotkey_dev->swbit);
+> +			break;
+> +		}
+> +	}
+> +
+> +	ret = input_register_device(yeeloong_hotkey_dev);
+> +	if (ret) {
+> +		input_free_device(yeeloong_hotkey_dev);
+> +		return ret;
+> +	}
+-- 
+Dmitry
