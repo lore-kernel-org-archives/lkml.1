@@ -1,99 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbZKZKPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbZKZJtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbZKZKPc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 05:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760116AbZKZKPb
+	id S1759994AbZKZJtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 04:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759679AbZKZJtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 05:15:31 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:55427 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752638AbZKZKP3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 05:15:29 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Luming Yu <luming.yu@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] hrtimer: correct a few numbers in comments and printk outputs
-Date: Thu, 26 Nov 2009 10:41:39 +0100
-Message-Id: <1259228499-3927-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.5.2
+	Thu, 26 Nov 2009 04:49:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44510 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759675AbZKZJtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 04:49:22 -0500
+Message-ID: <4B0E4EFB.2070705@kernel.org>
+Date: Thu, 26 Nov 2009 18:48:43 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; ko-KR; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 10.1.0.3
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: linux-next: manual merge of the workqueues tree with the tip
+ tree
+References: <20091126190018.88a6dd77.sfr@canb.auug.org.au> <20091126081237.GA31034@elte.hu> <4B0E4741.10509@kernel.org> <20091126092631.GA17253@elte.hu>
+In-Reply-To: <20091126092631.GA17253@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Luming Yu <luming.yu@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
-Hello,
+Hello, Ingo.
 
-I rebased this onto next/master now.
+11/26/2009 06:26 PM, Ingo Molnar wrote:
+>> Sure, which sched/* branch should I base these patches on?
+> 
+> You could send the patch you rely on standalone (it seems to be a single 
+> patch) and we can look at applying it to the scheduler tree. That 
+> reduces the conflicts on an ongoing basis. Please Cc: PeterZ and Mike 
+> Galbraith as well.
 
-Best regards
-Uwe
+The tree contains four scheduler patches.
 
- kernel/hrtimer.c           |    4 ++--
- kernel/time/tick-oneshot.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+0001-sched-rename-preempt_notifier-to-sched_notifier-and-.patch
+0002-sched-update-sched_notifier-and-add-wakeup-sleep-not.patch
+0003-sched-implement-sched_notifier_wake_up_process.patch
+0004-sched-implement-force_cpus_allowed.patch
 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index ede5277..fd89917 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1220,7 +1220,7 @@ static void __run_hrtimer(struct hrtimer *timer, ktime_t *now)
- static int force_clock_reprogram;
- 
- /*
-- * After 5 iteration's attempts, we consider that hrtimer_interrupt()
-+ * After 4 iteration's attempts, we consider that hrtimer_interrupt()
-  * is hanging, which could happen with something that slows the interrupt
-  * such as the tracing. Then we force the clock reprogramming for each future
-  * hrtimer interrupts to avoid infinite loops and use the min_delta_ns
-@@ -1258,7 +1258,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
- 	dev->next_event.tv64 = KTIME_MAX;
- 
-  retry:
--	/* 5 retries is enough to notice a hang */
-+	/* 4 retries is enough to notice a hang */
- 	if (!(++nr_retries % 5))
- 		hrtimer_interrupt_hanging(dev, ktime_sub(ktime_get(), now));
- 
-diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
-index 0a8a213..6c12fe0 100644
---- a/kernel/time/tick-oneshot.c
-+++ b/kernel/time/tick-oneshot.c
-@@ -39,7 +39,7 @@ int tick_dev_program_event(struct clock_event_device *dev, ktime_t expires,
- 
- 		/*
- 		 * We tried 2 times to program the device with the given
--		 * min_delta_ns. If that's not working then we double it
-+		 * min_delta_ns. If that's not working then we increase it
- 		 * and emit a warning.
- 		 */
- 		if (++i > 2) {
-@@ -52,7 +52,7 @@ int tick_dev_program_event(struct clock_event_device *dev, ktime_t expires,
- 			printk(KERN_WARNING
- 			       "CE: %s increasing min_delta_ns to %llu nsec\n",
- 			       dev->name ? dev->name : "?",
--			       (unsigned long long) dev->min_delta_ns << 1);
-+			       (unsigned long long) dev->min_delta_ns);
- 
- 			i = 0;
- 		}
+1, 2 and 4 are somewhat spread throughout sched.c so it would be
+better if they all are routed through sched tree.  Currently the
+wq#for-sched contains the followings on top of linus#master.
+
+* Adds debugobj support to workqueue.
+
+* Pulls in sched/urgent to receive the scheduler fix.
+
+* Adds the above four patches.
+
+If pulling in from the existing branch is an option, I'd prefer that.
+If not, please let me know.  I'll send the above four patches against
+sched/urgent.
+
+Thanks.
+
 -- 
-1.6.5.2
-
+tejun
