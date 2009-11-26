@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbZKZFlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbZKZFp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752040AbZKZFlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 00:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZKZFlg
+	id S1751896AbZKZFp0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 00:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZKZFpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 00:41:36 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:61657 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751296AbZKZFle (ORCPT
+	Thu, 26 Nov 2009 00:45:25 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:65067 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbZKZFpZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 00:41:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TIHBo00vtcGhDb14tJd6bSUD3zUYfzVeuYQTRiY52TPYuUETDJZ+0NLlOVu5gRrko3
-         Jh/RyAITp1Q2WxbmrIyYAdn87R5fyq9F1znJ0XjxTEz1oH2UzHYmIL9jZYwhMiaZ30lW
-         gpH/9Btn3rkBP4vBlNyCbkL3gKuGCncuLD2KM=
-Date: Wed, 25 Nov 2009 21:41:35 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: IR raw input is not sutable for input system
-Message-ID: <20091126054135.GG23244@core.coreip.homeip.net>
-References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <1259105571.28219.20.camel@maxim-laptop> <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0911241918390.30284@shell2.speakeasy.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 26 Nov 2009 00:45:25 -0500
+Date: Thu, 26 Nov 2009 14:44:55 +0900 (JST)
+Message-Id: <20091126.144455.508149124281697063.mitake@dcl.info.waseda.ac.jp>
+To: dvhltc@us.ibm.com
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, walken@google.com,
+       a.p.zijlstra@chello.nl, paulus@samba.org, fweisbec@gmail.com
+Subject: Re: [PATCH 1/3] perf bench: Add wrappers for atomic operation of
+ GCC
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <4B0C07C2.7090608@us.ibm.com>
+References: <20091118033741.GB23808@google.com>
+	<1259073555-7312-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+	<4B0C07C2.7090608@us.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 07:32:42PM -0800, Trent Piepho wrote:
+From: Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: [PATCH 1/3] perf bench: Add wrappers for atomic operation of GCC
+Date: Tue, 24 Nov 2009 08:20:18 -0800
+
+Hi Darren,
+
+> > It contains wrappers for atomic operation of GCC,
+> > I think this is useful not only for 'perf bench',
+> > but also for entire of perf command.
+> > 
+> > This patch adds new typedefed struct 'atomic_t'.
+> > I know new typedef is not a thing to welcome,
+> > but I believe that atomic_t is worth to typedef
+> > because it is much general.
+> > 
+> > I borrowed this file from Darren Hart's futextest.
+> > http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git
 > 
-> One thing that could be done, unless it has changed much since I wrote it
-> 10+ years ago, is to take the mark/space protocol the ir device uses and sent
-> that data to lircd via the input layer.  It would be less efficient, but
-> would avoid another kernel interface.  Of course the input layer to lircd
-> interface would be somewhat different than other input devices, so
-> it's not entirely correct to say another interface is avoided.
+> Hi Hitoshi-san,
+> 
+> I took the gcc built-ins approach for futextest.h because I didn't want 
+> the hassle of maintaining per-arch asm files. Since perf is already in 
+> the kernel source, I wonder if you could leverage the already existing 
+> kernel atomic code? See Documentation/atomic_ops.txt.
 
-No, it would still be completely new interface that just happened to use
-input layer as transport. An ordinary program that would just want to
-react to play. pause, forward, etc buttons would have no idea what to do
-with the data so you'd still need a very specialized library to deal
-with the data.
+Yes, kernel source has atomic operations for every architecture.
+But some architectures which has no 64bit atomic ops, like x86_32,
+uses lib/atomic64.c.
 
--- 
-Dmitry
+And headers provided by arch depends on autoconf.h.
+So if I use kernel atomic code, 'make menuconfig' must be done
+before building perf. I think it's not good for users.
+
+So I borrowed your approach.
+
+> 
+> > 
+> > Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> > Cc: Michel Lespinasse <walken@google.com>
+> > Cc: Darren Hart <dvhltc@us.ibm.com>
+> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> > ---
+> >  tools/perf/util/include/asm/atomic.h |   91 ++++++++++++++++++++++++++++++++++
+> >  1 files changed, 91 insertions(+), 0 deletions(-)
+> >  create mode 100644 tools/perf/util/include/asm/atomic.h
+> > 
+> > diff --git a/tools/perf/util/include/asm/atomic.h b/tools/perf/util/include/asm/atomic.h
+> > new file mode 100644
+> > index 0000000..1cef451
+> > --- /dev/null
+> > +++ b/tools/perf/util/include/asm/atomic.h
+> > @@ -0,0 +1,91 @@
+> > +/******************************************************************************
+> > + *
+> > + *   Copyright B) International Business Machines  Corp., 2009
+> 
+> B) should be © (or (C) at the very least), I'm guessing character set issue?
+
+Sorry:( This must be character set issue. I'll fix.
+
+Thanks
+	Hitoshi
