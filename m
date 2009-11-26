@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbZKZIA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbZKZIDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbZKZIA5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 03:00:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759320AbZKZIAz
+	id S1759360AbZKZIDw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 03:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759319AbZKZIDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 03:00:55 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55949 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759319AbZKZIAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 03:00:54 -0500
-Date: Thu, 26 Nov 2009 19:00:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter Ujfalusi <peter.ujfalusi@nokia.com>, Takashi Iwai <tiwai@suse.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: linux-next: workqueues tree build failure
-Message-Id: <20091126190050.3f9d7fef.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__26_Nov_2009_19_00_50_+1100_fGOSUNzHSHOAJuJs"
+	Thu, 26 Nov 2009 03:03:51 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:51940 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759320AbZKZIDu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 03:03:50 -0500
+Date: 26 Nov 2009 09:01:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: jarod@wilsonet.com
+Cc: awalls@radix.net
+Cc: dmitry.torokhov@gmail.com
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: khc@pm.waw.pl
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: mchehab@redhat.com
+Cc: superm1@ubuntu.com
+Message-ID: <BDcbizrJjFB@christoph>
+In-Reply-To: <4BFB11CF-1835-4AFA-BDC6-F42288A9A6F4@wilsonet.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19tcsg/ujY+SGRd4kIAFDG7HvSyQOOgREtPwbX
+ Yug28C5MVMtDyFkPj53B4WcGFHkmF7P1oJXlK+24+xd5ZKA96Q
+ akk8UtL0HUoVALjWI1IXtszoZ3VLaNR
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__26_Nov_2009_19_00_50_+1100_fGOSUNzHSHOAJuJs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi Tejun,
+on 25 Nov 09 at 12:44, Jarod Wilson wrote:
+[...]
+> Ah, but the approach I'd take to converting to in-kernel decoding[*] would
+> be this:
+[...]
+> [*] assuming, of course, that it was actually agreed upon that in-kernel
+> decoding was the right way, the only way, all others will be shot on sight.
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+I'm happy to see that the discussion is getting along.
+But I'm still a bit hesitant about the in-kernel decoding. Maybe it's just  
+because I'm not familiar at all with input layer toolset.
 
-sound/soc/codecs/tlv320dac33.c: In function 'dac33_i2c_probe':
-sound/soc/codecs/tlv320dac33.c:1121: error: implicit declaration of functio=
-n 'create_rt_workqueue'
-sound/soc/codecs/tlv320dac33.c:1121: warning: assignment makes pointer from=
- integer without a cast
+1. For sure in-kernel decoding will require some assistance from userspace  
+to load the mapping from IR codes to keys. So, if there needs to be a tool  
+in userspace that does some kind of autodetection, why not have a tool  
+that does some autodetection and autoconfigures lircd for the current  
+device. Lots of code duplication in kernel saved. What's the actual  
+benefit of in-kernel decoding?
 
-Caused by commit 1b2d88bf4c63ed3a8c9033c358905d3463aa8bc2 ("stop_machine:
-reimplement without using workqueue") (which removed create_rt_workqueue
-()) interacting with commit c8bf93f0fe8c5a509a29e30f3bac823fa0f6d96e
-("ASoC: Codec driver for Texas Instruments tlv320dac33 codec") from the
-sound tree.
+2. What would be the format of the key map? lircd.conf files already exist  
+for a lot of remote controls. Will we have a second incompatible format to  
+map the keys in-kernel? Where are the tools that create the key maps for  
+new remotes?
 
-I have no idea how to fix this, so I have used the workqueues tree from
-next-20091125 until someone can suggest a solution.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Maybe someone can shed some light on this.
 
---Signature=_Thu__26_Nov_2009_19_00_50_+1100_fGOSUNzHSHOAJuJs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksONbIACgkQjjKRsyhoI8y4sACfUyHspJga8DCJng2RuVwxBIXA
-ZoQAnR4CjRISlG7iX+K+ksPCxO8lHqrh
-=MnC3
------END PGP SIGNATURE-----
-
---Signature=_Thu__26_Nov_2009_19_00_50_+1100_fGOSUNzHSHOAJuJs--
+Christoph
