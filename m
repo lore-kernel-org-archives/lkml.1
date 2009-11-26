@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbZKZJ1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZKZJc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760214AbZKZJ1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 04:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760200AbZKZJ1Q
+	id S1755524AbZKZJc2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 04:32:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbZKZJc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 04:27:16 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:38794 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760163AbZKZJ1O (ORCPT
+	Thu, 26 Nov 2009 04:32:27 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:46693 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752808AbZKZJcZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 04:27:14 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Junio C Hamano <gitster@pobox.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Teemu Likonen <tlikonen@iki.fi>, Jiri Kosina <jkosina@suse.cz>,
-       Dan Carpenter <error27@gmail.com>, Martin Olsson <martin@minimum.se>,
-       linux-doc@vger.kernel.org
-Subject: [PATCH RFC] Codingstyle: allow omitting braces for all single statement branches
-Date: Thu, 26 Nov 2009 10:26:58 +0100
-Message-Id: <1259227618-1466-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.5.2
+	Thu, 26 Nov 2009 04:32:25 -0500
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: ext Tejun Heo <tj@kernel.org>
+Subject: Re: linux-next: workqueues tree build failure
+Date: Thu, 26 Nov 2009 11:31:15 +0200
+User-Agent: KMail/1.12.3 (Linux/2.6.31-gentoo-r4; KDE/4.3.3; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au> <200911261016.58810.peter.ujfalusi@nokia.com> <4B0E467A.8080201@kernel.org>
+In-Reply-To: <4B0E467A.8080201@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200911261131.15155.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 26 Nov 2009 09:31:19.0676 (UTC) FILETIME=[35D673C0:01CA6E7B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grepping for "} else$" in v2.6.32-rc8 yields 6440 hits.  So this seems
-to be common practice and should be allowed.  checkpatch doesn't warn
-about both variants.
+On Thursday 26 November 2009 11:12:26 ext Tejun Heo wrote:
+> Hello,
+> 
+> 11/26/2009 05:16 PM, Peter Ujfalusi wrote:
+> >> Takashi, RT workqueue is going away.  Do you really need it?
+> >
+> > What can be used instead of RT workqueue?
+> > The tlv320dac33 needs RT workqueue because I need to send the I2C
+> > command with minimum delay to the codec. If this can not be done
+> > (the workqueue is delayed), and the codec does not receive the
+> > command in time, it will literally die.  What are the options to
+> > replace the RT workqueue?
+> 
+> The problem with RT workqueue is that RT and queue don't really mix
+> well.  To act in real time, it requires all the resource pre-allocated
+> and dedicated to it making queueing or pooling meaningless.  The
+> original workqueue code created dedicated pool of threads for each
+> workqueue so it could be used for RT but new implementation uses
+> shared worker pool, so it can't be used as an interface to dedicated
+> threads.
+> 
+> I haven't read the code but,
+> 
+> * If you need to respond fast, wouldn't you be doing that from IRQ
+>   handler or softirq?  Do you need task context?
 
-Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
-Cc: Junio C Hamano <gitster@pobox.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Teemu Likonen <tlikonen@iki.fi>
-Cc: Jiri Kosina <jkosina@suse.cz>
-Cc: Dan Carpenter <error27@gmail.com>
-Cc: Martin Olsson <martin@minimum.se>
-Cc: linux-doc@vger.kernel.org
----
- Documentation/CodingStyle |   26 +++++++++++++++++---------
- 1 files changed, 17 insertions(+), 9 deletions(-)
+I2C communication can not be done in interrupt context.
+I'll take a look at the threaded IRQ, but AFAIK it is just a wrapper to use the 
+global workqueue (I'm not sure, I have not actually checked it).
+For a quick fix, I can convert the tlv320dac33 driver to use this, and revisit 
+later, if it does not fulfill the timing requirements for the HW.
 
-diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-index 8bb3723..84563c6 100644
---- a/Documentation/CodingStyle
-+++ b/Documentation/CodingStyle
-@@ -168,15 +168,23 @@ Do not unnecessarily use braces where a single statement will do.
- if (condition)
- 	action();
- 
--This does not apply if one branch of a conditional statement is a single
--statement. Use braces in both branches.
--
--if (condition) {
--	do_this();
--	do_that();
--} else {
--	otherwise();
--}
-+If not all branches of a conditional statement are single statements you might
-+use braces for both branches.
-+
-+	if (condition) {
-+		do_this();
-+		do_that();
-+	} else
-+		otherwise();
-+
-+or
-+
-+	if (condition) {
-+		do_this();
-+		do_that();
-+	} else {
-+		otherwise();
-+	}
- 
- 		3.1:  Spaces
- 
+> 
+> * Or is it that it's not triggered by IRQ but once the transfer
+>   started it can't be interrupted?  But in this case preempt_disable()
+>   or local_irq_disable() should suffice.
+
+As Takashi already commented, it is used as a BH.
+
+> 
+> Thanks.
+> 
+
 -- 
-1.6.5.2
-
+Péter
