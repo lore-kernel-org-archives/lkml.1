@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751319AbZKZSNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751466AbZKZSPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751319AbZKZSNH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZKZSNF
+	id S1751466AbZKZSPj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZKZSPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:13:05 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56893 "EHLO khc.piap.pl"
+	Thu, 26 Nov 2009 13:15:39 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:46515 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973AbZKZSNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:13:04 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, jarod@wilsonet.com,
-       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDcbizrJjFB@christoph> <4B0EABF8.9000902@redhat.com>
-Date: Thu, 26 Nov 2009 19:13:08 +0100
-In-Reply-To: <4B0EABF8.9000902@redhat.com> (Mauro Carvalho Chehab's message of
-	"Thu, 26 Nov 2009 14:25:28 -0200")
-Message-ID: <m3r5rlupcb.fsf@intrepid.localdomain>
+	id S1750826AbZKZSPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 13:15:38 -0500
+Date: Thu, 26 Nov 2009 18:15:54 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: wuzhangjin@gmail.com, Andreas Mohr <andi@lisas.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: snd_usb_audio OOPS on MIPSEL - is that the mmap issue?
+Message-ID: <20091126181554.GB11737@linux-mips.org>
+References: <20091125231211.GA19559@rhlx01.hs-esslingen.de>
+ <1259198431.2870.17.camel@falcon.domain.org>
+ <s5h7htdodov.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5h7htdodov.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+On Thu, Nov 26, 2009 at 10:09:04AM +0100, Takashi Iwai wrote:
 
-> 1) the developer that adds the hardware also adds the IR code. He has
-> the hardware and the IR for testing, so it means a faster development
-> cycle than waiting for someone else with the same hardware and IR to
-> recode it on some other place. You should remember that not all
-> developers use lirc;
+> I guess it won't, because usb audio driver provides its own page
+> callback.  It uses vmalloced buffer as the primary buffer, then
+> copies to the urb transfer buffer.  So, mmap should work as long as
+> the page returned from vmalloc_to_page() can be mapped.
 
-It's fine, but please - no keymaps in the kernel (except for fixed
-receivers, i.e. the ones which can only work with their own dedicated
-remote, and which don't pass RC5/etc. code).
+You mean mapping a page that is mapped to the vmalloc area of the kernel
+also to userland?  That's a fairly safe way to create cache aliases on
+those platforms that suffer from them.
 
-The existing keymaps (those which can be used with lirc) have to be
-moved to userspace as well.
--- 
-Krzysztof Halasa
+  Ralf
