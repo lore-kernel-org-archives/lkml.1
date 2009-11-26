@@ -1,131 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZKZFyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZKZF5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbZKZFyJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 00:54:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbZKZFyI
+	id S1752912AbZKZF5c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 00:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbZKZF5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 00:54:08 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:65191 "EHLO
+	Thu, 26 Nov 2009 00:57:32 -0500
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:65240 "EHLO
 	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbZKZFyH (ORCPT
+	with ESMTP id S1750896AbZKZF5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 00:54:07 -0500
-Date: Thu, 26 Nov 2009 14:53:38 +0900 (JST)
-Message-Id: <20091126.145338.189277946042751963.mitake@dcl.info.waseda.ac.jp>
-To: dvhltc@us.ibm.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, walken@google.com,
-       a.p.zijlstra@chello.nl, paulus@samba.org, fweisbec@gmail.com
-Subject: Re: [PATCH 2/3] perf bench: Add new files for futex performance
- test
+	Thu, 26 Nov 2009 00:57:31 -0500
 From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <4B0C0ACC.5050703@us.ibm.com>
-References: <20091118033741.GB23808@google.com>
-	<1259073555-7312-3-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	<4B0C0ACC.5050703@us.ibm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Michel Lespinasse <walken@google.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] futextest: Make locktest() in harness.h more general
+Date: Thu, 26 Nov 2009 14:56:57 +0900
+Message-Id: <1259215017-30305-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <20091126.145338.189277946042751963.mitake@dcl.info.waseda.ac.jp>
+References: <20091126.145338.189277946042751963.mitake@dcl.info.waseda.ac.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [PATCH 2/3] perf bench: Add new files for futex performance test
-Date: Tue, 24 Nov 2009 08:33:16 -0800
+This patch adds new function locktest_preset() to harness.h,
+which is a wrapper for locktest().
+Current locktest() has array of threads number for test,
+but this makes usefulness of harness.h less.
+So preset arrays should go to outside of locktest().
+locktest_preset() has preset array now.
 
-Hi Darren,
+And every output has gone to locktest_preset() too.
 
-> 
-> Hitoshi Mitake wrote:
-> > This patch adds two new files.
-> > 
-> 
-> Hi Hitoshi-san,
-> 
->  > futextest.h provides general wrappers for futex() system call.
->  > This patch containts the line:
->  > typedef volatile u_int32_t futex_t;
->  > I know that new typedef is not a thing to welcome,
->  > but this is useful thing.
->  >
->  > futex-wait.c is a new suite to test performance of FUTEX_WAIT.
->  >
->  > These files are from Darren Hart's futex test,
->  > and futex-wait.c is based on the program originally
->  > written by Michel Lespinasse.
-> 
-> Thanks for looking at getting the futex performance tests into perf. 
-> Just wanted to make sure you are aware that there will likely be several 
-> more futextest/performance tests in the near future as the project is 
-> under early active development. I see you have merged harness.h into 
-> futex-wait.c, which is fine, but I will likely be adding a new 
-> include/locking.h to add things like barrier, lock, and lock_pi locking 
-> primitives to the futextest testsuite. futex-wait.c would then be 
-> updated to use those directly if feasible and remove the custom locking 
-> primitives in the test itself. I mention this so you are aware and perf 
-> futex benchmarks don't get too far out of sync with futextest.
-> 
-> I'd be interested in any ideas you have to make futextest/performance/* 
-> tests integrate more easily into perf as I'd like to include each new 
-> test into perf as well.
-> 
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Michel Lespinasse <walken@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ performance/futex_wait.c |    2 +-
+ performance/harness.h    |   98 +++++++++++++++++++++++++++-------------------
+ 2 files changed, 59 insertions(+), 41 deletions(-)
 
-There are two reasons why I changed and merged harness.h into futex-wait.c.
-1) Thread numbers are fixed
-2) Output style are fixed
-But it seems that there is no other problem.
-So I wrote the patch making locktest() more general.
-I'll post it later in this thread, could you review this?
-
-> Couple of nits below:
-> 
-> 
-> > diff --git a/tools/perf/bench/futextest.h b/tools/perf/bench/futextest.h
-> > new file mode 100644
-> > index 0000000..09d8b94
-> > --- /dev/null
-> > +++ b/tools/perf/bench/futextest.h
-> > @@ -0,0 +1,280 @@
-> > +/******************************************************************************
-> > + *
-> > + *   Copyright B) International Business Machines  Corp., 2009
-> 
-> 
-> Copyright character issue...
-
-Sorry again...
-
-> 
-> > + * HISTORY
-> > + *      2009-Nov-24:
-> > + *       Ported to perf by Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> > + *      2009-Nov-06: Initial version by Darren Hart <dvhltc@us.ibm.com>
-> 
-> I usually add the dates in ascending chronological order.
-
-Sorry, I'll fix it.
-
-> 
-> > + *
-> > + *****************************************************************************/
-> > +
-> > +#ifndef _FUTEXTEST_H
-> > +#define _FUTEXTEST_H
-> > +
-> > +#include <unistd.h>
-> > +#include <sys/syscall.h>
-> > +#include <sys/types.h>
-> > +#include <linux/futex.h>
-> > +
-> > +typedef volatile u_int32_t futex_t;
-> 
-> I have been considering making this into a val wrapped in a struct like 
-> the atomic_t as that will make adding things like flags to the futex_t 
-> easier. Again, just a head's up that it may be changing in the near future.
-
-Of course I'll chase your changes in the future :)
-
-Thanks
-	Hitoshi
+diff --git a/performance/futex_wait.c b/performance/futex_wait.c
+index bcbca77..62a7330 100644
+--- a/performance/futex_wait.c
++++ b/performance/futex_wait.c
+@@ -46,6 +46,6 @@ static void futex_wait_test(futex_t *futex, int loops)
+ int main (void)
+ {
+ 	printf("FUTEX_WAIT test\n");
+-	locktest(futex_wait_test, 100000000);
++	locktest_preset(futex_wait_test, 100000000);
+ 	return 0;
+ }
+diff --git a/performance/harness.h b/performance/harness.h
+index 7b23bdc..d08d31d 100644
+--- a/performance/harness.h
++++ b/performance/harness.h
+@@ -4,8 +4,9 @@
+ #include <limits.h>
+ #include <sys/times.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <pthread.h>
+-
++#include <string.h>
+ 
+ struct thread_barrier {
+ 	futex_t threads;
+@@ -64,54 +65,71 @@ static void * locktest_thread(void * dummy)
+ 	return NULL;
+ }
+ 
+-static void locktest(void locktest_function(futex_t * ptr, int loops),
+-		     int iterations)
++static int locktest(void locktest_function(futex_t * ptr, int loops),
++			int num_threads, int iterations,
++			struct tms *tms_before, struct tms *tms_after)
++{
++	struct locktest_shared shared;
++	pthread_t thread[num_threads];
++	int i;
++	clock_t before, after;
++
++	barrier_init(&shared.barrier_before, num_threads);
++	barrier_init(&shared.barrier_after, num_threads);
++	shared.locktest_function = locktest_function;
++	shared.loops = iterations / num_threads;
++	shared.futex = 0;
++
++	for (i = 0; i < num_threads; i++)
++		if (pthread_create(thread + i, NULL, locktest_thread,
++				   &shared)) {
++			/* Could not create thread; abort */
++			barrier_unblock(&shared.barrier_before, -1);
++			while (--i >= 0)
++				pthread_join(thread[i], NULL);
++			return -1;
++		}
++	barrier_wait(&shared.barrier_before);
++	before = times(tms_before);
++	barrier_unblock(&shared.barrier_before, 1);
++	barrier_wait(&shared.barrier_after);
++	after = times(tms_after);
++	barrier_unblock(&shared.barrier_after, 1);
++	for (i = 0; i < num_threads; i++)
++		pthread_join(thread[i], NULL);
++	return after - before;
++}
++
++static void locktest_preset(void locktest_function(futex_t * ptr, int loops),
++			    int iterations)
+ {
+ 	int threads[] = { 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 24, 32,
+ 			  64, 128, 256, 512, 1024, 0 };
+ 	int t;
++	struct tms before, after;
++	int wall, user, system;
++	double tick;
++
+ 	for (t = 0; threads[t]; t++) {
+-		int num_threads = threads[t];
+-		struct locktest_shared shared;
+-		pthread_t thread[num_threads];
+-		int i;
+-		clock_t before, after;
+-		struct tms tms_before, tms_after;
+-		int wall, user, system;
+-		double tick;
+-
+-		barrier_init(&shared.barrier_before, num_threads);
+-		barrier_init(&shared.barrier_after, num_threads);
+-		shared.locktest_function = locktest_function;
+-		shared.loops = iterations / num_threads;
+-		shared.futex = 0;
+-
+-		for (i = 0; i < num_threads; i++)
+-			if (pthread_create(thread + i, NULL, locktest_thread,
+-					   &shared)) {
+-				/* Could not create thread; abort */
+-				barrier_unblock(&shared.barrier_before, -1);
+-				while (--i >= 0)
+-					pthread_join(thread[i], NULL);
+-				return;
+-			}
+-		barrier_wait(&shared.barrier_before);
+-		before = times(&tms_before);
+-		barrier_unblock(&shared.barrier_before, 1);
+-		barrier_wait(&shared.barrier_after);
+-		after = times(&tms_after);
+-		wall = after - before;
+-		user = tms_after.tms_utime - tms_before.tms_utime;
+-		system = tms_after.tms_stime - tms_before.tms_stime;
++		bzero(&before, sizeof(struct tms));
++		bzero(&after, sizeof(struct tms));
++		wall = locktest(locktest_function, threads[t], iterations,
++			 &before, &after);
++
++		if (wall < 0) {
++			fprintf(stderr, "locktest() failed.\n");
++			exit(1);
++		}
++
++		user = after.tms_utime - before.tms_utime;
++		system = after.tms_stime - before.tms_stime;
+ 		tick = 1.0 / sysconf(_SC_CLK_TCK);
+ 		printf("%d threads: %.0f Kiter/s "
+ 		       "(%.2fs user %.2fs system %.2fs wall %.2f cores)\n",
+-		       num_threads,
+-		       (num_threads * shared.loops) / (wall * tick * 1000),
++		       threads[t],
++		       iterations / (wall * tick * 1000),
+ 		       user * tick, system * tick, wall * tick,
+ 		       wall ? (user + system) * 1. / wall : 1.);
+-		barrier_unblock(&shared.barrier_after, 1);
+-		for (i = 0; i < num_threads; i++)
+-			pthread_join(thread[i], NULL);
++
+ 	}
+ }
+-- 
+1.6.5.2
 
