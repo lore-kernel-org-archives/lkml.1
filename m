@@ -1,85 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbZKZUMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752752AbZKZU3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbZKZUMa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 15:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZKZUM3
+	id S1752752AbZKZU3D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 15:29:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZKZU3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 15:12:29 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:61011 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbZKZUM3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 15:12:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=j9q6CbOjI8BwlQ1tBbrAYVoVH0F2YaFYGcBucRwk0pYbse1MwB3BXk8GjNLiNHcgn6
-         neZEcdBvfWXmFOtidlldWlnpvS+odcMwzyRqjEhf5U4q28NzcpuP6ADdkuV7uTbbh6sl
-         UmUs8ddxevhH32uPNmBdBkXpR2Dj6t00D73MY=
+	Thu, 26 Nov 2009 15:29:02 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57013 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751662AbZKZU3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 15:29:00 -0500
+Date: Thu, 26 Nov 2009 21:23:12 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Veaceslav Falico <vfalico@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc: fork && stepping (Was: [RFC,PATCH 0/14] utrace/ptrace)
+Message-ID: <20091126202312.GA21945@redhat.com>
+References: <20091124200127.GA5751@redhat.com> <20091125080342.GD2660@in.ibm.com> <20091125154052.GA6734@redhat.com> <20091126075335.GA18508@in.ibm.com> <20091126145051.GB4382@redhat.com> <20091126172524.GA14768@redhat.com> <20091126182226.GF12355@darkmag.usersys.redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <4B0EDFF4.2030909@suse.cz>
-References: <1259124522-26050-1-git-send-email-vapier@gentoo.org> 
-	<4B0E634B.8070506@suse.cz> <8bd0f97a0911261103w499540e1p24d9cb219808c0b9@mail.gmail.com> 
-	<4B0EDFF4.2030909@suse.cz>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 26 Nov 2009 15:12:14 -0500
-Message-ID: <8bd0f97a0911261212q3b9cf6cm71235c6cf7fae40f@mail.gmail.com>
-Subject: Re: [PATCH] kconfig: display an error message when aborting
-To: Michal Marek <mmarek@suse.cz>
-Cc: linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091126182226.GF12355@darkmag.usersys.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 15:07, Michal Marek wrote:
-> Mike Frysinger napsal(a):
->> 2009/11/26 Michal Marek
->>> On 25.11.2009 05:48, Mike Frysinger wrote:
->>>> If the Kconfig option causes an open() failure (like one that starts with
->>>> an underscore), there should be an error message shown since we're going
->>>> to be exiting with an error code.  Otherwise, the reason for the failure
->>>> can really only be diagnosed with strace or something similar.
->>>>
->>>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->>>> ---
->>>>  scripts/kconfig/confdata.c |    2 ++
->>>>  1 files changed, 2 insertions(+), 0 deletions(-)
->>>>
->>>> diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
->>>> index b55e72f..e2644b4 100644
->>>> --- a/scripts/kconfig/confdata.c
->>>> +++ b/scripts/kconfig/confdata.c
->>>> @@ -640,6 +640,8 @@ static int conf_split_config(void)
->>>>               fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
->>>>               if (fd == -1) {
->>>>                       if (errno != ENOENT) {
->>>> +                             conf_warning("sym '%s' with path '%s': %s",
->>>> +                                          sym->name, path, strerror(errno));
->>>>                               res = 1;
->>>>                               break;
->>>>                       }
->>>
->>> I agree that there definitely needs to be some error reporting (and not
->>> only here but in many more places, look e.g. at conf_write() or
->>> conf_write_autoconf()), but why use conf_warning() for this? It will
->>> prefix the error message with "include/config/auto.conf:<last lineno>",
->>> which has nothing to do with the path that could not be opened.
->>
->> no it doesnt.  it prefixes the config file name which i think is relevant.
->>     .config:1871:warning: sym '_BF548' with path '/bf548.h': Permission denied
->
-> Well, it prints either ".config" or "include/config/auto.conf",
-> depending whether there was a successful silentoldconfig pass before and
-> the latter file exists. But the number is the number of lines of the
-> respective file.
+Veaceslav doesn't have the time to continue, but he gave me
+access to rhts machine ;)
 
-if you want to improve kconfig's error reporing in general, have at
-it, but conf_warning() appears to be the standard in confdata.c for
-reporting errors/warnings to stderr.  your complaint applies to just
-about every usage of conf_warning() in confdata.c.  i'm not going to
-create my own format and fprintf() directly to stderr.
--mike
+The kernel is 2.6.31.6 btw.
+
+On 11/26, Veaceslav Falico wrote:
+>
+> > Just noticed the test-case fails in handler_fail(). Most probably
+> > this means it is killed by SIGALRM because either parent or child
+> > hang in wait(). Perhaps we have another (ppc specific?) bug, but
+> > currently I do not understand how this is possible, this should
+> > not be arch-dependent.
+>
+> I can confirm that we have another bug on ppc arch. The test case below
+> is spinning forever,
+>
+> [...]
+>
+> it doesn't hang, the parent is spinning around for, the test case
+> isn't printing anything. Seems like fork() can't complete under
+> PTRACE_SINGLESTEP.
+
+Yep, thanks a lot Veaceslav.
+
+I modified this test-case to print si_addr:
+
+	int main(void)
+	{
+		int pid, status;
+
+		if (!(pid = fork())) {
+			assert(ptrace(PTRACE_TRACEME) == 0);
+			kill(getpid(), SIGSTOP);
+
+			if (!fork())
+				return 0;
+
+			printf("fork passed..\n");
+
+			return 0;
+		}
+
+		for (;;) {
+			siginfo_t info;
+
+			assert(pid == wait(&status));
+			assert(status = 0x57f);
+
+			assert(ptrace(PTRACE_GETSIGINFO, pid, 0,&info) == 0);
+			printf("%p\n", info.si_addr);
+
+			if (WIFEXITED(status))
+				break;
+			assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
+		}
+
+		printf("Parent exit.\n");
+
+		return 0;
+	}
+
+the output is:
+
+	...
+	0xfedf880
+	0xfedf884
+	...
+	0xfedf96c
+	0xfedf970
+
+this is fork which calls __GI__IO_list_lock
+
+	Dump of assembler code for function fork:
+	0x0fedf880 <fork+0>:	mflr    r0
+	...
+	0x0fedf96c <fork+236>:	li      r28,0
+	0x0fedf970 <fork+240>:	bl      0xfeacce0 <__GI__IO_list_lock>
+
+Then it loops inside __GI__IO_list_lock
+
+	...
+	0xfeacd24
+	0xfeacd28
+	0xfeacd2c
+	0xfeacd30
+	0xfeacd34
+
+	0xfeacd24
+	0xfeacd28
+	0xfeacd2c
+	0xfeacd30
+	0xfeacd34
+
+	0xfeacd24
+	0xfeacd28
+	0xfeacd2c
+	0xfeacd30
+	0xfeacd34
+	...
+
+and so on forever,
+
+	Dump of assembler code for function __GI__IO_list_lock:
+	0x0feacce0 <__GI__IO_list_lock+0>:	mflr    r0
+	0x0feacce4 <__GI__IO_list_lock+4>:	stwu    r1,-32(r1)
+	0x0feacce8 <__GI__IO_list_lock+8>:	li      r11,0
+	0x0feaccec <__GI__IO_list_lock+12>:	bcl-    20,4*cr7+so,0xfeaccf0 <__GI__IO_list_lock+16>
+	0x0feaccf0 <__GI__IO_list_lock+16>:	li      r9,1
+	0x0feaccf4 <__GI__IO_list_lock+20>:	stw     r0,36(r1)
+	0x0feaccf8 <__GI__IO_list_lock+24>:	stw     r30,24(r1)
+	0x0feaccfc <__GI__IO_list_lock+28>:	mflr    r30
+	0x0feacd00 <__GI__IO_list_lock+32>:	stw     r31,28(r1)
+	0x0feacd04 <__GI__IO_list_lock+36>:	stw     r29,20(r1)
+	0x0feacd08 <__GI__IO_list_lock+40>:	addi    r29,r2,-29824
+	0x0feacd0c <__GI__IO_list_lock+44>:	addis   r30,r30,16
+	0x0feacd10 <__GI__IO_list_lock+48>:	addi    r30,r30,13060
+	0x0feacd14 <__GI__IO_list_lock+52>:	lwz     r31,-6436(r30)
+	0x0feacd18 <__GI__IO_list_lock+56>:	lwz     r0,8(r31)
+	0x0feacd1c <__GI__IO_list_lock+60>:	cmpw    cr7,r0,r29
+	0x0feacd20 <__GI__IO_list_lock+64>:	beq-    cr7,0xfeacd4c <__GI__IO_list_lock+108>
+
+beg->	0x0feacd24 <__GI__IO_list_lock+68>:	lwarx   r0,0,r31
+	0x0feacd28 <__GI__IO_list_lock+72>:	cmpw    r0,r11
+	0x0feacd2c <__GI__IO_list_lock+76>:	bne-    0xfeacd38 <__GI__IO_list_lock+88>
+	0x0feacd30 <__GI__IO_list_lock+80>:	stwcx.  r9,0,r31
+end->	0x0feacd34 <__GI__IO_list_lock+84>:	bne+    0xfeacd24 <__GI__IO_list_lock+68>
+
+I don't even know whether this is user-space bug or kernel bug,
+the asm above is the black magic for me.
+
+Anyone who knows something about powerpc can give me a hint?
+
+Oleg.
+
