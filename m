@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbZKZQnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759828AbZKZQoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbZKZQnM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 11:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbZKZQnK
+	id S1759828AbZKZQoN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 11:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbZKZQoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 11:43:10 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:24722 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1755851AbZKZQnJ (ORCPT
+	Thu, 26 Nov 2009 11:44:12 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58764 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758555AbZKZQoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 11:43:09 -0500
-Message-ID: <4B0EB057.10301@ru.mvista.com>
-Date: Thu, 26 Nov 2009 19:44:07 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/86] pata_efar: MWDMA0 is unsupported
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200911261640.39208.bzolnier@gmail.com> <4B0EA9FC.1000208@ru.mvista.com> <200911261729.46700.bzolnier@gmail.com>
-In-Reply-To: <200911261729.46700.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Nov 2009 11:44:11 -0500
+Date: Thu, 26 Nov 2009 17:44:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
+       Roger Quadros <quadros.roger@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: [PATCH 7/7] kfifo: add record handling functions
+Message-ID: <20091126164414.GK29096@one.firstfloor.org>
+References: <1258704942.4426.5.camel@wall-e> <1258705988.4426.22.camel@wall-e> <20091123141914.e320c341.akpm@linux-foundation.org> <1259251632.26705.17.camel@wall-e>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259251632.26705.17.camel@wall-e>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Thu, Nov 26, 2009 at 05:07:12PM +0100, Stefani Seibold wrote:
+> I analyzed the code and most of them will be optimized away by the
+> compiler. The reason for this design decision was that i want no
+> performance regression against the old kfifo implementation.
+> 
+> But if the majority vote for an non inline version i will do it. It will
+> make the code more readable and slim down the footprint.
 
->>>>>>>>MWDMA0 timings cannot be met with the PIIX based controller
->>>>>>>>programming interface.
+I vote for smaller text size if possible. I doubt kfifo is used in any 
+circumstances where a function call or two is a big problem. But of course
+some inlines might be smaller than calls.
 
->>>>>>>The efar documentation makes no reference to not being capable of MWDMA0,
->>>>>>>so where does this come from ? No MWDMA0 is an Intel erratum it appears.
+But then this code has been pending for a long time and I
+have some potential users. It would be good to merge ASAP and do such tweaks 
+later in tree.
 
->>>>>>No MWDMA0 support is a common issue on all 'PIIX-like' controllers.
+-Andi
 
->>>>>>In case of this chipset while the (preliminary) documentation claims MWDMA0
->>>>>>support on the 'FEATURES' page the later 'programming guide' part describes
->>>>>>only PIO0-4, SWDMA2, MWDMA1-2 and UDMA0-4 transfer modes as supported.
-
->>>>>Cool - I only have the original docs.
-
->>>>   Hm, me too... perhaps worth putting in Jeff's documentation archive?
-
->>>Me too?  I just have what 'The Good Uncle Google' has..
-
->>    Well, I've googled for it and was unable to find any valid links even to 
->>my preliminary version anymore. Perhaps I haven't looked hard enough...
-
-> Maybe... ;)
-
-> FWIW my file is called 38384_SMSC_SLC90E66.pdf
-
-    Well, that brought me to some Chinese site with 07/10/2002 version 
-(which I've already found minutes before that). But it still claims support 
-for MWDMA0 under the features... ah, I need to look further down... no 
-"programming guide" part, hm... but thanks anyway. :-)
-
-> --
-> Bartlomiej Zolnierkiewicz
-
-WBR, Sergei
+-- 
+ak@linux.intel.com -- Speaking for myself only.
