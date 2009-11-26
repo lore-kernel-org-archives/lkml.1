@@ -1,93 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbZKZOqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbZKZOtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760586AbZKZOqp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 09:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760561AbZKZOqo
+	id S1760580AbZKZOtv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 09:49:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760286AbZKZOtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 09:46:44 -0500
-Received: from daytona.panasas.com ([67.152.220.89]:40483 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760558AbZKZOql (ORCPT
+	Thu, 26 Nov 2009 09:49:51 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47848 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754557AbZKZOtu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 09:46:41 -0500
-Message-ID: <4B0E94D4.5090800@panasas.com>
-Date: Thu, 26 Nov 2009 16:46:44 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091125 Remi/fc10 Thunderbird/3.0
+	Thu, 26 Nov 2009 09:49:50 -0500
+From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] e100: Use pci pool to work around GFP_ATOMIC order 5 memory allocation failure
+Date: Thu, 26 Nov 2009 16:49:54 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.31-rc9-ironman-1; KDE/4.3.2; i686; ; )
+Cc: e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@citi.umich.edu>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Kyle McMartin <kyle@mcmartin.ca>, Helge Deller <deller@gmx.de>,
-       "James E.J. Bottomley" <jejb@parisc-linux.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       NFS list <linux-nfs@vger.kernel.org>,
-       pNFS Mailing List <pnfs@linux-nfs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] parsic: remove unused nfsd #includes
-References: <4B0C1EB7.50508@panasas.com> <4B0C1F1A.8070605@panasas.com>
-In-Reply-To: <4B0C1F1A.8070605@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Nov 2009 14:46:48.0168 (UTC) FILETIME=[48191E80:01CA6EA7]
+Message-Id: <200911261649.54785.roger.oksanen@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/24/2009 11:27 PM, Grant Grundler wrote:
-> On Tue, Nov 24, 2009 at 07:58:15PM +0200, Boaz Harrosh wrote:
->> Some arch files had unneeded #includes directives from linux/nfsd/*.
->> Some vfs files had unneeded #includes directives from linux/nfsd/*.
-> ...
->> patches:
->> [PATCH 1/5] parsic: remove unused nfsd #includes
->> 	Some kind soul, please compile with this patch? compile
->> 	is all that's needed.
-> 
-> Boaz,
-> linux-2.6 compiles for parisc with this patch. Please add:
->     Tested-by: Grant Grundler <grundler@parisc-linux.org>
-> 
-> thanks,
-> grant
-> 
+e100: Use pci pool to work around GFP_ATOMIC order 5 memory allocation failure.
 
-CCing registered parsic maintainers. Could we please get an ACK on
-this patch, and cary this through the nfsd tree?
+pci_alloc_consistent uses GFP_ATOMIC allocation that may fail on some systems
+with limited memory (Bug #14265). pci_pool_alloc allows waiting with
+GFP_KERNEL.
 
-Thanks 
-Boaz
+Tested-by: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+---
+ drivers/net/e100.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
 
-On 11/24/2009 07:59 PM, Boaz Harrosh wrote:
-> 
-> Some unused includes removed.
-> 
-> This patch is in an effort to cleanup nfsd headers and move
-> private definitions to source directory.
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> ---
->  arch/parisc/kernel/sys_parisc32.c |    6 ------
->  1 files changed, 0 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/parisc/kernel/sys_parisc32.c b/arch/parisc/kernel/sys_parisc32.c
-> index 561388b..4a8ca63 100644
-> --- a/arch/parisc/kernel/sys_parisc32.c
-> +++ b/arch/parisc/kernel/sys_parisc32.c
-> @@ -26,13 +26,7 @@
->  #include <linux/shm.h>
->  #include <linux/slab.h>
->  #include <linux/uio.h>
-> -#include <linux/nfs_fs.h>
->  #include <linux/ncp_fs.h>
-> -#include <linux/sunrpc/svc.h>
-> -#include <linux/nfsd/nfsd.h>
-> -#include <linux/nfsd/cache.h>
-> -#include <linux/nfsd/xdr.h>
-> -#include <linux/nfsd/syscall.h>
->  #include <linux/poll.h>
->  #include <linux/personality.h>
->  #include <linux/stat.h>
-
+diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+index 3c29a20..d269a68 100644
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -157,6 +157,7 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/dma-mapping.h>
++#include <linux/dmapool.h>
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+ #include <linux/mii.h>
+@@ -602,6 +603,7 @@ struct nic {
+ 	struct mem *mem;
+ 	dma_addr_t dma_addr;
+ 
++	struct pci_pool *cbs_pool;
+ 	dma_addr_t cbs_dma_addr;
+ 	u8 adaptive_ifs;
+ 	u8 tx_threshold;
+@@ -1793,9 +1795,7 @@ static void e100_clean_cbs(struct nic *nic)
+ 			nic->cb_to_clean = nic->cb_to_clean->next;
+ 			nic->cbs_avail++;
+ 		}
+-		pci_free_consistent(nic->pdev,
+-			sizeof(struct cb) * nic->params.cbs.count,
+-			nic->cbs, nic->cbs_dma_addr);
++		pci_pool_free(nic->cbs_pool, nic->cbs, nic->cbs_dma_addr);
+ 		nic->cbs = NULL;
+ 		nic->cbs_avail = 0;
+ 	}
+@@ -1813,8 +1813,8 @@ static int e100_alloc_cbs(struct nic *nic)
+ 	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = NULL;
+ 	nic->cbs_avail = 0;
+ 
+-	nic->cbs = pci_alloc_consistent(nic->pdev,
+-		sizeof(struct cb) * count, &nic->cbs_dma_addr);
++	nic->cbs = pci_pool_alloc(nic->cbs_pool, GFP_KERNEL,
++				  &nic->cbs_dma_addr);
+ 	if (!nic->cbs)
+ 		return -ENOMEM;
+ 
+@@ -2841,7 +2841,11 @@ static int __devinit e100_probe(struct pci_dev *pdev,
+ 		DPRINTK(PROBE, ERR, "Cannot register net device, aborting.\n");
+ 		goto err_out_free;
+ 	}
+-
++	nic->cbs_pool = pci_pool_create(netdev->name,
++			   nic->pdev,
++			   nic->params.cbs.count * sizeof(struct cb),
++			   sizeof(u32),
++			   0);
+ 	DPRINTK(PROBE, INFO, "addr 0x%llx, irq %d, MAC addr %pM\n",
+ 		(unsigned long long)pci_resource_start(pdev, use_io ? 1 : 0),
+ 		pdev->irq, netdev->dev_addr);
+@@ -2871,6 +2875,7 @@ static void __devexit e100_remove(struct pci_dev *pdev)
+ 		unregister_netdev(netdev);
+ 		e100_free(nic);
+ 		pci_iounmap(pdev, nic->csr);
++		pci_pool_destroy(nic->cbs_pool);
+ 		free_netdev(netdev);
+ 		pci_release_regions(pdev);
+ 		pci_disable_device(pdev);
