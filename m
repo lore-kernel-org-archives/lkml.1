@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbZKZKdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbZKZLKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760272AbZKZKdO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 05:33:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760262AbZKZKdM
+	id S1759232AbZKZLKd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 06:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZKZLKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 05:33:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43482 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760259AbZKZKdL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 05:33:11 -0500
-Subject: Re: [PATCH 1/4 tip/sched/core] sched: rename preempt_notifier to
- sched_notifier and always enable it
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20091126102936.GA1196@elte.hu>
-References: <20091126190018.88a6dd77.sfr@canb.auug.org.au>
-	 <20091126081237.GA31034@elte.hu> <4B0E4741.10509@kernel.org>
-	 <20091126092631.GA17253@elte.hu> <4B0E4EFB.2070705@kernel.org>
-	 <20091126095154.GE32275@elte.hu> <4B0E5458.30303@kernel.org>
-	 <20091126102936.GA1196@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 26 Nov 2009 11:32:45 +0100
-Message-ID: <1259231565.4273.31.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 26 Nov 2009 06:10:31 -0500
+Received: from blue-labs.org ([72.34.249.230]:60782 "EHLO blue-labs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758178AbZKZLK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 06:10:29 -0500
+X-Greylist: delayed 2143 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Nov 2009 06:10:29 EST
+X-Authenticated-Colt: Submitter authenticated to send mail
+Message-ID: <4B0E5994.1000108@blue-labs.org>
+Date: Thu, 26 Nov 2009 05:33:56 -0500
+From: David Ford <david@blue-labs.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091123)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] additional update of dev_net(net) to struct *net in ip_fragment.c,
+ NULL ptr OOPS
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 11:29 +0100, Ingo Molnar wrote:
-> * Tejun Heo <tj@kernel.org> wrote:
-> 
-> > Rename preempt_notifier to sched_notifier, move it from preempt.h to 
-> > sched.h, drop sched_ prefixes from ops names and make sched_notifier 
-> > always enabled.
-> > 
-> > This is to prepare for adding more notification hooks.  This patch 
-> > doesn't make any functional changes.
-> 
-> The sched notifiers and the various event notifiers we have in the same 
-> codepaths should really be unified into a single callback framework.
-> 
-> We have these _5_ callbacks:
-> 
-> ....
->         perf_event_task_sched_out(prev, next, cpu);
-> ....
->         fire_sched_out_notifiers(prev, next);
-> ....
->         trace_sched_switch(rq, prev, next);
-> ....
->         perf_event_task_sched_in(current, cpu_of(rq));
-> 	fire_sched_in_notifiers(current);
-> ....
-> 
-> That could be done with just two callbacks - one for sched-out, one for 
-> sched-in.
-> 
-> The best way to do that would be to use two TRACE_EVENT() callbacks, 
-> make them unconditional and register to them. (with wrappers to make it 
-> all convenient to use)
-> 
-> This requires some work but needs to be done.
+ipv4 ip_frag_reasm(), fully replace 'dev_net(dev)' with 'net', defined
+previously patched into 2.6.29.
 
-Ugh,.. it also makes TRACE_EVENT unconditional.
+--- linux-2.6.32-rc8/net/ipv4/ip_fragment.c.orig 2009-09-09
+18:13:59.000000000 -0400
++++ linux-2.6.32-rc8/net/ipv4/ip_fragment.c      2009-11-26
+05:02:43.000000000 -0500
+@@ -563,7 +563,7 @@
+                printk(KERN_INFO "Oversized IP packet from %pI4.\n",
+                        &qp->saddr);
+ out_fail:
+-       IP_INC_STATS_BH(dev_net(dev), IPSTATS_MIB_REASMFAILS);
++       IP_INC_STATS_BH(net, IPSTATS_MIB_REASMFAILS);
+        return err;
+ }
 
-That really wants a separate option.. What we could do is take regular
-notifier lists and extend them to auto-generate a tracepoint when the
-trace stuff is enabled or something.
+Signed-off-by: David Ford <david@blue-labs.org>
 
+
+
+Between 2.6.28.10 and 2.6.29, net/ipv4/ip_fragment.c was patched,
+changing from dev_net(dev) to container_of(...).  Unfortunately the goto
+section (out_fail) on oversized packets inside ip_frag_reasm() didn't
+get touched up as well.  Oversized IP packets cause a NULL pointer
+dereference and immediate hang.
+
+I discovered this running openvasd and my previous email on this is
+titled:  NULL pointer dereference at 2.6.32-rc8:net/ipv4/ip_fragment.c:566
+
+-david
 
