@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbZKZSY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbZKZS2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751762AbZKZSY2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 13:24:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbZKZSY1
+	id S1751801AbZKZS2E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 13:28:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZKZS2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 13:24:27 -0500
-Received: from khc.piap.pl ([195.187.100.11]:48400 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791AbZKZSY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 13:24:27 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>
-	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
-	<4B0E765C.2080806@redhat.com>
-Date: Thu, 26 Nov 2009 19:24:30 +0100
-In-Reply-To: <4B0E765C.2080806@redhat.com> (Mauro Carvalho Chehab's message of
-	"Thu, 26 Nov 2009 10:36:44 -0200")
-Message-ID: <m3iqcxuotd.fsf@intrepid.localdomain>
+	Thu, 26 Nov 2009 13:28:04 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:59798 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbZKZS2C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 13:28:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=sBGDuUnabPhe+ZyJnagNyjGdHZww2C/0oHyxk/xoKHG0Vb6ymu4w32hIDB5d/R0wFb
+         dFlN0H3869Tvz6wGbwsNSHBZH006RLb/+pyfhAgwp3gpwXfX3ajOg9DcOLpr0+cXYe+S
+         HkmVN8Bf/YEIJulHKLYpUqxXSqLMVGjaeIV6Y=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] pata_it8213: MWDMA0 is unsupported
+Date: Thu, 26 Nov 2009 19:27:00 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200911261728.36433.bzolnier@gmail.com> <200911261903.01199.bzolnier@gmail.com> <4B0EC52B.2070805@ru.mvista.com>
+In-Reply-To: <4B0EC52B.2070805@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200911261927.00597.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+On Thursday 26 November 2009 07:12:59 pm Sergei Shtylyov wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> 
+> >>>>>MWDMA0 timings cannot be met with the PIIX based controller
+> >>>>>programming interface.
+> >>>
+> >>>>>This change should be safe as this is how we have been doing
+> >>>>>things in IDE it8213 host driver for years.
+> >>>
+> >>>>>Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>>>>---
+> >>>>>Verified with the documentation (similar case as with pata_efar).
+> 
+> >>>>Uhhh, no...
+> 
+> >>>>Too many damn drivers.
+> 
+> >>>>Too much damn duplication.
+> 
+> >>>>Too much damn subtle differences here and there.
+> 
+> >>>>The hardware is probably fine for MWMDA0 when it comes to pata_{efar,it8213},
+> >>>>it just not documented properly in the data sheet.
+> 
+> >>>    How so with pata_efar? The active/recovery bitfields are still 2-bit 
+> >>>wide, no?
+> 
+> >>Yes but when TIMEx bit is disabled we are using XFER_PIO_SLOW timings.
+> 
+>     600 ns cycle vs spec'ed 480 ns? Is it really worth it?
 
-> The issue I see is to support at the same time NEC and RC5 protocols. While
-> this may work with some devices, for others, the hardware won't allow.
+960 ns actually
 
-Sure. We can handle it for the "simple" devices at least.
+> >>All data sheets including original Intel ones are a complete crap when it
+> >>comes to explicitly documenting this behavior.
+> 
+> > OTOH all drivers set TIMEx for MWDMA0 currently.. ?
+> 
+>     ... which would give a grossly overclocked timing.
 
->> I think the mapping should be: key = proto + group + raw code, while
->> key2 could be different_proto + different group (if any) + another code.
->
-> This may work for protocols up to RC5, that uses either 8 or 16 bits.
-> However, RC6 mode 6 codes can be 32 bits, and we have "only" 32 bits
-> for a scancode. So, we don't have spare bits to represent a protocol, 
-> if we consider RC6 mode 6 codes as well.
+Except ata_piix which blacklists MWDMA0 for _all_ PATA controllers.. :)
 
-I don't see this limitation. The number of bits should depend on the
-protocol.
+I'm leaving my patches as they were for now, unless somebody wants to
+untangle this mess this is a safest and quickest way forward..
 
-> See above. Also, several protocols have a way to check if a keystroke were
-> properly received. When handling just one protocol, we can use this to double
-> check the key. However, on a multiprotocol mode, we'll need to disable this
-> feature.
-
-I don't think so. We can pass the space/mark data to all (configured,
-i.e. with active mapping) protocol handlers at once. Should a check
-fail, we ignore the data. Perhaps another protocol will make some sense
-out of it.
--- 
-Krzysztof Halasa
+--
+Bartlomiej Zolnierkiewicz
