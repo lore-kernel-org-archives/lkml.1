@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbZKZR2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbZKZR1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760826AbZKZR2I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 12:28:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760819AbZKZR2G
+	id S1760780AbZKZR1m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 12:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760417AbZKZR1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 12:28:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44993 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760417AbZKZR2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 12:28:04 -0500
-Date: Thu, 26 Nov 2009 17:27:38 GMT
-From: tip-bot for Xiaotian Feng <dfeng@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, dfeng@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, dfeng@redhat.com, mingo@elte.hu
-In-Reply-To: <1259236428-16329-1-git-send-email-dfeng@redhat.com>
-References: <1259236428-16329-1-git-send-email-dfeng@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mm] x86/pat: Trivial: don't create debugfs for memtype if pat is disabled
-Message-ID: <tip-dd4377b02d9f028006beed1b7b1695ee5d1498b6@git.kernel.org>
-Git-Commit-ID: dd4377b02d9f028006beed1b7b1695ee5d1498b6
-X-Mailer: tip-git-log-daemon
+	Thu, 26 Nov 2009 12:27:40 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:41354
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760031AbZKZR1j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 12:27:39 -0500
+Message-ID: <4B0EBBB5.5090303@wilsonet.com>
+Date: Thu, 26 Nov 2009 12:32:37 -0500
+From: Jarod Wilson <jarod@wilsonet.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+CC: Andy Walls <awalls@radix.net>, Christoph Bartelmus <lirc@bartelmus.de>,
+       khc@pm.waw.pl, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com> <4B0E889C.9060405@redhat.com>
+In-Reply-To: <4B0E889C.9060405@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  dd4377b02d9f028006beed1b7b1695ee5d1498b6
-Gitweb:     http://git.kernel.org/tip/dd4377b02d9f028006beed1b7b1695ee5d1498b6
-Author:     Xiaotian Feng <dfeng@redhat.com>
-AuthorDate: Thu, 26 Nov 2009 19:53:48 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 26 Nov 2009 15:05:03 +0100
+On 11/26/2009 08:54 AM, Mauro Carvalho Chehab wrote:
+> Jarod Wilson wrote:
+>> On Nov 23, 2009, at 7:53 PM, Andy Walls wrote:
+>>
+>>> On Mon, 2009-11-23 at 22:11 +0100, Christoph Bartelmus wrote:
+>> ...
+>>> I generally don't understand the LIRC aversion I perceive in this thread
+>>> (maybe I just have a skewed perception).  Aside for a video card's
+>>> default remote setup, the suggestions so far don't strike me as any
+>>> simpler for the end user than LIRC -- maybe I'm just used to LIRC.  LIRC
+>>> already works for both transmit and receive and has existing support in
+>>> applications such as MythTV and mplayer.
+>>
+>> There's one gripe I agree with, and that is that its still not plug-n-play.
+>> Something where udev auto-loads a sane default remote config for say,
+>> mceusb transceivers, and the stock mce remote Just Works would be nice,
+>> but auto-config is mostly out the window the second you involve transmitters
+>> and universal remotes anyway.
+>
+> For several devices, an udev rule that auto-loads a sane default keymap does work.
+> Of course, this won't cover 100% of the usages, and I lirc is a very good way
+> of covering the holes.
+>
+>> But outside of that, I think objections are largely philosophical --
+>> in a nutshell, the kernel has an input layer, remotes are input devices,
+>> and lirc doesn't conform to input layer standards.
+>
+> Yes. I think this is mainly the issue.
+>
+> The other issue is how to migrate the existing drivers to a new API without
+> causing regressions. If we decide that IR's that receive raw pulse/code
+> should use the raw input interface, this means that a large task force will be
+> needed to convert the existing drivers to use it.
 
-x86/pat: Trivial: don't create debugfs for memtype if pat is disabled
+Aversion to regression is definitely a major concern. And why I'm liking 
+the idea of a hybrid approach, at least initially.
 
-If pat is disabled (boot with nopat), there's no need to create
-debugfs for it, it's empty all the time.
+> What do you think of adding lirc at staging while we discuss/improve the API's and lircd
+> support for the input event interface? Do you think this would work?
 
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-LKML-Reference: <1259236428-16329-1-git-send-email-dfeng@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/pat.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+Sure, I don't see why not. And I've got another dozen or so drivers to 
+follow those first three... :)
 
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index ef71251..a81b7e7 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -1019,8 +1019,10 @@ static const struct file_operations memtype_fops = {
- 
- static int __init pat_memtype_list_init(void)
- {
--	debugfs_create_file("pat_memtype_list", S_IRUSR, arch_debugfs_dir,
--				NULL, &memtype_fops);
-+	if (pat_enabled) {
-+		debugfs_create_file("pat_memtype_list", S_IRUSR,
-+				    arch_debugfs_dir, NULL, &memtype_fops);
-+	}
- 	return 0;
- }
- 
+-- 
+Jarod Wilson
+jarod@wilsonet.com
