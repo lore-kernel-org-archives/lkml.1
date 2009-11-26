@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbZKZKQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbZKZKRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760198AbZKZKQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 05:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760120AbZKZKQS
+	id S932706AbZKZKRD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 05:17:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbZKZKRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 05:16:18 -0500
-Received: from mail.gmx.net ([213.165.64.20]:53975 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760118AbZKZKQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 05:16:14 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18OqFNRLgYOeI3OraTDpzNX4hcJcmZD0AzBZwwzTN
-	jPfTObv86L3qIG
-Subject: Re: [patch] sched: fix set_task_cpu() and provide an unlocked
- runqueue variant
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1259228139.4273.6.camel@twins>
-References: <1258891781.14325.34.camel@marge.simson.net>
-	 <1259173672.4027.732.camel@laptop>
-	 <1259197270.6186.17.camel@marge.simson.net>
-	 <1259199068.6186.33.camel@marge.simson.net> <1259228139.4273.6.camel@twins>
-Content-Type: text/plain
-Date: Thu, 26 Nov 2009 11:16:18 +0100
-Message-Id: <1259230578.15079.12.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Thu, 26 Nov 2009 05:17:01 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:22781 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759332AbZKZKRA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 05:17:00 -0500
+Message-ID: <4B0E559E.8020309@panasas.com>
+Date: Thu, 26 Nov 2009 12:17:02 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090924 Remi/fc10 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Neil Brown <neilb@suse.de>
+CC: Jiri Slaby <jirislaby@gmail.com>,
+       James Bottomley <James.Bottomley@suse.de>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <Jens.Axboe@oracle.com>
+Subject: Re: BUG at scsi_lib.c:1108 [Was: mmotm 2009-11-24-16-47 uploaded]
+References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>	<4B0D4949.4090109@gmail.com>	<1259162399.2535.8.camel@mulgrave.site>	<4B0D9221.2050103@gmail.com> <20091126081359.414c8216@notabene.brown>
+In-Reply-To: <20091126081359.414c8216@notabene.brown>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+X-OriginalArrivalTime: 26 Nov 2009 10:17:06.0550 (UTC) FILETIME=[9B1A2960:01CA6E81]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 10:35 +0100, Peter Zijlstra wrote:
-> On Thu, 2009-11-26 at 02:31 +0100, Mike Galbraith wrote:
-> > On Thu, 2009-11-26 at 02:01 +0100, Mike Galbraith wrote:
-> > > On Wed, 2009-11-25 at 19:27 +0100, Peter Zijlstra wrote:
-> > 
-> > > > I've got to ask, what's that barrier for?
-> > > 
-> > > It's a leftover from frustrated bug hunting.
-> > 
-> > To be more specific, I put it there to ensure that min_vruntimes are
-> > stable. 
+On 11/25/2009 11:13 PM, Neil Brown wrote:
+> On Wed, 25 Nov 2009 21:22:57 +0100
+> Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
-> min_vruntime should only ever be poked at when holding the respective
-> rq->lock, even with a barrier a 64bit read on a 32bit machine can go all
-> funny.
+>> It doesn't make sense at all. How can empty merge cause a regression?
+>> And md/for-next doesn't produce the BUG.
+> 
+> I've hit that situation before.  Two separate changes in separate
+> branches conspire to cause a problem.
+> 
+> md/for-next contains code to handle barriers properly for all levels,
+> not just RAID1.
+> It is possible I got this wrong in some way, and some new sanity check
+> in a separate branch is firing, or it is possible some other bug in
+> barrier handling has been added and now that MD sends barriers, it is
+> being triggered.
+> 
+> What I did to find the actual offending patches is to got to one of the
+> heads just before the merge, and cherry-pick all the patches from the
+> other branch, and then bisect that.
+> 
 
-Yeah, but we're looking at an unlocked runqueue.  But never mind...
+cherry-pick is hard work.
+Stand on the merge point and do:
+git rebase -i HEAD^
 
-> >  I figured that if try_to_wake_up() needs a barrier to look at
-> > task->state, I had better do the same for the runqueues.
-> 
-> Ah, ttwu() has that barrier for another reason. The wmb in ttwu() is to
-> ensure the wakee sees the state of the waker at the time of waking.
-> 
-> That is, its about ordering things like:
-> 
-> 
->    A				   B
-> 
-> 
-> my_cond = true;
-> wake_process(my_friend);
-> 
-> 				while (!my_cond)
-> 				  schedule();
-> 
-> 
-> So that you can actually observe my_cond being true once you wakeup
-> (schedule acts as a mb() when it actually schedules).
+That will cherry-pick all these for you in one easy command ;-)
 
-(Ah!  I think you actually made a wrinkle in grey-ware)
-
-...ATM, I kinda wish I'd not gone off and read barriers.txt.  It hasn't
-sunk in yet, but certainly has made me _paranoid as hell_ :-)
-
-	-Mike
+Boaz
+> NeilBrown
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
