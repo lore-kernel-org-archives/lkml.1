@@ -1,84 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbZK0DIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZK0DHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753915AbZK0DIg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 22:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZK0DIe
+	id S1753854AbZK0DHy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 22:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbZK0DHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 22:08:34 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:53496 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753755AbZK0DId convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 22:07:53 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:59282
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752913AbZK0DHw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 22:08:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ZOOsXjfyASCI9+DjvgQ4hMoJ5Oe0F43HJQNWM41doWB1useT8RNfpwSE/yxp2pX/s5
-         bWruNBaRvbvMGJuCA9q3mxPKByVFY1wm7fFaGL4Md5tif5mfTT5KbUnf+DGUE69Yrlpf
-         AdhSkG/EGJjNZc8Gw5rembiTmV7ddgKOPzyiw=
+	Thu, 26 Nov 2009 22:07:52 -0500
+Message-ID: <4B0F43B3.4090804@wilsonet.com>
+Date: Thu, 26 Nov 2009 22:12:51 -0500
+From: Jarod Wilson <jarod@wilsonet.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091127114511.bbb43d5a.kamezawa.hiroyu@jp.fujitsu.com>
-References: <cover.1259255307.git.kirill@shutemov.name>
-	 <bc4dc055a7307c8667da85a4d4d9d5d189af27d5.1259255307.git.kirill@shutemov.name>
-	 <8524ba285f6dd59cda939c28da523f344cdab3da.1259255307.git.kirill@shutemov.name>
-	 <20091127092035.bbf2efdc.nishimura@mxp.nes.nec.co.jp>
-	 <20091127114511.bbb43d5a.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 27 Nov 2009 08:38:39 +0530
-X-Google-Sender-Auth: faf8e8f457a6afc8
-Message-ID: <661de9470911261908i4bb51e91v649025e6c75bd91b@mail.gmail.com>
-Subject: Re: [PATCH RFC v0 2/3] res_counter: implement thresholds
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
-       Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [IR-RFC PATCH v4 0/6] In-kernel IR support using evdev
+References: <20091127013217.7671.32355.stgit@terra>
+In-Reply-To: <20091127013217.7671.32355.stgit@terra>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 8:15 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Fri, 27 Nov 2009 09:20:35 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+First up, thank you for reposting this. I believe several of us were 
+keeping this code in mind for the in-kernel decoding portion of this 
+discussion, but it hadn't been stated outright in the recent threads here.
+
+On 11/26/2009 08:34 PM, Jon Smirl wrote:
+> This is a repost of the LIRC input patch series I wrote a year ago.
+> Many of the ideas being discussed in the currect "Should we create a
+> raw input interface for IR's?" thread have already been implemented
+> in this code.
 >
->> Hi.
->> >
->> > @@ -73,6 +76,7 @@ void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val)
->> >             val = counter->usage;
->> >
->> >     counter->usage -= val;
->> > +   res_counter_threshold_notify_locked(counter);
->> >  }
->> >
->> hmm.. this adds new checks to hot-path of process life cycle.
->>
->> Do you have any number on performance impact of these patches(w/o setting any threshold)?
->> IMHO, it might be small enough to be ignored because KAMEZAWA-san's coalesce charge/uncharge
->> patches have decreased charge/uncharge for res_counter itself, but I want to know just to make sure.
->>
-> Another concern is to support root cgroup, you need another notifier hook in
-> memcg because root cgroup doesn't use res_counter now.
+> ---------------------------------------------------
 >
-> Can't this be implemented in a way like softlimit check ?
-> Filter by the number of event will be good for notifier behavior, for avoiding
-> too much wake up, too.
+> All of this kernel code is tiny, about 20K including a driver.
+>
+> Basic flow works like this:
+>
+> patch: Minimal changes to the core input system
+> Add a new IR data type to the input framework
+>
+> patch: Core IR module
+> In-kernel decoding of core IR protocols - RC5, RC6, etc
+> This only converts from protocol pulse timing to common command format.
+> Check out: http://www.sbprojects.com/knowledge/ir/sirc.htm
 
-I guess the semantics would vary then, they would become activity
-semantics. I think we should avoid threshold notification for root,
-since we have no limits in root anymore.
+I think we can definitely take advantage of this for the in-kernel side 
+of the initial hybrid approach I think we're converging on.
 
-BTW, Kirill, I've been meaning to write this layer on top of
-cgroupstats, is there anything that prevents us from using that today?
-CC'ing Dan Malek and Vladslav Buzov who worked on similar patches
-earlier.
+> patch: Configfs support for IR
+> Decoded core protocols pass through a translation map based on configfs
+> When core protocol matches an entry in configfs it is turned into a
+> keycode event.
 
-Balbir Singh.
+This part... Not so wild about. The common thought I'm seeing from 
+people is that we should be using setkeycode to load keymaps. I mean, 
+sure, I suppose this could be abstracted away so the user never sees it, 
+but it seems to be reinventing a way to set up key mapping when 
+setkeycode already exists, and is used by a number of existing IR 
+devices in the v4l/dvb subsystem (as well as misc things like the ati rf 
+remotes, iirc). Is there some distinct advantage to going this route vs. 
+setkeycode that I'm missing?
+
+> patch: Microsoft mceusb2 driver for in-kernel IR subsystem
+> Example mceusb IR input driver
+
+Bah. I completely forgot you'd actually did have transmit code too.
+
+...
+> Raw IR pulse data is available in a FIFO via sysfs. You can use this
+> to figure out new remote protocols.
+>
+> Two input events are generated
+> 1) an event for the decoded raw IR protocol
+> 2) a keycode event if the decoded raw IR protocol matches an entry in
+> the configfs
+>
+> You can also send pulses.
+...
+> Raw mode. There are three sysfs attributes - ir_raw, ir_carrier,
+> ir_xmitter. Read from ir_raw to get the raw timing data from the IR
+> device. Set carrier and active xmitters and then copy raw data to
+> ir_raw to send. These attributes may be better on a debug switch. You
+> would use raw mode when decoding a new protocol. After you figure out
+> the new protocol, write an in-kernel encoder/decoder for it.
+
+Also neglected to recall there was raw IR data access too. However, a 
+few things... One, this is, in some sense, cheating, as its not an input 
+layer interface being used. :) Granted though, it *is* an existing 
+kernel interface being used, instead of adding a new one. Two, there's 
+no userspace to do anything with it at this time. I mean, sure, in 
+theory, writing it wouldn't be that hard, but we can already do the same 
+thing using the lirc interface, and already have userspace code for it. 
+I think users need/desire to use raw IR modes may be more prevalent that 
+most people think.
+
+> Two drivers are supplied. mceusb2 implements send and receive support
+> for the Microsoft USB IR dongle.
+
+I'd be game to try hacking up the lirc_mceusb driver (which has, since 
+your work was done, merged mce v1 and v2 transceiver support) to support 
+both your in-kernel interface and the lirc interface as an example of 
+the hybrid approach I'm thinking of.
+
+> Code is only lightly tested. Encoders and decoders have not been
+> written for all protocols. Repeat is not handled for any protocol. I'm
+> looking for help. There are 15 more existing LIRC drivers.
+
+And there's the hangup for me. The lirc drivers and interface have been 
+pretty heavily battle-tested over years and years in the field. And 
+there are those 15 more drivers that already work with the lirc 
+interface. I'm woefully short on time to work on any porting myself, and 
+about to get even shorter with some new responsibilities at work 
+requiring even more of my attention.
+
+If we go with a hybrid approach, all those existing drivers can be 
+brought in supporting just the lirc interface initially, and have 
+in-kernel decode support added as folks have time to work on them, if it 
+actually makes sense for those devices.
+
+Just trying to find a happy middle ground that minimizes regressions for 
+users *and* gives us maximum flexibility.
+
+-- 
+Jarod Wilson
+jarod@wilsonet.com
