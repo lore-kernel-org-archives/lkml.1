@@ -1,100 +1,580 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbZK0OaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbZK0Op0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753892AbZK0OaS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 09:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZK0OaR
+	id S1753156AbZK0Op0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 09:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbZK0Op0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 09:30:17 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:59406 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbZK0OaQ (ORCPT
+	Fri, 27 Nov 2009 09:45:26 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:35402 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbZK0OpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 09:30:16 -0500
+	Fri, 27 Nov 2009 09:45:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=cNG5nFSq+XRxJQ/0VU2XfqsllN10M24UqpGzRtn227h1Oa7iS4u5O0Bo4zv+FRYQ+k
-         kCwnzX2IiHM58NCKtG5hnw+/aaf50sno7bBGfvVD7CqpcCpnMYD162jGBScihnCdRY+5
-         +PK0Kn87ubQ58mglxqGxvTKRXgkNp66v4hDVc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@linux.intel.com>
-Subject: Re: [PATCH 5/5] pata_piccolo: Driver for old Toshiba chipsets
-Date: Fri, 27 Nov 2009 15:28:09 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <20091117144450.15430.83450.stgit@localhost.localdomain> <20091117145144.15430.55784.stgit@localhost.localdomain>
-In-Reply-To: <20091117145144.15430.55784.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Message-Id: <200911271528.09697.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Yo36Pi/Ez/+Y0abjdKZGNA+9vJ7+8fkdiiDrpIJlbtmP7Hec24A92M56/VCo4xUv2i
+         LJPtkpE2d7i0IHhKWw30L98AYVlvrlgGQh0QtmYXG+LkUSqJolzl6ffRcD8utez5xmCE
+         13lNt5/Ao/aY+TlwkVeV1OSqDW+oW7YXjIYxI=
+From: Grazvydas Ignotas <notasas@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>, linux-omap@vger.kernel.org,
+       Grazvydas Ignotas <notasas@gmail.com>
+Subject: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI charger
+Date: Fri, 27 Nov 2009 16:44:20 +0200
+Message-Id: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 November 2009 03:52:12 pm Alan Cox wrote:
-> We were never able to get docs for this out of Toshiba for years. Dave
-> Barnes produced a NetBSD driver however and from that we can fill in the
-> needed tables
-> 
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
-> ---
-> 
->  drivers/ata/Kconfig        |   25 +++++---
->  drivers/ata/Makefile       |    1 
->  drivers/ata/ata_generic.c  |    5 +-
->  drivers/ata/pata_piccolo.c |  140 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pci_ids.h    |    7 +-
->  5 files changed, 166 insertions(+), 12 deletions(-)
->  create mode 100644 drivers/ata/pata_piccolo.c
+TWL4030/TPS65950 is a multi-function device with integrated charger,
+which allows charging from AC or USB. This driver enables the
+charger and provides several monitoring functions.
 
-[...]
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+For this driver to work, TWL4030-core needs to be patched to use
+correct macros so that it registers twl4030_bci platform_device.
+I'll send patches for this later.
 
-> --- a/drivers/ata/ata_generic.c
-> +++ b/drivers/ata/ata_generic.c
-> @@ -168,9 +168,12 @@ static struct pci_device_id ata_generic[] = {
->  	{ PCI_DEVICE(PCI_VENDOR_ID_VIA,    PCI_DEVICE_ID_VIA_82C561), },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_OPTI,   PCI_DEVICE_ID_OPTI_82C558), },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_CENATEK,PCI_DEVICE_ID_CENATEK_IDE), },
-> +#if !defined(CONFIG_PATA_TOSHIBA) && !defined(CONFIG_PATA_TOSHIBA_MODULE)
->  	{ PCI_DEVICE(PCI_VENDOR_ID_TOSHIBA,PCI_DEVICE_ID_TOSHIBA_PICCOLO), },
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_TOSHIBA,PCI_DEVICE_ID_TOSHIBA_PICCOLO_1), },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_TOSHIBA,PCI_DEVICE_ID_TOSHIBA_PICCOLO_2),  },
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_TOSHIBA,PCI_DEVICE_ID_TOSHIBA_PICCOLO_3),  },
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_TOSHIBA,PCI_DEVICE_ID_TOSHIBA_PICCOLO_5),  },
-> +#endif	
+ drivers/power/Kconfig           |    7 +
+ drivers/power/Makefile          |    1 +
+ drivers/power/twl4030_charger.c |  499 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 507 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/power/twl4030_charger.c
 
-[...]
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index cea6cef..95d7e60 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -110,4 +110,11 @@ config CHARGER_PCF50633
+ 	help
+ 	 Say Y to include support for NXP PCF50633 Main Battery Charger.
+ 
++config CHARGER_TWL4030
++	tristate "OMAP TWL4030 BCI charger driver"
++	depends on TWL4030_CORE
++	default y
++	help
++	  Say Y here to enable support for TWL4030 Battery Charge Interface.
++
+ endif # POWER_SUPPLY
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index b96f29d..9cea9b5 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -29,3 +29,4 @@ obj-$(CONFIG_BATTERY_BQ27x00)	+= bq27x00_battery.o
+ obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
+ obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
+ obj-$(CONFIG_CHARGER_PCF50633)	+= pcf50633-charger.o
++obj-$(CONFIG_CHARGER_TWL4030)	+= twl4030_charger.o
+diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
+new file mode 100644
+index 0000000..604dd56
+--- /dev/null
++++ b/drivers/power/twl4030_charger.c
+@@ -0,0 +1,499 @@
++/*
++ * TWL4030/TPS65950 BCI (Battery Charger Interface) driver
++ *
++ * Copyright (C) 2009 Gražvydas Ignotas <notasas@gmail.com>
++ *
++ * based on twl4030_bci_battery.c by TI
++ * Copyright (C) 2008 Texas Instruments, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/interrupt.h>
++#include <linux/i2c/twl4030.h>
++#include <linux/power_supply.h>
++
++#define REG_BCIMSTATEC		0x02
++#define REG_BCIICHG		0x08
++#define REG_BCIVAC		0x0a
++#define REG_BCIVBUS		0x0c
++#define REG_BCIMFSTS4		0x10
++#define REG_BCICTL1		0x23
++
++#define REG_BOOT_BCI		0x07
++#define REG_STS_HW_CONDITIONS	0x0f
++
++#define BCIAUTOWEN		0x20
++#define CONFIG_DONE		0x10
++#define CVENAC			0x04
++#define BCIAUTOUSB		0x02
++#define BCIAUTOAC		0x01
++#define BCIMSTAT_MASK		0x3F
++#define STS_VBUS		0x80
++#define STS_CHG			0x02
++#define STS_USB_ID		0x04
++#define CGAIN			0x20
++#define USBFASTMCHG		0x04
++
++#define STATEC_USB		0x10
++#define STATEC_AC		0x20
++#define STATEC_STATUS_MASK	0x0f
++#define STATEC_QUICK1		0x02
++#define STATEC_QUICK7		0x07
++#define STATEC_COMPLETE1	0x0b
++#define STATEC_COMPLETE4	0x0e
++
++#define BCI_DELAY		100
++
++struct twl4030_bci_device_info {
++	struct power_supply	ac;
++	struct power_supply	usb;
++	struct delayed_work	bat_work;
++	bool			started;
++};
++
++/*
++ * clear and set bits on an given register on a given module
++ */
++static int twl4030_clear_set(u8 mod_no, u8 clear, u8 set, u8 reg)
++{
++	u8 val = 0;
++	int ret;
++
++	ret = twl4030_i2c_read_u8(mod_no, &val, reg);
++	if (ret)
++		return ret;
++
++	val &= ~clear;
++	val |= set;
++
++	return twl4030_i2c_write_u8(mod_no, val, reg);
++}
++
++static int twl4030bci_read_adc_val(u8 reg)
++{
++	int ret, temp;
++	u8 val;
++
++	/* read MSB */
++	ret = twl4030_i2c_read_u8(TWL4030_MODULE_MAIN_CHARGE, &val, reg + 1);
++	if (ret)
++		return ret;
++
++	temp = (int)(val & 0x03) << 8;
++
++	/* read LSB */
++	ret = twl4030_i2c_read_u8(TWL4030_MODULE_MAIN_CHARGE, &val, reg);
++	if (ret)
++		return ret;
++
++	return temp | val;
++}
++
++static void twl4030bci_power_work(struct work_struct *work)
++{
++	struct twl4030_bci_device_info *di = container_of(work,
++		struct twl4030_bci_device_info, bat_work.work);
++
++	power_supply_changed(&di->ac);
++	power_supply_changed(&di->usb);
++}
++
++/*
++ * Attend to TWL4030 CHG_PRES (AC charger presence) events
++ */
++static irqreturn_t twl4030_charger_interrupt(int irq, void *_di)
++{
++	struct twl4030_bci_device_info *di = _di;
++
++#ifdef CONFIG_LOCKDEP
++	/* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
++	 * we don't want and can't tolerate.  Although it might be
++	 * friendlier not to borrow this thread context...
++	 */
++	local_irq_enable();
++#endif
++
++	schedule_delayed_work(&di->bat_work, msecs_to_jiffies(BCI_DELAY));
++
++	return IRQ_HANDLED;
++}
++
++/*
++ * Enable/Disable AC Charge funtionality.
++ */
++static int twl4030_charger_enable_ac(bool enable)
++{
++	int ret;
++
++	if (enable) {
++		/* forcing the field BCIAUTOAC (BOOT_BCI[0) to 1 */
++		ret = twl4030_clear_set(TWL4030_MODULE_PM_MASTER, 0,
++			CONFIG_DONE | BCIAUTOWEN | BCIAUTOAC,
++			REG_BOOT_BCI);
++	} else {
++		/* forcing the field BCIAUTOAC (BOOT_BCI[0) to 0*/
++		ret = twl4030_clear_set(TWL4030_MODULE_PM_MASTER, BCIAUTOAC,
++			CONFIG_DONE | BCIAUTOWEN,
++			REG_BOOT_BCI);
++	}
++
++	return ret;
++}
++
++/*
++ * Check if VBUS power is present
++ */
++static int twl4030_charger_check_vbus(void)
++{
++	int ret;
++	u8 hwsts;
++
++	ret = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &hwsts,
++		REG_STS_HW_CONDITIONS);
++	if (ret) {
++		pr_err("twl4030_bci: error reading STS_HW_CONDITIONS\n");
++		return ret;
++	}
++
++	pr_debug("check_vbus: HW_CONDITIONS %02x\n", hwsts);
++
++	/* in case we also have STS_USB_ID, VBUS is driven by TWL itself */
++	if ((hwsts & STS_VBUS) && !(hwsts & STS_USB_ID))
++		return 1;
++
++	return 0;
++}
++
++/*
++ * Enable/Disable USB Charge funtionality.
++ */
++static int twl4030_charger_enable_usb(bool enable)
++{
++	int ret;
++
++	if (enable) {
++		/* Check for USB charger conneted */
++		ret = twl4030_charger_check_vbus();
++		if (ret < 0)
++			return ret;
++
++		if (!ret)
++			return -ENXIO;
++
++		/* forcing the field BCIAUTOUSB (BOOT_BCI[1]) to 1 */
++		ret = twl4030_clear_set(TWL4030_MODULE_PM_MASTER, 0,
++			CONFIG_DONE | BCIAUTOWEN | BCIAUTOUSB,
++			REG_BOOT_BCI);
++		if (ret)
++			return ret;
++
++		/* forcing USBFASTMCHG(BCIMFSTS4[2]) to 1 */
++		ret = twl4030_clear_set(TWL4030_MODULE_MAIN_CHARGE, 0,
++			USBFASTMCHG, REG_BCIMFSTS4);
++	} else {
++		ret = twl4030_clear_set(TWL4030_MODULE_PM_MASTER, BCIAUTOUSB,
++			CONFIG_DONE | BCIAUTOWEN, REG_BOOT_BCI);
++	}
++
++	return ret;
++}
++
++/*
++ * Return voltage (valid while charging only)
++ * 10 bit ADC (0...0x3ff) scales to 0...6V
++ */
++static int twl4030_get_voltage(int reg)
++{
++	int ret = twl4030bci_read_adc_val(reg);
++	if (ret < 0)
++		return ret;
++
++	return 6000 * ret / 1023;
++}
++
++/*
++ * TI provided formulas:
++ * CGAIN == 0: ICHG = (BCIICHG * 1.7) / (2^10 – 1) - 0.85
++ * CGAIN == 1: ICHG = (BCIICHG * 3.4) / (2^10 – 1) - 1.7
++ * Here we use integer approximation of:
++ * CGAIN == 0: val * 1.6618 - 0.85
++ * CGAIN == 1: (val * 1.6618 - 0.85) * 2
++ */
++static int twl4030_charger_get_current(void)
++{
++	int curr;
++	int ret;
++	u8 bcictl1;
++
++	curr = twl4030bci_read_adc_val(REG_BCIICHG);
++	if (curr < 0)
++		return curr;
++
++	ret = twl4030_i2c_read_u8(TWL4030_MODULE_MAIN_CHARGE, &bcictl1,
++		REG_BCICTL1);
++	if (ret)
++		return ret;
++
++	ret = (curr * 16618 - 850 * 10000) / 10000;
++	if (bcictl1 & CGAIN)
++		ret *= 2;
++
++	return ret;
++}
++
++/*
++ * Returns the main charge FSM state
++ * Or < 0 on failure.
++ */
++static int twl4030bci_state(void)
++{
++	int ret;
++	u8 state;
++
++	ret = twl4030_i2c_read_u8(TWL4030_MODULE_MAIN_CHARGE,
++		&state, REG_BCIMSTATEC);
++	if (ret) {
++		pr_err("twl4030_bci: error reading BCIMSTATEC\n");
++		return ret;
++	}
++
++	pr_debug("state: %02x\n", state);
++
++	return state & BCIMSTAT_MASK;
++}
++
++static int twl4030_bci_state_to_status(int state)
++{
++	state &= STATEC_STATUS_MASK;
++	if (STATEC_QUICK1 <= state && state <= STATEC_QUICK7)
++		return POWER_SUPPLY_STATUS_CHARGING;
++	else if (STATEC_COMPLETE1 <= state && state <= STATEC_COMPLETE4)
++		return POWER_SUPPLY_STATUS_FULL;
++	else
++		return POWER_SUPPLY_STATUS_NOT_CHARGING;
++}
++
++static int twl4030_charger_get_property(struct power_supply *psy,
++					enum power_supply_property psp,
++					union power_supply_propval *val)
++{
++	int is_charging;
++	int voltage_reg;
++	int state;
++	int ret;
++
++	state = twl4030bci_state();
++	if (state < 0)
++		return state;
++
++	if (psy->type == POWER_SUPPLY_TYPE_USB) {
++		is_charging = state & STATEC_USB;
++		voltage_reg = REG_BCIVBUS;
++	} else {
++		is_charging = state & STATEC_AC;
++		voltage_reg = REG_BCIVAC;
++	}
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		if (is_charging)
++			val->intval = twl4030_bci_state_to_status(state);
++		else
++			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		/* charging must be active for meaningful result */
++		if (!is_charging) {
++			val->intval = 0;
++			break;
++		}
++		ret = twl4030_get_voltage(voltage_reg);
++		if (ret < 0)
++			return ret;
++		val->intval = ret;
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		if (!is_charging) {
++			val->intval = 0;
++			break;
++		}
++		/* current measurement is shared between AC and USB */
++		ret = twl4030_charger_get_current();
++		if (ret < 0)
++			return ret;
++		val->intval = ret;
++		break;
++	case POWER_SUPPLY_PROP_ONLINE:
++		val->intval = is_charging &&
++			twl4030_bci_state_to_status(state) !=
++				POWER_SUPPLY_STATUS_NOT_CHARGING;
++		break;
++	default:
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static enum power_supply_property twl4030_charger_props[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++};
++
++static struct twl4030_bci_device_info twl4030_bci = {
++	.ac = {
++		.name		= "twl4030_ac",
++		.type		= POWER_SUPPLY_TYPE_MAINS,
++		.properties	= twl4030_charger_props,
++		.num_properties = ARRAY_SIZE(twl4030_charger_props),
++		.get_property	= twl4030_charger_get_property,
++	},
++	.usb = {
++		.name		= "twl4030_usb",
++		.type		= POWER_SUPPLY_TYPE_USB,
++		.properties	= twl4030_charger_props,
++		.num_properties = ARRAY_SIZE(twl4030_charger_props),
++		.get_property	= twl4030_charger_get_property,
++	},
++};
++
++/*
++ * called by TWL4030 USB transceiver driver on USB_PRES interrupt.
++ */
++int twl4030charger_usb_en(int enable)
++{
++	if (twl4030_bci.started)
++		schedule_delayed_work(&twl4030_bci.bat_work,
++			msecs_to_jiffies(BCI_DELAY));
++
++	return twl4030_charger_enable_usb(enable);
++}
++
++static int __devinit twl4030_bci_probe(struct platform_device *pdev)
++{
++	int irq;
++	int ret;
++
++	twl4030_charger_enable_ac(true);
++	twl4030_charger_enable_usb(true);
++
++	irq = platform_get_irq(pdev, 0);
++
++	/* CHG_PRES irq */
++	ret = request_irq(irq, twl4030_charger_interrupt,
++		0, pdev->name, &twl4030_bci);
++	if (ret) {
++		dev_err(&pdev->dev, "could not request irq %d, status %d\n",
++			irq, ret);
++		goto fail_chg_irq;
++	}
++
++	ret = power_supply_register(&pdev->dev, &twl4030_bci.ac);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register ac: %d\n", ret);
++		goto fail_register_ac;
++	}
++
++	ret = power_supply_register(&pdev->dev, &twl4030_bci.usb);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register usb: %d\n", ret);
++		goto fail_register_usb;
++	}
++
++	platform_set_drvdata(pdev, &twl4030_bci);
++
++	INIT_DELAYED_WORK_DEFERRABLE(&twl4030_bci.bat_work,
++			twl4030bci_power_work);
++	schedule_delayed_work(&twl4030_bci.bat_work,
++			msecs_to_jiffies(BCI_DELAY));
++	twl4030_bci.started = true;
++
++	return 0;
++
++fail_register_usb:
++	power_supply_unregister(&twl4030_bci.ac);
++fail_register_ac:
++	free_irq(irq, &twl4030_bci);
++fail_chg_irq:
++	twl4030_charger_enable_ac(false);
++	twl4030_charger_enable_usb(false);
++
++	return ret;
++}
++
++static int __devexit twl4030_bci_remove(struct platform_device *pdev)
++{
++	struct twl4030_bci_device_info *di = platform_get_drvdata(pdev);
++	int irq = platform_get_irq(pdev, 0);
++
++	di->started = false;
++	twl4030_charger_enable_ac(false);
++	twl4030_charger_enable_usb(false);
++
++	free_irq(irq, di);
++
++	flush_scheduled_work();
++	power_supply_unregister(&di->ac);
++	power_supply_unregister(&di->usb);
++	platform_set_drvdata(pdev, NULL);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int twl4030_bci_suspend(struct platform_device *pdev,
++	pm_message_t state)
++{
++	/* flush all pending status updates */
++	flush_scheduled_work();
++	return 0;
++}
++
++static int twl4030_bci_resume(struct platform_device *pdev)
++{
++	struct twl4030_bci_device_info *di = platform_get_drvdata(pdev);
++
++	/* things may have changed while we were away */
++	schedule_delayed_work(&di->bat_work, msecs_to_jiffies(BCI_DELAY));
++	return 0;
++}
++#else
++#define twl4030_bci_suspend	NULL
++#define twl4030_bci_resume	NULL
++#endif /* CONFIG_PM */
++
++static struct platform_driver twl4030_bci_driver = {
++	.probe		= twl4030_bci_probe,
++	.remove		= __devexit_p(twl4030_bci_remove),
++	.suspend	= twl4030_bci_suspend,
++	.resume		= twl4030_bci_resume,
++	.driver		= {
++		.name	= "twl4030_bci",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init twl4030_bci_init(void)
++{
++	return platform_driver_register(&twl4030_bci_driver);
++}
++module_init(twl4030_bci_init);
++
++static void __exit twl4030_bci_exit(void)
++{
++	platform_driver_unregister(&twl4030_bci_driver);
++}
++module_exit(twl4030_bci_exit);
++
++MODULE_AUTHOR("Gražvydas Ignotas");
++MODULE_DESCRIPTION("TWL4030 Battery Charger Interface driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:twl4030_bci");
+-- 
+1.6.3.3
 
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -1496,9 +1496,10 @@
->  #define PCI_DEVICE_ID_SBE_WANXL400	0x0104
->  
->  #define PCI_VENDOR_ID_TOSHIBA		0x1179
-> -#define PCI_DEVICE_ID_TOSHIBA_PICCOLO	0x0102
-> -#define PCI_DEVICE_ID_TOSHIBA_PICCOLO_1	0x0103
-> -#define PCI_DEVICE_ID_TOSHIBA_PICCOLO_2	0x0105
-> +#define PCI_DEVICE_ID_TOSHIBA_PICCOLO	0x0101
-> +#define PCI_DEVICE_ID_TOSHIBA_PICCOLO_2	0x0102
-> +#define PCI_DEVICE_ID_TOSHIBA_PICCOLO_3	0x0103
-> +#define PCI_DEVICE_ID_TOSHIBA_PICCOLO_5	0x0105
->  #define PCI_DEVICE_ID_TOSHIBA_TOPIC95	0x060a
->  #define PCI_DEVICE_ID_TOSHIBA_TOPIC97	0x060f
->  #define PCI_DEVICE_ID_TOSHIBA_TOPIC100	0x0617
-
-This adds kernel regression and breaks kernel build (it is generally good to
-grep kernel tree for the existing users before doing changes like the above):
-
-drivers/ide/ide-pci-generic.c:
-
-        { PCI_VDEVICE(TOSHIBA,  PCI_DEVICE_ID_TOSHIBA_PICCOLO),          4 },
-        { PCI_VDEVICE(TOSHIBA,  PCI_DEVICE_ID_TOSHIBA_PICCOLO_1),        4 },
-        { PCI_VDEVICE(TOSHIBA,  PCI_DEVICE_ID_TOSHIBA_PICCOLO_2),        4 },
-
-Please fix your patch.
-
---
-Bartlomiej Zolnierkiewicz
