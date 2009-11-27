@@ -1,252 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbZK0QRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752242AbZK0QXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752505AbZK0QRP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 11:17:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbZK0QRO
+	id S1752242AbZK0QXY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 11:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZK0QXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 11:17:14 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:43711 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751116AbZK0QRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 11:17:13 -0500
-Date: Fri, 27 Nov 2009 16:17:15 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [RFC][PATCH 4/4] vmscan: vmscan don't use pcp list
-Message-ID: <20091127161715.GO13095@csn.ul.ie>
-References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com> <20091127091920.A7D5.A69D9226@jp.fujitsu.com>
+	Fri, 27 Nov 2009 11:23:23 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:55572 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465AbZK0QXW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 11:23:22 -0500
+Date: Fri, 27 Nov 2009 16:23:22 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: avorontsov@ru.mvista.com, linux-kernel@vger.kernel.org,
+       Madhusudhan Chikkature <madhu.cr@ti.com>, linux-omap@vger.kernel.org
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+	charger
+Message-ID: <20091127162321.GF29512@sirena.org.uk>
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com> <20091127145426.GA6135@oksana.dev.rtsoft.ru> <6ed0b2680911270747k4bd5610eg1e0ef83c41622bba@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091127091920.A7D5.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <6ed0b2680911270747k4bd5610eg1e0ef83c41622bba@mail.gmail.com>
+X-Cookie: Sorry.  Nice try.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 09:23:57AM +0900, KOSAKI Motohiro wrote:
-> 
-> note: Last year,  Andy Whitcroft reported pcp prevent to make contenious
-> high order page when lumpy reclaim is running.
+On Fri, Nov 27, 2009 at 05:47:40PM +0200, Grazvydas Ignotas wrote:
+> On Fri, Nov 27, 2009 at 4:54 PM, Anton Vorontsov
 
-I don't remember the specifics of the discussion but I know that when
-that patch series was being prototyped, it was because order-0
-allocations were racing with lumpy reclaimers. A lumpy reclaim might
-free up an order-9 page say but while it was freeing, an order-0 page
-would be allocated from the middle. It wasn't the PCP lists as such that
-were a problem once they were getting drained as part of a high-order
-allocation attempt. It would be just as bad if the order-0 page was
-taken from the buddy lists.
+> >> + ? ? /* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
+> >> + ? ? ?* we don't want and can't tolerate. ?Although it might be
+> >> + ? ? ?* friendlier not to borrow this thread context...
+> >> + ? ? ?*/
+> >> + ? ? local_irq_enable();
+> >> +#endif
 
-> He posted "capture pages freed during direct reclaim for allocation by the reclaimer"
-> patch series, but Christoph mentioned simple bypass pcp instead.
-> I made it. I'd hear Christoph and Mel's mention.
-> 
-> ==========================
-> Currently vmscan free unused pages by __pagevec_free().  It mean free pages one by one
-> and use pcp. it makes two suboptimal result.
-> 
->  - The another task can steal the freed page in pcp easily. it decrease
->    lumpy reclaim worth.
->  - To pollute pcp cache, vmscan freed pages might kick out cache hot
->    pages from pcp.
-> 
+> > Can you explain why the driver can't tolerate disabled irqs?
+> > Calling schedule_delayed_work() from an irq context should be OK.
 
-The latter point is interesting.
+> Ah, this is leftover from TI code this driver is based on, which used
+> to do more things directly in interrupt handler. So I guess it can be
+> removed, updated patch attached.
 
-> This patch make new free_pages_bulk() function and vmscan use it.
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  include/linux/gfp.h |    2 +
->  mm/page_alloc.c     |   56 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  mm/vmscan.c         |   23 +++++++++++----------
->  3 files changed, 70 insertions(+), 11 deletions(-)
-> 
-> diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-> index f53e9b8..403584d 100644
-> --- a/include/linux/gfp.h
-> +++ b/include/linux/gfp.h
-> @@ -330,6 +330,8 @@ extern void free_hot_page(struct page *page);
->  #define __free_page(page) __free_pages((page), 0)
->  #define free_page(addr) free_pages((addr),0)
->  
-> +void free_pages_bulk(struct zone *zone, int count, struct list_head *list);
-> +
->  void page_alloc_init(void);
->  void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
->  void drain_all_pages(void);
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 11ae66e..f77f8a8 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2037,6 +2037,62 @@ void free_pages(unsigned long addr, unsigned int order)
->  
->  EXPORT_SYMBOL(free_pages);
->  
-> +/*
-> + * Frees a number of pages from the list
-> + * Assumes all pages on list are in same zone and order==0.
-> + * count is the number of pages to free.
-> + *
-> + * This is similar to __pagevec_free(), but receive list instead pagevec.
-> + * and this don't use pcp cache. it is good characteristics for vmscan.
-> + */
-> +void free_pages_bulk(struct zone *zone, int count, struct list_head *list)
-> +{
-> +	unsigned long flags;
-> +	struct page *page;
-> +	struct page *page2;
-> +
-> +	list_for_each_entry_safe(page, page2, list, lru) {
-> +		int wasMlocked = __TestClearPageMlocked(page);
-> +
-> +		kmemcheck_free_shadow(page, 0);
-> +
-> +		if (PageAnon(page))
-> +			page->mapping = NULL;
-> +		if (free_pages_check(page)) {
-> +			/* orphan this page. */
-> +			list_del(&page->lru);
-> +			continue;
-> +		}
-> +		if (!PageHighMem(page)) {
-> +			debug_check_no_locks_freed(page_address(page),
-> +						   PAGE_SIZE);
-> +			debug_check_no_obj_freed(page_address(page), PAGE_SIZE);
-> +		}
-> +		arch_free_page(page, 0);
-> +		kernel_map_pages(page, 1, 0);
-> +
-> +		local_irq_save(flags);
-> +		if (unlikely(wasMlocked))
-> +			free_page_mlock(page);
-> +		local_irq_restore(flags);
-> +	}
-> +
-> +	spin_lock_irqsave(&zone->lock, flags);
-> +	__count_vm_events(PGFREE, count);
-> +	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
-> +	zone->pages_scanned = 0;
-> +
-> +	__mod_zone_page_state(zone, NR_FREE_PAGES, count);
-> +
-> +	list_for_each_entry_safe(page, page2, list, lru) {
-> +		/* have to delete it as __free_one_page list manipulates */
-> +		list_del(&page->lru);
-> +		trace_mm_page_free_direct(page, 0);
-> +		__free_one_page(page, zone, 0, page_private(page));
-> +	}
-> +	spin_unlock_irqrestore(&zone->lock, flags);
-> +}
-
-It would be preferable that the bulk free code would use as much of the
-existing free logic in the page allocator as possible. This is making a
-lot of checks that are done elsewhere. As this is an RFC, it's not
-critical but worth bearing in mind.
-
-> +
->  /**
->   * alloc_pages_exact - allocate an exact number physically-contiguous pages.
->   * @size: the number of bytes to allocate
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 56faefb..00156f2 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -598,18 +598,17 @@ redo:
->   * shrink_page_list() returns the number of reclaimed pages
->   */
->  static unsigned long shrink_page_list(struct list_head *page_list,
-> +				      struct list_head *freed_pages_list,
->  					struct scan_control *sc,
-
-Should the freed_pages_list be part of scan_control?
-
->  					enum pageout_io sync_writeback)
->  {
->  	LIST_HEAD(ret_pages);
-> -	struct pagevec freed_pvec;
->  	int pgactivate = 0;
->  	unsigned long nr_reclaimed = 0;
->  	unsigned long vm_flags;
->  
->  	cond_resched();
->  
-> -	pagevec_init(&freed_pvec, 1);
->  	while (!list_empty(page_list)) {
->  		struct address_space *mapping;
->  		struct page *page;
-> @@ -785,10 +784,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
->  		__clear_page_locked(page);
->  free_it:
->  		nr_reclaimed++;
-> -		if (!pagevec_add(&freed_pvec, page)) {
-> -			__pagevec_free(&freed_pvec);
-> -			pagevec_reinit(&freed_pvec);
-> -		}
-> +		list_add(&page->lru, freed_pages_list);
->  		continue;
->  
->  cull_mlocked:
-> @@ -812,8 +808,6 @@ keep:
->  		VM_BUG_ON(PageLRU(page) || PageUnevictable(page));
->  	}
->  	list_splice(&ret_pages, page_list);
-> -	if (pagevec_count(&freed_pvec))
-> -		__pagevec_free(&freed_pvec);
->  	count_vm_events(PGACTIVATE, pgactivate);
->  	return nr_reclaimed;
->  }
-> @@ -1100,6 +1094,7 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
->  					  int priority, int file)
->  {
->  	LIST_HEAD(page_list);
-> +	LIST_HEAD(freed_pages_list);
->  	struct pagevec pvec;
->  	unsigned long nr_scanned;
->  	unsigned long nr_reclaimed = 0;
-> @@ -1174,7 +1169,8 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
->  
->  	spin_unlock_irq(&zone->lru_lock);
->  
-> -	nr_reclaimed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
-> +	nr_reclaimed = shrink_page_list(&page_list, &freed_pages_list, sc,
-> +					PAGEOUT_IO_ASYNC);
->  
->  	/*
->  	 * If we are direct reclaiming for contiguous pages and we do
-> @@ -1192,10 +1188,15 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
->  		nr_active = clear_active_flags(&page_list, count);
->  		count_vm_events(PGDEACTIVATE, nr_active);
->  
-> -		nr_reclaimed += shrink_page_list(&page_list, sc,
-> -						 PAGEOUT_IO_SYNC);
-> +		nr_reclaimed += shrink_page_list(&page_list, &freed_pages_list,
-> +						 sc, PAGEOUT_IO_SYNC);
->  	}
->  
-> +	/*
-> +	 * Free unused pages.
-> +	 */
-> +	free_pages_bulk(zone, nr_reclaimed, &freed_pages_list);
-> +
->  	local_irq_disable();
->  	if (current_is_kswapd())
->  		__count_vm_events(KSWAPD_STEAL, nr_reclaimed);
-
-This patch does not stand-alone so it's not easy to test. I'll think about
-the idea more although I do see how it might help slightly in the same way
-capture-reclaim did by closing the race window with other allocators.
-
-I'm curious, how did you evaluate this and what problem did you
-encounter that this might help?
-
-Thanks
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Actually, the genirq infrastructure in 2.6.32 has been improved to allow
+I2C based interrupt controllers properly so even those twl4030 drivers
+that do I/O in interrupt callbacks should now be able to run without
+these workarounds once the core has been updated.
