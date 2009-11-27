@@ -1,187 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZK0MFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752071AbZK0Lzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbZK0MFz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 07:05:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZK0MFz
+	id S1752071AbZK0Lzj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 06:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZK0Lzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 07:05:55 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:45456 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbZK0MFy (ORCPT
+	Fri, 27 Nov 2009 06:55:38 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:65399 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751333AbZK0LzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 07:05:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=T/3N9POqi3xWEA0wU+oXc65WG9Zo0Nqme1J64nEuwam1EODoCeQDFDBUQ+VULpWf3N
-         Bt2GqKFPcSyiMWk2KKmDjQo9wYqrtMS2aQhHBYf1T96CjSIIm/mRwjEFKbFyXIAHHC4t
-         jx6CApX3+b95RXNKo8JQDJVHxjSK6ptkm5rz4=
-Date: Fri, 27 Nov 2009 19:50:29 +0800
-From: Wu Fengguang <fengguang.wu@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Dave Chinner <david@fromorbit.com>, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 4/6] writeback: remove unused nonblocking and
-	congestion checks (xfs)
-Message-ID: <20091127115029.GA20166@localhost>
-References: <20091127105908.944744141@intel.com> <20091127110407.781077241@intel.com> <20091127114014.GA5132@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091127114014.GA5132@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Nov 2009 06:55:16 -0500
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: containers@lists.linux-foundation.org, linux-mm@kvack.org
+Cc: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org,
+       "Kirill A. Shutemov" <kirill@shutemov.name>
+Subject: [PATCH RFC v1 1/3] cgroup: implement eventfd-based generic API for notifications
+Date: Fri, 27 Nov 2009 13:55:02 +0200
+Message-Id: <bc4dc055a7307c8667da85a4d4d9d5d189af27d5.1259321503.git.kirill@shutemov.name>
+X-Mailer: git-send-email 1.6.5.3
+In-Reply-To: <cover.1259255307.git.kirill@shutemov.name>
+References: <cover.1259255307.git.kirill@shutemov.name>
+In-Reply-To: <cover.1259321503.git.kirill@shutemov.name>
+References: <cover.1259321503.git.kirill@shutemov.name>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 06:40:14AM -0500, Christoph Hellwig wrote:
-> On Fri, Nov 27, 2009 at 06:59:12PM +0800, Wu Fengguang wrote:
-> > No one is calling wb_writeback and write_cache_pages with
-> > wbc.nonblocking=1 any more. And lumpy pageout will want to do
-> > nonblocking writeback without the congestion wait.
-> 
-> Please, just fold this into one big patch removing the flag.  Splitting
-> this into multiple patches is just a real pain in the neck.
+This patch introduces write-only file "cgroup.event_control" in every
+cgroup.
 
-Sure. This is the folded version for the first 4 patches.
+To register new notification handler you need:
+- create an eventfd;
+- open a control file to be monitored. Callbacks register_event() and
+  unregister_event() must be defined for the control file;
+- write "<event_fd> <control_fd> <args>" to cgroup.event_control.
+  Interpretation of args is defined by control file implementation;
 
-Thanks,
-Fengguang
+eventfd will be woken up by control file implementation or when the
+cgroup is removed.
+
+To unregister notification handler just close eventfd.
+
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
 ---
-writeback: remove unused nonblocking and congestion checks
+ include/linux/cgroup.h |    8 ++
+ kernel/cgroup.c        |  181 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 188 insertions(+), 1 deletions(-)
 
-- no one is calling wb_writeback and write_cache_pages with
-  wbc.nonblocking=1 any more
-- lumpy pageout will want to do nonblocking writeback without the
-  congestion wait
-
-So remove the congestion checks as suggested by Chris.
-
-CC: Chris Mason <chris.mason@oracle.com>
-CC: Jens Axboe <jens.axboe@oracle.com>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Dave Chinner <david@fromorbit.com>
-CC: Evgeniy Polyakov <zbr@ioremap.net>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/staging/pohmelfs/inode.c |   10 ----------
- fs/fs-writeback.c                |    9 ---------
- fs/xfs/linux-2.6/xfs_aops.c      |    9 +--------
- mm/page-writeback.c              |   12 ------------
- 4 files changed, 1 insertion(+), 39 deletions(-)
-
---- linux.orig/fs/fs-writeback.c	2009-11-27 19:46:05.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-11-27 19:46:10.000000000 +0800
-@@ -657,14 +657,6 @@ static void writeback_inodes_wb(struct b
- 			continue;
- 		}
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index 0008dee..285eaff 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -220,6 +220,9 @@ struct cgroup {
  
--		if (wbc->nonblocking && bdi_write_congested(wb->bdi)) {
--			wbc->encountered_congestion = 1;
--			if (!is_blkdev_sb)
--				break;		/* Skip a congested fs */
--			requeue_io(inode);
--			continue;		/* Skip a congested blockdev */
--		}
--
- 		/*
- 		 * Was this inode dirtied after sync_sb_inodes was called?
- 		 * This keeps sync from extra jobs and livelock.
-@@ -787,7 +779,6 @@ static long wb_writeback(struct bdi_writ
- 			break;
+ 	/* For RCU-protected deletion */
+ 	struct rcu_head rcu_head;
++
++	struct list_head event_list;
++	struct mutex event_list_mutex;
+ };
  
- 		wbc.more_io = 0;
--		wbc.encountered_congestion = 0;
- 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
- 		wbc.pages_skipped = 0;
- 		writeback_inodes_wb(wb, &wbc);
---- linux.orig/drivers/staging/pohmelfs/inode.c	2009-11-27 19:06:00.000000000 +0800
-+++ linux/drivers/staging/pohmelfs/inode.c	2009-11-27 19:46:31.000000000 +0800
-@@ -143,7 +143,6 @@ static int pohmelfs_writepages(struct ad
- 	struct inode *inode = mapping->host;
- 	struct pohmelfs_inode *pi = POHMELFS_I(inode);
- 	struct pohmelfs_sb *psb = POHMELFS_SB(inode->i_sb);
--	struct backing_dev_info *bdi = mapping->backing_dev_info;
- 	int err = 0;
- 	int done = 0;
- 	int nr_pages;
-@@ -152,11 +151,6 @@ static int pohmelfs_writepages(struct ad
- 	int scanned = 0;
- 	int range_whole = 0;
+ /*
+@@ -362,6 +365,11 @@ struct cftype {
+ 	int (*trigger)(struct cgroup *cgrp, unsigned int event);
  
--	if (wbc->nonblocking && bdi_write_congested(bdi)) {
--		wbc->encountered_congestion = 1;
--		return 0;
--	}
--
- 	if (wbc->range_cyclic) {
- 		index = mapping->writeback_index; /* Start from prev offset */
- 		end = -1;
-@@ -248,10 +242,6 @@ retry:
+ 	int (*release)(struct inode *inode, struct file *file);
++
++	int (*register_event)(struct cgroup *cgrp, struct cftype *cft,
++			struct eventfd_ctx *eventfd, const char *args);
++	int (*unregister_event)(struct cgroup *cgrp, struct cftype *cft,
++			struct eventfd_ctx *eventfd);
+ };
  
- 			if (wbc->nr_to_write <= 0)
- 				done = 1;
--			if (wbc->nonblocking && bdi_write_congested(bdi)) {
--				wbc->encountered_congestion = 1;
--				done = 1;
--			}
+ struct cgroup_scanner {
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 0249f4b..5438d46 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -4,6 +4,10 @@
+  *  Based originally on the cpuset system, extracted by Paul Menage
+  *  Copyright (C) 2006 Google, Inc
+  *
++ *  Notifiactions support
++ *  Copyright (C) 2009 Nokia Corporation
++ *  Author: Kirill A. Shutemov
++ *
+  *  Copyright notices from the original cpuset code:
+  *  --------------------------------------------------
+  *  Copyright (C) 2003 BULL SA.
+@@ -51,6 +55,8 @@
+ #include <linux/pid_namespace.h>
+ #include <linux/idr.h>
+ #include <linux/vmalloc.h> /* TODO: replace with more sophisticated array */
++#include <linux/eventfd.h>
++#include <linux/poll.h>
  
- 			continue;
- out_continue:
---- linux.orig/fs/xfs/linux-2.6/xfs_aops.c	2009-11-27 19:06:00.000000000 +0800
-+++ linux/fs/xfs/linux-2.6/xfs_aops.c	2009-11-27 19:46:40.000000000 +0800
-@@ -904,16 +904,9 @@ xfs_convert_page(
+ #include <asm/atomic.h>
  
- 	if (startio) {
- 		if (count) {
--			struct backing_dev_info *bdi;
--
--			bdi = inode->i_mapping->backing_dev_info;
- 			wbc->nr_to_write--;
--			if (bdi_write_congested(bdi)) {
--				wbc->encountered_congestion = 1;
--				done = 1;
--			} else if (wbc->nr_to_write <= 0) {
-+			if (wbc->nr_to_write <= 0)
- 				done = 1;
--			}
- 		}
- 		xfs_start_page_writeback(page, !page_dirty, count);
- 	}
---- linux.orig/mm/page-writeback.c	2009-11-27 19:46:06.000000000 +0800
-+++ linux/mm/page-writeback.c	2009-11-27 19:46:20.000000000 +0800
-@@ -821,7 +821,6 @@ int write_cache_pages(struct address_spa
- 		      struct writeback_control *wbc, writepage_t writepage,
- 		      void *data)
+@@ -146,6 +152,16 @@ struct css_id {
+ 	unsigned short stack[0]; /* Array of Length (depth+1) */
+ };
+ 
++struct cgroup_event {
++	struct cgroup *cgrp;
++	struct cftype *cft;
++	struct eventfd_ctx *eventfd;
++	struct list_head list;
++	poll_table pt;
++	wait_queue_head_t *wqh;
++	wait_queue_t wait;
++};
++static int cgroup_event_remove(struct cgroup_event *event);
+ 
+ /* The list of hierarchy roots */
+ 
+@@ -734,14 +750,26 @@ static struct inode *cgroup_new_inode(mode_t mode, struct super_block *sb)
+ static int cgroup_call_pre_destroy(struct cgroup *cgrp)
  {
--	struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 	struct cgroup_subsys *ss;
++	struct cgroup_event *event, *tmp;
  	int ret = 0;
- 	int done = 0;
- 	struct pagevec pvec;
-@@ -834,11 +833,6 @@ int write_cache_pages(struct address_spa
- 	int range_whole = 0;
- 	long nr_to_write = wbc->nr_to_write;
  
--	if (wbc->nonblocking && bdi_write_congested(bdi)) {
--		wbc->encountered_congestion = 1;
--		return 0;
--	}
--
- 	pagevec_init(&pvec, 0);
- 	if (wbc->range_cyclic) {
- 		writeback_index = mapping->writeback_index; /* prev offset */
-@@ -957,12 +951,6 @@ continue_unlock:
- 					break;
- 				}
- 			}
--
--			if (wbc->nonblocking && bdi_write_congested(bdi)) {
--				wbc->encountered_congestion = 1;
--				done = 1;
+ 	for_each_subsys(cgrp->root, ss)
+ 		if (ss->pre_destroy) {
+ 			ret = ss->pre_destroy(ss, cgrp);
+ 			if (ret)
 -				break;
--			}
++				goto out;
  		}
- 		pagevec_release(&pvec);
- 		cond_resched();
++
++	mutex_lock(&cgrp->event_list_mutex);
++	list_for_each_entry_safe(event, tmp, &cgrp->event_list, list) {
++		ret = cgroup_event_remove(event);
++		if (ret)
++			break;
++		eventfd_signal(event->eventfd, 1);
++	}
++	mutex_unlock(&cgrp->event_list_mutex);
++
++out:
+ 	return ret;
+ }
+ 
+@@ -1136,6 +1164,8 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
+ 	INIT_LIST_HEAD(&cgrp->release_list);
+ 	INIT_LIST_HEAD(&cgrp->pidlists);
+ 	mutex_init(&cgrp->pidlist_mutex);
++	INIT_LIST_HEAD(&cgrp->event_list);
++	mutex_init(&cgrp->event_list_mutex);
+ }
+ 
+ static void init_cgroup_root(struct cgroupfs_root *root)
+@@ -1935,6 +1965,13 @@ static const struct inode_operations cgroup_dir_inode_operations = {
+ 	.rename = cgroup_rename,
+ };
+ 
++static inline struct cftype *__file_cft(struct file *file)
++{
++	if (file->f_dentry->d_inode->i_fop != &cgroup_file_operations)
++		return ERR_PTR(-EINVAL);
++	return __d_cft(file->f_dentry);
++}
++
+ static int cgroup_create_file(struct dentry *dentry, mode_t mode,
+ 				struct super_block *sb)
+ {
+@@ -2789,6 +2826,143 @@ static int cgroup_write_notify_on_release(struct cgroup *cgrp,
+ 	return 0;
+ }
+ 
++static int cgroup_event_remove(struct cgroup_event *event)
++{
++	struct cgroup *cgrp = event->cgrp;
++	int ret;
++
++	BUG_ON(!mutex_is_locked(&cgrp->event_list_mutex));
++	ret = event->cft->unregister_event(cgrp, event->cft, event->eventfd);
++	eventfd_ctx_put(event->eventfd);
++	remove_wait_queue(event->wqh, &event->wait);
++	list_del(&event->list);
++	kfree(event);
++
++	return ret;
++}
++
++static int cgroup_event_wake(wait_queue_t *wait, unsigned mode,
++		int sync, void *key)
++{
++	struct cgroup_event *event = container_of(wait,
++			struct cgroup_event, wait);
++	struct cgroup *cgrp = event->cgrp;
++	unsigned long flags = (unsigned long)key;
++	int ret;
++
++	if (!(flags & POLLHUP))
++		return 0;
++
++	mutex_lock(&cgrp->event_list_mutex);
++	ret = cgroup_event_remove(event);
++	mutex_unlock(&cgrp->event_list_mutex);
++
++	return ret;
++}
++
++static void cgroup_event_ptable_queue_proc(struct file *file,
++		wait_queue_head_t *wqh, poll_table *pt)
++{
++	struct cgroup_event *event = container_of(pt,
++			struct cgroup_event, pt);
++
++	event->wqh = wqh;
++	add_wait_queue(wqh, &event->wait);
++}
++
++static int cgroup_write_event_control(struct cgroup *cont, struct cftype *cft,
++				      const char *buffer)
++{
++	struct cgroup_event *event = NULL;
++	unsigned int efd, cfd;
++	struct file *efile = NULL;
++	struct file *cfile = NULL;
++	char *endp;
++	int ret;
++
++	efd = simple_strtoul(buffer, &endp, 10);
++	if (*endp != ' ')
++		return -EINVAL;
++	buffer = endp + 1;
++
++	cfd = simple_strtoul(buffer, &endp, 10);
++	if ((*endp != ' ') && (*endp != '\0'))
++		return -EINVAL;
++	buffer = endp + 1;
++
++	event = kzalloc(sizeof(*event), GFP_KERNEL);
++	if (!event)
++		return -ENOMEM;
++	event->cgrp = cont;
++	INIT_LIST_HEAD(&event->list);
++	init_poll_funcptr(&event->pt, cgroup_event_ptable_queue_proc);
++	init_waitqueue_func_entry(&event->wait, cgroup_event_wake);
++
++	efile = eventfd_fget(efd);
++	if (IS_ERR(efile)) {
++		ret = PTR_ERR(efile);
++		goto fail;
++	}
++
++	event->eventfd = eventfd_ctx_fileget(efile);
++	if (IS_ERR(event->eventfd)) {
++		ret = PTR_ERR(event->eventfd);
++		goto fail;
++	}
++
++	cfile = fget(cfd);
++	if (!cfile) {
++		ret = -EBADF;
++		goto fail;
++	}
++
++	ret = file_permission(cfile, MAY_READ);
++	if (ret < 0)
++		goto fail;
++
++	event->cft = __file_cft(cfile);
++	if (IS_ERR(event->cft)) {
++		ret = PTR_ERR(event->cft);
++		goto fail;
++	}
++
++	if (!event->cft->register_event || !event->cft->unregister_event) {
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	ret = event->cft->register_event(cont, event->cft,
++			event->eventfd, buffer);
++	if (ret)
++		goto fail;
++
++	efile->f_op->poll(efile, &event->pt);
++
++	mutex_lock(&cont->event_list_mutex);
++	list_add(&event->list, &cont->event_list);
++	mutex_unlock(&cont->event_list_mutex);
++
++	fput(cfile);
++	fput(efile);
++
++	return 0;
++
++fail:
++	if (!IS_ERR(cfile))
++		fput(cfile);
++
++	if (event && event->eventfd && !IS_ERR(event->eventfd))
++		eventfd_ctx_put(event->eventfd);
++
++	if (!IS_ERR(efile))
++		fput(efile);
++
++	if (event)
++		kfree(event);
++
++	return ret;
++}
++
+ /*
+  * for the common functions, 'private' gives the type of file
+  */
+@@ -2814,6 +2988,11 @@ static struct cftype files[] = {
+ 		.read_u64 = cgroup_read_notify_on_release,
+ 		.write_u64 = cgroup_write_notify_on_release,
+ 	},
++	{
++		.name = CGROUP_FILE_GENERIC_PREFIX "event_control",
++		.write_string = cgroup_write_event_control,
++		.mode = S_IWUGO,
++	},
+ };
+ 
+ static struct cftype cft_release_agent = {
+-- 
+1.6.5.3
+
