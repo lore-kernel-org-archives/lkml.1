@@ -1,215 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZK0WNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbZK0WOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbZK0WNH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 17:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbZK0WNF
+	id S1753357AbZK0WOl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 17:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZK0WOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 17:13:05 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:54339 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752733AbZK0WNE (ORCPT
-	<rfc822;groupwise-PMullaney@novell.com:0:0>);
-	Fri, 27 Nov 2009 17:13:04 -0500
-From: Patrick Mullaney <pmullaney@novell.com>
-Subject: [PATCH v2] netdevice: provide common routine for macvlan and vlan
-	operstate management
-To: netdev@vger.kernel.org
-Cc: kaber@trash.net, arnd@arndb.de, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net
-Date: Fri, 27 Nov 2009 17:12:52 -0500
-Message-ID: <20091127220717.14078.6058.stgit@mimic.site>
-User-Agent: StGIT/0.14.3
+	Fri, 27 Nov 2009 17:14:40 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:50250 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751749AbZK0WOj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 17:14:39 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Patrick Mullaney <pmullaney@novell.com>
+Subject: Re: [PATCH 3/3] macvlan: allow in-kernel modules to create and manage macvlan devices
+Date: Fri, 27 Nov 2009 23:14:42 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: kaber@trash.net, netdev@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       bridge@lists.linux-foundation.org
+References: <20091113195201.11184.25766.stgit@mimic.site> <20091113195529.11184.19011.stgit@mimic.site>
+In-Reply-To: <20091113195529.11184.19011.stgit@mimic.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911272314.42641.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18f2vX3Z22v7Yq/sse4WQa0T2Rh+G1i8H5nczd
+ HmdgJGDqreOBCFmDEOvCVfEKCvaX3BP9dbnFKW9dg5lDYYu/+E
+ akjGOjDfSBngXXTHEqKQA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applies to net-2.6.git/master:0135ae0b9)
+On Friday 13 November 2009, Patrick Mullaney wrote:
+> 
+> The macvlan driver didn't allow for creation/deletion of devices
+> by other in-kernel modules. This patch provides common routines
+> for both in-kernel and netlink based management. This patch
+> also enables macvlan device support for gro for lower level
+> devices that support gro.
 
-Provide common routine for the transition of operational state for a leaf
-device during a root device transition. This updates a previous patch in
-my venet macvlan series and fixes the problems that Arnd pointed out.
+I wonder if doing this way round is a good idea, why don't
+you just use netlink to set up the endpoint device like
+the current macvlan and macvtap do? I think doing it consistently
+for all backends would be a significant advantage.
 
-Is submitting this applied to net-next a more better approach?
-
-Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
----
-
- drivers/net/macvlan.c     |   24 +++---------------------
- include/linux/netdevice.h |    3 +++
- net/8021q/vlan.c          |   29 ++++-------------------------
- net/core/dev.c            |   27 +++++++++++++++++++++++++++
- 4 files changed, 37 insertions(+), 46 deletions(-)
-
-diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
-index 2490aa3..14f63ec 100644
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -456,25 +456,6 @@ static void macvlan_port_destroy(struct net_device *dev)
- 	kfree(port);
- }
- 
--static void macvlan_transfer_operstate(struct net_device *dev)
--{
--	struct macvlan_dev *vlan = netdev_priv(dev);
--	const struct net_device *lowerdev = vlan->lowerdev;
--
--	if (lowerdev->operstate == IF_OPER_DORMANT)
--		netif_dormant_on(dev);
--	else
--		netif_dormant_off(dev);
--
--	if (netif_carrier_ok(lowerdev)) {
--		if (!netif_carrier_ok(dev))
--			netif_carrier_on(dev);
--	} else {
--		if (netif_carrier_ok(dev))
--			netif_carrier_off(dev);
--	}
--}
--
- static int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
- {
- 	if (tb[IFLA_ADDRESS]) {
-@@ -552,7 +533,7 @@ static int macvlan_newlink(struct net_device *dev,
- 		return err;
- 
- 	list_add_tail(&vlan->list, &port->vlans);
--	macvlan_transfer_operstate(dev);
-+	netif_stacked_transfer_operstate(lowerdev, dev);
- 	return 0;
- }
- 
-@@ -592,7 +573,8 @@ static int macvlan_device_event(struct notifier_block *unused,
- 	switch (event) {
- 	case NETDEV_CHANGE:
- 		list_for_each_entry(vlan, &port->vlans, list)
--			macvlan_transfer_operstate(vlan->dev);
-+			netif_stacked_transfer_operstate(vlan->lowerdev,
-+							 vlan->dev);
- 		break;
- 	case NETDEV_FEAT_CHANGE:
- 		list_for_each_entry(vlan, &port->vlans, list) {
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 812a5f3..1587715 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1914,6 +1914,9 @@ unsigned long netdev_increment_features(unsigned long all, unsigned long one,
- 					unsigned long mask);
- unsigned long netdev_fix_features(unsigned long features, const char *name);
- 
-+void netif_stacked_transfer_operstate(const struct net_device *rootdev,
-+					struct net_device *dev);
-+
- static inline int net_gso_ok(int features, int gso_type)
- {
- 	int feature = gso_type << NETIF_F_GSO_SHIFT;
-diff --git a/net/8021q/vlan.c b/net/8021q/vlan.c
-index a29c5ab..44f5751 100644
---- a/net/8021q/vlan.c
-+++ b/net/8021q/vlan.c
-@@ -183,27 +183,6 @@ void unregister_vlan_dev(struct net_device *dev)
- 	dev_put(real_dev);
- }
- 
--static void vlan_transfer_operstate(const struct net_device *dev,
--				    struct net_device *vlandev)
--{
--	/* Have to respect userspace enforced dormant state
--	 * of real device, also must allow supplicant running
--	 * on VLAN device
--	 */
--	if (dev->operstate == IF_OPER_DORMANT)
--		netif_dormant_on(vlandev);
--	else
--		netif_dormant_off(vlandev);
--
--	if (netif_carrier_ok(dev)) {
--		if (!netif_carrier_ok(vlandev))
--			netif_carrier_on(vlandev);
--	} else {
--		if (netif_carrier_ok(vlandev))
--			netif_carrier_off(vlandev);
--	}
--}
--
- int vlan_check_real_dev(struct net_device *real_dev, u16 vlan_id)
- {
- 	const char *name = real_dev->name;
-@@ -261,7 +240,7 @@ int register_vlan_dev(struct net_device *dev)
- 	/* Account for reference in struct vlan_dev_info */
- 	dev_hold(real_dev);
- 
--	vlan_transfer_operstate(real_dev, dev);
-+	netif_stacked_transfer_operstate(real_dev, dev);
- 	linkwatch_fire_event(dev); /* _MUST_ call rfc2863_policy() */
- 
- 	/* So, got the sucker initialized, now lets place
-@@ -450,7 +429,7 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
- 			if (!vlandev)
- 				continue;
- 
--			vlan_transfer_operstate(dev, vlandev);
-+			netif_stacked_transfer_operstate(dev, vlandev);
- 		}
- 		break;
- 
-@@ -506,7 +485,7 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
- 				continue;
- 
- 			dev_change_flags(vlandev, flgs & ~IFF_UP);
--			vlan_transfer_operstate(dev, vlandev);
-+			netif_stacked_transfer_operstate(dev, vlandev);
- 		}
- 		break;
- 
-@@ -522,7 +501,7 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
- 				continue;
- 
- 			dev_change_flags(vlandev, flgs | IFF_UP);
--			vlan_transfer_operstate(dev, vlandev);
-+			netif_stacked_transfer_operstate(dev, vlandev);
- 		}
- 		break;
- 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index fe10551..8ece671 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -4747,6 +4747,33 @@ unsigned long netdev_fix_features(unsigned long features, const char *name)
- EXPORT_SYMBOL(netdev_fix_features);
- 
- /**
-+ *	netif_stacked_transfer_operstate -	transfer operstate
-+ *	@rootdev: the root or lower level device to transfer state from
-+ *	@dev: the device to transfer operstate to
-+ *
-+ *	Transfer operational state from root to device. This is normally
-+ *	called when a stacking relationship exists between the root
-+ *	device and the device(a leaf device).
-+ */
-+void netif_stacked_transfer_operstate(const struct net_device *rootdev,
-+					struct net_device *dev)
-+{
-+	if (rootdev->operstate == IF_OPER_DORMANT)
-+		netif_dormant_on(dev);
-+	else
-+		netif_dormant_off(dev);
-+
-+	if (netif_carrier_ok(rootdev)) {
-+		if (!netif_carrier_ok(dev))
-+			netif_carrier_on(dev);
-+	} else {
-+		if (netif_carrier_ok(dev))
-+			netif_carrier_off(dev);
-+	}
-+}
-+EXPORT_SYMBOL(netif_stacked_transfer_operstate);
-+
-+/**
-  *	register_netdevice	- register a network device
-  *	@dev: device to register
-  *
-
+	Arnd <><
