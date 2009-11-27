@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbZK0FvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZK0Fy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005AbZK0FvH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 00:51:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbZK0FvF
+	id S1753573AbZK0Fy0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 00:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZK0FyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 00:51:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57965 "EHLO hera.kernel.org"
+	Fri, 27 Nov 2009 00:54:25 -0500
+Received: from sparc.brc.ubc.ca ([137.82.2.12]:49290 "EHLO sparc.brc.ubc.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753932AbZK0FvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 00:51:02 -0500
-Date: Fri, 27 Nov 2009 05:50:15 GMT
-From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       laijs@cn.fujitsu.com, mhiramat@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       laijs@cn.fujitsu.com, mhiramat@redhat.com, mingo@elte.hu
-In-Reply-To: <4B0CEBCB.7080309@cn.fujitsu.com>
-References: <4B0CEBCB.7080309@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] trace_kprobes: Don't output zero offset
-Message-ID: <tip-52a11f354970e7301e1d1a029b87535be45abec9@git.kernel.org>
-Git-Commit-ID: 52a11f354970e7301e1d1a029b87535be45abec9
-X-Mailer: tip-git-log-daemon
+	id S1751045AbZK0FyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 00:54:25 -0500
+X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Nov 2009 00:54:25 EST
+Date: Thu, 26 Nov 2009 21:54:29 -0800 (PST)
+From: Vincent Li <macli@brc.ubc.ca>
+X-X-Sender: root@kernalhack.brc.ubc.ca
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Vincent Li <macli@brc.ubc.ca>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/4] vmscan: make lru_index() helper function
+In-Reply-To: <20091127144636.A7E4.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0911262153080.15015@kernalhack.brc.ubc.ca>
+References: <20091127091755.A7CF.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0911262138310.14657@kernalhack.brc.ubc.ca> <20091127144636.A7E4.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  52a11f354970e7301e1d1a029b87535be45abec9
-Gitweb:     http://git.kernel.org/tip/52a11f354970e7301e1d1a029b87535be45abec9
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Wed, 25 Nov 2009 16:33:15 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 27 Nov 2009 06:43:05 +0100
 
-trace_kprobes: Don't output zero offset
 
-"symbol_name+0" is not so friendly.
-It makes the output longer.
+On Fri, 27 Nov 2009, KOSAKI Motohiro wrote:
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4B0CEBCB.7080309@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/trace/trace_kprobe.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
+> > > @@ -1373,10 +1378,8 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+> > >  	 */
+> > >  	reclaim_stat->recent_rotated[file] += nr_rotated;
+> > >  
+> > > -	move_active_pages_to_lru(zone, &l_active,
+> > > -						LRU_ACTIVE + file * LRU_FILE);
+> > > -	move_active_pages_to_lru(zone, &l_inactive,
+> > > -						LRU_BASE   + file * LRU_FILE);
+> > > +	move_active_pages_to_lru(zone, &l_active, lru_index(1, file));
+> > > +	move_active_pages_to_lru(zone, &l_inactive, lru_index(0, file));
+> > 
+> > How about:
+> > 	move_active_pages_to_lru(zone, &l_active, lru_index(LRU_ACTIVE, file));
+> > 	move_active_pages_to_lru(zone, &l_inactive, lru_index(LRU_BASE, file));
+> > ?
+> 
+> No. lru_index mean convert two boolean to one index. it shoudn't be passed
+> lru index itself.
 
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 96e1944..72d0c65 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -243,7 +243,11 @@ static int probe_arg_string(char *buf, size_t n, struct fetch_func *ff)
- 		ret = snprintf(buf, n, "@0x%p", ff->data);
- 	else if (ff->func == fetch_symbol) {
- 		struct symbol_cache *sc = ff->data;
--		ret = snprintf(buf, n, "@%s%+ld", sc->symbol, sc->offset);
-+		if (sc->offset)
-+			ret = snprintf(buf, n, "@%s%+ld", sc->symbol,
-+					sc->offset);
-+		else
-+			ret = snprintf(buf, n, "@%s", sc->symbol);
- 	} else if (ff->func == fetch_retvalue)
- 		ret = snprintf(buf, n, "$retval");
- 	else if (ff->func == fetch_stack_address)
-@@ -762,10 +766,12 @@ static int probes_seq_show(struct seq_file *m, void *v)
- 	seq_printf(m, "%c", probe_is_return(tp) ? 'r' : 'p');
- 	seq_printf(m, ":%s/%s", tp->call.system, tp->call.name);
- 
--	if (tp->symbol)
-+	if (!tp->symbol)
-+		seq_printf(m, " 0x%p", tp->rp.kp.addr);
-+	else if (tp->rp.kp.offset)
- 		seq_printf(m, " %s+%u", probe_symbol(tp), tp->rp.kp.offset);
- 	else
--		seq_printf(m, " 0x%p", tp->rp.kp.addr);
-+		seq_printf(m, " %s", probe_symbol(tp));
- 
- 	for (i = 0; i < tp->nr_args; i++) {
- 		ret = probe_arg_string(buf, MAX_ARGSTR_LEN, &tp->args[i].fetch);
+Yeah, you are right, I immediately realized I am wrong after replying, 
+sorry.
+
+Vincent
+
