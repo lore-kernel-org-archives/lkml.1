@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbZK0Vzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZK0VuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbZK0Vzz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 16:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZK0Vzy
+	id S1752912AbZK0VuT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 16:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZK0VuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 16:55:54 -0500
-Received: from smtp-relay.virtualhosts.de ([80.83.113.14]:42062 "HELO
-	smtp-relay.virtualhosts.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752753AbZK0Vzy (ORCPT
+	Fri, 27 Nov 2009 16:50:12 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37948 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbZK0VuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 16:55:54 -0500
-X-Greylist: delayed 403 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Nov 2009 16:55:53 EST
-X-PDA-ORIGIN: smtp-relay.virtualhosts.de
-Date: Fri, 27 Nov 2009 22:48:51 +0100
-From: markus reichelt <ml@mareichelt.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: blowfish and cryptoloop modules question
-Message-ID: <20091127214851.GM3313@tatooine.rebelbase.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <m1NE61t-004yeQC@outside.256.com>
+	Fri, 27 Nov 2009 16:50:11 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B104971.4020800@s5r6.in-berlin.de>
+Date: Fri, 27 Nov 2009 22:49:37 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="EOHJn1TVIJfeVXv2"
-Content-Disposition: inline
-In-Reply-To: <m1NE61t-004yeQC@outside.256.com>
-Organization: still stuck in reorganization mode
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+In-Reply-To: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jon Smirl wrote:
+> 3) No special tools - use mkdir, echo, cat, shell scripts to build maps
 
---EOHJn1TVIJfeVXv2
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>From the POV of a distributor, there is always a special tool required.
+Whether it is implemented in bash, Python, or C doesn't make a
+difference to him.
 
-* jgj7.ignorantguru@mailnull.com wrote:
+For an enduser whose distributor doesn't package that tool, it also
+doesn't matter whether it is bash or Python.  (C is awkward because it
+needs to be run through gcc first.)  A Pyton tool can operate the
+existing EVIOCSKEYCODE interface just as well as a C tool.
 
-> Why are the blowfish modules not compatible?
+Your mkdir/ echo/ cat programs would still just this:  Programs.  Sure,
+these programs would be interpreted by an interpreter which is installed
+everywhere, and the data they operate on is in a clear text format.  The
+downside is that these programs do not exist yet.
 
-Have a look at section 2.8 of=20
+> 5) Direct multi-app support - no daemon
 
-http://loop-aes.sourceforge.net/loop-AES.README
+Think of lircd (when it feeds into uinput) as of a userspace driver
+rather than a daemon.  The huge benefit of a userspace driver is that it
+can load configuration files.
 
---=20
-left blank, right bald
+Multi-app support is provided by evdev of course.
 
---EOHJn1TVIJfeVXv2
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+> What are other goals for this subsystem?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+  - Minimal development cost; reduced maintenance cost relative
+    the to status quo.
 
-iEYEARECAAYFAksQSUMACgkQLMyTO8Kj/uRqdgCeI0QauCPKgYPj/+269UD55Hpr
-Yz8AnRDviGAGzrp3n0E+VhvVfLqbUGaG
-=9zwR
------END PGP SIGNATURE-----
-
---EOHJn1TVIJfeVXv2--
+  - No regressions would be best.
+-- 
+Stefan Richter
+-=====-==--= =-== ==-==
+http://arcgraph.de/sr/
