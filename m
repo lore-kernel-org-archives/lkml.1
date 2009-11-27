@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbZK0DCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZK0DI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbZK0DCJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 22:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbZK0DCI
+	id S1753893AbZK0DI3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 22:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbZK0DI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 22:02:08 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:49291 "EHLO
+	Thu, 26 Nov 2009 22:08:29 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:57238 "EHLO
 	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753588AbZK0DCH convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753785AbZK0DI1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 22:02:07 -0500
+	Thu, 26 Nov 2009 22:08:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=EmFcG6HI+LN6lVWtzxbUEIovOLEVTvWHUfPp4SVb3HBdCZxfw6zU0Wo+wMHbgsCp4Q
-         FC36PW8C6yjntNeyrGZM7+Bj5GALuP0tW08SYfhxH7QJz29+O7WKth+uUovSo/fyP0RW
-         fYg0LvMOCWm6Tg3263yCHxy2wuPF5rlTBppGI=
+        b=wUprlvuhIRkPJRtYWS3aVjMUpsYvpUqPYw0FwDng36h8VJ8WHp0XCiNt46q08g9RcT
+         rbydx/jK16YeBb83H6HM1/s3/mgQ23ZZeP44AcjY2JZES57/Kl4AVcaQvjr9fNKWidGJ
+         VR4h3r6y26d/Ywj283tzHP94EWxnZSPYBamgY=
 MIME-Version: 1.0
-In-Reply-To: <20091127025512.GB5406@nowhere>
-References: <20091127022820.GU32182@kryten>
-	 <2375c9f90911261846i18a828eft391420b13bb3fbb2@mail.gmail.com>
-	 <20091127025512.GB5406@nowhere>
-Date: Fri, 27 Nov 2009 11:02:13 +0800
-Message-ID: <2375c9f90911261902q1f7df666nc0b303e89d88d643@mail.gmail.com>
-Subject: Re: PATCH: softlockup: Fix hung_task_check_count sysctl
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Anton Blanchard <anton@samba.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, msb@google.com
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <4B0F3963.8040701@wilsonet.com>
+References: <200910200956.33391.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	 <20091123173726.GE17813@core.coreip.homeip.net>
+	 <4B0B6321.3050001@wilsonet.com>
+	 <20091126053109.GE23244@core.coreip.homeip.net>
+	 <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
+	 <20091126232311.GD6936@core.coreip.homeip.net>
+	 <4B0F3963.8040701@wilsonet.com>
+Date: Thu, 26 Nov 2009 22:08:29 -0500
+Message-ID: <9e4733910911261908l122263c3x68854e8a00334eae@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Jarod Wilson <jarod@wilsonet.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 10:55 AM, Frederic Weisbecker
-<fweisbec@gmail.com> wrote:
-> On Fri, Nov 27, 2009 at 10:46:53AM +0800, AmÃ©rico Wang wrote:
->> On Fri, Nov 27, 2009 at 10:28 AM, Anton Blanchard <anton@samba.org> wrote:
->> >
->> > I'm seeing spikes of up to 0.5ms in khungtaskd on a large machine. To reduce
->> > this source of jitter I tried setting hung_task_check_count to 0:
->> >
->> > # echo 0 > /proc/sys/kernel/hung_task_check_count
->> >
->> > which didn't have the intended response. Change to a post increment of
->> > max_count, so a value of 0 means check 0 tasks.
->> >
->> > Signed-off-by: Anton Blanchard <anton@samba.org>
->>
->>
->> Ack.
->>
->> I would also suggest to make 'max_count' as unsigned long,
->> since sysctl_hung_task_check_count is.
->>
->> Thanks.
+On Thu, Nov 26, 2009 at 9:28 PM, Jarod Wilson <jarod@wilsonet.com> wrote:
+>> No, at present we expect 1:1 button->event mapping leaving macro
+>> expansion (i.e. KEY_PROG1 ->  "do some multi-step sequence" to
+>> userspace).
 >
->
-> Also, the batch_count thing should be dropped I think.
-> This is a hardcoded, not overridable pause after 1024
-> threads checks to avoid latencies caused by rcu_read_lock.
-> But now we have PREEMPT_RCU so people can enable it if
-> they care about latency. We should remove it as it adds
-> unnecessary complexity.
+> Hm. So ctrl-x, alt-tab, etc. would have to be faked in userspace somehow.
+> Bummer.
 
-This sounds OK for me.
+That is scripting. Scripting always needs to be done in user space.
 
->
-> I'm preparing a patch for that, on top of Anton patch.
->
+In the code I posted there is one evdev device for each configured
+remote. Mapped single keycodes are presented on these devices for each
+IR burst. There is no device for the IR receiver.  A LIRC type process
+could watch these devices and then execute scripts based on the
+keycodes reported.
 
-Great!
+The configfs model is very flexible. You could make a "remote" that
+translates the UP/DOWN buttons of several different remotes into
+KEY_UP/DOWN.  That lets several different remotes control the same
+app.
 
-Thanks.
+Sure it is clunky to play with IR hex codes and keycodes in the
+configfs mapping dir. If you don't like it write a GUI app for
+manipulating the codes. GUI would then generate a script for udev to
+run which builds the configfs entries.
+
+Maybe I should rename those directory entries to "app" instead of
+"remote". They contain the mappings from IR hex codes to keycodes that
+an app is interested in. Usually there is a 1:1 correspondence between
+remote and app but there doesn't have to be.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
