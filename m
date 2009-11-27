@@ -1,85 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbZK0QFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbZK0QIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752340AbZK0QFk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 11:05:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZK0QFk
+	id S1752280AbZK0QIz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 11:08:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZK0QIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 11:05:40 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:32856 "EHLO gir.skynet.ie"
+	Fri, 27 Nov 2009 11:08:54 -0500
+Received: from kroah.org ([198.145.64.141]:52699 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751858AbZK0QFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 11:05:39 -0500
-Date: Fri, 27 Nov 2009 16:05:37 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       efault@gmx.de
-Subject: Re: [RFC,PATCH] cfq-iosched: improve async queue ramp up formula
-Message-ID: <20091127160537.GN13095@csn.ul.ie>
-References: <200911261710.40719.czoccolo@gmail.com> <20091127082316.GY8742@kernel.dk> <4e5e476b0911270103u61ed5a95t3997e28ae79bac82@mail.gmail.com> <20091127114847.GZ8742@kernel.dk>
+	id S1751162AbZK0QIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 11:08:54 -0500
+Date: Fri, 27 Nov 2009 08:06:43 -0800
+From: Greg KH <greg@kroah.com>
+To: Wei Chen <acee06.weichen@gmail.com>
+Cc: chris@wirex.com, ssmalley@nai.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Why the kernel remove some LSM related functions?
+Message-ID: <20091127160643.GA12345@kroah.com>
+References: <C5B8AF15-0D1A-4A72-AFF6-684405331FCD@osss.cs.tsukuba.ac.jp> <9C0E1031-67FD-4C14-A199-F4A878277438@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091127114847.GZ8742@kernel.dk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <9C0E1031-67FD-4C14-A199-F4A878277438@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 12:48:47PM +0100, Jens Axboe wrote:
-> On Fri, Nov 27 2009, Corrado Zoccolo wrote:
-> > Hi Jens,
-> > let me explain why my improved formula should work better.
-> > 
-> > The original problem was that, even if an async queue had a slice of 40ms,
-> > it could take much more to complete since it could have up to 31
-> > requests dispatched at the moment of expiry.
-> > In total, it could take up to 40 + 16 * 8 = 168 ms (worst case) to
-> > complete all dispatched requests, if they were seeky (I'm taking 8ms
-> > average service time of a seeky request).
-> > 
-> > With your patch, within the first 200ms from last sync, the max depth
-> > will be 1, so a slice will take at most 48ms.
-> > My patch still ensures that a slice will take at most 48ms within the
-> > first 200ms from last sync, but lifts the restriction that depth will
-> > be 1 at all time.
-> > In fact, after the first 100ms, a new async slice will start allowing
-> > 5 requests (async_slice/slice_idle). Then, whenever a request
-> > completes, we compute remaining_slice / slice_idle, and compare this
-> > with the number of dispatched requests. If it is greater, it means we
-> > were lucky, and the requests were sequential, so we can allow more
-> > requests to be dispatched. The number of requests dispatched will
-> > decrease when reaching the end of the slice, and at the end we will
-> > allow only depth 1.
-> > For next 100ms, you will allow just depth 2, and my patch will allow
-> > depth 2 at the end of the slice (but larger at the beginning), and so
-> > on.
-> > 
-> > I think the numbers by Mel show that this idea can give better and
-> > more stable timings, and they were just with a single NCQ rotational
-> > disk. I wonder how much improvement we can get on a raid, where
-> > keeping the depth at 1 hits performance really hard.
-> > Probably, waiting until memory reclaiming is noticeably active (since
-> > in CFQ we will be sampling) may be too late.
+On Fri, Nov 27, 2009 at 09:03:17PM +0900, Wei Chen wrote:
+> Recent kernel of linux has removed the exported symbol of
+> register_security() for Linux Security Module; so when I want to
+> develop my own security module on 2.6.28, I have to modify the kernel
+> to export the symbol and recompile the kernel source. 
 > 
-> I'm not saying it's a no-go, just that it invalidates the low latency
-> testing done through the 2.6.32 cycle and we should re-run those tests
-> before committing and submitting anything.
+> Besides, the kernel has completely removed the functions of
+> mod_reg_security() and mod_unreg_security(), which makes me unable to
+> stack the security module. The only approach is to disable the active
+> security module like SELinux and register mine.
 > 
+> Here, I want to know why the kernel did so. 
 
-Any chance there is a description of the tests that were used to
-evaulate low_latency around?
+Please read the archives and the patch changelog of the comments for
+these changes, that detail why it was done.
 
-> If the 'check for reclaim' hack isn't good enough, then that's probably
-> what we have to do.
-> 
+thanks,
 
-It isn't good enough. I'll try variations of the same idea but the
-initial tests were not promising at all.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+greg k-h
