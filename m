@@ -1,167 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbZK0Opz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbZK0OyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbZK0Opz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 09:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZK0Opy
+	id S1753362AbZK0OyX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 09:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbZK0OyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 09:45:54 -0500
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:39529 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbZK0Opv (ORCPT
+	Fri, 27 Nov 2009 09:54:22 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:13874 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751287AbZK0OyV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 09:45:51 -0500
-From: ehrhardt@linux.vnet.ibm.com
-To: peterz@infradead.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-Cc: ehrhardt@linux.vnet.ibm.com, Holger.Wolf@de.ibm.com, epasch@de.ibm.com,
-       schwidefsky@de.ibm.com
-Subject: [PATCH 3/3] sched: update normalized values on user updates via proc
-Date: Fri, 27 Nov 2009 15:45:55 +0100
-Message-Id: <1259333155-14475-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1259333155-14475-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-References: <1259333155-14475-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	Fri, 27 Nov 2009 09:54:21 -0500
+Date: Fri, 27 Nov 2009 17:54:26 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Madhusudhan Chikkature <madhu.cr@ti.com>,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+ charger
+Message-ID: <20091127145426.GA6135@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+On Fri, Nov 27, 2009 at 04:44:20PM +0200, Grazvydas Ignotas wrote:
+> TWL4030/TPS65950 is a multi-function device with integrated charger,
+> which allows charging from AC or USB. This driver enables the
+> charger and provides several monitoring functions.
+> 
+> Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+> ---
 
-This patch updates the internally used scheduler tuning values that are
-normalized to one cpu in case a user sets new values via sysfs.
+Thanks for the patch.
 
-Together with patch 2 of this series this allows to let user configured
-values scale (or not) to cpu add/remove events taking place later.
+[...]
+> +/*
+> + * Attend to TWL4030 CHG_PRES (AC charger presence) events
+> + */
+> +static irqreturn_t twl4030_charger_interrupt(int irq, void *_di)
+> +{
+> +	struct twl4030_bci_device_info *di = _di;
+> +
+> +#ifdef CONFIG_LOCKDEP
+> +	/* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
+> +	 * we don't want and can't tolerate.  Although it might be
+> +	 * friendlier not to borrow this thread context...
+> +	 */
+> +	local_irq_enable();
+> +#endif
 
-Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
----
+Can you explain why the driver can't tolerate disabled irqs?
+Calling schedule_delayed_work() from an irq context should be OK.
 
-[diffstat]
- sched.c      |   12 +++++++++---
- sched_fair.c |   11 ++++++++++-
- sysctl.c     |   12 ++++++++----
- 3 files changed, 27 insertions(+), 8 deletions(-)
+> +	schedule_delayed_work(&di->bat_work, msecs_to_jiffies(BCI_DELAY));
+> +
+> +	return IRQ_HANDLED;
+> +}
 
-[diff]
-Index: linux-2.6-git-schedrecalc/kernel/sched.c
-===================================================================
---- linux-2.6-git-schedrecalc.orig/kernel/sched.c
-+++ linux-2.6-git-schedrecalc/kernel/sched.c
-@@ -1812,6 +1812,7 @@ static void cfs_rq_set_shares(struct cfs
- 
- static void calc_load_account_active(struct rq *this_rq);
- static void update_sysctl(void);
-+static int get_update_sysctl_factor(void);
- 
- #include "sched_stats.h"
- #include "sched_idletask.c"
-@@ -7005,11 +7006,9 @@ cpumask_var_t nohz_cpu_mask;
-  *
-  * This idea comes from the SD scheduler of Con Kolivas:
-  */
--static void update_sysctl(void)
-+static int get_update_sysctl_factor(void)
- {
- 	unsigned int cpus = max(num_online_cpus(), 8U);
--	unsigned int factor = 1 + ilog2(cpus);
--
- 	unsigned int factor;
- 
- 	switch (sysctl_sched_tunable_scaling) {
-@@ -7025,6 +7024,13 @@ static void update_sysctl(void)
- 			break;
- 	}
- 
-+	return factor;
-+}
-+
-+static void update_sysctl(void)
-+{
-+	unsigned int factor = get_update_sysctl_factor();
-+
- #define SET_SYSCTL(name) \
- 	sysctl_##name = (factor) * normalized_sysctl_##name
- 	SET_SYSCTL(sched_min_granularity);
-Index: linux-2.6-git-schedrecalc/kernel/sched_fair.c
-===================================================================
---- linux-2.6-git-schedrecalc.orig/kernel/sched_fair.c
-+++ linux-2.6-git-schedrecalc/kernel/sched_fair.c
-@@ -398,11 +398,12 @@ static struct sched_entity *__pick_last_
-  */
- 
- #ifdef CONFIG_SCHED_DEBUG
--int sched_nr_latency_handler(struct ctl_table *table, int write,
-+int sched_proc_update_handler(struct ctl_table *table, int write,
- 		void __user *buffer, size_t *lenp,
- 		loff_t *ppos)
- {
- 	int ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-+	int factor = get_update_sysctl_factor();
- 
- 	if (ret || !write)
- 		return ret;
-@@ -410,6 +411,14 @@ int sched_nr_latency_handler(struct ctl_
- 	sched_nr_latency = DIV_ROUND_UP(sysctl_sched_latency,
- 					sysctl_sched_min_granularity);
- 
-+#define WRT_SYSCTL(name) \
-+	normalized_sysctl_##name = sysctl_##name / (factor)
-+	WRT_SYSCTL(sched_min_granularity);
-+	WRT_SYSCTL(sched_latency);
-+	WRT_SYSCTL(sched_wakeup_granularity);
-+	WRT_SYSCTL(sched_shares_ratelimit);
-+#undef WRT_SYSCTL
-+
- 	return 0;
- }
- #endif
-Index: linux-2.6-git-schedrecalc/kernel/sysctl.c
-===================================================================
---- linux-2.6-git-schedrecalc.orig/kernel/sysctl.c
-+++ linux-2.6-git-schedrecalc/kernel/sysctl.c
-@@ -250,6 +250,8 @@ static int min_wakeup_granularity_ns;
- static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
- static int min_sched_tunable_scaling = SCHED_TUNABLESCALING_NONE;
- static int max_sched_tunable_scaling = SCHED_TUNABLESCALING_END-1;
-+static int min_sched_shares_ratelimit = 100000; /* 100 usec */
-+static int max_sched_shares_ratelimit = NSEC_PER_SEC; /* 1 second */
- #endif
- 
- static struct ctl_table kern_table[] = {
-@@ -268,7 +270,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_min_granularity,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &sched_nr_latency_handler,
-+		.proc_handler	= &sched_proc_update_handler,
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &min_sched_granularity_ns,
- 		.extra2		= &max_sched_granularity_ns,
-@@ -279,7 +281,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_latency,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &sched_nr_latency_handler,
-+		.proc_handler	= &sched_proc_update_handler,
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &min_sched_granularity_ns,
- 		.extra2		= &max_sched_granularity_ns,
-@@ -290,7 +292,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_wakeup_granularity,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
-+		.proc_handler	= &sched_proc_update_handler,
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &min_wakeup_granularity_ns,
- 		.extra2		= &max_wakeup_granularity_ns,
-@@ -301,7 +303,9 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_shares_ratelimit,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
-+		.proc_handler	= &sched_proc_update_handler,
-+		.extra1		= &min_sched_shares_ratelimit,
-+		.extra2		= &max_sched_shares_ratelimit,
- 	},
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
