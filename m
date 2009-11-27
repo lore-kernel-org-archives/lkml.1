@@ -1,109 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbZK0N4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbZK0N4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbZK0N4J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 08:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZK0N4G
+	id S1753429AbZK0N4E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 08:56:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZK0N4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 08:56:06 -0500
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:35942 "EHLO
-	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753156AbZK0Nz7 (ORCPT
+	Fri, 27 Nov 2009 08:56:02 -0500
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:52763
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752794AbZK0Nz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 08:55:59 -0500
-X-SpamScore: 1
-X-BigFish: VPS1(zzzz1202hzzz32i6bh61h)
+	Fri, 27 Nov 2009 08:55:56 -0500
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i27bh6bh43j61h)
 X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KTRTD9-01-6S2-02
+X-WSS-ID: 0KTRTD3-02-34P-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 16/34] x86/amd-iommu: Make alloc_new_range aware of multiple IOMMUs
-Date: Fri, 27 Nov 2009 14:55:27 +0100
-Message-ID: <1259330145-14865-17-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 17/34] x86/amd-iommu: Remove iommu parameter from __(un)map_single
+Date: Fri, 27 Nov 2009 14:55:28 +0100
+Message-ID: <1259330145-14865-18-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <1259330145-14865-1-git-send-email-joerg.roedel@amd.com>
 References: <1259330145-14865-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 27 Nov 2009 13:55:48.0295 (UTC) FILETIME=[52AF4D70:01CA6F69]
+X-OriginalArrivalTime: 27 Nov 2009 13:55:48.0217 (UTC) FILETIME=[52A36690:01CA6F69]
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+X-Bypass-Agent: IPF-1;
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the assumption that an dma_ops domain is only bound to
-one IOMMU was given up we need to make alloc_new_range aware
-of it.
+With the prior changes this parameter is not longer
+required. This patch removes it from the function and all
+callers.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kernel/amd_iommu.c |   27 +++++++++++++++------------
- 1 files changed, 15 insertions(+), 12 deletions(-)
+ arch/x86/kernel/amd_iommu.c |   18 ++++++++----------
+ 1 files changed, 8 insertions(+), 10 deletions(-)
 
 diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index da3f9d8..687f617 100644
+index 687f617..c04dcb7 100644
 --- a/arch/x86/kernel/amd_iommu.c
 +++ b/arch/x86/kernel/amd_iommu.c
-@@ -788,11 +788,11 @@ static u64 *fetch_pte(struct protection_domain *domain,
-  * aperture in case of dma_ops domain allocation or address allocation
-  * failure.
+@@ -1653,7 +1653,6 @@ static void dma_ops_domain_unmap(struct dma_ops_domain *dom,
+  * Must be called with the domain lock held.
   */
--static int alloc_new_range(struct amd_iommu *iommu,
+ static dma_addr_t __map_single(struct device *dev,
+-			       struct amd_iommu *iommu,
+ 			       struct dma_ops_domain *dma_dom,
+ 			       phys_addr_t paddr,
+ 			       size_t size,
+@@ -1737,8 +1736,7 @@ out_unmap:
+  * Does the reverse of the __map_single function. Must be called with
+  * the domain lock held too
+  */
+-static void __unmap_single(struct amd_iommu *iommu,
 -			   struct dma_ops_domain *dma_dom,
-+static int alloc_new_range(struct dma_ops_domain *dma_dom,
- 			   bool populate, gfp_t gfp)
- {
- 	int index = dma_dom->aperture_size >> APERTURE_RANGE_SHIFT;
-+	struct amd_iommu *iommu;
- 	int i;
++static void __unmap_single(struct dma_ops_domain *dma_dom,
+ 			   dma_addr_t dma_addr,
+ 			   size_t size,
+ 			   int dir)
+@@ -1797,7 +1795,7 @@ static dma_addr_t map_page(struct device *dev, struct page *page,
+ 		return DMA_ERROR_CODE;
  
- #ifdef CONFIG_IOMMU_STRESS
-@@ -832,14 +832,17 @@ static int alloc_new_range(struct amd_iommu *iommu,
- 	dma_dom->aperture_size += APERTURE_RANGE_SIZE;
+ 	spin_lock_irqsave(&domain->lock, flags);
+-	addr = __map_single(dev, iommu, domain->priv, paddr, size, dir, false,
++	addr = __map_single(dev, domain->priv, paddr, size, dir, false,
+ 			    dma_mask);
+ 	if (addr == DMA_ERROR_CODE)
+ 		goto out;
+@@ -1832,7 +1830,7 @@ static void unmap_page(struct device *dev, dma_addr_t dma_addr, size_t size,
  
- 	/* Intialize the exclusion range if necessary */
--	if (iommu->exclusion_start &&
--	    iommu->exclusion_start >= dma_dom->aperture[index]->offset &&
--	    iommu->exclusion_start < dma_dom->aperture_size) {
--		unsigned long startpage = iommu->exclusion_start >> PAGE_SHIFT;
--		int pages = iommu_num_pages(iommu->exclusion_start,
--					    iommu->exclusion_length,
--					    PAGE_SIZE);
--		dma_ops_reserve_addresses(dma_dom, startpage, pages);
-+	for_each_iommu(iommu) {
-+		if (iommu->exclusion_start &&
-+		    iommu->exclusion_start >= dma_dom->aperture[index]->offset
-+		    && iommu->exclusion_start < dma_dom->aperture_size) {
-+			unsigned long startpage;
-+			int pages = iommu_num_pages(iommu->exclusion_start,
-+						    iommu->exclusion_length,
-+						    PAGE_SIZE);
-+			startpage = iommu->exclusion_start >> PAGE_SHIFT;
-+			dma_ops_reserve_addresses(dma_dom, startpage, pages);
-+		}
+ 	spin_lock_irqsave(&domain->lock, flags);
+ 
+-	__unmap_single(iommu, domain->priv, dma_addr, size, dir);
++	__unmap_single(domain->priv, dma_addr, size, dir);
+ 
+ 	iommu_flush_complete(domain);
+ 
+@@ -1890,7 +1888,7 @@ static int map_sg(struct device *dev, struct scatterlist *sglist,
+ 	for_each_sg(sglist, s, nelems, i) {
+ 		paddr = sg_phys(s);
+ 
+-		s->dma_address = __map_single(dev, iommu, domain->priv,
++		s->dma_address = __map_single(dev, domain->priv,
+ 					      paddr, s->length, dir, false,
+ 					      dma_mask);
+ 
+@@ -1910,7 +1908,7 @@ out:
+ unmap:
+ 	for_each_sg(sglist, s, mapped_elems, i) {
+ 		if (s->dma_address)
+-			__unmap_single(iommu, domain->priv, s->dma_address,
++			__unmap_single(domain->priv, s->dma_address,
+ 				       s->dma_length, dir);
+ 		s->dma_address = s->dma_length = 0;
  	}
+@@ -1946,7 +1944,7 @@ static void unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 	spin_lock_irqsave(&domain->lock, flags);
  
- 	/*
-@@ -1143,7 +1146,7 @@ static struct dma_ops_domain *dma_ops_domain_alloc(struct amd_iommu *iommu)
+ 	for_each_sg(sglist, s, nelems, i) {
+-		__unmap_single(iommu, domain->priv, s->dma_address,
++		__unmap_single(domain->priv, s->dma_address,
+ 			       s->dma_length, dir);
+ 		s->dma_address = s->dma_length = 0;
+ 	}
+@@ -1996,7 +1994,7 @@ static void *alloc_coherent(struct device *dev, size_t size,
  
- 	add_domain_to_list(&dma_dom->domain);
+ 	spin_lock_irqsave(&domain->lock, flags);
  
--	if (alloc_new_range(iommu, dma_dom, true, GFP_KERNEL))
-+	if (alloc_new_range(dma_dom, true, GFP_KERNEL))
- 		goto free_dma_dom;
+-	*dma_addr = __map_single(dev, iommu, domain->priv, paddr,
++	*dma_addr = __map_single(dev, domain->priv, paddr,
+ 				 size, DMA_BIDIRECTIONAL, true, dma_mask);
  
- 	/*
-@@ -1686,7 +1689,7 @@ retry:
- 		 */
- 		dma_dom->next_address = dma_dom->aperture_size;
+ 	if (*dma_addr == DMA_ERROR_CODE) {
+@@ -2038,7 +2036,7 @@ static void free_coherent(struct device *dev, size_t size,
  
--		if (alloc_new_range(iommu, dma_dom, false, GFP_ATOMIC))
-+		if (alloc_new_range(dma_dom, false, GFP_ATOMIC))
- 			goto out;
+ 	spin_lock_irqsave(&domain->lock, flags);
  
- 		/*
+-	__unmap_single(iommu, domain->priv, dma_addr, size, DMA_BIDIRECTIONAL);
++	__unmap_single(domain->priv, dma_addr, size, DMA_BIDIRECTIONAL);
+ 
+ 	iommu_flush_complete(domain);
+ 
 -- 
 1.6.5.3
 
