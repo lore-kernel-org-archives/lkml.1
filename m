@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbZK0IHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbZK0IHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751814AbZK0IHI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 03:07:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZK0IHI
+	id S1751937AbZK0IHs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 03:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZK0IHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 03:07:08 -0500
-Received: from sh.osrg.net ([192.16.179.4]:38590 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751358AbZK0IHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 03:07:07 -0500
-Date: Fri, 27 Nov 2009 17:06:21 +0900
-To: yinghai@kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B0F839D.5050104@kernel.org>
-References: <4B0DB0B7.9040004@kernel.org>
-	<20091127162918G.fujita.tomonori@lab.ntt.co.jp>
-	<4B0F839D.5050104@kernel.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091127170347O.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 27 Nov 2009 17:06:22 +0900 (JST)
+	Fri, 27 Nov 2009 03:07:47 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:34931 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751716AbZK0IHr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 03:07:47 -0500
+Message-ID: <4B0F88C4.9010206@gmail.com>
+Date: Fri, 27 Nov 2009 09:07:32 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz
+Subject: Re: [patch] spitz: better voltage-to-percentage conversion
+References: <20091127073119.GB1405@ucw.cz>
+In-Reply-To: <20091127073119.GB1405@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 27 Nov 2009 09:07:33 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Nov 2009 23:45:33 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+Pavel Machek a écrit :
+> Old code has two huge tables... unfortunately those tables are simple
+> linear relationships and wrong: li-ions do not behave like that.
+> 
+> Convert physical values to mV,mA,mOhm, add computation that makes
+> sense for physical point of view, and provide tables based on
+> measurements.
+> 
+> To get even better results, we should provide better battery_current
+> estimate (taking backlight into account), and adjust adjust
+> battery_resistance according to its age and temperature. 
+> 
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> 
+> 
+> --- a/arch/arm/mach-pxa/corgi_pm.c	2009-11-23 20:48:26.000000000 +0100
 
-> >> when AMD64 mem > 4g, no AGP, BIOS set all gart iommu on all nodes size to 32M, and enable bit are set.
-> > 
-> > I have such machine (with sane BIOS).
-> > 
-> > But if BIOS is broken, early_gart_iommu_check() disables GART_EN bit
-> > (bits 0)?
-> 
-> not for 32M small size.
-> 
-> that function only clear that bit when different nodes have different setting.
-> 
-> > 
-> >> 1. iommu=soft, will go through POINT A and POINT B
-> > 
-> > Not always. if aperture_valid() is true, it doesn't go POINT A. My
-> > GART machine doesn't go.
-> 
-> maybe your bios set GART iommu set to 64M?
+> +typedef int miliamp_t;
+> +typedef int miliohm_t;
+> +typedef int milivolt_t;
 
-Yeah, my machine has sane BIOS.
+milliamp, milliohm, millivolt ?
 
-
-> >> 2. no "iommu=soft", will go through POINT A and POINT C
-> > 
-> > As I said, it's not true about POINT A.
-> 
-> maybe your bios set GART iommu set to 64M?
-> 
-> > 
-> > 
-> >> and all will reach POINT X to make sure ENABLE bit is not set.
-> > 
-> > POINT X doesn't look make sure ENABLE bit is not set. It just fixes up
-> > (sets) the address and its size.
-> 
->                         write_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL, aper_order << 1);
-> 
-> that bit is that bit 0 of AMD64_GARTAPERTURECTL reg.
-
-Oops, thanks.
-
-But as I wrote in the previous mail, can you tell me why we need this?
-With 2.6.31 my machine uses swiotlb with GART_EN bit enabled.
-
-My another question is that why can't early_gart_iommu_check()
-_always_ disable GART_EN bit?
