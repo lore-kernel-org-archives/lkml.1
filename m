@@ -1,329 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZK0HTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbZK0HWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411AbZK0HTQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 02:19:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbZK0HTP
+	id S1752446AbZK0HWL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 02:22:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbZK0HWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 02:19:15 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36879 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750729AbZK0HTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 02:19:14 -0500
-Date: Fri, 27 Nov 2009 18:19:15 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for November 27
-Message-Id: <20091127181915.a6af7ba3.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__27_Nov_2009_18_19_15_+1100_=TeW=+uqGhFX.1c2"
+	Fri, 27 Nov 2009 02:22:09 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57048 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbZK0HWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 02:22:08 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B0F7E21.3020703@s5r6.in-berlin.de>
+Date: Fri, 27 Nov 2009 08:22:09 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: Jarod Wilson <jarod@wilsonet.com>
+CC: Jon Smirl <jonsmirl@gmail.com>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: [IR-RFC PATCH v4 0/6] In-kernel IR support using evdev
+References: <20091127013217.7671.32355.stgit@terra> <4B0F43B3.4090804@wilsonet.com>
+In-Reply-To: <4B0F43B3.4090804@wilsonet.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__27_Nov_2009_18_19_15_+1100_=TeW=+uqGhFX.1c2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Jarod Wilson wrote:
+> On 11/26/2009 08:34 PM, Jon Smirl wrote:
+>> Raw mode. There are three sysfs attributes - ir_raw, ir_carrier,
+>> ir_xmitter. Read from ir_raw to get the raw timing data from the IR
+>> device. Set carrier and active xmitters and then copy raw data to
+>> ir_raw to send. These attributes may be better on a debug switch. You
+>> would use raw mode when decoding a new protocol. After you figure out
+>> the new protocol, write an in-kernel encoder/decoder for it.
+> 
+> Also neglected to recall there was raw IR data access too. However, a
+> few things... One, this is, in some sense, cheating, as its not an input
+> layer interface being used. :) Granted though, it *is* an existing
+> kernel interface being used, instead of adding a new one. Two, there's
+> no userspace to do anything with it at this time.
 
-Hi all,
+No; it is a new interface, just using an existing mechanism (sysfs). Not
+all of sysfs in itself is an interface really; rather there is a number
+of interfaces which are implemented by means of sysfs.
 
-Changes since 20091126:
-
-New tree:	logfs
-
-Changed tree:	kbuild has a new maintainer
-
-Removed tree:	kbuild-current (pending the new maintainer's input)
-
-The sparc tree still has a build failure for which I reverted a commit.
-
-The rr tree gained a conflict against the kbuild tree.
-
-The osd tree gained a conflict against the scsi tree.
-
-The workqueues tree lost its build failure.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 154 trees (counting Linus' and 21 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
-pu.h
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-CONFLICT (content): Merge conflict in arch/m68k/include/asm/ptrace.h
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in arch/mips/Kconfig
-CONFLICT (content): Merge conflict in arch/mips/Makefile
-CONFLICT (content): Merge conflict in arch/mips/include/asm/ftrace.h
-CONFLICT (add/add): Merge conflict in arch/mips/kernel/ftrace.c
-CONFLICT (add/add): Merge conflict in arch/mips/kernel/mcount.S
-CONFLICT (content): Merge conflict in drivers/net/au1000_eth.c
-CONFLICT (content): Merge conflict in scripts/recordmcount.pl
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-CONFLICT (content): Merge conflict in fs/cifs/dir.c
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in drivers/media/common/tuners/tda18271-=
-fe.c
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/pci/hotplug/acpiphp_glue.c
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/ieee802154/fakehard.c
-CONFLICT (content): Merge conflict in drivers/net/e1000e/ich8lan.c
-CONFLICT (content): Merge conflict in drivers/net/e1000e/phy.c
-CONFLICT (content): Merge conflict in drivers/net/netxen/netxen_nic_init.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/ath/ath9k/main.c
-CONFLICT (delete/modify): net/wireless/wext.c deleted in net/master and mod=
-ified in HEAD. Version HEAD of net/wireless/wext.c left in tree.
-$ git rm net/wireless/wext.c
-Applying: wext: merg fixup
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Applying: ASoC: tlv320dac33: Change RT wq to singlethread wq
-Merging cpufreq/next
-CONFLICT (content): Merge conflict in include/acpi/processor.h
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/arm/kernel/vmlinux.lds.S
-CONFLICT (content): Merge conflict in scripts/mod/modpost.c
-Applying: modpost: autoconf.h has moved to include/generated
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/ray_cs.c
-CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-CONFLICT (content): Merge conflict in drivers/platform/x86/thinkpad_acpi.c
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
-CONFLICT (content): Merge conflict in drivers/mfd/Makefile
-Merging security-testing/next
-CONFLICT (content): Merge conflict in Documentation/dontdiff
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-CONFLICT (content): Merge conflict in drivers/scsi/osd/osd_uld.c
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-CONFLICT (content): Merge conflict in fs/afs/write.c
-CONFLICT (content): Merge conflict in fs/cifs/dir.c
-CONFLICT (content): Merge conflict in fs/ubifs/file.c
-CONFLICT (content): Merge conflict in include/asm-generic/fcntl.h
-CONFLICT (content): Merge conflict in net/socket.c
-Merging irda/for-next
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Applying: i7core_edac: do not export static functions
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-Merging omap_dss2/for-next
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
-CONFLICT (content): Merge conflict in kernel/irq/chip.c
-CONFLICT (content): Merge conflict in scripts/recordmcount.pl
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/powerpc/platforms/pseries/hvCall=
-.S
-CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
-CONFLICT (content): Merge conflict in kernel/softlockup.c
-Applying: percpu: merge fixup for variable renaming
-Merging workqueues/for-next
-CONFLICT (content): Merge conflict in init/Kconfig
-CONFLICT (content): Merge conflict in kernel/sched.c
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-CONFLICT (content): Merge conflict in net/ipv6/addrconf.c
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-CONFLICT (content): Merge conflict in arch/arm/plat-mxc/Makefile
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_lab=
-pc_cs.c
-CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_mio=
-_cs.c
-Merging scsi-post-merge/master
-[master fb3932c] Revert "sparc: Make atomic locks raw"
-
---Signature=_Fri__27_Nov_2009_18_19_15_+1100_=TeW=+uqGhFX.1c2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksPfXMACgkQjjKRsyhoI8zb6wCglYxUdDwjOA0+tHQLtwrpQD7b
-pW0AniIsK3fDcDoBkqSiSMWqDUjvp92T
-=dm3a
------END PGP SIGNATURE-----
-
---Signature=_Fri__27_Nov_2009_18_19_15_+1100_=TeW=+uqGhFX.1c2--
+sysfs is primarily meant for simple textual attributes though, not for
+I/O streams.
+-- 
+Stefan Richter
+-=====-==--= =-== ==-==
+http://arcgraph.de/sr/
