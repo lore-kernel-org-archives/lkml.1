@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZK0Be4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZK0Bfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbZK0Be4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 20:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZK0Bey
+	id S1753487AbZK0Bfj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 20:35:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZK0Be4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 20:34:54 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:59852 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbZK0BeY (ORCPT
+	Thu, 26 Nov 2009 20:34:56 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:61976 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbZK0BeZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 20:34:24 -0500
+	Thu, 26 Nov 2009 20:34:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:to:from:date:message-id:in-reply-to:references:user-agent
          :mime-version:content-type:content-transfer-encoding;
-        b=UAWd1bd5D1Ay/VMg/HKe8xfZWGdqz+TjQDxiUS7QdrMmXkqRckrF+9WpqtRyJMDRGc
-         d25fdNKtvzoPqbNQ5Z4hUBQx9HKr6+qrdpNuYXzmgj+rTuE1KVDI3Iz+iNcindBzGLNX
-         OHmvlLfC2YZqV7VSc1sXttPBf9QNWtdfmomzk=
-Subject: [IR-RFC PATCH v4 4/6] GPT driver for in-kernel IR support.
+        b=Qm2XY65X/Rqhp1g/ZRv3UndiG63aCCpSrjjZfWQIJu6HzZm0MverRm5Ee+q71umvvB
+         Knf5ySEtjLntCxICw08EmWDuyyPDGxAoqYXJsvJyz2/aC3vCzMlWdZwl/rS1s0Q6Xm37
+         Edub9jhXob/I4t6kgmKfnJ+nwHmAlJlRQliNw=
+Subject: [IR-RFC PATCH v4 5/6] Example of PowerPC device tree support for GPT
+	based IR
 To: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-input@vger.kernel.org
 From: Jon Smirl <jonsmirl@gmail.com>
-Date: Thu, 26 Nov 2009 20:34:27 -0500
-Message-ID: <20091127013427.7671.52935.stgit@terra>
+Date: Thu, 26 Nov 2009 20:34:29 -0500
+Message-ID: <20091127013429.7671.65302.stgit@terra>
 In-Reply-To: <20091127013217.7671.32355.stgit@terra>
 References: <20091127013217.7671.32355.stgit@terra>
 User-Agent: StGit/0.15
@@ -33,229 +34,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GPT is a GPIO pin that is cable able of measuring the lenght of pulses.
-GPTs are common on embedded systems
----
- drivers/input/ir/Kconfig  |    6 +
- drivers/input/ir/Makefile |    3 +
- drivers/input/ir/ir-gpt.c |  184 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 193 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/ir/ir-gpt.c
 
-diff --git a/drivers/input/ir/Kconfig b/drivers/input/ir/Kconfig
-index a6f3f25..172c0c6 100644
---- a/drivers/input/ir/Kconfig
-+++ b/drivers/input/ir/Kconfig
-@@ -12,4 +12,10 @@ menuconfig INPUT_IR
+---
+ arch/powerpc/boot/dts/dspeak01.dts |   19 ++++++++-----------
+ 1 files changed, 8 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/dspeak01.dts b/arch/powerpc/boot/dts/dspeak01.dts
+index 429bb2f..50cc247 100644
+--- a/arch/powerpc/boot/dts/dspeak01.dts
++++ b/arch/powerpc/boot/dts/dspeak01.dts
+@@ -131,16 +131,6 @@
+ 			#gpio-cells = <2>;
+ 		};
  
- if INPUT_IR
+-		gpt7: timer@670 { /* General Purpose Timer in GPIO mode */
+-			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
+-			cell-index = <7>;
+-			reg = <0x670 0x10>;
+-			interrupts = <0x1 0x10 0x0>;
+-			interrupt-parent = <&mpc5200_pic>;
+-			gpio-controller;
+-			#gpio-cells = <2>;
+-		};
+-
+ 		rtc@800 {	// Real time clock
+ 			compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
+ 			device_type = "rtc";
+@@ -320,6 +310,14 @@
+ 			reg = <0x8000 0x4000>;
+ 		};
  
-+config IR_GPT
-+	tristate "GPT Based IR Receiver"
-+	default m
-+	help
-+	  Driver for GPT-based IR receiver found on Digispeaker
++		ir0@670 { /* General Purpose Timer 6 in Input mode */
++			compatible = "gpt-ir";
++			cell-index = <7>;
++			reg = <0x670 0x10>;
++			interrupts = <0x1 0x10 0x0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
 +
- endif
-diff --git a/drivers/input/ir/Makefile b/drivers/input/ir/Makefile
-index 2ccdda3..ab0da3f 100644
---- a/drivers/input/ir/Makefile
-+++ b/drivers/input/ir/Makefile
-@@ -6,3 +6,6 @@
- obj-$(CONFIG_INPUT_IR)		+= ir.o
- ir-objs := ir-core.o ir-configfs.o
- 
-+
-+obj-$(CONFIG_IR_GPT)		+= ir-gpt.o
-+
-diff --git a/drivers/input/ir/ir-gpt.c b/drivers/input/ir/ir-gpt.c
-new file mode 100644
-index 0000000..41d2fa6
---- /dev/null
-+++ b/drivers/input/ir/ir-gpt.c
-@@ -0,0 +1,184 @@
-+/*
-+ * GPT timer based IR device
-+ *
-+ * Copyright (C) 2008 Jon Smirl <jonsmirl@gmail.com>
-+ */
-+
-+#define DEBUG
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/device.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
-+#include <linux/input.h>
-+#include <asm/io.h>
-+#include <asm/mpc52xx.h>
-+
-+struct ir_gpt {
-+	struct input_dev *input;
-+	int irq, previous;
-+	struct mpc52xx_gpt __iomem *regs;
-+};
-+
-+/*
-+ * Interrupt handlers
-+ */
-+static irqreturn_t dpeak_ir_irq(int irq, void *_ir)
-+{
-+	struct ir_gpt *ir_gpt = _ir;
-+	int sample, count, delta, bit, wrap;
-+
-+	sample = in_be32(&ir_gpt->regs->status);
-+	out_be32(&ir_gpt->regs->status, 0xF);
-+
-+	count = sample >> 16;
-+	wrap = (sample >> 12) & 7;
-+	bit = (sample >> 8) & 1;
-+
-+	delta = count - ir_gpt->previous;
-+	delta += wrap * 0x10000;
-+
-+	ir_gpt->previous = count;
-+
-+	if (bit)
-+		delta = -delta;
-+
-+	input_ir_queue(ir_gpt->input, delta);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+
-+/* ---------------------------------------------------------------------
-+ * OF platform bus binding code:
-+ * - Probe/remove operations
-+ * - OF device match table
-+ */
-+static int __devinit ir_gpt_of_probe(struct of_device *op,
-+				      const struct of_device_id *match)
-+{
-+	struct ir_gpt *ir_gpt;
-+	struct resource res;
-+	int ret, rc;
-+
-+	dev_dbg(&op->dev, "ir_gpt_of_probe\n");
-+
-+	/* Allocate and initialize the driver private data */
-+	ir_gpt = kzalloc(sizeof *ir_gpt, GFP_KERNEL);
-+	if (!ir_gpt)
-+		return -ENOMEM;
-+
-+	ir_gpt->input = input_allocate_device();
-+	if (!ir_gpt->input) {
-+		ret = -ENOMEM;
-+		goto free_mem;
-+	}
-+	ret = input_ir_create(ir_gpt->input, ir_gpt, NULL);
-+	if (ret)
-+		goto free_input;
-+
-+	ir_gpt->input->id.bustype = BUS_HOST;
-+	ir_gpt->input->name = "GPT IR Receiver";
-+
-+	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_36K);
-+	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_38K);
-+	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_40K);
-+	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_RAW);
-+
-+	ret = input_register_device(ir_gpt->input);
-+	if (ret)
-+		goto free_input;
-+	ret = input_ir_register(ir_gpt->input);
-+	if (ret)
-+		goto free_input;
-+
-+	/* Fetch the registers and IRQ of the GPT */
-+	if (of_address_to_resource(op->node, 0, &res)) {
-+		dev_err(&op->dev, "Missing reg property\n");
-+		ret = -ENODEV;
-+		goto free_input;
-+	}
-+	ir_gpt->regs = ioremap(res.start, 1 + res.end - res.start);
-+	if (!ir_gpt->regs) {
-+		dev_err(&op->dev, "Could not map registers\n");
-+		ret = -ENODEV;
-+		goto free_input;
-+	}
-+	ir_gpt->irq = irq_of_parse_and_map(op->node, 0);
-+	if (ir_gpt->irq == NO_IRQ) {
-+		ret = -ENODEV;
-+		goto free_input;
-+	}
-+	dev_dbg(&op->dev, "ir_gpt_of_probe irq=%d\n", ir_gpt->irq);
-+
-+	rc = request_irq(ir_gpt->irq, &dpeak_ir_irq, IRQF_SHARED,
-+			 "gpt-ir", ir_gpt);
-+	dev_dbg(&op->dev, "ir_gpt_of_probe request irq rc=%d\n", rc);
-+
-+	/* set prescale to ? */
-+	out_be32(&ir_gpt->regs->count, 0x00870000);
-+
-+	/* Select input capture, enable the counter, and interrupt */
-+	out_be32(&ir_gpt->regs->mode, 0x0);
-+	out_be32(&ir_gpt->regs->mode, 0x00000501);
-+
-+	/* Save what we've done so it can be found again later */
-+	dev_set_drvdata(&op->dev, ir_gpt);
-+
-+	printk("GPT IR Receiver driver\n");
-+
-+	return 0;
-+
-+free_input:
-+	input_free_device(ir_gpt->input);
-+free_mem:
-+	kfree(ir_gpt);
-+	return ret;
-+}
-+
-+static int __devexit ir_gpt_of_remove(struct of_device *op)
-+{
-+	struct ir_gpt *ir_gpt = dev_get_drvdata(&op->dev);
-+
-+	dev_dbg(&op->dev, "ir_gpt_remove()\n");
-+
-+	input_unregister_device(ir_gpt->input);
-+	kfree(ir_gpt);
-+	dev_set_drvdata(&op->dev, NULL);
-+
-+	return 0;
-+}
-+
-+/* Match table for of_platform binding */
-+static struct of_device_id ir_gpt_match[] __devinitdata = {
-+	{ .compatible = "gpt-ir", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, ir_gpt_match);
-+
-+static struct of_platform_driver ir_gpt_driver = {
-+	.match_table = ir_gpt_match,
-+	.probe = ir_gpt_of_probe,
-+	.remove = __devexit_p(ir_gpt_of_remove),
-+	.driver = {
-+		.name = "ir-gpt",
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+/* ---------------------------------------------------------------------
-+ * Module setup and teardown; simply register the of_platform driver
-+ */
-+static int __init ir_gpt_init(void)
-+{
-+	return of_register_platform_driver(&ir_gpt_driver);
-+}
-+module_init(ir_gpt_init);
-+
-+static void __exit ir_gpt_exit(void)
-+{
-+	of_unregister_platform_driver(&ir_gpt_driver);
-+}
-+module_exit(ir_gpt_exit);
+ 		/* This is only an example device to show the usage of gpios. It maps all available
+ 		 * gpios to the "gpio-provider" device.
+ 		 */
+@@ -335,7 +333,6 @@
+ 				 &gpt3		0 0 /* timer3		13d		x6-4	   */
+ 				 &gpt4		0 0 /* timer4		61c		x2-16	   */
+ 				 &gpt6		0 0 /* timer6		60c		x8-15	   */
+-				 &gpt7		0 0 /* timer7		36a		x17-9	   */
+ 				 >;
+ 		};
+ 	};
 
