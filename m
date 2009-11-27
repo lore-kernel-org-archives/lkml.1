@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbZK0ApQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751212AbZK0BD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbZK0ApQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 19:45:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZK0ApP
+	id S1751212AbZK0BD6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 20:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbZK0BD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 19:45:15 -0500
-Received: from khc.piap.pl ([195.187.100.11]:44686 "EHLO khc.piap.pl"
+	Thu, 26 Nov 2009 20:03:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56058 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751141AbZK0ApO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 19:45:14 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>
-	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
-	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
-	<4B0ED238.6060306@redhat.com>
-	<Pine.LNX.4.58.0911261450590.30284@shell2.speakeasy.net>
-Date: Fri, 27 Nov 2009 01:45:14 +0100
-In-Reply-To: <Pine.LNX.4.58.0911261450590.30284@shell2.speakeasy.net> (Trent
-	Piepho's message of "Thu, 26 Nov 2009 14:59:50 -0800 (PST)")
-Message-ID: <m3vdgwre1x.fsf@intrepid.localdomain>
+	id S1750953AbZK0BD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 20:03:56 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dave Airlie <airlied@gmail.com>
+Subject: Re: Weird suspend/resume problem on HP nx6325 w/ openSUSE 11.2 w/ -rc8
+Date: Fri, 27 Nov 2009 02:04:15 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+References: <200911220015.30912.rjw@sisk.pl> <21d7e9970911211955i69c12969n3085b6fc2c4a95f9@mail.gmail.com>
+In-Reply-To: <21d7e9970911211955i69c12969n3085b6fc2c4a95f9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911270204.15100.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trent Piepho <xyzzy@speakeasy.org> writes:
+On Sunday 22 November 2009, Dave Airlie wrote:
+> On Sun, Nov 22, 2009 at 9:15 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Hi,
+> >
+> > I'm not really sure where this should be reported, but here it goes.
+> >
+> > After installing openSUSE 11.2 on my testbed nx6325 I noticed that resume
+> > (from suspend to RAM) stopped working on it.  Apparently, it hanged while
+> > switching from the console back to X and the box remained completely
+> > unresponsive after that (it didn't even react to the magic sysrq).  However,
+> > it used to work just fine with -rc7 and openSUSE 11.1, so I figured the problem
+> > was related to the new X driver, which is radeon module version 6.12.4 (xorg
+> > server 1.6.5).
+> >
+> > So, I started to investigate and found that after a suspend from a framebuffer
+> > console, the resume had always worked.  However, when I switched from X to the
+> > framebuffer console, suspended, resumed and switched back to X, the box hanged
+> > immediately just like during resume after a suspend from under X.  [There also
+> > were some problems when switching from X to the framebuffer console and back
+> > which seemd to be independent of suspend/resume (in short, the screen stays
+> > black after a switch from the framebuffer console to X and you need to kill X
+> > to fix this).]
+> 
+> You are using radeonfb on it? or vesafb?
 
-> Then you use the protocol that fits best.  For instance decoding with one
-> protocol might produce a scancode that isn't assigned to any key, while
-> another protocol produces an assigned scancode.  Clearly then the latter is
-> most likely to be correct.
+vesafb
 
-Right.
+> first test is to try without either of those installed.
 
-> It also possible to have a space/mark length
-> that is within the allowable tolerances for one remote, but is even closer
-> another remote.  You don't want to just find *a* match, you want to find
-> the *best* match.
+That doesn't change the behavior AFAICS.
 
-That won't work, the decoders don't calculate quality. And even if they
-did, if you have two remotes generating the same e.g. RC5 code, you
-won't be able to differentiate between them. Your TV etc. won't do that
-either.
+> From memory though that machines an Xpress 200M
 
-> The in kernel code in v4l is very simple in that it is only designed to
-> work with one procotol and one remote.  Once you have multiple remotes of
-> any type things become much more complicted.
+Yes, it has this one.
 
-If you're using them at once, sure :-)
+> which is the the worst graphics card for use with open drivers and has
+> always caused no-end of pain.
 
-> Keep in mind that remotes
-> that aren't even intended to be used with the computer but are used in the
-> same room will still be received by the receiver.  It's not enough to
-> decode the signals you expect to receive, you must also not get confused by
-> random signals destined for somewhere else.
+Too bad. :-(
 
-This is usually not a problem. My experience is the decoding is very
-reliable.
--- 
-Krzysztof Halasa
+> Its also mostly undocumented when it comes to errata and workarounds.
+
+Well, so I guess this is a hardware errata.
+
+Still, it worked with the older X, so I wonder if I can make the new X work
+like the old one?
+
+Best,
+Rafael
