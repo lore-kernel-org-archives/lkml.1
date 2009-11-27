@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZK0PM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZK0PR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbZK0PM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 10:12:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZK0PM2
+	id S1753089AbZK0PR6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 10:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZK0PR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 10:12:28 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:32960 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753173AbZK0PM1 (ORCPT
+	Fri, 27 Nov 2009 10:17:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41514 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbZK0PR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 10:12:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=hJgEH90SYrpZWlXV0q/ZkCBLL6Mn65EA+6uMOwMhCwYr8v5y5lzWXrG87Feaf2Jxun
-         V3PTFE4IPPE6QF7UJ7Zdu9TTZmMyYIWMqb5NisHOMSQ6XHwJhdCuifl7itKZ7Im8Ea+Y
-         WOgzqrySn69264kfz1bgUm3joN5EaGCaA6FFg=
-MIME-Version: 1.0
-In-Reply-To: <20091127114847.GZ8742@kernel.dk>
-References: <200911261710.40719.czoccolo@gmail.com>
-	 <20091127082316.GY8742@kernel.dk>
-	 <4e5e476b0911270103u61ed5a95t3997e28ae79bac82@mail.gmail.com>
-	 <20091127114847.GZ8742@kernel.dk>
-Date: Fri, 27 Nov 2009 16:12:32 +0100
-Message-ID: <4e5e476b0911270712s3c451842y22ab2fd14644f47@mail.gmail.com>
-Subject: Re: [RFC,PATCH] cfq-iosched: improve async queue ramp up formula
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       mel@csn.ul.ie, efault@gmx.de
-Content-Type: text/plain; charset=UTF-8
+	Fri, 27 Nov 2009 10:17:57 -0500
+Subject: Re: WARNING: kernel/smp.c:292 smp_call_function_single [Was: mmotm
+ 2009-11-24-16-47 uploaded]
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mm-commits@vger.kernel.org, Avi Kivity <avi@redhat.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
+       the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4B0FEA3E.5050108@gmail.com>
+References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>
+	 <4B0FEA3E.5050108@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 27 Nov 2009 16:17:16 +0100
+Message-ID: <1259335036.6483.440.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 12:48 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Fri, Nov 27 2009, Corrado Zoccolo wrote:
->> Hi Jens,
->> let me explain why my improved formula should work better.
->>
->> The original problem was that, even if an async queue had a slice of 40ms,
->> it could take much more to complete since it could have up to 31
->> requests dispatched at the moment of expiry.
->> In total, it could take up to 40 + 16 * 8 = 168 ms (worst case) to
->> complete all dispatched requests, if they were seeky (I'm taking 8ms
->> average service time of a seeky request).
->>
->> With your patch, within the first 200ms from last sync, the max depth
->> will be 1, so a slice will take at most 48ms.
->> My patch still ensures that a slice will take at most 48ms within the
->> first 200ms from last sync, but lifts the restriction that depth will
->> be 1 at all time.
->> In fact, after the first 100ms, a new async slice will start allowing
->> 5 requests (async_slice/slice_idle). Then, whenever a request
->> completes, we compute remaining_slice / slice_idle, and compare this
->> with the number of dispatched requests. If it is greater, it means we
->> were lucky, and the requests were sequential, so we can allow more
->> requests to be dispatched. The number of requests dispatched will
->> decrease when reaching the end of the slice, and at the end we will
->> allow only depth 1.
->> For next 100ms, you will allow just depth 2, and my patch will allow
->> depth 2 at the end of the slice (but larger at the beginning), and so
->> on.
->>
->> I think the numbers by Mel show that this idea can give better and
->> more stable timings, and they were just with a single NCQ rotational
->> disk. I wonder how much improvement we can get on a raid, where
->> keeping the depth at 1 hits performance really hard.
->> Probably, waiting until memory reclaiming is noticeably active (since
->> in CFQ we will be sampling) may be too late.
->
-> I'm not saying it's a no-go, just that it invalidates the low latency
-> testing done through the 2.6.32 cycle and we should re-run those tests
-> before committing and submitting anything.
-Agreed, but it should be ok for 2.6.33.
-BTW, when Jeff investigated the write performance drop in 2.6.32, he
-found, too, that low_latency should be set to 0 to get performance
-comparable with previous kernels.
->
-> If the 'check for reclaim' hack isn't good enough, then that's probably
-> what we have to do.
-There is still something puzzling me. The write performance drop
-affects mostly NCQ disks, so it can't be the only cause for hitting
-OOM condition, otherwise we should have observed it also on previous
-kernels, on non-NCQ disks, in which the phenomenon I described above
-doesn't happen.
-So probably there is something else to look at, and even this patch
-can only be a palliative.
+On Fri, 2009-11-27 at 16:03 +0100, Jiri Slaby wrote:
+> On 11/25/2009 01:47 AM, akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2009-11-24-16-47 has been uploaded to
+> 
+> Hi, when executing qemu-kvm I often get following warning and a hard lockup.
+> 
+> WARNING: at kernel/smp.c:292 smp_call_function_single+0xbd/0x140()
+> Hardware name: To Be Filled By O.E.M.
+> Modules linked in: kvm_intel kvm fuse ath5k ath
+> Pid: 3265, comm: qemu-kvm Not tainted 2.6.32-rc8-mm1_64 #912
+> Call Trace:
+>  [<ffffffff81039678>] warn_slowpath_common+0x78/0xb0
+>  [<ffffffffa007fd50>] ? __vcpu_clear+0x0/0xd0 [kvm_intel]
+>  [<ffffffff810396bf>] warn_slowpath_null+0xf/0x20
+>  [<ffffffff8106410d>] smp_call_function_single+0xbd/0x140
+>  [<ffffffffa0080af6>] vmx_vcpu_load+0x46/0x170 [kvm_intel]
+>  [<ffffffffa004dd94>] kvm_arch_vcpu_load+0x24/0x60 [kvm]
+>  [<ffffffffa0047a8d>] kvm_sched_in+0xd/0x10 [kvm]
+>  [<ffffffff8102de37>] finish_task_switch+0x67/0xc0
+>  [<ffffffff814699f8>] schedule+0x2f8/0x9c0
 
-Thanks
-Corrado
+> 
+> It is a regression against 2009-11-13-19-59.
+> 
+> Any ideas?
 
->
-> --
-> Jens Axboe
->
->
+Looks like kvm is trying to send an IPI from the preempt notifiers,
+which are called with IRQs disabled, not a sane thing to do.
 
+If they really want that, they'll have to use a pre-allocated struct
+call_single_data and use __smp_call_function_single.
 
-
--- 
-__________________________________________________________________________
-
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
