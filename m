@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbZK0TZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZK0T0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752048AbZK0TZh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 14:25:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZK0TZh
+	id S1752241AbZK0T0m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 14:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbZK0T0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 14:25:37 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40244 "EHLO
+	Fri, 27 Nov 2009 14:26:41 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40735 "EHLO
 	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbZK0TZg (ORCPT
+	with ESMTP id S1751446AbZK0T0l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 14:25:36 -0500
-Date: Fri, 27 Nov 2009 13:25:06 -0600 (CST)
+	Fri, 27 Nov 2009 14:26:41 -0500
+Date: Fri, 27 Nov 2009 13:26:44 -0600 (CST)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@router.home
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC][PATCH 4/4] vmscan: vmscan don't use pcp list
-In-Reply-To: <20091127091920.A7D5.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0911271322450.27110@router.home>
-References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com> <20091127091920.A7D5.A69D9226@jp.fujitsu.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SLUB: Fix __GFP_ZERO unlikely() annotation
+In-Reply-To: <84144f020911261227i3f2c9193v388a7b118402cbb5@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0911271326090.27110@router.home>
+References: <1259173279-21220-1-git-send-email-penberg@cs.helsinki.fi>  <1259173636.29779.41.camel@Joe-Laptop.home>  <4B0D77CC.3020807@cs.helsinki.fi>  <alpine.DEB.2.00.0911251414480.4779@router.home>
+ <84144f020911261227i3f2c9193v388a7b118402cbb5@mail.gmail.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -27,38 +27,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Nov 2009, KOSAKI Motohiro wrote:
+On Thu, 26 Nov 2009, Pekka Enberg wrote:
 
-> patch series, but Christoph mentioned simple bypass pcp instead.
-> I made it. I'd hear Christoph and Mel's mention.
+> I ran the synthetic benchmarks here and cycle count is roughly the
+> same for both versions.
 
-Ah. good.
+Ok.
 
-> +		kmemcheck_free_shadow(page, 0);
-> +
-> +		if (PageAnon(page))
-> +			page->mapping = NULL;
-> +		if (free_pages_check(page)) {
-> +			/* orphan this page. */
-> +			list_del(&page->lru);
-> +			continue;
-> +		}
-> +		if (!PageHighMem(page)) {
-> +			debug_check_no_locks_freed(page_address(page),
-> +						   PAGE_SIZE);
-> +			debug_check_no_obj_freed(page_address(page), PAGE_SIZE);
-> +		}
-> +		arch_free_page(page, 0);
-> +		kernel_map_pages(page, 1, 0);
-> +
-> +		local_irq_save(flags);
-> +		if (unlikely(wasMlocked))
-> +			free_page_mlock(page);
-> +		local_irq_restore(flags);
-
-The above looks like it should be generic logic that is used elsewhere?
-Create a common function?
-
-
-Rest looks good to me...
+Acked-by: Christoph Lameter <cl@linux-foundation.org>
 
