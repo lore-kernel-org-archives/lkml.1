@@ -1,123 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbZK0EaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZK0EcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753467AbZK0EaY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 23:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbZK0EaX
+	id S1753490AbZK0EcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 23:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZK0EcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 23:30:23 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:63288 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167AbZK0EaW (ORCPT
+	Thu, 26 Nov 2009 23:32:17 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:44957 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753074AbZK0EcQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 23:30:22 -0500
+	Thu, 26 Nov 2009 23:32:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DBDIHm1x5eyCf0t2T0tlKTxDapHvw9o4WLZim/V+Ox2IUBGbLwXIWeFEb7S31FWp5y
-         qV8YllROWT/vfTi/9b2ClfMpSJM8YwOqrSm+90C5u13ehQXICrKXPPlfpu9flhhR0zUm
-         1Lt3E1xxbTozyHOoSi5qLtLDmC4LE74YEFh90=
-Date: Thu, 26 Nov 2009 20:30:23 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jarod Wilson <jarod@wilsonet.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091127043023.GJ6936@core.coreip.homeip.net>
-References: <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <20091126053109.GE23244@core.coreip.homeip.net> <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com> <20091126232311.GD6936@core.coreip.homeip.net> <4B0F3963.8040701@wilsonet.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=giX5LXBqjWdGfL1l5JcIfkPiT2ZElauVmmbzKxm9qkaev5+I4Y5zIPP4z6xBts3BUa
+         2iW7wfRQfCMLcj3iHty8bdbbmq9Lp7HeOLQeJU6t81YPGA6bZXo5L34yzlytEn5ujHxg
+         YNRKFLJNnvfnmk6tqZvjqrceeybxbwqdnJsbs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0F3963.8040701@wilsonet.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901EE5BE1@mi8nycmail19.Mi8.com>
+References: <BD79186B4FD85F4B8E60E381CAEE190901EE5BE1@mi8nycmail19.Mi8.com>
+Date: Fri, 27 Nov 2009 13:32:23 +0900
+Message-ID: <57afda040911262032u5e398303p2d704214ce7cf43b@mail.gmail.com>
+Subject: Re: drivers/block/mg_disk.c: use resource_size()
+From: unsik Kim <donari75@gmail.com>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       akpm@linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 09:28:51PM -0500, Jarod Wilson wrote:
-> On 11/26/2009 06:23 PM, Dmitry Torokhov wrote:
->> On Thu, Nov 26, 2009 at 01:16:01AM -0500, Jarod Wilson wrote:
->>> On Nov 26, 2009, at 12:31 AM, Dmitry Torokhov wrote:
->>>
->>>> On Mon, Nov 23, 2009 at 11:37:53PM -0500, Jarod Wilson wrote:
->>>>> On 11/23/2009 12:37 PM, Dmitry Torokhov wrote:
->>>>>> On Mon, Nov 23, 2009 at 03:14:56PM +0100, Krzysztof Halasa wrote:
->>>>>>> Mauro Carvalho Chehab<mchehab@redhat.com>   writes:
->>>>>>>
->>>>>>>> Event input has the advantage that the keystrokes will provide an unique
->>>>>>>> representation that is independent of the device.
->>>>>>>
->>>>>>> This can hardly work as the only means, the remotes have different keys,
->>>>>>> the user almost always has to provide customized key<>function mapping.
->>>>>>>
->>>>>>
->>>>>> Is it true? I would expect the remotes to have most of the keys to have
->>>>>> well-defined meanings (unless it is one of the programmable remotes)...
->>>>>
->>>>> Its the cases like programmable universal remotes that really throw
->>>>> things for a loop. That, and people wanting to use random remote X that
->>>>> came with the amp or tv or set top box, with IR receiver Y.
->>>>
->>>> Right, but still the keys usually do have the well-defined meaning,
->>>
->>> Except when they don't. I have two very similar remotes, one that was bundled with a system from CaptiveWorks, and one that was bundled with an Antec Veris IR/LCD (SoundGraph iMON rebrand). Outside of the Antec remote having a mouse pad instead of up/down/left/right/enter, they have an identical layout, and the keys in the same locations on the remotes send the same IR signal. But the button names vary a LOT between the two. So on the DVD key on the Antec and the MUTE key on the CW send the same signal. Same with Audio vs. Eject, TV vs. History, etc. Moral of the story is that not all IR protocols spell things out particularly well for what a given code should actually mean.
->>
->> I guess we are talking about different things. While the 2 remotes may
->> use different protocols to communicate
+> Use resource_size() for ioremap.
 >
-> The remotes use the exact same protocol. Their respective bundled  
-> receivers however, do translate key presses differently. Perhaps this is  
-> a bad example though, because both of these remotes came with receivers  
-> that do onboard decoding. But there's nothing stopping me from wanting  
-> to use either of these remotes with an mceusb IR transceiver.
->
->> and may use the same codes to
->> mean different things they buttons have well-defined meaning and we
->> could map that to input keycodes. Then what is left is to load the
->> proper mapping for particular device into the kernel.
->
-> In this case, its not the device, but the remote, that we need a  
-> different mapping for.
+> The ioremap appears to be passing the incorrect size for the platform
+> resource.  Unfortunately, I can't locate a user in mainline to verify
+> this.  Using resource_size should be the correct fix.
 
-I would say that the remote is the device, not the receiver...
+The patch is definitely right. I tested it in ARM platform.
+Thank you for your patch.
 
->
->> This can be done
->> either automatically (when we know the mapping) or with the help of the
->> user (owner of the system).
->
-> Yep, that'd work. Just trying to illustrate that the same code doesn't  
-> always mean anywhere near the same thing from one remote to another.
-
-We have the same scenatio with atkbd and various laptops - the
-"extended" keys may use the same scancodes for different keys and we use
-DMI data to load the proper keymap. Obviously in case if IRC we won't be
-using DMI but something else.
-
->
->>>> teh
->>>> issue is in mapping raw code to the appropriate keycode. This can be
->>>> done either by lirc config file (when lirc is used) or by some other
->>>> means.
->>>
->>> The desire to map a button press to multiple keystrokes isn't uncommon either, though I presume that's doable within the input layer context too.
->>
->> No, at present we expect 1:1 button->event mapping leaving macro
->> expansion (i.e. KEY_PROG1 ->  "do some multi-step sequence" to
->> userspace).
->
-> Hm. So ctrl-x, alt-tab, etc. would have to be faked in userspace  
-> somehow. Bummer.
->
-
-What is Ctrl-x? Alt-tab? This are application-specific binding and of
-course kernel does not emit these. If there is a distinct action that
-needs to be signalled then there [normally] is a keycode for it.
-
--- 
-Dmitry
+---
+Regards,
+unsik Kim <donari75@gmail.com>
