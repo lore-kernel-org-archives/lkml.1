@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977AbZK0NJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZK0NNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751977AbZK0NJn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 08:09:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZK0NJm
+	id S1752502AbZK0NNH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 08:13:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbZK0NNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 08:09:42 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:65004 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbZK0NJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 08:09:41 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Patrick Mullaney <pmullaney@novell.com>
-Subject: Re: [PATCH 1/3] netdevice: provide common routine for macvlan and vlan operstate management
-Date: Fri, 27 Nov 2009 14:09:28 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: kaber@trash.net, netdev@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       bridge@lists.linux-foundation.org
-References: <20091113195201.11184.25766.stgit@mimic.site> <20091113195513.11184.63631.stgit@mimic.site>
-In-Reply-To: <20091113195513.11184.63631.stgit@mimic.site>
+	Fri, 27 Nov 2009 08:13:06 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:48767 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750857AbZK0NNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 08:13:04 -0500
+Date: Fri, 27 Nov 2009 14:13:03 +0100
+From: Jan Kara <jack@suse.cz>
+To: tmhikaru@gmail.com
+Cc: Alan Stern <stern@rowland.harvard.edu>, Jan Kara <jack@suse.cz>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem
+ readonly
+Message-ID: <20091127131302.GA5235@quack.suse.cz>
+References: <20091125084240.GA549@quack.suse.cz>
+ <Pine.LNX.4.44L0.0911251052020.2879-100000@iolanthe.rowland.org>
+ <20091127094339.GA9047@roll>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911271409.28810.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18WWSUnZLWr5awuuKb6AWqt0fBNzp6AsVTZ4TL
- ZOQoX+ri/I2NkP/GCUN70ynNad4LiJ1vB6S04KpfBRdRp5V+qW
- RPFwpb1zis//Msbssz9PA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091127094339.GA9047@roll>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 November 2009, Patrick Mullaney wrote:
-> @@ -551,7 +532,7 @@ static int macvlan_newlink(struct net_device *dev,
->                 return err;
->  
->         list_add_tail(&vlan->list, &port->vlans);
-> -       macvlan_transfer_operstate(dev);
-> +       netif_stacked_transfer_operstate(dev, lowerdev);
->         return 0;
->  }
->  
-> @@ -591,7 +572,8 @@ static int macvlan_device_event(struct notifier_block *unused,
->         switch (event) {
->         case NETDEV_CHANGE:
->                 list_for_each_entry(vlan, &port->vlans, list)
-> -                       macvlan_transfer_operstate(vlan->dev);
-> +                       netif_stacked_transfer_operstate(vlan->dev,
-> +                                                        vlan->lowerdev);
->                 break;
->         case NETDEV_FEAT_CHANGE:
->                 list_for_each_entry(vlan, &port->vlans, list) {
+On Fri 27-11-09 04:43:39, tmhikaru@gmail.com wrote:
+> On Wed, Nov 25, 2009 at 11:10:48AM -0500, Alan Stern wrote:
+> > On Wed, 25 Nov 2009, Jan Kara wrote:
+> > 
+> > > > > > > Okay, very good.  There remains the question of the disturbing error
+> > > > > > > messages in the system log.  Should they be supressed for FAILFAST
+> > > > > > > requests?
+> > > > > >   I think it's useful they are there because ultimately, something really
+> > > > > > went wrong and you should better investigate. BTW, "end_request: I/O error"
+> > > > > > messages are in the log even for requests where we retried and succeeded...
+> > 
+> > That isn't true.  Take a look at the dmesg log accompanying Tim's 
+> > usbmon log.  Although there were 5 read errors in the usbmon log, there 
+> > were only 2 I/O error messages in dmesg, corresponding to the 2 reads 
+> > that weren't retried successfully.
+> > 
+> > Personally, I think it makes little sense to print error messages in 
+> > the system log for commands where retries are disallowed.  Unless we go 
+> > ahead and print error messages for _all_ failures, including those 
+> > which are retried successfully.
+> > 
+> > Perhaps a good compromise would be to set the REQ_QUIET flag in 
+> > req->cmd_flags for readaheads.  That would suppress the error messages 
+> > coming from the SCSI core.
+> > 
+> > >   Yeah, we might make it more obvious that read failed and whether or not
+> > > we are going to retry. Just technically it's not so simple because a
+> > > different layer prints messages about errors (generic block layer) and
+> > > different (scsi disk driver) decides what to do (retry, don't retry, ...).
+> > 
+> > Actually the retry decisions (or many of them) are made by the SCSI 
+> > core, and that's also where some of those error messages come from.
+> > 
+> > > > 	I should have asked since I'm here at the moment - do you need any
+> > > > more information out of the buggy USB enclosure at the moment, or can I work
+> > > > on trying to fix/replace it now?
+> > >   No, feel free to do anything with it :). Thanks for your help with
+> > > debugging this.
+> > 
+> > To clarify, the enclosure isn't really very buggy.  It _should_ have
+> > carried out the failed commands, or if it had a valid reason for not
+> > doing so then it _should_ have reported the reason.  Regardless, the
+> > errors that occurred were harmless because they went away when the
+> > commands were retried.  (Although if they weren't harmless, you
+> > wouldn't be able to tell just from reading the system log...)
+> > 
+> > Alan Stern
+> 
+> Okay. Okay. Back up a moment here - Clarify a little. I have the filesystem
+> set to remount readonly on errors. I have not seen any filesystem
+> corruption or file corruption I could find. The filesystem *was* remounting
+> readonly under 2.6.31.5, but has not since .6 came out. (and I reformatted
+> and redid the entire backup under 2.6.31.6 without errors)
+> 
+> How do I know when it has generated an actual failure that was not
+> corrected?
+> 
+> How do I know when errors have been detected but they were corrected?
+> 
+> I'm guessing in the former, it'll remount ro, and in the latter it won't. Am
+> I correct?
+  So if just the file data cannot be read / written, you see messages
+about IO errors in the log (as you see now), some application might get EIO
+error but the filesystem will not be remounted. It gets remounted only if
+some filesystem metadata cannot be read / written.
+  It's true that retrying commands usually succeeds but not always and thus
+I find it possible that eventually it fails several times in a row so that
+kernel just gives up and discards data block to write because it thinks it
+has no way of writing it. So I personally would ask for a warranty exchange
+of the enclosure...
 
-These have the arguments reversed, lowerdev should come first.
-
-	Arnd <><
+									Honza
