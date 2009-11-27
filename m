@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662AbZK0PdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751858AbZK0Pca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751662AbZK0PdX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 10:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbZK0PdW
+	id S1751858AbZK0Pca (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 10:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbZK0Pca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 10:33:22 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:65249 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbZK0PdV convert rfc822-to-8bit (ORCPT
+	Fri, 27 Nov 2009 10:32:30 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39336 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751484AbZK0Pc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 10:33:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=f/0Xj8H9AUtrqvfkhQlZj27fZFlevQyatyWOdyz4Achh7/yZ4n8FmgLWMrlmO0NaUu
-         YUS2DCY5OUsqx901x5e7RP23mp9sxqbrZDDeIk65aZRo/vP5crfLuq1x7tW+aXJTAcRB
-         QsrNJZ3z3RuuIiH9Hf7FNmCgrqpfjnfQt8q2A=
-MIME-Version: 1.0
-In-Reply-To: <BDgcSm3ZjFB@christoph>
-References: <9e4733910911262106r553bb28brb5bef07dee3aae3b@mail.gmail.com>
-	 <BDgcSm3ZjFB@christoph>
-Date: Fri, 27 Nov 2009 10:33:27 -0500
-Message-ID: <9e4733910911270733j1abbb1ddi962c8a46c9aabe48@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Christoph Bartelmus <lirc@bartelmus.de>
-Cc: dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 27 Nov 2009 10:32:29 -0500
+Date: Fri, 27 Nov 2009 15:34:32 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 5/5] pata_piccolo: Driver for old Toshiba chipsets
+Message-ID: <20091127153432.42922230@lxorguk.ukuu.org.uk>
+In-Reply-To: <200911271528.09697.bzolnier@gmail.com>
+References: <20091117144450.15430.83450.stgit@localhost.localdomain>
+	<20091117145144.15430.55784.stgit@localhost.localdomain>
+	<200911271528.09697.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 2:33 AM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
-> Hi Jon,
->
-> on 27 Nov 09 at 00:06, Jon Smirl wrote:
-> [...]
->> code for the fun of it, I have no commercial interest in IR. I was
->> annoyed with how LIRC handled Sony remotes on my home system.
->
-> Can you elaborate on this?
-> I'm not aware of any issue with Sony remotes.
+> > +#define PCI_DEVICE_ID_TOSHIBA_PICCOLO	0x0101
+> > +#define PCI_DEVICE_ID_TOSHIBA_PICCOLO_2	0x0102
+> > +#define PCI_DEVICE_ID_TOSHIBA_PICCOLO_3	0x0103
+> > +#define PCI_DEVICE_ID_TOSHIBA_PICCOLO_5	0x0105
+> >  #define PCI_DEVICE_ID_TOSHIBA_TOPIC95	0x060a
+> >  #define PCI_DEVICE_ID_TOSHIBA_TOPIC97	0x060f
+> >  #define PCI_DEVICE_ID_TOSHIBA_TOPIC100	0x0617
+> 
+> This adds kernel regression and breaks kernel build (it is generally good to
+> grep kernel tree for the existing users before doing changes like the above):
+> 
+> drivers/ide/ide-pci-generic.c:
+> 
+>         { PCI_VDEVICE(TOSHIBA,  PCI_DEVICE_ID_TOSHIBA_PICCOLO),          4 },
+>         { PCI_VDEVICE(TOSHIBA,  PCI_DEVICE_ID_TOSHIBA_PICCOLO_1),        4 },
+>         { PCI_VDEVICE(TOSHIBA,  PCI_DEVICE_ID_TOSHIBA_PICCOLO_2),        4 },
+> 
+> Please fix your patch.
 
-irrecord can't figure out that Sony remotes transmit multiple
-protocols so it reverts to raw mode. When trying to figure that out I
-started working on the concept of running simultaneous state machines
-to decode the pulse timings.  I also had an embedded system with an IR
-receiver hooked to a timer input pin.  I started off with a
-implementation that ran multiple Sony protocol decoders and used the
-input from the timer pin. I know now that I could use irrecord
-individually for each group of keys on the Sony remote and then glue
-the flies together. But that's the path that caused me to write the
-code.
+Will do - I'll add the missing ones to ide-generic as well.
 
-Also throw into pot that I had previously had some very bad
-experiences trying to deal with the old mouse and kbd device inside of
-the X server. I was aware that evdev was designed to fix all of those
-problems. That made me want a fully evdev based design.
-
->
-> Christoph
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Alan
