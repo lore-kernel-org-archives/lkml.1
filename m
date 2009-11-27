@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbZK0EPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbZK0EP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752970AbZK0EPj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 23:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZK0EPi
+	id S1753221AbZK0EP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 23:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZK0EP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 23:15:38 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:49922 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751512AbZK0EPi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 23:15:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OuHKoIXuXQkKA8gti8WX1wLj1goYWnWCVm8qt/SsuH73F28wM8XfcPGsPbrRfmjmgg
-         lWkmPfrRW3+ipwgGb/ZQ3CEN13SNOc2PwMARt4PBU+XS8mJ34DTnE/DgWrQUlN/kxBh9
-         lG22BZB7hyyRf+PxnoItIX/JHGzSMsllDsNNQ=
-Date: Fri, 27 Nov 2009 05:15:41 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] trace_syscalls: add missed field
-Message-ID: <20091127041540.GA5221@nowhere>
-References: <4B0E330D.1070206@cn.fujitsu.com> <20091126223153.GA7177@nowhere> <4B0F4F63.6040307@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0F4F63.6040307@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 26 Nov 2009 23:15:56 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:48883 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753024AbZK0EPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 23:15:49 -0500
+Date: Fri, 27 Nov 2009 15:17:21 +1100
+From: Neil Brown <neilb@suse.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: James Bottomley <James.Bottomley@suse.de>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Jens Axboe <Jens.Axboe@oracle.com>
+Subject: Re: BUG at scsi_lib.c:1108 [Was: mmotm 2009-11-24-16-47 uploaded]
+Message-ID: <20091127151721.57c02c29@notabene.brown>
+In-Reply-To: <20091126081359.414c8216@notabene.brown>
+References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>
+	<4B0D4949.4090109@gmail.com>
+	<1259162399.2535.8.camel@mulgrave.site>
+	<4B0D9221.2050103@gmail.com>
+	<20091126081359.414c8216@notabene.brown>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 12:02:43PM +0800, Lai Jiangshan wrote:
-> Frederic Weisbecker wrote:
-> > On Thu, Nov 26, 2009 at 03:49:33PM +0800, Lai Jiangshan wrote:
-> >> Field syscall number is missed in syscall_enter_define_fields()/
-> >> syscall_exit_define_fields().
-> >>
-> >> syscall number is also needed for event filter or other users.
-> >>
-> >> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > 
-> > 
+On Thu, 26 Nov 2009 08:13:59 +1100
+Neil Brown <neilb@suse.de> wrote:
+
+> On Wed, 25 Nov 2009 21:22:57 +0100
+> Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
+> > It doesn't make sense at all. How can empty merge cause a regression?
+> > And md/for-next doesn't produce the BUG.
 > 
-> For all kinds of tracer, all fields are "defined"
-> by trace_define_field(), except this one.
-> Maybe because I don't like inconsistent codes.
-
-
-:)
-
-
-> > 
-> > Well, I don't think it's very useful for in-kernel filtering.
-> > Filtering a syscall event by its number would mean filtering all
-> > event for this syscall. This is the same as not tracing it.
-> > 
-> > Or do you have other usecases in mind?
-> > 
+> I've hit that situation before.  Two separate changes in separate
+> branches conspire to cause a problem.
 > 
-> Current, only filter use struct ftrace_event_call->fields,
-> so there is no other usecases ^_^.
-> But my next take of "tracing: use defined fields to print formats"
-> will use it.
+> md/for-next contains code to handle barriers properly for all levels,
+> not just RAID1.
+> It is possible I got this wrong in some way, and some new sanity check
+> in a separate branch is firing, or it is possible some other bug in
+> barrier handling has been added and now that MD sends barriers, it is
+> being triggered.
 
+And it looks like I did get it wrong in some way.
+I handled a barrier by:
+   - send an empty barrier to each component
+   - schedule to write with the barrier flag cleared
+   - send another empty barrier
 
-Oh really you are planning such patch? That looks hard to do
-considering the tricky things that happen in fields printing
-sometimes. Also printing the fields is often a human
-interpretation on how to handle them, so... Anyway, I'll just
-wait for your patches and see.
+If an empty barrier is received, step 2 sends an empty non-barrier,
+which caused the BUG.
+I have revised the code to special case empty barriers and only perform
+the first step.
+This should appear in the next -next.
 
-That said I really have no opposition against this patch.
-For consistency over what is done with every other trace event
-fields, and to anticipate any further uses of trace event fields
-definition other than filtering:
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-(Steve, Ingo, should I queue it or...what do you prefer?)
-
+Thanks,
+NeilBrown
