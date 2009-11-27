@@ -1,134 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbZK0Nwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbZK0Nzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752784AbZK0Nwm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 08:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZK0Nwl
+	id S1752986AbZK0Nzz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 08:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZK0Nzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 08:52:41 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:34734 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbZK0Nwk (ORCPT
+	Fri, 27 Nov 2009 08:55:53 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:45948 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751577AbZK0Nzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 08:52:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=nji3PaZYPukgW9XzEQRatYp7ycMkpoIbvLqEEizF4qermFGoBt7fbw0Xr6Ur6HRYKh
-         x7RJquuFmU7WFojR4JCIN3p7hCCPy7xP2V2Vt9UYrWMfzB8KP10IPn2O/Dor+oxaLRwV
-         dQFyBZNZLXHrWTHRIKDsSAcLyyfcalThp4qrU=
-Date: Fri, 27 Nov 2009 16:52:41 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux@arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH v2] arm: convert /proc/cpu/alignment to seq_file 
-Message-ID: <20091127135240.GA19410@x200.malnet.ru>
+	Fri, 27 Nov 2009 08:55:52 -0500
+X-SpamScore: -14
+X-BigFish: VPS-14(z21eWzzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KTRTD0-01-6RI-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [git pull] IOMMU updates for 2.6.33
+Date: Fri, 27 Nov 2009 14:55:11 +0100
+Message-ID: <1259330145-14865-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.5.3
+X-OriginalArrivalTime: 27 Nov 2009 13:55:47.0748 (UTC) FILETIME=[525BD640:01CA6F69]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Hi Ingo,
 
- Fix compilation on some arm defconfigs due to THIS_MODULE
- by removing line.
 
- arch/arm/mm/alignment.c |   53 +++++++++++++++++++++++-------------------------
- 1 file changed, 26 insertions(+), 27 deletions(-)
+The following changes since commit 273bee27fa9f79d94b78c83506016f2e41e78983:
+  FUJITA Tomonori (1):
+        x86: Fix iommu=soft boot option
 
---- a/arch/arm/mm/alignment.c
-+++ b/arch/arm/mm/alignment.c
-@@ -16,6 +16,7 @@
- #include <linux/errno.h>
- #include <linux/string.h>
- #include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
- #include <linux/init.h>
- #include <linux/sched.h>
- #include <linux/uaccess.h>
-@@ -91,36 +92,29 @@ static const char *usermode_action[] = {
- 	"signal+warn"
- };
- 
--static int
--proc_alignment_read(char *page, char **start, off_t off, int count, int *eof,
--		    void *data)
-+static int alignment_proc_show(struct seq_file *m, void *v)
- {
--	char *p = page;
--	int len;
--
--	p += sprintf(p, "User:\t\t%lu\n", ai_user);
--	p += sprintf(p, "System:\t\t%lu\n", ai_sys);
--	p += sprintf(p, "Skipped:\t%lu\n", ai_skipped);
--	p += sprintf(p, "Half:\t\t%lu\n", ai_half);
--	p += sprintf(p, "Word:\t\t%lu\n", ai_word);
-+	seq_printf(m, "User:\t\t%lu\n", ai_user);
-+	seq_printf(m, "System:\t\t%lu\n", ai_sys);
-+	seq_printf(m, "Skipped:\t%lu\n", ai_skipped);
-+	seq_printf(m, "Half:\t\t%lu\n", ai_half);
-+	seq_printf(m, "Word:\t\t%lu\n", ai_word);
- 	if (cpu_architecture() >= CPU_ARCH_ARMv5TE)
--		p += sprintf(p, "DWord:\t\t%lu\n", ai_dword);
--	p += sprintf(p, "Multi:\t\t%lu\n", ai_multi);
--	p += sprintf(p, "User faults:\t%i (%s)\n", ai_usermode,
-+		seq_printf(m, "DWord:\t\t%lu\n", ai_dword);
-+	seq_printf(m, "Multi:\t\t%lu\n", ai_multi);
-+	seq_printf(m, "User faults:\t%i (%s)\n", ai_usermode,
- 			usermode_action[ai_usermode]);
- 
--	len = (p - page) - off;
--	if (len < 0)
--		len = 0;
--
--	*eof = (len <= count) ? 1 : 0;
--	*start = page + off;
-+	return 0;
-+}
- 
--	return len;
-+static int alignment_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, alignment_proc_show, NULL);
- }
- 
--static int proc_alignment_write(struct file *file, const char __user *buffer,
--				unsigned long count, void *data)
-+static ssize_t alignment_proc_write(struct file *file, const char __user *buffer,
-+				    size_t count, loff_t *pos)
- {
- 	char mode;
- 
-@@ -133,6 +127,13 @@ static int proc_alignment_write(struct file *file, const char __user *buffer,
- 	return count;
- }
- 
-+static const struct file_operations alignment_proc_fops = {
-+	.open		= alignment_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+	.write		= alignment_proc_write,
-+};
- #endif /* CONFIG_PROC_FS */
- 
- union offset_union {
-@@ -902,12 +903,10 @@ static int __init alignment_init(void)
- 	if (!res)
- 		return -ENOMEM;
- 
--	res = create_proc_entry("alignment", S_IWUSR | S_IRUGO, res);
-+	res = proc_create("alignment", S_IWUSR | S_IRUGO, res,
-+			  &alignment_proc_fops);
- 	if (!res)
- 		return -ENOMEM;
--
--	res->read_proc = proc_alignment_read;
--	res->write_proc = proc_alignment_write;
- #endif
- 
- 	/*
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/2.6.33
+
+Joerg Roedel (35):
+      x86/amd-iommu: Separate internal interface definitions
+      x86/amd-iommu: Update copyright headers
+      x86/amd-iommu: Add an index field to struct amd_iommu
+      x86/amd-iommu: Add per IOMMU reference counting
+      x86/amd-iommu: Add function to complete a tlb flush
+      x86/amd-iommu: Make iommu_flush_pages aware of multiple IOMMUs
+      x86/amd-iommu: Use __iommu_flush_pages for tlb flushes
+      x86/amd-iommu: Remove iommu_flush_domain function
+      x86/amd-iommu: Implement protection domain list
+      x86/amd-iommu: Reimplement amd_iommu_flush_all_domains()
+      x86/amd-iommu: Reimplement flush_all_domains_on_iommu()
+      x86/amd-iommu: Make np-cache a global flag
+      x86/amd-iommu: Use check_device for amd_iommu_dma_supported
+      x86/amd-iommu: Use check_device in get_device_resources
+      x86/amd-iommu: Remove iommu parameter from dma_ops_domain_(un)map
+      x86/amd-iommu: Make alloc_new_range aware of multiple IOMMUs
+      x86/amd-iommu: Remove iommu parameter from __(un)map_single
+      x86/amd-iommu: Remove iommu specific handling from dma_ops path
+      x86/amd-iommu: Let domain_for_device handle aliases
+      x86/amd-iommu: Simplify get_device_resources()
+      x86/amd-iommu: Move find_protection_domain to helper functions
+      x86/amd-iommu: Use get_device_id and check_device where appropriate
+      x86/amd-iommu: Remove iommu parameter from dma_ops_domain_alloc
+      x86/amd-iommu: Move some pte allocation functions in the right section
+      x86/amd-iommu: Rearrange dma_ops related functions
+      x86/amd-iommu: Remove support for domain sharing
+      x86/amd-iommu: Use dev->arch->iommu to store iommu related information
+      x86/amd-iommu: Add device bind reference counting
+      x86/amd-iommu: Keep devices per domain in a list
+      x86/amd-iommu: Cleanup attach/detach_device code
+      x86/amd-iommu: Introduce iommu_flush_device() function
+      x86/amd-iommu: Cleanup DTE flushing code
+      x86/amd-iommu: Move reset_iommu_command_buffer out of locked code
+      x86/amd-iommu: Remove amd_iommu_pd_table
+      Merge branch 'gart/fixes' into amd-iommu/2.6.33
+
+Pavel Vasilyev (1):
+      agp/amd64: Remove GART dependency on AGP_AMD64
+
+ arch/x86/include/asm/amd_iommu.h       |   12 +-
+ arch/x86/include/asm/amd_iommu_proto.h |   38 +
+ arch/x86/include/asm/amd_iommu_types.h |   54 ++-
+ arch/x86/include/asm/device.h          |    2 +-
+ arch/x86/kernel/amd_iommu.c            | 1230 +++++++++++++++++---------------
+ arch/x86/kernel/amd_iommu_init.c       |   67 +-
+ drivers/char/agp/Kconfig               |    3 +-
+ 7 files changed, 777 insertions(+), 629 deletions(-)
+ create mode 100644 arch/x86/include/asm/amd_iommu_proto.h
+
+Most of the changes are for AMD IOMMU driver. The changes there are bigger than
+usual because I did a lot of changes to the data structures storing the
+relations between devices, protection domains and iommus. A major change is
+that the amd_iommu_pd_table is now gone and replaced by a struct iommu_dev_data
+for each device stored in dev->archdata->iommu.
+These changes result in a more robust reference counting, especially for
+devices with an alias and simplified code in many places.
+Also included are some related cleanups which separated the internal function
+prototypes to a several header and code movement to get rid of most function
+forward declarations. Please pull.
+
+	Joerg
+
+
