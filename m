@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZK0DI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbZK0DIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbZK0DI3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 22:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbZK0DI3
+	id S1753915AbZK0DIg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 22:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZK0DIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 22:08:29 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:57238 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753785AbZK0DI1 convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 22:08:34 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:53496 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753755AbZK0DId convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 22:08:27 -0500
+	Thu, 26 Nov 2009 22:08:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wUprlvuhIRkPJRtYWS3aVjMUpsYvpUqPYw0FwDng36h8VJ8WHp0XCiNt46q08g9RcT
-         rbydx/jK16YeBb83H6HM1/s3/mgQ23ZZeP44AcjY2JZES57/Kl4AVcaQvjr9fNKWidGJ
-         VR4h3r6y26d/Ywj283tzHP94EWxnZSPYBamgY=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ZOOsXjfyASCI9+DjvgQ4hMoJ5Oe0F43HJQNWM41doWB1useT8RNfpwSE/yxp2pX/s5
+         bWruNBaRvbvMGJuCA9q3mxPKByVFY1wm7fFaGL4Md5tif5mfTT5KbUnf+DGUE69Yrlpf
+         AdhSkG/EGJjNZc8Gw5rembiTmV7ddgKOPzyiw=
 MIME-Version: 1.0
-In-Reply-To: <4B0F3963.8040701@wilsonet.com>
-References: <200910200956.33391.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	 <20091123173726.GE17813@core.coreip.homeip.net>
-	 <4B0B6321.3050001@wilsonet.com>
-	 <20091126053109.GE23244@core.coreip.homeip.net>
-	 <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
-	 <20091126232311.GD6936@core.coreip.homeip.net>
-	 <4B0F3963.8040701@wilsonet.com>
-Date: Thu, 26 Nov 2009 22:08:29 -0500
-Message-ID: <9e4733910911261908l122263c3x68854e8a00334eae@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Jarod Wilson <jarod@wilsonet.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
+In-Reply-To: <20091127114511.bbb43d5a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <cover.1259255307.git.kirill@shutemov.name>
+	 <bc4dc055a7307c8667da85a4d4d9d5d189af27d5.1259255307.git.kirill@shutemov.name>
+	 <8524ba285f6dd59cda939c28da523f344cdab3da.1259255307.git.kirill@shutemov.name>
+	 <20091127092035.bbf2efdc.nishimura@mxp.nes.nec.co.jp>
+	 <20091127114511.bbb43d5a.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 27 Nov 2009 08:38:39 +0530
+X-Google-Sender-Auth: faf8e8f457a6afc8
+Message-ID: <661de9470911261908i4bb51e91v649025e6c75bd91b@mail.gmail.com>
+Subject: Re: [PATCH RFC v0 2/3] res_counter: implement thresholds
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 9:28 PM, Jarod Wilson <jarod@wilsonet.com> wrote:
->> No, at present we expect 1:1 button->event mapping leaving macro
->> expansion (i.e. KEY_PROG1 ->  "do some multi-step sequence" to
->> userspace).
+On Fri, Nov 27, 2009 at 8:15 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Fri, 27 Nov 2009 09:20:35 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 >
-> Hm. So ctrl-x, alt-tab, etc. would have to be faked in userspace somehow.
-> Bummer.
+>> Hi.
+>> >
+>> > @@ -73,6 +76,7 @@ void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val)
+>> >             val = counter->usage;
+>> >
+>> >     counter->usage -= val;
+>> > +   res_counter_threshold_notify_locked(counter);
+>> >  }
+>> >
+>> hmm.. this adds new checks to hot-path of process life cycle.
+>>
+>> Do you have any number on performance impact of these patches(w/o setting any threshold)?
+>> IMHO, it might be small enough to be ignored because KAMEZAWA-san's coalesce charge/uncharge
+>> patches have decreased charge/uncharge for res_counter itself, but I want to know just to make sure.
+>>
+> Another concern is to support root cgroup, you need another notifier hook in
+> memcg because root cgroup doesn't use res_counter now.
+>
+> Can't this be implemented in a way like softlimit check ?
+> Filter by the number of event will be good for notifier behavior, for avoiding
+> too much wake up, too.
 
-That is scripting. Scripting always needs to be done in user space.
+I guess the semantics would vary then, they would become activity
+semantics. I think we should avoid threshold notification for root,
+since we have no limits in root anymore.
 
-In the code I posted there is one evdev device for each configured
-remote. Mapped single keycodes are presented on these devices for each
-IR burst. There is no device for the IR receiver.  A LIRC type process
-could watch these devices and then execute scripts based on the
-keycodes reported.
+BTW, Kirill, I've been meaning to write this layer on top of
+cgroupstats, is there anything that prevents us from using that today?
+CC'ing Dan Malek and Vladslav Buzov who worked on similar patches
+earlier.
 
-The configfs model is very flexible. You could make a "remote" that
-translates the UP/DOWN buttons of several different remotes into
-KEY_UP/DOWN.  That lets several different remotes control the same
-app.
-
-Sure it is clunky to play with IR hex codes and keycodes in the
-configfs mapping dir. If you don't like it write a GUI app for
-manipulating the codes. GUI would then generate a script for udev to
-run which builds the configfs entries.
-
-Maybe I should rename those directory entries to "app" instead of
-"remote". They contain the mappings from IR hex codes to keycodes that
-an app is interested in. Usually there is a 1:1 correspondence between
-remote and app but there doesn't have to be.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Balbir Singh.
