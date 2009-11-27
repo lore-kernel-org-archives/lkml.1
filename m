@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZK0OEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZK0OKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbZK0OEm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 09:04:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZK0OEm
+	id S1754495AbZK0OKm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 09:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZK0OKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 09:04:42 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33974 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbZK0OEl (ORCPT
+	Fri, 27 Nov 2009 09:10:41 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:36874 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859AbZK0OKl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 09:04:41 -0500
-Date: Fri, 27 Nov 2009 09:04:39 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: Re: [RFC,PATCH 0/14] utrace/ptrace
-Message-ID: <20091127140439.GA17000@infradead.org>
-References: <20091124200127.GA5751@redhat.com> <20091125214818.GA4916@infradead.org> <20091126091052.GF1389@elte.hu> <20091126104722.GA8316@infradead.org> <20091126122441.GC15189@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091126122441.GC15189@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 27 Nov 2009 09:10:41 -0500
+Subject: Re: [Bug #14352] WARNING: at net/mac80211/scan.c:267
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0911271438340.3429@localhost>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera>
+	 <xXQGFmujPl.A.o1.bUdALB@chimera>
+	 <8db1092f0911162204i36dbd472w1d2c88411e151acb@mail.gmail.com>
+	 <200911172319.49198.rjw@sisk.pl>
+	 <alpine.LFD.2.00.0911271438340.3429@localhost>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-cTylexAlDVI3DKO6R6eY"
+Date: Fri, 27 Nov 2009 15:10:34 +0100
+Message-ID: <1259331034.5428.19.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 01:24:41PM +0100, Ingo Molnar wrote:
-> FYI, the merge window has not opened yet, so it cannot close in a few 
-> days.
 
-subsystems merged window, not Linus'.
+--=-cTylexAlDVI3DKO6R6eY
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > [...] and thus not getting any of the broad -next test coverage is a 
-> > pretty bad idea.  In the end it will be the maintainers ruling but 
-> > that doesn't make it a good idea from the engineering point of view.
-> 
-> FYI, it's been in -mm, that's where it's maintained.
+On Fri, 2009-11-27 at 14:46 +0100, Sebastian Ott wrote:
 
-None of the recent mm snapshots has anything utrace related in there,
-just a few ptrace patches from Oleg (which are in this series but a very
-small part of it) and certainly not all this new code that is pretty
-recent (take a look at the utrace list for the development).
+> [ 5724.754068] iwl3945 0000:03:00.0: Error sending REPLY_SCAN_CMD: time=20
+> out after 500ms.
 
-> Yes. Which is a further argument to not do it like that but to do one 
-> arch at a time. Trying to do too much at once is bad engineering.
+That tells you there's something wrong with the device -- and maybe the
+driver is misbehaving by telling mac80211 that it couldn't scan but then
+still calling scan_completed().
 
-I'm not sure why you're trying to pick fights here, but no one has said
-about doing it all in once.  The point I'm trying to make is that it's
-pretty bad to keep parallel ptrace implementations, and we should settle
-on one.  A pre-requisite of using the new once genericly is to have the
-architecture ptrace code updated.  I think arm and mips are the two
-only relevant ones still missing, so updating them and killing the other
-ones is easy.
+In any case, driver bug as far as I can tell.
 
-If you think keeping the two ptrace implementations is fine argue for
-that directly, but please stick to the technical points instead of just
-fighting for fightings sake.
+johannes
+
+--=-cTylexAlDVI3DKO6R6eY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLD93XAAoJEODzc/N7+Qma8X0P/1DfjfPk6uTCNM2FKDrSISeB
+cSbofmtR55rBSrgbR4fiy4jftjpoa2hSVWQoTjmZ/5m1vJRiIAkqPUG7rZ/FIIND
+X704I+oe/0TfCbuhk56lO+5lo0OpdScZItMK8ZeXgPOJkbzElm2+5wPLdSClXeh/
+HQNCzkRhcelqc8fejOQ2VLhopJrx7Kf/xuJCTf2ACbx16lVPyPa8yNQ477J+/KtV
+D+lARzdXmKsk52pm0CzyMtXdaJGVYwDrFxmxX0DLfiSW8EenK+DmJVY3Pk/oZw8W
+lOjYq3c+vkNHfBVsIf7MeMHbjPahYtZAmWCLmO9Yv7YfewYST1BBQQqq8ZKSN9X6
+uYDrx/0fiSUeCRbcYmdycjNTQ6jT39sVtAQWIGADe2bFg9YMZ6kvzeLYPwpVNdL7
+3OLUYo4t8yJKc/lFX7/qRPkgDQ3Mbv6Ne5IXFHZsUUPybJutvftek8LD1zsuO7hN
+knnLkdEFvD3Ozs0iLanVT+iwR6pymn04e/NoCLBQGcWKtDLR2ElCE6B592M8BtJ2
+3MFnM6PZ5IRD4oj5Yhs0kFctE4AG/rvUbXHJweiTs/z3rmixagMKUazeQ7ZI9i5q
+ZYfkbh908f+75wlsxm5JPUmu5XFHqKVz1ErlMf3Vi9D7VWEeoouj6ylYgZsqYR/P
+BvsUOQdxptVrfOnc3+2y
+=OGMK
+-----END PGP SIGNATURE-----
+
+--=-cTylexAlDVI3DKO6R6eY--
+
