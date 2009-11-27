@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbZK0S0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZK0Saf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752918AbZK0S0l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 13:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZK0S0k
+	id S1753548AbZK0Saf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 13:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZK0S3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 13:26:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32901 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbZK0S0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 13:26:40 -0500
-Date: Fri, 27 Nov 2009 19:26:07 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: David Rientjes <rientjes@google.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, vedran.furac@gmail.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-Message-ID: <20091127182607.GA30235@random.random>
-References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com>
- <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com>
- <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com>
- <20091125124433.GB27615@random.random>
- <alpine.DEB.2.00.0911251334020.8191@chino.kir.corp.google.com>
+	Fri, 27 Nov 2009 13:29:51 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43552 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753113AbZK0S3n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 13:29:43 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 01/12] perf symbols: Avoid annoying message about loading [vdso] symbols
+Date: Fri, 27 Nov 2009 16:29:12 -0200
+Message-Id: <1259346563-12568-1-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0911251334020.8191@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 25, 2009 at 01:39:59PM -0800, David Rientjes wrote:
-> adjust that heuristic.  That has traditionally always used total_vm as a 
-> baseline which is a much more static value and can be quantified within a 
-> reasonable range by experimental data when it would not be defined as 
-> rogue.  By changing the baseline to rss, we lose much of that control 
-> since its more dynamic and dependent on the current state of the machine 
-> at the time of the oom which can be predicted with less accuracy.
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Ok I can see the fact by being dynamic and less predictable worries
-you. The "second to last" tasks especially are going to be less
-predictable, but the memory hog would normally end up accounting for
-most of the memory and this should increase the badness delta between
-the offending tasks (or tasks) and the innocent stuff, so making it
-more reliable. The innocent stuff should be more and more paged out
-from ram. So I tend to think it'll be much less likely to kill an
-innocent task this way (as demonstrated in practice by your
-measurement too), but it's true there's no guarantee it'll always do
-the right thing, because it's a heuristic anyway, but even total_vm
-doesn't provide guarantee unless your workload is stationary and your
-badness scores are fixed and no virtual memory is ever allocated by
-any task in the system and no new task are spawned.
+This should be properly fixed when we remove the XXX comment in 'perf
+report', function resolve_symbol.
 
-It'd help if you posted a regression showing smaller delta between
-oom-target task and second task. My email was just to point out, your
-measurement was a good thing in oom killing terms. If I've to imagine
-the worst case for this, is an app allocating memory at very low
-peace, and then slowly getting swapped out and taking huge swap
-size. Maybe we need to add swap size to rss, dunno, but the paged out
-MAP_SHARED equivalent can't be accounted like we can account swap
-size, so in practice I feel a raw rss is going to be more practical
-than making swap special vs file mappings.
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/util/symbol.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 4ed379b..8aab89b 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -1516,6 +1516,7 @@ static int kernel_maps__create_kernel_map(const struct symbol_conf *conf)
+ 	vdso = dso__new("[vdso]");
+ 	if (vdso == NULL)
+ 		goto out_delete_kernel_map;
++	vdso->loaded = 1;
+ 
+ 	if (sysfs__read_build_id("/sys/kernel/notes", kernel->build_id,
+ 				 sizeof(kernel->build_id)) == 0)
+-- 
+1.6.2.5
+
