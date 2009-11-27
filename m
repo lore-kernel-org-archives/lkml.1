@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbZK0PGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZK0PGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbZK0PGJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 10:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZK0PGI
+	id S1754388AbZK0PGw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 10:06:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZK0PGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 10:06:08 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:10110 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbZK0PGH convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;3:1>);
-	Fri, 27 Nov 2009 10:06:07 -0500
-Message-Id: <4B0FF8F80200007800022708@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 27 Nov 2009 15:06:16 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/alternatives: no need for alternatives-asm.h to
-	 re-invent stuff already in asm.h
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Fri, 27 Nov 2009 10:06:51 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:38074 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753126AbZK0PGv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 10:06:51 -0500
+Date: Fri, 27 Nov 2009 10:08:26 -0500
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Len Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: ucc_geth doesn't work properly with vlans enabled.
+Message-ID: <20091127150826.GA13458@caffeine.csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This at once also gets the alignment specification right for x86-64.
+We just started using vlans on our powerpc platform, and we noticed that
+we were getting dropped packets when using the vlan interfaces.
+After a bit of debuging it turned out that dropping the MUT on the
+client machine to 1496 made the problem go away, which was of course
+also very suspicious.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+So looking through the driver I found the max packet length is set to 1518
+which of course is the right size for a 1500byte packet as long as it is
+not vlan tagged.  The UCC happens to have support for recognizing vlan
+tagged packets and dynamically increasing the allowed size in the vlan
+tagged case by 4 bytes which is great if it works.  Well it turns out,
+that feature works, but isn't actually enabled in the driver.  The code
+to handle activating it is there, but there is no code anywhere to ever
+set that parameter.
 
----
- arch/x86/include/asm/alternative-asm.h |   10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+Specifically:
 
---- linux-2.6.32-rc8/arch/x86/include/asm/alternative-asm.h
-+++ 2.6.32-rc8-x86-alternative/arch/x86/include/asm/alternative-asm.h
-@@ -1,17 +1,13 @@
- #ifdef __ASSEMBLY__
- 
--#ifdef CONFIG_X86_32
--# define X86_ALIGN .long
--#else
--# define X86_ALIGN .quad
--#endif
-+#include <asm/asm.h>
- 
- #ifdef CONFIG_SMP
- 	.macro LOCK_PREFIX
- 1:	lock
- 	.section .smp_locks,"a"
--	.align 4
--	X86_ALIGN 1b
-+	_ASM_ALIGN
-+	_ASM_PTR 1b
- 	.previous
- 	.endm
- #else
+        if (ug_info->dynamicMaxFrameLength)
+                remoder |= REMODER_DYNAMIC_MAX_FRAME_LENGTH;
 
+This code works fine, but ug_info->dynamicMaxFrameLength is never touched
+anywhere other than being memset to 0 initially as part of the struct.
 
+So a simple hack of:
 
+        if (ug_info->dynamicMaxFrameLength || 1)
+                remoder |= REMODER_DYNAMIC_MAX_FRAME_LENGTH;
+
+makes it work perfectly with vlans, but is obviously not the right way
+to solve this.
+
+What would be the right way to solve this?  What was the intent here I
+wonder when it was written?  Certainly the current behaviour means vlans
+can't be used on this driver.
+
+-- 
+Len Sorensen
