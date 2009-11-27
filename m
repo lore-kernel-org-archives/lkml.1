@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbZK0XLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbZK0XLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbZK0XLM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 18:11:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZK0XLL
+	id S1753402AbZK0XLK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 18:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbZK0XLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 18:11:11 -0500
-Received: from server1.wserver.cz ([82.113.45.157]:60458 "EHLO
+	Fri, 27 Nov 2009 18:11:09 -0500
+Received: from server1.wserver.cz ([82.113.45.157]:60466 "EHLO
 	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753335AbZK0XGF (ORCPT
+	with ESMTP id S1753520AbZK0XGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Nov 2009 18:06:05 -0500
 From: Jiri Slaby <jslaby@suse.cz>
@@ -15,10 +15,11 @@ To: jirislaby@gmail.com
 Cc: mingo@elte.hu, nhorman@tuxdriver.com, sfr@canb.auug.org.au,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, torvalds@linux-foundation.org, oleg@redhat.com
-Subject: [PATCH v3 09/27] FS: proc, make limits writable
-Date: Sat, 28 Nov 2009 00:05:49 +0100
-Message-Id: <1259363167-9347-9-git-send-email-jslaby@suse.cz>
+       hpa@zytor.com, torvalds@linux-foundation.org, oleg@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH v3 10/27] core: do security check under task_lock
+Date: Sat, 28 Nov 2009 00:05:50 +0100
+Message-Id: <1259363167-9347-10-git-send-email-jslaby@suse.cz>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <1259363167-9347-1-git-send-email-jslaby@suse.cz>
 References: <1259363167-9347-1-git-send-email-jslaby@suse.cz>
@@ -26,112 +27,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+Do security_task_setrlimit under task_lock. Other tasks may
+change limits under our hands while we are checking limits
+inside the function. From now on, they can't.
 
-Allow writing strings such as
-Max core file size=0:unlimited
-to /proc/<pid>/limits to change limits.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Acked-by: James Morris <jmorris@namei.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
 ---
- fs/proc/base.c |   68 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 66 insertions(+), 2 deletions(-)
+ kernel/sys.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index be4733c..78c0367 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -536,8 +536,72 @@ static ssize_t limits_read(struct file *file, char __user *buf, size_t rcount,
- 	return count;
- }
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 605ab9c..0f86199 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1243,7 +1243,7 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
+ 		struct rlimit *new_rlim)
+ {
+ 	struct rlimit *old_rlim;
+-	int retval;
++	int retval = 0;
  
-+static ssize_t limits_write(struct file *file, const char __user *buf,
-+		size_t count, loff_t *ppos)
-+{
-+	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-+	char str[32 + 1 + 16 + 1 + 16 + 1], *delim, *next;
-+	struct rlimit new_rlimit;
-+	unsigned int i;
-+	int ret;
-+
-+	if (!task) {
-+		count = -ESRCH;
-+		goto out;
-+	}
-+	if (copy_from_user(str, buf, min(count, sizeof(str) - 1))) {
-+		count = -EFAULT;
-+		goto put_task;
-+	}
-+
-+	str[min(count, sizeof(str) - 1)] = 0;
-+
-+	delim = strchr(str, '=');
-+	if (!delim) {
-+		count = -EINVAL;
-+		goto put_task;
-+	}
-+	*delim++ = 0; /* for easy 'str' usage */
-+	new_rlimit.rlim_cur = simple_strtoul(delim, &next, 0);
-+	if (*next != ':') {
-+		if (strncmp(delim, "unlimited:", 10)) {
-+			count = -EINVAL;
-+			goto put_task;
-+		}
-+		new_rlimit.rlim_cur = RLIM_INFINITY;
-+		next = delim + 9; /* move to ':' */
-+	}
-+	delim = next + 1;
-+	new_rlimit.rlim_max = simple_strtoul(delim, &next, 0);
-+	if (*next != 0) {
-+		if (strcmp(delim, "unlimited")) {
-+			count = -EINVAL;
-+			goto put_task;
-+		}
-+		new_rlimit.rlim_max = RLIM_INFINITY;
-+	}
-+
-+	for (i = 0; i < RLIM_NLIMITS; i++)
-+		if (!strcmp(str, lnames[i].name))
-+			break;
-+	if (i >= RLIM_NLIMITS) {
-+		count = -EINVAL;
-+		goto put_task;
-+	}
-+
-+	ret = setrlimit(task, i, &new_rlimit);
-+	if (ret)
-+		count = ret;
-+
-+put_task:
-+	put_task_struct(task);
-+out:
-+	return count;
-+}
-+
- static const struct file_operations proc_pid_limits_operations = {
- 	.read	= limits_read,
-+	.write	= limits_write,
- };
+ 	if (new_rlim->rlim_cur > new_rlim->rlim_max)
+ 		return -EINVAL;
+@@ -1260,10 +1260,6 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
+ 		}
+ 	}
  
- #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-@@ -2519,7 +2583,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	INF("auxv",       S_IRUSR, proc_pid_auxv),
- 	ONE("status",     S_IRUGO, proc_pid_status),
- 	ONE("personality", S_IRUSR, proc_pid_personality),
--	REG("limits",	  S_IRUSR, proc_pid_limits_operations),
-+	REG("limits",	  S_IRUSR|S_IWUSR, proc_pid_limits_operations),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
-@@ -2853,7 +2917,7 @@ static const struct pid_entry tid_base_stuff[] = {
- 	INF("auxv",      S_IRUSR, proc_pid_auxv),
- 	ONE("status",    S_IRUGO, proc_pid_status),
- 	ONE("personality", S_IRUSR, proc_pid_personality),
--	REG("limits",	  S_IRUSR, proc_pid_limits_operations),
-+	REG("limits",	  S_IRUSR|S_IWUSR, proc_pid_limits_operations),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
+-	retval = security_task_setrlimit(tsk, resource, new_rlim);
+-	if (retval)
+-		goto out;
+-
+ 	if (resource == RLIMIT_CPU && new_rlim->rlim_cur == 0) {
+ 		/*
+ 		 * The caller is asking for an immediate RLIMIT_CPU
+@@ -1276,11 +1272,13 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
+ 
+ 	old_rlim = tsk->signal->rlim + resource;
+ 	task_lock(tsk->group_leader);
+-	if ((new_rlim->rlim_max <= old_rlim->rlim_max) ||
+-				capable(CAP_SYS_RESOURCE))
+-		*old_rlim = *new_rlim;
+-	else
++	if ((new_rlim->rlim_max > old_rlim->rlim_max) &&
++				!capable(CAP_SYS_RESOURCE))
+ 		retval = -EPERM;
++	if (!retval)
++		retval = security_task_setrlimit(tsk, resource, new_rlim);
++	if (!retval)
++		*old_rlim = *new_rlim;
+ 	task_unlock(tsk->group_leader);
+ 
+ 	if (retval || resource != RLIMIT_CPU)
 -- 
 1.6.5.3
 
