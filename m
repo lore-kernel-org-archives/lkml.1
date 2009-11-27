@@ -1,55 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510AbZK0BWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbZK0BeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751510AbZK0BWt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 20:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZK0BWs
+	id S1752010AbZK0BeV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 20:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbZK0BeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 20:22:48 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:38576 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbZK0BWr (ORCPT
+	Thu, 26 Nov 2009 20:34:19 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:59189 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbZK0BeS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 20:22:47 -0500
+	Thu, 26 Nov 2009 20:34:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BYki4A3ZwG+w14xQKQ7JPnrAsQVBlxBd8AWFBoOSaSsWEhkPISRGPVJ67mwYtmVnwS
-         p68SkOQIlwiDsM+ETUSXyxMu3HJClPXvZpHRRVsmWwCCEU26KQ81/Ae4S97iJU5Eqzhy
-         +OXiY2xJJqmqv2CCxY8Q07jMpA2O6Q2DbwR74=
-Date: Thu, 26 Nov 2009 17:22:49 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Vincent Perricone <vhp@buffalo.edu>, linux-kernel@vger.kernel.org
-Subject: Re: Keyboard driver not refreshing settings when unplugged.
-Message-ID: <20091127012249.GI6936@core.coreip.homeip.net>
-References: <58ccc7770911112150y4b5adebfq4401df46b20d2867@mail.gmail.com> <4AFCBEBF.3010607@gmail.com>
+        h=subject:to:from:date:message-id:user-agent:mime-version
+         :content-type:content-transfer-encoding;
+        b=ZLSTCFK/0rzP+Gvb+LyQKM4fbNcr6Plo+c3yGqYg+eOaiTIvGL4MdMa3b9fG2qAfMJ
+         0CiKYXkB5nDqKIEaTVqK8JeTqzIY6GMTbfHA9CUdG877qhxzm5IfkYtXmo1BafqMQGci
+         61QvPcqLz08Qa33SNygULqY4kxBT3wzMusZGo=
+Subject: [IR-RFC PATCH v4 0/6] In-kernel IR support using evdev
+To: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+From: Jon Smirl <jonsmirl@gmail.com>
+Date: Thu, 26 Nov 2009 20:34:19 -0500
+Message-ID: <20091127013217.7671.32355.stgit@terra>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AFCBEBF.3010607@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 08:04:47PM -0600, Robert Hancock wrote:
-> On 11/11/2009 11:50 PM, Vincent Perricone wrote:
->> I noticed a bug which may possibly be part of the Linux kernel.  If
->> one were to enable a setting on the keyboard(caps lock) and then
->> unplug that keyboard.  Upon re-plugging it in or another, the system
->> will still keep caps lock enabled.  When the user then goes and
->> enables caps lock on their own keyboard which assumes the setting is
->> disabled, the system then turns caps lock off, even though the user
->> wanted it on.
->>
->> 2.6.31-14-generic
->
-> USB or PS/2 keyboard? I don't know that the kernel even can tell if a  
-> PS/2 keyboard has been unplugged or not..
+This is a repost of the LIRC input patch series I wrote a year ago.
+Many of the ideas being discussed in the currect "Should we create a 
+raw input interface for IR's?" thread have already been implemented
+in this code.
 
-Depends on the box. PS/2 devices normally send 0xaa 0x00 when plugged in
-but that may get suppressed, especially on laptops.
+---------------------------------------------------
+
+All of this kernel code is tiny, about 20K including a driver.
+
+Basic flow works like this:
+
+patch: Minimal changes to the core input system
+Add a new IR data type to the input framework
+
+patch: Core IR module
+In-kernel decoding of core IR protocols - RC5, RC6, etc
+This only converts from protocol pulse timing to common command format.
+Check out: http://www.sbprojects.com/knowledge/ir/sirc.htm
+
+patch: Configfs support for IR
+Decoded core protocols pass through a translation map based on configfs
+When core protocol matches an entry in configfs it is turned into a
+keycode event.
+
+patch: Microsoft mceusb2 driver for in-kernel IR subsystem
+Example mceusb IR input driver
+
+patch: the other ones are an embedded driver using a GPT pin.
+
+You make a directory in /configfs/remotes for each remote you have.
+Making the directory creates a new evdev device.  Under the directory
+make an entry for each command generated by the device. These entries
+cause the decoded IR data to be mapped into keycodes on the new evdev
+device. udev would load these configfs mappings at boot time...
+
+mkdir /config/remotes/sony
+ -- this creates a new evdev device
+mkdir remotes/sony/one
+echo 7 >remotes/sony/one/protocol
+echo 264 >remotes/sony/one/command
+echo 2 >remotes/sony/one/keycode
+
+This transforms a button push of 1 on my remote into a key stroke for KEY_1
+
+ *   configfs root
+ *   --remotes
+ *   ----specific remote
+ *   ------keymap
+ *   --------protocol
+ *   --------device
+ *   --------command
+ *   --------keycode
+ *   ------repeat keymaps
+ *   --------....
+ *   ----another remote
+ *   ------more keymaps
+
+You can map the 1 button from multiple remotes to KEY_1 if you want. Or
+you can use a single remote to create multiple virtual keyboards.
+
+-------------------------
+
+Raw IR pulse data is available in a FIFO via sysfs. You can use this
+to figure out new remote protocols.
+
+Two input events are generated
+1) an event for the decoded raw IR protocol
+2) a keycode event if thedecoded raw IR protocol matches an entry in
+the configfs
+
+You can also send pulses.
+
+------
+
+If you want to script this, you would have a user space task that
+watches for either the decoded IR codes or the mapped keycodes.
+
+This system also works with user space device drivers. They can inject
+input events into the early event flow and they will get processed as
+if the event originated in the kernel.
+
+---------------------
+
+Sure you could push the protocol decoding code (RC5, etc) into user
+space. Seems like a lot of hassle to move about 3KB of code out of the
+kernel.
+
+--------------------
+previos comment on the patches...
+
+Now when a key is pressed on a remote, the configfs directories are
+searched for a match on protocol, device, command. If a matches is
+found, a key stroke corresponding to keycode is created and sent on
+the input device that was created when the directory for the remote
+was made.
+
+The configfs directories are pretty flexible. You can use them to map
+multiple remotes to the same key stroke, or send a single button push
+to multiple apps.
+
+To do the mapping it uses configfs (part of the kernel).  The main
+directory is remotes. You use a shell script to build mappings between
+the IR event and key stroke.
+
+mkdir /config/remotes/sony
+ -- this creates a new evdev device
+mkdir remotes/sony/one
+echo 7 >remotes/sony/one/procotol
+echo 264 >remotes/sony/one/command
+echo 2 >remotes/sony/one/keycode
+
+This transforms a button push of 1 on my remote into a key stroke for KEY_1
+
+ *   configfs root
+ *   --remotes
+ *   ----specific remote
+ *   ------keymap
+ *   --------protocol
+ *   --------device
+ *   --------command
+ *   --------keycode
+ *   ------repeat keymaps
+ *   --------....
+ *   ----another remote
+ *   ------more keymaps
+
+You can map the 1 button from multiple remote to KEY_1 if you want. Or
+you can use a single remote to create multiple virtual keyboards.
+
+>From last release...
+
+Raw mode. There are three sysfs attributes - ir_raw, ir_carrier,
+ir_xmitter. Read from ir_raw to get the raw timing data from the IR
+device. Set carrier and active xmitters and then copy raw data to
+ir_raw to send. These attributes may be better on a debug switch. You
+would use raw mode when decoding a new protocol. After you figure out
+the new protocol, write an in-kernel encoder/decoder for it.
+
+The in-kernel code is tiny, about 20K including a driver.
+
+>From last post...
+Note that user space IR device drivers can use the existing support in
+evdev to inject events into the input queue.
+
+Send and receive are implemented. Received IR messages are decoded and
+sent to user space as input messages. Send is done via an IOCTL on the
+input device.
+
+Two drivers are supplied. mceusb2 implements send and receive support
+for the Microsoft USB IR dongle.
+
+The GPT driver implements receive only support for a GPT pin - GPT is
+a GPIO with a timer attached.
+
+Code is only lightly tested. Encoders and decoders have not been
+written for all protocols. Repeat is not handled for any protocol. I'm 
+looking for help. There are 15 more existing LIRC drivers.
+
+---
+
+Jon Smirl (6):
+      Minimal changes to the core input system
+      Core IR module
+      Configfs support for IR
+      GPT driver for in-kernel IR support.
+      Example of PowerPC device tree support for GPT based IR
+      Microsoft mceusb2 driver for in-kernel IR subsystem
+
+
+ arch/powerpc/boot/dts/dspeak01.dts |   19 -
+ drivers/input/Kconfig              |    2 
+ drivers/input/Makefile             |    1 
+ drivers/input/input.c              |   20 +
+ drivers/input/ir/Kconfig           |   27 +
+ drivers/input/ir/Makefile          |   12 +
+ drivers/input/ir/ir-configfs.c     |  348 +++++++++++++++++
+ drivers/input/ir/ir-core.c         |  730 +++++++++++++++++++++++++++++++++++
+ drivers/input/ir/ir-gpt.c          |  184 +++++++++
+ drivers/input/ir/ir-mceusb2.c      |  745 ++++++++++++++++++++++++++++++++++++
+ drivers/input/ir/ir.h              |   63 +++
+ include/linux/input.h              |   76 ++++
+ include/linux/mod_devicetable.h    |    3 
+ 13 files changed, 2219 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/input/ir/Kconfig
+ create mode 100644 drivers/input/ir/Makefile
+ create mode 100644 drivers/input/ir/ir-configfs.c
+ create mode 100644 drivers/input/ir/ir-core.c
+ create mode 100644 drivers/input/ir/ir-gpt.c
+ create mode 100644 drivers/input/ir/ir-mceusb2.c
+ create mode 100644 drivers/input/ir/ir.h
 
 -- 
-Dmitry
+Jon Smirl
+jonsmirl@gmail.com
