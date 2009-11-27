@@ -1,49 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZK0ATn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbZK0A1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbZK0ATn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 19:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZK0ATm
+	id S1753526AbZK0A1K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 19:27:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZK0A1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 19:19:42 -0500
-Received: from khc.piap.pl ([195.187.100.11]:43849 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751106AbZK0ATl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 19:19:41 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com>
-	<200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	<4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	<4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
-	<4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
-	<4B0ED238.6060306@redhat.com> <m3pr75rpqa.fsf@intrepid.localdomain>
-	<4B0EED7D.90204@redhat.com> <m3ljhtrn83.fsf@intrepid.localdomain>
-	<4B0EFC30.80208@redhat.com>
-Date: Fri, 27 Nov 2009 01:19:44 +0100
-In-Reply-To: <4B0EFC30.80208@redhat.com> (Mauro Carvalho Chehab's message of
-	"Thu, 26 Nov 2009 20:07:44 -0200")
-Message-ID: <m38wdsstsv.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 26 Nov 2009 19:27:09 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37852 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753431AbZK0A1I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 19:27:08 -0500
+Date: Fri, 27 Nov 2009 09:20:35 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH RFC v0 2/3] res_counter: implement thresholds
+Message-Id: <20091127092035.bbf2efdc.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <8524ba285f6dd59cda939c28da523f344cdab3da.1259255307.git.kirill@shutemov.name>
+References: <cover.1259255307.git.kirill@shutemov.name>
+	<bc4dc055a7307c8667da85a4d4d9d5d189af27d5.1259255307.git.kirill@shutemov.name>
+	<8524ba285f6dd59cda939c28da523f344cdab3da.1259255307.git.kirill@shutemov.name>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+Hi.
 
-> Why do you want to replace everything into a single shot?
+On Thu, 26 Nov 2009 19:11:16 +0200, "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+> It allows to setup two thresholds: one above current usage and one
+> below. Callback threshold_notifier() will be called if a threshold is
+> crossed.
+> 
+> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> ---
+>  include/linux/res_counter.h |   44 +++++++++++++++++++++++++++++++++++++++++++
+>  kernel/res_counter.c        |    4 +++
+>  2 files changed, 48 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+> index fcb9884..bca99a5 100644
+> --- a/include/linux/res_counter.h
+> +++ b/include/linux/res_counter.h
+> @@ -9,6 +9,10 @@
+>   *
+>   * Author: Pavel Emelianov <xemul@openvz.org>
+>   *
+> + * Thresholds support
+> + * Copyright (C) 2009 Nokia Corporation
+> + * Author: Kirill A. Shutemov
+> + *
+>   * See Documentation/cgroups/resource_counter.txt for more
+>   * info about what this counter is.
+>   */
+> @@ -42,6 +46,13 @@ struct res_counter {
+>  	 * the number of unsuccessful attempts to consume the resource
+>  	 */
+>  	unsigned long long failcnt;
+> +
+> +	unsigned long long threshold_above;
+> +	unsigned long long threshold_below;
+> +	void (*threshold_notifier)(struct res_counter *counter,
+> +			unsigned long long usage,
+> +			unsigned long long threshold);
+> +
+>  	/*
+>  	 * the lock to protect all of the above.
+>  	 * the routines below consider this to be IRQ-safe
+> @@ -145,6 +156,20 @@ static inline bool res_counter_soft_limit_check_locked(struct res_counter *cnt)
+>  	return false;
+>  }
+>  
+> +static inline void res_counter_threshold_notify_locked(struct res_counter *cnt)
+> +{
+> +	if (cnt->usage >= cnt->threshold_above) {
+> +		cnt->threshold_notifier(cnt, cnt->usage, cnt->threshold_above);
+> +		return;
+> +	}
+> +
+> +	if (cnt->usage < cnt->threshold_below) {
+> +		cnt->threshold_notifier(cnt, cnt->usage, cnt->threshold_below);
+> +		return;
+> +	}
+> +}
+> +
+> +
+>  /**
+>   * Get the difference between the usage and the soft limit
+>   * @cnt: The counter
+> @@ -238,4 +263,23 @@ res_counter_set_soft_limit(struct res_counter *cnt,
+>  	return 0;
+>  }
+>  
+> +static inline int
+> +res_counter_set_thresholds(struct res_counter *cnt,
+> +		unsigned long long threshold_above,
+> +		unsigned long long threshold_below)
+> +{
+> +	unsigned long flags;
+> +	int ret = -EINVAL;
+> +
+> +	spin_lock_irqsave(&cnt->lock, flags);
+> +	if ((cnt->usage < threshold_above) &&
+> +			(cnt->usage >= threshold_below)) {
+> +		cnt->threshold_above = threshold_above;
+> +		cnt->threshold_below = threshold_below;
+> +		ret = 0;
+> +	}
+> +	spin_unlock_irqrestore(&cnt->lock, flags);
+> +	return ret;
+> +}
+> +
+>  #endif
+> diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+> index bcdabf3..646c29c 100644
+> --- a/kernel/res_counter.c
+> +++ b/kernel/res_counter.c
+> @@ -20,6 +20,8 @@ void res_counter_init(struct res_counter *counter, struct res_counter *parent)
+>  	spin_lock_init(&counter->lock);
+>  	counter->limit = RESOURCE_MAX;
+>  	counter->soft_limit = RESOURCE_MAX;
+> +	counter->threshold_above = RESOURCE_MAX;
+> +	counter->threshold_below = 0ULL;
+>  	counter->parent = parent;
+>  }
+>  
+> @@ -33,6 +35,7 @@ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+>  	counter->usage += val;
+>  	if (counter->usage > counter->max_usage)
+>  		counter->max_usage = counter->usage;
+> +	res_counter_threshold_notify_locked(counter);
+>  	return 0;
+>  }
+>  
+> @@ -73,6 +76,7 @@ void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val)
+>  		val = counter->usage;
+>  
+>  	counter->usage -= val;
+> +	res_counter_threshold_notify_locked(counter);
+>  }
+>  
+hmm.. this adds new checks to hot-path of process life cycle.
 
-Why not? It seems simpler to me. We need to change this anyway.
+Do you have any number on performance impact of these patches(w/o setting any threshold)?
+IMHO, it might be small enough to be ignored because KAMEZAWA-san's coalesce charge/uncharge
+patches have decreased charge/uncharge for res_counter itself, but I want to know just to make sure.
 
-If we change the whole table in a single ioctl, we can easily enumerate
-protocols requested and enable then selectively.
-But I think it's a minor implementation decision and we don't need to
-look at it at this time.
--- 
-Krzysztof Halasa
+
+Regards,
+Daisuke Nishimura.
