@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZK0WzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZK0XJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbZK0WzO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 17:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZK0WzO
+	id S1754006AbZK0XJW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 18:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbZK0XGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 17:55:14 -0500
-Received: from waste.org ([173.11.57.241]:46873 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752922AbZK0WzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 17:55:13 -0500
-Subject: Re: Re:
-From: Matt Mackall <mpm@selenic.com>
-To: Ian Molton <ian.molton@collabora.co.uk>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, jeff@garzik.org
-In-Reply-To: <4B0E6B02.8020705@collabora.co.uk>
-References: <1259197403.2858.88.camel@calx>
-	 <1259232570-11918-1-git-send-email-ian.molton@collabora.co.uk>
-	 <1259235525.9212.444.camel@calx>  <4B0E6B02.8020705@collabora.co.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 27 Nov 2009 16:54:56 -0600
-Message-ID: <1259362496.25403.165.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Nov 2009 18:06:05 -0500
+Received: from server1.wserver.cz ([82.113.45.157]:60406 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753221AbZK0XGD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 18:06:03 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: jirislaby@gmail.com
+Cc: mingo@elte.hu, nhorman@tuxdriver.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, torvalds@linux-foundation.org, oleg@redhat.com,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
+       David Howells <dhowells@redhat.com>
+Subject: [PATCH v3 01/27] SECURITY: selinux, fix update_rlimit_cpu parameter
+Date: Sat, 28 Nov 2009 00:05:41 +0100
+Message-Id: <1259363167-9347-1-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 11:48 +0000, Ian Molton wrote:
-> Matt Mackall wrote:
-> > On Thu, 2009-11-26 at 10:49 +0000, Ian Molton wrote:
-> >> Hi guys,
-> >>
-> > 
-> > No need to pass rng_buffer to the helper as there's only one with global
-> > scope.
-> 
-> Ah, sorry, I see what you mean now. The logic behind that is that it
-> matches the new API, whcih is all that will be left once the old drivers
-> are patched to use it. I planned to drop the helper altogether at that
-> point and though it'd make the patch more readable when that happens.
+From: Jiri Slaby <jirislaby@gmail.com>
 
-Ok, that's quite reasonable.
+Don't pass rlim_cur member of RLIM_NLIMITS-1=RLIMIT_RTTIME limit
+to update_rlimit_cpu() in selinux_bprm_committing_creds.
 
-> Is this enough to get an acked-by: ? If so, I'll do that and see about
-> getting the change into linux-next.
+Use proper rlim[RLIMIT_CPU].rlim_cur instead.
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Acked-by: James Morris <jmorris@namei.org>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Eric Paris <eparis@parisplace.org>
+Cc: David Howells <dhowells@redhat.com>
+---
+ security/selinux/hooks.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-You should probably go through Herbert's tree to get into -next,
-hopefully he won't be too miffed by your repeated failure to cc:
-linux-kernel initially and failure to cc: him here..
-
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index bb230d5..36d9e25 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2366,7 +2366,7 @@ static void selinux_bprm_committing_creds(struct linux_binprm *bprm)
+ 			initrlim = init_task.signal->rlim + i;
+ 			rlim->rlim_cur = min(rlim->rlim_max, initrlim->rlim_cur);
+ 		}
+-		update_rlimit_cpu(rlim->rlim_cur);
++		update_rlimit_cpu(current->signal->rlim[RLIMIT_CPU].rlim_cur);
+ 	}
+ }
+ 
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
+1.6.5.3
 
