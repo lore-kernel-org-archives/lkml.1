@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZK0Fty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbZK0Ftz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZK0Fty (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 00:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZK0Ftw
+	id S1753578AbZK0Ftz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 00:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZK0Ftz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 00:49:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57865 "EHLO hera.kernel.org"
+	Fri, 27 Nov 2009 00:49:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57866 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbZK0Ftv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751580AbZK0Ftv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Nov 2009 00:49:51 -0500
-Date: Fri, 27 Nov 2009 05:49:02 GMT
+Date: Fri, 27 Nov 2009 05:49:17 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu,
@@ -17,12 +17,12 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        fweisbec@gmail.com, tglx@linutronix.de, prasad@linux.vnet.ibm.com,
        mingo@elte.hu
-In-Reply-To: <1259294154-5197-1-git-send-regression-fweisbec@gmail.com>
-References: <1259294154-5197-1-git-send-regression-fweisbec@gmail.com>
+In-Reply-To: <1259294154-5197-2-git-send-regression-fweisbec@gmail.com>
+References: <1259294154-5197-2-git-send-regression-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] hw-breakpoints: Use struct perf_event_attr to define user breakpoints
-Message-ID: <tip-5fa10b28e57f94a90535cfeafe89dcee9f47d540@git.kernel.org>
-Git-Commit-ID: 5fa10b28e57f94a90535cfeafe89dcee9f47d540
+Subject: [tip:perf/core] hw-breakpoints: Use struct perf_event_attr to define kernel breakpoints
+Message-ID: <tip-dd1853c3f493f6d22d9e5390b192a07b73d2ac0a@git.kernel.org>
+Git-Commit-ID: dd1853c3f493f6d22d9e5390b192a07b73d2ac0a
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,353 +31,291 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5fa10b28e57f94a90535cfeafe89dcee9f47d540
-Gitweb:     http://git.kernel.org/tip/5fa10b28e57f94a90535cfeafe89dcee9f47d540
+Commit-ID:  dd1853c3f493f6d22d9e5390b192a07b73d2ac0a
+Gitweb:     http://git.kernel.org/tip/dd1853c3f493f6d22d9e5390b192a07b73d2ac0a
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 27 Nov 2009 04:55:53 +0100
+AuthorDate: Fri, 27 Nov 2009 04:55:54 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 27 Nov 2009 06:22:58 +0100
+CommitDate: Fri, 27 Nov 2009 06:22:59 +0100
 
-hw-breakpoints: Use struct perf_event_attr to define user breakpoints
+hw-breakpoints: Use struct perf_event_attr to define kernel breakpoints
 
-In-kernel user breakpoints are created using functions in which
-we pass breakpoint parameters as individual variables: address,
-length and type.
+Kernel breakpoints are created using functions in which we pass
+breakpoint parameters as individual variables: address, length
+and type.
 
 Although it fits well for x86, this just does not scale across
-archictectures that may support this api later as these may have
+architectures that may support this api later as these may have
 more or different needs. Pass in a perf_event_attr structure
 instead because it is meant to evolve as much as possible into
 a generic hardware breakpoint parameter structure.
 
 Reported-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1259294154-5197-1-git-send-regression-fweisbec@gmail.com>
+LKML-Reference: <1259294154-5197-2-git-send-regression-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/ptrace.c      |   74 +++++++++++++++++++---------------
- include/linux/hw_breakpoint.h |   36 +++++++---------
- kernel/hw_breakpoint.c        |   87 ++++++++--------------------------------
- 3 files changed, 75 insertions(+), 122 deletions(-)
+ include/linux/hw_breakpoint.h           |   35 +++++++++++--------------
+ kernel/hw_breakpoint.c                  |   35 +++----------------------
+ kernel/trace/trace_ksym.c               |   42 ++++++++++++++----------------
+ samples/hw_breakpoint/data_breakpoint.c |   10 +++---
+ 4 files changed, 44 insertions(+), 78 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 75e0cd8..2941b32 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -593,6 +593,34 @@ static unsigned long ptrace_get_dr7(struct perf_event *bp[])
- 	return dr7;
- }
- 
-+static struct perf_event *
-+ptrace_modify_breakpoint(struct perf_event *bp, int len, int type,
-+			 struct task_struct *tsk)
-+{
-+	int err;
-+	int gen_len, gen_type;
-+	DEFINE_BREAKPOINT_ATTR(attr);
-+
-+	/*
-+	 * We shoud have at least an inactive breakpoint at this
-+	 * slot. It means the user is writing dr7 without having
-+	 * written the address register first
-+	 */
-+	if (!bp)
-+		return ERR_PTR(-EINVAL);
-+
-+	err = arch_bp_generic_fields(len, type, &gen_len, &gen_type);
-+	if (err)
-+		return ERR_PTR(err);
-+
-+	attr = bp->attr;
-+	attr.bp_len = gen_len;
-+	attr.bp_type = gen_type;
-+	attr.disabled = 0;
-+
-+	return modify_user_hw_breakpoint(bp, &attr, bp->callback, tsk);
-+}
-+
- /*
-  * Handle ptrace writes to debug register 7.
-  */
-@@ -603,7 +631,6 @@ static int ptrace_write_dr7(struct task_struct *tsk, unsigned long data)
- 	int i, orig_ret = 0, rc = 0;
- 	int enabled, second_pass = 0;
- 	unsigned len, type;
--	int gen_len, gen_type;
- 	struct perf_event *bp;
- 
- 	data &= ~DR_CONTROL_RESERVED;
-@@ -634,33 +661,12 @@ restore:
- 			continue;
- 		}
- 
--		/*
--		 * We shoud have at least an inactive breakpoint at this
--		 * slot. It means the user is writing dr7 without having
--		 * written the address register first
--		 */
--		if (!bp) {
--			rc = -EINVAL;
--			break;
--		}
--
--		rc = arch_bp_generic_fields(len, type, &gen_len, &gen_type);
--		if (rc)
--			break;
--
--		/*
--		 * This is a temporary thing as bp is unregistered/registered
--		 * to simulate modification
--		 */
--		bp = modify_user_hw_breakpoint(bp, bp->attr.bp_addr, gen_len,
--					       gen_type, bp->callback,
--					       tsk, true);
--		thread->ptrace_bps[i] = NULL;
-+		bp = ptrace_modify_breakpoint(bp, len, type, tsk);
- 
- 		/* Incorrect bp, or we have a bug in bp API */
- 		if (IS_ERR(bp)) {
- 			rc = PTR_ERR(bp);
--			bp = NULL;
-+			thread->ptrace_bps[i] = NULL;
- 			break;
- 		}
- 		thread->ptrace_bps[i] = bp;
-@@ -707,24 +713,26 @@ static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
- {
- 	struct perf_event *bp;
- 	struct thread_struct *t = &tsk->thread;
-+	DEFINE_BREAKPOINT_ATTR(attr);
- 
- 	if (!t->ptrace_bps[nr]) {
- 		/*
- 		 * Put stub len and type to register (reserve) an inactive but
- 		 * correct bp
- 		 */
--		bp = register_user_hw_breakpoint(addr, HW_BREAKPOINT_LEN_1,
--						 HW_BREAKPOINT_W,
--						 ptrace_triggered, tsk,
--						 false);
-+		attr.bp_addr = addr;
-+		attr.bp_len = HW_BREAKPOINT_LEN_1;
-+		attr.bp_type = HW_BREAKPOINT_W;
-+		attr.disabled = 1;
-+
-+		bp = register_user_hw_breakpoint(&attr, ptrace_triggered, tsk);
- 	} else {
- 		bp = t->ptrace_bps[nr];
- 		t->ptrace_bps[nr] = NULL;
--		bp = modify_user_hw_breakpoint(bp, addr, bp->attr.bp_len,
--					       bp->attr.bp_type,
--					       bp->callback,
--					       tsk,
--					       bp->attr.disabled);
-+
-+		attr = bp->attr;
-+		attr.bp_addr = addr;
-+		bp = modify_user_hw_breakpoint(bp, &attr, bp->callback, tsk);
- 	}
- 	/*
- 	 * CHECKME: the previous code returned -EIO if the addr wasn't a
 diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
-index c9f7f7c..5da472e 100644
+index 5da472e..a03daed 100644
 --- a/include/linux/hw_breakpoint.h
 +++ b/include/linux/hw_breakpoint.h
-@@ -20,6 +20,14 @@ enum {
+@@ -28,6 +28,13 @@ struct perf_event_attr name = {		\
+ 	.pinned = 1,			\
+ };
  
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
- 
-+/* As it's for in-kernel or ptrace use, we want it to be pinned */
-+#define DEFINE_BREAKPOINT_ATTR(name)	\
-+struct perf_event_attr name = {		\
-+	.type = PERF_TYPE_BREAKPOINT,	\
-+	.size = sizeof(name),		\
-+	.pinned = 1,			\
-+};
++static inline void hw_breakpoint_init(struct perf_event_attr *attr)
++{
++	attr->type = PERF_TYPE_BREAKPOINT;
++	attr->size = sizeof(*attr);
++	attr->pinned = 1;
++}
 +
  static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
  {
  	return bp->attr.bp_addr;
-@@ -36,22 +44,16 @@ static inline int hw_breakpoint_len(struct perf_event *bp)
- }
- 
- extern struct perf_event *
--register_user_hw_breakpoint(unsigned long addr,
--			    int len,
--			    int type,
-+register_user_hw_breakpoint(struct perf_event_attr *attr,
- 			    perf_callback_t triggered,
--			    struct task_struct *tsk,
--			    bool active);
-+			    struct task_struct *tsk);
- 
- /* FIXME: only change from the attr, and don't unregister */
- extern struct perf_event *
- modify_user_hw_breakpoint(struct perf_event *bp,
--			  unsigned long addr,
--			  int len,
--			  int type,
-+			  struct perf_event_attr *attr,
- 			  perf_callback_t triggered,
--			  struct task_struct *tsk,
--			  bool active);
-+			  struct task_struct *tsk);
- 
- /*
+@@ -59,19 +66,13 @@ modify_user_hw_breakpoint(struct perf_event *bp,
   * Kernel breakpoints are not associated with any particular thread.
-@@ -89,20 +91,14 @@ static inline struct arch_hw_breakpoint *counter_arch_bp(struct perf_event *bp)
- #else /* !CONFIG_HAVE_HW_BREAKPOINT */
- 
- static inline struct perf_event *
--register_user_hw_breakpoint(unsigned long addr,
--			    int len,
--			    int type,
-+register_user_hw_breakpoint(struct perf_event_attr *attr,
- 			    perf_callback_t triggered,
--			    struct task_struct *tsk,
--			    bool active)		{ return NULL; }
-+			    struct task_struct *tsk)	{ return NULL; }
- static inline struct perf_event *
- modify_user_hw_breakpoint(struct perf_event *bp,
--			  unsigned long addr,
--			  int len,
--			  int type,
-+			  struct perf_event_attr *attr,
- 			  perf_callback_t triggered,
--			  struct task_struct *tsk,
--			  bool active)			{ return NULL; }
-+			  struct task_struct *tsk)	{ return NULL; }
- static inline struct perf_event *
- register_wide_hw_breakpoint_cpu(unsigned long addr,
- 				int len,
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index 32e1018..2a47514 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -289,90 +289,32 @@ int register_perf_hw_breakpoint(struct perf_event *bp)
- 	return __register_perf_hw_breakpoint(bp);
- }
- 
--/*
-- * Register a breakpoint bound to a task and a given cpu.
-- * If cpu is -1, the breakpoint is active for the task in every cpu
-- * If the task is -1, the breakpoint is active for every tasks in the given
-- * cpu.
-- */
--static struct perf_event *
--register_user_hw_breakpoint_cpu(unsigned long addr,
+  */
+ extern struct perf_event *
+-register_wide_hw_breakpoint_cpu(unsigned long addr,
 -				int len,
 -				int type,
--				perf_callback_t triggered,
--				pid_t pid,
++register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
+ 				perf_callback_t triggered,
 -				int cpu,
--				bool active)
+-				bool active);
++				int cpu);
+ 
+ extern struct perf_event **
+-register_wide_hw_breakpoint(unsigned long addr,
+-			    int len,
+-			    int type,
+-			    perf_callback_t triggered,
+-			    bool active);
++register_wide_hw_breakpoint(struct perf_event_attr *attr,
++			    perf_callback_t triggered);
+ 
+ extern int register_perf_hw_breakpoint(struct perf_event *bp);
+ extern int __register_perf_hw_breakpoint(struct perf_event *bp);
+@@ -100,18 +101,12 @@ modify_user_hw_breakpoint(struct perf_event *bp,
+ 			  perf_callback_t triggered,
+ 			  struct task_struct *tsk)	{ return NULL; }
+ static inline struct perf_event *
+-register_wide_hw_breakpoint_cpu(unsigned long addr,
+-				int len,
+-				int type,
++register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
+ 				perf_callback_t triggered,
+-				int cpu,
+-				bool active)		{ return NULL; }
++				int cpu)		{ return NULL; }
+ static inline struct perf_event **
+-register_wide_hw_breakpoint(unsigned long addr,
+-			    int len,
+-			    int type,
+-			    perf_callback_t triggered,
+-			    bool active)		{ return NULL; }
++register_wide_hw_breakpoint(struct perf_event_attr *attr,
++			    perf_callback_t triggered)	{ return NULL; }
+ static inline int
+ register_perf_hw_breakpoint(struct perf_event *bp)	{ return -ENOSYS; }
+ static inline int
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index 2a47514..cf5ee16 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -339,42 +339,16 @@ void unregister_hw_breakpoint(struct perf_event *bp)
+ }
+ EXPORT_SYMBOL_GPL(unregister_hw_breakpoint);
+ 
+-static struct perf_event *
+-register_kernel_hw_breakpoint_cpu(unsigned long addr,
+-				  int len,
+-				  int type,
+-				  perf_callback_t triggered,
+-				  int cpu,
+-				  bool active)
 -{
--	struct perf_event_attr *attr;
--	struct perf_event *bp;
+-	DEFINE_BREAKPOINT_ATTR(attr);
 -
--	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
--	if (!attr)
--		return ERR_PTR(-ENOMEM);
--
--	attr->type = PERF_TYPE_BREAKPOINT;
--	attr->size = sizeof(*attr);
--	attr->bp_addr = addr;
--	attr->bp_len = len;
--	attr->bp_type = type;
--	/*
--	 * Such breakpoints are used by debuggers to trigger signals when
--	 * we hit the excepted memory op. We can't miss such events, they
--	 * must be pinned.
--	 */
--	attr->pinned = 1;
+-	attr.bp_addr = addr;
+-	attr.bp_len = len;
+-	attr.bp_type = type;
 -
 -	if (!active)
--		attr->disabled = 1;
+-		attr.disabled = 1;
 -
--	bp = perf_event_create_kernel_counter(attr, cpu, pid, triggered);
--	kfree(attr);
--
--	return bp;
+-	return perf_event_create_kernel_counter(&attr, cpu, -1, triggered);
 -}
 -
  /**
-  * register_user_hw_breakpoint - register a hardware breakpoint for user space
+  * register_wide_hw_breakpoint - register a wide breakpoint in the kernel
 - * @addr: is the memory address that triggers the breakpoint
 - * @len: the length of the access to the memory (1 byte, 2 bytes etc...)
 - * @type: the type of the access to the memory (read/write/exec)
 + * @attr: breakpoint attributes
   * @triggered: callback to trigger when we hit the breakpoint
-  * @tsk: pointer to 'task_struct' of the process to which the address belongs
 - * @active: should we activate it while registering it
-- *
+  *
+  * @return a set of per_cpu pointers to perf events
   */
- struct perf_event *
--register_user_hw_breakpoint(unsigned long addr,
+ struct perf_event **
+-register_wide_hw_breakpoint(unsigned long addr,
 -			    int len,
 -			    int type,
-+register_user_hw_breakpoint(struct perf_event_attr *attr,
- 			    perf_callback_t triggered,
--			    struct task_struct *tsk,
+-			    perf_callback_t triggered,
 -			    bool active)
-+			    struct task_struct *tsk)
++register_wide_hw_breakpoint(struct perf_event_attr *attr,
++			    perf_callback_t triggered)
  {
--	return register_user_hw_breakpoint_cpu(addr, len, type, triggered,
--					       tsk->pid, -1, active);
-+	return perf_event_create_kernel_counter(attr, -1, tsk->pid, triggered);
- }
- EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
+ 	struct perf_event **cpu_events, **pevent, *bp;
+ 	long err;
+@@ -386,8 +360,7 @@ register_wide_hw_breakpoint(unsigned long addr,
  
- /**
-  * modify_user_hw_breakpoint - modify a user-space hardware breakpoint
-  * @bp: the breakpoint structure to modify
-- * @addr: is the memory address that triggers the breakpoint
-- * @len: the length of the access to the memory (1 byte, 2 bytes etc...)
-- * @type: the type of the access to the memory (read/write/exec)
-+ * @attr: new breakpoint attributes
-  * @triggered: callback to trigger when we hit the breakpoint
-  * @tsk: pointer to 'task_struct' of the process to which the address belongs
-- * @active: should we activate it while registering it
-  */
- struct perf_event *
--modify_user_hw_breakpoint(struct perf_event *bp,
--			  unsigned long addr,
--			  int len,
--			  int type,
-+modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr,
- 			  perf_callback_t triggered,
--			  struct task_struct *tsk,
--			  bool active)
-+			  struct task_struct *tsk)
+ 	for_each_possible_cpu(cpu) {
+ 		pevent = per_cpu_ptr(cpu_events, cpu);
+-		bp = register_kernel_hw_breakpoint_cpu(addr, len, type,
+-					triggered, cpu, active);
++		bp = perf_event_create_kernel_counter(attr, cpu, -1, triggered);
+ 
+ 		*pevent = bp;
+ 
+diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
+index c538b15..ddfa0fd 100644
+--- a/kernel/trace/trace_ksym.c
++++ b/kernel/trace/trace_ksym.c
+@@ -42,9 +42,7 @@
+ 
+ struct trace_ksym {
+ 	struct perf_event	**ksym_hbp;
+-	unsigned long		ksym_addr;
+-	int			type;
+-	int			len;
++	struct perf_event_attr	attr;
+ #ifdef CONFIG_PROFILE_KSYM_TRACER
+ 	unsigned long		counter;
+ #endif
+@@ -71,7 +69,7 @@ void ksym_collect_stats(unsigned long hbp_hit_addr)
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(entry, node, &ksym_filter_head, ksym_hlist) {
+-		if ((entry->ksym_addr == hbp_hit_addr) &&
++		if ((entry->attr.bp_addr == hbp_hit_addr) &&
+ 		    (entry->counter <= MAX_UL_INT)) {
+ 			entry->counter++;
+ 			break;
+@@ -192,14 +190,15 @@ int process_new_ksym_entry(char *ksymname, int op, unsigned long addr)
+ 	if (!entry)
+ 		return -ENOMEM;
+ 
+-	entry->type = op;
+-	entry->ksym_addr = addr;
+-	entry->len = HW_BREAKPOINT_LEN_4;
++	hw_breakpoint_init(&entry->attr);
++
++	entry->attr.bp_type = op;
++	entry->attr.bp_addr = addr;
++	entry->attr.bp_len = HW_BREAKPOINT_LEN_4;
+ 
+ 	ret = -EAGAIN;
+-	entry->ksym_hbp = register_wide_hw_breakpoint(entry->ksym_addr,
+-					entry->len, entry->type,
+-					ksym_hbp_handler, true);
++	entry->ksym_hbp = register_wide_hw_breakpoint(&entry->attr,
++					ksym_hbp_handler);
+ 
+ 	if (IS_ERR(entry->ksym_hbp)) {
+ 		ret = PTR_ERR(entry->ksym_hbp);
+@@ -236,12 +235,12 @@ static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
+ 	mutex_lock(&ksym_tracer_mutex);
+ 
+ 	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
+-		ret = trace_seq_printf(s, "%pS:", (void *)entry->ksym_addr);
+-		if (entry->type == HW_BREAKPOINT_R)
++		ret = trace_seq_printf(s, "%pS:", (void *)entry->attr.bp_addr);
++		if (entry->attr.bp_type == HW_BREAKPOINT_R)
+ 			ret = trace_seq_puts(s, "r--\n");
+-		else if (entry->type == HW_BREAKPOINT_W)
++		else if (entry->attr.bp_type == HW_BREAKPOINT_W)
+ 			ret = trace_seq_puts(s, "-w-\n");
+-		else if (entry->type == (HW_BREAKPOINT_W | HW_BREAKPOINT_R))
++		else if (entry->attr.bp_type == (HW_BREAKPOINT_W | HW_BREAKPOINT_R))
+ 			ret = trace_seq_puts(s, "rw-\n");
+ 		WARN_ON_ONCE(!ret);
+ 	}
+@@ -317,9 +316,9 @@ static ssize_t ksym_trace_filter_write(struct file *file,
+ 
+ 	ret = -EINVAL;
+ 	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
+-		if (entry->ksym_addr == ksym_addr) {
++		if (entry->attr.bp_addr == ksym_addr) {
+ 			/* Check for malformed request: (6) */
+-			if (entry->type != op)
++			if (entry->attr.bp_type != op)
+ 				changed = 1;
+ 			else
+ 				goto out;
+@@ -328,13 +327,12 @@ static ssize_t ksym_trace_filter_write(struct file *file,
+ 	}
+ 	if (changed) {
+ 		unregister_wide_hw_breakpoint(entry->ksym_hbp);
+-		entry->type = op;
++		entry->attr.bp_type = op;
+ 		ret = 0;
+ 		if (op > 0) {
+ 			entry->ksym_hbp =
+-				register_wide_hw_breakpoint(entry->ksym_addr,
+-					entry->len, entry->type,
+-					ksym_hbp_handler, true);
++				register_wide_hw_breakpoint(&entry->attr,
++					ksym_hbp_handler);
+ 			if (IS_ERR(entry->ksym_hbp))
+ 				ret = PTR_ERR(entry->ksym_hbp);
+ 			else
+@@ -489,7 +487,7 @@ static int ksym_tracer_stat_show(struct seq_file *m, void *v)
+ 
+ 	entry = hlist_entry(stat, struct trace_ksym, ksym_hlist);
+ 
+-	access_type = entry->type;
++	access_type = entry->attr.bp_type;
+ 
+ 	switch (access_type) {
+ 	case HW_BREAKPOINT_R:
+@@ -505,7 +503,7 @@ static int ksym_tracer_stat_show(struct seq_file *m, void *v)
+ 		seq_puts(m, "  NA          ");
+ 	}
+ 
+-	if (lookup_symbol_name(entry->ksym_addr, fn_name) >= 0)
++	if (lookup_symbol_name(entry->attr.bp_addr, fn_name) >= 0)
+ 		seq_printf(m, "  %-36s", fn_name);
+ 	else
+ 		seq_printf(m, "  %-36s", "<NA>");
+diff --git a/samples/hw_breakpoint/data_breakpoint.c b/samples/hw_breakpoint/data_breakpoint.c
+index ee7f9fb..2952550 100644
+--- a/samples/hw_breakpoint/data_breakpoint.c
++++ b/samples/hw_breakpoint/data_breakpoint.c
+@@ -51,13 +51,13 @@ static void sample_hbp_handler(struct perf_event *temp, void *data)
+ static int __init hw_break_module_init(void)
  {
- 	/*
- 	 * FIXME: do it without unregistering
-@@ -381,8 +323,7 @@ modify_user_hw_breakpoint(struct perf_event *bp,
- 	 */
- 	unregister_hw_breakpoint(bp);
- 
--	return register_user_hw_breakpoint(addr, len, type, triggered,
--					   tsk, active);
-+	return perf_event_create_kernel_counter(attr, -1, tsk->pid, triggered);
- }
- EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint);
- 
-@@ -406,8 +347,16 @@ register_kernel_hw_breakpoint_cpu(unsigned long addr,
- 				  int cpu,
- 				  bool active)
- {
--	return register_user_hw_breakpoint_cpu(addr, len, type, triggered,
--					       -1, cpu, active);
+ 	int ret;
+-	unsigned long addr;
 +	DEFINE_BREAKPOINT_ATTR(attr);
-+
-+	attr.bp_addr = addr;
-+	attr.bp_len = len;
-+	attr.bp_type = type;
-+
-+	if (!active)
-+		attr.disabled = 1;
-+
-+	return perf_event_create_kernel_counter(&attr, cpu, -1, triggered);
- }
  
- /**
+-	addr = kallsyms_lookup_name(ksym_name);
++	attr.bp_addr = kallsyms_lookup_name(ksym_name);
++	attr.bp_len = HW_BREAKPOINT_LEN_4;
++	attr.bp_type = HW_BREAKPOINT_W | HW_BREAKPOINT_R;
+ 
+-	sample_hbp = register_wide_hw_breakpoint(addr, HW_BREAKPOINT_LEN_4,
+-						 HW_BREAKPOINT_W | HW_BREAKPOINT_R,
+-						 sample_hbp_handler, true);
++	sample_hbp = register_wide_hw_breakpoint(&attr, sample_hbp_handler);
+ 	if (IS_ERR(sample_hbp)) {
+ 		ret = PTR_ERR(sample_hbp);
+ 		goto fail;
