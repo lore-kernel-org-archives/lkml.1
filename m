@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbZK0XJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZK0XJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbZK0XJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 18:09:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbZK0XJ1
+	id S1754067AbZK0XJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 18:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbZK0XJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 18:09:27 -0500
-Received: from server1.wserver.cz ([82.113.45.157]:60473 "EHLO
+	Fri, 27 Nov 2009 18:09:25 -0500
+Received: from server1.wserver.cz ([82.113.45.157]:60474 "EHLO
 	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575AbZK0XGF (ORCPT
+	with ESMTP id S1753579AbZK0XGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Nov 2009 18:06:05 -0500
 From: Jiri Slaby <jslaby@suse.cz>
@@ -17,10 +17,10 @@ Cc: mingo@elte.hu, nhorman@tuxdriver.com, sfr@canb.auug.org.au,
        marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
        hpa@zytor.com, torvalds@linux-foundation.org, oleg@redhat.com,
        James Morris <jmorris@namei.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH v3 14/27] resource: add helpers for fetching rlimits
-Date: Sat, 28 Nov 2009 00:05:54 +0100
-Message-Id: <1259363167-9347-14-git-send-email-jslaby@suse.cz>
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-ia64@vger.kernel.org
+Subject: [PATCH v3 15/27] IA64: use helpers for rlimits
+Date: Sat, 28 Nov 2009 00:05:55 +0100
+Message-Id: <1259363167-9347-15-git-send-email-jslaby@suse.cz>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <1259363167-9347-1-git-send-email-jslaby@suse.cz>
 References: <1259363167-9347-1-git-send-email-jslaby@suse.cz>
@@ -28,56 +28,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We want to be sure that compiler fetches the limit variable only
-once, so add helpers for fetching current and maximal resource
-limits which do that.
+Make sure compiler won't do weird things with limits. E.g. fetching
+them twice may return 2 different values after writable limits are
+implemented.
 
-Add them to sched.h (instead of resource.h) due to circular dependency
- sched.h->resource.h->task_struct
-Alternative would be to create a separate res_access.h or similar.
+I.e. either use newly added rlimit helpers or ACCESS_ONCE if not
+applicable.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Cc: James Morris <jmorris@namei.org>
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: linux-ia64@vger.kernel.org
 ---
- include/linux/sched.h |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ arch/ia64/kernel/perfmon.c  |    2 +-
+ arch/ia64/kernel/sys_ia64.c |    2 +-
+ arch/ia64/mm/init.c         |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 75e6e60..cf4205b 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2574,6 +2574,28 @@ static inline void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
- }
- #endif /* CONFIG_MM_OWNER */
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index f178270..82429cc 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -2298,7 +2298,7 @@ pfm_smpl_buffer_alloc(struct task_struct *task, struct file *filp, pfm_context_t
+ 	 * if ((mm->total_vm << PAGE_SHIFT) + len> task->rlim[RLIMIT_AS].rlim_cur)
+ 	 * 	return -ENOMEM;
+ 	 */
+-	if (size > task->signal->rlim[RLIMIT_MEMLOCK].rlim_cur)
++	if (size > task_rlim_get_cur(task, RLIMIT_MEMLOCK))
+ 		return -ENOMEM;
  
-+static inline unsigned long task_rlim_get_cur(const struct task_struct *tsk,
-+		unsigned int limit)
-+{
-+	return ACCESS_ONCE(tsk->signal->rlim[limit].rlim_cur);
-+}
-+
-+static inline unsigned long task_rlim_get_max(const struct task_struct *tsk,
-+		unsigned int limit)
-+{
-+	return ACCESS_ONCE(tsk->signal->rlim[limit].rlim_max);
-+}
-+
-+static inline unsigned long rlim_get_cur(unsigned int limit)
-+{
-+	return task_rlim_get_cur(current, limit);
-+}
-+
-+static inline unsigned long rlim_get_max(unsigned int limit)
-+{
-+	return task_rlim_get_max(current, limit);
-+}
-+
- #define TASK_STATE_TO_CHAR_STR "RSDTtZX"
+ 	/*
+diff --git a/arch/ia64/kernel/sys_ia64.c b/arch/ia64/kernel/sys_ia64.c
+index 92ed83f..ad663c8 100644
+--- a/arch/ia64/kernel/sys_ia64.c
++++ b/arch/ia64/kernel/sys_ia64.c
+@@ -129,7 +129,7 @@ ia64_brk (unsigned long brk)
+ 		goto out;
  
- #endif /* __KERNEL__ */
+ 	/* Check against rlimit.. */
+-	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
++	rlim = rlim_get_cur(RLIMIT_DATA);
+ 	if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
+ 		goto out;
+ 
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 1857766..0995019 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -91,7 +91,7 @@ dma_mark_clean(void *addr, size_t size)
+ inline void
+ ia64_set_rbs_bot (void)
+ {
+-	unsigned long stack_size = current->signal->rlim[RLIMIT_STACK].rlim_max & -16;
++	unsigned long stack_size = rlim_get_max(RLIMIT_STACK) & -16;
+ 
+ 	if (stack_size > MAX_USER_STACK_SIZE)
+ 		stack_size = MAX_USER_STACK_SIZE;
 -- 
 1.6.5.3
 
