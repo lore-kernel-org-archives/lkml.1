@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZK0LDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZK0LG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbZK0LDN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 06:03:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbZK0LDN
+	id S1753392AbZK0LG7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 06:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZK0LG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 06:03:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:38464 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754427AbZK0LDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 06:03:12 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 05/10] kbuild: sort the list of symbols exported by the kernel (__ksymtab)
-Date: Fri, 27 Nov 2009 21:33:15 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Alex Chiang <achiang@hp.com>,
-       Tony Luck <tony.luck@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Mike Frysinger <vapier.adi@gmail.com>, greg@kroah.com,
-       linux-kbuild@vger.kernel.org, carmelo73@gmail.com,
-       linux-kernel@vger.kernel.org, kyle@mcmartin.ca, deller@gmx.de,
-       jejb@parisc-linux.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org
-References: <9b2b86520911020852q49c55695rb05d87090fa9ad33@mail.gmail.com> <4B0CF5A6.7080908@tuffmail.co.uk> <1259161737.2535.6.camel@mulgrave.site>
-In-Reply-To: <1259161737.2535.6.camel@mulgrave.site>
+	Fri, 27 Nov 2009 06:06:59 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:43528 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbZK0LG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 06:06:58 -0500
+Date: Fri, 27 Nov 2009 11:06:57 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Kuninori Morimoto <morimoto.kuninori@renesas.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Magnus Damm <damm@igel.co.jp>,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH 1/2 v2] ASoC: sh: fsi: Add runtime PM
+	support
+Message-ID: <20091127110656.GA29512@sirena.org.uk>
+References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com> <20091109105858.GB1245@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911272133.15617.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091109105858.GB1245@sirena.org.uk>
+X-Cookie: Sorry.  Nice try.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Nov 2009 01:38:57 am James Bottomley wrote:
-> On Wed, 2009-11-25 at 09:15 +0000, Alan Jenkins wrote:
-> > Yes, the series as a whole relies on that patch.  Rusty pulled the 
-> > series from linux-next (thanks rusty!).
-> 
-> Not according to current linux-next:
+On Mon, Nov 09, 2009 at 10:58:58AM +0000, Mark Brown wrote:
+> On Mon, Nov 09, 2009 at 11:54:47AM +0900, Kuninori Morimoto wrote:
 
-Yeah, I pulled it for a day, then Alan produced the ia64 fix.
+> > +	pm_suspend_ignore_children(&pdev->dev, true);
+> > +	pm_runtime_enable(&pdev->dev);
+> > +	pm_runtime_resume(&pdev->dev);
 
-Pulling again until all acks are in...
+> Why pm_suspend_ignore_all_children()?  I'd not expect the device to have
+> any children and if it did it doesn't seem like an entirely safe
+> assumption.
 
-Thanks,
-Rusty.
+I've not yet seen any response to this query?
