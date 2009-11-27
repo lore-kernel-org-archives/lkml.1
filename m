@@ -1,145 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbZK0RbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752123AbZK0RgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752153AbZK0RbT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 12:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbZK0RbS
+	id S1752123AbZK0RgE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 12:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZK0RgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 12:31:18 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:53779 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751867AbZK0RbR (ORCPT
+	Fri, 27 Nov 2009 12:36:03 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:50231 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbZK0RgB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 12:31:17 -0500
-Date: 27 Nov 2009 18:29:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: jonsmirl@gmail.com
-Cc: awalls@radix.net
-Cc: christoph@bartelmus.de
-Cc: dmitry.torokhov@gmail.com
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: jarod@wilsonet.com
-Cc: khc@pm.waw.pl
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: mchehab@redhat.com
-Cc: superm1@ubuntu.com
-Message-ID: <BDgcsm11qgB@lirc>
-In-Reply-To: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+	Fri, 27 Nov 2009 12:36:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=Ffrovw5VALUWdwHw7lXjimeDbwGNEf4YtjttMACiAlIgStNqcymqjuCR2RiZ2u9v8l
+         xjdj3Z4LUg1lhgcFDY2aVhEnd/LQwl1N6323O/CJlKsKewxLjacEPVdlpuooprsi+CoL
+         NGDHKoLmvaeMAqTvD6XuNVGbGnIVA3lHKPeTw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1982LpH8xTUNmoQoMgeqcHZ0BSIcijAWXekuY9
- RWw0B942W0v5C05EuCNeM26mJZgOLvnMAI89Bp/uHkIzQHS8zp
- xBWN1iw0Nq1bv8Pk/2GKksJMZq2fJJy
+In-Reply-To: <alpine.LSU.2.00.0911271308270.6953@wotan.suse.de>
+References: <39840bc80911241957r38e6f26ah437f73fc890236c0@mail.gmail.com>
+	 <alpine.LRH.2.00.0911271158560.3659@twin.jikos.cz>
+	 <39840bc80911270403q83c16efy872cc1f72a0344ee@mail.gmail.com>
+	 <alpine.LSU.2.00.0911271308270.6953@wotan.suse.de>
+Date: Fri, 27 Nov 2009 19:36:06 +0200
+X-Google-Sender-Auth: a613e83b2584e003
+Message-ID: <39840bc80911270936n2cb568e6wd33a376ab59a6e62@mail.gmail.com>
+Subject: Re: touchscreen wirh 2.6.26
+From: Alex Custov <alex.custov@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jon,
-
-on 27 Nov 09 at 10:57, Jon Smirl wrote:
-[...]
->>>> But I'm still a bit hesitant about the in-kernel decoding. Maybe it's
->>>> just because I'm not familiar at all with input layer toolset.
->> [...]
->>> I hope it helps for you to better understand how this works.
+2009/11/27 Jiri Kosina <jkosina@suse.cz>:
+> On Fri, 27 Nov 2009, Alex Custov wrote:
+>
+>> >> I have Acer T230H on Debian Lenny with 2.6.26.8 manually complied
+>> >> kernel. The problem is that this is a multitouch monitor and it seems
+>> >> that it doesn't work at all (even single touches). All things under
+>> >> "Drivers => Input device support => Touchscreens" are enabled in kernel
+>> >> (as modules). Is this type of monitor supported, or I should upgrade to
+>> >> a newer kernel? Thanks.
+>> >
+>> > How is the touchscreen conntected to system? Is it USB? If so, what is the
+>> > vendor and product ID? (lsusb will tell).
 >>
->> So the plan is to have two ways of using IR in the future which are
->> incompatible to each other, the feature-set of one being a subset of the
->> other?
-
-> Take advantage of the fact that we don't have a twenty year old legacy
-> API already in the kernel. Design an IR API that uses current kernel
-> systems. Christoph, ignore the code I wrote and make a design proposal
-> that addresses these goals...
+>> Hi. Thanks for answer. I've already found the /dev device it has - it
+>> is /dev/usb/hiddev0. Yes, it is USB connected. I did "cat
+>> /dev/usb/hiddev0" and touched some points on the screen, it seems that
+>> it works (I got some binary data from 'cat'). Now I will try to add
+>> the corresponding section to the xorg.conf to let it work in X.
 >
-> 1) Unified input in Linux using evdev. IR is on equal footing with
-> mouse and keyboard.
-
-Full support given with LIRC by using uinput.
-
-> 2) plug and play for basic systems - you only need an external app for
-> scripting
-
-LIRC is lacking in plug and play support. But it wouldn't be very  
-difficult to add some that works for all basic systems.
-As I'm favouring a solution outside of the kernel, of course I can't offer  
-you a solution which works without userspace tools.
-
-> 3) No special tools - use mkdir, echo, cat, shell scripts to build
-> maps
-
-A user friendly GUI tool to configure the mapping of the remote buttons is  
-essential for good user experience. I hope noone here considers that users  
-learn command line or bash to configure their remotes.
-
-> 4) Use of modern Linux features like sysfs, configfs and udev.
-
-LIRC uses sysfs where appropriate. I have no problem using modern  
-interfaces where it makes sense. But I won't change working and well  
-tested interfaces just because it's possible to implement the same thing a  
-different way. The interface is efficient and small. I don't see how it  
-could gain much by the mentioned featues.
-Tell me what exactly you don't like about the LIRC interface and we can  
-work on it.
-
-> 5) Direct multi-app support - no daemon
-
-lircd is multi-app. I want to be in userspace, so I need a daemon.
-
-> 6) Hide timing data from user as much as possible.
-
-Nobody is manually writing lircd.conf files. Of course you don't want the  
-user to know anything about the technical details unless you really want  
-to get your hands dirty.
-
-> What are other goals for this subsystem?
+> It might not be that trivial -- /dev/usb/hiddev0 gives you only
+> more-or-less raw HID data, but they have still to be interpreted somehow
+> to make sense.
 >
-> Maybe we decide to take the existing LIRC system as is and not
-> integrate it into the input subsystem. But I think there is a window
-> here to update the LIRC design to use the latest kernel features.
+> If the device is implementing some vendor-specific (or device-specific)
+> protocol, then the data you see coming through hiddev0 might not be useful
+> at all directly in X.
+>
+> Repeating from my previous mail -- please provide the idVendor/idProduct
+> (found by lsusb -v) for this device. It might be supported in later
+> kernels, but without this information, it's impossible to tell.
+>
+> --
+> Jiri Kosina
+> SUSE Labs, Novell Inc.
+>
 
-If it ain't broke, don't fix it.
+Here you are:
 
-I'm also not against using the input layer where it makes sense.
+Bus 004 Device 002: ID 0408:3000 Quanta Computer, Inc.
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0        64
+  idVendor           0x0408 Quanta Computer, Inc.
+  idProduct          0x3000
+  bcdDevice            0.00
+  iManufacturer           1 Acer
+  iProduct                2 T230H
+  iSerial                 0
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           34
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              100mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         3 Human Interface Device
+      bInterfaceSubClass      0 No Subclass
+      bInterfaceProtocol      0 None
+      iInterface              0
+        HID Device Descriptor:
+          bLength                 9
+          bDescriptorType        33
+          bcdHID               1.10
+          bCountryCode            0 Not supported
+          bNumDescriptors         1
+          bDescriptorType        34 Report
+          wDescriptorLength     210
+         Report Descriptors:
+           ** UNAVAILABLE **
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x83  EP 3 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               8
+Device Status:     0x0000
+  (Bus Powered)
 
-For devices that do the decoding in hardware, the only thing that I don't  
-like about the current kernel implementation is the fact that there are  
-mapping tables in the kernel source. I'm not aware of any tools that let  
-you change them without writing some keymaps manually.
-
-I'm also not against in-kernel decoding in general. We already agreed last  
-year that we can include an interface in lirc_dev that feeds the signal  
-data to an in-kernel decoder if noone from userspace reads it. That's  
-close to an one line change in lirc_dev. You won't have to change a single  
-device driver for this. I think there also was common understanding that  
-there will be cases where in-kernel decoding will not be possible for  
-esoteric protocols and that there needs to be an interface to deliver the  
-raw data to userspace.
-
-My point just is that it took LIRC a very long time until the most common  
-protocols have been fully supported, with all the toggle bits, toggle  
-masks, repeat codes, sequences, headers, differing gap values, etc. Or  
-take a look at crappy hardware like the Igor Cesko's USB IR Receiver. This  
-device cripples the incoming signal except RC-5 because it has a limited  
-buffer size. LIRC happily accepts the data because it does not make any  
-assumptions on the protocol or bit length. With the approach that you  
-suggested for the in-kernel decoder, this device simply will not work for  
-anything but RC-5. The devil is in all the details. If we decide to do the  
-decoding in-kernel, how long do you think this solution will need to  
-become really stable and mainline? Currently I don't even see any  
-consensus on the interface yet. But maybe you will prove me wrong and it's  
-just that easy to get it all working.
-I also understand that people want to avoid dependency on external  
-userspace tools. All I can tell you is that the lirc tools already do  
-support everything you need for IR control. And as it includes a lot of  
-drivers that are implemented in userspace already, LIRC will just continue  
-to do it's work even when there is an alternative in-kernel.
-If LIRC is being rejected I don't have a real problem with this either,  
-but we finally need a decision because for me this is definitely the last  
-attempt to get this into the kernel.
-
-Christoph
+--
