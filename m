@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbZK0Wfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZK0Wh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570AbZK0Wfa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 17:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZK0Wf3
+	id S1753599AbZK0Wh6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 17:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbZK0Wh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 17:35:29 -0500
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:34715 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbZK0Wf2 (ORCPT
+	Fri, 27 Nov 2009 17:37:57 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:64470 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753002AbZK0Wh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 17:35:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=XsbzmX2tMesTHKaSPCeDjqAw+m2wi4xDOcjNmyVAeWoYr7TQIufK3EziRXYDfJ7ET6
-         fTEV9y2PMmpjQECUD2zcutla9zkHx0ExQDrgispXSjclHdHHZ/G/RvrsPfgn9iGDGFfj
-         pZo6eYyhOJ5apbeJJvDvFXzpxelCtbA4BACIo=
+	Fri, 27 Nov 2009 17:37:56 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH v2] netdevice: provide common routine for macvlan and 
+ =?iso-8859-15?q?vlan=09operstate?= management
+Date: Fri, 27 Nov 2009 23:38:00 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Patrick Mullaney <pmullaney@novell.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net
+References: <20091127220717.14078.6058.stgit@mimic.site> <4B105311.1020005@trash.net>
+In-Reply-To: <4B105311.1020005@trash.net>
 MIME-Version: 1.0
-In-Reply-To: <20091127213640.GA2611@ami.dom.local>
-References: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com>
-	 <20091124111946.GA7883@ff.dom.local>
-	 <81bfc67a0911250606k1ec76354n217da9ca20b3517c@mail.gmail.com>
-	 <20091125191105.GA3167@ami.dom.local>
-	 <81bfc67a0911271007o1fb8f8c2vdd36e8585280e4da@mail.gmail.com>
-	 <20091127213640.GA2611@ami.dom.local>
-Date: Fri, 27 Nov 2009 17:35:34 -0500
-Message-ID: <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
-Subject: Re: large packet loss take2 2.6.31.x
-From: Caleb Cushing <xenoterracide@gmail.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911272338.00529.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19pBZOp582vCaF5SNJgjnOUmng5OfKjH5eS9pg
+ BBYT6gZrHrfwcmEmCQwR9vNzSbbtTXPpMdTV17n5h/Hn4XP2fJ
+ 1DbOrQMTv2TBE9aNRh5oA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I doubt bisecting is a good idea with so unpredictable bug. First, you
-> should make sure it's not a hardware problem, so go back to the kernel
-> you trust most, and give it a really long try with a few recompilations
-> after slightly changing the config. Btw, I wonder if you tried e1000e
-> module parameters like IntMode=0 or 1.
+On Friday 27 November 2009, Patrick McHardy wrote:
+> > Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
+> 
+> Acked-by: Patrick McHardy <kaber@trash.net>
 
-no, how do I set those?
-
-
--- 
-Caleb Cushing
-
-http://xenoterracide.blogspot.com
+Acked-by: Arnd Bergmann <arnd@arndb.de>
