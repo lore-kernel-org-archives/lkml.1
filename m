@@ -1,122 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbZK0XO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbZK0XaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753708AbZK0XO7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 18:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZK0XO6
+	id S1753428AbZK0XaG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 18:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZK0XaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 18:14:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40338 "EHLO hera.kernel.org"
+	Fri, 27 Nov 2009 18:30:05 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40311 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753203AbZK0XO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 18:14:57 -0500
-Message-ID: <4B105D2E.2030109@kernel.org>
-Date: Fri, 27 Nov 2009 15:13:50 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751419AbZK0XaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 18:30:04 -0500
+Date: Sat, 28 Nov 2009 00:30:10 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Alex Custov <alex.custov@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: touchscreen wirh 2.6.26
+In-Reply-To: <39840bc80911270936n2cb568e6wd33a376ab59a6e62@mail.gmail.com>
+Message-ID: <alpine.LSU.2.00.0911280025460.6953@wotan.suse.de>
+References: <39840bc80911241957r38e6f26ah437f73fc890236c0@mail.gmail.com>  <alpine.LRH.2.00.0911271158560.3659@twin.jikos.cz>  <39840bc80911270403q83c16efy872cc1f72a0344ee@mail.gmail.com>  <alpine.LSU.2.00.0911271308270.6953@wotan.suse.de>
+ <39840bc80911270936n2cb568e6wd33a376ab59a6e62@mail.gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 1/2] pci: release that leaf bridge' resource that is not
- big -v11
-References: <4ADEB601.8020200@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B0D6CFE.4070804@kerne! l .org> <4B0E2388.50302@jp.fujitsu.com> <A2C249D4-FC31-40D9-ACEA-807C336F8514@kernel.org> <4B0F7BC6.90105@jp.fujitsu.com> <4B0F854C.4010902@kernel.org> <4B0F8D4D.6050000@jp.fujitsu.com>
-In-Reply-To: <4B0F8D4D.6050000@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige wrote:
-> Yinghai Lu wrote:
->>> Bad news...
->>>
->>> My system doesn't boot (hangup) with your latest set of patches.
->>> Fusion MPT SAS driver initialization failed on some devices.
->>> Please see below
->>>
->>> ...
->>> Fusion MPT SAS Host driver 3.04.12
->>> mptsas 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
->>> mptsas 0000:09:00.0: BAR 1: can't reserve [mem 0x00510000-0x00513fff
->>> 64bit]
->>> mptbase: ioc0: ERROR - pci_request_selected_regions() with MEM failed
->>> mptsas 0000:0a:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
->>> mptsas 0000:0a:00.0: BAR 1: can't reserve [mem 0x00610000-0x00613fff
->>> 64bit]
->>> mptbase: ioc1: ERROR - pci_request_selected_regions() with MEM failed
->>> ...
->>>
->>>
->>> This problem disappear when I revert the patch 6/9, and my system
->>> can boot. But I found igb driver initialization failed on some
->>> devices even in this case. Please see below
->>>
->>> ...
->>> igb 0000:08:00.0: BAR 0: can't reserve [mem 0x00100000-0x0011ffff]
->>> igb 0000:08:00.0: PCI INT A disabled
->>> igb: probe of 0000:08:00.0 failed with error -16
->>> igb 0000:08:00.1: PCI INT B -> GSI 18 (level, low) -> IRQ 18
->>> igb 0000:08:00.1: BAR 0: can't reserve [mem 0x00140000-0x0015ffff]
->>> igb 0000:08:00.1: PCI INT B disabled
->>> igb: probe of 0000:08:00.1 failed with error -16
->>> ...
->>
->> that looks werid, without patch 6/9 should only have pci bridge res
->> shrink problem with your last test?
->>
-> 
-> I don't know why. I might have overlooked it at the previous
-> test.
-> 
->> maybe we need keep that feature default to be disabled.
-> 
-> Will do it next week.
+On Fri, 27 Nov 2009, Alex Custov wrote:
 
+> Bus 004 Device 002: ID 0408:3000 Quanta Computer, Inc.
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               1.10
+>   bDeviceClass            0 (Defined at Interface level)
+>   bDeviceSubClass         0
+>   bDeviceProtocol         0
+>   bMaxPacketSize0        64
+>   idVendor           0x0408 Quanta Computer, Inc.
+>   idProduct          0x3000
 
-> 
-> Thanks,
-> Kenji Kaneshige
-> 
-> 
->>
->> please try
->>
->> ---
->>  drivers/pci/setup-bus.c |    3 +--
->>  1 file changed, 1 insertion(+), 2 deletions(-)
->>
->> Index: linux-2.6/drivers/pci/setup-bus.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/pci/setup-bus.c
->> +++ linux-2.6/drivers/pci/setup-bus.c
->> @@ -918,8 +918,7 @@ static void pci_bus_dump_resources(struc
->>   * second try will clear small leaf bridge res
->>   * third try will clear related bridge: some aggressive
->>   */
->> -/* assume we only have 4 level bridges, so only try 5 times */
->> -int pci_try_num = 5;
->> +int pci_try_num = 1;
->>  void __init
->>  pci_assign_unassigned_resources(void)
->>  {
->>
->>
-> 
+Unfortunately, this touchscreen is not (yet) neither supported by 
+usbtouchscreen kernel driver, nor is it apparently HID standard compliant, 
+so HID driver can't do much with it as well.
 
-don't try it. found the cause.
+You will have to reverse-engineer the data protocol the touchscreen is 
+sending. It's usually quite easy, in cases in which the device doesn't 
+require complex initialization before it can become functional.
 
-even change pci_try_num = 1 will not help.
-
-...
-
-will have another patch.
-
-Thanks
-
-Yinghai 
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
