@@ -1,677 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZK0V4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZK0WNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbZK0V4s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 16:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZK0V4r
+	id S1753284AbZK0WNH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 17:13:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbZK0WNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 16:56:47 -0500
-Received: from icebox.esperi.org.uk ([81.187.191.129]:59055 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbZK0V4p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 16:56:45 -0500
-To: kvm@vger.kernel.org
-Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: 2.6.31.5 x86-64 KVM: 'emulation failed (pagetable) rip 7fb49335da7b 66 0f 7f 07'
-From: Nix <nix@esperi.org.uk>
-Emacs: if it payed rent for disk space, you'd be rich.
-Date: Fri, 27 Nov 2009 21:56:50 +0000
-Message-ID: <87skbzvdgd.fsf@spindle.srvr.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
+	Fri, 27 Nov 2009 17:13:05 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:54339 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752733AbZK0WNE (ORCPT
+	<rfc822;groupwise-PMullaney@novell.com:0:0>);
+	Fri, 27 Nov 2009 17:13:04 -0500
+From: Patrick Mullaney <pmullaney@novell.com>
+Subject: [PATCH v2] netdevice: provide common routine for macvlan and vlan
+	operstate management
+To: netdev@vger.kernel.org
+Cc: kaber@trash.net, arnd@arndb.de, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net
+Date: Fri, 27 Nov 2009 17:12:52 -0500
+Message-ID: <20091127220717.14078.6058.stgit@mimic.site>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-URT-Metrics: spindle 1060; Body=2 Fuz1=2 Fuz2=2
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So I installed my first KVM guest image (a prerelease of Ubuntu 9.10
-that I had lying around) this morning (through virt-manager, as it
-happens). Everything worked fine, the install was searingly fast
-compared to the UML virtual machines I'm used to.
+Applies to net-2.6.git/master:0135ae0b9)
 
-I got back to it this evening, restarted the VM, and found that it had
-suddenly slowed right down again, with one CPU being saturated with work
-even when nothing was happening. Looking at the syslog shows (what would
-be but for ratelimit) incredible numbers of these messages being logged:
+Provide common routine for the transition of operational state for a leaf
+device during a root device transition. This updates a previous patch in
+my venet macvlan series and fixes the problems that Arnd pointed out.
 
-Nov 27 21:44:00 spindle info: [444857.792205] device vnet0 entered promiscuous mode
-Nov 27 21:44:00 spindle info: [444857.794347] linux-net: port 2(vnet0) entering learning state
-Nov 27 21:44:03 spindle warning: [444860.856640] __ratelimit: 928705 callbacks suppressed
-Nov 27 21:44:03 spindle err: [444860.856729] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.856824] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.856919] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.857012] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.857106] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.857200] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.857294] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.857388] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.857495] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:03 spindle err: [444860.857590] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
-Nov 27 21:44:08 spindle warning: [444865.850784] __ratelimit: 2199675 callbacks suppressed
+Is submitting this applied to net-next a more better approach?
 
-This seems to be a recurrent KVM bug: people reported it with 2.6.29 and
-it got fixed; now it's back. I suspect this won't go away again until I
-reboot (which is quite inconvenient, other people use this server too).
+Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
+---
 
-I'm using qemu-kvm 0.11.0-1 and the KVM module in 2.6.31.5, with no
-patches. The Ubuntu image is installed from
-ubuntu-9.10-beta-alternate-amd64.iso, sha1sum
-983c26420dad28c8a84264a01ca73a6c395760d8, with a completely default
-install other than to switch to UK keyboard layout, to use
-all-modules-loaded initramfs, and LVM.)
+ drivers/net/macvlan.c     |   24 +++---------------------
+ include/linux/netdevice.h |    3 +++
+ net/8021q/vlan.c          |   29 ++++-------------------------
+ net/core/dev.c            |   27 +++++++++++++++++++++++++++
+ 4 files changed, 37 insertions(+), 46 deletions(-)
 
-Loaded modules (very few, my kernels are mostly non-modular):
+diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
+index 2490aa3..14f63ec 100644
+--- a/drivers/net/macvlan.c
++++ b/drivers/net/macvlan.c
+@@ -456,25 +456,6 @@ static void macvlan_port_destroy(struct net_device *dev)
+ 	kfree(port);
+ }
+ 
+-static void macvlan_transfer_operstate(struct net_device *dev)
+-{
+-	struct macvlan_dev *vlan = netdev_priv(dev);
+-	const struct net_device *lowerdev = vlan->lowerdev;
+-
+-	if (lowerdev->operstate == IF_OPER_DORMANT)
+-		netif_dormant_on(dev);
+-	else
+-		netif_dormant_off(dev);
+-
+-	if (netif_carrier_ok(lowerdev)) {
+-		if (!netif_carrier_ok(dev))
+-			netif_carrier_on(dev);
+-	} else {
+-		if (netif_carrier_ok(dev))
+-			netif_carrier_off(dev);
+-	}
+-}
+-
+ static int macvlan_validate(struct nlattr *tb[], struct nlattr *data[])
+ {
+ 	if (tb[IFLA_ADDRESS]) {
+@@ -552,7 +533,7 @@ static int macvlan_newlink(struct net_device *dev,
+ 		return err;
+ 
+ 	list_add_tail(&vlan->list, &port->vlans);
+-	macvlan_transfer_operstate(dev);
++	netif_stacked_transfer_operstate(lowerdev, dev);
+ 	return 0;
+ }
+ 
+@@ -592,7 +573,8 @@ static int macvlan_device_event(struct notifier_block *unused,
+ 	switch (event) {
+ 	case NETDEV_CHANGE:
+ 		list_for_each_entry(vlan, &port->vlans, list)
+-			macvlan_transfer_operstate(vlan->dev);
++			netif_stacked_transfer_operstate(vlan->lowerdev,
++							 vlan->dev);
+ 		break;
+ 	case NETDEV_FEAT_CHANGE:
+ 		list_for_each_entry(vlan, &port->vlans, list) {
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 812a5f3..1587715 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1914,6 +1914,9 @@ unsigned long netdev_increment_features(unsigned long all, unsigned long one,
+ 					unsigned long mask);
+ unsigned long netdev_fix_features(unsigned long features, const char *name);
+ 
++void netif_stacked_transfer_operstate(const struct net_device *rootdev,
++					struct net_device *dev);
++
+ static inline int net_gso_ok(int features, int gso_type)
+ {
+ 	int feature = gso_type << NETIF_F_GSO_SHIFT;
+diff --git a/net/8021q/vlan.c b/net/8021q/vlan.c
+index a29c5ab..44f5751 100644
+--- a/net/8021q/vlan.c
++++ b/net/8021q/vlan.c
+@@ -183,27 +183,6 @@ void unregister_vlan_dev(struct net_device *dev)
+ 	dev_put(real_dev);
+ }
+ 
+-static void vlan_transfer_operstate(const struct net_device *dev,
+-				    struct net_device *vlandev)
+-{
+-	/* Have to respect userspace enforced dormant state
+-	 * of real device, also must allow supplicant running
+-	 * on VLAN device
+-	 */
+-	if (dev->operstate == IF_OPER_DORMANT)
+-		netif_dormant_on(vlandev);
+-	else
+-		netif_dormant_off(vlandev);
+-
+-	if (netif_carrier_ok(dev)) {
+-		if (!netif_carrier_ok(vlandev))
+-			netif_carrier_on(vlandev);
+-	} else {
+-		if (netif_carrier_ok(vlandev))
+-			netif_carrier_off(vlandev);
+-	}
+-}
+-
+ int vlan_check_real_dev(struct net_device *real_dev, u16 vlan_id)
+ {
+ 	const char *name = real_dev->name;
+@@ -261,7 +240,7 @@ int register_vlan_dev(struct net_device *dev)
+ 	/* Account for reference in struct vlan_dev_info */
+ 	dev_hold(real_dev);
+ 
+-	vlan_transfer_operstate(real_dev, dev);
++	netif_stacked_transfer_operstate(real_dev, dev);
+ 	linkwatch_fire_event(dev); /* _MUST_ call rfc2863_policy() */
+ 
+ 	/* So, got the sucker initialized, now lets place
+@@ -450,7 +429,7 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
+ 			if (!vlandev)
+ 				continue;
+ 
+-			vlan_transfer_operstate(dev, vlandev);
++			netif_stacked_transfer_operstate(dev, vlandev);
+ 		}
+ 		break;
+ 
+@@ -506,7 +485,7 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
+ 				continue;
+ 
+ 			dev_change_flags(vlandev, flgs & ~IFF_UP);
+-			vlan_transfer_operstate(dev, vlandev);
++			netif_stacked_transfer_operstate(dev, vlandev);
+ 		}
+ 		break;
+ 
+@@ -522,7 +501,7 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
+ 				continue;
+ 
+ 			dev_change_flags(vlandev, flgs | IFF_UP);
+-			vlan_transfer_operstate(dev, vlandev);
++			netif_stacked_transfer_operstate(dev, vlandev);
+ 		}
+ 		break;
+ 
+diff --git a/net/core/dev.c b/net/core/dev.c
+index fe10551..8ece671 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -4747,6 +4747,33 @@ unsigned long netdev_fix_features(unsigned long features, const char *name)
+ EXPORT_SYMBOL(netdev_fix_features);
+ 
+ /**
++ *	netif_stacked_transfer_operstate -	transfer operstate
++ *	@rootdev: the root or lower level device to transfer state from
++ *	@dev: the device to transfer operstate to
++ *
++ *	Transfer operational state from root to device. This is normally
++ *	called when a stacking relationship exists between the root
++ *	device and the device(a leaf device).
++ */
++void netif_stacked_transfer_operstate(const struct net_device *rootdev,
++					struct net_device *dev)
++{
++	if (rootdev->operstate == IF_OPER_DORMANT)
++		netif_dormant_on(dev);
++	else
++		netif_dormant_off(dev);
++
++	if (netif_carrier_ok(rootdev)) {
++		if (!netif_carrier_ok(dev))
++			netif_carrier_on(dev);
++	} else {
++		if (netif_carrier_ok(dev))
++			netif_carrier_off(dev);
++	}
++}
++EXPORT_SYMBOL(netif_stacked_transfer_operstate);
++
++/**
+  *	register_netdevice	- register a network device
+  *	@dev: device to register
+  *
 
-Module                  Size  Used by
-dummy                   3496  0
-firewire_ohci          24204  0
-firewire_core          46968  1 firewire_ohci
-
-(only dummy in active use, to render the VM bridges visible to
-virt-manager even when they're otherwise empty).
-
-.config:
-
-CONFIG_64BIT=y
-CONFIG_X86_64=y
-CONFIG_X86=y
-CONFIG_OUTPUT_FORMAT="elf64-x86-64"
-CONFIG_ARCH_DEFCONFIG="arch/x86/configs/x86_64_defconfig"
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-CONFIG_FAST_CMPXCHG_LOCAL=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_BUG_RELATIVE_POINTERS=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_TIME_VSYSCALL=y
-CONFIG_ARCH_HAS_CPU_RELAX=y
-CONFIG_ARCH_HAS_DEFAULT_IDLE=y
-CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
-CONFIG_HAVE_SETUP_PER_CPU_AREA=y
-CONFIG_HAVE_DYNAMIC_PER_CPU_AREA=y
-CONFIG_HAVE_CPUMASK_OF_CPU_MAP=y
-CONFIG_ARCH_HIBERNATION_POSSIBLE=y
-CONFIG_ARCH_SUSPEND_POSSIBLE=y
-CONFIG_ZONE_DMA32=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_AUDIT_ARCH=y
-CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
-CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_GENERIC_PENDING_IRQ=y
-CONFIG_USE_GENERIC_SMP_HELPERS=y
-CONFIG_X86_64_SMP=y
-CONFIG_X86_HT=y
-CONFIG_X86_TRAMPOLINE=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_CONSTRUCTORS=y
-CONFIG_EXPERIMENTAL=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_HAVE_KERNEL_GZIP=y
-CONFIG_HAVE_KERNEL_BZIP2=y
-CONFIG_HAVE_KERNEL_LZMA=y
-CONFIG_KERNEL_GZIP=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_POSIX_MQUEUE_SYSCTL=y
-CONFIG_BSD_PROCESS_ACCT=y
-CONFIG_CLASSIC_RCU=y
-CONFIG_LOG_BUF_SHIFT=17
-CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
-CONFIG_GROUP_SCHED=y
-CONFIG_FAIR_GROUP_SCHED=y
-CONFIG_RT_GROUP_SCHED=y
-CONFIG_USER_SCHED=y
-CONFIG_CGROUPS=y
-CONFIG_RELAY=y
-CONFIG_NAMESPACES=y
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE="usr/initramfs.spindle"
-CONFIG_INITRAMFS_ROOT_UID=99
-CONFIG_INITRAMFS_ROOT_GID=101
-CONFIG_RD_GZIP=y
-CONFIG_RD_BZIP2=y
-CONFIG_RD_LZMA=y
-CONFIG_INITRAMFS_COMPRESSION_GZIP=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_ANON_INODES=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_PCSPKR_PLATFORM=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_AIO=y
-CONFIG_HAVE_PERF_COUNTERS=y
-CONFIG_PERF_COUNTERS=y
-CONFIG_EVENT_PROFILE=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_PCI_QUIRKS=y
-CONFIG_STRIP_ASM_SYMS=y
-CONFIG_SLAB=y
-CONFIG_TRACEPOINTS=y
-CONFIG_MARKERS=y
-CONFIG_HAVE_OPROFILE=y
-CONFIG_KPROBES=y
-CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
-CONFIG_KRETPROBES=y
-CONFIG_HAVE_IOREMAP_PROT=y
-CONFIG_HAVE_KPROBES=y
-CONFIG_HAVE_KRETPROBES=y
-CONFIG_HAVE_ARCH_TRACEHOOK=y
-CONFIG_HAVE_DMA_ATTRS=y
-CONFIG_HAVE_DMA_API_DEBUG=y
-CONFIG_SLABINFO=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_STOP_MACHINE=y
-CONFIG_BLOCK=y
-CONFIG_BLOCK_COMPAT=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=m
-CONFIG_IOSCHED_DEADLINE=m
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_PREEMPT_NOTIFIERS=y
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_SMP=y
-CONFIG_SPARSE_IRQ=y
-CONFIG_SCHED_OMIT_FRAME_POINTER=y
-CONFIG_MCORE2=y
-CONFIG_X86_CPU=y
-CONFIG_X86_L1_CACHE_BYTES=64
-CONFIG_X86_INTERNODE_CACHE_BYTES=64
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=6
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_P6_NOP=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMPXCHG64=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=64
-CONFIG_X86_DEBUGCTLMSR=y
-CONFIG_CPU_SUP_INTEL=y
-CONFIG_CPU_SUP_AMD=y
-CONFIG_CPU_SUP_CENTAUR=y
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-CONFIG_DMI=y
-CONFIG_GART_IOMMU=y
-CONFIG_SWIOTLB=y
-CONFIG_IOMMU_HELPER=y
-CONFIG_IOMMU_API=y
-CONFIG_NR_CPUS=8
-CONFIG_SCHED_SMT=y
-CONFIG_SCHED_MC=y
-CONFIG_PREEMPT_NONE=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_X86_MCE=y
-CONFIG_X86_NEW_MCE=y
-CONFIG_X86_MCE_INTEL=y
-CONFIG_X86_MCE_THRESHOLD=y
-CONFIG_X86_THERMAL_VECTOR=y
-CONFIG_MICROCODE=m
-CONFIG_MICROCODE_INTEL=y
-CONFIG_MICROCODE_OLD_INTERFACE=y
-CONFIG_X86_MSR=m
-CONFIG_X86_CPUID=y
-CONFIG_X86_CPU_DEBUG=m
-CONFIG_ARCH_PHYS_ADDR_T_64BIT=y
-CONFIG_DIRECT_GBPAGES=y
-CONFIG_ARCH_SPARSEMEM_DEFAULT=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_SPARSEMEM_MANUAL=y
-CONFIG_SPARSEMEM=y
-CONFIG_HAVE_MEMORY_PRESENT=y
-CONFIG_SPARSEMEM_EXTREME=y
-CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
-CONFIG_SPARSEMEM_VMEMMAP=y
-CONFIG_PAGEFLAGS_EXTENDED=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_PHYS_ADDR_T_64BIT=y
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_VIRT_TO_BUS=y
-CONFIG_HAVE_MLOCK=y
-CONFIG_HAVE_MLOCKED_PAGE_BIT=y
-CONFIG_MMU_NOTIFIER=y
-CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
-CONFIG_MTRR=y
-CONFIG_X86_PAT=y
-CONFIG_HZ_100=y
-CONFIG_HZ=100
-CONFIG_SCHED_HRTICK=y
-CONFIG_PHYSICAL_START=0x1000000
-CONFIG_PHYSICAL_ALIGN=0x1000000
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-CONFIG_PM=y
-CONFIG_ACPI=y
-CONFIG_ACPI_PROC_EVENT=y
-CONFIG_ACPI_BUTTON=y
-CONFIG_ACPI_FAN=y
-CONFIG_ACPI_DOCK=y
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_THERMAL=y
-CONFIG_ACPI_CUSTOM_DSDT_FILE=""
-CONFIG_ACPI_BLACKLIST_YEAR=0
-CONFIG_ACPI_PCI_SLOT=y
-CONFIG_X86_PM_TIMER=y
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_X86_ACPI_CPUFREQ=y
-CONFIG_CPU_IDLE=y
-CONFIG_CPU_IDLE_GOV_LADDER=y
-CONFIG_CPU_IDLE_GOV_MENU=y
-CONFIG_I7300_IDLE_IOAT_CHANNEL=y
-CONFIG_I7300_IDLE=y
-CONFIG_PCI=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-CONFIG_PCI_DOMAINS=y
-CONFIG_DMAR=y
-CONFIG_DMAR_DEFAULT_ON=y
-CONFIG_DMAR_FLOPPY_WA=y
-CONFIG_PCIEPORTBUS=y
-CONFIG_PCIEAER=y
-CONFIG_PCIEASPM=y
-CONFIG_ARCH_SUPPORTS_MSI=y
-CONFIG_PCI_MSI=y
-CONFIG_PCI_IOV=y
-CONFIG_ISA_DMA_API=y
-CONFIG_K8_NB=y
-CONFIG_BINFMT_ELF=y
-CONFIG_COMPAT_BINFMT_ELF=y
-CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
-CONFIG_BINFMT_MISC=y
-CONFIG_IA32_EMULATION=y
-CONFIG_COMPAT=y
-CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
-CONFIG_SYSVIPC_COMPAT=y
-CONFIG_NET=y
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_PNP=y
-CONFIG_INET_LRO=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_STP=y
-CONFIG_BRIDGE=y
-CONFIG_LLC=y
-CONFIG_UEVENT_HELPER_PATH=""
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-CONFIG_FIRMWARE_IN_KERNEL=y
-CONFIG_EXTRA_FIRMWARE=""
-CONFIG_PNP=y
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV=y
-CONFIG_BLK_DEV_LOOP=m
-CONFIG_BLK_DEV_CRYPTOLOOP=m
-CONFIG_BLK_DEV_NBD=m
-CONFIG_CDROM_PKTCDVD=y
-CONFIG_CDROM_PKTCDVD_BUFFERS=16
-CONFIG_MISC_DEVICES=y
-CONFIG_HAVE_IDE=y
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-CONFIG_SCSI_PROC_FS=y
-CONFIG_BLK_DEV_SD=y
-CONFIG_BLK_DEV_SR=y
-CONFIG_CHR_DEV_SG=y
-CONFIG_SCSI_MULTI_LUN=y
-CONFIG_SCSI_SCAN_ASYNC=y
-CONFIG_SCSI_WAIT_SCAN=m
-CONFIG_SCSI_LOWLEVEL=y
-CONFIG_SCSI_ARCMSR=y
-CONFIG_SCSI_ARCMSR_AER=y
-CONFIG_ATA=y
-CONFIG_ATA_ACPI=y
-CONFIG_SATA_AHCI=y
-CONFIG_MD=y
-CONFIG_BLK_DEV_DM=y
-CONFIG_DM_CRYPT=y
-CONFIG_DM_SNAPSHOT=y
-CONFIG_DM_MIRROR=y
-CONFIG_DM_ZERO=y
-CONFIG_FIREWIRE=m
-CONFIG_FIREWIRE_OHCI=m
-CONFIG_FIREWIRE_OHCI_DEBUG=y
-CONFIG_FIREWIRE_SBP2=m
-CONFIG_NETDEVICES=y
-CONFIG_DUMMY=m
-CONFIG_TUN=y
-CONFIG_NETDEV_1000=y
-CONFIG_E1000E=y
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1680
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=1050
-CONFIG_INPUT_EVDEV=y
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_MOUSE_PS2_ALPS=y
-CONFIG_MOUSE_PS2_LOGIPS2PP=y
-CONFIG_MOUSE_PS2_SYNAPTICS=y
-CONFIG_MOUSE_PS2_LIFEBOOK=y
-CONFIG_MOUSE_PS2_TRACKPOINT=y
-CONFIG_INPUT_JOYSTICK=y
-CONFIG_JOYSTICK_ANALOG=y
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_GAMEPORT=y
-CONFIG_VT=y
-CONFIG_CONSOLE_TRANSLATIONS=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_FIX_EARLYCON_MEM=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_IPMI_HANDLER=m
-CONFIG_IPMI_PANIC_EVENT=y
-CONFIG_IPMI_DEVICE_INTERFACE=m
-CONFIG_IPMI_SI=m
-CONFIG_IPMI_POWEROFF=m
-CONFIG_NVRAM=m
-CONFIG_HPET=y
-CONFIG_HPET_MMAP=y
-CONFIG_DEVPORT=y
-CONFIG_I2C=y
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_CHARDEV=y
-CONFIG_I2C_HELPER_AUTO=y
-CONFIG_I2C_I801=y
-CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
-CONFIG_HWMON=y
-CONFIG_HWMON_VID=y
-CONFIG_SENSORS_W83793=y
-CONFIG_THERMAL=y
-CONFIG_THERMAL_HWMON=y
-CONFIG_SSB_POSSIBLE=y
-CONFIG_AGP=y
-CONFIG_AGP_AMD64=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_SOUND=y
-CONFIG_SOUND_OSS_CORE=y
-CONFIG_SND=y
-CONFIG_SND_TIMER=y
-CONFIG_SND_PCM=y
-CONFIG_SND_JACK=y
-CONFIG_SND_SEQUENCER=y
-CONFIG_SND_SEQ_DUMMY=m
-CONFIG_SND_OSSEMUL=y
-CONFIG_SND_MIXER_OSS=y
-CONFIG_SND_PCM_OSS=y
-CONFIG_SND_PCM_OSS_PLUGINS=y
-CONFIG_SND_SEQUENCER_OSS=y
-CONFIG_SND_HRTIMER=y
-CONFIG_SND_SEQ_HRTIMER_DEFAULT=y
-CONFIG_SND_DYNAMIC_MINORS=y
-CONFIG_SND_VERBOSE_PROCFS=y
-CONFIG_SND_VMASTER=y
-CONFIG_SND_PCI=y
-CONFIG_SND_HDA_INTEL=y
-CONFIG_SND_HDA_INPUT_JACK=y
-CONFIG_SND_HDA_CODEC_INTELHDMI=y
-CONFIG_SND_HDA_ELD=y
-CONFIG_SND_HDA_GENERIC=y
-CONFIG_SND_HDA_POWER_SAVE=y
-CONFIG_SND_HDA_POWER_SAVE_DEFAULT=0
-CONFIG_HID_SUPPORT=y
-CONFIG_HID=y
-CONFIG_USB_HID=y
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=y
-CONFIG_USB_DEVICEFS=y
-CONFIG_USB_DYNAMIC_MINORS=y
-CONFIG_USB_EHCI_HCD=y
-CONFIG_USB_UHCI_HCD=y
-CONFIG_USB_STORAGE=y
-CONFIG_USB_SERIAL=y
-CONFIG_USB_SERIAL_PL2303=m
-CONFIG_EDAC=y
-CONFIG_EDAC_MM_EDAC=y
-CONFIG_RTC_LIB=y
-CONFIG_RTC_CLASS=y
-CONFIG_RTC_HCTOSYS=y
-CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-CONFIG_RTC_INTF_SYSFS=y
-CONFIG_RTC_INTF_PROC=y
-CONFIG_RTC_INTF_DEV=y
-CONFIG_RTC_DRV_CMOS=y
-CONFIG_X86_PLATFORM_DEVICES=y
-CONFIG_FIRMWARE_MEMMAP=y
-CONFIG_DMIID=y
-CONFIG_EXT4_FS=y
-CONFIG_EXT4_FS_XATTR=y
-CONFIG_EXT4_FS_POSIX_ACL=y
-CONFIG_JBD2=y
-CONFIG_FS_MBCACHE=y
-CONFIG_REISERFS_FS=y
-CONFIG_REISERFS_FS_XATTR=y
-CONFIG_REISERFS_FS_POSIX_ACL=y
-CONFIG_FS_POSIX_ACL=y
-CONFIG_FILE_LOCKING=y
-CONFIG_FSNOTIFY=y
-CONFIG_DNOTIFY=y
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-CONFIG_QUOTA=y
-CONFIG_QUOTA_NETLINK_INTERFACE=y
-CONFIG_PRINT_QUOTA_WARNING=y
-CONFIG_QUOTA_TREE=y
-CONFIG_QFMT_V2=y
-CONFIG_QUOTACTL=y
-CONFIG_FUSE_FS=y
-CONFIG_CUSE=y
-CONFIG_GENERIC_ACL=y
-CONFIG_ISO9660_FS=y
-CONFIG_JOLIET=y
-CONFIG_UDF_FS=y
-CONFIG_UDF_NLS=y
-CONFIG_FAT_FS=m
-CONFIG_MSDOS_FS=m
-CONFIG_VFAT_FS=m
-CONFIG_FAT_DEFAULT_CODEPAGE=437
-CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-CONFIG_PROC_FS=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_PROC_PAGE_MONITOR=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_TMPFS_POSIX_ACL=y
-CONFIG_HUGETLBFS=y
-CONFIG_HUGETLB_PAGE=y
-CONFIG_CONFIGFS_FS=y
-CONFIG_MISC_FILESYSTEMS=y
-CONFIG_NETWORK_FILESYSTEMS=y
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-CONFIG_NFS_V3_ACL=y
-CONFIG_ROOT_NFS=y
-CONFIG_NFSD=y
-CONFIG_NFSD_V2_ACL=y
-CONFIG_NFSD_V3=y
-CONFIG_NFSD_V3_ACL=y
-CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=y
-CONFIG_NFS_ACL_SUPPORT=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-CONFIG_PARTITION_ADVANCED=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_NLS_CODEPAGE_437=y
-CONFIG_NLS_ASCII=m
-CONFIG_NLS_ISO8859_1=y
-CONFIG_NLS_ISO8859_15=m
-CONFIG_NLS_UTF8=m
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_PRINTK_TIME=y
-CONFIG_ENABLE_WARN_DEPRECATED=y
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_FRAME_WARN=1024
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_DEBUG_FS=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
-CONFIG_DETECT_HUNG_TASK=y
-CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
-CONFIG_SCHED_DEBUG=y
-CONFIG_SCHEDSTATS=y
-CONFIG_TIMER_STATS=y
-CONFIG_STACKTRACE=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_INFO=y
-CONFIG_DEBUG_MEMORY_INIT=y
-CONFIG_ARCH_WANT_FRAME_POINTERS=y
-CONFIG_FRAME_POINTER=y
-CONFIG_LATENCYTOP=y
-CONFIG_SYSCTL_SYSCALL_CHECK=y
-CONFIG_USER_STACKTRACE_SUPPORT=y
-CONFIG_NOP_TRACER=y
-CONFIG_HAVE_FTRACE_NMI_ENTER=y
-CONFIG_HAVE_FUNCTION_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
-CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
-CONFIG_HAVE_DYNAMIC_FTRACE=y
-CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-CONFIG_HAVE_FTRACE_SYSCALLS=y
-CONFIG_RING_BUFFER=y
-CONFIG_FTRACE_NMI_ENTER=y
-CONFIG_EVENT_TRACING=y
-CONFIG_CONTEXT_SWITCH_TRACER=y
-CONFIG_TRACING=y
-CONFIG_GENERIC_TRACER=y
-CONFIG_TRACING_SUPPORT=y
-CONFIG_FTRACE=y
-CONFIG_FUNCTION_TRACER=y
-CONFIG_SYSPROF_TRACER=y
-CONFIG_BRANCH_PROFILE_NONE=y
-CONFIG_BLK_DEV_IO_TRACE=y
-CONFIG_DYNAMIC_FTRACE=y
-CONFIG_FTRACE_MCOUNT_RECORD=y
-CONFIG_HAVE_ARCH_KGDB=y
-CONFIG_HAVE_ARCH_KMEMCHECK=y
-CONFIG_STRICT_DEVMEM=y
-CONFIG_X86_VERBOSE_BOOTUP=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_DEBUG_RODATA=y
-CONFIG_HAVE_MMIOTRACE_SUPPORT=y
-CONFIG_IO_DELAY_TYPE_0X80=0
-CONFIG_IO_DELAY_TYPE_0XED=1
-CONFIG_IO_DELAY_TYPE_UDELAY=2
-CONFIG_IO_DELAY_TYPE_NONE=3
-CONFIG_IO_DELAY_0X80=y
-CONFIG_DEFAULT_IO_DELAY_TYPE=0
-CONFIG_SECURITY_FILE_CAPABILITIES=y
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_ALGAPI2=y
-CONFIG_CRYPTO_AEAD2=y
-CONFIG_CRYPTO_BLKCIPHER=y
-CONFIG_CRYPTO_BLKCIPHER2=y
-CONFIG_CRYPTO_HASH2=y
-CONFIG_CRYPTO_RNG2=y
-CONFIG_CRYPTO_PCOMP=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_MANAGER2=y
-CONFIG_CRYPTO_WORKQUEUE=y
-CONFIG_CRYPTO_CBC=y
-CONFIG_HAVE_KVM=y
-CONFIG_HAVE_KVM_IRQCHIP=y
-CONFIG_VIRTUALIZATION=y
-CONFIG_KVM=y
-CONFIG_KVM_INTEL=y
-CONFIG_VIRTIO=y
-CONFIG_VIRTIO_RING=y
-CONFIG_VIRTIO_PCI=m
-CONFIG_VIRTIO_BALLOON=y
-CONFIG_BINARY_PRINTF=y
-CONFIG_BITREVERSE=y
-CONFIG_GENERIC_FIND_FIRST_BIT=y
-CONFIG_GENERIC_FIND_NEXT_BIT=y
-CONFIG_GENERIC_FIND_LAST_BIT=y
-CONFIG_CRC16=y
-CONFIG_CRC_ITU_T=y
-CONFIG_CRC32=y
-CONFIG_ZLIB_INFLATE=y
-CONFIG_DECOMPRESS_GZIP=y
-CONFIG_DECOMPRESS_BZIP2=y
-CONFIG_DECOMPRESS_LZMA=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_NLATTR=y
