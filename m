@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZK0IgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbZK0Ihc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbZK0IgB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 03:36:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZK0IgB
+	id S1752553AbZK0Ihc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 03:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbZK0Ihb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 03:36:01 -0500
-Received: from cantor.suse.de ([195.135.220.2]:32859 "EHLO mx1.suse.de"
+	Fri, 27 Nov 2009 03:37:31 -0500
+Received: from cantor.suse.de ([195.135.220.2]:32927 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750964AbZK0IgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 03:36:00 -0500
-Date: Fri, 27 Nov 2009 09:36:06 +0100
-Message-ID: <s5h4oogpdop.wl%tiwai@suse.de>
+	id S1751512AbZK0Ihb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 03:37:31 -0500
+Date: Fri, 27 Nov 2009 09:37:36 +0100
+Message-ID: <s5h3a40pdm7.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: wuzhangjin@gmail.com, Andreas Mohr <andi@lisas.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: snd_usb_audio OOPS on MIPSEL - is that the mmap issue?
-In-Reply-To: <20091126181554.GB11737@linux-mips.org>
-References: <20091125231211.GA19559@rhlx01.hs-esslingen.de>
-	<1259198431.2870.17.camel@falcon.domain.org>
-	<s5h7htdodov.wl%tiwai@suse.de>
-	<20091126181554.GB11737@linux-mips.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Andy Walls <awalls@radix.net>, Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: linux-next: workqueues tree build failure
+In-Reply-To: <4B0F3331.3070107@kernel.org>
+References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au>
+	<4B0E3677.6000603@kernel.org>
+	<200911261016.58810.peter.ujfalusi@nokia.com>
+	<4B0E467A.8080201@kernel.org>
+	<1259239225.3062.16.camel@palomino.walls.org>
+	<4B0F3331.3070107@kernel.org>
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.7 Emacs/23.1
  (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -30,21 +35,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 26 Nov 2009 18:15:54 +0000,
-Ralf Baechle wrote:
+At Fri, 27 Nov 2009 11:02:25 +0900,
+Tejun Heo wrote:
 > 
-> On Thu, Nov 26, 2009 at 10:09:04AM +0100, Takashi Iwai wrote:
+> Hello,
 > 
-> > I guess it won't, because usb audio driver provides its own page
-> > callback.  It uses vmalloced buffer as the primary buffer, then
-> > copies to the urb transfer buffer.  So, mmap should work as long as
-> > the page returned from vmalloc_to_page() can be mapped.
+> 11/26/2009 09:40 PM, Andy Walls wrote:
+> >> * If you need to respond fast, wouldn't you be doing that from IRQ
+> >>   handler or softirq?  Do you need task context?
+> > 
+> > I'm not sure doing things like I2C transactions in the in the top half
+> > of the IRQ handler is generally viable.  On shared IRQ lines, wouldn't
+> > this hold off the interrupt for another device for too long?
+> > 
+> > For example, I already ran across the case of an error path in the ahci
+> > disk controller driver interrupt handler holding off interrupts from the
+> > cx18 driver longer than the CX23418 firmware would tolerate on a shared
+> > interrupt line.
 > 
-> You mean mapping a page that is mapped to the vmalloc area of the kernel
-> also to userland?  That's a fairly safe way to create cache aliases on
-> those platforms that suffer from them.
+> Sounds like it should be using bottom half tasklet not workqueue.
+> Tasklet is exactly designed to handle situations like this.  Is there
+> any reason tasklet can't be used?
 
-Yes.  Thanks for clarification!
+Right now the h/w accessing code is using mutex.  I'm not sure whether
+the deeper part might sleep, though...
 
 
 Takashi
