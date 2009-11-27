@@ -1,102 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZK0NqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbZK0NxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbZK0NqR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 08:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbZK0NqQ
+	id S1752872AbZK0NxH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 08:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbZK0NxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 08:46:16 -0500
-Received: from mtagate5.de.ibm.com ([195.212.17.165]:60111 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbZK0NqP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 08:46:15 -0500
-Date: Fri, 27 Nov 2009 14:46:21 +0100 (CET)
-From: Sebastian Ott <sebott@linux.vnet.ibm.com>
-X-X-Sender: sebott@localhost
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       johannes@sipsolutions.net
-Subject: Re: [Bug #14352] WARNING: at net/mac80211/scan.c:267
-In-Reply-To: <200911172319.49198.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0911271438340.3429@localhost>
-References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.o1.bUdALB@chimera> <8db1092f0911162204i36dbd472w1d2c88411e151acb@mail.gmail.com> <200911172319.49198.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-Organization: "IBM Deutschland Research & Development GmbH Vorsitzender des Aufsichtsrats: Martin Jetter Geschaeftsfuehrung: Dirk Wittkopp Sitz der Gesellschaft: Boeblingen Registergericht: Amtsgericht Stuttgart, HRB 243294"
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Nov 2009 08:53:06 -0500
+Received: from mail1.radix.net ([207.192.128.31]:33843 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751287AbZK0NxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 08:53:04 -0500
+Subject: Re: linux-next: workqueues tree build failure
+From: Andy Walls <awalls@radix.net>
+To: Tejun Heo <tj@kernel.org>
+Cc: Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <4B0F3331.3070107@kernel.org>
+References: <20091126190050.3f9d7fef.sfr@canb.auug.org.au>
+	 <4B0E3677.6000603@kernel.org> <200911261016.58810.peter.ujfalusi@nokia.com>
+	 <4B0E467A.8080201@kernel.org> <1259239225.3062.16.camel@palomino.walls.org>
+	 <4B0F3331.3070107@kernel.org>
+Content-Type: text/plain
+Date: Fri, 27 Nov 2009 08:50:32 -0500
+Message-Id: <1259329832.3053.33.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 17 Nov 2009, Rafael J. Wysocki wrote:
-
-> On Tuesday 17 November 2009, Maciej Rutecki wrote:
-> > 2009/11/16 Rafael J. Wysocki <rjw@sisk.pl>:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > >
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.31.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > >
-> > >
-> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14352
-> > > Subject         : WARNING: at net/mac80211/scan.c:267
-> > > Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
-> > > Date            : 2009-10-08 00:30 (40 days old)
-> > > References      : http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2089#c7
-> > >
-> > >
+On Fri, 2009-11-27 at 11:02 +0900, Tejun Heo wrote:
+> Hello,
+> 
+> 11/26/2009 09:40 PM, Andy Walls wrote:
+> >> * If you need to respond fast, wouldn't you be doing that from IRQ
+> >>   handler or softirq?  Do you need task context?
 > > 
-> > In 2.6.32-rc7 problem seems be fixed.
-> 
-> Thanks, closing.
+> > I'm not sure doing things like I2C transactions in the in the top half
+> > of the IRQ handler is generally viable.
 
-looks like this one is still present in rc8:
+I'll back off on this statement a little as Mark Brown pointed out.  Two
+16 bit exchanges on a 100 kHz I2C bus is, as a lower bound, 32/100000 =
+320 microseconds (ignoring stop and start bits, turn-around times, I2C
+master register access times, etc.).  320 usec isn't bad.
 
-[ 5724.754068] iwl3945 0000:03:00.0: Error sending REPLY_SCAN_CMD: time 
-out after 500ms.
-[ 5725.886986] ------------[ cut here ]------------
-[ 5725.887021] WARNING: at net/mac80211/scan.c:267 
-ieee80211_scan_completed+0x48/0x198 [mac80211]()
-[ 5725.887051] Hardware name: 8741J3G
-[ 5725.887054] Modules linked in: fuse ipt_MASQUERADE iptable_nat nf_nat 
-rfcomm sco bridge stp llc bnep l2cap nfsd lockd nfs_acl auth_rpcgss 
-exportfs sunrpc xt_physdev ip6t_REJECT nf_conntrack_ipv6 ip6table_filter 
-ip6_tables ipv6 cpufreq_ondemand acpi_cpufreq dm_multipath kvm uinput 
-snd_hda_codec_analog snd_hda_intel snd_hda_codec arc4 snd_hwdep snd_seq 
-ecb iwl3945 snd_seq_device iwlcore snd_pcm snd_timer nsc_ircc mac80211 snd 
-irda btusb iTCO_wdt soundcore iTCO_vendor_support bluetooth thinkpad_acpi 
-video snd_page_alloc pcspkr output i2c_i801 joydev cfg80211 rfkill 
-crc_ccitt yenta_socket rsrc_nonstatic e1000e radeon ttm drm_kms_helper drm 
-i2c_algo_bit i2c_core [last unloaded: microcode]
-[ 5725.887263] Pid: 436, comm: iwl3945 Not tainted 2.6.32-rc8 #6
-[ 5725.887269] Call Trace:
-[ 5725.887283]  [<c0436c53>] warn_slowpath_common+0x6a/0x81
-[ 5725.887308]  [<f8bd0e8f>] ? ieee80211_scan_completed+0x48/0x198 
-[mac80211]
-[ 5725.887318]  [<c0436c7c>] warn_slowpath_null+0x12/0x15
-[ 5725.887340]  [<f8bd0e8f>] ieee80211_scan_completed+0x48/0x198 
-[mac80211]
-[ 5725.887370]  [<f8c97b81>] iwl_bg_scan_completed+0x97/0xcf [iwlcore]
-[ 5725.887382]  [<c044ad6b>] worker_thread+0x13f/0x1b7
-[ 5725.887409]  [<f8c97aea>] ? iwl_bg_scan_completed+0x0/0xcf [iwlcore]
-[ 5725.887421]  [<c044e535>] ? autoremove_wake_function+0x0/0x34
-[ 5725.887431]  [<c044ac2c>] ? worker_thread+0x0/0x1b7
-[ 5725.887441]  [<c044e2f7>] kthread+0x64/0x69
-[ 5725.887450]  [<c044e293>] ? kthread+0x0/0x69
-[ 5725.887461]  [<c040400f>] kernel_thread_helper+0x7/0x10
-[ 5725.887469] ---[ end trace f4077df61007acfa ]---
+But in general having a slow top half can have bad effects on other
+drivers sharing an IRQ line.
 
-regards, sebastian
+>   On shared IRQ lines, wouldn't
+> > this hold off the interrupt for another device for too long?
+> > 
+> > For example, I already ran across the case of an error path in the ahci
+> > disk controller driver interrupt handler holding off interrupts from the
+> > cx18 driver longer than the CX23418 firmware would tolerate on a shared
+> > interrupt line.
 > 
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Sounds like it should be using bottom half tasklet not workqueue.
+> Tasklet is exactly designed to handle situations like this.  Is there
+> any reason tasklet can't be used?
+
+Well if we're talking about the cx18 driver:
+
+1. I recall reading a while ago that tasklets were on the way out.
+Here's a recent reference:
+http://lwn.net/Articles/2.6-kernel-api/
+and an older one:
+http://lwn.net/Articles/239633/
+
+2. CX23418 IRQs that need deferred work can come in in very close
+succession.  This is due to *one* mailbox of information from firmware
+to the cx18 driver and buffer notifications for multiple streams coming
+in on that mailbox and the firmware doesn't have a long timeout waiting
+for the mailbox to be handled by the cx18 driver.  I needed to make sure
+sequential events get queued up properly and none of them dropped.
+Queueing up multiple defered work items with a tasklet seemed
+problematic compared to a workqueue.
+
+(3. Once upon a time, the cx18 buffer queues where protected by mutexes,
+which can sleep.  Sleeping wasn't allowed in a tasklet but was in
+workhandlers.  Those queue locks are now spinlocks though.)
+
+
+But in the case I mentioned above for the cx18 and ahci drivers with
+devices that share an interrupt - tasklet vs. workqueue doesn't matter.
+
+There is a variable, but often short, time interval from CX23418 raising
+the IRQn to provide notification of a completed buffer DMA, until the
+CX23418 gives up waiting for cx18 driver ack and begins to overwrite
+that notification with a new one.
+
+If the ahci driver is servicing an interrupt for the shared IRQn and
+leaving it masked for a very long time, like it does in an error
+handling path, it is the ahci driver's interrupt service routine that is
+consuming the cx18 driver's timeline, not the workqueue delays.
+
+The fix for that is a system level one: don't have a data acquisition
+type peripherial like a CX23418 based TV capture card, share an IRQ with
+some other peripherial whose linux driver might have a sometimes slow
+top-half.  Unfortunately, a normal home end user doesn't know to do that
+until he asks for help.
+
+
+Thanks.
+
+Regards,
+Andy
+
+
+> Thanks.
+
+
