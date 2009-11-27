@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbZK0Bqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZK0B40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbZK0Bqd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 20:46:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZK0Bqc
+	id S1752932AbZK0B40 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 20:56:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZK0B40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 20:46:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17744 "EHLO mx1.redhat.com"
+	Thu, 26 Nov 2009 20:56:26 -0500
+Received: from lo.gmane.org ([80.91.229.12]:39707 "EHLO lo.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751319AbZK0Bqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 20:46:31 -0500
-Message-ID: <4B0F2F50.5050102@redhat.com>
-Date: Thu, 26 Nov 2009 23:45:52 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Jarod Wilson <jarod@wilsonet.com>, Andy Walls <awalls@radix.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>, khc@pm.waw.pl, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <6D934408-B713-49B6-A197-46CE663455AC@wilsonet.com> <4B0E889C.9060405@redhat.com> <4B0EBBB5.5090303@wilsonet.com> <4B0EBF99.1070404@redhat.com> <20091126235057.GG6936@core.coreip.homeip.net>
-In-Reply-To: <20091126235057.GG6936@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751100AbZK0B4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 20:56:25 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Linux 2.6.31 - very swap-happy with plenty of free RAM
+Date: Thu, 26 Nov 2009 20:56:07 -0500
+Message-ID: <henbjo$col$1@ger.gmane.org>
+References: <4B046AEA.80109@wpkg.org> <c0c067900911181640h64971680l4da14cdbe9fa6d59@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-72-92-176-205.albyny.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 SeaMonkey/1.1.16
+In-Reply-To: <c0c067900911181640h64971680l4da14cdbe9fa6d59@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Thu, Nov 26, 2009 at 03:49:13PM -0200, Mauro Carvalho Chehab wrote:
->> Dmitry,
->>
->> While lirc is basically a series of input drivers, considering that they have lots
->> in common with the input drivers at V4L/DVB and that we'll need to work on
->> some glue to merge both, do you mind if I add the lirc drivers at drivers/staging from
->> my trees? 
->>
+Dan Merillat wrote:
+> On Wed, Nov 18, 2009 at 4:45 PM, Tomasz Chmielewski <mangoo@wpkg.org> wrote:
 > 
-> Mauro,
+>> I have a pretty powerful desktop machine with 8 GB RAM, fast disks with
+>> RAID-1 etc.
 > 
-> I would not mind if you will be pushing it to staging, however I am not
-> sure we have an agreement on what exactly the interface that we will be
-> using. I would hate to get something in that will need to be reworked
-> again.
+>> Every 10 minutes or so, machine is really unresponsive, load jumps to 10 or
+>> 20. Mouse pointer jumps, it's impossible to change between windows etc.
+> 
+> This is the type of hefty workstation many of the core developers
+> have, running similar workloads, so I'm somewhat surprised that the
+> default VM settings have this kind of issue.
+> 
+>> Do a "swapoff -a", and everything is snappy and responsive as it should,
+>> there are no more lags.
+> 
+> Yes, that's my exact finding.
+> 
+> Is this weird IO storm happening for anyone else with plenty of memory
+> (for their taskload?)
 
-I understand your concerns.
+My load is virtually the same a Tomasz describes, virtual machines (including 
+this desktop), little backup servers on CentOS-5.3, production Fedora-9 and 10, 
+testing FC11 and 12. I see none of this problem, with the Fedora kernel or my 
+own build of 2.6.31 whatever was stable two weeks ago.
 
-IMHO, we should be really careful with API's when migrating from staging to the
-right place, but I'm not that much concerned with staging. We already have several 
-drivers there with bad behaviors and even with some API's there that will go to /dev/null.
+What is not the same is that all are started from CLI and scripts, because much 
+of my VM stuff predates libvirt. So nothing between qemu-kvm and my fingers or 
+boot scripts.
 
-For example there's a V4L2 driver there (staging/go7007) that has their own private
-API to handle compressed streams. I won't ack moving it from staging while
-it has their own private extensions for something that are part of V4L2 API.
+I have no idea if this is useful or significant, just sharing it "in case."
 
-Also, staging drivers without progress for a few kernel cycles will be moved to /dev/null,
-so I don't see much sense of denying a driver to go there.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-Anyway, I'll add it there only when you feel comfortable about that and send us your ack.
-
--
-
->From what I heard on the comments, I think we have already a consensus of some points:
-	1) all IR's should implement the standard evdev interface;
-	2) IR's with raw interfaces will implement a raw pulse/space IR interface. 
-The proposal is to use lirc API interface for raw pulse/code TX and RX.
-
-Do you think we'll need to better detail the IR raw interface API before accepting 
-the patches for staging? If so, what level of details do you want?
-
-Cheers,
-Mauro.
