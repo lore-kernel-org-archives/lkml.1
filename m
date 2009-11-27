@@ -1,87 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZK0EWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbZK0EZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbZK0EWn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 23:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZK0EWm
+	id S1753371AbZK0EZB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 23:25:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZK0EZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 23:22:42 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:37783 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbZK0EWm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 23:22:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=VdhRxff+ZtIZEUGl3sV+K7VlnMNFc8Pl5glb3aqyKH5UbU+J8BPvL+XTzxtM+P9Be/
-         jYSUeHUSX6PPlGH1U6THD4M6enF3ylPRimf4ZxqIU3O0TZmGBxs2D7bUdaoXs4N1uCKs
-         2BS9mGieF6K5p9YVbQHLCl5YNPM3cBhMnjMqA=
-Date: Fri, 27 Nov 2009 05:22:47 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Anton Blanchard <anton@samba.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, msb@google.com
-Subject: Re: PATCH: softlockup: Fix hung_task_check_count sysctl
-Message-ID: <20091127042245.GB5221@nowhere>
-References: <20091127022820.GU32182@kryten> <2375c9f90911261846i18a828eft391420b13bb3fbb2@mail.gmail.com> <20091127025512.GB5406@nowhere> <2375c9f90911261902q1f7df666nc0b303e89d88d643@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2375c9f90911261902q1f7df666nc0b303e89d88d643@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 26 Nov 2009 23:25:00 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39317 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752078AbZK0EZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 23:25:00 -0500
+Date: Fri, 27 Nov 2009 15:24:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: =?UTF-8?B?IkrDtnJuIEVuZ2VsIg==?= <joern@logfs.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 0/17] [LogFS] New flash filesystem
+Message-Id: <20091127152459.b427f4e5.sfr@canb.auug.org.au>
+In-Reply-To: <20091126083614.GI10944@logfs.org>
+References: <20091120181113.GA2159@logfs.org>
+	<200911231318.39685.arnd@arndb.de>
+	<20091125155510.GE10944@logfs.org>
+	<20091126105103.4b2b4408.sfr@canb.auug.org.au>
+	<20091126083614.GI10944@logfs.org>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__27_Nov_2009_15_24_59_+1100_1bjiS9.ZWTkPl0y3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 11:02:13AM +0800, Américo Wang wrote:
-> On Fri, Nov 27, 2009 at 10:55 AM, Frederic Weisbecker
-> <fweisbec@gmail.com> wrote:
-> > On Fri, Nov 27, 2009 at 10:46:53AM +0800, Américo Wang wrote:
-> >> On Fri, Nov 27, 2009 at 10:28 AM, Anton Blanchard <anton@samba.org> wrote:
-> >> >
-> >> > I'm seeing spikes of up to 0.5ms in khungtaskd on a large machine. To reduce
-> >> > this source of jitter I tried setting hung_task_check_count to 0:
-> >> >
-> >> > # echo 0 > /proc/sys/kernel/hung_task_check_count
-> >> >
-> >> > which didn't have the intended response. Change to a post increment of
-> >> > max_count, so a value of 0 means check 0 tasks.
-> >> >
-> >> > Signed-off-by: Anton Blanchard <anton@samba.org>
-> >>
-> >>
-> >> Ack.
-> >>
-> >> I would also suggest to make 'max_count' as unsigned long,
-> >> since sysctl_hung_task_check_count is.
-> >>
-> >> Thanks.
-> >
-> >
-> > Also, the batch_count thing should be dropped I think.
-> > This is a hardcoded, not overridable pause after 1024
-> > threads checks to avoid latencies caused by rcu_read_lock.
-> > But now we have PREEMPT_RCU so people can enable it if
-> > they care about latency. We should remove it as it adds
-> > unnecessary complexity.
-> 
-> This sounds OK for me.
-> 
-> >
-> > I'm preparing a patch for that, on top of Anton patch.
-> >
-> 
-> Great!
-> 
-> Thanks.
+--Signature=_Fri__27_Nov_2009_15_24_59_+1100_1bjiS9.ZWTkPl0y3
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi J=C3=B6rn,
 
-Actually it looks like this check is not only there to take
-care of latency but also to avoid too much waiting before
-a grace period.
+On Thu, 26 Nov 2009 09:36:15 +0100 J=C3=B6rn Engel <joern@logfs.org> wrote:
+>
+> Being of sound state of mind, I hereby request that you add
 
-Hm, well, I'm not sure what to do.
+:-)
 
+> git://git.kernel.org/pub/scm/linux/kernel/git/joern/logfs.git
+> to linux-next.
+>=20
+> Something like that?  Or would you doubt my state of mind if I willing
+> accept the risk of breaking others' compile and suffering the angry
+> emails that inevitably follow?
+
+Sometimes I question my own state of mind :-)
+
+I have added the master branch of the above tree from today.
+
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgment of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
+
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+	Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
+
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
+
+--=20
+Cheers,
+Stephen Rothwell=20
+sfr@canb.auug.org.au
+
+Legal Stuff:
+By participating in linux-next, your subsystem tree contributions are
+public and will be included in the linux-next trees.  You may be sent
+e-mail messages indicating errors or other issues when the
+patches/commits from your subsystem tree are merged and tested in
+linux-next.  These messages may also be cross-posted to the linux-next
+mailing list, the linux-kernel mailing list, etc.  The linux-next tree
+project and IBM (my employer) make no warranties regarding the linux-next
+project, the testing procedures, the results, the e-mails, etc.  If you
+don't agree to these ground rules, let me know and I'll remove your tree
+from participation in linux-next.
+
+--Signature=_Fri__27_Nov_2009_15_24_59_+1100_1bjiS9.ZWTkPl0y3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksPVJsACgkQjjKRsyhoI8wE3QCeI5fTGMzx0gwKQOOHylhfDDSq
+jWEAoI0Dvvay+hd4Dae1JBnF4hyzSYWd
+=W0VY
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__27_Nov_2009_15_24_59_+1100_1bjiS9.ZWTkPl0y3--
