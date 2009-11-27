@@ -1,121 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751367AbZK0RAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751007AbZK0RGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751367AbZK0RAS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 12:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZK0RAR
+	id S1751007AbZK0RGk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 12:06:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZK0RGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 12:00:17 -0500
-Received: from mail1.radix.net ([207.192.128.31]:37394 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbZK0RAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 12:00:04 -0500
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-From: Andy Walls <awalls@radix.net>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-In-Reply-To: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 27 Nov 2009 11:57:50 -0500
-Message-Id: <1259341070.3062.34.camel@palomino.walls.org>
+	Fri, 27 Nov 2009 12:06:39 -0500
+Received: from soto.provo.novell.com ([137.65.250.214]:44032 "EHLO
+	soto.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbZK0RGj convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-pmullaney@novell.com;5:1>);
+	Fri, 27 Nov 2009 12:06:39 -0500
+Message-Id: <4B0FA4AD020000C70007B9AE@soto.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Fri, 27 Nov 2009 10:06:37 -0700
+From: "Patrick Mullaney" <pmullaney@novell.com>
+To: <arnd@arndb.de>
+Cc: <bridge@lists.linux-foundation.org>,
+       <alacrityvm-devel@lists.sourceforge.net>, <kaber@trash.net>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: Re: [PATCH 1/3] netdevice: provide common routine for macvlan
+	 and vlan operstate management
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-27 at 10:57 -0500, Jon Smirl wrote:
-> On Fri, Nov 27, 2009 at 2:45 AM, Christoph Bartelmus
-> <christoph@bartelmus.de> wrote:
+Thanks. I'll post an updated patch.
 
-> > So the plan is to have two ways of using IR in the future which are
-> > incompatible to each other, the feature-set of one being a subset of the
-> > other?
+On Fri, 2009-11-27 at 14:09 +0100, Arnd Bergmann wrote:
+> On Friday 13 November 2009, Patrick Mullaney wrote:
+> > @@ -551,7 +532,7 @@ static int macvlan_newlink(struct net_device *dev,
+> >                 return err;
+> >  
+> >         list_add_tail(&vlan->list, &port->vlans);
+> > -       macvlan_transfer_operstate(dev);
+> > +       netif_stacked_transfer_operstate(dev, lowerdev);
+> >         return 0;
+> >  }
+> >  
+> > @@ -591,7 +572,8 @@ static int macvlan_device_event(struct notifier_block *unused,
+> >         switch (event) {
+> >         case NETDEV_CHANGE:
+> >                 list_for_each_entry(vlan, &port->vlans, list)
+> > -                       macvlan_transfer_operstate(vlan->dev);
+> > +                       netif_stacked_transfer_operstate(vlan->dev,
+> > +                                                        vlan->lowerdev);
+> >                 break;
+> >         case NETDEV_FEAT_CHANGE:
+> >                 list_for_each_entry(vlan, &port->vlans, list) {
 > 
-> Take advantage of the fact that we don't have a twenty year old legacy
-> API already in the kernel. Design an IR API that uses current kernel
-> systems. Christoph, ignore the code I wrote and make a design proposal
-> that addresses these goals...
-
-Jon,
-
-It's good to have clear, sensible goals.  I'd also like to have
-concurrence on what are driving requirements vs. nice-to-have's and also
-on priorities.
-
-
-> 1) Unified input in Linux using evdev. IR is on equal footing with
-> mouse and keyboard.
-
-Sounds fine.  I think some of the discussion so far indicates the devil
-may be in the details.  I understand the driving requirement is to avoid
-user(?) problems experienced in the past with PS/2 keyboards, etc.
-
-
-> 2) plug and play for basic systems - you only need an external app for scripting
-
-I concur.  Users needing hardware to "Just Work" is *the* driving
-requirment for in kernel IR from the discussion.  I would only say that
-you may not need any application for the default configuration on basic
-systems.
-
-
-> 3) No special tools - use mkdir, echo, cat, shell scripts to build maps
-
-Sounds fine.  I also was a user who used setkeys, loadkeys, et. al. once
-years ago, and can't remeber for the life of me why I had to do so or
-how they work anymore.
-
-
-> 4) Use of modern Linux features like sysfs, configfs and udev.
-
-I'm not sure this is strictly driven by anything; it's an implementation
-decision stated in advance.  One uses features, if one needs them.
-
-
-> 5) Direct multi-app support - no daemon
-
-I understand the rationale for this to really be a desire for minimal
-userspace components.  If you think/know that the input system can
-multiplex or multicast events in a sane way for applications, then I
-suppose it's feasible.
-
-I don't hear users asking for minimal userspace components, as their
-dsitribution packaging system usually handles this for them.  I suspect
-this is mostly driven by kernel developers or embedded systems
-developers.
-
-
-> 6) Hide timing data from user as much as possible.
-
-I do not strictly agree with this.  I understand this goal is to
-insulate users from the low level details of IR protocols.  I think that
-hinders users' ability to solve or diagnose problems on their own.  Some
-people like details and flexible control.  I think users being able to
-report about timing data of unknown remotes or protocols has value as
-well.
-
-
-> What are other goals for this subsystem?
-
-7. Support IR transmit by applications.
-
-8. Support IR transmit without using special applications - just cat,
-mkdir, shell, etc.
-(Following your lead here.)
-
-9. For flexible IR transmit hardware, the one IR transmitter should be
-capable of sending codes to STBs with different protocols or keymaps
-(not at the same time of course).
-
-
-
-Regards,
-Andy
+> These have the arguments reversed, lowerdev should come first.
+> 
+> 	Arnd <><
 
