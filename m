@@ -1,161 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbZK0A1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbZK0AX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526AbZK0A1K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 19:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZK0A1J
+	id S1753477AbZK0AX5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 19:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZK0AX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 19:27:09 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37852 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753431AbZK0A1I (ORCPT
+	Thu, 26 Nov 2009 19:23:57 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52391 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751568AbZK0AX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 19:27:08 -0500
-Date: Fri, 27 Nov 2009 09:20:35 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+	Thu, 26 Nov 2009 19:23:56 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH 4/4] vmscan: vmscan don't use pcp list
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH RFC v0 2/3] res_counter: implement thresholds
-Message-Id: <20091127092035.bbf2efdc.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <8524ba285f6dd59cda939c28da523f344cdab3da.1259255307.git.kirill@shutemov.name>
-References: <cover.1259255307.git.kirill@shutemov.name>
-	<bc4dc055a7307c8667da85a4d4d9d5d189af27d5.1259255307.git.kirill@shutemov.name>
-	<8524ba285f6dd59cda939c28da523f344cdab3da.1259255307.git.kirill@shutemov.name>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <20091127091357.A7CC.A69D9226@jp.fujitsu.com>
+References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com>
+Message-Id: <20091127091920.A7D5.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 27 Nov 2009 09:23:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Thu, 26 Nov 2009 19:11:16 +0200, "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
-> It allows to setup two thresholds: one above current usage and one
-> below. Callback threshold_notifier() will be called if a threshold is
-> crossed.
-> 
-> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-> ---
->  include/linux/res_counter.h |   44 +++++++++++++++++++++++++++++++++++++++++++
->  kernel/res_counter.c        |    4 +++
->  2 files changed, 48 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-> index fcb9884..bca99a5 100644
-> --- a/include/linux/res_counter.h
-> +++ b/include/linux/res_counter.h
-> @@ -9,6 +9,10 @@
->   *
->   * Author: Pavel Emelianov <xemul@openvz.org>
->   *
-> + * Thresholds support
-> + * Copyright (C) 2009 Nokia Corporation
-> + * Author: Kirill A. Shutemov
-> + *
->   * See Documentation/cgroups/resource_counter.txt for more
->   * info about what this counter is.
->   */
-> @@ -42,6 +46,13 @@ struct res_counter {
->  	 * the number of unsuccessful attempts to consume the resource
->  	 */
->  	unsigned long long failcnt;
-> +
-> +	unsigned long long threshold_above;
-> +	unsigned long long threshold_below;
-> +	void (*threshold_notifier)(struct res_counter *counter,
-> +			unsigned long long usage,
-> +			unsigned long long threshold);
-> +
->  	/*
->  	 * the lock to protect all of the above.
->  	 * the routines below consider this to be IRQ-safe
-> @@ -145,6 +156,20 @@ static inline bool res_counter_soft_limit_check_locked(struct res_counter *cnt)
->  	return false;
->  }
->  
-> +static inline void res_counter_threshold_notify_locked(struct res_counter *cnt)
-> +{
-> +	if (cnt->usage >= cnt->threshold_above) {
-> +		cnt->threshold_notifier(cnt, cnt->usage, cnt->threshold_above);
-> +		return;
-> +	}
-> +
-> +	if (cnt->usage < cnt->threshold_below) {
-> +		cnt->threshold_notifier(cnt, cnt->usage, cnt->threshold_below);
-> +		return;
-> +	}
-> +}
-> +
-> +
->  /**
->   * Get the difference between the usage and the soft limit
->   * @cnt: The counter
-> @@ -238,4 +263,23 @@ res_counter_set_soft_limit(struct res_counter *cnt,
->  	return 0;
->  }
->  
-> +static inline int
-> +res_counter_set_thresholds(struct res_counter *cnt,
-> +		unsigned long long threshold_above,
-> +		unsigned long long threshold_below)
-> +{
-> +	unsigned long flags;
-> +	int ret = -EINVAL;
-> +
-> +	spin_lock_irqsave(&cnt->lock, flags);
-> +	if ((cnt->usage < threshold_above) &&
-> +			(cnt->usage >= threshold_below)) {
-> +		cnt->threshold_above = threshold_above;
-> +		cnt->threshold_below = threshold_below;
-> +		ret = 0;
-> +	}
-> +	spin_unlock_irqrestore(&cnt->lock, flags);
-> +	return ret;
-> +}
-> +
->  #endif
-> diff --git a/kernel/res_counter.c b/kernel/res_counter.c
-> index bcdabf3..646c29c 100644
-> --- a/kernel/res_counter.c
-> +++ b/kernel/res_counter.c
-> @@ -20,6 +20,8 @@ void res_counter_init(struct res_counter *counter, struct res_counter *parent)
->  	spin_lock_init(&counter->lock);
->  	counter->limit = RESOURCE_MAX;
->  	counter->soft_limit = RESOURCE_MAX;
-> +	counter->threshold_above = RESOURCE_MAX;
-> +	counter->threshold_below = 0ULL;
->  	counter->parent = parent;
->  }
->  
-> @@ -33,6 +35,7 @@ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
->  	counter->usage += val;
->  	if (counter->usage > counter->max_usage)
->  		counter->max_usage = counter->usage;
-> +	res_counter_threshold_notify_locked(counter);
->  	return 0;
->  }
->  
-> @@ -73,6 +76,7 @@ void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val)
->  		val = counter->usage;
->  
->  	counter->usage -= val;
-> +	res_counter_threshold_notify_locked(counter);
->  }
->  
-hmm.. this adds new checks to hot-path of process life cycle.
-
-Do you have any number on performance impact of these patches(w/o setting any threshold)?
-IMHO, it might be small enough to be ignored because KAMEZAWA-san's coalesce charge/uncharge
-patches have decreased charge/uncharge for res_counter itself, but I want to know just to make sure.
+note: Last year,  Andy Whitcroft reported pcp prevent to make contenious
+high order page when lumpy reclaim is running.
+He posted "capture pages freed during direct reclaim for allocation by the reclaimer"
+patch series, but Christoph mentioned simple bypass pcp instead.
+I made it. I'd hear Christoph and Mel's mention.
 
 
-Regards,
-Daisuke Nishimura.
+==========================
+Currently vmscan free unused pages by __pagevec_free().  It mean free pages one by one
+and use pcp. it makes two suboptimal result.
+
+ - The another task can steal the freed page in pcp easily. it decrease
+   lumpy reclaim worth.
+ - To pollute pcp cache, vmscan freed pages might kick out cache hot
+   pages from pcp.
+
+This patch make new free_pages_bulk() function and vmscan use it.
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ include/linux/gfp.h |    2 +
+ mm/page_alloc.c     |   56 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ mm/vmscan.c         |   23 +++++++++++----------
+ 3 files changed, 70 insertions(+), 11 deletions(-)
+
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index f53e9b8..403584d 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -330,6 +330,8 @@ extern void free_hot_page(struct page *page);
+ #define __free_page(page) __free_pages((page), 0)
+ #define free_page(addr) free_pages((addr),0)
+ 
++void free_pages_bulk(struct zone *zone, int count, struct list_head *list);
++
+ void page_alloc_init(void);
+ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
+ void drain_all_pages(void);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 11ae66e..f77f8a8 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2037,6 +2037,62 @@ void free_pages(unsigned long addr, unsigned int order)
+ 
+ EXPORT_SYMBOL(free_pages);
+ 
++/*
++ * Frees a number of pages from the list
++ * Assumes all pages on list are in same zone and order==0.
++ * count is the number of pages to free.
++ *
++ * This is similar to __pagevec_free(), but receive list instead pagevec.
++ * and this don't use pcp cache. it is good characteristics for vmscan.
++ */
++void free_pages_bulk(struct zone *zone, int count, struct list_head *list)
++{
++	unsigned long flags;
++	struct page *page;
++	struct page *page2;
++
++	list_for_each_entry_safe(page, page2, list, lru) {
++		int wasMlocked = __TestClearPageMlocked(page);
++
++		kmemcheck_free_shadow(page, 0);
++
++		if (PageAnon(page))
++			page->mapping = NULL;
++		if (free_pages_check(page)) {
++			/* orphan this page. */
++			list_del(&page->lru);
++			continue;
++		}
++		if (!PageHighMem(page)) {
++			debug_check_no_locks_freed(page_address(page),
++						   PAGE_SIZE);
++			debug_check_no_obj_freed(page_address(page), PAGE_SIZE);
++		}
++		arch_free_page(page, 0);
++		kernel_map_pages(page, 1, 0);
++
++		local_irq_save(flags);
++		if (unlikely(wasMlocked))
++			free_page_mlock(page);
++		local_irq_restore(flags);
++	}
++
++	spin_lock_irqsave(&zone->lock, flags);
++	__count_vm_events(PGFREE, count);
++	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
++	zone->pages_scanned = 0;
++
++	__mod_zone_page_state(zone, NR_FREE_PAGES, count);
++
++	list_for_each_entry_safe(page, page2, list, lru) {
++		/* have to delete it as __free_one_page list manipulates */
++		list_del(&page->lru);
++		trace_mm_page_free_direct(page, 0);
++		__free_one_page(page, zone, 0, page_private(page));
++	}
++	spin_unlock_irqrestore(&zone->lock, flags);
++}
++
+ /**
+  * alloc_pages_exact - allocate an exact number physically-contiguous pages.
+  * @size: the number of bytes to allocate
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 56faefb..00156f2 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -598,18 +598,17 @@ redo:
+  * shrink_page_list() returns the number of reclaimed pages
+  */
+ static unsigned long shrink_page_list(struct list_head *page_list,
++				      struct list_head *freed_pages_list,
+ 					struct scan_control *sc,
+ 					enum pageout_io sync_writeback)
+ {
+ 	LIST_HEAD(ret_pages);
+-	struct pagevec freed_pvec;
+ 	int pgactivate = 0;
+ 	unsigned long nr_reclaimed = 0;
+ 	unsigned long vm_flags;
+ 
+ 	cond_resched();
+ 
+-	pagevec_init(&freed_pvec, 1);
+ 	while (!list_empty(page_list)) {
+ 		struct address_space *mapping;
+ 		struct page *page;
+@@ -785,10 +784,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		__clear_page_locked(page);
+ free_it:
+ 		nr_reclaimed++;
+-		if (!pagevec_add(&freed_pvec, page)) {
+-			__pagevec_free(&freed_pvec);
+-			pagevec_reinit(&freed_pvec);
+-		}
++		list_add(&page->lru, freed_pages_list);
+ 		continue;
+ 
+ cull_mlocked:
+@@ -812,8 +808,6 @@ keep:
+ 		VM_BUG_ON(PageLRU(page) || PageUnevictable(page));
+ 	}
+ 	list_splice(&ret_pages, page_list);
+-	if (pagevec_count(&freed_pvec))
+-		__pagevec_free(&freed_pvec);
+ 	count_vm_events(PGACTIVATE, pgactivate);
+ 	return nr_reclaimed;
+ }
+@@ -1100,6 +1094,7 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+ 					  int priority, int file)
+ {
+ 	LIST_HEAD(page_list);
++	LIST_HEAD(freed_pages_list);
+ 	struct pagevec pvec;
+ 	unsigned long nr_scanned;
+ 	unsigned long nr_reclaimed = 0;
+@@ -1174,7 +1169,8 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+ 
+ 	spin_unlock_irq(&zone->lru_lock);
+ 
+-	nr_reclaimed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
++	nr_reclaimed = shrink_page_list(&page_list, &freed_pages_list, sc,
++					PAGEOUT_IO_ASYNC);
+ 
+ 	/*
+ 	 * If we are direct reclaiming for contiguous pages and we do
+@@ -1192,10 +1188,15 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+ 		nr_active = clear_active_flags(&page_list, count);
+ 		count_vm_events(PGDEACTIVATE, nr_active);
+ 
+-		nr_reclaimed += shrink_page_list(&page_list, sc,
+-						 PAGEOUT_IO_SYNC);
++		nr_reclaimed += shrink_page_list(&page_list, &freed_pages_list,
++						 sc, PAGEOUT_IO_SYNC);
+ 	}
+ 
++	/*
++	 * Free unused pages.
++	 */
++	free_pages_bulk(zone, nr_reclaimed, &freed_pages_list);
++
+ 	local_irq_disable();
+ 	if (current_is_kswapd())
+ 		__count_vm_events(KSWAPD_STEAL, nr_reclaimed);
+-- 
+1.6.5.2
+
+
+
