@@ -1,102 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZK0CXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbZK0Ck5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753657AbZK0CXo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 21:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZK0CXo
+	id S1753757AbZK0Ck5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 21:40:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbZK0Ck4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 21:23:44 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:41138
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbZK0CXm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 21:23:42 -0500
-Message-ID: <4B0F3963.8040701@wilsonet.com>
-Date: Thu, 26 Nov 2009 21:28:51 -0500
-From: Jarod Wilson <jarod@wilsonet.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <200910200956.33391.jarod@redhat.com> <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <20091126053109.GE23244@core.coreip.homeip.net> <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com> <20091126232311.GD6936@core.coreip.homeip.net>
-In-Reply-To: <20091126232311.GD6936@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 26 Nov 2009 21:40:56 -0500
+Received: from gate.crashing.org ([63.228.1.57]:45133 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753719AbZK0Ckz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 21:40:55 -0500
+Subject: Re: [PATCH 0/4] powerpc: Fix minor build issues on 2.6.32-rc7
+ without CONFIG_XICS set
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091118170510.GA1119@csn.ul.ie>
+References: <1258459659-11770-1-git-send-email-mel@csn.ul.ie>
+	 <1258524332.2140.663.camel@pasglop>  <20091118170510.GA1119@csn.ul.ie>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 27 Nov 2009 13:40:26 +1100
+Message-ID: <1259289626.2076.1.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/26/2009 06:23 PM, Dmitry Torokhov wrote:
-> On Thu, Nov 26, 2009 at 01:16:01AM -0500, Jarod Wilson wrote:
->> On Nov 26, 2009, at 12:31 AM, Dmitry Torokhov wrote:
->>
->>> On Mon, Nov 23, 2009 at 11:37:53PM -0500, Jarod Wilson wrote:
->>>> On 11/23/2009 12:37 PM, Dmitry Torokhov wrote:
->>>>> On Mon, Nov 23, 2009 at 03:14:56PM +0100, Krzysztof Halasa wrote:
->>>>>> Mauro Carvalho Chehab<mchehab@redhat.com>   writes:
->>>>>>
->>>>>>> Event input has the advantage that the keystrokes will provide an unique
->>>>>>> representation that is independent of the device.
->>>>>>
->>>>>> This can hardly work as the only means, the remotes have different keys,
->>>>>> the user almost always has to provide customized key<>function mapping.
->>>>>>
->>>>>
->>>>> Is it true? I would expect the remotes to have most of the keys to have
->>>>> well-defined meanings (unless it is one of the programmable remotes)...
->>>>
->>>> Its the cases like programmable universal remotes that really throw
->>>> things for a loop. That, and people wanting to use random remote X that
->>>> came with the amp or tv or set top box, with IR receiver Y.
->>>
->>> Right, but still the keys usually do have the well-defined meaning,
->>
->> Except when they don't. I have two very similar remotes, one that was bundled with a system from CaptiveWorks, and one that was bundled with an Antec Veris IR/LCD (SoundGraph iMON rebrand). Outside of the Antec remote having a mouse pad instead of up/down/left/right/enter, they have an identical layout, and the keys in the same locations on the remotes send the same IR signal. But the button names vary a LOT between the two. So on the DVD key on the Antec and the MUTE key on the CW send the same signal. Same with Audio vs. Eject, TV vs. History, etc. Moral of the story is that not all IR protocols spell things out particularly well for what a given code should actually mean.
->
-> I guess we are talking about different things. While the 2 remotes may
-> use different protocols to communicate
+On Wed, 2009-11-18 at 17:05 +0000, Mel Gorman wrote:
 
-The remotes use the exact same protocol. Their respective bundled 
-receivers however, do translate key presses differently. Perhaps this is 
-a bad example though, because both of these remotes came with receivers 
-that do onboard decoding. But there's nothing stopping me from wanting 
-to use either of these remotes with an mceusb IR transceiver.
+> 
+> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+> index 04a8061..a82c470 100644
+> --- a/arch/powerpc/platforms/Kconfig
+> +++ b/arch/powerpc/platforms/Kconfig
+> @@ -52,9 +52,9 @@ config PPC_UDBG_BEAT
+>  	default n
+>  
+>  config XICS
+> -	depends on PPC_PSERIES
+> +	depends on PCI_MSI
+>  	bool
+> -	default y
+> +	default n
 
-> and may use the same codes to
-> mean different things they buttons have well-defined meaning and we
-> could map that to input keycodes. Then what is left is to load the
-> proper mapping for particular device into the kernel.
+Why the above ? XICS only exist on PSERIES and select bypass depends in
+nasty ways anyways.
 
-In this case, its not the device, but the remote, that we need a 
-different mapping for.
+>  config IPIC
+>  	bool
+> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> index f0e6f28..81c2289 100644
+> --- a/arch/powerpc/platforms/pseries/Kconfig
+> +++ b/arch/powerpc/platforms/pseries/Kconfig
+> @@ -5,6 +5,8 @@ config PPC_PSERIES
+>  	select PPC_I8259
+>  	select PPC_RTAS
+>  	select RTAS_ERROR_LOGGING
+> +	select PCI_MSI
+> +	select XICS
+>  	select PPC_UDBG_16550
+>  	select PPC_NATIVE
+>  	select PPC_PCI_CHOICE if EMBEDDED
 
-> This can be done
-> either automatically (when we know the mapping) or with the help of the
-> user (owner of the system).
+The above bits look plenty enough. Can you also stick it next to the
+MPIC one ?
 
-Yep, that'd work. Just trying to illustrate that the same code doesn't 
-always mean anywhere near the same thing from one remote to another.
+Cheers,
+Ben.
 
->>> teh
->>> issue is in mapping raw code to the appropriate keycode. This can be
->>> done either by lirc config file (when lirc is used) or by some other
->>> means.
->>
->> The desire to map a button press to multiple keystrokes isn't uncommon either, though I presume that's doable within the input layer context too.
->
-> No, at present we expect 1:1 button->event mapping leaving macro
-> expansion (i.e. KEY_PROG1 ->  "do some multi-step sequence" to
-> userspace).
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Hm. So ctrl-x, alt-tab, etc. would have to be faked in userspace 
-somehow. Bummer.
 
--- 
-Jarod Wilson
-jarod@wilsonet.com
