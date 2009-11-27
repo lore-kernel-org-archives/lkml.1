@@ -1,82 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbZK0TDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbZK0THM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752831AbZK0TDN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 14:03:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZK0TDM
+	id S1752955AbZK0THM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 14:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbZK0THM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 14:03:12 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:56790 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751007AbZK0TDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 14:03:11 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       christoph@bartelmus.de, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
-	<BDgcsm11qgB@lirc>
-	<9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
-Date: Fri, 27 Nov 2009 20:03:09 +0100
-In-Reply-To: <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
-	(Jon Smirl's message of "Fri, 27 Nov 2009 12:49:28 -0500")
-Message-ID: <874oof6b9u.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Fri, 27 Nov 2009 14:07:12 -0500
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:50938 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751430AbZK0THK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 14:07:10 -0500
+Date: Sat, 28 Nov 2009 00:37:05 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
+       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [GIT PULL v6] hw-breakpoints: Rewrite on top of perf events v6
+Message-ID: <20091127190705.GB18408@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com> <20091124094421.GA3468@in.ibm.com> <20091124101342.GB5570@elte.hu> <20091124132127.GA5355@in.ibm.com> <20091126055903.GB5649@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091126055903.GB5649@nowhere>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl <jonsmirl@gmail.com> writes:
+On Thu, Nov 26, 2009 at 06:59:05AM +0100, Frederic Weisbecker wrote:
+> On Tue, Nov 24, 2009 at 06:51:27PM +0530, K.Prasad wrote:
+> > On Tue, Nov 24, 2009 at 11:13:42AM +0100, Ingo Molnar wrote:
+> > > 
+> > > * K.Prasad <prasad@linux.vnet.ibm.com> wrote:
+> > > 
+<snipped>
+> > > > - Proposed migration of register allocation logic to arch-specific 
+> > > > files from kernel/hw_breakpoint.c. This is best done early to help 
+> > > > easy porting of code to other architectures (we have an active 
+> > > > interest in bringing support for PPC64 and S390). If done later, it 
+> > > > will entail additional effort in porting for each architecture.
+> > > 
+> > > I think the general direction should be towards librarized common 
+> > > frameworks.
+> > > 
+> > > If an architecture wants to do something special it should either extend 
+> > > the core code, or, if it's too weird to be added to the core, override 
+> > > it via its own implementation.
+> > > 
+> > Given the feeling that the generic set of constraints in the re-written
+> > kernel/hw_breakpoint.c cannot accommodate the needs of various
+> > processors (LKML ref:20091117013959.GG5293@nowher) and that
+> > the register allocation logic should move to arch-specific code, it is
+> > best done early to help easy porting for other archs. For instance
+> > there's already a port to PPC64 against the layered hw-breakpoint
+> > (found here: 20090903183930.GA4590@in.ibm.com) and one from the
+> > community for SH (20091018062558.GA20535@linux-sh.org).
+> > 
+> > If such code migration is done while porting of a new architecture, then
+> > it involves making changes to every other arch on which it is previously
+> > implemented (or workaround using #ifdef).
+> 
+> As I said, we can probably workaround it by keeping the most part
+> in the generic code and delegate special arch things to arch
+> constraints.
+> 
 
-> On Fri, Nov 27, 2009 at 12:29 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
->
->>> Maybe we decide to take the existing LIRC system as is and not
->>> integrate it into the input subsystem. But I think there is a window
->>> here to update the LIRC design to use the latest kernel features.
->>
->> If it ain't broke, don't fix it.  [...]
->>
->> We already agreed last year that we can include an interface in
->> lirc_dev that feeds the signal data to an in-kernel decoder if noone
->> from userspace reads it.  [...]
->>
->> I also understand that people want to avoid dependency on external
->> userspace tools. All I can tell you is that the lirc tools already do
->> support everything you need for IR control. And as it includes a lot of
->> drivers that are implemented in userspace already, LIRC will just continue
->> to do it's work even when there is an alternative in-kernel.
->
-> Christoph, take what you know from all of the years of working on LIRC
-> and design the perfect in-kernel system.
+I think the register_<> interfaces can become wrappers around functions
+that do the following:
 
-Hi,
+- arch_validate(): Validate request by invoking an arch-dependant
+  routine. Proceed if returned valid.
+- arch-specific debugreg availability: Do something like
+  if (arch_hw_breakpoint_availabile())
+	bp = perf_event_create_kernel_counter();
 
-I'm reading this thread with great interest.  Thank you (plural) for the
-very informative conversation, I think I learnt a lot.  But now I
-somehow lost the point, please correct me if the following is wrong.
+  perf_event_create_kernel_counter()--->arch_install_hw_breakpoint();
 
-It looks like having lirc_dev (or a similar raw interface) is a must.
-It could be disguised as an input device, or changed in various ways,
-but is it worth the effort?  As I understand Christoph, he does not want
-to do so, because he finds it wasted work, and also there's already a
-*single* user space daemon using it and doing everything users could
-want.  Except for plug&play.
+This way, all book-keeping related work (no. of pinned/flexible/per-cpu)
+will be moved to arch-specific files (will be helpful for PPC Book-E
+implementation having two types of debug registers). Every new
+architecture that intends to port to the new hw-breakpoint
+implementation must define their arch_validate(),
+arch_hw_breakpoint_available() and an arch_install_hw_breakpoint(),
+while the hw-breakpoint code will be flexible enough to extend itself to
+each of these archs.
 
-On the other hand, a one-liner could make in-kernel decoding possible,
-so those who haven't got lircd running could have plug&play easily, if
-somebody writes the necessary in-kernel decoders to feed the input
-subsystem (which lircd also does, through uinput).
+This implementation would be even superior (in terms of extensibility)
+to even the older hw-breakpoint layer implementation (despite it providing
+a working layer for x86 and PPC64).
 
-But even if you can't find anybody at the moment to write those, this is
-still good stuff (I don't know about the code), which is hurt by being
-developed out of kernel.  Is there any reason to keep this so?
-Admittedly, I don't know why /dev/mouse is evil, maybe I'd understand if
-somebody pointed me to some reading.
--- 
+> > > > - Fix ptrace bugs that potentially alter the semantics of ptrace.
+> > > 
+> > > Is there a specific list of these bugs?
+> > > 
+> > 
+> > As pointed out in 20091111130207.GA5676@in.ibm.com and
+> > 20091112042502.GA3145@in.ibm.com, ptrace requests can a) lose register
+> > slots when modifying the breakpoint addresses and b) new implementation
+> > assumes that every DR7 write to be preceded by a write on DR0-DR3 which
+> > need not be true.
+> 
+> The a) case is going to be fixed.
+> But the b) situation must be reported as a user mistake (which is what is
+> done currently): -EINVAL, -EIO or whatever. Enabling a breakpoint without
+> having given an address is a userland bug.
+> 
+
+b) need not be a user mistake always (except perhaps the first time). As I
+mentioned here 20091112042502.GA3145@in.ibm.com, DR7 enable/disable
+without a DR0-DR3 write can be done by the user through ptrace for
+optimising the number of write operations (and hence ptrace syscalls).
+
+Consider the following steps which is entirely valid (in mainline ptrace)
+but which would fail if assumed that a DR0-DR3 write precedes a DR7 write:
+i) Set address on DR0
+ii) Enable bits corresponding to DR0 in DR7
+iii) Disable DR0 bits in DR7
+iv) Re-enable DR0 bits in DR7
+
 Thanks,
-Feri.
+K.Prasad
+
