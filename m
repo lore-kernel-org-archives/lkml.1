@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZK0TJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbZK0TDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbZK0TJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 14:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZK0TJU
+	id S1752831AbZK0TDN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 14:03:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZK0TDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 14:09:20 -0500
-Received: from outside.256.com ([72.93.100.124]:63091 "EHLO outside.256.com"
+	Fri, 27 Nov 2009 14:03:12 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:56790 "EHLO tac.ki.iif.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbZK0TJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 14:09:20 -0500
-X-Greylist: delayed 432 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Nov 2009 14:09:20 EST
-Message-Id: <m1NE61t-004yeQC@outside.256.com>
-Date: Fri, 27 Nov 2009 13:58:53 -0500 (EST)
-To: linux-kernel@vger.kernel.org
-From: jgj7.ignorantguru@mailnull.com
-Subject: blowfish and cryptoloop modules question
-X-Forward: linux-kernel@vger.kernel.org via outside.256.com
+	id S1751007AbZK0TDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 14:03:11 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
+       christoph@bartelmus.de, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	<BDgcsm11qgB@lirc>
+	<9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
+Date: Fri, 27 Nov 2009 20:03:09 +0100
+In-Reply-To: <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
+	(Jon Smirl's message of "Fri, 27 Nov 2009 12:49:28 -0500")
+Message-ID: <874oof6b9u.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a question for the maintainer of these modules or losetup but haven't been able to find an address.  I posted this to an Arch forum but no one could explain it.  
+Jon Smirl <jonsmirl@gmail.com> writes:
 
-I don't need my entire hard drive encrypted so my habit is to create a small blowfish container using the cryptoloop and blowfish kernel modules.  Something like:
+> On Fri, Nov 27, 2009 at 12:29 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
+>
+>>> Maybe we decide to take the existing LIRC system as is and not
+>>> integrate it into the input subsystem. But I think there is a window
+>>> here to update the LIRC design to use the latest kernel features.
+>>
+>> If it ain't broke, don't fix it.  [...]
+>>
+>> We already agreed last year that we can include an interface in
+>> lirc_dev that feeds the signal data to an in-kernel decoder if noone
+>> from userspace reads it.  [...]
+>>
+>> I also understand that people want to avoid dependency on external
+>> userspace tools. All I can tell you is that the lirc tools already do
+>> support everything you need for IR control. And as it includes a lot of
+>> drivers that are implemented in userspace already, LIRC will just continue
+>> to do it's work even when there is an alternative in-kernel.
+>
+> Christoph, take what you know from all of the years of working on LIRC
+> and design the perfect in-kernel system.
 
-Code:
+Hi,
 
-## Load modules
-/sbin/modprobe cryptoloop
-/sbin/modprobe blowfish
-## Make file "secfilename"
-dd if=/dev/urandom of=secfilename bs=1024k count=10
-## Set file as target of loop device
-losetup -e blowfish /dev/loop0 secfilename
-## Make ext3 filesystem
-mkfs -t ext3 /dev/loop0
-## Mount filesystem
-mount -t ext3 /dev/loop0 /mnt/loop
-#...
-## Unmount, detach, and sync
-umount /dev/loop0
-## Detach loop device
-losetup -d /dev/loop0
-sync
+I'm reading this thread with great interest.  Thank you (plural) for the
+very informative conversation, I think I learnt a lot.  But now I
+somehow lost the point, please correct me if the following is wrong.
 
-Here's my question:  A long time ago, when I changed from SUSE to Ubuntu, I could no longer mount the container - it said there was no valid FS on it.  So I had to recreate it.  This made me question SUSE's blowfish implementation - was it crippled or have a backdoor?  Now, years later I have installed Arch, and once again my container wasn't portable.  Arch couldn't open Ubuntu's blowfish container.  I had to recreate it from scratch with the 'new' blowfish.
+It looks like having lirc_dev (or a similar raw interface) is a must.
+It could be disguised as an input device, or changed in various ways,
+but is it worth the effort?  As I understand Christoph, he does not want
+to do so, because he finds it wasted work, and also there's already a
+*single* user space daemon using it and doing everything users could
+want.  Except for plug&play.
 
-Will the real blowfish please stand up.
+On the other hand, a one-liner could make in-kernel decoding possible,
+so those who haven't got lircd running could have plug&play easily, if
+somebody writes the necessary in-kernel decoders to feed the input
+subsystem (which lircd also does, through uinput).
 
-Needless to say, this makes me question the integrity of these modules.  A cryptographic algorithm, if properly implemented, should not be distro-centric.  For my purposes it's probably not critical, but what's going on?  I can mount my unencrypted ext3 partitions created by Ubuntu fine in Arch.  Why are the blowfish modules not compatible?
-
-And if they are, then why is losetup so inconsistent between distributions?
-
-If they aren't compatible for a legitimate reason, I think they should be, as using different implementations is the only way users can verify an implementation.
-
-Thanks for any info.
-
-
-----------
-This message was sent from a MailNull anti-spam account.  You can get
-your free account and take control over your email by visiting the
-following URL.
-
-   http://mailnull.com/
+But even if you can't find anybody at the moment to write those, this is
+still good stuff (I don't know about the code), which is hurt by being
+developed out of kernel.  Is there any reason to keep this so?
+Admittedly, I don't know why /dev/mouse is evil, maybe I'd understand if
+somebody pointed me to some reading.
+-- 
+Thanks,
+Feri.
