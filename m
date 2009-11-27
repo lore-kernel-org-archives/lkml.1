@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbZK0EdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbZK0EgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753637AbZK0EdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 23:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZK0EdS
+	id S1753706AbZK0EgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 23:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZK0EgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 23:33:18 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:58254 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753270AbZK0EdQ (ORCPT
+	Thu, 26 Nov 2009 23:36:18 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34156 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753338AbZK0EgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 23:33:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=pKcHcERoqIZYPcaNyM+NpHfV4jlt411M9WRwH4af3sVhqKhvF4DLyM92gy8wXx6D9m
-         GKn4Uhbg9PtC7F+WDcE8yt19Z5+3W1jGHbkeG9T8BMA+IUh44v2knI/SmVwJkYTI2QbX
-         jgf2R6p0BJDtvcE2pHZRxhJ9rWLJ1u3UBi7JM=
-Date: Thu, 26 Nov 2009 20:33:18 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091127043318.GK6936@core.coreip.homeip.net>
-References: <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <20091126053109.GE23244@core.coreip.homeip.net> <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com> <20091126232311.GD6936@core.coreip.homeip.net> <4B0F3963.8040701@wilsonet.com> <9e4733910911261908l122263c3x68854e8a00334eae@mail.gmail.com>
+	Thu, 26 Nov 2009 23:36:18 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH-RFC] cfq: Disable low_latency by default for 2.6.32
+Cc: kosaki.motohiro@jp.fujitsu.com, Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20091126121945.GB13095@csn.ul.ie>
+References: <20091126121945.GB13095@csn.ul.ie>
+Message-Id: <20091127133511.A7DB.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9e4733910911261908l122263c3x68854e8a00334eae@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 27 Nov 2009 13:36:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 10:08:29PM -0500, Jon Smirl wrote:
-> On Thu, Nov 26, 2009 at 9:28 PM, Jarod Wilson <jarod@wilsonet.com> wrote:
-> >> No, at present we expect 1:1 button->event mapping leaving macro
-> >> expansion (i.e. KEY_PROG1 ->  "do some multi-step sequence" to
-> >> userspace).
-> >
-> > Hm. So ctrl-x, alt-tab, etc. would have to be faked in userspace somehow.
-> > Bummer.
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  block/cfq-iosched.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> That is scripting. Scripting always needs to be done in user space.
-> 
-> In the code I posted there is one evdev device for each configured
-> remote. Mapped single keycodes are presented on these devices for each
-> IR burst. There is no device for the IR receiver.  A LIRC type process
-> could watch these devices and then execute scripts based on the
-> keycodes reported.
-> 
-> The configfs model is very flexible. You could make a "remote" that
-> translates the UP/DOWN buttons of several different remotes into
-> KEY_UP/DOWN.  That lets several different remotes control the same
-> app.
-> 
-> Sure it is clunky to play with IR hex codes and keycodes in the
-> configfs mapping dir. If you don't like it write a GUI app for
-> manipulating the codes. GUI would then generate a script for udev to
-> run which builds the configfs entries.
-> 
-> Maybe I should rename those directory entries to "app" instead of
-> "remote". They contain the mappings from IR hex codes to keycodes that
-> an app is interested in. Usually there is a 1:1 correspondence between
-> remote and app but there doesn't have to be.
-> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index aa1e953..dc33045 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -2543,7 +2543,7 @@ static void *cfq_init_queue(struct request_queue *q)
+>  	cfqd->cfq_slice[1] = cfq_slice_sync;
+>  	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+>  	cfqd->cfq_slice_idle = cfq_slice_idle;
+> -	cfqd->cfq_latency = 1;
+> +	cfqd->cfq_latency = 0;
+>  	cfqd->hw_tag = 1;
+>  	cfqd->last_end_sync_rq = jiffies;
+>  	return cfqd;
 
-Maybe we should revisit Jon's patchset as well. Regretfully I did not
-have time to do that when it was submitted the last time.
+Great. Probably we can reenable this feature at 2.6.33. but there isn't any reason to take
+any risk at 2.6.32. i.e. This simple disabling is best. I like this.
 
--- 
-Dmitry
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+
+
