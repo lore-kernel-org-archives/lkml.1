@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbZK0Nzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZK0Nzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752986AbZK0Nzz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 08:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZK0Nzx
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1752912AbZK0Nzx (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 27 Nov 2009 08:55:53 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:45948 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751577AbZK0Nzw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZK0Nzw
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 27 Nov 2009 08:55:52 -0500
-X-SpamScore: -14
-X-BigFish: VPS-14(z21eWzzz1202hzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KTRTD0-01-6RI-02
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:32076 "EHLO
+	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbZK0Nzv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 08:55:51 -0500
+X-SpamScore: 1
+X-BigFish: VPS1(zz18c1J655Nc8kzz1202hzz92fbmz32i6bh65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KTRTD1-02-34K-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [git pull] IOMMU updates for 2.6.33
-Date: Fri, 27 Nov 2009 14:55:11 +0100
-Message-ID: <1259330145-14865-1-git-send-email-joerg.roedel@amd.com>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 01/34] x86/amd-iommu: Separate internal interface definitions
+Date: Fri, 27 Nov 2009 14:55:12 +0100
+Message-ID: <1259330145-14865-2-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.5.3
-X-OriginalArrivalTime: 27 Nov 2009 13:55:47.0748 (UTC) FILETIME=[525BD640:01CA6F69]
+In-Reply-To: <1259330145-14865-1-git-send-email-joerg.roedel@amd.com>
+References: <1259330145-14865-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 27 Nov 2009 13:55:47.0811 (UTC) FILETIME=[52657330:01CA6F69]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: ausb3extmailp02.amd.com
@@ -30,78 +33,128 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+This patch moves all function declarations which are only
+used inside the driver code to a seperate header file.
 
-
-The following changes since commit 273bee27fa9f79d94b78c83506016f2e41e78983:
-  FUJITA Tomonori (1):
-        x86: Fix iommu=soft boot option
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/2.6.33
-
-Joerg Roedel (35):
-      x86/amd-iommu: Separate internal interface definitions
-      x86/amd-iommu: Update copyright headers
-      x86/amd-iommu: Add an index field to struct amd_iommu
-      x86/amd-iommu: Add per IOMMU reference counting
-      x86/amd-iommu: Add function to complete a tlb flush
-      x86/amd-iommu: Make iommu_flush_pages aware of multiple IOMMUs
-      x86/amd-iommu: Use __iommu_flush_pages for tlb flushes
-      x86/amd-iommu: Remove iommu_flush_domain function
-      x86/amd-iommu: Implement protection domain list
-      x86/amd-iommu: Reimplement amd_iommu_flush_all_domains()
-      x86/amd-iommu: Reimplement flush_all_domains_on_iommu()
-      x86/amd-iommu: Make np-cache a global flag
-      x86/amd-iommu: Use check_device for amd_iommu_dma_supported
-      x86/amd-iommu: Use check_device in get_device_resources
-      x86/amd-iommu: Remove iommu parameter from dma_ops_domain_(un)map
-      x86/amd-iommu: Make alloc_new_range aware of multiple IOMMUs
-      x86/amd-iommu: Remove iommu parameter from __(un)map_single
-      x86/amd-iommu: Remove iommu specific handling from dma_ops path
-      x86/amd-iommu: Let domain_for_device handle aliases
-      x86/amd-iommu: Simplify get_device_resources()
-      x86/amd-iommu: Move find_protection_domain to helper functions
-      x86/amd-iommu: Use get_device_id and check_device where appropriate
-      x86/amd-iommu: Remove iommu parameter from dma_ops_domain_alloc
-      x86/amd-iommu: Move some pte allocation functions in the right section
-      x86/amd-iommu: Rearrange dma_ops related functions
-      x86/amd-iommu: Remove support for domain sharing
-      x86/amd-iommu: Use dev->arch->iommu to store iommu related information
-      x86/amd-iommu: Add device bind reference counting
-      x86/amd-iommu: Keep devices per domain in a list
-      x86/amd-iommu: Cleanup attach/detach_device code
-      x86/amd-iommu: Introduce iommu_flush_device() function
-      x86/amd-iommu: Cleanup DTE flushing code
-      x86/amd-iommu: Move reset_iommu_command_buffer out of locked code
-      x86/amd-iommu: Remove amd_iommu_pd_table
-      Merge branch 'gart/fixes' into amd-iommu/2.6.33
-
-Pavel Vasilyev (1):
-      agp/amd64: Remove GART dependency on AGP_AMD64
-
- arch/x86/include/asm/amd_iommu.h       |   12 +-
- arch/x86/include/asm/amd_iommu_proto.h |   38 +
- arch/x86/include/asm/amd_iommu_types.h |   54 ++-
- arch/x86/include/asm/device.h          |    2 +-
- arch/x86/kernel/amd_iommu.c            | 1230 +++++++++++++++++---------------
- arch/x86/kernel/amd_iommu_init.c       |   67 +-
- drivers/char/agp/Kconfig               |    3 +-
- 7 files changed, 777 insertions(+), 629 deletions(-)
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/include/asm/amd_iommu.h       |   10 +++-----
+ arch/x86/include/asm/amd_iommu_proto.h |   38 ++++++++++++++++++++++++++++++++
+ arch/x86/include/asm/amd_iommu_types.h |    5 ----
+ arch/x86/kernel/amd_iommu.c            |    1 +
+ arch/x86/kernel/amd_iommu_init.c       |    1 +
+ 5 files changed, 44 insertions(+), 11 deletions(-)
  create mode 100644 arch/x86/include/asm/amd_iommu_proto.h
 
-Most of the changes are for AMD IOMMU driver. The changes there are bigger than
-usual because I did a lot of changes to the data structures storing the
-relations between devices, protection domains and iommus. A major change is
-that the amd_iommu_pd_table is now gone and replaced by a struct iommu_dev_data
-for each device stored in dev->archdata->iommu.
-These changes result in a more robust reference counting, especially for
-devices with an alias and simplified code in many places.
-Also included are some related cleanups which separated the internal function
-prototypes to a several header and code movement to get rid of most function
-forward declarations. Please pull.
-
-	Joerg
+diff --git a/arch/x86/include/asm/amd_iommu.h b/arch/x86/include/asm/amd_iommu.h
+index b8ef2ee..0891338 100644
+--- a/arch/x86/include/asm/amd_iommu.h
++++ b/arch/x86/include/asm/amd_iommu.h
+@@ -23,15 +23,13 @@
+ #include <linux/irqreturn.h>
+ 
+ #ifdef CONFIG_AMD_IOMMU
+-extern int amd_iommu_init_dma_ops(void);
+-extern int amd_iommu_init_passthrough(void);
++
+ extern void amd_iommu_detect(void);
+-extern irqreturn_t amd_iommu_int_handler(int irq, void *data);
+-extern void amd_iommu_flush_all_domains(void);
+-extern void amd_iommu_flush_all_devices(void);
+-extern void amd_iommu_apply_erratum_63(u16 devid);
++
+ #else
++
+ static inline void amd_iommu_detect(void) { }
++
+ #endif
+ 
+ #endif /* _ASM_X86_AMD_IOMMU_H */
+diff --git a/arch/x86/include/asm/amd_iommu_proto.h b/arch/x86/include/asm/amd_iommu_proto.h
+new file mode 100644
+index 0000000..84786fb
+--- /dev/null
++++ b/arch/x86/include/asm/amd_iommu_proto.h
+@@ -0,0 +1,38 @@
++/*
++ * Copyright (C) 2009 Advanced Micro Devices, Inc.
++ * Author: Joerg Roedel <joerg.roedel@amd.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#ifndef _ASM_X86_AMD_IOMMU_PROTO_H
++#define _ASM_X86_AMD_IOMMU_PROTO_H
++
++struct amd_iommu;
++
++extern int amd_iommu_init_dma_ops(void);
++extern int amd_iommu_init_passthrough(void);
++extern irqreturn_t amd_iommu_int_handler(int irq, void *data);
++extern void amd_iommu_flush_all_domains(void);
++extern void amd_iommu_flush_all_devices(void);
++extern void amd_iommu_apply_erratum_63(u16 devid);
++extern void amd_iommu_reset_cmd_buffer(struct amd_iommu *iommu);
++
++#ifndef CONFIG_AMD_IOMMU_STATS
++
++static inline void amd_iommu_stats_init(void) { }
++
++#endif /* !CONFIG_AMD_IOMMU_STATS */
++
++#endif /* _ASM_X86_AMD_IOMMU_PROTO_H  */
+diff --git a/arch/x86/include/asm/amd_iommu_types.h b/arch/x86/include/asm/amd_iommu_types.h
+index 2a2cc7a..27db7f9 100644
+--- a/arch/x86/include/asm/amd_iommu_types.h
++++ b/arch/x86/include/asm/amd_iommu_types.h
+@@ -462,11 +462,6 @@ struct __iommu_counter {
+ #define ADD_STATS_COUNTER(name, x)
+ #define SUB_STATS_COUNTER(name, x)
+ 
+-static inline void amd_iommu_stats_init(void) { }
+-
+ #endif /* CONFIG_AMD_IOMMU_STATS */
+ 
+-/* some function prototypes */
+-extern void amd_iommu_reset_cmd_buffer(struct amd_iommu *iommu);
+-
+ #endif /* _ASM_X86_AMD_IOMMU_TYPES_H */
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index b74b212..50d2b05 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -28,6 +28,7 @@
+ #include <asm/proto.h>
+ #include <asm/iommu.h>
+ #include <asm/gart.h>
++#include <asm/amd_iommu_proto.h>
+ #include <asm/amd_iommu_types.h>
+ #include <asm/amd_iommu.h>
+ 
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index 72bdbda..db30cfe 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -25,6 +25,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/msi.h>
+ #include <asm/pci-direct.h>
++#include <asm/amd_iommu_proto.h>
+ #include <asm/amd_iommu_types.h>
+ #include <asm/amd_iommu.h>
+ #include <asm/iommu.h>
+-- 
+1.6.5.3
 
 
