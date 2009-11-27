@@ -1,126 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZK0Ni6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZK0NqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbZK0Ni6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 08:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZK0Ni5
+	id S1752743AbZK0NqR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 08:46:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbZK0NqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 08:38:57 -0500
-Received: from mail1-out1.atlantis.sk ([80.94.52.55]:42023 "EHLO
-	mail.atlantis.sk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751482AbZK0Ni4 (ORCPT
+	Fri, 27 Nov 2009 08:46:16 -0500
+Received: from mtagate5.de.ibm.com ([195.212.17.165]:60111 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbZK0NqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 08:38:56 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: linux-usb@vger.kernel.org
-Subject: debugging oops after disconnecting Nexio USB touchscreen
-Date: Fri, 27 Nov 2009 14:38:56 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
+	Fri, 27 Nov 2009 08:46:15 -0500
+Date: Fri, 27 Nov 2009 14:46:21 +0100 (CET)
+From: Sebastian Ott <sebott@linux.vnet.ibm.com>
+X-X-Sender: sebott@localhost
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       johannes@sipsolutions.net
+Subject: Re: [Bug #14352] WARNING: at net/mac80211/scan.c:267
+In-Reply-To: <200911172319.49198.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0911271438340.3429@localhost>
+References: <GUZt44bIwCE.A.vLF.pSdALB@chimera> <xXQGFmujPl.A.o1.bUdALB@chimera> <8db1092f0911162204i36dbd472w1d2c88411e151acb@mail.gmail.com> <200911172319.49198.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Organization: "IBM Deutschland Research & Development GmbH Vorsitzender des Aufsichtsrats: Martin Jetter Geschaeftsfuehrung: Dirk Wittkopp Sitz der Gesellschaft: Boeblingen Registergericht: Amtsgericht Stuttgart, HRB 243294"
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911271438.57467.linux@rainbow-software.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I have problems debbugging an oops. It happens when Nexio USB touchscreen
-(using my new code http://lkml.org/lkml/2009/11/25/568) is disconnected:
 
-BUG: unable to handle kernel NULL pointer dereference at 00000048
-IP: [<f7c38afd>] start_unlink_async+0xb2/0x160 [ehci_hcd]
-*pde = 00000000
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1b.0/sound/card0/controlC0/uevent
-Modules linked in: uvesafb cn i915 drm i2c_algo_bit joydev usbtouchscreen loop snd_usb_audio snd_usb_lib snd_rawmidi snd_seq_device
-snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_hwdep snd_pcm snd_timer snd ftdi_sio soundcore snd_page_alloc
-gspca_ov519 usblp usbhid hid usbserial gspca_main videodev rng_core v4l1_compat i2c_i801 i2c_core processor pcspkr psmouse
-asus_atk0110 evdev serio_raw button ext3 jbd mbcache usb_storage sd_mod crc_t10dif ata_generic ata_piix libata scsi_mod
-ide_pci_generic r8169 mii video output uhci_hcd intel_agp agpgart ehci_hcd ide_core usbcore nls_base thermal fan thermal_sys
-Pid: 195, comm: khubd Not tainted (2.6.31 #1) B202
-EIP: 0060:[<f7c38afd>] EFLAGS: 00010003 CPU: 0
-EIP is at start_unlink_async+0xb2/0x160 [ehci_hcd]
-EAX: 00000000 EBX: f648c8e8 ECX: 78bd7dee EDX: 78bd7dee
-ESI: 00000000 EDI: f65fc080 EBP: 00010030 ESP: f65bfddc
- DS: 007b  ES: 007b  FS: 00d8  GS: 00e0  SS: 0068
-Process hbuhd (pid: 195, ti=f65be000 task=f644e1c0 task.ti=f65be000)
-Stack:
- 78bd7dee fffffffe f65fc080 f648c800 f648c8e8 f7c3ab29 f648c8f8 00000246
-<0> 00000000 78bd7dee f7c3e278 f648c800 f605d840 fffffffe f7c977fc f6481800
-<0> 78bd7dee 00000000 f605d840 00000246 fffffffe f7c9795d 78bd7dee f605d840
-Call Trace:
- [<f7c3ab29>] ? ehci_urb_dequeue+0x7c/0x11a [ehci_hcd]
- [<f7c977fc>] ? unlink1+0xaa/0xc7 [usbcore]
- [<f7c9795d>] ? usb_hcd_unlink_urb+0x57/0x84 [usbcore]
- [<f7c98b28>] ? usb_kill_urb+0x40/0xbe [usbcore]
- [<c1034ec2>] ? default_wake_function+0x0/0x2b
- [<f7c99ff9>] ? usb_start_wait_urb+0x6e/0xb0 [usbcore]
- [<f7c9a2cf>] ? usb_control_msg+0x10a/0x136 [usbcore]
- [<f7c92e46>] ? hub_port_status+0x77/0xf7 [usbcore]
- [<f7c95f9d>] ? hub_thread+0x56d/0xe14 [usbcore]
- [<c1050003>] ? autoremove_wake_function+0x0/0x4f
- [<f7c95a30>] ? hub_thread+0x0/0xe14 [usbcore]
- [<c104fc73>] ? kthread+0x7a/0x7f
- [<c104fbf9>] ? kthread+0x0/0x7f
- [<c1004027>] ? kernel_thread_helper+0x7/0x10
-Code: 00 fb e9 bb 00 00 00 c6 46 68 02 89 f0 e8 ee e8 ff ff 85 db 89 c7 89 43 18 75 06 68 c5 e4 c3 f7 e8 b4 5f 68 c9 50 8b 43 14 89 c6
-<8b> 40 48 39 f8 75 f7 85 f6 75 0b 68 0c e5 c3 f7 e8 99 5f 68 c9
-EIP: [<f7c38afd>] start_unlink_async+0xb2/0x160 [ehci_hcd] SS:ESP 0068:f65bfddc
-CR2: 0000000000000048
----[ end trace 040b72a526aa0755 ]---
+On Tue, 17 Nov 2009, Rafael J. Wysocki wrote:
 
+> On Tuesday 17 November 2009, Maciej Rutecki wrote:
+> > 2009/11/16 Rafael J. Wysocki <rjw@sisk.pl>:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.31.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > >
+> > >
+> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14352
+> > > Subject         : WARNING: at net/mac80211/scan.c:267
+> > > Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
+> > > Date            : 2009-10-08 00:30 (40 days old)
+> > > References      : http://bugzilla.intellinuxwireless.org/show_bug.cgi?id=2089#c7
+> > >
+> > >
+> > 
+> > In 2.6.32-rc7 problem seems be fixed.
+> 
+> Thanks, closing.
 
-It does not happen everytime - sometimes it survives the first disconnect.
-Tried adding printk()s to start_unlink_async function - and the oops does not appear.
-Looks like a race. It might be a bug in my code but I'm not able to find it.
+looks like this one is still present in rc8:
 
-It also happens only when the touchscreen is connected through a hub:
-Bus 001 Device 002: ID 2001:f103 D-Link Corp. [hex] DUB-H7 7-port USB 2.0 hub
-When connected directly to the machine, it does not oops.
+[ 5724.754068] iwl3945 0000:03:00.0: Error sending REPLY_SCAN_CMD: time 
+out after 500ms.
+[ 5725.886986] ------------[ cut here ]------------
+[ 5725.887021] WARNING: at net/mac80211/scan.c:267 
+ieee80211_scan_completed+0x48/0x198 [mac80211]()
+[ 5725.887051] Hardware name: 8741J3G
+[ 5725.887054] Modules linked in: fuse ipt_MASQUERADE iptable_nat nf_nat 
+rfcomm sco bridge stp llc bnep l2cap nfsd lockd nfs_acl auth_rpcgss 
+exportfs sunrpc xt_physdev ip6t_REJECT nf_conntrack_ipv6 ip6table_filter 
+ip6_tables ipv6 cpufreq_ondemand acpi_cpufreq dm_multipath kvm uinput 
+snd_hda_codec_analog snd_hda_intel snd_hda_codec arc4 snd_hwdep snd_seq 
+ecb iwl3945 snd_seq_device iwlcore snd_pcm snd_timer nsc_ircc mac80211 snd 
+irda btusb iTCO_wdt soundcore iTCO_vendor_support bluetooth thinkpad_acpi 
+video snd_page_alloc pcspkr output i2c_i801 joydev cfg80211 rfkill 
+crc_ccitt yenta_socket rsrc_nonstatic e1000e radeon ttm drm_kms_helper drm 
+i2c_algo_bit i2c_core [last unloaded: microcode]
+[ 5725.887263] Pid: 436, comm: iwl3945 Not tainted 2.6.32-rc8 #6
+[ 5725.887269] Call Trace:
+[ 5725.887283]  [<c0436c53>] warn_slowpath_common+0x6a/0x81
+[ 5725.887308]  [<f8bd0e8f>] ? ieee80211_scan_completed+0x48/0x198 
+[mac80211]
+[ 5725.887318]  [<c0436c7c>] warn_slowpath_null+0x12/0x15
+[ 5725.887340]  [<f8bd0e8f>] ieee80211_scan_completed+0x48/0x198 
+[mac80211]
+[ 5725.887370]  [<f8c97b81>] iwl_bg_scan_completed+0x97/0xcf [iwlcore]
+[ 5725.887382]  [<c044ad6b>] worker_thread+0x13f/0x1b7
+[ 5725.887409]  [<f8c97aea>] ? iwl_bg_scan_completed+0x0/0xcf [iwlcore]
+[ 5725.887421]  [<c044e535>] ? autoremove_wake_function+0x0/0x34
+[ 5725.887431]  [<c044ac2c>] ? worker_thread+0x0/0x1b7
+[ 5725.887441]  [<c044e2f7>] kthread+0x64/0x69
+[ 5725.887450]  [<c044e293>] ? kthread+0x0/0x69
+[ 5725.887461]  [<c040400f>] kernel_thread_helper+0x7/0x10
+[ 5725.887469] ---[ end trace f4077df61007acfa ]---
 
-Tried decodecode:
-Code: 00 fb e9 bb 00 00 00 c6 46 68 02 89 f0 e8 ee e8 ff ff 85 db 89 c7 89 43 18 75 06 68 c5 e4 c3 f7 e8 b4 5f 68 c9 50 8b 43 14 89 c6 <8b> 40 48 39 f8 75 
-f7 85 f6 75 0b 68 0c e5 c3 f7 e8 99 5f 68 c9
-All code
-========
-   0:   00 fb                   add    %bh,%bl
-   2:   e9 bb 00 00 00          jmp    0xc2
-   7:   c6 46 68 02             movb   $0x2,0x68(%esi)
-   b:   89 f0                   mov    %esi,%eax
-   d:   e8 ee e8 ff ff          call   0xffffe900
-  12:   85 db                   test   %ebx,%ebx
-  14:   89 c7                   mov    %eax,%edi
-  16:   89 43 18                mov    %eax,0x18(%ebx)
-  19:   75 06                   jne    0x21
-  1b:   68 c5 e4 c3 f7          push   $0xf7c3e4c5
-  20:   e8 b4 5f 68 c9          call   0xc9685fd9
-  25:   50                      push   %eax
-  26:   8b 43 14                mov    0x14(%ebx),%eax
-  29:   89 c6                   mov    %eax,%esi
-  2b:*  8b 40 48                mov    0x48(%eax),%eax     <-- trapping instruction
-  2e:   39 f8                   cmp    %edi,%eax
-  30:   75 f7                   jne    0x29
-  32:   85 f6                   test   %esi,%esi
-  34:   75 0b                   jne    0x41
-  36:   68 0c e5 c3 f7          push   $0xf7c3e50c
-  3b:   e8 99 5f 68 c9          call   0xc9685fd9
-
-Code starting with the faulting instruction
-===========================================
-   0:   8b 40 48                mov    0x48(%eax),%eax
-   3:   39 f8                   cmp    %edi,%eax
-   5:   75 f7                   jne    0xfffffffe
-   7:   85 f6                   test   %esi,%esi
-   9:   75 0b                   jne    0x16
-   b:   68 0c e5 c3 f7          push   $0xf7c3e50c
-  10:   e8 99 5f 68 c9          call   0xc9685fae
-
-and "make drivers/usb/host/ehci-hcd.s" but I'm not able to find the above code in ehci-hcd.s.
-
-What am I doing wrong?
-
--- 
-Ondrej Zary
+regards, sebastian
+> 
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
