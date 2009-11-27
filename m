@@ -1,105 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbZK0TS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZK0TVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbZK0TS7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 14:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZK0TS6
+	id S1753318AbZK0TVL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 14:21:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZK0TVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 14:18:58 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:42247 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751151AbZK0TS5 (ORCPT
+	Fri, 27 Nov 2009 14:21:10 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:4745 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751907AbZK0TVJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 14:18:57 -0500
-Message-ID: <4B10265C.1090004@ru.mvista.com>
-Date: Fri, 27 Nov 2009 22:19:56 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 27 Nov 2009 14:21:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CUiDDN2g8+dGHJQmDLqO4pzP8vfHuM2Kx997G9HVZQEtFMiUDIljpfVFfkkbl3yq1c
+         Mwde7dtqAiY5XrL3lOYdr5lsv7XwVWyen5u+9242TXxaUSeDD51sfEXVyrSVBn6RD21o
+         dxNM4R6BDeNGXNVwIUht4Yr4knozpiy1wmTKA=
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pata_hpt366: add hpt36x_find_mode() helper
-References: <200911271954.54019.bzolnier@gmail.com>
-In-Reply-To: <200911271954.54019.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <874oof6b9u.fsf@tac.ki.iif.hu>
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	 <BDgcsm11qgB@lirc>
+	 <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
+	 <874oof6b9u.fsf@tac.ki.iif.hu>
+Date: Fri, 27 Nov 2009 14:21:13 -0500
+Message-ID: <9e4733910911271121j452aa796j543f1fc3f6de7028@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Ferenc Wagner <wferi@niif.hu>
+Cc: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
+       christoph@bartelmus.de, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, Nov 27, 2009 at 2:03 PM, Ferenc Wagner <wferi@niif.hu> wrote:
+> Jon Smirl <jonsmirl@gmail.com> writes:
+>
+>> On Fri, Nov 27, 2009 at 12:29 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
+>>
+>>>> Maybe we decide to take the existing LIRC system as is and not
+>>>> integrate it into the input subsystem. But I think there is a window
+>>>> here to update the LIRC design to use the latest kernel features.
+>>>
+>>> If it ain't broke, don't fix it.  [...]
+>>>
+>>> We already agreed last year that we can include an interface in
+>>> lirc_dev that feeds the signal data to an in-kernel decoder if noone
+>>> from userspace reads it.  [...]
+>>>
+>>> I also understand that people want to avoid dependency on external
+>>> userspace tools. All I can tell you is that the lirc tools already do
+>>> support everything you need for IR control. And as it includes a lot of
+>>> drivers that are implemented in userspace already, LIRC will just continue
+>>> to do it's work even when there is an alternative in-kernel.
+>>
+>> Christoph, take what you know from all of the years of working on LIRC
+>> and design the perfect in-kernel system.
+>
+> Hi,
+>
+> I'm reading this thread with great interest.  Thank you (plural) for the
+> very informative conversation, I think I learnt a lot.  But now I
+> somehow lost the point, please correct me if the following is wrong.
+>
+> It looks like having lirc_dev (or a similar raw interface) is a must.
+> It could be disguised as an input device, or changed in various ways,
+> but is it worth the effort?  As I understand Christoph, he does not want
+> to do so, because he finds it wasted work, and also there's already a
+> *single* user space daemon using it and doing everything users could
+> want.  Except for plug&play.
 
-Bartlomiej Zolnierkiewicz wrote:
+The high level summary:
 
-> Factor out code for finding the register programming information
-> from hpt366_set_mode() to hpt36x_find_mode().
+LIRC has developed it's own way of doing things. It has its own device
+protocol, user space daemon, tools, etc. No one is denying that all of
+that works.
 
-    Not sure what it gives us...
+The alternative is to rework IR to use standard kernel interfaces
+(evdev, sysfs, configfs), standard user space tools (udev, ls, mkdir,
+cat) and make the daemon optional.
 
-> This makes pata_hpt366 driver more similar to pata_{37x,3x2n} ones.
+Since IR hasn't been added to the kernel yet we are still free to
+design the user space API before locking it in stone for the next
+twenty years.
 
-    ... if only that. :-)
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
-> Sergei, pata_hpt{37x,3x2n} drivers can also be made to use *set_mode()
-> helper but I don't want to interfere with your pending fixes there.
+This is an architectural debate, not a debate on specific features.
 
-    Yeah, it's on my agenda. :-)
 
->  drivers/ata/pata_hpt366.c |   35 +++++++++++++++++++++++++----------
->  1 file changed, 25 insertions(+), 10 deletions(-)
-> 
-> Index: b/drivers/ata/pata_hpt366.c
-> ===================================================================
-> --- a/drivers/ata/pata_hpt366.c
-> +++ b/drivers/ata/pata_hpt366.c
-> @@ -114,6 +114,28 @@ static const struct hpt_clock hpt366_25[
->  	{	0,		0x01208585	}
->  };
->  
-> +/**
-> + *	hpt36x_find_mode	-	find the hpt36x timing
-> + *	@ap: ATA port
-> + *	@speed: transfer mode
-> + *
-> + *	Return the 32bit register programming information for this channel
-> + *	that matches the speed provided.
-> + */
-> +
-> +static u32 hpt36x_find_mode(struct ata_port *ap, int speed)
-> +{
-> +	struct hpt_clock *clocks = ap->host->private_data;
-> +
-> +	while (clocks->xfer_mode) {
-> +		if (clocks->xfer_mode == speed)
-> +			return clocks->timing;
-> +		clocks++;
+>
+> On the other hand, a one-liner could make in-kernel decoding possible,
+> so those who haven't got lircd running could have plug&play easily, if
+> somebody writes the necessary in-kernel decoders to feed the input
+> subsystem (which lircd also does, through uinput).
+>
+> But even if you can't find anybody at the moment to write those, this is
+> still good stuff (I don't know about the code), which is hurt by being
+> developed out of kernel.  Is there any reason to keep this so?
+> Admittedly, I don't know why /dev/mouse is evil, maybe I'd understand if
 
-    This whole data structure of <mode, timing> tuples makes my eyes hurt.
-If you remember, I've changed it to a separate array of modes and timings 
-which takes ~twice less space...
+/dev/mouse is evil because it is possible to read partial mouse
+messages. evdev fixes things so that you only get complete messages.
 
-> +	}
-> +	BUG();
-> +	return 0xffffffffU;	/* silence compiler warning */
-> +}
-> +
->  static const char *bad_ata33[] = {
->  	"Maxtor 92720U8", "Maxtor 92040U6", "Maxtor 91360U4", "Maxtor 91020U3", "Maxtor 90845U3", "Maxtor 90650U2",
->  	"Maxtor 91360D8", "Maxtor 91190D7", "Maxtor 91020D6", "Maxtor 90845D5", "Maxtor 90680D4", "Maxtor 90510D3", "Maxtor 90340D2",
-> @@ -238,11 +260,10 @@ static int hpt36x_prereset(struct ata_li
->  static void hpt366_set_mode(struct ata_port *ap, struct ata_device *adev,
->  			    u8 mode)
->  {
-> -	struct hpt_clock *clocks = ap->host->private_data;
->  	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
->  	u32 addr1 = 0x40 + 4 * (adev->devno + 2 * ap->port_no);
->  	u32 addr2 = 0x51 + 4 * ap->port_no;
-> -	u32 mask, reg;
-> +	u32 mask, reg, t;
+> somebody pointed me to some reading.
+> --
+> Thanks,
+> Feri.
+>
 
-    Alan calls this 't' variable 'mode' if you want to be 100% similar. ;-)
 
-WBR, Sergei
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
