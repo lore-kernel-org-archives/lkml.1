@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZK0CxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZK0CvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbZK0CxX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 21:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZK0CxW
+	id S1753345AbZK0CvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 21:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZK0CvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 21:53:22 -0500
-Received: from mail-in-05.arcor-online.net ([151.189.21.45]:33520 "EHLO
-	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753050AbZK0CxU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 21:53:20 -0500
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-10.arcor-online.net 0C18B28ECC3
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-In-Reply-To: <Pine.LNX.4.58.0911261450590.30284@shell2.speakeasy.net>
-References: <200910200956.33391.jarod@redhat.com>
-	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
-	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	 <4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
-	 <4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
-	 <4B0ED238.6060306@redhat.com>
-	 <Pine.LNX.4.58.0911261450590.30284@shell2.speakeasy.net>
-Content-Type: text/plain
-Date: Fri, 27 Nov 2009 03:50:13 +0100
-Message-Id: <1259290213.3253.11.camel@pc07.localdom.local>
+	Thu, 26 Nov 2009 21:51:18 -0500
+Received: from mail.gmx.net ([213.165.64.20]:47599 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752192AbZK0CvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 21:51:17 -0500
+X-Authenticated: #25574588
+X-Provags-ID: V01U2FsdGVkX19UA7ckXJFUA/EU5r1B8BGETaLyXXzc06yUOkB4Gx
+	0koUilwhHzLIGZ
+Date: Fri, 27 Nov 2009 15:51:48 +1300
+From: Johannes Buchner <buchner.johannes@gmx.at>
+To: linux-kernel@vger.kernel.org
+Cc: reiserfs-devel@vger.kernel.org
+Subject: Fw: reiser4 git repo
+Message-Id: <20091127155148.dcc5cdee.buchner.johannes@gmx.at>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__27_Nov_2009_15_51_48_+1300_iHYJ8QZk+s6fijQO"
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.66
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Fri__27_Nov_2009_15_51_48_+1300_iHYJ8QZk+s6fijQO
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Am Donnerstag, den 26.11.2009, 14:59 -0800 schrieb Trent Piepho:
-> On Thu, 26 Nov 2009, Mauro Carvalho Chehab wrote:
-> > >> See above. Also, several protocols have a way to check if a keystroke were
-> > >> properly received. When handling just one protocol, we can use this to double
-> > >> check the key. However, on a multiprotocol mode, we'll need to disable this
-> > >> feature.
-> > >
-> > > I don't think so. We can pass the space/mark data to all (configured,
-> > > i.e. with active mapping) protocol handlers at once. Should a check
-> > > fail, we ignore the data. Perhaps another protocol will make some sense
-> > > out of it.
-> >
-> > What happens if it succeeds on two protocol handlers?
-> 
-> Then you use the protocol that fits best.  For instance decoding with one
-> protocol might produce a scancode that isn't assigned to any key, while
-> another protocol produces an assigned scancode.  Clearly then the latter is
-> most likely to be correct.  It also possible to have a space/mark length
-> that is within the allowable tolerances for one remote, but is even closer
-> another remote.  You don't want to just find *a* match, you want to find
-> the *best* match.
-> 
-> The in kernel code in v4l is very simple in that it is only designed to
-> work with one procotol and one remote.  Once you have multiple remotes of
-> any type things become much more complicted.  Keep in mind that remotes
-> that aren't even intended to be used with the computer but are used in the
-> same room will still be received by the receiver.  It's not enough to
-> decode the signals you expect to receive, you must also not get confused by
-> random signals destined for somewhere else.
+[ I sent this 2 days ago to linux-fsdevel@vger.kernel.org, maybe I'll
+get more responses in here. ]
 
-Giving some random living room these days, likely open to the kids
-rooms, you have to take that into account.
+Hi!
 
-Another point, if decoding from IRQs generated by the remote, there is
-flawed hardware around, needing to poll IRQs in some timely manner to
-get it to something at all.
+I would like to keep a git repo up to date with current kernel
+development, with reiser4 patched in. I am having trouble finding a
+repo that provides reiser4. Is there one?
 
-This will break such remotes. Never seen?
+Some people may have noticed the last patch doesn't apply cleanly
+anymore. I made a few lines of modifications in my local repo. Maybe
+that repo would be interesting for others too*.
 
-For me the first priority is, that existing remotes are not broken.
+I plan to catch up with changes from kernel development on a
+daily/weekly basis; my /home partition is reiser4, so I am fairly
+serious about it.
 
-Don't tell you have done a nice job just now, but are unfortunately in
-need of testers ... 
+At the moment, I fetch from torvalds/linux-2.6.git and=20
+stable/linux-2.6.31.y.git. Am I missing any other repositories that I
+should try to keep up with? (A fs subsystem maintainer repo?)
+next/linux-next.git is probably moving too fast for me.
 
 Cheers,
-Hermann
+Johannes
+
+* How hard is it to get a git.kernel.org repo?
+--=20
+http://jakeapp.com/ http://johannes.jakeapp.com/blog/
 
 
+
+--=20
+Emails k=F6nnen ge=E4ndert, gef=E4lscht und eingesehen werden. Signiere oder
+versch=FCssele deine Mails mit GPG.
+http://web.student.tuwien.ac.at/~e0625457/pgp.html
+
+--Signature=_Fri__27_Nov_2009_15_51_48_+1300_iHYJ8QZk+s6fijQO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAksPPsgACgkQ7X1+MfqVcr2uAACfbmuE4VIoq5Mz7q0bFfIAsRCf
+2RgAn3gs1Lay41+84jktK2uS813eTVPA
+=Db+B
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__27_Nov_2009_15_51_48_+1300_iHYJ8QZk+s6fijQO--
