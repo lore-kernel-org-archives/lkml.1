@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZK0S6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZK0TJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbZK0S6m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 13:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZK0S6l
+	id S1752912AbZK0TJV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 14:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZK0TJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 13:58:41 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:11529 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbZK0S6P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 13:58:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:message-id;
-        b=TiKY+Su7bAll02RmWJAmZSy2cCmKo50gO3/IvCupxmatjOCvq86//uvOwTiHwY7pcx
-         LZLUajFLMBcHuoeSBKwKXEQ8F2Une55qXmRPEQ+W2p1uZsUy5YmSXC14PpPywX0GGS2U
-         +lCWgfB1Tws3Cgxc22ws2Ar5IYDCnCOO6dqQM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] pata_hpt3x2n: fix overclocked MWDMA0 timing
-Date: Fri, 27 Nov 2009 19:56:55 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911271956.55939.bzolnier@gmail.com>
+	Fri, 27 Nov 2009 14:09:20 -0500
+Received: from outside.256.com ([72.93.100.124]:63091 "EHLO outside.256.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751003AbZK0TJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 14:09:20 -0500
+X-Greylist: delayed 432 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Nov 2009 14:09:20 EST
+Message-Id: <m1NE61t-004yeQC@outside.256.com>
+Date: Fri, 27 Nov 2009 13:58:53 -0500 (EST)
+To: linux-kernel@vger.kernel.org
+From: jgj7.ignorantguru@mailnull.com
+Subject: blowfish and cryptoloop modules question
+X-Forward: linux-kernel@vger.kernel.org via outside.256.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove superfluous timings table entry while at it.
+I have a question for the maintainer of these modules or losetup but haven't been able to find an address.  I posted this to an Arch forum but no one could explain it.  
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-Sergei, XFER_UDMA_5 timing also looks suspicious,
-please take a look when you have a minute, thanks.
+I don't need my entire hard drive encrypted so my habit is to create a small blowfish container using the cryptoloop and blowfish kernel modules.  Something like:
 
- drivers/ata/pata_hpt3x2n.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+Code:
 
-Index: b/drivers/ata/pata_hpt3x2n.c
-===================================================================
---- a/drivers/ata/pata_hpt3x2n.c
-+++ b/drivers/ata/pata_hpt3x2n.c
-@@ -80,14 +80,13 @@ static struct hpt_clock hpt3x2n_clocks[]
- 
- 	{	XFER_MW_DMA_2,	0x2c829c62	},
- 	{	XFER_MW_DMA_1,	0x2c829c66	},
--	{	XFER_MW_DMA_0,	0x2c829d2c	},
-+	{	XFER_MW_DMA_0,	0x2c829d2e	},
- 
- 	{	XFER_PIO_4,	0x0c829c62	},
- 	{	XFER_PIO_3,	0x0c829c84	},
- 	{	XFER_PIO_2,	0x0c829ca6	},
- 	{	XFER_PIO_1,	0x0d029d26	},
- 	{	XFER_PIO_0,	0x0d029d5e	},
--	{	0,		0x0d029d5e	}
- };
- 
- /**
+## Load modules
+/sbin/modprobe cryptoloop
+/sbin/modprobe blowfish
+## Make file "secfilename"
+dd if=/dev/urandom of=secfilename bs=1024k count=10
+## Set file as target of loop device
+losetup -e blowfish /dev/loop0 secfilename
+## Make ext3 filesystem
+mkfs -t ext3 /dev/loop0
+## Mount filesystem
+mount -t ext3 /dev/loop0 /mnt/loop
+#...
+## Unmount, detach, and sync
+umount /dev/loop0
+## Detach loop device
+losetup -d /dev/loop0
+sync
+
+Here's my question:  A long time ago, when I changed from SUSE to Ubuntu, I could no longer mount the container - it said there was no valid FS on it.  So I had to recreate it.  This made me question SUSE's blowfish implementation - was it crippled or have a backdoor?  Now, years later I have installed Arch, and once again my container wasn't portable.  Arch couldn't open Ubuntu's blowfish container.  I had to recreate it from scratch with the 'new' blowfish.
+
+Will the real blowfish please stand up.
+
+Needless to say, this makes me question the integrity of these modules.  A cryptographic algorithm, if properly implemented, should not be distro-centric.  For my purposes it's probably not critical, but what's going on?  I can mount my unencrypted ext3 partitions created by Ubuntu fine in Arch.  Why are the blowfish modules not compatible?
+
+And if they are, then why is losetup so inconsistent between distributions?
+
+If they aren't compatible for a legitimate reason, I think they should be, as using different implementations is the only way users can verify an implementation.
+
+Thanks for any info.
+
+
+----------
+This message was sent from a MailNull anti-spam account.  You can get
+your free account and take control over your email by visiting the
+following URL.
+
+   http://mailnull.com/
