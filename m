@@ -1,118 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbZK0InO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZK0Ips@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737AbZK0InO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 03:43:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZK0InN
+	id S1752771AbZK0Ips (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 03:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZK0Ipr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 03:43:13 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60817 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbZK0InM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 03:43:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=t4O1DDhxx05Oz5K6zwtu6cxiHBHMLM712eOqPHxPvAmuhe5gD8EyBR3HDnOAZEFhtx
-         vtq+KW2raecEcEYddQGtKeMJXHFtDjy5GsdW/OT+52a79TS61Tz6NjIWE4jRIGwwDvDJ
-         7CrNiKh9Lm/OQUn7Jm09tm3Kqs8FH8JeAHWyM=
-MIME-Version: 1.0
-In-Reply-To: <4B0F5908.3090900@snapgear.com>
-References: <20091126115806.c53684f5.sfr@canb.auug.org.au>
-	 <10f740e80911261329s35f62au37e6b209c657e09@mail.gmail.com>
-	 <4B0F5908.3090900@snapgear.com>
-Date: Fri, 27 Nov 2009 09:43:17 +0100
-X-Google-Sender-Auth: 6caf1413e5748830
-Message-ID: <10f740e80911270043h567f6bf3l9fc51cfe5a6ac0af@mail.gmail.com>
-Subject: Re: linux-next: manual merge of the m68knommu tree with the m68k tree
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andreas Schwab <schwab@linux-m68k.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 27 Nov 2009 03:45:47 -0500
+Received: from mail.gmx.net ([213.165.64.20]:53693 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752441AbZK0Ipr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 03:45:47 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19RJj9M6ndR0jsNCq18UT90+d6OvXrVJ+IGZYV/X2
+	VX76qPo51MdLpg
+Subject: Re: [patch] sched: fix b5d9d734 blunder in task_new_fair()
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1259252785.31676.216.camel@laptop>
+References: <1258891664.14325.30.camel@marge.simson.net>
+	 <1259252785.31676.216.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 27 Nov 2009 09:45:50 +0100
+Message-Id: <1259311550.6110.241.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 05:43, Greg Ungerer <gerg@snapgear.com> wrote:
-> Geert Uytterhoeven wrote:
->>
->> On Thu, Nov 26, 2009 at 01:58, Stephen Rothwell <sfr@canb.auug.org.au>
->> wrote:
->>>
->>> Today's linux-next merge of the m68knommu tree got a conflict in
->>> arch/m68k/include/asm/ptrace.h between commit
->>> 63c361b65f6540043c4baabf1a044a45c7465858 ("m68k: use generic code for
->>> ptrace requests") from the m68k tree and commit
->>> 03a03164e8084b810e9f92906a51232d63bac72c ("m68knommu: define
->>> arch_has_single_step() and friends") from the m68knommu tree.
->>>
->>> These mostly add the same stuff but not quite :-(
->>
->> Ah sorry, my bad. I'm not yet used to the uClinux guys touching "my"
->> includes ;-)
->> So we need better coordination between us.
->>
->> IIRC, Greg's changes were inspired by Andreas' patch.
->
-> Yes, largely they are.
->
->
->>> I have done a fixup (see below) and can carry it as necessary.  Please
->>> check the result.
->>
->> At first sight, it looks OK. Thanks for fixing it up!
->
-> Yep, looks ok from what I can see.
->
-> Geert, how do you want to handle for the real linus merge?
-> Do you want me to drop the changes to ptrace.h from that patch?
+Off list
 
-I can apply your patch (modified to apply on top of Andreas') to the
-m68k for-linus branch.
-Does that sound OK for you?
+On Thu, 2009-11-26 at 17:26 +0100, Peter Zijlstra wrote:
+> On Sun, 2009-11-22 at 13:07 +0100, Mike Galbraith wrote:
+> > @@ -2589,16 +2588,10 @@ void sched_fork(struct task_struct *p, i
+> >          */
+> >         p->prio = current->normal_prio;
+> >  
+> > -       if (!rt_prio(p->prio))
+> > +       if (!task_has_rt_policy(p))
+> >                 p->sched_class = &fair_sched_class;
+> >  
+> > -#ifdef CONFIG_SMP
+> > -       cpu = p->sched_class->select_task_rq(p, SD_BALANCE_FORK, 0);
+> > -#endif
+> > -       local_irq_save(flags);
+> > -       update_rq_clock(cpu_rq(cpu));
+> > -       set_task_cpu(p, cpu);
+> > -       local_irq_restore(flags);
+> > +       __set_task_cpu(p, cpu); 
+> 
+> OK, so I figured out why it was in sched_fork() and not in
+> wake_up_new_task().
+> 
+> It is because in sched_fork() the new task isn't in the tasklist yet and
+> can therefore not race with any other migration logic.
 
->>> --
->>> Cheers,
->>> Stephen Rothwell                    sfr@canb.auug.org.au
->>>
->>> diff --cc arch/m68k/include/asm/ptrace.h
->>> index eef9309,beb2091..0000000
->>> --- a/arch/m68k/include/asm/ptrace.h
->>> +++ b/arch/m68k/include/asm/ptrace.h
->>> @@@ -86,14 -84,15 +86,18 @@@ struct switch_stack
->>>  extern void show_regs(struct pt_regs *);
->>>
->>>  /*
->>>  - * These are defined as per linux/ptrace.h.
->>>  + * These are defined as per linux/ptrace.h, which see.
->>>  */
->>> + struct task_struct;
->>> +
->>>  -#ifndef CONFIG_MMU
->>>  -#define       arch_has_single_step()  (1)
->>>  +#define arch_has_single_step()        (1)
->>>  extern void user_enable_single_step(struct task_struct *);
->>>  extern void user_disable_single_step(struct task_struct *);
->>>  +
->>> ++#ifdef CONFIG_MMU
->>>  +#define arch_has_block_step() (1)
->>>  +extern void user_enable_block_step(struct task_struct *);
->>> + #endif
->>>
->>>  #endif /* __KERNEL__ */
->>>  #endif /* __ASSEMBLY__ */
+All the raciness I'm fretting over probably just doesn't matter much.
+Things aren't exploding.  Maybe min_vruntime is the only thing I should
+be worrying about.  That concern is in-flight deltas of SCHED_IDLE
+magnitude, ie cross cpu "fuzziness" on a very large scale.
 
-Gr{oetje,eeting}s,
+However :-/  (aw sh*t, here i go again.  aaaaOOOOOgah! dive! dive!;)
 
-						Geert
+WRT affinity, sched_class, nice level fretting, that can all change from
+userland at any instant that you do not hold the task's runqueue lock
+and the tasklist lock is not held by somebody to keep them from getting
+a task reference to start the ball rolling.  As soon as you drop the
+runqueue lock, userland can acquire, and change whatever it likes under
+you, so afaikt, we can call the wrong sched_class method etc etc.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+3f029d3 agrees fully wrt sched_class at least:
+    In addition, we fix a race condition where we try to access
+    current->sched_class without holding the rq->lock.  This is
+    technically racy, as the sched-class could change out from
+    under us.  Instead, we reference the per-rq post_schedule
+    variable with the runqueue unlocked, but with preemption
+    disabled to see if we need to reacquire the rq->lock.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+The only thing that really changes with the unlocked _rummaging_ is that
+we now can't count on nr_running/load on the task's current runqueue,
+sched_class etc while you're rummaging, ALL state is fuzzy, instead of
+only most.
+
+However, I don't think we can even count on the task remaining untouched
+while in TASK_WAKING state, and that might be a bigger deal.
+
+afaikt, userland can migrate the task you're in the process of waking
+while you're off rummaging around looking for a place to put it, like
+so:  Wakee is on the tasklist, can be accessed by userland.  We wouldn't
+be in ttwu either were it not.  We're waking, we set task state to
+TASK_WAKING, release the lock, userland acquires, nobody but ttwu has
+ever heard of a TASK_WAKING, so it happily changes task's affinity,
+migrates the sleeping task to the one and only (pins) correct runqueue,
+sets task cpu etc, releases the lock, and goes home.  We finish
+rummaging, do NOT check for an intervening affinity change, instead, we
+do an unlocked scribble over what userland just wrote, resetting cpu and
+vruntime to a now illegal cpu, and activate.  I'm not seeing any
+inhibitor for this scenario.
+
+When I moved fork balancing runqueue selection to the much more logical
+wakeup and enqueue time, vs copy and fiddle time, I didn't fix anything,
+I merely duplicated the races that are now in ttwu.
+
+No matter were we do the selection, we can race with userland if the
+darn thing isn't locked all the while.  With .31 ttwu locking, there is
+no race, because nobody can get to the task struct.  If target cpu
+changes via rq selection, we set cpu, _then_ unlock, at which point
+userland or whomever may override _our_ decision, but we never write
+after re-acquiring, so intervening changes, if any, stay intact.
+
+With an exec, userland policy/affinity change will deactivate/activate
+or do a migration call.  We don't have the thing locked while we're
+rummaging, so what keeps sched_class from changing after we evaluated,
+so we call the wrong method, and then do our own migration call?
+
+/me is still pretty befuddled, and haven't even crawled over PI.
+
+I flat don't see how we can do this race free, unless we put every task
+in some untouchable state while we're rummaging, and teach everything
+having to do with migration about that state.
+
+	-Mike
+
