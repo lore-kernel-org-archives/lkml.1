@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbZK0S3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZK0S3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429AbZK0S3v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 13:29:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZK0S3s
+	id S1753289AbZK0S3n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 13:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbZK0S3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 13:29:48 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43555 "EHLO
+	Fri, 27 Nov 2009 13:29:41 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43541 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753308AbZK0S3o (ORCPT
+	with ESMTP id S1752812AbZK0S3i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 13:29:44 -0500
+	Fri, 27 Nov 2009 13:29:38 -0500
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
        =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
        Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 02/12] perf symbols: Rename kernel_map[s] to kernel_map[s]__functions
-Date: Fri, 27 Nov 2009 16:29:13 -0200
-Message-Id: <1259346563-12568-2-git-send-email-acme@infradead.org>
+Subject: [PATCH 03/12] perf symbols: Split the dsos list into kernel and user parts
+Date: Fri, 27 Nov 2009 16:29:14 -0200
+Message-Id: <1259346563-12568-3-git-send-email-acme@infradead.org>
 X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1259346563-12568-1-git-send-email-acme@infradead.org>
+In-Reply-To: <1259346563-12568-2-git-send-email-acme@infradead.org>
 References: <1259346563-12568-1-git-send-email-acme@infradead.org>
+ <1259346563-12568-2-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -33,7 +34,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-As we'll have kernel_map[s]__variables too.
+We don't need to look at modules in dsos__findnew because the kernel
+events come only with user DSOs. Also we need a way to list just the
+module DSOs so that we can create multiple sets of maps, now that we
+will support maps for the variables in a symtab.
 
 Cc: Frédéric Weisbecker <fweisbec@gmail.com>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -41,196 +45,210 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/builtin-annotate.c |    2 +-
- tools/perf/util/symbol.c      |   46 ++++++++++++++++++++--------------------
- tools/perf/util/symbol.h      |    2 +-
- 3 files changed, 25 insertions(+), 25 deletions(-)
+ tools/perf/util/header.c |   12 ++++++++-
+ tools/perf/util/symbol.c |   56 ++++++++++++++++++++++++++++++---------------
+ tools/perf/util/symbol.h |    2 +-
+ 3 files changed, 48 insertions(+), 22 deletions(-)
 
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 18ac5ea..377cb7c 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -184,7 +184,7 @@ got_map:
- 			 * trick of looking in the whole kernel symbol list.
- 			 */
- 			if ((long long)ip < 0) {
--				map = kernel_map;
-+				map = kernel_map__functions;
- 				goto got_map;
- 			}
- 		}
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 4b58656..4805e6d 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -185,11 +185,11 @@ static int do_write(int fd, const void *buf, size_t size)
+ 	return 0;
+ }
+ 
+-static int dsos__write_buildid_table(int fd)
++static int __dsos__write_buildid_table(struct list_head *head, int fd)
+ {
+ 	struct dso *pos;
+ 
+-	list_for_each_entry(pos, &dsos, node) {
++	list_for_each_entry(pos, head, node) {
+ 		int err;
+ 		struct build_id_event b;
+ 		size_t len;
+@@ -212,6 +212,14 @@ static int dsos__write_buildid_table(int fd)
+ 	return 0;
+ }
+ 
++static int dsos__write_buildid_table(int fd)
++{
++	int err = __dsos__write_buildid_table(&dsos__kernel, fd);
++	if (err == 0)
++		err = __dsos__write_buildid_table(&dsos__user, fd);
++	return err;
++}
++
+ static int perf_header__adds_write(struct perf_header *self, int fd)
+ {
+ 	int nr_sections;
 diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 8aab89b..687fb7f 100644
+index 687fb7f..dc25231 100644
 --- a/tools/perf/util/symbol.c
 +++ b/tools/perf/util/symbol.c
-@@ -43,7 +43,7 @@ static struct symbol_conf symbol_conf__defaults = {
- 	.try_vmlinux_path = true,
+@@ -28,8 +28,7 @@ enum dso_origin {
+ 	DSO__ORIG_NOT_FOUND,
  };
  
--static struct rb_root kernel_maps;
-+static struct rb_root kernel_maps__functions;
+-static void dsos__add(struct dso *dso);
+-static struct dso *dsos__find(const char *name);
++static void dsos__add(struct list_head *head, struct dso *dso);
+ static struct map *map__new2(u64 start, struct dso *dso);
+ static void kernel_maps__insert(struct map *map);
+ static int dso__load_kernel_sym(struct dso *self, struct map *map,
+@@ -855,7 +854,7 @@ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
+ 				curr_map->unmap_ip = identity__map_ip;
+ 				curr_dso->origin = DSO__ORIG_KERNEL;
+ 				kernel_maps__insert(curr_map);
+-				dsos__add(curr_dso);
++				dsos__add(&dsos__kernel, curr_dso);
+ 			} else
+ 				curr_dso = curr_map->dso;
  
- static void symbols__fixup_end(struct rb_root *self)
- {
-@@ -71,7 +71,7 @@ static void symbols__fixup_end(struct rb_root *self)
- static void kernel_maps__fixup_end(void)
- {
- 	struct map *prev, *curr;
--	struct rb_node *nd, *prevnd = rb_first(&kernel_maps);
-+	struct rb_node *nd, *prevnd = rb_first(&kernel_maps__functions);
+@@ -907,12 +906,12 @@ static bool dso__build_id_equal(const struct dso *self, u8 *build_id)
+ 	return memcmp(self->build_id, build_id, sizeof(self->build_id)) == 0;
+ }
  
- 	if (prevnd == NULL)
- 		return;
-@@ -325,7 +325,7 @@ static int kernel_maps__load_all_kallsyms(void)
- 		 * kernel_maps__split_kallsyms, when we have split the
- 		 * maps per module
- 		 */
--		symbols__insert(&kernel_map->dso->functions, sym);
-+		symbols__insert(&kernel_map__functions->dso->functions, sym);
+-bool dsos__read_build_ids(void)
++static bool __dsos__read_build_ids(struct list_head *head)
+ {
+ 	bool have_build_id = false;
+ 	struct dso *pos;
+ 
+-	list_for_each_entry(pos, &dsos, node)
++	list_for_each_entry(pos, head, node)
+ 		if (filename__read_build_id(pos->long_name, pos->build_id,
+ 					    sizeof(pos->build_id)) > 0) {
+ 			have_build_id	  = true;
+@@ -922,6 +921,12 @@ bool dsos__read_build_ids(void)
+ 	return have_build_id;
+ }
+ 
++bool dsos__read_build_ids(void)
++{
++	return __dsos__read_build_ids(&dsos__kernel) ||
++	       __dsos__read_build_ids(&dsos__user);
++}
++
+ /*
+  * Align offset to 4 bytes as needed for note name and descriptor data.
+  */
+@@ -1343,7 +1348,7 @@ static int kernel_maps__create_module_maps(void)
+ 
+ 		dso->origin = DSO__ORIG_KMODULE;
+ 		kernel_maps__insert(map);
+-		dsos__add(dso);
++		dsos__add(&dsos__kernel, dso);
  	}
  
  	free(line);
-@@ -346,10 +346,10 @@ out_failure:
-  */
- static int kernel_maps__split_kallsyms(symbol_filter_t filter)
- {
--	struct map *map = kernel_map;
-+	struct map *map = kernel_map__functions;
- 	struct symbol *pos;
- 	int count = 0;
--	struct rb_node *next = rb_first(&kernel_map->dso->functions);
-+	struct rb_node *next = rb_first(&kernel_map__functions->dso->functions);
- 	int kernel_range = 0;
- 
- 	while (next) {
-@@ -376,7 +376,7 @@ static int kernel_maps__split_kallsyms(symbol_filter_t filter)
- 			 */
- 			pos->start = map->map_ip(map, pos->start);
- 			pos->end   = map->map_ip(map, pos->end);
--		} else if (map != kernel_map) {
-+		} else if (map != kernel_map__functions) {
- 			char dso_name[PATH_MAX];
- 			struct dso *dso;
- 
-@@ -399,12 +399,12 @@ static int kernel_maps__split_kallsyms(symbol_filter_t filter)
- 		}
- 
- 		if (filter && filter(map, pos)) {
--			rb_erase(&pos->rb_node, &kernel_map->dso->functions);
-+			rb_erase(&pos->rb_node, &kernel_map__functions->dso->functions);
- 			symbol__delete(pos);
- 		} else {
--			if (map != kernel_map) {
-+			if (map != kernel_map__functions) {
- 				rb_erase(&pos->rb_node,
--					 &kernel_map->dso->functions);
-+					 &kernel_map__functions->dso->functions);
- 				symbols__insert(&map->dso->functions, pos);
- 			}
- 			count++;
-@@ -420,8 +420,8 @@ static int kernel_maps__load_kallsyms(symbol_filter_t filter)
- 	if (kernel_maps__load_all_kallsyms())
- 		return -1;
- 
--	symbols__fixup_end(&kernel_map->dso->functions);
--	kernel_map->dso->origin = DSO__ORIG_KERNEL;
-+	symbols__fixup_end(&kernel_map__functions->dso->functions);
-+	kernel_map__functions->dso->origin = DSO__ORIG_KERNEL;
- 
- 	return kernel_maps__split_kallsyms(filter);
+@@ -1445,19 +1450,20 @@ out_fixup:
+ 	return err;
  }
-@@ -431,7 +431,7 @@ size_t kernel_maps__fprintf(FILE *fp)
- 	size_t printed = fprintf(fp, "Kernel maps:\n");
- 	struct rb_node *nd;
  
--	for (nd = rb_first(&kernel_maps); nd; nd = rb_next(nd)) {
-+	for (nd = rb_first(&kernel_maps__functions); nd; nd = rb_next(nd)) {
- 		struct map *pos = rb_entry(nd, struct map, rb_node);
+-LIST_HEAD(dsos);
++LIST_HEAD(dsos__user);
++LIST_HEAD(dsos__kernel);
+ struct dso *vdso;
  
- 		printed += fprintf(fp, "Map:");
-@@ -1159,17 +1159,17 @@ out:
+-static void dsos__add(struct dso *dso)
++static void dsos__add(struct list_head *head, struct dso *dso)
+ {
+-	list_add_tail(&dso->node, &dsos);
++	list_add_tail(&dso->node, head);
+ }
+ 
+-static struct dso *dsos__find(const char *name)
++static struct dso *dsos__find(struct list_head *head, const char *name)
+ {
+ 	struct dso *pos;
+ 
+-	list_for_each_entry(pos, &dsos, node)
++	list_for_each_entry(pos, head, node)
+ 		if (strcmp(pos->name, name) == 0)
+ 			return pos;
+ 	return NULL;
+@@ -1465,12 +1471,12 @@ static struct dso *dsos__find(const char *name)
+ 
+ struct dso *dsos__findnew(const char *name)
+ {
+-	struct dso *dso = dsos__find(name);
++	struct dso *dso = dsos__find(&dsos__user, name);
+ 
+ 	if (!dso) {
+ 		dso = dso__new(name);
+ 		if (dso != NULL) {
+-			dsos__add(dso);
++			dsos__add(&dsos__user, dso);
+ 			dso__set_basename(dso);
+ 		}
+ 	}
+@@ -1478,26 +1484,38 @@ struct dso *dsos__findnew(const char *name)
+ 	return dso;
+ }
+ 
+-void dsos__fprintf(FILE *fp)
++static void __dsos__fprintf(struct list_head *head, FILE *fp)
+ {
+ 	struct dso *pos;
+ 
+-	list_for_each_entry(pos, &dsos, node)
++	list_for_each_entry(pos, head, node)
+ 		dso__fprintf(pos, fp);
+ }
+ 
+-size_t dsos__fprintf_buildid(FILE *fp)
++void dsos__fprintf(FILE *fp)
++{
++	__dsos__fprintf(&dsos__kernel, fp);
++	__dsos__fprintf(&dsos__user, fp);
++}
++
++static size_t __dsos__fprintf_buildid(struct list_head *head, FILE *fp)
+ {
+ 	struct dso *pos;
+ 	size_t ret = 0;
+ 
+-	list_for_each_entry(pos, &dsos, node) {
++	list_for_each_entry(pos, head, node) {
+ 		ret += dso__fprintf_buildid(pos, fp);
+ 		ret += fprintf(fp, " %s\n", pos->long_name);
+ 	}
  	return ret;
  }
  
--struct map *kernel_map;
-+struct map *kernel_map__functions;
- 
- static void kernel_maps__insert(struct map *map)
++size_t dsos__fprintf_buildid(FILE *fp)
++{
++	return (__dsos__fprintf_buildid(&dsos__kernel, fp) +
++		__dsos__fprintf_buildid(&dsos__user, fp));
++}
++
+ static int kernel_maps__create_kernel_map(const struct symbol_conf *conf)
  {
--	maps__insert(&kernel_maps, map);
-+	maps__insert(&kernel_maps__functions, map);
- }
- 
- struct symbol *kernel_maps__find_function(u64 ip, struct map **mapp,
- 					  symbol_filter_t filter)
- {
--	struct map *map = maps__find(&kernel_maps, ip);
-+	struct map *map = maps__find(&kernel_maps__functions, ip);
- 
- 	if (mapp)
- 		*mapp = map;
-@@ -1178,7 +1178,7 @@ struct symbol *kernel_maps__find_function(u64 ip, struct map **mapp,
- 		ip = map->map_ip(map, ip);
- 		return map__find_function(map, ip, filter);
- 	} else
--		WARN_ONCE(RB_EMPTY_ROOT(&kernel_maps),
-+		WARN_ONCE(RB_EMPTY_ROOT(&kernel_maps__functions),
- 			  "Empty kernel_maps, was symbol__init() called?\n");
- 
- 	return NULL;
-@@ -1188,7 +1188,7 @@ struct map *kernel_maps__find_by_dso_name(const char *name)
- {
- 	struct rb_node *nd;
- 
--	for (nd = rb_first(&kernel_maps); nd; nd = rb_next(nd)) {
-+	for (nd = rb_first(&kernel_maps__functions); nd; nd = rb_next(nd)) {
- 		struct map *map = rb_entry(nd, struct map, rb_node);
- 
- 		if (map->dso && strcmp(map->dso->name, name) == 0)
-@@ -1505,11 +1505,11 @@ static int kernel_maps__create_kernel_map(const struct symbol_conf *conf)
- 	if (kernel == NULL)
- 		return -1;
- 
--	kernel_map = map__new2(0, kernel);
--	if (kernel_map == NULL)
-+	kernel_map__functions = map__new2(0, kernel);
-+	if (kernel_map__functions == NULL)
- 		goto out_delete_kernel_dso;
- 
--	kernel_map->map_ip	 = kernel_map->unmap_ip = identity__map_ip;
-+	kernel_map__functions->map_ip	 = kernel_map__functions->unmap_ip = identity__map_ip;
- 	kernel->short_name	 = "[kernel]";
- 	kernel->kernel		 = 1;
- 
-@@ -1522,15 +1522,15 @@ static int kernel_maps__create_kernel_map(const struct symbol_conf *conf)
- 				 sizeof(kernel->build_id)) == 0)
+ 	struct dso *kernel = dso__new(conf->vmlinux_name ?: "[kernel.kallsyms]");
+@@ -1523,8 +1541,8 @@ static int kernel_maps__create_kernel_map(const struct symbol_conf *conf)
  		kernel->has_build_id = true;
  
--	kernel_maps__insert(kernel_map);
-+	kernel_maps__insert(kernel_map__functions);
- 	dsos__add(kernel);
- 	dsos__add(vdso);
+ 	kernel_maps__insert(kernel_map__functions);
+-	dsos__add(kernel);
+-	dsos__add(vdso);
++	dsos__add(&dsos__kernel, kernel);
++	dsos__add(&dsos__user, vdso);
  
  	return 0;
  
- out_delete_kernel_map:
--	map__delete(kernel_map);
--	kernel_map = NULL;
-+	map__delete(kernel_map__functions);
-+	kernel_map__functions = NULL;
- out_delete_kernel_dso:
- 	dso__delete(kernel);
- 	return -1;
 diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 65846d0..b42d196 100644
+index b42d196..5d0371f 100644
 --- a/tools/perf/util/symbol.h
 +++ b/tools/perf/util/symbol.h
-@@ -105,6 +105,6 @@ size_t kernel_maps__fprintf(FILE *fp);
+@@ -104,7 +104,7 @@ size_t kernel_maps__fprintf(FILE *fp);
+ 
  int symbol__init(struct symbol_conf *conf);
  
- extern struct list_head dsos;
--extern struct map *kernel_map;
-+extern struct map *kernel_map__functions;
+-extern struct list_head dsos;
++extern struct list_head dsos__user, dsos__kernel;
+ extern struct map *kernel_map__functions;
  extern struct dso *vdso;
  #endif /* __PERF_SYMBOL */
 -- 
