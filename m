@@ -1,205 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbZK0Hqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751484AbZK0HyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbZK0Hqx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 02:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbZK0Hqw
+	id S1751484AbZK0HyJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 02:54:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZK0HyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 02:46:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34027 "EHLO hera.kernel.org"
+	Fri, 27 Nov 2009 02:54:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39659 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750964AbZK0Hqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 02:46:51 -0500
-Message-ID: <4B0F839D.5050104@kernel.org>
-Date: Thu, 26 Nov 2009 23:45:33 -0800
+	id S1750952AbZK0HyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 02:54:07 -0500
+Message-ID: <4B0F854C.4010902@kernel.org>
+Date: Thu, 26 Nov 2009 23:52:44 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
-References: <4B0CFCA6.5070708@kernel.org>	<20091125200337I.fujita.tomonori@lab.ntt.co.jp>	<4B0DB0B7.9040004@kernel.org> <20091127162918G.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091127162918G.fujita.tomonori@lab.ntt.co.jp>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/2] pci: release that leaf bridge' resource that is not
+ big -v11
+References: <4ADEB601.8020200@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B0D6CFE.4070804@kerne! l .org> <4B0E2388.50302@jp.fujitsu.com> <A2C249D4-FC31-40D9-ACEA-807C336F8514@kernel.org> <4B0F7BC6.90105@jp.fujitsu.com>
+In-Reply-To: <4B0F7BC6.90105@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Wed, 25 Nov 2009 14:33:27 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
+>>
 > 
->> in aperture_64.c::gart_iommu_hole_init()
->>         printk(KERN_INFO  "Checking aperture...\n");
->>
->>         if (!fallback_aper_force)
->>                 agp_aper_base = search_agp_bridge(&agp_aper_order, &valid_agp);
->>
->>         fix = 0;
->>         node = 0;
->>         for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
->>                 int bus;
->>                 int dev_base, dev_limit;
->>
->>                 bus = bus_dev_ranges[i].bus;
->>                 dev_base = bus_dev_ranges[i].dev_base;
->>                 dev_limit = bus_dev_ranges[i].dev_limit;
->>
->>                 for (slot = dev_base; slot < dev_limit; slot++) {
->>
->>                         if (!early_is_k8_nb(read_pci_config(bus, slot, 3, 0x00)))
->>                                 continue;
->>
->>                         iommu_detected = 1;
->>                         gart_iommu_aperture = 1;
->>
->>                         aper_order = (read_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL) >> 1) & 7;
->>                         aper_size = (32 * 1024 * 1024) << aper_order;
->>                         aper_base = read_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE) & 0x7fff;
->>                         aper_base <<= 25;
->>
->>                         printk(KERN_INFO "Node %d: aperture @ %Lx size %u MB\n",
->>                                         node, aper_base, aper_size >> 20);
->>                         node++;
->>
->>                         if (!aperture_valid(aper_base, aper_size, 64<<20)) {
->>                                 if (valid_agp && agp_aper_base &&
->>                                     agp_aper_base == aper_base &&
->>                                     agp_aper_order == aper_order) {
->>                                         /* the same between two setting from NB and agp */
->>                                         if (!no_iommu &&
->>                                             max_pfn > MAX_DMA32_PFN &&
->>                                             !printed_gart_size_msg) {
->>                                                 printk(KERN_ERR "you are using iommu with agp, but GART size is less than 64M\n");
->>                                                 printk(KERN_ERR "please increase GART size in your BIOS setup\n");
->>                                                 printk(KERN_ERR "if BIOS doesn't have that option, contact your HW vendor!\n");
->>                                                 printed_gart_size_msg = 1;
->>                                         }
->>                                 } else {
->> POINT A:
->>                                         fix = 1;
->>                                         goto out;
->>                                 }
->>                         }
->>
->>                         if ((last_aper_order && aper_order != last_aper_order) ||
->>                             (last_aper_base && aper_base != last_aper_base)) {
->>                                 fix = 1;
->>                                 goto out;
->>                         }
->>                         last_aper_order = aper_order;
->>                         last_aper_base = aper_base;
->>                 }
->>         }
->>
->> out:
->>         if (!fix && !fallback_aper_force) {
->>                 if (last_aper_base) {
->>                         unsigned long n = (32 * 1024 * 1024) << last_aper_order;
->>
->>                         insert_aperture_resource((u32)last_aper_base, n);
->>                 }
->>                 return;
->>         }
->>
->>         if (!fallback_aper_force) {
->>                 aper_alloc = agp_aper_base;
->>                 aper_order = agp_aper_order;
->>         }
->>
->>         if (aper_alloc) {
->>                 /* Got the aperture from the AGP bridge */
->>         } else if (swiotlb && !valid_agp) {
->> POINT: B
->>                 /* Do nothing */
->>         } else if ((!no_iommu && max_pfn > MAX_DMA32_PFN) ||
->>                    force_iommu ||
->>                    valid_agp ||
->>                    fallback_aper_force) {
->> POINT: C
->>                 printk(KERN_INFO
->>                         "Your BIOS doesn't leave a aperture memory hole\n");
->>                 printk(KERN_INFO
->>                         "Please enable the IOMMU option in the BIOS setup\n");
->>                 printk(KERN_INFO
->>                         "This costs you %d MB of RAM\n",
->>                                 32 << fallback_aper_order);
->>
->>                 aper_order = fallback_aper_order;
->>                 aper_alloc = allocate_aperture();
->>                 if (!aper_alloc) {
->>                         /*
->>                          * Could disable AGP and IOMMU here, but it's
->>                          * probably not worth it. But the later users
->>                          * cannot deal with bad apertures and turning
->>                          * on the aperture over memory causes very
->>                          * strange problems, so it's better to panic
->>                          * early.
->>                          */
->>                         panic("Not enough memory for aperture");
->>                 }
->>         } else {
->>                 return;
->>         }
->>
->> POINT X:
->>
->>         /* Fix up the north bridges */
->>         for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
->>                 int bus;
->>                 int dev_base, dev_limit;
->>
->>                 bus = bus_dev_ranges[i].bus;
->>                 dev_base = bus_dev_ranges[i].dev_base;
->>                 dev_limit = bus_dev_ranges[i].dev_limit;
->>                 for (slot = dev_base; slot < dev_limit; slot++) {
->>                         if (!early_is_k8_nb(read_pci_config(bus, slot, 3, 0x00)))
->>                                 continue;
->>
->>                         /* Don't enable translation yet. That is done later.
->>                            Assume this BIOS didn't initialise the GART so
->>                            just overwrite all previous bits */
->>                         write_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL, aper_order << 1);
->>                         write_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE, aper_alloc >> 25);
->>                 }
->>         }
->>
->> when AMD64 mem > 4g, no AGP, BIOS set all gart iommu on all nodes size to 32M, and enable bit are set.
+> Bad news...
 > 
-> I have such machine (with sane BIOS).
+> My system doesn't boot (hangup) with your latest set of patches.
+> Fusion MPT SAS driver initialization failed on some devices.
+> Please see below
 > 
-> But if BIOS is broken, early_gart_iommu_check() disables GART_EN bit
-> (bits 0)?
+> ...
+> Fusion MPT SAS Host driver 3.04.12
+> mptsas 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+> mptsas 0000:09:00.0: BAR 1: can't reserve [mem 0x00510000-0x00513fff 64bit]
+> mptbase: ioc0: ERROR - pci_request_selected_regions() with MEM failed
+> mptsas 0000:0a:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+> mptsas 0000:0a:00.0: BAR 1: can't reserve [mem 0x00610000-0x00613fff 64bit]
+> mptbase: ioc1: ERROR - pci_request_selected_regions() with MEM failed
+> ...
+> 
+> 
+> This problem disappear when I revert the patch 6/9, and my system
+> can boot. But I found igb driver initialization failed on some
+> devices even in this case. Please see below
+> 
+> ...
+> igb 0000:08:00.0: BAR 0: can't reserve [mem 0x00100000-0x0011ffff]
+> igb 0000:08:00.0: PCI INT A disabled
+> igb: probe of 0000:08:00.0 failed with error -16
+> igb 0000:08:00.1: PCI INT B -> GSI 18 (level, low) -> IRQ 18
+> igb 0000:08:00.1: BAR 0: can't reserve [mem 0x00140000-0x0015ffff]
+> igb 0000:08:00.1: PCI INT B disabled
+> igb: probe of 0000:08:00.1 failed with error -16
+> ...
 
-not for 32M small size.
+that looks werid, without patch 6/9 should only have pci bridge res shrink problem with your last test?
 
-that function only clear that bit when different nodes have different setting.
+maybe we need keep that feature default to be disabled.
 
-> 
->> 1. iommu=soft, will go through POINT A and POINT B
-> 
-> Not always. if aperture_valid() is true, it doesn't go POINT A. My
-> GART machine doesn't go.
+please try
 
-maybe your bios set GART iommu set to 64M?
+---
+ drivers/pci/setup-bus.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-> 
-> 
->> 2. no "iommu=soft", will go through POINT A and POINT C
-> 
-> As I said, it's not true about POINT A.
-
-maybe your bios set GART iommu set to 64M?
-
-> 
-> 
->> and all will reach POINT X to make sure ENABLE bit is not set.
-> 
-> POINT X doesn't look make sure ENABLE bit is not set. It just fixes up
-> (sets) the address and its size.
-
-                        write_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL, aper_order << 1);
-
-that bit is that bit 0 of AMD64_GARTAPERTURECTL reg.
-
-YH
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -918,8 +918,7 @@ static void pci_bus_dump_resources(struc
+  * second try will clear small leaf bridge res
+  * third try will clear related bridge: some aggressive
+  */
+-/* assume we only have 4 level bridges, so only try 5 times */
+-int pci_try_num = 5;
++int pci_try_num = 1;
+ void __init
+ pci_assign_unassigned_resources(void)
+ {
