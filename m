@@ -1,91 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbZK0MpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751732AbZK0Mtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752732AbZK0MpY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 07:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZK0MpX
+	id S1751732AbZK0Mtd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 07:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZK0Mtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 07:45:23 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:64315 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751464AbZK0MpW (ORCPT
+	Fri, 27 Nov 2009 07:49:32 -0500
+Received: from h3281.serverkompetenz.net ([81.169.158.52]:54059 "EHLO
+	h3281.serverkompetenz.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbZK0Mtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 07:45:22 -0500
-X-Trace: 294345944/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AooBANdYD0tPRTgw/2dsb2JhbAAI1HCEMQQ
-X-IronPort-AV: E=Sophos;i="4.47,301,1257120000"; 
-   d="scan'208";a="294345944"
-Date: Fri, 27 Nov 2009 12:45:04 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/9] ksm: fix mlockfreed to munlocked
-In-Reply-To: <20091126162011.GG13095@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0911271214040.4167@sister.anvils>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
- <Pine.LNX.4.64.0911241638130.25288@sister.anvils> <20091126162011.GG13095@csn.ul.ie>
+	Fri, 27 Nov 2009 07:49:31 -0500
+Message-ID: <4B0FCAD3.9000801@hillier.de>
+Date: Fri, 27 Nov 2009 13:49:23 +0100
+From: Gernot Hillier <gernot@hillier.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Oliver Neukum <oliver@neukum.org>
+CC: Matthias Urlichs <smurf@smurf.noris.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add support for Mobilcom Debitel USB UMTS Surf-Stick
+ to option driver
+References: <4B08F18C.3040904@hillier.de> <200911220920.16717.oliver@neukum.org> <4B0C1F41.2060101@hillier.de> <200911241919.10895.oliver@neukum.org>
+In-Reply-To: <200911241919.10895.oliver@neukum.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Nov 2009, Mel Gorman wrote:
-> On Tue, Nov 24, 2009 at 04:40:55PM +0000, Hugh Dickins wrote:
-> > When KSM merges an mlocked page, it has been forgetting to munlock it:
-> > that's been left to free_page_mlock(), which reports it in /proc/vmstat
-> > as unevictable_pgs_mlockfreed instead of unevictable_pgs_munlocked (and
-> > whinges "Page flag mlocked set for process" in mmotm, whereas mainline
-> > is silently forgiving).  Call munlock_vma_page() to fix that.
-> > 
-> > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Oliver Neukum wrote:
+> Am Dienstag, 24. November 2009 19:00:33 schrieb Gernot Hillier:
+>> As you might have expected, I have no detailed spec about the device 
+>> which could explain this. I can only say that the device reacts on AT 
+>> commands on ttyUSB1 and ttyUSB2 while ttyUSB0 seems to serve other
+>>  purposes.
+>>
+>> What do you think - shall I disable sending the usb control message 
+>> depending on bInterfaceNumber? Any better ideas?
 > 
-> Acked-by: Mel Gorman <mel@csn.ul.ie>
-
-Rik & Mel, thanks for the Acks.
-
-But please clarify: that patch was for mmotm and hopefully 2.6.33,
-but the vmstat issue (minus warning message) is there in 2.6.32-rc.
-Should I
-
-(a) forget it for 2.6.32
-(b) rush Linus a patch for 2.6.32 final
-(c) send a patch for 2.6.32.stable later on
-
-? I just don't have a feel for how important this is.
-
-Typically, these pages are immediately freed, and the only issue is
-which stats they get added to; but if fork has copied them into other
-mms, then such pages might stay unevictable indefinitely, despite no
-longer being in any mlocked vma.
-
-There's a remark in munlock_vma_page(), apropos a different issue,
-			/*
-			 * We lost the race.  let try_to_unmap() deal
-			 * with it.  At least we get the page state and
-			 * mlock stats right.  However, page is still on
-			 * the noreclaim list.  We'll fix that up when
-			 * the page is eventually freed or we scan the
-			 * noreclaim list.
-			 */
-which implies that sometimes we scan the unevictable list and resolve
-such cases.  But I wonder if that's nowadays the case?
-
+> I have no better idea.
 > 
-> > ---
-> > Is this a fix that I ought to backport to 2.6.32?  It does rely on part of
-> > an earlier patch (moved unlock_page down), so does not apply cleanly as is.
+> 	Regards
+> 		Oliver
+> 
 
-Thanks,
-Hugh
+Ok, so here comes the update. The patch was tested to apply against 2.6.31
+as well as 2.6-git. Please apply if you agree...
+
+----------- SNIP -------------
+From: Gernot Hillier <gernot@hillier.de>
+
+This patch adds the vendor and device id for the Mobilcom Debitel UMTS surf
+stick (a.k.a. 4G Systems XSStick W14, MobiData MBD-200HU, ...).
+
+To see these ids, you need to switch the stick to modem operation first
+with the help of usb_modeswitch. This makes it switch from 1c9e:f000 to
+1c9e:9603 and thus be recognized by the option driver.
+
+In addition, this device seems to ignore setting of RTS/DTR by option_send_
+setup and doesn't answer the usb_control_msg leading to a 5 s timeout
+(USB_CTRL_SET_TIMEOUT) in userspace open() and other operations. As this
+confused several impatient userspace applications like Minicom and
+ModemManager, I return immediately instead.
+
+Signed-off-by: Gernot Hillier <gernot@hillier.de>
+
+--- linux-source-2.6.31/drivers/usb/serial/option.c.orig	2009-11-24 08:17:31.000000000 +0100
++++ linux-source-2.6.31/drivers/usb/serial/option.c	2009-11-27 12:48:15.000000000 +0100
+@@ -337,6 +337,10 @@
+ #define AIRPLUS_VENDOR_ID			0x1011
+ #define AIRPLUS_PRODUCT_MCD650			0x3198
+ 
++/* 4G Systems products */
++#define FOUR_G_SYSTEMS_VENDOR_ID		0x1c9e
++#define FOUR_G_SYSTEMS_PRODUCT_W14		0x9603
++
+ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
+@@ -600,6 +604,7 @@
+ 	{ USB_DEVICE(ALCATEL_VENDOR_ID, ALCATEL_PRODUCT_X060S) },
+ 	{ USB_DEVICE(AIRPLUS_VENDOR_ID, AIRPLUS_PRODUCT_MCD650) },
+ 	{ USB_DEVICE(TLAYTECH_VENDOR_ID, TLAYTECH_PRODUCT_TEU800) },
++	{ USB_DEVICE(FOUR_G_SYSTEMS_VENDOR_ID, FOUR_G_SYSTEMS_PRODUCT_W14) },
+ 	{ } /* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, option_ids);
+@@ -1171,6 +1176,13 @@
+ 	int val = 0;
+ 	dbg("%s", __func__);
+ 
++	/* 4G Systems W14 simply ignores this message on interface 0 & 1 
++	   and would cause long timeouts when calling usb_control_msg()  */
++	if (serial->dev->descriptor.idVendor == FOUR_G_SYSTEMS_VENDOR_ID &&
++		serial->dev->descriptor.idProduct == FOUR_G_SYSTEMS_PRODUCT_W14 &&
++		(ifNum == 0 || ifNum == 1) )
++		return -EIO;
++
+ 	portdata = usb_get_serial_port_data(port);
+ 
+ 	if (portdata->dtr_state)
+
+
