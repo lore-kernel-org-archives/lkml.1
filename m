@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbZK0GXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbZK0G3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754051AbZK0GXR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 01:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbZK0GXQ
+	id S1752709AbZK0G3J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 01:29:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZK0G3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 01:23:16 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:19937 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbZK0GXP (ORCPT
+	Fri, 27 Nov 2009 01:29:08 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38638 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbZK0G3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 01:23:15 -0500
-Message-ID: <4B0F7008.8000204@oracle.com>
-Date: Thu, 26 Nov 2009 22:22:00 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Fri, 27 Nov 2009 01:29:07 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH-RFC] cfq: Disable low_latency by default for 2.6.32
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       Corrado Zoccolo <czoccolo@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       Tobias Oetiker <tobi@oetiker.ch>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20091127143307.A7E1.A69D9226@jp.fujitsu.com>
+References: <20091126141738.GE13095@csn.ul.ie> <20091127143307.A7E1.A69D9226@jp.fujitsu.com>
+Message-Id: <20091127152824.A7EA.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Wolfram Sang <w.sang@pengutronix.de>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH -next] misc/eeprom: fix at24 printk format
-References: <20091126203837.b64fb4d3.sfr@canb.auug.org.au>
-In-Reply-To: <20091126203837.b64fb4d3.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B0F703B.0024:SCFMA4539814,ss=1,fgs=0
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 27 Nov 2009 15:29:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> Instead, PF_MEMALLOC is good idea?
 
-Fix printk format warning:
+This patch was obviously wrong. please forget it. i'm sorry.
 
-drivers/misc/eeprom/at24.c:230: warning: format '%zd' expects type 'signed size_t', but argument 6 has type 'int'
+> 
+> 
+> Subject: [PATCH] cfq: Do not limit the async queue depth while memory reclaim
+> 
+> Not-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> (I haven't test this)
+> ---
+>  block/cfq-iosched.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index aa1e953..9546f64 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1308,7 +1308,8 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>  	 * We also ramp up the dispatch depth gradually for async IO,
+>  	 * based on the last sync IO we serviced
+>  	 */
+> -	if (!cfq_cfqq_sync(cfqq) && cfqd->cfq_latency) {
+> +	if (!cfq_cfqq_sync(cfqq) && cfqd->cfq_latency &&
+> +	    !(current->flags & PF_MEMALLOC)) {
+>  		unsigned long last_sync = jiffies - cfqd->last_end_sync_rq;
+>  		unsigned int depth;
+>  
+> -- 
+> 1.6.5.2
+> 
+> 
+> 
+> 
+> 
+> 
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc:	Wolfram Sang <w.sang@pengutronix.de>
-Cc:	David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/misc/eeprom/at24.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20091126.orig/drivers/misc/eeprom/at24.c
-+++ linux-next-20091126/drivers/misc/eeprom/at24.c
-@@ -227,7 +227,7 @@ static ssize_t at24_eeprom_read(struct a
- 			if (status == 2)
- 				status = count;
- 		}
--		dev_dbg(&client->dev, "read %zu@%d --> %zd (%ld)\n",
-+		dev_dbg(&client->dev, "read %zu@%d --> %d (%ld)\n",
- 				count, offset, status, jiffies);
- 
- 		if (status == count)
+
