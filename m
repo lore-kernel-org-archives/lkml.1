@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751203AbZK0FGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751191AbZK0FXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751203AbZK0FGt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 00:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbZK0FGs
+	id S1751191AbZK0FXs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 00:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbZK0FXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 00:06:48 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:26857 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbZK0FGq convert rfc822-to-8bit (ORCPT
+	Fri, 27 Nov 2009 00:23:47 -0500
+Received: from smtp-out-042.synserver.de ([212.40.180.42]:1057 "HELO
+	smtp-out-041.synserver.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1751002AbZK0FXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 00:06:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fVbyvMJkgXGh5Lz+yOEM4fDxl1HZTXNJ4T9pVMYyq4XLKSsGJ170lraaTzkBIWa6Rf
-         mg3bUclwjDLSNy+AwUaIjiSVmW3FKkQPB1dcC2OhZDY7fX6tfgp59g2w9a2KDAFbWs50
-         TE1vj7SphEAaj3NrLA+0z62m5uM8l3/mSTyps=
-MIME-Version: 1.0
-In-Reply-To: <20091127043318.GK6936@core.coreip.homeip.net>
-References: <4B0A765F.7010204@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
-	 <20091123173726.GE17813@core.coreip.homeip.net>
-	 <4B0B6321.3050001@wilsonet.com>
-	 <20091126053109.GE23244@core.coreip.homeip.net>
-	 <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com>
-	 <20091126232311.GD6936@core.coreip.homeip.net>
-	 <4B0F3963.8040701@wilsonet.com>
-	 <9e4733910911261908l122263c3x68854e8a00334eae@mail.gmail.com>
-	 <20091127043318.GK6936@core.coreip.homeip.net>
-Date: Fri, 27 Nov 2009 00:06:52 -0500
-Message-ID: <9e4733910911262106r553bb28brb5bef07dee3aae3b@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 27 Nov 2009 00:23:47 -0500
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Nov 2009 00:23:46 EST
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: lars@laprican.de
+X-SynServer-PPID: 14904
+From: Lars-Peter Clausen <lars@metafoo.de>
+To: rpurdie@rpsys.net
+Cc: l.fu@pengutronix.de, linux-kernel@vger.kernel.org,
+       Lars-Peter Clausen <lars@metafoo.de>
+Subject: [PATCH] leds: leds-pwm: Set led_classdev max_brightness
+Date: Fri, 27 Nov 2009 06:17:38 +0100
+Message-Id: <1259299058-23443-1-git-send-email-lars@metafoo.de>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 11:33 PM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
->> In the code I posted there is one evdev device for each configured
->> remote. Mapped single keycodes are presented on these devices for each
->> IR burst. There is no device for the IR receiver.  A LIRC type process
->> could watch these devices and then execute scripts based on the
->> keycodes reported.
->>
-...
->
-> Maybe we should revisit Jon's patchset as well. Regretfully I did not
-> have time to do that when it was submitted the last time.
+Currently the driver leds-pwm doesn't set max_brightness for the led device
+although it's platform data proides a maximum brightness. Instead it stores its
+own private driver struct. The max_brightness defaults to 255 for led device if
+it has not been set.
+As a result any leds-pwm device with a different maximum brightness will show
+incorrect behavior, as it is posible to either set a longer then period duty
+time or not be able to switch the led to full brightness.
 
-Consider my patch set a technology demo starting point. It shows a
-modern architecture for integrating IR into evdev.  Use the input from
-everyone else to turn these concepts into a real design. I wrote the
-code for the fun of it, I have no commercial interest in IR. I was
-annoyed with how LIRC handled Sony remotes on my home system.
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+---
+ drivers/leds/leds-pwm.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-The design is a clean slate implementation of IR for the kernel. No
-attempt was made at legacy compatibility. I was familiar with evdev vs
-/dev/mouse problems from my work on the X server. Because of working
-on X I've also always hated keymaps (that's what drove the configfs
-design).
-
-I wish one of the set top box or TV manufacturers would step up and
-own this.  They are the ones that would benefit the most. Jarod would
-probably be open to some consulting, right?
-
+diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
+index cdfdc87..88b1dd0 100644
+--- a/drivers/leds/leds-pwm.c
++++ b/drivers/leds/leds-pwm.c
+@@ -27,7 +27,6 @@ struct led_pwm_data {
+ 	struct pwm_device	*pwm;
+ 	unsigned int 		active_low;
+ 	unsigned int		period;
+-	unsigned int		max_brightness;
+ };
+ 
+ static void led_pwm_set(struct led_classdev *led_cdev,
+@@ -35,7 +34,7 @@ static void led_pwm_set(struct led_classdev *led_cdev,
+ {
+ 	struct led_pwm_data *led_dat =
+ 		container_of(led_cdev, struct led_pwm_data, cdev);
+-	unsigned int max = led_dat->max_brightness;
++	unsigned int max = led_dat->cdev.max_brightness;
+ 	unsigned int period =  led_dat->period;
+ 
+ 	if (brightness == 0) {
+@@ -77,10 +76,10 @@ static int led_pwm_probe(struct platform_device *pdev)
+ 		led_dat->cdev.name = cur_led->name;
+ 		led_dat->cdev.default_trigger = cur_led->default_trigger;
+ 		led_dat->active_low = cur_led->active_low;
+-		led_dat->max_brightness = cur_led->max_brightness;
+ 		led_dat->period = cur_led->pwm_period_ns;
+ 		led_dat->cdev.brightness_set = led_pwm_set;
+ 		led_dat->cdev.brightness = LED_OFF;
++		led_dat->cdev.max_brightness = cur_led->max_brightness;
+ 		led_dat->cdev.flags |= LED_CORE_SUSPENDRESUME;
+ 
+ 		ret = led_classdev_register(&pdev->dev, &led_dat->cdev);
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.6.5
+
