@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbZK0IRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbZK0IXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187AbZK0IRb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 03:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZK0IRb
+	id S1752280AbZK0IXM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 03:23:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZK0IXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 03:17:31 -0500
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:48479 "EHLO h5.dl5rb.org.uk"
+	Fri, 27 Nov 2009 03:23:12 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:59489 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002AbZK0IRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 03:17:30 -0500
-Date: Fri, 27 Nov 2009 08:16:56 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Ming Lei <tom.leiming@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH 06/38] move iodev_remove to .devexit.text
-Message-ID: <20091127081656.GA6948@linux-mips.org>
-References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
- <1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
- <1259096853-18909-4-git-send-email-u.kleine-koenig@pengutronix.de>
- <1259096853-18909-5-git-send-email-u.kleine-koenig@pengutronix.de>
- <1259096853-18909-6-git-send-email-u.kleine-koenig@pengutronix.de>
+	id S1751407AbZK0IXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 03:23:11 -0500
+Date: Fri, 27 Nov 2009 09:23:16 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       mel@csn.ul.ie, efault@gmx.de
+Subject: Re: [RFC,PATCH] cfq-iosched: improve async queue ramp up formula
+Message-ID: <20091127082316.GY8742@kernel.dk>
+References: <200911261710.40719.czoccolo@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1259096853-18909-6-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <200911261710.40719.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 10:07:01PM +0100, Uwe Kleine-König wrote:
+On Thu, Nov 26 2009, Corrado Zoccolo wrote:
+> The introduction of ramp-up formula for async queue depths has
+> slowed down dirty page reclaim, by reducing async write performance.
+> This patch improves the formula by considering the remaining slice.
+> 
+> The new formula will allow more dispatches at the beginning of the
+> slice, reducing them at the end.
+> This will ensure that we achieve good throughput, without the risk of
+> overrunning the allotted timeslice.
+> 
+> The threshold is automatically increased when sync I/O is not
+> intermingled with async, in accordance with the previous incarnation of
+> the formula.
 
-> The function iodev_remove is used only wrapped by __devexit_p so define
-> it using __devexit.
+The slow ramp up is pretty much essential to being able to have low
+latency for the sync reads, so I'm afraid this will break that. I would
+prefer doing it through memory reclaim detection, like the other patch
+you and Motohiro suggested.
 
-Thanks, queued for 2.6.33.
+-- 
+Jens Axboe
 
-  Ralf
