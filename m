@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778AbZK0Cqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZK0CxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753778AbZK0Cqs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 21:46:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZK0Cqs
+	id S1753810AbZK0CxX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 21:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZK0CxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 21:46:48 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:63124 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753728AbZK0Cqr convert rfc822-to-8bit (ORCPT
+	Thu, 26 Nov 2009 21:53:22 -0500
+Received: from mail-in-05.arcor-online.net ([151.189.21.45]:33520 "EHLO
+	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753050AbZK0CxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 21:46:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wCx3EnGzmmndqa5DaSW5yE874yYRRtZsi86V/jx2Voih4akfMAvqZnOUzmLZr6bf++
-         R2KWtodXknbM+B4KGHsJftMIvA8KdzzFOnqp1M2xcXHSOeyVtVhImiNFXoOK5CW1zR3Q
-         qz+bot0rBBlLQH/kJ7/ti4ZeZp5pWCvqjsSB4=
-MIME-Version: 1.0
-In-Reply-To: <20091127022820.GU32182@kryten>
-References: <20091127022820.GU32182@kryten>
-Date: Fri, 27 Nov 2009 10:46:53 +0800
-Message-ID: <2375c9f90911261846i18a828eft391420b13bb3fbb2@mail.gmail.com>
-Subject: Re: PATCH: softlockup: Fix hung_task_check_count sysctl
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, msb@google.com,
-       fweisbec@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 26 Nov 2009 21:53:20 -0500
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-10.arcor-online.net 0C18B28ECC3
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
+       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+In-Reply-To: <Pine.LNX.4.58.0911261450590.30284@shell2.speakeasy.net>
+References: <200910200956.33391.jarod@redhat.com>
+	 <200910200958.50574.jarod@redhat.com> <4B0A765F.7010204@redhat.com>
+	 <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain>
+	 <4B0AC65C.806@redhat.com> <m3zl6dq8ig.fsf@intrepid.localdomain>
+	 <4B0E765C.2080806@redhat.com> <m3iqcxuotd.fsf@intrepid.localdomain>
+	 <4B0ED238.6060306@redhat.com>
+	 <Pine.LNX.4.58.0911261450590.30284@shell2.speakeasy.net>
+Content-Type: text/plain
+Date: Fri, 27 Nov 2009 03:50:13 +0100
+Message-Id: <1259290213.3253.11.camel@pc07.localdom.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 10:28 AM, Anton Blanchard <anton@samba.org> wrote:
->
-> I'm seeing spikes of up to 0.5ms in khungtaskd on a large machine. To reduce
-> this source of jitter I tried setting hung_task_check_count to 0:
->
-> # echo 0 > /proc/sys/kernel/hung_task_check_count
->
-> which didn't have the intended response. Change to a post increment of
-> max_count, so a value of 0 means check 0 tasks.
->
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+
+Am Donnerstag, den 26.11.2009, 14:59 -0800 schrieb Trent Piepho:
+> On Thu, 26 Nov 2009, Mauro Carvalho Chehab wrote:
+> > >> See above. Also, several protocols have a way to check if a keystroke were
+> > >> properly received. When handling just one protocol, we can use this to double
+> > >> check the key. However, on a multiprotocol mode, we'll need to disable this
+> > >> feature.
+> > >
+> > > I don't think so. We can pass the space/mark data to all (configured,
+> > > i.e. with active mapping) protocol handlers at once. Should a check
+> > > fail, we ignore the data. Perhaps another protocol will make some sense
+> > > out of it.
+> >
+> > What happens if it succeeds on two protocol handlers?
+> 
+> Then you use the protocol that fits best.  For instance decoding with one
+> protocol might produce a scancode that isn't assigned to any key, while
+> another protocol produces an assigned scancode.  Clearly then the latter is
+> most likely to be correct.  It also possible to have a space/mark length
+> that is within the allowable tolerances for one remote, but is even closer
+> another remote.  You don't want to just find *a* match, you want to find
+> the *best* match.
+> 
+> The in kernel code in v4l is very simple in that it is only designed to
+> work with one procotol and one remote.  Once you have multiple remotes of
+> any type things become much more complicted.  Keep in mind that remotes
+> that aren't even intended to be used with the computer but are used in the
+> same room will still be received by the receiver.  It's not enough to
+> decode the signals you expect to receive, you must also not get confused by
+> random signals destined for somewhere else.
+
+Giving some random living room these days, likely open to the kids
+rooms, you have to take that into account.
+
+Another point, if decoding from IRQs generated by the remote, there is
+flawed hardware around, needing to poll IRQs in some timely manner to
+get it to something at all.
+
+This will break such remotes. Never seen?
+
+For me the first priority is, that existing remotes are not broken.
+
+Don't tell you have done a nice job just now, but are unfortunately in
+need of testers ... 
+
+Cheers,
+Hermann
 
 
-Ack.
-
-I would also suggest to make 'max_count' as unsigned long,
-since sysctl_hung_task_check_count is.
-
-Thanks.
-
-> ---
->
-> Index: linux.trees.git/kernel/hung_task.c
-> ===================================================================
-> --- linux.trees.git.orig/kernel/hung_task.c     2009-11-27 13:11:46.000000000 +1100
-> +++ linux.trees.git/kernel/hung_task.c  2009-11-27 13:11:57.000000000 +1100
-> @@ -144,7 +144,7 @@ static void check_hung_uninterruptible_t
->
->        rcu_read_lock();
->        do_each_thread(g, t) {
-> -               if (!--max_count)
-> +               if (!max_count--)
->                        goto unlock;
->                if (!--batch_count) {
->                        batch_count = HUNG_TASK_BATCHING;
