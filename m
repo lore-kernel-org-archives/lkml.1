@@ -1,100 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZK0XHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbZK0XO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbZK0XHn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 18:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZK0XHk
+	id S1753708AbZK0XO7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 18:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZK0XO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 18:07:40 -0500
-Received: from server1.wserver.cz ([82.113.45.157]:60487 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753752AbZK0XGH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 18:06:07 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: jirislaby@gmail.com
-Cc: mingo@elte.hu, nhorman@tuxdriver.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       marcin.slusarz@gmail.com, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, torvalds@linux-foundation.org, oleg@redhat.com,
-       James Morris <jmorris@namei.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH v3 27/27] x86: add ia32 compat prlimit syscalls
-Date: Sat, 28 Nov 2009 00:06:07 +0100
-Message-Id: <1259363167-9347-27-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <1259363167-9347-1-git-send-email-jslaby@suse.cz>
-References: <1259363167-9347-1-git-send-email-jslaby@suse.cz>
+	Fri, 27 Nov 2009 18:14:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40338 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753203AbZK0XO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 18:14:57 -0500
+Message-ID: <4B105D2E.2030109@kernel.org>
+Date: Fri, 27 Nov 2009 15:13:50 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 1/2] pci: release that leaf bridge' resource that is not
+ big -v11
+References: <4ADEB601.8020200@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B0D6CFE.4070804@kerne! l .org> <4B0E2388.50302@jp.fujitsu.com> <A2C249D4-FC31-40D9-ACEA-807C336F8514@kernel.org> <4B0F7BC6.90105@jp.fujitsu.com> <4B0F854C.4010902@kernel.org> <4B0F8D4D.6050000@jp.fujitsu.com>
+In-Reply-To: <4B0F8D4D.6050000@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To support 32/64-bit compatibility (rlimit structure contains 2 longs)
-for prlimit syscalls, add compat wrappers for them.
+Kenji Kaneshige wrote:
+> Yinghai Lu wrote:
+>>> Bad news...
+>>>
+>>> My system doesn't boot (hangup) with your latest set of patches.
+>>> Fusion MPT SAS driver initialization failed on some devices.
+>>> Please see below
+>>>
+>>> ...
+>>> Fusion MPT SAS Host driver 3.04.12
+>>> mptsas 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+>>> mptsas 0000:09:00.0: BAR 1: can't reserve [mem 0x00510000-0x00513fff
+>>> 64bit]
+>>> mptbase: ioc0: ERROR - pci_request_selected_regions() with MEM failed
+>>> mptsas 0000:0a:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+>>> mptsas 0000:0a:00.0: BAR 1: can't reserve [mem 0x00610000-0x00613fff
+>>> 64bit]
+>>> mptbase: ioc1: ERROR - pci_request_selected_regions() with MEM failed
+>>> ...
+>>>
+>>>
+>>> This problem disappear when I revert the patch 6/9, and my system
+>>> can boot. But I found igb driver initialization failed on some
+>>> devices even in this case. Please see below
+>>>
+>>> ...
+>>> igb 0000:08:00.0: BAR 0: can't reserve [mem 0x00100000-0x0011ffff]
+>>> igb 0000:08:00.0: PCI INT A disabled
+>>> igb: probe of 0000:08:00.0 failed with error -16
+>>> igb 0000:08:00.1: PCI INT B -> GSI 18 (level, low) -> IRQ 18
+>>> igb 0000:08:00.1: BAR 0: can't reserve [mem 0x00140000-0x0015ffff]
+>>> igb 0000:08:00.1: PCI INT B disabled
+>>> igb: probe of 0000:08:00.1 failed with error -16
+>>> ...
+>>
+>> that looks werid, without patch 6/9 should only have pci bridge res
+>> shrink problem with your last test?
+>>
+> 
+> I don't know why. I might have overlooked it at the previous
+> test.
+> 
+>> maybe we need keep that feature default to be disabled.
+> 
+> Will do it next week.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: James Morris <jmorris@namei.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/ia32/ia32entry.S |    2 ++
- kernel/compat.c           |   32 ++++++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 581b056..c61ced2 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -841,4 +841,6 @@ ia32_sys_call_table:
- 	.quad compat_sys_pwritev
- 	.quad compat_sys_rt_tgsigqueueinfo	/* 335 */
- 	.quad sys_perf_event_open
-+	.quad compat_sys_getprlimit
-+	.quad compat_sys_setprlimit
- ia32_syscall_end:
-diff --git a/kernel/compat.c b/kernel/compat.c
-index af15719..c1d5704 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -371,6 +371,38 @@ asmlinkage long compat_sys_getrlimit (unsigned int resource,
- 	return ret;
- }
- 
-+asmlinkage long compat_sys_setprlimit(pid_t pid, unsigned int resource,
-+		struct compat_rlimit __user *rlim)
-+{
-+	mm_segment_t old_fs = get_fs();
-+	struct rlimit r;
-+	int ret;
-+
-+	ret = get_compat_rlimit(&r, rlim);
-+	if (ret)
-+		return ret;
-+
-+	set_fs(KERNEL_DS);
-+	ret = sys_setprlimit(pid, resource, (struct rlimit __force __user *)&r);
-+	set_fs(old_fs);
-+	return ret;
-+}
-+
-+asmlinkage long compat_sys_getprlimit(pid_t pid, unsigned int resource,
-+		struct compat_rlimit __user *rlim)
-+{
-+	mm_segment_t old_fs = get_fs();
-+	struct rlimit r;
-+	int ret;
-+
-+	set_fs(KERNEL_DS);
-+	ret = sys_getprlimit(pid, resource, (struct rlimit __force __user *)&r);
-+	set_fs(old_fs);
-+	if (!ret)
-+		ret = put_compat_rlimit(&r, rlim);
-+	return ret;
-+}
-+
- int put_compat_rusage(const struct rusage *r, struct compat_rusage __user *ru)
- {
- 	if (!access_ok(VERIFY_WRITE, ru, sizeof(*ru)) ||
--- 
-1.6.5.3
+> 
+> Thanks,
+> Kenji Kaneshige
+> 
+> 
+>>
+>> please try
+>>
+>> ---
+>>  drivers/pci/setup-bus.c |    3 +--
+>>  1 file changed, 1 insertion(+), 2 deletions(-)
+>>
+>> Index: linux-2.6/drivers/pci/setup-bus.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/pci/setup-bus.c
+>> +++ linux-2.6/drivers/pci/setup-bus.c
+>> @@ -918,8 +918,7 @@ static void pci_bus_dump_resources(struc
+>>   * second try will clear small leaf bridge res
+>>   * third try will clear related bridge: some aggressive
+>>   */
+>> -/* assume we only have 4 level bridges, so only try 5 times */
+>> -int pci_try_num = 5;
+>> +int pci_try_num = 1;
+>>  void __init
+>>  pci_assign_unassigned_resources(void)
+>>  {
+>>
+>>
+> 
 
+don't try it. found the cause.
+
+even change pci_try_num = 1 will not help.
+
+...
+
+will have another patch.
+
+Thanks
+
+Yinghai 
