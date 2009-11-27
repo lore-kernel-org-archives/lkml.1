@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZK0CvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZK0CzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbZK0CvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Nov 2009 21:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZK0CvS
+	id S1753823AbZK0CzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Nov 2009 21:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbZK0CzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Nov 2009 21:51:18 -0500
-Received: from mail.gmx.net ([213.165.64.20]:47599 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752192AbZK0CvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Nov 2009 21:51:17 -0500
-X-Authenticated: #25574588
-X-Provags-ID: V01U2FsdGVkX19UA7ckXJFUA/EU5r1B8BGETaLyXXzc06yUOkB4Gx
-	0koUilwhHzLIGZ
-Date: Fri, 27 Nov 2009 15:51:48 +1300
-From: Johannes Buchner <buchner.johannes@gmx.at>
-To: linux-kernel@vger.kernel.org
-Cc: reiserfs-devel@vger.kernel.org
-Subject: Fw: reiser4 git repo
-Message-Id: <20091127155148.dcc5cdee.buchner.johannes@gmx.at>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__27_Nov_2009_15_51_48_+1300_iHYJ8QZk+s6fijQO"
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.66
+	Thu, 26 Nov 2009 21:55:08 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:46586 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753734AbZK0CzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Nov 2009 21:55:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=ArHKaqetegajBsQCwwKFiCypRd7SHlXSie6PmxFtBuB6w93V9VXg90R4mTMb2DK0tF
+         e6UetRUvBZuaGIQAIAUaUCumMigUkVCT+2Hl2iLONHPFHJKJnZZLZWjepwv5fEcPuA2K
+         ixoYmmgI1SV8mDo9zltweXj/0QDEsgBdSlHYM=
+Date: Fri, 27 Nov 2009 03:55:13 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Anton Blanchard <anton@samba.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, msb@google.com
+Subject: Re: PATCH: softlockup: Fix hung_task_check_count sysctl
+Message-ID: <20091127025512.GB5406@nowhere>
+References: <20091127022820.GU32182@kryten> <2375c9f90911261846i18a828eft391420b13bb3fbb2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2375c9f90911261846i18a828eft391420b13bb3fbb2@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__27_Nov_2009_15_51_48_+1300_iHYJ8QZk+s6fijQO
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-[ I sent this 2 days ago to linux-fsdevel@vger.kernel.org, maybe I'll
-get more responses in here. ]
-
-Hi!
-
-I would like to keep a git repo up to date with current kernel
-development, with reiser4 patched in. I am having trouble finding a
-repo that provides reiser4. Is there one?
-
-Some people may have noticed the last patch doesn't apply cleanly
-anymore. I made a few lines of modifications in my local repo. Maybe
-that repo would be interesting for others too*.
-
-I plan to catch up with changes from kernel development on a
-daily/weekly basis; my /home partition is reiser4, so I am fairly
-serious about it.
-
-At the moment, I fetch from torvalds/linux-2.6.git and=20
-stable/linux-2.6.31.y.git. Am I missing any other repositories that I
-should try to keep up with? (A fs subsystem maintainer repo?)
-next/linux-next.git is probably moving too fast for me.
-
-Cheers,
-Johannes
-
-* How hard is it to get a git.kernel.org repo?
---=20
-http://jakeapp.com/ http://johannes.jakeapp.com/blog/
+On Fri, Nov 27, 2009 at 10:46:53AM +0800, Américo Wang wrote:
+> On Fri, Nov 27, 2009 at 10:28 AM, Anton Blanchard <anton@samba.org> wrote:
+> >
+> > I'm seeing spikes of up to 0.5ms in khungtaskd on a large machine. To reduce
+> > this source of jitter I tried setting hung_task_check_count to 0:
+> >
+> > # echo 0 > /proc/sys/kernel/hung_task_check_count
+> >
+> > which didn't have the intended response. Change to a post increment of
+> > max_count, so a value of 0 means check 0 tasks.
+> >
+> > Signed-off-by: Anton Blanchard <anton@samba.org>
+> 
+> 
+> Ack.
+> 
+> I would also suggest to make 'max_count' as unsigned long,
+> since sysctl_hung_task_check_count is.
+> 
+> Thanks.
 
 
+Also, the batch_count thing should be dropped I think.
+This is a hardcoded, not overridable pause after 1024
+threads checks to avoid latencies caused by rcu_read_lock.
+But now we have PREEMPT_RCU so people can enable it if
+they care about latency. We should remove it as it adds
+unnecessary complexity.
 
---=20
-Emails k=F6nnen ge=E4ndert, gef=E4lscht und eingesehen werden. Signiere oder
-versch=FCssele deine Mails mit GPG.
-http://web.student.tuwien.ac.at/~e0625457/pgp.html
+I'm preparing a patch for that, on top of Anton patch.
 
---Signature=_Fri__27_Nov_2009_15_51_48_+1300_iHYJ8QZk+s6fijQO
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAksPPsgACgkQ7X1+MfqVcr2uAACfbmuE4VIoq5Mz7q0bFfIAsRCf
-2RgAn3gs1Lay41+84jktK2uS813eTVPA
-=Db+B
------END PGP SIGNATURE-----
-
---Signature=_Fri__27_Nov_2009_15_51_48_+1300_iHYJ8QZk+s6fijQO--
