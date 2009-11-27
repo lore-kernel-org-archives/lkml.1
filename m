@@ -1,122 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZK0TVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbZK0TZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbZK0TVL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 14:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZK0TVK
+	id S1752048AbZK0TZh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 14:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZK0TZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 14:21:10 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:4745 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbZK0TVJ convert rfc822-to-8bit (ORCPT
+	Fri, 27 Nov 2009 14:25:37 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40244 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650AbZK0TZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 14:21:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CUiDDN2g8+dGHJQmDLqO4pzP8vfHuM2Kx997G9HVZQEtFMiUDIljpfVFfkkbl3yq1c
-         Mwde7dtqAiY5XrL3lOYdr5lsv7XwVWyen5u+9242TXxaUSeDD51sfEXVyrSVBn6RD21o
-         dxNM4R6BDeNGXNVwIUht4Yr4knozpiy1wmTKA=
+	Fri, 27 Nov 2009 14:25:36 -0500
+Date: Fri, 27 Nov 2009 13:25:06 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC][PATCH 4/4] vmscan: vmscan don't use pcp list
+In-Reply-To: <20091127091920.A7D5.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0911271322450.27110@router.home>
+References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com> <20091127091920.A7D5.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <874oof6b9u.fsf@tac.ki.iif.hu>
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
-	 <BDgcsm11qgB@lirc>
-	 <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
-	 <874oof6b9u.fsf@tac.ki.iif.hu>
-Date: Fri, 27 Nov 2009 14:21:13 -0500
-Message-ID: <9e4733910911271121j452aa796j543f1fc3f6de7028@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       christoph@bartelmus.de, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 2:03 PM, Ferenc Wagner <wferi@niif.hu> wrote:
-> Jon Smirl <jonsmirl@gmail.com> writes:
->
->> On Fri, Nov 27, 2009 at 12:29 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
->>
->>>> Maybe we decide to take the existing LIRC system as is and not
->>>> integrate it into the input subsystem. But I think there is a window
->>>> here to update the LIRC design to use the latest kernel features.
->>>
->>> If it ain't broke, don't fix it.  [...]
->>>
->>> We already agreed last year that we can include an interface in
->>> lirc_dev that feeds the signal data to an in-kernel decoder if noone
->>> from userspace reads it.  [...]
->>>
->>> I also understand that people want to avoid dependency on external
->>> userspace tools. All I can tell you is that the lirc tools already do
->>> support everything you need for IR control. And as it includes a lot of
->>> drivers that are implemented in userspace already, LIRC will just continue
->>> to do it's work even when there is an alternative in-kernel.
->>
->> Christoph, take what you know from all of the years of working on LIRC
->> and design the perfect in-kernel system.
->
-> Hi,
->
-> I'm reading this thread with great interest.  Thank you (plural) for the
-> very informative conversation, I think I learnt a lot.  But now I
-> somehow lost the point, please correct me if the following is wrong.
->
-> It looks like having lirc_dev (or a similar raw interface) is a must.
-> It could be disguised as an input device, or changed in various ways,
-> but is it worth the effort?  As I understand Christoph, he does not want
-> to do so, because he finds it wasted work, and also there's already a
-> *single* user space daemon using it and doing everything users could
-> want.  Except for plug&play.
+On Fri, 27 Nov 2009, KOSAKI Motohiro wrote:
 
-The high level summary:
+> patch series, but Christoph mentioned simple bypass pcp instead.
+> I made it. I'd hear Christoph and Mel's mention.
 
-LIRC has developed it's own way of doing things. It has its own device
-protocol, user space daemon, tools, etc. No one is denying that all of
-that works.
+Ah. good.
 
-The alternative is to rework IR to use standard kernel interfaces
-(evdev, sysfs, configfs), standard user space tools (udev, ls, mkdir,
-cat) and make the daemon optional.
+> +		kmemcheck_free_shadow(page, 0);
+> +
+> +		if (PageAnon(page))
+> +			page->mapping = NULL;
+> +		if (free_pages_check(page)) {
+> +			/* orphan this page. */
+> +			list_del(&page->lru);
+> +			continue;
+> +		}
+> +		if (!PageHighMem(page)) {
+> +			debug_check_no_locks_freed(page_address(page),
+> +						   PAGE_SIZE);
+> +			debug_check_no_obj_freed(page_address(page), PAGE_SIZE);
+> +		}
+> +		arch_free_page(page, 0);
+> +		kernel_map_pages(page, 1, 0);
+> +
+> +		local_irq_save(flags);
+> +		if (unlikely(wasMlocked))
+> +			free_page_mlock(page);
+> +		local_irq_restore(flags);
 
-Since IR hasn't been added to the kernel yet we are still free to
-design the user space API before locking it in stone for the next
-twenty years.
+The above looks like it should be generic logic that is used elsewhere?
+Create a common function?
 
 
-This is an architectural debate, not a debate on specific features.
+Rest looks good to me...
 
-
->
-> On the other hand, a one-liner could make in-kernel decoding possible,
-> so those who haven't got lircd running could have plug&play easily, if
-> somebody writes the necessary in-kernel decoders to feed the input
-> subsystem (which lircd also does, through uinput).
->
-> But even if you can't find anybody at the moment to write those, this is
-> still good stuff (I don't know about the code), which is hurt by being
-> developed out of kernel.  Is there any reason to keep this so?
-> Admittedly, I don't know why /dev/mouse is evil, maybe I'd understand if
-
-/dev/mouse is evil because it is possible to read partial mouse
-messages. evdev fixes things so that you only get complete messages.
-
-> somebody pointed me to some reading.
-> --
-> Thanks,
-> Feri.
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
