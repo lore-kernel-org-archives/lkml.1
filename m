@@ -1,58 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZK0Wme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbZK0Wzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbZK0Wme (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 17:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZK0Wmd
+	id S1753676AbZK0Wzg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 17:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbZK0Wzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 17:42:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:11515 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575AbZK0Wmc (ORCPT
+	Fri, 27 Nov 2009 17:55:35 -0500
+Received: from nv-lasvegas.nl.edu ([65.79.10.171]:10582 "EHLO
+	NV-LasVegas.nl.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753445AbZK0Wza convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 17:42:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=IZ3EDibNvHhZIKliPlJV1FEpjPACs3+/TF8N47I/ZUTM1OyHCEFBfr0QaoLviZ8172
-         13L1BUz8GSLqkqmykRuDOfidFTdWYSlCjY0GsN4kj/ZLoOMOOWrFyLLOuhsmR5nXjhxT
-         L0mDM77pnBX0vOM2Ry155QxNBmG3GxfPhlaP0=
-Date: Fri, 27 Nov 2009 23:42:06 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Caleb Cushing <xenoterracide@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: large packet loss take2 2.6.31.x
-Message-ID: <20091127224206.GA3350@ami.dom.local>
-References: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com>
- <20091124111946.GA7883@ff.dom.local>
- <81bfc67a0911250606k1ec76354n217da9ca20b3517c@mail.gmail.com>
- <20091125191105.GA3167@ami.dom.local>
- <81bfc67a0911271007o1fb8f8c2vdd36e8585280e4da@mail.gmail.com>
- <20091127213640.GA2611@ami.dom.local>
- <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
+	Fri, 27 Nov 2009 17:55:30 -0500
+X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Nov 2009 17:55:29 EST
+From: Tom Fox <TFox@nl.edu>
+To: "mr_kelvingibson29@hotmail.com" <mr_kelvingibson29@hotmail.com>
+Date: Fri, 27 Nov 2009 16:50:29 -0600
+Subject: End Of Year Joy Congratulation Your Email Address Has won You The
+ Sum Of 500,000.00 Pounds Contact (mr_kelvingibson@hotmail.com)
+Thread-Topic: End Of Year Joy Congratulation Your Email Address Has won You
+ The Sum Of 500,000.00 Pounds Contact (mr_kelvingibson@hotmail.com)
+Thread-Index: AQHKb7QEtpGqXxo1ZEaP3RVgbSUSJA==
+Message-ID: <9022F846FD4D8C4199BB24951E9B76F412A31407A3@NV-Jackpot.nl.edu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 05:35:34PM -0500, Caleb Cushing wrote:
-> > I doubt bisecting is a good idea with so unpredictable bug. First, you
-> > should make sure it's not a hardware problem, so go back to the kernel
-> > you trust most, and give it a really long try with a few recompilations
-> > after slightly changing the config. Btw, I wonder if you tried e1000e
-> > module parameters like IntMode=0 or 1.
-> 
-> no, how do I set those?
-
-modprobe -r e1000e
-modprobe e1000e IntMode=0
-
-Jarek P.
+Amount Won:(£500,000.00).Your email address has brought you an unexpected luck,Your e-mail address was selected and confirmed by our co-sponsor Visa Credit Card International online promo.To claim your prize Contact Email:(mr_kelvingibson@hotmail.com<mailto:mr_kelvingibson@hotmail.com>)
