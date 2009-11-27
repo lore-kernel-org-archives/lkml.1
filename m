@@ -1,106 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbZK0Rqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZK0RtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbZK0Rqr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 12:46:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZK0Rqq
+	id S1752664AbZK0RtZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 12:49:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZK0RtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 12:46:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34857 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751422AbZK0Rqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 12:46:45 -0500
-Date: Fri, 27 Nov 2009 18:46:27 +0100
-From: Veaceslav Falico <vfalico@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc: fork && stepping (Was: [RFC,PATCH 0/14] utrace/ptrace)
-Message-ID: <20091127174627.GB26193@darkmag.usersys.redhat.com>
-References: <20091124200127.GA5751@redhat.com> <20091125080342.GD2660@in.ibm.com> <20091125154052.GA6734@redhat.com> <20091126075335.GA18508@in.ibm.com> <20091126145051.GB4382@redhat.com> <20091126172524.GA14768@redhat.com> <20091126182226.GF12355@darkmag.usersys.redhat.com> <20091126202312.GA21945@redhat.com> <19214.63688.860929.962005@cargo.ozlabs.ibm.com> <20091126223703.GA28556@redhat.com>
+	Fri, 27 Nov 2009 12:49:24 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:34831 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752410AbZK0RtX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 12:49:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=jAGfEN/z4HEGljG3OqI5v4PtHHffHUSrI0m4YZ0NrUypM92NlWs13LLH1vdOw4XgGI
+         jDkQ4ThBkPBcAPdbQxIVR80XBorqak28hSb5SN9ugjt+l+RnrMpz7wLjiCg85Q7nWwBA
+         LI6hGhttQash9Xtbv61aw4qtgSfji5YBXRJAQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091126223703.GA28556@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <BDgcsm11qgB@lirc>
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	 <BDgcsm11qgB@lirc>
+Date: Fri, 27 Nov 2009 12:49:28 -0500
+Message-ID: <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Christoph Bartelmus <lirc@bartelmus.de>
+Cc: awalls@radix.net, christoph@bartelmus.de, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 11:37:03PM +0100, Oleg Nesterov wrote:
+On Fri, Nov 27, 2009 at 12:29 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
+>> Maybe we decide to take the existing LIRC system as is and not
+>> integrate it into the input subsystem. But I think there is a window
+>> here to update the LIRC design to use the latest kernel features.
 >
-> Could you look at this
+> If it ain't broke, don't fix it.
 >
->   ptrace-copy_process-should-disable-stepping.patch
->   http://marc.info/?l=linux-mm-commits&m=125789789322573
+> I'm also not against using the input layer where it makes sense.
 >
-> patch? It is not clear to me how we can modify the test-case to
-> verify it fixes the original problem for powerpc.
+> For devices that do the decoding in hardware, the only thing that I don't
+> like about the current kernel implementation is the fact that there are
+> mapping tables in the kernel source. I'm not aware of any tools that let
+> you change them without writing some keymaps manually.
+>
+> I'm also not against in-kernel decoding in general. We already agreed last
+> year that we can include an interface in lirc_dev that feeds the signal
+> data to an in-kernel decoder if noone from userspace reads it. That's
+> close to an one line change in lirc_dev. You won't have to change a single
+> device driver for this. I think there also was common understanding that
+> there will be cases where in-kernel decoding will not be possible for
+> esoteric protocols and that there needs to be an interface to deliver the
+> raw data to userspace.
+>
+> My point just is that it took LIRC a very long time until the most common
+> protocols have been fully supported, with all the toggle bits, toggle
+> masks, repeat codes, sequences, headers, differing gap values, etc. Or
+> take a look at crappy hardware like the Igor Cesko's USB IR Receiver. This
+> device cripples the incoming signal except RC-5 because it has a limited
+> buffer size. LIRC happily accepts the data because it does not make any
+> assumptions on the protocol or bit length. With the approach that you
+> suggested for the in-kernel decoder, this device simply will not work for
+> anything but RC-5. The devil is in all the details. If we decide to do the
+> decoding in-kernel, how long do you think this solution will need to
+> become really stable and mainline? Currently I don't even see any
+> consensus on the interface yet. But maybe you will prove me wrong and it's
+> just that easy to get it all working.
+> I also understand that people want to avoid dependency on external
+> userspace tools. All I can tell you is that the lirc tools already do
+> support everything you need for IR control. And as it includes a lot of
+> drivers that are implemented in userspace already, LIRC will just continue
+> to do it's work even when there is an alternative in-kernel.
+> If LIRC is being rejected I don't have a real problem with this either,
+> but we finally need a decision because for me this is definitely the last
+> attempt to get this into the kernel.
 
-I modified the test-case, it confirms that
-ptrace-copy_process-should-disable-stepping.patch fixes the
-problem with TIF_SINGLESTEP copied by fork() on powerpc.
+Christoph, take what you know from all of the years of working on LIRC
+and design the perfect in-kernel system. This is the big chance to
+redesign IR support and get rid of any past mistakes. Incorporate any
+useful chunks of code and knowledge from the existing LIRC into the
+new design. Drop legacy APIs, get rid of daemons, etc. You can do this
+redesign in parallel with existing LIRC. Everyone can continue using
+the existing code while the new scheme is being built. Think of it as
+LIRC 2.0. You can lead this design effort, you're the most experience
+developer in the IR area.  Take advantage of this window to make a
+design that is fully integrated with Linux - put IR on equal footing
+with the keyboard and mouse as it should be.
 
-Probably we need a similar fix for step-fork.c in ptrace-tests.
-
-Modified the original testcase to call fork via syscall(__NR_fork),
-to avoid the looping inside libc's fork() on powerpc.
-The parent singlesteps until he sees that the child has forked, after
-that the parent PTRACE_CONTs until the child exits.
-
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/ptrace.h>
-#include <sys/wait.h>
-#include <assert.h>
-#include <sys/syscall.h>
-
-int main(void)
-{
-	void *addr_after_fork = &&after_fork;
-	int pid, status;
-
-	if (!(pid = fork())) {
-		assert(ptrace(PTRACE_TRACEME) == 0);
-		kill(getpid(), SIGSTOP);
-
-		if (!syscall(__NR_fork)) {
-			/* kernel bug: this child will be killed by SIGTRAP */
-			printf("Hello world\n");
-			return 43;
-		}
-
-after_fork:	wait(&status);
-		return WEXITSTATUS(status);
-	}
-
-	for (;;) {
-		siginfo_t info;
-
-		assert(pid == wait(&status));
-		assert(ptrace(PTRACE_GETSIGINFO, pid, 0,&info) == 0);
-		if (info.si_addr == addr_after_fork)
-			break;
-		assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
-	}
-
-	for (;;) {
-		if (WIFEXITED(status))
-			break;
-		assert(ptrace(PTRACE_CONT, pid, 0,0) == 0);
-		assert(pid == wait(&status));
-	}
-
-	assert(WEXITSTATUS(status) == 43);
-	return 0;
-}
-
---
-Veaceslav
+-- 
+Jon Smirl
+jonsmirl@gmail.com
