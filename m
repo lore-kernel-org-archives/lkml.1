@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752322AbZK1Pkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbZK1Pok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752322AbZK1Pkq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 10:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZK1Pkp
+	id S1752190AbZK1Pok (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 10:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZK1Poj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 10:40:45 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:44142 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710AbZK1Pko (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 10:40:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=IqUktbWpYRwUfOh/EJnRTNrLf5JugfvgM+/egdcGZMcbNV7kzVViYsiJCbvh07JNrY
-         4d01oDMZnDPX3GubcXqazXVqYDguC61YV2LiYMjmHpoo75o9MNwXyKAE55SjhEBlVp1Y
-         sFkfH/nts4TAiqvF4w7jxtd4/1rhQngiDxFWM=
+	Sat, 28 Nov 2009 10:44:39 -0500
+Received: from khc.piap.pl ([195.187.100.11]:55001 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751539AbZK1Poi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 10:44:38 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 	system?
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	<4B104971.4020800@s5r6.in-berlin.de>
+	<1259370501.11155.14.camel@maxim-laptop>
+	<m37hta28w9.fsf@intrepid.localdomain>
+	<1259419368.18747.0.camel@maxim-laptop>
+	<m3zl66y8mo.fsf@intrepid.localdomain>
+	<1259422559.18747.6.camel@maxim-laptop>
+Date: Sat, 28 Nov 2009 16:44:41 +0100
+In-Reply-To: <1259422559.18747.6.camel@maxim-laptop> (Maxim Levitsky's message
+	of "Sat, 28 Nov 2009 17:35:59 +0200")
+Message-ID: <m3r5riy7py.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Sat, 28 Nov 2009 10:40:30 -0500
-Message-ID: <8bd0f97a0911280740p24ad49bal64b924a427abfa39@mail.gmail.com>
-Subject: avoiding duplicate icache flushing of shared maps on nommu
-To: David Howells <dhowells@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Jie Zhang <jie.zhang@analog.com>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-when working with FDPIC, there are many shared maps of read only text
-regions (the C library, applet packages like busybox, ...) between
-applications.  but the current mm/nommu.c:do_mmap_pgoff() function
-will issue an icache flush whenever a vma is added to a mm instead of
-only doing it when the map is initially created.  am i missing
-something obvious here, or would a change like below be OK ?  this
-easily cuts the number of icache flushes during boot by 50% if not
-more.
+Maxim Levitsky <maximlevitsky@gmail.com> writes:
 
-(yes, this now does the icache flush while holding the
-nommu_region_sem, but i'm interested if the _idea_ is OK)
+> Generic decoder that lirc has is actually much better and more tolerant
+> that protocol specific decoders that you propose,
 
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -1409,14 +1409,14 @@ unsigned long do_mmap_pgoff(struct file *file,
+Actually, it is not the case. Why do you think it's better (let alone
+"much better")? Have you at least seen my RC5 decoder?
 
-    current->mm->total_vm += len >> PAGE_SHIFT;
+> You claim you 'fix' the decoder, right?
 
-+   if (prot & PROT_EXEC)
-+       flush_icache_range(result, result + len);
-+
- share:
-    add_vma_to_mm(current->mm, vma);
+Sure.
 
-    up_write(&nommu_region_sem);
+> But what about all these lirc userspace drivers?
 
--   if (prot & PROT_EXEC)
--       flush_icache_range(result, result + len);
--
-    kleave(" = %lx", result);
-    return result;
+Nothing. They are not relevant and obviously have to use lircd.
+If you can have userspace driver, you can have lircd as well.
 
--mike
+> How they are supposed to use that 'fixed' decoder.
+
+They are not.
+
+Is it a problem for you?
+How is your keyboard supposed to use scanner driver?
+-- 
+Krzysztof Halasa
