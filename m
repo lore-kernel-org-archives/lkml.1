@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752618AbZK1SKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZK1SSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752618AbZK1SKS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 13:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZK1SKR
+	id S1752961AbZK1SSP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 13:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbZK1SSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 13:10:17 -0500
-Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:49827 "EHLO
-	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbZK1SKQ (ORCPT
+	Sat, 28 Nov 2009 13:18:15 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47981 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbZK1SSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 13:10:16 -0500
-Date: Sat, 28 Nov 2009 13:10:21 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: Problem? intel_iommu=off; perf top shows acpi_os_read_port as
- extremely busy
-In-reply-to: <20091128094530.0ede7b1a@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       linux-kernel@vger.kernel.org
-Message-id: <4B11678D.8020601@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B106CC0.4050406@majjas.com> <20091128071808.GA32183@elte.hu>
- <20091128094530.0ede7b1a@infradead.org>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sat, 28 Nov 2009 13:18:14 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B116954.5050706@s5r6.in-berlin.de>
+Date: Sat, 28 Nov 2009 19:17:56 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Christoph Bartelmus <lirc@bartelmus.de>, khc@pm.waw.pl, awalls@radix.net,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       maximlevitsky@gmail.com, mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+In-Reply-To: <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok - my only question then is why things appear so different with 
-intel_iommu enabled.
-Arjan van de Ven wrote:
-> On Sat, 28 Nov 2009 08:18:08 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
->
->   
->> * Michael Breuer <mbreuer@majjas.com> wrote:
->>
->>     
->>> Having given up for now on VT-D, I rebooted 2.6.38 rc8 with 
->>> intel_iommu=off. Whilst my myriad of broken bios issues cleared, I
->>> now see in perf top acpi_os_read_port as continually the busiest
->>> function. With intel_iommu enabled, _spin_lock was always on top,
->>> and nothing else was notable.
->>>
->>> This seems odd to me, perhaps this will make sense to someone else.
->>>
->>> FWIW, I'm running on an Asus p6t deluxe v2; ht enabled; no errors
->>> or oddities in dmesg or /var/log/messages.
->>>       
->> Could you post the perf top output please?
->>
->> Also, could you also post the output of:
->>
->> 	perf stat -a --repeat 10 sleep 1
->>
->> this will show us how idle the system is. (My guess is that your
->> system is idle and perf top shows acpi_os_read_port because the
->> system goes to idle via ACPI methods and PIO is slow. In that case
->> all is nominal and your system is fine. But it's hard to tell without
->> more details.)
->>
->>     
->
-> yeah the os_read_port is part of the idle loop, so if your system is
-> idle it'll show up big.... not much we can optimize there though...
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
+Jon Smirl wrote:
+> There are two very basic things that we need to reach consensus on first.
+> 
+> 1) Unification with mouse/keyboard in evdev - put IR on equal footing.
+> 2) Specific tools (xmodmap, setkeycodes, etc or the LIRC ones) or
+> generic tools (ls, mkdir, echo) for configuration
 
+About 2:  If at all, there only needs to be a decision about pulse/space
+to scancode converter configuration.  In contrast, scancode to keycode
+converter configuration is already solved; the interface is
+EVIOCSKEYCODE.  If you find the EVIOCSKEYCODE interface lacking, extend
+it or submit an alternative --- but this does not affect LIRC and
+whether to merge it in any way.
+
+PS:  Drop your "specific vs. generic tools" terminology already.  Your
+configfs based proposal requires "specific" tools as well, it's just
+that they can be implemented in bash, among else.
+-- 
+Stefan Richter
+-=====-==--= =-== ===--
+http://arcgraph.de/sr/
