@@ -1,95 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbZK1Qo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZK1Qps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbZK1Qo2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 11:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZK1Qo2
+	id S1752614AbZK1Qps (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 11:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZK1Qpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 11:44:28 -0500
-Received: from khc.piap.pl ([195.187.100.11]:35039 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752161AbZK1Qo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 11:44:27 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
+	Sat, 28 Nov 2009 11:45:47 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:4588 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbZK1Qpq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 11:45:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=lqJhawJuz9naLTdS8wHOnP+9O3E3rse40b+kBTi106D+tWobUI9TwSRwS3XOWsM4kT
+         UexD3OwkpF83jmtFpjR+oLtyaMcFv5SaKa6zeSZI5kmVuqiGoq7CvQfFcshxATwAjziw
+         kiiQRr6i/y3ljqoyNjldYbWmB6pCKYIg7EVI8=
+MIME-Version: 1.0
+In-Reply-To: <1259422559.18747.6.camel@maxim-laptop>
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	 <4B104971.4020800@s5r6.in-berlin.de>
+	 <1259370501.11155.14.camel@maxim-laptop>
+	 <m37hta28w9.fsf@intrepid.localdomain>
+	 <1259419368.18747.0.camel@maxim-laptop>
+	 <m3zl66y8mo.fsf@intrepid.localdomain>
+	 <1259422559.18747.6.camel@maxim-laptop>
+Date: Sat, 28 Nov 2009 11:45:51 -0500
+Message-ID: <9e4733910911280845y5cf06836l1640e9fc8b1740cf@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
 To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jon Smirl <jonsmirl@gmail.com>,
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
        awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
        jarod@redhat.com, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
        mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 	system?
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
-	<4B104971.4020800@s5r6.in-berlin.de>
-	<1259370501.11155.14.camel@maxim-laptop>
-	<m37hta28w9.fsf@intrepid.localdomain>
-	<1259419368.18747.0.camel@maxim-laptop>
-	<m3zl66y8mo.fsf@intrepid.localdomain>
-	<1259422559.18747.6.camel@maxim-laptop>
-	<m3r5riy7py.fsf@intrepid.localdomain>
-	<1259425575.19883.13.camel@maxim-laptop>
-Date: Sat, 28 Nov 2009 17:44:30 +0100
-In-Reply-To: <1259425575.19883.13.camel@maxim-laptop> (Maxim Levitsky's
-	message of "Sat, 28 Nov 2009 18:26:15 +0200")
-Message-ID: <m3k4xay4y9.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim Levitsky <maximlevitsky@gmail.com> writes:
-
->> Actually, it is not the case. Why do you think it's better (let alone
->> "much better")? Have you at least seen my RC5 decoder?
-> Because userspace decoder is general, it doesn't depend on exact timing,
-> as long as pulses vary in size it can distinguish between keys, and that
-> is enough.
-> I didn't use your decoder, so in that particular case I don't know.
-
-I thought so.
-FYI: a sane RC5 decoder doesn't depend on exact timing. Even seen
-a multi-function remote can control many different devices like TV,
-VCR, DVD and so on? From different manufacturers etc.
-
-> Unless you put it againt an inaccurate decoder....
-> Ask the lirc developers.
-
-Not sure what do you mean.
-
-> I have a VCR remote, ok?
-> I have a pulse/space decoder in my notebook, I have created a config
-> file for that, and I did a lot of customizations, because this remote
-> isn't supposed to be used with PC.
-
-There is no such thing as "being supposed to be used with PC".
-A space/mark receiver can receive data from any remote.
-
-> Now, I also have a desktop.
-> I don't have a receiver there, but someday I arrange some sort of it.
-> I have an IR dongle in the closed, its raw IR diode.
-> Probably with few components I could connect it to soundcard (and I have
-> 3 independent inputs, of which only one is used)
-> And then I will use alsa input driver.
+On Sat, Nov 28, 2009 at 10:35 AM, Maxim Levitsky
+<maximlevitsky@gmail.com> wrote:
+> On Sat, 2009-11-28 at 16:25 +0100, Krzysztof Halasa wrote:
+>> Maxim Levitsky <maximlevitsky@gmail.com> writes:
+>>
+>> >> And that's good. Especially for a popular and simple protocol such as
+>> >> RC5.
+>> >> Actually, it's not about adding the decoder. It's about fixing it.
+>> >> I can fix it.
+>> >
+>> > This is nonsense.
+>>
+>> You forgot to say why do you think so.
 >
-> Now I had ended up with 2 different configurations, one for the kernel,
-> another for the lirc.
-> Great, isn't it?
+> Because frankly, I am sick of this discussion.
+> Generic decoder that lirc has is actually much better and more tolerant
+> that protocol specific decoders that you propose,
 
-If you want such setup - why not?
-If you don't - you can use lirc in both cases.
+Porting the decoder engine from lirc into the kernel is also a possibility.
 
-> The point is again, I *emphasize* that as long as lirc is used to decode
-> all but ready to use scancodes, everything is kept in one place.
-> Both decode algorithms and configuration.
+I'm asking to have an architecture design discussion, not to pick one
+of the various implementations. This is something that we have to live
+with for twenty years and it is a giant pain to change if we get wrong
+initially.
 
-Then keep it that way and let others use what they think is best for
-them.
+> You claim you 'fix' the decoder, right?
+> But what about all these lirc userspace drivers?
+> How they are supposed to use that 'fixed' decoder.
 
-Now how hard is it to understand that?
+Some of that user space hardware belongs in the trash can and will
+never work reliably in a modern system. For example - sitting in a
+tight user space loop reading the DTS bit from a serial port or
+parallel port and then using the system clock to derive IR timings.
+That process is going to be inaccurate or it is going to make video
+frames drop. Big banging from user space is completely unreliable.
 
-> Also, I repeat again, that this discussion *IS NOT* about userspace api,
-> its about who decodes the input, kernel or lirc.
+If you really want to use your microphone input as a DAC channel, run
+a little app that reads the ALSA input and converts it to a timing
+stream and then inject this data into the kernel input system using
+uevent.
 
-That could be the case if you were limited to "or". But we can do both.
+Both of these are hobbyist class solutions. They are extremely cheap
+but they are unreliable and create large CPU loads.  But some people
+want to use a $300 CPU to eliminate $2 worth of IR hardware. This type
+of hardware will continue to work via event injection. But neither of
+these solutions belong in the kernel.
+
+What are other examples of user space IR drivers?
+
 -- 
-Krzysztof Halasa
+Jon Smirl
+jonsmirl@gmail.com
