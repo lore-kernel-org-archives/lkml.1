@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbZK1KFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZK1KTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752874AbZK1KFY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 05:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZK1KFX
+	id S1753318AbZK1KTK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 05:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZK1KTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 05:05:23 -0500
-Received: from ozlabs.org ([203.10.76.45]:57709 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087AbZK1KFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 05:05:23 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH 1/2] hw_random: core updates to allow more efficient drivers
-Date: Sat, 28 Nov 2009 20:35:26 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
-Cc: Ian Molton <ian.molton@collabora.co.uk>, linux-kernel@vger.kernel.org
-References: <1259177252.2858.17.camel@calx> <1259195127-20086-2-git-send-email-ian.molton@collabora.co.uk> <1259197403.2858.88.camel@calx>
-In-Reply-To: <1259197403.2858.88.camel@calx>
+	Sat, 28 Nov 2009 05:19:10 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:14004 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbZK1KTJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 05:19:09 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=i2IZj5H/jj3texp14SZhQmTwHdFjAndgRwfbCWyfH56luw5MUCTQm1yMkaNdD+oQh
+	Y1NiUMh8KkVoEfKmuJRug==
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911282035.26847.rusty@rustcorp.com.au>
+In-Reply-To: <1259397915-762-1-git-send-email-corentincj@iksaif.net>
+References: <1259397915-762-1-git-send-email-corentincj@iksaif.net>
+Date: Sat, 28 Nov 2009 02:19:09 -0800
+Message-ID: <a55d774e0911280219s69729b54l544660aac4b2197@mail.gmail.com>
+Subject: Re: [PATCH 0/2] staging/android fixes
+From: Brian Swetland <swetland@google.com>
+To: Corentin Chary <corentincj@iksaif.net>,
+       =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@google.com>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Chih-Wei Huang <cwhuang@linux.org.tw>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Nov 2009 11:33:23 am Matt Mackall wrote:
-> On Thu, 2009-11-26 at 00:25 +0000, Ian Molton wrote:
-> >  #define PFX			RNG_MODULE_NAME ": "
-> >  #define RNG_MISCDEV_MINOR	183 /* official */
-> > +#define RNG_BUFFSIZE		64
-> 
-> How about just:
-> 
-> static u8 rng_buffer[RNG_BUFFSIZE] __cacheline_aligned;
-> 
-> And lose all the kmalloc and kfree code? The memory use will be smaller,
-> even when the buffer isn't needed.
+On Sat, Nov 28, 2009 at 12:45 AM, Corentin Chary <corentincj@iksaif.net> wrote:
+> Hi,
+> Here is a patch to fix build for android specifics drivers.
+>
+> What we should do next to prevent them from being removed in 2.6.23 ?
+>
+> Is there any chance that all android stuff would be merged one day ?
+> Actually, we got a working 2.6.32 kernel for android here (with wakelock, ashm, etc..):
+> http://git.iksaif.net/?p=android-x86/kernel;a=shortlog;h=refs/heads/android-x86-backport
 
-And might as well just #defube RNG_BUFFSIZE SMP_CACHE_BYTES (or use
-SMP_CACHE_BYTES here and sizeof() elsewhere).
+Arve's done a few revisions of the wakelock code with the linux-pm
+list, and I know he's planning on trying to work through the remaining
+issues (as I recall there was some discussion on read/write vs ioctl
+interfaces to userspace) in the near future.
 
-> > +		if (!data_avail) {
-> > +			bytes_read = rng_get_data(current_rng, rng_buffer,
-> > +				RNG_BUFFSIZE, !(filp->f_flags & O_NONBLOCK));
-> 
-> No need to pass rng_buffer to the helper as there's only one with global
-> scope.
+This really is the one piece that has the most impact on everything
+else -- maintaining versions of the various platform hardware drivers
+with and without wakelock support is messy.
 
-Naah, I like the separation; it matches the rest of the kernel and means we
-can get funky with buffer management in 10 years time when we rewrite this
-again.
+I'm not sure if there are seriously issues with picking up ashmem or
+logger.  They are relatively small, simple, and self-contained.  The
+binder driver seemed to be much more contentious.
 
-Thanks,
-Rusty.
+Brian
