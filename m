@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbZK1BfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZK1CHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbZK1BfH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 20:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZK1BfG
+	id S1753289AbZK1CHa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 21:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZK1CHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 20:35:06 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:57877 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753756AbZK1Beu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 20:34:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nQgMiBfhZkGZyJitCuL1Jy498rVxFLXvcTPMmkKOgC6UJzoRI2txbDBnJo/p+lYNq7
-         IHv6t2SP8UzRcc6VNvbaEZcv2ELR8MFriw3tuc0Ui3+/VyJwq9zlMArNiPdcd267WFeS
-         OVLCbUr6zRYMtzkgnb57gib9rT+3YvwMCxZoY=
-Date: Fri, 27 Nov 2009 17:34:44 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Ferenc Wagner <wferi@niif.hu>, Christoph Bartelmus <lirc@bartelmus.de>,
-       awalls@radix.net, christoph@bartelmus.de, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR system?
-Message-ID: <20091128013443.GL6936@core.coreip.homeip.net>
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com> <BDgcsm11qgB@lirc> <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com> <874oof6b9u.fsf@tac.ki.iif.hu> <9e4733910911271121j452aa796j543f1fc3f6de7028@mail.gmail.com>
+	Fri, 27 Nov 2009 21:07:30 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:53416 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751252AbZK1CH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Nov 2009 21:07:29 -0500
+Date: Fri, 27 Nov 2009 18:07:39 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [rfc] "fair" rw spinlocks
+Message-ID: <20091128020739.GA18149@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091123145409.GA29627@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <9e4733910911271121j452aa796j543f1fc3f6de7028@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091123145409.GA29627@wotan.suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 02:21:13PM -0500, Jon Smirl wrote:
-> On Fri, Nov 27, 2009 at 2:03 PM, Ferenc Wagner <wferi@niif.hu> wrote:
-> > Admittedly, I don't know why /dev/mouse is evil, maybe I'd understand if
+On Mon, Nov 23, 2009 at 03:54:09PM +0100, Nick Piggin wrote:
+> Hi,
 > 
-> /dev/mouse is evil because it is possible to read partial mouse
-> messages. evdev fixes things so that you only get complete messages.
+> Last time this issue came up that I could see, I don't think
+> there were objections to making rwlocks fair, the main
+> difficulty seemed to be that we allow reentrant read locks
+> (so a write lock waiting must not block arbitrary read lockers).
 > 
+> Nowadays our rwlock usage is smaller although still quite a
+> few, so it would make better sense to do a conversion by
+> introducing a new lock type and move them over I guess.
+> 
+> Anyway, I would like to add some kind of fairness or at least
+> anti starvation for writers. We have a customer seeing total
+> livelock on tasklist_lock for write locking on a system as small
+> as 8 core Opteron.
+> 
+> This was basically reproduced by several cores executing wait
+> with WNOHANG.
+> 
+> Of course it would always be nice to improve locking so
+> contention isn't an issue, but so long as we have rwlocks, we
+> could possibly get into a situation where starvation is
+> triggered *somehow*. So I'd really like to fix this.
+> 
+> This particular starvation on tasklist lock I guess is a local
+> DoS vulnerability even if the workload is not particularly
+> realistic.
+> 
+> Anyway, I don't have a patch yet. I'm sure it can be done
+> without extra atomics in fastpaths. Comments?
 
-For me the main evil of /dev/mouse (and other multuiplexing interfaces)
-is that it is impossible to remove one of the streams from the
-multiplexed stream without affecting other users. And so are born
-various "grab" schemes where we declare one application _the
-application_ and let it "grab" the device.. which breaks when there are
-other applications also interested in the same data stream.
+The usual trick would be to keep per-fair-rwlock state in per-CPU
+variables.  If it is forbidden to read-acquire one nestable fair rwlock
+while read-holding another, then this per-CPU state can be a single
+pointer and a nesting count.  On the other hand, if it is permitted to
+read-acquire one nestable fair rwlock while holding another, then one
+can use a small per-CPU array of pointer/count pairs.
 
--- 
-Dmitry
+Readers check the per-CPU state.  If they already read-hold the lock,
+they increment the nesting count, otherwise, they contend directly for
+the lock (and set up the per-CPU state).
+
+Same number of atomics on the fastpath as the current implementation.
+Too bad about those array access, though!  ;-)
+
+(Though on modern hardware, the array accesses might be a non-event,
+performance-wise.)
+
+Hey, you asked!!!  And there are other ways to make this work, including
+variations on brlock.
+
+							Thanx, Paul
