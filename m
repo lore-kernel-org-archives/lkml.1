@@ -1,61 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbZK1AwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753725AbZK1BI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbZK1AwT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 19:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZK1AwS
+	id S1753725AbZK1BI0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 20:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZK1BIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 19:52:18 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:37962 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbZK1AwS (ORCPT
+	Fri, 27 Nov 2009 20:08:25 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:48011 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752753AbZK1BIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 19:52:18 -0500
-Message-ID: <4B10741C.9090305@collabora.co.uk>
-Date: Sat, 28 Nov 2009 00:51:40 +0000
-From: Ian Molton <ian.molton@collabora.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, jeff@garzik.org,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: rng updates
-References: <1259197403.2858.88.camel@calx>	 <1259232570-11918-1-git-send-email-ian.molton@collabora.co.uk>	 <1259235525.9212.444.camel@calx>  <4B0E6B02.8020705@collabora.co.uk> <1259362496.25403.165.camel@calx>
-In-Reply-To: <1259362496.25403.165.camel@calx>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 27 Nov 2009 20:08:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=LdFD/CgQZwJpcUxBx/7xpd/y4oNaO5OPtse0Z9/tcWyy2w3ACYq02jQkxB/swO35a8
+         I7ouBQ1rfzubOMNTG9ii56sor728PChbSZDNRPAdAUAY56IgXlenee1TVnIotYihOCWt
+         tZgTHk1RF6GhDCnR768Z1dl8Y8EalGx79XbRk=
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+In-Reply-To: <4B104971.4020800@s5r6.in-berlin.de>
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	 <4B104971.4020800@s5r6.in-berlin.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Nov 2009 03:08:21 +0200
+Message-ID: <1259370501.11155.14.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Thu, 2009-11-26 at 11:48 +0000, Ian Molton wrote:
->> Matt Mackall wrote:
->>> On Thu, 2009-11-26 at 10:49 +0000, Ian Molton wrote:
->>>> Hi guys,
->>>>
->>> No need to pass rng_buffer to the helper as there's only one with global
->>> scope.
->> Ah, sorry, I see what you mean now. The logic behind that is that it
->> matches the new API, whcih is all that will be left once the old drivers
->> are patched to use it. I planned to drop the helper altogether at that
->> point and though it'd make the patch more readable when that happens.
+On Fri, 2009-11-27 at 22:49 +0100, Stefan Richter wrote: 
+> Jon Smirl wrote:
+> > 3) No special tools - use mkdir, echo, cat, shell scripts to build maps
 > 
-> Ok, that's quite reasonable.
+> From the POV of a distributor, there is always a special tool required.
+> Whether it is implemented in bash, Python, or C doesn't make a
+> difference to him.
 > 
->> Is this enough to get an acked-by: ? If so, I'll do that and see about
->> getting the change into linux-next.
+> For an enduser whose distributor doesn't package that tool, it also
+> doesn't matter whether it is bash or Python.  (C is awkward because it
+> needs to be run through gcc first.)  A Pyton tool can operate the
+> existing EVIOCSKEYCODE interface just as well as a C tool.
 > 
-> Acked-by: Matt Mackall <mpm@selenic.com>
+> Your mkdir/ echo/ cat programs would still just this:  Programs.  Sure,
+> these programs would be interpreted by an interpreter which is installed
+> everywhere, and the data they operate on is in a clear text format.  The
+> downside is that these programs do not exist yet.
+> 
+> > 5) Direct multi-app support - no daemon
+> 
+> Think of lircd (when it feeds into uinput) as of a userspace driver
+> rather than a daemon.  The huge benefit of a userspace driver is that it
+> can load configuration files.
+And bear in mind the fact that only handful of lirc drivers are in
+kernel.
+Many drivers are pure userspace and live in  the lirc daemon itself.
+These drivers ether will have to be reimplemented in kernel (huge job)
+Or we will have a lot of duplication, because same remote can be used
+with kernel or userspace drivers.
 
-Just to check - is that with or without changing the helpers parameters?
+Look at daemons subdirectory of lircd to get the idea of how many such
+drivers exist.
 
-> You should probably go through Herbert's tree to get into -next,
-> hopefully he won't be too miffed by your repeated failure to cc:
-> linux-kernel initially and failure to cc: him here..
 
-Drat, I thought he'd been re-added when LKML got added to the CC: list.
-Sorry about that. Re-added to CC:
+Btw, for _some_ user space drivers its not possible to re implement them
+in kernel, like driver that reads input from a sound card, which I can
+say is nice very cheap way to have a receiver.
 
--Ian
+
+I want to repeat the correct way of doing things:
+
+1 - all drivers that do all processing in hardware, will use input
+system. 
+
+2 - all drivers that decode protocol will use ether lirc, to keep
+configuration in one place.
+
+3 - all drivers that send pulse/space will use lirc.
+
+lirc will process the data, convert it to input events and feed them
+back to kernel.
+
+Please note, and note again.
+We aren't taking about two interfaces for userspace!
+Everybody agree that userspace programs will only recieve input events.
+The point is that we give an exception for one program that yes is just
+a userspace driver to recieve the raw data, process it, and feed it
+back.
+
+Also same program (lircd) could receive data from other sources, and
+convert that to input events.
+
+Whats wrong with that?
+
+If we add in-kernel decoding, we still will end up with two different
+decoding, one in kernel and one in lirc.
+
+Could we finally end this discussion and move forward?
+
+Best regards,
+Maxim Levitsky
 
