@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZK1X2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbZK2AEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752961AbZK1X2n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 18:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZK1X2i
+	id S1753512AbZK2AEJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 19:04:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZK2AEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 18:28:38 -0500
-Received: from mail1.radix.net ([207.192.128.31]:59994 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752473AbZK1X2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 18:28:37 -0500
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-From: Andy Walls <awalls@radix.net>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       maximlevitsky@gmail.com, mchehab@redhat.com, stefanr@s5r6.in-berlin.de,
-       superm1@ubuntu.com
-In-Reply-To: <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
-	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
-	 <m3aay6y2m1.fsf@intrepid.localdomain>
-	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 28 Nov 2009 18:26:55 -0500
-Message-Id: <1259450815.3137.19.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Nov 2009 19:04:08 -0500
+Received: from ara.aytolacoruna.es ([91.117.124.165]:53661 "EHLO
+	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753347AbZK2AEI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 19:04:08 -0500
+X-Greylist: delayed 611 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Nov 2009 19:04:07 EST
+Date: Sun, 29 Nov 2009 00:54:00 +0100
+From: Santiago Garcia Mantinan <manty@manty.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [Bug #14294] kernel BUG at drivers/ide/ide-disk.c:187
+Message-ID: <20091128235359.GA6877@dis.manty.net>
+References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
+ <mYW9sxtWd2G.A.EcF.bDACLB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <mYW9sxtWd2G.A.EcF.bDACLB@chimera>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon,
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14294
 
-On Sat, 2009-11-28 at 12:37 -0500, Jon Smirl wrote:
-> On Sat, Nov 28, 2009 at 12:35 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> > Jon Smirl <jonsmirl@gmail.com> writes:
-> >
-> >> There are two very basic things that we need to reach consensus on first.
-> >>
-> >> 1) Unification with mouse/keyboard in evdev - put IR on equal footing.
+Hi!
 
-The only thing this buys for the user is remote/products bundles that
-work out of the box.  That can only be a solution for the 80% case.
+Sorry for not answering before, I've been running 2.6.31 patched for all
+this time and the results are a bit dissapointing...
 
-I don't hear users crying out "Please integrate IR with the input
-system".  I do hear users say "I want my remote to work", and "How can I
-make my remote work?".  Users are not specifically asking for this
-integration of IR and the input system - a technical nuance.  If such a
-tecnical desire-ment drives excessive rework, I doubt anyone will care
-enough about IR to follow through to make a complete system.
+The first run was for almost a month and ended up with half a hang, I could
+read on the console that there had been an error on one of the disks, dma
+error, the keyboard was working, getty seemed to work but then login didn't
+show up when entering the username even though the disks led was flashing
+when I operated the console entering usernames and all that. This hang was
+not like the hangs I had before, don't know if it was due to the patch and
+the unknown operation arriving to the IDE disk, but the message that the
+patch was supposed to display was not displayed at all.
 
-What does "equal footing" mean as an incentive anyway?  The opportunity
-to reimplement *everything* that exists for IR already over again in
-kernel-space for the sake of developer technical desires?  That's just a
-lot of work for "not invented here" syndrome.  IR transceivers are
-arguably superior to keyboards and mice anyway because they can transmit
-data too.
+The second run is current run I believe, currently it has an uptime of 18
+days and not problem was showed over this time.
 
+So... I'm afraid I'm not able to reproduce this and maybe the whole problem
+is hardware related, even though the machine had been running with 2.6.30 in
+a stable way, it is an old machine, so maybe it is not as healthy as I
+believed, and even though memtest doesn't show any errors there could be
+some dma problems or other weird things happening around :-(
 
-> >> 2) Specific tools (xmodmap, setkeycodes, etc or the LIRC ones) or
-> >> generic tools (ls, mkdir, echo) for configuration
-> >
-> > I think we can do this gradually:
-> > 1. Merging the lirc drivers. The only stable thing needed is lirc
-> >   interface.
-> 
-> Doing that locks in a user space API that needs to be supported
-> forever. We need to think this API through before locking it in.
+So... I'd say you can close the bug and if I happen to find it again... I'll
+report it again.
 
-No one get things right the first time - No one.
+Sorry for all the noise.
 
-Most designs are iterated with prototypes in the commercial world.
-Prototypes keep costs low so you can throw it away easily and try a new
-approach, if the current approach is not panning out
-
-Only governements try to get everything right on the first go.  It takes
-them too long and the end product is usually still hosed.
-
-Whatever gets developed won't be locked in for 20 years, that's absurd.
-Technology moves on 6 month to two year cycles.  Linux changes ABIs too.
-V4L transitioned from V4L1 to V4L2 and that's happened in less than 20
-years for a much more complex set of devices with a more varied set of
-userspace apps.
-
-Regards,
-Andy
-
-> > 2. Changing IR input layer interface ("media" drivers and adding to lirc
-> >   drivers).
-> > --
-> > Krzysztof Halasa
-
-
+Regards...
+-- 
+Manty/BestiaTester -> http://manty.net
