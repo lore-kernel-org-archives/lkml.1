@@ -1,99 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752123AbZK1HbD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZK1Hgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752123AbZK1HbD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 02:31:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZK1HbD
+	id S1752502AbZK1Hgm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 02:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZK1Hgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 02:31:03 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:56309 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751541AbZK1HbB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 02:31:01 -0500
-Date: Sat, 28 Nov 2009 13:00:50 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Veaceslav Falico <vfalico@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc: fork && stepping (Was: [RFC,PATCH 0/14] utrace/ptrace)
-Message-ID: <20091128073049.GD23108@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20091125080342.GD2660@in.ibm.com> <20091125154052.GA6734@redhat.com> <20091126075335.GA18508@in.ibm.com> <20091126145051.GB4382@redhat.com> <20091126172524.GA14768@redhat.com> <20091126182226.GF12355@darkmag.usersys.redhat.com> <20091126202312.GA21945@redhat.com> <19214.63688.860929.962005@cargo.ozlabs.ibm.com> <20091126223703.GA28556@redhat.com> <20091127174627.GB26193@darkmag.usersys.redhat.com>
+	Sat, 28 Nov 2009 02:36:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34439 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751558AbZK1Hgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 02:36:40 -0500
+Message-ID: <4B10D286.4020607@kernel.org>
+Date: Fri, 27 Nov 2009 23:34:30 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091127174627.GB26193@darkmag.usersys.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: [PATCH 0/9] pci: update pci bridge resource to get more big range
+ for devices under it - v13
+References: <4ADEB601.8020200@kernel.org>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com>
+In-Reply-To: <4B0D13EB.9010403@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 27, 2009 at 06:46:27PM +0100, Veaceslav Falico wrote:
-> On Thu, Nov 26, 2009 at 11:37:03PM +0100, Oleg Nesterov wrote:
-> >
-> > Could you look at this
-> >
-> >   ptrace-copy_process-should-disable-stepping.patch
-> >   http://marc.info/?l=linux-mm-commits&m=125789789322573
-> >
-> > patch? It is not clear to me how we can modify the test-case to
-> > verify it fixes the original problem for powerpc.
-> 
-> I modified the test-case, it confirms that
-> ptrace-copy_process-should-disable-stepping.patch fixes the
-> problem with TIF_SINGLESTEP copied by fork() on powerpc.
-> 
-> Probably we need a similar fix for step-fork.c in ptrace-tests.
-> 
-> Modified the original testcase to call fork via syscall(__NR_fork),
-> to avoid the looping inside libc's fork() on powerpc.
-> The parent singlesteps until he sees that the child has forked, after
-> that the parent PTRACE_CONTs until the child exits.
+split the two patches in to 9 for easy review...
 
-Thanks Veaceslav. This works:
+please check
 
-Index: ptrace-tests/tests/step-fork.c
-===================================================================
---- ptrace-tests.orig/tests/step-fork.c
-+++ ptrace-tests/tests/step-fork.c
-@@ -29,6 +29,7 @@
- #include <unistd.h>
- #include <sys/wait.h>
- #include <string.h>
-+#include <sys/syscall.h>
- #include <signal.h>
+1. boot time:
 
- #ifndef PTRACE_SINGLESTEP
-@@ -78,7 +79,7 @@ main (int argc, char **argv)
-        sigprocmask (SIG_BLOCK, &mask, NULL);
-        ptrace (PTRACE_TRACEME);
-        raise (SIGUSR1);
--       if (fork () == 0)
-+       if (syscall(__NR_fork) == 0)
-          {
-            read (-1, NULL, 0);
-            _exit (22);
+BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to the bridge, but stop
+assigning resource to the device under that bridge, because the device need big resource.
 
-Oleg,
-With the above patch applied, syscall-reset is the only failure I see on
-powerpc:
+so patches (first 6) are trying to 
+a. pci assign unassign and record the failed device resource.
+b. clear the BIOS assigned resource of the parent bridge of fail device
+c. go back and call pci assign unsigned
+d. if it still fail, will go up more bridges. and clear and try again.
 
-errno 14 (Bad address)
-syscall-reset: syscall-reset.c:95: main: Assertion `(*__errno_location
-()) == 38' failed.
-unexpected child status 67f
-FAIL: syscall-reset
-...
-========================================
-1 of 40 tests failed
-(11 tests were not run)
-Please report to utrace-devel@redhat.com
-========================================
+v2: Jesse doesn't like it is in find_free_bus_resource...
+    try to move out of pci_bus_size_bridges loop.
+v3: add pci_setup_bridge calling after pci_bridge_release_not_used_res.
+    only clear release those res for x86.
+v4: Bjorn want to release use dev instead of bus.
+v5: Kenji pointed out it will have problem with several level bridge.
+    so let only handle leaf bridge.
+v6: address Kenji's request (new pci_bus_release...). and change applying order
+    move back release to pci_assign_unassigned_resource
+v7: change functions name pci_bus_release_unused_bridge_res according to Jesse
+v8: address Eric's concern, only overwrite leaf bridge resource that is not big
+    enough need to do it in two steps, and first step recore the failed res,
+    and don't touch bridge res that programmed by firmware. second step will
+    try to release bridge resource that is too small at first.
+v9: refresh to be applied after bjorn's patch, and remove trick about save
+    size and restore resource second try.
+v11:add pci=try=5, about more try to change more bridge
+v12:not shrink pci bridge resource
 
-Ananth
+2. hotplug:
+BIOS separate IO range between several IOHs, and on some slots, BIOS assign the resource to every bridge. (8M)
+but when insert one card that big resource, the card can not get resource. because kernel will not touch the 
+bridge resource.
+
+so patches (last 3) are trying to
+a. assign resource to devices with that slot. and record fail devices
+b. if there is some failed, will clear sepcifically io port of bridge, or mmio of bridge, or mmio pref of bridge.
+c. try to assign the parent bridge of the slot.
+
+v2: address Alex's concern about pci remove/rescan feature about
+    pci_setup_bridge changes.
+v3: Kenji pointed out that pci_config_slot need to be called before
+    pci_bus_add_devices()
+v4: move out pci_is_enabled checkout of pci_setup_bridge()
+v5: change the applying sequence.
+v6: change the functions name according to Jesse
+v8: address Eric's concern, only overwrite leaf bridge resource that is not
+     big enough
+v9: refresh to be applied after bjorn's patch, and remove trick about save
+    size and restore resource second try.
+v10:alex found need to have export for pci_assign_unassigned_bridge_resources
+v11: pass check_leaf with pci_bus_release_unused_bridge_res
+
+-v13: change resource_list to resource_list_x, to save size and flags aside, otherwise grandchild res will
+      get confused with son's res as could be used
+
+
+Thanks
+
+Yinghai
+
+
+
