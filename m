@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZK1TB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbZK1TQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbZK1TB2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 14:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbZK1TB1
+	id S1753706AbZK1TQS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 14:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZK1TQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 14:01:27 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:50948 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753351AbZK1TB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 14:01:26 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>, yakui.zhao@intel.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [linux-pm] intermittent suspend problem again
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911141952.50030.rjw@sisk.pl>
-	<87r5rwrkqs.fsf@tac.ki.iif.hu> <200911182313.14092.rjw@sisk.pl>
-Date: Sat, 28 Nov 2009 20:01:08 +0100
-In-Reply-To: <200911182313.14092.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Wed, 18 Nov 2009 23:13:14 +0100")
-Message-ID: <87d4324gp7.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 28 Nov 2009 14:16:18 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:49867 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbZK1TQQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 14:16:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=TPgQFxEASOsRWRIYFrSmzc8iTyyslT9WZBa3kddjZWFYxX9U+H2gjJ5PB6q/nJNNoI
+         RKZQSYAGiEwHQv7bTVvvBToPwgAN8nGYwhAMdLid8uDvlFn7+mZcAFcNTZ8j8TANYx9u
+         YgYioLF152dEVCAuDaBwkSPtalr1FfQ9NJKKs=
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+In-Reply-To: <9e4733910911281056s77e9bc8frd9200a81ebab8d7e@mail.gmail.com>
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	 <4B104971.4020800@s5r6.in-berlin.de>
+	 <1259370501.11155.14.camel@maxim-laptop>
+	 <m37hta28w9.fsf@intrepid.localdomain>
+	 <1259419368.18747.0.camel@maxim-laptop>
+	 <m3zl66y8mo.fsf@intrepid.localdomain>
+	 <1259422559.18747.6.camel@maxim-laptop>
+	 <9e4733910911280845y5cf06836l1640e9fc8b1740cf@mail.gmail.com>
+	 <1259433959.3658.0.camel@maxim-laptop>
+	 <9e4733910911281056s77e9bc8frd9200a81ebab8d7e@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Nov 2009 21:16:14 +0200
+Message-ID: <1259435775.3658.7.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Sat, 2009-11-28 at 13:56 -0500, Jon Smirl wrote: 
+> On Sat, Nov 28, 2009 at 1:45 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> > On Sat, 2009-11-28 at 11:45 -0500, Jon Smirl wrote:
+> >> What are other examples of user space IR drivers?
+> >>
+> >
+> > many libusb based drivers?
+> 
+> If these drivers are for specific USB devices it is straight forward
+> to turn them into kernel based drivers. If we are going for plug and
+> play this needs to happen. All USB device drivers can be implemented
+> in user space, but that doesn't mean you want to do that. Putting
+> device drivers in the kernel subjects them to code inspection, they
+> get shipped everywhere, they autoload when the device is inserted,
+> they participate in suspend/resume, etc.
+> 
+> If these are generic USB serial devices being used to implement IR
+> that's the hobbyist model and the driver should stay in user space and
+> use event injection.
+> 
+> If a ft232 has been used to build a USB IR receiver you should program
+> a specific USB ID into it rather than leaving the generic one in. FTDI
+> will assign you a specific USB ID out of their ID space for free,  you
+> don't need to pay to get one from the USB forum. Once you put a
+> specific ID into the ft232 it will trigger the load of the correct
+> in-kernel driver.
 
-> On Wednesday 18 November 2009, Ferenc Wagner wrote:
->
->> Ferenc Wagner <wferi@niif.hu> writes:
->> 
->>> Since I've instrumented s2disk and the hibernation path, no freeze
->>> happened during hibernating the machine.
->> 
->> Not until I removed the delays from hibernation_platform_enter(), which
->> were put there previously to get step-by-step feedback.  Removing them
->> again resulted in a freeze in short course, maybe just two hibernations
->> later.  The instrumentation shows it stuck in dpm_suspend_start(PMSG_HIBERNATE).
->> Does it mean that some device driver is at fault?
->
-> A driver or one of the platform hooks.
->
->> I'll check if it always fails at the same point (although tracing into
->> dpm_suspend_start isn't pure fun because of the multitude of devices it
->> loops over).  Is there any way to get printk output from that phase?
->
-> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
+If we could put *all* lirc drivers in the kernel and put the generic
+decoding algorithm, then it might be begin to look a bit more sane.
+And write  tool to upload the existing lirc config files to kernel.
+This would essentially we same as porting the lirc to the kernel.
+I don't see much gains of this, and this way or another, alsa input
+won't be possible.
 
-The last message now was:
+Christoph Bartelmus, Jarod Wilson, what do you think?
 
-e100: 0000:02:08.0: hibernate, may wakeup
-
-Looks like hibernating the e100 driver is unstable.
--- 
 Regards,
-Feri.
+Maxim Levitsky
+
+
+
+
+
+
+
+
+
