@@ -1,85 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbZK1QVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbZK1Q0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752113AbZK1QVQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 11:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZK1QVQ
+	id S1752435AbZK1Q0T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 11:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZK1Q0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 11:21:16 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35515 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751679AbZK1QVP (ORCPT
+	Sat, 28 Nov 2009 11:26:18 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:50236 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbZK1Q0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 11:21:15 -0500
-Date: Sat, 28 Nov 2009 17:21:17 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-11-24-16-47 uploaded (gpio_max7301)
-Message-ID: <20091128162117.GA9663@pengutronix.de>
-References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org> <4B0DDDFE.5060600@xenotime.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
-Content-Disposition: inline
-In-Reply-To: <4B0DDDFE.5060600@xenotime.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: wsa@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Sat, 28 Nov 2009 11:26:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=wq2Qhs9Hdtq2pbxwenQAh6HXITw6C9iEHfdoVzCTg7K670vFT/D/ETdfrzVlUpTDSx
+         085i5+bYpY2uorokoWQub4XgfJOU40offSUwnQ10gvaMcLGHE6Q5UdEjC4JxYyAHzlzb
+         lrW8gN7K8q9hLVyfnpG8X10315U+uBko3Hjvg=
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+In-Reply-To: <m3r5riy7py.fsf@intrepid.localdomain>
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	 <4B104971.4020800@s5r6.in-berlin.de>
+	 <1259370501.11155.14.camel@maxim-laptop>
+	 <m37hta28w9.fsf@intrepid.localdomain>
+	 <1259419368.18747.0.camel@maxim-laptop>
+	 <m3zl66y8mo.fsf@intrepid.localdomain>
+	 <1259422559.18747.6.camel@maxim-laptop>
+	 <m3r5riy7py.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Nov 2009 18:26:15 +0200
+Message-ID: <1259425575.19883.13.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2009-11-28 at 16:44 +0100, Krzysztof Halasa wrote: 
+> Maxim Levitsky <maximlevitsky@gmail.com> writes:
+> 
+> > Generic decoder that lirc has is actually much better and more tolerant
+> > that protocol specific decoders that you propose,
+> 
+> Actually, it is not the case. Why do you think it's better (let alone
+> "much better")? Have you at least seen my RC5 decoder?
+Because userspace decoder is general, it doesn't depend on exact timing,
+as long as pulses vary in size it can distinguish between keys, and that
+is enough.
+I didn't use your decoder, so in that particular case I don't know.
 
---Kj7319i9nmIyA2yE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+
+> 
+> > You claim you 'fix' the decoder, right?
+> 
+> Sure.
+Unless you put it againt an inaccurate decoder....
+Ask the lirc developers.
 
 
-> This driver has build failures when CONFIG_I2C=3Dm and
-> MAX7301=3Dy, MAX7301_I2C=3Dy, MAX7301_SPI=3Dy:
->=20
-> drivers/built-in.o: In function `max7301_i2c_write':
-> max7301.c:(.text+0x2d9e): undefined reference to `i2c_smbus_write_byte_da=
-ta'
-> drivers/built-in.o: In function `max7301_i2c_read':
-> max7301.c:(.text+0x2dc6): undefined reference to `i2c_smbus_read_byte_dat=
-a'
-> drivers/built-in.o: In function `max7301_init':
-> max7301.c:(.init.text+0x42e): undefined reference to `i2c_register_driver'
-> max7301.c:(.init.text+0x496): undefined reference to `i2c_del_driver'
-> drivers/built-in.o: In function `max7301_exit':
-> max7301.c:(.exit.text+0x14): undefined reference to `i2c_del_driver'
->=20
->=20
-> This kconfig syntax:
->=20
-> config GPIO_MAX7301
->         tristate "Maxim MAX730x GPIO expander"
->         depends on I2C || SPI_MASTER
->=20
-> allows GPIO_MAX7301 to be y when SPI_MASTER=3Dy and I2C=3Dm.
-> If you want to do that, you'll need to handle CONFIG_I2C=3Dm somehow.
+> 
+> > But what about all these lirc userspace drivers?
+> 
+> Nothing. They are not relevant and obviously have to use lircd.
+> If you can have userspace driver, you can have lircd as well.
+> 
+> > How they are supposed to use that 'fixed' decoder.
+> 
+> They are not.
+> 
+> Is it a problem for you?
+> How is your keyboard supposed to use scanner driver?
+Another piece of off-topic nonsense.
 
-ACK, will fix it.
+I have a VCR remote, ok?
+I have a pulse/space decoder in my notebook, I have created a config
+file for that, and I did a lot of customizations, because this remote
+isn't supposed to be used with PC.
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Now, I also have a desktop.
+I don't have a receiver there, but someday I arrange some sort of it.
+I have an IR dongle in the closed, its raw IR diode.
+Probably with few components I could connect it to soundcard (and I have
+3 independent inputs, of which only one is used)
+And then I will use alsa input driver.
 
---Kj7319i9nmIyA2yE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Now I had ended up with 2 different configurations, one for the kernel,
+another for the lirc.
+Great, isn't it?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+The point is again, I *emphasize* that as long as lirc is used to decode
+all but ready to use scancodes, everything is kept in one place.
+Both decode algorithms and configuration.
 
-iEYEARECAAYFAksRTf0ACgkQD27XaX1/VRtjrQCfV7DSExMdU/1FkQwrmFBpr0D+
-vvIAoJasMd+VZVsBcA2GV2unZ73rgF4V
-=IZyk
------END PGP SIGNATURE-----
+For ready to use scancode, a hardcoded table can be used in kernel to
+translate to input events.
 
---Kj7319i9nmIyA2yE--
+How hard to understand that?
+
+
+
+Also, I repeat again, that this discussion *IS NOT* about userspace api,
+its about who decodes the input, kernel or lirc.
+
+Raw access to timing will be aviable this way or another, ether as
+primary way of decoding for lirc, or as a debug measure.
+
+Regards,
+Maxim Levitsky
+
+
