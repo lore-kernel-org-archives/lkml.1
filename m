@@ -1,100 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZK1Cyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbZK1DEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbZK1Cyh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 21:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZK1Cyh
+	id S1753756AbZK1DEz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 22:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZK1DEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 21:54:37 -0500
-Received: from mail-px0-f173.google.com ([209.85.216.173]:52072 "EHLO
-	mail-px0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752934AbZK1Cyg (ORCPT
+	Fri, 27 Nov 2009 22:04:55 -0500
+Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:2284 "EHLO
+	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751576AbZK1DEy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 21:54:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YkYc7iRoETM6zh8OeZj+qWPXCO7+6WbB6T2Te0IObLJf1Zcm/3KpRJUOlZ4t1468Qf
-         0DViNRVk3bqXqluIYUB0UrpJV88WOSkVcOxM62u5QR+6yzWdFFzZv11Y14l/Zobl0xAI
-         HndttXZRAz+GrSnoZGdi/UdegqKGNWxTVlX4w=
-Date: Fri, 27 Nov 2009 18:54:37 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091128025437.GN6936@core.coreip.homeip.net>
-References: <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <4B0AB60B.2030006@s5r6.in-berlin.de> <4B0AC8C9.6080504@redhat.com> <m34oolrnwd.fsf@intrepid.localdomain> <4B0E71B6.4080808@redhat.com> <m3my29up3y.fsf@intrepid.localdomain> <4B0ED19B.9030409@redhat.com> <20091128003918.628d4b84@pedra>
+	Fri, 27 Nov 2009 22:04:54 -0500
+X-Greylist: delayed 410 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Nov 2009 22:04:54 EST
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
+Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
+Date: Sat, 28 Nov 2009 03:57:58 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+References: <4B103CE1.8050303@redhat.com> <200911272240.02930.s.L-H@gmx.de>
+In-Reply-To: <200911272240.02930.s.L-H@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091128003918.628d4b84@pedra>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911280357.58116.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 28, 2009 at 12:39:18AM -0200, Mauro Carvalho Chehab wrote:
-> Em Thu, 26 Nov 2009 17:06:03 -0200
-> Mauro Carvalho Chehab <mchehab@redhat.com> escreveu:
+On Friday 27 November 2009 22:40:01 Stefan Lippers-Hollmann wrote:
+> Hi
 > 
-> > Krzysztof Halasa wrote:
-> > > Mauro Carvalho Chehab <mchehab@redhat.com> writes:
-> > > 
-> > >> Technically, it is not hard to port this solution to the other
-> > >> drivers, but the issue is that we don't have all those IR's to know
-> > >> what is the complete scancode that each key produces. So, the hardest
-> > >> part is to find a way for doing it without causing regressions, and to
-> > >> find a group of people that will help testing the new way.
-> > > 
-> > > We don't want to "port it" to other drivers. We need to have a common
-> > > module which does all RCx decoding. The individual drivers should be as
-> > > simple as possible, something that I outlined in a previous mail.
+> On Friday 27 November 2009, Mauro Carvalho Chehab wrote:
+> > Hi Linus,
 > > 
-> > With the current 7bits mask applied to almost all devices, it is probably not very
-> > useful for those who want to use generic IRs. We really need to port the solution
-> > we've done on dvb-usb to the other drivers, allowing them to have the entire
-> > scancode at the tables while keep supporting table replacement. 
+> > Please pull from:
+> >         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
 > > 
-> > The issue is that we currently have only 7bits of the scan codes produced by the IR's.
-> > So, we need to re-generate the keycode tables for each IR after the changes got applied.
+> > For the following drivers and building fixes:
+> > 
+> >    - radio-gemtek-pci: fix double mutex_lock
+> >    - v4l: add more missing linux/sched.h includes
+> >    - soc-camera: properly initialise the device object when reusing
+> >    - soc-camera: sh_mobile_ceu_camera: call pm_runtime_disable
+> >    - em28xx: fix Reddo DVB-C USB TV Box GPIO
+> >    - davinci: remove stray duplicate config pointer
+> >    - SMS_SIANO_MDTV should depend on HAS_DMA
+> >    - cxusb: Fix hang on DViCO FusionHDTV DVB-T Dual Digital 4 (rev 1)
+> >    - sh_mobile_ceu_camera: fix compile warning
+> >    - Fix wrong parameter order in memset
+> [...]
 > 
-> Ok, I got some time to add support for tables with the full scan codes at the V4L drivers.
-> In order to not break all tables, I've confined the changes to just one device (HVR-950,
-> at the em28xx driver). The patches were already committed at the -hg development tree.
-> 
-> In order to support tables with the full scan codes, all that is needed is to add the 
-> RC5 address + RC5 data when calling ir_input_keydown. So, the change is as simple as:
-> 
-> -			ir_input_keydown(ir->input, &ir->ir,
-> -					 poll_result.rc_data[0]);
-> +			ir_input_keydown(ir->input, &ir->ir,
-> +					 poll_result.rc_address << 8 |
-> +					 poll_result.rc_data[0]);
-> +		else
-> 
-> An example of such patch can be seen at:
-> 	http://linuxtv.org/hg/v4l-dvb/rev/9c38704cfd56
-> 
-> There are still some work to do, since, currently, the drivers will use a table with a fixed
-> size. So, you can replace the current values, but it is not possible to add new keys.
-> 
-> The fix for it is simple, but we need to think what would be the better way for it. There are
-> two alternatives:
-> 	- A table with a fixed size (like 128 or 256 entries - maybe a modprobe parameter
-> could be used to change its size);
-> 	- some way to increase/reduce the table size. In this case, we'll likely need some
-> ioctl for it.
-> 
+> Please consider cherry picking the following two patches from Hans 
+> Verkuil [1]:
+> - add the missing s2250-loader.h
+> - s2250 mutex patch	
 
-Hmm, why can't you just resize it when you get EVIOCSKEYCODE for
-scancode that would be out of bounds for the current table (if using
-table approach)?
+Good catch. Mauro, can you please add these two as well for 2.6.32? I'm sure
+I marked these two as high-prio patches. This staging driver is actively
+being used and developed so this regression should be fixed.
+
+Thanks,
+
+	Hans
+
+> 
+> or revert the patch which broke compiling go7007-usb (imho it would be 
+> better to re-add the 2 externs [2], than throwing away the needed mutex 
+> conversion, but it would be an option)
+> Commit:	fd9a40da1db372833e1af6397d2f6c94ceff3dad
+> 		V4L/DVB (12859): go7007: semaphore -> mutex conversion
+> 
+> or mark CONFIG_VIDEO_GO7007_USB_S2250_BOARD as BROKEN, as it fails to 
+> compile since the afforementioned patch was merged on september 19th (this 
+> is a 2.6.31 --> 2.6.32 regression) [2,3].
+> 
+> Regards
+> 	Stefan Lippers-Hollmann
+> 
+> [1]	http://www.mail-archive.com/linux-media@vger.kernel.org/msg11736.html
+> [2]	http://lkml.indiana.edu/hypermail/linux/kernel/0911.1/02303.html
+> [3]	http://lkml.indiana.edu/hypermail/linux/kernel/0909.3/00062.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
 -- 
-Dmitry
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
