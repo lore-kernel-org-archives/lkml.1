@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZK1PZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbZK1PfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbZK1PZD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 10:25:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZK1PZC
+	id S1752294AbZK1PfP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 10:35:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZK1PfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 10:25:02 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56208 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751560AbZK1PZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 10:25:00 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jon Smirl <jonsmirl@gmail.com>,
-       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
-       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 	system?
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
-	<4B104971.4020800@s5r6.in-berlin.de>
-	<1259370501.11155.14.camel@maxim-laptop>
-	<m37hta28w9.fsf@intrepid.localdomain>
-	<1259419368.18747.0.camel@maxim-laptop>
-Date: Sat, 28 Nov 2009 16:25:03 +0100
-In-Reply-To: <1259419368.18747.0.camel@maxim-laptop> (Maxim Levitsky's message
-	of "Sat, 28 Nov 2009 16:42:48 +0200")
-Message-ID: <m3zl66y8mo.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 28 Nov 2009 10:35:14 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:59138 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752186AbZK1PfN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 10:35:13 -0500
+Subject: Re: Problem? intel_iommu=off; perf top shows acpi_os_read_port as
+ extremely busy
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Michael Breuer <mbreuer@majjas.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091128071808.GA32183@elte.hu>
+References: <4B106CC0.4050406@majjas.com>  <20091128071808.GA32183@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Nov 2009 16:27:46 +0100
+Message-ID: <1259422066.2155.4.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim Levitsky <maximlevitsky@gmail.com> writes:
+On Sat, 2009-11-28 at 08:18 +0100, Ingo Molnar wrote:
+> * Michael Breuer <mbreuer@majjas.com> wrote:
+> 
+> > Having given up for now on VT-D, I rebooted 2.6.38 rc8 with 
+> > intel_iommu=off. Whilst my myriad of broken bios issues cleared, I now 
+> > see in perf top acpi_os_read_port as continually the busiest function. 
+> > With intel_iommu enabled, _spin_lock was always on top, and nothing 
+> > else was notable.
+> > 
+> > This seems odd to me, perhaps this will make sense to someone else.
+> > 
+> > FWIW, I'm running on an Asus p6t deluxe v2; ht enabled; no errors or 
+> > oddities in dmesg or /var/log/messages.
+> 
+> Could you post the perf top output please?
+> 
+> Also, could you also post the output of:
+> 
+> 	perf stat -a --repeat 10 sleep 1
+> 
+> this will show us how idle the system is. (My guess is that your system 
+> is idle and perf top shows acpi_os_read_port because the system goes to 
+> idle via ACPI methods and PIO is slow. In that case all is nominal and 
+> your system is fine. But it's hard to tell without more details.)
 
->> And that's good. Especially for a popular and simple protocol such as
->> RC5.
->> Actually, it's not about adding the decoder. It's about fixing it.
->> I can fix it.
->
-> This is nonsense.
+Isn't there also a list of symbols it won't display? Can't find either
+the list nor the switch to turn it off (really didn't look hard), but
+acme might know.
 
-You forgot to say why do you think so.
--- 
-Krzysztof Halasa
+
+
