@@ -1,103 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbZK1QMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbZK1QVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752179AbZK1QMi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 11:12:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZK1QMh
+	id S1752113AbZK1QVQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 11:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZK1QVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 11:12:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7485 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbZK1QMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 11:12:36 -0500
-Message-ID: <4B114BB4.6080307@redhat.com>
-Date: Sat, 28 Nov 2009 11:11:32 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Sat, 28 Nov 2009 11:21:16 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35515 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751679AbZK1QVP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 11:21:15 -0500
+Date: Sat, 28 Nov 2009 17:21:17 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mmotm 2009-11-24-16-47 uploaded (gpio_max7301)
+Message-ID: <20091128162117.GA9663@pengutronix.de>
+References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org> <4B0DDDFE.5060600@xenotime.net>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH -tip v6 04/11] kprobes: Jump optimization sysctl interface
-References: <20091125165510.6073.48721.stgit@harusame>	<20091125165541.6073.43956.stgit@harusame> <m1my27txdo.fsf@fess.ebiederm.org>
-In-Reply-To: <m1my27txdo.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+Content-Disposition: inline
+In-Reply-To: <4B0DDDFE.5060600@xenotime.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Masami Hiramatsu<mhiramat@redhat.com>  writes:
->
->> Add /proc/sys/debug/kprobes-optimization sysctl which enables and disables
->> kprobes jump optimization on the fly for debugging.
->>
->> Changes in v6:
->> - Update comments and coding style.
->>
->
-> This will break when it hits the linux-next.  As ctl_name has been
-> removed in the sysctl tree.  Not setting ctl_name is equivalent
-> to setting ctl_name = CTL_UNNUMBERED.  It is 0 in both cases.
-> So you can safely drop touches of ctl_name.
->
-> Ideally you would also call register_sysctl_paths from kernel/kprobes.c
-> and not add to the ifdef horror that is kernel/sysctl.c but that
-> is probably more trouble than it is worth right now.    One way or
-> another there is going to be at least a minor conflict when this code
-> merges with the sysctl tree.
 
-Thanks for telling me!
-OK, so I'll remove that line.
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thank you,
 
->>   #include<asm/uaccess.h>
->>   #include<asm/processor.h>
->> @@ -1621,6 +1622,18 @@ static struct ctl_table debug_table[] = {
->>   		.proc_handler	= proc_dointvec
->>   	},
->>   #endif
->> +#if defined(CONFIG_OPTPROBES)
->> +	{
->> +		.ctl_name	= CTL_UNNUMBERED,
->                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Please remove this line.
->> +		.procname	= "kprobes-optimization",
->> +		.data		=&sysctl_kprobes_optimization,
->> +		.maxlen		= sizeof(int),
->> +		.mode		= 0644,
->> +		.proc_handler	= proc_kprobes_optimization_handler,
->> +		.extra1		=&zero,
->> +		.extra2		=&one,
->> +	},
->> +#endif
->>   	{ .ctl_name = 0 }
->>   };
->
->
-> Eric
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> This driver has build failures when CONFIG_I2C=3Dm and
+> MAX7301=3Dy, MAX7301_I2C=3Dy, MAX7301_SPI=3Dy:
+>=20
+> drivers/built-in.o: In function `max7301_i2c_write':
+> max7301.c:(.text+0x2d9e): undefined reference to `i2c_smbus_write_byte_da=
+ta'
+> drivers/built-in.o: In function `max7301_i2c_read':
+> max7301.c:(.text+0x2dc6): undefined reference to `i2c_smbus_read_byte_dat=
+a'
+> drivers/built-in.o: In function `max7301_init':
+> max7301.c:(.init.text+0x42e): undefined reference to `i2c_register_driver'
+> max7301.c:(.init.text+0x496): undefined reference to `i2c_del_driver'
+> drivers/built-in.o: In function `max7301_exit':
+> max7301.c:(.exit.text+0x14): undefined reference to `i2c_del_driver'
+>=20
+>=20
+> This kconfig syntax:
+>=20
+> config GPIO_MAX7301
+>         tristate "Maxim MAX730x GPIO expander"
+>         depends on I2C || SPI_MASTER
+>=20
+> allows GPIO_MAX7301 to be y when SPI_MASTER=3Dy and I2C=3Dm.
+> If you want to do that, you'll need to handle CONFIG_I2C=3Dm somehow.
 
--- 
-Masami Hiramatsu
+ACK, will fix it.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-e-mail: mhiramat@redhat.com
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAksRTf0ACgkQD27XaX1/VRtjrQCfV7DSExMdU/1FkQwrmFBpr0D+
+vvIAoJasMd+VZVsBcA2GV2unZ73rgF4V
+=IZyk
+-----END PGP SIGNATURE-----
+
+--Kj7319i9nmIyA2yE--
