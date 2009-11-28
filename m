@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751622AbZK1OAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751792AbZK1Omu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751622AbZK1OAS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 09:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZK1OAR
+	id S1751792AbZK1Omu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 09:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZK1Omu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 09:00:17 -0500
-Received: from www.tglx.de ([62.245.132.106]:40302 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750923AbZK1OAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 09:00:16 -0500
-Date: Sat, 28 Nov 2009 15:00:02 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Magnus Damm <magnus.damm@gmail.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-sh@vger.kernel.org, johnstul@us.ibm.com, lethal@linux-sh.org
-Subject: Re: [PATCH 02/02] clocksource: Start CMT at clocksource resume
-In-Reply-To: <20091125081255.25416.85126.sendpatchset@rxone.opensource.se>
-Message-ID: <alpine.LFD.2.00.0911281457560.24119@localhost.localdomain>
-References: <20091125081235.25416.32481.sendpatchset@rxone.opensource.se> <20091125081255.25416.85126.sendpatchset@rxone.opensource.se>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 28 Nov 2009 09:42:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:21267 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbZK1Oms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 09:42:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=cIFcx1FVgzjuiwUmKxa12HIRWHV1hTRHtYgw0Kn97XKWwgzqRgsB8FKQrEYO/5BuaE
+         nLkv1Z+iFcLiJCxSXi7K6PaecOWHP1aFsztp5tjiMY3vPJf3BC7xDNhTlD9MpFp0YaVH
+         I42Evn2ELOk9/jIIz2Xrg6igMoog2RRbBkDV4=
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+In-Reply-To: <m37hta28w9.fsf@intrepid.localdomain>
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	 <4B104971.4020800@s5r6.in-berlin.de>
+	 <1259370501.11155.14.camel@maxim-laptop>
+	 <m37hta28w9.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Nov 2009 16:42:48 +0200
+Message-ID: <1259419368.18747.0.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 25 Nov 2009, Magnus Damm wrote:
-
-> From: Magnus Damm <damm@opensource.se>
+On Sat, 2009-11-28 at 12:20 +0100, Krzysztof Halasa wrote: 
+> Maxim Levitsky <maximlevitsky@gmail.com> writes:
 > 
-> Add code to start the CMT timer on clocksource resume.
+> > If we add in-kernel decoding, we still will end up with two different
+> > decoding, one in kernel and one in lirc.
 > 
-> This makes sure the timer is started during sysdev_resume().
-> Without this patch the clocksource may be read as suspended,
-> this after sysdev resume but before platform device resume.
+> And that's good. Especially for a popular and simple protocol such as
+> RC5.
+> Actually, it's not about adding the decoder. It's about fixing it.
+> I can fix it.
 
-Hmm, don't you have the same situation on suspend ?
+This is nonsense.
 
-platform device suspend stops the clock, but the generic code expects
-it to be running until sysdev shutdown.
 
-Another thing is that you now run both, the sysdev and the platform
-resume. Is that by design or accident ?
 
-Thanks,
-
-	tglx
-
-> Signed-off-by: Magnus Damm <damm@opensource.se>
-> ---
-> 
->  drivers/clocksource/sh_cmt.c |    8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> --- 0001/drivers/clocksource/sh_cmt.c
-> +++ work/drivers/clocksource/sh_cmt.c	2009-11-25 16:02:52.000000000 +0900
-> @@ -432,6 +432,13 @@ static void sh_cmt_clocksource_disable(s
->  	sh_cmt_stop(cs_to_sh_cmt(cs), FLAG_CLOCKSOURCE);
->  }
->  
-> +static void sh_cmt_clocksource_resume(struct clocksource *cs)
-> +{
-> +	struct sh_cmt_priv *p = cs_to_sh_cmt(cs);
-> +
-> +	sh_cmt_start(p, FLAG_CLOCKSOURCE);
-> +}
-> +
->  static int sh_cmt_register_clocksource(struct sh_cmt_priv *p,
->  				       char *name, unsigned long rating)
->  {
-> @@ -442,6 +449,7 @@ static int sh_cmt_register_clocksource(s
->  	cs->read = sh_cmt_clocksource_read;
->  	cs->enable = sh_cmt_clocksource_enable;
->  	cs->disable = sh_cmt_clocksource_disable;
-> +	cs->resume = sh_cmt_clocksource_resume;
->  	cs->mask = CLOCKSOURCE_MASK(sizeof(unsigned long) * 8);
->  	cs->flags = CLOCK_SOURCE_IS_CONTINUOUS;
->  	pr_info("sh_cmt: %s used as clock source\n", cs->name);
-> 
