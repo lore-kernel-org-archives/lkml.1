@@ -1,123 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752618AbZK1Wu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZK1X2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752618AbZK1Wu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 17:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZK1Wu3
+	id S1752961AbZK1X2n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 18:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZK1X2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 17:50:29 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:51739 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbZK1Wu2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 17:50:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=biCc39S3jV1LNyS3S7OfeprDKn9SGvSp+vgHgye1M3UNp/rOTVhcLZGMa6tdp8eNop
-         l/iPYfKOznYQO67Lao9W2gw8f5zBk2jOPKUYhFJn0Ok5pi8A2TWE4vd4pDOjFMzYXTt+
-         KB07C+Pbt1dxl45yA7Stvezn9ggRr54t50rG8=
-From: Siarhei Siamashka <siarhei.siamashka@gmail.com>
-To: cbe-oss-dev@lists.ozlabs.org
-Subject: Re: [Cbe-oss-dev] [PATCH] block/ps3: Fix slow VRAM IO
-Date: Sun, 29 Nov 2009 00:50:30 +0200
-User-Agent: KMail/1.9.10
-Cc: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jim Paris <jim@jtan.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-References: <4ADCC4E3.8060104@am.sony.com> <20091103002322.1f04adbe.akpm@linux-foundation.org> <20091109154036.08C0.4D252088@rd.scei.sony.co.jp>
-In-Reply-To: <20091109154036.08C0.4D252088@rd.scei.sony.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 28 Nov 2009 18:28:38 -0500
+Received: from mail1.radix.net ([207.192.128.31]:59994 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752473AbZK1X2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 18:28:37 -0500
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+From: Andy Walls <awalls@radix.net>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       maximlevitsky@gmail.com, mchehab@redhat.com, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+In-Reply-To: <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	 <m3aay6y2m1.fsf@intrepid.localdomain>
+	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 28 Nov 2009 18:26:55 -0500
+Message-Id: <1259450815.3137.19.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200911290050.30885.siarhei.siamashka@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 November 2009, Akira Tsukamoto wrote:
-> Thank you for the review!
->
-> > > The current PS3 VRAM driver uses msleep() to wait for completion
-> > > of RSX DMA transfers between system memory and VRAM.  Depending
-> > > on the system timing, the processing delay and overhead of this
-> > > msleep() call can significantly impact VRAM driver IO.
-> > >
-> > > To avoid the condition, add a short duration (200 usec max)
-> > > udelay() polling loop before entering the msleep() polling
-> > > loop.
-> >
-> > When raising a performance-based patch, please always try to include
-> > before-and-after performance measurements in the changelog.  People
-> > want to know the magnitude of the improvement.
->
-> No problem we will add the difference of improvement in the changelog.
-> This is the results. Pretty impressive.
-> Before
->   Reading:  33MB/s
->   Writing:  16MB/s
-> After
->   Reading: 370MB/s
->   Writing: 238MB/s
->
-> > > +		if (!notify[3])
-> > > +			return 0;
-> > > +		udelay(10);
-> > > +	}
-> >
-> > You might as well do a udelay(1) here.  The additional cost will be
-> > negligible, and it will reduce latency.
->
-> Are you mentioning adding udelay(1) in the between udelay polling
-> and msleep polling? Or are you mentioning to change udelay(10) to udelay(1)
-> inside the udelay polling?
->
-> The former is no problem, but the later has impact on performance of PS3
-> system.
-> Because Cell/B.E.(consists of PPE and SPEs cores) and GPU are connected
-> with ring bus called EIB and every issuing notify[3] to check VRAM-DMA
-> results will generate data transfer to the bus.
-> There are only one EIB bus in PS3 and other devices connected on the bus
-> such as SPEs will be affected if the bus is occupied by many notify[3] and
-> as a result it will decrease the over all system performance.
->
-> The udelay(10) was the most reasonable distance not to overcrowd the bus
-> and not to wait too long for checking DMA on VRAM.
-> We have tried udelay(5) but did not improve the VRAM IO speed.
->
-> > > +	timeout = jiffies + msecs_to_jiffies(timeout_ms);
-> >
-> > The maximum latency is now timout_ms + 200usec.
-> >
-> > That's OK with the current constants, but if someone later changes a
-> > constant, the error could become significant.
->
-> Yes, I think so too. Probably reconstructing the design entirely based on
-> usec instead of msec might be ideal but adding 200usec loops fixes the
-> current slow VRAM driver, so I thought it is acceptable work around.
+Jon,
 
-Thanks for the detailed explanations. I wonder if it makes sense to change
-200usec magic number to something more flexible. If I understand it correctly,
-200usec is just about twice the time that is needed to transfer 256KiB sized
-ps3vram internal cache page from or to VRAM via DMA with otherwise idle EIB
-bus. I guess it is done so that msleep is only ever reachable when EIB bus is
-heavily overloaded. Reaching msleep in the code means getting all the same
-33MB/s or 16MB/s for ps3vram performance.
+On Sat, 2009-11-28 at 12:37 -0500, Jon Smirl wrote:
+> On Sat, Nov 28, 2009 at 12:35 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> > Jon Smirl <jonsmirl@gmail.com> writes:
+> >
+> >> There are two very basic things that we need to reach consensus on first.
+> >>
+> >> 1) Unification with mouse/keyboard in evdev - put IR on equal footing.
 
-If somebody tries to play with tweaking ps3vram constants like 
-CACHE_PAGE_SIZE, the magic 200usec delay may need to be changed
-to something more appropriate, but right now it is not very obvious
-from the patch description or comments in the code.
+The only thing this buys for the user is remote/products bundles that
+work out of the box.  That can only be a solution for the 80% case.
 
-So probably some constant, based on DMA throughput and cache page size
-would be better here?
+I don't hear users crying out "Please integrate IR with the input
+system".  I do hear users say "I want my remote to work", and "How can I
+make my remote work?".  Users are not specifically asking for this
+integration of IR and the input system - a technical nuance.  If such a
+tecnical desire-ment drives excessive rework, I doubt anyone will care
+enough about IR to follow through to make a complete system.
 
--- 
-Best regards,
-Siarhei Siamashka
+What does "equal footing" mean as an incentive anyway?  The opportunity
+to reimplement *everything* that exists for IR already over again in
+kernel-space for the sake of developer technical desires?  That's just a
+lot of work for "not invented here" syndrome.  IR transceivers are
+arguably superior to keyboards and mice anyway because they can transmit
+data too.
+
+
+> >> 2) Specific tools (xmodmap, setkeycodes, etc or the LIRC ones) or
+> >> generic tools (ls, mkdir, echo) for configuration
+> >
+> > I think we can do this gradually:
+> > 1. Merging the lirc drivers. The only stable thing needed is lirc
+> >   interface.
+> 
+> Doing that locks in a user space API that needs to be supported
+> forever. We need to think this API through before locking it in.
+
+No one get things right the first time - No one.
+
+Most designs are iterated with prototypes in the commercial world.
+Prototypes keep costs low so you can throw it away easily and try a new
+approach, if the current approach is not panning out
+
+Only governements try to get everything right on the first go.  It takes
+them too long and the end product is usually still hosed.
+
+Whatever gets developed won't be locked in for 20 years, that's absurd.
+Technology moves on 6 month to two year cycles.  Linux changes ABIs too.
+V4L transitioned from V4L1 to V4L2 and that's happened in less than 20
+years for a much more complex set of devices with a more varied set of
+userspace apps.
+
+Regards,
+Andy
+
+> > 2. Changing IR input layer interface ("media" drivers and adding to lirc
+> >   drivers).
+> > --
+> > Krzysztof Halasa
+
+
