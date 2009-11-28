@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZK1Jdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZK1LkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbZK1Jdu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 04:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZK1Jdt
+	id S1753906AbZK1LkK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 06:40:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZK1LkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 04:33:49 -0500
-Received: from [195.7.61.12] ([195.7.61.12]:34296 "EHLO killala.koala.ie"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753190AbZK1Jds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 04:33:48 -0500
-X-Greylist: delayed 1764 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Nov 2009 04:33:48 EST
-Message-ID: <4B10E79B.2050609@koala.ie>
-Date: Sat, 28 Nov 2009 09:04:27 +0000
-From: Simon Kenyon <simon@koala.ie>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Sat, 28 Nov 2009 06:40:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40522 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750812AbZK1LkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 06:40:08 -0500
+Date: Sat, 28 Nov 2009 10:14:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       anton@samba.org, hch@infradead.org
+Subject: Re: [RFC][PATCH 0/7] perf trace: general-purpose scripting support,
+ v2
+Message-ID: <20091128091430.GA22737@elte.hu>
+References: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
 MIME-Version: 1.0
-CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <BDgcsm11qgB@lirc>
-In-Reply-To: <BDgcsm11qgB@lirc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Bartelmus wrote:
- > A user friendly GUI tool to configure the mapping of the remote 
-buttons is
- > essential for good user experience. I hope noone here considers that 
-users
- > learn command line or bash to configure their remotes.
 
-oh please no
-the major, major problem with bluetooth is that there is *only* a gui
-the core system should use the command line and then a gui (or guis) can 
-follow
+* Tom Zanussi <tzanussi@gmail.com> wrote:
 
- > Nobody is manually writing lircd.conf files. Of course you don't want 
-the
- > user to know anything about the technical details unless you really 
-want
- > to get your hands dirty.
+> Hi,
+> 
+> Here's a belated update to v1 of the trace stream scripting support 
+> patches I posted last month; I had meant to get this out sooner but 
+> got too busy with other things...
 
-speak for yourself
+Excellent progress!
 
- > If it ain't broke, don't fix it.
+I wanted to try it so i took the patches and applied them with some 
+conflicts (they interacted with some other recent changes in perf), but 
+the Perl engine wouldnt build on Fedora 11 - see the errors attached 
+below.
 
-i have been hacking lirc for *so many years* because i needed two 
-separate serial inputs. so that is most assuredly broken
+I've pushed the merge out to this temporary branch:
+
+  git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tmp.perf/scripting
+
+Mind having a look at it?
+
+Thanks,
+
+	Ingo
+
+    CC util/trace-event-perl.o
+cc1: warnings being treated as errors
+util/trace-event-perl.c: In function 'define_symbolic_value':
+util/trace-event-perl.c:70: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c:85: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c: In function 'define_symbolic_field':
+util/trace-event-perl.c:102: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c:115: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c: In function 'define_flag_value':
+util/trace-event-perl.c:128: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c:143: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c: In function 'define_flag_field':
+util/trace-event-perl.c:161: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c:175: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c: In function 'perl_process_event':
+util/trace-event-perl.c:301: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+util/trace-event-perl.c:350: error: declaration of 'my_perl' shadows a global declaration
+util/trace-event-perl.c:48: error: shadowed declaration is here
+make: *** [util/trace-event-perl.o] Error 1
