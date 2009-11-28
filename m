@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbZK1VvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbZK1Vrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbZK1VvB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 16:51:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZK1VvB
+	id S1752435AbZK1Vrz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 16:47:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZK1Vrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 16:51:01 -0500
-Received: from www.tglx.de ([62.245.132.106]:46800 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751886AbZK1VvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 16:51:00 -0500
-Date: Sat, 28 Nov 2009 22:50:02 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] warn about shared irqs requesting IRQF_DISABLED registered
- with setup_irq
-In-Reply-To: <20091128200344.GA1272@pengutronix.de>
-Message-ID: <alpine.LFD.2.00.0911282239430.24119@localhost.localdomain>
-References: <20091127195857.GB28193@n2100.arm.linux.org.uk> <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911272234460.24119@localhost.localdomain> <20091128200344.GA1272@pengutronix.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 28 Nov 2009 16:47:55 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:51360 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbZK1Vry (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 16:47:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=OlqG6iaqTCviS00rE8ZMrrlh4Q4h+5eHu8BR963E3ouMdIewY265jguPDLyNblOk+i
+         FQ14/541mNjNL6s+IdMtEkAA1RKfsYtobTF9LCIS3iPwO8a/vzsaBvlo3UIjjIgQfsXx
+         Q1NSVOKIvx2huY15Y5eCoy2QznmTSrj40RApw=
+Message-ID: <4B119D95.6090806@gmail.com>
+Date: Sat, 28 Nov 2009 20:00:53 -0200
+From: Bruno Barberi Gnecco <brunobg@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2044321886-1259445005=:24119"
+To: linux-kernel@vger.kernel.org
+CC: brunobg@gmail.com
+Subject: PROBLEM: BUG: Constant freezes and kernel panics on a quad core (with
+ dumps)
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Summary: a PC I'm testing is unstable and freezing often. Freezes occur in various 
+situations, including under no load (not even the X running). Dumps are provided below.
 
---8323328-2044321886-1259445005=:24119
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Sometimes it's a plain freeze, sometimes a kernel panic with the blinking leds and a dump. 
+It seems the problem is related to memory, most of the messages are related to null memory 
+references (see more below). System ran once for several hours before freezing.
 
-On Sat, 28 Nov 2009, Uwe Kleine-König wrote:
+* System specification: Intel Core 2 Quad Q9550 @ 2.83GHz, 4GB DDR3, Motherboard Asus 
+P5QC. No overclocking.
 
-> On Fri, Nov 27, 2009 at 11:18:00PM +0100, Thomas Gleixner wrote:
-> > On Fri, 27 Nov 2009, Uwe Kleine-König wrote:
-> > 
-> > > IRQF_DISABLED is not guaranteed on shared irqs.  There is already a
-> > > warning in place for irqs registered with request_irq (introduced in
-> > > 470c66239ef03).  Move it to __setup_irq, this way it triggers for both
-> > > request_irq and setup_irq.
-> > > 
-> > > One irq that is now warned about is the timer tick on at91 (ARCH=arm).
-> > 
-> > And how does that help ? The interrupt is shared between the timer and
-> > the debug port. There is nothing you can do about that.
-> > 
-> > The interupt handlers are called in order of setup. The AT91 timer
-> > irq is set up first and if that's not the case then it needs to be
-> > fixed and the only way to catch it is in the affected interrupt
-> > handler.
->
-> Russell already suggests to save (and restore) irqs in the handler
-> before (and after resp.) calling the clockevent functions.
+* Tested under the following kernels/distros, all had the bug. Since I used their vanilla 
+kernels, I'm not posting a copy of the .configs:
 
-What about analysing the code and verifying that the setup order is
-correct ?
+- 2.6.27.7-smp (slackware 12.2 hugesmp kernel; distro heavily updated), 32 bits
+- 2.6.29.6-smp (slackware 13.0 hugesmp kernel; fresh install), both 32 and 64 bits
+- 2.6.29.6-nosmp (slackware 13.0 huge kernel; fresh install), both 32 and 64 bits
+- 2.6.31-14-generic SMP (ubuntu 9.10 netbook remix live cd), 32 bits
 
-Adding save/restore_irq just because you have no clue what the code
-does is utter nonsense.
+* Here are some screen dumps (sorry, no serial cable for a text dump).
 
-Thanks,
+http://ultraxs.com/share-208E_4B118ED2.html
+http://ultraxs.com/share-2FDD_4B118ED2.html
+http://ultraxs.com/share-D0D9_4B118ED2.html
+http://ultraxs.com/share-498F_4B118ED2.html
+http://ultraxs.com/share-0AD8_4B118ED2.html
 
-	tglx
---8323328-2044321886-1259445005=:24119--
+* Turning off ACPI and APIC, either through the BIOS or through kernel parameters did not 
+help, even when only one processor is recognized.
+
+* I ran memtest and no errors were detected. I completed the tests three times.
+
+* Nothing is ever output to the logs.
+
+* A sure way to get a freeze is to recompile the kernel, but the freeze does not happen at 
+the same point of the compilation and I can't even say if the compilation triggers the bug 
+or if it's just a coincidence and the compilation just takes long enough for it to happen.
+
+* Any other information, testing or debugging you need, just ask. I just can't use the PC, 
+it usually freezes within minutes. Please CC any replies to me [brunobg at gmail]. Thank 
+you very much for any help.
