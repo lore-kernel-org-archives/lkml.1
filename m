@@ -1,123 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbZK1Jnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZK1Jvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbZK1Jnp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 04:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZK1Jno
+	id S1753598AbZK1Jvw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 04:51:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZK1Jvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 04:43:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2523 "EHLO mx1.redhat.com"
+	Sat, 28 Nov 2009 04:51:51 -0500
+Received: from ozlabs.org ([203.10.76.45]:52899 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752291AbZK1Jnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 04:43:43 -0500
-Message-ID: <4B10F0BC.60008@redhat.com>
-Date: Sat, 28 Nov 2009 07:43:24 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1752777AbZK1Jvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 04:51:50 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: percpu tree build warning
+Date: Sat, 28 Nov 2009 20:21:50 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
+Cc: Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20091125214219.f37935e8.sfr@canb.auug.org.au> <200911270846.02717.rusty@rustcorp.com.au> <20091127054128.GC13914@elte.hu>
+In-Reply-To: <20091127054128.GC13914@elte.hu>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <4B0AB60B.2030006@s5r6.in-berlin.de> <4B0AC8C9.6080504@redhat.com> <m34oolrnwd.fsf@intrepid.localdomain> <4B0E71B6.4080808@redhat.com> <m3my29up3y.fsf@intrepid.localdomain> <4B0ED19B.9030409@redhat.com> <20091128003918.628d4b84@pedra> <20091128025437.GN6936@core.coreip.homeip.net>
-In-Reply-To: <20091128025437.GN6936@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911282021.50315.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Sat, Nov 28, 2009 at 12:39:18AM -0200, Mauro Carvalho Chehab wrote:
->> Em Thu, 26 Nov 2009 17:06:03 -0200
->> Mauro Carvalho Chehab <mchehab@redhat.com> escreveu:
->>
->>> Krzysztof Halasa wrote:
->>>> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
->>>>
->>>>> Technically, it is not hard to port this solution to the other
->>>>> drivers, but the issue is that we don't have all those IR's to know
->>>>> what is the complete scancode that each key produces. So, the hardest
->>>>> part is to find a way for doing it without causing regressions, and to
->>>>> find a group of people that will help testing the new way.
->>>> We don't want to "port it" to other drivers. We need to have a common
->>>> module which does all RCx decoding. The individual drivers should be as
->>>> simple as possible, something that I outlined in a previous mail.
->>> With the current 7bits mask applied to almost all devices, it is probably not very
->>> useful for those who want to use generic IRs. We really need to port the solution
->>> we've done on dvb-usb to the other drivers, allowing them to have the entire
->>> scancode at the tables while keep supporting table replacement. 
->>>
->>> The issue is that we currently have only 7bits of the scan codes produced by the IR's.
->>> So, we need to re-generate the keycode tables for each IR after the changes got applied.
->> Ok, I got some time to add support for tables with the full scan codes at the V4L drivers.
->> In order to not break all tables, I've confined the changes to just one device (HVR-950,
->> at the em28xx driver). The patches were already committed at the -hg development tree.
->>
->> In order to support tables with the full scan codes, all that is needed is to add the 
->> RC5 address + RC5 data when calling ir_input_keydown. So, the change is as simple as:
->>
->> -			ir_input_keydown(ir->input, &ir->ir,
->> -					 poll_result.rc_data[0]);
->> +			ir_input_keydown(ir->input, &ir->ir,
->> +					 poll_result.rc_address << 8 |
->> +					 poll_result.rc_data[0]);
->> +		else
->>
->> An example of such patch can be seen at:
->> 	http://linuxtv.org/hg/v4l-dvb/rev/9c38704cfd56
->>
->> There are still some work to do, since, currently, the drivers will use a table with a fixed
->> size. So, you can replace the current values, but it is not possible to add new keys.
->>
->> The fix for it is simple, but we need to think what would be the better way for it. There are
->> two alternatives:
->> 	- A table with a fixed size (like 128 or 256 entries - maybe a modprobe parameter
->> could be used to change its size);
->> 	- some way to increase/reduce the table size. In this case, we'll likely need some
->> ioctl for it.
->>
+On Fri, 27 Nov 2009 04:11:28 pm Ingo Molnar wrote:
 > 
-> Hmm, why can't you just resize it when you get EVIOCSKEYCODE for
-> scancode that would be out of bounds for the current table (if using
-> table approach)?
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > On Thu, 26 Nov 2009 12:10:58 am Ingo Molnar wrote:
+> > > While a percpu variable is defined and used in completely different 
+> > > ways:
+> > > 
+> > >   DEFINE_PER_CPU(unsigned long, dr7);
+> > > 
+> > > and is used via:
+> > > 
+> > >   __get_cpu_var(dr7);  [[Fixed -- RR]]
+> > 
+> > The entire point of Tejun's per-cpu work is that &dr7 is now valid. A 
+> > per-cpu pointer as if it were allocated by the dynamic per-cpu 
+> > allocator.
+> >
+> > Your arguments are fine, but out-of-date.
+> 
+> But allowing &dr7 is outright dangerous - and not particularly clean 
+> either.
 
-For your reference, the code where EVIOGKEYCODE/EVIOSKEYCODE handling is done is at
-this changeset:
-	http://linuxtv.org/hg/v4l-dvb/rev/21e71d58cd2a
+That's foolish.  We can now have generic per-cpu function for counters
+and the like.
 
-Dynamic resizing can be done, but there are a few different use cases for 
-someone to touch on the keymaps:
+> Nothing tells us that it's a percpu variable
 
-1. People want to change the key assignment for a key at the shipped IR. In this case, 
-the table won't need to change its size;
+__percpu.  Again, I'm explaining what you should already know before sending
+email about this stuff.
 
-2. People want to use the shipped IR, plus a different one. In this case, table size needs
-to be extended to store the newer codes;
+> and it blends into the 
+> regular namespace while most of the operators on it are special 
+> (__get_cpu_var(), per_cpu(), __this_cpu(), etc.).
 
-3. People want to discard the shipped IR and use something else. 
+OK, you convince Linus to change __user vars to use a prefix.  Then I'll
+agree that per_cpu_## is more kernely.
 
-Case 3 is the worse scenario. Let's suppose, for example that instead of using a 49 keys
-IR, they want to use some programable IR with 55 keys, with different
-scancodes. This means that they'll need to delete all 49 scancodes from the old IR 
-and add 55 new scancodes. As there's no explicit call to delete a scan code, the solution
-I found with the current API is to read the current scancode table and replace them with
-KEY_UNKNOWN, allowing its re-use (this is what the driver currently does) or deleting
-that scancode from the table. After deleting 49 keys, you'll need to add the 55 new keys.
-If we do dynamic table resize for each operation, we'll do 104 sequences of kmalloc/kfree
-for replacing one table. 
-
-IMO, it would be better to have an ioctl to do the keycode table resize. An optional flag
-at the ioctl (or a separate one) can be used to ask the driver to clean the current
-keymap table and allocate a new one with the specified size. 
-This will avoid playing with memory allocation for every new key and will provide a simple
-way to say to the driver to discard the current keybable, since a new one will be used.
-
-Cheers,
-Mauro.
-
-
+Stupidest debate ever.
+Rusty.
