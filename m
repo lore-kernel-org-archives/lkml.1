@@ -1,90 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZK1LkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbZK1Jnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbZK1LkK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 06:40:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZK1LkJ
+	id S1753211AbZK1Jnp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 04:43:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZK1Jno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 06:40:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40522 "EHLO mx2.mail.elte.hu"
+	Sat, 28 Nov 2009 04:43:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2523 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750812AbZK1LkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 06:40:08 -0500
-Date: Sat, 28 Nov 2009 10:14:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       anton@samba.org, hch@infradead.org
-Subject: Re: [RFC][PATCH 0/7] perf trace: general-purpose scripting support,
- v2
-Message-ID: <20091128091430.GA22737@elte.hu>
-References: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
+	id S1752291AbZK1Jnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 04:43:43 -0500
+Message-ID: <4B10F0BC.60008@redhat.com>
+Date: Sat, 28 Nov 2009 07:43:24 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259133352-23685-1-git-send-email-tzanussi@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Krzysztof Halasa <khc@pm.waw.pl>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
+       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <4B0AB60B.2030006@s5r6.in-berlin.de> <4B0AC8C9.6080504@redhat.com> <m34oolrnwd.fsf@intrepid.localdomain> <4B0E71B6.4080808@redhat.com> <m3my29up3y.fsf@intrepid.localdomain> <4B0ED19B.9030409@redhat.com> <20091128003918.628d4b84@pedra> <20091128025437.GN6936@core.coreip.homeip.net>
+In-Reply-To: <20091128025437.GN6936@core.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Tom Zanussi <tzanussi@gmail.com> wrote:
-
-> Hi,
+Dmitry Torokhov wrote:
+> On Sat, Nov 28, 2009 at 12:39:18AM -0200, Mauro Carvalho Chehab wrote:
+>> Em Thu, 26 Nov 2009 17:06:03 -0200
+>> Mauro Carvalho Chehab <mchehab@redhat.com> escreveu:
+>>
+>>> Krzysztof Halasa wrote:
+>>>> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+>>>>
+>>>>> Technically, it is not hard to port this solution to the other
+>>>>> drivers, but the issue is that we don't have all those IR's to know
+>>>>> what is the complete scancode that each key produces. So, the hardest
+>>>>> part is to find a way for doing it without causing regressions, and to
+>>>>> find a group of people that will help testing the new way.
+>>>> We don't want to "port it" to other drivers. We need to have a common
+>>>> module which does all RCx decoding. The individual drivers should be as
+>>>> simple as possible, something that I outlined in a previous mail.
+>>> With the current 7bits mask applied to almost all devices, it is probably not very
+>>> useful for those who want to use generic IRs. We really need to port the solution
+>>> we've done on dvb-usb to the other drivers, allowing them to have the entire
+>>> scancode at the tables while keep supporting table replacement. 
+>>>
+>>> The issue is that we currently have only 7bits of the scan codes produced by the IR's.
+>>> So, we need to re-generate the keycode tables for each IR after the changes got applied.
+>> Ok, I got some time to add support for tables with the full scan codes at the V4L drivers.
+>> In order to not break all tables, I've confined the changes to just one device (HVR-950,
+>> at the em28xx driver). The patches were already committed at the -hg development tree.
+>>
+>> In order to support tables with the full scan codes, all that is needed is to add the 
+>> RC5 address + RC5 data when calling ir_input_keydown. So, the change is as simple as:
+>>
+>> -			ir_input_keydown(ir->input, &ir->ir,
+>> -					 poll_result.rc_data[0]);
+>> +			ir_input_keydown(ir->input, &ir->ir,
+>> +					 poll_result.rc_address << 8 |
+>> +					 poll_result.rc_data[0]);
+>> +		else
+>>
+>> An example of such patch can be seen at:
+>> 	http://linuxtv.org/hg/v4l-dvb/rev/9c38704cfd56
+>>
+>> There are still some work to do, since, currently, the drivers will use a table with a fixed
+>> size. So, you can replace the current values, but it is not possible to add new keys.
+>>
+>> The fix for it is simple, but we need to think what would be the better way for it. There are
+>> two alternatives:
+>> 	- A table with a fixed size (like 128 or 256 entries - maybe a modprobe parameter
+>> could be used to change its size);
+>> 	- some way to increase/reduce the table size. In this case, we'll likely need some
+>> ioctl for it.
+>>
 > 
-> Here's a belated update to v1 of the trace stream scripting support 
-> patches I posted last month; I had meant to get this out sooner but 
-> got too busy with other things...
+> Hmm, why can't you just resize it when you get EVIOCSKEYCODE for
+> scancode that would be out of bounds for the current table (if using
+> table approach)?
 
-Excellent progress!
+For your reference, the code where EVIOGKEYCODE/EVIOSKEYCODE handling is done is at
+this changeset:
+	http://linuxtv.org/hg/v4l-dvb/rev/21e71d58cd2a
 
-I wanted to try it so i took the patches and applied them with some 
-conflicts (they interacted with some other recent changes in perf), but 
-the Perl engine wouldnt build on Fedora 11 - see the errors attached 
-below.
+Dynamic resizing can be done, but there are a few different use cases for 
+someone to touch on the keymaps:
 
-I've pushed the merge out to this temporary branch:
+1. People want to change the key assignment for a key at the shipped IR. In this case, 
+the table won't need to change its size;
 
-  git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tmp.perf/scripting
+2. People want to use the shipped IR, plus a different one. In this case, table size needs
+to be extended to store the newer codes;
 
-Mind having a look at it?
+3. People want to discard the shipped IR and use something else. 
 
-Thanks,
+Case 3 is the worse scenario. Let's suppose, for example that instead of using a 49 keys
+IR, they want to use some programable IR with 55 keys, with different
+scancodes. This means that they'll need to delete all 49 scancodes from the old IR 
+and add 55 new scancodes. As there's no explicit call to delete a scan code, the solution
+I found with the current API is to read the current scancode table and replace them with
+KEY_UNKNOWN, allowing its re-use (this is what the driver currently does) or deleting
+that scancode from the table. After deleting 49 keys, you'll need to add the 55 new keys.
+If we do dynamic table resize for each operation, we'll do 104 sequences of kmalloc/kfree
+for replacing one table. 
 
-	Ingo
+IMO, it would be better to have an ioctl to do the keycode table resize. An optional flag
+at the ioctl (or a separate one) can be used to ask the driver to clean the current
+keymap table and allocate a new one with the specified size. 
+This will avoid playing with memory allocation for every new key and will provide a simple
+way to say to the driver to discard the current keybable, since a new one will be used.
 
-    CC util/trace-event-perl.o
-cc1: warnings being treated as errors
-util/trace-event-perl.c: In function 'define_symbolic_value':
-util/trace-event-perl.c:70: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c:85: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c: In function 'define_symbolic_field':
-util/trace-event-perl.c:102: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c:115: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c: In function 'define_flag_value':
-util/trace-event-perl.c:128: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c:143: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c: In function 'define_flag_field':
-util/trace-event-perl.c:161: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c:175: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c: In function 'perl_process_event':
-util/trace-event-perl.c:301: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-util/trace-event-perl.c:350: error: declaration of 'my_perl' shadows a global declaration
-util/trace-event-perl.c:48: error: shadowed declaration is here
-make: *** [util/trace-event-perl.o] Error 1
+Cheers,
+Mauro.
+
+
