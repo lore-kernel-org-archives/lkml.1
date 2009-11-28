@@ -1,51 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZK1WJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbZK1WK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZK1WJJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 17:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZK1WJI
+	id S1752913AbZK1WK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 17:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZK1WK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 17:09:08 -0500
-Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:35982 "HELO
-	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752606AbZK1WJI (ORCPT
+	Sat, 28 Nov 2009 17:10:26 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:65344 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752674AbZK1WKZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 17:09:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=K7QJR1jZZrOYNcaEWqgEtGtbPNzZNufpVIh18syXCTkoZYHwHbzSjR1CHjhkJhlXpBOaYnc7SDbhGV0MamlERwEGERK/D+h37lS24CjwZTVu0sa7n/zPbAcwPTB/hzssPtYLfw2YPL5AN/p2sG1oTFZAImQUArG3tCnTYQT20/4=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: 8atgxckVM1kiKbLYdgF5A95g.YKZK79DzRcA5g1mfH6suIOOTg5Zx7W23dEKrgukjrh3smNenQqTVpz3LSohEbvxRCeDRlzSU3hp9gWqOOQokcqN34VuPHhQxUxncwzB6LPfJHOYKK6GQA_e462PkzdxrtNv0LliFE1NTy__cow_CRIPldV_CZTKhZyBCbS5YBUfIpxYb2eswP3z36hlAtl_h0Z9CF4YYbKGvPwrDFQs1cRLefYqfwzwjWc1DTs-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] warn about shared irqs requesting IRQF_DISABLED registered with setup_irq
-Date: Sat, 28 Nov 2009 14:09:13 -0800
-User-Agent: KMail/1.9.10
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       linux-arm-kernel@lists.infradead.org
-References: <20091127195857.GB28193@n2100.arm.linux.org.uk> <alpine.LFD.2.00.0911272234460.24119@localhost.localdomain> <20091128200344.GA1272@pengutronix.de>
-In-Reply-To: <20091128200344.GA1272@pengutronix.de>
+	Sat, 28 Nov 2009 17:10:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nZdj4liDppf6Krdursr20T4MnXuRHtR65XwYiXEDTWI5qdNj9lYXljCWVLlPiPjxSR
+         ClnLEcj9YPb8SSFpia/oiUh/aJR3ouMGDQRxIHI57Dny28RBlc4g5EDwBKqzGrUeHr9T
+         HbUwWgLF+J72MlypqBsMfthfDo0mYrkDPCGt4=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200911281409.13807.david-b@pacbell.net>
+In-Reply-To: <4B119A36.8020903@s5r6.in-berlin.de>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	 <4B116954.5050706@s5r6.in-berlin.de>
+	 <9e4733910911281058i1b28f33bh64c724a89dcb8cf5@mail.gmail.com>
+	 <4B117DEA.3030400@s5r6.in-berlin.de>
+	 <9e4733910911281208t23c938a2l7537e248e1eda4ae@mail.gmail.com>
+	 <4B11881B.7000204@s5r6.in-berlin.de>
+	 <9e4733910911281246r65670e1free76e98ff4a23822@mail.gmail.com>
+	 <4B119A36.8020903@s5r6.in-berlin.de>
+Date: Sat, 28 Nov 2009 17:10:30 -0500
+Message-ID: <9e4733910911281410i75bf19b7xa4dfd6ad1dc1b748@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Christoph Bartelmus <lirc@bartelmus.de>, khc@pm.waw.pl, awalls@radix.net,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       maximlevitsky@gmail.com, mchehab@redhat.com, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 November 2009, Uwe Kleine-König wrote:
->  I just thought that a
-> warning that is triggered with request_irq and request_threaded_irq
-> shouldn't be skipped when using setup_irq.
+On Sat, Nov 28, 2009 at 4:46 PM, Stefan Richter
+<stefanr@s5r6.in-berlin.de> wrote:
+> Jon Smirl wrote:
+>> On Sat, Nov 28, 2009 at 3:29 PM, Stefan Richter
+>> <stefanr@s5r6.in-berlin.de> wrote:
+>>> Jon Smirl wrote:
+>>>> We have one IR receiver device and multiple remotes. How does the
+>>>> input system know how many devices to create corresponding to how many
+>>>> remotes you have?
+>>> If several remotes are to be used on the same receiver, then they
+>>> necessarily need to generate different scancodes, don't they?  Otherwise
+>                                          ^^^^^^^^^
+> I referred to scancodes, not keycodes.
+>
+>>> the input driver wouldn't be able to route their events to the
+>>> respective subdevice.  But if they do generate different scancodes,
+>>> there is no need to create subdevices just for EVIOCSKEYCODE's sake. (It
+>>> might still be desirable to have subdevices for other reasons perhaps.)
+>>
+>> Multiple remotes will have duplicate buttons (1, 2 ,3, power, mute,
+>> etc) these should get mapped into the standard keycodes. You need to
+>> devices to key things straight.
+>>
+>> Push button 1 on Remote A. That should generate a KP_1 on the evdev
+>> interface for that remote.
+>> Push button 1 on Remote B. That should generate a KP_1 on the evdev
+>> interface for that remote.
+>>
+>> Scenario for this - a mutifunction remote that is controlling two
+>> different devices/apps. In one mode the 1 might be a channel number,
+>> in the other mode it might be a telephone number.
+>>
+>> The user may chose to make button 1 on both remote A/B map to KP_1 on
+>> a single interface.
+>>
+>> Scenario for this - I want to use two different remotes to control a
+>> single device.
+>>
+>> ---------------------
+>>
+>> I handled that in configds like this:
+>> /configfs - mount the basic configfs
+>> /configfs/remotes (created by loading IR support)
+>> mkdir /configfs/remotes/remote_A  - this causes the input subdevice to
+>> be created, the name of it appears in the created directory.
+> [...]
+>
+> I'm lost.  If there are two remotes sending to a single receiver, and
+> their sets of scancodes do not overlap, then all is fine.  You can map
+> either set of scancodes to keycodes independently.  But if their ranges
 
-Seems fair to me.
+You can do this, but now the events from both remotes are occurring on
+a single evdev device. If I assign Remote_A_1 to KP_1 what am I going
+to assign to Remote_B_1?
+
+> of scancodes do overlap, then even the creation of subdevices does not
+> help --- the driver has no way to tell which of the remotes sent the
+> signal in order to select the corresponding input subdevice, does it?
+
+The scancodes are always unique even among different remotes.
+
+I have three apps: mythtv, voip and home automation.  How can I use a
+remote(s) to control these three apps? The concept of keyboard focus
+doesn't map very well to remote controls.
+
+My idea was to create an evdev device for each app:
+mythtv - Remote_A_1 mapped KP_1, etc
+voip -  Remote_B_1 mapped KP_1, etc
+home automation - etc
+
+Note that there probably aren't really three remotes (A,B,C), it a
+multi-function remote. Picking a different context on a multi-function
+remote doesn't generate an event.
+
+
+
+
+> --
+> Stefan Richter
+> -=====-==--= =-== ===--
+> http://arcgraph.de/sr/
+>
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
