@@ -1,71 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbZK1SgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbZK1SqC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbZK1SgY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 13:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZK1SgY
+	id S1753321AbZK1SqC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 13:46:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZK1SqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 13:36:24 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:20475 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbZK1SgX (ORCPT
+	Sat, 28 Nov 2009 13:46:01 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:39059 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbZK1SqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 13:36:23 -0500
-Date: Sat, 28 Nov 2009 10:34:29 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Michal Nazarewicz <m.nazarewicz@samsung.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: g_multi: Fixed '"CONFIG_USB_ETH_RNDIS" redefined'
- warning
-Message-Id: <20091128103429.705670b2.randy.dunlap@oracle.com>
-In-Reply-To: <1259150386-7291-1-git-send-email-m.nazarewicz@samsung.com>
-References: <20091125223508.c0924e2d.sfr@canb.auug.org.au>
-	<1259150386-7291-1-git-send-email-m.nazarewicz@samsung.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Sat, 28 Nov 2009 13:46:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=nO/2xt3IMqjk9609NXn3KAwST3O318bZY4XT5Sum4EmyG3nulKtmjYh1jtLn50IFwx
+         FHMAkJfnvcnvor3DLNowgnvmsh56zLE3ro5ixm9E6gfEBV7qrkbSzhYmzKnj5D3/2z/m
+         sRwxwJrrssG7KiglgKbbXACZnX7diXBciW5xU=
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+In-Reply-To: <9e4733910911280845y5cf06836l1640e9fc8b1740cf@mail.gmail.com>
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	 <4B104971.4020800@s5r6.in-berlin.de>
+	 <1259370501.11155.14.camel@maxim-laptop>
+	 <m37hta28w9.fsf@intrepid.localdomain>
+	 <1259419368.18747.0.camel@maxim-laptop>
+	 <m3zl66y8mo.fsf@intrepid.localdomain>
+	 <1259422559.18747.6.camel@maxim-laptop>
+	 <9e4733910911280845y5cf06836l1640e9fc8b1740cf@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Nov 2009 20:45:59 +0200
+Message-ID: <1259433959.3658.0.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt358.oracle.com [141.146.40.158]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B116DA3.002F:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Nov 2009 12:59:46 +0100 Michal Nazarewicz wrote:
-
-> From: Michal Nazarewicz <m.nazarewicz@samsung.com>
+On Sat, 2009-11-28 at 11:45 -0500, Jon Smirl wrote: 
+> On Sat, Nov 28, 2009 at 10:35 AM, Maxim Levitsky
+> <maximlevitsky@gmail.com> wrote:
+> > On Sat, 2009-11-28 at 16:25 +0100, Krzysztof Halasa wrote:
+> >> Maxim Levitsky <maximlevitsky@gmail.com> writes:
+> >>
+> >> >> And that's good. Especially for a popular and simple protocol such as
+> >> >> RC5.
+> >> >> Actually, it's not about adding the decoder. It's about fixing it.
+> >> >> I can fix it.
+> >> >
+> >> > This is nonsense.
+> >>
+> >> You forgot to say why do you think so.
+> >
+> > Because frankly, I am sick of this discussion.
+> > Generic decoder that lirc has is actually much better and more tolerant
+> > that protocol specific decoders that you propose,
 > 
-> CONFIG_USB_ETH_RNDIS may be defined when g_ether is built causing
-> warning when multi.c tries to redefine its value.  Changed to first
-> undefine CONFIG_USB_ETH_RNDIS in multi.c.
-
-Is there no kconfig way to solve this?
-You shouldn't be messing with kconfig symbols in source files...
-
-
-> Signed-off-by: Michal Nazarewicz <m.nazarewicz@samsung.com>
-> ---
->  drivers/usb/gadget/multi.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+> Porting the decoder engine from lirc into the kernel is also a possibility.
 > 
-> diff --git a/drivers/usb/gadget/multi.c b/drivers/usb/gadget/multi.c
-> index 64711fe..227dc81 100644
-> --- a/drivers/usb/gadget/multi.c
-> +++ b/drivers/usb/gadget/multi.c
-> @@ -26,6 +26,9 @@
->  #include <linux/utsname.h>
->  
->  
-> +#if defined CONFIG_USB_ETH_RNDIS
-> +#  undef CONFIG_USB_ETH_RNDIS
-> +#endif
->  #if defined CONFIG_USB_G_MULTI_RNDIS
->  #  define CONFIG_USB_ETH_RNDIS y
->  #endif
-> -- 
+> I'm asking to have an architecture design discussion, not to pick one
+> of the various implementations. This is something that we have to live
+> with for twenty years and it is a giant pain to change if we get wrong
+> initially.
+> 
+> > You claim you 'fix' the decoder, right?
+> > But what about all these lirc userspace drivers?
+> > How they are supposed to use that 'fixed' decoder.
+> 
+> Some of that user space hardware belongs in the trash can and will
+> never work reliably in a modern system. For example - sitting in a
+> tight user space loop reading the DTS bit from a serial port or
+> parallel port and then using the system clock to derive IR timings.
+> That process is going to be inaccurate or it is going to make video
+> frames drop. Big banging from user space is completely unreliable.
+> 
+> If you really want to use your microphone input as a DAC channel, run
+> a little app that reads the ALSA input and converts it to a timing
+> stream and then inject this data into the kernel input system using
+> uevent.
+> 
+> Both of these are hobbyist class solutions. They are extremely cheap
+> but they are unreliable and create large CPU loads.  But some people
+> want to use a $300 CPU to eliminate $2 worth of IR hardware. This type
+> of hardware will continue to work via event injection. But neither of
+> these solutions belong in the kernel.
 
 
----
-~Randy
+> 
+> What are other examples of user space IR drivers?
+> 
+
+many libusb based drivers?
+
+Regards,
+Maxim Levitsky
+
