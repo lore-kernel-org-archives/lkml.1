@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZK1ATk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbZK1AUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753063AbZK1ATk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Nov 2009 19:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZK1ATj
+	id S1753768AbZK1AUf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Nov 2009 19:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZK1AUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Nov 2009 19:19:39 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45017
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751586AbZK1ATj (ORCPT
+	Fri, 27 Nov 2009 19:20:34 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:62668 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753583AbZK1AUc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Nov 2009 19:19:39 -0500
-Date: Fri, 27 Nov 2009 16:19:57 -0800 (PST)
-Message-Id: <20091127.161957.243886653.davem@davemloft.net>
-To: arnd@arndb.de
-Cc: shemminger@vyatta.com, pmullaney@novell.com, kaber@trash.net,
-       netdev@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, bridge@lists.linux-foundation.org
-Subject: Re: [PATCH 0/3] macvlan: support for guest vm direct rx/tx
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200911280043.58784.arnd@arndb.de>
-References: <20091113195201.11184.25766.stgit@mimic.site>
-	<20091113132728.0f1db7c5@s6510>
-	<200911280043.58784.arnd@arndb.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Nov 2009 19:20:32 -0500
+Date: Fri, 27 Nov 2009 19:20:16 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Problem? intel_iommu=off; perf top shows acpi_os_read_port as
+ extremely busy
+To: linux-kernel@vger.kernel.org
+Message-id: <4B106CC0.4050406@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre)
+ Gecko/20091109 Fedora/3.0-3.10.b4.fc12 Thunderbird/3.0b4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Sat, 28 Nov 2009 00:43:58 +0100
+Having given up for now on VT-D, I rebooted 2.6.38 rc8 with 
+intel_iommu=off. Whilst my myriad of broken bios issues cleared, I now 
+see in perf top acpi_os_read_port as continually the busiest function. 
+With intel_iommu enabled, _spin_lock was always on top, and nothing else 
+was notable.
 
-> On Friday 13 November 2009, Stephen Hemminger wrote:
->> Also, macvlan should really being calling netif_receive_skb()
->> not going through another queue/softirq cycle.
-> 
-> I've added a patch for this in my experimental queue now.
-> When I last tried this, I saw a kernel stack overflow
-> but it seems fine now.
+This seems odd to me, perhaps this will make sense to someone else.
 
-I think it is unwise for any virtual device layer to use netif_receive_skb().
-Just like tunnels they should always use netif_rx().
-
-Otherwise stack overflow is a very real concern.
+FWIW, I'm running on an Asus p6t deluxe v2; ht enabled; no errors or 
+oddities in dmesg or /var/log/messages.
