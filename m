@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbZK1PYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZK1PZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751868AbZK1PYY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 10:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZK1PYX
+	id S1752138AbZK1PZD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 10:25:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZK1PZC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 10:24:23 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:35997 "EHLO smtp.gentoo.org"
+	Sat, 28 Nov 2009 10:25:02 -0500
+Received: from khc.piap.pl ([195.187.100.11]:56208 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbZK1PYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 10:24:22 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: uclinux-dev@uclinux.org, David Howells <dhowells@redhat.com>,
-       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Paul Mundt <lethal@linux-sh.org>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] FDPIC: respect PT_GNU_STACK exec markings when creating NOMMU stack
-Date: Sat, 28 Nov 2009 10:24:23 -0500
-Message-Id: <1259421863-12777-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.3
+	id S1751560AbZK1PZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 10:25:00 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 	system?
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+	<4B104971.4020800@s5r6.in-berlin.de>
+	<1259370501.11155.14.camel@maxim-laptop>
+	<m37hta28w9.fsf@intrepid.localdomain>
+	<1259419368.18747.0.camel@maxim-laptop>
+Date: Sat, 28 Nov 2009 16:25:03 +0100
+In-Reply-To: <1259419368.18747.0.camel@maxim-laptop> (Maxim Levitsky's message
+	of "Sat, 28 Nov 2009 16:42:48 +0200")
+Message-ID: <m3zl66y8mo.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current code will load the stack size and markings, but then only use
-the markings in the MMU code path.  The NOMMU code path always passes EXEC
-to the mmap() call.  While this doesn't matter to most people during the
-run of the code, it causes a pointless icache flush when starting every
-FDPIC application and by default, that tends to be 128kB of waste.
+Maxim Levitsky <maximlevitsky@gmail.com> writes:
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-note: this will apply cleanly with the uninitialized flag patch applied,
-but otherwise doesn't directly depend on it
+>> And that's good. Especially for a popular and simple protocol such as
+>> RC5.
+>> Actually, it's not about adding the decoder. It's about fixing it.
+>> I can fix it.
+>
+> This is nonsense.
 
- fs/binfmt_elf_fdpic.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 8563a57..3e2507b 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -380,7 +380,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 
- 	down_write(&current->mm->mmap_sem);
- 	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
--					 PROT_READ | PROT_WRITE | PROT_EXEC,
-+					 PROT_READ | PROT_WRITE |
-+					 (executable_stack & EXSTACK_ENABLE_X ? PROT_EXEC : 0),
- 					 MAP_PRIVATE | MAP_ANONYMOUS |
- 					 MAP_UNINITIALIZED | MAP_GROWSDOWN,
- 					 0);
+You forgot to say why do you think so.
 -- 
-1.6.5.3
-
+Krzysztof Halasa
