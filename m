@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbZK1Tsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbZK1TzC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbZK1Tsa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 14:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZK1Ts3
+	id S1753973AbZK1TzC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 14:55:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZK1TzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 14:48:29 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48661 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbZK1Ts2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 14:48:28 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4B117E76.4000109@s5r6.in-berlin.de>
-Date: Sat, 28 Nov 2009 20:48:06 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
-MIME-Version: 1.0
+	Sat, 28 Nov 2009 14:55:01 -0500
+Received: from khc.piap.pl ([195.187.100.11]:37897 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752856AbZK1TzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 14:55:00 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
 To: Jon Smirl <jonsmirl@gmail.com>
-CC: Maxim Levitsky <maximlevitsky@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
-       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR 	system?
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>	 <1259370501.11155.14.camel@maxim-laptop>	 <m37hta28w9.fsf@intrepid.localdomain>	 <1259419368.18747.0.camel@maxim-laptop>	 <m3zl66y8mo.fsf@intrepid.localdomain>	 <1259422559.18747.6.camel@maxim-laptop>	 <9e4733910911280845y5cf06836l1640e9fc8b1740cf@mail.gmail.com>	 <1259433959.3658.0.camel@maxim-laptop>	 <9e4733910911281056s77e9bc8frd9200a81ebab8d7e@mail.gmail.com>	 <4B117A4C.1070304@s5r6.in-berlin.de> <9e4733910911281132m5d0cce31t5544c5a6361813bd@mail.gmail.com>
-In-Reply-To: <9e4733910911281132m5d0cce31t5544c5a6361813bd@mail.gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       maximlevitsky@gmail.com, mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	<4B116954.5050706@s5r6.in-berlin.de>
+	<9e4733910911281058i1b28f33bh64c724a89dcb8cf5@mail.gmail.com>
+Date: Sat, 28 Nov 2009 20:55:03 +0100
+In-Reply-To: <9e4733910911281058i1b28f33bh64c724a89dcb8cf5@mail.gmail.com>
+	(Jon Smirl's message of "Sat, 28 Nov 2009 13:58:27 -0500")
+Message-ID: <m3ws1awhk8.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
-> On Sat, Nov 28, 2009 at 2:30 PM, Stefan Richter
-> <stefanr@s5r6.in-berlin.de> wrote:
->> Jon Smirl wrote:
->>> If these drivers are for specific USB devices it is straight forward
->>> to turn them into kernel based drivers. If we are going for plug and
->>> play this needs to happen. All USB device drivers can be implemented
->>> in user space, but that doesn't mean you want to do that. Putting
->>> device drivers in the kernel subjects them to code inspection, they
->>> get shipped everywhere, they autoload when the device is inserted,
->>> they participate in suspend/resume, etc.
->> Huh?  Userspace implementations /can/ be code-reviewed (but they can't
->> crash your machine), they /can/ be and are shipped everywhere, they /do/
->> auto-load when the device is inserted.  And if there should be an issue
->> with power management (is there any?), then improve the ABI and libusb
->> can surely be improved.  I don't see why a device with a userspace
->> driver cannot be included in power management.
-> 
-> If you want a micro-kernel there are plenty to pick from. Linux has
-> chosen not to be a micro-kernel. The Linux model is device drivers in
-> the kernel.
+Jon Smirl <jonsmirl@gmail.com> writes:
 
-Total nonsense.  Neither am I arguing for a micro-kernel, nor are
-userspace drivers alien to Linux.  Not at all.
+> EVIOCSKEYCODE is lacking, first parameter is an INT. Some decoded IR
+> codes are over 32b. Christoph posted an example that needs 128b.
+
+This only means that the existing interface is limited.
+
+> This
+> is a problem with ioctls, they change size depending on platform and
+> endianess.
+
+But not this: you can use fixed-width u16, u32, u64 and e.g. u8[x].
+I don't know an arch which changes int sizes depending on endianness,
+is there any?
+32/64 binary compatibility needs some minimal effort.
 -- 
-Stefan Richter
--=====-==--= =-== ===--
-http://arcgraph.de/sr/
+Krzysztof Halasa
