@@ -1,146 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbZK1M6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751358AbZK1NSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbZK1M6U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 07:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZK1M6T
+	id S1751358AbZK1NSQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 08:18:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbZK1NSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 07:58:19 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:36937 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753969AbZK1M6S convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 07:58:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xF6luTbtOyM1WGwPHMVuTV1eCSJX6wWflUCycfoJ0TJIw0oeaA9JzPmx+rMIT0gL5+
-         UW5A2jzpXOjlqJ4Agx7AR4LUgVo3qa/HDo6BZME8o43Sv9GdpMdpeZ1daVbUiouLYUZZ
-         m1q92Exaxd55hVItYJg0jK5D/nZnbk20C7P10=
-MIME-Version: 1.0
-In-Reply-To: <20091128122229.GB17894@khazad-dum.debian.net>
-References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
-	 <b170af450911280230g4a2f7f8ao64b46ce7e88ec929@mail.gmail.com>
-	 <20091128122229.GB17894@khazad-dum.debian.net>
-Date: Sat, 28 Nov 2009 13:58:23 +0100
-Message-ID: <b170af450911280458v66c3741dy2a1d9c5297c8faf5@mail.gmail.com>
-Subject: Re: Backlight device class redesign
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
+	Sat, 28 Nov 2009 08:18:15 -0500
+Received: from khc.piap.pl ([195.187.100.11]:58781 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750863AbZK1NSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 08:18:15 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Stefan Assmann <sassmann@redhat.com>
+Cc: linux-pci@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Don Dutile <ddutile@redhat.com>, kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH] change PCI nomenclature according to PCI-SIG
+References: <4B110F79.8080405@redhat.com>
+Date: Sat, 28 Nov 2009 14:18:19 +0100
+In-Reply-To: <4B110F79.8080405@redhat.com> (Stefan Assmann's message of "Sat,
+	28 Nov 2009 12:54:33 +0100")
+Message-ID: <m3hbsezt2c.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/28 Henrique de Moraes Holschuh <hmh@hmh.eng.br>:
-> Backlight maintainer added to CC.
+Stefan Assmann <sassmann@redhat.com> writes:
 
-Thanks, I should have done that.
+> --- a/drivers/firmware/edd.c
+> +++ b/drivers/firmware/edd.c
+> @@ -150,7 +150,7 @@ edd_show_host_bus(struct edd_device *edev, char *buf)
+>  	if (!strncmp(info->params.host_bus_type, "ISA", 3)) {
+>  		p += scnprintf(p, left, "\tbase_address: %x\n",
+>  			     info->params.interface_path.isa.base_address);
+> -	} else if (!strncmp(info->params.host_bus_type, "PCIX", 4) ||
+> +	} else if (!strncmp(info->params.host_bus_type, "PCI-X", 4) ||
+>  		   !strncmp(info->params.host_bus_type, "PCI", 3)) {
 
-> On Sat, 28 Nov 2009, Rafa?? Mi??ecki wrote:
->> W dniu 28 listopada 2009 01:30 u??ytkownik Rafa?? Mi??ecki
->> <zajec5@gmail.com> napisa??:
->> > Currently we keep all registered controllers in /sys/class/backlgiht/
->> > without any grouping per display or per anything. We can not use
->> > grouping per GPU (as somewhere proposed) because one GPU can control
->> > (for example) two PANELS and TV - 3 displays needing backlight
->> > management. The most obvious and stable solution seems to be grouping
->> > per display.
->>
->> Just in case I was not clear enough. We should make ACPI, platform and
->> GPU drivers register same panel backlight control under same name like
->> "panel-0". Backlight class device would create
->> /sys/class/backlight/panel-0 only. When touching files in this
->> backlight/panel-0/, blacklight class would call functions from the
->> most proper (ACPI > platform > GPU) driver.
->>
+This one looks like a BIOS binary interface so you can't change it.
+
+> --- a/drivers/net/igb/e1000_mac.c
+> +++ b/drivers/net/igb/e1000_mac.c
+> @@ -1256,7 +1256,7 @@ s32 igb_led_off(struct e1000_hw *hw)
+>  }
 >
-> I once suggested some sort of multiplexer backlight device that would do
-> exactly that.  Various drivers (platform, ACPI, display) would register
-> backends and specify some sort of dynamic preference so that the kernel
-> would have a good bet on the default one, and userspace could switch the
-> active backend later if it wanted.
+>  /**
+> - *  igb_disable_pcie_master - Disables PCI-express master access
+> + *  igb_disable_pcie_master - Disables PCIe.press master access
+>   *  @hw: pointer to the HW structure
+
+This one needs fixing.
+
+> @@ -2066,7 +2066,7 @@ out:
+>  }
 >
-> In this case, we'd have to specify properties or some other way to group the
-> backends properly and to easily let userspace find the backlight device it
-> needs to drive a specific device.
+>  /**
+> - *  ixgbe_disable_pcie_master - Disable PCI-express master access
+> + *  ixgbe_disable_pcie_master - Disable PCIe.press master access
+>   *  @hw: pointer to hardware structure
 
-I described my idea of solution at end (cat/echo method).
+Same here.
 
+> --- a/drivers/staging/rt3090/common/cmm_mac_pci.c
+> +++ b/drivers/staging/rt3090/common/cmm_mac_pci.c
+> @@ -1481,7 +1481,7 @@ BOOLEAN RT28xxPciAsicRadioOff(
+>  	*/
+>  #endif // CONFIG_STA_SUPPORT //
+>  //KH Debug:My original codes have the follwoing codes, but currecnt codes do not have it.
+> -// Disable for stability. If PCIE Link Control is modified for advance power save, re-covery this code segment.
+> +// Disable for stability. If PCIe Link Control is modified for advance power save, re-covery this code segment.
 
->> I thought if we could use card number for anything. I recalled that
->> notebooks with hybrid gpu, where system should switch between weaker
->> and more powerful GPU watching load. In case of that notebooks PANEL
->> can be controlled by both: card0 and card1.
+While it has nothing to do with PCIe... You may want to fix it as well.
+"follwoing", "currecnt", what does "advance power save" do? What does
+the "re-covery this code segment" means? Staging standard.
+
+> --- a/drivers/staging/rt3090/common/rtmp_init.c
+> +++ b/drivers/staging/rt3090/common/rtmp_init.c
+> @@ -3512,7 +3512,7 @@ int rt28xx_init(
 >
-> That would require backends to be able to runtime register and unregister
-> themselves with the main backlight device, and that they hook somehow on the
-> hotplug stuff, to know when to bind/unbind along with the GPU.
+>  #ifdef RTMP_MAC_PCI
+>  #ifdef PCIE_PS_SUPPORT
+> -	/*Iverson patch PCIE L1 issue to make sure that driver can be read,write ,BBP and RF register  at pcie L.1 level */
+> +	/*Iverson patch PCIe L1 issue to make sure that driver can be read,write ,BBP and RF register  at pcie L.1 level */
+                                                                                                     ^^^^^^^^^^
+Should be changed as well I think. "can be read,write", well.
 
-Don't see anything problematic here. First of course we would have to
-support GPU switching, but backlight should not be any issue. When
-switching from ATI do Intel just unregister backlight device in ATI
-and register backlight device in Intel. Both drivers should register
-under the same name like "panel0" or sth.
-
-
->> So finally I think we should just register panel0 by default
->> everywhere. And in future we could add some quirks in drivers (ACPI,
->> platform, GPU) that would register panel1, panel2... for such devices.
->
-> If you're going to design something, do it properly from day one.  Address
-> all the main issues: multiple backends for each device, auto-selection of
-> the default backend based on data reported by the backend drivers (e.g. a
-> platform driver usually knows very well if it should be preferred over ACPI
-> and GPU or not...), *and* multiple devices with hotplug.
->
-> These are not, after all, overengineering for the future.  It is a problem
-> we have _now_ with real world devices that are shipping.
-
-I wasn't clear, sorry. I want to address all current and future
-combinations. I tried to make that clear in my mails. I just mean we
-should modify all panel backlight devices to register for "panel0"
-display as we currently don't know/support notebooks with two PANELs.
-In future if someone put hands on notebook with two PANELs he can
-modify module to register both backlight devices: panel0 and panel1
-(2, 3, ...).
-
-I didn't know we should prefer platform over ACPI. But maybe you're
-right, really, don't know. Eventually we can even add enum { LOWEST,
-GPU, PLATFORM_LOW, ACPI, PLATFORM_HIGH } or sth.
-
-
-> There are other ways to solve this issue, of course, and they're easier:
-> publish MORE information on sysfs to properly bind backlight devices to the
-> real device they control, as well as more data to help userspace decide
-> which one it should use.   It is a cop-out, as we are only solving half the
-> problem space in-kernel.  But it works, and it is not a hack, so it is also
-> a viable solution.
->
-> I prefer the full kernel solution where we export just one backlight
-> interface, but when I propesed it, the others made it clear they'd prefer
-> the less complex "userspace chooses which backlight backend to drive"
-> currently employed.
-
-I think we can stay with proposed kernel solution with eventual
-choosing backlight controller for display (overwriting kernel's
-choice). For example
-$ cat /sys/class/backlight/panel0/method
-acpi
-platform
-$ echo "platform" > /sys/class/backlight/panel0/method
-
-
-> Meanwhile, I'd like a LOT to know how I could parent the backlight device I
-> export in a platform driver to the correct PCI or ACPI device for the main
-> GPU...
-
-Is actually "parent" used for something? I can see it used in many
-modules, but not sure where we use that pointer (if we do).
-
+Otherwise, the patch looks IMHO good.
 -- 
-Rafał
+Krzysztof Halasa
