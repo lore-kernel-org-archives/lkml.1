@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752618AbZK1WBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZK1WJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752618AbZK1WBy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 17:01:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZK1WBx
+	id S1752793AbZK1WJJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 17:09:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZK1WJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 17:01:53 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:51488 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868AbZK1WBx (ORCPT
+	Sat, 28 Nov 2009 17:09:08 -0500
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:35982 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752606AbZK1WJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 17:01:53 -0500
-Date: Sat, 28 Nov 2009 17:01:59 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: PROBLEM: BUG: Constant freezes and kernel panics on a quad core
- (with dumps)
-In-reply-to: <4B119D95.6090806@gmail.com>
-To: Bruno Barberi Gnecco <brunobg@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <4B119DD7.8020303@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B119D95.6090806@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sat, 28 Nov 2009 17:09:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=K7QJR1jZZrOYNcaEWqgEtGtbPNzZNufpVIh18syXCTkoZYHwHbzSjR1CHjhkJhlXpBOaYnc7SDbhGV0MamlERwEGERK/D+h37lS24CjwZTVu0sa7n/zPbAcwPTB/hzssPtYLfw2YPL5AN/p2sG1oTFZAImQUArG3tCnTYQT20/4=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: 8atgxckVM1kiKbLYdgF5A95g.YKZK79DzRcA5g1mfH6suIOOTg5Zx7W23dEKrgukjrh3smNenQqTVpz3LSohEbvxRCeDRlzSU3hp9gWqOOQokcqN34VuPHhQxUxncwzB6LPfJHOYKK6GQA_e462PkzdxrtNv0LliFE1NTy__cow_CRIPldV_CZTKhZyBCbS5YBUfIpxYb2eswP3z36hlAtl_h0Z9CF4YYbKGvPwrDFQs1cRLefYqfwzwjWc1DTs-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] warn about shared irqs requesting IRQF_DISABLED registered with setup_irq
+Date: Sat, 28 Nov 2009 14:09:13 -0800
+User-Agent: KMail/1.9.10
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux-arm-kernel@lists.infradead.org
+References: <20091127195857.GB28193@n2100.arm.linux.org.uk> <alpine.LFD.2.00.0911272234460.24119@localhost.localdomain> <20091128200344.GA1272@pengutronix.de>
+In-Reply-To: <20091128200344.GA1272@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200911281409.13807.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd think this is a hardware problem. Some things that have caused me 
-similar grief in the past:
+On Saturday 28 November 2009, Uwe Kleine-König wrote:
+>  I just thought that a
+> warning that is triggered with request_irq and request_threaded_irq
+> shouldn't be skipped when using setup_irq.
 
-Bad IDE cable
-Bad SATA cable
-Bad power supply
-Bad motherboard
-Bad memory (memtest doesn't necessarily access things the same way as 
-the kernel)
-Bad cards (pci, agp, whatever)
-Any of the above with loose connections
-And did I mention bad power supply?
-
-Bruno Barberi Gnecco wrote:
-> Summary: a PC I'm testing is unstable and freezing often. Freezes 
-> occur in various situations, including under no load (not even the X 
-> running). Dumps are provided below.
->
-> Sometimes it's a plain freeze, sometimes a kernel panic with the 
-> blinking leds and a dump. It seems the problem is related to memory, 
-> most of the messages are related to null memory references (see more 
-> below). System ran once for several hours before freezing.
->
-> * System specification: Intel Core 2 Quad Q9550 @ 2.83GHz, 4GB DDR3, 
-> Motherboard Asus P5QC. No overclocking.
->
-> * Tested under the following kernels/distros, all had the bug. Since I 
-> used their vanilla kernels, I'm not posting a copy of the .configs:
->
-> - 2.6.27.7-smp (slackware 12.2 hugesmp kernel; distro heavily 
-> updated), 32 bits
-> - 2.6.29.6-smp (slackware 13.0 hugesmp kernel; fresh install), both 32 
-> and 64 bits
-> - 2.6.29.6-nosmp (slackware 13.0 huge kernel; fresh install), both 32 
-> and 64 bits
-> - 2.6.31-14-generic SMP (ubuntu 9.10 netbook remix live cd), 32 bits
->
-> * Here are some screen dumps (sorry, no serial cable for a text dump).
->
-> http://ultraxs.com/share-208E_4B118ED2.html
-> http://ultraxs.com/share-2FDD_4B118ED2.html
-> http://ultraxs.com/share-D0D9_4B118ED2.html
-> http://ultraxs.com/share-498F_4B118ED2.html
-> http://ultraxs.com/share-0AD8_4B118ED2.html
->
-> * Turning off ACPI and APIC, either through the BIOS or through kernel 
-> parameters did not help, even when only one processor is recognized.
->
-> * I ran memtest and no errors were detected. I completed the tests 
-> three times.
->
-> * Nothing is ever output to the logs.
->
-> * A sure way to get a freeze is to recompile the kernel, but the 
-> freeze does not happen at the same point of the compilation and I 
-> can't even say if the compilation triggers the bug or if it's just a 
-> coincidence and the compilation just takes long enough for it to happen.
->
-> * Any other information, testing or debugging you need, just ask. I 
-> just can't use the PC, it usually freezes within minutes. Please CC 
-> any replies to me [brunobg at gmail]. Thank you very much for any help.
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+Seems fair to me.
