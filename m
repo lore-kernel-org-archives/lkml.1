@@ -1,87 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbZK1GRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbZK1G1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751600AbZK1GRv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 01:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZK1GRu
+	id S1751814AbZK1G1d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 01:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZK1G1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 01:17:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37082 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbZK1GRt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 01:17:49 -0500
-Subject: Re: [stable][PATCH] PCIe hot-plug for Intel IOMMU
-From: David Woodhouse <dwmw2@infradead.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, jbarnes@virtuousgeek.org,
-       stable@kernel.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440911111327o49bb2b09xc8ab801ce281d04@mail.gmail.com>
-References: <20091104225359.2720.91502.stgit@nehalem.aw>
-	 <20091106114130J.fujita.tomonori@lab.ntt.co.jp>
-	 <1257807747.25961.852.camel@macbook.infradead.org>
-	 <20091111152306.GA29256@linux-os.sc.intel.com>
-	 <86802c440911111327o49bb2b09xc8ab801ce281d04@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 28 Nov 2009 06:17:37 +0000
-Message-ID: <1259389057.3691.2186.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 (2.28.1-2.fc12) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 28 Nov 2009 01:27:32 -0500
+Received: from mail.gmx.net ([213.165.64.20]:53404 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751380AbZK1G1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 01:27:31 -0500
+X-Authenticated: #25574588
+X-Provags-ID: V01U2FsdGVkX19shA5Jl4psLPwSVmP9aeHLe2Mv0TScMAhQGhU/5v
+	PwvNNV7QZlCqp1
+From: Johannes Buchner <buchner.johannes@gmx.at>
+To: linux-kernel@vger.kernel.org, reiserfs-devel@vger.kernel.org
+Cc: Johannes Buchner <buchner.johannes@gmx.at>
+Subject: [PATCH 0/4] reiser4 fixes for -mm
+Date: Sat, 28 Nov 2009 19:28:00 +1300
+Message-Id: <1259389684-18625-1-git-send-email-buchner.johannes@gmx.at>
+X-Mailer: git-send-email 1.6.4.4
+In-Reply-To: <1259389179-3772-2-git-send-email-buchner.johannes@gmx.at>
+References: <1259389179-3772-2-git-send-email-buchner.johannes@gmx.at>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-11-11 at 13:27 -0800, Yinghai Lu wrote:
-> On Wed, Nov 11, 2009 at 7:23 AM, Fenghua Yu <fenghua.yu@intel.com> wrote:
-> > To support PCIe hot plug in IOMMU, we register a notifier to respond to device
-> > change action.
-> >
-> > When the notifier gets BUS_NOTIFY_UNBOUND_DRIVER, it removes the device from its
-> > DMAR domain.
-> >
-> > A hot added device will be added into an IOMMU domain when it first does IOMMU
-> > op. So there is no need to add more code for hot add.
-> >
-> > Without the patch, after a hot-remove, a hot-added device on the same slot will
-> > not work.
-> >
-> > Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+These are the same patches as a previous email with the subject
+'Re: Fw: reiser4 git repo', but without MIME.
+
+The content of my previous mail:
+
+> I had some issues with the reiser4 patch series from -mm.
+> First of all, I'm not sure what release they are based on. I used 
+> a8a8a669e from Linus' git repository. I applied all reiser4 patches
+> (except reiser4-disable of course) from
+> http://userweb.kernel.org/~akpm/mmotm/, which worked fine.
 > 
-> Tested-by: Yinghai Lu <yinghai@kernel.org>
+> I think these patches are based on the reiser4-2.6.30 patch. 
+> I also compared them to the reiser4-2.6.31 patch, which adds some
+> missing pieces ([1] reiser4-from-2.6.31-patch.patch).
+> 
+> Additionally, some recent commits demand some changes, especially
+> since current_is_pdflush and generic_sync_sb_inodes are not available
+> any more (d8a8559cd7a9cc).
+> [2] reiser4-pdflush-comments.patch only fixes some comments which
+> still mention pdflush. 
+> In [3] reiser4-generic_sync_sb_inodes.patch I tried to
+> replace generic_sync_sb_inodes. I am not 100% sure that this is
+> correct, but that is what I understood from the commit diff+message of
+> d8a8559cd7a9cc.
+> 
+> The original patch
+> 'reiser4-vfs-add-super_operationssync_inodes' introduced the call from
+> sync_inodes_sb to the super operation sync_inodes(sb, NULL). This NULL
+> pointer is dereferenced in reiser4_sync_inodes, which is fixed by
+> [4] reiser4-sync_inodes-null-dereference.patch.
+> 
+> All 4 additional patches are attached. I can only say that it works on
+> my machine, before I had compilation issues and freezes on 'sync'. 
+> 
+> Cheers,
+> Johannes
+> 
+> PS: The git repo mentioned in
+> http://userweb.kernel.org/~akpm/mmotm/mmotm-readme.txt is not
+> available.
 
-But not with 'intel_iommu=igfx_off', I note. The call to find_domain()
-will oops when it runs on the graphics device with ->archdata.iommu ==
-DUMMY_DEVICE_DOMAIN_INFO (== -1). All other calls to find_domain() are
-guaranteed not to happen for such devices.
 
-One might argue that find_domain() should cope, but do we really want to
-be doing that extra check in the unmap fast path?
+Johannes Buchner (4):
+  reiser4: some changes from reiser4-2.6.31 patch
+  reiser4: some comments were still mentioning pdflush
+  reiser4: generic_sync_sb_inodes doesn't exist anymore
+  reiser4: fixed null pointer dereference
 
-Testing this fix now...
-
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 1840a05..f44a015 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -3228,6 +3228,9 @@ static int device_notifier(struct notifier_block *nb,
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct dmar_domain *domain;
- 
-+	if (iommu_no_mapping(dev))
-+		return 0;
-+
- 	domain = find_domain(pdev);
- 	if (!domain)
- 		return 0;
-
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+ fs/reiser4/carry.c     |    2 +-
+ fs/reiser4/carry_ops.c |    2 +-
+ fs/reiser4/context.c   |    2 +-
+ fs/reiser4/coord.c     |    8 ++++----
+ fs/reiser4/entd.c      |    4 +++-
+ fs/reiser4/super_ops.c |    6 ++++--
+ fs/reiser4/txnmgr.c    |    4 ++--
+ fs/reiser4/znode.h     |    1 -
+ include/linux/mm.h     |    1 +
+ mm/filemap.c           |    4 +++-
+ mm/page-writeback.c    |   26 ++++++++++++++++++++++++++
+ 11 files changed, 46 insertions(+), 14 deletions(-)
 
