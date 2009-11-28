@@ -1,107 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZK1MW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbZK1M12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbZK1MW3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 07:22:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZK1MW2
+	id S1754001AbZK1M12 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 07:27:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZK1M11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 07:22:28 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:56914 "EHLO
+	Sat, 28 Nov 2009 07:27:27 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:48205 "EHLO
 	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753950AbZK1MW1 (ORCPT
+	by vger.kernel.org with ESMTP id S1753190AbZK1M11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 07:22:27 -0500
-X-Sasl-enc: 20jxiN1se1r5rSklsCp0/ysRQz/cTeGZIS7O/7+LTQvS 1259410953
-Date: Sat, 28 Nov 2009 10:22:29 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Rafa?? Mi??ecki <zajec5@gmail.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: Backlight device class redesign
-Message-ID: <20091128122229.GB17894@khazad-dum.debian.net>
-References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
- <b170af450911280230g4a2f7f8ao64b46ce7e88ec929@mail.gmail.com>
+	Sat, 28 Nov 2009 07:27:27 -0500
+X-Sasl-enc: tt3JAtmXySJqMof5xahwVif9Vw27Lz61UxH6L+U+4tVn 1259411252
+Message-ID: <4B1116F2.20308@imap.cc>
+Date: Sat, 28 Nov 2009 13:26:26 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b170af450911280230g4a2f7f8ao64b46ce7e88ec929@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       isdn@linux-pingi.de, mac@melware.de
+Subject: Re: [PATCH] proc_fops: convert drivers/isdn/ to seq_file
+References: <20091123015625.GA32088@x200.localdomain>
+In-Reply-To: <20091123015625.GA32088@x200.localdomain>
+X-Enigmail-Version: 0.97a
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig9C81604568BF514A62D322D1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Backlight maintainer added to CC.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig9C81604568BF514A62D322D1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 28 Nov 2009, Rafa?? Mi??ecki wrote:
-> W dniu 28 listopada 2009 01:30 u??ytkownik Rafa?? Mi??ecki
-> <zajec5@gmail.com> napisa??:
-> > Currently we keep all registered controllers in /sys/class/backlgiht/
-> > without any grouping per display or per anything. We can not use
-> > grouping per GPU (as somewhere proposed) because one GPU can control
-> > (for example) two PANELS and TV - 3 displays needing backlight
-> > management. The most obvious and stable solution seems to be grouping
-> > per display.
-> 
-> Just in case I was not clear enough. We should make ACPI, platform and
-> GPU drivers register same panel backlight control under same name like
-> "panel-0". Backlight class device would create
-> /sys/class/backlight/panel-0 only. When touching files in this
-> backlight/panel-0/, blacklight class would call functions from the
-> most proper (ACPI > platform > GPU) driver.
-> 
+Am 23.11.2009 02:56 schrieb Alexey Dobriyan:
+> --- a/Documentation/isdn/INTERFACE.CAPI
+> +++ b/Documentation/isdn/INTERFACE.CAPI
+> @@ -149,8 +149,8 @@ char *(*procinfo)(struct capi_ctr *ctrlr)
+>  	pointer to a callback function returning the entry for the device in
+>  	the CAPI controller info table, /proc/capi/controller
+> =20
+> -read_proc_t *ctr_read_proc
+> -	pointer to the read_proc callback function for the device's proc file=
 
-I once suggested some sort of multiplexer backlight device that would do
-exactly that.  Various drivers (platform, ACPI, display) would register
-backends and specify some sort of dynamic preference so that the kernel
-would have a good bet on the default one, and userspace could switch the
-active backend later if it wanted.
+> +const struct file_operations *proc_fops
+> +	pointers to callback functions for the device's proc file
+>  	system entry, /proc/capi/controllers/<n>; will be called with a
+>  	pointer to the device's capi_ctr structure as the last (data) argumen=
+t
+> =20
 
-In this case, we'd have to specify properties or some other way to group the
-backends properly and to easily let userspace find the backlight device it
-needs to drive a specific device.
+This doesn't look correct. AFACIS, most of the callback functions in proc=
+_fops
+don't have a last argument named data or looking as if it might lend itse=
+lf to
+passing a pointer to the device's capi_ctr structure. In fact, later in y=
+our
+patch you replace uses of that last argument by accesses to the m->privat=
+e
+member of the struct seq_file *m argument, like here:
 
-> I thought if we could use card number for anything. I recalled that
-> notebooks with hybrid gpu, where system should switch between weaker
-> and more powerful GPU watching load. In case of that notebooks PANEL
-> can be controlled by both: card0 and card1.
+> --- a/drivers/isdn/hardware/avm/b1.c
+> +++ b/drivers/isdn/hardware/avm/b1.c
+[...]
+> @@ -634,18 +636,17 @@ irqreturn_t b1_interrupt(int interrupt, void *dev=
+ptr)
+>  }
+> =20
+>  /* ------------------------------------------------------------- */
+> -int b1ctl_read_proc(char *page, char **start, off_t off,
+> -        		int count, int *eof, struct capi_ctr *ctrl)
+> +static int b1ctl_proc_show(struct seq_file *m, void *v)
+>  {
+> +	struct capi_ctr *ctrl =3D m->private;
+>  	avmctrl_info *cinfo =3D (avmctrl_info *)(ctrl->driverdata);
+>  	avmcard *card =3D cinfo->card;
+>  	u8 flag;
+[...]
 
-That would require backends to be able to runtime register and unregister
-themselves with the main backlight device, and that they hook somehow on the
-hotplug stuff, to know when to bind/unbind along with the GPU.
+So I guess the paragraph Documentation/isdn/INTERFACE.CAPI needs to be
+adapted to describe correctly where the callbacks will find their
+controller data structure after that change.
 
-> So finally I think we should just register panel0 by default
-> everywhere. And in future we could add some quirks in drivers (ACPI,
-> platform, GPU) that would register panel1, panel2... for such devices.
+OTOH, the new proc_show functions sport a second argument void *v that
+doesn't appear to get used anywhere. It would be nice if that could be
+explained a bit somewhere.
 
-If you're going to design something, do it properly from day one.  Address
-all the main issues: multiple backends for each device, auto-selection of
-the default backend based on data reported by the backend drivers (e.g. a
-platform driver usually knows very well if it should be preferred over ACPI
-and GPU or not...), *and* multiple devices with hotplug.
+Thanks,
+Tilman
 
-These are not, after all, overengineering for the future.  It is a problem
-we have _now_ with real world devices that are shipping.
 
-There are other ways to solve this issue, of course, and they're easier:
-publish MORE information on sysfs to properly bind backlight devices to the
-real device they control, as well as more data to help userspace decide
-which one it should use.   It is a cop-out, as we are only solving half the
-problem space in-kernel.  But it works, and it is not a hack, so it is also
-a viable solution.
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
-I prefer the full kernel solution where we export just one backlight
-interface, but when I propesed it, the others made it clear they'd prefer
-the less complex "userspace chooses which backlight backend to drive"
-currently employed.
 
-Meanwhile, I'd like a LOT to know how I could parent the backlight device I
-export in a platform driver to the correct PCI or ACPI device for the main
-GPU...
+--------------enig9C81604568BF514A62D322D1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAksRFv0ACgkQQ3+did9BuFtm0wCeMszvhdODPFbglW0YsHGxAGs0
+fioAn0Qw87wMvVK5Carsj/a47epOG992
+=IItB
+-----END PGP SIGNATURE-----
+
+--------------enig9C81604568BF514A62D322D1--
