@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZK1Qps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752752AbZK1Qs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbZK1Qps (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 11:45:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZK1Qpr
+	id S1752752AbZK1Qs0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 11:48:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZK1QsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 11:45:47 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:4588 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbZK1Qpq (ORCPT
+	Sat, 28 Nov 2009 11:48:24 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:64823 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbZK1QsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 11:45:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=lqJhawJuz9naLTdS8wHOnP+9O3E3rse40b+kBTi106D+tWobUI9TwSRwS3XOWsM4kT
-         UexD3OwkpF83jmtFpjR+oLtyaMcFv5SaKa6zeSZI5kmVuqiGoq7CvQfFcshxATwAjziw
-         kiiQRr6i/y3ljqoyNjldYbWmB6pCKYIg7EVI8=
+	Sat, 28 Nov 2009 11:48:22 -0500
+Date: 28 Nov 2009 17:47:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: khc@pm.waw.pl
+Cc: awalls@radix.net
+Cc: dmitry.torokhov@gmail.com
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: jarod@wilsonet.com
+Cc: jonsmirl@gmail.com
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: maximlevitsky@gmail.com
+Cc: mchehab@redhat.com
+Cc: stefanr@s5r6.in-berlin.de
+Cc: superm1@ubuntu.com
+Message-ID: <BDkdITRHqgB@lirc>
+In-Reply-To: <m3r5riy7py.fsf@intrepid.localdomain>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 	system?
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
 MIME-Version: 1.0
-In-Reply-To: <1259422559.18747.6.camel@maxim-laptop>
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
-	 <4B104971.4020800@s5r6.in-berlin.de>
-	 <1259370501.11155.14.camel@maxim-laptop>
-	 <m37hta28w9.fsf@intrepid.localdomain>
-	 <1259419368.18747.0.camel@maxim-laptop>
-	 <m3zl66y8mo.fsf@intrepid.localdomain>
-	 <1259422559.18747.6.camel@maxim-laptop>
-Date: Sat, 28 Nov 2009 11:45:51 -0500
-Message-ID: <9e4733910911280845y5cf06836l1640e9fc8b1740cf@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
-       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19gf7pUprOCGXVmNNuk/Qwv/14YTlk5vWw19wY
+ w2rpuhOfwKXmY+JKosNIiBqBJ/NpSqTop/SFatVVgoL2/Hw4Hk
+ 2oNnDCxZST6C7Uyopn0xKr5pMI3932J
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 28, 2009 at 10:35 AM, Maxim Levitsky
-<maximlevitsky@gmail.com> wrote:
-> On Sat, 2009-11-28 at 16:25 +0100, Krzysztof Halasa wrote:
->> Maxim Levitsky <maximlevitsky@gmail.com> writes:
->>
->> >> And that's good. Especially for a popular and simple protocol such as
->> >> RC5.
->> >> Actually, it's not about adding the decoder. It's about fixing it.
->> >> I can fix it.
->> >
->> > This is nonsense.
->>
->> You forgot to say why do you think so.
->
-> Because frankly, I am sick of this discussion.
-> Generic decoder that lirc has is actually much better and more tolerant
-> that protocol specific decoders that you propose,
+Hi Krzysztof and Maxim,
 
-Porting the decoder engine from lirc into the kernel is also a possibility.
+on 28 Nov 09 at 16:44, Krzysztof Halasa wrote:
+> Maxim Levitsky <maximlevitsky@gmail.com> writes:
 
-I'm asking to have an architecture design discussion, not to pick one
-of the various implementations. This is something that we have to live
-with for twenty years and it is a giant pain to change if we get wrong
-initially.
+>> Generic decoder that lirc has is actually much better and more tolerant
+>> that protocol specific decoders that you propose,
 
-> You claim you 'fix' the decoder, right?
-> But what about all these lirc userspace drivers?
-> How they are supposed to use that 'fixed' decoder.
+> Actually, it is not the case. Why do you think it's better (let alone
+> "much better")? Have you at least seen my RC5 decoder?
 
-Some of that user space hardware belongs in the trash can and will
-never work reliably in a modern system. For example - sitting in a
-tight user space loop reading the DTS bit from a serial port or
-parallel port and then using the system clock to derive IR timings.
-That process is going to be inaccurate or it is going to make video
-frames drop. Big banging from user space is completely unreliable.
+Nobody here doubts that you can implement a working RC-5 decoder. It's  
+really easy. I'll give you an example why Maxim thinks that the generic  
+LIRC approach has advantages:
 
-If you really want to use your microphone input as a DAC channel, run
-a little app that reads the ALSA input and converts it to a timing
-stream and then inject this data into the kernel input system using
-uevent.
+Look at the Streamzap remote (I think Jarod submitted the lirc_streamzap  
+driver in his patchset):
+http://lirc.sourceforge.net/remotes/streamzap/PC_Remote
 
-Both of these are hobbyist class solutions. They are extremely cheap
-but they are unreliable and create large CPU loads.  But some people
-want to use a $300 CPU to eliminate $2 worth of IR hardware. This type
-of hardware will continue to work via event injection. But neither of
-these solutions belong in the kernel.
+This remote uses RC-5. But some of the developers must have thought that  
+it may be a smart idea to use 14 bits instead the standard 13 bits for  
+this remote. In LIRC you won't care, because this is configurable and  
+irrecord will figure it out automatically for you. In the proposed kernel  
+decoders I have seen until now, you will have to treat this case specially  
+in the decoder because you expect 13 bits for RC-5, not 14.
+Well, it can be done. But you'll have to add another IR protocol define  
+for RC-5_14, which will become very ugly with many non-standard protocol  
+variations.
 
-What are other examples of user space IR drivers?
+@Maxim: I think Mauro is right. We need to find an approach that makes  
+everybody happy. We should take the time now to discuss all the  
+possibilities and choose the best solution. LIRC has lived so long outside  
+the kernel, that we can wait another couple of weeks/months until we  
+agreed on something which will be a stable API hopefully for many years to  
+come.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Christoph
