@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995AbZK1PUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbZK1PYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751995AbZK1PUR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 10:20:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZK1PUQ
+	id S1751868AbZK1PYY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 10:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZK1PYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 10:20:16 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:37542 "EHLO e7.ny.us.ibm.com"
+	Sat, 28 Nov 2009 10:24:23 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:35997 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbZK1PUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 10:20:15 -0500
-Date: Sat, 28 Nov 2009 07:20:26 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc] "fair" rw spinlocks
-Message-ID: <20091128152026.GA6883@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091123145409.GA29627@wotan.suse.de> <20091128020739.GA18149@linux.vnet.ibm.com> <87pr72529w.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87pr72529w.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1751519AbZK1PYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 10:24:22 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: uclinux-dev@uclinux.org, David Howells <dhowells@redhat.com>,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] FDPIC: respect PT_GNU_STACK exec markings when creating NOMMU stack
+Date: Sat, 28 Nov 2009 10:24:23 -0500
+Message-Id: <1259421863-12777-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 28, 2009 at 12:15:07PM +0100, Andi Kleen wrote:
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
-> >
-> > The usual trick would be to keep per-fair-rwlock state in per-CPU
-> > variables.  If it is forbidden to read-acquire one nestable fair rwlock
-> > while read-holding another, then this per-CPU state can be a single
-> > pointer and a nesting count.  On the other hand, if it is permitted to
-> > read-acquire one nestable fair rwlock while holding another, then one
-> > can use a small per-CPU array of pointer/count pairs.
-> 
-> The problem is that in preemptible kernels kernel threads can switch
-> CPUs all the time.  How would you sync the per CPU state then?
+The current code will load the stack size and markings, but then only use
+the markings in the MMU code path.  The NOMMU code path always passes EXEC
+to the mmap() call.  While this doesn't matter to most people during the
+run of the code, it causes a pointless icache flush when starting every
+FDPIC application and by default, that tends to be 128kB of waste.
 
-In preemptible kernels, put the state into the task structure.  Perhaps do
-this in non-preemptible kernels too, just to save a bit of source code.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+note: this will apply cleanly with the uninitialized flag patch applied,
+but otherwise doesn't directly depend on it
 
-							Thanx, Paul
+ fs/binfmt_elf_fdpic.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 8563a57..3e2507b 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -380,7 +380,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
+ 
+ 	down_write(&current->mm->mmap_sem);
+ 	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
+-					 PROT_READ | PROT_WRITE | PROT_EXEC,
++					 PROT_READ | PROT_WRITE |
++					 (executable_stack & EXSTACK_ENABLE_X ? PROT_EXEC : 0),
+ 					 MAP_PRIVATE | MAP_ANONYMOUS |
+ 					 MAP_UNINITIALIZED | MAP_GROWSDOWN,
+ 					 0);
+-- 
+1.6.5.3
+
