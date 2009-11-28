@@ -1,92 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751358AbZK1NSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751622AbZK1OAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751358AbZK1NSQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 08:18:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbZK1NSP
+	id S1751622AbZK1OAS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 09:00:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZK1OAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 08:18:15 -0500
-Received: from khc.piap.pl ([195.187.100.11]:58781 "EHLO khc.piap.pl"
+	Sat, 28 Nov 2009 09:00:17 -0500
+Received: from www.tglx.de ([62.245.132.106]:40302 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750863AbZK1NSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 08:18:15 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Stefan Assmann <sassmann@redhat.com>
-Cc: linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Don Dutile <ddutile@redhat.com>, kaneshige.kenji@jp.fujitsu.com
-Subject: Re: [PATCH] change PCI nomenclature according to PCI-SIG
-References: <4B110F79.8080405@redhat.com>
-Date: Sat, 28 Nov 2009 14:18:19 +0100
-In-Reply-To: <4B110F79.8080405@redhat.com> (Stefan Assmann's message of "Sat,
-	28 Nov 2009 12:54:33 +0100")
-Message-ID: <m3hbsezt2c.fsf@intrepid.localdomain>
+	id S1750923AbZK1OAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 09:00:16 -0500
+Date: Sat, 28 Nov 2009 15:00:02 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-sh@vger.kernel.org, johnstul@us.ibm.com, lethal@linux-sh.org
+Subject: Re: [PATCH 02/02] clocksource: Start CMT at clocksource resume
+In-Reply-To: <20091125081255.25416.85126.sendpatchset@rxone.opensource.se>
+Message-ID: <alpine.LFD.2.00.0911281457560.24119@localhost.localdomain>
+References: <20091125081235.25416.32481.sendpatchset@rxone.opensource.se> <20091125081255.25416.85126.sendpatchset@rxone.opensource.se>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Assmann <sassmann@redhat.com> writes:
 
-> --- a/drivers/firmware/edd.c
-> +++ b/drivers/firmware/edd.c
-> @@ -150,7 +150,7 @@ edd_show_host_bus(struct edd_device *edev, char *buf)
->  	if (!strncmp(info->params.host_bus_type, "ISA", 3)) {
->  		p += scnprintf(p, left, "\tbase_address: %x\n",
->  			     info->params.interface_path.isa.base_address);
-> -	} else if (!strncmp(info->params.host_bus_type, "PCIX", 4) ||
-> +	} else if (!strncmp(info->params.host_bus_type, "PCI-X", 4) ||
->  		   !strncmp(info->params.host_bus_type, "PCI", 3)) {
 
-This one looks like a BIOS binary interface so you can't change it.
+On Wed, 25 Nov 2009, Magnus Damm wrote:
 
-> --- a/drivers/net/igb/e1000_mac.c
-> +++ b/drivers/net/igb/e1000_mac.c
-> @@ -1256,7 +1256,7 @@ s32 igb_led_off(struct e1000_hw *hw)
+> From: Magnus Damm <damm@opensource.se>
+> 
+> Add code to start the CMT timer on clocksource resume.
+> 
+> This makes sure the timer is started during sysdev_resume().
+> Without this patch the clocksource may be read as suspended,
+> this after sysdev resume but before platform device resume.
+
+Hmm, don't you have the same situation on suspend ?
+
+platform device suspend stops the clock, but the generic code expects
+it to be running until sysdev shutdown.
+
+Another thing is that you now run both, the sysdev and the platform
+resume. Is that by design or accident ?
+
+Thanks,
+
+	tglx
+
+> Signed-off-by: Magnus Damm <damm@opensource.se>
+> ---
+> 
+>  drivers/clocksource/sh_cmt.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> --- 0001/drivers/clocksource/sh_cmt.c
+> +++ work/drivers/clocksource/sh_cmt.c	2009-11-25 16:02:52.000000000 +0900
+> @@ -432,6 +432,13 @@ static void sh_cmt_clocksource_disable(s
+>  	sh_cmt_stop(cs_to_sh_cmt(cs), FLAG_CLOCKSOURCE);
 >  }
->
->  /**
-> - *  igb_disable_pcie_master - Disables PCI-express master access
-> + *  igb_disable_pcie_master - Disables PCIe.press master access
->   *  @hw: pointer to the HW structure
-
-This one needs fixing.
-
-> @@ -2066,7 +2066,7 @@ out:
->  }
->
->  /**
-> - *  ixgbe_disable_pcie_master - Disable PCI-express master access
-> + *  ixgbe_disable_pcie_master - Disable PCIe.press master access
->   *  @hw: pointer to hardware structure
-
-Same here.
-
-> --- a/drivers/staging/rt3090/common/cmm_mac_pci.c
-> +++ b/drivers/staging/rt3090/common/cmm_mac_pci.c
-> @@ -1481,7 +1481,7 @@ BOOLEAN RT28xxPciAsicRadioOff(
->  	*/
->  #endif // CONFIG_STA_SUPPORT //
->  //KH Debug:My original codes have the follwoing codes, but currecnt codes do not have it.
-> -// Disable for stability. If PCIE Link Control is modified for advance power save, re-covery this code segment.
-> +// Disable for stability. If PCIe Link Control is modified for advance power save, re-covery this code segment.
-
-While it has nothing to do with PCIe... You may want to fix it as well.
-"follwoing", "currecnt", what does "advance power save" do? What does
-the "re-covery this code segment" means? Staging standard.
-
-> --- a/drivers/staging/rt3090/common/rtmp_init.c
-> +++ b/drivers/staging/rt3090/common/rtmp_init.c
-> @@ -3512,7 +3512,7 @@ int rt28xx_init(
->
->  #ifdef RTMP_MAC_PCI
->  #ifdef PCIE_PS_SUPPORT
-> -	/*Iverson patch PCIE L1 issue to make sure that driver can be read,write ,BBP and RF register  at pcie L.1 level */
-> +	/*Iverson patch PCIe L1 issue to make sure that driver can be read,write ,BBP and RF register  at pcie L.1 level */
-                                                                                                     ^^^^^^^^^^
-Should be changed as well I think. "can be read,write", well.
-
-Otherwise, the patch looks IMHO good.
--- 
-Krzysztof Halasa
+>  
+> +static void sh_cmt_clocksource_resume(struct clocksource *cs)
+> +{
+> +	struct sh_cmt_priv *p = cs_to_sh_cmt(cs);
+> +
+> +	sh_cmt_start(p, FLAG_CLOCKSOURCE);
+> +}
+> +
+>  static int sh_cmt_register_clocksource(struct sh_cmt_priv *p,
+>  				       char *name, unsigned long rating)
+>  {
+> @@ -442,6 +449,7 @@ static int sh_cmt_register_clocksource(s
+>  	cs->read = sh_cmt_clocksource_read;
+>  	cs->enable = sh_cmt_clocksource_enable;
+>  	cs->disable = sh_cmt_clocksource_disable;
+> +	cs->resume = sh_cmt_clocksource_resume;
+>  	cs->mask = CLOCKSOURCE_MASK(sizeof(unsigned long) * 8);
+>  	cs->flags = CLOCK_SOURCE_IS_CONTINUOUS;
+>  	pr_info("sh_cmt: %s used as clock source\n", cs->name);
+> 
