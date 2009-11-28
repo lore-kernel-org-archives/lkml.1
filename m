@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbZK1RfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZK1Rhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752922AbZK1RfD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 12:35:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZK1RfC
+	id S1753113AbZK1Rhk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 12:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZK1Rhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 12:35:02 -0500
-Received: from khc.piap.pl ([195.187.100.11]:57477 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbZK1RfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 12:35:01 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Jon Smirl <jonsmirl@gmail.com>
+	Sat, 28 Nov 2009 12:37:39 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:45524 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752878AbZK1Rhi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 12:37:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=oUEa7THaGYpyh3pAww3S6WiVlifJjSgUUi1+NqVi0v51ynLKaReujfInrXWZYq8zIA
+         y4heW/lFPbddBIpeFnCrWb1SnURKHJloWsheJFeg/rEjNhD47ejBRVbGTb3YR0M+dDyk
+         ZY3VI6xGkttBMwWOZU5Ow4QS+jm2lYzBXfsMw=
+MIME-Version: 1.0
+In-Reply-To: <m3aay6y2m1.fsf@intrepid.localdomain>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	 <m3aay6y2m1.fsf@intrepid.localdomain>
+Date: Sat, 28 Nov 2009 12:37:40 -0500
+Message-ID: <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
 Cc: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
        dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
        jarod@wilsonet.com, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
        maximlevitsky@gmail.com, mchehab@redhat.com, stefanr@s5r6.in-berlin.de,
        superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
-	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
-Date: Sat, 28 Nov 2009 18:35:02 +0100
-In-Reply-To: <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> (Jon
-	Smirl's message of "Sat, 28 Nov 2009 12:06:48 -0500")
-Message-ID: <m3aay6y2m1.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl <jonsmirl@gmail.com> writes:
-
-> There are two very basic things that we need to reach consensus on first.
+On Sat, Nov 28, 2009 at 12:35 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> Jon Smirl <jonsmirl@gmail.com> writes:
 >
-> 1) Unification with mouse/keyboard in evdev - put IR on equal footing.
-> 2) Specific tools (xmodmap, setkeycodes, etc or the LIRC ones) or
-> generic tools (ls, mkdir, echo) for configuration
+>> There are two very basic things that we need to reach consensus on first.
+>>
+>> 1) Unification with mouse/keyboard in evdev - put IR on equal footing.
+>> 2) Specific tools (xmodmap, setkeycodes, etc or the LIRC ones) or
+>> generic tools (ls, mkdir, echo) for configuration
+>
+> I think we can do this gradually:
+> 1. Merging the lirc drivers. The only stable thing needed is lirc
+>   interface.
 
-I think we can do this gradually:
-1. Merging the lirc drivers. The only stable thing needed is lirc
-   interface.
-2. Changing IR input layer interface ("media" drivers and adding to lirc
-   drivers).
+Doing that locks in a user space API that needs to be supported
+forever. We need to think this API through before locking it in.
+
+> 2. Changing IR input layer interface ("media" drivers and adding to lirc
+>   drivers).
+> --
+> Krzysztof Halasa
+>
+
+
+
 -- 
-Krzysztof Halasa
+Jon Smirl
+jonsmirl@gmail.com
