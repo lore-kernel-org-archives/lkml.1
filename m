@@ -1,139 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZK1Uaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZK1Uig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbZK1Uaj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 15:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbZK1Uaj
+	id S1754116AbZK1Uig (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 15:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbZK1Uif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 15:30:39 -0500
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:35011 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753932AbZK1Uai (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 15:30:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Luf0chKInV4VzqyhYVo46t4fzqA1lq1HB09fOQFcoO860SWA584KIdrMmZl1JWSPVi
-         MHdu6D7rk0JBtoB43TezQKvVArCe3mgGRQfeu10vpmO5+PnkR79vEnPONOoJkDOGNoAi
-         p8eZIYZVySkBInv57qHAZ5vk7gaoSz9Fm5yLw=
-Message-ID: <4B11886E.3030906@gmail.com>
-Date: Sat, 28 Nov 2009 14:30:38 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Johannes Stezenbach <js@sig21.net>, Mikhail Malygin <mmalygin@ked.de>,
-       Hans Werner <hwerner4@gmx.de>, Tejun Heo <tj@kernel.org>,
-       Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: Samsung N130 ATA exception after 5min uptime -- Phoenix   FailSafe
- issue?
-References: <20091126164212.GA24421@sig21.net> <20091128191932.GB24048@kroah.com>
-In-Reply-To: <20091128191932.GB24048@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 28 Nov 2009 15:38:35 -0500
+Received: from cnc.isely.net ([64.81.146.143]:45301 "EHLO cnc.isely.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753264AbZK1Uif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 15:38:35 -0500
+X-Greylist: delayed 310 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Nov 2009 15:38:34 EST
+Date: Sat, 28 Nov 2009 14:33:30 -0600 (CST)
+From: Mike Isely <isely@isely.net>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-media@vger.kernel.org
+Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
+In-Reply-To: <200911280357.58116.hverkuil@xs4all.nl>
+Message-ID: <alpine.DEB.1.10.0911281425240.5482@ivanova.isely.net>
+References: <4B103CE1.8050303@redhat.com> <200911272240.02930.s.L-H@gmx.de> <200911280357.58116.hverkuil@xs4all.nl>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/28/2009 01:19 PM, Greg KH wrote:
-> On Thu, Nov 26, 2009 at 05:42:12PM +0100, Johannes Stezenbach wrote:
->> Hi,
->>
->> I'm refering to
->> http://bugzilla.kernel.org/show_bug.cgi?id=14314
->> and I still have this issue on a N130 with latest BIOS (05CM),
->> running kernel 2.6.32-rc8 + wireless-testing.
->>
->> BIOS Information
->>          Vendor: Phoenix Technologies Ltd.
->>          Version: 05CM.M011.20091013.JIP
->>          Release Date: 10/13/2009
->>          Address: 0xE6300
->>          Runtime Size: 105728 bytes
->>          ROM Size: 2048 kB
->>          Characteristics:
->>                  ISA is supported
->>                  PCI is supported
->>                  PNP is supported
->>                  BIOS is upgradeable
->>                  BIOS shadowing is allowed
->>                  ESCD support is available
->>                  ACPI is supported
->>                  USB legacy is supported
->>                  Smart battery is supported
->>                  BIOS boot specification is supported
->>                  Targeted content distribution is supported
->>          BIOS Revision: 5.0
->>
->> Around 5min after boot or resume if generates the following error:
->>
->> [  302.364174] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
->> [  302.364201] ata1.00: failed command: WRITE DMA
->> [  302.364234] ata1.00: cmd ca/00:08:f7:01:1a/00:00:00:00:00/e0 tag 0 dma 4096 out
->> [  302.364241]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
->> [  302.364257] ata1.00: status: { DRDY }
->> [  307.408107] ata1: link is slow to respond, please be patient (ready=0)
->> [  312.392109] ata1: device not ready (errno=-16), forcing hardreset
->> [  312.392138] ata1: soft resetting link
->> [  312.574482] ata1.00: configured for UDMA/133
->> [  312.574506] ata1.00: device reported invalid CHS sector 0
->> [  312.574542] ata1: EH complete
->
-> This is because after 5 minutes, the BIOS implements C states in the
-> processor, which causes a "hic-up" in userspace.  Everything should be
-> fine after this, and most importantly, the power usage drops by a few
-> watts, which is most important.
+On Sat, 28 Nov 2009, Hans Verkuil wrote:
 
-Why does this "hiccup" seem to cause interrupts to get lost? This would 
-cause an up to 30-second stall in disk I/O.
+> On Friday 27 November 2009 22:40:01 Stefan Lippers-Hollmann wrote:
+> > Hi
+> > 
+> > On Friday 27 November 2009, Mauro Carvalho Chehab wrote:
+> > > Hi Linus,
+> > > 
+> > > Please pull from:
+> > >         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+> > > 
+> > > For the following drivers and building fixes:
+> > > 
+> > >    - radio-gemtek-pci: fix double mutex_lock
+> > >    - v4l: add more missing linux/sched.h includes
+> > >    - soc-camera: properly initialise the device object when reusing
+> > >    - soc-camera: sh_mobile_ceu_camera: call pm_runtime_disable
+> > >    - em28xx: fix Reddo DVB-C USB TV Box GPIO
+> > >    - davinci: remove stray duplicate config pointer
+> > >    - SMS_SIANO_MDTV should depend on HAS_DMA
+> > >    - cxusb: Fix hang on DViCO FusionHDTV DVB-T Dual Digital 4 (rev 1)
+> > >    - sh_mobile_ceu_camera: fix compile warning
+> > >    - Fix wrong parameter order in memset
+> > [...]
+> > 
+> > Please consider cherry picking the following two patches from Hans 
+> > Verkuil [1]:
+> > - add the missing s2250-loader.h
+> > - s2250 mutex patch	
+> 
+> Good catch. Mauro, can you please add these two as well for 2.6.32? I'm sure
+> I marked these two as high-prio patches. This staging driver is actively
+> being used and developed so this regression should be fixed.
+> 
 
->
->> This also happens when booting with rdinit=/bin/sh, i.e. only running busybox sh
->> inside initrd.  The error then appears when accessing the disk after the 5min
->> period with dd if=/dev/sda of=/dev/null count=10000.
->
-> Yup, see above for why.
->
-> Samsung does this to make booting their BIOS faster.
+Mauro:
 
-Ugh.. Seriously?
+I had also posted up two high priority pvrusb2 patches that should 
+really be cherry-picked for 2.6.32.  You've already pulled them into 
+v4l/dvb and I did mark them as high priority at the time.
 
->
->> The link in comment #14 is dead but eventually I found
->> http://download.opensuse.org/repositories/Moblin:/Base/openSUSE_11.1/src/kernel-source-2.6.31.6-37.1.src.rpm
->> which contains the attached patch with a samsung_laptop driver.
->>
->> I think it is weird that the Samsung BIOS has a special "SECLINUX" mode,
->> but anyway the samsung_laptop driver works (the backlight control via ACPI
->> also works with the 05CM BIOS, though).
->
-> Yes, but Samsung does not support ACPI at this time, even though it is
-> in their latest bios versions (experimental stuff, needed for Windows 7
-> mode or something...)
+These patches enable use of FX2 microcontroller firmware that is 16KB in 
+size.  Hauppauge is no longer shipping 8KB firmware for HVR-1950 and 
+HVR-1900 and without these changes then those devices won't work AT ALL 
+in kernel 2.6.32.
 
-ACPI support would seem much preferable to implementing power management 
-with such strange proprietary hacks..
+You can find these within the v4l-dvb Mercurial repository here:
 
->
-> And yes, a "special" linux mode is weird, but at least they gave us
-> something that works :)
->
->> However, it does not prevent the ATA exception.
->
-> Yup, it's not an issue though.
->
->> (Side note about backlight level 0: I noticed that in Windows when you
->> set the backlight to the lowest level, after a minute of inactivity
->> the screen would dim one level more. Stupid -- why not allow the user
->> to choose that level manually?)
->
-> Talk to samsung about this.  There is one more lower level the BIOS can
-> go to, which is what Windows does here.  Samsung doesn't want Linux to
-> use that mode at this time.  It only saves a bit less than .1W, so it's
-> not that big of a deal.
->
-> Glad it's all working for you now.
->
-> greg k-h
+Changeset 13495:87c3853fe2b3 
+Subject: pvrusb2: Support 16KB FX2 firmware
+http://linuxtv.org/hg/v4l-dvb/rev/87c3853fe2b3
 
+Changeset 13500:d4c418d4b25c
+Subject: pvrusb2: Fix lingering 16KB FX2 Firmware issues
+http://linuxtv.org/hg/v4l-dvb/rev/d4c418d4b25c
+
+I do not believe these patches have any ordering dependencies with other 
+patches, though between the two the second one technically should come 
+after the first.
+
+Thanks,
+
+  -Mike
+
+
+-- 
+
+Mike Isely
+isely @ isely (dot) net
+PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
