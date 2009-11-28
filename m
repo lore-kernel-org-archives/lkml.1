@@ -1,115 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZK1Hl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbZK1Htu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbZK1Hl5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 02:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZK1Hl4
+	id S1753255AbZK1Htu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 02:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZK1Htt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 02:41:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54271 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbZK1Hlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 02:41:55 -0500
-Message-ID: <4B10D30D.3020108@kernel.org>
-Date: Fri, 27 Nov 2009 23:36:45 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH 9/9] pci: pciehp second try to get big range for pcie devices
- -v2
-References: <4ADEB601.8020200@kernel.org>	<4AE55D12.30403@kernel.org>	<4AE57976.4060107@jp.fujitsu.com>	<4AE5E37F.8070707@kernel.org>	<4AE5EFDB.2060908@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B10D084.8070608@kerne!
- l.org>
-In-Reply-To: <4B10D084.8070608@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 28 Nov 2009 02:49:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42536 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752185AbZK1Htt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 02:49:49 -0500
+Date: Fri, 27 Nov 2009 23:48:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Clemens Ladisch <clemens@ladisch.de>,
+       Serge Belyshev <belyshev@depni.sinp.msu.ru>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v4] k10temp: temperature sensor for AMD Family 10h/11h
+ CPUs
+Message-Id: <20091127234836.d33c9841.akpm@linux-foundation.org>
+In-Reply-To: <20091127164333.75e20c8f@hyperion.delvare>
+References: <4AF91F70.10106@ladisch.de>
+	<4B06501B.8080509@ladisch.de>
+	<87ws1l5wcl.fsf@depni.sinp.msu.ru>
+	<4B0673D7.5010006@ladisch.de>
+	<20091120123016.19d98ab4@hyperion.delvare>
+	<4B068402.7020606@ladisch.de>
+	<20091120131855.7f8f8722@hyperion.delvare>
+	<4B0A3DB6.9090703@ladisch.de>
+	<20091123145154.5b2b5735@hyperion.delvare>
+	<4B0AAA55.3040702@ladisch.de>
+	<20091123200527.1114cbc2@hyperion.delvare>
+	<4B0B9CBB.2050107@ladisch.de>
+	<20091127164333.75e20c8f@hyperion.delvare>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 27 Nov 2009 16:43:33 +0100 Jean Delvare <khali@linux-fr.org> wrote:
 
-handle the case the slot bridge that doesn't get pre-allocated big enough res
-from FW.
-for example pcie devices need 256M, but the bridge only get preallocated 2M...
+> Hi Clemens,
+> 
+> On Tue, 24 Nov 2009 09:43:39 +0100, Clemens Ladisch wrote:
+> > This adds a driver for the internal temperature sensor of AMD Family 10h
+> > and 11h CPUs.
+> > 
+> > Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+> > ---
+> > v3: added 'force' parameter for CPUs with buggy sensor; more documentation
+> > v4: added max/crit values, other changes suggested by Jean Delvare
+> > 
+> >  Documentation/hwmon/k10temp |   60 +++++++++
+> >  drivers/hwmon/Kconfig       |   12 +
+> >  drivers/hwmon/Makefile      |    1
+> >  drivers/hwmon/k10temp.c     |  197 ++++++++++++++++++++++++++++++++
+> >  4 files changed, 270 insertions(+)
+> 
+> Looks alright to me.
+> 
+> Acked-by: Jean Delvare <khali@linux-fr.org>
+> 
+> If this is OK with you, I can add this patch to my hwmon tree and
+> schedule it for merge in kernel 2.6.33.
 
--v2: use resource_list_x
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/pci/setup-bus.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 48 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/pci/setup-bus.c
-===================================================================
---- linux-2.6.orig/drivers/pci/setup-bus.c
-+++ linux-2.6/drivers/pci/setup-bus.c
-@@ -985,13 +985,60 @@ void pci_assign_unassigned_bridge_resour
- {
- 	struct pci_bus *bus;
- 	struct pci_bus *parent = bridge->subordinate;
-+	bool second_tried = false;
-+	struct resource_list_x head, *list;
- 	int retval;
-+	unsigned long type_mask = IORESOURCE_IO | IORESOURCE_MEM |
-+				  IORESOURCE_PREFETCH;
- 
-+	head.next = NULL;
-+
-+again:
- 	pci_bus_size_bridges(parent);
- 	pci_clear_master(bridge);
--	__pci_bridge_assign_resources(bridge, NULL);
-+	__pci_bridge_assign_resources(bridge, &head);
- 	retval = pci_reenable_device(bridge);
- 	pci_set_master(bridge);
- 	pci_enable_bridges(parent);
-+
-+	/* any device complain? */
-+	if (!head.next)
-+		return;
-+
-+	if (second_tried) {
-+		/* still fail, don't need to try more */
-+		free_failed_list(&head);
-+		return;
-+	}
-+
-+	second_tried = true;
-+	printk(KERN_DEBUG "PCI: second try to assign unassigned res\n");
-+
-+	/*
-+	 * Try to release leaf bridge's resources that doesn't fit resource of
-+	 * child device under that bridge
-+	 */
-+	for (list = head.next; list;) {
-+		unsigned long flags = list->flags;
-+
-+		bus = list->dev->bus;
-+		pci_bus_release_unused_bridge_res(bus, flags & type_mask, 0);
-+		list = list->next;
-+	}
-+	/* retore size and flags */
-+	for (list = head.next; list;) {
-+		struct resource *res = list->res;
-+
-+		res->start = list->start;
-+		res->end = list->end;
-+		res->flags = list->flags;
-+		if (list->dev->subordinate)
-+			res->flags = 0;
-+
-+		list = list->next;
-+	}
-+	free_failed_list(&head);
-+
-+	goto again;
- }
- EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
-
+Sounds good, thanks.
