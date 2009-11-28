@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZK1KcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbZK1Kgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753617AbZK1KcF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 05:32:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZK1KcE
+	id S1753637AbZK1Kgm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 05:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZK1Kgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 05:32:04 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42817 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbZK1KcC (ORCPT
+	Sat, 28 Nov 2009 05:36:42 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:55694 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752153AbZK1Kgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 05:32:02 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4B10FC0A.7050408@s5r6.in-berlin.de>
-Date: Sat, 28 Nov 2009 11:31:38 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
-MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Jarod Wilson <jarod@redhat.com>,
-       linux-kernel@vger.kernel.org, Mario Limonciello <superm1@ubuntu.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <4B0A765F.7010204@redhat.com> <4B0A81BF.4090203@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <4B0AB60B.2030006@s5r6.in-berlin.de> <4B0AC8C9.6080504@redhat.com> <m34oolrnwd.fsf@intrepid.localdomain> <4B0E71B6.4080808@redhat.com> <m3my29up3y.fsf@intrepid.localdomain> <4B0ED19B.9030409@redhat.com> <20091128003918.628d4b84@pedra> <20091128025437.GN6936@core.coreip.homeip.net> <4B10F0BC.60008@redhat.com>
-In-Reply-To: <4B10F0BC.60008@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Nov 2009 05:36:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=R0O0XR4fWCLKGnN3wILJiYmRRhg4DLD6RdDAiOR/23y1+bNvykYZfOGiZaxRJpZXcb
+         L2dhvsT+TKPBWUi1H9arQ/7hTJufGYc9yGGKLUNOVmi2UojUXsiZ3SfJc4WF1gtKDQuZ
+         VSuHKkwUVqWipbmY5UjGust4F0mRDMmqN9hqQ=
+Subject: Re: XD/smartmedia - how to implement it right?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alex Dubov <oakad@yahoo.com>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, arnd@arndb.de,
+       tglx@linutonix.de
+In-Reply-To: <716701.11435.qm@web37602.mail.mud.yahoo.com>
+References: <716701.11435.qm@web37602.mail.mud.yahoo.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Nov 2009 12:36:39 +0200
+Message-ID: <1259404599.15208.6.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> Dmitry Torokhov wrote:
-[scancode-to-keycode map size]
->> Hmm, why can't you just resize it when you get EVIOCSKEYCODE for
->> scancode that would be out of bounds for the current table (if using
->> table approach)?
-[...]
-> Let's suppose, for example that instead of using a 49 keys
-> IR, they want to use some programable IR with 55 keys, with different
-> scancodes. This means that they'll need to delete all 49 scancodes from the old IR 
-> and add 55 new scancodes. As there's no explicit call to delete a scan code, the solution
-> I found with the current API is to read the current scancode table and replace them with
-> KEY_UNKNOWN, allowing its re-use (this is what the driver currently does) or deleting
-> that scancode from the table. After deleting 49 keys, you'll need to add the 55 new keys.
-> If we do dynamic table resize for each operation, we'll do 104 sequences of kmalloc/kfree
-> for replacing one table.
+On Fri, 2009-11-27 at 23:22 -0800, Alex Dubov wrote: 
+> > 
+> > The "mtd uses blocking calls" argument I can help
+> > with.  For some other
+> > project I've added non-blocking calls to mtd[1].
+> > 
+> > Biggest problems I see are a) the userspace interface and
+> > b) allowing
+> > both raw flash access through MTD and block device access
+> > with an FTL.
+> > 
+> > [1] http://lists.infradead.org/pipermail/linux-mtd/2009-November/028065.html
+> > 
+> > Jörn
+> 
+> I actually tried several approaches to this problem and I think, I have a good idea about how to create a fully asynchronous mtd driver, which can handle different device models. Unfortunately, I had other commitments so I couldn't advance my mtd stuff.
+> 
+> Recently I was going to go back to it, but then I was asked to implement some additional functionality in rapidio subsystem, which I'll have to take care of first.
 
-It is not a performance sensitive task, is it?  If you can trade ABI
-simplicity for performance (which shouldn't actually matter), that'd be
-a better deal.
+Hi, 
 
-Besides, some of the necessary kernel-internal house-keeping can also be
-deferred until close().
+First of all, thank you very much for your contributions.
+Could you explain, why we need an asynchronous mtd driver?
 
-> IMO, it would be better to have an ioctl to do the keycode table resize. An optional flag
-> at the ioctl (or a separate one) can be used to ask the driver to clean the current
-> keymap table and allocate a new one with the specified size. 
-> This will avoid playing with memory allocation for every new key and will provide a simple
-> way to say to the driver to discard the current keybable, since a new one will be used.
+Also, as I understand the command interface more and more, it seems that
+'magically' xD card had same interface as standard NAND flash chip.
 
-OTOH, an additional "forget all current mappings" ioctl sounds like an
-ABI simplification.
--- 
-Stefan Richter
--=====-==--= =-== ===--
-http://arcgraph.de/sr/
+I think I can implement the driver for each controller just like an nand
+chip driver.
+
+Best regards,
+Maxim Levitsky
+
+
+
