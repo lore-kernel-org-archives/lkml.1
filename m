@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbZK1Rk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZK1Roi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753101AbZK1Rk3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 12:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZK1Rk2
+	id S1753165AbZK1Roi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 12:44:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZK1Roh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 12:40:28 -0500
-Received: from khc.piap.pl ([195.187.100.11]:55302 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752756AbZK1Rk1 convert rfc822-to-8bit (ORCPT
+	Sat, 28 Nov 2009 12:44:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:34456 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752378AbZK1Rog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 12:40:27 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       maximlevitsky@gmail.com, mchehab@redhat.com, stefanr@s5r6.in-berlin.de,
-       superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
-	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
-	<m3aay6y2m1.fsf@intrepid.localdomain>
-	<9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
-Date: Sat, 28 Nov 2009 18:40:30 +0100
-In-Reply-To: <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
-	(Jon Smirl's message of "Sat, 28 Nov 2009 12:37:40 -0500")
-Message-ID: <m3638uy2cx.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 28 Nov 2009 12:44:36 -0500
+Date: Sat, 28 Nov 2009 09:45:30 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Michael Breuer <mbreuer@majjas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Problem? intel_iommu=off; perf top shows acpi_os_read_port as
+ extremely busy
+Message-ID: <20091128094530.0ede7b1a@infradead.org>
+In-Reply-To: <20091128071808.GA32183@elte.hu>
+References: <4B106CC0.4050406@majjas.com>
+	<20091128071808.GA32183@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl <jonsmirl@gmail.com> writes:
+On Sat, 28 Nov 2009 08:18:08 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
->> 1. Merging the lirc drivers. The only stable thing needed is lirc
->>   interface.
->
-> Doing that locks in a user space API that needs to be supported
-> forever. We need to think this API through before locking it in.
+> 
+> * Michael Breuer <mbreuer@majjas.com> wrote:
+> 
+> > Having given up for now on VT-D, I rebooted 2.6.38 rc8 with 
+> > intel_iommu=off. Whilst my myriad of broken bios issues cleared, I
+> > now see in perf top acpi_os_read_port as continually the busiest
+> > function. With intel_iommu enabled, _spin_lock was always on top,
+> > and nothing else was notable.
+> > 
+> > This seems odd to me, perhaps this will make sense to someone else.
+> > 
+> > FWIW, I'm running on an Asus p6t deluxe v2; ht enabled; no errors
+> > or oddities in dmesg or /var/log/messages.
+> 
+> Could you post the perf top output please?
+> 
+> Also, could you also post the output of:
+> 
+> 	perf stat -a --repeat 10 sleep 1
+> 
+> this will show us how idle the system is. (My guess is that your
+> system is idle and perf top shows acpi_os_read_port because the
+> system goes to idle via ACPI methods and PIO is slow. In that case
+> all is nominal and your system is fine. But it's hard to tell without
+> more details.)
+> 
 
-Sure, that's why I wrote about the need for it to be "stable".
--- 
-Krzysztof Halasa
+yeah the os_read_port is part of the idle loop, so if your system is
+idle it'll show up big.... not much we can optimize there though...
