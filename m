@@ -1,109 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbZK2RlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbZK2SCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752796AbZK2RlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 12:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZK2RlS
+	id S1752823AbZK2SCU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 13:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZK2SCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 12:41:18 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:42912 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751654AbZK2RlR convert rfc822-to-8bit (ORCPT
+	Sun, 29 Nov 2009 13:02:19 -0500
+Received: from mail2.racsa.co.cr ([196.40.31.26]:33309 "EHLO
+	barracuda7.racsa.co.cr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752306AbZK2SCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 12:41:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LIDEsmUdJS3QcDgpp7+jhXmD0XCkjYXuL4W97GHSzr5b2CGy+QvElxoKs2EIN1PcSf
-         TRJ0EqOwJGg0ojavJAmoO5UaHparPwiUUvma0EesrcIW0TN44zgIMi0Q2jWlzq/EbZfZ
-         SaXoMZPcmfC7M3kqfkbhB+MlyfFPqu25fczak=
-MIME-Version: 1.0
-In-Reply-To: <20091129171726.GB4993@kroah.com>
-References: <20091127013217.7671.32355.stgit@terra>
-	 <20091127013423.7671.36546.stgit@terra>
-	 <20091129171726.GB4993@kroah.com>
-Date: Sun, 29 Nov 2009 12:41:22 -0500
-Message-ID: <9e4733910911290941o761a4dfhf4168e573c6b6e89@mail.gmail.com>
-Subject: Re: [IR-RFC PATCH v4 2/6] Core IR module
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 29 Nov 2009 13:02:19 -0500
+X-Greylist: delayed 936 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Nov 2009 13:02:18 EST
+X-ASG-Debug-ID: 1259516818-63c5031f0000-xx1T2L
+X-Barracuda-URL: http://172.16.1.16:8000/cgi-bin/mark.cgi
+X-Barracuda-Envelope-From: osobosque@racsa.co.cr
+Date: Sun, 29 Nov 2009 11:46:43 -0600 (CST)
+From: Joseph Parmelee <jparmele@wildbear.com>
+X-X-Sender: jparmele@bruno
+To: linux-kernel@vger.kernel.org
+X-ASG-Orig-Subj: futex_cmpxchg_enabled not set in futex_init on pentium3
+Subject: futex_cmpxchg_enabled not set in futex_init on pentium3
+Message-id: <alpine.LNX.2.00.0911291057100.2912@bruno>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Barracuda-Connect: UNKNOWN[172.16.7.14]
+X-Barracuda-Start-Time: 1259516818
+X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at racsa.co.cr
+X-Barracuda-Spam-Score: 0.00
+X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=4.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=6.0 tests=
+X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.2.15900
+	Rule breakdown below
+	 pts rule name              description
+	---- ---------------------- --------------------------------------------------
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 12:17 PM, Greg KH <greg@kroah.com> wrote:
->> +static ssize_t ir_raw_show(struct device *dev,
->> +                              struct device_attribute *attr, char *buf)
->> +{
->> +     struct input_dev *input_dev = to_input_dev(dev);
->> +     unsigned int i, count = 0;
->> +
->> +     for (i = input_dev->ir->raw.tail; i != input_dev->ir->raw.head; ) {
->> +
->> +             count += snprintf(&buf[count], PAGE_SIZE - 1, "%i\n", input_dev->ir->raw.buffer[i++]);
->> +             if (i > ARRAY_SIZE(input_dev->ir->raw.buffer))
->> +                     i = 0;
->> +             if (count >= PAGE_SIZE - 1) {
->> +                     input_dev->ir->raw.tail = i;
->> +                     return PAGE_SIZE - 1;
->> +             }
->> +     }
->> +     input_dev->ir->raw.tail = i;
->> +     return count;
->> +}
->
-> This looks like it violates the "one value per sysfs file" rule that we
-> have.  What exactly are you outputting here?  It does not look like this
-> belongs in sysfs at all.
+Greetings all:
 
-It should be on a debug switch or maybe a debug device. If the rest of
-the system is working right you shouldn't need this data.
+Sometime between 2.6.28.6 and 2.6.31.5 a regression (feature?) in the futex
+system now causes futex test failures on glibc-2.9 which where not present
+before.  That is, recompiling the binaries of glibc-2.9 and rerunning its
+test suite now produces futex errors that passed previously.  The problem
+appears now with glibc-2.9 compiled with either gcc-4.1.2 or gcc-4.4.2, and
+with glibc-2.11 compiled with gcc-4.4.2, which is what I am currently
+running on this machine, failures and all.
 
->
->> +static ssize_t ir_raw_store(struct device *dev,
->> +                               struct device_attribute *attr,
->> +                               const char *buf,
->> +                               size_t count)
->> +{
->> +     struct ir_device *ir = to_input_dev(dev)->ir;
->> +     long delta;
->> +     int i = count;
->> +     int first = 0;
->> +
->> +     if (!ir->xmit)
->> +             return count;
->> +     ir->send.count = 0;
->> +
->> +     while (i > 0) {
->> +             i -= strict_strtoul(&buf[i], i, &delta);
->> +             while ((buf[i] != '\n') && (i > 0))
->> +                     i--;
->> +             i--;
->> +             /* skip leading zeros */
->> +             if ((delta > 0) && !first)
->> +                     continue;
->> +
->> +             ir->send.buffer[ir->send.count++] = abs(delta);
->> +     }
->> +
->> +     ir->xmit(ir->private, ir->send.buffer, ir->send.count, ir->raw.carrier, ir->raw.xmitter);
->> +
->> +     return count;
->> +}
->
-> What type of data are you expecting here?  More than one value?
->
-> thanks,
->
-> greg k-h
->
+The system under discussion is a uniprocessor pentium3 with an AMI BIOS. 
+Full details available on request should that prove necessary.
+
+I have tracked the test failures down to the fact that futex_cmpxchg_enabled
+is not set because the test in futex_init now "fails" (actually succeeds). 
+This appears to be happening because the expected page fault intentionally
+provoked by a null dereference appears to be working now in kernel mode. 
+This *may* (rank speculation) be associated with the AMI BIOS low-memory
+corruption protection added sometime during this gap, and which is activated
+on this machine.
+
+Before I muck any further with this, especially involving the quite tricky
+futex mess, I would appreciate some insight into the idea behind the test in
+futex_init.  I don't understand why you would bother to invoke a fault in
+what is apparently a test to determine if the cmpxchg instruction works. 
+The fault is supposed to occur as a result of a null dereference that takes
+place *before* the cmpxchg instruction is even executed.  If you want to
+test that cmpxchg works, why not just make a little test in futex_init that
+uses it and fails (not succeeds) if it doesn't behave as expected, or if
+there is a fault of some kind (like illegal instruction)?  Or is the fact
+that we don't get a fault the whole point here?
 
 
+Regards,
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Joseph
+
+Please CC me directly as I am no longer subscribed to the list.
