@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752252AbZK2XbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZK2Xb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752252AbZK2XbM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 18:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZK2XbL
+	id S1752367AbZK2Xb6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 18:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZK2Xb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 18:31:11 -0500
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:49005 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751855AbZK2XbK convert rfc822-to-8bit (ORCPT
+	Sun, 29 Nov 2009 18:31:57 -0500
+Received: from icebox.esperi.org.uk ([81.187.191.129]:39709 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751865AbZK2Xb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 18:31:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=Oc60tl0oHRf1LE/Dqw6arTBH0ldeX/ZXlvGWDc0pcQYwihXl9qOQAFYYjAYe3mqM9o
-         P5VGuwkHXf76chF9hPaCRZvOmkSDNnuOP6GmRlQTkz6jaG7gFIdEzjRIQIPTZ9o96ynv
-         SjqEz6ujaM8z5C0FQdDvj7rVomf7X7/gX7kIc=
+	Sun, 29 Nov 2009 18:31:56 -0500
+To: Avi Kivity <avi@redhat.com>
+Cc: kvm@vger.kernel.org,
+       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31.5 x86-64 KVM: 'emulation failed (pagetable) rip 7fb49335da7b 66 0f 7f 07'
+References: <87skbzvdgd.fsf@spindle.srvr.nix> <4B125051.6010506@redhat.com>
+	<87k4x9saqn.fsf@spindle.srvr.nix> <4B1283F5.5060204@redhat.com>
+From: Nix <nix@esperi.org.uk>
+Emacs: because extension languages should come with the editor built in.
+Date: Sun, 29 Nov 2009 23:31:45 +0000
+In-Reply-To: <4B1283F5.5060204@redhat.com> (Avi Kivity's message of "Sun, 29 Nov 2009 16:23:49 +0200")
+Message-ID: <87y6lorjq6.fsf@spindle.srvr.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
 MIME-Version: 1.0
-From: =?ISO-8859-1?Q?J=E9r=E9my_Cochoy?= <jeremy.cochoy@gmail.com>
-Date: Mon, 30 Nov 2009 00:30:55 +0100
-Message-ID: <a229bc400911291530s51e1971do402e6441115d70ee@mail.gmail.com>
-Subject: [PATCH] fs/ext2: ext2_readdir comment about returns
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
-       Pavel Machek <pavel@suse.cz>, Al Viro <viro@zeniv.linux.org.uk>,
-       ronny.pretzsch@dfs.de, Corentin Chary <corentin.chary@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-DCC-wuwien-Metrics: spindle 1290; Body=3 Fuz1=3 Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:Jeremy Cochoy <jeremy.cochoy@gmail.com>
+On 29 Nov 2009, Avi Kivity stated:
+> Most likely, either this or something similar is called on a userspace
+> device driver.  Can you check if this is triggered by starting X?
 
-Hello,
+*sigh* I just wasted twenty minutes trying to find some way, *any* way
+to not start X under Ubuntu Karmic, so as to test this. None is evident.
+I can't even figure out what and where in upstart's horrific dependency
+tangle is starting X in the first place: deleting suspicious-looking
+things from rc*.d has no effect at all. I can't even tell if rc*.d is
+still used, nor if the concept of runlevel is even meaningful any
+longer. There are lots of things googleable that claim to say how to do
+this, but all relate to the non-dependency-based inittab-emulating
+method used in previous Ubuntu versions.
 
-I submit a short correction about a comment in ext2/dir.c
-
-(I've already send it but it wasn't the good patch format and i didn't
-cc the right people.)
-
-PS: Please excuse me if I make mistakes with the netiquette, it's my
-first patch and i wich to send more useful patchs next time, without
-hurting your eyes.
-
-Best regards,
-
------
-diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
-index 6cde970..fc2bd05 100644
---- a/fs/ext2/dir.c
-+++ b/fs/ext2/dir.c
-@@ -353,8 +353,8 @@ ext2_readdir (struct file * filp, void * dirent,
-filldir_t filldir)
- * ext2_find_entry()
- *
- * finds an entry in the specified directory with the wanted name. It
-- * returns the page in which the entry was found, and the entry itself
-- * (as a parameter - res_dir). Page is returned mapped and unlocked.
-+ * returns the page in which the entry was found (as a parameter - res_page),
-+ * and the entry itself. Page is returned mapped and unlocked.
- * Entry is guaranteed to be valid.
- */
-struct ext2_dir_entry_2 *ext2_find_entry (struct inode * dir,
-
---
-Jérémy Cochoy - L1 MI (Lyon1)
-Mail : jeremy.cochoy@gmail.com
-Tel : 06-43-01-74-02
-Alias Zenol - http://zenol.fr
+Anyone know?
