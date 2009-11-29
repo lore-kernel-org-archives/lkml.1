@@ -1,117 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbZK2VMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbZK2VJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752765AbZK2VMy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 16:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZK2VMx
+	id S1752460AbZK2VJY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 16:09:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZK2VJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 16:12:53 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4030 "EHLO mx1.redhat.com"
+	Sun, 29 Nov 2009 16:09:23 -0500
+Received: from khc.piap.pl ([195.187.100.11]:39947 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752048AbZK2VMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 16:12:53 -0500
-Date: Sun, 29 Nov 2009 22:07:16 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Veaceslav Falico <vfalico@redhat.com>, Paul Mackerras <paulus@samba.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: powerpc: syscall_dotrace() && retcode (Was: powerpc: fork &&
-	stepping)
-Message-ID: <20091129210716.GA19205@redhat.com>
-References: <20091125154052.GA6734@redhat.com> <20091126075335.GA18508@in.ibm.com> <20091126145051.GB4382@redhat.com> <20091126172524.GA14768@redhat.com> <20091126182226.GF12355@darkmag.usersys.redhat.com> <20091126202312.GA21945@redhat.com> <19214.63688.860929.962005@cargo.ozlabs.ibm.com> <20091126223703.GA28556@redhat.com> <20091127174627.GB26193@darkmag.usersys.redhat.com> <20091128073049.GD23108@in.ibm.com>
+	id S1751875AbZK2VJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 16:09:23 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Stefan Assmann <sassmann@redhat.com>, linux-pci@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Don Dutile <ddutile@redhat.com>, kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH] change PCI nomenclature according to PCI-SIG
+References: <4B110F79.8080405@redhat.com> <4B111ADC.9020800@garzik.org>
+	<4B123A34.5090509@redhat.com> <4B126EEB.1040908@garzik.org>
+Date: Sun, 29 Nov 2009 22:09:26 +0100
+In-Reply-To: <4B126EEB.1040908@garzik.org> (Jeff Garzik's message of "Sun, 29
+	Nov 2009 07:54:03 -0500")
+Message-ID: <m34ood6nsp.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091128073049.GD23108@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/28, Ananth N Mavinakayanahalli wrote:
->
-> syscall-reset is the only failure I see on
-> powerpc:
->
-> errno 14 (Bad address)
-> syscall-reset: syscall-reset.c:95: main: Assertion `(*__errno_location
-> ()) == 38' failed.
-> unexpected child status 67f
-> FAIL: syscall-reset
+Jeff Garzik <jeff@garzik.org> writes:
 
-(to remind, it also fails without utrace)
+> Think about this from an engineering perspective.  This patch is
+> driven not by any real technical need, but more by marketing and
+> trademark folks.
 
-Once again, I know nothing about powerc, perhaps I misread the code,
-but I believe this test-case is just wrong on powerpc and should be
-fixed.
+Uh, I'm not sure about this. It would be much better if the kernel was
+consistent in naming the PCI versions, not like today: PCIe, PCIE,
+PCI-E, PCI-express, PCI-X, PCIX etc, including the user-visible cases
+(but obviously not the EDD and similar things).
 
-On powerpc, syscall_get_nr() returns regs->gpr[0], this means this
-register is used to pass the syscall number.
+But I think it should be handler by individual maintainers.
 
-This matches do_syscall_trace_enter(), it returns regs->gpr[0] as a
-(possibly changed by tracer) syscall nr.
+> Finally, split your patch up.  I would suggest starting with 100%
+> comment changes that are guaranteed with mathematical certainty to not
+> change the compiler-generated code at all.  That will make the
+> remaining changes much easier to review, if they are in separate
+> patches from the comment-only changes.
 
-arch/powerpc/kernel/entry_64.S does
-
-	syscall_dotrace:
-
-		 bl      .do_syscall_trace_enter
-		 mr      r0,r3	// I guess, r3 = r0 ?
-		 ...
-		 b       syscall_dotrace_cont
-
-	syscall_dotrace_cont:
-
-		syscall_dotrace_cont:
-
-			cmpldi  0,r0,NR_syscalls
-			bge-    syscall_enosys
-
-	syscall_enosys:
-
-		li      r3,-ENOSYS
-		b       syscall_exit
-
-
-Now return to the test-case, syscall-reset.c. The tracee does
-l = syscall (-23, 1, 2, 3) and stops.
-
-The tracer does
-
-	#define RETREG	offsetof(struct pt_regs, gpr[0])
-	#define NEWVAL	((long) ENOTTY)
-
-	l = ptrace(PTRACE_PEEKUSER, child, RETREG, 0l);
-
-l == -23, this is correct, note syscall(-23) above.
-
-	l = ptrace(PTRACE_POKEUSER, child, RETREG, NEWVAL);
-
-And expects the tracee will see NEWVAL==ENOTTY after return from
-the systame call.
-
-Of course this can't happen. We changed the syscall number, the
-new value is ENOTTY == 25 == __NR_stime, sys_stime() correctly
-returns -EFAULT.
-
------------------------------------------------------------------
-
-If I change the test-case to use NEWVAL == 1000 (or any other value
-greater than NR_syscalls), then the tracee sees ENOSYS and this is
-correct too.
-
-But I do not see how it is possible to change the retcode on powerpc.
-Unlike x86, powepc doesn't set -ENOSYS "in advance", before doing
-do_syscall_trace_enter() logic. This means that if the tracer "cancels"
-syscall, r3 will be overwritten by syscall_enosys.
-
-This probably means the kernel should be fixed too, but I am not
-brave enough to change the asm which I can't understand ;)
-
-Oleg.
-
+Absolutely. Perhaps that older PCI patch should be done first, it was
+a good one IIRC.
+-- 
+Krzysztof Halasa
