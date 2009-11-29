@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZK2E7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751346AbZK2FJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbZK2E7Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 23:59:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbZK2E7Y
+	id S1751346AbZK2FJm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 00:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbZK2FJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 23:59:24 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:59245 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754109AbZK2E7X (ORCPT
+	Sun, 29 Nov 2009 00:09:42 -0500
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:4448 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbZK2FJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 23:59:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Sf/zsqJxgcsgjEA/0PZBMMsmbGW2u3LnRIWACwqIKaEf/rgjvGZ8eC/8c/jJ8rt+OB
-         cpwznFmTS7399oli2aPXJoz3fIDAhpSGZIumsD+4OAzxddLWsDVM56FO533jUZiAQlTN
-         iSiuBnBJCT6vR/MLsMLPEBYBPolyVplTokhNM=
-Date: Sat, 28 Nov 2009 20:59:25 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, khc@pm.waw.pl,
-       awalls@radix.net, j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, maximlevitsky@gmail.com,
-       mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR system?
-Message-ID: <20091129045925.GS6936@core.coreip.homeip.net>
-References: <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> <4B116954.5050706@s5r6.in-berlin.de> <9e4733910911281058i1b28f33bh64c724a89dcb8cf5@mail.gmail.com> <4B117DEA.3030400@s5r6.in-berlin.de> <9e4733910911281208t23c938a2l7537e248e1eda4ae@mail.gmail.com> <4B11881B.7000204@s5r6.in-berlin.de> <9e4733910911281246r65670e1free76e98ff4a23822@mail.gmail.com> <4B119A36.8020903@s5r6.in-berlin.de> <9e4733910911281410i75bf19b7xa4dfd6ad1dc1b748@mail.gmail.com> <9e4733910911281418s702489e5t418eab5623c2af98@mail.gmail.com>
+	Sun, 29 Nov 2009 00:09:41 -0500
+X-Greylist: delayed 588 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Nov 2009 00:09:41 EST
+Message-ID: <4B11FFCE.5050002@shikadi.net>
+Date: Sun, 29 Nov 2009 14:59:58 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.22) Gecko/20090809 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9e4733910911281418s702489e5t418eab5623c2af98@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Why does the disk still thrash when I have no swap?
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 28, 2009 at 05:18:34PM -0500, Jon Smirl wrote:
-> I'm looking at a Sony multi-function remote right now. It has five
-> devices and forty keys. Each of the five devices can transmit 0-9,
-> power, volume, etc. It transmits 5*40 = 200 unique scancodes.
-> 
-> I want the five devices to correspond to five apps. What's the plan
-> for splitting those 200 scancodes into the five apps?
-> 
-> I did it by creating five evdev devices each mapping 40 scancodes.
-> That's lets me reuse KP_1 for each of the five apps.
-> 
+Hi all,
 
-KEY_NUMERIC_1 please (which should not be affected by numlock state).
+My PC (x86_64) used to have 4GB RAM and 4GB swap.  I found that if I was doing 
+something very memory-intensive it would thrash, in that the entire PC would 
+grind to a halt while data was moved in and out of swap.  In some cases the PC 
+would be unresponsive for over 12 hours when I would just give up and reboot.
 
--- 
-Dmitry
+To avoid this I decided to upgrade the system to 8GB of RAM and disable swap. 
+  I figured the system should work fine without swap given that the total 
+available memory hasn't changed, it's just that half of it used to be swap and 
+now it's actual RAM.  It's been fine for about a year now.
+
+I was just compiling KDE and had a couple of VirtualBoxes running, which 
+appeared to max out my memory - it reached 6.9GB in use.  I say "appeared" to 
+max out my memory because the entire system froze again and the disk was 
+thrashing, just like it used to when I had swap enabled.
+
+I eventually managed to suspend the compile job which stopped all disk 
+activity, and told VirtualBox to grab a snapshot of the running VMs which took 
+about 10 minutes (compared to the usual 10 seconds) with the disk being 
+hammered the whole time and the system unusable (couldn't move the mouse 
+cursor more than a few pixels a minute.)
+
+Does anyone know what could have caused this 'thrash' to occur?  I have 
+checked and definitely have swap disabled (/proc/swaps is empty) and I have no 
+swap partitions on my disks anyway.  Could it be that the disk cache was 
+forced to shrink and suddenly all accesses to the filesystem became unbuffered 
+and incredibly slow?  Why would this stop the X11 mouse cursor from moving?
+
+Thanks,
+Adam.
