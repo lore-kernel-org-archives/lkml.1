@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZK2EbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZK2Edp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbZK2EbA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 23:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbZK2Ea7
+	id S1754029AbZK2Edp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 23:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZK2Edo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 23:30:59 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:58470 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753758AbZK2Ea6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 23:30:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pT3h41tZGVQEyr1RDSry5ON4NevLGxiIqWyf00nSa8FTMKxZz1ITviqtIyDzJyagYf
-         1ORBEjoEsx1lRbr0FdGvdZRm86fkoQU6/giEwlkyT/mngNrvE9PA79TYoi3pVHyaC/RL
-         lfVmUSoi3HKoy3BXVFFY1DWwZlQD5AyxQP7YE=
-Date: Sat, 28 Nov 2009 23:30:57 -0500
-From: tmhikaru@gmail.com
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: tmhikaru@gmail.com, Jan Kara <jack@suse.cz>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: Weird I/O errors with USB hard drive not remounting filesystem readonly
-Message-ID: <20091129043057.GA6131@roll>
-References: <20091127094339.GA9047@roll> <Pine.LNX.4.44L0.0911271248210.30903-100000@netrider.rowland.org>
+	Sat, 28 Nov 2009 23:33:44 -0500
+Received: from mail1.radix.net ([207.192.128.31]:63584 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753758AbZK2Edn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Nov 2009 23:33:43 -0500
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+From: Andy Walls <awalls@radix.net>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       maximlevitsky@gmail.com, mchehab@redhat.com, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+In-Reply-To: <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	 <m3aay6y2m1.fsf@intrepid.localdomain>
+	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 28 Nov 2009 23:32:01 -0500
+Message-Id: <1259469121.3125.28.camel@palomino.walls.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0911271248210.30903-100000@netrider.rowland.org>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Thank you for the time and effort you had to spend on this, all of
-you, I really appreciate all the hard work spent diagnosing my hardware
-issues as well as explaining what the various error messages were coming
-from.
+On Sat, 2009-11-28 at 12:37 -0500, Jon Smirl wrote:
+> On Sat, Nov 28, 2009 at 12:35 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> > Jon Smirl <jonsmirl@gmail.com> writes:
+> >
+> >> There are two very basic things that we need to reach consensus on first.
+> >>
+> >> 1) Unification with mouse/keyboard in evdev - put IR on equal footing.
+
+BTW, circa 1995 my serial mouse "Just Worked" in Linux.  Sometime around
+the release of Fedora Core 3 or 4, serial mice stopped being well
+supported as input devices AFAICT.  (I still have a dual boot
+Windows95/Linux machine with a serial mouse because it has ISA slots.)
+
+Are serial port connected IR devices going to see the same fate in this
+model?
 
 
-	Hope to see you next time,
-	Tim McGrath
+Why not consider IR devices as bi-directional communications devices vs.
+input devices like mice or keyboards?  Theoretically the TTY layer with
+line discipline modules for underlying IR hardware could also interface
+IR devices to user space.
+
+Sorry, the input subsystem cannot meet all the end user IR requirements.
+I doubt it could easily support all the current user space only IR
+drivers moving into the kernel.  I suspect the serial port connected IR
+devices will be deemed "too hard" and IR Tx as "not input" and dropped
+on the floor.
+
+
+The more I think about IR integration with input, the more I think any
+effort beyond the plug-and-plug for default configurations is a waste of
+time and effort.  Something more is needed to handle the transmitters
+and serial connected IRs.  It's also too convenient to access USB IR
+hardware from existing userspace drivers to bother porting into the
+kernel.
+
+Regards,
+Andy
+
