@@ -1,99 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbZK2STI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbZK2Stb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752660AbZK2STI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 13:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZK2STH
+	id S1752446AbZK2Stb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 13:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZK2Sta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 13:19:07 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:55475 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbZK2STF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 13:19:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=AnQ2sLm0HdG8azzZLcDIdciduitsgFHCEyKB35JRFvHWaauA8oua1QiahNpCYmS4id
-         NZCAOesKyQ39dBT8fLyO51zteM174NQb1DYM6uhCkDYrt1Y9etP6QKvkQU/4xK84NMvt
-         y/sCRjRoGBaRqrNxvAzdHggGWeBgi8hePVIY0=
+	Sun, 29 Nov 2009 13:49:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36913 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751416AbZK2Sta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 13:49:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] PM fix for 2.6.32
+Date: Sun, 29 Nov 2009 19:49:49 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
 MIME-Version: 1.0
-In-Reply-To: <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
-	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
-	 <m3aay6y2m1.fsf@intrepid.localdomain>
-	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
-	 <1259469121.3125.28.camel@palomino.walls.org>
-	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
-Date: Sun, 29 Nov 2009 13:19:10 -0500
-Message-ID: <9e4733910911291019l27e5fea2x3db268311842b17@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andy Walls <awalls@radix.net>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, maximlevitsky@gmail.com,
-       mchehab@redhat.com, stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911291949.49250.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 7:40 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> BTW, circa 1995 my serial mouse "Just Worked" in Linux.  Sometime around
->
-> Correct X11 just talked to the serial ports. In fact that is still the
-> way to configure it if you want any sanity in life.
->
->> and serial connected IRs.  It's also too convenient to access USB IR
->> hardware from existing userspace drivers to bother porting into the
->> kernel.
->
-> Userspace needs a way to identify IR hardware and to interface with it
-> using the right protocol. It's not clear the kernel needs to provide
-> anything more than minimal hardware interfaces in most case - be that
-> serial, libusb, ...
+Hi Linus,
 
-That's a description of the current system and it is driver chaos.
+Please pull a power management fix for 2.6.32 from:
 
-Half of the drivers are in user space and there are two different
-classes of kernel driver - LIRC and V4L.
-A lot of the hardware doesn't identify itself.
-There are two types of IR data in use - pulse timing and decoded protocol.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
 
-IR is an input device. We have a nice evdev input subsystem and it has
-been demonstrated that IR can work with it.
-
-Everybody keeps complaining that they want IR to "just work".
-Consolidating all of this (under 50K of code)  driver support in the
-kernel is the way to make it "just work".
-
-For example. Some IR devices only record pulse timing data. There are
-various protocols - RC5, RC6, etc for turning these pulse timing into
-a decode IR command. This is about 20K of code. Does it really make
-sense to create a device, push this data out into user space, decode
-it there, then inject the results back into the kernel (uinput) for
-further processing by the input subsystem?
-
-This decoding is getting done in user space because half of the IR
-drivers are in user space. But the other half of them aren't in user
-space and that set can't work in user space.  Most of the user space
-drivers can be pushed into the kernel where they'll automatically load
-when the device is detected.
-
-Some of the drivers can't be moved like the IR over ALSA. But is
-attaching an IR diode to the mic input of your sound card really a
-device or is it a hack that should be dealt with in user space?
-Another type is IR hardware that toggles the DTR output of a serial
-port at 40Khz to make a signal. Same thing is done with parallel
-ports. Those force the system into a bit-banging timing loop for
-1/10th second.
+This includes one change fixing irq enable/disable in runtime PM code.
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+ drivers/base/power/runtime.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+---------------
+
+Alan Stern (1):
+      PM: fix irq enable/disable in runtime PM code
+
