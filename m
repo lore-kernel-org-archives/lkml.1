@@ -1,116 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZK2Fc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbZK2GGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751964AbZK2Fc1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 00:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZK2Fc0
+	id S1753408AbZK2GGB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 01:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbZK2GGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 00:32:26 -0500
-Received: from outbound-mail03.westnet.com.au ([203.10.1.244]:15863 "EHLO
-	outbound-mail03.westnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751525AbZK2FcZ (ORCPT
+	Sun, 29 Nov 2009 01:06:00 -0500
+Received: from outbound.icp-qv1-irony-out5.iinet.net.au ([203.59.1.105]:23980
+	"EHLO outbound.icp-qv1-irony-out5.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752868AbZK2GGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 00:32:25 -0500
+	Sun, 29 Nov 2009 01:06:00 -0500
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AigEANKWEUvKrYkQbmdsb2JhbACBTppEP6l6AY00gksBgWUE
+X-IronPort-Anti-Spam-Result: AggBAKidEUt8qMDu/2dsb2JhbAAI02aEMQQ
 X-IronPort-AV: E=Sophos;i="4.47,307,1257091200"; 
-   d="scan'208";a="42367206"
-From: Mike Lampard <mike@mtgambier.net>
-Reply-To: mike@mtgambier.net
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR system?
-Date: Sun, 29 Nov 2009 16:01:53 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31.6-1mdv; KDE/4.3.2; x86_64; ; )
-Cc: Jon Smirl <jonsmirl@gmail.com>,
-       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
-       awalls@radix.net, j@jannau.net, jarod@redhat.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
-References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com> <200911291317.03612.mike@mtgambier.net> <20091129045549.GQ6936@core.coreip.homeip.net>
-In-Reply-To: <20091129045549.GQ6936@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+   d="scan'208";a="76927862"
+Subject: Re: Why does the disk still thrash when I have no swap?
+From: Ben Nizette <bn@niasdigital.com>
+To: Adam Nielsen <a.nielsen@shikadi.net>
+Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B11FFCE.5050002@shikadi.net>
+References: <4B11FFCE.5050002@shikadi.net>
+Content-Type: text/plain
+Date: Sun, 29 Nov 2009 17:06:26 +1100
+Message-Id: <1259474786.4467.129.camel@ben-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911291601.53368.mike@mtgambier.net>
-X-GROMMIT-SECNET-NET-AU-MailScanner: Not scanned: please contact SECNet for details
-X-GROMMIT-SECNET-NET-AU-MailScanner-SpamCheck: 
-X-GROMMIT-SECNET-NET-AU-MailScanner-From: mike@mtgambier.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Nov 2009 03:25:49 pm Dmitry Torokhov wrote:
-> On Sun, Nov 29, 2009 at 01:17:03PM +1030, Mike Lampard wrote:
-> > On Sat, 28 Nov 2009 02:27:59 am Jon Smirl wrote:
-> > > On Fri, Nov 27, 2009 at 2:45 AM, Christoph Bartelmus
-> > >
-> > > <christoph@bartelmus.de> wrote:
-> > > > Hi Mauro,
-> > > >
-> > > > on 26 Nov 09 at 14:25, Mauro Carvalho Chehab wrote:
-> > > >> Christoph Bartelmus wrote:
-> > > >
-> > > > [...]
-> > > >
-> > > >>> But I'm still a bit hesitant about the in-kernel decoding. Maybe
-> > > >>> it's just because I'm not familiar at all with input layer toolset.
-> > > >
-> > > > [...]
-> > > >
-> > > >> I hope it helps for you to better understand how this works.
-> > > >
-> > > > So the plan is to have two ways of using IR in the future which are
-> > > > incompatible to each other, the feature-set of one being a subset of
-> > > > the other?
-> > >
-> > > Take advantage of the fact that we don't have a twenty year old legacy
-> > > API already in the kernel. Design an IR API that uses current kernel
-> > > systems. Christoph, ignore the code I wrote and make a design proposal
-> > > that addresses these goals...
-> > >
-> > > 1) Unified input in Linux using evdev. IR is on equal footing with
-> > > mouse and keyboard.
-> >
-> > I think this a case where automating setup can be over-emphasised (in the
-> > remote-as-keyboard case).
-> >
-> > Apologies in advance if I've misunderstood the idea of utilising the
-> > 'input subsystem' for IR.  If the plan is to offer dedicated IR events
-> > via a yet-to- be-announced input event subsystem and to optionally
-> > disallow acting as a keyboard via a module option or similar then please
-> > ignore the following.
-> >
-> > Whilst having remotes come through the input subsystem might be 'the
-> > correct thing' from a purely technical standpoint, as an end-user I find
-> > the use-case for remotes completely different in one key aspect: 
-> > Keyboards and mice are generally foreground-app input devices, whereas
-> > remotes are often controlling daemons sitting in the background piping
-> > media through dedicated devices.  As an example I have a VDR instance
-> > running in the background on my desktop machine outputting to a TV in
-> > another room via a pci mpeg decoder - I certainly don't want the VDR
-> > remote control interacting with my X11 desktop in any way unless I go out
-> > of my way to set it up to do so, nor do I want it interacting with other
-> > applications (such as MPD piping music around the house) that are
-> > controlled via other remotes in other rooms unless specified.
-> >
-> > Setting this up with Lircd was easy, how would a kernel-based proposal
-> > handle this?
-> 
-> Why would that be different really? On my keyboard there is a key for
-> e-mail application (and many others) - what HID calls Application Launch
-> keys IIRC. There also application control keys and system control keys,
-> KEY_COFFEE aka KEY_SCREENLOCK. Those are not to be consumed by
-> foreground application but by daemons/session-wide application.
-> 
-In my real-world examples above, both VDR and MPD are started at system start 
-and are not associated with any user-initiated sessions (X login etc) - they 
-are not X11 clients.  Their only input is via Lircd.  Conversely todays 
-Xserver (if I read my logfiles correctly) consumes all input event devices by 
-default, turning them into keypresses for its client apps.  This is exactly 
-the wrong behaviour for my use-case.  In order to ensure that my daemons 
-receive their input I must first ensure that X doesn't receive those events - 
-assuming this is possible it still complicates matters further than they are 
-today (I'd need a simple way of automatically differentiating between remote 
-devices and keyboard devices) .
+On Sun, 2009-11-29 at 14:59 +1000, Adam Nielsen wrote:
+> Could it be that the disk cache was 
+> forced to shrink and suddenly all accesses to the filesystem became unbuffered 
+> and incredibly slow?  Why would this stop the X11 mouse cursor from moving?
 
-Mike
+Pretty much, yeah.  Well, not so much that the filesystem became
+unbuffered, the new files you're accessing would have still been pulled
+in to RAM, but rather all the old files you were no longer accessing but
+were still in memory had to hit the disk before new allocations could
+succeed.
+
+Given the modern programmer's love of OOP, pretty much every action you
+can think of causes a massive number of (generally small) allocations
+and even though each one would likely free shortly after, could still
+potentially trigger a dirty page writeback before the allocation would
+succeed.
+
+This is one of my pet annoyances - most OOP programmers forget that
+object creation is potentially IO-bound in low memory situations (either
+by swap or by pagecache writeback) and wonder why seemingly innocuous
+things like "new Integer()" can take many seconds to complete!
+
+	--Ben.
+
