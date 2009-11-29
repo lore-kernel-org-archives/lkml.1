@@ -1,169 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbZK2Vvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZK2V5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753329AbZK2Vvs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 16:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZK2Vvr
+	id S1753390AbZK2V5O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 16:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZK2V5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 16:51:47 -0500
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:36670 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbZK2Vvq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 16:51:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=Uap3DTKMRVyIeVMePtQ5BSDzKPNd37khY25gWDKsWAzyYxeTT4y0sHIlGcVVV0jHJZ
-         NcLUK4H6b7H5s5Af2Y8ngMGLajMJyduPWrduUJc+wHqM8qxsU0DLQjCJeHUYMa5yPiwD
-         LY1YSb88WLf7jT9b6oZeGEbNi4uHakilzkyn4=
-MIME-Version: 1.0
-In-Reply-To: <b170af450911291351r443e355fraf1828dc1163e9e3@mail.gmail.com>
-References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
-	 <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
-	 <b170af450911291351r443e355fraf1828dc1163e9e3@mail.gmail.com>
-Date: Sun, 29 Nov 2009 22:51:52 +0100
-Message-ID: <b170af450911291351g6d5d5b34kf53bce65d84ae54a@mail.gmail.com>
-Subject: Re: Backlight device class redesign
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Richard Purdie <rpurdie@rpsys.net>
-Content-Type: multipart/mixed; boundary=000e0ce0445a617e1d04798988f6
+	Sun, 29 Nov 2009 16:57:13 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39996 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753265AbZK2V5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 16:57:12 -0500
+Date: Mon, 30 Nov 2009 08:57:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michal Marek <mmarek@suse.cz>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       =?UTF-8?B?QW7DrWJhbA==?= Monsalve Salazar <anibal@debian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: linux-kbuild.git
+Message-Id: <20091130085713.75f56423.sfr@canb.auug.org.au>
+In-Reply-To: <4B0F9F0D.6010601@suse.cz>
+References: <4B0E73E1.50900@suse.cz>
+	<20091126193750.GA15453@merkur.ravnborg.org>
+	<20091127152211.55043dbb.sfr@canb.auug.org.au>
+	<4B0F9F0D.6010601@suse.cz>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__30_Nov_2009_08_57_13_+1100_0OpR/904v96TQU19"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0ce0445a617e1d04798988f6
-Content-Type: text/plain; charset=UTF-8
+--Signature=_Mon__30_Nov_2009_08_57_13_+1100_0OpR/904v96TQU19
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-W dniu 29 listopada 2009 22:51 u=C5=BCytkownik Rafa=C5=82 Mi=C5=82ecki
-<zajec5@gmail.com> napisa=C5=82:
-> W dniu 29 listopada 2009 21:09 u=C5=BCytkownik Rafa=C5=82 Mi=C5=82ecki
-> <zajec5@gmail.com> napisa=C5=82:
->> So I think we have to register every device and just keep symlink
->> /sys/class/backlight/display_name pointing best device. We could
->> register devices in
->> 1) /sys/class/backlight/.devicename (hidden)
->> 2) some /sys/class/internal-usage/devicename
->>
->> Do you agree on this?
->
-> Please, see attached patch. TODO:
+Hi Michal,
 
-Attached...
+On Fri, 27 Nov 2009 10:42:37 +0100 Michal Marek <mmarek@suse.cz> wrote:
+>
+> >  Do you intend to run the equivalent of
+> > the kbuild-current tree (bug fixes for the current release while they a=
+re
+> > waiting to go to Linus)?  I have removed the kbuild-current tree for now
+> > since the only commit in it is in the new kbuild tree.
+>=20
+> I plan to maintain such a branch, but I thought I would base the
+> for-next branch on top of it, so that you get everything in one pack. Or
+> would you still prefer to have two kbuild branches in linux-next, so
+> that you can remove the for-next branch if necessary and keep the
+> for-current branch? Just tell me what fits you best.
+
+Running a for-current branch allows you to queue up urgent fixes without
+disrupting your for-next branch.  I will merge such a branch early on
+(actually before I do my first build) so that I don't have to worry about
+problems that are already have fixes pending for to be merged by Linus in
+his current tree.  Also, as you say, if I have problems with your
+for-next branch, it does not affect the more urgent patches.
 
 --=20
-Rafa=C5=82
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
---000e0ce0445a617e1d04798988f6
-Content-Type: application/octet-stream; name="backlight3.patch"
-Content-Disposition: attachment; filename="backlight3.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g2mck7pr0
+--Signature=_Mon__30_Nov_2009_08_57_13_+1100_0OpR/904v96TQU19
+Content-Type: application/pgp-signature
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2JhY2tsaWdodC5jIGIvZHJpdmVy
-cy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKaW5kZXggNjYxNWFjNy4uNDNhYWUzMSAxMDA2
-NDQKLS0tIGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKKysrIGIvZHJpdmVy
-cy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKQEAgLTEzLDExICsxMyw0NiBAQAogI2luY2x1
-ZGUgPGxpbnV4L2N0eXBlLmg+CiAjaW5jbHVkZSA8bGludXgvZXJyLmg+CiAjaW5jbHVkZSA8bGlu
-dXgvZmIuaD4KKyNpbmNsdWRlIDxsaW51eC9zdHJpbmcuaD4KIAogI2lmZGVmIENPTkZJR19QTUFD
-X0JBQ0tMSUdIVAogI2luY2x1ZGUgPGFzbS9iYWNrbGlnaHQuaD4KICNlbmRpZgogCitzdGF0aWMg
-c3RydWN0IGNsYXNzICpiYWNrbGlnaHRfY2xhc3M7CitzdGF0aWMgc3RydWN0IGxpc3RfaGVhZCBk
-aXNwbGF5czsKKworc3RhdGljIHN0cnVjdCBiYWNrbGlnaHRfZGlzcGxheSAqYmFja2xpZ2h0X2Zp
-bmRfZGlzcGxheShjb25zdCBjaGFyICpuYW1lKQoreworCXN0cnVjdCBsaXN0X2hlYWQgKnB0cjsK
-KwlzdHJ1Y3QgYmFja2xpZ2h0X2Rpc3BsYXkgKmVudHJ5OworCisJbGlzdF9mb3JfZWFjaChwdHIs
-ICZkaXNwbGF5cykgeworCQllbnRyeSA9IGxpc3RfZW50cnkocHRyLCBzdHJ1Y3QgYmFja2xpZ2h0
-X2Rpc3BsYXksIGxpc3QpOworCQlpZiAoc3RyY21wKGVudHJ5LT5uYW1lLCBuYW1lKSA9PSAwKSB7
-CisJCQlyZXR1cm4gZW50cnk7CisJCX0KKwl9CisKKwlyZXR1cm4gTlVMTDsKK30KKworc3RhdGlj
-IHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiYWNrbGlnaHRfYmVzdF9kZXZpY2Uoc3RydWN0IGJh
-Y2tsaWdodF9kaXNwbGF5ICpkaXNwbGF5KQoreworCXN0cnVjdCBsaXN0X2hlYWQgKnB0cjsKKwlz
-dHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqZW50cnk7CisKKwlwcmludGsoS0VSTl9XQVJOSU5HICJb
-REJHXSBnZXRfZGV2aWNlIGNhbGxlZCBmb3IgJXNcbiIsIGRpc3BsYXktPm5hbWUpOworCWxpc3Rf
-Zm9yX2VhY2gocHRyLCAmZGlzcGxheS0+ZGV2aWNlcykgeworCQkvKiBGSVhNRTogcmV0dXJuIGJl
-c3QsIG5vdCBmaXJzdCAqLworCQllbnRyeSA9IGxpc3RfZW50cnkocHRyLCBzdHJ1Y3QgYmFja2xp
-Z2h0X2RldmljZSwgbGlzdCk7CisJCXJldHVybiBlbnRyeTsKKwl9CisKKwlwcmludGsoS0VSTl9X
-QVJOSU5HICJbREJHXSBvaGhoaGggbm9vb28sIGxpc3QgZW1wdHk/XG4iKTsKKwlyZXR1cm4gTlVM
-TDsKK30KKwogI2lmIGRlZmluZWQoQ09ORklHX0ZCKSB8fCAoZGVmaW5lZChDT05GSUdfRkJfTU9E
-VUxFKSAmJiBcCiAJCQkgICBkZWZpbmVkKENPTkZJR19CQUNLTElHSFRfQ0xBU1NfREVWSUNFX01P
-RFVMRSkpCiAvKiBUaGlzIGNhbGxiYWNrIGdldHMgY2FsbGVkIHdoZW4gc29tZXRoaW5nIGltcG9y
-dGFudCBoYXBwZW5zIGluc2lkZSBhCkBAIC03Myw2ICsxMDgsNDIgQEAgc3RhdGljIGlubGluZSB2
-b2lkIGJhY2tsaWdodF91bnJlZ2lzdGVyX2ZiKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCkK
-IH0KICNlbmRpZiAvKiBDT05GSUdfRkIgKi8KIAorc3RhdGljIGludCBiYWNrbGlnaHRfcGlja191
-cF9kZXZpY2Uoc3RydWN0IGJhY2tsaWdodF9kaXNwbGF5ICpkaXNwbGF5KQoreworCWludCByZXN1
-bHQ7CisJc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgKmRldmljZSA9IGJhY2tsaWdodF9iZXN0X2Rl
-dmljZShkaXNwbGF5KTsKKworCWlmICghZGV2aWNlKSB7CisJCXByaW50ayhLRVJOX1dBUk5JTkcg
-IltEQkddIGNhbid0IGZpbmQgYmVzdCBkZXZpY2UgZm9yICVzXG4iLCBkaXNwbGF5LT5uYW1lKTsK
-KwkJcmV0dXJuIC0xOworCX0KKworCWlmIChkZXZpY2UgPT0gZGlzcGxheS0+Y3VycikgeworCQkv
-KiBDdXJyZW50bHkgdXNlZCBkZXZpY2UgaXMgc3RpbGwgdGhlIGJlc3QgY2hvaWNlICovCisJCXBy
-aW50ayhLRVJOX1dBUk5JTkcgIltEQkddIGN1cnJlbnQgaXMgdGhlIGJlc3RcbiIpOworCQlyZXR1
-cm4gMDsKKwl9CisKKwlpZiAoZGlzcGxheS0+Y3VycikgeworCQlwcmludGsoS0VSTl9XQVJOSU5H
-ICJbREJHXSB1bnJlZ2lzdGVyaW5nIHN5bWxpbmsgJXMgZm9yIG9sZCBkZXZpY2VcbiIsIGRpc3Bs
-YXktPm5hbWUpOworCQlzeXNmc19yZW1vdmVfbGluayhiYWNrbGlnaHRfY2xhc3MtPmRldl9rb2Jq
-LCBkaXNwbGF5LT5uYW1lKTsKKwkJZGlzcGxheS0+Y3VyciA9IE5VTEw7CisJfQorCisJcHJpbnRr
-KEtFUk5fV0FSTklORyAiW0RCR10gcmVnaXN0ZXJpbmcgbmV3IHN5bWxpbmsgJXMgZm9yIG5ldyBk
-ZXZpY2VcbiIsIGRpc3BsYXktPm5hbWUpOworCisJcmVzdWx0ID0gc3lzZnNfY3JlYXRlX2xpbmso
-YmFja2xpZ2h0X2NsYXNzLT5kZXZfa29iaiwKKwkJCQkJICAgJmRldmljZS0+ZGV2LmtvYmosIGRp
-c3BsYXktPm5hbWUpOworCWlmIChyZXN1bHQpIHsKKwkJcHJpbnRrKEtFUk5fV0FSTklORyAiW0RC
-R10gZmFpbGVkIHRvIHN5bWxpbmtcbiIpOworCQlyZXR1cm4gcmVzdWx0OworCX0KKworCWRpc3Bs
-YXktPmN1cnIgPSBkZXZpY2U7CisKKwlyZXR1cm4gMDsKK30KKwogc3RhdGljIHZvaWQgYmFja2xp
-Z2h0X2dlbmVyYXRlX2V2ZW50KHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCwKIAkJCQkgICAg
-IGVudW0gYmFja2xpZ2h0X3VwZGF0ZV9yZWFzb24gcmVhc29uKQogewpAQCAtMTkwLDggKzI2MSw2
-IEBAIHN0YXRpYyBzc2l6ZV90IGJhY2tsaWdodF9zaG93X2FjdHVhbF9icmlnaHRuZXNzKHN0cnVj
-dCBkZXZpY2UgKmRldiwKIAlyZXR1cm4gcmM7CiB9CiAKLXN0YXRpYyBzdHJ1Y3QgY2xhc3MgKmJh
-Y2tsaWdodF9jbGFzczsKLQogc3RhdGljIGludCBiYWNrbGlnaHRfc3VzcGVuZChzdHJ1Y3QgZGV2
-aWNlICpkZXYsIHBtX21lc3NhZ2VfdCBzdGF0ZSkKIHsKIAlzdHJ1Y3QgYmFja2xpZ2h0X2Rldmlj
-ZSAqYmQgPSB0b19iYWNrbGlnaHRfZGV2aWNlKGRldik7CkBAIC0yNzEsMTAgKzM0MCwyNiBAQCBF
-WFBPUlRfU1lNQk9MKGJhY2tsaWdodF9mb3JjZV91cGRhdGUpOwogc3RydWN0IGJhY2tsaWdodF9k
-ZXZpY2UgKmJhY2tsaWdodF9kZXZpY2VfcmVnaXN0ZXIoY29uc3QgY2hhciAqbmFtZSwKIAkJc3Ry
-dWN0IGRldmljZSAqcGFyZW50LCB2b2lkICpkZXZkYXRhLCBzdHJ1Y3QgYmFja2xpZ2h0X29wcyAq
-b3BzKQogeworCXN0cnVjdCBiYWNrbGlnaHRfZGlzcGxheSAqZGlzcGxheTsKIAlzdHJ1Y3QgYmFj
-a2xpZ2h0X2RldmljZSAqbmV3X2JkOworCWNoYXIgKm1vZF9uYW1lOwogCWludCByYzsKIAogCXBy
-X2RlYnVnKCJiYWNrbGlnaHRfZGV2aWNlX3JlZ2lzdGVyOiBuYW1lPSVzXG4iLCBuYW1lKTsKKwlw
-cmludGsoS0VSTl9XQVJOSU5HICJbREJHXSByZWdpc3RlcmluZyBuZXcgYmFja2xpZ2h0OiAlc1xu
-IiwgbmFtZSk7CisKKwlkaXNwbGF5ID0gYmFja2xpZ2h0X2ZpbmRfZGlzcGxheSgicGFuZWwwIik7
-CisJaWYgKCFkaXNwbGF5KSB7CisJCWRpc3BsYXkgPSBremFsbG9jKHNpemVvZihzdHJ1Y3QgYmFj
-a2xpZ2h0X2Rpc3BsYXkpLCBHRlBfS0VSTkVMKTsKKwkJaWYgKCFkaXNwbGF5KQorCQkJcmV0dXJu
-IEVSUl9QVFIoLUVOT01FTSk7CisKKwkJSU5JVF9MSVNUX0hFQUQoJmRpc3BsYXktPmRldmljZXMp
-OworCQlkaXNwbGF5LT5uYW1lID0ga3N0cmR1cCgicGFuZWwwIiwgR0ZQX0tFUk5FTCk7CisJCWxp
-c3RfYWRkX3RhaWwoJmRpc3BsYXktPmxpc3QsICZkaXNwbGF5cyk7CisKKwkJcHJpbnRrKEtFUk5f
-V0FSTklORyAiW0RCR10gd2UgaGF2ZSBuZXcgZGlzcGxheSAlc1xuIiwgZGlzcGxheS0+bmFtZSk7
-CisJfQogCiAJbmV3X2JkID0ga3phbGxvYyhzaXplb2Yoc3RydWN0IGJhY2tsaWdodF9kZXZpY2Up
-LCBHRlBfS0VSTkVMKTsKIAlpZiAoIW5ld19iZCkKQEAgLTI4MywxMSArMzY4LDE2IEBAIHN0cnVj
-dCBiYWNrbGlnaHRfZGV2aWNlICpiYWNrbGlnaHRfZGV2aWNlX3JlZ2lzdGVyKGNvbnN0IGNoYXIg
-Km5hbWUsCiAJbXV0ZXhfaW5pdCgmbmV3X2JkLT51cGRhdGVfbG9jayk7CiAJbXV0ZXhfaW5pdCgm
-bmV3X2JkLT5vcHNfbG9jayk7CiAKKwltb2RfbmFtZSA9IGt6YWxsb2Moc3RybGVuKG5hbWUpICsg
-MiwgR0ZQX0tFUk5FTCk7CisJaWYgKCFtb2RfbmFtZSkKKwkJcmV0dXJuIEVSUl9QVFIoLUVOT01F
-TSk7CisJc3ByaW50Zihtb2RfbmFtZSwgIi4lcyIsIG5hbWUpOwogCW5ld19iZC0+ZGV2LmNsYXNz
-ID0gYmFja2xpZ2h0X2NsYXNzOwogCW5ld19iZC0+ZGV2LnBhcmVudCA9IHBhcmVudDsKIAluZXdf
-YmQtPmRldi5yZWxlYXNlID0gYmxfZGV2aWNlX3JlbGVhc2U7Ci0JZGV2X3NldF9uYW1lKCZuZXdf
-YmQtPmRldiwgbmFtZSk7CisJZGV2X3NldF9uYW1lKCZuZXdfYmQtPmRldiwgbW9kX25hbWUpOwog
-CWRldl9zZXRfZHJ2ZGF0YSgmbmV3X2JkLT5kZXYsIGRldmRhdGEpOworCWtmcmVlKG1vZF9uYW1l
-KTsKIAogCXJjID0gZGV2aWNlX3JlZ2lzdGVyKCZuZXdfYmQtPmRldik7CiAJaWYgKHJjKSB7CkBA
-IC0zMDEsNiArMzkxLDEwIEBAIHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiYWNrbGlnaHRfZGV2
-aWNlX3JlZ2lzdGVyKGNvbnN0IGNoYXIgKm5hbWUsCiAJCXJldHVybiBFUlJfUFRSKHJjKTsKIAl9
-CiAKKwlsaXN0X2FkZF90YWlsKCZuZXdfYmQtPmxpc3QsICZkaXNwbGF5LT5kZXZpY2VzKTsKKwor
-CWJhY2tsaWdodF9waWNrX3VwX2RldmljZShkaXNwbGF5KTsKKwogCW5ld19iZC0+b3BzID0gb3Bz
-OwogCiAjaWZkZWYgQ09ORklHX1BNQUNfQkFDS0xJR0hUCkBAIC0zNDcsNiArNDQxLDggQEAgc3Rh
-dGljIHZvaWQgX19leGl0IGJhY2tsaWdodF9jbGFzc19leGl0KHZvaWQpCiAKIHN0YXRpYyBpbnQg
-X19pbml0IGJhY2tsaWdodF9jbGFzc19pbml0KHZvaWQpCiB7CisJSU5JVF9MSVNUX0hFQUQoJmRp
-c3BsYXlzKTsKKwogCWJhY2tsaWdodF9jbGFzcyA9IGNsYXNzX2NyZWF0ZShUSElTX01PRFVMRSwg
-ImJhY2tsaWdodCIpOwogCWlmIChJU19FUlIoYmFja2xpZ2h0X2NsYXNzKSkgewogCQlwcmludGso
-S0VSTl9XQVJOSU5HICJVbmFibGUgdG8gY3JlYXRlIGJhY2tsaWdodCBjbGFzczsgZXJybm8gPSAl
-bGRcbiIsCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2JhY2tsaWdodC5oIGIvaW5jbHVkZS9s
-aW51eC9iYWNrbGlnaHQuaAppbmRleCAwZjVmNTc4Li41YjE0OGY0IDEwMDY0NAotLS0gYS9pbmNs
-dWRlL2xpbnV4L2JhY2tsaWdodC5oCisrKyBiL2luY2x1ZGUvbGludXgvYmFja2xpZ2h0LmgKQEAg
-LTM1LDYgKzM1LDE4IEBAIGVudW0gYmFja2xpZ2h0X3VwZGF0ZV9yZWFzb24gewogc3RydWN0IGJh
-Y2tsaWdodF9kZXZpY2U7CiBzdHJ1Y3QgZmJfaW5mbzsKIAorc3RydWN0IGJhY2tsaWdodF9kaXNw
-bGF5IHsKKwkvKiBMaXN0IG9mIGRpc3BsYXlzICovCisJc3RydWN0IGxpc3RfaGVhZCBsaXN0Owor
-CisJY2hhciAqbmFtZTsKKworCS8qIERldmljZXMgY29udHJvbGxpbmcgZGlzcGxheSdzIGJhY2ts
-aWdodCAqLworCXN0cnVjdCBsaXN0X2hlYWQgZGV2aWNlczsKKworCXN0cnVjdCBiYWNrbGlnaHRf
-ZGV2aWNlICpjdXJyOworfTsKKwogc3RydWN0IGJhY2tsaWdodF9vcHMgewogCXVuc2lnbmVkIGlu
-dCBvcHRpb25zOwogCkBAIC03Niw2ICs4OCwxMSBAQCBzdHJ1Y3QgYmFja2xpZ2h0X3Byb3BlcnRp
-ZXMgewogfTsKIAogc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgeworCS8qIExpc3Qgb2YgZGV2aWNl
-cyAqLworCXN0cnVjdCBsaXN0X2hlYWQgbGlzdDsKKworCXN0cnVjdCBiYWNrbGlnaHRfZGlzcGxh
-eSAqZGlzcGxheTsKKwogCS8qIEJhY2tsaWdodCBwcm9wZXJ0aWVzICovCiAJc3RydWN0IGJhY2ts
-aWdodF9wcm9wZXJ0aWVzIHByb3BzOwogCg==
---000e0ce0445a617e1d04798988f6--
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksS7jkACgkQjjKRsyhoI8xw/wCfeloYLCe86Wuq4qwVasICM+b/
+Q/YAoKThUIaRARno72+2bicDS/C2mbyO
+=8C4M
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__30_Nov_2009_08_57_13_+1100_0OpR/904v96TQU19--
