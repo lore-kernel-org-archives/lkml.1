@@ -1,60 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752027AbZK2XBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbZK2XBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752027AbZK2XBw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 18:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbZK2XBv
+	id S1751848AbZK2XBJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 18:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZK2XBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 18:01:51 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:54373 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbZK2XBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 18:01:51 -0500
-Date: Mon, 30 Nov 2009 10:01:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <len.brown@intel.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: linux-next: origin tree build warning
-Message-Id: <20091130100149.a951b65a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	Sun, 29 Nov 2009 18:01:08 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44087 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750956AbZK2XBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 18:01:08 -0500
+Date: Sun, 29 Nov 2009 23:03:10 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "werner" <w.landgraf@ru.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: pci=off
+Message-ID: <20091129230310.265110e2@lxorguk.ukuu.org.uk>
+In-Reply-To: <web-96228708@zbackend1.aha.ru>
+References: <web-96228708@zbackend1.aha.ru>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__30_Nov_2009_10_01_49_+1100_W98rTpAbOOgREX9."
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__30_Nov_2009_10_01_49_+1100_W98rTpAbOOgREX9.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> The most frequent problem is that IDE drives are not 
+> found, or cannot be accessed because reclaimed as ocupied. 
 
-Hi Len,
+Some detailed diagnostic information would be useful.
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+> screen become black and nothing more happened.  The same 
+> happens on that laptop with all newer Slackware kernels
 
-drivers/platform/x86/thinkpad_acpi.c:2224: warning: 'tpacpi_hotkey_driver_m=
-ask_set' defined but not used
-
-Introduced by commit 8b468c0c85f41c4c55227c17271b4187d8911fb0
-("thinkpad-acpi: add internal hotkey event API").  This entered Linus'
-tree before 2.6.32-rc1.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__30_Nov_2009_10_01_49_+1100_W98rTpAbOOgREX9.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksS/V0ACgkQjjKRsyhoI8xxxACcCkchJXo9OHuQG3fDrkP0t8sY
-a+EAniT0YI1AGm1RXSnp4tjR2p0dHmHR
-=fXer
------END PGP SIGNATURE-----
-
---Signature=_Mon__30_Nov_2009_10_01_49_+1100_W98rTpAbOOgREX9.--
+First reporting point for distro kernels is the distribution. Do modern
+non-Slackware kernels (eg Fedora, SuSE) work on the problem laptop ?
