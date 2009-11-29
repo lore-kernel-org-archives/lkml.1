@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZK2V5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbZK2V7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZK2V5O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 16:57:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZK2V5N
+	id S1753434AbZK2V7a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 16:59:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbZK2V73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 16:57:13 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:39996 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753265AbZK2V5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 16:57:12 -0500
-Date: Mon, 30 Nov 2009 08:57:13 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       =?UTF-8?B?QW7DrWJhbA==?= Monsalve Salazar <anibal@debian.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: linux-kbuild.git
-Message-Id: <20091130085713.75f56423.sfr@canb.auug.org.au>
-In-Reply-To: <4B0F9F0D.6010601@suse.cz>
-References: <4B0E73E1.50900@suse.cz>
-	<20091126193750.GA15453@merkur.ravnborg.org>
-	<20091127152211.55043dbb.sfr@canb.auug.org.au>
-	<4B0F9F0D.6010601@suse.cz>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__30_Nov_2009_08_57_13_+1100_0OpR/904v96TQU19"
+	Sun, 29 Nov 2009 16:59:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:1849 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753025AbZK2V71 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 16:59:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=sm3a7CRaDkU9EwT9xo/qIbClutRY27bt2xZffMHKf9cST6+9HHtxk762Tpmop1BgJl
+         riZc+qjBkM0YNB95V9jTU+6qNSpWJAdUlV+Og8EOjMLZH095A0E8A6nbe8TRF4xtv8Tw
+         v5IHpL5QR/Oy1sN60Tz6+E35pyJFNcuQDP1uU=
+Message-ID: <4B12EEC2.3030207@gmail.com>
+Date: Sun, 29 Nov 2009 22:59:30 +0100
+From: Artur Skawina <art.08.09@gmail.com>
+User-Agent: Thunderbird 2.0.0.22pre (X11/20090422)
+MIME-Version: 1.0
+To: mike@mtgambier.net
+CC: Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR system?
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com> <200911291317.03612.mike@mtgambier.net>
+In-Reply-To: <200911291317.03612.mike@mtgambier.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__30_Nov_2009_08_57_13_+1100_0OpR/904v96TQU19
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Mike Lampard wrote:
+> an example I have a VDR instance running in the background on my desktop 
+> machine outputting to a TV in another room via a pci mpeg decoder - I 
+> certainly don't want the VDR remote control interacting with my X11 desktop in 
+> any way unless I go out of my way to set it up to do so, nor do I want it 
+> interacting with other applications (such as MPD piping music around the 
+> house) that are controlled via other remotes in other rooms unless specified.
+> 
+> Setting this up with Lircd was easy, how would a kernel-based proposal handle 
+> this?
 
-Hi Michal,
+eg
 
-On Fri, 27 Nov 2009 10:42:37 +0100 Michal Marek <mmarek@suse.cz> wrote:
->
-> >  Do you intend to run the equivalent of
-> > the kbuild-current tree (bug fixes for the current release while they a=
-re
-> > waiting to go to Linus)?  I have removed the kbuild-current tree for now
-> > since the only commit in it is in the new kbuild tree.
->=20
-> I plan to maintain such a branch, but I thought I would base the
-> for-next branch on top of it, so that you get everything in one pack. Or
-> would you still prefer to have two kbuild branches in linux-next, so
-> that you can remove the for-next branch if necessary and keep the
-> for-current branch? Just tell me what fits you best.
+EV="/dev/input/"$( cd "/sys/class/input" &&
+   ( grep -l 'X10' event*/device/name || grep -l 'X10' event*/device/manufacturer ) |
+   sed -e 's,/.*,,' )
 
-Running a for-current branch allows you to queue up urgent fixes without
-disrupting your for-next branch.  I will merge such a branch early on
-(actually before I do my first build) so that I don't have to worry about
-problems that are already have fixes pending for to be merged by Linus in
-his current tree.  Also, as you say, if I have problems with your
-for-next branch, it does not affect the more urgent patches.
+./vdr [...] -P "remote -i $EV"
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This is how it has worked for years, so there's no reason it wouldn't work w/ any
+future scheme. The remote buttons normally arrive as normal kbd keys; once an app
+grabs the input device corresponding to a remote, it receives the events exclusively.
 
---Signature=_Mon__30_Nov_2009_08_57_13_+1100_0OpR/904v96TQU19
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksS7jkACgkQjjKRsyhoI8xw/wCfeloYLCe86Wuq4qwVasICM+b/
-Q/YAoKThUIaRARno72+2bicDS/C2mbyO
-=8C4M
------END PGP SIGNATURE-----
-
---Signature=_Mon__30_Nov_2009_08_57_13_+1100_0OpR/904v96TQU19--
+artur
