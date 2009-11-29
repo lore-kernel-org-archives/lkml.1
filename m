@@ -1,101 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbZK2MyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751779AbZK2NHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751549AbZK2MyG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 07:54:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZK2MyF
+	id S1751779AbZK2NHN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 08:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbZK2NHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 07:54:05 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:50745 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbZK2MyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 07:54:04 -0500
-Message-ID: <4B126EEB.1040908@garzik.org>
-Date: Sun, 29 Nov 2009 07:54:03 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Sun, 29 Nov 2009 08:07:12 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:10222 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750956AbZK2NHL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 08:07:11 -0500
+Message-ID: <4B127202.1010900@panasas.com>
+Date: Sun, 29 Nov 2009 15:07:14 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091125 Remi/fc10 Thunderbird/3.0
 MIME-Version: 1.0
-To: Stefan Assmann <sassmann@redhat.com>
-CC: linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Don Dutile <ddutile@redhat.com>,
-       kaneshige.kenji@jp.fujitsu.com
-Subject: Re: [PATCH] change PCI nomenclature according to PCI-SIG
-References: <4B110F79.8080405@redhat.com> <4B111ADC.9020800@garzik.org> <4B123A34.5090509@redhat.com>
-In-Reply-To: <4B123A34.5090509@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       open-osd <osd-dev@open-osd.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: linux-next: manual merge of the osd tree with the scsi tree
+References: <20091127143229.108298c6.sfr@canb.auug.org.au> <4B123A82.10104@panasas.com>
+In-Reply-To: <4B123A82.10104@panasas.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-OriginalArrivalTime: 29 Nov 2009 13:07:17.0361 (UTC) FILETIME=[E0758610:01CA70F4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/29/2009 04:09 AM, Stefan Assmann wrote:
-> On 28.11.2009 13:43, Jeff Garzik wrote:
->> On 11/28/2009 06:54 AM, Stefan Assmann wrote:
->>> From: Stefan Assmann<sassmann@redhat.com>
->>>
->>> Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
->>> terms listed in the "Trademark and Logo Usage Guidelines".
->>> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
->>>
->>> Additionally some renames of Gb/s to GT/s where appropriate, concerns
->>> PCIe.
->>>
->>> This is a followup to the discussion at:
->>> http://lkml.org/lkml/2009/10/14/107
->>> Patch is based on 2.6.32-rc8.
->>>
->>> Signed-off-by: Stefan Assmann<sassmann@redhat.com>
+On 11/29/2009 11:10 AM, Boaz Harrosh wrote:
+> On 11/27/2009 05:32 AM, Stephen Rothwell wrote:
+>> Hi Boaz,
 >>
->> NAK, this clearly introduces bugs and changes sysfs output (ABI).
+>> Today's linux-next merge of the osd tree got a conflict in
+>> drivers/scsi/osd/osd_uld.c between commit
+>> f89b9ee4a722721ed205b8c29555ac75fbe8c2cc ("[SCSI] osduld: Use
+>> device->release instead of internal kref") from the scsi tree and commit
+>> 9b579fe8588b861dcf0c9b620757729643db4557 ("osduld: Use device->release
+>> instead of internal kref") from the osd tree.
 >>
->> Typically this type of change is pointless churn that creates far more
->> problems than it "solves."
->
-> Hi Jeff,
->
-> I see you point in not liking this kind of change. What kind of cleanup
-> would be ok in your opinion?
+>> These are slightly different versions of the same patch ...
+>>
+>> And commit 01e4c32c668251e74eb179ee1207c075466c4ef8 ("osduld: No need to
+>> use dev_set_drvdata on embedded devices") from the osd also contributes
+>> to the conflict.
+>>
+> 
+> James has squashed these two patches together. Which do belong together
+> I should say. In my tree they are separate. I will change my tree to
+> match James's.
+> 
+> Thanks James, I prefer it much better this way.
+> 
 
-Think about this from an engineering perspective.  This patch is driven 
-not by any real technical need, but more by marketing and trademark folks.
+James hi.
 
-The absolute best case scenario for this patch is that nothing changes, 
-from an implementation and behavior standpoint.  The worst case, of 
-course, is that it introduces bugs (which it does).
+In your merge of the patch:
+    [SCSI] osduld: Use device->release instead of internal kref
+at:
+    [jejb: fold in use of container_of]
 
-You also incur the standard costs of any kernel change:  you've just 
-made the diff between, for example, a vendor kernel's foo_driver.c and 
-upstream's foo_driver.c a lot larger, and more difficult to discern 
-real, technical changes to the code.
+You have made a mistake, which renders the driver unusable.
+At osd_remove() you changed the use of dev_get_drvdata to an, container_of()
+but it is the *wrong* dev at this point this dev here is the grand-parent of
+the embedded dev in question.
 
-Of course, we change the kernel every day -- but we also know that 
-change itself has cost, and a lot of code changes for cosmetic reasons 
-have the potential for greater negative costs, and fewer positive benefits.
+Also at the next patch:
+    [SCSI] libosd: osd_dev_info: Unique Identification of an OSD device
 
-Next, IMO, you don't have any idea how maintainers will react to this 
-patch, because you CC'd so few of them.  People who perform tree-wide 
-changes should take the time to CC __every__ relevant maintainer.  If 
-you are changing somebody's code, you should always let them know about 
-it, and give them an opportunity to review the change. 
-scripts/get_maintainer.pl can help with this.
+a new use of dev_get_drvdata() is not converted to a container_of(), which by
+now will return NULL.
 
-So, while the PCI maintainer might agree with the nomenclature change, 
-he is not the most qualified person to state that your changes have no 
-effect on drivers/edac/ppc4xx_edac.c, for example.
+Should I repost the correct two patches (my preference)? should I send in a fix to
+current scsi-misc tree? or should I send two SQUASH-ME patches to the two bad commits
+in your tree?
 
-Finally, split your patch up.  I would suggest starting with 100% 
-comment changes that are guaranteed with mathematical certainty to not 
-change the compiler-generated code at all.  That will make the remaining 
-changes much easier to review, if they are in separate patches from the 
-comment-only changes.
+How do you want to proceed?
 
-	Jeff
+>> I fixed it up (the obvious way) and can carry the fix for a while.
+> 
 
+Stephan, I have not yet fixed up the conflict in -next, please carry that
+fix you have for a little while, until we resolve it.
 
+> Thanks
+> Boaz
 
-
-
+Boaz
