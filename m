@@ -1,99 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZK2UGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZK2UJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbZK2UGL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 15:06:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZK2UGL
+	id S1752907AbZK2UJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 15:09:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZK2UJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 15:06:11 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:38374 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbZK2UGK (ORCPT
+	Sun, 29 Nov 2009 15:09:29 -0500
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:64342 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbZK2UJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 15:06:10 -0500
+	Sun, 29 Nov 2009 15:09:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=plCry1aSi/I8bnEPnHLCTcp6JkYZDxbH+FhHs6BJCuG9o8LkrUI11FnZwvaNuDCyPk
-         lV3ayhw26JTFh5tIAqz7IOlSUSZjb0F2sdywJDGGubk++0iCa1i9otLECPWOUrERCsF1
-         YwXY6Jgxv7f6ZvDvFBt34x85jX7YRT0pDZ3YY=
-From: Thiago Farina <tfransosi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: mchehab@infradead.org, hverkuil@xs4all.nl, alan@redhat.com,
-       roel.kluin@gmail.com, linux-media@vger.kernel.org,
-       Thiago Farina <tfransosi@gmail.com>
-Subject: [PATCH] cpia2: use __stringify macro.
-Date: Sun, 29 Nov 2009 15:05:58 -0500
-Message-Id: <1259525158-16517-1-git-send-email-tfransosi@gmail.com>
-X-Mailer: git-send-email 1.6.6.rc0.61.g41d5b
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=A44twwAqi1ZMJr9ame+KoRiUbV3J1zdcOuvnF2h+MSlNXfCjtoALJVa9hPxl5FYR0M
+         poikfPH7kuIGNRBEPL6S7XFNAbNo6nXP7zr/9QYtOCMH3VXHoeDfiWj9Cuw10bs3UbH0
+         LzD0sus1DZxXrr+1q4fYPHG9U0tbMfkLJ2YqE=
+MIME-Version: 1.0
+In-Reply-To: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
+References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
+Date: Sun, 29 Nov 2009 21:09:32 +0100
+Message-ID: <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
+Subject: Re: Backlight device class redesign
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Richard Purdie <rpurdie@rpsys.net>
+Content-Type: multipart/mixed; boundary=0016e6d975cb6e90cd0479881a36
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Thiago Farina <tfransosi@gmail.com>
----
- drivers/media/video/cpia2/cpia2_v4l.c |   27 +++++++++++----------------
- 1 files changed, 11 insertions(+), 16 deletions(-)
+--0016e6d975cb6e90cd0479881a36
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/media/video/cpia2/cpia2_v4l.c b/drivers/media/video/cpia2/cpia2_v4l.c
-index 0b4a8f3..6c5fcd8 100644
---- a/drivers/media/video/cpia2/cpia2_v4l.c
-+++ b/drivers/media/video/cpia2/cpia2_v4l.c
-@@ -38,17 +38,12 @@
- #include <linux/slab.h>
- #include <linux/init.h>
- #include <linux/videodev.h>
-+#include <linux/stringify.h>
- #include <media/v4l2-ioctl.h>
- 
- #include "cpia2.h"
- #include "cpia2dev.h"
- 
--
--//#define _CPIA2_DEBUG_
--
--#define MAKE_STRING_1(x)	#x
--#define MAKE_STRING(x)	MAKE_STRING_1(x)
--
- static int video_nr = -1;
- module_param(video_nr, int, 0);
- MODULE_PARM_DESC(video_nr,"video device to register (0=/dev/video0, etc)");
-@@ -60,26 +55,26 @@ MODULE_PARM_DESC(buffer_size, "Size for each frame buffer in bytes (default 68k)
- static int num_buffers = 3;
- module_param(num_buffers, int, 0);
- MODULE_PARM_DESC(num_buffers, "Number of frame buffers (1-"
--		 MAKE_STRING(VIDEO_MAX_FRAME) ", default 3)");
-+		 __stringify(VIDEO_MAX_FRAME) ", default 3)");
- 
- static int alternate = DEFAULT_ALT;
- module_param(alternate, int, 0);
--MODULE_PARM_DESC(alternate, "USB Alternate (" MAKE_STRING(USBIF_ISO_1) "-"
--		 MAKE_STRING(USBIF_ISO_6) ", default "
--		 MAKE_STRING(DEFAULT_ALT) ")");
-+MODULE_PARM_DESC(alternate, "USB Alternate (" __stringify(USBIF_ISO_1) "-"
-+		 __stringify(USBIF_ISO_6) ", default "
-+		 __stringify(DEFAULT_ALT) ")");
- 
- static int flicker_freq = 60;
- module_param(flicker_freq, int, 0);
--MODULE_PARM_DESC(flicker_freq, "Flicker frequency (" MAKE_STRING(50) "or"
--		 MAKE_STRING(60) ", default "
--		 MAKE_STRING(60) ")");
-+MODULE_PARM_DESC(flicker_freq, "Flicker frequency (" __stringify(50) "or"
-+		 __stringify(60) ", default "
-+		 __stringify(60) ")");
- 
- static int flicker_mode = NEVER_FLICKER;
- module_param(flicker_mode, int, 0);
- MODULE_PARM_DESC(flicker_mode,
--		 "Flicker supression (" MAKE_STRING(NEVER_FLICKER) "or"
--		 MAKE_STRING(ANTI_FLICKER_ON) ", default "
--		 MAKE_STRING(NEVER_FLICKER) ")");
-+		 "Flicker supression (" __stringify(NEVER_FLICKER) "or"
-+		 __stringify(ANTI_FLICKER_ON) ", default "
-+		 __stringify(NEVER_FLICKER) ")");
- 
- MODULE_AUTHOR("Steve Miller (STMicroelectronics) <steve.miller@st.com>");
- MODULE_DESCRIPTION("V4L-driver for STMicroelectronics CPiA2 based cameras");
--- 
-1.6.6.rc0.61.g41d5b
+W dniu 28 listopada 2009 01:30 u=C5=BCytkownik Rafa=C5=82 Mi=C5=82ecki
+<zajec5@gmail.com> napisa=C5=82:
+> As discussed in http://marc.info/?t=3D124947671300008&r=3D1&w=3D2 we need=
+ to
+> redesign our backlight device class.
 
+I was trying to make it work this way:
+1. Everytime register request comes, look for backlight_display with given =
+name.
+1. A. If needed, create new backlight_display
+2. Add new device to devices list of backlight_display
+3. Find best device on devices list of backlight_display
+4. Register if under /sys/class/backlight/name_of_display
+
+This didn't work because of registering only the best device. Look at
+this code in drivers/acpi/video.c:
+
+device->backlight =3D backlight_device_register(name,
+    NULL, device, &acpi_backlight_ops);
+(...)
+result =3D sysfs_create_link(&device->backlight->dev.kobj,
+    &device->dev->dev.kobj, "device");
+
+It expects device to be registered (have dev.kobj) after calling
+backlight_device_register.
+
+So in summary we just can not do lazy registration. Every device
+passed to backlight_device_register has to be registered in that
+function or never.
+
+So I think we have to register every device and just keep symlink
+/sys/class/backlight/display_name pointing best device. We could
+register devices in
+1) /sys/class/backlight/.devicename (hidden)
+2) some /sys/class/internal-usage/devicename
+
+Do you agree on this?
+
+--=20
+Rafa=C5=82
+
+--0016e6d975cb6e90cd0479881a36
+Content-Type: application/octet-stream; name="backlight2.patch"
+Content-Disposition: attachment; filename="backlight2.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g2m8kj5g0
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2JhY2tsaWdodC5jIGIvZHJpdmVy
+cy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKaW5kZXggNjYxNWFjNy4uMjIzNmIzOCAxMDA2
+NDQKLS0tIGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKKysrIGIvZHJpdmVy
+cy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKQEAgLTEzLDExICsxMyw0NiBAQAogI2luY2x1
+ZGUgPGxpbnV4L2N0eXBlLmg+CiAjaW5jbHVkZSA8bGludXgvZXJyLmg+CiAjaW5jbHVkZSA8bGlu
+dXgvZmIuaD4KKyNpbmNsdWRlIDxsaW51eC9zdHJpbmcuaD4KIAogI2lmZGVmIENPTkZJR19QTUFD
+X0JBQ0tMSUdIVAogI2luY2x1ZGUgPGFzbS9iYWNrbGlnaHQuaD4KICNlbmRpZgogCitzdGF0aWMg
+c3RydWN0IGNsYXNzICpiYWNrbGlnaHRfY2xhc3M7CitzdGF0aWMgc3RydWN0IGxpc3RfaGVhZCBk
+aXNwbGF5czsKKworc3RhdGljIHN0cnVjdCBiYWNrbGlnaHRfZGlzcGxheSAqYmFja2xpZ2h0X2Zp
+bmRfZGlzcGxheShjb25zdCBjaGFyICpuYW1lKQoreworCXN0cnVjdCBsaXN0X2hlYWQgKnB0cjsK
+KwlzdHJ1Y3QgYmFja2xpZ2h0X2Rpc3BsYXkgKmVudHJ5OworCisJbGlzdF9mb3JfZWFjaChwdHIs
+ICZkaXNwbGF5cykgeworCQllbnRyeSA9IGxpc3RfZW50cnkocHRyLCBzdHJ1Y3QgYmFja2xpZ2h0
+X2Rpc3BsYXksIGxpc3QpOworCQlpZiAoc3RyY21wKGVudHJ5LT5uYW1lLCBuYW1lKSA9PSAwKSB7
+CisJCQlyZXR1cm4gZW50cnk7CisJCX0KKwl9CisKKwlyZXR1cm4gTlVMTDsKK30KKworc3RhdGlj
+IHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiYWNrbGlnaHRfYmVzdF9kZXZpY2Uoc3RydWN0IGJh
+Y2tsaWdodF9kaXNwbGF5ICpkaXNwbGF5KQoreworCXN0cnVjdCBsaXN0X2hlYWQgKnB0cjsKKwlz
+dHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqZW50cnk7CisKKwlwcmludGsoS0VSTl9XQVJOSU5HICJb
+REJHXSBnZXRfZGV2aWNlIGNhbGxlZCBmb3IgJXNcbiIsIGRpc3BsYXktPm5hbWUpOworCWxpc3Rf
+Zm9yX2VhY2gocHRyLCAmZGlzcGxheS0+ZGV2aWNlcykgeworCQkvKiBGSVhNRTogcmV0dXJuIGJl
+c3QsIG5vdCBmaXJzdCAqLworCQllbnRyeSA9IGxpc3RfZW50cnkocHRyLCBzdHJ1Y3QgYmFja2xp
+Z2h0X2RldmljZSwgbGlzdCk7CisJCXJldHVybiBlbnRyeTsKKwl9CisKKwlwcmludGsoS0VSTl9X
+QVJOSU5HICJbREJHXSBvaGhoaGggbm9vb28sIGxpc3QgZW1wdHk/XG4iKTsKKwlyZXR1cm4gTlVM
+TDsKK30KKwogI2lmIGRlZmluZWQoQ09ORklHX0ZCKSB8fCAoZGVmaW5lZChDT05GSUdfRkJfTU9E
+VUxFKSAmJiBcCiAJCQkgICBkZWZpbmVkKENPTkZJR19CQUNLTElHSFRfQ0xBU1NfREVWSUNFX01P
+RFVMRSkpCiAvKiBUaGlzIGNhbGxiYWNrIGdldHMgY2FsbGVkIHdoZW4gc29tZXRoaW5nIGltcG9y
+dGFudCBoYXBwZW5zIGluc2lkZSBhCkBAIC03Myw2ICsxMDgsNTMgQEAgc3RhdGljIGlubGluZSB2
+b2lkIGJhY2tsaWdodF91bnJlZ2lzdGVyX2ZiKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCkK
+IH0KICNlbmRpZiAvKiBDT05GSUdfRkIgKi8KIAorc3RhdGljIGludCBiYWNrbGlnaHRfcGlja191
+cF9kZXZpY2Uoc3RydWN0IGJhY2tsaWdodF9kaXNwbGF5ICpkaXNwbGF5KQoreworCWludCByYzsK
+KwlzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqZGV2aWNlID0gYmFja2xpZ2h0X2Jlc3RfZGV2aWNl
+KGRpc3BsYXkpOworCisJaWYgKCFkZXZpY2UpIHsKKwkJcHJpbnRrKEtFUk5fV0FSTklORyAiW0RC
+R10gY2FuJ3QgZmluZCBiZXN0IGRldmljZSBmb3IgJXNcbiIsIGRpc3BsYXktPm5hbWUpOworCQly
+ZXR1cm4gLTE7CisJfQorCisJaWYgKGRldmljZSA9PSBkaXNwbGF5LT5jdXJyKSB7CisJCS8qIEN1
+cnJlbnRseSB1c2VkIGRldmljZSBpcyBzdGlsbCB0aGUgYmVzdCBjaG9pY2UgKi8KKwkJcHJpbnRr
+KEtFUk5fV0FSTklORyAiW0RCR10gY3VycmVudCBpcyB0aGUgYmVzdFxuIik7CisJCXJldHVybiAw
+OworCX0KKworCWlmIChkaXNwbGF5LT5jdXJyKSB7CisJCXByaW50ayhLRVJOX1dBUk5JTkcgIltE
+QkddIHVucmVnaXN0ZXJpbmcgb2xkIChjdXJyZW50KVxuIik7CisJCWJhY2tsaWdodF91bnJlZ2lz
+dGVyX2ZiKGRpc3BsYXktPmN1cnIpOworCQlkZXZpY2VfdW5yZWdpc3RlcigmZGlzcGxheS0+Y3Vy
+ci0+ZGV2KTsKKwkJZGlzcGxheS0+Y3VyciA9IE5VTEw7CisJfQorCisJcHJpbnRrKEtFUk5fV0FS
+TklORyAiW0RCR10gcmVnaXN0ZXJpbmcgbmV3XG4iKTsKKworCXJjID0gZGV2aWNlX3JlZ2lzdGVy
+KCZkZXZpY2UtPmRldik7CisJaWYgKHJjKSB7CisJCXJldHVybiByYzsKKwl9CisKKwlyYyA9IGJh
+Y2tsaWdodF9yZWdpc3Rlcl9mYihkZXZpY2UpOworCWlmIChyYykgeworCQlyZXR1cm4gcmM7CisJ
+fQorCisJZGlzcGxheS0+Y3VyciA9IGRldmljZTsKKworI2lmZGVmIENPTkZJR19QTUFDX0JBQ0tM
+SUdIVAorCW11dGV4X2xvY2soJnBtYWNfYmFja2xpZ2h0X211dGV4KTsKKwlpZiAoIXBtYWNfYmFj
+a2xpZ2h0KQorCQlwbWFjX2JhY2tsaWdodCA9IG5ld19iZDsKKwltdXRleF91bmxvY2soJnBtYWNf
+YmFja2xpZ2h0X211dGV4KTsKKyNlbmRpZgorCisJcmV0dXJuIDA7Cit9CisKIHN0YXRpYyB2b2lk
+IGJhY2tsaWdodF9nZW5lcmF0ZV9ldmVudChzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqYmQsCiAJ
+CQkJICAgICBlbnVtIGJhY2tsaWdodF91cGRhdGVfcmVhc29uIHJlYXNvbikKIHsKQEAgLTE5MCw4
+ICsyNzIsNiBAQCBzdGF0aWMgc3NpemVfdCBiYWNrbGlnaHRfc2hvd19hY3R1YWxfYnJpZ2h0bmVz
+cyhzdHJ1Y3QgZGV2aWNlICpkZXYsCiAJcmV0dXJuIHJjOwogfQogCi1zdGF0aWMgc3RydWN0IGNs
+YXNzICpiYWNrbGlnaHRfY2xhc3M7Ci0KIHN0YXRpYyBpbnQgYmFja2xpZ2h0X3N1c3BlbmQoc3Ry
+dWN0IGRldmljZSAqZGV2LCBwbV9tZXNzYWdlX3Qgc3RhdGUpCiB7CiAJc3RydWN0IGJhY2tsaWdo
+dF9kZXZpY2UgKmJkID0gdG9fYmFja2xpZ2h0X2RldmljZShkZXYpOwpAQCAtMjcxLDEwICszNTEs
+MjQgQEAgRVhQT1JUX1NZTUJPTChiYWNrbGlnaHRfZm9yY2VfdXBkYXRlKTsKIHN0cnVjdCBiYWNr
+bGlnaHRfZGV2aWNlICpiYWNrbGlnaHRfZGV2aWNlX3JlZ2lzdGVyKGNvbnN0IGNoYXIgKm5hbWUs
+CiAJCXN0cnVjdCBkZXZpY2UgKnBhcmVudCwgdm9pZCAqZGV2ZGF0YSwgc3RydWN0IGJhY2tsaWdo
+dF9vcHMgKm9wcykKIHsKKwlzdHJ1Y3QgYmFja2xpZ2h0X2Rpc3BsYXkgKmRpc3BsYXk7CiAJc3Ry
+dWN0IGJhY2tsaWdodF9kZXZpY2UgKm5ld19iZDsKLQlpbnQgcmM7CiAKIAlwcl9kZWJ1ZygiYmFj
+a2xpZ2h0X2RldmljZV9yZWdpc3RlcjogbmFtZT0lc1xuIiwgbmFtZSk7CisJcHJpbnRrKEtFUk5f
+V0FSTklORyAiW0RCR10gcmVnaXN0ZXJpbmcgbmV3IGJhY2tsaWdodDogJXNcbiIsIG5hbWUpOwor
+CisJZGlzcGxheSA9IGJhY2tsaWdodF9maW5kX2Rpc3BsYXkoInBhbmVsMCIpOworCWlmICghZGlz
+cGxheSkgeworCQlkaXNwbGF5ID0ga3phbGxvYyhzaXplb2Yoc3RydWN0IGJhY2tsaWdodF9kaXNw
+bGF5KSwgR0ZQX0tFUk5FTCk7CisJCWlmICghZGlzcGxheSkKKwkJCXJldHVybiBFUlJfUFRSKC1F
+Tk9NRU0pOworCisJCUlOSVRfTElTVF9IRUFEKCZkaXNwbGF5LT5kZXZpY2VzKTsKKwkJZGlzcGxh
+eS0+bmFtZSA9IGtzdHJkdXAoInBhbmVsMCIsIEdGUF9LRVJORUwpOworCQlsaXN0X2FkZF90YWls
+KCZkaXNwbGF5LT5saXN0LCAmZGlzcGxheXMpOworCisJCXByaW50ayhLRVJOX1dBUk5JTkcgIltE
+QkddIHdlIGhhdmUgbmV3IGRpc3BsYXkgJXNcbiIsIGRpc3BsYXktPm5hbWUpOworCX0KIAogCW5l
+d19iZCA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlKSwgR0ZQX0tFUk5F
+TCk7CiAJaWYgKCFuZXdfYmQpCkBAIC0yODksMjYgKzM4MywxMSBAQCBzdHJ1Y3QgYmFja2xpZ2h0
+X2RldmljZSAqYmFja2xpZ2h0X2RldmljZV9yZWdpc3Rlcihjb25zdCBjaGFyICpuYW1lLAogCWRl
+dl9zZXRfbmFtZSgmbmV3X2JkLT5kZXYsIG5hbWUpOwogCWRldl9zZXRfZHJ2ZGF0YSgmbmV3X2Jk
+LT5kZXYsIGRldmRhdGEpOwogCi0JcmMgPSBkZXZpY2VfcmVnaXN0ZXIoJm5ld19iZC0+ZGV2KTsK
+LQlpZiAocmMpIHsKLQkJa2ZyZWUobmV3X2JkKTsKLQkJcmV0dXJuIEVSUl9QVFIocmMpOwotCX0K
+LQotCXJjID0gYmFja2xpZ2h0X3JlZ2lzdGVyX2ZiKG5ld19iZCk7Ci0JaWYgKHJjKSB7Ci0JCWRl
+dmljZV91bnJlZ2lzdGVyKCZuZXdfYmQtPmRldik7Ci0JCXJldHVybiBFUlJfUFRSKHJjKTsKLQl9
+Ci0KIAluZXdfYmQtPm9wcyA9IG9wczsKIAotI2lmZGVmIENPTkZJR19QTUFDX0JBQ0tMSUdIVAot
+CW11dGV4X2xvY2soJnBtYWNfYmFja2xpZ2h0X211dGV4KTsKLQlpZiAoIXBtYWNfYmFja2xpZ2h0
+KQotCQlwbWFjX2JhY2tsaWdodCA9IG5ld19iZDsKLQltdXRleF91bmxvY2soJnBtYWNfYmFja2xp
+Z2h0X211dGV4KTsKLSNlbmRpZgorCWxpc3RfYWRkX3RhaWwoJm5ld19iZC0+bGlzdCwgJmRpc3Bs
+YXktPmRldmljZXMpOworCisJYmFja2xpZ2h0X3BpY2tfdXBfZGV2aWNlKGRpc3BsYXkpOwogCiAJ
+cmV0dXJuIG5ld19iZDsKIH0KQEAgLTM0Nyw2ICs0MjYsOCBAQCBzdGF0aWMgdm9pZCBfX2V4aXQg
+YmFja2xpZ2h0X2NsYXNzX2V4aXQodm9pZCkKIAogc3RhdGljIGludCBfX2luaXQgYmFja2xpZ2h0
+X2NsYXNzX2luaXQodm9pZCkKIHsKKwlJTklUX0xJU1RfSEVBRCgmZGlzcGxheXMpOworCiAJYmFj
+a2xpZ2h0X2NsYXNzID0gY2xhc3NfY3JlYXRlKFRISVNfTU9EVUxFLCAiYmFja2xpZ2h0Iik7CiAJ
+aWYgKElTX0VSUihiYWNrbGlnaHRfY2xhc3MpKSB7CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIlVu
+YWJsZSB0byBjcmVhdGUgYmFja2xpZ2h0IGNsYXNzOyBlcnJubyA9ICVsZFxuIiwKZGlmZiAtLWdp
+dCBhL2luY2x1ZGUvbGludXgvYmFja2xpZ2h0LmggYi9pbmNsdWRlL2xpbnV4L2JhY2tsaWdodC5o
+CmluZGV4IDBmNWY1NzguLjViMTQ4ZjQgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvYmFja2xp
+Z2h0LmgKKysrIGIvaW5jbHVkZS9saW51eC9iYWNrbGlnaHQuaApAQCAtMzUsNiArMzUsMTggQEAg
+ZW51bSBiYWNrbGlnaHRfdXBkYXRlX3JlYXNvbiB7CiBzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZTsK
+IHN0cnVjdCBmYl9pbmZvOwogCitzdHJ1Y3QgYmFja2xpZ2h0X2Rpc3BsYXkgeworCS8qIExpc3Qg
+b2YgZGlzcGxheXMgKi8KKwlzdHJ1Y3QgbGlzdF9oZWFkIGxpc3Q7CisKKwljaGFyICpuYW1lOwor
+CisJLyogRGV2aWNlcyBjb250cm9sbGluZyBkaXNwbGF5J3MgYmFja2xpZ2h0ICovCisJc3RydWN0
+IGxpc3RfaGVhZCBkZXZpY2VzOworCisJc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgKmN1cnI7Cit9
+OworCiBzdHJ1Y3QgYmFja2xpZ2h0X29wcyB7CiAJdW5zaWduZWQgaW50IG9wdGlvbnM7CiAKQEAg
+LTc2LDYgKzg4LDExIEBAIHN0cnVjdCBiYWNrbGlnaHRfcHJvcGVydGllcyB7CiB9OwogCiBzdHJ1
+Y3QgYmFja2xpZ2h0X2RldmljZSB7CisJLyogTGlzdCBvZiBkZXZpY2VzICovCisJc3RydWN0IGxp
+c3RfaGVhZCBsaXN0OworCisJc3RydWN0IGJhY2tsaWdodF9kaXNwbGF5ICpkaXNwbGF5OworCiAJ
+LyogQmFja2xpZ2h0IHByb3BlcnRpZXMgKi8KIAlzdHJ1Y3QgYmFja2xpZ2h0X3Byb3BlcnRpZXMg
+cHJvcHM7CiAK
+--0016e6d975cb6e90cd0479881a36--
