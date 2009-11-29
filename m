@@ -1,187 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZK2UJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbZK2U1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbZK2UJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 15:09:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZK2UJ3
+	id S1752856AbZK2U1x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 15:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZK2U1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 15:09:29 -0500
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:64342 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbZK2UJ1 (ORCPT
+	Sun, 29 Nov 2009 15:27:53 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:40780 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381AbZK2U1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 15:09:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=A44twwAqi1ZMJr9ame+KoRiUbV3J1zdcOuvnF2h+MSlNXfCjtoALJVa9hPxl5FYR0M
-         poikfPH7kuIGNRBEPL6S7XFNAbNo6nXP7zr/9QYtOCMH3VXHoeDfiWj9Cuw10bs3UbH0
-         LzD0sus1DZxXrr+1q4fYPHG9U0tbMfkLJ2YqE=
+	Sun, 29 Nov 2009 15:27:52 -0500
+Date: Sun, 29 Nov 2009 21:27:21 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Ogness <john.ogness@linutronix.de>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Sascha Hauer <kernel@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH] MXC: set GPIO IRQ handler
+Message-ID: <20091129202721.GA22137@pengutronix.de>
+References: <807htelb5d.fsf@merkur.tec.linutronix.de> <20091126075724.GA12179@pengutronix.de> <alpine.LFD.2.00.0911280005010.24119@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
-References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
-Date: Sun, 29 Nov 2009 21:09:32 +0100
-Message-ID: <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
-Subject: Re: Backlight device class redesign
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Richard Purdie <rpurdie@rpsys.net>
-Content-Type: multipart/mixed; boundary=0016e6d975cb6e90cd0479881a36
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0911280005010.24119@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e6d975cb6e90cd0479881a36
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi Thomas,
 
-W dniu 28 listopada 2009 01:30 u=C5=BCytkownik Rafa=C5=82 Mi=C5=82ecki
-<zajec5@gmail.com> napisa=C5=82:
-> As discussed in http://marc.info/?t=3D124947671300008&r=3D1&w=3D2 we need=
- to
-> redesign our backlight device class.
+On Sat, Nov 28, 2009 at 12:46:18AM +0100, Thomas Gleixner wrote:
+> On Thu, 26 Nov 2009, Uwe Kleine-König wrote:
+> > On Wed, Nov 25, 2009 at 07:19:58PM +0100, John Ogness wrote:
+> > > The irq chip function gpio_set_irq_type() correctly sets the i.MX
+> > > registers but does not set the irq handler.
+> >
+> > I assume you see some breakage without your patch?  In mainline?
+> 
+> Is there some other sensible reason why someone would send such a
+> patch with a completely clear change log ?
+IMHO John's commit could point out where he saw breakage.  This applies
+to mine, too, of course.
 
-I was trying to make it work this way:
-1. Everytime register request comes, look for backlight_display with given =
-name.
-1. A. If needed, create new backlight_display
-2. Add new device to devices list of backlight_display
-3. Find best device on devices list of backlight_display
-4. Register if under /sys/class/backlight/name_of_display
+> > 
+> >                                             This means that all
+> > > gpio-based irq's are handled with handle_edge_irq().
+> 
+> > This is not true in mainline, ...
+> 
+> We probably look at a different mainline, right ?
+> 
+> int __init mxc_gpio_init(struct mxc_gpio_port *port, int cnt)
+> {
+> ....
+>          set_irq_chip(j, &gpio_irq_chip);
+>          set_irq_handler(j, handle_edge_irq);
 
-This didn't work because of registering only the best device. Look at
-this code in drivers/acpi/video.c:
+Oh, I was sure that John wrote "... all gpio-based irq's are handled
+with handle_level_irq()."  Sorry for the confusion.
+ 
+> > .... until 060d20d (imx/gpio: Use
+> > handle_level_irq) (currently in imx/mxc-master) hits Linus' tree ...
 
-device->backlight =3D backlight_device_register(name,
-    NULL, device, &acpi_backlight_ops);
-(...)
-result =3D sysfs_create_link(&device->backlight->dev.kobj,
-    &device->dev->dev.kobj, "device");
+> 
+> The patch fixes an existing problem in mainline. It does not matter
+> whether there is a different fix pending in some git tree which is
+> supposed to hit mainline at some undefined point in the future.
+That undefined point in future is the next merge window and the commit
+is already contained in rmk's devel branch.
 
-It expects device to be registered (have dev.kobj) after calling
-backlight_device_register.
+> > > This patch corrects this by also setting the appropriate handler.
+> > > 
+> > > This patch is against 2.6.32-rc8.
+> > ... so there is no hurry.
+> 
+> Interesting conclusion: every level triggered GPIO interrupt in
+> 2.6.32-rc8 is affected by this problem. Definitely nothing to worry
+> about ....
+When I sent the patch that became 060d20d to Sascha Hauer I considered
+this a fix that should go in before 2.6.32, too.  Sascha decided it to
+be too risky to take it outside of the merge window as he didn't knew of
+any breakage in mainline code.  That's why I asked where John saw
+breakage and if my patch helps.  And yes, if (and only if) the breakage
+happens only for a platform or a driver that is not in mainline I don't
+see a reason to take the patch before 2.6.32.  Agreed?
 
-So in summary we just can not do lazy registration. Every device
-passed to backlight_device_register has to be registered in that
-function or never.
+> > Can you please test with 060d20d if your breakage still occurs and
+> > if it is still valid report some details (for me and the commit log)?
+> 
+> Could you please provide useful details, i.e. a short explanation why
+> that commit is the superior fix, instead of forcing people to clone a
+> git tree to figure out what you are (not) talking about ?
+As I misread John's commit log I thought that he already has looked at
+the imx tree.  (Which seems natural when working with that platform.)
+I just noticed that the tree isn't listed in MAINTAINERS, I will send a
+patch for that.
 
-So I think we have to register every device and just keep symlink
-/sys/class/backlight/display_name pointing best device. We could
-register devices in
-1) /sys/class/backlight/.devicename (hidden)
-2) some /sys/class/internal-usage/devicename
+Having the commit log of 060d20d I don't consider it too hard to work
+out why my commit should fix John's problem, too.
 
-Do you agree on this?
+> That's the change log of 060d20d:
+> 
+>     imx/gpio: Use handle_level_irq
+>     
+>     According to Russell King handle_edge_irq is only useful for "edge-based
+>     inputs where the controller does not remember transitions with the input
+>     masked."
+>     
+>     So using handle_edge_irq unconditionally for both edge and level irqs is
+>     wrong.  Testing showed that the controller does remember transitions
+>     while the interrupt is masked.  So use handle_level_irq unconditionally.
+> 
+> And the changelog is utter crap.
+> 
+> Using handle_edge_irq for level triggered interrupts has nothing to do
+> with Russell's observation simply because using handle_edge_irq for
+> level triggered interrupts is patently wrong.
+> 
+> The fact that the irq controller of the imx happens to be designed by
+> people who seem to have understood the pitfalls of edge triggered irqs
+> allows to use handle_level_irq for both edge and level triggered. 
+> 
+> That does not make John's patch incorrect. Using handle_level_irq for
+> both is merily an optimization which would be even more understandable
+> if there would be an useful comment in the code.
+I didn't say that John's patch is wrong.  And instead of documenting
+that handle_level_irq (which is named a bit misleading) is capable of
+handling edge irqs on imx, too, what about creating a handler with a
+better name (say handle_generic_irq?---open for better suggestions) and
+making handle_level_irq a deprecated wrapper for it?
 
---=20
-Rafa=C5=82
+Best regards
+Uwe
 
---0016e6d975cb6e90cd0479881a36
-Content-Type: application/octet-stream; name="backlight2.patch"
-Content-Disposition: attachment; filename="backlight2.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g2m8kj5g0
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2JhY2tsaWdodC5jIGIvZHJpdmVy
-cy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKaW5kZXggNjYxNWFjNy4uMjIzNmIzOCAxMDA2
-NDQKLS0tIGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKKysrIGIvZHJpdmVy
-cy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMKQEAgLTEzLDExICsxMyw0NiBAQAogI2luY2x1
-ZGUgPGxpbnV4L2N0eXBlLmg+CiAjaW5jbHVkZSA8bGludXgvZXJyLmg+CiAjaW5jbHVkZSA8bGlu
-dXgvZmIuaD4KKyNpbmNsdWRlIDxsaW51eC9zdHJpbmcuaD4KIAogI2lmZGVmIENPTkZJR19QTUFD
-X0JBQ0tMSUdIVAogI2luY2x1ZGUgPGFzbS9iYWNrbGlnaHQuaD4KICNlbmRpZgogCitzdGF0aWMg
-c3RydWN0IGNsYXNzICpiYWNrbGlnaHRfY2xhc3M7CitzdGF0aWMgc3RydWN0IGxpc3RfaGVhZCBk
-aXNwbGF5czsKKworc3RhdGljIHN0cnVjdCBiYWNrbGlnaHRfZGlzcGxheSAqYmFja2xpZ2h0X2Zp
-bmRfZGlzcGxheShjb25zdCBjaGFyICpuYW1lKQoreworCXN0cnVjdCBsaXN0X2hlYWQgKnB0cjsK
-KwlzdHJ1Y3QgYmFja2xpZ2h0X2Rpc3BsYXkgKmVudHJ5OworCisJbGlzdF9mb3JfZWFjaChwdHIs
-ICZkaXNwbGF5cykgeworCQllbnRyeSA9IGxpc3RfZW50cnkocHRyLCBzdHJ1Y3QgYmFja2xpZ2h0
-X2Rpc3BsYXksIGxpc3QpOworCQlpZiAoc3RyY21wKGVudHJ5LT5uYW1lLCBuYW1lKSA9PSAwKSB7
-CisJCQlyZXR1cm4gZW50cnk7CisJCX0KKwl9CisKKwlyZXR1cm4gTlVMTDsKK30KKworc3RhdGlj
-IHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiYWNrbGlnaHRfYmVzdF9kZXZpY2Uoc3RydWN0IGJh
-Y2tsaWdodF9kaXNwbGF5ICpkaXNwbGF5KQoreworCXN0cnVjdCBsaXN0X2hlYWQgKnB0cjsKKwlz
-dHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqZW50cnk7CisKKwlwcmludGsoS0VSTl9XQVJOSU5HICJb
-REJHXSBnZXRfZGV2aWNlIGNhbGxlZCBmb3IgJXNcbiIsIGRpc3BsYXktPm5hbWUpOworCWxpc3Rf
-Zm9yX2VhY2gocHRyLCAmZGlzcGxheS0+ZGV2aWNlcykgeworCQkvKiBGSVhNRTogcmV0dXJuIGJl
-c3QsIG5vdCBmaXJzdCAqLworCQllbnRyeSA9IGxpc3RfZW50cnkocHRyLCBzdHJ1Y3QgYmFja2xp
-Z2h0X2RldmljZSwgbGlzdCk7CisJCXJldHVybiBlbnRyeTsKKwl9CisKKwlwcmludGsoS0VSTl9X
-QVJOSU5HICJbREJHXSBvaGhoaGggbm9vb28sIGxpc3QgZW1wdHk/XG4iKTsKKwlyZXR1cm4gTlVM
-TDsKK30KKwogI2lmIGRlZmluZWQoQ09ORklHX0ZCKSB8fCAoZGVmaW5lZChDT05GSUdfRkJfTU9E
-VUxFKSAmJiBcCiAJCQkgICBkZWZpbmVkKENPTkZJR19CQUNLTElHSFRfQ0xBU1NfREVWSUNFX01P
-RFVMRSkpCiAvKiBUaGlzIGNhbGxiYWNrIGdldHMgY2FsbGVkIHdoZW4gc29tZXRoaW5nIGltcG9y
-dGFudCBoYXBwZW5zIGluc2lkZSBhCkBAIC03Myw2ICsxMDgsNTMgQEAgc3RhdGljIGlubGluZSB2
-b2lkIGJhY2tsaWdodF91bnJlZ2lzdGVyX2ZiKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCkK
-IH0KICNlbmRpZiAvKiBDT05GSUdfRkIgKi8KIAorc3RhdGljIGludCBiYWNrbGlnaHRfcGlja191
-cF9kZXZpY2Uoc3RydWN0IGJhY2tsaWdodF9kaXNwbGF5ICpkaXNwbGF5KQoreworCWludCByYzsK
-KwlzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqZGV2aWNlID0gYmFja2xpZ2h0X2Jlc3RfZGV2aWNl
-KGRpc3BsYXkpOworCisJaWYgKCFkZXZpY2UpIHsKKwkJcHJpbnRrKEtFUk5fV0FSTklORyAiW0RC
-R10gY2FuJ3QgZmluZCBiZXN0IGRldmljZSBmb3IgJXNcbiIsIGRpc3BsYXktPm5hbWUpOworCQly
-ZXR1cm4gLTE7CisJfQorCisJaWYgKGRldmljZSA9PSBkaXNwbGF5LT5jdXJyKSB7CisJCS8qIEN1
-cnJlbnRseSB1c2VkIGRldmljZSBpcyBzdGlsbCB0aGUgYmVzdCBjaG9pY2UgKi8KKwkJcHJpbnRr
-KEtFUk5fV0FSTklORyAiW0RCR10gY3VycmVudCBpcyB0aGUgYmVzdFxuIik7CisJCXJldHVybiAw
-OworCX0KKworCWlmIChkaXNwbGF5LT5jdXJyKSB7CisJCXByaW50ayhLRVJOX1dBUk5JTkcgIltE
-QkddIHVucmVnaXN0ZXJpbmcgb2xkIChjdXJyZW50KVxuIik7CisJCWJhY2tsaWdodF91bnJlZ2lz
-dGVyX2ZiKGRpc3BsYXktPmN1cnIpOworCQlkZXZpY2VfdW5yZWdpc3RlcigmZGlzcGxheS0+Y3Vy
-ci0+ZGV2KTsKKwkJZGlzcGxheS0+Y3VyciA9IE5VTEw7CisJfQorCisJcHJpbnRrKEtFUk5fV0FS
-TklORyAiW0RCR10gcmVnaXN0ZXJpbmcgbmV3XG4iKTsKKworCXJjID0gZGV2aWNlX3JlZ2lzdGVy
-KCZkZXZpY2UtPmRldik7CisJaWYgKHJjKSB7CisJCXJldHVybiByYzsKKwl9CisKKwlyYyA9IGJh
-Y2tsaWdodF9yZWdpc3Rlcl9mYihkZXZpY2UpOworCWlmIChyYykgeworCQlyZXR1cm4gcmM7CisJ
-fQorCisJZGlzcGxheS0+Y3VyciA9IGRldmljZTsKKworI2lmZGVmIENPTkZJR19QTUFDX0JBQ0tM
-SUdIVAorCW11dGV4X2xvY2soJnBtYWNfYmFja2xpZ2h0X211dGV4KTsKKwlpZiAoIXBtYWNfYmFj
-a2xpZ2h0KQorCQlwbWFjX2JhY2tsaWdodCA9IG5ld19iZDsKKwltdXRleF91bmxvY2soJnBtYWNf
-YmFja2xpZ2h0X211dGV4KTsKKyNlbmRpZgorCisJcmV0dXJuIDA7Cit9CisKIHN0YXRpYyB2b2lk
-IGJhY2tsaWdodF9nZW5lcmF0ZV9ldmVudChzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqYmQsCiAJ
-CQkJICAgICBlbnVtIGJhY2tsaWdodF91cGRhdGVfcmVhc29uIHJlYXNvbikKIHsKQEAgLTE5MCw4
-ICsyNzIsNiBAQCBzdGF0aWMgc3NpemVfdCBiYWNrbGlnaHRfc2hvd19hY3R1YWxfYnJpZ2h0bmVz
-cyhzdHJ1Y3QgZGV2aWNlICpkZXYsCiAJcmV0dXJuIHJjOwogfQogCi1zdGF0aWMgc3RydWN0IGNs
-YXNzICpiYWNrbGlnaHRfY2xhc3M7Ci0KIHN0YXRpYyBpbnQgYmFja2xpZ2h0X3N1c3BlbmQoc3Ry
-dWN0IGRldmljZSAqZGV2LCBwbV9tZXNzYWdlX3Qgc3RhdGUpCiB7CiAJc3RydWN0IGJhY2tsaWdo
-dF9kZXZpY2UgKmJkID0gdG9fYmFja2xpZ2h0X2RldmljZShkZXYpOwpAQCAtMjcxLDEwICszNTEs
-MjQgQEAgRVhQT1JUX1NZTUJPTChiYWNrbGlnaHRfZm9yY2VfdXBkYXRlKTsKIHN0cnVjdCBiYWNr
-bGlnaHRfZGV2aWNlICpiYWNrbGlnaHRfZGV2aWNlX3JlZ2lzdGVyKGNvbnN0IGNoYXIgKm5hbWUs
-CiAJCXN0cnVjdCBkZXZpY2UgKnBhcmVudCwgdm9pZCAqZGV2ZGF0YSwgc3RydWN0IGJhY2tsaWdo
-dF9vcHMgKm9wcykKIHsKKwlzdHJ1Y3QgYmFja2xpZ2h0X2Rpc3BsYXkgKmRpc3BsYXk7CiAJc3Ry
-dWN0IGJhY2tsaWdodF9kZXZpY2UgKm5ld19iZDsKLQlpbnQgcmM7CiAKIAlwcl9kZWJ1ZygiYmFj
-a2xpZ2h0X2RldmljZV9yZWdpc3RlcjogbmFtZT0lc1xuIiwgbmFtZSk7CisJcHJpbnRrKEtFUk5f
-V0FSTklORyAiW0RCR10gcmVnaXN0ZXJpbmcgbmV3IGJhY2tsaWdodDogJXNcbiIsIG5hbWUpOwor
-CisJZGlzcGxheSA9IGJhY2tsaWdodF9maW5kX2Rpc3BsYXkoInBhbmVsMCIpOworCWlmICghZGlz
-cGxheSkgeworCQlkaXNwbGF5ID0ga3phbGxvYyhzaXplb2Yoc3RydWN0IGJhY2tsaWdodF9kaXNw
-bGF5KSwgR0ZQX0tFUk5FTCk7CisJCWlmICghZGlzcGxheSkKKwkJCXJldHVybiBFUlJfUFRSKC1F
-Tk9NRU0pOworCisJCUlOSVRfTElTVF9IRUFEKCZkaXNwbGF5LT5kZXZpY2VzKTsKKwkJZGlzcGxh
-eS0+bmFtZSA9IGtzdHJkdXAoInBhbmVsMCIsIEdGUF9LRVJORUwpOworCQlsaXN0X2FkZF90YWls
-KCZkaXNwbGF5LT5saXN0LCAmZGlzcGxheXMpOworCisJCXByaW50ayhLRVJOX1dBUk5JTkcgIltE
-QkddIHdlIGhhdmUgbmV3IGRpc3BsYXkgJXNcbiIsIGRpc3BsYXktPm5hbWUpOworCX0KIAogCW5l
-d19iZCA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlKSwgR0ZQX0tFUk5F
-TCk7CiAJaWYgKCFuZXdfYmQpCkBAIC0yODksMjYgKzM4MywxMSBAQCBzdHJ1Y3QgYmFja2xpZ2h0
-X2RldmljZSAqYmFja2xpZ2h0X2RldmljZV9yZWdpc3Rlcihjb25zdCBjaGFyICpuYW1lLAogCWRl
-dl9zZXRfbmFtZSgmbmV3X2JkLT5kZXYsIG5hbWUpOwogCWRldl9zZXRfZHJ2ZGF0YSgmbmV3X2Jk
-LT5kZXYsIGRldmRhdGEpOwogCi0JcmMgPSBkZXZpY2VfcmVnaXN0ZXIoJm5ld19iZC0+ZGV2KTsK
-LQlpZiAocmMpIHsKLQkJa2ZyZWUobmV3X2JkKTsKLQkJcmV0dXJuIEVSUl9QVFIocmMpOwotCX0K
-LQotCXJjID0gYmFja2xpZ2h0X3JlZ2lzdGVyX2ZiKG5ld19iZCk7Ci0JaWYgKHJjKSB7Ci0JCWRl
-dmljZV91bnJlZ2lzdGVyKCZuZXdfYmQtPmRldik7Ci0JCXJldHVybiBFUlJfUFRSKHJjKTsKLQl9
-Ci0KIAluZXdfYmQtPm9wcyA9IG9wczsKIAotI2lmZGVmIENPTkZJR19QTUFDX0JBQ0tMSUdIVAot
-CW11dGV4X2xvY2soJnBtYWNfYmFja2xpZ2h0X211dGV4KTsKLQlpZiAoIXBtYWNfYmFja2xpZ2h0
-KQotCQlwbWFjX2JhY2tsaWdodCA9IG5ld19iZDsKLQltdXRleF91bmxvY2soJnBtYWNfYmFja2xp
-Z2h0X211dGV4KTsKLSNlbmRpZgorCWxpc3RfYWRkX3RhaWwoJm5ld19iZC0+bGlzdCwgJmRpc3Bs
-YXktPmRldmljZXMpOworCisJYmFja2xpZ2h0X3BpY2tfdXBfZGV2aWNlKGRpc3BsYXkpOwogCiAJ
-cmV0dXJuIG5ld19iZDsKIH0KQEAgLTM0Nyw2ICs0MjYsOCBAQCBzdGF0aWMgdm9pZCBfX2V4aXQg
-YmFja2xpZ2h0X2NsYXNzX2V4aXQodm9pZCkKIAogc3RhdGljIGludCBfX2luaXQgYmFja2xpZ2h0
-X2NsYXNzX2luaXQodm9pZCkKIHsKKwlJTklUX0xJU1RfSEVBRCgmZGlzcGxheXMpOworCiAJYmFj
-a2xpZ2h0X2NsYXNzID0gY2xhc3NfY3JlYXRlKFRISVNfTU9EVUxFLCAiYmFja2xpZ2h0Iik7CiAJ
-aWYgKElTX0VSUihiYWNrbGlnaHRfY2xhc3MpKSB7CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIlVu
-YWJsZSB0byBjcmVhdGUgYmFja2xpZ2h0IGNsYXNzOyBlcnJubyA9ICVsZFxuIiwKZGlmZiAtLWdp
-dCBhL2luY2x1ZGUvbGludXgvYmFja2xpZ2h0LmggYi9pbmNsdWRlL2xpbnV4L2JhY2tsaWdodC5o
-CmluZGV4IDBmNWY1NzguLjViMTQ4ZjQgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvYmFja2xp
-Z2h0LmgKKysrIGIvaW5jbHVkZS9saW51eC9iYWNrbGlnaHQuaApAQCAtMzUsNiArMzUsMTggQEAg
-ZW51bSBiYWNrbGlnaHRfdXBkYXRlX3JlYXNvbiB7CiBzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZTsK
-IHN0cnVjdCBmYl9pbmZvOwogCitzdHJ1Y3QgYmFja2xpZ2h0X2Rpc3BsYXkgeworCS8qIExpc3Qg
-b2YgZGlzcGxheXMgKi8KKwlzdHJ1Y3QgbGlzdF9oZWFkIGxpc3Q7CisKKwljaGFyICpuYW1lOwor
-CisJLyogRGV2aWNlcyBjb250cm9sbGluZyBkaXNwbGF5J3MgYmFja2xpZ2h0ICovCisJc3RydWN0
-IGxpc3RfaGVhZCBkZXZpY2VzOworCisJc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgKmN1cnI7Cit9
-OworCiBzdHJ1Y3QgYmFja2xpZ2h0X29wcyB7CiAJdW5zaWduZWQgaW50IG9wdGlvbnM7CiAKQEAg
-LTc2LDYgKzg4LDExIEBAIHN0cnVjdCBiYWNrbGlnaHRfcHJvcGVydGllcyB7CiB9OwogCiBzdHJ1
-Y3QgYmFja2xpZ2h0X2RldmljZSB7CisJLyogTGlzdCBvZiBkZXZpY2VzICovCisJc3RydWN0IGxp
-c3RfaGVhZCBsaXN0OworCisJc3RydWN0IGJhY2tsaWdodF9kaXNwbGF5ICpkaXNwbGF5OworCiAJ
-LyogQmFja2xpZ2h0IHByb3BlcnRpZXMgKi8KIAlzdHJ1Y3QgYmFja2xpZ2h0X3Byb3BlcnRpZXMg
-cHJvcHM7CiAK
---0016e6d975cb6e90cd0479881a36--
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
