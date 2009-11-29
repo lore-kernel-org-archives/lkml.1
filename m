@@ -1,100 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbZK2Hef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZK2HmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbZK2Hef (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 02:34:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZK2Hee
+	id S1753902AbZK2HmI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 02:42:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZK2HmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 02:34:34 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:48076 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbZK2Hed (ORCPT
+	Sun, 29 Nov 2009 02:42:07 -0500
+Received: from james.oetiker.ch ([213.144.138.195]:51952 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937AbZK2HmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 02:34:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V4kMFJuHWS6B2311RLXv+3/9nLRLdPCHWwCBn8VOrNAVqwS+3WTKE46I5taEQ3Kd66
-         DjAObVkf+iEmCkfNPBWsFpYWV+S6rjHeAVYI1b97K5Ve5QobgeXj3ssCoN2Q8rFbzlfa
-         S4YmPFAeSVnGMC4Sik13J8DImMBqd0yP7sK/E=
-Date: Sat, 28 Nov 2009 23:34:34 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Subject: Re: [IR-RFC PATCH v4 0/6] In-kernel IR support using evdev
-Message-ID: <20091129073434.GX6936@core.coreip.homeip.net>
-References: <20091127013217.7671.32355.stgit@terra> <4B0F43B3.4090804@wilsonet.com> <9e4733910911261958w2911f69dk4ab747b4bf12461@mail.gmail.com>
+	Sun, 29 Nov 2009 02:42:05 -0500
+Date: Sun, 29 Nov 2009 08:42:09 +0100 (CET)
+From: Tobi Oetiker <tobi@oetiker.ch>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: still getting allocation failures (was Re: [PATCH] vmscan: Stop
+ kswapd waiting on congestion when the min watermark is not being met V2)
+In-Reply-To: <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu>
+Message-ID: <alpine.DEB.2.00.0911290834470.20857@sebohet.brgvxre.pu>
+References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091113135443.GF29804@csn.ul.ie> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie> <2f11576a0911131033w4a9e6042k3349f0be290a167e@mail.gmail.com> <20091113200357.GO29804@csn.ul.ie>
+ <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9e4733910911261958w2911f69dk4ab747b4bf12461@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 10:58:59PM -0500, Jon Smirl wrote:
+Hi Mel,
+
+Thursday Tobias Oetiker wrote:
+> Hi Mel,
+>
+> Nov 13 Mel Gorman wrote:
+>
+> > The last version has a stupid bug in it. Sorry.
 > >
-> >> Code is only lightly tested. Encoders and decoders have not been
-> >> written for all protocols. Repeat is not handled for any protocol. I'm
-> >> looking for help. There are 15 more existing LIRC drivers.
+> > Changelog since V1
+> >   o Fix incorrect negation
+> >   o Rename kswapd_no_congestion_wait to kswapd_skip_congestion_wait as
+> >     suggested by Rik
 > >
-> > And there's the hangup for me. The lirc drivers and interface have been
-> > pretty heavily battle-tested over years and years in the field. And there
-> > are those 15 more drivers that already work with the lirc interface. I'm
-> > woefully short on time to work on any porting myself, and about to get even
-> > shorter with some new responsibilities at work requiring even more of my
-> > attention.
+> > If reclaim fails to make sufficient progress, the priority is raised.
+> > Once the priority is higher, kswapd starts waiting on congestion.  However,
+> > if the zone is below the min watermark then kswapd needs to continue working
+> > without delay as there is a danger of an increased rate of GFP_ATOMIC
+> > allocation failure.
 > >
-> > If we go with a hybrid approach, all those existing drivers can be brought
-> > in supporting just the lirc interface initially, and have in-kernel decode
-> > support added as folks have time to work on them, if it actually makes sense
-> > for those devices.
-> >
-> > Just trying to find a happy middle ground that minimizes regressions for
-> > users *and* gives us maximum flexibility.
-> 
-> You are going to have to choose. Recreate the problems of type
-> specific devices like /dev/mouse and /dev/kbd that evdev was created
-> to fix, or skip those type specific devices and go straight to evdev.
-> We've known for years the /dev/mouse was badly broken. How many more
-> years is it going to be before it can be removed? /dev/lirc has the
-> same type of problems that /dev/mouse has. The only reason that
-> /dev/lirc works now is because there is a single app that uses it.
-> 
+> > This patch changes the conditions under which kswapd waits on
+> > congestion by only going to sleep if the min watermarks are being met.
+>
+> I finally got around to test this together with the whole series on
+> 2.6.31.6. after running it for a day I have not yet seen a single
+> order:5 allocation problem ... (while I had several an hour before)
 
-Pardon my ignorance here but it does not seem that /dev/lirc actually
-multiplexes data stream from different receivers but rather creates a
-device per receiver... Multiplexing is the main issue with /dev/mouse
-for me.
+> for the record, my kernel is now running with the following
+> patches:
+>
+> patch1:Date: Thu, 12 Nov 2009 19:30:31 +0000
+> patch1:Subject: [PATCH 1/5] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
+>
+> patch2:Date: Thu, 12 Nov 2009 19:30:32 +0000
+> patch2:Subject: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
+>
+> patch3:Date: Thu, 12 Nov 2009 19:30:33 +0000
+> patch3:Subject: [PATCH 3/5] page allocator: Wait on both sync and async congestion after direct reclaim
+>
+> patch4:Date: Thu, 12 Nov 2009 19:30:34 +0000
+> patch4:Subject: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and double check it should be asleep
+>
+> patch5:Date: Fri, 13 Nov 2009 20:03:57 +0000
+> patch5:Subject: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met V2
+>
+> patch6:Date: Tue, 17 Nov 2009 10:34:21 +0000
+> patch6:Subject: [PATCH] vmscan: Have kswapd sleep for a short interval and double check it should be asleep fix 1
+>
+I have now been running the new kernel for a few days and I am
+sorry to report that about a day after booting the allocation
+failures started showing again. More order:4 instead of order:5 ...
 
-What are the other issues with LIRC interface _for lircd-type applications_
-do we see? I see for example that it is not 32/64 bit clean so that is
-somethign that we may consider re-evaluating before just acceptig it
-into kernel. Is there anything else?
+Nov 29 07:16:17 johan kernel: [261565.598627] nfsd: page allocation failure. order:4, mode:0x4020 [kern.warning]
+Nov 29 07:16:17 johan kernel: [261565.598638] Pid: 6956, comm: nfsd Tainted: G      D    2.6.31.6-oep #1 [kern.warning]
+Nov 29 07:16:17 johan kernel: [261565.598641] Call Trace: [kern.warning]
+Nov 29 07:16:17 johan kernel: [261565.598646]  <IRQ>  [<ffffffff810cb730>] __alloc_pages_nodemask+0x570/0x690 [kern.warning]
+Nov 29 07:16:17 johan kernel: [261565.598672]  [<ffffffff8142aba5>] ? tcp_tso_segment+0x265/0x2e0 [kern.warning]
+Nov 29 07:16:17 johan kernel: [261565.598680]  [<ffffffff810faf08>] kmalloc_large_node+0x68/0xc0 [kern.warning]
+Nov 29 07:16:17 johan kernel: [261565.598692]  [<ffffffff810febfa>] __kmalloc_node_track_caller+0x11a/0x180 [kern.warning]
 
-> Also, implementing a new evdev based system in the kernel in no way
-> breaks existing lirc installations. Just don't load the new
-> implementation and everything works exactly the same way as before.
-> 
-> I'd go the evdev only route for in-kernel and leave existing lirc out
-> of tree. Existing lirc will continue to work. This is probably the
-> most stable strategy, even more so than a hybrid approach. The
-> in-kernel implementation will then be free to evolve without the
-> constraint of legacy APIs. As people become happy with it they can
-> switch over.
-> 
+the fact that there were no problems right after booting might give
+some indication as to where the problem is. This is on a machine
+with 24 GB of memory, as you can see from the 'top' headers, it has
+plenty of room to spare and should never run into allocation problems
+anyway. The only thing that would have changed after running it for
+about a day is that more memory is used for caching ...
 
-If by evdev-based system you mean adding EV_IR event to the input core I
-think it would be a mistake. Such data (EV_IR/IR_XXX) will have to be read
-from an event device, processed (probably in userspace) and re-injected
-back through uinput as (EV_KEY/KEY_XXX) for consumption again. Such
-looping interface would be a mistake IMHO.
+# cat /proc/meminfo
+MemTotal:       24746268 kB
+MemFree:          128012 kB
+Buffers:         6255988 kB
+Cached:         10600780 kB
+SwapCached:        23668 kB
+Active:         13078944 kB
+Inactive:        9229172 kB
+Active(anon):    5455164 kB
+Inactive(anon):   508616 kB
+Active(file):    7623780 kB
+Inactive(file):  8720556 kB
+Unevictable:      291768 kB
+Mlocked:          291768 kB
+SwapTotal:      83886056 kB
+SwapFree:       83846520 kB
+Dirty:              2028 kB
+Writeback:             0 kB
+AnonPages:       5723748 kB
+Mapped:           152240 kB
+Slab:            1339176 kB
+SReclaimable:    1270156 kB
+SUnreclaim:        69020 kB
+PageTables:        31208 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    101208440 kB
+Committed_AS:    8146696 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:      115084 kB
+VmallocChunk:   34359518011 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:       10176 kB
+DirectMap2M:    25155584 kB
 
-Still, the end result of the transformation should be EV_KEY/KEY_XXX
-delivered on one of the event devices (preferrably one per remote, not
-one per receiver), I believe everyone agrees on that.
+hth
+tobi
 
 -- 
-Dmitry
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
