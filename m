@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZK2Xb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752458AbZK2XhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367AbZK2Xb6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 18:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZK2Xb5
+	id S1752458AbZK2XhV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 18:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZK2XhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 18:31:57 -0500
-Received: from icebox.esperi.org.uk ([81.187.191.129]:39709 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751865AbZK2Xb4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 18:31:56 -0500
-To: Avi Kivity <avi@redhat.com>
-Cc: kvm@vger.kernel.org,
-       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31.5 x86-64 KVM: 'emulation failed (pagetable) rip 7fb49335da7b 66 0f 7f 07'
-References: <87skbzvdgd.fsf@spindle.srvr.nix> <4B125051.6010506@redhat.com>
-	<87k4x9saqn.fsf@spindle.srvr.nix> <4B1283F5.5060204@redhat.com>
-From: Nix <nix@esperi.org.uk>
-Emacs: because extension languages should come with the editor built in.
-Date: Sun, 29 Nov 2009 23:31:45 +0000
-In-Reply-To: <4B1283F5.5060204@redhat.com> (Avi Kivity's message of "Sun, 29 Nov 2009 16:23:49 +0200")
-Message-ID: <87y6lorjq6.fsf@spindle.srvr.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b29 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-wuwien-Metrics: spindle 1290; Body=3 Fuz1=3 Fuz2=3
+	Sun, 29 Nov 2009 18:37:20 -0500
+Received: from mail1.radix.net ([207.192.128.31]:44829 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752093AbZK2XhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 18:37:19 -0500
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+From: Andy Walls <awalls@radix.net>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com,
+       stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
+In-Reply-To: <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	 <m3aay6y2m1.fsf@intrepid.localdomain>
+	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+	 <1259469121.3125.28.camel@palomino.walls.org>
+	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
+	 <1259515703.3284.11.camel@maxim-laptop>
+	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 29 Nov 2009 18:35:32 -0500
+Message-Id: <1259537732.5231.11.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29 Nov 2009, Avi Kivity stated:
-> Most likely, either this or something similar is called on a userspace
-> device driver.  Can you check if this is triggered by starting X?
+On Sun, 2009-11-29 at 09:49 -0800, Ray Lee wrote:
+> On Sun, Nov 29, 2009 at 9:28 AM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> > This has zero advantages besides good developer feeling that "My system
+> > has one less daemon..."
+> 
+> Surely it's clear that having an unnecessary daemon is introducing
+> another point of failure?
 
-*sigh* I just wasted twenty minutes trying to find some way, *any* way
-to not start X under Ubuntu Karmic, so as to test this. None is evident.
-I can't even figure out what and where in upstart's horrific dependency
-tangle is starting X in the first place: deleting suspicious-looking
-things from rc*.d has no effect at all. I can't even tell if rc*.d is
-still used, nor if the concept of runlevel is even meaningful any
-longer. There are lots of things googleable that claim to say how to do
-this, but all relate to the non-dependency-based inittab-emulating
-method used in previous Ubuntu versions.
+A failure in a userspace IR daemon is worst case loss of IR
+functionality.
 
-Anyone know?
+A failure in kernel space can oops or panic the machine.
+
+> Reducing complexity is not just its own
+> reward in a 'Developer Feel Good' way.
+
+No complexity is being reduced here.  It's being shoved from one side of
+a fence to another.  A bad part about the proposed move is that in user
+space, user address space is fairly isolated from other applications and
+separate from kernel space.  Partitioning reduces complexity and the
+impact of failures.  Moving things into kernel space just adds more to
+the pile of code; it should have a good reason for being there.
+
+
+> If decoding can *only* be sanely handled in user-space, that's one
+> thing. If it can be handled in kernel, then that would be better.
+
+Why does the address space in which decoding is performed make the
+decoding process better or worse?  The in kernel infrastructre and
+restrictions add constraints to a decoding implementation.  Userspace is
+much more flexible.
+
+Regards,
+Andy
+
