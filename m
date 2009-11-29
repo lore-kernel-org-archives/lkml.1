@@ -1,152 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZK2HmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbZK2IVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbZK2HmI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 02:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZK2HmH
+	id S1754113AbZK2IVi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 03:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZK2IVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 02:42:07 -0500
-Received: from james.oetiker.ch ([213.144.138.195]:51952 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751937AbZK2HmF (ORCPT
+	Sun, 29 Nov 2009 03:21:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38014
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753830AbZK2IVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 02:42:05 -0500
-Date: Sun, 29 Nov 2009 08:42:09 +0100 (CET)
-From: Tobi Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: still getting allocation failures (was Re: [PATCH] vmscan: Stop
- kswapd waiting on congestion when the min watermark is not being met V2)
-In-Reply-To: <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu>
-Message-ID: <alpine.DEB.2.00.0911290834470.20857@sebohet.brgvxre.pu>
-References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091113135443.GF29804@csn.ul.ie> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie> <2f11576a0911131033w4a9e6042k3349f0be290a167e@mail.gmail.com> <20091113200357.GO29804@csn.ul.ie>
- <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 29 Nov 2009 03:21:37 -0500
+Date: Sun, 29 Nov 2009 00:21:42 -0800 (PST)
+Message-Id: <20091129.002142.230416671.davem@davemloft.net>
+To: nico@fluxnic.net
+Cc: khilman@deeprootsystems.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NET: smc91x: convert to dev_pm_ops
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0911242012500.2059@xanadu.home>
+References: <1259103467-31016-1-git-send-email-khilman@deeprootsystems.com>
+	<alpine.LFD.2.00.0911242012500.2059@xanadu.home>
+X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+From: Nicolas Pitre <nico@fluxnic.net>
+Date: Tue, 24 Nov 2009 20:13:15 -0500 (EST)
 
-Thursday Tobias Oetiker wrote:
-> Hi Mel,
->
-> Nov 13 Mel Gorman wrote:
->
-> > The last version has a stupid bug in it. Sorry.
-> >
-> > Changelog since V1
-> >   o Fix incorrect negation
-> >   o Rename kswapd_no_congestion_wait to kswapd_skip_congestion_wait as
-> >     suggested by Rik
-> >
-> > If reclaim fails to make sufficient progress, the priority is raised.
-> > Once the priority is higher, kswapd starts waiting on congestion.  However,
-> > if the zone is below the min watermark then kswapd needs to continue working
-> > without delay as there is a danger of an increased rate of GFP_ATOMIC
-> > allocation failure.
-> >
-> > This patch changes the conditions under which kswapd waits on
-> > congestion by only going to sleep if the min watermarks are being met.
->
-> I finally got around to test this together with the whole series on
-> 2.6.31.6. after running it for a day I have not yet seen a single
-> order:5 allocation problem ... (while I had several an hour before)
+> On Tue, 24 Nov 2009, Kevin Hilman wrote:
+> 
+>> Convert smc91x driver from legacy PM hooks over to using dev_pm_ops.
+>> 
+>> Tested on OMAP3 platform.
+>> 
+>> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+> 
+> Acked-by: Nicolas Pitre <nico@fluxnic.net>
 
-> for the record, my kernel is now running with the following
-> patches:
->
-> patch1:Date: Thu, 12 Nov 2009 19:30:31 +0000
-> patch1:Subject: [PATCH 1/5] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
->
-> patch2:Date: Thu, 12 Nov 2009 19:30:32 +0000
-> patch2:Subject: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
->
-> patch3:Date: Thu, 12 Nov 2009 19:30:33 +0000
-> patch3:Subject: [PATCH 3/5] page allocator: Wait on both sync and async congestion after direct reclaim
->
-> patch4:Date: Thu, 12 Nov 2009 19:30:34 +0000
-> patch4:Subject: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and double check it should be asleep
->
-> patch5:Date: Fri, 13 Nov 2009 20:03:57 +0000
-> patch5:Subject: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met V2
->
-> patch6:Date: Tue, 17 Nov 2009 10:34:21 +0000
-> patch6:Subject: [PATCH] vmscan: Have kswapd sleep for a short interval and double check it should be asleep fix 1
->
-I have now been running the new kernel for a few days and I am
-sorry to report that about a day after booting the allocation
-failures started showing again. More order:4 instead of order:5 ...
-
-Nov 29 07:16:17 johan kernel: [261565.598627] nfsd: page allocation failure. order:4, mode:0x4020 [kern.warning]
-Nov 29 07:16:17 johan kernel: [261565.598638] Pid: 6956, comm: nfsd Tainted: G      D    2.6.31.6-oep #1 [kern.warning]
-Nov 29 07:16:17 johan kernel: [261565.598641] Call Trace: [kern.warning]
-Nov 29 07:16:17 johan kernel: [261565.598646]  <IRQ>  [<ffffffff810cb730>] __alloc_pages_nodemask+0x570/0x690 [kern.warning]
-Nov 29 07:16:17 johan kernel: [261565.598672]  [<ffffffff8142aba5>] ? tcp_tso_segment+0x265/0x2e0 [kern.warning]
-Nov 29 07:16:17 johan kernel: [261565.598680]  [<ffffffff810faf08>] kmalloc_large_node+0x68/0xc0 [kern.warning]
-Nov 29 07:16:17 johan kernel: [261565.598692]  [<ffffffff810febfa>] __kmalloc_node_track_caller+0x11a/0x180 [kern.warning]
-
-the fact that there were no problems right after booting might give
-some indication as to where the problem is. This is on a machine
-with 24 GB of memory, as you can see from the 'top' headers, it has
-plenty of room to spare and should never run into allocation problems
-anyway. The only thing that would have changed after running it for
-about a day is that more memory is used for caching ...
-
-# cat /proc/meminfo
-MemTotal:       24746268 kB
-MemFree:          128012 kB
-Buffers:         6255988 kB
-Cached:         10600780 kB
-SwapCached:        23668 kB
-Active:         13078944 kB
-Inactive:        9229172 kB
-Active(anon):    5455164 kB
-Inactive(anon):   508616 kB
-Active(file):    7623780 kB
-Inactive(file):  8720556 kB
-Unevictable:      291768 kB
-Mlocked:          291768 kB
-SwapTotal:      83886056 kB
-SwapFree:       83846520 kB
-Dirty:              2028 kB
-Writeback:             0 kB
-AnonPages:       5723748 kB
-Mapped:           152240 kB
-Slab:            1339176 kB
-SReclaimable:    1270156 kB
-SUnreclaim:        69020 kB
-PageTables:        31208 kB
-NFS_Unstable:          0 kB
-Bounce:                0 kB
-WritebackTmp:          0 kB
-CommitLimit:    101208440 kB
-Committed_AS:    8146696 kB
-VmallocTotal:   34359738367 kB
-VmallocUsed:      115084 kB
-VmallocChunk:   34359518011 kB
-HugePages_Total:       0
-HugePages_Free:        0
-HugePages_Rsvd:        0
-HugePages_Surp:        0
-Hugepagesize:       2048 kB
-DirectMap4k:       10176 kB
-DirectMap2M:    25155584 kB
-
-hth
-tobi
-
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+Applied to net-next-2.6, thanks.
