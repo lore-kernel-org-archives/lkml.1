@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZK2PXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbZK2P0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbZK2PXi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 10:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZK2PXi
+	id S1752101AbZK2P0F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 10:26:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZK2P0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 10:23:38 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38936 "EHLO mx1.suse.de"
+	Sun, 29 Nov 2009 10:26:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751709AbZK2PXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 10:23:37 -0500
-Subject: Re: linux-next: manual merge of the osd tree with the scsi tree
-From: James Bottomley <James.Bottomley@suse.de>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: open-osd <osd-dev@open-osd.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <4B1283C9.1030002@panasas.com>
-References: <20091127143229.108298c6.sfr@canb.auug.org.au>
-	 <4B123A82.10104@panasas.com>  <4B127202.1010900@panasas.com>
-	 <1259502399.2827.14.camel@mulgrave.site>  <4B1283C9.1030002@panasas.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 29 Nov 2009 10:23:35 -0500
-Message-Id: <1259508215.2827.15.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	id S1750918AbZK2P0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 10:26:04 -0500
+Message-ID: <4B129277.5050000@redhat.com>
+Date: Sun, 29 Nov 2009 17:25:43 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Tim Blechmann <tim@klingt.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] sched: Optimize branch hint in context_switch()
+References: <4B1262AC.8000903@klingt.org>  <4B128F65.40804@redhat.com> <1259508050.13695.160.camel@laptop>
+In-Reply-To: <1259508050.13695.160.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-11-29 at 16:23 +0200, Boaz Harrosh wrote:
-> On 11/29/2009 03:46 PM, James Bottomley wrote:
-> >>
-> >> Should I repost the correct two patches (my preference)? should I send in a fix to
-> >> current scsi-misc tree? or should I send two SQUASH-ME patches to the two bad commits
-> >> in your tree?
-> >>
-> >> How do you want to proceed?
-> > 
-> > Send me the replacement patch (and tell me which commit id in my tree
-> > it's replacing).
-> > 
-> 
-> Thank you James.
-> 
-> I'm posting two patches as reply to this mail.
-> 
-> [PATCH 1/2] osduld: Use device->release instead of internal kref
-> which replaces:
-> f89b9ee [SCSI] osduld: Use device->release instead of internal kref
-> 
-> and
-> 
-> [PATCH 2/2] libosd: osd_dev_info: Unique Identification of an OSD device
-> which replaces:
-> 3b616d4 [SCSI] libosd: osd_dev_info: Unique Identification of an OSD device
+On 11/29/2009 05:20 PM, Peter Zijlstra wrote:
+> On Sun, 2009-11-29 at 17:12 +0200, Avi Kivity wrote:
+>    
+>> On 11/29/2009 02:01 PM, Tim Blechmann wrote:
+>>      
+>>> Branch hint profiling on my nehalem machine showed 88%
+>>> incorrect branch hints:
+>>>
+>>> 42017484 326957902  88 context_switch                 sched.c              3043
+>>> 42038493 326953687  88 context_switch                 sched.c              3050
+>>>
+>>> @@ -3040,14 +3040,14 @@ context_switch(struct rq *rq, struct task_struct *prev,
+>>>    	 */
+>>>    	arch_start_context_switch(prev);
+>>>
+>>> -	if (likely(!mm)) {
+>>> +	if (unlikely(!mm)) {
+>>>    		next->active_mm = oldmm;
+>>>    		atomic_inc(&oldmm->mm_count);
+>>>    		enter_lazy_tlb(oldmm, next);
+>>>    	} else
+>>>    		switch_mm(oldmm, mm, next);
+>>>
+>>> -	if (likely(!prev->mm)) {
+>>> +	if (unlikely(!prev->mm)) {
+>>>    		prev->active_mm = NULL;
+>>>    		rq->prev_mm = oldmm;
+>>>    	}
+>>>
+>>>        
+>> I don't think either the original or the patch is correct.  Whether or
+>> not a task has an mm is entirely workload dependent, we shouldn't be
+>> giving hints here.
+>>      
+> There are reasons to still use branch hints, for example if the unlikely
+> branch is very expensive anyway and it pays to have the likely branch be
+> ever so slightly less expensive.
+>
+> Now I don't think that applies here, but there are cases where such code
+> generation issues are the main motivator not the actual usage patterns.
+>    
 
-OK, replacement should be done in scsi-misc (give an hour or two for
-mirror updates).
+These should be documented then to avoid patches removing them:
 
-James
+      #define slowpath(x) unlikely(x)
 
+      if (slowpath(condition))
+            expensive_operation();
+
+-- 
+error compiling committee.c: too many arguments to function
 
