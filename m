@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbZK2SCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbZK2RuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbZK2SCU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 13:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZK2SCT
+	id S1752696AbZK2RuI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 12:50:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZK2RuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 13:02:19 -0500
-Received: from mail2.racsa.co.cr ([196.40.31.26]:33309 "EHLO
-	barracuda7.racsa.co.cr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbZK2SCT (ORCPT
+	Sun, 29 Nov 2009 12:50:06 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:64192 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751654AbZK2RuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 13:02:19 -0500
-X-Greylist: delayed 936 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Nov 2009 13:02:18 EST
-X-ASG-Debug-ID: 1259516818-63c5031f0000-xx1T2L
-X-Barracuda-URL: http://172.16.1.16:8000/cgi-bin/mark.cgi
-X-Barracuda-Envelope-From: osobosque@racsa.co.cr
-Date: Sun, 29 Nov 2009 11:46:43 -0600 (CST)
-From: Joseph Parmelee <jparmele@wildbear.com>
-X-X-Sender: jparmele@bruno
-To: linux-kernel@vger.kernel.org
-X-ASG-Orig-Subj: futex_cmpxchg_enabled not set in futex_init on pentium3
-Subject: futex_cmpxchg_enabled not set in futex_init on pentium3
-Message-id: <alpine.LNX.2.00.0911291057100.2912@bruno>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-X-Barracuda-Connect: UNKNOWN[172.16.7.14]
-X-Barracuda-Start-Time: 1259516818
-X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at racsa.co.cr
-X-Barracuda-Spam-Score: 0.00
-X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=4.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=6.0 tests=
-X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.2.15900
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
+	Sun, 29 Nov 2009 12:50:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type;
+        b=W9KJxUkqAvJdQrpBjmyRW8nojnNIEoP2bjtEos3GWP59gZqkDXrvwrCUG4nGFr5dO9
+         8Hb4d9sWHgMwcmWhnwvbrd8f4zZGSt1HXE/9nGRq7luemOfenJKTKyXUnQRdw7JVU823
+         85D0Ei+MYvPOuiwiBwrHBZPX4Ls4ZxUyPMKqU=
+MIME-Version: 1.0
+In-Reply-To: <1259515703.3284.11.camel@maxim-laptop>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> 
+	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> 
+	<m3aay6y2m1.fsf@intrepid.localdomain> <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com> 
+	<1259469121.3125.28.camel@palomino.walls.org> <20091129124011.4d8a6080@lxorguk.ukuu.org.uk> 
+	<1259515703.3284.11.camel@maxim-laptop>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Sun, 29 Nov 2009 09:49:51 -0800
+X-Google-Sender-Auth: 11c93706f39d280b
+Message-ID: <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Walls <awalls@radix.net>,
+       Jon Smirl <jonsmirl@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com,
+       stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all:
+On Sun, Nov 29, 2009 at 9:28 AM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> This has zero advantages besides good developer feeling that "My system
+> has one less daemon..."
 
-Sometime between 2.6.28.6 and 2.6.31.5 a regression (feature?) in the futex
-system now causes futex test failures on glibc-2.9 which where not present
-before.  That is, recompiling the binaries of glibc-2.9 and rerunning its
-test suite now produces futex errors that passed previously.  The problem
-appears now with glibc-2.9 compiled with either gcc-4.1.2 or gcc-4.4.2, and
-with glibc-2.11 compiled with gcc-4.4.2, which is what I am currently
-running on this machine, failures and all.
+Surely it's clear that having an unnecessary daemon is introducing
+another point of failure? Reducing complexity is not just its own
+reward in a 'Developer Feel Good' way.
 
-The system under discussion is a uniprocessor pentium3 with an AMI BIOS. 
-Full details available on request should that prove necessary.
-
-I have tracked the test failures down to the fact that futex_cmpxchg_enabled
-is not set because the test in futex_init now "fails" (actually succeeds). 
-This appears to be happening because the expected page fault intentionally
-provoked by a null dereference appears to be working now in kernel mode. 
-This *may* (rank speculation) be associated with the AMI BIOS low-memory
-corruption protection added sometime during this gap, and which is activated
-on this machine.
-
-Before I muck any further with this, especially involving the quite tricky
-futex mess, I would appreciate some insight into the idea behind the test in
-futex_init.  I don't understand why you would bother to invoke a fault in
-what is apparently a test to determine if the cmpxchg instruction works. 
-The fault is supposed to occur as a result of a null dereference that takes
-place *before* the cmpxchg instruction is even executed.  If you want to
-test that cmpxchg works, why not just make a little test in futex_init that
-uses it and fails (not succeeds) if it doesn't behave as expected, or if
-there is a fault of some kind (like illegal instruction)?  Or is the fact
-that we don't get a fault the whole point here?
-
-
-Regards,
-
-Joseph
-
-Please CC me directly as I am no longer subscribed to the list.
+If decoding can *only* be sanely handled in user-space, that's one
+thing. If it can be handled in kernel, then that would be better.
