@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbZK2TuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZK2UGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbZK2TuI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 14:50:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZK2TuH
+	id S1752624AbZK2UGL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 15:06:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZK2UGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 14:50:07 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:56081 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752298AbZK2TuF (ORCPT
+	Sun, 29 Nov 2009 15:06:11 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:38374 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbZK2UGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 14:50:05 -0500
-Date: 29 Nov 2009 20:49:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: jonsmirl@gmail.com
-Cc: alan@lxorguk.ukuu.org.uk
-Cc: awalls@radix.net
-Cc: dmitry.torokhov@gmail.com
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: jarod@wilsonet.com
-Cc: khc@pm.waw.pl
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: maximlevitsky@gmail.com
-Cc: mchehab@redhat.com
-Cc: ray-lk@madrabbit.org
-Cc: stefanr@s5r6.in-berlin.de
-Cc: superm1@ubuntu.com
-Message-ID: <BDodzfumqgB@lirc>
-In-Reply-To: <9e4733910911291116r66dda6dap591d1b0f322f9663@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/GeDPI45s63oI49gnb2KTbMDQ6ghmnN2dTCbP
- NPmSqYSFAmiP9dtLfzxJWkrR6R6/KIxRTNMwrZ+0ItmlrYYpnl
- bDgyq1sJouC2aYKpg6kRAYt6WBzBIj+
+	Sun, 29 Nov 2009 15:06:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=plCry1aSi/I8bnEPnHLCTcp6JkYZDxbH+FhHs6BJCuG9o8LkrUI11FnZwvaNuDCyPk
+         lV3ayhw26JTFh5tIAqz7IOlSUSZjb0F2sdywJDGGubk++0iCa1i9otLECPWOUrERCsF1
+         YwXY6Jgxv7f6ZvDvFBt34x85jX7YRT0pDZ3YY=
+From: Thiago Farina <tfransosi@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: mchehab@infradead.org, hverkuil@xs4all.nl, alan@redhat.com,
+       roel.kluin@gmail.com, linux-media@vger.kernel.org,
+       Thiago Farina <tfransosi@gmail.com>
+Subject: [PATCH] cpia2: use __stringify macro.
+Date: Sun, 29 Nov 2009 15:05:58 -0500
+Message-Id: <1259525158-16517-1-git-send-email-tfransosi@gmail.com>
+X-Mailer: git-send-email 1.6.6.rc0.61.g41d5b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Signed-off-by: Thiago Farina <tfransosi@gmail.com>
+---
+ drivers/media/video/cpia2/cpia2_v4l.c |   27 +++++++++++----------------
+ 1 files changed, 11 insertions(+), 16 deletions(-)
 
-on 29 Nov 09 at 14:16, Jon Smirl wrote:
-> On Sun, Nov 29, 2009 at 2:04 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->>> Jon is asking for an architecture discussion, y'know, with use cases.
-[...]
-> So we're just back to the status quo of last year which is to do
-> nothing except some minor clean up.
->
-> We'll be back here again next year repeating this until IR gets
-> redesigned into something fairly invisible like keyboard and mouse
-> drivers.
+diff --git a/drivers/media/video/cpia2/cpia2_v4l.c b/drivers/media/video/cpia2/cpia2_v4l.c
+index 0b4a8f3..6c5fcd8 100644
+--- a/drivers/media/video/cpia2/cpia2_v4l.c
++++ b/drivers/media/video/cpia2/cpia2_v4l.c
+@@ -38,17 +38,12 @@
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/videodev.h>
++#include <linux/stringify.h>
+ #include <media/v4l2-ioctl.h>
+ 
+ #include "cpia2.h"
+ #include "cpia2dev.h"
+ 
+-
+-//#define _CPIA2_DEBUG_
+-
+-#define MAKE_STRING_1(x)	#x
+-#define MAKE_STRING(x)	MAKE_STRING_1(x)
+-
+ static int video_nr = -1;
+ module_param(video_nr, int, 0);
+ MODULE_PARM_DESC(video_nr,"video device to register (0=/dev/video0, etc)");
+@@ -60,26 +55,26 @@ MODULE_PARM_DESC(buffer_size, "Size for each frame buffer in bytes (default 68k)
+ static int num_buffers = 3;
+ module_param(num_buffers, int, 0);
+ MODULE_PARM_DESC(num_buffers, "Number of frame buffers (1-"
+-		 MAKE_STRING(VIDEO_MAX_FRAME) ", default 3)");
++		 __stringify(VIDEO_MAX_FRAME) ", default 3)");
+ 
+ static int alternate = DEFAULT_ALT;
+ module_param(alternate, int, 0);
+-MODULE_PARM_DESC(alternate, "USB Alternate (" MAKE_STRING(USBIF_ISO_1) "-"
+-		 MAKE_STRING(USBIF_ISO_6) ", default "
+-		 MAKE_STRING(DEFAULT_ALT) ")");
++MODULE_PARM_DESC(alternate, "USB Alternate (" __stringify(USBIF_ISO_1) "-"
++		 __stringify(USBIF_ISO_6) ", default "
++		 __stringify(DEFAULT_ALT) ")");
+ 
+ static int flicker_freq = 60;
+ module_param(flicker_freq, int, 0);
+-MODULE_PARM_DESC(flicker_freq, "Flicker frequency (" MAKE_STRING(50) "or"
+-		 MAKE_STRING(60) ", default "
+-		 MAKE_STRING(60) ")");
++MODULE_PARM_DESC(flicker_freq, "Flicker frequency (" __stringify(50) "or"
++		 __stringify(60) ", default "
++		 __stringify(60) ")");
+ 
+ static int flicker_mode = NEVER_FLICKER;
+ module_param(flicker_mode, int, 0);
+ MODULE_PARM_DESC(flicker_mode,
+-		 "Flicker supression (" MAKE_STRING(NEVER_FLICKER) "or"
+-		 MAKE_STRING(ANTI_FLICKER_ON) ", default "
+-		 MAKE_STRING(NEVER_FLICKER) ")");
++		 "Flicker supression (" __stringify(NEVER_FLICKER) "or"
++		 __stringify(ANTI_FLICKER_ON) ", default "
++		 __stringify(NEVER_FLICKER) ")");
+ 
+ MODULE_AUTHOR("Steve Miller (STMicroelectronics) <steve.miller@st.com>");
+ MODULE_DESCRIPTION("V4L-driver for STMicroelectronics CPiA2 based cameras");
+-- 
+1.6.6.rc0.61.g41d5b
 
-Last year everyone complained that LIRC does not support evdev - so I  
-added support for evdev.
-
-This year everyone complains that LIRC is not plug'n'play - we'll fix that  
-'til next year.
-
-There's progress. ;-)
-
-Christoph
