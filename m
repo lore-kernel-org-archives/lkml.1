@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZK2VrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZK2Vv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbZK2VrQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 16:47:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZK2VrO
+	id S1753063AbZK2Vv1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 16:51:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZK2Vv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 16:47:14 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:58993 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbZK2VrN convert rfc822-to-8bit (ORCPT
+	Sun, 29 Nov 2009 16:51:27 -0500
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:36670 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752425AbZK2Vv0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 16:47:13 -0500
+	Sun, 29 Nov 2009 16:51:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=s5tGnx1vBcx8dOmUePUpHVgMI/N6zcl+c5nwLoZ9irSRjvfBCLqpFoB3XtBMOW3GP7
-         PEumU4zRQf72D0OvCnlHP03hbPJwwFgibZ8/THDsE8McOIcV8dLfnnjw/XPhvJg1aOD4
-         K6DCTl/RQM9HGsMJOH6rAnDuXEFWwtRDgJnVk=
+         :content-type:content-transfer-encoding;
+        b=k8Fz6ZHLp5ngBkhPkCF30hmhJ0CXooF//W/S2OtgLUsPWWv/03QOypntjtlvEz8qxY
+         0Arkg//jLXAL+feq/XGj+spuphkgQgc25zaWl39yQoEaTs04kIkqZy+ZRE6rZn/b34Tc
+         BnSODvGW68PmmSU4J/dmlpBzyLt+h7CHCc9B0=
 MIME-Version: 1.0
-In-Reply-To: <83224BA3-A5FF-4525-BF20-16A60F865C0A@gmail.com>
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
-	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
-	 <m3aay6y2m1.fsf@intrepid.localdomain>
-	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
-	 <1259450815.3137.19.camel@palomino.walls.org>
-	 <m3ocml6ppt.fsf@intrepid.localdomain>
-	 <9e4733910911291244p364b328fm3a76ded4e4cd8603@mail.gmail.com>
-	 <83224BA3-A5FF-4525-BF20-16A60F865C0A@gmail.com>
-Date: Sun, 29 Nov 2009 16:47:18 -0500
-Message-ID: <9e4733910911291347x4c4cac73h8c64223d0de563e4@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Andy Walls <awalls@radix.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>, "j@jannau.net" <j@jannau.net>,
-       "jarod@redhat.com" <jarod@redhat.com>,
-       "jarod@wilsonet.com" <jarod@wilsonet.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       "maximlevitsky@gmail.com" <maximlevitsky@gmail.com>,
-       "mchehab@redhat.com" <mchehab@redhat.com>,
-       "stefanr@s5r6.in-berlin.de" <stefanr@s5r6.in-berlin.de>,
-       "superm1@ubuntu.com" <superm1@ubuntu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
+References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
+	 <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
+Date: Sun, 29 Nov 2009 22:51:31 +0100
+Message-ID: <b170af450911291351r443e355fraf1828dc1163e9e3@mail.gmail.com>
+Subject: Re: Backlight device class redesign
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Richard Purdie <rpurdie@rpsys.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 4:29 PM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> On Nov 29, 2009, at 12:44 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+W dniu 29 listopada 2009 21:09 użytkownik Rafał Miłecki
+<zajec5@gmail.com> napisał:
+> So I think we have to register every device and just keep symlink
+> /sys/class/backlight/display_name pointing best device. We could
+> register devices in
+> 1) /sys/class/backlight/.devicename (hidden)
+> 2) some /sys/class/internal-usage/devicename
 >
->> On Sun, Nov 29, 2009 at 3:27 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
->>>
->>> 1. Do we agree that a lirc (-style) kernel-user interface is needed at
->>> �least?
->>>
->>> 2. Is there any problem with lirc kernel-user interface?
->>
->> Can you consider sending the raw IR data as a new evdev message type
->> instead of creating a new device protocol?
->
-> No, I think it would be wrong. Such events are ill-suited for consumption by
-> regular applications and would introduce the "looping" interface I described
-> in my other email.
+> Do you agree on this?
 
-Regular applications are going to ignore these messages. The only
-consumer for them is the LIRC daemon. Which is just going to process
-them and re-inject the events back into evdev again in a different
-form.
+Please, see attached patch. TODO:
+1) Add METHOD (enum { ACPI, GPU, PLATFORM} ) as
+backlight_device_register parameter
+2) Add display name as backlight_device_register parameter
+3) Use given METHODs in backlight_best_device
+4) Fix symlinks to be created in /sys/class/backlight/ instead of
+/sys/dev/char/ (how?!)
 
-IR is an input device, what make it so special that it needs to by
-pass this subsystem and implement its own private communications
-scheme?
-
->> evdev protects the messages in a transaction to stop incomplete
->> messages from being read.
->
-> If such property is desired we can add it to the new lirc-like interface,
-> can't we?
-
-Why do you want to redesign evdev instead of using it?
-
-
->
-> --
->>
-> Dmitry
->
-
-
+What about proposed solution?
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Rafał
