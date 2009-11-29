@@ -1,86 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbZK2OfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbZK2Ore@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbZK2OfV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 09:35:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZK2OfG
+	id S1753480AbZK2Ore (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 09:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZK2Ord
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 09:35:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45862 "EHLO mx1.redhat.com"
+	Sun, 29 Nov 2009 09:47:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29346 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752179AbZK2OfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 09:35:05 -0500
+	id S1752425AbZK2Ord (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 09:47:33 -0500
+Message-ID: <4B12895A.2010706@redhat.com>
+Date: Sun, 29 Nov 2009 16:46:50 +0200
 From: Avi Kivity <avi@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH tip:x86/entry] core: fix user return notifier on fork()
-Date: Sun, 29 Nov 2009 16:34:48 +0200
-Message-Id: <1259505288-16559-1-git-send-email-avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Andrew Theurer <habanero@linux.vnet.ibm.com>
+CC: Tejun Heo <tj@kernel.org>, kvm@vger.kernel.org,
+       Linux-kernel@vger.kernel.org
+Subject: Re: kernel bug in kvm_intel
+References: <4ACF9745.3050902@linux.vnet.ibm.com> <4AD16ACE.6040903@redhat.com> <1255372957.4883.49.camel@twinturbo.austin.ibm.com> <4AD4231F.6040608@redhat.com> <1255442640.4883.56.camel@twinturbo.austin.ibm.com> <4AD6061D.5070306@redhat.com> <1255637909.4883.129.camel@twinturbo.austin.ibm.com> <1256926052.4883.203.camel@twinturbo.austin.ibm.com> <4AEC5C24.9080506@redhat.com> <4AEC64FC.7070908@linux.vnet.ibm.com> <4AEC6699.6000202@redhat.com> <4AEC6821.7010801@redhat.com> <4AED5C3F.9050506@kernel.org> <4AED6100.6040804@redhat.com> <4AED66D0.20704@kernel.org> <4AED7178.2060906@redhat.com> <4B03BDCC.4080502@kernel.org> <4B0DDB5D.9030202@linux.vnet.ibm.com>
+In-Reply-To: <4B0DDB5D.9030202@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fork() clones all thread_info flags, including TIF_USER_RETURN_NOTIFY; if the
-new task is first scheduled on a cpu which doesn't have user return notifiers
-set, this causes user return notifiers to trigger without any way of clearing
-itself.
+On 11/26/2009 03:35 AM, Andrew Theurer wrote:
+> I just tried testing tip of kvm.git, but unfortunately I think I might 
+> be hitting a different problem, where processes run 100% in kernel 
+> mode.  In my case, cpus 9 and 13 were stuck, running qemu processes.  
+> A stack backtrace for both cpus are below.  FWIW, kernel.org 
+> 2.6.32-rc7 does not have this problem, or the original problem.
 
-This is easy to trigger with a forky workload on the host in parallel with
-kvm, resulting in a cpu in an endless loop on the verge of returning to
-userspace.
+I just posted a patch fixing this, titled "[PATCH tip:x86/entry] core: 
+fix user return notifier on fork()".
 
-Fix by dropping the TIF_USER_RETURN_NOTIFY immediately after fork.
-
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- include/linux/user-return-notifier.h |    7 +++++++
- kernel/fork.c                        |    2 ++
- 2 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/user-return-notifier.h b/include/linux/user-return-notifier.h
-index b6ac056..9c4a445 100644
---- a/include/linux/user-return-notifier.h
-+++ b/include/linux/user-return-notifier.h
-@@ -26,6 +26,11 @@ static inline void propagate_user_return_notify(struct task_struct *prev,
- 
- void fire_user_return_notifiers(void);
- 
-+static inline void clear_user_return_notifier(struct task_struct *p)
-+{
-+	clear_tsk_thread_flag(p, TIF_USER_RETURN_NOTIFY);
-+}
-+
- #else
- 
- struct user_return_notifier {};
-@@ -37,6 +42,8 @@ static inline void propagate_user_return_notify(struct task_struct *prev,
- 
- static inline void fire_user_return_notifiers(void) {}
- 
-+static inline void clear_user_return_notifier(struct task_struct *p) {}
-+
- #endif
- 
- #endif
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 166b8c4..7d4a348 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -64,6 +64,7 @@
- #include <linux/magic.h>
- #include <linux/perf_event.h>
- #include <linux/posix-timers.h>
-+#include <linux/user-return-notifier.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -249,6 +250,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
- 		goto out;
- 
- 	setup_thread_stack(tsk, orig);
-+	clear_user_return_notifier(tsk);
- 	stackend = end_of_stack(tsk);
- 	*stackend = STACK_END_MAGIC;	/* for overflow detection */
- 
 -- 
-1.6.5.2
+error compiling committee.c: too many arguments to function
 
