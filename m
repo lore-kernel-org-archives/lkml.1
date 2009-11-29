@@ -1,90 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZK2Pua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbZK2Pzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbZK2Pua (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 10:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZK2Pua
+	id S1753837AbZK2Pzg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 10:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbZK2Pzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 10:50:30 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:41708 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751848AbZK2Pu3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 10:50:29 -0500
-X-Trace: 298636986/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: As8BAI4mEktPRTgw/2dsb2JhbAAIkFABwjCEMQQ
-X-IronPort-AV: E=Sophos;i="4.47,308,1257120000"; 
-   d="scan'208";a="298636986"
-Date: Sun, 29 Nov 2009 15:50:32 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] ksm: hold anon_vma in rmap_item fix
-Message-ID: <Pine.LNX.4.64.0911291544140.14991@sister.anvils>
+	Sun, 29 Nov 2009 10:55:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23257 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751582AbZK2Pzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 10:55:35 -0500
+Date: Sun, 29 Nov 2009 17:52:01 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       Mark McLoughlin <markmc@redhat.com>, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
+       Anthony Liguori <anthony@codemonkey.ws>, kvm@vger.kernel.org,
+       Yan Vugenfirer <yvugenfi@redhat.com>
+Subject: [PATCH] virtio: set pci bus master enable bit
+Message-ID: <20091129155200.GA6667@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KSM mem_cgroup testing oopsed on NULL pointer in mem_cgroup_from_task(),
-called from the mm_match_cgroup() in page_referenced_ksm().
+As all virtio devices perform DMA, we
+must enable bus mastering for them to be
+spec compliant.
 
-Right, it is inappropriate to use mm_match_cgroup() on rmap_item->mm
-there: that mm could be waiting for ksmd's final mmdrop(), with its
-mm->owner task long gone.
-
-Move the mm_match_cgroup() test down into the anon_vma loop, which is
-where it now should be to match page_referenced_anon().  The anon_vma
-guarantees its vmas are valid, which guarantee their mms are valid.
-
-However... although this moves the oops from easy-to-reproduce to
-never-seen, I think we shall want to do more later: so far as I can
-see, with or without KSM, the use of mm->owner from page_referenced()
-is unsafe.  No problem when NULL, but it may have been left pointing
-to a task_struct freed by now, with nonsense in mm->owner->cgroups.
-
-But let's put this patch in while we discuss that separately: perhaps
-mm_need_new_owner() should not short-circuit when mm_users <= 1, or
-perhaps it should then set mm->owner to NULL, or perhaps we abandon
-mm->owner as more trouble than it's worth, or... perhaps I'm wrong.
-
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
+ drivers/virtio/virtio_pci.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
- mm/ksm.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
---- mmotm/mm/ksm.c	2009-11-25 09:28:50.000000000 +0000
-+++ linux/mm/ksm.c	2009-11-27 13:49:50.000000000 +0000
-@@ -1565,9 +1565,6 @@ again:
- 		struct anon_vma *anon_vma = rmap_item->anon_vma;
- 		struct vm_area_struct *vma;
+diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
+index 28d9cf7..717bae1 100644
+--- a/drivers/virtio/virtio_pci.c
++++ b/drivers/virtio/virtio_pci.c
+@@ -648,6 +648,7 @@ static int __devinit virtio_pci_probe(struct pci_dev *pci_dev,
+ 		goto out_req_regions;
  
--		if (memcg && !mm_match_cgroup(rmap_item->mm, memcg))
--			continue;
--
- 		spin_lock(&anon_vma->lock);
- 		list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
- 			if (rmap_item->address < vma->vm_start ||
-@@ -1582,6 +1579,9 @@ again:
- 			if ((rmap_item->mm == vma->vm_mm) == search_new_forks)
- 				continue;
+ 	pci_set_drvdata(pci_dev, vp_dev);
++	pci_set_master(pci_dev);
  
-+			if (memcg && !mm_match_cgroup(vma->vm_mm, memcg))
-+				continue;
-+
- 			referenced += page_referenced_one(page, vma,
- 				rmap_item->address, &mapcount, vm_flags);
- 			if (!search_new_forks || !mapcount)
+ 	/* we use the subsystem vendor/device id as the virtio vendor/device
+ 	 * id.  this allows us to use the same PCI vendor/device id for all
+-- 
+1.6.5.2.143.g8cc62
