@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbZK2JAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZK2JKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753706AbZK2JAI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 04:00:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZK2JAI
+	id S1754172AbZK2JKQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 04:10:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZK2JKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 04:00:08 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41455 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbZK2JAH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 04:00:07 -0500
-Date: Sun, 29 Nov 2009 09:59:58 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: Re: [RFC,PATCH 0/14] utrace/ptrace
-Message-ID: <20091129085957.GF1530@ucw.cz>
-References: <20091124200127.GA5751@redhat.com> <20091125214818.GA4916@infradead.org>
+	Sun, 29 Nov 2009 04:10:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12988 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752618AbZK2JKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 04:10:13 -0500
+Message-ID: <4B123A34.5090509@redhat.com>
+Date: Sun, 29 Nov 2009 10:09:08 +0100
+From: Stefan Assmann <sassmann@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091125214818.GA4916@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-pci@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Don Dutile <ddutile@redhat.com>,
+       kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH] change PCI nomenclature according to PCI-SIG
+References: <4B110F79.8080405@redhat.com> <4B111ADC.9020800@garzik.org>
+In-Reply-To: <4B111ADC.9020800@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-11-25 16:48:18, Christoph Hellwig wrote:
-> On Tue, Nov 24, 2009 at 09:01:27PM +0100, Oleg Nesterov wrote:
-> > Hello.
-> > 
-> > This is the new iteration of Roland's utrace patch, this time
-> > with "rewrite-ptrace-via-utrace" + cleanups in utrace core.
-> > 
-> > 1-7 are already in -mm tree, I am sending them to simplify the
-> > review.
-> > 
-> > 8-12 don not change the behaviour, simple preparations.
-> > 
-> > 13-14 add utrace-ptrace and utrace
+On 28.11.2009 13:43, Jeff Garzik wrote:
+> On 11/28/2009 06:54 AM, Stefan Assmann wrote:
+>> From: Stefan Assmann<sassmann@redhat.com>
+>>
+>> Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
+>> terms listed in the "Trademark and Logo Usage Guidelines".
+>> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
+>>
+>> Additionally some renames of Gb/s to GT/s where appropriate, concerns
+>> PCIe.
+>>
+>> This is a followup to the discussion at:
+>> http://lkml.org/lkml/2009/10/14/107
+>> Patch is based on 2.6.32-rc8.
+>>
+>> Signed-off-by: Stefan Assmann<sassmann@redhat.com>
 > 
-> Skipped over it very, very briefly.  One thing I really hate about this
-> is that it introduces two ptrace implementation by adding the new one
-> without removing the old one.  Given that's it's pretty much too later
-> for the 2.6.33 cycle anyway I'd suggest you make sure the remaining
-> two major architectures (arm and mips) get converted, and if the
-> remaining minor architectures don't manage to get their homework done
-> they're left without ptrace.
+> NAK, this clearly introduces bugs and changes sysfs output (ABI).
+> 
+> Typically this type of change is pointless churn that creates far more
+> problems than it "solves."
 
-I don't think introducing regressions to force people to rewrite code
-is a good way to go...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hi Jeff,
+
+I see you point in not liking this kind of change. What kind of cleanup
+would be ok in your opinion?
+
+  Stefan
+--
+Stefan Assmann         | Red Hat GmbH
+Software Engineer      | Otto-Hahn-Strasse 20, 85609 Dornach
+                       | HR: Amtsgericht Muenchen HRB 153243
+                       | GF: Brendan Lane, Charlie Peters,
+sassmann at redhat.com |     Michael Cunningham, Charles Cachera
