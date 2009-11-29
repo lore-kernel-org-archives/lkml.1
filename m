@@ -1,57 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751346AbZK2FJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZK2Fc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751346AbZK2FJm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 00:09:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbZK2FJm
+	id S1751964AbZK2Fc1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 00:32:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZK2Fc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 00:09:42 -0500
-Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:4448 "EHLO
-	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbZK2FJl (ORCPT
+	Sun, 29 Nov 2009 00:32:26 -0500
+Received: from outbound-mail03.westnet.com.au ([203.10.1.244]:15863 "EHLO
+	outbound-mail03.westnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751525AbZK2FcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 00:09:41 -0500
-X-Greylist: delayed 588 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Nov 2009 00:09:41 EST
-Message-ID: <4B11FFCE.5050002@shikadi.net>
-Date: Sun, 29 Nov 2009 14:59:58 +1000
-From: Adam Nielsen <a.nielsen@shikadi.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.22) Gecko/20090809 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+	Sun, 29 Nov 2009 00:32:25 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigEANKWEUvKrYkQbmdsb2JhbACBTppEP6l6AY00gksBgWUE
+X-IronPort-AV: E=Sophos;i="4.47,307,1257091200"; 
+   d="scan'208";a="42367206"
+From: Mike Lampard <mike@mtgambier.net>
+Reply-To: mike@mtgambier.net
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR system?
+Date: Sun, 29 Nov 2009 16:01:53 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31.6-1mdv; KDE/4.3.2; x86_64; ; )
+Cc: Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, j@jannau.net, jarod@redhat.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com> <200911291317.03612.mike@mtgambier.net> <20091129045549.GQ6936@core.coreip.homeip.net>
+In-Reply-To: <20091129045549.GQ6936@core.coreip.homeip.net>
 MIME-Version: 1.0
-To: LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Why does the disk still thrash when I have no swap?
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911291601.53368.mike@mtgambier.net>
+X-GROMMIT-SECNET-NET-AU-MailScanner: Not scanned: please contact SECNet for details
+X-GROMMIT-SECNET-NET-AU-MailScanner-SpamCheck: 
+X-GROMMIT-SECNET-NET-AU-MailScanner-From: mike@mtgambier.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sun, 29 Nov 2009 03:25:49 pm Dmitry Torokhov wrote:
+> On Sun, Nov 29, 2009 at 01:17:03PM +1030, Mike Lampard wrote:
+> > On Sat, 28 Nov 2009 02:27:59 am Jon Smirl wrote:
+> > > On Fri, Nov 27, 2009 at 2:45 AM, Christoph Bartelmus
+> > >
+> > > <christoph@bartelmus.de> wrote:
+> > > > Hi Mauro,
+> > > >
+> > > > on 26 Nov 09 at 14:25, Mauro Carvalho Chehab wrote:
+> > > >> Christoph Bartelmus wrote:
+> > > >
+> > > > [...]
+> > > >
+> > > >>> But I'm still a bit hesitant about the in-kernel decoding. Maybe
+> > > >>> it's just because I'm not familiar at all with input layer toolset.
+> > > >
+> > > > [...]
+> > > >
+> > > >> I hope it helps for you to better understand how this works.
+> > > >
+> > > > So the plan is to have two ways of using IR in the future which are
+> > > > incompatible to each other, the feature-set of one being a subset of
+> > > > the other?
+> > >
+> > > Take advantage of the fact that we don't have a twenty year old legacy
+> > > API already in the kernel. Design an IR API that uses current kernel
+> > > systems. Christoph, ignore the code I wrote and make a design proposal
+> > > that addresses these goals...
+> > >
+> > > 1) Unified input in Linux using evdev. IR is on equal footing with
+> > > mouse and keyboard.
+> >
+> > I think this a case where automating setup can be over-emphasised (in the
+> > remote-as-keyboard case).
+> >
+> > Apologies in advance if I've misunderstood the idea of utilising the
+> > 'input subsystem' for IR.  If the plan is to offer dedicated IR events
+> > via a yet-to- be-announced input event subsystem and to optionally
+> > disallow acting as a keyboard via a module option or similar then please
+> > ignore the following.
+> >
+> > Whilst having remotes come through the input subsystem might be 'the
+> > correct thing' from a purely technical standpoint, as an end-user I find
+> > the use-case for remotes completely different in one key aspect: 
+> > Keyboards and mice are generally foreground-app input devices, whereas
+> > remotes are often controlling daemons sitting in the background piping
+> > media through dedicated devices.  As an example I have a VDR instance
+> > running in the background on my desktop machine outputting to a TV in
+> > another room via a pci mpeg decoder - I certainly don't want the VDR
+> > remote control interacting with my X11 desktop in any way unless I go out
+> > of my way to set it up to do so, nor do I want it interacting with other
+> > applications (such as MPD piping music around the house) that are
+> > controlled via other remotes in other rooms unless specified.
+> >
+> > Setting this up with Lircd was easy, how would a kernel-based proposal
+> > handle this?
+> 
+> Why would that be different really? On my keyboard there is a key for
+> e-mail application (and many others) - what HID calls Application Launch
+> keys IIRC. There also application control keys and system control keys,
+> KEY_COFFEE aka KEY_SCREENLOCK. Those are not to be consumed by
+> foreground application but by daemons/session-wide application.
+> 
+In my real-world examples above, both VDR and MPD are started at system start 
+and are not associated with any user-initiated sessions (X login etc) - they 
+are not X11 clients.  Their only input is via Lircd.  Conversely todays 
+Xserver (if I read my logfiles correctly) consumes all input event devices by 
+default, turning them into keypresses for its client apps.  This is exactly 
+the wrong behaviour for my use-case.  In order to ensure that my daemons 
+receive their input I must first ensure that X doesn't receive those events - 
+assuming this is possible it still complicates matters further than they are 
+today (I'd need a simple way of automatically differentiating between remote 
+devices and keyboard devices) .
 
-My PC (x86_64) used to have 4GB RAM and 4GB swap.  I found that if I was doing 
-something very memory-intensive it would thrash, in that the entire PC would 
-grind to a halt while data was moved in and out of swap.  In some cases the PC 
-would be unresponsive for over 12 hours when I would just give up and reboot.
-
-To avoid this I decided to upgrade the system to 8GB of RAM and disable swap. 
-  I figured the system should work fine without swap given that the total 
-available memory hasn't changed, it's just that half of it used to be swap and 
-now it's actual RAM.  It's been fine for about a year now.
-
-I was just compiling KDE and had a couple of VirtualBoxes running, which 
-appeared to max out my memory - it reached 6.9GB in use.  I say "appeared" to 
-max out my memory because the entire system froze again and the disk was 
-thrashing, just like it used to when I had swap enabled.
-
-I eventually managed to suspend the compile job which stopped all disk 
-activity, and told VirtualBox to grab a snapshot of the running VMs which took 
-about 10 minutes (compared to the usual 10 seconds) with the disk being 
-hammered the whole time and the system unusable (couldn't move the mouse 
-cursor more than a few pixels a minute.)
-
-Does anyone know what could have caused this 'thrash' to occur?  I have 
-checked and definitely have swap disabled (/proc/swaps is empty) and I have no 
-swap partitions on my disks anyway.  Could it be that the disk cache was 
-forced to shrink and suddenly all accesses to the filesystem became unbuffered 
-and incredibly slow?  Why would this stop the X11 mouse cursor from moving?
-
-Thanks,
-Adam.
+Mike
