@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbZK2P0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZK2P3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752101AbZK2P0F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 10:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZK2P0E
+	id S1752559AbZK2P3K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 10:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbZK2P3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 10:26:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750918AbZK2P0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 10:26:04 -0500
-Message-ID: <4B129277.5050000@redhat.com>
-Date: Sun, 29 Nov 2009 17:25:43 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Sun, 29 Nov 2009 10:29:10 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:43261 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbZK2P3J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 10:29:09 -0500
+Date: Sun, 29 Nov 2009 15:27:57 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Nicolas Pitre <nico@marvell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] warn about shared irqs requesting IRQF_DISABLED
+	registered with setup_irq
+Message-ID: <20091129152757.GF11445@n2100.arm.linux.org.uk>
+References: <20091127195857.GB28193@n2100.arm.linux.org.uk> <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911272234460.24119@localhost.localdomain> <20091128200344.GA1272@pengutronix.de> <alpine.LFD.2.00.0911282239430.24119@localhost.localdomain> <20091129023118.GA21529@shareable.org> <20091129102635.GA22653@pengutronix.de> <20091129151840.GA30813@shareable.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Tim Blechmann <tim@klingt.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] sched: Optimize branch hint in context_switch()
-References: <4B1262AC.8000903@klingt.org>  <4B128F65.40804@redhat.com> <1259508050.13695.160.camel@laptop>
-In-Reply-To: <1259508050.13695.160.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091129151840.GA30813@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/29/2009 05:20 PM, Peter Zijlstra wrote:
-> On Sun, 2009-11-29 at 17:12 +0200, Avi Kivity wrote:
->    
->> On 11/29/2009 02:01 PM, Tim Blechmann wrote:
->>      
->>> Branch hint profiling on my nehalem machine showed 88%
->>> incorrect branch hints:
->>>
->>> 42017484 326957902  88 context_switch                 sched.c              3043
->>> 42038493 326953687  88 context_switch                 sched.c              3050
->>>
->>> @@ -3040,14 +3040,14 @@ context_switch(struct rq *rq, struct task_struct *prev,
->>>    	 */
->>>    	arch_start_context_switch(prev);
->>>
->>> -	if (likely(!mm)) {
->>> +	if (unlikely(!mm)) {
->>>    		next->active_mm = oldmm;
->>>    		atomic_inc(&oldmm->mm_count);
->>>    		enter_lazy_tlb(oldmm, next);
->>>    	} else
->>>    		switch_mm(oldmm, mm, next);
->>>
->>> -	if (likely(!prev->mm)) {
->>> +	if (unlikely(!prev->mm)) {
->>>    		prev->active_mm = NULL;
->>>    		rq->prev_mm = oldmm;
->>>    	}
->>>
->>>        
->> I don't think either the original or the patch is correct.  Whether or
->> not a task has an mm is entirely workload dependent, we shouldn't be
->> giving hints here.
->>      
-> There are reasons to still use branch hints, for example if the unlikely
-> branch is very expensive anyway and it pays to have the likely branch be
-> ever so slightly less expensive.
->
-> Now I don't think that applies here, but there are cases where such code
-> generation issues are the main motivator not the actual usage patterns.
->    
+On Sun, Nov 29, 2009 at 03:18:40PM +0000, Jamie Lokier wrote:
+> Or we could do away with this silliness and just switch everything to
+> threaded interrupts with RT-priorities ;-)
 
-These should be documented then to avoid patches removing them:
+... thereby needlessly increasing the latency of all interrupt handling
+and probably breaking some devices.
 
-      #define slowpath(x) unlikely(x)
+Some devices (eg, SMC91x, serial ports, PIO audio - AACI, MMCI) are
+_extremely_ sensitive to interrupt latency due to lack of FIFO depth.
 
-      if (slowpath(condition))
-            expensive_operation();
-
--- 
-error compiling committee.c: too many arguments to function
-
+MMCI already sees overruns on ARM platforms if you try and clock the
+cards at anything over about 500kHz.  Adding any more latency means
+reducing the maximum clock rate there, and therefore crippling
+throughput even more than it is already.
