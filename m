@@ -1,37 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbZK2V3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZK2Vbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996AbZK2V3r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 16:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZK2V3q
+	id S1753173AbZK2Vbx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 16:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZK2Vbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 16:29:46 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:42397 "EHLO
+	Sun, 29 Nov 2009 16:31:52 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:42287 "EHLO
 	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbZK2V3p (ORCPT
+	with ESMTP id S1752505AbZK2Vbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 16:29:45 -0500
+	Sun, 29 Nov 2009 16:31:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=references:message-id:from:to:in-reply-to:content-type
          :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=veRIhfiSE2D6N1geWQB95xw887rbtSS5s3eemOQhnYr8THuWjn1kFHbiH5Zogzkk36
-         rm4gyRZLFU4HvzpsVW5odVH8wj7RMQxCszjbTqWJylNTRMfVgks+opDzBhPxVhFUSUGn
-         636nx08mvj2NbWKKsLUEB7oamx6wqgpYtUo9s=
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> <m3aay6y2m1.fsf@intrepid.localdomain> <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com> <1259450815.3137.19.camel@palomino.walls.org> <m3ocml6ppt.fsf@intrepid.localdomain> <9e4733910911291244p364b328fm3a76ded4e4cd8603@mail.gmail.com>
-Message-Id: <83224BA3-A5FF-4525-BF20-16A60F865C0A@gmail.com>
+        b=m0qlpBHs/EXHLXJXav20R/I90t3FBLn0Z7kH9vLRRklCM/CuTZxubBkrtlGXPkOeU/
+         v37cseLLJuOOKTqrPTcHnJY2oXR3mjKopOAzMJV0jRKY4fITLO0cnijn7F/nCJTvIndH
+         POAiO5RFlFuaVZ3KGDyYQtlU2OW0maxjFOR3I=
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> <m3aay6y2m1.fsf@intrepid.localdomain> <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com> <1259450815.3137.19.camel@palomino.walls.org> <m3ocml6ppt.fsf@intrepid.localdomain>
+Message-Id: <D9ED2E54-7B65-4841-AADF-110C8E51DD0E@gmail.com>
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-In-Reply-To: <9e4733910911291244p364b328fm3a76ded4e4cd8603@mail.gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <m3ocml6ppt.fsf@intrepid.localdomain>
 Content-Type: text/plain;
 	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+	format=flowed
 Content-Transfer-Encoding: 7bit
 X-Mailer: iPhone Mail (7C144)
 Mime-Version: 1.0 (iPhone Mail 7C144)
 Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-Date: Sun, 29 Nov 2009 13:29:37 -0800
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Andy Walls <awalls@radix.net>,
+Date: Sun, 29 Nov 2009 13:31:46 -0800
+Cc: Andy Walls <awalls@radix.net>, Jon Smirl <jonsmirl@gmail.com>,
        Christoph Bartelmus <lirc@bartelmus.de>, "j@jannau.net" <j@jannau.net>,
        "jarod@redhat.com" <jarod@redhat.com>,
        "jarod@wilsonet.com" <jarod@wilsonet.com>,
@@ -46,29 +45,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29, 2009, at 12:44 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+On Nov 29, 2009, at 12:27 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
 
-> On Sun, Nov 29, 2009 at 3:27 PM, Krzysztof Halasa <khc@pm.waw.pl>  
-> wrote:
->> 1. Do we agree that a lirc (-style) kernel-user interface is needed  
->> at
->>   least?
->>
->> 2. Is there any problem with lirc kernel-user interface?
+> 1. Do we agree that a lirc (-style) kernel-user interface is needed at
+>   least?
 >
-> Can you consider sending the raw IR data as a new evdev message type
-> instead of creating a new device protocol?
+> 2. Is there any problem with lirc kernel-user interface?
+>
+> If the answer for #1 is "yes" and for #2 is "no" then perhaps we merge
+> the Jarod's lirc patches (at least the core) so at least the
+> non-controversial part is done?
 
-No, I think it would be wrong. Such events are ill-suited for  
-consumption by regular applications and would introduce the "looping"  
-interface I described in my other email.
 
-> evdev protects the messages in a transaction to stop incomplete
-> messages from being read.
-
-If such property is desired we can add it to the new lirc-like  
-interface, can't we?
+Isn't the meat of Jarod's patch the lirc interface?
 
 -- 
 >
+
 Dmitry
