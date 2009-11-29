@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZK2Vbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbZK2Vjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbZK2Vbx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 16:31:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZK2Vbw
+	id S1753075AbZK2Vjb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 16:39:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZK2Vja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 16:31:52 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:42287 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbZK2Vbv (ORCPT
+	Sun, 29 Nov 2009 16:39:30 -0500
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:65502 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752425AbZK2Vja convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 16:31:51 -0500
+	Sun, 29 Nov 2009 16:39:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=m0qlpBHs/EXHLXJXav20R/I90t3FBLn0Z7kH9vLRRklCM/CuTZxubBkrtlGXPkOeU/
-         v37cseLLJuOOKTqrPTcHnJY2oXR3mjKopOAzMJV0jRKY4fITLO0cnijn7F/nCJTvIndH
-         POAiO5RFlFuaVZ3KGDyYQtlU2OW0maxjFOR3I=
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> <m3aay6y2m1.fsf@intrepid.localdomain> <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com> <1259450815.3137.19.camel@palomino.walls.org> <m3ocml6ppt.fsf@intrepid.localdomain>
-Message-Id: <D9ED2E54-7B65-4841-AADF-110C8E51DD0E@gmail.com>
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-In-Reply-To: <m3ocml6ppt.fsf@intrepid.localdomain>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (7C144)
-Mime-Version: 1.0 (iPhone Mail 7C144)
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-Date: Sun, 29 Nov 2009 13:31:46 -0800
-Cc: Andy Walls <awalls@radix.net>, Jon Smirl <jonsmirl@gmail.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, "j@jannau.net" <j@jannau.net>,
-       "jarod@redhat.com" <jarod@redhat.com>,
-       "jarod@wilsonet.com" <jarod@wilsonet.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       "maximlevitsky@gmail.com" <maximlevitsky@gmail.com>,
-       "mchehab@redhat.com" <mchehab@redhat.com>,
-       "stefanr@s5r6.in-berlin.de" <stefanr@s5r6.in-berlin.de>,
-       "superm1@ubuntu.com" <superm1@ubuntu.com>
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=lFQSt8EjZDoCQC9TTWaLQLPnnxBj4/ce7iuColmhUUPhDk7EsIRLwtFynLXfLajMAP
+         9D/3MeqRsb4vpzSBiE0fRGQ7Zxfkh/NGRcJ0L4nxIvWZ7OYd4ehSTIQo1vMCTJ8Piumr
+         3Y6Lficl8LDWku0b+3KBqu48pF5XX5JABSFjA=
+MIME-Version: 1.0
+In-Reply-To: <20091125144307.5e7d6d6f.akpm@linux-foundation.org>
+References: <1259162390-378-1-git-send-email-cliffcai.sh@gmail.com> 
+	<20091125140422.cdee4a0d.akpm@linux-foundation.org> <8bd0f97a0911251425q178993fete79b675e2730bdec@mail.gmail.com> 
+	<20091125144307.5e7d6d6f.akpm@linux-foundation.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sun, 29 Nov 2009 16:39:16 -0500
+Message-ID: <8bd0f97a0911291339v7b0195dfjeb2065d011b47dc7@mail.gmail.com>
+Subject: Re: [PATCH v4][mmc/host]:Blackfin SD Host Controller Driver
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cliffcai.sh@gmail.com, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, cliff.cai@analog.com,
+       Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29, 2009, at 12:27 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-
-> 1. Do we agree that a lirc (-style) kernel-user interface is needed at
->   least?
+On Wed, Nov 25, 2009 at 17:43, Andrew Morton wrote:
+> On Wed, 25 Nov 2009 17:25:20 -0500 Mike Frysinger wrote:
+>> > Arguably wrong from a coding-style POV and looks weird IMO. __Adds a bit
+>> > of risk that subsequent coders will think they're writing in python adn
+>> > will add bugs.
+>>
+>> i dont really get what you're referring to here.  the code in question
+>> looks ifne to me, and i dont see anything "python-esque" about it
 >
-> 2. Is there any problem with lirc kernel-user interface?
+> Code like
 >
-> If the answer for #1 is "yes" and for #2 is "no" then perhaps we merge
-> the Jarod's lirc patches (at least the core) so at least the
-> non-controversial part is done?
-
-
-Isn't the meat of Jarod's patch the lirc interface?
-
--- 
+>        if (expr) {
+>                line1;
+>                line2;
+>        } else
+>                line3;
 >
+> looks odd and can cause people to later add bugs along the lines of
+>
+>        if (expr) {
+>                line1;
+>                line2;
+>        } else
+> +               line3a;
+>                line3;
+>
+> this is particularly the case if line3 is long, or is preceded by a
+> comment.  This has happened in the past.
+>
+> Adding the missing braces reduces the risk that this will occur.
 
-Dmitry
+*shrug* people can screw up braces regardless of how many statements
+and/or branches there are.  i doubt people are going to get confused
+and think kernel code is python, but if you really want to be pedantic
+about braces, doesnt matter that much to me.
+-mike
