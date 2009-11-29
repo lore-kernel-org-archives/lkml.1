@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbZK2PSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZK2PUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753812AbZK2PSv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 10:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZK2PSv
+	id S1753976AbZK2PUy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 10:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZK2PUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 10:18:51 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36310 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752309AbZK2PSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 10:18:50 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH] NET: smc91x: convert to dev_pm_ops
-Date: Sun, 29 Nov 2009 16:19:11 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Nicolas Pitre <nico@fluxnic.net>, "David S. Miller" <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1259103467-31016-1-git-send-email-khilman@deeprootsystems.com>
-In-Reply-To: <1259103467-31016-1-git-send-email-khilman@deeprootsystems.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+	Sun, 29 Nov 2009 10:20:54 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44066 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753107AbZK2PUx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 10:20:53 -0500
+Subject: Re: [PATCH] sched: Optimize branch hint in context_switch()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Avi Kivity <avi@redhat.com>
+Cc: Tim Blechmann <tim@klingt.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <4B128F65.40804@redhat.com>
+References: <4B1262AC.8000903@klingt.org>  <4B128F65.40804@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 29 Nov 2009 16:20:50 +0100
+Message-ID: <1259508050.13695.160.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200911291619.11808.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 November 2009, Kevin Hilman wrote:
-> Convert smc91x driver from legacy PM hooks over to using dev_pm_ops.
+On Sun, 2009-11-29 at 17:12 +0200, Avi Kivity wrote:
+> On 11/29/2009 02:01 PM, Tim Blechmann wrote:
+> > Branch hint profiling on my nehalem machine showed 88%
+> > incorrect branch hints:
+> >
+> > 42017484 326957902  88 context_switch                 sched.c              3043
+> > 42038493 326953687  88 context_switch                 sched.c              3050
+> >
+> > @@ -3040,14 +3040,14 @@ context_switch(struct rq *rq, struct task_struct *prev,
+> >   	 */
+> >   	arch_start_context_switch(prev);
+> >
+> > -	if (likely(!mm)) {
+> > +	if (unlikely(!mm)) {
+> >   		next->active_mm = oldmm;
+> >   		atomic_inc(&oldmm->mm_count);
+> >   		enter_lazy_tlb(oldmm, next);
+> >   	} else
+> >   		switch_mm(oldmm, mm, next);
+> >
+> > -	if (likely(!prev->mm)) {
+> > +	if (unlikely(!prev->mm)) {
+> >   		prev->active_mm = NULL;
+> >   		rq->prev_mm = oldmm;
+> >   	}
+> >    
 > 
-> Tested on OMAP3 platform.
+> I don't think either the original or the patch is correct.  Whether or 
+> not a task has an mm is entirely workload dependent, we shouldn't be 
+> giving hints here.
 
-It seems to be missing the hibernation hooks, at least .freeze() and .restore(),
-but I guess .thaw() as well.
+There are reasons to still use branch hints, for example if the unlikely
+branch is very expensive anyway and it pays to have the likely branch be
+ever so slightly less expensive.
 
-> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+Now I don't think that applies here, but there are cases where such code
+generation issues are the main motivator not the actual usage patterns.
 
-Thanks (and sorry for the late response),
-Rafael
-
-
-> ---
->  drivers/net/smc91x.c |   18 ++++++++++++------
->  1 files changed, 12 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
-> index 05c91ee..8e4c455 100644
-> --- a/drivers/net/smc91x.c
-> +++ b/drivers/net/smc91x.c
-> @@ -2365,9 +2365,10 @@ static int __devexit smc_drv_remove(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> -static int smc_drv_suspend(struct platform_device *dev, pm_message_t state)
-> +static int smc_drv_suspend(struct device *dev)
->  {
-> -	struct net_device *ndev = platform_get_drvdata(dev);
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct net_device *ndev = platform_get_drvdata(pdev);
->  
->  	if (ndev) {
->  		if (netif_running(ndev)) {
-> @@ -2379,9 +2380,10 @@ static int smc_drv_suspend(struct platform_device *dev, pm_message_t state)
->  	return 0;
->  }
->  
-> -static int smc_drv_resume(struct platform_device *dev)
-> +static int smc_drv_resume(struct device *dev)
->  {
-> -	struct net_device *ndev = platform_get_drvdata(dev);
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct net_device *ndev = platform_get_drvdata(pdev);
->  
->  	if (ndev) {
->  		struct smc_local *lp = netdev_priv(ndev);
-> @@ -2397,14 +2399,18 @@ static int smc_drv_resume(struct platform_device *dev)
->  	return 0;
->  }
->  
-> +static struct dev_pm_ops smc_drv_pm_ops = {
-> +	.suspend	= smc_drv_suspend,
-> +	.resume		= smc_drv_resume,
-> +};
-> +
->  static struct platform_driver smc_driver = {
->  	.probe		= smc_drv_probe,
->  	.remove		= __devexit_p(smc_drv_remove),
-> -	.suspend	= smc_drv_suspend,
-> -	.resume		= smc_drv_resume,
->  	.driver		= {
->  		.name	= CARDNAME,
->  		.owner	= THIS_MODULE,
-> +		.pm	= &smc_drv_pm_ops,
->  	},
->  };
