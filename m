@@ -1,50 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbZK2CcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZK2C4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbZK2CcA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 21:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZK2Cb7
+	id S1753872AbZK2C4e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 21:56:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758AbZK2C4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 21:31:59 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:38525 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752532AbZK2Cb7 (ORCPT
+	Sat, 28 Nov 2009 21:56:33 -0500
+Received: from outbound-mail02.westnet.com.au ([203.10.1.243]:48255 "EHLO
+	outbound-mail02.westnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752734AbZK2C4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 21:31:59 -0500
-Date: Sun, 29 Nov 2009 02:31:18 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       John Stultz <johnstul@us.ibm.com>, Nicolas Pitre <nico@marvell.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] warn about shared irqs requesting IRQF_DISABLED registered with setup_irq
-Message-ID: <20091129023118.GA21529@shareable.org>
-References: <20091127195857.GB28193@n2100.arm.linux.org.uk> <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911272234460.24119@localhost.localdomain> <20091128200344.GA1272@pengutronix.de> <alpine.LFD.2.00.0911282239430.24119@localhost.localdomain>
+	Sat, 28 Nov 2009 21:56:31 -0500
+X-Greylist: delayed 561 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Nov 2009 21:56:30 EST
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigEAPtuEUvKrYkQbmdsb2JhbACBTppEP7dehDEEgXI
+X-IronPort-AV: E=Sophos;i="4.47,307,1257091200"; 
+   d="scan'208";a="46666998"
+From: Mike Lampard <mike@mtgambier.net>
+Reply-To: mike@mtgambier.net
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR system?
+Date: Sun, 29 Nov 2009 13:17:03 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31.6-1mdv; KDE/4.3.2; x86_64; ; )
+Cc: Christoph Bartelmus <christoph@bartelmus.de>, jarod@wilsonet.com,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+References: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
+In-Reply-To: <9e4733910911270757j648e39ecl7487b7e6c43db828@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0911282239430.24119@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200911291317.03612.mike@mtgambier.net>
+X-GROMMIT-SECNET-NET-AU-MailScanner: Not scanned: please contact SECNet for details
+X-GROMMIT-SECNET-NET-AU-MailScanner-SpamCheck: 
+X-GROMMIT-SECNET-NET-AU-MailScanner-From: mike@mtgambier.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> What about analysing the code and verifying that the setup order is
-> correct ?
+On Sat, 28 Nov 2009 02:27:59 am Jon Smirl wrote:
+> On Fri, Nov 27, 2009 at 2:45 AM, Christoph Bartelmus
 > 
-> Adding save/restore_irq just because you have no clue what the code
-> does is utter nonsense.
+> <christoph@bartelmus.de> wrote:
+> > Hi Mauro,
+> >
+> > on 26 Nov 09 at 14:25, Mauro Carvalho Chehab wrote:
+> >> Christoph Bartelmus wrote:
+> >
+> > [...]
+> >
+> >>> But I'm still a bit hesitant about the in-kernel decoding. Maybe it's
+> >>> just because I'm not familiar at all with input layer toolset.
+> >
+> > [...]
+> >
+> >> I hope it helps for you to better understand how this works.
+> >
+> > So the plan is to have two ways of using IR in the future which are
+> > incompatible to each other, the feature-set of one being a subset of the
+> > other?
+> 
+> Take advantage of the fact that we don't have a twenty year old legacy
+> API already in the kernel. Design an IR API that uses current kernel
+> systems. Christoph, ignore the code I wrote and make a design proposal
+> that addresses these goals...
+> 
+> 1) Unified input in Linux using evdev. IR is on equal footing with
+> mouse and keyboard.
 
-Wouldn't it be quite a lot nicer if generic setup moved the
-IRQF_DISABLED handler to be first in the list, if that actually works
-in a useful way rather than simply being a quirk that irqs are
-disabled for the first one?
+I think this a case where automating setup can be over-emphasised (in the 
+remote-as-keyboard case).
 
--- Jamie
+Apologies in advance if I've misunderstood the idea of utilising the 'input 
+subsystem' for IR.  If the plan is to offer dedicated IR events via a yet-to-
+be-announced input event subsystem and to optionally disallow acting as a 
+keyboard via a module option or similar then please ignore the following.
+
+Whilst having remotes come through the input subsystem might be 'the correct 
+thing' from a purely technical standpoint, as an end-user I find the use-case 
+for remotes completely different in one key aspect:  Keyboards and mice are 
+generally foreground-app input devices, whereas remotes are often controlling 
+daemons sitting in the background piping media through dedicated devices.  As 
+an example I have a VDR instance running in the background on my desktop 
+machine outputting to a TV in another room via a pci mpeg decoder - I 
+certainly don't want the VDR remote control interacting with my X11 desktop in 
+any way unless I go out of my way to set it up to do so, nor do I want it 
+interacting with other applications (such as MPD piping music around the 
+house) that are controlled via other remotes in other rooms unless specified.
+
+Setting this up with Lircd was easy, how would a kernel-based proposal handle 
+this?
+
+Regards
+Mike
+
+
+> 2) plug and play for basic systems - you only need an external app for
+>  scripting 
+>  3) No special tools - use mkdir, echo, cat, shell scripts to
+>  build maps 
+>  4) Use of modern Linux features like sysfs, configfs and udev.
+> 5) Direct multi-app support - no daemon
+> 6) Hide timing data from user as much as possible.
+> 
+> What are other goals for this subsystem?
+> 
+> Maybe we decide to take the existing LIRC system as is and not
+> integrate it into the input subsystem. But I think there is a window
+> here to update the LIRC design to use the latest kernel features. We
+> don't want to build another /dev/mouse and have to rip it out in five
+> years.
+> 
+> > When designing the key mapping in the kernel you should be aware that
+> > there are remotes out there that send a sequence of scan codes for some
+> > buttons, e.g.
+> > http://lirc.sourceforge.net/remotes/pioneer/CU-VSX159
+> 
+> This is good input.
+> 
