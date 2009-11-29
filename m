@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZK2S71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZK2TDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbZK2S71 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 13:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZK2S70
+	id S1752946AbZK2TDB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 14:03:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZK2TDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 13:59:26 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35039 "EHLO
+	Sun, 29 Nov 2009 14:03:00 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44543 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751622AbZK2S7Z (ORCPT
+	with ESMTP id S1752743AbZK2TC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 13:59:25 -0500
-Date: Sun, 29 Nov 2009 19:00:59 +0000
+	Sun, 29 Nov 2009 14:02:59 -0500
+Date: Sun, 29 Nov 2009 19:04:35 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Andy Walls <awalls@radix.net>, Krzysztof Halasa <khc@pm.waw.pl>,
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Andy Walls <awalls@radix.net>,
+       Jon Smirl <jonsmirl@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
        Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
        j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, maximlevitsky@gmail.com,
-       mchehab@redhat.com, stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
+       linux-media@vger.kernel.org, mchehab@redhat.com,
+       stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
 Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
  IR  system?
-Message-ID: <20091129190059.02c2a0ff@lxorguk.ukuu.org.uk>
-In-Reply-To: <9e4733910911291019l27e5fea2x3db268311842b17@mail.gmail.com>
+Message-ID: <20091129190435.6500ac84@lxorguk.ukuu.org.uk>
+In-Reply-To: <2c0942db0911291052n6e9dd116x943ee636bcf548b9@mail.gmail.com>
 References: <m3r5riy7py.fsf@intrepid.localdomain>
 	<BDkdITRHqgB@lirc>
 	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
@@ -30,7 +31,10 @@ References: <m3r5riy7py.fsf@intrepid.localdomain>
 	<9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
 	<1259469121.3125.28.camel@palomino.walls.org>
 	<20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
-	<9e4733910911291019l27e5fea2x3db268311842b17@mail.gmail.com>
+	<1259515703.3284.11.camel@maxim-laptop>
+	<2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
+	<20091129181316.7850f33c@lxorguk.ukuu.org.uk>
+	<2c0942db0911291052n6e9dd116x943ee636bcf548b9@mail.gmail.com>
 X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -39,72 +43,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Half of the drivers are in user space and there are two different
-> classes of kernel driver - LIRC and V4L.
+> Jon is asking for an architecture discussion, y'know, with use cases.
+> Maxim seems to be saying it's obvious that what we have today works
+> fine. Except it doesn't appear that we have a consensus that
+> everything is fine, nor an obvious winner for how to reduce the
+> complexity here and keep the kernel in a happy, maintainable state for
+> the long haul.
 
+The important point is that this is not an A or B discussion. There are
+lots of ways to tackle it that are neither. If you look at things like
+complex video format handling it is done in user space but with an
+infrastructure to handle it.
 
-> A lot of the hardware doesn't identify itself.
-> There are two types of IR data in use - pulse timing and decoded protocol.
-> 
-> IR is an input device. We have a nice evdev input subsystem and it has
-> been demonstrated that IR can work with it.
-
-Evdev allows userspace to feed events into the kernel.
-
-> Everybody keeps complaining that they want IR to "just work".
-> Consolidating all of this (under 50K of code)  driver support in the
-> kernel is the way to make it "just work".
-
-We have things called "Libraries" that unlike kernel code run out of a
-secure context, can be paged and shared by applications dynamically.
-
-Also the data rate of IR controllers puts it into the realm where the
-kernel doesn't need to be involved, in fact you could turn them into
-evdev events via user space quite acceptably, or even into meaningful
-actions and onto dbus.
-
-> For example. Some IR devices only record pulse timing data. There are
-> various protocols - RC5, RC6, etc for turning these pulse timing into
-> a decode IR command. This is about 20K of code. Does it really make
-> sense to create a device, push this data out into user space, decode
-> it there, then inject the results back into the kernel (uinput) for
-> further processing by the input subsystem?
-
-Does it really make sense to put big chunks of protocol decoding crap for
-an interface which runs at about 1 character per second on a good day
-into the kernel ? Does it really make sense ot move 50K of code from user
-context to kernel context where it must meet strict security
-requirements, be extensively audited and cannot be paged. For embedded
-users will also have to be highly modular so no unused bits are loaded.
-
-> This decoding is getting done in user space because half of the IR
-> drivers are in user space. But the other half of them aren't in user
-> space and that set can't work in user space.  Most of the user space
-> drivers can be pushed into the kernel where they'll automatically load
-> when the device is detected.
-
-So you proposed to write another ton of new drivers in kernel space for
-these only devices supported by user space, portably and to test and
-submit them all. If you can't persuade the maintainera of all those
-drivers to do so you don't appear to have a credible proposal.
-
-> attaching an IR diode to the mic input of your sound card really a
-> device or is it a hack that should be dealt with in user space?
-
-It's a device. There is no divide between "hack" and "device", as anyone
-who ever worked on the Mac68K can assure you ;)
-
-> Another type is IR hardware that toggles the DTR output of a serial
-> port at 40Khz to make a signal. Same thing is done with parallel
-> ports. Those force the system into a bit-banging timing loop for
-> 1/10th second.
-
-We have people who run wireless like that, people who ran SCSI and IDE
-like that. In the embedded world its the norm. If you sell 100,000
-devices then saving that part, wiring and board space is often the right
-choice. That kind of stuff needs doing in user space not kernel.
-
-You stated the real problem at the start - devices don't identify
-themselves well. That doesn't seem to be a kernel problem other than for
-kernel drivers perhaps exposing more information on themselves via sysfs.
+I don't believe putting it in the kernel is the alternative to the
+current setup. Cleaning up the way what we have today is presented to
+applications is perfectly possible without a whole new pile of kernel
+crap, because evdev was designed sensibly in the first place to allow
+userspace added events.
 
