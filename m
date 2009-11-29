@@ -1,107 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbZK3N4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751867AbZK2QCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbZK3N4d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 08:56:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbZK3N4c
+	id S1751867AbZK2QCK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 11:02:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZK2QCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 08:56:32 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46786 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbZK3N4b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 08:56:31 -0500
-Date: Sun, 29 Nov 2009 16:58:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: bluetooth cf slow (10KB/sec), lots of dmesg spam
-Message-ID: <20091129155801.GA1634@ucw.cz>
+	Sun, 29 Nov 2009 11:02:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:47233 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751182AbZK2QCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 11:02:07 -0500
+Message-ID: <4B129ADF.9050004@redhat.com>
+Date: Sun, 29 Nov 2009 14:01:35 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, khc@pm.waw.pl,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       maximlevitsky@gmail.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>	 <4B116954.5050706@s5r6.in-berlin.de>	 <9e4733910911281058i1b28f33bh64c724a89dcb8cf5@mail.gmail.com>	 <4B117DEA.3030400@s5r6.in-berlin.de> <9e4733910911281208t23c938a2l7537e248e1eda4ae@mail.gmail.com>
+In-Reply-To: <9e4733910911281208t23c938a2l7537e248e1eda4ae@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jon Smirl wrote:
+> On Sat, Nov 28, 2009 at 2:45 PM, Stefan Richter
+> <stefanr@s5r6.in-berlin.de> wrote:
+>> Jon Smirl wrote:
+>>> Also, how do you create the devices for each remote? You would need to
+>>> create these devices before being able to do EVIOCSKEYCODE to them.
+>> The input subsystem creates devices on behalf of input drivers.  (Kernel
+>> drivers, that is.  Userspace drivers are per se not affected.)
+> 
+> We have one IR receiver device and multiple remotes. How does the
+> input system know how many devices to create corresponding to how many
+> remotes you have? There is no current mechanism to do that. You need
+> an input device for each remote so that you can do the EVIOCSKEYCODE
+> against it. Some type of "create subdevice" IOCTL will need to be
+> built.
+> 
+> I handled that in configds like this:
+> /configfs - mount the basic configfs
+> /configfs/remotes (created by loading IR support)
+> mkdir /configfs/remotes/remote_A  - this causes the input subdevice to
+> be created, the name of it appears in the created directory.
+> mkdir /configfs/remotes/remote_A/... - now build the mapping entires.
+> 
+> This "create subdevice" IOCTL will need to take a name so that it can
+> be identified. You will probably another IOCTL to enumerate which
+> subdevices belong to the root device, etc...
+> 
+> Keyboards don't have subdevices. There is a 1:1 mapping between the
+> keyboard and the device driver.
 
-Hi!
+The above struct doesn't fit for the already existing in-kernel drivers, since
+you may have more than one IR driver on kernel. I have some machines here with
+3 or 4 different input cards, each with their own IR hardware. How are you
+supposing to associate a created Remote Controller with the corresponding driver?
 
-I'm using CF bluetooth card:
+With EVIOSKEYCODE, it is as simple as directing the ioctl to the corresponding
+evdev interface.
 
-toy:~# setserial -av /dev/ttyS0
-/dev/ttyS0, Line 0, UART: 16950/954, Port: 0xc48202f8, IRQ: 201
-	Baud_base: 921600, close_delay: 50, divisor: 0
-	closing_wait: 3000
-	Flags: spd_normal skip_test
+Cheers,
+Mauro.
+> 
 
-toy:~# hciconfig
-hci0:	Type: UART
-	BD Address: 00:10:60:AB:25:9A ACL MTU: 192:8 SCO MTU: 64:8
-	UP RUNNING PSCAN ISCAN 
-	RX bytes:1612262 acl:5084 sco:0 events:3602 errors:0
-	TX bytes:507156 acl:3779 sco:0 commands:28 errors:0
-
-
-...and it mostly works, but slowly, and with tons of complains. Card
-is:
-
-toy:~# lspcmcia -v
-Socket 0 Bridge:   	[pxa2xx-pcmcia] 	(bus ID: pxa2xx-pcmcia)
-	Configuration:	state: on	ready: yes
-			Voltage: 3.3V Vcc: 3.3V Vpp: 0.0V
-Socket 0 Device 0:	[serial_cs]		(bus ID: 0.0)
-	Configuration:	state: on
-	Product Name:   Compact Flash Bluetooth Card 
-	Identification:	manf_id: 0x0279	card_id: 0x950b
-			function: 2 (serial)
-			prod_id(1): "Compact Flash" (0x95521410)
-			prod_id(2): "Bluetooth Card" (0x7664fb1d)
-			prod_id(3): --- (---)
-			prod_id(4): --- (---)
-
-I believe the problem is 115200 bitrate between system and CF serial;
-I did setserial baud_base 921600,  but that does not seem to speed it
-up. Do I need to do some special magic to enable high speed?
-
-Any ideas?
-									Pavel
-
-PM: Adding info for No Bus:hci0
-bcsp_recv: Out-of-order packet arrived, got 1 expected 0
-PM: Adding info for No Bus:rfcomm1
-PM: Adding info for No Bus:hci0:41
-PM: Adding info for No Bus:bnep0
-bcsp_recv: Short BCSP packet
-bcsp_recv: Out-of-order packet arrived, got 5 expected 4
-bcsp_recv: Out-of-order packet arrived, got 6 expected 4
-SysRq : Changing Loglevel
-Loglevel set to 1
-bcsp_recv: Short BCSP packet
-bcsp_recv: Out-of-order packet arrived, got 1 expected 0
-bcsp_recv: Out-of-order packet arrived, got 2 expected 0
-bcsp_recv: Out-of-order packet arrived, got 3 expected 0
-bcsp_recv: Short BCSP packet
-...
-bcsp_recv: Out-of-order packet arrived, got 2 expected 7
-bcsp_recv: Short BCSP packet
-bcsp_recv: Out-of-order packet arrived, got 7 expected 6
-bcsp_recv: Out-of-order packet arrived, got 0 expected 6
-bcsp_recv: Out-of-order packet arrived, got 1 expected 6
-bcsp_recv: Short BCSP packet
-bcsp_recv: Error in BCSP hdr checksum
-bcsp_recv: Out-of-order packet arrived, got 4 expected 2
-bcsp_recv: Out-of-order packet arrived, got 5 expected 2
-bcsp_recv: Short BCSP packet
-bcsp_recv: Out-of-order packet arrived, got 2 expected 1
-bcsp_recv: Out-of-order packet arrived, got 3 expected 1
-bcsp_recv: Out-of-order packet arrived, got 4 expected 1
-bcsp_unslip_one_byte: Invalid byte 00 after esc byte
-bcsp_recv: Out-of-order packet arrived, got 4 expected 3
-bcsp_recv: Out-of-order packet arrived, got 5 expected 3
-bcsp_recv: Out-of-order packet arrived, got 6 expected 3
-bcsp_recv: Short BCSP packet
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
