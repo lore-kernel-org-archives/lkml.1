@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbZK2K0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbZK2Kn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970AbZK2K0z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 05:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbZK2K0z
+	id S1754160AbZK2Kn2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 05:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZK2Kn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 05:26:55 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:46700 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751956AbZK2K0y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 05:26:54 -0500
-Date: Sun, 29 Nov 2009 11:26:35 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       John Stultz <johnstul@us.ibm.com>, Nicolas Pitre <nico@marvell.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] warn about shared irqs requesting IRQF_DISABLED
-	registered with setup_irq
-Message-ID: <20091129102635.GA22653@pengutronix.de>
-References: <20091127195857.GB28193@n2100.arm.linux.org.uk> <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911272234460.24119@localhost.localdomain> <20091128200344.GA1272@pengutronix.de> <alpine.LFD.2.00.0911282239430.24119@localhost.localdomain> <20091129023118.GA21529@shareable.org>
+	Sun, 29 Nov 2009 05:43:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30121 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752373AbZK2Kn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 05:43:26 -0500
+Message-ID: <4B125051.6010506@redhat.com>
+Date: Sun, 29 Nov 2009 12:43:29 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091129023118.GA21529@shareable.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Nix <nix@esperi.org.uk>
+CC: kvm@vger.kernel.org,
+       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31.5 x86-64 KVM: 'emulation failed (pagetable) rip 7fb49335da7b
+ 66 0f 7f 07'
+References: <87skbzvdgd.fsf@spindle.srvr.nix>
+In-Reply-To: <87skbzvdgd.fsf@spindle.srvr.nix>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 11/27/2009 11:56 PM, Nix wrote:
+> So I installed my first KVM guest image (a prerelease of Ubuntu 9.10
+> that I had lying around) this morning (through virt-manager, as it
+> happens). Everything worked fine, the install was searingly fast
+> compared to the UML virtual machines I'm used to.
+>
+> I got back to it this evening, restarted the VM, and found that it had
+> suddenly slowed right down again, with one CPU being saturated with work
+> even when nothing was happening. Looking at the syslog shows (what would
+> be but for ratelimit) incredible numbers of these messages being logged:
+>
+> Nov 27 21:44:00 spindle info: [444857.792205] device vnet0 entered promiscuous mode
+> Nov 27 21:44:00 spindle info: [444857.794347] linux-net: port 2(vnet0) entering learning state
+> Nov 27 21:44:03 spindle warning: [444860.856640] __ratelimit: 928705 callbacks suppressed
+> Nov 27 21:44:03 spindle err: [444860.856729] emulation failed (pagetable) rip 7f3845f36a7b 66 0f 7f 07
+>    
 
-On Sun, Nov 29, 2009 at 02:31:18AM +0000, Jamie Lokier wrote:
-> Thomas Gleixner wrote:
-> > What about analysing the code and verifying that the setup order is
-> > correct ?
-> > 
-> > Adding save/restore_irq just because you have no clue what the code
-> > does is utter nonsense.
-> 
-> Wouldn't it be quite a lot nicer if generic setup moved the
-> IRQF_DISABLED handler to be first in the list, if that actually works
-> in a useful way rather than simply being a quirk that irqs are
-> disabled for the first one?
-Hmm, what happens if an ISR runs with irqs disabled even though it
-doesn't expect it?  I wouldn't bet that nothing breaks.
+66 0f 7f 07              movdqa %xmm0,(%rdi)
 
-IMHO the best is if a warning is printed or registering fails if shared
-irq actions don't agree about wanting IRQF_DISABLED.
+which we don't emulate.
 
-Best regards
-Uwe
+Can you, using the qemu monitor, see where the guest is trying to write?
+
+   (qemu) info registers
+   (qemu) x/30i $eip - 20
+
 
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+error compiling committee.c: too many arguments to function
+
