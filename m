@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbZK2Lzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbZK2MH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334AbZK2Lzz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 06:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZK2Lzy
+	id S1754394AbZK2MH5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 07:07:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZK2MHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 06:55:54 -0500
-Received: from mail.klingt.org ([86.59.21.178]:38618 "EHLO klingt.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754246AbZK2Lzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 06:55:54 -0500
-Message-ID: <4B126124.60902@klingt.org>
-Date: Sun, 29 Nov 2009 12:55:16 +0100
-From: Tim Blechmann <tim@klingt.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.6pre) Gecko/20091127 Lightning/1.0pre Shredder/3.0.1pre
+	Sun, 29 Nov 2009 07:07:05 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:64694 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752102AbZK2MHB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 07:07:01 -0500
+Date: 29 Nov 2009 13:01:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: jonsmirl@gmail.com
+Cc: awalls@radix.net
+Cc: dmitry.torokhov@gmail.com
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: jarod@wilsonet.com
+Cc: khc@pm.waw.pl
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: lirc@bartelmus.de
+Cc: mchehab@redhat.com
+Cc: superm1@ubuntu.com
+Message-ID: <BDodiKlXqgB@lirc>
+In-Reply-To: <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: [PATCH] sched, x86: Optimize branch hint in __switch_to()
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0ABA9069F674BBAC57147F1F"
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [86.59.21.178]); Sun, 29 Nov 2009 12:55:22 +0100 (CET)
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1+TH93lmlVrZXbNmvhfEv6s5cz9sLoqvabw5hY
+ xQXi1MVzWusiIZxJLRv973TSl4s+Cws6iY1sAP7WHcASqbnSNX
+ kog1BH4fwUumREdCxsZZsbky6+4NerS
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0ABA9069F674BBAC57147F1F
-Content-Type: multipart/mixed;
- boundary="------------080205030302090701010401"
+Hi Jon,
 
-This is a multi-part message in MIME format.
---------------080205030302090701010401
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+on 27 Nov 09 at 12:49, Jon Smirl wrote:
+[...]
+> Christoph, take what you know from all of the years of working on LIRC
+> and design the perfect in-kernel system. This is the big chance to
+> redesign IR support and get rid of any past mistakes. Incorporate any
+> useful chunks of code and knowledge from the existing LIRC into the
+> new design. Drop legacy APIs, get rid of daemons, etc. You can do this
+> redesign in parallel with existing LIRC. Everyone can continue using
+> the existing code while the new scheme is being built. Think of it as
+> LIRC 2.0. You can lead this design effort, you're the most experience
+> developer in the IR area.
 
+This is a very difficult thing for me to do. I must admit that I'm very  
+biased.
+Because lircd is the only userspace application that uses the LIRC kernel  
+interface, we never had any problems changing the interface when needed.
+I can't say there's much legacy stuff inside. I'm quite happy with the  
+interface.
+The other thing is that I can't really move the decoder from userspace to  
+kernel because there are way too many userspace drivers that do require a  
+userspace decoder. LIRC also is running on FreeBSD, MacOS and even Cygwin.  
+So letting the userspace drivers take advantage of a potential Linux in- 
+kernel decoder is not an option for me either.
+I'm having my 'LIRC maintainer' hat on mostly during this discussion and I  
+do understand that from Linux kernel perspective things look different.
 
-Branch hint profiling on my nehalem machine showed 89%
-incorrect branch hints:
+> Take advantage of this window to make a
+> design that is fully integrated with Linux - put IR on equal footing
+> with the keyboard and mouse as it should be.
 
-31032542 270070841  89 __switch_to                    process_64.c       =
-  440
+That's a question that I have not answered for myself concludingly.
+Is a remote control really on exactly the same level as a keyboard or  
+mouse?
 
-Signed-off-by: Tim Blechmann <tim@klingt.org>
----
- arch/x86/kernel/process_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-
---------------080205030302090701010401
-Content-Type: text/x-patch;
- name="0001-sched-x86-Optimize-branch-hint-in-__switch_to.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="0001-sched-x86-Optimize-branch-hint-in-__switch_to.patch"
-
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index c8d0ece..88068b3 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -437,7 +437,7 @@ __switch_to(struct task_struct *prev_p, struct task_s=
-truct *next_p)
- 	 * reload when it has changed.  When prev process used 64bit
- 	 * base always reload to avoid an information leak.
- 	 */
--	if (unlikely(fsindex | next->fsindex | prev->fs)) {
-+	if (fsindex | next->fsindex | prev->fs) {
- 		loadsegment(fs, next->fsindex);
- 		/*
- 		 * Check if the user used a selector !=3D 0; if yes
-
-
---------------080205030302090701010401--
-
---------------enig0ABA9069F674BBAC57147F1F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAksSYSkACgkQdL+4qsZfVst57QCaAlvTag49D0iQmQIfUHhWAUCL
-SbAAnjmeLz9KxLdNs62bHqLXNv1z3RIe
-=A+a4
------END PGP SIGNATURE-----
-
---------------enig0ABA9069F674BBAC57147F1F--
+Christoph
