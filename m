@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbZK2AEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZK2ARP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbZK2AEJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Nov 2009 19:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZK2AEI
+	id S1753575AbZK2ARP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Nov 2009 19:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbZK2ARO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Nov 2009 19:04:08 -0500
-Received: from ara.aytolacoruna.es ([91.117.124.165]:53661 "EHLO
-	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753347AbZK2AEI (ORCPT
+	Sat, 28 Nov 2009 19:17:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:41044 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752674AbZK2ARN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Nov 2009 19:04:08 -0500
-X-Greylist: delayed 611 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Nov 2009 19:04:07 EST
-Date: Sun, 29 Nov 2009 00:54:00 +0100
-From: Santiago Garcia Mantinan <manty@manty.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [Bug #14294] kernel BUG at drivers/ide/ide-disk.c:187
-Message-ID: <20091128235359.GA6877@dis.manty.net>
-References: <7qTjLRFNcGF.A.eSE.kCACLB@chimera>
- <mYW9sxtWd2G.A.EcF.bDACLB@chimera>
+	Sat, 28 Nov 2009 19:17:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=NC7aoirJ4f7Cn1oYgjI4QHvkmfyPFhTckUrGgGV6diufRTEwDgPnTcIKo/DFdv2u7a
+         g9akyiM6m1v+cQxmpu7ckObVvIusYCSX2EjvfSiKCdIVEq9yFITQIunDGAUYGmlOER0T
+         fYKwGwZ7rgRWvEe0CDy+os1FgD6j5/RuLjhII=
+Date: Sun, 29 Nov 2009 01:17:10 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Philippe De Muyter <phdm@macqel.be>
+Cc: grundler@parisc-linux.org, kyle@mcmartin.ca, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: tulip : kernel BUG in tulip_up/tulip_resume
+Message-ID: <20091129001710.GA4055@ami.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <mYW9sxtWd2G.A.EcF.bDACLB@chimera>
+In-Reply-To: <20091108223305.GA21072@frolo.macqel>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14294
+Philippe De Muyter wrote, On 11/08/2009 11:33 PM:
 
-Hi!
+> Hello,
+> 
+> I have just installed 2.6.31 (from opensuse 11.2) one a tulip-equipped
+> computer and I get the following error message from the kernel :
+> 
+> [ 2495.526390] ------------[ cut here ]------------
+> [ 2495.526390] kernel BUG at /usr/src/packages/BUILD/kernel-default-2.6.31.5/linux-2.6.31/include/linux/netdevice.h:439!
+> [ 2495.526390] invalid opcode: 0000 [#1] SMP 
+...
+> This comes from a BUG_ON in napi_enable in netdevice.h.
+> 
+> napi_enable itself is called by tulip_up as such :
+> 
+> #ifdef CONFIG_TULIP_NAPI
+> 	napi_enable(&tp->napi);
+> #endif
+> 
+> At first reading, a matching napi_disable is called in tulip_down.
+> 
+> Does someone know what could be wrong and have a fix or should I look myself ?
 
-Sorry for not answering before, I've been running 2.6.31 patched for all
-this time and the results are a bit dissapointing...
+Don't know, guess only...
 
-The first run was for almost a month and ended up with half a hang, I could
-read on the console that there had been an error on one of the disks, dma
-error, the keyboard was working, getty seemed to work but then login didn't
-show up when entering the username even though the disks led was flashing
-when I operated the console entering usernames and all that. This hang was
-not like the hangs I had before, don't know if it was due to the patch and
-the unknown operation arriving to the IDE disk, but the message that the
-patch was supposed to display was not displayed at all.
+Jarek P.
+---
 
-The second run is current run I believe, currently it has an uptime of 18
-days and not problem was showed over this time.
+ drivers/net/tulip/tulip_core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-So... I'm afraid I'm not able to reproduce this and maybe the whole problem
-is hardware related, even though the machine had been running with 2.6.30 in
-a stable way, it is an old machine, so maybe it is not as healthy as I
-believed, and even though memtest doesn't show any errors there could be
-some dma problems or other weird things happening around :-(
-
-So... I'd say you can close the bug and if I happen to find it again... I'll
-report it again.
-
-Sorry for all the noise.
-
-Regards...
--- 
-Manty/BestiaTester -> http://manty.net
+diff --git a/drivers/net/tulip/tulip_core.c b/drivers/net/tulip/tulip_core.c
+index 0df983b..6b1456c 100644
+--- a/drivers/net/tulip/tulip_core.c
++++ b/drivers/net/tulip/tulip_core.c
+@@ -1787,11 +1787,11 @@ static int tulip_resume(struct pci_dev *pdev)
+ 		return retval;
+ 	}
+ 
+-	netif_device_attach(dev);
+-
+ 	if (netif_running(dev))
+ 		tulip_up(dev);
+ 
++	netif_device_attach(dev);
++
+ 	return 0;
+ }
+ 
