@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZK3Cdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbZK3Cof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753323AbZK3Cdf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 21:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZK3Cde
+	id S1753143AbZK3Cof (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 21:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZK3Coe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 21:33:34 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34562 "EHLO
+	Sun, 29 Nov 2009 21:44:34 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50069 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZK3Cdd (ORCPT
+	with ESMTP id S1751848AbZK3Cod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 21:33:33 -0500
-Date: Sun, 29 Nov 2009 21:33:05 -0500
-Message-Id: <200911300233.nAU2X5jp007432@agora.fsl.cs.sunysb.edu>
+	Sun, 29 Nov 2009 21:44:33 -0500
+Date: Sun, 29 Nov 2009 21:44:04 -0500
+Message-Id: <200911300244.nAU2i41s007505@agora.fsl.cs.sunysb.edu>
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+Cc: Jan Blunck <jblunck@suse.de>, Ian Kent <raven@themaw.net>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
        Andy Whitcroft <apw@canonical.com>,
        Scott James Remnant <scott@canonical.com>,
@@ -23,100 +24,118 @@ Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/41] VFS: Add read-only users count to superblock 
-In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:05 PDT."
-             <1256152779-10054-8-git-send-email-vaurora@redhat.com> 
+       linux-kernel@vger.kernel.org, Jan Blunck <jblunck@infradead.org>
+Subject: Re: [PATCH 08/41] Don't replace nameidata path when following links 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:06 PDT."
+             <1256152779-10054-9-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1256152779-10054-8-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> While we can check if a file system is currently read-only, we can't
-> guarantee that it will stay read-only.  The file system can be
-> remounted read-write at any time; it's also conceivable that a file
-> system can be mounted a second time and converted to read-write if the
-> underlying fs allows it.  This is a problem for union mounts, which
-> require the underlying file system be read-only.  Add a read-only
-> users count and don't allow remounts to change the file system to
-> read-write or read-write mounts if there are any read-only users.
+In message <1256152779-10054-9-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> From: Jan Blunck <jblunck@infradead.org>
 > 
-> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> For autofs4 the commit 051d381259eb57d6074d02a6ba6e90e744f1a29f introduced
+> some code that is replacing the path embedded in the nameidata with the
+> path of the link itself. This was done to have access to the struct
+> vfsmount in the autofs4_follow_link function. Instead autofs4 should
+> remember the struct vfsmount when it is mounted.
+
+This is an autofs4 patch, mainly: say so in the subject line:
+
+     VFS/Autofs4: don't replace nameidata ...
+
+I'm curious why wasn't Ian Kent CC'ed on this patch originally?  I added him
+to the CC list now.
+
+And what does this patch have to do with union mounts?  Can you document why
+you needed this change made?
+
+Lastly, if this patch is acceptable to all parties, then it should be pushed
+to the autofs4 maintainers and hopefully upstream well before UM.
+
 > ---
->  fs/super.c         |   14 ++++++++++++++
->  include/linux/fs.h |    5 +++++
->  2 files changed, 19 insertions(+), 0 deletions(-)
+>  fs/autofs4/autofs_i.h |    1 +
+>  fs/autofs4/init.c     |   11 ++++++++++-
+>  fs/autofs4/root.c     |    6 ++++++
+>  fs/namei.c            |    7 ++-----
+>  4 files changed, 19 insertions(+), 6 deletions(-)
 > 
-> diff --git a/fs/super.c b/fs/super.c
-> index 2761d3e..c8140ac 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -553,6 +553,15 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
->  	}
->  	remount_rw = !(flags & MS_RDONLY) && (sb->s_flags & MS_RDONLY);
->  
-> +	/* If we are remounting read/write, make sure that none of the
-> +	   users require read-only for correct operation (such as
-> +	   union mounts). */
-
-Minor nit: but I think multi-line comments look better like this:
-
-      /*
-       * text
-       */
-
-> +	if (remount_rw && sb->s_readonly_users) {
-> +		printk(KERN_INFO "%s: In use by %d read-only user(s)\n",
-> +		       sb->s_id, sb->s_readonly_users);
-> +		return -EROFS;
-> +	}
+> diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+> index 8f7cdde..db2bfce 100644
+> --- a/fs/autofs4/autofs_i.h
+> +++ b/fs/autofs4/autofs_i.h
+> @@ -130,6 +130,7 @@ struct autofs_sb_info {
+>  	int reghost_enabled;
+>  	int needs_reghost;
+>  	struct super_block *sb;
+> +	struct vfsmount *mnt;
+>  	struct mutex wq_mutex;
+>  	spinlock_t fs_lock;
+>  	struct autofs_wait_queue *queues; /* Wait queue pointer */
+> diff --git a/fs/autofs4/init.c b/fs/autofs4/init.c
+> index 9722e4b..5e0dcd7 100644
+> --- a/fs/autofs4/init.c
+> +++ b/fs/autofs4/init.c
+> @@ -17,7 +17,16 @@
+>  static int autofs_get_sb(struct file_system_type *fs_type,
+>  	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
+>  {
+> -	return get_sb_nodev(fs_type, flags, data, autofs4_fill_super, mnt);
+> +	struct autofs_sb_info *sbi;
+> +	int ret;
 > +
->  	if (sb->s_op->remount_fs) {
->  		retval = sb->s_op->remount_fs(sb, &flags, data);
->  		if (retval)
-> @@ -889,6 +898,11 @@ vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void
->   	if (error)
->   		goto out_sb;
->  
-> +	error = -EROFS;
-> +	if (!(flags & MS_RDONLY) &&
-> +	    (mnt->mnt_sb->s_readonly_users))
-
-Minor nit: two parts of '&&' in the above 'if' can go on same line and not
-violate checkpatch.
-
-> +		goto out_sb;
+> +	ret = get_sb_nodev(fs_type, flags, data, autofs4_fill_super, mnt);
+> +	if (ret)
+> +		return ret;
 > +
->  	mnt->mnt_mountpoint = mnt->mnt_root;
->  	mnt->mnt_parent = mnt;
->  	up_write(&mnt->mnt_sb->s_umount);
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 73e9b64..5fb7343 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1379,6 +1379,11 @@ struct super_block {
->  	 * generic_show_options()
->  	 */
->  	char *s_options;
-> +
-> +	/*
-> +	 * Users who require read-only access - e.g., union mounts
-> +	 */
-
-Minor nit: for short one-line comments I prefer to save LoC:
-
-      /* text */
-
-> +	int s_readonly_users;
->  };
+> +	sbi = autofs4_sbi(mnt->mnt_sb);
+> +	sbi->mnt = mnt;
+> +	return 0;
+>  }
 >  
->  extern struct timespec current_fs_time(struct super_block *sb);
-> -- 
-> 1.6.3.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  static struct file_system_type autofs_fs_type = {
+> diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+> index b96a3c5..cb991b8 100644
+> --- a/fs/autofs4/root.c
+> +++ b/fs/autofs4/root.c
+> @@ -179,6 +179,12 @@ static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd)
+>  	DPRINTK("dentry=%p %.*s oz_mode=%d nd->flags=%d",
+>  		dentry, dentry->d_name.len, dentry->d_name.name, oz_mode,
+>  		nd->flags);
+> +
+> +	dput(nd->path.dentry);
+> +	mntput(nd->path.mnt);
+> +	nd->path.mnt = mntget(sbi->mnt);
+> +	nd->path.dentry = dget(dentry);
+> +
+>  	/*
+>  	 * For an expire of a covered direct or offset mount we need
+>  	 * to break out of follow_down() at the autofs mount trigger
+> diff --git a/fs/namei.c b/fs/namei.c
+> index a338496..46cf1cb 100644
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -636,11 +636,8 @@ static __always_inline int __do_follow_link(struct path *path, struct nameidata
+>  	touch_atime(path->mnt, dentry);
+>  	nd_set_link(nd, NULL);
+>  
+> -	if (path->mnt != nd->path.mnt) {
+> -		path_to_nameidata(path, nd);
+> -		dget(dentry);
+> -	}
+> -	mntget(path->mnt);
+> +	if (path->mnt == nd->path.mnt)
+> +		mntget(nd->path.mnt);
+>  	cookie = dentry->d_inode->i_op->follow_link(dentry, nd);
+>  	error = PTR_ERR(cookie);
+>  	if (!IS_ERR(cookie)) {
 
+Just want to mention that the five lines you replace with the two lines, in
+the above patch snippet, are not functionally equivalent.  Is this the
+intention of "reversing" what commit
+051d381259eb57d6074d02a6ba6e90e744f1a29f introduced?  If not, then please
+explain the change in __do_follow_link.
+
+Thanks,
 Erez.
