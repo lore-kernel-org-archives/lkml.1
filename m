@@ -1,50 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZK3KgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZK3KgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbZK3KgB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 05:36:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZK3KgB
+	id S1752243AbZK3KgX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 05:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbZK3KgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 05:36:01 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38239 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752533AbZK3KgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 05:36:00 -0500
-Message-ID: <4B13A015.8010407@suse.cz>
-Date: Mon, 30 Nov 2009 11:36:05 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.3 Thunderbird/3.0b4
+	Mon, 30 Nov 2009 05:36:21 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:44611 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752720AbZK3KgR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 05:36:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=sLgRQ/MGWFk8xWmAqaQudPvg1gMz1MZEcuN5Ysyga+BTz760hcOETjfgWQjXwx7JWz
+         LbmByW2qLB4irihuklOTO3wQrK2223OROLiXCbW52tdKy/2VPTFbJOu4q257qRsP+sYd
+         oMxoD99w4oICT2m7qzk9hBSSHdAJFYtC0uqLQ=
+Message-ID: <4B13A025.7000103@gmail.com>
+Date: Mon, 30 Nov 2009 05:36:21 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       =?ISO-8859-2?Q?An=EDbal_Monsalve_?= =?ISO-8859-2?Q?Salazar?= 
-	<anibal@debian.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: linux-kbuild.git
-References: <4B0E73E1.50900@suse.cz>	<20091126193750.GA15453@merkur.ravnborg.org>	<20091127152211.55043dbb.sfr@canb.auug.org.au>	<4B0F9F0D.6010601@suse.cz> <20091130085713.75f56423.sfr@canb.auug.org.au>
-In-Reply-To: <20091130085713.75f56423.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-2
+To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
+CC: Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: warning: massive change to conditional coding style in net?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29.11.2009 22:57, Stephen Rothwell wrote:
-> On Fri, 27 Nov 2009 10:42:37 +0100 Michal Marek <mmarek@suse.cz> wrote:
->> I plan to maintain such a branch, but I thought I would base the
->> for-next branch on top of it, so that you get everything in one pack. Or
->> would you still prefer to have two kbuild branches in linux-next, so
->> that you can remove the for-next branch if necessary and keep the
->> for-current branch? Just tell me what fits you best.
-> 
-> Running a for-current branch allows you to queue up urgent fixes without
-> disrupting your for-next branch.  I will merge such a branch early on
-> (actually before I do my first build) so that I don't have to worry about
-> problems that are already have fixes pending for to be merged by Linus in
-> his current tree.  Also, as you say, if I have problems with your
-> for-next branch, it does not affect the more urgent patches.
+Over the past several days, David Miller (with help from Joe Perches)
+made sweeping changes to the format of conditional statements in the
+net tree -- the equivalent of mass patches that change spaces.
 
-OK, I created a for-linus branch in git://repo.or.cz/linux-kbuild.git.
-Currently it's empty, as there are no urgent kbuild fixes for 2.6.32.
+This makes writing patches for multiple versions of the tree very
+difficult, and will make future pullups problematic.  It's enough to
+make a grown man cry....  Patching conflicts everywhere!
 
-Michal
+CodingStyle is mute on this issue.  Does Linus have a preference?
+
+My personal practice (based on decades of open source projects) has
+been to use a form already used in the same file or section of code,
+matching the existing practice.
+
+If this is to be done everywhere, CodingStyle (and SubmittingPatches)
+should be updated.
+
+Currently, roughly 19% (7855 lines) of the -2.6 tree uses leading form:
+
+	if (condition
+	    && condition
+	    && (condition
+	        || condition
+	        || condition)) {
+
+Single spaced is also fairly common:
+
+	if (condition
+	 && condition
+	 && (condition
+	  || condition
+	  || condition)) {
+
+The advantage of the leading form is *readability* due to indentation,
+ease of patching and reading patches (changes affect only 1 line,
+instead of previous and following lines), and especially conditionals
+within #if sections.  Also, shorter lines (by 3 characters).
+
+The other 81% uses trailing form, often with odd random line breaks:
+
+	if (condition &&
+             condition && (condition || condition ||
+	    condition)) {
+
+Miller (with Perches) changed hundreds (thousands?) of these to
+trailing form.  This results in a number of hilarious examples --
+lines with both leading and trailing, lines with only &&, etc.  A
+small sample for illustration:
+
+===
+
+diff --git a/net/ipv4/ip_output.c b/net/ipv4/ip_output.c
+index 322b408..b78e615 100644
+--- a/net/ipv4/ip_output.c
++++ b/net/ipv4/ip_output.c
+@@ -264,9 +264,11 @@ int ip_mc_output(struct sk_buff *skb)
+
+  		   This check is duplicated in ip_mr_input at the moment.
+  		 */
+-		    && ((rt->rt_flags&RTCF_LOCAL) || !(IPCB(skb)->flags&IPSKB_FORWARDED))
++		    &&
++		    ((rt->rt_flags & RTCF_LOCAL) ||
++		     !(IPCB(skb)->flags & IPSKB_FORWARDED))
+  #endif
+-		) {
++		   ) {
+  			struct sk_buff *newskb = skb_clone(skb, GFP_ATOMIC);
+  			if (newskb)
+  				NF_HOOK(PF_INET, NF_INET_POST_ROUTING, newskb,
+diff --git a/net/irda/irnet/irnet_irda.c b/net/irda/irnet/irnet_irda.c
+index cccc2e9..b26dee7 100644
+--- a/net/irda/irnet/irnet_irda.c
++++ b/net/irda/irnet/irnet_irda.c
+@@ -1403,8 +1403,8 @@ irnet_connect_indication(void *		instance,
+    /* Socket already connecting ? On primary ? */
+    if(0
+  #ifdef ALLOW_SIMULT_CONNECT
+-     || ((irttp_is_primary(server->tsap) == 1)	/* primary */
+-	 && (test_and_clear_bit(0, &new->ttp_connect)))
++     || ((irttp_is_primary(server->tsap) == 1) &&	/* primary */
++	 (test_and_clear_bit(0, &new->ttp_connect)))
+  #endif /* ALLOW_SIMULT_CONNECT */
+       )
+      {
+diff --git a/net/sched/cls_rsvp.h b/net/sched/cls_rsvp.h
+index 7034ea4..dd9414e 100644
+--- a/net/sched/cls_rsvp.h
++++ b/net/sched/cls_rsvp.h
+@@ -170,21 +170,23 @@ restart:
+  	for (s = sht[h1]; s; s = s->next) {
+  		if (dst[RSVP_DST_LEN-1] == s->dst[RSVP_DST_LEN-1] &&
+  		    protocol == s->protocol &&
+-		    !(s->dpi.mask & (*(u32*)(xprt+s->dpi.offset)^s->dpi.key))
++		    !(s->dpi.mask &
++		      (*(u32*)(xprt+s->dpi.offset)^s->dpi.key)) &&
+  #if RSVP_DST_LEN == 4
+-		    && dst[0] == s->dst[0]
+-		    && dst[1] == s->dst[1]
+-		    && dst[2] == s->dst[2]
++		    dst[0] == s->dst[0] &&
++		    dst[1] == s->dst[1] &&
++		    dst[2] == s->dst[2] &&
+  #endif
+-		    && tunnelid == s->tunnelid) {
++		    tunnelid == s->tunnelid) {
+
+  			for (f = s->ht[h2]; f; f = f->next) {
+  				if (src[RSVP_DST_LEN-1] == f->src[RSVP_DST_LEN-1] &&
+  				    !(f->spi.mask & (*(u32*)(xprt+f->spi.offset)^f->spi.key))
+  #if RSVP_DST_LEN == 4
+-				    && src[0] == f->src[0]
+-				    && src[1] == f->src[1]
+-				    && src[2] == f->src[2]
++				    &&
++				    src[0] == f->src[0] &&
++				    src[1] == f->src[1] &&
++				    src[2] == f->src[2]
+  #endif
+  				    ) {
+  					*res = f->res;
+
+
