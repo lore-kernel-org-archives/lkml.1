@@ -1,78 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZK3QTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZK3QTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbZK3QTB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 11:19:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZK3QS7
+	id S1753265AbZK3QTe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 11:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZK3QTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 11:18:59 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:58968 "EHLO e3.ny.us.ibm.com"
+	Mon, 30 Nov 2009 11:19:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26257 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752470AbZK3QS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 11:18:58 -0500
-Date: Mon, 30 Nov 2009 08:18:45 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
-       cl@linux-foundation.org, mpm@selenic.com,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
-Subject: Re: lockdep complaints in slab allocator
-Message-ID: <20091130161845.GA8338@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com> <1258709153.11284.429.camel@laptop> <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com> <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <20091124162311.GA8679@linux.vnet.ibm.com> <84144f020911241259r3a604b29yb59902655ec03a20@mail.gmail.com> <20091124214740.GJ6831@linux.vnet.ibm.com>
+	id S1752720AbZK3QTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 11:19:30 -0500
+Message-ID: <4B13F075.2090806@redhat.com>
+Date: Mon, 30 Nov 2009 14:19:01 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091124214740.GJ6831@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Andy Walls <awalls@radix.net>
+CC: Ray Lee <ray-lk@madrabbit.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>	 <m3aay6y2m1.fsf@intrepid.localdomain>	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>	 <1259469121.3125.28.camel@palomino.walls.org>	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>	 <1259515703.3284.11.camel@maxim-laptop>	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>	 <1259537732.5231.11.camel@palomino.walls.org> <4B13B2FA.4050600@redhat.com> <1259585852.3093.31.camel@palomino.walls.org>
+In-Reply-To: <1259585852.3093.31.camel@palomino.walls.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 01:47:40PM -0800, Paul E. McKenney wrote:
-> On Tue, Nov 24, 2009 at 10:59:44PM +0200, Pekka Enberg wrote:
-> > On Tue, Nov 24, 2009 at 6:23 PM, Paul E. McKenney
-> > <paulmck@linux.vnet.ibm.com> wrote:
-> > > On Mon, Nov 23, 2009 at 09:00:00PM +0200, Pekka Enberg wrote:
-> > >> Hi Peter,
-> > >>
-> > >> On Fri, 2009-11-20 at 16:09 +0100, Peter Zijlstra wrote:
-> > >> > > Uh, ok, so apparently I was right after all. There's a comment in
-> > >> > > free_block() above the slab_destroy() call that refers to the comment
-> > >> > > above alloc_slabmgmt() function definition which explains it all.
-> > >> > >
-> > >> > > Long story short: ->slab_cachep never points to the same kmalloc cache
-> > >> > > we're allocating or freeing from. Where do we need to put the
-> > >> > > spin_lock_nested() annotation? Would it be enough to just use it in
-> > >> > > cache_free_alien() for alien->lock or do we need it in
-> > >> > > cache_flusharray() as well?
-> > >> >
-> > >> > You'd have to somehow push the nested state down from the
-> > >> > kmem_cache_free() call in slab_destroy() to all nc->lock sites below.
-> > >>
-> > >> That turns out to be _very_ hard. How about something like the following
-> > >> untested patch which delays slab_destroy() while we're under nc->lock.
-> > >>
-> > >>                       Pekka
-> > >
-> > > Preliminary tests look good!  The test was a ten-hour rcutorture run on
-> > > an 8-CPU Power system with a half-second delay between randomly chosen
-> > > CPU-hotplug operations.  No lockdep warnings.  ;-)
-> > >
-> > > Will keep hammering on it.
-> > 
-> > Thanks! Please let me know when you're hammered it enough :-). Peter,
-> > may I have your ACK or NAK on the patch, please?
-> 
-> I expect to hammer it over the USA Thanksgiving holiday Thu-Sun this week.
-> It is like this, Pekka: since I don't drink, it is instead your code
-> that is going to get hammered this weekend!
+Andy Walls wrote:
 
-And the runs with your patch were free from lockdep complaints, while
-those runs lacking your patch did raise lockdep's ire.  So feel free to
-add "Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>" to the
-patch.
+> Nonetheless I'd still rather debug a problem with a dead process in
+> userspace than an oops or panic (not that an end user cares) and avoid
+> the risk of filesystem corruption.
 
-And thank you for the fix!!!
+Considering my experience adding in-kernel support for IR's, I'd say that
+in general, a driver does some things:
 
-							Thanx, Paul
+1) it polls or waits IRQ's for an IR event. On raw IR devices, the read value
+means a mark or a space;
+2) it counts the timings between each pulse, and pulse/space duration;
+3) it runs a protocol decoding logic that, based on pulse/space duration, one
+   scancode is produced;
+4) it does a table lookup to convert the scancode into the corresponding keycode;
+5) it generates an evdev event.
+
+Steps 2 and 3 happen only when the device doesn't have hardware decoding capabilities.
+For devices with hardware decoding, the polling/IRQ process already retrieves a scancode.
+
+Based on my experience, I can say that, from the above logic, the one
+where you're more likely to generate an OOPS is at the first one, 
+where you need to do the proper memory barriers for example to avoid
+unregistering an IR while you're in the middle of an IRQ or pull handling.
+In the case of IRQ, you'll also need to take care to not sleep, since you're
+in interrupt mode.
+
+If you're outputing raw pulse/space to userspace (a lirc-like raw interface), 
+you'll still need to do steps (1) and (2) in kernel, and doing a logic close
+to (5) to output an event to userspace.
+
+So, the basic difference is that you won't run the decoder (3) nor do a table lookup (4).
+
+The logic for (4) is trivial (a simple a table lookup). If you do a mistake
+there, the bug will likely arise at the development time. Also, if you're not able
+to write a proper code to get a value from a table, you shouldn't be trying
+to write a driver anyway.
+
+The logic for (3) is as simple as identifying the length of a pulse and the length of
+the spaces. Depending on the length, it will produce a zero or one. Pure integer math.
+The only risk of such logic is if you try to divide by zero. Except of that, this type
+of code shouldn't cause any OOPS or panic.
+
+Also, for (3) and (4), it is very easy to write it first on userspace (if you feel
+more comfortable on doing so) and, after doing enough testing, add the same code to
+kernelspace.
+
+Cheers,
+Mauro.
+
+
+
