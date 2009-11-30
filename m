@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbZK3IVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbZK3IU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753464AbZK3IVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 03:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZK3IVN
+	id S1753555AbZK3IU3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 03:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZK3IU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 03:21:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33565 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753061AbZK3IVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 03:21:12 -0500
-Message-ID: <4B13802E.2090809@kernel.org>
-Date: Mon, 30 Nov 2009 00:19:58 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 30 Nov 2009 03:20:27 -0500
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:37818 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753486AbZK3IUY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 03:20:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=rnJ6SDl0fiQtEPIY34DVBT5J9miJIZBz1jsOawWt36xfb+3vmmDnNzrpmMlxalW0SH
+         FG936RmH2En8dxd+ma+XSTQOhHZRokjuFCyrF0Hle/1Suz8MU2IXcklAlHkK04soVM+S
+         wiSNd/WfBf9f+4XSr3k9w99r7faxUlZ7Llwq0=
+Date: Mon, 30 Nov 2009 10:20:32 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: host a git archive on an rsync server?
+Message-ID: <20091130082032.GS10640@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 0/9] pci: update pci bridge resource to get more big range
- for devices under it - v13
-References: <4ADEB601.8020200@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B10D286.4020607@kernel .org> <4B136FEE.7060305@jp.fujitsu.com> <4B1370D8.3070600@kernel.org> <4B13738E.2000202@jp.fujitsu.com>
-In-Reply-To: <4B13738E.2000202@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige wrote:
-> Yinghai Lu wrote:
->> Kenji Kaneshige wrote:
->>> My system doesn't boot (hangup) with the following error messages
->>> from Fusion MPT SAS driver. Those are different from the one
->>> captured with the previous version of your patches.
->>>
->>>
->>> Fusion MPT SAS Host driver 3.04.12
->>> mptsas 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
->>> mptbase: ioc0: Initiating bringup
->>> mptbase: ioc0: WARNING - Unexpected doorbell active!
->>> mptbase: ioc0: ERROR - Failed to come READY after reset!
->>> IocState=f0000000
->>> mptbase: ioc0: WARNING - ResetHistory bit failed to clear!
->>> mptbase: ioc0: ERROR - Diagnostic reset FAILED! (ffffffffh)
->>> mptbase: ioc0: WARNING - NOT READY WARNING!
->>> mptbase: ioc0: ERROR - didn't initialize properly! (-1)
->>> mptsas: probe of 0000:09:00.0 failed with error -1
->>> mptsas 0000:0a:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
->>> mptbase: ioc1: Initiating bringup
->>> mptbase: ioc1: WARNING - Unexpected doorbell active!
->>> mptbase: ioc1: ERROR - Failed to come READY after reset!
->>> IocState=f0000000
->>> mptbase: ioc1: WARNING - ResetHistory bit failed to clear!
->>> mptbase: ioc1: ERROR - Diagnostic reset FAILED! (ffffffffh)
->>> mptbase: ioc1: WARNING - NOT READY WARNING!
->>> mptbase: ioc1: ERROR - didn't initialize properly! (-1)
->>> mptsas: probe of 0000:0a:00.0 failed with error -1
->>>
->>>
->>> I'll send the whole boot log privately.
->>
->> thanks, at the same time please try "debug pci=try=1"
->>
-> 
-> I confirmed system boot up without errors by "pci=try=1".
-> I'll capture the bootlog with "debug" option and send it
-> to you soon.
+Could someone do a git clone and put it on an rsync server for me?
 
-Please also try "debug pci=try=7"
-it should work too.
+I am in Africa and it is going to take some months before I get 
+broadband.  The max bandwith I can currently buy at one time is 200MB.
+It's not enough to clone of the kernel.  With git you can't download
+200MB, disconnect and then download the remaining bits later, so
+that's why I need rsync.
 
-Thanks
+If I had the initial clone, I could pull in the changes every day
+no problem.  
 
-Yinghai
+It costs $.05 USD per MB so maybe the best way to save bandwidth
+is something like this:
+git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+mv linux-2.6/.git linux-2.6.gitdir
+tar cvvf linux-2.6.gitdir.tar linux-2.6.gitdir
+bzip2 linux-2.6.gitdir.tar
+
+I would be super grateful if anyone could do this.
+
+thanks,
+dan carpenter
