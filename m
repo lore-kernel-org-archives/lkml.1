@@ -1,116 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZK3UHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZK3UNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbZK3UHj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 15:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZK3UHh
+	id S1752062AbZK3UNi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 15:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbZK3UNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 15:07:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27310 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753057AbZK3UHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 15:07:36 -0500
-Message-ID: <4B1425FD.1030705@redhat.com>
-Date: Mon, 30 Nov 2009 18:07:25 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090902 Fedora/3.0-3.7.b3.el6 Thunderbird/3.0b3
+	Mon, 30 Nov 2009 15:13:38 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:46066 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751503AbZK3UNh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 15:13:37 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:from:date:message-id:
+	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=srXbOgplDgXP5VfD1eye8EzhN4+yPtkM/oqruwSeAQS0dWyu8aBuVJfuO3EgvXh7I
+	v/7UI25lWf1OapYQRWu5g==
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Stefan Lippers-Hollmann <s.L-H@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
-References: <4B103CE1.8050303@redhat.com> <200911272240.02930.s.L-H@gmx.de>
-In-Reply-To: <200911272240.02930.s.L-H@gmx.de>
+In-Reply-To: <1259549968-10369-4-git-send-email-vgoyal@redhat.com>
+References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> 
+	<1259549968-10369-4-git-send-email-vgoyal@redhat.com>
+From: Divyesh Shah <dpshah@google.com>
+Date: Tue, 1 Dec 2009 01:43:16 +0530
+Message-ID: <af41c7c40911301213j51bec79ev4d07c77b8de523f6@mail.gmail.com>
+Subject: Re: [PATCH 03/21] blkio: Implement macro to traverse each idle tree 
+	in group
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       czoccolo@gmail.com, Alan.Brunelle@hp.com
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, Nov 30, 2009 at 8:29 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> o Implement a macro to traverse each service tree in the group. This avoids
+>  usage of double for loop and special condition for idle tree 4 times.
+>
+> o Macro is little twisted because of special handling of idle class service
+>  tree.
+>
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/cfq-iosched.c |   35 +++++++++++++++++++++--------------
+>  1 files changed, 21 insertions(+), 14 deletions(-)
+>
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 3baa3f4..c73ff44 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -303,6 +303,15 @@ CFQ_CFQQ_FNS(deep);
+>  #define cfq_log(cfqd, fmt, args...)    \
+>        blk_add_trace_msg((cfqd)->queue, "cfq " fmt, ##args)
+>
+> +/* Traverses through cfq group service trees */
+> +#define for_each_cfqg_st(cfqg, i, j, st) \
+> +       for (i = 0; i < 3; i++) \
+> +               for (j = 0, st = i < 2 ? &cfqg->service_trees[i][j] : \
+> +                       &cfqg->service_tree_idle; \
+> +                       (i < 2 && j < 3) || (i == 2 && j < 1); \
+> +                       j++, st = i < 2 ? &cfqg->service_trees[i][j]: NULL) \
 
-Em 27-11-2009 19:40, Stefan Lippers-Hollmann escreveu:
-> Please consider cherry picking the following two patches from Hans 
-> Verkuil [1]:
-> - add the missing s2250-loader.h
-> - s2250 mutex patch	
-> 
-> or revert the patch which broke compiling go7007-usb (imho it would be 
-> better to re-add the 2 externs [2], than throwing away the needed mutex 
-> conversion, but it would be an option)
-> Commit:	fd9a40da1db372833e1af6397d2f6c94ceff3dad
-> 		V4L/DVB (12859): go7007: semaphore -> mutex conversion
-> 
-> or mark CONFIG_VIDEO_GO7007_USB_S2250_BOARD as BROKEN, as it fails to 
-> compile since the afforementioned patch was merged on september 19th (this 
-> is a 2.6.31 --> 2.6.32 regression) [2,3].
+Can this be simplified a bit by moving the service tree assignments
+out of the for statement? Also is it possible to use macros for the
+various service classes instead of 1, 2, 3?
 
-Please pull from:
-       	ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
-
-It is basically the same pull request as before with two more patches added,
-in order to fix the staging/g07007 compilation/work.
-
-The two new patches are:
-      staging/go7007: Fix compilation by re-adding the missing s2250-loader.h
-      staging/go7007: fix mutex function usage for s2250
-
-(I replaced the subjects for a more adequate one, to explicitly say that those are fixes)
-
-Thanks!
-Mauro
-
----
-
- MAINTAINERS                                |    7 +++++++
- drivers/media/common/ir-functions.c        |    2 +-
- drivers/media/dvb/dvb-usb/cxusb.c          |   10 +++++++++-
- drivers/media/dvb/siano/Kconfig            |    2 +-
- drivers/media/radio/radio-gemtek-pci.c     |    2 --
- drivers/media/video/davinci/vpif_display.c |    1 -
- drivers/media/video/em28xx/em28xx-cards.c  |    2 +-
- drivers/media/video/mx1_camera.c           |    1 +
- drivers/media/video/mx3_camera.c           |    1 +
- drivers/media/video/sh_mobile_ceu_camera.c |    7 +++++--
- drivers/media/video/soc_camera.c           |   17 ++++++++++++-----
- drivers/media/video/videobuf-dma-contig.c  |    1 +
- drivers/staging/go7007/s2250-board.c       |    4 ++--
- drivers/staging/go7007/s2250-loader.h      |   24 ++++++++++++++++++++++++
- 14 files changed, 65 insertions(+), 16 deletions(-)
- create mode 100644 drivers/staging/go7007/s2250-loader.h
-Alan Cox (1):
-      V4L/DVB (13530): Fix wrong parameter order in memset
-
-Antti Palosaari (1):
-      V4L/DVB (13366): em28xx: fix Reddo DVB-C USB TV Box GPIO
-
-Geert Uytterhoeven (1):
-      V4L/DVB (13412): SMS_SIANO_MDTV should depend on HAS_DMA
-
-Guennadi Liakhovetski (2):
-      V4L/DVB (13343): v4l: add more missing linux/sched.h includes
-      V4L/DVB (13344): soc-camera: properly initialise the device object when reusing
-
-Hans Verkuil (3):
-      V4L/DVB (13321): radio-gemtek-pci: fix double mutex_lock
-      V4L/DVB (13371): davinci: remove stray duplicate config pointer
-      V4L/DVB (13481): sh_mobile_ceu_camera: fix compile warning
-
-Kuninori Morimoto (1):
-      V4L/DVB (13345): soc-camera: sh_mobile_ceu_camera: call pm_runtime_disable
-
-Mauro Carvalho Chehab (1):
-      staging/go7007: Fix compilation by re-adding the missing s2250-loader.h
-
-Olivier Lorin (1):
-      V4L/DVB (13372a): MAINTAINERS: addition of gspca_gl860 driver
-
-Pete Eberlein (1):
-      V4L/DVB (13372): staging/go7007: fix mutex function usage for s2250
-
-Robert Lowery (1):
-      V4L/DVB (13436): cxusb: Fix hang on DViCO FusionHDTV DVB-T Dual Digital 4 (rev 1)
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
-
+> +
+> +
+>  static inline enum wl_prio_t cfqq_prio(struct cfq_queue *cfqq)
+>  {
+>        if (cfq_class_idle(cfqq))
+> @@ -565,6 +574,10 @@ cfq_choose_req(struct cfq_data *cfqd, struct request *rq1, struct request *rq2,
+>  */
+>  static struct cfq_queue *cfq_rb_first(struct cfq_rb_root *root)
+>  {
+> +       /* Service tree is empty */
+> +       if (!root->count)
+> +               return NULL;
+> +
+>        if (!root->left)
+>                root->left = rb_first(&root->rb);
+>
+> @@ -1592,18 +1605,14 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
+>        int dispatched = 0;
+>        int i, j;
+>        struct cfq_group *cfqg = &cfqd->root_group;
+> +       struct cfq_rb_root *st;
+>
+> -       for (i = 0; i < 2; ++i)
+> -               for (j = 0; j < 3; ++j)
+> -                       while ((cfqq = cfq_rb_first(&cfqg->service_trees[i][j]))
+> -                               != NULL)
+> -                               dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+> -
+> -       while ((cfqq = cfq_rb_first(&cfqg->service_tree_idle)) != NULL)
+> -               dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+> +       for_each_cfqg_st(cfqg, i, j, st) {
+> +               while ((cfqq = cfq_rb_first(st)) != NULL)
+> +                       dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+> +       }
+>
+>        cfq_slice_expired(cfqd, 0);
+> -
+>        BUG_ON(cfqd->busy_queues);
+>
+>        cfq_log(cfqd, "forced_dispatch=%d", dispatched);
+> @@ -2974,6 +2983,7 @@ static void *cfq_init_queue(struct request_queue *q)
+>        struct cfq_data *cfqd;
+>        int i, j;
+>        struct cfq_group *cfqg;
+> +       struct cfq_rb_root *st;
+>
+>        cfqd = kmalloc_node(sizeof(*cfqd), GFP_KERNEL | __GFP_ZERO, q->node);
+>        if (!cfqd)
+> @@ -2981,11 +2991,8 @@ static void *cfq_init_queue(struct request_queue *q)
+>
+>        /* Init root group */
+>        cfqg = &cfqd->root_group;
+> -
+> -       for (i = 0; i < 2; ++i)
+> -               for (j = 0; j < 3; ++j)
+> -                       cfqg->service_trees[i][j] = CFQ_RB_ROOT;
+> -       cfqg->service_tree_idle = CFQ_RB_ROOT;
+> +       for_each_cfqg_st(cfqg, i, j, st)
+> +               *st = CFQ_RB_ROOT;
+>
+>        /*
+>         * Not strictly needed (since RB_ROOT just clears the node and we
+> --
+> 1.6.2.5
+>
+>
