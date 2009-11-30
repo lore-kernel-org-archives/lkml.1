@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZK3Xzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZK3X6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbZK3Xzd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 18:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbZK3Xzc
+	id S1753956AbZK3X6h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 18:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZK3X6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 18:55:32 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38030 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752596AbZK3Xzb (ORCPT
+	Mon, 30 Nov 2009 18:58:35 -0500
+Received: from complete.lackof.org ([198.49.126.79]:53588 "EHLO
+	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753300AbZK3X6e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 18:55:31 -0500
-Date: Mon, 30 Nov 2009 23:57:39 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: bluetooth cf slow (10KB/sec), lots of dmesg spam
-Message-ID: <20091130235739.6dfa3d66@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091129164450.GA1438@ucw.cz>
-References: <20091129155801.GA1634@ucw.cz>
-	<20091130153915.0a6910e3@lxorguk.ukuu.org.uk>
-	<20091129164450.GA1438@ucw.cz>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 18:58:34 -0500
+Date: Mon, 30 Nov 2009 16:58:38 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Alex Williamson <alex.williamson@hp.com>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32
+	registers
+Message-ID: <20091130235838.GB24539@lackof.org>
+References: <20091130212228.7555.43533.stgit@debian.lart> <4B143AE5.7040702@kernel.org> <1259617381.8949.281.camel@8530w.home> <4B143E83.6020105@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B143E83.6020105@kernel.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ioctl(3, SNDCTL_TMR_START or TCSETS, {B921600 -opost -isig -icanon -echo ...}) = 0
+On Mon, Nov 30, 2009 at 01:52:03PM -0800, Yinghai Lu wrote:
+> if HW state that reg is only 32bit pref,
+> why should we care about the upper 32bit?
 
-It's certainly trying
-> 
-> ...set 921K using TCSETS/B921600... and kernel says ok, but ...
+pref_mem64 describes the resource, not the HW.
 
-Careful: termios is one of those "gotcha" ioctls. It returns 0 to say
-"stuff happened" and returns a termios struct which contains the results
-- which may not be what you requested.
+All the PCI specs define Type 1 configuration space with Prefetchable Memory
+register as 64-bit. Even if the Type 1 (PCI Bridge) HW ignores this register.
+See "7.5.3. Type 1 Configuration Space Header" of PCI EXPRESS BASE
+SPECIFICATION, REV. 1.1.
 
-So a set to an unsupported rate (too high for the chip clock) will
-produce a response of 0 and return the baud rate you actually got given.
+> looks like that your bridge device need quirk to clear that so called
+> upper 32bit for it.
 
-> ...we are still at 115200... I wonder if 921600 is the right speed to
-> use after all? Any other speeds I should try? (and can 400MHz arm
-> handle 921K on serial line?)
+Hrm...I don't think this is a quirk. PCI spec defines 64-bit PrefMem
+window register regardless of what type of resource we program into it.
 
-It's pushing it on an x86 with a 16550A. You've got about 14 character
-times of worst case latency permitted and 14 x 10 bits isn't a lot at
-that rate. Some of the clones have much bigger FIFOs so it may depend
-what you actually have.
-
-Alan
+hth,
+grant
