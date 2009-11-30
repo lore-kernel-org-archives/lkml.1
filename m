@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbZK3VrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZK3Vmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751649AbZK3VrN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:47:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZK3VrN
+	id S1753561AbZK3Vmm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:42:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbZK3Vml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:47:13 -0500
-Received: from gate.crashing.org ([63.228.1.57]:51741 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbZK3VrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:47:12 -0500
-Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
- IRQF_SHARED|IRQF_DISABLED)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Jamie Lokier <jamie@shareable.org>,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <alpine.LFD.2.00.0911302225050.24119@localhost.localdomain>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	 <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	 <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
-	 <1259589780.26472.18.camel@laptop>
-	 <alpine.LFD.2.00.0911301519120.24119@localhost.localdomain>
-	 <1259611151.2076.101.camel@pasglop>
-	 <alpine.LFD.2.00.0911302225050.24119@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 01 Dec 2009 08:42:11 +1100
-Message-ID: <1259617331.2076.146.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 16:42:41 -0500
+Received: from complete.lackof.org ([198.49.126.79]:54509 "EHLO
+	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbZK3Vmk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 16:42:40 -0500
+Date: Mon, 30 Nov 2009 14:42:43 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Alex Williamson <alex.williamson@hp.com>
+Cc: jbarnes@virtuousgeek.org, yinghai@kernel.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32
+	registers
+Message-ID: <20091130214243.GA24539@lackof.org>
+References: <20091130212228.7555.43533.stgit@debian.lart>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130212228.7555.43533.stgit@debian.lart>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 22:31 +0100, Thomas Gleixner wrote:
-
-> Are the perf events on power generally coming through the standard irq
-> handler code path and/or sensitive to local_irq_disable() ?
-
-They are in HW yes. On ppc64, we do soft-disabling, which mean that we
-can still get the perf events within a local_irq_disable() region
-provided we don't get another interrupt within that region that forces
-us to hard disable so it would make the problem less bad I suppose.
-
-> > I would suggest we timestamp the handlers in the core btw and warn
-> if
-> > they take too long so we get a chance to track down the bad guys.
+On Mon, Nov 30, 2009 at 02:22:53PM -0700, Alex Williamson wrote:
+> Prior to 1f82de10 we always initialized the upper 32bits of the
+> prefetchable memory window, regardless of the address range used.
+> Now we only touch it for a >32bit address, which means the upper32
+> registers remain whatever the BIOS initialized them too.
 > 
-> The hassle is to find a time which we think is appropriate as a
-> threshold which is of course depending on the cpu power of a
-> system. Also I wonder whether we'd need to make such a warning thing
-> aware of irq nesting.
+> It's valid for the BIOS to set the upper32 base/limit to
+> 0xffffffff/0x00000000, which makes us program prefetchable ranges
+> like 0xffffffffabc00000 - 0x00000000abc00000
+> 
+> Revert the chunk of 1f82de10 that made this conditional so we always
+> write the upper32 registers.
+> 
+> Signed-off-by: Alex Williamson <alex.williamson@hp.com>
+> ---
+> 
+>  drivers/pci/setup-bus.c |    8 +++-----
+>  1 files changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+> index cb1a027..127d759 100644
+> --- a/drivers/pci/setup-bus.c
+> +++ b/drivers/pci/setup-bus.c
+> @@ -221,11 +221,9 @@ static void pci_setup_bridge(struct pci_bus *bus)
+>  	}
+>  	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
+>  
+> -	if (pref_mem64) {
+> -		/* Set the upper 32 bits of PREF base & limit. */
+> -		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+> -		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+> -	}
 
-But if we always disable interrupts while running the handlers, we don't
-nest right ?
+Why not remove all references to pref_mem64?
+This was the only use AFAICT.
 
-Cheers,
-Ben.
+thanks,
+grant
 
+> +	/* Set the upper 32 bits of PREF base & limit. */
+> +	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+> +	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+>  
+>  	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+>  }
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
