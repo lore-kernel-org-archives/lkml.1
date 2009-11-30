@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbZK3VYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZK3VZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753064AbZK3VYR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZK3VYQ
+	id S1753387AbZK3VZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZK3VZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:24:16 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49054 "EHLO mx1.redhat.com"
+	Mon, 30 Nov 2009 16:25:20 -0500
+Received: from www.tglx.de ([62.245.132.106]:59003 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752362AbZK3VYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:24:16 -0500
-Date: Mon, 30 Nov 2009 16:23:43 -0500
-From: Jason Baron <jbaron@redhat.com>
-Message-Id: <200911302123.nAULNhaC019844@int-mx02.intmail.prod.int.phx2.redhat.com>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, mhiramat@redhat.com,
-       wcohen@redhat.com, rostedt@goodmis.org, fweisbec@gmail.com,
-       mathieu.desnoyers@polymtl.ca
-Subject: [PATCH] tracing: add DEFINE_EVENT(), DEFINE_SINGLE_EVENT() support to docbook
+	id S1752522AbZK3VZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 16:25:19 -0500
+Date: Mon, 30 Nov 2009 22:23:46 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
+ IRQF_SHARED|IRQF_DISABLED)
+In-Reply-To: <20091130195129.GA19172@pengutronix.de>
+Message-ID: <alpine.LFD.2.00.0911302216030.24119@localhost.localdomain>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain> <20091130195129.GA19172@pengutronix.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1107247360-1259616228=:24119"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The introduction of the new 'DECLARE_EVENT_CLASS()' obviates the need for the
-'TRACE_EVENT()' macro in some cases. Thus, docbook style comments that used
-to live with 'TRACE_EVENT()' are now moved to 'DEFINE_EVENT()'. Thus, we need
-to make the docbook system understand the new 'DEFINE_EVENT()' macro. In
-addition I've tried to futureproof the patch, by also adding support for
-'DEFINE_SINGLE_EVENT()', since there has been discussion about renaming:
-TRACE_EVENT() -> DEFINE_SINGLE_EVENT().
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Without this patch the tracepoint docbook fails to build.
+--8323328-1107247360-1259616228=:24119
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-I've verified that this patch correctly builds the tracepoint docbook which
-currently covers signals, and irqs.
+On Mon, 30 Nov 2009, Uwe Kleine-König wrote:
+> I think there is
+> 
+>  3) you can only benefit from decent priority hardware if irqs are
+>     processed while irqs are enabled.
+> 
+> I think 
+> 
+> 	git grep handle_fasteoi_irq
+> 
+> gives an overview here: some hits in arch/powerpc, arch/sparc and
+> arch/x86/kernel/apic/io_apic.c.  (There is handle_prio_irq in
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
----
+No. That handler is not an indicator for prio hardware actively used
+in the sense of allowing higher prio interrupts to interrupt a current
+running lower priority one. It can be used when the irq controller
+does not fire the interrupt again before the eoi acknowledge has been
+done.
 
- scripts/kernel-doc |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+Thanks,
 
-diff --git a/scripts/kernel-doc b/scripts/kernel-doc
-index ea9f8a5..d1746be 100755
---- a/scripts/kernel-doc
-+++ b/scripts/kernel-doc
-@@ -1855,6 +1855,13 @@ sub tracepoint_munge($) {
- 	if($prototype =~ m/TRACE_EVENT\((.*?),/) {
- 		$tracepointname = $1;
- 	}
-+	if($prototype =~ m/DEFINE_SINGLE_EVENT\((.*?),/) {
-+		$tracepointname = $1;
-+	}
-+	if($prototype =~ m/DEFINE_EVENT\((.*?),(.*?),/) {
-+		$tracepointname = $2;
-+	}
-+	$tracepointname =~ s/^\s+//; #strip leading whitespace
- 	if($prototype =~ m/TP_PROTO\((.*?)\)/) {
- 		$tracepointargs = $1;
- 	}
-@@ -1920,7 +1927,9 @@ sub process_state3_function($$) {
- 	if ($prototype =~ /SYSCALL_DEFINE/) {
- 		syscall_munge();
- 	}
--	if ($prototype =~ /TRACE_EVENT/) {
-+	if ($prototype =~ /TRACE_EVENT/ || $prototype =~ /DEFINE_EVENT/ ||
-+	    $prototype =~ /DEFINE_SINGLE_EVENT/)
-+	{
- 		tracepoint_munge($file);
- 	}
- 	dump_function($prototype, $file);
--- 
-1.6.5.1
-
+	tglx
+--8323328-1107247360-1259616228=:24119--
