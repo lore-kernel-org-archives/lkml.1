@@ -1,84 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbZK3VAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753057AbZK3VVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbZK3VAJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:00:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZK3VAH
+	id S1753057AbZK3VVt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:21:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZK3VVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:00:07 -0500
-Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:48603 "HELO
-	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752688AbZK3VAE (ORCPT
+	Mon, 30 Nov 2009 16:21:48 -0500
+Received: from 207-172-212-176.c3-0.smr-ubr2.sbo-smr.ma.static.cable.rcn.com ([207.172.212.176]:58130
+	"EHLO torpor.static.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbZK3VVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:00:04 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Nov 2009 16:00:04 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=cVL7ZjoOhfWoyQHTWiRlyJmah+GyVkkBCYeJHWkEnUv297MhFiIIecnzShsHdVY9FNbxCYbH5uk38/CS3EOJwEXRjo7c+X6n9SjmUX3L51cMn/4HVySHc8vNMtd9bltkmHbmGi35e+QKG1TrGfl1NegHtMSl27+6Rpef1W6gdNc=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: Y8a02PsVM1mzGBSKgJkm32CO9etXY.3H1r_yAAOMldHfnWLwCgp3bHMBdvhUTfzVEROgAJ347OcHNm4a3ilYGhVJZraUSzpf_7jTWfqWkff3cwEFgayA9AupIq4Ga0jvDobw2KF1jYyKbpbjgb.83n73yH0Hw4psjqFMMhyyVe2JCGWl2U37eK2W4MibPUz6K0ZhLceLlRTvBseQ4QBiZxQ0D_oQNwgWjHyMI5m4sgx33h_s_gwcwlvHfTvIzOo7
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about IRQF_SHARED|IRQF_DISABLED)
-Date: Mon, 30 Nov 2009 12:53:28 -0800
-User-Agent: KMail/1.9.10
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       John Stultz <johnstul@us.ibm.com>, Nicolas Pitre <nico@marvell.com>,
-       Jamie Lokier <jamie@shareable.org>, LKML <linux-kernel@vger.kernel.org>,
-       Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-arm-kernel@lists.infradead.org
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <20091130144702.14bea0ee@lxorguk.ukuu.org.uk> <20091130150100.GB7028@n2100.arm.linux.org.uk>
-In-Reply-To: <20091130150100.GB7028@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200911301253.29325.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 16:21:48 -0500
+X-Greylist: delayed 1605 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Nov 2009 16:21:47 EST
+From: James Y Knight <foom@fuhm.net>
+Content-Type: multipart/mixed; boundary=Apple-Mail-346--13056191
+Subject: writev data loss bug in (at least) 2.6.31 and 2.6.32pre8 x86-64
+Date: Mon, 30 Nov 2009 15:55:01 -0500
+Message-Id: <1F5364AE-321E-44E9-8B0D-B8E17597A0DA@fuhm.net>
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0 (Apple Message framework v1077)
+X-Mailer: Apple Mail (2.1077)
+X-Spam-Score: -10.0
+X-Spam-Report: ALL_TRUSTED=-10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 November 2009, Russell King - ARM Linux wrote:
-> On Mon, Nov 30, 2009 at 02:47:02PM +0000, Alan Cox wrote:
-> > SHARED|DISABLED ought to WARN_ON() and if that doesn't motivate people
-> > then return -EINVAL.
-> 
-> That is an impossibility.  There is hardware out there (AT91) where
-> the timer interrupt is shared with other peripherals, and you end
-> up with a mixture of irqs-disabled and irqs-enabled handlers sharing
-> the same interrupt.
 
-For the record:  AT91 isn't restricted to the system timers hooked
-up on irq 0 ... there's also drivers/clocksource/tcb_clksrc.c (not
-at the same hardware priority).
+--Apple-Mail-346--13056191
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=us-ascii
 
-But to concur, this is indeed messy.  Both the system timer and
-the serial console generally share the same IRQ; both are very
-timing-sensitive.  I've seen console character dropouts after
-tweaking timer IRQ handling.  And I've never convinced myself
-that Linux handles the hardware IRQ priority on those chips as
-well as it could.  
+This test case fails in 2.6.23-2.6.25, because of the bug fixed in =
+864f24395c72b6a6c48d13f409f986dc71a5cf4a, and now again in at least =
+2.6.31 and 2.6.32pre8 because of a *different* bug. This test *does not* =
+fail 2.6.26. I have not tested anything between 2.6.26 and 2.6.31.
+
+The bug in 2.6.31 is definitely not the same bug as 2.6.23's. This time, =
+the zero'd area of the file doesn't show up immediately upon writing the =
+file. Instead, the kernel waits to mangle the file until it has to flush =
+the buffer to disk. *THEN* it zeros out parts of the file.
+
+So, after writing out the new file with writev, and checking the md5sum =
+(which is correct), this test case asks the kernel to flush the cache =
+for that file, and then checks the md5sum again. ONLY THEN is the file =
+corrupted. That is, I won't hesitate to say *incredibly evil* behavior: =
+it took me quite some time to figure out WTH was going wrong with my =
+program before determining it was a kernel bug.
+
+This test case is distilled from an actual application which doesn't =
+even intentionally use writev: it just uses C++'s ofstream class to =
+write data to a file. Unfortunately, that class smart and uses writev =
+under the covers. Unfortunately, I guess nobody ever tests linux writev =
+behavior, since it's broken _so_much_of_the_time_. I really am quite =
+astounded to see such a bad track record for such a fundamental core =
+system call....
+
+My /tmp is an ext3 filesystem, in case that matters.
+
+Here is the output I get from running the program on a broken kernel:
+Compiling test program
+Making original file /tmp/writevtest.yzafRmFCOR/test.in
+..checking original file's md5sum.
+Running test to copy to /tmp/writevtest.yzafRmFCOR/test.out
+..checking new file's md5sum.
+Attempting to drop the page cache for this file...
+..checking new file's md5sum again.
+MD5SUM MISMATCH(/tmp/writevtest.yzafRmFCOR/test.out):
+  wanted 2fdd6851b32ae931637d4845c037b550
+  got    67e5e2d6d4435e8095335d86a3d3e993
 
 
-> My point is that if we outlaw irqs-disabled shared interrupts, it puts
-> Atmel AT91 support into immediate difficulties.
+(please CC responses to me, I'm not subscribed to this list).
 
-ISTR that those TCB modules don't share IRQs with other peripherals.
+Thanks,
+James
 
-Also, that Linux doesn't use them for much else.  I've yet to see a
-three-phase motor driver using the TCB's PWM capabilities, for example.
 
-- Dave
+--Apple-Mail-346--13056191
+Content-Disposition: attachment;
+	filename=run-writev-test.sh
+Content-Type: application/octet-stream;
+	name="run-writev-test.sh"
+Content-Transfer-Encoding: 7bit
+
+#!/bin/sh
+
+set -e
+
+MYDIR="$(dirname $0)"
+
+cd "$MYDIR"
+echo "Compiling test program"
+gcc -o writev-test writev-test.c
+
+test_md5 () {
+    local MD5
+    MD5=$(md5sum $1|cut -d" " -f1)
+    if [[ "$MD5" != $2 ]]; then
+	printf "MD5SUM MISMATCH($1):\n  wanted $2\n  got    $MD5\n"
+	exit 1
+    fi
+}
+
+EXPECTED_MD5=2fdd6851b32ae931637d4845c037b550
+DIR=$(mktemp -d -t writevtest.XXXXXXXXXX)
+echo "Making original file $DIR/test.in"
+dd if=/dev/zero bs=1k count=1k  2>/dev/null | tr '\000' '\377' > $DIR/test.in
+echo "..checking original file's md5sum."
+test_md5 $DIR/test.in $EXPECTED_MD5
+echo "Running test to copy to $DIR/test.out"
+./writev-test copy $DIR/test.in $DIR/test.out
+echo "..checking new file's md5sum."
+test_md5 $DIR/test.out $EXPECTED_MD5
+
+echo "Attempting to drop the page cache for this file..."
+./writev-test drop $DIR/test.out
+#sync; sudo /bin/sh -c "echo 3 > /proc/sys/vm/drop_caches"
+
+echo "..checking new file's md5sum again."
+test_md5 $DIR/test.out $EXPECTED_MD5
+
+--Apple-Mail-346--13056191
+Content-Disposition: attachment;
+	filename=writev-test.c
+Content-Type: application/octet-stream;
+	name="writev-test.c"
+Content-Transfer-Encoding: 7bit
+
+#include <sys/uio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <string.h>
+
+void exit_error(char *str) {
+    fputs(str, stderr);
+    fputc('\n', stderr);
+    exit(1);
+}
+
+void exit_perror(char *str) {
+    perror(str);
+    exit(1);
+}
+
+int main(int argc, char **argv) {
+    int in_fd, out_fd;
+    struct stat info;
+    void *base_addr;
+    char buf[600];
+    struct iovec iov[2];
+    int mode = 0;
+
+    if (argc < 3)
+        exit_error("Usage: writev-test copy infile outfile\n"
+                   "       writev-test drop infile\n");
+
+    if (!strcmp(argv[1], "copy")) {
+        if (argc < 4)
+            exit_error("Missing outfile argument\n");
+        mode = 1;
+    }
+    else if (!strcmp(argv[1], "drop"))
+        mode = 0;
+    else
+        exit_error("Unknown mode\n");
+
+    in_fd = open(argv[2], O_RDONLY);
+    if (in_fd < 0)
+        exit_perror("open input");
+
+    if (fstat(in_fd, &info) < 0)
+        exit_perror("fstat");
+
+    if (mode == 1) {
+
+        base_addr = mmap(0, info.st_size, PROT_READ, MAP_SHARED, in_fd, 0);
+        if (base_addr == MAP_FAILED)
+            perror("mmap");
+
+        if (read(in_fd, buf, 600) < 600)
+            exit_perror("read");
+
+        out_fd = open(argv[3], O_WRONLY|O_TRUNC|O_CREAT, 0666);
+        if (out_fd < 0)
+            exit_perror("open output");
+
+        iov[0].iov_base = buf;
+        iov[0].iov_len = 600;
+        iov[1].iov_base = base_addr + 600;
+        iov[1].iov_len = info.st_size - 600;
+        if (writev(out_fd, iov, 2) < info.st_size)
+            exit_perror("writev");
+
+    } else {
+        if (fsync(in_fd) < 0)
+            perror("fsync");
+        if (posix_fadvise(in_fd, 0, info.st_size, POSIX_FADV_DONTNEED) != 0)
+            perror("posix_fadvise");
+    }
+    return 0;
+}
+
+--Apple-Mail-346--13056191--
