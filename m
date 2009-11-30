@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbZK3Mq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZK3MHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753357AbZK3Mq2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 07:46:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZK3MqU
+	id S1753071AbZK3MHK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 07:07:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZK3MHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 07:46:20 -0500
-Received: from ns.gsystems.sk ([62.176.172.50]:48587 "EHLO www.gsystems.sk"
+	Mon, 30 Nov 2009 07:07:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55139 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753105AbZK3MqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 07:46:17 -0500
-To: Oliver Neukum <oliver@neukum.org>
-Subject: [PATCH 2/3] [resend] usbtouchscreen: find input endpoint automatically
-Cc: linux-usb@vger.kernel.org, daniel.ritz@gmx.ch,
-       linux-kernel@vger.kernel.org
-Content-Disposition: inline
-From: Ondrej Zary <zary@gsystems.sk>
-Date: Mon, 30 Nov 2009 13:06:55 +0100
+	id S1752230AbZK3MHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 07:07:09 -0500
+Date: Mon, 30 Nov 2009 13:07:05 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+Message-ID: <20091130120705.GD30235@random.random>
+References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
+ <Pine.LNX.4.64.0911241640590.25288@sister.anvils>
+ <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200911301306.56545.zary@gsystems.sk>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Find input enpoint automatically instead of assuming that the first one is OK.
-This is needed for devices with multiple endpoints such as iNexio where the
-first endpoint might be output.
+On Mon, Nov 30, 2009 at 09:46:16AM +0900, KAMEZAWA Hiroyuki wrote:
+> Hmm. I'm not sure how many pages are shared in a system but
+> can't we add some threshold for avoidng too much scan against shared pages ?
+> (in vmscan.c)
+> like..
+>       
+>        if (page_mapcount(page) > (XXXX >> scan_priority))
+> 		return 1;
+> 
+> I saw terrible slow downs in shmem-swap-out in old RHELs (at user support).
+> (Added kosaki to CC.)
 
+If those ptes are all old there's no reason to keep those pages in ram
+more... I don't like those magic number levels. If you saw slowdowns
+it'd be interesting to get more information on those workloads. I
+never seen swap out workloads in real life that are not 99% I/O
+dominated, there's nothing that loads the cpu anything close to 100%,
+so nothing that a magic check like above could affect. Besides tmpfs
+unmap methods are different from ksm and anon pages unmap methods, and
+certain locks are coarser if there's userland taking i_mmap_lock for
+I/O during paging.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> After this patch, the number of shared swappable page will be unlimited.
 
---- linux-source-2.6.31/drivers/input/touchscreen/usbtouchscreen.c.1	2009-11-23 10:30:14.000000000 +0100
-+++ linux-source-2.6.31/drivers/input/touchscreen/usbtouchscreen.c	2009-11-23 10:57:14.000000000 +0100
-@@ -882,17 +882,25 @@ static int usbtouch_probe(struct usb_int
- 	struct usbtouch_usb *usbtouch;
- 	struct input_dev *input_dev;
- 	struct usb_host_interface *interface;
--	struct usb_endpoint_descriptor *endpoint;
-+	struct usb_endpoint_descriptor *endpoint = NULL;
- 	struct usb_device *udev = interface_to_usbdev(intf);
- 	struct usbtouch_device_info *type;
- 	int err = -ENOMEM;
-+	int i;
- 
- 	/* some devices are ignored */
- 	if (id->driver_info == DEVTYPE_IGNORE)
- 		return -ENODEV;
- 
- 	interface = intf->cur_altsetting;
--	endpoint = &interface->endpoint[0].desc;
-+	/* find first input endpoint */
-+	for (i = 0; i < interface->desc.bNumEndpoints; i++)
-+		if (usb_endpoint_dir_in(&interface->endpoint[i].desc)) {
-+			endpoint = &interface->endpoint[i].desc;
-+			break;
-+		}
-+	if (!endpoint)
-+		return -ENXIO;
- 
- 	usbtouch = kzalloc(sizeof(struct usbtouch_usb), GFP_KERNEL);
- 	input_dev = input_allocate_device();
-
-
--- 
-Ondrej Zary
+It is unlimited even without ksm, tmpfs may be limited but it's not
+like we stop fork from sharing at some point and anon_vma is less
+finegrined than rmap_item and it can also include in its list vmas not
+mapping the page in presence of mremap/munmap partial truncation of
+the copied/shared vma.
