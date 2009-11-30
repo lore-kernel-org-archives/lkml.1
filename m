@@ -1,106 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbZK3N5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZK3N6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbZK3N5F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 08:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZK3N5E
+	id S1753575AbZK3N6m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 08:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZK3N6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 08:57:04 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49921 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752802AbZK3N5C (ORCPT
+	Mon, 30 Nov 2009 08:58:40 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:56452 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753464AbZK3N6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 08:57:02 -0500
-Date: Mon, 30 Nov 2009 11:57:01 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Mike Isely <isely@isely.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org
-Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
-Message-ID: <20091130115701.40c92b2c@pedra>
-In-Reply-To: <alpine.DEB.1.10.0911281425240.5482@ivanova.isely.net>
-References: <4B103CE1.8050303@redhat.com>
-	<200911272240.02930.s.L-H@gmx.de>
-	<200911280357.58116.hverkuil@xs4all.nl>
-	<alpine.DEB.1.10.0911281425240.5482@ivanova.isely.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Mon, 30 Nov 2009 08:58:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=wbtAH8/tZai2x3YGT7WxAYK0XXDnlbjbsgMz1KonSbx9/O8YH94zSui/bpMdmES1r9
+         DiqZPII94TmzudUN2HSayhCTsJHs7DEIVNSmvoF9hkkBB6EYoJ9n8x1pfEoJpfeCSPnj
+         gxCsR1jF5mTvqV7pKTFxLz7D3jCd13t8S7xew=
+Subject: Re: XD/smartmedia - how to implement it right?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alex Dubov <oakad@yahoo.com>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, arnd@arndb.de,
+       tglx@linutonix.de
+In-Reply-To: <109361.10237.qm@web37604.mail.mud.yahoo.com>
+References: <109361.10237.qm@web37604.mail.mud.yahoo.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Nov 2009 15:58:37 +0200
+Message-ID: <1259589517.13049.31.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sat, 28 Nov 2009 14:33:30 -0600 (CST)
-Mike Isely <isely@isely.net> escreveu:
-
-> On Sat, 28 Nov 2009, Hans Verkuil wrote:
+On Mon, 2009-11-30 at 04:35 -0800, Alex Dubov wrote: 
 > 
-> > On Friday 27 November 2009 22:40:01 Stefan Lippers-Hollmann wrote:
-> > > Hi
+> --- On Sat, 11/28/09, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> 
+> > From: Maxim Levitsky <maximlevitsky@gmail.com>
+> > Subject: Re: XD/smartmedia - how to implement it right?
+> > To: "Alex Dubov" <oakad@yahoo.com>
+> > Cc: "Jörn Engel" <joern@logfs.org>, "linux-kernel" <linux-kernel@vger.kernel.org>, arnd@arndb.de, tglx@linutonix.de
+> > Date: Saturday, November 28, 2009, 2:36 AM
+> > On Fri, 2009-11-27 at 23:22 -0800,
+> > Alex Dubov wrote: 
+> > > > 
+> > > > The "mtd uses blocking calls" argument I can
+> > help
+> > > > with.  For some other
+> > > > project I've added non-blocking calls to mtd[1].
+> > > > 
+> > > > Biggest problems I see are a) the userspace
+> > interface and
+> > > > b) allowing
+> > > > both raw flash access through MTD and block
+> > device access
+> > > > with an FTL.
+> > > > 
+> > > > [1] http://lists.infradead.org/pipermail/linux-mtd/2009-November/028065.html
+> > > > 
+> > > > Jörn
 > > > 
-> > > On Friday 27 November 2009, Mauro Carvalho Chehab wrote:
-> > > > Hi Linus,
-> > > > 
-> > > > Please pull from:
-> > > >         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
-> > > > 
-> > > > For the following drivers and building fixes:
-> > > > 
-> > > >    - radio-gemtek-pci: fix double mutex_lock
-> > > >    - v4l: add more missing linux/sched.h includes
-> > > >    - soc-camera: properly initialise the device object when reusing
-> > > >    - soc-camera: sh_mobile_ceu_camera: call pm_runtime_disable
-> > > >    - em28xx: fix Reddo DVB-C USB TV Box GPIO
-> > > >    - davinci: remove stray duplicate config pointer
-> > > >    - SMS_SIANO_MDTV should depend on HAS_DMA
-> > > >    - cxusb: Fix hang on DViCO FusionHDTV DVB-T Dual Digital 4 (rev 1)
-> > > >    - sh_mobile_ceu_camera: fix compile warning
-> > > >    - Fix wrong parameter order in memset
-> > > [...]
+> > > I actually tried several approaches to this problem
+> > and I think, I have a good idea about how to create a fully
+> > asynchronous mtd driver, which can handle different device
+> > models. Unfortunately, I had other commitments so I couldn't
+> > advance my mtd stuff.
 > > > 
-> > > Please consider cherry picking the following two patches from Hans 
-> > > Verkuil [1]:
-> > > - add the missing s2250-loader.h
-> > > - s2250 mutex patch	
+> > > Recently I was going to go back to it, but then I was
+> > asked to implement some additional functionality in rapidio
+> > subsystem, which I'll have to take care of first.
 > > 
-> > Good catch. Mauro, can you please add these two as well for 2.6.32? I'm sure
-> > I marked these two as high-prio patches. This staging driver is actively
-> > being used and developed so this regression should be fixed.
+> > Hi, 
+> > 
+> > First of all, thank you very much for your contributions.
+> > Could you explain, why we need an asynchronous mtd driver?
+> 
+> Because it's the future. ;-)
+Although I like the xD format, it has no future,
+Everyone migrated to SD now.
+
+Reasons are very simple:
+
+1 - xD hardcodes device sizes, thus if somebody makes say 8GB card, many
+readers couldn't use it.
+I know that windows driver I was dealing with supports sizes up to 2GB
+
+
+2 - xD is a nand card, but with 8-bit bus.
+Newer nand chips seem to favor 16 bit bus or more.
+Obviously, if they were to implement that it would be physically
+incompatible.
+
+3 - embedded cpus are cheap dirt now, and allow to use their, always
+'better' FTL strategy, and also hide inner working of the chip.
+
+Memstick pro is also today sort of SD card, but for Sony its their first
+priority to keep proprietary standards even if inferior.
+I won't be surprised though if this format dies too.
+
+Could you explain why we need an asynchronous interface?
+I understand that filesystem/page cache/block cache/and block layer,
+already provide caches and asynchronous behavior.
+
+Only maybe reading several pages at time, and writing could benefit, but
+many devices don't support that feature.
+And again, bulk of the time will be spend writing, and only saving will
+be from queuing more work to the device.
+
+
+
+> 
+> > 
+> > Also, as I understand the command interface more and more,
+> > it seems that
+> > 'magically' xD card had same interface as standard NAND
+> > flash chip.
+> > 
+> > I think I can implement the driver for each controller just
+> > like an nand
+> > chip driver.
 > > 
 > 
-> Mauro:
-> 
-> I had also posted up two high priority pvrusb2 patches that should 
-> really be cherry-picked for 2.6.32.  You've already pulled them into 
-> v4l/dvb and I did mark them as high priority at the time.
-> 
-> These patches enable use of FX2 microcontroller firmware that is 16KB in 
-> size.  Hauppauge is no longer shipping 8KB firmware for HVR-1950 and 
-> HVR-1900 and without these changes then those devices won't work AT ALL 
-> in kernel 2.6.32.
-> 
-> You can find these within the v4l-dvb Mercurial repository here:
-> 
-> Changeset 13495:87c3853fe2b3 
-> Subject: pvrusb2: Support 16KB FX2 firmware
-> http://linuxtv.org/hg/v4l-dvb/rev/87c3853fe2b3
-> 
-> Changeset 13500:d4c418d4b25c
-> Subject: pvrusb2: Fix lingering 16KB FX2 Firmware issues
-> http://linuxtv.org/hg/v4l-dvb/rev/d4c418d4b25c
-> 
-> I do not believe these patches have any ordering dependencies with other 
-> patches, though between the two the second one technically should come 
-> after the first.
+> xD spec, first of all, is about flash-based ordinary block devices.
+> All the hard problems are in good r/w FTL implementation, which is
+> currently mostly absent from the MTD.
 
-There are. Picking just those patches broke compilation.
+Its true, and I will write an r/w FTL for xD devices, in same manner as
+existing FTL implementations.
+It works above the mtd layer btw.
 
-Also, it seemed too late for adding support for newer boards/firmware when Linus
-is about to release a kernel.
 
-Cheers,
-Mauro
+
+Best regards,
+Maxim Levitsky
+
+
