@@ -1,109 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbZK3Anp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752284AbZK3ApC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752477AbZK3Anp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 19:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZK3Anp
+	id S1752284AbZK3ApC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 19:45:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZK3ApB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 19:43:45 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:41893 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751622AbZK3Ano (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 19:43:44 -0500
-X-Sasl-enc: DavGuAZoZrQmBd67byu0zWMCZnclhU+KbFmeYxrft6Pp 1259541830
-Message-ID: <4B1314F8.10500@imap.cc>
-Date: Mon, 30 Nov 2009 01:42:32 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       isdn@linux-pingi.de, mac@melware.de
-Subject: Re: [PATCH] proc_fops: convert drivers/isdn/ to seq_file
-References: <20091123015625.GA32088@x200.localdomain> <20091124162541.03e7e375.akpm@linux-foundation.org> <20091125045914.GA3528@x200.malnet.ru>
-In-Reply-To: <20091125045914.GA3528@x200.malnet.ru>
-X-Enigmail-Version: 0.97a
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCADF8FF118A91A6E08B1117A"
+	Sun, 29 Nov 2009 19:45:01 -0500
+Received: from gate.crashing.org ([63.228.1.57]:32783 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751709AbZK3ApA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 19:45:00 -0500
+Subject: Re: powerpc: syscall_dotrace() && retcode (Was: powerpc: fork &&
+ stepping)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Veaceslav Falico <vfalico@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+In-Reply-To: <1259536501.2076.39.camel@pasglop>
+References: <20091125154052.GA6734@redhat.com>
+	 <20091126075335.GA18508@in.ibm.com> <20091126145051.GB4382@redhat.com>
+	 <20091126172524.GA14768@redhat.com>
+	 <20091126182226.GF12355@darkmag.usersys.redhat.com>
+	 <20091126202312.GA21945@redhat.com>
+	 <19214.63688.860929.962005@cargo.ozlabs.ibm.com>
+	 <20091126223703.GA28556@redhat.com>
+	 <20091127174627.GB26193@darkmag.usersys.redhat.com>
+	 <20091128073049.GD23108@in.ibm.com>  <20091129210716.GA19205@redhat.com>
+	 <1259536501.2076.39.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Nov 2009 11:43:21 +1100
+Message-ID: <1259541801.2076.44.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCADF8FF118A91A6E08B1117A
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-11-30 at 10:15 +1100, Benjamin Herrenschmidt wrote:
 
-Am 25.11.2009 05:59 schrieb Alexey Dobriyan:
-> --- a/drivers/isdn/gigaset/capi.c
-> +++ b/drivers/isdn/gigaset/capi.c
-> @@ -2106,35 +2106,22 @@ static char *gigaset_procinfo(struct capi_ctr *=
-ctr)
->  	return ctr->name;	/* ToDo: more? */
->  }
-> =20
-> -/**
-> - * gigaset_ctr_read_proc() - build controller proc file entry
-> - * @page:	buffer of PAGE_SIZE bytes for receiving the entry.
-> - * @start:	unused.
-> - * @off:	unused.
-> - * @count:	unused.
-> - * @eof:	unused.
-> - * @ctr:	controller descriptor structure.
-> - *
-> - * Return value: length of generated entry
-> - */
-> -static int gigaset_ctr_read_proc(char *page, char **start, off_t off,
-> -			  int count, int *eof, struct capi_ctr *ctr)
-> +static int gigaset_proc_show(struct seq_file *m, void *v)
+> Yes, the asm should be changed. I suppose we could check if the result
+> of do_syscall_trace_enter is negative, and if it is, branch to the exit
+> path using r3 as the error code. Would that be ok ?
+> 
+> Something like this:
 
-I would prefer that, instead of throwing the kerneldoc comment away,
-you adapted it to the new function. Specifically, I would like to
-know what the second argument "void *v" is for.
+Note however that there's a trace exit too and that's normally the right
+place to alter the result don't you think ?
 
->  {
-> +	struct capi_ctr *ctr =3D m->private;
+Cheers,
+Ben.
 
-See below.
-
-> +static int gigaset_proc_open(struct inode *inode, struct file *file)
-> +{
-> +	return single_open(file, gigaset_proc_show, PDE(inode)->data);
-
-I'd like to understand how that works.
-
-According to Documentation/filesystems/seq_file.txt, the value of
-the last argument will be passed to the proc_show function in the
-private field of the seq_file structure. Your gigaset_proc_show()
-function assumes that this will be the capi_ctr pointer for the
-device.
-
-So what is PDE(inode)->data and where does it get set to the
-capi_ctr pointer for the device?
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index 1175a85..7a88c88 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -419,6 +419,9 @@ syscall_dotrace:
+>  	stw	r0,_TRAP(r1)
+>  	addi	r3,r1,STACK_FRAME_OVERHEAD
+>  	bl	do_syscall_trace_enter
+> +	cmpwi	cr0,r3,0
+> +	blt	ret_from_syscall
+> +
+>  	/*
+>  	 * Restore argument registers possibly just changed.
+>  	 * We use the return value of do_syscall_trace_enter
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 9763267..ec709a7 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -240,6 +240,9 @@ syscall_dotrace:
+>  	bl	.save_nvgprs
+>  	addi	r3,r1,STACK_FRAME_OVERHEAD
+>  	bl	.do_syscall_trace_enter
+> +	cmpdi	cr0,r3,0
+> +	blt	syscall_exit
+> +
+>  	/*
+>  	 * Restore argument registers possibly just changed.
+>  	 * We use the return value of do_syscall_trace_enter
+> 
+> 
+> Cheers,
+> Ben.
 
 
---------------enigCADF8FF118A91A6E08B1117A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAksTFQQACgkQQ3+did9BuFsuawCeL25ok+9FZWzZLBqMMRsm99G4
-BJoAn1QaC0PR/P563/6I5oIV1E8EllvP
-=d+xI
------END PGP SIGNATURE-----
-
---------------enigCADF8FF118A91A6E08B1117A--
