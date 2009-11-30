@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZK3QJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZK3QKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZK3QJq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 11:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZK3QJp
+	id S1752960AbZK3QKG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 11:10:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZK3QKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 11:09:45 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:60662 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbZK3QJp (ORCPT
+	Mon, 30 Nov 2009 11:10:04 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:38324 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752359AbZK3QKC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 11:09:45 -0500
-Message-ID: <4B13EE3D.4030704@oracle.com>
-Date: Mon, 30 Nov 2009 08:09:33 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 30 Nov 2009 11:10:02 -0500
+Date: Mon, 30 Nov 2009 10:09:39 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Tim Blechmann <tim@klingt.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       davem@davemloft.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 3/5] slab.c: remove branch hint
+In-Reply-To: <4B138AC2.7080008@cs.helsinki.fi>
+Message-ID: <alpine.DEB.2.00.0911300926150.14098@router.home>
+References: <cover.1259059549.git.tim@klingt.org> <4B0BBBA8.2090604@klingt.org>  <20091124112058.GA23765@elte.hu> <84144f020911240328l3d36d347o6c91b2b1a0f50f2a@mail.gmail.com> <4B125CC2.7000202@klingt.org> <4B138AC2.7080008@cs.helsinki.fi>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Alan Cox <alan@linux.intel.com>
-CC: greg@kroah.com, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] staging: fix a silly typo
-References: <20091130132432.27394.48685.stgit@localhost.localdomain>
-In-Reply-To: <20091130132432.27394.48685.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B13EE44.001D:SCFMA4539814,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> (Resend #3)
+On Mon, 30 Nov 2009, Pekka Enberg wrote:
 
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
-> ---
-I have also sent this patch a few times.
+> OK, so it's the generic alloc_skb() function that keeps hitting
+> kmem_cache_alloc_node() with "-1". Christoph, are you okay with removing the
+> unlikely() annotation from __cache_alloc_node()?
 
-The problems are in Rusty Russell's quilt series/tree and he replied to me
-that he fixed them, but they don't seem to be pushed yet....
+Yes. Lets look for other cases in the allocators too.
+kmem_cache_alloc_node used to be mainly used for off node allocations but
+the network alloc_skb() case shows that this is changing now.
 
-Rusty?
-
-
->  drivers/staging/rtl8187se/r8180_core.c  |    2 +-
->  drivers/staging/rtl8192su/r8192U_core.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> 
-> diff --git a/drivers/staging/rtl8187se/r8180_core.c b/drivers/staging/rtl8187se/r8180_core.c
-> index 5a6cd60..d74bf70 100644
-> --- a/drivers/staging/rtl8187se/r8180_core.c
-> +++ b/drivers/staging/rtl8187se/r8180_core.c
-> @@ -79,7 +79,7 @@ MODULE_AUTHOR("Andrea Merello <andreamrl@tiscali.it>");
->  MODULE_DESCRIPTION("Linux driver for Realtek RTL8180 / RTL8185 WiFi cards");
->  
->  
-> -module_param_string(ifname, ifname, sizef(ifname), S_IRUGO|S_IWUSR);
-> +module_param_string(ifname, ifname, sizeof(ifname), S_IRUGO|S_IWUSR);
->  module_param(hwseqnum,int, S_IRUGO|S_IWUSR);
->  module_param(hwwep,int, S_IRUGO|S_IWUSR);
->  module_param(channels,int, S_IRUGO|S_IWUSR);
-> diff --git a/drivers/staging/rtl8192su/r8192U_core.c b/drivers/staging/rtl8192su/r8192U_core.c
-> index e24815f..0a052ea 100644
-> --- a/drivers/staging/rtl8192su/r8192U_core.c
-> +++ b/drivers/staging/rtl8192su/r8192U_core.c
-> @@ -142,7 +142,7 @@ static int channels = 0x3fff;
->  
->  
->  
-> -module_param_string(ifname, ifname, sizef(ifname), S_IRUGO|S_IWUSR);
-> +module_param_string(ifname, ifname, sizeof(ifname), S_IRUGO|S_IWUSR);
->  //module_param(hwseqnum,int, S_IRUGO|S_IWUSR);
->  module_param(hwwep,int, S_IRUGO|S_IWUSR);
->  module_param(channels,int, S_IRUGO|S_IWUSR);
+I hope the users of kmem_cache_alloc_node() realize that using -1 is not
+equivalent to kmem_cache_alloc(). kmem_cache_alloc follows numa policies
+for memory allocations. kmem_cache_alloc_node() does not.
 
 
--- 
-~Randy
+
+
+
+
