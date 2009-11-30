@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbZK3XWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbZK3XXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbZK3XWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 18:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZK3XWs
+	id S1753874AbZK3XXy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 18:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZK3XXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 18:22:48 -0500
-Received: from mga01.intel.com ([192.55.52.88]:29216 "EHLO mga01.intel.com"
+	Mon, 30 Nov 2009 18:23:51 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43152 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752500AbZK3XWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 18:22:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="518481640"
-Subject: Re: [RFC PATCH -tip] x86/pat: fix pat_x_mtrr_type to its essentials
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <1259237724-21260-1-git-send-email-dfeng@redhat.com>
-References: <1259237724-21260-1-git-send-email-dfeng@redhat.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 30 Nov 2009 15:21:32 -0800
-Message-Id: <1259623292.2651.218.camel@sbs-t61.sc.intel.com>
+	id S1750937AbZK3XXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 18:23:51 -0500
+Date: Tue, 1 Dec 2009 10:23:52 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Gibson <david@gibson.dropbear.id.au>
+Subject: linux-next: powerpc tree build failure
+Message-Id: <20091201102352.8a2d0a52.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__1_Dec_2009_10_23_52_+1100_9kD/jf7JG0Z1.H3l"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xiaotian,
+--Signature=_Tue__1_Dec_2009_10_23_52_+1100_9kD/jf7JG0Z1.H3l
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We look through the mtrr's only when the incoming request type is WB
-(which is mostly the case for legacy /dev/mem mmap mapping). And only in
-this scenario we use more conservative UC- instead of WC, if mtrr says
-WC.
+Hi Ben,
 
-This will ensure the scenarios like ioremap() (which defaults to UC-) by
-legacy drivers, before and after the user level mmap are consistent and
-don't fail because of inconsistent mappings etc.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-There is no reason why we need to use WC when especially the incoming
-request was not strict enough and specified WB.
+arch/powerpc/mm/mmu_context_hash64.c: In function 'destroy_context':
+arch/powerpc/mm/mmu_context_hash64.c:96: error: passing argument 1 of 'subp=
+age_prot_free' from incompatible pointer type
+arch/powerpc/include/asm/mmu-hash64.h:404: note: expected 'pgd_t *' but arg=
+ument is of type 'struct mm_struct *'
 
-Also BTW,  your current effective return values mentioned in the below
-table () is wrong.
+Casued by commit c045256d146800ea1d741a8e9e377dada6b7e195 ("powerpc/mm:
+Fix bug in pagetable cache cleanup with CONFIG_PPC_SUBPAGE_PROT") which I
+have reverted for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-i.e., for example, when we use UC- for PAT and mtrr has WC, effective
-memory type used by cpu will be WC.
+--Signature=_Tue__1_Dec_2009_10_23_52_+1100_9kD/jf7JG0Z1.H3l
+Content-Type: application/pgp-signature
 
-thanks,
-suresh
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-On Thu, 2009-11-26 at 04:15 -0800, Xiaotian Feng wrote:
-> Due to the IA-32 SDM vol 3a "Effective Memory Type" tables, the PAT
-> and mtrr relations should be:
-> 	|	UC	UC-	WC	WB	[PAT]
-> --------+--------------------------------------
-> UC	|	UC	UC(UC-)	WC	UC(UC-)
-> WC	|	UC	WC(UC-)	WC	WC(UC-)
-> WB	|	UC	UC(UC-)	WC	WB
-> [MTRR]
-> * In () is the current return value.
-> 
-> So, commit b6ff32, Fix pat_x_mtrr_type() to use UC_MINUS when the
-> mtrr type return UC. But it also made mtrr type WC use UC_MINUS.
-> This is not reasonable.
-> 
-> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-> Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> ---
->  arch/x86/mm/pat.c |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-> index c37fd51..92e9627 100644
-> --- a/arch/x86/mm/pat.c
-> +++ b/arch/x86/mm/pat.c
-> @@ -228,10 +228,11 @@ static unsigned long pat_x_mtrr_type(u64 start, u64 end, unsigned long req_type)
->  		u8 mtrr_type;
->  
->  		mtrr_type = mtrr_type_lookup(start, end);
-> -		if (mtrr_type != MTRR_TYPE_WRBACK)
-> -			return _PAGE_CACHE_UC_MINUS;
-> -
-> -		return _PAGE_CACHE_WB;
-> +		if (mtrr_type == MTRR_TYPE_WRBACK)
-> +			return _PAGE_CACHE_WB;
-> +		else if (mtrr_type == MTRR_TYPE_WRCOMB)
-> +			return _PAGE_CACHE_WC;
-> +		return _PAGE_CACHE_UC_MINUS;
->  	}
->  
->  	return req_type;
+iEYEARECAAYFAksUVAgACgkQjjKRsyhoI8zmmgCfTeShjC/JngEwzVslw/LgHG56
+29QAn0CMZ2f+t28ylqHQtbzxphS7whDb
+=GLt3
+-----END PGP SIGNATURE-----
 
+--Signature=_Tue__1_Dec_2009_10_23_52_+1100_9kD/jf7JG0Z1.H3l--
