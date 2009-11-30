@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbZK3J2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbZK3J3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753662AbZK3J2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 04:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbZK3J2c
+	id S1753752AbZK3J3J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 04:29:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbZK3J3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 04:28:32 -0500
-Received: from ernst.netinsight.se ([194.16.221.21]:43129 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752970AbZK3J2b (ORCPT
+	Mon, 30 Nov 2009 04:29:08 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50129 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753176AbZK3J3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 04:28:31 -0500
-Date: Mon, 30 Nov 2009 10:28:28 +0100
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: dedekind1@gmail.com
-Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+	Mon, 30 Nov 2009 04:29:07 -0500
+Date: Mon, 30 Nov 2009 10:28:49 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Nicolas Pitre <nico@marvell.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH/RFC v5 4/5]: core: Add dump device to call on oopses and
- panics
-Message-ID: <20091130102828.273b925d@marrow.netinsight.se>
-In-Reply-To: <1259572187.7518.70.camel@localhost>
-References: <20091012122023.GA19365@elte.hu>
-	<20091012150650.51a4b4dc@marrow.netinsight.se>
-	<20091012131528.GC25464@elte.hu>
-	<20091012153937.0dcd73e5@marrow.netinsight.se>
-	<alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
-	<20091012110954.67d7d8d8.akpm@linux-foundation.org>
-	<20091012182346.GH17138@elte.hu>
-	<alpine.LFD.2.01.0910121130190.3438@localhost.localdomain>
-	<20091013151751.59e217a7@marrow.netinsight.se>
-	<20091013152235.188059d2@marrow.netinsight.se>
-	<20091126093657.GA25430@logfs.org>
-	<1259572187.7518.70.camel@localhost>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] warn about shared irqs requesting IRQF_DISABLED
+	registered with setup_irq
+Message-ID: <20091130092849.GA6896@pengutronix.de>
+References: <20091127195857.GB28193@n2100.arm.linux.org.uk> <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911272234460.24119@localhost.localdomain> <20091128200344.GA1272@pengutronix.de> <alpine.LFD.2.00.0911282239430.24119@localhost.localdomain> <20091129023118.GA21529@shareable.org> <20091129102635.GA22653@pengutronix.de> <20091129151840.GA30813@shareable.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091129151840.GA30813@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009 11:09:47 +0200
-Artem Bityutskiy <dedekind1@gmail.com> wrote:
+Hello Jamie,
 
-> > I believe this bit is wrong.  log_end is an unsigned int, so it can
-> > wrap relatively quickly.  If log_end just wrapped to 0 and dump_kmsg is
-> > called, the amount of printk buffer stored appears to be 0 as well.
-> 
-> Simon, if you want your patches to be merged to 2.6.33, we should
-> address this issue ASAP, otherwise it'll be too late.
+On Sun, Nov 29, 2009 at 03:18:40PM +0000, Jamie Lokier wrote:
+> According to this thread, at the moment when you have multiple
+> IRQF_DISABLED|IRQF_SHARED ISRs, only the first one is run with
+> interrupts disabled.
+No.  When you have multiple IRQF_SHARED ISRs *all* are run with irqs
+disabled if the first has IRQF_DISABLED.
 
-I'm testing your patch, I'll get back when I have verified that it works.
+Best regards
+Uwe
 
-// Simon
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
