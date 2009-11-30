@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbZK3V6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbZK3Vzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753058AbZK3V6H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:58:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZK3V6F
+	id S1752294AbZK3Vzs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:55:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZK3Vzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:58:05 -0500
-Received: from kroah.org ([198.145.64.141]:58813 "EHLO coco.kroah.org"
+	Mon, 30 Nov 2009 16:55:48 -0500
+Received: from www.tglx.de ([62.245.132.106]:41728 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752201AbZK3V6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:58:04 -0500
-Date: Mon, 30 Nov 2009 13:53:47 -0800
-From: Greg KH <greg@kroah.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 0/15] sysfs lazification final
-Message-ID: <20091130215347.GA2750@kroah.com>
-References: <m13a4vbz8r.fsf@fess.ebiederm.org>
- <m1pr7tmqb4.fsf@fess.ebiederm.org>
- <20091130213337.GA3468@kroah.com>
+	id S1751964AbZK3Vzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 16:55:47 -0500
+Date: Mon, 30 Nov 2009 22:54:23 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
+ IRQF_SHARED|IRQF_DISABLED)
+In-Reply-To: <1259617331.2076.146.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0911302253570.24119@localhost.localdomain>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>  <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>  <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>  <1259589780.26472.18.camel@laptop> 
+ <alpine.LFD.2.00.0911301519120.24119@localhost.localdomain>  <1259611151.2076.101.camel@pasglop>  <alpine.LFD.2.00.0911302225050.24119@localhost.localdomain> <1259617331.2076.146.camel@pasglop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091130213337.GA3468@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 01:33:37PM -0800, Greg KH wrote:
-> On Sat, Nov 07, 2009 at 11:25:03PM -0800, Eric W. Biederman wrote:
+On Tue, 1 Dec 2009, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-11-30 at 22:31 +0100, Thomas Gleixner wrote:
+> 
+> > Are the perf events on power generally coming through the standard irq
+> > handler code path and/or sensitive to local_irq_disable() ?
+> 
+> They are in HW yes. On ppc64, we do soft-disabling, which mean that we
+> can still get the perf events within a local_irq_disable() region
+> provided we don't get another interrupt within that region that forces
+> us to hard disable so it would make the problem less bad I suppose.
+> 
+> > > I would suggest we timestamp the handlers in the core btw and warn
+> > if
+> > > they take too long so we get a chance to track down the bad guys.
 > > 
-> > The sysfs code updates the vfs caches immediately when the sysfs data
-> > structures change causing a lot of unnecessary complications.  The
-> > following patchset untangles that beast.  Allowing for simpler
-> > more straight forward code, the removal of a hack from the vfs
-> > to support sysfs, and human comprehensible locking on sysfs.
-> > 
-> > Most of these patches have already been reviewed and acked from the
-> > last time I had time to work on sysfs.
-> > 
-> > This acks have been folded in and the two small bugs found in the
-> > previous review have been fixed in the trailing patches (they are
-> > minor enough nits that even a bisect that happens to land in the
-> > middle should not see sysfs problems).
+> > The hassle is to find a time which we think is appropriate as a
+> > threshold which is of course depending on the cpu power of a
+> > system. Also I wonder whether we'd need to make such a warning thing
+> > aware of irq nesting.
 > 
-> I've applied all of these to my tree now, and sorry, but something is
-> broken pretty badly.
-> 
-> When doing a simple 'ls /sys/class/input/' the process locks up.  This
-> means that X can't find any input devices, which makes for a bit of a
-> problem when wanting to use your mouse or keyboard :(
-> 
-> Attached is the state of my processes when this happens, if that helps
-> out any.
-> 
-> So I'm going to drop all of these from my tree again, as they are not
-> ready for merging at this point :(
+> But if we always disable interrupts while running the handlers, we don't
+> nest right ?
 
-In looking at the stuck processes, it seems your last patch was the
-problem.  Removing that caused things to work again, so I've only
-dropped that one.
+Right, in that case we do not and it's easy to instrument.
 
-Next time, please test your patches before submitting them :(
+Thanks,
 
-thanks,
-
-greg k-h
+	tglx
