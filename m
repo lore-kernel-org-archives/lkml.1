@@ -1,101 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbZK3TuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbZK3Tva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753310AbZK3TuX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 14:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZK3TuW
+	id S1753328AbZK3Tva (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 14:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZK3Tv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 14:50:22 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34167 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752469AbZK3TuW (ORCPT
+	Mon, 30 Nov 2009 14:51:29 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:37552 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752501AbZK3Tv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 14:50:22 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: [PATCH 1/1] MIPS: Wire up recvmmsg syscall
-Date: Mon, 30 Nov 2009 17:50:15 -0200
-Message-Id: <1259610615-23996-1-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.2.5
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 30 Nov 2009 14:51:28 -0500
+Date: Mon, 30 Nov 2009 20:51:29 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
+	IRQF_SHARED|IRQF_DISABLED)
+Message-ID: <20091130195129.GA19172@pengutronix.de>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Hello,
 
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- arch/mips/include/asm/unistd.h |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+On Mon, Nov 30, 2009 at 02:54:54PM +0100, Thomas Gleixner wrote:
+> On Mon, 30 Nov 2009, Uwe Kleine-König wrote:
+> > For shared irqs IRQF_DISABLED is only guaranteed for the first handler.
+> > So only warn starting at the second registration.
+> > 
+> > The warning is moved to __setup_irq having the additional benefit of
+> > catching actions registered using setup_irq not only register_irq.
+> > 
+> > This doesn't fix the cases where setup order is wrong but it should
+> > report the broken cases more reliably.
+> 
+> The whole IRQF_DISABLED trickery is questionable and I'm pretty
+> unhappy about the warning in general.
+> 
+> While it is true that there is no guarantee of IRQF_DISABLED on shared
+> interrupts (at least not for the secondary handlers) we really need to
+> think about the reason why we want to run interrupt handlers with
+> interrupts enabled at all.
+> 
+> The separation of interrupt handlers which run with interrupts
+> disabled/enabled goes all the way back to Linux 1.0, which had two
+> interrupt handling modes:
+> 
+> 1) handlers installed with SA_INTERRUPT ran atomically with interrupts
+>    disabled.
+> 
+> 2) handlers installed without SA_INTERRUPT ran with interrupts enabled
+>    as they did more complex stuff like signal handling in the kernel.
 
-diff --git a/arch/mips/include/asm/unistd.h b/arch/mips/include/asm/unistd.h
-index 8c9dfa9..65c679e 100644
---- a/arch/mips/include/asm/unistd.h
-+++ b/arch/mips/include/asm/unistd.h
-@@ -355,16 +355,17 @@
- #define __NR_rt_tgsigqueueinfo		(__NR_Linux + 332)
- #define __NR_perf_event_open		(__NR_Linux + 333)
- #define __NR_accept4			(__NR_Linux + 334)
-+#define __NR_recvmmsg			(__NR_Linux + 335)
- 
- /*
-  * Offset of the last Linux o32 flavoured syscall
-  */
--#define __NR_Linux_syscalls		334
-+#define __NR_Linux_syscalls		335
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
- 
- #define __NR_O32_Linux			4000
--#define __NR_O32_Linux_syscalls		334
-+#define __NR_O32_Linux_syscalls		335
- 
- #if _MIPS_SIM == _MIPS_SIM_ABI64
- 
-@@ -666,16 +667,17 @@
- #define __NR_rt_tgsigqueueinfo		(__NR_Linux + 291)
- #define __NR_perf_event_open		(__NR_Linux + 292)
- #define __NR_accept4			(__NR_Linux + 293)
-+#define __NR_recvmmsg			(__NR_Linux + 294)
- 
- /*
-  * Offset of the last Linux 64-bit flavoured syscall
-  */
--#define __NR_Linux_syscalls		293
-+#define __NR_Linux_syscalls		294
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_ABI64 */
- 
- #define __NR_64_Linux			5000
--#define __NR_64_Linux_syscalls		293
-+#define __NR_64_Linux_syscalls		294
- 
- #if _MIPS_SIM == _MIPS_SIM_NABI32
- 
-@@ -981,16 +983,17 @@
- #define __NR_rt_tgsigqueueinfo		(__NR_Linux + 295)
- #define __NR_perf_event_open		(__NR_Linux + 296)
- #define __NR_accept4			(__NR_Linux + 297)
-+#define __NR_recvmmsg			(__NR_Linux + 298)
- 
- /*
-  * Offset of the last N32 flavoured syscall
-  */
--#define __NR_Linux_syscalls		297
-+#define __NR_Linux_syscalls		298
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_NABI32 */
- 
- #define __NR_N32_Linux			6000
--#define __NR_N32_Linux_syscalls		297
-+#define __NR_N32_Linux_syscalls		298
- 
- #ifdef __KERNEL__
+> The interrupt which was always run with interrupts disabled was the
+> timer interrupt because some of the "slower" interrupt handlers were
+> relying on jiffies being updated, which is only possible when they run
+> with interrupts enabled and no such handler can interrupt the timer
+> interrupt.
+> 
+> In the 2.1.x timeframe the discussion about shared interrupt handlers
+> and the treatment of SA_INTERRUPT (today IRQF_DISABLED) was resolved
+> by changing the code to what we have right now. If you read back in
+> the archives you will find the same arguments as we have seen in this
+> thread and a boatload of different solutions to that.
+> 
+> The real question is why we want to run an interrupt handler with
+> interrupts enabled at all. There are two reaons AFAICT:
+> 
+> 1) interrupt handler relies on jiffies being updated:
+> 
+>    I don't think that this is the case anymore and if we still have
+>    code which does it is probably historic crap which is unused for
+>    quite a time.
+> 
+> 2) interrupt handler runs a long time:
+> 
+>    I'm sure we still have some of those especially in the
+>    archaelogical corners of drivers/* and in the creative space of the
+>    embedded "oh, I don't know why but it works" departement. That's
+>    code which needs to be fixed anyway.
+
+I think there is
+
+ 3) you can only benefit from decent priority hardware if irqs are
+    processed while irqs are enabled.
+
+I think 
+
+	git grep handle_fasteoi_irq
+
+gives an overview here: some hits in arch/powerpc, arch/sparc and
+arch/x86/kernel/apic/io_apic.c.  (There is handle_prio_irq in
+arch/arm/mach-ns9xxx, but the priodecoder is crappy and actually it
+should use handle_level_irq IIRC.)
+
+Best regards
+Uwe
  
 -- 
-1.6.2.5
-
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
