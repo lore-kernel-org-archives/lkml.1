@@ -1,43 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZK3UD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbZK3UDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752230AbZK3UD2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 15:03:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZK3UD2
+	id S1752709AbZK3UDm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 15:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZK3UDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 15:03:28 -0500
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:42085 "EHLO h5.dl5rb.org.uk"
+	Mon, 30 Nov 2009 15:03:41 -0500
+Received: from khc.piap.pl ([195.187.100.11]:47843 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbZK3UD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 15:03:27 -0500
-Date: Mon, 30 Nov 2009 20:03:19 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-mips@linux-mips.org
-Subject: Re: [PATCH 1/1] MIPS: Wire up recvmmsg syscall
-Message-ID: <20091130200319.GA26639@linux-mips.org>
-References: <1259610615-23996-1-git-send-email-acme@infradead.org>
+	id S1752375AbZK3UDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 15:03:40 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Andy Walls <awalls@radix.net>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, Ray Lee <ray-lk@madrabbit.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	<m3aay6y2m1.fsf@intrepid.localdomain>
+	<9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+	<1259469121.3125.28.camel@palomino.walls.org>
+	<20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
+	<1259515703.3284.11.camel@maxim-laptop>
+	<2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
+	<1259537732.5231.11.camel@palomino.walls.org>
+	<4B13B2FA.4050600@redhat.com>
+	<1259585852.3093.31.camel@palomino.walls.org>
+Date: Mon, 30 Nov 2009 21:03:42 +0100
+In-Reply-To: <1259585852.3093.31.camel@palomino.walls.org> (Andy Walls's
+	message of "Mon, 30 Nov 2009 07:57:32 -0500")
+Message-ID: <m3iqcrvkyp.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259610615-23996-1-git-send-email-acme@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 05:50:15PM -0200, Arnaldo Carvalho de Melo wrote:
+Andy Walls <awalls@radix.net> writes:
 
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> Cc: Ralf Baechle <ralf@linux-mips.org>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  arch/mips/include/asm/unistd.h |   15 +++++++++------
->  1 files changed, 9 insertions(+), 6 deletions(-)
+> Nonetheless I'd still rather debug a problem with a dead process in
+> userspace than an oops or panic (not that an end user cares) and avoid
+> the risk of filesystem corruption.
 
-Looks good.  Dave, wanna merge this through the netdev tree?
+I'll concentrate on IRQ-driven space/mark drivers/devices since it's
+what I've been using. They are: very simple hardware (as simple as a
+TSOP1836 3-pin receiver "chip" + a resistor), very simple driver (the
+hardware signals change in input state with IRQ). Something like maybe
+50 lines of code + the (default) key mapping table.
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
+Anyway, you can't move the whole driver to userspace, as it has to
+handle IRQs with timestamps.
 
-  Ralf
+It doesn't have to sleep.
+
+It's about the last thing I'd worry about WRT the stability.
+
+> So are we optimizing for the embedded/STB and HTPC with no keyboard use
+> case, or the desktop or HTPC with a keyboard for maintencance?
+
+IOW the question is: do we want to continue supporting keyboard-less
+machines?
+-- 
+Krzysztof Halasa
