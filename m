@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbZK3QLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZK3QMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753010AbZK3QLo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 11:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZK3QLn
+	id S1753128AbZK3QMQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 11:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbZK3QMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 11:11:43 -0500
-Received: from outbound-mail-03.bluehost.com ([69.89.21.13]:56874 "HELO
-	outbound-mail-03.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752668AbZK3QLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 11:11:42 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=ZhlGrmUuZjCzWW3yaZGOUu1eWcgHFAIbDdre0Jl2g9epfjN1heRdAbl54OUROXZNybUynGJVg+EiQTA7a6RDBUJSh6d+ClfYZR6CQEbY51pWGtPWt9zJv6j4wBsVbHAn;
-Date: Mon, 30 Nov 2009 08:11:47 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Stefan Assmann <sassmann@redhat.com>, linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Don Dutile <ddutile@redhat.com>,
-       kaneshige.kenji@jp.fujitsu.com
-Subject: Re: [PATCH] change PCI nomenclature according to PCI-SIG
-Message-ID: <20091130081147.274c8af0@jbarnes-piketon>
-In-Reply-To: <4B126EEB.1040908@garzik.org>
-References: <4B110F79.8080405@redhat.com>
-	<4B111ADC.9020800@garzik.org>
-	<4B123A34.5090509@redhat.com>
-	<4B126EEB.1040908@garzik.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 30 Nov 2009 11:12:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11846 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752291AbZK3QMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 11:12:12 -0500
+Date: Mon, 30 Nov 2009 17:12:05 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Mark Veltzer <mark.veltzer@gmail.com>, linux-kernel@vger.kernel.org,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+Subject: Re: get_user_pages question
+Message-ID: <20091130161205.GE30235@random.random>
+References: <200911090850.26724.mark.veltzer@gmail.com>
+ <Pine.LNX.4.64.0911101613080.22198@sister.anvils>
+ <20091128185052.GB30235@random.random>
+ <200911290022.17568.mark.veltzer@gmail.com>
+ <20091130120145.GB21639@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130120145.GB21639@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Nov 2009 07:54:03 -0500
-Jeff Garzik <jeff@garzik.org> wrote:
+On Mon, Nov 30, 2009 at 01:01:45PM +0100, Nick Piggin wrote:
+> If you can wean O_DIRECT off get_user_pages, you'd have most of the
+> battle won. I don't think it's really possible though.
 
-> Next, IMO, you don't have any idea how maintainers will react to this 
-> patch, because you CC'd so few of them.  People who perform tree-wide 
-> changes should take the time to CC __every__ relevant maintainer.  If 
-> you are changing somebody's code, you should always let them know
-> about it, and give them an opportunity to review the change. 
-> scripts/get_maintainer.pl can help with this.
-> 
-> So, while the PCI maintainer might agree with the nomenclature
-> change, he is not the most qualified person to state that your
-> changes have no effect on drivers/edac/ppc4xx_edac.c, for example.
+Agreed. Not just O_DIRECT, virtualization requires it too, the kvm
+page fault calls get_user_pages, practically anything that uses mmu
+notifier also uses get_user_pages. There are things you simply can't
+do without it.
 
-Honestly I'm not thrilled about it either.  Given the large
-downside of making many oustanding diffs conflict, I'm wary of these
-sorts of changes in general.  I suggested to Stefan that he just put
-together one big patch to minimize that pain, but I didn't expect
-something so huge (I was thinking it would be mainly limited to PCI
-related files).
+In general if the memory doesn't need to be persistently stored on
+disk to survive task killage, there's not much point in using
+pagecache MAP_SHARED on-disk, instead of anonymous memory, this is why
+anonymous memory is backing malloc, and there's no reason why people
+should be prevented to issue disk I/O in zero-copy with anonymous
+memory (or tmpfs), if they know they access this data only once and
+they want to manage the cache in some logical form rather than in
+physical on-disk format (or if there are double physical caches more
+efficient kept elsewhere, like in KVM guest case).
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+OTOH if you'd be using the I/O data in physical format in your
+userland memory, then using pagecache by mmapping the file and
+disabling O_DIRECT on the filesystem is surely preferred and more
+efficient (if nothing else, because it also provides caching just in
+case).
+
+For drivers (Mark's case) it depends, but if you can avoid to use
+get_user_pages without slowing down anything you should, that usually
+makes code simpler... and it won't risk to suffer from these race
+conditions either ;).
