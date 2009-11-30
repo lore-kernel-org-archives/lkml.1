@@ -1,143 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZK3JFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbZK3JFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753113AbZK3JFY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 04:05:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZK3JFX
+	id S1752749AbZK3JFD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 04:05:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZK3JFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 04:05:23 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:55223 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753040AbZK3JFT (ORCPT
+	Mon, 30 Nov 2009 04:05:03 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42478 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751654AbZK3JFB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 04:05:19 -0500
-Date: Mon, 30 Nov 2009 04:04:50 -0500
-Message-Id: <200911300904.nAU94o0k025981@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>
-Subject: Re: [PATCH 22/41] union-mount: Some checks during namespace changes 
-In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:20 PDT."
-             <1256152779-10054-23-git-send-email-vaurora@redhat.com> 
+	Mon, 30 Nov 2009 04:05:01 -0500
+Message-ID: <4B138AC2.7080008@cs.helsinki.fi>
+Date: Mon, 30 Nov 2009 11:05:06 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Tim Blechmann <tim@klingt.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, davem@davemloft.net,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 3/5] slab.c: remove branch hint
+References: <cover.1259059549.git.tim@klingt.org> <4B0BBBA8.2090604@klingt.org>	 <20091124112058.GA23765@elte.hu> <84144f020911240328l3d36d347o6c91b2b1a0f50f2a@mail.gmail.com> <4B125CC2.7000202@klingt.org>
+In-Reply-To: <4B125CC2.7000202@klingt.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1256152779-10054-23-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> From: Jan Blunck <jblunck@suse.de>
+Tim Blechmann kirjoitti:
+> On 11/24/2009 12:28 PM, Pekka Enberg wrote:
+>> On Tue, Nov 24, 2009 at 1:20 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>>> (Pekka Cc:-ed)
+>>>
+>>> * Tim Blechmann <tim@klingt.org> wrote:
+>>>
+>>>> branch profiling on my nehalem machine showed 99% incorrect branch hints:
+>>>>
+>>>>    28459  7678524  99 __cache_alloc_node             slab.c
+>>>>   3551
+>>>>
+>>>> Signed-off-by: Tim Blechmann <tim@klingt.org>
+>>>> ---
+>>>>  mm/slab.c |    2 +-
+>>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>>
+>>>> diff --git a/mm/slab.c b/mm/slab.c
+>>>> index f70b326..4125fcd 100644
+>>>> --- a/mm/slab.c
+>>>> +++ b/mm/slab.c
+>>>> @@ -3548,7 +3548,7 @@ __cache_alloc_node(struct kmem_cache *cachep,
+>>>> gfp_t flags, int nodeid,
+>>>>       slab_irq_save(save_flags, this_cpu);
+>>>>       this_node = cpu_to_node(this_cpu);
+>>>> -     if (unlikely(nodeid == -1))
+>>>> +     if (nodeid == -1)
+>>>>               nodeid = this_node;
+>>>>       if (unlikely(!cachep->nodelists[nodeid])) {
+>> That sounds odd to me. Can you see where the incorrectly predicted
+>> calls are coming from? Calling kmem_cache_alloc_node() with node set
+>> to -1 most of the time could be a real bug somewhere.
 > 
-> Add some additional checks when mounting something into an union.
-
-The text "add some additional checks" seems to imply "code I forgot to add
-earlier".  If this patch is better merged with some other one, then do so;
-otherwise, the subject line and patch header need to give this patch more
-credit than this: better explain what the checks are more precisely.
-
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
-> ---
->  fs/namespace.c |   34 ++++++++++++++++++++++++++++++++++
->  1 files changed, 34 insertions(+), 0 deletions(-)
+> when dumping the stack for the incorrectly hinted branches, i get the
+> attached stack traces...
 > 
-> diff --git a/fs/namespace.c b/fs/namespace.c
-> index 81b3188..dc01385 100644
-> --- a/fs/namespace.c
-> +++ b/fs/namespace.c
-> @@ -29,6 +29,7 @@
->  #include <linux/log2.h>
->  #include <linux/idr.h>
->  #include <linux/fs_struct.h>
-> +#include <linux/union.h>
->  #include <asm/uaccess.h>
->  #include <asm/unistd.h>
->  #include "pnode.h"
-> @@ -1427,6 +1428,10 @@ static int do_change_type(struct path *path, int flag)
->  	if (path->dentry != path->mnt->mnt_root)
->  		return -EINVAL;
->  
-> +	/* Don't change the type of union mounts */
-> +	if (IS_MNT_UNION(path->mnt))
-> +		return -EINVAL;
-> +
->  	down_write(&namespace_sem);
->  	if (type == MS_SHARED) {
->  		err = invent_group_ids(mnt, recurse);
-> @@ -1478,6 +1483,18 @@ static int do_loopback(struct path *path, char *old_name, int recurse,
->  	if (!mnt)
->  		goto out;
->  
-> +	/*
-> +	 * Unions couldn't be writable if the filesystem doesn't know about
-> +	 * whiteouts
-> +	 */
-> +	err = -ENOTSUPP;
-> +	if ((mnt_flags & MNT_UNION) &&
-> +	    !(mnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
-> +		goto out;
-> +
-> +	if (mnt_flags & MNT_UNION)
-> +		mnt->mnt_flags |= MNT_UNION;
-> +
->  	err = graft_tree(mnt, path);
->  	if (err) {
->  		LIST_HEAD(umount_list);
-> @@ -1571,6 +1588,13 @@ static int do_move_mount(struct path *path, char *old_name)
->  	if (err)
->  		return err;
->  
-> +	/* moving to or from a union mount is not supported */
-> +	err = -EINVAL;
-> +	if (IS_MNT_UNION(path->mnt))
-> +		goto exit;
-> +	if (IS_MNT_UNION(old_path.mnt))
-> +		goto exit;
-> +
->  	down_write(&namespace_sem);
->  	while (d_mountpoint(path->dentry) &&
->  	       follow_down(path))
-> @@ -1628,6 +1652,7 @@ out:
->  	up_write(&namespace_sem);
->  	if (!err)
->  		path_put(&parent_path);
-> +exit:
->  	path_put(&old_path);
->  	return err;
->  }
-
-I'd avoid using 'exit' as a label and goto name; use "out_err" or some other
-out_XXX label.  'exit' is almost a reserved word in C. :-)
-
-> @@ -1685,6 +1710,15 @@ int do_add_mount(struct vfsmount *newmnt, struct path *path,
->  	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
->  		goto unlock;
->  
-> +	/*
-> +	 * Unions couldn't be writable if the filesystem doesn't know about
-> +	 * whiteouts
-> +	 */
-> +	err = -ENOTSUPP;
-> +	if ((mnt_flags & MNT_UNION) &&
-> +	    !(newmnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
-> +		goto unlock;
-> +
->  	newmnt->mnt_flags = mnt_flags;
->  	if ((err = graft_tree(newmnt, path)))
->  		goto unlock;
-> -- 
-> 1.6.3.3
+> hth, tim
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -3548,8 +3548,10 @@ __cache_alloc_node(struct kmem_cache *cachep,
+> gfp_t flags, int nodeid,
+>         slab_irq_save(save_flags, this_cpu);
+> 
+>         this_node = cpu_to_node(this_cpu);
+> -       if (nodeid == -1)
+> +       if (nodeid == -1) {
+> +               dump_stack();
+>                 nodeid = this_node;
+> +       }
+> 
+>         if (unlikely(!cachep->nodelists[nodeid])) {
+>                 /* Node not bootstrapped yet */
+> 
+> 
+> 
 
-Erez.
+OK, so it's the generic alloc_skb() function that keeps hitting 
+kmem_cache_alloc_node() with "-1". Christoph, are you okay with removing 
+the unlikely() annotation from __cache_alloc_node()?
+
+			Pekka
