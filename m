@@ -1,152 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751277AbZK3Lkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbZK3Lmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751277AbZK3Lkp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbZK3Lko
+	id S1751649AbZK3Lmn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbZK3Lmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:40:44 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:59406 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750828AbZK3Lko (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:40:44 -0500
-X-Trace: 295733893/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AogBAFc+E0tPRTgw/2dsb2JhbAAI1UeEMQSDIA
-X-IronPort-AV: E=Sophos;i="4.47,314,1257120000"; 
-   d="scan'208";a="295733893"
-Date: Mon, 30 Nov 2009 11:40:48 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 6/9] ksm: mem cgroup charge swapin copy
-In-Reply-To: <20091130091316.b804a75c.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0911301119060.20054@sister.anvils>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
- <Pine.LNX.4.64.0911241648520.25288@sister.anvils>
- <20091130091316.b804a75c.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 30 Nov 2009 06:42:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51755 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750940AbZK3Lmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 06:42:42 -0500
+Message-ID: <4B13AF71.9010902@kernel.org>
+Date: Mon, 30 Nov 2009 20:41:37 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Avi Kivity <avi@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH UPDATED 2.6.32-rc6] sched, kvm: fix race condition involving
+ sched_in_preempt_notifers
+References: <4AFD2801.7020900@kernel.org> <20091113095516.GD1364@elte.hu> <4AFEAB6D.60600@redhat.com> <4B138BC8.3090008@kernel.org> <4B13942E.3000002@redhat.com> <20091130100049.GA7054@elte.hu> <4B139A3F.4030505@redhat.com>
+In-Reply-To: <4B139A3F.4030505@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, KAMEZAWA Hiroyuki wrote:
-> 
-> Ok. Maybe commit_charge will work enough. (I hope so.)
+498657a478c60be092208422fefa9c7b248729c2 incorrectly assumed that
+preempt wasn't disabled around context_switch() and thus was fixing
+imaginary problem.  It also broke kvm because it depended on
+->sched_in() to be called with irq enabled so that it can do smp calls
+from there.
 
-                                             Me too.
-> 
-> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> BTW, I'm happy if you adds "How to test" documenation to
-> Documentation/vm/ksm.txt or to share some test programs.
-> 
-> 1. Map anonymous pages + madvise(MADV_MERGEABLE)
-> 2. "echo 1 > /sys/kernel/mm/ksm/run"
+Revert the incorrect commit and add comment describing different
+contexts under with the two callbacks are invoked.
 
-Those are the main points, yes.
+Avi: spotted transposed in/out in the added comment.
 
-Though in testing for races, I do think the default
-/sys/kernel/mm/ksm/sleep_millisecs 20 is probably too relaxed
-to find issues quickly enough, so I usually change that to 0,
-and also raise pages_to_scan from its default of 100 (though
-that should matter less).  In testing for races, something I've
-not done but probably should, is raise the priority of ksmd: we
-have it niced down, but that may leave some nasties unobserved.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Avi Kivity <avi@redhat.com>
+---
+Avi, thanks for spotting it.
 
-As to adding Documentation on testing: whilst my primary reason
-for not doing so is certainly laziness (or an interest in moving
-on to somewhere else), a secondary reason is that I'd much rather
-that if someone does have an interest in testing this, that they
-follow their own ideas, rather than copying what's already done.
+ include/linux/preempt.h |    5 +++++
+ kernel/sched.c          |    2 +-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-But here's something I'll share with you, please don't show it
-to anyone else ;)  Writing test programs using MADV_MERGEABLE is
-good for testing specific issues, but can't give much coverage,
-so I tend to run with this hack below: boot option "allksm" makes
-as much as it can MADV_MERGEABLE.  (If you wonder why I squashed it
-up, it was to avoid changing the line numbering as much as possible.)
-
-Hugh
-
---- mmotm/mm/mmap.c	2009-11-25 09:28:50.000000000 +0000
-+++ allksm/mm/mmap.c	2009-11-25 11:19:13.000000000 +0000
-@@ -902,9 +902,9 @@ void vm_stat_account(struct mm_struct *m
- #endif /* CONFIG_PROC_FS */
+diff --git a/include/linux/preempt.h b/include/linux/preempt.h
+index 72b1a10..2e681d9 100644
+--- a/include/linux/preempt.h
++++ b/include/linux/preempt.h
+@@ -105,6 +105,11 @@ struct preempt_notifier;
+  * @sched_out: we've just been preempted
+  *    notifier: struct preempt_notifier for the task being preempted
+  *    next: the task that's kicking us out
++ *
++ * Please note that sched_in and out are called under different
++ * contexts.  sched_out is called with rq lock held and irq disabled
++ * while sched_in is called without rq lock and irq enabled.  This
++ * difference is intentional and depended upon by its users.
+  */
+ struct preempt_ops {
+ 	void (*sched_in)(struct preempt_notifier *notifier, int cpu);
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3c91f11..e36c868 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2758,9 +2758,9 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	prev_state = prev->state;
+ 	finish_arch_switch(prev);
+ 	perf_event_task_sched_in(current, cpu_of(rq));
+-	fire_sched_in_preempt_notifiers(current);
+ 	finish_lock_switch(rq, prev);
  
- /*
-- * The caller must hold down_write(&current->mm->mmap_sem).
-- */
--
-+ * The caller must hold down_write(&current->mm->mmap_sem). */
-+#include <linux/ksm.h>
-+unsigned long vm_mergeable;
- unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 			unsigned long len, unsigned long prot,
- 			unsigned long flags, unsigned long pgoff)
-@@ -1050,7 +1050,7 @@ unsigned long do_mmap_pgoff(struct file
- 			/*
- 			 * Set pgoff according to addr for anon_vma.
- 			 */
--			pgoff = addr >> PAGE_SHIFT;
-+			vm_flags |= vm_mergeable; pgoff = addr >> PAGE_SHIFT;
- 			break;
- 		default:
- 			return -EINVAL;
-@@ -1201,10 +1201,10 @@ munmap_back:
- 		vma->vm_file = file;
- 		get_file(file);
- 		error = file->f_op->mmap(file, vma);
--		if (error)
--			goto unmap_and_free_vma;
--		if (vm_flags & VM_EXECUTABLE)
--			added_exe_file_vma(mm);
-+		if (error) goto unmap_and_free_vma;
-+		if (vm_flags & VM_EXECUTABLE) added_exe_file_vma(mm);
-+		if (vm_mergeable)
-+			ksm_madvise(vma, 0, 0, MADV_MERGEABLE,&vma->vm_flags);
- 
- 		/* Can addr have changed??
- 		 *
-@@ -2030,7 +2030,7 @@ unsigned long do_brk(unsigned long addr,
- 		return error;
- 
- 	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
--
-+	flags |= vm_mergeable;
- 	error = arch_mmap_check(addr, len, flags);
- 	if (error)
- 		return error;
-@@ -2179,7 +2179,7 @@ int insert_vm_struct(struct mm_struct *
- 	if (!vma->vm_file) {
- 		BUG_ON(vma->anon_vma);
- 		vma->vm_pgoff = vma->vm_start >> PAGE_SHIFT;
--	}
-+		vma->vm_flags |= vm_mergeable;	}
- 	__vma = find_vma_prepare(mm,vma->vm_start,&prev,&rb_link,&rb_parent);
- 	if (__vma && __vma->vm_start < vma->vm_end)
- 		return -ENOMEM;
-@@ -2518,3 +2518,10 @@ void __init mmap_init(void)
- 	ret = percpu_counter_init(&vm_committed_as, 0);
- 	VM_BUG_ON(ret);
- }
-+static int __init allksm(char *s)
-+{
-+	randomize_va_space = 0;
-+	vm_mergeable = VM_MERGEABLE;
-+	return 1;
-+}
-+__setup("allksm", allksm);
++	fire_sched_in_preempt_notifiers(current);
+ 	if (mm)
+ 		mmdrop(mm);
+ 	if (unlikely(prev_state == TASK_DEAD)) {
