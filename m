@@ -1,63 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZK3TzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZK3T5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753207AbZK3TzL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 14:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZK3TzK
+	id S1753343AbZK3T5J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 14:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZK3T5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 14:55:10 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48139 "EHLO smtps.tip.net.au"
+	Mon, 30 Nov 2009 14:57:08 -0500
+Received: from cnc.isely.net ([64.81.146.143]:47113 "EHLO cnc.isely.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbZK3TzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 14:55:09 -0500
-Date: Tue, 1 Dec 2009 06:55:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ben Hutchings <bhutchings@solarflare.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       =?UTF-8?B?IkFuZHLDqSBHb2RkYXJkIFJvc2Ei?= <andre.goddard@gmail.com>
-Subject: Re: linux-next: manual merge of the trivial tree with the net tree
-Message-Id: <20091201065511.37da12f1.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LSU.2.00.0911301335570.6953@wotan.suse.de>
-References: <20091130135320.215722a2.sfr@canb.auug.org.au>
-	<alpine.LSU.2.00.0911301335570.6953@wotan.suse.de>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	id S1753002AbZK3T5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 14:57:07 -0500
+Date: Mon, 30 Nov 2009 13:57:13 -0600 (CST)
+From: Mike Isely <isely@isely.net>
+Reply-To: Mike Isely <isely@isely.net>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-media@vger.kernel.org
+Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
+In-Reply-To: <20091130115701.40c92b2c@pedra>
+Message-ID: <alpine.DEB.1.10.0911301341320.20937@cnc.isely.net>
+References: <4B103CE1.8050303@redhat.com> <200911272240.02930.s.L-H@gmx.de> <200911280357.58116.hverkuil@xs4all.nl> <alpine.DEB.1.10.0911281425240.5482@ivanova.isely.net> <20091130115701.40c92b2c@pedra>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__1_Dec_2009_06_55_11_+1100_t2pJaNJXJIVWkxP5"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__1_Dec_2009_06_55_11_+1100_t2pJaNJXJIVWkxP5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 30 Nov 2009, Mauro Carvalho Chehab wrote:
 
-Hi Jiri,
+> Em Sat, 28 Nov 2009 14:33:30 -0600 (CST)
+> Mike Isely <isely@isely.net> escreveu:
+> 
+> > 
+> > Mauro:
+> > 
+> > I had also posted up two high priority pvrusb2 patches that should 
+> > really be cherry-picked for 2.6.32.  You've already pulled them into 
+> > v4l/dvb and I did mark them as high priority at the time.
+> > 
+> > These patches enable use of FX2 microcontroller firmware that is 16KB in 
+> > size.  Hauppauge is no longer shipping 8KB firmware for HVR-1950 and 
+> > HVR-1900 and without these changes then those devices won't work AT ALL 
+> > in kernel 2.6.32.
+> > 
+> > You can find these within the v4l-dvb Mercurial repository here:
+> > 
+> > Changeset 13495:87c3853fe2b3 
+> > Subject: pvrusb2: Support 16KB FX2 firmware
+> > http://linuxtv.org/hg/v4l-dvb/rev/87c3853fe2b3
+> > 
+> > Changeset 13500:d4c418d4b25c
+> > Subject: pvrusb2: Fix lingering 16KB FX2 Firmware issues
+> > http://linuxtv.org/hg/v4l-dvb/rev/d4c418d4b25c
+> > 
+> > I do not believe these patches have any ordering dependencies with other 
+> > patches, though between the two the second one technically should come 
+> > after the first.
+> 
 
-On Mon, 30 Nov 2009 13:36:18 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrot=
-e:
->
-> Dropped the falcon.c hunk from the pile, so the conflict should be gone.
 
-Thanks for that.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> There are. Picking just those patches broke compilation.
 
---Signature=_Tue__1_Dec_2009_06_55_11_+1100_t2pJaNJXJIVWkxP5
-Content-Type: application/pgp-signature
+Mauro:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Please forward to me the compilation errors.  Right now I am just not 
+seeing how a patch this trivial could have any compilation dependencies.  
+And unfortunately I will not be able to reproduce your build setup until 
+at least Tuesday night.  I must be blind.
 
-iEYEARECAAYFAksUIx8ACgkQjjKRsyhoI8zMmgCfe42XHs3fh7jj1jOUKUJ7tcur
-VLYAoLIFE308zFecDg9ZpVxL/gTE6Xg8
-=v+7V
------END PGP SIGNATURE-----
 
---Signature=_Tue__1_Dec_2009_06_55_11_+1100_t2pJaNJXJIVWkxP5--
+> 
+> Also, it seemed too late for adding support for newer boards/firmware when Linus
+> is about to release a kernel.
+
+This is not a new feature.  It's a bug fix due to something that 
+Hauppauge recently did.  Hauppauge is NO LONGER officially distributing 
+FX2 firmware with their hardware which the driver can use.  This simply 
+prevents any new HVR-1950 / HVR-1900 users from working under Linux.  
+This fixes breakage for previously working hardware.  The root cause is 
+simple - the firmware blob is just larger now - and the fix is trivial.  
+It absolutely needs to go in.  In fact, this should go back to a 
+2.6.31.x and a 2.6.27.x release as well, though in those cases I have to 
+figure out if driver source code is still close enough for the same 
+patches to still work.
+
+I am sorry this is showing up late for you.  There are multiple reasons 
+for this.  However I did mark these patches as "high priority", 
+following your v4l-dvb changeset process.  I did comment on the pull 
+request that these were important but I guess I needed to also 
+specifically call these out in the pull request text as well.
+
+If these don't get in now as part of the official 2.6.32 release, these 
+absolutely need to be queued for 2.6.32.1.
+
+  -Mike
+
+
+-- 
+
+Mike Isely
+isely @ isely (dot) net
+PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
