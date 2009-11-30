@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZK3Eur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750884AbZK3FAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753323AbZK3Eur (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 23:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZK3Euq
+	id S1750884AbZK3FAS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 00:00:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZK3FAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 23:50:46 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:51526
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752374AbZK3Eup convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 23:50:45 -0500
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <D9ED2E54-7B65-4841-AADF-110C8E51DD0E@gmail.com>
-Date: Sun, 29 Nov 2009 23:50:45 -0500
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Andy Walls <awalls@radix.net>,
-       Jon Smirl <jonsmirl@gmail.com>, Christoph Bartelmus <lirc@bartelmus.de>,
-       "j@jannau.net" <j@jannau.net>, "jarod@redhat.com" <jarod@redhat.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       "maximlevitsky@gmail.com" <maximlevitsky@gmail.com>,
-       "mchehab@redhat.com" <mchehab@redhat.com>,
-       "stefanr@s5r6.in-berlin.de" <stefanr@s5r6.in-berlin.de>,
-       "superm1@ubuntu.com" <superm1@ubuntu.com>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <AFCCABA5-177F-4FA5-827E-BFF216510943@wilsonet.com>
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> <m3aay6y2m1.fsf@intrepid.localdomain> <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com> <1259450815.3137.19.camel@palomino.walls.org> <m3ocml6ppt.fsf@intrepid.localdomain> <D9ED2E54-7B65-4841-AADF-110C8E51DD0E@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-X-Mailer: Apple Mail (2.1077)
+	Mon, 30 Nov 2009 00:00:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14321 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbZK3FAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 00:00:16 -0500
+Date: Sun, 29 Nov 2009 23:59:20 -0500
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jan Engelhardt <jengelh@medozas.de>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Amerigo Wang <amwang@redhat.com>, James Morris <jmorris@namei.org>,
+       akpm@linux-foundation.org, stable@kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Message-Id: <20091130050219.3897.55458.sendpatchset@localhost.localdomain>
+Subject: [Patch] 'sysctl_max_map_count' should be non-negative
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 29, 2009, at 4:31 PM, Dmitry Torokhov wrote:
 
-> On Nov 29, 2009, at 12:27 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> 
->> 1. Do we agree that a lirc (-style) kernel-user interface is needed at
->>  least?
->> 
->> 2. Is there any problem with lirc kernel-user interface?
->> 
->> If the answer for #1 is "yes" and for #2 is "no" then perhaps we merge
->> the Jarod's lirc patches (at least the core) so at least the
->> non-controversial part is done?
-> 
-> 
-> Isn't the meat of Jarod's patch the lirc interface?
+Jan Engelhardt reported we have this problem:
 
-Patch 1 was the lirc interface, 2 and 3 are individual device drivers that use it.
+setting max_map_count to a value large enough results in programs dying
+at first try.
+This is on 2.6.31.6.
 
-/me has some catching up to do on this thread after being partially detached from the computer over the holiday weekend here in the US...
-
--- 
-Jarod Wilson
-jarod@wilsonet.com
+15:59 borg:/proc/sys/vm # echo $[1<<31-1] >max_map_count
+15:59 borg:/proc/sys/vm # cat max_map_count
+1073741824
+15:59 borg:/proc/sys/vm # echo $[1<<31] >max_map_count
+15:59 borg:/proc/sys/vm # cat max_map_count
+Killed
 
 
+This is because we have a chance to make 'max_map_count' negative.
+but it's meaningless. Make it only accept non-negative values.
 
+Reported-by: Jan Engelhardt <jengelh@medozas.de>
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: James Morris <jmorris@namei.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: stable@kernel.org
+
+---
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 0d949c5..212360e 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1245,7 +1245,8 @@ static struct ctl_table vm_table[] = {
+ 		.data		= &sysctl_max_map_count,
+ 		.maxlen		= sizeof(sysctl_max_map_count),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec
++		.proc_handler	= &proc_dointvec_minmax,
++		.extra1		= &zero,
+ 	},
+ #else
+ 	{
