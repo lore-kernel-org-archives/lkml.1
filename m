@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZK3CLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZK3CP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbZK3CLj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 21:11:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZK3CLi
+	id S1753128AbZK3CP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 21:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZK3CPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 21:11:38 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49648 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752066AbZK3CLh (ORCPT
+	Sun, 29 Nov 2009 21:15:25 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:44221 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbZK3CPY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 21:11:37 -0500
-Date: Sun, 29 Nov 2009 21:11:11 -0500
-Message-Id: <200911300211.nAU2BBrT007283@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/41] VFS: Make real_lookup() return a struct path 
-In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:03 PDT."
-             <1256152779-10054-6-git-send-email-vaurora@redhat.com> 
+	Sun, 29 Nov 2009 21:15:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=IUUvTM42vfIB03nK1LPBazCbNeYfXfuT+N2ORSlGy5P4hrrE0sLGg48rn9gIXtsGFT
+         glXVJ5y4m7/d9iPdvSC5eAWxCzW5wyl04UR852H5D+CpvOwvYe+BCZMtl7yDJ8UKzF9Y
+         CtmvEc4lqPIL3UiAKckqM6FJS7DsV0QLgCCM8=
+MIME-Version: 1.0
+In-Reply-To: <1259537732.5231.11.camel@palomino.walls.org>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> 
+	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> 
+	<m3aay6y2m1.fsf@intrepid.localdomain> <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com> 
+	<1259469121.3125.28.camel@palomino.walls.org> <20091129124011.4d8a6080@lxorguk.ukuu.org.uk> 
+	<1259515703.3284.11.camel@maxim-laptop> <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com> 
+	<1259537732.5231.11.camel@palomino.walls.org>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Sun, 29 Nov 2009 18:15:10 -0800
+X-Google-Sender-Auth: 92cd06956884e906
+Message-ID: <2c0942db0911291815r7cf93287k78acb8ddb13a7920@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+To: Andy Walls <awalls@radix.net>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com,
+       stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1256152779-10054-6-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> From: Jan Blunck <jblunck@suse.de>
-> 
-> This patch changes real_lookup() into returning a struct path.
-> 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
-> ---
->  fs/namei.c |   82 +++++++++++++++++++++++++++++++++++++----------------------
->  1 files changed, 51 insertions(+), 31 deletions(-)
-> 
-> diff --git a/fs/namei.c b/fs/namei.c
-> index 9c9ecfa..a338496 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -462,10 +462,11 @@ ok:
->   * make sure that nobody added the entry to the dcache in the meantime..
->   * SMP-safe
->   */
-> -static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, struct nameidata *nd)
-> +static int real_lookup(struct nameidata *nd, struct qstr *name,
-> +		       struct path *path)
->  {
+On Sun, Nov 29, 2009 at 3:35 PM, Andy Walls <awalls@radix.net> wrote:
+>> If decoding can *only* be sanely handled in user-space, that's one
+>> thing. If it can be handled in kernel, then that would be better.
+>
+> Why does the address space in which decoding is performed make the
+> decoding process better or worse?  The in kernel infrastructre and
+> restrictions add constraints to a decoding implementation.  Userspace is
+> much more flexible.
 
-Same comments I had on patch 3:
-
-- document in comment and patch header the new @path parameter, who is
-  responsible for it, new return err, etc.
-
-- consider adding BUG_ON(!path)
-
-- perhaps VFS this should also be pushed upstream before UM
-
-Erez.
+In which case I look forward to seeing your patches to move
+drivers/hid/ to userspace. Please cc: me so I can enjoy the ensuing
+festival.
