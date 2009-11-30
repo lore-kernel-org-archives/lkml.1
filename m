@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZK3Kl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbZK3KmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbZK3Kl0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 05:41:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbZK3KlZ
+	id S1753605AbZK3KmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 05:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZK3KmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 05:41:25 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:17727 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751937AbZK3KlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 05:41:25 -0500
-Date: Mon, 30 Nov 2009 12:41:02 +0200
-From: Eduardo Valentin <eduardo.valentin@nokia.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: "Hogander Jouni (Nokia-D/Tampere)" <jouni.hogander@nokia.com>,
-       "De-Schrijver Peter (Nokia-D/Helsinki)" 
-	<Peter.De-Schrijver@nokia.com>,
-       "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
-	<ext-juha.1.keski-saari@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Doubt about Regulator Framework and VBAT use case
-Message-ID: <20091130104102.GA16608@esdhcp037198.research.nokia.com>
-Reply-To: eduardo.valentin@nokia.com
+	Mon, 30 Nov 2009 05:42:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43309 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752154AbZK3KmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 05:42:11 -0500
+Message-ID: <4B13A161.7050405@redhat.com>
+Date: Mon, 30 Nov 2009 08:41:37 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 30 Nov 2009 10:41:09.0500 (UTC) FILETIME=[A0D1DBC0:01CA71A9]
-X-Nokia-AV: Clean
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: jonsmirl@gmail.com, awalls@radix.net, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <BDodiKlXqgB@lirc>
+In-Reply-To: <BDodiKlXqgB@lirc>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Mark and Liam,
+Christoph Bartelmus wrote:
+> Hi Jon,
+> 
+> on 27 Nov 09 at 12:49, Jon Smirl wrote:
+> [...]
+>> Christoph, take what you know from all of the years of working on LIRC
+>> and design the perfect in-kernel system. This is the big chance to
+>> redesign IR support and get rid of any past mistakes. Incorporate any
+>> useful chunks of code and knowledge from the existing LIRC into the
+>> new design. Drop legacy APIs, get rid of daemons, etc. You can do this
+>> redesign in parallel with existing LIRC. Everyone can continue using
+>> the existing code while the new scheme is being built. Think of it as
+>> LIRC 2.0. You can lead this design effort, you're the most experience
+>> developer in the IR area.
+> 
+> This is a very difficult thing for me to do. I must admit that I'm very  
+> biased.
+> Because lircd is the only userspace application that uses the LIRC kernel  
+> interface, we never had any problems changing the interface when needed.
+> I can't say there's much legacy stuff inside. I'm quite happy with the  
+> interface.
 
-I'm writing to ask about VBAT use case. What is the expected
-way to use regulator framework in case of rail coming from battery?
-Should it be added to the regulator framework at all?
+It makes sense currently, but, once added at kernel, you won't be able
+to change it again, without huge efforts. So, if the interface has any 
+trouble, we need to correct it before adding at the kernel. You should
+remember that a kernel driver shouldn't be bound to an specific userspace
+application. So, the same kernel interface should work with all lircd's
+starting from the version where the interface was added. In other words,
+it should be possible to use let's say a 5 year-old lirc with a brand 
+new kernel.
 
-In that case, the rail should not be controllable. So I don't see
-any reason to add it to the regulator framework board definitions,
-as we should not be controlling it.
+Also, some non lirc applications may arise, using the same kernel interface.
+So, the API stability needs to be kept.
 
-However, drivers for devices on that rail would require their regulator anyway.
-And I guess the point would be that drivers should not be aware that they are on VBAT
-or any other rail.
+> The other thing is that I can't really move the decoder from userspace to  
+> kernel because there are way too many userspace drivers that do require a  
+> userspace decoder. LIRC also is running on FreeBSD, MacOS and even Cygwin.  
+> So letting the userspace drivers take advantage of a potential Linux in- 
+> kernel decoder is not an option for me either.
 
-So, what's the correct way to solve this?
+You can take advantage of a in-kernel decoder. Instead of receiving raw
+pulse/space, you'll be receiving keystrokes (or scancodes).
 
-- Should drivers fail nicely if a regulator_get fail? And continue even if one fails.
-- Should drivers disable regfw usage completely in the driver if regulator_get doesn't
-give valid regulator ?
-- or Should a fake fixed regulator be added for vbat so drivers can still get a valid
-regulator with regulator_get.
+Probably, it doesn't make sense to port every single IR protocol decoder
+to kernel. We need there support for the protocols that come with the IR shipped
+with the devices (I think that currently we have RC5, RC4, NEC and pulse-distance), 
+and the most used procolos at the universal IR's (RC5 may be enough?).
 
-The last options seams to be the one that does not require much changes on drivers.
-But it will be adding a regulator that does basically nothing in the system.
+>> Take advantage of this window to make a
+>> design that is fully integrated with Linux - put IR on equal footing
+>> with the keyboard and mouse as it should be.
+> 
+> That's a question that I have not answered for myself concludingly.
+> Is a remote control really on exactly the same level as a keyboard or  
+> mouse?
 
-BR,
+On some devices like STB and TV sets (most of modern LCD/Plasma TV's run Linux),
+they are at the same level. I'd say that the same applies to PC's that
+the user has dedicated to work as an MCE.
 
--- 
-Eduardo Valentin
+Cheers,
+Mauro.
