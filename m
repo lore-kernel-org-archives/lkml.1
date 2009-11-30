@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbZK3U1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbZK3Ufs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752801AbZK3U1X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 15:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZK3U1X
+	id S1753164AbZK3Ufs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 15:35:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZK3Ufs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 15:27:23 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35275 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752446AbZK3U1W (ORCPT
+	Mon, 30 Nov 2009 15:35:48 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:46912 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbZK3Ufr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 15:27:22 -0500
-Date: Mon, 30 Nov 2009 21:27:18 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jamie Lokier <jamie@shareable.org>,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] genirq: warn about IRQF_SHARED|IRQF_DISABLED at the
-	right place
-Message-ID: <20091130202718.GC19172@pengutronix.de>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de> <200911301221.30601.david-b@pacbell.net>
+	Mon, 30 Nov 2009 15:35:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=cQWkQQo1YKiKDA4v4cwXzBj8hry6ntMs6Kjsg4RsKpkUzsMbCac8/DUEAKhARixxhz
+         3IVFWmQZ/hcxEvJdxj/1paVuDRdoS5+si1XPfQ2+RJkYtuKwSWXyMXor0C3kkAJ05kqU
+         nfjoDEuZ8BDzl1M/EltJv0nZVOr1Ajh7XhFJo=
+Date: Mon, 30 Nov 2009 21:35:47 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Doug Thompson <dougthompson@xmission.com>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Subject: Re: 2.6.32-rc8: amd64_edac slub error
+Message-ID: <20091130203547.GA2838@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Doug Thompson <dougthompson@xmission.com>,
+	Borislav Petkov <borislav.petkov@amd.com>
+References: <4B1400B3.60300@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200911301221.30601.david-b@pacbell.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <4B1400B3.60300@oracle.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 12:21:30PM -0800, David Brownell wrote:
-> On Monday 30 November 2009, Uwe Kleine-König wrote:
-> > +               if (new->flags & IRQF_DISABLED)
-> > +                       pr_warning("IRQ %d/%s: IRQF_DISABLED is not guaranteed "
-> > +                                       "on shared IRQs\n", irq, new->name);
-> 
-> This should have copied the original test ... this way,
-> it's dropping the SHARED constraint, and trying to morph
-> into a generic "IRQF_DISABLED is eeebil!" test.
-No, it doesn't.  The inserted code is in an if block:
+Hi Randy,
 
-	old_ptr = &desc->action;
-	old = *old_ptr;
-	if (old) {
-		/* ... */
-		if (!((old->flags & new->flags) & IRQF_SHARED) ||
-			((old->flags ^ new->flags) & IRQF_TRIGGER_MASK)) {
-			old_name = old->name;
-			goto mismatch;
-		}
+On Mon, Nov 30, 2009 at 09:28:19AM -0800, Randy Dunlap wrote:
+> Loading amd64_edac_mod on an amd64 system without the expected hardware support
+> causes memory usage error(s).
 
-		...
+Well, this is new!
 
-+		if (new->flags & IRQF_DISABLED)
-+			pr_warning("...");
+> Is this already fixed/patched?  Do you need more info?
 
-and the mismatch label is further below.  So the warning is still only
-hit if a shared irq is registered.
+Nope :(.
 
-Best regards
-Uwe
+I've tried to reproduce it here by selecting CONFIG_SLUB no success.
+Please send me your config.
+
+Also, it would be very helpful if you could enable CONFIG_EDAC_DEBUG and
+run it again.
+
+>From looking at the error trace, though, it looks like we're
+not allocating enough memory for the struct msr things in
+amd64_nb_mce_bank_enabled_on_node(). This is just a hunch though and you
+could give the following debug patch a try:
+
+---
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index a38831c..139bc14 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2739,8 +2739,10 @@ static void get_cpus_on_this_dct_cpumask(cpumask_t *mask, int nid)
+ 	int cpu;
+ 
+ 	for_each_online_cpu(cpu)
+-		if (amd_get_nb_id(cpu) == nid)
++		if (amd_get_nb_id(cpu) == nid) {
++			pr_err("%s: nid: %d, cpu: %d\n", __func__, nid, cpu);
+ 			cpumask_set_cpu(cpu, mask);
++		}
+ }
+ 
+ /* check MCG_CTL on all the cpus on this node */
+@@ -2755,6 +2757,8 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
+ 
+ 	get_cpus_on_this_dct_cpumask(&mask, nid);
+ 
++	pr_err("%s: weight: %d\n", __func__, cpumask_weight(&mask));
++
+ 	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(&mask), GFP_KERNEL);
+ 	if (!msrs) {
+ 		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+
+--
+
+PS. I'm travelling till the end of the week and won't have constant
+access to mail but I'll do my best to fix this, sorry.
+
+Thanks.
 
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Regards/Gruss,
+    Boris.
