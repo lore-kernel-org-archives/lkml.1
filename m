@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZK3Ugj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbZK3VAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbZK3Ugj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 15:36:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZK3Ugi
+	id S1752998AbZK3VAG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:00:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZK3VAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 15:36:38 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49494
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752154AbZK3Ugi (ORCPT
+	Mon, 30 Nov 2009 16:00:05 -0500
+Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:48605 "HELO
+	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752709AbZK3VAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 15:36:38 -0500
-Date: Mon, 30 Nov 2009 12:36:44 -0800 (PST)
-Message-Id: <20091130.123644.203668577.davem@davemloft.net>
-To: william.allen.simpson@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: warning: massive change to conditional coding style in net?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B13A025.7000103@gmail.com>
-References: <4B13A025.7000103@gmail.com>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 30 Nov 2009 16:00:04 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=tXsD+3Yo59Gu21FGTE+7GJIYgLaJh+rZDEkbUFklsLlpKCTkIV0JG2ee5D4GgthQouAug51wgAd2Vw7QttkPtQZOpT2nt0rHl54pfEq8YmJ84gCXTKNY8FfC+ZaLR4mbbuVG1KyeoaVk5rJY0oZBfTaW9tMccAr1QhsV90nCois=  ;
+X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
+X-YMail-OSG: 9bRd1xkVM1kWGU_gUDSJpq7Ih7eBwsvYgLnSQkqTuEUZ3eTtiKbuJutikhyTB0nIph3KojGTwxnWKYy.UB2FA5jUJyyqysWiNqhoLJD4e4mtslUG.lyhnR0PwPyn9BUxJJIRaLX62nbx9IY.whaFNij3dX4ydNG1SYjTn3cniBhjQtKLc43GF3ylXLejdVv_taro3dv444KQK8YPdVzgORTAsKcctsm1UC89DPThLp0pKBW5n4JJM1ONbCpWhJ2w
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about IRQF_SHARED|IRQF_DISABLED)
+Date: Mon, 30 Nov 2009 12:38:35 -0800
+User-Agent: KMail/1.9.10
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
+	<u.kleine-koenig@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.infradead.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911301519120.24119@localhost.localdomain> <20091130144702.14bea0ee@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091130144702.14bea0ee@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200911301238.35750.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-Date: Mon, 30 Nov 2009 05:36:21 -0500
+On Monday 30 November 2009, Alan Cox wrote:
+> SHARED|DISABLED ought to WARN_ON() and if that doesn't motivate people
+> then return -EINVAL. And with any luck that'll prove 6 months later that
+> most of the offenders are not used and we can delete them wholesale.
 
-> Over the past several days, David Miller (with help from Joe Perches)
-> made sweeping changes to the format of conditional statements in the
-> net tree -- the equivalent of mass patches that change spaces.
-> 
-> This makes writing patches for multiple versions of the tree very
-> difficult, and will make future pullups problematic.  It's enough to
-> make a grown man cry....  Patching conflicts everywhere!
+So ... merge an updated version of the original patch, to
+get full WARN coverage?
 
-William, you're unreasonable.
+We've had that warning for a long time now.  The original
+patch just covered non-request_irq() cases.  So by your
+timetable we're ready for the "return -EINVAL" stage of
+the migration... at least, for request_irq() callers.
 
-We asked you to follow a certain style, and then you immediately
-complain that the style isn't followed consistently in the tree, and
-therefore as a consequence you shouldn't be required to follow it.
 
-Then Joe comes and submits patches making the tree follow the style
-more consistently.  See, instead of merely complaining like you did,
-he proactively did something positive.
 
-Now you're complaining because this makes your patches harder to
-maintain.
 
-You're being difficult about this from every possible angle.  I can
-only conclude that for whatever reason you don't want to have any
-requirements made upon you for your submission.  You've handled this
-negatively in every way possible, and every step of the way.  No
-matter how hard other people have been to try and help you, you've
-continued to do this.
-
-Whereas if you had merely fixed up the coding style as I and others
-have asked you, your code would be in my tree weeks ago.
-
-Why is it such a huge deal to follow the coding style that the
-maintainer (and other prominent developers of that subsystem) are
-asking you to follow?
