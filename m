@@ -1,190 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbZK3KjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZK3Kl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753724AbZK3KjM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 05:39:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZK3KjM
+	id S1753319AbZK3Kl0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 05:41:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbZK3KlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 05:39:12 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:51295 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753426AbZK3KjJ (ORCPT
+	Mon, 30 Nov 2009 05:41:25 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:17727 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937AbZK3KlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 05:39:09 -0500
-From: Ian Molton <ian.molton@collabora.co.uk>
-To: linux-kernel@vger.kernel.org
-Cc: rusty@rustcorp.com.au, mpm@selenic.com, jeff@garzik.org,
-       herbert@gondor.apana.org.au, Ian Molton <ian.molton@collabora.co.uk>
-Subject: [PATCH 2/2] virtio: Convert virtio-rng to the new API
-Date: Mon, 30 Nov 2009 10:38:21 +0000
-Message-Id: <1259577501-17786-3-git-send-email-ian.molton@collabora.co.uk>
-X-Mailer: git-send-email 1.6.5
-In-Reply-To: <1259577501-17786-2-git-send-email-ian.molton@collabora.co.uk>
-References: <1259196250-24182-3-git-send-email-ian.molton@collabora.co.uk>
- <1259577501-17786-1-git-send-email-ian.molton@collabora.co.uk>
- <1259577501-17786-2-git-send-email-ian.molton@collabora.co.uk>
+	Mon, 30 Nov 2009 05:41:25 -0500
+Date: Mon, 30 Nov 2009 12:41:02 +0200
+From: Eduardo Valentin <eduardo.valentin@nokia.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: "Hogander Jouni (Nokia-D/Tampere)" <jouni.hogander@nokia.com>,
+       "De-Schrijver Peter (Nokia-D/Helsinki)" 
+	<Peter.De-Schrijver@nokia.com>,
+       "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
+	<ext-juha.1.keski-saari@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Doubt about Regulator Framework and VBAT use case
+Message-ID: <20091130104102.GA16608@esdhcp037198.research.nokia.com>
+Reply-To: eduardo.valentin@nokia.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 30 Nov 2009 10:41:09.0500 (UTC) FILETIME=[A0D1DBC0:01CA71A9]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	This patch converts virtio-rng to the new hw_rng API.
+Hello Mark and Liam,
 
-In the process it fixes a previously untriggered buffering bug where the
-buffer is not drained correctly if it has a non-multiple-of-4 length.
+I'm writing to ask about VBAT use case. What is the expected
+way to use regulator framework in case of rail coming from battery?
+Should it be added to the regulator framework at all?
 
-Performance has improved under qemu-kvm testing also.
+In that case, the rail should not be controllable. So I don't see
+any reason to add it to the regulator framework board definitions,
+as we should not be controlling it.
 
-Signed-off-by: Ian Molton <ian.molton@collabora.co.uk>
----
- drivers/char/hw_random/virtio-rng.c |   78 ++++++++++++-----------------------
- 1 files changed, 27 insertions(+), 51 deletions(-)
+However, drivers for devices on that rail would require their regulator anyway.
+And I guess the point would be that drivers should not be aware that they are on VBAT
+or any other rail.
 
-diff --git a/drivers/char/hw_random/virtio-rng.c b/drivers/char/hw_random/virtio-rng.c
-index 915157f..bdaef8e 100644
---- a/drivers/char/hw_random/virtio-rng.c
-+++ b/drivers/char/hw_random/virtio-rng.c
-@@ -16,6 +16,7 @@
-  *  along with this program; if not, write to the Free Software
-  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-  */
-+
- #include <linux/err.h>
- #include <linux/hw_random.h>
- #include <linux/scatterlist.h>
-@@ -23,78 +24,64 @@
- #include <linux/virtio.h>
- #include <linux/virtio_rng.h>
- 
--/* The host will fill any buffer we give it with sweet, sweet randomness.  We
-- * give it 64 bytes at a time, and the hwrng framework takes it 4 bytes at a
-- * time. */
--#define RANDOM_DATA_SIZE 64
--
- static struct virtqueue *vq;
--static u32 *random_data;
--static unsigned int data_left;
-+static unsigned int data_avail;
- static DECLARE_COMPLETION(have_data);
-+static bool busy;
- 
- static void random_recv_done(struct virtqueue *vq)
- {
--	unsigned int len;
--
- 	/* We can get spurious callbacks, e.g. shared IRQs + virtio_pci. */
--	if (!vq->vq_ops->get_buf(vq, &len))
-+	if (!vq->vq_ops->get_buf(vq, &data_avail))
- 		return;
- 
--	data_left += len;
- 	complete(&have_data);
- }
- 
--static void register_buffer(void)
-+/* The host will fill any buffer we give it with sweet, sweet randomness. */
-+static void register_buffer(u8 *buf, size_t size)
- {
- 	struct scatterlist sg;
- 
--	sg_init_one(&sg, random_data+data_left, RANDOM_DATA_SIZE-data_left);
-+	sg_init_one(&sg, buf, size);
-+
- 	/* There should always be room for one buffer. */
--	if (vq->vq_ops->add_buf(vq, &sg, 0, 1, random_data) < 0)
-+	if (vq->vq_ops->add_buf(vq, &sg, 0, 1, buf) < 0)
- 		BUG();
-+
- 	vq->vq_ops->kick(vq);
- }
- 
--/* At least we don't udelay() in a loop like some other drivers. */
--static int virtio_data_present(struct hwrng *rng, int wait)
-+static int virtio_read(struct hwrng *rng, void *buf, size_t size, bool wait)
- {
--	if (data_left >= sizeof(u32))
--		return 1;
- 
--again:
-+	if (!busy) {
-+		busy = true;
-+		init_completion(&have_data);
-+		register_buffer(buf, size);
-+	}
-+
- 	if (!wait)
- 		return 0;
- 
- 	wait_for_completion(&have_data);
- 
--	/* Not enough?  Re-register. */
--	if (unlikely(data_left < sizeof(u32))) {
--		register_buffer();
--		goto again;
--	}
-+	busy = false;
- 
--	return 1;
-+	return data_avail;
- }
- 
--/* virtio_data_present() must have succeeded before this is called. */
--static int virtio_data_read(struct hwrng *rng, u32 *data)
-+static void virtio_cleanup(struct hwrng *rng)
- {
--	BUG_ON(data_left < sizeof(u32));
--	data_left -= sizeof(u32);
--	*data = random_data[data_left / 4];
--
--	if (data_left < sizeof(u32)) {
--		init_completion(&have_data);
--		register_buffer();
--	}
--	return sizeof(*data);
-+	if (busy)
-+		wait_for_completion(&have_data);
- }
- 
-+
- static struct hwrng virtio_hwrng = {
--	.name = "virtio",
--	.data_present = virtio_data_present,
--	.data_read = virtio_data_read,
-+	.name		= "virtio",
-+	.cleanup	= virtio_cleanup,
-+	.read		= virtio_read,
- };
- 
- static int virtrng_probe(struct virtio_device *vdev)
-@@ -112,7 +99,6 @@ static int virtrng_probe(struct virtio_device *vdev)
- 		return err;
- 	}
- 
--	register_buffer();
- 	return 0;
- }
- 
-@@ -138,21 +124,11 @@ static struct virtio_driver virtio_rng = {
- 
- static int __init init(void)
- {
--	int err;
--
--	random_data = kmalloc(RANDOM_DATA_SIZE, GFP_KERNEL);
--	if (!random_data)
--		return -ENOMEM;
--
--	err = register_virtio_driver(&virtio_rng);
--	if (err)
--		kfree(random_data);
--	return err;
-+	return register_virtio_driver(&virtio_rng);
- }
- 
- static void __exit fini(void)
- {
--	kfree(random_data);
- 	unregister_virtio_driver(&virtio_rng);
- }
- module_init(init);
+So, what's the correct way to solve this?
+
+- Should drivers fail nicely if a regulator_get fail? And continue even if one fails.
+- Should drivers disable regfw usage completely in the driver if regulator_get doesn't
+give valid regulator ?
+- or Should a fake fixed regulator be added for vbat so drivers can still get a valid
+regulator with regulator_get.
+
+The last options seams to be the one that does not require much changes on drivers.
+But it will be adding a regulator that does basically nothing in the system.
+
+BR,
+
 -- 
-1.6.5
-
+Eduardo Valentin
