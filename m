@@ -1,244 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbZK3V51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbZK3WAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbZK3V51 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:57:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbZK3V51
+	id S1753130AbZK3WAi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 17:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZK3WAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:57:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:36232 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751957AbZK3V5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:57:25 -0500
-Subject: [RFC] high system time & lock contention running large mixed
-	workload
-From: Larry Woodman <lwoodman@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, akpm@linux-foundation.org
-In-Reply-To: <20091125133752.2683c3e4@bree.surriel.com>
-References: <20091125133752.2683c3e4@bree.surriel.com>
-Content-Type: multipart/mixed; boundary="=-F5sZ4AFkbzXZkLAxMWLm"
-Date: Mon, 30 Nov 2009 17:00:29 -0500
-Message-Id: <1259618429.2345.3.camel@dhcp-100-19-198.bos.redhat.com>
+	Mon, 30 Nov 2009 17:00:37 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:42628 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbZK3WAg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 17:00:36 -0500
+Subject: Re: Block IO Controller V4
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com
+In-Reply-To: <4e5e476b0911301334o2440ea8fi7444aa7d5a688ed1@mail.gmail.com>
+References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com>
+	 <4e5e476b0911300734h34a22c88oa5d7d4e5642ead50@mail.gmail.com>
+	 <20091130160024.GD11670@redhat.com>
+	 <4e5e476b0911301334o2440ea8fi7444aa7d5a688ed1@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Nov 2009 17:00:33 -0500
+Message-ID: <1259618433.2701.31.camel@cail>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+FYI: Results today from my test suite - haven't had time to parse them
+in any depth...
 
---=-F5sZ4AFkbzXZkLAxMWLm
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+---- ---- - --------- --------- ---------
+Mode RdWr N   base      i1,s8     i1,s0
+---- ---- - --------- --------- ---------
+rnd  rd   2      43.3      50.6      43.3
+rnd  rd   4      40.9      55.8      41.1
+rnd  rd   8      36.7      61.6      36.9
 
+rnd  wr   2      69.2      68.1      69.4
+rnd  wr   4      66.0      62.7      66.0
+rnd  wr   8      60.5      47.8      61.3
 
-While running workloads that do lots of forking processes, exiting
-processes and page reclamation(AIM 7) on large systems very high system
-time(100%) and lots of lock contention was observed.
+rnd  rdwr 2      54.3      49.1      54.3
+rnd  rdwr 4      50.3      41.7      50.4
+rnd  rdwr 8      45.9      30.4      46.2
 
+seq  rd   2     613.7     606.0     602.8
+seq  rd   4     617.3     606.7     606.1
+seq  rd   8     618.3     602.9     605.0
 
+seq  wr   2     670.3     725.9     703.9
+seq  wr   4     680.0     722.0     627.0
+seq  wr   8     685.3     710.4     631.3
 
-CPU5:
-[<ffffffff814afb48>] ? _spin_lock+0x27/0x48
- [<ffffffff81101deb>] ? anon_vma_link+0x2a/0x5a
- [<ffffffff8105d3d8>] ? dup_mm+0x242/0x40c
- [<ffffffff8105e0a9>] ? copy_process+0xab1/0x12be
- [<ffffffff8105ea07>] ? do_fork+0x151/0x330
- [<ffffffff81058407>] ? default_wake_function+0x0/0x36
- [<ffffffff814b0243>] ? _spin_lock_irqsave+0x2f/0x68
- [<ffffffff810121d3>] ? stub_clone+0x13/0x20
-[<ffffffff81011e02>] ? system_call_fastpath+0x16/0x1b
+seq  rdwr 2     703.4     665.3     680.2
+seq  rdwr 4     677.5     656.8     639.9
+seq  rdwr 8     683.3     646.4     633.7
 
-CPU4:
-[<ffffffff814afb4a>] ? _spin_lock+0x29/0x48
- [<ffffffff81103062>] ? anon_vma_unlink+0x2a/0x84
- [<ffffffff810fbab7>] ? free_pgtables+0x3c/0xe1
- [<ffffffff810fd8b1>] ? exit_mmap+0xc5/0x110
- [<ffffffff8105ce4c>] ? mmput+0x55/0xd9
- [<ffffffff81061afd>] ? exit_mm+0x109/0x129
- [<ffffffff81063846>] ? do_exit+0x1d7/0x712
- [<ffffffff814b0243>] ? _spin_lock_irqsave+0x2f/0x68
- [<ffffffff81063e07>] ? do_group_exit+0x86/0xb2
- [<ffffffff81063e55>] ? sys_exit_group+0x22/0x3e
-[<ffffffff81011e02>] ? system_call_fastpath+0x16/0x1b
+===============================================================
 
-CPU0:
-[<ffffffff814afb4a>] ? _spin_lock+0x29/0x48
-[<ffffffff81101ad1>] ? page_check_address+0x9e/0x16f
- [<ffffffff81101cb8>] ? page_referenced_one+0x53/0x10b
- [<ffffffff81102f5a>] ? page_referenced+0xcd/0x167
- [<ffffffff810eb32d>] ? shrink_active_list+0x1ed/0x2a3
- [<ffffffff810ebde9>] ? shrink_zone+0xa06/0xa38
- [<ffffffff8108440a>] ? getnstimeofday+0x64/0xce
- [<ffffffff810ecaf9>] ? do_try_to_free_pages+0x1e5/0x362
- [<ffffffff810ecd9f>] ? try_to_free_pages+0x7a/0x94
- [<ffffffff810ea66f>] ? isolate_pages_global+0x0/0x242
- [<ffffffff810e57b9>] ? __alloc_pages_nodemask+0x397/0x572
- [<ffffffff810e3c1e>] ? __get_free_pages+0x19/0x6e
- [<ffffffff8105d6c9>] ? copy_process+0xd1/0x12be
- [<ffffffff81204eb2>] ? avc_has_perm+0x5c/0x84
- [<ffffffff81130db8>] ? user_path_at+0x65/0xa3
- [<ffffffff8105ea07>] ? do_fork+0x151/0x330
- [<ffffffff810b7935>] ? check_for_new_grace_period+0x78/0xab
- [<ffffffff810121d3>] ? stub_clone+0x13/0x20
-[<ffffffff81011e02>] ? system_call_fastpath+0x16/0x1b
+----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+base        rnd  rd   2  21.7  21.5
+base        rnd  rd   4  11.3  11.4   9.4   8.8
+base        rnd  rd   8   2.7   2.9   7.0   7.2   4.2   4.3   4.6   3.8
+
+base        rnd  wr   2  34.2  34.9
+base        rnd  wr   4  18.2  18.3  15.3  14.2
+base        rnd  wr   8   3.9   3.8  16.8  17.3   4.7   4.6   5.1   4.3
+
+base        rnd  rdwr 2  27.1  27.2
+base        rnd  rdwr 4  13.8  13.3  11.8  11.4
+base        rnd  rdwr 8   2.9   2.8   9.9   9.6   4.9   5.4   5.7   4.6
 
 
-------------------------------------------------------------------------------
-   PerfTop:     864 irqs/sec  kernel:99.7% [100000 cycles],  (all, 8
-CPUs)
-------------------------------------------------------------------------------
+base        seq  rd   2 306.9 306.8
+base        seq  rd   4 160.6 161.0 147.5 148.1
+base        seq  rd   8  78.3  78.9  76.7  77.6  76.1  75.8  77.8  77.1
 
-             samples    pcnt         RIP          kernel function
-  ______     _______   _____   ________________   _______________
+base        seq  wr   2 335.2 335.1
+base        seq  wr   4 170.7 171.5 168.7 169.0
+base        seq  wr   8  87.7  88.3  85.4  85.0  81.9  84.2  85.6  87.2
 
-             3235.00 - 75.1% - ffffffff814afb21 : _spin_lock
-              670.00 - 15.6% - ffffffff81101a33 : page_check_address
-              165.00 -  3.8% - ffffffffa01cbc39 : rpc_sleep_on  [sunrpc]
-               40.00 -  0.9% - ffffffff81102113 : try_to_unmap_one
-               29.00 -  0.7% - ffffffff81101c65 : page_referenced_one
-               27.00 -  0.6% - ffffffff81101964 : vma_address
-                8.00 -  0.2% - ffffffff8125a5a0 : clear_page_c
-                6.00 -  0.1% - ffffffff8125a5f0 : copy_page_c
-                6.00 -  0.1% - ffffffff811023ca : try_to_unmap_anon
-                5.00 -  0.1% - ffffffff810fb014 : copy_page_range
-                5.00 -  0.1% - ffffffff810e4d18 : get_page_from_freelist
+base        seq  rdwr 2 350.6 352.8
+base        seq  rdwr 4 180.3 181.4 157.7 158.2
+base        seq  rdwr 8  85.8  86.2  87.2  86.8  82.6  81.5  85.3  88.0
 
+----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+i1,s8       rnd  rd   2  20.6  30.0
+i1,s8       rnd  rd   4   2.0   4.8  26.1  22.8
+i1,s8       rnd  rd   8   0.7   1.3   3.5   4.6  15.2  16.1  10.0  10.2
 
+i1,s8       rnd  wr   2  18.5  49.6
+i1,s8       rnd  wr   4   1.0   2.1  19.7  40.0
+i1,s8       rnd  wr   8   0.5   0.7   0.9   1.2   1.6   3.2  15.1  24.5
 
-The cause was determined to be the unconditional call to
-page_referenced() for every mapped page encountered in
-shrink_active_list().  page_referenced() takes the anon_vma->lock and
-calls page_referenced_one() for each vma.  page_referenced_one() then
-calls page_check_address() which takes the pte_lockptr spinlock.   If
-several CPUs are doing this at the same time there is a lot of
-pte_lockptr spinlock contention with the anon_vma->lock held.  This
-causes contention on the anon_vma->lock, stalling in the fo and very
-high system time.
-
-Before the splitLRU patch shrink_active_list() would only call
-page_referenced() when reclaim_mapped got set.  reclaim_mapped only got
-set when the priority worked its way from 12 all the way to 7. This
-prevented page_referenced() from being called from shrink_active_list()
-until the system was really struggling to reclaim memory.
-
-On way to prevent this is to change page_check_address() to execute a
-spin_trylock(ptl) when it was called by shrink_active_list() and simply
-fail if it could not get the pte_lockptr spinlock.  This will make
-shrink_active_list() consider the page not referenced and allow the
-anon_vma->lock to be dropped much quicker.
-
-The attached patch does just that, thoughts???
+i1,s8       rnd  rdwr 2  16.4  32.7
+i1,s8       rnd  rdwr 4   1.2   3.5  16.2  20.8
+i1,s8       rnd  rdwr 8   0.6   0.8   1.1   1.6   2.1   3.6   9.3  11.3
 
 
+i1,s8       seq  rd   2 202.8 403.2
+i1,s8       seq  rd   4  91.9 115.3 181.9 217.7
+i1,s8       seq  rd   8  39.1  76.1  73.7  74.6  74.9  75.6  84.6 104.3
+
+i1,s8       seq  wr   2 246.8 479.1
+i1,s8       seq  wr   4 108.1 157.4 201.9 254.6
+i1,s8       seq  wr   8  52.2  81.0  80.8  83.0  90.9  95.6 108.6 118.3
+
+i1,s8       seq  rdwr 2 226.9 438.4
+i1,s8       seq  rdwr 4 103.4 139.4 186.4 227.7
+i1,s8       seq  rdwr 8  53.4  77.4  77.4  77.9  79.7  82.1  93.5 105.1
+
+----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
+----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
+i1,s0       rnd  rd   2  21.7  21.6
+i1,s0       rnd  rd   4  12.4  12.0   9.7   7.0
+i1,s0       rnd  rd   8   2.7   2.8   7.4   7.6   4.4   4.1   4.4   3.5
+
+i1,s0       rnd  wr   2  35.4  34.0
+i1,s0       rnd  wr   4  19.9  19.9  13.7  12.4
+i1,s0       rnd  wr   8   4.0   3.8  17.5  19.8   4.4   3.9   4.5   3.5
+
+i1,s0       rnd  rdwr 2  27.4  26.9
+i1,s0       rnd  rdwr 4  14.1  14.8  10.6  10.9
+i1,s0       rnd  rdwr 8   2.7   3.1  10.3  10.5   5.6   4.7   5.1   4.1
 
 
---=-F5sZ4AFkbzXZkLAxMWLm
-Content-Disposition: attachment; filename=pageout.diff
-Content-Type: text/x-patch; name=pageout.diff; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+i1,s0       seq  rd   2 301.4 301.3
+i1,s0       seq  rd   4 157.8 156.9 145.1 146.2
+i1,s0       seq  rd   8  76.4  76.4  75.2  74.9  76.7  75.4  74.3  75.7
 
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index cb0ba70..65b841d 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -99,7 +99,7 @@ int try_to_unmap(struct page *, enum ttu_flags flags);
-  * Called from mm/filemap_xip.c to unmap empty zero page
-  */
- pte_t *page_check_address(struct page *, struct mm_struct *,
--				unsigned long, spinlock_t **, int);
-+				unsigned long, spinlock_t **, int, int);
- 
- /*
-  * Used by swapoff to help locate where page is expected in vma.
-diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
-index 1888b2d..35be29d 100644
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -188,7 +188,7 @@ retry:
- 		address = vma->vm_start +
- 			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
- 		BUG_ON(address < vma->vm_start || address >= vma->vm_end);
--		pte = page_check_address(page, mm, address, &ptl, 1);
-+		pte = page_check_address(page, mm, address, &ptl, 1, 0);
- 		if (pte) {
- 			/* Nuke the page table entry. */
- 			flush_cache_page(vma, address, pte_pfn(*pte));
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 5575f86..8abb14b 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -623,7 +623,7 @@ static int write_protect_page(struct vm_area_struct *vma, struct page *page,
- 	if (addr == -EFAULT)
- 		goto out;
- 
--	ptep = page_check_address(page, mm, addr, &ptl, 0);
-+	ptep = page_check_address(page, mm, addr, &ptl, 0, 0);
- 	if (!ptep)
- 		goto out;
- 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index dd43373..4e4eb8e 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -270,7 +270,7 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
-  * On success returns with pte mapped and locked.
-  */
- pte_t *page_check_address(struct page *page, struct mm_struct *mm,
--			  unsigned long address, spinlock_t **ptlp, int sync)
-+			  unsigned long address, spinlock_t **ptlp, int sync, int try)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
-@@ -298,7 +298,13 @@ pte_t *page_check_address(struct page *page, struct mm_struct *mm,
- 	}
- 
- 	ptl = pte_lockptr(mm, pmd);
--	spin_lock(ptl);
-+	if (try) {
-+		if (!spin_trylock(ptl)) {
-+			pte_unmap(pte);
-+			return NULL;
-+		}
-+	} else
-+		spin_lock(ptl);
- 	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
- 		*ptlp = ptl;
- 		return pte;
-@@ -325,7 +331,7 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
- 	address = vma_address(page, vma);
- 	if (address == -EFAULT)		/* out of vma range */
- 		return 0;
--	pte = page_check_address(page, vma->vm_mm, address, &ptl, 1);
-+	pte = page_check_address(page, vma->vm_mm, address, &ptl, 1, 0);
- 	if (!pte)			/* the page is not in this mm */
- 		return 0;
- 	pte_unmap_unlock(pte, ptl);
-@@ -352,7 +358,7 @@ static int page_referenced_one(struct page *page,
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl, 0);
-+	pte = page_check_address(page, mm, address, &ptl, 0, 1);
- 	if (!pte)
- 		goto out;
- 
-@@ -547,7 +553,7 @@ static int page_mkclean_one(struct page *page, struct vm_area_struct *vma)
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl, 1);
-+	pte = page_check_address(page, mm, address, &ptl, 1, 0);
- 	if (!pte)
- 		goto out;
- 
-@@ -774,7 +780,7 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl, 0);
-+	pte = page_check_address(page, mm, address, &ptl, 0, 0);
- 	if (!pte)
- 		goto out;
- 
+i1,s0       seq  wr   2 351.5 352.4
+i1,s0       seq  wr   4 156.5 156.4 156.1 158.1
+i1,s0       seq  wr   8  80.3  79.7  81.3  80.8  75.8  76.2  77.7  79.4
 
---=-F5sZ4AFkbzXZkLAxMWLm--
+i1,s0       seq  rdwr 2 340.6 339.6
+i1,s0       seq  rdwr 4 162.5 161.7 157.9 157.8
+i1,s0       seq  rdwr 8  77.2  77.1  80.1  80.4  78.6  79.1  80.8  80.3
+
 
