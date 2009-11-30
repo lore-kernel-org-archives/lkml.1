@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbZK3GTL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbZK3GVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753049AbZK3GTL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 01:19:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZK3GTL
+	id S1753441AbZK3GVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 01:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbZK3GVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 01:19:11 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61054 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbZK3GTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 01:19:10 -0500
-Message-ID: <4B13637E.3040400@cn.fujitsu.com>
-Date: Mon, 30 Nov 2009 14:17:34 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] xen: cleanup for xen_pv_domain()/xen_hvm_domain()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 01:21:45 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:50438 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751383AbZK3GVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 01:21:45 -0500
+Date: Mon, 30 Nov 2009 17:21:48 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Haojian Zhuang <haojian.zhuang@marvell.com>
+Subject: linux-next: pxa tree build failure
+Message-Id: <20091130172148.1b2c527f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__30_Nov_2009_17_21_48_+1100_GhQgsy61QS_Gq1e2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove unnecessary judgment in xen_pv_domain() and xen_hvm_domain()
+--Signature=_Mon__30_Nov_2009_17_21_48_+1100_GhQgsy61QS_Gq1e2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- arch/x86/include/asm/xen/hypervisor.h |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+Hi Eric,
 
-diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
-index d5b7e90..f94bd0a 100644
---- a/arch/x86/include/asm/xen/hypervisor.h
-+++ b/arch/x86/include/asm/xen/hypervisor.h
-@@ -50,10 +50,8 @@ extern enum xen_domain_type xen_domain_type;
- #endif
- 
- #define xen_domain()		(xen_domain_type != XEN_NATIVE)
--#define xen_pv_domain()		(xen_domain() &&			\
--				 xen_domain_type == XEN_PV_DOMAIN)
--#define xen_hvm_domain()	(xen_domain() &&			\
--				 xen_domain_type == XEN_HVM_DOMAIN)
-+#define xen_pv_domain()		(xen_domain_type == XEN_PV_DOMAIN)
-+#define xen_hvm_domain()	(xen_domain_type == XEN_HVM_DOMAIN)
- 
- #ifdef CONFIG_XEN_DOM0
- #include <xen/interface/xen.h>
--- 
-1.6.1.2
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
+drivers/video/backlight/da903x_bl.c: In function 'da903x_backlight_probe':
+drivers/video/backlight/da903x_bl.c:134: error: 'dev' undeclared (first use=
+ in this function)
+
+Caused by commit ed084c0f6b7e003194276d74ef9087b78c180409 ("da903x_bl:
+control WLED output current in da9034") which I have reverted for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__30_Nov_2009_17_21_48_+1100_GhQgsy61QS_Gq1e2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksTZHwACgkQjjKRsyhoI8xC8wCfSBzafcfpuxZ90UY7uj8PpXaF
+3TEAnjcyQp6iiCYfiS2XLhJ3gMo2LryI
+=/ojB
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__30_Nov_2009_17_21_48_+1100_GhQgsy61QS_Gq1e2--
