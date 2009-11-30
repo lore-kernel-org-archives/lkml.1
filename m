@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZK3VNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZK3VWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299AbZK3VNH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZK3VNG
+	id S1753112AbZK3VWm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:22:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZK3VWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:13:06 -0500
-Received: from www.tglx.de ([62.245.132.106]:54369 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753149AbZK3VNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:13:05 -0500
-Date: Mon, 30 Nov 2009 22:12:45 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] "fair" rw spinlocks
-In-Reply-To: <20091130174638.GA9782@elte.hu>
-Message-ID: <alpine.LFD.2.00.0911302206370.24119@localhost.localdomain>
-References: <20091123145409.GA29627@wotan.suse.de> <alpine.LFD.2.00.0911280927180.2561@localhost> <20091130100041.GA29610@infradead.org> <alpine.LFD.2.00.0911300722370.2872@localhost.localdomain> <20091130174638.GA9782@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 30 Nov 2009 16:22:42 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:36760 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbZK3VWl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 16:22:41 -0500
+From: Alex Williamson <alex.williamson@hp.com>
+Subject: [PATCH] PCI: Always set prefetchable base/limit upper32 registers
+To: jbarnes@virtuousgeek.org
+Cc: yinghai@kernel.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, alex.williamson@hp.com
+Date: Mon, 30 Nov 2009 14:22:53 -0700
+Message-ID: <20091130212228.7555.43533.stgit@debian.lart>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, Ingo Molnar wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Mon, 30 Nov 2009, Christoph Hellwig wrote:
-> > > 
-> > > How long will this use be around?  I've seen some slow progress toward
-> > > replacing most read side uses of the task list lock with RCU.  While we
-> > > still have lots of read side users now I wonder when they'll go away.
-> > 
-> > tasklist_lock is pretty nasty. I threw out "replace it with RCU" 
-> > because it would be nice, but the data structures used are not just 
-> > simple linked lists that we have RCU helpers for traversing.
-> > 
-> > There are various real exclusion rules about things like 
-> > 'tsk->exit_state' etc, which do not translate directly to RCU usage. 
-> > Of course, _maybe_ all the places that care already take the thing for 
-> > writing and would just automatically have exclusion anyway.
-> > 
-> > So I'd love to see somebody try to do the conversion. To a first 
-> > approximation, you probably could do
-> > 
-> >  - turn tasklist_lock into a spinlock
-> > 
-> >  - sed 's/write_lock_irq(&tasklist_lock)/spin_lock(&tasklist_lock)/g'
-> >    sed 's/write_unlock_irq(&tasklist_lock)/spin_unlock(&tasklist_lock)/g'
-> > 
-> >  - sed 's/read_lock(&tasklist_lock)/rcu_read_lock()/g'
-> >    sed 's/read_unlock(&tasklist_lock)/rcu_read_unlock()/g'
-> > 
-> >  - make all the task lists use the RCU versions of the list routines
-> > 
-> >  - free the task structure using RCU
-> > 
-> > and you'd be _pretty_ close to a working system.
-> 
-> In -rt we've got that in essence, and it's indeed working fine (with a 
-> few caveats). A few RCU conversions of tasklist_lock usage in that area 
-> even trickled upstream, because the simple lock would hurt so much under 
-> -rt.
+Prior to 1f82de10 we always initialized the upper 32bits of the
+prefetchable memory window, regardless of the address range used.
+Now we only touch it for a >32bit address, which means the upper32
+registers remain whatever the BIOS initialized them too.
 
-I think the conversion Linus proposed is pretty feasible. I went
-through the read_lock sites and most of them are protecting function
-calls which we already use under rcu_read_lock() in other places like
-find_task* and thread or pid iterators.
+It's valid for the BIOS to set the upper32 base/limit to
+0xffffffff/0x00000000, which makes us program prefetchable ranges
+like 0xffffffffabc00000 - 0x00000000abc00000
 
-There are a few non obvious ones in signal.c and posix-cpu-timers.c
-(what a surprise) but nothing looks too scary.
+Revert the chunk of 1f82de10 that made this conditional so we always
+write the upper32 registers.
 
-If nobody beats me I'm going to let sed loose on the kernel, lift the
-task_struct rcu free code from -rt and figure out what explodes.
+Signed-off-by: Alex Williamson <alex.williamson@hp.com>
+---
 
-Thanks,
+ drivers/pci/setup-bus.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-	tglx
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index cb1a027..127d759 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -221,11 +221,9 @@ static void pci_setup_bridge(struct pci_bus *bus)
+ 	}
+ 	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
+ 
+-	if (pref_mem64) {
+-		/* Set the upper 32 bits of PREF base & limit. */
+-		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+-		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+-	}
++	/* Set the upper 32 bits of PREF base & limit. */
++	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
++	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+ 
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+ }
+
