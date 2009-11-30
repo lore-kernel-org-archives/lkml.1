@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbZK3OFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZK3OXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753618AbZK3OFO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 09:05:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZK3OFO
+	id S1753071AbZK3OXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 09:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZK3OXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 09:05:14 -0500
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:56544 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751504AbZK3OFN (ORCPT
+	Mon, 30 Nov 2009 09:23:16 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55953 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752733AbZK3OXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 09:05:13 -0500
-Date: Mon, 30 Nov 2009 19:35:14 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Roland McGrath <roland@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
-Message-ID: <20091130140514.GD18879@linux.vnet.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <20091130120345.GA18879@linux.vnet.ibm.com> <1259582952.20516.209.camel@laptop> <20091130123257.GB18879@linux.vnet.ibm.com> <1259584907.20516.246.camel@laptop> <20091130131928.GC18879@linux.vnet.ibm.com> <1259588232.20516.307.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259588232.20516.307.camel@laptop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 30 Nov 2009 09:23:15 -0500
+Subject: Re: Ethernet issues with lite5200 board from linux-2.6.31
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Yogesh Chaudhari <mr.yogesh@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       John Kacur <jkacur@redhat.com>
+In-Reply-To: <d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
+References: <d1f76ba30911300038w272578dfx9adb116bde493e00@mail.gmail.com>
+	 <d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 30 Nov 2009 09:23:19 -0500
+Message-Id: <1259590999.12870.0.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > I guess Christoph, Roland and Frank would be able to explain in a better
-> > fashion the rational and advantages of this stub over convential gdb.
-> 
-> Hmm,. wouldn't it make much more sense to extend the current kgdb stub
-> to include userspace debugging, providing an all-in-one solution?
+On Mon, 2009-11-30 at 15:20 +0530, Yogesh Chaudhari wrote:
+> Hello,
+>          I am running linux kernel with rt patch on embedded board
+> based on lite5200 eval board. From linux-2.6.31 release, in which the
+> mdio patch has gone inside,  the fec ethernet does not come up on this
+> board. I get the following message at startup:
+> mpc52xx MII bus: probed
 
-I see two limitations but I guess there could be ways to get over it.
-1. gdb requiring file that needs to be debugged. I always
-thought it can either be a user program or a vmlinux file. gdb makes
-most of the information(i.e registers) from the remote protocol to
-display the backtrace, variable values and the like by reading this
-file. 
+Do you see the same issue without adding the rt patch?
 
-2.  Also I am not sure if gdb has a way to tell the remote to switch the
-context and provide information(registers) pertaining to the user mode/
-kernel mode.
+-- Steve
 
-There could be other limitations too that I may not be aware.
-> 
-> I think it would be much more powerful to be able to observe the full
-> software stack and not be limited by this user<->kernel barrier.
-> 
-> (Provided the user has sufficient privileges of course).
 
-In this implementation, the current user can debug his/her own
-processes. May be if we can debug both the context from same gdb then we
-might have to place restrictions.. 
-
---
-Thanks and Regards
-Srikar
-> 
