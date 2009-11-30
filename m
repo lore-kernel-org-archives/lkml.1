@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbZK3Rr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZK3Rqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753100AbZK3Rr7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 12:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZK3Rr6
+	id S1752941AbZK3Rqw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 12:46:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZK3Rqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 12:47:58 -0500
-Received: from www.tglx.de ([62.245.132.106]:53934 "EHLO www.tglx.de"
+	Mon, 30 Nov 2009 12:46:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52881 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752641AbZK3Rr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 12:47:57 -0500
-Date: Mon, 30 Nov 2009 18:46:37 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Miao <eric.y.miao@gmail.com>,
+	id S1752474AbZK3Rqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 12:46:51 -0500
+Date: Mon, 30 Nov 2009 18:46:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       John Stultz <johnstul@us.ibm.com>, Nicolas Pitre <nico@marvell.com>,
-       Jamie Lokier <jamie@shareable.org>, LKML <linux-kernel@vger.kernel.org>,
-       Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
- IRQF_SHARED|IRQF_DISABLED)
-In-Reply-To: <20091130143703.GA7028@n2100.arm.linux.org.uk>
-Message-ID: <alpine.LFD.2.00.0911301834220.24119@localhost.localdomain>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain> <20091130143703.GA7028@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] "fair" rw spinlocks
+Message-ID: <20091130174638.GA9782@elte.hu>
+References: <20091123145409.GA29627@wotan.suse.de>
+ <alpine.LFD.2.00.0911280927180.2561@localhost>
+ <20091130100041.GA29610@infradead.org>
+ <alpine.LFD.2.00.0911300722370.2872@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911300722370.2872@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, Russell King - ARM Linux wrote:
-> On Mon, Nov 30, 2009 at 02:54:54PM +0100, Thomas Gleixner wrote:
-> Maybe a "safer" way forward is to go and find all those request_irq()
-> sites and add IRQF_DISABLED to them all, wait for regression reports and
-> selectively remove the IRQF_DISABLED flags?  We would then be able to
-> build up a picture of the problematical drivers that need to be reworked,
-> and whether the "run everything with irqs disabled" is even a practical
-> proposition.
 
-Well, that's basically the same as removing IRQF_DISABLED, setting the
-default to run disabled and provide a new flag IRQF_ENABLE_IRQS which
-can be added to drivers when regressions show up. That way you just
-have to grep for IRQF_ENABLE_IRQS instead of doing a search for
-everything which has it removed. We can keep IRQF_DISABLED around by
-setting it to 0 for the transition, so we don't have to touch the
-world in the first place.
- 
-> Now, at the risk of covering old ground, how about we have two separate
-> irqaction lists, one for handlers to be called with irqs disabled and
-> one for handlers with irqs enabled.  We run the irqs-disabled list
-> first, naturally with irqs disabled.  If, at the end of that run (or
-> maybe after each handler), IRQs have ended being enabled, print some
-> diagnostics.  (We're going to need something like this to ensure that
-> drivers interrupt handlers don't enable IRQs themselves.)  Then enable
-> IRQs and run the irqs-enabled chain.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Pretty old ground. :) That was discussed 10 years ago and never found
-much love, but yes we could do that. Either two list or sorting the
-entries. That might avoid the obvious pitfall, but I doubt it'd help
-us to fix the drivers which think that they need to do the irqs
-enabled dance.
+> On Mon, 30 Nov 2009, Christoph Hellwig wrote:
+> > 
+> > How long will this use be around?  I've seen some slow progress toward
+> > replacing most read side uses of the task list lock with RCU.  While we
+> > still have lots of read side users now I wonder when they'll go away.
+> 
+> tasklist_lock is pretty nasty. I threw out "replace it with RCU" 
+> because it would be nice, but the data structures used are not just 
+> simple linked lists that we have RCU helpers for traversing.
+> 
+> There are various real exclusion rules about things like 
+> 'tsk->exit_state' etc, which do not translate directly to RCU usage. 
+> Of course, _maybe_ all the places that care already take the thing for 
+> writing and would just automatically have exclusion anyway.
+> 
+> So I'd love to see somebody try to do the conversion. To a first 
+> approximation, you probably could do
+> 
+>  - turn tasklist_lock into a spinlock
+> 
+>  - sed 's/write_lock_irq(&tasklist_lock)/spin_lock(&tasklist_lock)/g'
+>    sed 's/write_unlock_irq(&tasklist_lock)/spin_unlock(&tasklist_lock)/g'
+> 
+>  - sed 's/read_lock(&tasklist_lock)/rcu_read_lock()/g'
+>    sed 's/read_unlock(&tasklist_lock)/rcu_read_unlock()/g'
+> 
+>  - make all the task lists use the RCU versions of the list routines
+> 
+>  - free the task structure using RCU
+> 
+> and you'd be _pretty_ close to a working system.
 
-Thanks,
+In -rt we've got that in essence, and it's indeed working fine (with a 
+few caveats). A few RCU conversions of tasklist_lock usage in that area 
+even trickled upstream, because the simple lock would hurt so much under 
+-rt.
 
-	tglx
-
+	Ingo
