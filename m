@@ -1,137 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZK3UNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZK3UPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbZK3UNi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 15:13:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbZK3UNi
+	id S1752367AbZK3UPe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 15:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZK3UPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 15:13:38 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:46066 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbZK3UNh convert rfc822-to-8bit (ORCPT
+	Mon, 30 Nov 2009 15:15:33 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:35639 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbZK3UPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 15:13:37 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:from:date:message-id:
-	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=srXbOgplDgXP5VfD1eye8EzhN4+yPtkM/oqruwSeAQS0dWyu8aBuVJfuO3EgvXh7I
-	v/7UI25lWf1OapYQRWu5g==
+	Mon, 30 Nov 2009 15:15:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=jYWk6y3L4fCiUCSTfulk3HkDRCGr2Gzh5iKkYhUxaFBzhAhAF/eVsfmdB+GphgCB3l
+         4E689QowFa2vkM4AmJwB4CdG18d2xks+BZT+ziTYNvC7c/M3mtjItqwLryH3niTvhHr8
+         BUi2a1645r8twG+8IvOX61Rzzi262JVS8yDto=
 MIME-Version: 1.0
-In-Reply-To: <1259549968-10369-4-git-send-email-vgoyal@redhat.com>
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> 
-	<1259549968-10369-4-git-send-email-vgoyal@redhat.com>
-From: Divyesh Shah <dpshah@google.com>
-Date: Tue, 1 Dec 2009 01:43:16 +0530
-Message-ID: <af41c7c40911301213j51bec79ev4d07c77b8de523f6@mail.gmail.com>
-Subject: Re: [PATCH 03/21] blkio: Implement macro to traverse each idle tree 
-	in group
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       czoccolo@gmail.com, Alan.Brunelle@hp.com
+In-Reply-To: <20091130150100.GB7028@n2100.arm.linux.org.uk>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	 <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
+	 <1259589780.26472.18.camel@laptop>
+	 <alpine.LFD.2.00.0911301519120.24119@localhost.localdomain>
+	 <20091130144702.14bea0ee@lxorguk.ukuu.org.uk>
+	 <20091130150100.GB7028@n2100.arm.linux.org.uk>
+Date: Mon, 30 Nov 2009 22:15:38 +0200
+Message-ID: <cd73a99e0911301215i7a61b468w3b49325bd1fda3ac@mail.gmail.com>
+Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about 
+	IRQF_SHARED|IRQF_DISABLED)
+From: Andrew Victor <avictor.za@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jamie Lokier <jamie@shareable.org>, LKML <linux-kernel@vger.kernel.org>,
+       Remy Bohmer <linux@bohmer.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrea Gallo <andrea.gallo@stericsson.com>,
+       =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Nicolas Pitre <nico@marvell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-arm-kernel@lists.infradead.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 8:29 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> o Implement a macro to traverse each service tree in the group. This avoids
->  usage of double for loop and special condition for idle tree 4 times.
->
-> o Macro is little twisted because of special handling of idle class service
->  tree.
->
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
->  block/cfq-iosched.c |   35 +++++++++++++++++++++--------------
->  1 files changed, 21 insertions(+), 14 deletions(-)
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index 3baa3f4..c73ff44 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -303,6 +303,15 @@ CFQ_CFQQ_FNS(deep);
->  #define cfq_log(cfqd, fmt, args...)    \
->        blk_add_trace_msg((cfqd)->queue, "cfq " fmt, ##args)
->
-> +/* Traverses through cfq group service trees */
-> +#define for_each_cfqg_st(cfqg, i, j, st) \
-> +       for (i = 0; i < 3; i++) \
-> +               for (j = 0, st = i < 2 ? &cfqg->service_trees[i][j] : \
-> +                       &cfqg->service_tree_idle; \
-> +                       (i < 2 && j < 3) || (i == 2 && j < 1); \
-> +                       j++, st = i < 2 ? &cfqg->service_trees[i][j]: NULL) \
+hi,
 
-Can this be simplified a bit by moving the service tree assignments
-out of the for statement? Also is it possible to use macros for the
-various service classes instead of 1, 2, 3?
+> There is hardware out there (AT91) where
+> the timer interrupt is shared with other peripherals, and you end
+> up with a mixture of irqs-disabled and irqs-enabled handlers sharing
+> the same interrupt.
 
-> +
-> +
->  static inline enum wl_prio_t cfqq_prio(struct cfq_queue *cfqq)
->  {
->        if (cfq_class_idle(cfqq))
-> @@ -565,6 +574,10 @@ cfq_choose_req(struct cfq_data *cfqd, struct request *rq1, struct request *rq2,
->  */
->  static struct cfq_queue *cfq_rb_first(struct cfq_rb_root *root)
->  {
-> +       /* Service tree is empty */
-> +       if (!root->count)
-> +               return NULL;
-> +
->        if (!root->left)
->                root->left = rb_first(&root->rb);
->
-> @@ -1592,18 +1605,14 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
->        int dispatched = 0;
->        int i, j;
->        struct cfq_group *cfqg = &cfqd->root_group;
-> +       struct cfq_rb_root *st;
->
-> -       for (i = 0; i < 2; ++i)
-> -               for (j = 0; j < 3; ++j)
-> -                       while ((cfqq = cfq_rb_first(&cfqg->service_trees[i][j]))
-> -                               != NULL)
-> -                               dispatched += __cfq_forced_dispatch_cfqq(cfqq);
-> -
-> -       while ((cfqq = cfq_rb_first(&cfqg->service_tree_idle)) != NULL)
-> -               dispatched += __cfq_forced_dispatch_cfqq(cfqq);
-> +       for_each_cfqg_st(cfqg, i, j, st) {
-> +               while ((cfqq = cfq_rb_first(st)) != NULL)
-> +                       dispatched += __cfq_forced_dispatch_cfqq(cfqq);
-> +       }
->
->        cfq_slice_expired(cfqd, 0);
-> -
->        BUG_ON(cfqd->busy_queues);
->
->        cfq_log(cfqd, "forced_dispatch=%d", dispatched);
-> @@ -2974,6 +2983,7 @@ static void *cfq_init_queue(struct request_queue *q)
->        struct cfq_data *cfqd;
->        int i, j;
->        struct cfq_group *cfqg;
-> +       struct cfq_rb_root *st;
->
->        cfqd = kmalloc_node(sizeof(*cfqd), GFP_KERNEL | __GFP_ZERO, q->node);
->        if (!cfqd)
-> @@ -2981,11 +2991,8 @@ static void *cfq_init_queue(struct request_queue *q)
->
->        /* Init root group */
->        cfqg = &cfqd->root_group;
-> -
-> -       for (i = 0; i < 2; ++i)
-> -               for (j = 0; j < 3; ++j)
-> -                       cfqg->service_trees[i][j] = CFQ_RB_ROOT;
-> -       cfqg->service_tree_idle = CFQ_RB_ROOT;
-> +       for_each_cfqg_st(cfqg, i, j, st)
-> +               *st = CFQ_RB_ROOT;
->
->        /*
->         * Not strictly needed (since RB_ROOT just clears the node and we
-> --
-> 1.6.2.5
->
->
+For the AT91 case I don't think this shouldn't matter.
+
+The AT91's have a priority-level interrupt controller, so:
+  1. a lower-priority interrupt won't interrupt a higher-priority
+  2. shared interrupts cannot interrupt each other until irq_finish()
+is called (a write to AIC_EOICR)
+
+Since the Timer, DBGU serial port (and other system peripherals) are
+on the same priority level they cannot interrupt each other.
+(ie, basically as-if always irqs-disabled).
+
+The case of irqs-enabled does means that a higher-priority interrupt
+could interrupt [*], but it's not a shared-IRQ in that case.
+
+([*] The system peripherals have the highest priority by default, so
+the user would need to override the defaults for this to occur)
+
+
+Regards,
+ Andrew Victor
