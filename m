@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbZK3BNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbZK3BRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275AbZK3BNL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 20:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZK3BNK
+	id S1753294AbZK3BRp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 20:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZK3BRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 20:13:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46264
+	Sun, 29 Nov 2009 20:17:44 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53818
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752688AbZK3BNJ (ORCPT
+	by vger.kernel.org with ESMTP id S1751622AbZK3BRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 20:13:09 -0500
-Date: Sun, 29 Nov 2009 17:13:15 -0800 (PST)
-Message-Id: <20091129.171315.78513393.davem@davemloft.net>
-To: jkosina@suse.cz
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, andre.goddard@gmail.com,
-       bruce.w.allan@intel.com
-Subject: Re: linux-next: manual merge of the trivial tree with the net tree
+	Sun, 29 Nov 2009 20:17:43 -0500
+Date: Sun, 29 Nov 2009 17:17:49 -0800 (PST)
+Message-Id: <20091129.171749.113308677.davem@davemloft.net>
+To: roger.oksanen@cs.helsinki.fi
+Cc: jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
+       bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
+       john.ronciak@intel.com, akpm@linux-foundation.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, karol.k.lewandowski@gmail.com
+Subject: Re: [PATCH] e100: Use pci pool to work around GFP_ATOMIC order 5
+ memory allocation failure
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LSU.2.00.0911241011520.6953@wotan.suse.de>
-References: <20091124171459.88cb0c0d.sfr@canb.auug.org.au>
-	<alpine.LSU.2.00.0911241011520.6953@wotan.suse.de>
+In-Reply-To: <200911261649.54785.roger.oksanen@cs.helsinki.fi>
+References: <200911261649.54785.roger.oksanen@cs.helsinki.fi>
 X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-2022-jp-2
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Tue, 24 Nov 2009 10:13:47 +0100 (CET)
+From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+Date: Thu, 26 Nov 2009 16:49:54 +0200
 
-> Subject: e1000e: fix assorted typos
+> e100: Use pci pool to work around GFP_ATOMIC order 5 memory allocation failure.
 > 
-> Signed-off-by: André Goddard Rosa <andre.goddard@gmail.com>
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> pci_alloc_consistent uses GFP_ATOMIC allocation that may fail on some systems
+> with limited memory (Bug #14265). pci_pool_alloc allows waiting with
+> GFP_KERNEL.
+> 
+> Tested-by: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+> Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
 
-I'm happy to add this, but:
+Looks good, thanks.
 
-1) it doesn't apply to net-next-2.6
-
-2) all networking patches should be CC:'d to netdev@vger.kernel.org
-   particularly so that they get tracked in patchwork and therefore
-   are much less likely to get lost
-
+Applied to net-2.6 and queued up for -stable
