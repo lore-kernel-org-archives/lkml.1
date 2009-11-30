@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752252AbZK3M2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbZK3MaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752252AbZK3M2y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 07:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZK3M2x
+	id S1752702AbZK3MaI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 07:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZK3MaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 07:28:53 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34798 "EHLO
+	Mon, 30 Nov 2009 07:30:07 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34847 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbZK3M2w (ORCPT
+	with ESMTP id S1751208AbZK3MaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 07:28:52 -0500
-Date: Mon, 30 Nov 2009 13:28:51 +0100
+	Mon, 30 Nov 2009 07:30:05 -0500
+Date: Mon, 30 Nov 2009 13:30:04 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jlayton@redhat.com, jamie@shareable.org, ebiederm@xmission.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk
-Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks
- and file bind mounts (try #5)
-Message-ID: <20091130122851.GF13328@elf.ucw.cz>
-References: <20091123173616.75c3f600@tlielax.poochiereds.net>
- <20091123224948.GB5598@shareable.org>
- <20091123181545.05ad004d@tlielax.poochiereds.net>
- <m1ljhwbyr3.fsf@fess.ebiederm.org>
- <20091123193426.55f1530a@tlielax.poochiereds.net>
- <20091124012027.GA14645@shareable.org>
- <20091124062621.744beddb@tlielax.poochiereds.net>
- <E1NCtxF-0000rn-1z@pomaz-ex.szeredi.hu>
- <20091124120906.GA1700@ucw.cz>
- <E1NCuz4-00010e-Ch@pomaz-ex.szeredi.hu>
+To: Brian Swetland <swetland@google.com>
+Cc: Corentin Chary <corentincj@iksaif.net>, Arve Hj??nnev??g <arve@google.com>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       Chih-Wei Huang <cwhuang@linux.org.tw>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] staging/android fixes
+Message-ID: <20091130123004.GG13328@elf.ucw.cz>
+References: <1259397915-762-1-git-send-email-corentincj@iksaif.net>
+ <a55d774e0911280219s69729b54l544660aac4b2197@mail.gmail.com>
+ <20091129084351.GD1530@ucw.cz>
+ <a55d774e0911290138j3d44a25aqce041f7a7a87d5a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1NCuz4-00010e-Ch@pomaz-ex.szeredi.hu>
+In-Reply-To: <a55d774e0911290138j3d44a25aqce041f7a7a87d5a@mail.gmail.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-11-24 13:59:06, Miklos Szeredi wrote:
-> On Tue, 24 Nov 2009, Pavel Machek wrote:
-> > I believe that current semantics is ugly enough that 'documenting' it
-> > is not enough... and people want to port from other systems, too, not
-> > expecting nasty surprises like this...
+
+> >> Arve's done a few revisions of the wakelock code with the linux-pm
+> >> list, and I know he's planning on trying to work through the remaining
+> >> issues (as I recall there was some discussion on read/write vs ioctl
+> >> interfaces to userspace) in the near future.
+> >>
+> >> This really is the one piece that has the most impact on everything
+> >> else -- maintaining versions of the various platform hardware drivers
+> >> with and without wakelock support is messy.
+> >
+> > It is really not that bad. Yes, it touches most drivers, but it is few
+> > lines per driver and easy to remove.
+> >
+> > Waiting for wakelocks (1year plus, AFAICT) before merging hw drivers
+> > seems like very slow way forward.
 > 
-> This hasn't been a problem for the last 12 years, and still we don't
-> see script kiddies exploiting this hole and sysadmins hurrying to
-> secure their system, even though it has been public for quite a while.
-> 
-> Why?
+> I'm not suggesting we hold off on everything until they're in, just
+> saying it'll simplify things once they are.
 
-Because condition when it hits are quite unusual?
+That's certainly true :-).
 
-> The reason might be, that there *is no* violation of security.
+> I'd like to get to a point where we can ship out of the upstream
+> kernel and that's going to need power management to work.  If we can
+> sort out wakelocks (as it seemed like we were getting close to),
+> that's one less difference to maintain.
 
-Well, security people disagree with you.
-
-> See this: the surprise isn't that an inode can be reached from
-> multiple paths, that has been possible with hard links for as long as
-> unix lived.  The suprise is that the inode can be reached through
-> proc.  So this "hole" that has been opened about 12 years ago in linux
-> is quite well known.  Only this particular aspect of it isn't well
-> known, but that doesn't mean it's not right, does it?
-
-It does. Bypassing checks on read-only file descriptors is design
-misfeature, and users are clearly unaware. (See bugtraq). Being "old"
-does not mean it is right.
+Yes, that would be nice.
 								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
