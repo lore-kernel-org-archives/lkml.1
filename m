@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbZK3HqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbZK3HqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754062AbZK3HqO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 02:46:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZK3HqN
+	id S1754078AbZK3HqQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 02:46:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZK3HqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 02:46:13 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:38702 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbZK3HqM (ORCPT
+	Mon, 30 Nov 2009 02:46:14 -0500
+Received: from lazybastard.de ([212.112.238.170]:52180 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753977AbZK3HqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 02:46:12 -0500
-Date: Mon, 30 Nov 2009 02:45:40 -0500
-Message-Id: <200911300745.nAU7jecR022659@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 15/41] whiteout: ext2 whiteout support 
-In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:13 PDT."
-             <1256152779-10054-16-git-send-email-vaurora@redhat.com> 
+	Mon, 30 Nov 2009 02:46:13 -0500
+Date: Mon, 30 Nov 2009 08:46:03 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH/RFC v5 4/5]: core: Add dump device to call on oopses and panics
+Message-ID: <20091130074603.GA30911@logfs.org>
+References: <20091012131528.GC25464@elte.hu> <20091012153937.0dcd73e5@marrow.netinsight.se> <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain> <20091012110954.67d7d8d8.akpm@linux-foundation.org> <20091012182346.GH17138@elte.hu> <alpine.LFD.2.01.0910121130190.3438@localhost.localdomain> <20091013151751.59e217a7@marrow.netinsight.se> <20091013152235.188059d2@marrow.netinsight.se> <20091126093657.GA25430@logfs.org> <1259566071.7518.48.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1259566071.7518.48.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1256152779-10054-16-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> From: Jan Blunck <jblunck@suse.de>
+On Mon, 30 November 2009 09:27:51 +0200, Artem Bityutskiy wrote:
 > 
-> This patch adds whiteout support to EXT2. A whiteout is an empty directory
-> entry (inode == 0) with the file type set to EXT2_FT_WHT. Therefore it
-> allocates space in directories. Due to being implemented as a filetype it is
-> necessary to have the EXT2_FEATURE_INCOMPAT_FILETYPE flag set.
-> 
-> XXX - Whiteouts could be implemented as special symbolic links
-> 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
-> Cc: Theodore Tso <tytso@mit.edu>
-> Cc: linux-ext4@vger.kernel.org
-> ---
->  fs/ext2/dir.c           |   96 +++++++++++++++++++++++++++++++++++++++++++++--
->  fs/ext2/ext2.h          |    3 +
->  fs/ext2/inode.c         |   11 ++++-
->  fs/ext2/namei.c         |   65 ++++++++++++++++++++++++++++++-
->  fs/ext2/super.c         |    7 +++
->  include/linux/ext2_fs.h |    4 ++
->  6 files changed, 176 insertions(+), 10 deletions(-)
-> 
-> diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
-> index cb8ceff..d4628c0 100644
-> --- a/fs/ext2/dir.c
-> +++ b/fs/ext2/dir.c
-> @@ -219,7 +219,7 @@ static inline int ext2_match (int len, const char * const name,
->  {
->  	if (len != de->name_len)
->  		return 0;
-> -	if (!de->inode)
-> +	if (!de->inode && (de->file_type != EXT2_FT_WHT))
+> To me it looks like 'log_end' is not supposed to wrap. What makes you
+> think it can? In which cases it can?
 
-The extra parens around (de->file_type != EXT2_FT_WHT) don't hurt but are
-unnecessary.  Ditto in a couple of other places in this patch.
+It is a 32bit variable.  Would do you expect happens once you reach
+0xffffffff and add 1?
 
-Erez.
+Jörn
+
+-- 
+This above all: to thine own self be true.
+-- Shakespeare
