@@ -1,77 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbZK3TNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZK3TTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753010AbZK3TNS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 14:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZK3TNS
+	id S1753167AbZK3TTk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 14:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZK3TTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 14:13:18 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:54381 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752601AbZK3TNR (ORCPT
+	Mon, 30 Nov 2009 14:19:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57725 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbZK3TTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 14:13:17 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:in-reply-to:
-	x-operating-system:user-agent:x-system-of-record;
-	b=LYjDzfIkkZTwZOhmfgSTHjYGpcyZ3K3V0DMnhBUlLNp2J5sUWmQMY/wSTsw0xvBwX
-	o48t/mURsD2hY591o5liA==
-Date: Mon, 30 Nov 2009 11:13:07 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, fweisbec@gmail.com
-Subject: Re: PATCH: softlockup: Fix hung_task_check_count sysctl
-Message-ID: <20091130191307.GM11670@google.com>
-References: <20091127022820.GU32182@kryten>
+	Mon, 30 Nov 2009 14:19:39 -0500
+Message-ID: <4B141A8E.1090104@zytor.com>
+Date: Mon, 30 Nov 2009 11:18:38 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091127022820.GU32182@kryten>
-X-Operating-System: Linux/2.6.24-gg804003-generic (x86_64)
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-System-Of-Record: true
+To: "Brown, Len" <len.brown@intel.com>
+CC: helight <helight@126.com>, linux-kernel@vger.kernel.org, x86@kernel.org,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Subject: [PATCH 2/2] fix a Section mismatch in arch/x86/pci/mmconfig-shared.c
+ and include/linux/sfi_acpi.h
+References: <4B13A094.2080504@126.com>
+In-Reply-To: <4B13A094.2080504@126.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To disable hung_task at runtime:
+Hi Len,
 
-# echo 0 > /proc/sys/kernel/hung_task_check_count
+Do you want to take this one or should I?
 
-33 /*
-34  * Zero means infinite timeout - no checking done:
-35  */
-36 unsigned long __read_mostly sysctl_hung_task_timeout_secs = 120;
+	-hpa
 
-For hung_task_check_count, 0 means there is no maximum so all tasks
-are checked.
 
-Anton Blanchard (anton@samba.org) wrote:
-> 
-> I'm seeing spikes of up to 0.5ms in khungtaskd on a large machine. To reduce
-> this source of jitter I tried setting hung_task_check_count to 0:
-> 
-
-Hmm, maybe khungtaskd should be run using SCHED_IDLE.
-
-> # echo 0 > /proc/sys/kernel/hung_task_check_count
-> 
-> which didn't have the intended response. Change to a post increment of
-> max_count, so a value of 0 means check 0 tasks.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> Index: linux.trees.git/kernel/hung_task.c
-> ===================================================================
-> --- linux.trees.git.orig/kernel/hung_task.c	2009-11-27 13:11:46.000000000 +1100
-> +++ linux.trees.git/kernel/hung_task.c	2009-11-27 13:11:57.000000000 +1100
-> @@ -144,7 +144,7 @@ static void check_hung_uninterruptible_t
->  
->  	rcu_read_lock();
->  	do_each_thread(g, t) {
-> -		if (!--max_count)
-> +		if (!max_count--)
->  			goto unlock;
->  		if (!--batch_count) {
->  			batch_count = HUNG_TASK_BATCHING;
+On 11/30/2009 02:38 AM, helight wrote:
+> acpi_sfi_table_parse() should be __init. tested on x86 system!
