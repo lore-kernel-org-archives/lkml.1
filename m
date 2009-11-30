@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbZK3Jfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZK3Jfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbZK3Jfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 04:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZK3Jfu
+	id S1753598AbZK3Jfn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 04:35:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZK3Jfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 04:35:50 -0500
-Received: from lazybastard.de ([212.112.238.170]:46468 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753789AbZK3Jft (ORCPT
+	Mon, 30 Nov 2009 04:35:42 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:53970 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbZK3Jfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 04:35:49 -0500
-Date: Mon, 30 Nov 2009 10:35:41 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH/RFC v5 4/5]: core: Add dump device to call on oopses and panics
-Message-ID: <20091130093541.GA14254@logfs.org>
-References: <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain> <20091012110954.67d7d8d8.akpm@linux-foundation.org> <20091012182346.GH17138@elte.hu> <alpine.LFD.2.01.0910121130190.3438@localhost.localdomain> <20091013151751.59e217a7@marrow.netinsight.se> <20091013152235.188059d2@marrow.netinsight.se> <20091126093657.GA25430@logfs.org> <1259566071.7518.48.camel@localhost> <20091130074603.GA30911@logfs.org> <1259571118.7518.56.camel@localhost>
+	Mon, 30 Nov 2009 04:35:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pmApTSlj1UHgYMMktylO/fVrUqzbYQuwVAiHGltx727aFeX+gdQaCmXlbenyPtJT1N
+         8cYomphfqUMJs3wEwhJJm/vNlT1IdsCNIuc2vkBNJkyjgIgYQNS85pU6nb6htDOCY3OB
+         2zg5Mx8/s5c913zbLScUxugVj0feNrwmc/zSs=
+Date: Mon, 30 Nov 2009 01:35:44 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Anisse Astier <anisse@astier.eu>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: i8042 - add Dell Vostro 1520 and 1720 to the
+	reset list
+Message-ID: <20091130093544.GH10295@core.coreip.homeip.net>
+References: <20091124151250.03e185d1@destiny.ordissimo> <20091126110500.735461ac@destiny.ordissimo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1259571118.7518.56.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20091126110500.735461ac@destiny.ordissimo>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 November 2009 10:51:58 +0200, Artem Bityutskiy wrote:
+On Thu, Nov 26, 2009 at 11:05:00AM +0100, Anisse Astier wrote:
+> Hi Dmitry,
 > 
-> How about this patch on top of the existing one (untested):
+> Sorry for the badly threaded reply, I wasn't subscribed to the list and
+> didn't ask explicitely to be Cc-ed.
 > 
-> +	/*
-> +	 * Have we ever rotated around the circular buffer? If we never did,
-> +	 * we have to have zeroes at the end.
-> +	 */
-> +	if (log_buf[end]) {
-> +		s1 = log_buf + end;
-> +		l1 = log_buf_len - end;
-> +	} else {
-> +		s1 = "";
-> +		l1 = 0;
+> >On Wed, 25 Nov 2009 12:17:37 -0800, Dmitry Torokhov wrote:
+> >Could youplease explain in more detail what the "bad state" is.
+> >And what exactly do you mean by "first boot"? Cold boot? The very
+> >first boot after assembling? Something else?
+> 
+> By bad state I mean that neither touchpad nor keyboard are working. They
+> are both unresponsive. You can fix this by adding i8042.reset on the
+> kernel command line, or removing the battery and waiting long enough.
+> By very first boot I mean when the laptops are received from Dell and
+> booted in Linux.
+> 
+> If you cold boot with a working non-Dell power supply (with same
+> electrical characteristics), you can reproduce the "first boot" bug as
+> much as you want, and laptops won't work unless you remove the battery
+> and wait long enough OR add i8042.reset on the cmdline.
+> 
 
-So now you are assuming that a) the buffer is initially zeroed and b)
-noone ever writes NUL to it.  Is that correct?
-
-I'm not sure whether those assumptions are valid.  If they are, then
-this will obviously work.  Otherwise we can just always assume the
-wrapped case.
-
-Jörn
+Ok, I see... what about 1320? I did a quick round of googling and it
+seem to have the similar issue...
 
 -- 
-Write programs that do one thing and do it well. Write programs to work
-together. Write programs to handle text streams, because that is a
-universal interface.
--- Doug MacIlroy
+Dmitry
