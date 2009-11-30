@@ -1,67 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbZK3Rtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbZK3Rud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166AbZK3Rtr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 12:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZK3Rtq
+	id S1753190AbZK3Rud (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 12:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZK3Ruc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 12:49:46 -0500
-Received: from www.tglx.de ([62.245.132.106]:54029 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbZK3Rtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 12:49:46 -0500
-Date: Mon, 30 Nov 2009 18:48:43 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       John Stultz <johnstul@us.ibm.com>, Nicolas Pitre <nico@marvell.com>,
-       Jamie Lokier <jamie@shareable.org>, LKML <linux-kernel@vger.kernel.org>,
-       Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
- IRQF_SHARED|IRQF_DISABLED)
-In-Reply-To: <20091130143956.GA8227@n2100.arm.linux.org.uk>
-Message-ID: <alpine.LFD.2.00.0911301847221.24119@localhost.localdomain>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain> <20091130143703.GA7028@n2100.arm.linux.org.uk>
- <20091130143956.GA8227@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 30 Nov 2009 12:50:32 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:51889 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbZK3Rub (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 12:50:31 -0500
+Date: Mon, 30 Nov 2009 11:50:15 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Tim Blechmann <tim@klingt.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       davem@davemloft.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 3/5] slab.c: remove branch hint
+In-Reply-To: <84144f020911300944x89309c5r8e9079e1a62fb416@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0911301149110.17037@router.home>
+References: <cover.1259059549.git.tim@klingt.org> <4B0BBBA8.2090604@klingt.org>  <20091124112058.GA23765@elte.hu>  <84144f020911240328l3d36d347o6c91b2b1a0f50f2a@mail.gmail.com>  <4B125CC2.7000202@klingt.org> <4B138AC2.7080008@cs.helsinki.fi> 
+ <alpine.DEB.2.00.0911300926150.14098@router.home> <84144f020911300944x89309c5r8e9079e1a62fb416@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, Russell King - ARM Linux wrote:
+On Mon, 30 Nov 2009, Pekka Enberg wrote:
 
-> On Mon, Nov 30, 2009 at 02:37:03PM +0000, Russell King - ARM Linux wrote:
-> > Now, at the risk of covering old ground, how about we have two separate
-> > irqaction lists, one for handlers to be called with irqs disabled and
-> > one for handlers with irqs enabled.  We run the irqs-disabled list
-> > first, naturally with irqs disabled.  If, at the end of that run (or
-> > maybe after each handler), IRQs have ended being enabled, print some
-> > diagnostics.  (We're going to need something like this to ensure that
-> > drivers interrupt handlers don't enable IRQs themselves.)  Then enable
-> > IRQs and run the irqs-enabled chain.
-> 
-> Oh, and the other interesting thing to do may be to have a way of
-> measuring how much time irq handlers run for, so that handlers taking
-> an excessive time (more than 0.5ms or so - thinking about the 1000Hz
-> timer rate found on some arches) can be targetted.
+> Tim, can you please re-send the patch to me so I can apply it?
 
-.33 will have trace points for this, so the infrastructure is there or
-do you think about something permanent which does not depend on the
-tracer ?
+SLUB has no issue since NUMA decisions are deferred to the page allocator.
 
-Thanks,
-
-	tglx
 
