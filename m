@@ -1,72 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbZK3AtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZK3AuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752871AbZK3AtL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 19:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZK3AtK
+	id S1752908AbZK3AuA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 19:50:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZK3At7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 19:49:10 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33781 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752111AbZK3AtJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 19:49:09 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 30 Nov 2009 09:46:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
-Message-Id: <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0911241640590.25288@sister.anvils>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
-	<Pine.LNX.4.64.0911241640590.25288@sister.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Sun, 29 Nov 2009 19:49:59 -0500
+Received: from mail1.radix.net ([207.192.128.31]:45677 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751748AbZK3At6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 19:49:58 -0500
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+From: Andy Walls <awalls@radix.net>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       maximlevitsky@gmail.com, mchehab@redhat.com, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+In-Reply-To: <m3ocml6ppt.fsf@intrepid.localdomain>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	 <m3aay6y2m1.fsf@intrepid.localdomain>
+	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+	 <1259450815.3137.19.camel@palomino.walls.org>
+	 <m3ocml6ppt.fsf@intrepid.localdomain>
+Content-Type: text/plain
+Date: Sun, 29 Nov 2009 19:48:17 -0500
+Message-Id: <1259542097.5231.78.camel@palomino.walls.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 16:42:15 +0000 (GMT)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> +int page_referenced_ksm(struct page *page, struct mem_cgroup *memcg,
-> +			unsigned long *vm_flags)
-> +{
-> +	struct stable_node *stable_node;
-> +	struct rmap_item *rmap_item;
-> +	struct hlist_node *hlist;
-> +	unsigned int mapcount = page_mapcount(page);
-> +	int referenced = 0;
-> +	struct vm_area_struct *vma;
-> +
-> +	VM_BUG_ON(!PageKsm(page));
-> +	VM_BUG_ON(!PageLocked(page));
-> +
-> +	stable_node = page_stable_node(page);
-> +	if (!stable_node)
-> +		return 0;
-> +
+On Sun, 2009-11-29 at 21:27 +0100, Krzysztof Halasa wrote:
+> 1. Do we agree that a lirc (-style) kernel-user interface is needed at
+>    least?
 
-Hmm. I'm not sure how many pages are shared in a system but
-can't we add some threshold for avoidng too much scan against shared pages ?
-(in vmscan.c)
-like..
-      
-       if (page_mapcount(page) > (XXXX >> scan_priority))
-		return 1;
+Yes.  Honestly, I'm just waiting on lirc_dev for the IR devices I work
+with.  With that I can get those new devices supported for both IR Rx
+and Tx right now.  I was holding off building a lirc_v4l module to see
+if lirc_dev makes it in kernel.
 
-I saw terrible slow downs in shmem-swap-out in old RHELs (at user support).
-(Added kosaki to CC.)
+However, because of the desire by V4L supporters wanting IR to just work
+for remotes bundled with video capture cards, I have already added:
 
-After this patch, the number of shared swappable page will be unlimited.
+1. cx23885-input.c support with RC-5, and soon NEC support, in kernel.
 
-Thanks,
--Kame
+2. new configurations for ir-kbd-i2c.c, due to IR hardware on some cx18
+and ivtv supported cards. 
 
+So at least IR Rx works for the cheap bundled remote.  I still think
+input subsystem will never be able to rpovide a feature complete
+interface though.  I don't mind putting enough work in for the "Just
+works" part with the bundled remote with -input, but not more.
+
+
+> 2. Is there any problem with lirc kernel-user interface?
+
+Here's my list
+
+1. Unused transmit mode defines/enums.  It's not a big deal really, but
+I had a hard time figuring out the differences between CODE, MODE2,
+PULSE since some are not well documented and some of those are not even
+used for Tx.
+
+2. The LIRC ioctls() wanting to change one parameter at a time will
+cause me some thought/work.  It would be better, I think, if LIRC would
+do a get/set of all the parameters in one go.
+
+That's what I do internally here:
+
+http://linuxtv.org/hg/v4l-dvb/file/e0cd9a337600/linux/include/media/v4l2-subdev.h#l283
+http://linuxtv.org/hg/v4l-dvb/file/e0cd9a337600/linux/drivers/media/video/cx23885/cx23888-ir.c#l746
+http://linuxtv.org/hg/v4l-dvb/file/e0cd9a337600/linux/drivers/media/video/cx23885/cx23885-input.c#l269
+
+The idea is that you set up the IR hardware infrequently and spend most
+of the time letting it run.  I'd have to think, if setting up the
+hardware one parameter at a time may have it operating in a strange
+mode, until the sequence of configuration ioctl() is complete.
+
+I was planning on a lirc_v4l module aggregating all the lirc_dev ioctl
+requests somehow to possibly avoid that potential problem.
+
+Maybe an additional ioctl() from LIRC userspace and lirc_dev saying it
+was done with the current IR device configuration sequence would be
+another way to mitigate the problem for me.
+
+
+
+
+> If the answer for #1 is "yes" and for #2 is "no" then perhaps we merge
+> the Jarod's lirc patches (at least the core) so at least the
+> non-controversial part is done?
+> 
+> Doing so doesn't block improving input layer IR interface, does it?
+
+It never has AFAICT.
+
+A current related problem is that i2c based devices can only be bound to
+only one of ir-kbd-i2c *or* lirc_i2c *or* lirc_zilog at any one time.
+Currently it is somewhat up to the bridge driver which binding is
+preferred.  Discussion about this for the pvrusb2 module had the biggest
+email churn IIRC.
+
+This will be a general problem to fix for all the V4L-DVB drivers where
+both LIRC and input can handle the device. A reasonable default
+assumption  *may* be that the user who bothers to configure LIRC wants
+LIRC to override handling by input.  That's a detail though...
+
+Regards,
+Andy
 
