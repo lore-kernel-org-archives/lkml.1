@@ -1,84 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZK3RHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbZK3RNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbZK3RHx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 12:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZK3RHw
+	id S1753155AbZK3RNb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 12:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbZK3RNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 12:07:52 -0500
-Received: from 2605ds1-ynoe.0.fullrate.dk ([90.184.12.24]:36818 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbZK3RHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 12:07:51 -0500
-Message-ID: <4B13FBE7.9040304@krogh.cc>
-Date: Mon, 30 Nov 2009 18:07:51 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: 2.6.31.6, unresponsiveness and something with nfs
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 12:13:30 -0500
+Received: from cantor.suse.de ([195.135.220.2]:53646 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753061AbZK3RNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 12:13:30 -0500
+Date: Mon, 30 Nov 2009 18:13:33 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] "fair" rw spinlocks
+Message-ID: <20091130171333.GG21639@wotan.suse.de>
+References: <20091123145409.GA29627@wotan.suse.de> <alpine.LFD.2.00.0911280927180.2561@localhost> <20091130075557.GI17484@wotan.suse.de> <alpine.LFD.2.00.0911300706420.2872@localhost.localdomain> <20091130154031.GE21639@wotan.suse.de> <alpine.LFD.2.00.0911300754420.2872@localhost.localdomain> <20091130163923.GC6762@linux.vnet.ibm.com> <alpine.LFD.2.00.0911300852410.2872@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911300852410.2872@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Mon, Nov 30, 2009 at 09:05:57AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 30 Nov 2009, Paul E. McKenney wrote:
+> > 
+> > My suggestion would be to put the nesting counter in the task structure
+> > to avoid this problem.
+> 
+> It still doesn't end up being all that cheap. Now you'd need to disable 
+> preemption in order to fix the race between the local counter and the real 
+> lock.
+> 
+> That should be cheaper than cli/sti, but the downside is that now you need 
+> that task struct pointer (both for the preemption disable and the 
+> counter), so now you're adding some register pressure too. Of course, 
+> maybe you don't even want to inline it anyway, in which case that doesn't 
+> matter.
+> 
+> One advantage with your suggestion of using preemption is that (unlike irq 
+> disables) you can keep the preemt counter over the whole lock, so you 
+> don't need to re-do the preempt disable/enable in both read-lock and 
+> read-unlock.
+> 
+> So you might end up with something like (UNTESTED!):
+> 
+> 	static void tasklist_write_lock(void)
+> 	{
+> 		spin_lock_irq(&tasklist_lock);
+> 	}
+> 
+> 	static void tasklist_write_unlock(void)
+> 	{
+> 		spin_unlock_irq(&tasklist_lock);
+> 	}
 
-I have a system running 2.6.31.6 that when running a particular process
-become "unresponsive". I cannot really tell what it is but the effect is
-that logins as ordinary users hangs, when that user has its home on a
-remote NFS-server.
+Two questions. Firstly, does tasklist_lock benefit much from read
+side paralellism? Looking at some of the critical sections some seem
+to hold it for quite a while (over task and thread iterations). So
+it might not be the right thing to convert it to a spinlock?
 
-so from root "su - localuser" works excellent. But su - user-with-home
-on-nfs doesnt.
+Secondly:
 
-It is not as if NIS/NFS doesnt work, since i can get a directory-listing
-from the NFS-share as root without problems.
+> 	static void tasklist_read_lock(void)
+> 	{
+> 		preempt_disable();
+> 		if (!current->tasklist_count++)
 
-But here is the last 10 lines from "strace -f su -
-user-with-home-on-nfs" .. it get into an un-interruptible hang.
+What happens if an interrupt and nested tasklist_read_lock() happens
+here?
 
-[pid 24599] close(3)                    = 0
-[pid 24599] open("/etc/localtime", O_RDONLY) = 3
-[pid 24599] fstat(3, {st_mode=S_IFREG|0644, st_size=2134, ...}) = 0
-[pid 24599] fstat(3, {st_mode=S_IFREG|0644, st_size=2134, ...}) = 0
-[pid 24599] mmap(NULL, 4096, PROT_READ|PROT_WRITE,
-MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6b0c5b2000
-[pid 24599] read(3,
-"TZif2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\6\0\0\0\6\0\0"..., 4096) = 2134
-[pid 24599] lseek(3, -1368, SEEK_CUR)   = 766
-[pid 24599] read(3,
-"TZif2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\10\0\0\0\10\0"..., 4096) = 1368
-[pid 24599] close(3)                    = 0
-[pid 24599] munmap(0x7f6b0c5b2000, 4096) = 0
-[pid 24599] stat("/etc/localtime", {st_mode=S_IFREG|0644, st_size=2134,
-...}) = 0
-[pid 24599] fstat(1,
-
-^C^C^C^C
-
-
-or at least not uninterruptable, because I have a process merging 20,
-1.5GB presorted files using "sort -m" from GNU-coreutils.. on an ext4
-volume, a few seconds after I kill -9 the sorting process.. all hanging
-login continues.. the above process continues(and the system returns to
-"normal state"):
-
-{st_mode=S_IFREG|0664, st_size=246138, ...}) = 0
-[pid 24599] --- SIGINT (Interrupt) @ 0 (0) ---
-Process 24542 resumed
-Process 24599 detached
-[pid 24542] <... wait4 resumed> 0x7fffa656c5a4, 0, NULL) = ? ERESTARTSYS
-(To be restarted)
-[pid 24542] --- SIGINT (Interrupt) @ 0 (0) ---
-
-The merging process is on an ext4 volume of 8TB in size. strace of the
-sorting process, shows it progresses nicely.
-
-The system is running 2.6.31.6 with
-59a252ff8c0f2fa32c896f69d56ae33e641ce7ad reverted as suggested by J.
-Bruce Fields, to me it seems unrelated.
-
-Jesper
--- 
-Jesper
+> 			spin_lock(&tasklist_lock);
+> 	}
+> 
+> 	static void tasklist_read_unlock(void)
+> 	{
+> 		if (!--current->tasklist_count)
+> 			spin_unlock(&tasklist_lock);
+> 		preempt_enable();
+> 	}
+> 
+> And the upside, of course, is that a spin_unlock() is cheaper than a 
+> read_unlock() (no serializing atomic op), so while there is overhead, 
+> there are also some advantages.. Maybe that atomic op advantage is enough 
+> to offset the extra instructions.
+> 
+> And maybe we could use 'raw_spin_[un]lock()' in the above read-[un]lock 
+> sequences, since tasklist_lock is pretty special, and since we do the 
+> preempt disable by hand (no need to do it again in the spinlock code). 
+> That looks like it might cut down the overhead of all of the above to 
+> almost nothing for what is probably the common case today (ie preemption 
+> enabled).
+> 
+> 			Linus
