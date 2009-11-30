@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZK3OXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbZK3O0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZK3OXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 09:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZK3OXQ
+	id S1752274AbZK3O0S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 09:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZK3O0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 09:23:16 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55953 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752733AbZK3OXP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 09:23:15 -0500
-Subject: Re: Ethernet issues with lite5200 board from linux-2.6.31
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Yogesh Chaudhari <mr.yogesh@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
-       John Kacur <jkacur@redhat.com>
-In-Reply-To: <d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
-References: <d1f76ba30911300038w272578dfx9adb116bde493e00@mail.gmail.com>
-	 <d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 30 Nov 2009 09:23:19 -0500
-Message-Id: <1259590999.12870.0.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 09:26:18 -0500
+Received: from www.tglx.de ([62.245.132.106]:46610 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751228AbZK3O0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 09:26:17 -0500
+Date: Mon, 30 Nov 2009 15:24:40 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.infradead.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
+ IRQF_SHARED|IRQF_DISABLED)
+In-Reply-To: <1259589780.26472.18.camel@laptop>
+Message-ID: <alpine.LFD.2.00.0911301519120.24119@localhost.localdomain>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>  <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>  <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain> <1259589780.26472.18.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 15:20 +0530, Yogesh Chaudhari wrote:
-> Hello,
->          I am running linux kernel with rt patch on embedded board
-> based on lite5200 eval board. From linux-2.6.31 release, in which the
-> mdio patch has gone inside,  the fec ethernet does not come up on this
-> board. I get the following message at startup:
-> mpc52xx MII bus: probed
+On Mon, 30 Nov 2009, Peter Zijlstra wrote:
+> On Mon, 2009-11-30 at 14:54 +0100, Thomas Gleixner wrote:
+> > The correct solution IMNSHO is to get rid of IRQF_DISABLED and run
+> > interrupt handlers always with interrupts disabled and require them
+> > not to reenable interrupts themself.
+> > 
+> > Thoughts ?
+> 
+> I'm all for removing that brain damage:
+> 
+>   http://lkml.org/lkml/2009/3/2/33
 
-Do you see the same issue without adding the rt patch?
+Darn, I knew that we discussed that before, but my memory tricked me
+into believing that it was years ago :)
 
--- Steve
+> We should convert the broken hardware PIO and 3com interrupt things to
+> threaded interrupts, and simply mandate all IRQ handlers run short and
+> with IRQs disabled.
 
+The ide stuff seems to be the only one which uses
+local_irq_enable_in_hardirq() so that at least it tripped over lockdep
+already.
 
+What's the 3com wreckage about ?
+
+> Except I guess that will upset some of the IRQ priority folks, like
+> power, where they (iirc) have a stack per irq prio level.
+
+Is that actually used ? Ben ?
+ 
+> But its not like the core kernel knows about these nesting rules and can
+> actually track any of that muck.
+
+True.
+
+	tglx
+ 
