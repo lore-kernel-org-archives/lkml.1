@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbZK3LFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZK3LG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753027AbZK3LFg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:05:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZK3LFg
+	id S1753446AbZK3LG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZK3LG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:05:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37167 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbZK3LFf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:05:35 -0500
-Subject: Re: [PATCH v2 10/12] Maintain preemptability count even for
- !CONFIG_PREEMPT kernels
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, kvm@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, riel@redhat.com
-In-Reply-To: <1259578793.20516.130.camel@laptop>
-References: <1258985167-29178-1-git-send-email-gleb@redhat.com>
-	 <1258985167-29178-11-git-send-email-gleb@redhat.com>
-	 <1258990455.4531.594.camel@laptop> <20091123155851.GU2999@redhat.com>
-	 <alpine.DEB.2.00.0911231128190.785@router.home>
-	 <20091124071250.GC2999@redhat.com>
-	 <alpine.DEB.2.00.0911240906360.14045@router.home>
-	 <20091130105612.GF30150@redhat.com>  <20091130105812.GG30150@redhat.com>
-	 <1259578793.20516.130.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 30 Nov 2009 12:05:14 +0100
-Message-ID: <1259579114.20516.136.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 30 Nov 2009 06:06:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47339 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751249AbZK3LG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 06:06:26 -0500
+Message-ID: <4B13A71E.2070803@kernel.org>
+Date: Mon, 30 Nov 2009 20:06:06 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Johannes Stezenbach <js@sig21.net>
+CC: Greg KH <greg@kroah.com>, Robert Hancock <hancockrwd@gmail.com>,
+       Mikhail Malygin <mmalygin@ked.de>, Hans Werner <hwerner4@gmx.de>,
+       Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: Samsung N130 ATA exception after 5min uptime -- Phoenix FailSafe
+ issue?
+References: <20091126164212.GA24421@sig21.net> <20091128191932.GB24048@kroah.com> <4B11886E.3030906@gmail.com> <20091128213446.GA26420@kroah.com> <20091128222203.GA369@sig21.net> <20091129001745.GA29143@kroah.com> <20091129005157.GA6487@sig21.net> <4B1387EB.2090506@kernel.org> <20091130102104.GA13288@sig21.net>
+In-Reply-To: <20091130102104.GA13288@sig21.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 11:59 +0100, Peter Zijlstra wrote:
-> On Mon, 2009-11-30 at 12:58 +0200, Gleb Natapov wrote:
-> > On Mon, Nov 30, 2009 at 12:56:12PM +0200, Gleb Natapov wrote:
-> > > On Tue, Nov 24, 2009 at 09:14:03AM -0600, Christoph Lameter wrote:
-> > > > On Tue, 24 Nov 2009, Gleb Natapov wrote:
-> > > > 
-> > > > > On Mon, Nov 23, 2009 at 11:30:02AM -0600, Christoph Lameter wrote:
-> > > > > > This adds significant overhead for the !PREEMPT case adding lots of code
-> > > > > > in critical paths all over the place.
-> > > > > I want to measure it. Can you suggest benchmarks to try?
-> > > > 
-> > > > AIM9 (reaim9)?
-> > > Below are results for kernel 2.6.32-rc8 with and without the patch (only
-> > > this single patch is applied).
-> > > 
-> > Forgot to tell. The results are average between 5 different runs.
-> 
-> Would be good to also report the variance over those 5 runs, allows us
-> to see if the difference is within the noise.
+Hello,
 
-Got pointed to the fact that there is a stddev column right there.
+On 11/30/2009 07:21 PM, Johannes Stezenbach wrote:
+> I've booted with rdinit=/bin/sh (busybox sh in initramfs), so
+> nothing accesses the disk.  After 5min the C state switch
+> happens, but no ATA exception. I waited a few more miniutes
+> and then used dd if=/dev/sda of=/dev/null  -> ATA exception.
+> There is no way to escape it.
 
-Must be Monday or something ;-)
+Ah, okay, so whatever follows the switch times out.
 
+I have no idea what to do about it at this point.  :-(
+
+-- 
+tejun
