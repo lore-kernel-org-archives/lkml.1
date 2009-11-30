@@ -1,39 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZK3TTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZK3TTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbZK3TTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 14:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZK3TTk
+	id S1753318AbZK3TTu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 14:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbZK3TTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 14:19:40 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57725 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbZK3TTj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 14:19:39 -0500
-Message-ID: <4B141A8E.1090104@zytor.com>
-Date: Mon, 30 Nov 2009 11:18:38 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: "Brown, Len" <len.brown@intel.com>
-CC: helight <helight@126.com>, linux-kernel@vger.kernel.org, x86@kernel.org,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Subject: [PATCH 2/2] fix a Section mismatch in arch/x86/pci/mmconfig-shared.c
- and include/linux/sfi_acpi.h
-References: <4B13A094.2080504@126.com>
-In-Reply-To: <4B13A094.2080504@126.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 30 Nov 2009 14:19:45 -0500
+Received: from lo.gmane.org ([80.91.229.12]:36900 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753175AbZK3TTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 14:19:42 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: pci=off
+Date: Mon, 30 Nov 2009 20:18:56 +0100
+Message-ID: <20091130201856.43adcc38@schatten.dmk.lab>
+References: <web-96228708@zbackend1.aha.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: f053213122.adsl.alicedsl.de
+In-Reply-To: <web-96228708@zbackend1.aha.ru>
+X-Newsreader: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len,
+On Sun, 29 Nov 2009 16:52:50 -0400
+"werner" <w.landgraf@ru.ru> wrote:
 
-Do you want to take this one or should I?
+> "werner" <w.landgraf@ru.ru>
+> In the last time, more and more laptops have problems to 
+> boot with Linux.
+> 
+> The most frequent problem is that IDE drives are not 
+> found, or cannot be accessed because reclaimed as ocupied. 
+>   The only mean to access them and to get it booted, is 
+> with pci=off.   However, with this, the system becomes 
+> almost unuseable, lspci also shows nothing.      ITS 
+> NECESSARY THAT SOMEONE MAKE A KERNEL PARAMETER  pci=noide 
+> , so that all hardware is registered, with exception of 
+> ide (and sata) drives   !!!!   This problem, for example, 
+> also happens on IBM/Lenovo Thinkpad laptops.
 
-	-hpa
+i run on thinkpad r61 . i have experienced no problems.
+what specific model are you running into trouble and with what
+specific kernel-configuration? 
+
+maybe this helps: http://tuxmobil.org/ibm.html 
 
 
-On 11/30/2009 02:38 AM, helight wrote:
-> acpi_sfi_table_parse() should be __init. tested on x86 system!
+> 
+> A Toshibe Satelite laptop, I need go back to kernel 2.6.23 
+> . With later kernels, at the beginning of the boot the 
+> screen become black and nothing more happened.  The same 
+> happens on that laptop with all newer Slackware kernels
+
+did you try any recent fedora/ubuntu/debian live-dvds? this is normally
+the easiest way to check if there is a real problem or if it is only a
+kernel-configuration issue. 
+
+cheers,
+flo
+
