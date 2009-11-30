@@ -1,34 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZK3Ntf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbZK3Nw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbZK3Ntf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 08:49:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZK3Nte
+	id S1753434AbZK3Nw3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 08:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZK3Nw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 08:49:34 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55048 "EHLO
+	Mon, 30 Nov 2009 08:52:28 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55056 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752230AbZK3Ntd (ORCPT
+	with ESMTP id S1752501AbZK3Nw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 08:49:33 -0500
-Date: Mon, 30 Nov 2009 13:51:19 +0000
+	Mon, 30 Nov 2009 08:52:27 -0500
+Date: Mon, 30 Nov 2009 13:54:35 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Pierre Ossman <pierre@ossman.eu>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Ben Hutchings <ben@decadent.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, 504391@bugs.debian.org,
-       Wouter van Heyst <larstiq@larstiq.dyndns.org>
-Subject: Re: [PATCH] mmc: add module parameter to set whether cards are
- assumed removable
-Message-ID: <20091130135119.4bacade7@lxorguk.ukuu.org.uk>
-In-Reply-To: <1259587966.13049.6.camel@maxim-laptop>
-References: <1257914676.2237.57.camel@localhost>
-	<20091116122329.847916b6.akpm@linux-foundation.org>
-	<1258410709.2792.9.camel@localhost>
-	<4B02565C.1030406@s5r6.in-berlin.de>
-	<20091130133949.794fef00@mjolnir.ossman.eu>
-	<1259587966.13049.6.camel@maxim-laptop>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: William Allen Simpson <william.allen.simpson@gmail.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: warning: massive change to conditional coding style in net?
+Message-ID: <20091130135435.3895a437@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091130134414.GB7114@ff.dom.local>
+References: <4B13A025.7000103@gmail.com>
+	<20091130134414.GB7114@ff.dom.local>
 X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -37,14 +29,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Before we do suspend, pick few random sectors from the media, run that
-> through some hash function, thus creating some sort of watermark.
+> > Miller (with Perches) changed hundreds (thousands?) of these to
+> > trailing form.  This results in a number of hilarious examples --
+> > lines with both leading and trailing, lines with only &&, etc.  A
+> > small sample for illustration:
+> 
+> Yes, it's even enough to make a grown man laugh....
 
-Statistically speaking the chances are you'll catch zero sectors and
-lose. You'll also not detect the suspend, move to other box, use, put
-back error. That is one users make and we need to be at least vaguely
-robust against.
+IMHO for left to right languages dangly bits want to be on the right,
+because that is where your eyes are when you hit the end of the previous
+line, so the dangly bit is already in your line of vision and probably
+even in focus.
 
-Hence you need the fs checking here.
-
-Alan
