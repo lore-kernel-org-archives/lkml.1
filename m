@@ -1,132 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZK3O5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZK3O4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbZK3O5e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 09:57:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbZK3O5e
+	id S1753089AbZK3O4f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 09:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZK3O4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 09:57:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53209 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752446AbZK3O5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 09:57:33 -0500
-Date: Mon, 30 Nov 2009 15:54:43 +0100
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Spencer Candland <spencer@bluehost.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH 2/2] cputime: introduce thread_group_times()
-Message-ID: <20091130145442.GA2326@dhcp-lab-161.englab.brq.redhat.com>
-References: <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com> <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com> <1258464288.7816.305.camel@laptop> <20091119181744.GA3743@dhcp-lab-161.englab.brq.redhat.com> <4B05F835.10401@jp.fujitsu.com> <20091123100925.GB25978@dhcp-lab-161.englab.brq.redhat.com> <20091123101612.GC25978@dhcp-lab-161.englab.brq.redhat.com> <4B138EA0.90007@jp.fujitsu.com>
+	Mon, 30 Nov 2009 09:56:34 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:32244 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbZK3O4e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 09:56:34 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -14.389
+Message-ID: <4B13DD1A.3030103@tremplin-utc.net>
+Date: Mon, 30 Nov 2009 15:56:26 +0100
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B138EA0.90007@jp.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Samu Onkalo <samu.p.onkalo@nokia.com>
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v3 1/5] lis3: Selftest support
+References: <1258622842-23129-1-git-send-email-samu.p.onkalo@nokia.com> <1258622842-23129-2-git-send-email-samu.p.onkalo@nokia.com>
+In-Reply-To: <1258622842-23129-2-git-send-email-samu.p.onkalo@nokia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 06:21:36PM +0900, Hidetoshi Seto wrote:
-> This patch fixes the above problem in the following way:
+Op 19-11-09 10:27, Samu Onkalo schreef:
+> Implement selftest feature as specified by chip manufacturer.
+> Control: read selftest sysfs entry
+> Response: "OK x y z" or "FAIL x y z"
+> where x, y, and z are difference between selftest mode and normal mode.
+> Test is passed when values are within acceptance limit values.
 > 
->  - Modify thread's exit (= __exit_signal()) not to use task_times().
->    It means {u,s}time in signal struct accumulates raw values instead
->    of adjusted values.  As the result it makes thread_group_cputime()
->    to return pure sum of "raw" values.
+> Acceptance limits are provided via platform data. See chip spesifications
+> for acceptance limits. If limits are not properly set, OK / FAIL decision is
+> meaningless. However, userspace application can still make decision based on
+> the numeric x, y, z values.
 > 
->  - Introduce a new function thread_group_times(*task, *utime, *stime)
->    that converts "raw" values of thread_group_cputime() to "adjusted"
->    values, in same calculation procedure as task_times().
-> 
->  - Modify group's exit (= wait_task_zombie()) to use this introduced
->    thread_group_times().  It make c{u,s}time in signal struct to
->    have adjusted values like before this patch.
-> 
->  - Replace some thread_group_cputime() by thread_group_times().
->    This replacements are only applied where conveys the "adjusted"
->    cputime to users, and where already uses task_times() near by it.
->    (i.e. sys_times(), getrusage(), and /proc/<PID>/stat.)
-> 
-> This patch have a positive side effect:
-> 
->  - Before this patch, if a group contains many short-life threads
->    (e.g. runs 0.9ms and not interrupted by ticks), the group's
->    cputime could be invisible since thread's cputime was accumulated
->    after adjusted: imagine adjustment function as adj(ticks, runtime),
->      {adj(0, 0.9) + adj(0, 0.9) + ....} = {0 + 0 + ....} = 0.
->    After this patch it will not happen because the adjustment is
->    applied after accumulated.
+> Selftest is meant for HW diagnostic purposes. It is not meant to be called
+> during normal use of the chip. It may cause false interrupt events.
+> Selftest mode delays polling of the normal results but it doesn't cause
+> wrong values. Chip must be in static state during selftest.
+> Any acceration during the test causes most probably failure.
+This patch looks good to me, but please add the info of this changelog
+into the documentation (in patch 4). If users have to start digging into
+the git changelog to find out what does a feature, we are nasty ;-)
 
-Idea is very good IMHO.
+Signed-off-by: Éric Piel <eric.piel@tremplin-utc.net>
 
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+> 
+> Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
 > ---
->  fs/proc/array.c       |    5 +---
->  include/linux/sched.h |    3 +-
->  kernel/exit.c         |   23 +++++++++++----------
->  kernel/fork.c         |    2 +
->  kernel/sched.c        |   52 +++++++++++++++++++++++++++++++++++++++++++++++-
->  kernel/sys.c          |   18 +++++++---------
->  6 files changed, 75 insertions(+), 28 deletions(-)
-
-[snip]
-
->  #ifndef CONFIG_VIRT_CPU_ACCOUNTING
-> -	cputime_t prev_utime, prev_stime;
-> +	cputime_t prev_utime, prev_stime, prev_tgutime, prev_tgstime;
->  #endif
-
-I think the new values should be part of struct_signal (see below)
-
-> +static void __thread_group_times(struct task_struct *p,
-> +				 struct task_cputime *cputime)
+>  drivers/hwmon/lis3lv02d.c |   72 ++++++++++++++++++++++++++++++++++++++++++++-
+>  drivers/hwmon/lis3lv02d.h |   14 +++++++-
+>  include/linux/lis3lv02d.h |    3 ++
+>  3 files changed, 86 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
+> index 39b9ac8..69314f9 100644
+> --- a/drivers/hwmon/lis3lv02d.c
+> +++ b/drivers/hwmon/lis3lv02d.c
+> @@ -106,9 +106,11 @@ static void lis3lv02d_get_xyz(struct lis3lv02d *lis3, int *x, int *y, int *z)
+>  {
+>  	int position[3];
+>  
+> +	mutex_lock(&lis3->mutex);
+>  	position[0] = lis3->read_data(lis3, OUTX);
+>  	position[1] = lis3->read_data(lis3, OUTY);
+>  	position[2] = lis3->read_data(lis3, OUTZ);
+> +	mutex_unlock(&lis3->mutex);
+>  
+>  	*x = lis3lv02d_get_axis(lis3->ac.x, position);
+>  	*y = lis3lv02d_get_axis(lis3->ac.y, position);
+> @@ -133,6 +135,60 @@ static int lis3lv02d_get_odr(void)
+>  	return val;
+>  }
+>  
+> +static int lis3lv02d_selftest(struct lis3lv02d *lis3, s16 results[3])
 > +{
-> +	cputime_t rtime, utime, total;
+> +	u8 reg;
+> +	s16 x, y, z;
+> +	u8 selftest;
+> +	int ret;
 > +
-> +	thread_group_cputime(p, cputime);
+> +	mutex_lock(&lis3->mutex);
+> +	if (lis3_dev.whoami == WAI_12B)
+> +		selftest = CTRL1_ST;
+> +	else
+> +		selftest = CTRL1_STP;
 > +
-> +	total = cputime_add(cputime->utime, cputime->stime);
-> +	rtime = nsecs_to_cputime(cputime->sum_exec_runtime);
+> +	lis3->read(lis3, CTRL_REG1, &reg);
+> +	lis3->write(lis3, CTRL_REG1, (reg | selftest));
+> +	msleep(lis3->pwron_delay / lis3lv02d_get_odr());
 > +
-> +	if (total) {
-> +		u64 temp;
+> +	/* Read directly to avoid axis remap */
+> +	x = lis3->read_data(lis3, OUTX);
+> +	y = lis3->read_data(lis3, OUTY);
+> +	z = lis3->read_data(lis3, OUTZ);
 > +
-> +		temp = (u64)(rtime * cputime->utime);
-> +		do_div(temp, total);
-> +		utime = (cputime_t)temp;
-> +	} else
-> +		utime = rtime;
+> +	/* back to normal settings */
+> +	lis3->write(lis3, CTRL_REG1, reg);
+> +	msleep(lis3->pwron_delay / lis3lv02d_get_odr());
 > +
-> +	p->prev_tgutime = max(p->prev_tgutime, utime);
-> +	p->prev_tgstime = max(p->prev_tgstime,
-> +			      cputime_sub(rtime, p->prev_tgutime));
-
-p->sig->prev_utime = max(p->sig->prev_utime, utime);
-p->sig->prev_stime = max(p->sig->prev_stime,
-   		     	cputime_sub(rtime, p->sig->prev_utime));
-
->  /*
-> + * Must be called with siglock held.
-> + */
-> +void thread_group_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
+> +	results[0] = x - lis3->read_data(lis3, OUTX);
+> +	results[1] = y - lis3->read_data(lis3, OUTY);
+> +	results[2] = z - lis3->read_data(lis3, OUTZ);
+> +
+> +	ret = 0;
+> +	if (lis3->pdata) {
+> +		int i;
+> +		for (i = 0; i < 3; i++) {
+> +			/* Check minimum acceptance limits */
+> +			if (results[i] < lis3->pdata->st_min_limits[i]) {
+> +				ret = -EIO;
+> +				goto fail;
+> +			}
+> +
+> +			/* Check maximum acceptance limits */
+> +			if (results[i] > lis3->pdata->st_max_limits[i]) {
+> +				ret = -EIO;
+> +				goto fail;
+> +			}
+> +		}
+> +	}
+> +
+> +	/* test passed */
+> +fail:
+> +	mutex_unlock(&lis3->mutex);
+> +	return ret;
+> +}
+> +
+>  void lis3lv02d_poweroff(struct lis3lv02d *lis3)
+>  {
+>  	/* disable X,Y,Z axis and power down */
+> @@ -365,6 +421,17 @@ void lis3lv02d_joystick_disable(void)
+>  EXPORT_SYMBOL_GPL(lis3lv02d_joystick_disable);
+>  
+>  /* Sysfs stuff */
+> +static ssize_t lis3lv02d_selftest_show(struct device *dev,
+> +				struct device_attribute *attr, char *buf)
 > +{
-> +	struct task_cputime cputime;
+> +	int result;
+> +	s16 values[3];
 > +
-> +	__thread_group_times(p, &cputime);
+> +	result = lis3lv02d_selftest(&lis3_dev, values);
+> +	return sprintf(buf, "%s %d %d %d\n", result == 0 ? "OK" : "FAIL",
+> +		values[0], values[1], values[2]);
+> +}
 > +
-> +	if (ut)
-> +		*ut = cputime.utime;
-> +	if (st)
-> +		*st = cputime.stime;
+>  static ssize_t lis3lv02d_position_show(struct device *dev,
+>  				struct device_attribute *attr, char *buf)
+>  {
+> @@ -394,12 +461,14 @@ static ssize_t lis3lv02d_rate_show(struct device *dev,
+>  	return sprintf(buf, "%d\n", lis3lv02d_get_odr());
+>  }
+>  
+> +static DEVICE_ATTR(selftest, S_IRUSR, lis3lv02d_selftest_show, NULL);
+>  static DEVICE_ATTR(position, S_IRUGO, lis3lv02d_position_show, NULL);
+>  static DEVICE_ATTR(calibrate, S_IRUGO|S_IWUSR, lis3lv02d_calibrate_show,
+>  	lis3lv02d_calibrate_store);
+>  static DEVICE_ATTR(rate, S_IRUGO, lis3lv02d_rate_show, NULL);
+>  
+>  static struct attribute *lis3lv02d_attributes[] = {
+> +	&dev_attr_selftest.attr,
+>  	&dev_attr_position.attr,
+>  	&dev_attr_calibrate.attr,
+>  	&dev_attr_rate.attr,
+> @@ -455,6 +524,8 @@ int lis3lv02d_init_device(struct lis3lv02d *dev)
+>  		return -EINVAL;
+>  	}
+>  
+> +	mutex_init(&dev->mutex);
+> +
+>  	lis3lv02d_add_fs(dev);
+>  	lis3lv02d_poweron(dev);
+>  
+> @@ -507,4 +578,3 @@ EXPORT_SYMBOL_GPL(lis3lv02d_init_device);
+>  MODULE_DESCRIPTION("ST LIS3LV02Dx three-axis digital accelerometer driver");
+>  MODULE_AUTHOR("Yan Burman, Eric Piel, Pavel Machek");
+>  MODULE_LICENSE("GPL");
+> -
+> diff --git a/drivers/hwmon/lis3lv02d.h b/drivers/hwmon/lis3lv02d.h
+> index c57f21f..166794c 100644
+> --- a/drivers/hwmon/lis3lv02d.h
+> +++ b/drivers/hwmon/lis3lv02d.h
+> @@ -98,7 +98,7 @@ enum lis3_who_am_i {
+>  	WAI_6B		= 0x52, /* 6 bits: LIS331DLF - not supported */
+>  };
+>  
+> -enum lis3lv02d_ctrl1 {
+> +enum lis3lv02d_ctrl1_12b {
+>  	CTRL1_Xen	= 0x01,
+>  	CTRL1_Yen	= 0x02,
+>  	CTRL1_Zen	= 0x04,
+> @@ -107,8 +107,17 @@ enum lis3lv02d_ctrl1 {
+>  	CTRL1_DF1	= 0x20,
+>  	CTRL1_PD0	= 0x40,
+>  	CTRL1_PD1	= 0x80,
+> -	CTRL1_DR	= 0x80, /* Data rate on 8 bits */
+>  };
+> +
+> +/* Delta to ctrl1_12b version */
+> +enum lis3lv02d_ctrl1_8b {
+> +	CTRL1_STM	= 0x08,
+> +	CTRL1_STP	= 0x10,
+> +	CTRL1_FS	= 0x20,
+> +	CTRL1_PD	= 0x40,
+> +	CTRL1_DR	= 0x80,
+> +};
+> +
+>  enum lis3lv02d_ctrl2 {
+>  	CTRL2_DAS	= 0x01,
+>  	CTRL2_SIM	= 0x02,
+> @@ -218,6 +227,7 @@ struct lis3lv02d {
+>  	unsigned long		misc_opened; /* bit0: whether the device is open */
+>  
+>  	struct lis3lv02d_platform_data *pdata;	/* for passing board config */
+> +	struct mutex		mutex;     /* Serialize poll and selftest */
+>  };
+>  
+>  int lis3lv02d_init_device(struct lis3lv02d *lis3);
+> diff --git a/include/linux/lis3lv02d.h b/include/linux/lis3lv02d.h
+> index 8970135..f1ca0dc 100644
+> --- a/include/linux/lis3lv02d.h
+> +++ b/include/linux/lis3lv02d.h
+> @@ -55,6 +55,9 @@ struct lis3lv02d_platform_data {
+>  	s8 axis_z;
+>  	int (*setup_resources)(void);
+>  	int (*release_resources)(void);
+> +	/* Limits for selftest are specified in chip data sheet */
+> +	s16 st_min_limits[3]; /* min pass limit x, y, z */
+> +	s16 st_max_limits[3]; /* max pass limit x, y, z */
+>  };
+>  
+>  #endif /* __LIS3LV02D_H_ */
 
-No thread_group_times() nor task_times() is called with NULL arguments, we
-can get rid of "if ({u,s}t)" checks. Perhaps thread_group_times() should
-have "struct task_cputime" argument as it is wrapper for
-thread_group_cputime();
-
-Thanks
-Stanislaw
