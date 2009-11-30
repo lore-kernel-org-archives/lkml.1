@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZK3NJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbZK3Nc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbZK3NJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 08:09:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZK3NJ1
+	id S1753268AbZK3Nc5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 08:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZK3Nc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 08:09:27 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:53209 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752082AbZK3NJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 08:09:26 -0500
-Date: Mon, 30 Nov 2009 14:09:28 +0100
-From: Pierre Ossman <pierre@ossman.eu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Ben Hutchings <ben@decadent.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, 504391@bugs.debian.org,
-       Wouter van Heyst <larstiq@larstiq.dyndns.org>
-Subject: Re: [PATCH] mmc: add module parameter to set whether cards are
- assumed removable
-Message-ID: <20091130140928.29d847a4@mjolnir.ossman.eu>
-In-Reply-To: <20091130125405.541a6a01@lxorguk.ukuu.org.uk>
-References: <1257914676.2237.57.camel@localhost>
-	<20091116122329.847916b6.akpm@linux-foundation.org>
-	<1258410709.2792.9.camel@localhost>
-	<4B02565C.1030406@s5r6.in-berlin.de>
-	<20091130133949.794fef00@mjolnir.ossman.eu>
-	<20091130125405.541a6a01@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-30097-1259586574-0001-2"
+	Mon, 30 Nov 2009 08:32:56 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57512 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753034AbZK3Ncy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 08:32:54 -0500
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH] matroxfb: Fix problems with display stability
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Mon, 30 Nov 2009 13:13:26 +0000
+Message-ID: <20091130130921.26634.96600.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Regression caused in 2.6.23 and then despite repeated requests never fixed
+or dealt with (Petr promised to sort it in 2008 but seems to have
+forgotten).
 
---=_freyr.ossman.eu-30097-1259586574-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Enough is enough - remove the problem line that was added. If it upsets
+someone they've had two years to deal with it and at the very least it'll
+rattle their cage and wake them up.
 
-On Mon, 30 Nov 2009 12:54:05 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Closes-bug: http://bugzilla.kernel.org/show_bug.cgi?id=9709
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Cc: <stable@kernel.org>
+---
 
->=20
-> For most file systems it is sufficient to check the superblock related
-> information. So we'd need an fs->ops->validate_media() or somesuch but it
-> wouldn't be that horrific or need to do much I/O in most cases.
->=20
-> You could defeat that by being really stupid, but the purpose of the
-> check isn't a stupidity filter but to stop accidents happening in normal
-> use.
->=20
+ drivers/video/matrox/g450_pll.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Agreed. Something like that would more or less solve the issue. Someone
-just needs to write the code for all (or most) filesystems.
 
-> > Another way of putting it is that the kernel needs to umount/mount
-> > around suspend in a way that's transparent to users of the filesystem.
->=20
-> No. The kernel needs to push stuff to media on suspend (which is good
-> manners anyway), and validate on resume. if the validate fails you mark
-> the media as changed and the block layer will already see to it that
-> everything gets aborted as it already does with a truely removable device.
->=20
-> In fact if you did this by media serial numbers and idents you don't even
-> need the fs hook, although it would certainly be safer that way.
->=20
+diff --git a/drivers/video/matrox/g450_pll.c b/drivers/video/matrox/g450_pll.c
+index 09f6e04..c15f8a5 100644
+--- a/drivers/video/matrox/g450_pll.c
++++ b/drivers/video/matrox/g450_pll.c
+@@ -368,7 +368,8 @@ static int __g450_setclk(struct matrox_fb_info *minfo, unsigned int fout,
+ 					M1064_XDVICLKCTRL_C1DVICLKEN |
+ 					M1064_XDVICLKCTRL_DVILOOPCTL |
+ 					M1064_XDVICLKCTRL_P1LOOPBWDTCTL;
+-				matroxfb_DAC_out(minfo, M1064_XDVICLKCTRL, tmp);
++                                /* Setting this breaks PC systems so don't do it */
++				/* matroxfb_DAC_out(minfo, M1064_XDVICLKCTRL, tmp); */
+ 				matroxfb_DAC_out(minfo, M1064_XPWRCTRL,
+ 						 xpwrctrl);
+ 
 
-The hardware driver layer can only check if it's the same device being
-plugged in, not if someone has done something with it during suspend,
-so I see no other way than solving this in the filesystem layer.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by FRA, a
-  Swedish intelligence agency. Make sure your server uses
-  encryption for SMTP traffic and consider using PGP for
-  end-to-end encryption.
-
---=_freyr.ossman.eu-30097-1259586574-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-
-iEYEARECAAYFAksTxAoACgkQ7b8eESbyJLiOTwCZAURNSM8OzfC52PG04SDEhVn/
-+MYAn1HE5x/7zNFtGGWp2aysmTZGBCMT
-=PtPp
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-30097-1259586574-0001-2--
