@@ -1,101 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbZK3KgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZK3KgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbZK3KgK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 05:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZK3KgH
+	id S1753354AbZK3KgB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 05:36:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZK3KgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 05:36:07 -0500
-Received: from ns.firmix.at ([62.141.48.66]:3166 "EHLO ns.firmix.at"
+	Mon, 30 Nov 2009 05:36:01 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38239 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752668AbZK3KgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 05:36:04 -0500
-Subject: Re: O_NOATIME and files in /proc
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, drepper@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <20091120221108.1fb1dfcf@lxorguk.ukuu.org.uk>
-References: <1258477590.16246.35.camel@tara.firmix.at>
-	 <20091120133651.9df2da80.akpm@linux-foundation.org>
-	 <20091120221108.1fb1dfcf@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Mon, 30 Nov 2009 11:36:00 +0100
-Message-Id: <1259577360.28517.30.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	id S1752533AbZK3KgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 05:36:00 -0500
+Message-ID: <4B13A015.8010407@suse.cz>
+Date: Mon, 30 Nov 2009 11:36:05 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.3 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       =?ISO-8859-2?Q?An=EDbal_Monsalve_?= =?ISO-8859-2?Q?Salazar?= 
+	<anibal@debian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: linux-kbuild.git
+References: <4B0E73E1.50900@suse.cz>	<20091126193750.GA15453@merkur.ravnborg.org>	<20091127152211.55043dbb.sfr@canb.auug.org.au>	<4B0F9F0D.6010601@suse.cz> <20091130085713.75f56423.sfr@canb.auug.org.au>
+In-Reply-To: <20091130085713.75f56423.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.67 on ns.firmix.at
-X-Firmix-Spam-Score: -2.287 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.287 required=5
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-X-Firmix-Received-Date: Mon, 30 Nov 2009 11:36:09 CET
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 22:11 +0000, Alan Cox wrote:
-> On Fri, 20 Nov 2009 13:36:51 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Tue, 17 Nov 2009 18:06:29 +0100
-> > Bernd Petrovitsch <bernd@firmix.at> wrote:
-[...]
-> > > Is there a specific reason that open can not open files (at
-> > > least /proc/noatime and /proc/cpuinfo) under /proc with NO_ATIME as the
-> > > following program shows:
+On 29.11.2009 22:57, Stephen Rothwell wrote:
+> On Fri, 27 Nov 2009 10:42:37 +0100 Michal Marek <mmarek@suse.cz> wrote:
+>> I plan to maintain such a branch, but I thought I would base the
+>> for-next branch on top of it, so that you get everything in one pack. Or
+>> would you still prefer to have two kbuild branches in linux-next, so
+>> that you can remove the for-next branch if necessary and keep the
+>> for-current branch? Just tell me what fits you best.
 > 
-> Andreww: http://lkml.org/lkml/2004/6/14/184 seems to explain the origin
-> of this. To follow it further you'd need to discuss it with Ulrich I
-What is the best to reach him?
-Via drepper@gmail.com?
+> Running a for-current branch allows you to queue up urgent fixes without
+> disrupting your for-next branch.  I will merge such a branch early on
+> (actually before I do my first build) so that I don't have to worry about
+> problems that are already have fixes pending for to be merged by Linus in
+> his current tree.  Also, as you say, if I have problems with your
+> for-next branch, it does not affect the more urgent patches.
 
-> imagine and see why glibc expected that behaviour and in turn where it
-> came from and what security or similar concerns were anticipated.
-Security reasons were the only issues I found there (and no links to
-further papers/articles/motivation/literature).
+OK, I created a for-linus branch in git://repo.or.cz/linux-kbuild.git.
+Currently it's empty, as there are no urgent kbuild fixes for 2.6.32.
 
-For the more technical side (of the security concerns):
-- I agree that it may be important to forcibly keep the atime (for files
-  of other users including root) - at least for backups[0].
-  However, I stumbled over it because I needed a file which changes
-  over time for some periodic (as in every second) application
-  and /proc/uptime was the first crossing my mind[1].
-  Said application used O_NOATIME on each open() as it doesn't hurt
-  anyways (and saves a little I/O - God knows how the root on the
-  customers systems mounts filesystems).
-  So the better solution in this case would have been to e.g. simply
-  ignore the O_NOATIME flag (but make the open succeed). Yes, that
-  can be solved in userspace too with a minimal wrapper function.
-
-- *if* root (or whoever mounted it) already set "noatime" on a
-  filesystem, the atime won't be updated anyways. So I can't see any
-  security concern if the open() also requests O_NOATIME as it is not
-  any change in behaviour.
-  And since /proc/mounts is readable by any user, the user knows it.
-
-- for procfs (and thus /proc): That seems to not store atime at all but
-  returns always the "current" time.
-  So I fail to see what rejecting O_NOATIME on procfs (for files of
-  other users including root) may achieve.
-  Perhaps it makes sense to judge this on a per-file basis.
-
-Alas, perhaps selinux, capabilities and similar may invalid the above
-thoughts (but I don't know enough of these extensive security frameworks
-to comment on that).
-
-	Bernd
-
-[0]: I don't value "it can be proofed that user read the file" that
-     much. Just knowing that a user open a given file doesn't imply that
-     he actually read and actually understood it. Perhaps the user just
-     misclicked the file and exited the filereader 0.5s after opening
-     it.
-[1]: Yes, that can also be solved differently - just more cumbersome.
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+Michal
