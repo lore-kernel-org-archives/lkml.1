@@ -1,48 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZK3MgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbZK3Mi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbZK3MgO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 07:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZK3MgO
+	id S1752597AbZK3Mi2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 07:38:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbZK3Mi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 07:36:14 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43048 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbZK3MgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 07:36:13 -0500
-Date: Mon, 30 Nov 2009 13:36:18 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ben Hutchings <bhutchings@solarflare.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       =?ISO-8859-15?Q?=22Andr=E9_Goddard_Rosa=22?= 
-	<andre.goddard@gmail.com>
-Subject: Re: linux-next: manual merge of the trivial tree with the net tree
-In-Reply-To: <20091130135320.215722a2.sfr@canb.auug.org.au>
-Message-ID: <alpine.LSU.2.00.0911301335570.6953@wotan.suse.de>
-References: <20091130135320.215722a2.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Mon, 30 Nov 2009 07:38:27 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:12741 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752067AbZK3Mi1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 07:38:27 -0500
+X-Trace: 295769746/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.56.48
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AogBABZLE0tPRTgw/2dsb2JhbAAI1TOEMQQ
+X-IronPort-AV: E=Sophos;i="4.47,314,1257120000"; 
+   d="scan'208";a="295769746"
+Date: Mon, 30 Nov 2009 12:38:33 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+In-Reply-To: <20091130180452.5BF6.A69D9226@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0911301227530.24660@sister.anvils>
+References: <Pine.LNX.4.64.0911241640590.25288@sister.anvils>
+ <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091130180452.5BF6.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, Stephen Rothwell wrote:
-
-> Today's linux-next merge of the trivial tree got a conflict in
-> drivers/net/sfc/falcon.c between commit
-> 127e6e10ad17585c48cba8e1dcf30d98b90ee583 ("sfc: Fix bugs in RX queue
-> flushing") from the net tree and commit
-> 4e5cf22a6f45b6489f84de03d3a1dfa60cc4b4e4 ("tree-wide: fix assorted typos
-> all over the place") from the trivial tree.
+On Mon, 30 Nov 2009, KOSAKI Motohiro wrote:
+> > After this patch, the number of shared swappable page will be unlimited.
 > 
-> The former removed the comment that the latter was fixing.
+> Probably, it doesn't matter. I mean
+> 
+>   - KSM sharing and Shmem sharing are almost same performance characteristics.
+>   - if memroy pressure is low, SplitLRU VM doesn't scan anon list so much.
+> 
+> if ksm swap is too costly, we need to improve anon list scanning generically.
 
-Dropped the falcon.c hunk from the pile, so the conflict should be gone. 
-Thanks,
+Yes, we're in agreement that this issue is not new with KSM swapping.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+> btw, I'm not sure why bellow kmem_cache_zalloc() is necessary. Why can't we
+> use stack?
+
+Well, I didn't use stack: partly because I'm so ashamed of the pseudo-vmas
+on the stack in mm/shmem.c, which have put shmem_getpage() into reports
+of high stack users (I've unfinished patches to deal with that); and
+partly because page_referenced_ksm() and try_to_unmap_ksm() are on
+the page reclaim path, maybe way down deep on a very deep stack.
+
+But it's not something you or I should be worrying about: as the comment
+says, this is just a temporary hack, to present a patch which gets KSM
+swapping working in an understandable way, while leaving some corrections
+and refinements to subsequent patches.  This pseudo-vma is removed in the
+very next patch.
+
+Hugh
+
+> 
+> ----------------------------
+> +	/*
+> +	 * Temporary hack: really we need anon_vma in rmap_item, to
+> +	 * provide the correct vma, and to find recently forked instances.
+> +	 * Use zalloc to avoid weirdness if any other fields are involved.
+> +	 */
+> +	vma = kmem_cache_zalloc(vm_area_cachep, GFP_ATOMIC);
+> +	if (!vma) {
+> +		spin_lock(&ksm_fallback_vma_lock);
+> +		vma = &ksm_fallback_vma;
+> +	}
