@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZK3Lzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZK3L5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbZK3Lzu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZK3Lzt
+	id S1752722AbZK3L5N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbZK3L5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:55:49 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:61554 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750956AbZK3Lzt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:55:49 -0500
-X-Trace: 299078163/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AogBACZBE0tPRTgw/2dsb2JhbAAI1UCEMQQ
-X-IronPort-AV: E=Sophos;i="4.47,314,1257120000"; 
-   d="scan'208";a="299078163"
-Date: Mon, 30 Nov 2009 11:55:53 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
-In-Reply-To: <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0911301141010.20054@sister.anvils>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
- <Pine.LNX.4.64.0911241640590.25288@sister.anvils>
- <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 30 Nov 2009 06:57:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:31006 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751217AbZK3L5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 06:57:11 -0500
+Message-ID: <4B13B2FA.4050600@redhat.com>
+Date: Mon, 30 Nov 2009 09:56:42 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andy Walls <awalls@radix.net>
+CC: Ray Lee <ray-lk@madrabbit.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>	 <m3aay6y2m1.fsf@intrepid.localdomain>	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>	 <1259469121.3125.28.camel@palomino.walls.org>	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>	 <1259515703.3284.11.camel@maxim-laptop>	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com> <1259537732.5231.11.camel@palomino.walls.org>
+In-Reply-To: <1259537732.5231.11.camel@palomino.walls.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, KAMEZAWA Hiroyuki wrote:
+Andy Walls wrote:
+> On Sun, 2009-11-29 at 09:49 -0800, Ray Lee wrote:
+>> On Sun, Nov 29, 2009 at 9:28 AM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+>>> This has zero advantages besides good developer feeling that "My system
+>>> has one less daemon..."
+>> Surely it's clear that having an unnecessary daemon is introducing
+>> another point of failure?
 > 
-> Hmm. I'm not sure how many pages are shared in a system but
-> can't we add some threshold for avoidng too much scan against shared pages ?
-> (in vmscan.c)
-> like..
->       
->        if (page_mapcount(page) > (XXXX >> scan_priority))
-> 		return 1;
+> A failure in a userspace IR daemon is worst case loss of IR
+> functionality.
 > 
-> I saw terrible slow downs in shmem-swap-out in old RHELs (at user support).
-> (Added kosaki to CC.)
-> 
-> After this patch, the number of shared swappable page will be unlimited.
+> A failure in kernel space can oops or panic the machine.
 
-I don't think KSM swapping changes the story here at all: I don't
-think it significantly increases the likelihood of pages with very
-high mapcounts on the LRUs.  You've met the issue with shmem, okay,
-I've always thought shared library text pages would be a problem.
+If IR is the only interface between the user and the system (like in a TV
+or a Set Top Box), both will give you the same practical result: the system
+will be broken, if you got a crash at the IR driver.
 
-I've often thought that some kind of "don't bother if the mapcount is
-too high" check in vmscan.c might help - though I don't think I've
-ever noticed the bugreport it would help with ;)
+> Userspace is much more flexible.
 
-I used to imagine doing up to a certain number inside the rmap loops
-and then breaking out (that would help with those reports of huge
-anon_vma lists); but that would involve starting the next time from
-where we left off, which would be difficult with the prio_tree.
+Why? The flexibility about the same on both kernelspace and userspace,
+except for the boot time.
 
-Your proposal above (adjusting the limit according to scan_priority,
-yes that's important) looks very promising to me.
+A kernelspace input device driver can start working since boot time.
+On the other hand, an userspace device driver will be available only 
+after mounting the filesystems and starting the deamons 
+(e. g. after running inittab). 
 
-Hugh
+So, you cannot catch a key that would be affecting the boot 
+(for example to ask the kernel to run a different runlevel or entering
+on some administrative mode).
+
+After the boot, and providing that the kernel has the proper
+API's, a pure userspace driver can behave just like a kernelspace
+driver and vice-versa. The only difference may be in terms of device
+transfer rate (not relevant for input devices) and latency.
+
+Cheers,
+Mauro.
+
