@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZK3Vwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbZK3V6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752230AbZK3Vwv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbZK3Vwu
+	id S1753058AbZK3V6H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:58:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZK3V6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:52:50 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60285 "EHLO hera.kernel.org"
+	Mon, 30 Nov 2009 16:58:05 -0500
+Received: from kroah.org ([198.145.64.141]:58813 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750828AbZK3Vwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:52:50 -0500
-Message-ID: <4B143E83.6020105@kernel.org>
-Date: Mon, 30 Nov 2009 13:52:03 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752201AbZK3V6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 16:58:04 -0500
+Date: Mon, 30 Nov 2009 13:53:47 -0800
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: Re: [PATCH 0/15] sysfs lazification final
+Message-ID: <20091130215347.GA2750@kroah.com>
+References: <m13a4vbz8r.fsf@fess.ebiederm.org>
+ <m1pr7tmqb4.fsf@fess.ebiederm.org>
+ <20091130213337.GA3468@kroah.com>
 MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@hp.com>
-CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32 registers
-References: <20091130212228.7555.43533.stgit@debian.lart>	 <4B143AE5.7040702@kernel.org> <1259617381.8949.281.camel@8530w.home>
-In-Reply-To: <1259617381.8949.281.camel@8530w.home>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130213337.GA3468@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Williamson wrote:
-> On Mon, 2009-11-30 at 13:36 -0800, Yinghai Lu wrote:
->> Alex Williamson wrote:
->>> Prior to 1f82de10 we always initialized the upper 32bits of the
->>> prefetchable memory window, regardless of the address range used.
->>> Now we only touch it for a >32bit address, which means the upper32
->>> registers remain whatever the BIOS initialized them too.
->>>
->>> It's valid for the BIOS to set the upper32 base/limit to
->>> 0xffffffff/0x00000000, which makes us program prefetchable ranges
->>> like 0xffffffffabc00000 - 0x00000000abc00000
->>>
->>> Revert the chunk of 1f82de10 that made this conditional so we always
->>> write the upper32 registers.
->>>
->>> Signed-off-by: Alex Williamson <alex.williamson@hp.com>
->>> ---
->>>
->>>  drivers/pci/setup-bus.c |    8 +++-----
->>>  1 files changed, 3 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
->>> index cb1a027..127d759 100644
->>> --- a/drivers/pci/setup-bus.c
->>> +++ b/drivers/pci/setup-bus.c
->>> @@ -221,11 +221,9 @@ static void pci_setup_bridge(struct pci_bus *bus)
->>>  	}
->>>  	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
->>>  
->>> -	if (pref_mem64) {
->>> -		/* Set the upper 32 bits of PREF base & limit. */
->>> -		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
->>> -		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
->>> -	}
->>> +	/* Set the upper 32 bits of PREF base & limit. */
->>> +	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
->>> +	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
->>>  
->>>  	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
->>>  }
->> when pref_mem64=0 it means that pref register is only 32 bit, we should not touch upper 32bits.
+On Mon, Nov 30, 2009 at 01:33:37PM -0800, Greg KH wrote:
+> On Sat, Nov 07, 2009 at 11:25:03PM -0800, Eric W. Biederman wrote:
+> > 
+> > The sysfs code updates the vfs caches immediately when the sysfs data
+> > structures change causing a lot of unnecessary complications.  The
+> > following patchset untangles that beast.  Allowing for simpler
+> > more straight forward code, the removal of a hack from the vfs
+> > to support sysfs, and human comprehensible locking on sysfs.
+> > 
+> > Most of these patches have already been reviewed and acked from the
+> > last time I had time to work on sysfs.
+> > 
+> > This acks have been folded in and the two small bugs found in the
+> > previous review have been fixed in the trailing patches (they are
+> > minor enough nits that even a bisect that happens to land in the
+> > middle should not see sysfs problems).
 > 
-> Did you read my patch description?  In that case bu = lu = 0 and we
-> clear whatever state the BIOS left for those registers.
+> I've applied all of these to my tree now, and sorry, but something is
+> broken pretty badly.
+> 
+> When doing a simple 'ls /sys/class/input/' the process locks up.  This
+> means that X can't find any input devices, which makes for a bit of a
+> problem when wanting to use your mouse or keyboard :(
+> 
+> Attached is the state of my processes when this happens, if that helps
+> out any.
+> 
+> So I'm going to drop all of these from my tree again, as they are not
+> ready for merging at this point :(
 
-if HW state that reg is only 32bit pref, why should we care about the upper 32bit?
+In looking at the stuck processes, it seems your last patch was the
+problem.  Removing that caused things to work again, so I've only
+dropped that one.
 
-looks like that your bridge device need quirk to clear that so called upper 32bit for it.
+Next time, please test your patches before submitting them :(
 
-YH
+thanks,
+
+greg k-h
