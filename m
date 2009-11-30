@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZK3Jpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbZK3Jsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbZK3Jpz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 04:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZK3Jpz
+	id S1753108AbZK3Jsl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 04:48:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZK3Jsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 04:45:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1164 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752102AbZK3Jpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 04:45:54 -0500
-Message-ID: <4B13942E.3000002@redhat.com>
-Date: Mon, 30 Nov 2009 11:45:18 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Mon, 30 Nov 2009 04:48:40 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33770 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005AbZK3Jsk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 04:48:40 -0500
+Date: Mon, 30 Nov 2009 09:48:13 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Marc Zyngier <maz@misterjones.org>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: manual merge of the pcmcia tree with the pxa tree
+Message-ID: <20091130094813.GC1638@n2100.arm.linux.org.uk>
+References: <20091130131627.8ccc6033.sfr@canb.auug.org.au> <f17812d70911291917y2aeebbberbf31775491f0df4f@mail.gmail.com> <20091130091007.7a5fd554@hina.wild-wind.fr.eu.org> <f17812d70911300016q1e729569k8c72deb704e3a658@mail.gmail.com> <20091130102444.4ebc0a45@life-in-the-fast-lane>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2.6.32-rc6] sched, kvm: fix race condition involving sched_in_preempt_notifers
-References: <4AFD2801.7020900@kernel.org> <20091113095516.GD1364@elte.hu> <4AFEAB6D.60600@redhat.com> <4B138BC8.3090008@kernel.org>
-In-Reply-To: <4B138BC8.3090008@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130102444.4ebc0a45@life-in-the-fast-lane>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/30/2009 11:09 AM, Tejun Heo wrote:
->
->>
->>>    but we want to do sched.c changes via
->>> the scheduler tree.
->>>        
-> So, this one was a bust.  Given that the only platform which might
-> have been affected by the original bug is ia64 and it's very unlikely
-> to happen.  I think reverting this from sched/urgent would be the
-> right thing to do at this point if the branch is headed for another
-> push to Linus.  Avi, what do you think?
->    
+On Mon, Nov 30, 2009 at 10:24:44AM +0100, Marc Zyngier wrote:
+> Sounds good. I'll post rebased patches as soon as PCMCIA hits Linus'
+> tree.
 
-I agree.
+What would be a better idea is to rework the driver once my changes have
+hit.  If you need to pass additional data around, you can do it like this:
 
--- 
-error compiling committee.c: too many arguments to function
+struct my_socket {
+	struct soc_pcmcia_socket skt;
+	...
+};
 
+#define to_my_socket(s) container_of(s, struct my_socket, skt)
+
+static struct pcmcia_low_level my_ops = {
+};
+
+static int my_probe(struct platform_device *dev)
+{
+	struct my_socket *skts;
+
+	pxa2xx_drv_pcmcia_ops(&my_ops);
+
+	skts = kzalloc(sizeof(*skts) * nr, GFP_KERNEL);
+	if (!skts)
+		...
+
+	for (i = 0; i < nr; i++) {
+		skts[i].skt.nr = i;
+		skts[i].skt.ops = &my_ops;
+		skts[i].skt.socket.owner = THIS_MODULE;
+		skts[i].skt.socket.parent = &dev->dev;
+		skts[i].skt.socket.pci_irq = the_socket_irq;
+		ret = pxa2xx_drv_pcmcia_add_one(&skts[i].skt);
+		if (ret)
+			goto free_registered_sockets_and_return_ret;
+	}
+}
