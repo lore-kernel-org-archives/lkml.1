@@ -1,137 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZK3PgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbZK3PiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbZK3PgJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 10:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZK3PgG
+	id S1753109AbZK3PiW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 10:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZK3PiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 10:36:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55607 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752314AbZK3PgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 10:36:05 -0500
-Date: Mon, 30 Nov 2009 10:36:04 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cfq: Make use of service count to estimate the rb_key
-	offset
-Message-ID: <20091130153604.GB11670@redhat.com>
-References: <4B0E1E2F.9080604@cn.fujitsu.com> <4e5e476b0911260108s2fe4cd86lcb32c7be76b4f75c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0911260108s2fe4cd86lcb32c7be76b4f75c@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 30 Nov 2009 10:38:21 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:8704 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752869AbZK3PiU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 10:38:20 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 30 Nov 2009 10:38:16 -0500 (EST)
+From: Nicolas Pitre <nico@fluxnic.net>
+X-X-Sender: nico@xanadu.home
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       John Stultz <johnstul@us.ibm.com>, Jamie Lokier <jamie@shareable.org>,
+       LKML <linux-kernel@vger.kernel.org>, Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
+ IRQF_SHARED|IRQF_DISABLED)
+In-reply-to: <20091130143703.GA7028@n2100.arm.linux.org.uk>
+Message-id: <alpine.LFD.2.00.0911301006220.5820@xanadu.home>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
+ <20091130143703.GA7028@n2100.arm.linux.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 10:08:36AM +0100, Corrado Zoccolo wrote:
-> Hi Gui, Jens
-> On Thu, Nov 26, 2009 at 7:20 AM, Gui Jianfeng
-> <guijianfeng@cn.fujitsu.com> wrote:
-> > Hi Jens, Czoccolo
-> >
-> > For the moment, different workload cfq queues are put into different
-> > service trees. But CFQ still uses "busy_queues" to estimate rb_key
-> > offset when inserting a cfq queue into a service tree. I think this
-> > isn't appropriate, and it should make use of service tree count to do
-> > this estimation. This patch is for for-2.6.33 branch.
-> 
-> In cfq_choose_wl, we rely on consistency of rb_keys across service
-> trees to compute the next workload to be serviced.
->         for (i = 0; i < 3; ++i) {
->                 /* otherwise, select the one with lowest rb_key */
->                 queue = cfq_rb_first(service_tree_for(prio, i, cfqd));
->                 if (queue &&
->                     (!key_valid || time_before(queue->rb_key, lowest_key))) {
->                         lowest_key = queue->rb_key;
-> 			cur_best = i;
-> 			key_valid = true;
-> 		}
->         }
-> 
-> If you change how the rb_key is computed (so it is no longer
-> consistent across service trees) without changing how it is used can
-> introduce problems.
-> 
+On Mon, 30 Nov 2009, Russell King - ARM Linux wrote:
 
-Hi Corrado,
+> However, I think we still have a number of corner cases.  The SMC91x
+> driver comes to mind, with its stupidly small FIFOs, where the majority
+> of implementations have to have the packets loaded via PIO - and this
+> seems to generally happen from IRQ context.
 
-currently rb_key seems to be combination of two things. busy_queues and
-jiffies. 
+That is indeed the case for the RX path in order to avoid packet drop as 
+much as possible.  The TX path is always run outside IRQ context though.
 
-In new scheme, where we decide the share of a workload and then switch to
-new workload, dependence on busy_queues does not seem to make much sense.
+> The upshot of that is switching the SMC91x interrupt handler to run with
+> IRQs disabled will mean that serial can suffer with overruns, especially
+> if the serial port FIFO is also small.
 
-Assume, a bunch of sequential readers get backlogged and then few random
-readers gets backlogged. Now random reader will get higher rb_key because
-there are 8 sequential reders on sync-idle tree.
+That can happen now already anyway, regardless of whether IRQ handlers 
+are run with IRQs enabled or not.  Suffice to have serial and smc91x 
+interrupts asserted more or less at the same time, i.e. before the 
+pending interrupt sources are actually determined and interrupts enabled 
+again, in which case the IRQ handlers are serialized usually according 
+to their IRQ number (most target don't use sophisticated IRQ 
+priorities).
 
-IIUC, with above logic, even if we expire the sync-idle workload duration
-once, we might not switch to sync-noidle workload and start running the
-sync-idle workload again. (Because minimum slice length restrictions or
-if low_latency is not set).
+And then, the serial interrupt isn't currently registered with 
+IRQF_DISABLED, meaning that its handler can be interrupted by any other 
+interrupt coming along, including the heavier smc91x RX code.  That 
+isn't much different from having all interrupt handlers run with IRQs 
+disabled and the serial interrupt having to wait after the smc91x one.
 
-So instead of relying on rb_keys to switch the workload type, why not do
-it in round robin manner across the workload types? So rb_key will be
-significant only with-in service tree and not across service tree? 
+In other words, I don't think having all IRQ handlers run with IRQs 
+disabled would change much wrt average IRQ latency in practice.  
+Without real hardware based IRQ priority management (or thread based IRQ 
+handlers with software managed priorities), The smc91x handler could 
+adversely affect the serial handler in either cases.
 
-Thanks
-Vivek
 
-> Thanks,
-> Corrado
-> 
-> >
-> > Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> > ---
-> >  block/cfq-iosched.c |    8 ++++++--
-> >  1 files changed, 6 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > index 1bcbd8c..467981e 100644
-> > --- a/block/cfq-iosched.c
-> > +++ b/block/cfq-iosched.c
-> > @@ -600,11 +600,15 @@ cfq_find_next_rq(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-> >  static unsigned long cfq_slice_offset(struct cfq_data *cfqd,
-> >                                      struct cfq_queue *cfqq)
-> >  {
-> > +       struct cfq_rb_root *service_tree;
-> > +
-> > +       service_tree = service_tree_for(cfqq_prio(cfqq), cfqq_type(cfqq), cfqd);
-> > +
-> >        /*
-> >         * just an approximation, should be ok.
-> >         */
-> > -       return (cfqd->busy_queues - 1) * (cfq_prio_slice(cfqd, 1, 0) -
-> > -                      cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
-> > +       return  service_tree->count * (cfq_prio_slice(cfqd, 1, 0) -
-> > +                  cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
-> >  }
-> >
-> >  /*
-> > --
-> > 1.5.4.rc3
-> >
-> > --
-> > Regards
-> > Gui Jianfeng
-> >
-> >
-> 
-> 
-> 
-> -- 
-> __________________________________________________________________________
-> 
-> dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-> PhD - Department of Computer Science - University of Pisa, Italy
-> --------------------------------------------------------------------------
-> The self-confidence of a warrior is not the self-confidence of the average
-> man. The average man seeks certainty in the eyes of the onlooker and calls
-> that self-confidence. The warrior seeks impeccability in his own eyes and
-> calls that humbleness.
->                                Tales of Power - C. Castaneda
+Nicolas
