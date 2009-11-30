@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbZK3Q7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZK3RBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753130AbZK3Q7b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 11:59:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZK3Q7a
+	id S1753004AbZK3RBH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 12:01:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZK3RBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 11:59:30 -0500
-Received: from kroah.org ([198.145.64.141]:59211 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752402AbZK3Q7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 11:59:30 -0500
-Date: Mon, 30 Nov 2009 08:59:18 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Alan Cox <alan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fix a silly typo
-Message-ID: <20091130165918.GA29035@kroah.com>
-References: <20091130132432.27394.48685.stgit@localhost.localdomain>
- <20091130161405.GB15572@kroah.com>
- <20091130163937.092f10e9@lxorguk.ukuu.org.uk>
+	Mon, 30 Nov 2009 12:01:05 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46490 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752430AbZK3RBD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 12:01:03 -0500
+Message-ID: <4B13FA4E.1070901@zytor.com>
+Date: Mon, 30 Nov 2009 09:01:02 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091130163937.092f10e9@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ulrich Drepper <drepper@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: using kernel headers in libc headers
+References: <a36005b50911300837s6fe4da73s973ccbe7401b9989@mail.gmail.com>
+In-Reply-To: <a36005b50911300837s6fe4da73s973ccbe7401b9989@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 04:39:37PM +0000, Alan Cox wrote:
-> On Mon, 30 Nov 2009 08:14:05 -0800
-> Greg KH <greg@kroah.com> wrote:
+On 11/30/2009 08:37 AM, Ulrich Drepper wrote:
 > 
-> > On Mon, Nov 30, 2009 at 01:24:49PM +0000, Alan Cox wrote:
-> > > (Resend #3)
-> > > 
-> > > Signed-off-by: Alan Cox <alan@linux.intel.com>
-> > > ---
-> > > 
-> > >  drivers/staging/rtl8187se/r8180_core.c  |    2 +-
-> > >  drivers/staging/rtl8192su/r8192U_core.c |    2 +-
-> > >  2 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > This is due to changes in Rusty's tree, not mine.  You aren't the only
-> > one constantly sending this patch, Randy is as well.
+> It's likely in everybody's interest to get the kernel headers used.
+> But for this mode #ifdefs are needed.  I'm willing to do the work.
+> Easy enough to do when I'm going through the headers one-by-one to
+> enable them in glibc.  But I don't want to start this work unless it's
+> going to be accepted.  The symbols would be something like
 > 
-> Well given Rusty has vanished can you apply it to staging and rusty can
-> fix his tree up when he returns, assuming patch doesn't fix it for him.
+>   __USE_MISC
+> 
+> or
+> 
+>   __USE_GNU
+> 
+> These are not macros which the user must define.  The user sets macros
+> like _GNU_SOURCE etc which then set all the appropriate __USE_* macros
+> (see "info libc 'Feature Test Macros'" on machines with glibc
+> installed).  These names are somewhat glibc-specific but other libcs
+> can (or already have) adapt them.
+> 
+> So, what do you say?
 
-The patch does not apply to my tree at all, the problem is caused by
-stuff done only in Rusty's tree.  He has changed the code here to be
-broken, not me, so there's really nothing I can do about it.
+Speaking for myself, I think #ifdefs utterly suck for this purpose.
+First of all, because they tie back a glibc internal (the naming of
+feature test macros) with the kernel headers.  Second of all, because it
+really makes it much harder to get things right.  Third, because it
+conflicts with the usage model in the kernel itself in a way that is
+likely to cause breakage.
 
-Stephen could apply it to linux-next though.
+A better way is to factor out subsets; if <linux/sched.h> has too many
+things, we can break out the POSIX parts into <linux/sched_posix.h> or
+(certainly better if we have more than one of these)
+<linux/sched/posix.h> which can also be included by <linux/sched.h>.
 
-thanks,
+glibc can then choose to include or not include <linux/sched/posix.h>
+depending on its configuration.  The configuration macros remain a glibc
+internal detail.
 
-greg k-h
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
