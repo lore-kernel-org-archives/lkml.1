@@ -1,93 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752965AbZK3W1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZK3W34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752965AbZK3W1X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 17:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZK3W1X
+	id S1753181AbZK3W34 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 17:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZK3W3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 17:27:23 -0500
-Received: from www.tglx.de ([62.245.132.106]:47528 "EHLO www.tglx.de"
+	Mon, 30 Nov 2009 17:29:55 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35917 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751741AbZK3W1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 17:27:22 -0500
-Date: Mon, 30 Nov 2009 23:26:59 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Darren Hart <dvhltc@us.ibm.com>
-cc: Joseph Parmelee <jparmele@wildbear.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: futex_cmpxchg_enabled not set in futex_init on pentium3
-In-Reply-To: <4B143AE8.5090608@us.ibm.com>
-Message-ID: <alpine.LFD.2.00.0911302307440.24119@localhost.localdomain>
-References: <alpine.LNX.2.00.0911291057100.2912@bruno> <4B143AE8.5090608@us.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752440AbZK3W3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 17:29:54 -0500
+Subject: [GIT PATCH] SCSI fixes for 2.6.32-rc8
+From: James Bottomley <James.Bottomley@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Nov 2009 17:29:54 -0500
+Message-Id: <1259620194.11762.137.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, Darren Hart wrote:
-> > The system under discussion is a uniprocessor pentium3 with an AMI BIOS. 
-> > Full details available on request should that prove necessary.
-> > 
-> > I have tracked the test failures down to the fact that 
-> > futex_cmpxchg_enabled
-> > is not set because the test in futex_init now "fails" (actually 
-> > succeeds). This appears to be happening because the expected page fault 
-> > intentionally
-> > provoked by a null dereference appears to be working now in kernel mode. 
+This is a set of miscellaneous (but small) fixes for SCSI.
 
-Can you please printk the return value of that cmpxchg() test and
-provide a full bootlog (dmesg) of your machine ?
+The patch is available here:
 
-Could you also please do a quick check in which kernel version this
-got introduced ?
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-> > This *may* (rank speculation) be associated with the AMI BIOS low-memory
-> > corruption protection added sometime during this gap, and which is 
-> > activated on this machine.
+The short changelog is:
 
-That'd be a serious bug as it would let every NULL pointer dereference
-in the kernel proceed.
+Alexey Kuznetsov (1):
+      fix crash when disconnecting usb storage
 
-> > Before I muck any further with this, especially involving the quite tricky
-> > futex mess, I would appreciate some insight into the idea behind the 
-> > test in
-> > futex_init.  I don't understand why you would bother to invoke a fault in
-> > what is apparently a test to determine if the cmpxchg instruction works. 
+James Bottomley (1):
+      fix async scan add/remove race resulting in an oops
 
-The point is that we have to deal with architectures where we do not
-know at compile time whether we actually have a working cmpxchg. So we
-use cmpxchg with a NULL pointer which is supposed to fault and return
--EFAULT and if cmpxchg is not working on the machine the arch code is
-supposed to return -ENOSYS. 
+Martin K. Petersen (1):
+      sd: Return correct error code for DIF
 
-See arch/x86/include/asm/futex.h:futex_atomic_cmpxchg_inatomic() for
-an example.
+The diffstat is:
 
-> I suspect this is because the test asks for a userspace address. So rather
-> than hack something up to use a real userspace address, we just send NULL.
-> EFAULT=success and ENOSYS=failure.
+ drivers/scsi/hosts.c       |    2 -
+ drivers/scsi/scsi_scan.c   |   18 ++----------
+ drivers/scsi/scsi_sysfs.c  |   63 +++++++++++++++++++--------------------------
+ drivers/scsi/sd_dif.c      |    2 -
+ include/scsi/scsi_device.h |    1 
+ 5 files changed, 34 insertions(+), 52 deletions(-)
 
-We have no real user space address at this point.
+And the full patch is attached below.
 
-> > The fault is supposed to occur as a result of a null dereference that takes
-> > place *before* the cmpxchg instruction is even executed.  If you want to
+James
 
-No, the fault happens _when_ cmpxchg is executed on the NULL pointer.
+---
 
-> > test that cmpxchg works, why not just make a little test in futex_init that
-> > uses it and fails (not succeeds) if it doesn't behave as expected, or if
-> > there is a fault of some kind (like illegal instruction)?  Or is the fact
-> > that we don't get a fault the whole point here?
+diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+index 5fd2da4..c968cc3 100644
+--- a/drivers/scsi/hosts.c
++++ b/drivers/scsi/hosts.c
+@@ -164,8 +164,8 @@ void scsi_remove_host(struct Scsi_Host *shost)
+ 			return;
+ 		}
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
+-	mutex_unlock(&shost->scan_mutex);
+ 	scsi_forget_host(shost);
++	mutex_unlock(&shost->scan_mutex);
+ 	scsi_proc_host_rm(shost);
+ 
+ 	spin_lock_irqsave(shost->host_lock, flags);
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index 0547a7f..47291bc 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -952,16 +952,6 @@ static int scsi_add_lun(struct scsi_device *sdev, unsigned char *inq_result,
+ 	return SCSI_SCAN_LUN_PRESENT;
+ }
+ 
+-static inline void scsi_destroy_sdev(struct scsi_device *sdev)
+-{
+-	scsi_device_set_state(sdev, SDEV_DEL);
+-	if (sdev->host->hostt->slave_destroy)
+-		sdev->host->hostt->slave_destroy(sdev);
+-	transport_destroy_device(&sdev->sdev_gendev);
+-	put_device(&sdev->sdev_dev);
+-	put_device(&sdev->sdev_gendev);
+-}
+-
+ #ifdef CONFIG_SCSI_LOGGING
+ /** 
+  * scsi_inq_str - print INQUIRY data from min to max index, strip trailing whitespace
+@@ -1139,7 +1129,7 @@ static int scsi_probe_and_add_lun(struct scsi_target *starget,
+ 			}
+ 		}
+ 	} else
+-		scsi_destroy_sdev(sdev);
++		__scsi_remove_device(sdev);
+  out:
+ 	return res;
+ }
+@@ -1500,7 +1490,7 @@ static int scsi_report_lun_scan(struct scsi_target *starget, int bflags,
+ 		/*
+ 		 * the sdev we used didn't appear in the report luns scan
+ 		 */
+-		scsi_destroy_sdev(sdev);
++		__scsi_remove_device(sdev);
+ 	return ret;
+ }
+ 
+@@ -1710,7 +1700,7 @@ static void scsi_sysfs_add_devices(struct Scsi_Host *shost)
+ 	shost_for_each_device(sdev, shost) {
+ 		if (!scsi_host_scan_allowed(shost) ||
+ 		    scsi_sysfs_add_sdev(sdev) != 0)
+-			scsi_destroy_sdev(sdev);
++			__scsi_remove_device(sdev);
+ 	}
+ }
+ 
+@@ -1943,7 +1933,7 @@ void scsi_free_host_dev(struct scsi_device *sdev)
+ {
+ 	BUG_ON(sdev->id != sdev->host->this_id);
+ 
+-	scsi_destroy_sdev(sdev);
++	__scsi_remove_device(sdev);
+ }
+ EXPORT_SYMBOL(scsi_free_host_dev);
+ 
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index 5c7eb63..392d8db 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -854,82 +854,73 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+ 	transport_configure_device(&starget->dev);
+ 	error = device_add(&sdev->sdev_gendev);
+ 	if (error) {
+-		put_device(sdev->sdev_gendev.parent);
+ 		printk(KERN_INFO "error 1\n");
+-		return error;
++		goto out_remove;
+ 	}
+ 	error = device_add(&sdev->sdev_dev);
+ 	if (error) {
+ 		printk(KERN_INFO "error 2\n");
+-		goto clean_device;
++		device_del(&sdev->sdev_gendev);
++		goto out_remove;
+ 	}
++	transport_add_device(&sdev->sdev_gendev);
++	sdev->is_visible = 1;
+ 
+ 	/* create queue files, which may be writable, depending on the host */
+ 	if (sdev->host->hostt->change_queue_depth)
+ 		error = device_create_file(&sdev->sdev_gendev, &sdev_attr_queue_depth_rw);
+ 	else
+ 		error = device_create_file(&sdev->sdev_gendev, &dev_attr_queue_depth);
+-	if (error) {
+-		__scsi_remove_device(sdev);
+-		goto out;
+-	}
++	if (error)
++		goto out_remove;
++
+ 	if (sdev->host->hostt->change_queue_type)
+ 		error = device_create_file(&sdev->sdev_gendev, &sdev_attr_queue_type_rw);
+ 	else
+ 		error = device_create_file(&sdev->sdev_gendev, &dev_attr_queue_type);
+-	if (error) {
+-		__scsi_remove_device(sdev);
+-		goto out;
+-	}
++	if (error)
++		goto out_remove;
+ 
+ 	error = bsg_register_queue(rq, &sdev->sdev_gendev, NULL, NULL);
+ 
+ 	if (error)
++		/* we're treating error on bsg register as non-fatal,
++		 * so pretend nothing went wrong */
+ 		sdev_printk(KERN_INFO, sdev,
+ 			    "Failed to register bsg queue, errno=%d\n", error);
+ 
+-	/* we're treating error on bsg register as non-fatal, so pretend
+-	 * nothing went wrong */
+-	error = 0;
+-
+ 	/* add additional host specific attributes */
+ 	if (sdev->host->hostt->sdev_attrs) {
+ 		for (i = 0; sdev->host->hostt->sdev_attrs[i]; i++) {
+ 			error = device_create_file(&sdev->sdev_gendev,
+ 					sdev->host->hostt->sdev_attrs[i]);
+-			if (error) {
+-				__scsi_remove_device(sdev);
+-				goto out;
+-			}
++			if (error)
++				goto out_remove;
+ 		}
+ 	}
+ 
+-	transport_add_device(&sdev->sdev_gendev);
+- out:
+-	return error;
+-
+- clean_device:
+-	scsi_device_set_state(sdev, SDEV_CANCEL);
+-
+-	device_del(&sdev->sdev_gendev);
+-	transport_destroy_device(&sdev->sdev_gendev);
+-	put_device(&sdev->sdev_dev);
+-	put_device(&sdev->sdev_gendev);
++	return 0;
+ 
++ out_remove:
++	__scsi_remove_device(sdev);
+ 	return error;
++
+ }
+ 
+ void __scsi_remove_device(struct scsi_device *sdev)
+ {
+ 	struct device *dev = &sdev->sdev_gendev;
+ 
+-	if (scsi_device_set_state(sdev, SDEV_CANCEL) != 0)
+-		return;
++	if (sdev->is_visible) {
++		if (scsi_device_set_state(sdev, SDEV_CANCEL) != 0)
++			return;
+ 
+-	bsg_unregister_queue(sdev->request_queue);
+-	device_unregister(&sdev->sdev_dev);
+-	transport_remove_device(dev);
+-	device_del(dev);
++		bsg_unregister_queue(sdev->request_queue);
++		device_unregister(&sdev->sdev_dev);
++		transport_remove_device(dev);
++		device_del(dev);
++	} else
++		put_device(&sdev->sdev_dev);
+ 	scsi_device_set_state(sdev, SDEV_DEL);
+ 	if (sdev->host->hostt->slave_destroy)
+ 		sdev->host->hostt->slave_destroy(sdev);
+diff --git a/drivers/scsi/sd_dif.c b/drivers/scsi/sd_dif.c
+index 88da977..84be621 100644
+--- a/drivers/scsi/sd_dif.c
++++ b/drivers/scsi/sd_dif.c
+@@ -418,7 +418,7 @@ error:
+ 		  __func__, virt, phys, be32_to_cpu(sdt->ref_tag),
+ 		  be16_to_cpu(sdt->app_tag));
+ 
+-	return -EIO;
++	return -EILSEQ;
+ }
+ 
+ /*
+diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
+index 9af48cb..f097ae3 100644
+--- a/include/scsi/scsi_device.h
++++ b/include/scsi/scsi_device.h
+@@ -145,6 +145,7 @@ struct scsi_device {
+ 	unsigned retry_hwerror:1;	/* Retry HARDWARE_ERROR */
+ 	unsigned last_sector_bug:1;	/* do not use multisector accesses on
+ 					   SD_LAST_BUGGY_SECTORS */
++	unsigned is_visible:1;	/* is the device visible in sysfs */
+ 
+ 	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
+ 	struct list_head event_list;	/* asserted events */
 
-Again, we expect it to fault.
 
-IIRC, we tried to use a valid address for the test and let the
-exception fixup code return -EFAULT when the instruction is not
-available. That worked on x86 but did not work on other archs.
-
-Thanks,
-
-	tglx
