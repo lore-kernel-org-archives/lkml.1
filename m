@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZK3CP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbZK3CQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbZK3CP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 21:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZK3CPZ
+	id S1753180AbZK3CQT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 21:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbZK3CQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 21:15:25 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:44221 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbZK3CPY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 21:15:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=IUUvTM42vfIB03nK1LPBazCbNeYfXfuT+N2ORSlGy5P4hrrE0sLGg48rn9gIXtsGFT
-         glXVJ5y4m7/d9iPdvSC5eAWxCzW5wyl04UR852H5D+CpvOwvYe+BCZMtl7yDJ8UKzF9Y
-         CtmvEc4lqPIL3UiAKckqM6FJS7DsV0QLgCCM8=
-MIME-Version: 1.0
-In-Reply-To: <1259537732.5231.11.camel@palomino.walls.org>
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc> 
-	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com> 
-	<m3aay6y2m1.fsf@intrepid.localdomain> <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com> 
-	<1259469121.3125.28.camel@palomino.walls.org> <20091129124011.4d8a6080@lxorguk.ukuu.org.uk> 
-	<1259515703.3284.11.camel@maxim-laptop> <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com> 
-	<1259537732.5231.11.camel@palomino.walls.org>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Sun, 29 Nov 2009 18:15:10 -0800
-X-Google-Sender-Auth: 92cd06956884e906
-Message-ID: <2c0942db0911291815r7cf93287k78acb8ddb13a7920@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-To: Andy Walls <awalls@radix.net>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com,
-       stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 29 Nov 2009 21:16:18 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60024 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752771AbZK3CQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 21:16:17 -0500
+Date: Mon, 30 Nov 2009 13:16:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marc Zyngier <maz@misterjones.org>, Eric Miao <eric.y.miao@gmail.com>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: linux-next: manual merge of the pcmcia tree with the pxa tree
+Message-Id: <20091130131621.f4d20c96.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 3:35 PM, Andy Walls <awalls@radix.net> wrote:
->> If decoding can *only* be sanely handled in user-space, that's one
->> thing. If it can be handled in kernel, then that would be better.
->
-> Why does the address space in which decoding is performed make the
-> decoding process better or worse?  The in kernel infrastructre and
-> restrictions add constraints to a decoding implementation.  Userspace is
-> much more flexible.
+Hi Dominik,
 
-In which case I look forward to seeing your patches to move
-drivers/hid/ to userspace. Please cc: me so I can enjoy the ensuing
-festival.
+Today's linux-next merge of the pcmcia tree got a conflict in
+drivers/pcmcia/Kconfig between commit
+c9b74a4489db7e6fe03fbee11f406b9641baae55 ("[ARM] pxa/zeus: make Viper
+pcmcia support more generic to support Zeus") from the pxa tree and
+commit 0f767de6a26a07f7d58394512b6f6c96322f047f ("PCMCIA: soc_common:
+convert to a stand alone module") from the pcmcia tree.
+
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/pcmcia/Kconfig
+index d3faec3,f3ccbcc..0000000
+--- a/drivers/pcmcia/Kconfig
++++ b/drivers/pcmcia/Kconfig
+@@@ -242,7 -208,8 +229,8 @@@ config PCMCIA_PXA2X
+  	depends on ARM && ARCH_PXA && PCMCIA
+  	depends on (ARCH_LUBBOCK || MACH_MAINSTONE || PXA_SHARPSL \
+  		    || MACH_ARMCORE || ARCH_PXA_PALM || TRIZEPS_PCMCIA \
+ -		    || ARCH_VIPER || ARCH_PXA_ESERIES || MACH_STARGATE2)
+ +		    || ARCOM_PCMCIA || ARCH_PXA_ESERIES || MACH_STARGATE2)
++ 	select PCMCIA_SOC_COMMON
+  	help
+  	  Say Y here to include support for the PXA2xx PCMCIA controller
+  
