@@ -1,141 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbZK3Lqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbZK3LyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbZK3Lqu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:46:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZK3Lqt
+	id S1752503AbZK3LyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:54:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZK3LyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:46:49 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:55474 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbZK3Lqs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:46:48 -0500
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-To: List Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: rui.zhang@intel.com, jic23@cam.ac.uk, khali@linux-fr.org,
-       alan@linux.intel.com, linux-acpi@vger.kernel.org, gregkh@suse.de
-Subject: [PATCH 2/2] als: add unique device-ids to the als device class
-Date: Mon, 30 Nov 2009 13:46:38 +0200
-Message-Id: <1259581598-16176-1-git-send-email-amit.kucheria@verdurent.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1259581514-15356-1-git-send-email-amit.kucheria@verdurent.com>
-References: <1259581514-15356-1-git-send-email-amit.kucheria@verdurent.com>
-X-OriginalArrivalTime: 30 Nov 2009 11:46:28.0649 (UTC) FILETIME=[C0D08990:01CA71B2]
-X-Nokia-AV: Clean
+	Mon, 30 Nov 2009 06:54:21 -0500
+Received: from cantor.suse.de ([195.135.220.2]:41120 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752243AbZK3LyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 06:54:21 -0500
+Date: Mon, 30 Nov 2009 12:54:25 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Mark Veltzer <mark.veltzer@gmail.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+Subject: Re: get_user_pages question
+Message-ID: <20091130115425.GA21639@wotan.suse.de>
+References: <200911090850.26724.mark.veltzer@gmail.com> <87skco59jl.fsf@basil.nowhere.org> <Pine.LNX.4.64.0911091031460.15199@sister.anvils> <200911100013.31768.mark.veltzer@gmail.com> <Pine.LNX.4.64.0911101613080.22198@sister.anvils> <20091128185052.GB30235@random.random>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091128185052.GB30235@random.random>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Other devices classes such as hwmon and input class handle assignment of
-unique device-ids inside the core functions instead of pushing it out to
-individual drivers. This reduces code duplication and resulting bugs.
+On Sat, Nov 28, 2009 at 07:50:52PM +0100, Andrea Arcangeli wrote:
+> All other patches floating around spread an mm-wide semaphore over
+> fork fast path, and across O_DIRECT, nfs, and aio, and they most
+> certainly didn't fix the two races for all gup users, and they weren't
+> stable because of having to identify the closure of the I/O across all
+> possible put_page. That approach kind of opens a can of worms and it
+> looks the wrong way to go to me, and I think they scale worse too for
+> the fast path (no O_DIRECT or no fork). Identifying the gup closure
+> points and replacing the raw put_page with gup_put_page would not be
+> an useless effort though and I felt if the gup API was just a little
+> bit more sophisticated I could simplify a bit the put_compound_page to
+> serialize the race against split_huge_page_refcount, but this is an
+> orthogonal issue with the mm-wide semaphore release addition which I
+> personally dislike.
 
-V2 - Updated the header to reflect the change is signature of
-als_device_register(). Thanks to Jean for the review.
+IIRC, the last time this came up, it kind of became stalled on this
+point. Linus hated our "preemptive cow" approaches, and thought the
+above approach was better.
 
-V1 - Add capability to als core to create unique ids
+I don't think we need to bother arguing details between our former
+approaches until we get past this sticking point.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-Acked-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
----
- drivers/als/als_sys.c   |   48 ++++++++++++++++++++++++++++++++++++++++++++--
- include/linux/als_sys.h |    2 +-
- 2 files changed, 46 insertions(+), 4 deletions(-)
+FWIW, I need to change get_user_pages semantics somewhat because we
+have filesystems that cannot tolerate a set_page_dirty() to dirty a
+clean page (it must only be dirtied with page_mkwrite).
 
-diff --git a/drivers/als/als_sys.c b/drivers/als/als_sys.c
-index e1d6395..aa15ad8 100644
---- a/drivers/als/als_sys.c
-+++ b/drivers/als/als_sys.c
-@@ -26,22 +26,55 @@
- #include <linux/device.h>
- #include <linux/err.h>
- #include <linux/kdev_t.h>
-+#include <linux/idr.h>
- 
- MODULE_AUTHOR("Zhang Rui <rui.zhang@intel.com>");
- MODULE_DESCRIPTION("Ambient Light Sensor sysfs/class support");
- MODULE_LICENSE("GPL");
- 
-+#define ALS_ID_PREFIX "als"
-+#define ALS_ID_FORMAT ALS_ID_PREFIX "%d"
-+
- static struct class *als_class;
- 
-+static DEFINE_IDR(als_idr);
-+static DEFINE_SPINLOCK(idr_lock);
-+
- /**
-  * als_device_register - register a new Ambient Light Sensor class device
-  * @parent:	the device to register.
-  *
-  * Returns the pointer to the new device
-  */
--struct device *als_device_register(struct device *dev, char *name)
-+struct device *als_device_register(struct device *dev)
- {
--	return device_create(als_class, dev, MKDEV(0, 0), NULL, name);
-+	int id, err;
-+	struct device *alsdev;
-+
-+again:
-+	if (unlikely(idr_pre_get(&als_idr, GFP_KERNEL) == 0))
-+		return ERR_PTR(-ENOMEM);
-+
-+	spin_lock(&idr_lock);
-+	err = idr_get_new(&als_idr, NULL, &id);
-+	spin_unlock(&idr_lock);
-+
-+	if (unlikely(err == -EAGAIN))
-+		goto again;
-+	else if (unlikely(err))
-+		return ERR_PTR(err);
-+
-+	id = id & MAX_ID_MASK;
-+	alsdev = device_create(als_class, dev, MKDEV(0, 0), NULL,
-+			ALS_ID_FORMAT, id);
-+
-+	if (IS_ERR(alsdev)) {
-+		spin_lock(&idr_lock);
-+		idr_remove(&als_idr, id);
-+		spin_unlock(&idr_lock);
-+	}
-+
-+	return alsdev;
- }
- EXPORT_SYMBOL(als_device_register);
- 
-@@ -51,7 +84,16 @@ EXPORT_SYMBOL(als_device_register);
-  */
- void als_device_unregister(struct device *dev)
- {
--	device_unregister(dev);
-+	int id;
-+
-+	if (likely(sscanf(dev_name(dev), ALS_ID_FORMAT, &id) == 1)) {
-+		device_unregister(dev);
-+		spin_lock(&idr_lock);
-+		idr_remove(&als_idr, id);
-+		spin_unlock(&idr_lock);
-+	} else
-+		dev_dbg(dev->parent,
-+			"als_device_unregister() failed: bad class ID!\n");
- }
- EXPORT_SYMBOL(als_device_unregister);
- 
-diff --git a/include/linux/als_sys.h b/include/linux/als_sys.h
-index 500f300..41793f7 100644
---- a/include/linux/als_sys.h
-+++ b/include/linux/als_sys.h
-@@ -29,7 +29,7 @@
- #define ALS_ILLUMINANCE_MIN 0
- #define ALS_ILLUMINANCE_MAX -1
- 
--struct device *als_device_register(struct device *dev, char *name);
-+struct device *als_device_register(struct device *dev);
- void als_device_unregister(struct device *dev);
- 
- #endif /* __ALS_SYS_H__ */
--- 
-1.6.3.3
+This should probably require converting callers to use put_user_pages
+and disallowing lock_page, mmap_sem, user-copy etc. within these
+sections.
 
