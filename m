@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbZK3WBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZK3WB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231AbZK3WBm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 17:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZK3WBm
+	id S1753323AbZK3WB5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 17:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZK3WB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 17:01:42 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:42988 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753206AbZK3WBl (ORCPT
+	Mon, 30 Nov 2009 17:01:56 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37624 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752885AbZK3WBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 17:01:41 -0500
-Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32
- registers
-From: Alex Williamson <alex.williamson@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4B143E83.6020105@kernel.org>
-References: <20091130212228.7555.43533.stgit@debian.lart>
-	 <4B143AE5.7040702@kernel.org> <1259617381.8949.281.camel@8530w.home>
-	 <4B143E83.6020105@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: HP OSLO R&D
-Date: Mon, 30 Nov 2009 15:01:36 -0700
-Message-ID: <1259618496.8949.290.camel@8530w.home>
+	Mon, 30 Nov 2009 17:01:55 -0500
+Subject: Re: [PATCH] tracing: add DEFINE_EVENT(), DEFINE_SINGLE_EVENT()
+ support to docbook
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Jason Baron <jbaron@redhat.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       mhiramat@redhat.com, wcohen@redhat.com, fweisbec@gmail.com,
+       mathieu.desnoyers@polymtl.ca
+In-Reply-To: <200911302123.nAULNhaC019844@int-mx02.intmail.prod.int.phx2.redhat.com>
+References: <200911302123.nAULNhaC019844@int-mx02.intmail.prod.int.phx2.redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 30 Nov 2009 17:01:59 -0500
+Message-Id: <1259618519.12870.8.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 13:52 -0800, Yinghai Lu wrote:
-> Alex Williamson wrote:
-> > On Mon, 2009-11-30 at 13:36 -0800, Yinghai Lu wrote:
-> >> Alex Williamson wrote: 
-> >>> -	if (pref_mem64) {
-> >>> -		/* Set the upper 32 bits of PREF base & limit. */
-> >>> -		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
-> >>> -		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
-> >>> -	}
-> >>> +	/* Set the upper 32 bits of PREF base & limit. */
-> >>> +	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
-> >>> +	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
-> >>>  
-> >>>  	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
-> >>>  }
-> >> when pref_mem64=0 it means that pref register is only 32 bit, we should not touch upper 32bits.
-> > 
-> > Did you read my patch description?  In that case bu = lu = 0 and we
-> > clear whatever state the BIOS left for those registers.
+On Mon, 2009-11-30 at 16:23 -0500, Jason Baron wrote:
+> The introduction of the new 'DECLARE_EVENT_CLASS()' obviates the need for the
+> 'TRACE_EVENT()' macro in some cases. Thus, docbook style comments that used
+> to live with 'TRACE_EVENT()' are now moved to 'DEFINE_EVENT()'. Thus, we need
+> to make the docbook system understand the new 'DEFINE_EVENT()' macro. In
+> addition I've tried to futureproof the patch, by also adding support for
+> 'DEFINE_SINGLE_EVENT()', since there has been discussion about renaming:
+> TRACE_EVENT() -> DEFINE_SINGLE_EVENT().
 > 
-> if HW state that reg is only 32bit pref, why should we care about the upper 32bit?
+> Without this patch the tracepoint docbook fails to build.
+> 
+> I've verified that this patch correctly builds the tracepoint docbook which
+> currently covers signals, and irqs.
+> 
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
 
-In my case, we're programming a 32bit prefetchable range into a 64bit
-capable bridge.  We can't just assume the upper 32bits are already zero.
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-> looks like that your bridge device need quirk to clear that so called upper 32bit for it.
+-- Steve
 
-I don't believe the PCI spec dictates whether the upper 32bit base
-should be 0 or -1, so it's purely a BIOS initialization choice and Linux
-should properly handle both.  If the hardware only supports 32bit
-prefetchable windows, the hardware will drop the write, just as it did
-for every 2.6 kernel before 1f82de10.  Thanks,
-
-Alex
 
