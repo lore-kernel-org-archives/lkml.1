@@ -1,137 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbZK3O2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbZK3Oio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752375AbZK3O2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 09:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbZK3O2c
+	id S1752553AbZK3Oio (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 09:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZK3Oin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 09:28:32 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48316 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbZK3O2b (ORCPT
+	Mon, 30 Nov 2009 09:38:43 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45514 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752230AbZK3Oin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 09:28:31 -0500
-Date: Mon, 30 Nov 2009 12:28:14 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>,
-       "Stefan Lippers-Hollmann" <s.L-H@gmx.de>,
+	Mon, 30 Nov 2009 09:38:43 -0500
+Date: Mon, 30 Nov 2009 14:37:03 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       John Stultz <johnstul@us.ibm.com>, Nicolas Pitre <nico@marvell.com>,
+       Jamie Lokier <jamie@shareable.org>, LKML <linux-kernel@vger.kernel.org>,
+       Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       linux-arm-kernel@lists.infradead.org,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
-Message-ID: <20091130122814.204b409b@pedra>
-In-Reply-To: <20091130120332.1512e0c6@pedra>
-References: <4B103CE1.8050303@redhat.com>
-	<200911272240.02930.s.L-H@gmx.de>
-	<200911280357.58116.hverkuil@xs4all.nl>
-	<20091130120332.1512e0c6@pedra>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
+	IRQF_SHARED|IRQF_DISABLED)
+Message-ID: <20091130143703.GA7028@n2100.arm.linux.org.uk>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 30 Nov 2009 12:03:32 -0200
-Mauro Carvalho Chehab <mchehab@redhat.com> escreveu:
+On Mon, Nov 30, 2009 at 02:54:54PM +0100, Thomas Gleixner wrote:
+> The correct solution IMNSHO is to get rid of IRQF_DISABLED and run
+> interrupt handlers always with interrupts disabled and require them
+> not to reenable interrupts themself.
 
-> Em Sat, 28 Nov 2009 03:57:58 +0100
-> Hans Verkuil <hverkuil@xs4all.nl> escreveu:
-> 
-> > On Friday 27 November 2009 22:40:01 Stefan Lippers-Hollmann wrote:
-> > > Hi
-> > > 
-> > > On Friday 27 November 2009, Mauro Carvalho Chehab wrote:
-> > > > Hi Linus,
-> > > > 
-> > > > Please pull from:
-> > > >         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
-> > > > 
-> > > > For the following drivers and building fixes:
-> > > > 
-> > > >    - radio-gemtek-pci: fix double mutex_lock
-> > > >    - v4l: add more missing linux/sched.h includes
-> > > >    - soc-camera: properly initialise the device object when reusing
-> > > >    - soc-camera: sh_mobile_ceu_camera: call pm_runtime_disable
-> > > >    - em28xx: fix Reddo DVB-C USB TV Box GPIO
-> > > >    - davinci: remove stray duplicate config pointer
-> > > >    - SMS_SIANO_MDTV should depend on HAS_DMA
-> > > >    - cxusb: Fix hang on DViCO FusionHDTV DVB-T Dual Digital 4 (rev 1)
-> > > >    - sh_mobile_ceu_camera: fix compile warning
-> > > >    - Fix wrong parameter order in memset
-> > > [...]
-> > > 
-> > > Please consider cherry picking the following two patches from Hans 
-> > > Verkuil [1]:
-> > > - add the missing s2250-loader.h
+I think Linus advocated at one point making the default be "irqs disabled"
+and only only if a flag was passed would handlers run with IRQs enabled.
+However, that might have been a step towards having all handlers running
+with IRQs disabled.
 
-I'm not finding the above patch. I remember I got one patch at the go7007
-conversion series to V4L2 that were removing this patch that didn't exist
-upstream. I had to manually fix the patch to apply at my linux-next tree.
+I'm all in favour of it.  There are a large number of relatively simple
+interrupt handlers out there which don't care about whether they're
+called with IRQs disabled or not.
 
-The patches I actually merged from hans v4l-dvb-staging (after the tree rebase)
-were:
+However, I think we still have a number of corner cases.  The SMC91x
+driver comes to mind, with its stupidly small FIFOs, where the majority
+of implementations have to have the packets loaded via PIO - and this
+seems to generally happen from IRQ context.
 
-changeset:   13455:0eb2e476ac2a
-parent:      13372:8bff7e6c44d4
-user:        Hans Verkuil <hverkuil@xs4all.nl>
-date:        Mon Nov 16 19:07:42 2009 +0100
-summary:     go7007: Add struct v4l2_device.
+The upshot of that is switching the SMC91x interrupt handler to run with
+IRQs disabled will mean that serial can suffer with overruns, especially
+if the serial port FIFO is also small.
 
-changeset:   13456:f6f0c5647657
-user:        Hans Verkuil <hverkuil@xs4all.nl>
-date:        Mon Nov 16 19:13:51 2009 +0100
-summary:     s2250: Change module structure
+The alternative is to push the "expensive" packet-loading parts of SMC91x
+support into a tasklet, but that's probably going to impact performance
+of the driver.
 
-changeset:   13457:701aead61759
-user:        Hans Verkuil <hverkuil@xs4all.nl>
-date:        Mon Nov 16 19:15:07 2009 +0100
-summary:     s2250: subdev conversion
+What I'm saying is that I think it's a good idea, but we should be
+cautious about forcing a blanket change - to do so I believe risks creating
+performance regressions.
 
-changeset:   13458:2ca6a9dc112b
-user:        Hans Verkuil <hverkuil@xs4all.nl>
-date:        Mon Nov 16 19:16:00 2009 +0100
-summary:     go7007: subdev conversion
-
-changeset:   13459:28dc36f9dfdc
-parent:      13454:0ba581813fde
-parent:      13458:2ca6a9dc112b
-user:        Mauro Carvalho Chehab <mchehab@redhat.com>
-date:        Tue Nov 24 14:45:53 2009 -0200
-summary:     merge: http://www.linuxtv.org/hg/~hverkuil/v4l-dvb-staging
-
-Unfortunately, the original tree were already removed.
-
-I suspect that hans didn't merge that patch on the latest version of
-v4l-dvb-stating tree.
-
-> > > - s2250 mutex patch
-
-This one were merged on my tree:
-	http://linuxtv.org/hg/v4l-dvb/rev/8bff7e6c44d4
-
-However, I suspect that just applying it won't solve the compilation breakage.
-
-> > 
-> > Good catch. Mauro, can you please add these two as well for 2.6.32? I'm sure
-> > I marked these two as high-prio patches. This staging driver is actively
-> > being used and developed so this regression should be fixed.
-> 
-> There were a merge problem when applying those patches at -git. As this is a
-> staging driver, I opted to just move all patches to linux-next, as there were
-> no mention on the patch subject mentioned that they are, in fact, fixes.
-> 
-> I'll see what can we do to solve the s2250 compilation breakage.
-> 
-> As Linus didn't merge from this pull request yet, I'll work on a fix, based
-> on one of the Stefan suggestions, preferably backporting the patches.
-> 
+Maybe a "safer" way forward is to go and find all those request_irq()
+sites and add IRQF_DISABLED to them all, wait for regression reports and
+selectively remove the IRQF_DISABLED flags?  We would then be able to
+build up a picture of the problematical drivers that need to be reworked,
+and whether the "run everything with irqs disabled" is even a practical
+proposition.
 
 
-
-
-Cheers,
-Mauro
+Now, at the risk of covering old ground, how about we have two separate
+irqaction lists, one for handlers to be called with irqs disabled and
+one for handlers with irqs enabled.  We run the irqs-disabled list
+first, naturally with irqs disabled.  If, at the end of that run (or
+maybe after each handler), IRQs have ended being enabled, print some
+diagnostics.  (We're going to need something like this to ensure that
+drivers interrupt handlers don't enable IRQs themselves.)  Then enable
+IRQs and run the irqs-enabled chain.
