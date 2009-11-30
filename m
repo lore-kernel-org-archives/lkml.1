@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbZK3PQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZK3PRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752513AbZK3PQS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 10:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZK3PQO
+	id S1752420AbZK3PRI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 10:17:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZK3PRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 10:16:14 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:31837 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752123AbZK3PQN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 10:16:13 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <4B13E1C2.9050403@tremplin-utc.net>
-Date: Mon, 30 Nov 2009 16:16:18 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
+	Mon, 30 Nov 2009 10:17:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46397 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751421AbZK3PRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 10:17:04 -0500
+Date: Mon, 30 Nov 2009 16:16:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, utrace-devel <utrace-devel@redhat.com>,
+       Roland McGrath <roland@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
+Message-ID: <20091130151650.GA24316@elte.hu>
+References: <20091130120345.GA18879@linux.vnet.ibm.com>
+ <1259582952.20516.209.camel@laptop>
+ <20091130123257.GB18879@linux.vnet.ibm.com>
+ <1259584907.20516.246.camel@laptop>
+ <20091130131928.GC18879@linux.vnet.ibm.com>
+ <1259588232.20516.307.camel@laptop>
+ <20091130150314.GA10331@redhat.com>
 MIME-Version: 1.0
-To: Samu Onkalo <samu.p.onkalo@nokia.com>
-Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v3 4/5] lis3: Scale output values to mg
-References: <1258622842-23129-1-git-send-email-samu.p.onkalo@nokia.com> <1258622842-23129-2-git-send-email-samu.p.onkalo@nokia.com> <1258622842-23129-3-git-send-email-samu.p.onkalo@nokia.com> <1258622842-23129-4-git-send-email-samu.p.onkalo@nokia.com> <1258622842-23129-5-git-send-email-samu.p.onkalo@nokia.com>
-In-Reply-To: <1258622842-23129-5-git-send-email-samu.p.onkalo@nokia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130150314.GA10331@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 19-11-09 10:27, Samu Onkalo schreef:
-> Report output values as 1/1000 of earth gravity.
 
-:
-Looks good, excepted that you have some constants with a very long name.
+* Frank Ch. Eigler <fche@redhat.com> wrote:
 
-:
-> +#define LIS3_SCALING_ACCURACY           1024
-> +#define LIS3_2G2G_SENSITIVITY_WAI_12B	((LIS3_SCALING_ACCURACY * 1000) / 1024)
-> +#define LIS3_2G2G_SENSITIVITY_WAI_8B	(18 * LIS3_SCALING_ACCURACY)
-As you'll have to rebase it anyway for the path 3, could you change
-those constants to have a shorter name? At least "WAI" could go away.
-And what does 2G2G stands for?
+> peterz wrote: 
+> 
+> > Hmm,. wouldn't it make much more sense to extend the current kgdb stub
+> > to include userspace debugging, providing an all-in-one solution?
+> > I think it would be much more powerful to be able to observe the full
+> > software stack and not be limited by this user<->kernel barrier.
+> 
+> There exist other tools for this broad a scope (systemtap being one), 
+> and present gdb is not well suited for this.  That makes this idea an 
+> exciting potential for the future, but not a practical short-term 
+> goal.
 
-Eric
+Well, but Peter's suggestion is the obvious next step - or even a 
+necessary first step in my view.
+
+kgdb exists here and today in the kernel and you cannot just build a 
+facility that doesnt replace it and doesnt integrate well with it.
+
+So if a unified user/kernel model for debugging is a 'long term' feature 
+in your view then perhaps this framework (which introduces _extensive_ 
+hooks all around the kernel) is not designed/approached in the right way 
+and should not be merged in this form.
+
+Concentrating on 'other tools' just generates extensive dependencies on 
+something that is lacking - making it even harder to implement unified 
+debugging down the line.
+
+Thanks,
+
+	Ingo
