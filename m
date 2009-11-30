@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZK3KmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbZK3Kuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbZK3KmR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 05:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbZK3KmR
+	id S1752885AbZK3Kuj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 05:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZK3Kuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 05:42:17 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:41377 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbZK3KmP (ORCPT
+	Mon, 30 Nov 2009 05:50:39 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:50484 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbZK3Kui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 05:42:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=vTsMjw4g0ml3S3prYtXRFZr6dstJgoHXqUXJGyv2Okzgt56L3ff+zCFpmqfkdxdS7n
-         8wY2PRB2tWEK2PY19iHJYDPIhX0oOYrVuTKkn+Hr1gB3nvF9ct95vhYD9v371NoDNPhy
-         evuJ4pDI3a3YmJS+T7jnOhZ/Ja36wbxMSahb0=
+	Mon, 30 Nov 2009 05:50:38 -0500
+Date: Mon, 30 Nov 2009 12:43:53 +0200
+From: Eduardo Valentin <eduardo.valentin@nokia.com>
+To: "Valentin Eduardo (Nokia-D/Helsinki)" <eduardo.valentin@nokia.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       "Hogander Jouni (Nokia-D/Tampere)" <jouni.hogander@nokia.com>,
+       "De-Schrijver Peter (Nokia-D/Helsinki)" 
+	<Peter.De-Schrijver@nokia.com>,
+       "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
+	<ext-juha.1.keski-saari@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: Doubt about Regulator Framework and VBAT use case
+Message-ID: <20091130104353.GB16608@esdhcp037198.research.nokia.com>
+Reply-To: eduardo.valentin@nokia.com
+References: <20091130104102.GA16608@esdhcp037198.research.nokia.com>
 MIME-Version: 1.0
-Date: Mon, 30 Nov 2009 16:12:21 +0530
-Message-ID: <b681c62b0911300242u72ef2bb6v8029416fe96367dc@mail.gmail.com>
-Subject: finding kernel virtual addr from physical addr of a user buffer
-From: yogeshwar sonawane <yogyas@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130104102.GA16608@esdhcp037198.research.nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 30 Nov 2009 10:44:00.0282 (UTC) FILETIME=[069D1FA0:01CA71AA]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Forgot to add Liam into Cc. Doing it so.
 
-I want to see/monitor/check/read the data of a user buffer. The idea
-is like this :-
 
-There is a network card which is sending/receiving the data. Many
-applications are using that card.
-Sometimes i am getting an application level error saying received data
-is corrupt. I want to see/print send and receive buffer.
-Having application level changes for printing is out of scope as there
-can be multiple applications running simultaneous.
+On Mon, Nov 30, 2009 at 11:41:02AM +0100, Valentin Eduardo (Nokia-D/Helsinki) wrote:
+> Hello Mark and Liam,
+> 
+> I'm writing to ask about VBAT use case. What is the expected
+> way to use regulator framework in case of rail coming from battery?
+> Should it be added to the regulator framework at all?
+> 
+> In that case, the rail should not be controllable. So I don't see
+> any reason to add it to the regulator framework board definitions,
+> as we should not be controlling it.
+> 
+> However, drivers for devices on that rail would require their regulator anyway.
+> And I guess the point would be that drivers should not be aware that they are on VBAT
+> or any other rail.
+> 
+> So, what's the correct way to solve this?
+> 
+> - Should drivers fail nicely if a regulator_get fail? And continue even if one fails.
+> - Should drivers disable regfw usage completely in the driver if regulator_get doesn't
+> give valid regulator ?
+> - or Should a fake fixed regulator be added for vbat so drivers can still get a valid
+> regulator with regulator_get.
+> 
+> The last options seams to be the one that does not require much changes on drivers.
+> But it will be adding a regulator that does basically nothing in the system.
+> 
+> BR,
+> 
+> -- 
+> Eduardo Valentin
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-We have modified our card's firmware so that it will dump the Physical
-addresses of user buffers which are sent or received.
-After reading the dumped PA, we will pass a single PA to a driver
-through sysfs file. Then we will cat the sysfs file which should show
-the one page buffer contents corresponding to passed PA.
-
-For this to work, the driver has to have access to the PA. First, i am
-finding page frame no. (pfn) by right-shifting PA. Then kmap() is
-called using pfn_to_page().
-This will give kernel virtual address which can be used to print/show
-data during "cat sysfs file" command.
-
-1) Whether the above mentioned steps are correct ? Kindly comment.
-
-2) In the driver store() function, i have modified the contents by
-using kernel virtual address. But sometimes i am not able to see the
-modified contents at user level.
-Kindly suggest what can be the problem ?
-
-3) Kindly suggest any other way to see/check user buffer contents when
-PA is available ?
-
-Thanking you,
-Yogeshwar
+-- 
+Eduardo Valentin
