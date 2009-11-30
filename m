@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbZK3DB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZK3DCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806AbZK3DB1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 22:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbZK3DB0
+	id S1753811AbZK3DCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 22:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZK3DBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 22:01:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31532 "EHLO mx1.redhat.com"
+	Sun, 29 Nov 2009 22:01:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15875 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753579AbZK3DAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 22:00:55 -0500
+	id S1753555AbZK3DAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Nov 2009 22:00:53 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
@@ -16,356 +16,179 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, vgoyal@redhat.com,
        czoccolo@gmail.com, Alan.Brunelle@hp.com
-Subject: [PATCH 06/21] blkio: Introduce blkio controller cgroup interface
-Date: Sun, 29 Nov 2009 21:59:13 -0500
-Message-Id: <1259549968-10369-7-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 07/21] blkio: Introduce per cfq group weights and vdisktime calculations
+Date: Sun, 29 Nov 2009 21:59:14 -0500
+Message-Id: <1259549968-10369-8-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1259549968-10369-1-git-send-email-vgoyal@redhat.com>
 References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o This is basic implementation of blkio controller cgroup interface. This is
-  the common interface visible to user space and should be used by different
-  IO control policies as we implement those.
+o Bring in the per cfq group weight and how vdisktime is calculated for the
+  group. Also bring in the functionality of updating the min_vdisktime of
+  the group service tree.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/Kconfig                 |   13 +++
- block/Kconfig.iosched         |    1 +
- block/Makefile                |    1 +
- block/blk-cgroup.c            |  177 +++++++++++++++++++++++++++++++++++++++++
- block/blk-cgroup.h            |   58 +++++++++++++
- include/linux/cgroup_subsys.h |    6 ++
- include/linux/iocontext.h     |    4 +
- 7 files changed, 260 insertions(+), 0 deletions(-)
- create mode 100644 block/blk-cgroup.c
- create mode 100644 block/blk-cgroup.h
+ block/Kconfig.iosched |    9 ++++++-
+ block/cfq-iosched.c   |   62 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 69 insertions(+), 2 deletions(-)
 
-diff --git a/block/Kconfig b/block/Kconfig
-index 9be0b56..6ba1a8e 100644
---- a/block/Kconfig
-+++ b/block/Kconfig
-@@ -77,6 +77,19 @@ config BLK_DEV_INTEGRITY
- 	T10/SCSI Data Integrity Field or the T13/ATA External Path
- 	Protection.  If in doubt, say N.
- 
-+config BLK_CGROUP
-+	bool
-+	depends on CGROUPS
-+	default n
-+	---help---
-+	Generic block IO controller cgroup interface. This is the common
-+	cgroup interface which should be used by various IO controlling
-+	policies.
-+
-+	Currently, CFQ IO scheduler uses it to recognize task groups and
-+	control disk bandwidth allocation (proportional time slice allocation)
-+	to such task groups.
-+
- endif # BLOCK
- 
- config BLOCK_COMPAT
 diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index 8bd1051..be0280d 100644
+index be0280d..fa95fa7 100644
 --- a/block/Kconfig.iosched
 +++ b/block/Kconfig.iosched
-@@ -23,6 +23,7 @@ config IOSCHED_DEADLINE
+@@ -23,7 +23,6 @@ config IOSCHED_DEADLINE
  
  config IOSCHED_CFQ
  	tristate "CFQ I/O scheduler"
-+	select BLK_CGROUP
+-	select BLK_CGROUP
  	default y
  	---help---
  	  The CFQ I/O scheduler tries to distribute bandwidth equally
-diff --git a/block/Makefile b/block/Makefile
-index 7914108..cb2d515 100644
---- a/block/Makefile
-+++ b/block/Makefile
-@@ -8,6 +8,7 @@ obj-$(CONFIG_BLOCK) := elevator.o blk-core.o blk-tag.o blk-sysfs.o \
- 			blk-iopoll.o ioctl.o genhd.o scsi_ioctl.o
+@@ -33,6 +32,14 @@ config IOSCHED_CFQ
  
- obj-$(CONFIG_BLK_DEV_BSG)	+= bsg.o
-+obj-$(CONFIG_BLK_CGROUP)	+= blk-cgroup.o
- obj-$(CONFIG_IOSCHED_NOOP)	+= noop-iosched.o
- obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
- obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
-diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
-new file mode 100644
-index 0000000..4f6afd7
---- /dev/null
-+++ b/block/blk-cgroup.c
-@@ -0,0 +1,177 @@
-+/*
-+ * Common Block IO controller cgroup interface
-+ *
-+ * Based on ideas and code from CFQ, CFS and BFQ:
-+ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-+ *
-+ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-+ *		      Paolo Valente <paolo.valente@unimore.it>
-+ *
-+ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-+ * 	              Nauman Rafique <nauman@google.com>
-+ */
-+#include <linux/ioprio.h>
+ 	  This is the default I/O scheduler.
+ 
++config CFQ_GROUP_IOSCHED
++	bool "CFQ Group Scheduling support"
++	depends on IOSCHED_CFQ && CGROUPS
++	select BLK_CGROUP
++	default n
++	---help---
++	  Enable group IO scheduling in CFQ.
++
+ choice
+ 	prompt "Default I/O scheduler"
+ 	default DEFAULT_CFQ
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 0a284be..fbb6bf5 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -13,6 +13,7 @@
+ #include <linux/rbtree.h>
+ #include <linux/ioprio.h>
+ #include <linux/blktrace_api.h>
 +#include "blk-cgroup.h"
-+
-+struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
-+
-+struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
-+{
-+	return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
-+			    struct blkio_cgroup, css);
-+}
-+
-+void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-+				struct blkio_group *blkg, void *key)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&blkcg->lock, flags);
-+	rcu_assign_pointer(blkg->key, key);
-+	hlist_add_head_rcu(&blkg->blkcg_node, &blkcg->blkg_list);
-+	spin_unlock_irqrestore(&blkcg->lock, flags);
-+}
-+
-+int blkiocg_del_blkio_group(struct blkio_group *blkg)
-+{
-+	/* Implemented later */
-+	return 0;
-+}
-+
-+/* called under rcu_read_lock(). */
-+struct blkio_group *blkiocg_lookup_group(struct blkio_cgroup *blkcg, void *key)
-+{
-+	struct blkio_group *blkg;
-+	struct hlist_node *n;
-+	void *__key;
-+
-+	hlist_for_each_entry_rcu(blkg, n, &blkcg->blkg_list, blkcg_node) {
-+		__key = blkg->key;
-+		if (__key == key)
-+			return blkg;
-+	}
-+
-+	return NULL;
-+}
-+
-+#define SHOW_FUNCTION(__VAR)						\
-+static u64 blkiocg_##__VAR##_read(struct cgroup *cgroup,		\
-+				       struct cftype *cftype)		\
-+{									\
-+	struct blkio_cgroup *blkcg;					\
-+									\
-+	blkcg = cgroup_to_blkio_cgroup(cgroup);				\
-+	return (u64)blkcg->__VAR;					\
-+}
-+
-+SHOW_FUNCTION(weight);
-+#undef SHOW_FUNCTION
-+
-+static int
-+blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
-+{
-+	struct blkio_cgroup *blkcg;
-+
-+	if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
-+		return -EINVAL;
-+
-+	blkcg = cgroup_to_blkio_cgroup(cgroup);
-+	blkcg->weight = (unsigned int)val;
-+	return 0;
-+}
-+
-+struct cftype blkio_files[] = {
-+	{
-+		.name = "weight",
-+		.read_u64 = blkiocg_weight_read,
-+		.write_u64 = blkiocg_weight_write,
-+	},
-+};
-+
-+static int blkiocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-+{
-+	return cgroup_add_files(cgroup, subsys, blkio_files,
-+				ARRAY_SIZE(blkio_files));
-+}
-+
-+static void blkiocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-+{
-+	struct blkio_cgroup *blkcg = cgroup_to_blkio_cgroup(cgroup);
-+
-+	free_css_id(&blkio_subsys, &blkcg->css);
-+	kfree(blkcg);
-+}
-+
-+static struct cgroup_subsys_state *
-+blkiocg_create(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-+{
-+	struct blkio_cgroup *blkcg, *parent_blkcg;
-+
-+	if (!cgroup->parent) {
-+		blkcg = &blkio_root_cgroup;
-+		goto done;
-+	}
-+
-+	/* Currently we do not support hierarchy deeper than two level (0,1) */
-+	parent_blkcg = cgroup_to_blkio_cgroup(cgroup->parent);
-+	if (css_depth(&parent_blkcg->css) > 0)
-+		return ERR_PTR(-EINVAL);
-+
-+	blkcg = kzalloc(sizeof(*blkcg), GFP_KERNEL);
-+	if (!blkcg)
-+		return ERR_PTR(-ENOMEM);
-+
-+	blkcg->weight = BLKIO_WEIGHT_DEFAULT;
-+done:
-+	spin_lock_init(&blkcg->lock);
-+	INIT_HLIST_HEAD(&blkcg->blkg_list);
-+
-+	return &blkcg->css;
-+}
-+
-+/*
-+ * We cannot support shared io contexts, as we have no mean to support
-+ * two tasks with the same ioc in two different groups without major rework
-+ * of the main cic data structures.  For now we allow a task to change
-+ * its cgroup only if it's the only owner of its ioc.
-+ */
-+static int blkiocg_can_attach(struct cgroup_subsys *subsys,
-+				struct cgroup *cgroup, struct task_struct *tsk,
-+				bool threadgroup)
-+{
-+	struct io_context *ioc;
-+	int ret = 0;
-+
-+	/* task_lock() is needed to avoid races with exit_io_context() */
-+	task_lock(tsk);
-+	ioc = tsk->io_context;
-+	if (ioc && atomic_read(&ioc->nr_tasks) > 1)
-+		ret = -EINVAL;
-+	task_unlock(tsk);
-+
-+	return ret;
-+}
-+
-+static void blkiocg_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
-+				struct cgroup *prev, struct task_struct *tsk,
-+				bool threadgroup)
-+{
-+	struct io_context *ioc;
-+
-+	task_lock(tsk);
-+	ioc = tsk->io_context;
-+	if (ioc)
-+		ioc->cgroup_changed = 1;
-+	task_unlock(tsk);
-+}
-+
-+struct cgroup_subsys blkio_subsys = {
-+	.name = "blkio",
-+	.create = blkiocg_create,
-+	.can_attach = blkiocg_can_attach,
-+	.attach = blkiocg_attach,
-+	.destroy = blkiocg_destroy,
-+	.populate = blkiocg_populate,
-+	.subsys_id = blkio_subsys_id,
-+	.use_id = 1,
-+};
-diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
-new file mode 100644
-index 0000000..ba5703f
---- /dev/null
-+++ b/block/blk-cgroup.h
-@@ -0,0 +1,58 @@
-+#ifndef _BLK_CGROUP_H
-+#define _BLK_CGROUP_H
-+/*
-+ * Common Block IO controller cgroup interface
-+ *
-+ * Based on ideas and code from CFQ, CFS and BFQ:
-+ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-+ *
-+ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-+ *		      Paolo Valente <paolo.valente@unimore.it>
-+ *
-+ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-+ * 	              Nauman Rafique <nauman@google.com>
-+ */
-+
-+#include <linux/cgroup.h>
-+
-+struct blkio_cgroup {
-+	struct cgroup_subsys_state css;
+ 
+ /*
+  * tunables
+@@ -49,6 +50,7 @@ static const int cfq_hist_divisor = 4;
+ 
+ #define CFQ_SLICE_SCALE		(5)
+ #define CFQ_HW_QUEUE_MIN	(5)
++#define CFQ_SERVICE_SHIFT       12
+ 
+ #define RQ_CIC(rq)		\
+ 	((struct cfq_io_context *) (rq)->elevator_private)
+@@ -78,6 +80,7 @@ struct cfq_rb_root {
+ 	struct rb_node *left;
+ 	unsigned count;
+ 	u64 min_vdisktime;
++	struct rb_node *active;
+ };
+ #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
+ 
+@@ -162,6 +165,7 @@ struct cfq_group {
+ 
+ 	/* group service_tree key */
+ 	u64 vdisktime;
 +	unsigned int weight;
-+	spinlock_t lock;
-+	struct hlist_head blkg_list;
-+};
-+
-+struct blkio_group {
-+	/* An rcu protected unique identifier for the group */
-+	void *key;
-+	struct hlist_node blkcg_node;
-+};
-+
-+#define BLKIO_WEIGHT_MIN	100
-+#define BLKIO_WEIGHT_MAX	1000
-+#define BLKIO_WEIGHT_DEFAULT	500
-+
-+#ifdef CONFIG_BLK_CGROUP
-+extern struct blkio_cgroup blkio_root_cgroup;
-+extern struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup);
-+extern void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-+				struct blkio_group *blkg, void *key);
-+extern int blkiocg_del_blkio_group(struct blkio_group *blkg);
-+extern struct blkio_group *blkiocg_lookup_group(struct blkio_cgroup *blkcg,
-+						void *key);
-+#else
-+static inline struct blkio_cgroup *
-+cgroup_to_blkio_cgroup(struct cgroup *cgroup) { return NULL; }
-+
-+static inline void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-+			struct blkio_group *blkg, void *key)
+ 	bool on_st;
+ 
+ 	/* number of cfqq currently on this group */
+@@ -431,6 +435,51 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
+ }
+ 
++static inline u64 cfq_scale_slice(unsigned long delta, struct cfq_group *cfqg)
 +{
++	u64 d = delta << CFQ_SERVICE_SHIFT;
++
++	d = d * BLKIO_WEIGHT_DEFAULT;
++	do_div(d, cfqg->weight);
++	return d;
 +}
 +
-+static inline int
-+blkiocg_del_blkio_group(struct blkio_group *blkg) { return 0; }
++static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
++{
++	s64 delta = (s64)(vdisktime - min_vdisktime);
++	if (delta > 0)
++		min_vdisktime = vdisktime;
 +
-+static inline struct blkio_group *
-+blkiocg_lookup_group(struct blkio_cgroup *blkcg, void *key) { return NULL; }
-+#endif
-+#endif /* _BLK_CGROUP_H */
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index 9c8d31b..ccefff0 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -60,3 +60,9 @@ SUBSYS(net_cls)
- #endif
++	return min_vdisktime;
++}
++
++static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
++{
++	s64 delta = (s64)(vdisktime - min_vdisktime);
++	if (delta < 0)
++		min_vdisktime = vdisktime;
++
++	return min_vdisktime;
++}
++
++static void update_min_vdisktime(struct cfq_rb_root *st)
++{
++	u64 vdisktime = st->min_vdisktime;
++	struct cfq_group *cfqg;
++
++	if (st->active) {
++		cfqg = rb_entry(st->active, struct cfq_group, rb_node);
++		vdisktime = cfqg->vdisktime;
++	}
++
++	if (st->left) {
++		cfqg = rb_entry(st->left, struct cfq_group, rb_node);
++		vdisktime = min_vdisktime(vdisktime, cfqg->vdisktime);
++	}
++
++	st->min_vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
++}
++
+ /*
+  * get averaged number of queues of RT/BE priority.
+  * average is updated, with a formula that gives more weight to higher numbers,
+@@ -736,8 +785,12 @@ cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ {
+ 	struct cfq_rb_root *st = &cfqd->grp_service_tree;
  
- /* */
++	if (st->active == &cfqg->rb_node)
++		st->active = NULL;
 +
-+#ifdef CONFIG_BLK_CGROUP
-+SUBSYS(blkio)
-+#endif
+ 	BUG_ON(cfqg->nr_cfqq < 1);
+ 	cfqg->nr_cfqq--;
 +
-+/* */
-diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-index eb73632..d61b0b8 100644
---- a/include/linux/iocontext.h
-+++ b/include/linux/iocontext.h
-@@ -68,6 +68,10 @@ struct io_context {
- 	unsigned short ioprio;
- 	unsigned short ioprio_changed;
+ 	/* If there are other cfq queues under this group, don't delete it */
+ 	if (cfqg->nr_cfqq)
+ 		return;
+@@ -1656,10 +1709,14 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
+ static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd)
+ {
+ 	struct cfq_rb_root *st = &cfqd->grp_service_tree;
++	struct cfq_group *cfqg;
  
-+#ifdef CONFIG_BLK_CGROUP
-+	unsigned short cgroup_changed;
-+#endif
+ 	if (RB_EMPTY_ROOT(&st->rb))
+ 		return NULL;
+-	return cfq_rb_first_group(st);
++	cfqg = cfq_rb_first_group(st);
++	st->active = &cfqg->rb_node;
++	update_min_vdisktime(st);
++	return cfqg;
+ }
+ 
+ static void cfq_choose_cfqg(struct cfq_data *cfqd)
+@@ -3152,6 +3209,9 @@ static void *cfq_init_queue(struct request_queue *q)
+ 		*st = CFQ_RB_ROOT;
+ 	RB_CLEAR_NODE(&cfqg->rb_node);
+ 
++	/* Give preference to root group over other groups */
++	cfqg->weight = 2*BLKIO_WEIGHT_DEFAULT;
 +
  	/*
- 	 * For request batching
- 	 */
+ 	 * Not strictly needed (since RB_ROOT just clears the node and we
+ 	 * zeroed cfqd on alloc), but better be safe in case someone decides
 -- 
 1.6.2.5
 
