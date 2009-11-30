@@ -1,115 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbZK3KsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZK3Kyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752042AbZK3KsO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 05:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZK3KsN
+	id S1752722AbZK3Kyv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 05:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZK3Kyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 05:48:13 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35689 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750940AbZK3KsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 05:48:12 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jamie Lokier <jamie@shareable.org>,
-       linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] genirq: warn about IRQF_SHARED|IRQF_DISABLED at the right place
-Date: Mon, 30 Nov 2009 11:47:47 +0100
-Message-Id: <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 30 Nov 2009 05:54:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1934 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751208AbZK3Kyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 05:54:50 -0500
+From: Avi Kivity <avi@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: [PATCH] core: clean up user return notifers use of per_cpu
+Date: Mon, 30 Nov 2009 12:54:51 +0200
+Message-Id: <1259578491-4589-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For shared irqs IRQF_DISABLED is only guaranteed for the first handler.
-So only warn starting at the second registration.
+Instead of using per_cpu(..., raw_smp_processor_id()), use __get_cpu_var(...).
 
-The warning is moved to __setup_irq having the additional benefit of
-catching actions registered using setup_irq not only register_irq.
-
-This doesn't fix the cases where setup order is wrong but it should
-report the broken cases more reliably.
-
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Nicolas Pitre <nico@marvell.com>
-Cc: Eric Miao <eric.y.miao@gmail.com>
-Cc: John Stultz <johnstul@us.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Remy Bohmer <linux@bohmer.net>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrea Gallo <andrea.gallo@stericsson.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jamie Lokier <jamie@shareable.org>
-Cc: linux-arm-kernel@lists.infradead.org
+Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- kernel/irq/manage.c |   23 ++++++++++-------------
- 1 files changed, 10 insertions(+), 13 deletions(-)
+ kernel/user-return-notifier.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index bde4c66..d8f7415 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -702,6 +702,16 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
- 			goto mismatch;
- #endif
+diff --git a/kernel/user-return-notifier.c b/kernel/user-return-notifier.c
+index 03e2d6f..eb27fd3 100644
+--- a/kernel/user-return-notifier.c
++++ b/kernel/user-return-notifier.c
+@@ -6,8 +6,6 @@
  
-+		/*
-+		 * handle_IRQ_event() only honors IRQF_DISABLED for the _first_
-+		 * irqaction.  As the first handler might reenable irqs all bets
-+		 * are off for the later handlers even if the first one has
-+		 * IRQF_DISABLED, too.
-+		 */
-+		if (new->flags & IRQF_DISABLED)
-+			pr_warning("IRQ %d/%s: IRQF_DISABLED is not guaranteed "
-+					"on shared IRQs\n", irq, new->name);
-+
- 		/* add new interrupt at end of irq queue */
- 		do {
- 			old_ptr = &old->next;
-@@ -1008,19 +1018,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
- 	struct irq_desc *desc;
- 	int retval;
+ static DEFINE_PER_CPU(struct hlist_head, return_notifier_list);
  
--	/*
--	 * handle_IRQ_event() always ignores IRQF_DISABLED except for
--	 * the _first_ irqaction (sigh).  That can cause oopsing, but
--	 * the behavior is classified as "will not fix" so we need to
--	 * start nudging drivers away from using that idiom.
--	 */
--	if ((irqflags & (IRQF_SHARED|IRQF_DISABLED)) ==
--					(IRQF_SHARED|IRQF_DISABLED)) {
--		pr_warning(
--		  "IRQ %d/%s: IRQF_DISABLED is not guaranteed on shared IRQs\n",
--			irq, devname);
--	}
+-#define URN_LIST_HEAD per_cpu(return_notifier_list, raw_smp_processor_id())
 -
- #ifdef CONFIG_LOCKDEP
- 	/*
- 	 * Lockdep wants atomic interrupt handlers:
+ /*
+  * Request a notification when the current cpu returns to userspace.  Must be
+  * called in atomic context.  The notifier will also be called in atomic
+@@ -16,7 +14,7 @@ static DEFINE_PER_CPU(struct hlist_head, return_notifier_list);
+ void user_return_notifier_register(struct user_return_notifier *urn)
+ {
+ 	set_tsk_thread_flag(current, TIF_USER_RETURN_NOTIFY);
+-	hlist_add_head(&urn->link, &URN_LIST_HEAD);
++	hlist_add_head(&urn->link, &__get_cpu_var(return_notifier_list));
+ }
+ EXPORT_SYMBOL_GPL(user_return_notifier_register);
+ 
+@@ -27,7 +25,7 @@ EXPORT_SYMBOL_GPL(user_return_notifier_register);
+ void user_return_notifier_unregister(struct user_return_notifier *urn)
+ {
+ 	hlist_del(&urn->link);
+-	if (hlist_empty(&URN_LIST_HEAD))
++	if (hlist_empty(&__get_cpu_var(return_notifier_list)))
+ 		clear_tsk_thread_flag(current, TIF_USER_RETURN_NOTIFY);
+ }
+ EXPORT_SYMBOL_GPL(user_return_notifier_unregister);
 -- 
 1.6.5.2
 
