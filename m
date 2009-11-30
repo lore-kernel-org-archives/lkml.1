@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbZK3WZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZK3UTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866AbZK3WZg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 17:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZK3WZf
+	id S1752354AbZK3UTl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 15:19:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZK3UTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 17:25:35 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:46557 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbZK3WZe (ORCPT
+	Mon, 30 Nov 2009 15:19:40 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:50864 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751797AbZK3UTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 17:25:34 -0500
-X-Greylist: delayed 7554 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Nov 2009 17:25:34 EST
-From: Jiri Slaby <jslaby@suse.cz>
-To: jbarnes@virtuousgeek.org
-Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
-       Aristeu Sergio <arozansk@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-pci@vger.kernel.org,
-       x86@kernel.org
-Subject: [PATCH 2/2] X86: pci, fix section mismatches
-Date: Mon, 30 Nov 2009 21:19:42 +0100
-Message-Id: <1259612382-32722-2-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <1259612382-32722-1-git-send-email-jslaby@suse.cz>
-References: <1259612382-32722-1-git-send-email-jslaby@suse.cz>
+	Mon, 30 Nov 2009 15:19:40 -0500
+Date: Mon, 30 Nov 2009 15:19:45 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ondrej Zary <linux@rainbow-software.org>
+cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
+Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
+In-Reply-To: <200911301631.00484.linux@rainbow-software.org>
+Message-ID: <Pine.LNX.4.44L0.0911301502470.4478-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pcibios_scan_specific_bus calls pci_scan_bus_on_node which is __devinit.
-Mark it __devinit as well. All users are now __init or __devinit.
+On Mon, 30 Nov 2009, Ondrej Zary wrote:
 
-Remark update_res from __init to __devinit as it is called also from
-__devinit functions.
+> It does not make much sense to me but I think that it crashes iside this list 
+> manipulation:
+> 
+>         prev = ehci->async;
+>         while (prev->qh_next.qh != qh)
+>                 prev = prev->qh_next.qh;
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Aristeu Sergio <arozansk@redhat.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pci@vger.kernel.org
-Cc: x86@kernel.org
----
- arch/x86/pci/amd_bus.c |    2 +-
- arch/x86/pci/legacy.c  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Yes, it's crashing in the "while" test because prev is NULL.  This
+means the code is looking for qh in the async list but not finding it.  
+That's supposed to be impossible.
 
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index 995f360..b78ffff 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -119,7 +119,7 @@ static void __init update_range(struct res_range *range, size_t start,
- 	}
- }
- 
--void __init update_res(struct pci_root_info *info, size_t start,
-+void __devinit update_res(struct pci_root_info *info, size_t start,
- 			      size_t end, unsigned long flags, int merge)
- {
- 	int i;
-diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
-index a8194c8..8cf7835 100644
---- a/arch/x86/pci/legacy.c
-+++ b/arch/x86/pci/legacy.c
-@@ -39,7 +39,7 @@ static int __init pci_legacy_init(void)
- 	return 0;
- }
- 
--void pcibios_scan_specific_bus(int busn)
-+void __devinit pcibios_scan_specific_bus(int busn)
- {
- 	int devfn;
- 	long node;
--- 
-1.6.5.3
+The assembly code is peculiar because it includes stuff that isn't in
+the source code!  For example, right at this point (after the end of
+the loop) there's a test to see whether prev is NULL.  Where could that
+have come from?  Do you have any idea?
+
+>         prev->hw_next = qh->hw_next;
+>         prev->qh_next = qh->qh_next;
+>         wmb ();
+
+These lines aren't reached.
+
+Does this happen every time you disconnect the Nexio?
+
+You can try patching that loop.  If prev is NULL then print an error
+message in the log, including the value of qh and the value of
+ehci->async, and jump past the following three statements.
+
+With that change the system shouldn't crash, although khubd might hang.  
+But we still need to find out how this could have happened.  Try
+collecting a usbmon trace while running the test; then let's compare
+the usbmon output with the error messages in the log.
+
+Alan Stern
 
