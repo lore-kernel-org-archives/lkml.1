@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZK3H27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbZK3Hd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbZK3H27 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 02:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZK3H26
+	id S1753982AbZK3Hd5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 02:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbZK3Hd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 02:28:58 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:35274 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbZK3H25 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 02:28:57 -0500
-Subject: Re: [PATCH/RFC v5 4/5]: core: Add dump device to call on oopses
- and panics
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091126093657.GA25430@logfs.org>
-References: <20091012122023.GA19365@elte.hu>
-	 <20091012150650.51a4b4dc@marrow.netinsight.se>
-	 <20091012131528.GC25464@elte.hu>
-	 <20091012153937.0dcd73e5@marrow.netinsight.se>
-	 <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
-	 <20091012110954.67d7d8d8.akpm@linux-foundation.org>
-	 <20091012182346.GH17138@elte.hu>
-	 <alpine.LFD.2.01.0910121130190.3438@localhost.localdomain>
-	 <20091013151751.59e217a7@marrow.netinsight.se>
-	 <20091013152235.188059d2@marrow.netinsight.se>
-	 <20091126093657.GA25430@logfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 30 Nov 2009 09:27:51 +0200
-Message-Id: <1259566071.7518.48.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 30 Nov 2009 07:27:58.0347 (UTC) FILETIME=[A3F445B0:01CA718E]
-X-Nokia-AV: Clean
+	Mon, 30 Nov 2009 02:33:56 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57266 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753797AbZK3Hd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 02:33:56 -0500
+Message-ID: <4B137470.3000601@cn.fujitsu.com>
+Date: Mon, 30 Nov 2009 15:29:52 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org, riel@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com, czoccolo@gmail.com
+Subject: Re: [RFC] Block IO Controller V3
+References: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1258134015-21632-1-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-11-26 at 10:36 +0100, Jörn Engel wrote:
-> Just stumbled across this patch.
+Vivek Goyal wrote:
+> Hi Jens,
 > 
-> On Tue, 13 October 2009 15:22:35 +0200, Simon Kagstrom wrote:
-> > +void dump_kmsg(int panic)
-> > +{
-> > +	unsigned long len = ACCESS_ONCE(log_end);
-> > +	struct dump_device *dump;
-> > +	const char *s1, *s2;
-> > +	unsigned long l1, l2;
-> > +
-> > +	s1 = "";
-> > +	l1 = 0;
-> > +	s2 = log_buf;
-> > +	l2 = len;
-> > +
-> > +	/* Have we rotated around the circular buffer? */
-> > +	if (len > log_buf_len) {
+> This is V3 of the Block IO controller patches on top of "for-2.6.33" branch
+> of block tree.
 > 
-> I believe this bit is wrong.  log_end is an unsigned int, so it can
-> wrap relatively quickly.  If log_end just wrapped to 0 and dump_kmsg is
-> called, the amount of printk buffer stored appears to be 0 as well.
+...
 
-To me it looks like 'log_end' is not supposed to wrap. What makes you
-think it can? In which cases it can?
+Hi Vivek,
+
+If an idle task is running group A and a normal task is running in group B, these
+two group have the same weight, I think IO Controller should isolate group A and
+group B, these two group should get 50% of the IO bw for each, right? But for this case,
+we don't see any isolation, instead, group B monopolizes almost all IO BW. I guess
+the major reason is idle cfqq is only allowed to dispatch one request and get expired.
+I think in order to get better isolation, we shouldn't expire the idle cfqq immediately
+if this idle queue is the only one this its group. The following patch enable idling
+for idle queue and prevent expiring it immediately after dispatch one request if it's 
+the only one in group. This patch is working for V3, hasn't tested on V4 yet.
+
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/cfq-iosched.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 6f9d019..3440837 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -900,7 +900,7 @@ static bool cfq_should_idle(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	struct cfq_rb_root *service_tree = cfqq->service_tree;
+ 
+ 	/* We never do for idle class queues. */
+-	if (prio == IDLE_WORKLOAD)
++	if (prio == IDLE_WORKLOAD && cfqq->cfqg->nr_cfqq > 1)
+ 		return false;
+ 
+ 	/* We do for queues that were marked with idle window flag. */
+@@ -2336,7 +2336,7 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
+ 	 * expire an async queue immediately if it has used up its slice. idle
+ 	 * queue always expire after 1 dispatch round.
+ 	 */
+-	if (cfqd->busy_queues > 1 && ((!cfq_cfqq_sync(cfqq) &&
++	if (cfqq->cfqg->nr_cfqq  > 1 && ((!cfq_cfqq_sync(cfqq) &&
+ 	    cfqq->slice_dispatch >= cfq_prio_to_maxrq(cfqd, cfqq)) ||
+ 	    cfq_class_idle(cfqq))) {
+ 		cfqq->slice_end = jiffies + 1;
+-- 
+1.5.4.rc3
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Regards
+Gui Jianfeng
 
