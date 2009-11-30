@@ -1,67 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbZK3Ksg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbZK3KsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752802AbZK3Ksg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 05:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZK3Ksf
+	id S1752042AbZK3KsO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 05:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZK3KsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 05:48:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:32802 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751077AbZK3Kse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 05:48:34 -0500
-Message-ID: <4B13A24E.1080100@kernel.org>
-Date: Mon, 30 Nov 2009 19:45:34 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Mon, 30 Nov 2009 05:48:13 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35689 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbZK3KsM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 05:48:12 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.infradead.org
+Subject: [PATCH] genirq: warn about IRQF_SHARED|IRQF_DISABLED at the right place
+Date: Mon, 30 Nov 2009 11:47:47 +0100
+Message-Id: <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Avi Kivity <avi@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: WARNING: kernel/smp.c:292 smp_call_function_single [Was: mmotm
- 2009-11-24-16-47 uploaded]
-References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>  <4B0FEA3E.5050108@gmail.com> <1259335036.6483.440.camel@laptop> <alpine.LFD.2.00.0911271730330.24119@localhost.localdomain> <4B1113C0.30505@redhat.com> <4B138950.9040905@kernel.org> <alpine.LFD.2.00.0911301055000.24119@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0911301055000.24119@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+For shared irqs IRQF_DISABLED is only guaranteed for the first handler.
+So only warn starting at the second registration.
 
-On 11/30/2009 07:02 PM, Thomas Gleixner wrote:
-> No, it _CANNOT_ be preempted at that point:
-> 
-> schedule()
-> {
-> 	preempt_disable();
-> 
-> 	switch_to();
-> 
-> 	preempt_enable();
-> }
+The warning is moved to __setup_irq having the additional benefit of
+catching actions registered using setup_irq not only register_irq.
 
-Yes, you're right.
+This doesn't fix the cases where setup order is wrong but it should
+report the broken cases more reliably.
 
->> For the time being, maybe it's best to back out the fix given that the
->> only architecture which may be affected by the original bug is ia64
->> which is the only one with both kvm and the unlocked context switch.
-> 
-> Do you have a pointer to the original bug report ?
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Nicolas Pitre <nico@marvell.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>
+Cc: John Stultz <johnstul@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Remy Bohmer <linux@bohmer.net>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrea Gallo <andrea.gallo@stericsson.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jamie Lokier <jamie@shareable.org>
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ kernel/irq/manage.c |   23 ++++++++++-------------
+ 1 files changed, 10 insertions(+), 13 deletions(-)
 
-Nope, I was referring to the imaginary race condition, so there's no
-bug to worry about.  The only problem is the asymmetry between in and
-out callbacks.  Then again, it's not really possible to match them on
-unlocked ctxsw archs anyway, so I guess the only thing to do is to
-document the context difference between in and out.
-
-Sorry about the fuss.  I'll send out patch to revert it and document
-the difference.
-
-Thanks.
-
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index bde4c66..d8f7415 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -702,6 +702,16 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
+ 			goto mismatch;
+ #endif
+ 
++		/*
++		 * handle_IRQ_event() only honors IRQF_DISABLED for the _first_
++		 * irqaction.  As the first handler might reenable irqs all bets
++		 * are off for the later handlers even if the first one has
++		 * IRQF_DISABLED, too.
++		 */
++		if (new->flags & IRQF_DISABLED)
++			pr_warning("IRQ %d/%s: IRQF_DISABLED is not guaranteed "
++					"on shared IRQs\n", irq, new->name);
++
+ 		/* add new interrupt at end of irq queue */
+ 		do {
+ 			old_ptr = &old->next;
+@@ -1008,19 +1018,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+ 	struct irq_desc *desc;
+ 	int retval;
+ 
+-	/*
+-	 * handle_IRQ_event() always ignores IRQF_DISABLED except for
+-	 * the _first_ irqaction (sigh).  That can cause oopsing, but
+-	 * the behavior is classified as "will not fix" so we need to
+-	 * start nudging drivers away from using that idiom.
+-	 */
+-	if ((irqflags & (IRQF_SHARED|IRQF_DISABLED)) ==
+-					(IRQF_SHARED|IRQF_DISABLED)) {
+-		pr_warning(
+-		  "IRQ %d/%s: IRQF_DISABLED is not guaranteed on shared IRQs\n",
+-			irq, devname);
+-	}
+-
+ #ifdef CONFIG_LOCKDEP
+ 	/*
+ 	 * Lockdep wants atomic interrupt handlers:
 -- 
-tejun
+1.6.5.2
+
