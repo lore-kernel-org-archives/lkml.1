@@ -1,113 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbZK3Ii0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbZK3Ioq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752872AbZK3Ii0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 03:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbZK3IiZ
+	id S1751724AbZK3Ioq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 03:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZK3Iop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 03:38:25 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:55100 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbZK3IiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 03:38:25 -0500
-Date: Mon, 30 Nov 2009 09:38:31 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>, Vivek Goyal <vgoyal@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cfq: Make use of service count to estimate the rb_key
-	offset
-Message-ID: <20091130083830.GM8742@kernel.dk>
-References: <4B0E1E2F.9080604@cn.fujitsu.com> <4e5e476b0911260108s2fe4cd86lcb32c7be76b4f75c@mail.gmail.com> <4B0F2E8F.9090105@cn.fujitsu.com> <4e5e476b0911270016o6a6dfb08q7fefa2858a2ae8e6@mail.gmail.com> <4B1335D3.7030807@cn.fujitsu.com>
+	Mon, 30 Nov 2009 03:44:45 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54204 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbZK3Ioo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 03:44:44 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B1385F0.2020302@jp.fujitsu.com>
+Date: Mon, 30 Nov 2009 17:44:32 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1335D3.7030807@cn.fujitsu.com>
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH 0/9] pci: update pci bridge resource to get more big range
+ for devices under it - v13
+References: <4ADEB601.8020200@kernel.org>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B10D286.4020607@kernel .org> <4B136FEE.7060305@jp.fujitsu.com> <4B1370D8.3070600@kernel.org> <4B13738E.2000202@jp.fujitsu.com> <4B13802E.2090809@kernel.org>
+In-Reply-To: <4B13802E.2090809@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30 2009, Gui Jianfeng wrote:
-> Corrado Zoccolo wrote:
-> > Hi Guy,
-> > On Fri, Nov 27, 2009 at 2:42 AM, Gui Jianfeng
-> > <guijianfeng@cn.fujitsu.com> wrote:
-> >> Corrado Zoccolo wrote:
-> >>> Hi Gui, Jens
-> >>> On Thu, Nov 26, 2009 at 7:20 AM, Gui Jianfeng
-> >>> <guijianfeng@cn.fujitsu.com> wrote:
-> >>>> Hi Jens, Czoccolo
-> >>>>
-> >>>> For the moment, different workload cfq queues are put into different
-> >>>> service trees. But CFQ still uses "busy_queues" to estimate rb_key
-> >>>> offset when inserting a cfq queue into a service tree. I think this
-> >>>> isn't appropriate, and it should make use of service tree count to do
-> >>>> this estimation. This patch is for for-2.6.33 branch.
-> >>> In cfq_choose_wl, we rely on consistency of rb_keys across service
-> >>> trees to compute the next workload to be serviced.
-> >>>         for (i = 0; i < 3; ++i) {
-> >>>                 /* otherwise, select the one with lowest rb_key */
-> >>>                 queue = cfq_rb_first(service_tree_for(prio, i, cfqd));
-> >>>                 if (queue &&
-> >>>                     (!key_valid || time_before(queue->rb_key, lowest_key))) {
-> >>>                         lowest_key = queue->rb_key;
-> >>>                       cur_best = i;
-> >>>                       key_valid = true;
-> >>>               }
-> >>>         }
-> >>>
-> >>> If you change how the rb_key is computed (so it is no longer
-> >>> consistent across service trees) without changing how it is used can
-> >>> introduce problems.
-> >>  Ok, I think I was missing this part. This part still behaves like old CFQ regardless
-> >>  of workload type. I'm wondering why you prefer starting from sync no-idle only when
-> >>  priorities switched, after that, you do it like old CFQ behavior?
-> > 
-> > When switching priorities (e.g. from RT to BE), we may come from a
-> > long stall. In this case, I think it is better to run no-idle first.
-> > During normal operation, instead, we want a fair, starvation free way
-> > to switch between workloads, and I thought it was simpler to mimic old
-> > CFQ behaviour, instead of cook up a different method.
-> > The difference between new and old CFQ is that now, when we decide to
-> > service one no-idle request, we will then service subsequent ones from
-> > the same workload type.
-> > This allows processing them optimally on NCQ hardware.
-> > Moreover, when no more no-idle requests are available, but the
-> > timeslice for this workload did not expire yet, we will wait for more.
-> > This guarantees fairness for no-idle workload.
-> > 
-> >>  In order to improve
-> >>  latency for sync no-idle workload, is it possible to take workload type into account,
-> >>  not only rely on rb_keys across service trees?
-> > When loading a program into memory, your process will go through
-> > various phases w.r.t. disk access pattern: some are seeky, some others
-> > are sequential.
-> > 
-> > If you just improve latency for one workload, penalizing the others,
-> > you won't get an overall improvement of the system.
-> > The new scheme improves overall system behaviour because grouping
-> > no-idle requests together gives a better utilization of the disk, and
-> > fairness allows also processes making seeky requests to progress.
-> > Penalizing the idle service tree, instead, you will give you lower
-> > overall throughput (forbidding progress to the processes that make
-> > sequential requests), while penalizing writeback you will find
-> > yourself waiting for freeing dirty pages more often, and maybe
-> > incurring in OOM conditions.
-> > 
-> > Regarding the rb_key computation, I have done various experiments, and
-> > found that the actual formula doesn't matter much on rotational
-> > hardware, where the slice length has most importance.
-> > But I think it is essential on NCQ SSDs, to obtain fairness.
-> > Unfortunately, I don't have an NCQ SSD, so I can't test my improvement ideas.
-> > 
+Yinghai Lu wrote:
+> Kenji Kaneshige wrote:
+>> Yinghai Lu wrote:
+>>> Kenji Kaneshige wrote:
+>>>> My system doesn't boot (hangup) with the following error messages
+>>>> from Fusion MPT SAS driver. Those are different from the one
+>>>> captured with the previous version of your patches.
+>>>>
+>>>>
+>>>> Fusion MPT SAS Host driver 3.04.12
+>>>> mptsas 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+>>>> mptbase: ioc0: Initiating bringup
+>>>> mptbase: ioc0: WARNING - Unexpected doorbell active!
+>>>> mptbase: ioc0: ERROR - Failed to come READY after reset!
+>>>> IocState=f0000000
+>>>> mptbase: ioc0: WARNING - ResetHistory bit failed to clear!
+>>>> mptbase: ioc0: ERROR - Diagnostic reset FAILED! (ffffffffh)
+>>>> mptbase: ioc0: WARNING - NOT READY WARNING!
+>>>> mptbase: ioc0: ERROR - didn't initialize properly! (-1)
+>>>> mptsas: probe of 0000:09:00.0 failed with error -1
+>>>> mptsas 0000:0a:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+>>>> mptbase: ioc1: Initiating bringup
+>>>> mptbase: ioc1: WARNING - Unexpected doorbell active!
+>>>> mptbase: ioc1: ERROR - Failed to come READY after reset!
+>>>> IocState=f0000000
+>>>> mptbase: ioc1: WARNING - ResetHistory bit failed to clear!
+>>>> mptbase: ioc1: ERROR - Diagnostic reset FAILED! (ffffffffh)
+>>>> mptbase: ioc1: WARNING - NOT READY WARNING!
+>>>> mptbase: ioc1: ERROR - didn't initialize properly! (-1)
+>>>> mptsas: probe of 0000:0a:00.0 failed with error -1
+>>>>
+>>>>
+>>>> I'll send the whole boot log privately.
+>>> thanks, at the same time please try "debug pci=try=1"
+>>>
+>> I confirmed system boot up without errors by "pci=try=1".
+>> I'll capture the bootlog with "debug" option and send it
+>> to you soon.
 > 
-> Corrado, thanks for the detailed explanation.
+> Please also try "debug pci=try=7"
+> it should work too.
 > 
-> Jens, I think Corrado is right, we still need consistency of rb_keys
-> across service to compute next workload type. So would you revert this
-> patch please?
 
-Yes, I agree. I thought I had already reverted it, will do so now.
+I confirmed it works.
+I will send the whole boot log soon.
 
--- 
-Jens Axboe
+Thanks,
+Kenji Kaneshige
+
 
