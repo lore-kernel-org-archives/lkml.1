@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZK3DSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZK3EQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbZK3DSJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 22:18:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZK3DSH
+	id S1753446AbZK3EQV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 23:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbZK3EQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 22:18:07 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:2708 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752458AbZK3DSG (ORCPT
+	Sun, 29 Nov 2009 23:16:21 -0500
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:58253 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753226AbZK3EQU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 22:18:06 -0500
-X-IronPort-AV: E=Sophos;i="4.47,310,1257138000"; 
-   d="scan'208";a="9675186"
-Message-ID: <4B13396E.508@analog.com>
-Date: Mon, 30 Nov 2009 11:18:06 +0800
-From: Jie Zhang <jie.zhang@analog.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091125 Shredder/3.0
+	Sun, 29 Nov 2009 23:16:20 -0500
+Date: Mon, 30 Nov 2009 09:46:17 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Chris Wright <chrisw@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] ksm: hold anon_vma in rmap_item fix
+Message-ID: <20091130041617.GJ2970@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <Pine.LNX.4.64.0911291544140.14991@sister.anvils>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: David Howells <dhowells@redhat.com>, Paul Mundt <lethal@linux-sh.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
-Subject: Re: avoiding duplicate icache flushing of shared maps on nommu
-References: <8bd0f97a0911280740p24ad49bal64b924a427abfa39@mail.gmail.com>
-In-Reply-To: <8bd0f97a0911280740p24ad49bal64b924a427abfa39@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Nov 2009 03:18:07.0108 (UTC) FILETIME=[BC7ABC40:01CA716B]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0911291544140.14991@sister.anvils>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/28/2009 11:40 PM, Mike Frysinger wrote:
-> when working with FDPIC, there are many shared maps of read only text
-> regions (the C library, applet packages like busybox, ...) between
-> applications.  but the current mm/nommu.c:do_mmap_pgoff() function
-> will issue an icache flush whenever a vma is added to a mm instead of
-> only doing it when the map is initially created.  am i missing
-> something obvious here, or would a change like below be OK ?  this
-> easily cuts the number of icache flushes during boot by 50% if not
-> more.
+* Hugh Dickins <hugh.dickins@tiscali.co.uk> [2009-11-29 15:50:32]:
+
+> KSM mem_cgroup testing oopsed on NULL pointer in mem_cgroup_from_task(),
+> called from the mm_match_cgroup() in page_referenced_ksm().
+> 
+> Right, it is inappropriate to use mm_match_cgroup() on rmap_item->mm
+> there: that mm could be waiting for ksmd's final mmdrop(), with its
+> mm->owner task long gone.
+> 
+> Move the mm_match_cgroup() test down into the anon_vma loop, which is
+> where it now should be to match page_referenced_anon().  The anon_vma
+> guarantees its vmas are valid, which guarantee their mms are valid.
+> 
+> However... although this moves the oops from easy-to-reproduce to
+> never-seen, I think we shall want to do more later: so far as I can
+> see, with or without KSM, the use of mm->owner from page_referenced()
+> is unsafe.  No problem when NULL, but it may have been left pointing
+> to a task_struct freed by now, with nonsense in mm->owner->cgroups.
 >
-> (yes, this now does the icache flush while holding the
-> nommu_region_sem, but i'm interested if the _idea_ is OK)
->
-I don't see any problem. But I'm not a kernel expert. I tried to take a 
-look at the source code history. But I cannot find code older than 
-2.6.12. In the CVS repository of uClinux, there is no similar code in 
-kernel sub-directory. :-(
+
+Ideally we should not be left pointing to a stale task struct, unless
+our assumption about mm_users is incorrect (discussed below).
+
+ 
+> But let's put this patch in while we discuss that separately: perhaps
+> mm_need_new_owner() should not short-circuit when mm_users <= 1, or
+> perhaps it should then set mm->owner to NULL, or perhaps we abandon
+> mm->owner as more trouble than it's worth, or... perhaps I'm wrong.
+> 
+
+We short circuit, since the task is exiting and mm_users <= 1 and we
+are shorting going to do a mmput(). I suspect what you are seeing is
+mm_count >= 1 and mm_users == 0. With users == 0, we should set
+owner to NULL
+
+We could look for the above condition in mmput() and clear the owner
+when users become 0.
 
 
-Jie
-
-
-> --- a/mm/nommu.c
-> +++ b/mm/nommu.c
-> @@ -1409,14 +1409,14 @@ unsigned long do_mmap_pgoff(struct file *file,
->
->      current->mm->total_vm += len>>  PAGE_SHIFT;
->
-> +   if (prot&  PROT_EXEC)
-> +       flush_icache_range(result, result + len);
-> +
->   share:
->      add_vma_to_mm(current->mm, vma);
->
->      up_write(&nommu_region_sem);
->
-> -   if (prot&  PROT_EXEC)
-> -       flush_icache_range(result, result + len);
-> -
->      kleave(" = %lx", result);
->      return result;
->
-> -mike
-
+-- 
+	Balbir
