@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbZK3LyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZK3Lzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbZK3LyW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZK3LyV
+	id S1752420AbZK3Lzu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZK3Lzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:54:21 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41120 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752243AbZK3LyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:54:21 -0500
-Date: Mon, 30 Nov 2009 12:54:25 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Mark Veltzer <mark.veltzer@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-Subject: Re: get_user_pages question
-Message-ID: <20091130115425.GA21639@wotan.suse.de>
-References: <200911090850.26724.mark.veltzer@gmail.com> <87skco59jl.fsf@basil.nowhere.org> <Pine.LNX.4.64.0911091031460.15199@sister.anvils> <200911100013.31768.mark.veltzer@gmail.com> <Pine.LNX.4.64.0911101613080.22198@sister.anvils> <20091128185052.GB30235@random.random>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091128185052.GB30235@random.random>
-User-Agent: Mutt/1.5.9i
+	Mon, 30 Nov 2009 06:55:49 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:61554 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750956AbZK3Lzt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 06:55:49 -0500
+X-Trace: 299078163/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.56.48
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AogBACZBE0tPRTgw/2dsb2JhbAAI1UCEMQQ
+X-IronPort-AV: E=Sophos;i="4.47,314,1257120000"; 
+   d="scan'208";a="299078163"
+Date: Mon, 30 Nov 2009 11:55:53 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+In-Reply-To: <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0911301141010.20054@sister.anvils>
+References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
+ <Pine.LNX.4.64.0911241640590.25288@sister.anvils>
+ <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 28, 2009 at 07:50:52PM +0100, Andrea Arcangeli wrote:
-> All other patches floating around spread an mm-wide semaphore over
-> fork fast path, and across O_DIRECT, nfs, and aio, and they most
-> certainly didn't fix the two races for all gup users, and they weren't
-> stable because of having to identify the closure of the I/O across all
-> possible put_page. That approach kind of opens a can of worms and it
-> looks the wrong way to go to me, and I think they scale worse too for
-> the fast path (no O_DIRECT or no fork). Identifying the gup closure
-> points and replacing the raw put_page with gup_put_page would not be
-> an useless effort though and I felt if the gup API was just a little
-> bit more sophisticated I could simplify a bit the put_compound_page to
-> serialize the race against split_huge_page_refcount, but this is an
-> orthogonal issue with the mm-wide semaphore release addition which I
-> personally dislike.
+On Mon, 30 Nov 2009, KAMEZAWA Hiroyuki wrote:
+> 
+> Hmm. I'm not sure how many pages are shared in a system but
+> can't we add some threshold for avoidng too much scan against shared pages ?
+> (in vmscan.c)
+> like..
+>       
+>        if (page_mapcount(page) > (XXXX >> scan_priority))
+> 		return 1;
+> 
+> I saw terrible slow downs in shmem-swap-out in old RHELs (at user support).
+> (Added kosaki to CC.)
+> 
+> After this patch, the number of shared swappable page will be unlimited.
 
-IIRC, the last time this came up, it kind of became stalled on this
-point. Linus hated our "preemptive cow" approaches, and thought the
-above approach was better.
+I don't think KSM swapping changes the story here at all: I don't
+think it significantly increases the likelihood of pages with very
+high mapcounts on the LRUs.  You've met the issue with shmem, okay,
+I've always thought shared library text pages would be a problem.
 
-I don't think we need to bother arguing details between our former
-approaches until we get past this sticking point.
+I've often thought that some kind of "don't bother if the mapcount is
+too high" check in vmscan.c might help - though I don't think I've
+ever noticed the bugreport it would help with ;)
 
-FWIW, I need to change get_user_pages semantics somewhat because we
-have filesystems that cannot tolerate a set_page_dirty() to dirty a
-clean page (it must only be dirtied with page_mkwrite).
+I used to imagine doing up to a certain number inside the rmap loops
+and then breaking out (that would help with those reports of huge
+anon_vma lists); but that would involve starting the next time from
+where we left off, which would be difficult with the prio_tree.
 
-This should probably require converting callers to use put_user_pages
-and disallowing lock_page, mmap_sem, user-copy etc. within these
-sections.
+Your proposal above (adjusting the limit according to scan_priority,
+yes that's important) looks very promising to me.
 
+Hugh
