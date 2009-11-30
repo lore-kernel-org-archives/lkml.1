@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZK3Mcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752333AbZK3MeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZK3Mcy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 07:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbZK3Mcy
+	id S1752333AbZK3MeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 07:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbZK3MeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 07:32:54 -0500
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:55157 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbZK3Mcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 07:32:53 -0500
-Date: Mon, 30 Nov 2009 18:02:57 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Roland McGrath <roland@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
-Message-ID: <20091130123257.GB18879@linux.vnet.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <20091130120345.GA18879@linux.vnet.ibm.com> <1259582952.20516.209.camel@laptop>
+	Mon, 30 Nov 2009 07:34:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49256 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751416AbZK3MeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 07:34:17 -0500
+Message-ID: <4B13BBBE.3010101@redhat.com>
+Date: Mon, 30 Nov 2009 10:34:06 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259582952.20516.209.camel@laptop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, jonsmirl@gmail.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <BDodf9W1qgB@lirc>
+In-Reply-To: <BDodf9W1qgB@lirc>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <peterz@infradead.org> [2009-11-30 13:09:12]:
-
-> On Mon, 2009-11-30 at 17:33 +0530, Srikar Dronamraju wrote:
-> > This patch implements an in-kernel gdb stub.
-> > It provides an interface between gdb and Linux Kernel by implementing
-> > the remote serial protocol.  This gdbstub uses utrace infrastructure.
-> > This patch provides register set access, signal mapping, process event
-> > handling, input/output operations.
-> > 
-> > /proc/<pid>/gdb was chosen as file for gdb to interact with the
-> > process through remote serial protocol. 
-> > 
-> > Hence users would have to use "target remote /proc/<pid>/gdb" command
-> > on gdb prompt to start using this infrastructure.
-> > 
-> > For Breakpointing support, gdbstub needs User space breakpointing
-> > layer and uprobes layer which will be posted later.
+Christoph Bartelmus wrote:
+> Hi Mauro,
 > 
-> How does this compare to kgdb and related efforts?
+> I just don't want to change a working interface just because it could be  
+> also implemented in a different way, but having no other visible advantage  
+> than using more recent kernel features.
 
-This is a In-kernel gdbstub to debug user space programs. 
-This stub doesnt help in debugging kernel.
+I agree. The main reasons to review the interface is:
+	1) to avoid any overlaps (if are there any) with the evdev interface;
+	2) to have it stable enough to be used, without changes, for a long
+	   time.
 
-Hence I am not sure how to compare kgdb gdbstub with this gdbstub.
-Can you please provide more pointers on what you were referring to?
+>> I haven't seen such limitations on his proposal. We currently have in-kernel
+>> decoders for NEC, pulse-distance, RC4 protocols, and some variants. If
+>> non-RC5 decoders are missing, we need for sure to add them.
+> 
+> That was not my point. If you point a NEC remote at the Igor USB device,  
+> you won't be able to use a NEC decoder because the device will swallow  
+> half of the bits. LIRC won't care unless the resulting scancodes are  
+> identical.
 
---
-Thanks and Regards
-Srikar
+If the difference is just the bits order, and assuming that we use a standard
+NEC decoder, a (kernel) driver will simply provide a different scancode for
+that device, and the keymap table will be different, but it will still work
+(an can still be plug and play).
+
+In this specific case, we can opt to simply don't add any special hack for
+Igor USB at the driver, but to leting the userspace tool to invert the bits
+order when loading the keymap for that device.
+
+>> Providing that we agree on what we'll do, I don't see why not
+>> adding it on staging for 2.6.33 and targeting to have
+>> everything done for 2.6.34 or 2.6.35.
+> 
+> The problem that I see here is just that even when we have very talented  
+> people working on this, that put together all resources, we won't be able  
+> to cover all the corner cases with all the different receivers and remote  
+> control protocols out there. It will still require lots of fine-tuning  
+> which was done in LIRC over the years.
+
+True, but even if we want to merge lirc drivers "as-is", the drivers will
+still need changes, due to kernel CodingStyle, due to the usage of some API's
+that may be deprecated, due to some breakage with non-Intel architectures, due
+to some bugs that kernel hackers may discover, etc. 
+
+Also, there will be the needs for integrating with V4L/DVB code that may
+also require some changes.
+
+So, the drivers will still be different than what you currently have
+and they may still need some fine-tuning after the merge.
+
+Cheers,
+Mauro
