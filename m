@@ -1,121 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbZK3ODh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbZK3ODp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbZK3ODh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 09:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbZK3ODg
+	id S1753680AbZK3ODp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 09:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZK3ODo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 09:03:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43100 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753398AbZK3ODg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 09:03:36 -0500
-Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
- IRQF_SHARED|IRQF_DISABLED)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Mon, 30 Nov 2009 09:03:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14623 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752733AbZK3ODm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 09:03:42 -0500
+Date: Mon, 30 Nov 2009 12:03:32 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Jamie Lokier <jamie@shareable.org>,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	 <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	 <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 30 Nov 2009 15:03:00 +0100
-Message-ID: <1259589780.26472.18.camel@laptop>
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
+Message-ID: <20091130120332.1512e0c6@pedra>
+In-Reply-To: <200911280357.58116.hverkuil@xs4all.nl>
+References: <4B103CE1.8050303@redhat.com>
+	<200911272240.02930.s.L-H@gmx.de>
+	<200911280357.58116.hverkuil@xs4all.nl>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 14:54 +0100, Thomas Gleixner wrote:
-> On Mon, 30 Nov 2009, Uwe Kleine-König wrote:
-> > For shared irqs IRQF_DISABLED is only guaranteed for the first handler.
-> > So only warn starting at the second registration.
+Em Sat, 28 Nov 2009 03:57:58 +0100
+Hans Verkuil <hverkuil@xs4all.nl> escreveu:
+
+> On Friday 27 November 2009 22:40:01 Stefan Lippers-Hollmann wrote:
+> > Hi
 > > 
-> > The warning is moved to __setup_irq having the additional benefit of
-> > catching actions registered using setup_irq not only register_irq.
+> > On Friday 27 November 2009, Mauro Carvalho Chehab wrote:
+> > > Hi Linus,
+> > > 
+> > > Please pull from:
+> > >         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+> > > 
+> > > For the following drivers and building fixes:
+> > > 
+> > >    - radio-gemtek-pci: fix double mutex_lock
+> > >    - v4l: add more missing linux/sched.h includes
+> > >    - soc-camera: properly initialise the device object when reusing
+> > >    - soc-camera: sh_mobile_ceu_camera: call pm_runtime_disable
+> > >    - em28xx: fix Reddo DVB-C USB TV Box GPIO
+> > >    - davinci: remove stray duplicate config pointer
+> > >    - SMS_SIANO_MDTV should depend on HAS_DMA
+> > >    - cxusb: Fix hang on DViCO FusionHDTV DVB-T Dual Digital 4 (rev 1)
+> > >    - sh_mobile_ceu_camera: fix compile warning
+> > >    - Fix wrong parameter order in memset
+> > [...]
 > > 
-> > This doesn't fix the cases where setup order is wrong but it should
-> > report the broken cases more reliably.
+> > Please consider cherry picking the following two patches from Hans 
+> > Verkuil [1]:
+> > - add the missing s2250-loader.h
+> > - s2250 mutex patch	
 > 
-> The whole IRQF_DISABLED trickery is questionable and I'm pretty
-> unhappy about the warning in general.
-> 
-> While it is true that there is no guarantee of IRQF_DISABLED on shared
-> interrupts (at least not for the secondary handlers) we really need to
-> think about the reason why we want to run interrupt handlers with
-> interrupts enabled at all.
-> 
-> The separation of interrupt handlers which run with interrupts
-> disabled/enabled goes all the way back to Linux 1.0, which had two
-> interrupt handling modes:
-> 
-> 1) handlers installed with SA_INTERRUPT ran atomically with interrupts
->    disabled.
-> 
-> 2) handlers installed without SA_INTERRUPT ran with interrupts enabled
->    as they did more complex stuff like signal handling in the kernel.
-> 
-> The interrupt which was always run with interrupts disabled was the
-> timer interrupt because some of the "slower" interrupt handlers were
-> relying on jiffies being updated, which is only possible when they run
-> with interrupts enabled and no such handler can interrupt the timer
-> interrupt.
-> 
-> In the 2.1.x timeframe the discussion about shared interrupt handlers
-> and the treatment of SA_INTERRUPT (today IRQF_DISABLED) was resolved
-> by changing the code to what we have right now. If you read back in
-> the archives you will find the same arguments as we have seen in this
-> thread and a boatload of different solutions to that.
-> 
-> The real question is why we want to run an interrupt handler with
-> interrupts enabled at all. There are two reaons AFAICT:
-> 
-> 1) interrupt handler relies on jiffies being updated:
-> 
->    I don't think that this is the case anymore and if we still have
->    code which does it is probably historic crap which is unused for
->    quite a time.
-> 
-> 2) interrupt handler runs a long time:
-> 
->    I'm sure we still have some of those especially in the
->    archaelogical corners of drivers/* and in the creative space of the
->    embedded "oh, I don't know why but it works" departement. That's
->    code which needs to be fixed anyway.
-> 
-> The correct solution IMNSHO is to get rid of IRQF_DISABLED and run
-> interrupt handlers always with interrupts disabled and require them
-> not to reenable interrupts themself.
-> 
-> Thoughts ?
+> Good catch. Mauro, can you please add these two as well for 2.6.32? I'm sure
+> I marked these two as high-prio patches. This staging driver is actively
+> being used and developed so this regression should be fixed.
 
-I'm all for removing that brain damage:
+There were a merge problem when applying those patches at -git. As this is a
+staging driver, I opted to just move all patches to linux-next, as there were
+no mention on the patch subject mentioned that they are, in fact, fixes.
 
-  http://lkml.org/lkml/2009/3/2/33
+I'll see what can we do to solve the s2250 compilation breakage.
 
-We should convert the broken hardware PIO and 3com interrupt things to
-threaded interrupts, and simply mandate all IRQ handlers run short and
-with IRQs disabled.
+As Linus didn't merge from this pull request yet, I'll work on a fix, based
+on one of the Stefan suggestions, preferably backporting the patches.
 
-Except I guess that will upset some of the IRQ priority folks, like
-power, where they (iirc) have a stack per irq prio level.
+-- 
 
-But its not like the core kernel knows about these nesting rules and can
-actually track any of that muck.
-
+Cheers,
+Mauro
