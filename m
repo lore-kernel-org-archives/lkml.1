@@ -1,152 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbZK3XEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbZK3XJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbZK3XEa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 18:04:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbZK3XE1
+	id S1753862AbZK3XJr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 18:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbZK3XJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 18:04:27 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:56772 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752477AbZK3XE1 (ORCPT
+	Mon, 30 Nov 2009 18:09:47 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:43076 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753239AbZK3XJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 18:04:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=JBVQ9lfyS8eqmVQQ7//TuFLaLRe1/s4Qa1r3A4EKs1dc0AFEhyIRYKKnio8rjwLw4w
-         bZZfNPplt7s9tQEvBsK5bruXMEQ/dnkG885/kNWKNCRoJeOeYI21FZY/TB2yDPYfSeRK
-         gCNu6dleQ0Zp1f4AozFrv0lhwX0AHuKodtjok=
-Subject: Re: XD/smartmedia - how to implement it right?
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Alex Dubov <oakad@yahoo.com>
-Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, arnd@arndb.de,
-       tglx@linutonix.de
-In-Reply-To: <1259589517.13049.31.camel@maxim-laptop>
-References: <109361.10237.qm@web37604.mail.mud.yahoo.com>
-	 <1259589517.13049.31.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 01 Dec 2009 01:04:26 +0200
-Message-ID: <1259622266.6559.40.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 30 Nov 2009 18:09:46 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=m/7d24A4USM7v8TA6StD5VsICylBtDvzOpNQDTNyVbusPuEoLPy9c6gVhMTJRVXh5
+	4TXbUDNOVUsZ6k0QoITMw==
+Date: Mon, 30 Nov 2009 15:09:44 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrea Arcangeli <aarcange@redhat.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, vedran.furac@gmail.com,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+In-Reply-To: <20091127182607.GA30235@random.random>
+Message-ID: <alpine.DEB.2.00.0911301502160.12038@chino.kir.corp.google.com>
+References: <20091028175846.49a1d29c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0910280206430.7122@chino.kir.corp.google.com> <abbed627532b26d8d96990e2f95c02fc.squirrel@webmail-b.css.fujitsu.com> <20091029100042.973328d3.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.0910290125390.11476@chino.kir.corp.google.com> <20091125124433.GB27615@random.random> <alpine.DEB.2.00.0911251334020.8191@chino.kir.corp.google.com> <20091127182607.GA30235@random.random>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 15:58 +0200, Maxim Levitsky wrote: 
-> On Mon, 2009-11-30 at 04:35 -0800, Alex Dubov wrote: 
-> > 
-> > --- On Sat, 11/28/09, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> > 
-> > > From: Maxim Levitsky <maximlevitsky@gmail.com>
-> > > Subject: Re: XD/smartmedia - how to implement it right?
-> > > To: "Alex Dubov" <oakad@yahoo.com>
-> > > Cc: "Jörn Engel" <joern@logfs.org>, "linux-kernel" <linux-kernel@vger.kernel.org>, arnd@arndb.de, tglx@linutonix.de
-> > > Date: Saturday, November 28, 2009, 2:36 AM
-> > > On Fri, 2009-11-27 at 23:22 -0800,
-> > > Alex Dubov wrote: 
-> > > > > 
-> > > > > The "mtd uses blocking calls" argument I can
-> > > help
-> > > > > with.  For some other
-> > > > > project I've added non-blocking calls to mtd[1].
-> > > > > 
-> > > > > Biggest problems I see are a) the userspace
-> > > interface and
-> > > > > b) allowing
-> > > > > both raw flash access through MTD and block
-> > > device access
-> > > > > with an FTL.
-> > > > > 
-> > > > > [1] http://lists.infradead.org/pipermail/linux-mtd/2009-November/028065.html
-> > > > > 
-> > > > > Jörn
-> > > > 
-> > > > I actually tried several approaches to this problem
-> > > and I think, I have a good idea about how to create a fully
-> > > asynchronous mtd driver, which can handle different device
-> > > models. Unfortunately, I had other commitments so I couldn't
-> > > advance my mtd stuff.
-> > > > 
-> > > > Recently I was going to go back to it, but then I was
-> > > asked to implement some additional functionality in rapidio
-> > > subsystem, which I'll have to take care of first.
-> > > 
-> > > Hi, 
-> > > 
-> > > First of all, thank you very much for your contributions.
-> > > Could you explain, why we need an asynchronous mtd driver?
-> > 
-> > Because it's the future. ;-)
-> Although I like the xD format, it has no future,
-> Everyone migrated to SD now.
-> 
-> Reasons are very simple:
-> 
-> 1 - xD hardcodes device sizes, thus if somebody makes say 8GB card, many
-> readers couldn't use it.
-> I know that windows driver I was dealing with supports sizes up to 2GB
-> 
-> 
-> 2 - xD is a nand card, but with 8-bit bus.
-> Newer nand chips seem to favor 16 bit bus or more.
-> Obviously, if they were to implement that it would be physically
-> incompatible.
-> 
-> 3 - embedded cpus are cheap dirt now, and allow to use their, always
-> 'better' FTL strategy, and also hide inner working of the chip.
-> 
-> Memstick pro is also today sort of SD card, but for Sony its their first
-> priority to keep proprietary standards even if inferior.
-> I won't be surprised though if this format dies too.
-> 
-> Could you explain why we need an asynchronous interface?
-> I understand that filesystem/page cache/block cache/and block layer,
-> already provide caches and asynchronous behavior.
-> 
-> Only maybe reading several pages at time, and writing could benefit, but
-> many devices don't support that feature.
-> And again, bulk of the time will be spend writing, and only saving will
-> be from queuing more work to the device.
-> 
-> 
-> 
-> > 
-> > > 
-> > > Also, as I understand the command interface more and more,
-> > > it seems that
-> > > 'magically' xD card had same interface as standard NAND
-> > > flash chip.
-> > > 
-> > > I think I can implement the driver for each controller just
-> > > like an nand
-> > > chip driver.
-> > > 
-> > 
-> > xD spec, first of all, is about flash-based ordinary block devices.
-> > All the hard problems are in good r/w FTL implementation, which is
-> > currently mostly absent from the MTD.
-> 
-> Its true, and I will write an r/w FTL for xD devices, in same manner as
-> existing FTL implementations.
-> It works above the mtd layer btw.
+On Fri, 27 Nov 2009, Andrea Arcangeli wrote:
 
+> Ok I can see the fact by being dynamic and less predictable worries
+> you. The "second to last" tasks especially are going to be less
+> predictable, but the memory hog would normally end up accounting for
+> most of the memory and this should increase the badness delta between
+> the offending tasks (or tasks) and the innocent stuff, so making it
+> more reliable. The innocent stuff should be more and more paged out
+> from ram. So I tend to think it'll be much less likely to kill an
+> innocent task this way (as demonstrated in practice by your
+> measurement too), but it's true there's no guarantee it'll always do
+> the right thing, because it's a heuristic anyway, but even total_vm
+> doesn't provide guarantee unless your workload is stationary and your
+> badness scores are fixed and no virtual memory is ever allocated by
+> any task in the system and no new task are spawned.
+> 
 
-Alex, could you do me a favor, and explain why partial block writes
-don't work?
-What happens if its done?
+The purpose of /proc/pid/oom_adj is not always to polarize the heuristic 
+for the task it represents, it allows userspace to define when a task is 
+rogue.  Working with total_vm as a baseline, it is simple to use the 
+interface to tune the heuristic to prefer a certain task over another when 
+its memory consumption goes beyond what is expected.  With this interface, 
+I can easily define when an application should be oom killed because it is 
+using far more memory than expected.  I can also disable oom killing 
+completely for it, if necessary.  Unless you have a consistent baseline 
+for all tasks, the adjustment wouldn't contextually make any sense.  Using 
+rss does not allow users to statically define when a task is rogue and is 
+dependent on the current state of memory at the time of oom.
 
-the FTL layer of course will do full block writes, but its not easy to
-do full block writes in mtd layer.
-
-If I was going to do full block writes, I would need to set
-page_size = block size, and then loose many features nand mtd supports.
-
-
-Best regards,
-Maxim Levitsky
-
-
+I would support removing most of the other heuristics other than the 
+baseline and the nodes intersection with mems_allowed to prefer tasks in 
+the same cpuset, though, to make it easier to understand and tune.
