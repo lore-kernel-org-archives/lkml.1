@@ -1,80 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbZK3NT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbZK3NXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753130AbZK3NT2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 08:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbZK3NT1
+	id S1752460AbZK3NXD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 08:23:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZK3NXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 08:19:27 -0500
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:36840 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751205AbZK3NT1 (ORCPT
+	Mon, 30 Nov 2009 08:23:01 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:38110 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751722AbZK3NXA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 08:19:27 -0500
-Date: Mon, 30 Nov 2009 18:49:28 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Roland McGrath <roland@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
-Message-ID: <20091130131928.GC18879@linux.vnet.ibm.com>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <20091130120345.GA18879@linux.vnet.ibm.com> <1259582952.20516.209.camel@laptop> <20091130123257.GB18879@linux.vnet.ibm.com> <1259584907.20516.246.camel@laptop>
+	Mon, 30 Nov 2009 08:23:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jLYcO83croIaKGdEGDtUlRw7HG2ChkGDsB0m8kinSFPns8+g2NUjpbfSoiIqRV3qgS
+         ElBT04/xSea2CMXe+dGkTnf9St41G10J7SwoYQ6cukGDvcY0gtn94LI+fmOj3dBARL7Y
+         0a6JgSzF8wric2TPP5DCGypDIJWphI5RSqKik=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259584907.20516.246.camel@laptop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1259585852.3093.31.camel@palomino.walls.org>
+References: <m3r5riy7py.fsf@intrepid.localdomain>
+	 <m3aay6y2m1.fsf@intrepid.localdomain>
+	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+	 <1259469121.3125.28.camel@palomino.walls.org>
+	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
+	 <1259515703.3284.11.camel@maxim-laptop>
+	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
+	 <1259537732.5231.11.camel@palomino.walls.org>
+	 <4B13B2FA.4050600@redhat.com>
+	 <1259585852.3093.31.camel@palomino.walls.org>
+Date: Mon, 30 Nov 2009 08:23:05 -0500
+Message-ID: <9e4733910911300523y69b66963t36db6d52def6679d@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Andy Walls <awalls@radix.net>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, Ray Lee <ray-lk@madrabbit.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <peterz@infradead.org> [2009-11-30 13:41:47]:
+On Mon, Nov 30, 2009 at 7:57 AM, Andy Walls <awalls@radix.net> wrote:
+> I suppose my best answer to that is question back to you: Why does udev
+> run in userspace versus a kernel thread?
 
-> > 
-> > This is a In-kernel gdbstub to debug user space programs. 
-> > This stub doesnt help in debugging kernel.
-> > 
-> > Hence I am not sure how to compare kgdb gdbstub with this gdbstub.
-> > Can you please provide more pointers on what you were referring to?
-> 
-> Well, not even that much was clear from your changelog, so I wasn't
-> really sure wtf I was looking at. All it says was an in-kernel gdb stub,
-> what other than to debug the kernel would you need in-kernel stubs for?
-> 
-> So now my question is, what do you need an in-kernel stub to debug
-> userspace for?
-> 
+Because udev is a scripting system. I've always said that the
+scripting piece of IR belongs in user space. IR scripting should be
+optional, none of the systems I work on need it.
 
-This stub would allow users use features provided by utrace but through
-a gdb interface.  This idea was brought up in this year's Tracing
-roundtable at the Linux Foundation Collaboration summit, April 8-10 in
-San Francisco.  Here is the link to the minutes of the
-meeting sent by Christoph Hellwig.
-http://www.mail-archive.com/utrace-devel@redhat.com/msg00830.html
+This is the event flow being built...
 
-> In general, tell me about this patch thing, what does it do, why does it
-> do it, and how does it improve on the current situation.
+device timing data
+ -- send timing data to user space
+ -- do protocol decode (40K code)
+ -- send decoded data back to kernel
+other devices that decode in HW add events here
+ -- send decoded data to user space
+ -- map to keys (30K code)
+ -- send keys back to kernel
+apps listen for keys
+ -- send keys back to user space
+ -- user space apps act on key (possibly run scripts)
 
-This is suppose to be one of the interfaces to use utrace, i.e Allow
-gdb to use utrace features without having to change gdb itself.
-Though there are not enough features in this patch, intentions include
-support multi-threaded debugging, concurrent debugger support for same
-process, syscall tracing.
+I'd like to see...
 
-For Breakpoint support(not yet submitted to LKML), it would use
-execution out of line rather than the conventional inline-single
-stepping.
+device timing data
+-- user space can inject timing data from user space drivers
+do protocol decode (40K code)
+other devices that decode in HW add events here
+-- user space can inject decoded data from user space drivers
+map to keys (30K code)
+apps listen for keys
+ -- send keys back to user space
+ -- user space apps act on key (possibly run scripts)
 
-I guess Christoph, Roland and Frank would be able to explain in a better
-fashion the rational and advantages of this stub over convential gdb.
 
-> 
-> Your changelog doesn't address any of those things, so wth are we
-> supposed to think?
 
-Thanks for pointing out. 
---
-Thanks and Regards
-Srikar
+>
+> My personal thoughts on why user space is more flexible:
+>
+> 1. You have all of *NIX available to you to use as tools to achieve your
+> requirements.
+>
+> 2. You are not constrained to use C.
+>
+> 3. You can link in libraries with functions that are not available in
+> the kernel.  (udev has libudev IIRC to handle complexities)
+>
+> 4. Reading a configuration file or other file from the filesystem is
+> trivial - file access from usespace is easy.
+>
+> 5. You don't have to be concerned about the running context (am I
+> allowed to sleep here or not?).
+>
+>
+>
+>
+>
+>
+>> A kernelspace input device driver can start working since boot time.
+>> On the other hand, an userspace device driver will be available only
+>> after mounting the filesystems and starting the deamons
+>> (e. g. after running inittab).
+>>
+>> So, you cannot catch a key that would be affecting the boot
+>> (for example to ask the kernel to run a different runlevel or entering
+>> on some administrative mode).
+>
+> Right.  That's another requirement that makes sense, if we're talking
+> about systems that don't have any other keyboard handy to the user.
+>
+> So are we optimizing for the embedded/STB and HTPC with no keyboard use
+> case, or the desktop or HTPC with a keyboard for maintencance?
+>
+>
+> Regards,
+> Andy
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-input" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
