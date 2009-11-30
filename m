@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZK3XaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbZK3XdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZK3XaV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 18:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZK3XaU
+	id S1753148AbZK3XdE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 18:33:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZK3XdC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 18:30:20 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52750 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752542AbZK3XaT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 18:30:19 -0500
-Date: Mon, 30 Nov 2009 23:30:35 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Uwe =?ISO-8859-14?B?S2xlaW5lLUv2bmln?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       John Stultz <johnstul@us.ibm.com>, Nicolas Pitre <nico@marvell.com>,
-       Jamie Lokier <jamie@shareable.org>, LKML <linux-kernel@vger.kernel.org>,
-       Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
- IRQF_SHARED|IRQF_DISABLED)
-Message-ID: <20091130233035.2a404f62@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0911302255590.24119@localhost.localdomain>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	<alpine.LFD.2.00.0911301225110.24119@localhost.localdomain>
-	<20091130143703.GA7028@n2100.arm.linux.org.uk>
-	<20091130145122.7057a1e3@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.0911302255590.24119@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Nov 2009 18:33:02 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45768 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752196AbZK3XdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 18:33:01 -0500
+Message-ID: <4B1455FD.90002@kernel.org>
+Date: Mon, 30 Nov 2009 15:32:13 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Alex Williamson <alex.williamson@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32 registers
+References: <20091130212228.7555.43533.stgit@debian.lart>	 <4B143AE5.7040702@kernel.org> <1259617381.8949.281.camel@8530w.home>	 <4B143E83.6020105@kernel.org> <1259618496.8949.290.camel@8530w.home>	 <4B144346.50608@kernel.org> <1259619578.8949.295.camel@8530w.home>
+In-Reply-To: <1259619578.8949.295.camel@8530w.home>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Either that or we decide to push such beasts into the threaded irq
-> space to keep them working until the last card hits the trashcan. I
-> know that this would still need to disable the interrupt on the PIC
-> level, but we have already mechanisms for that in the threaded code.
+Alex Williamson wrote:
+> On Mon, 2009-11-30 at 14:12 -0800, Yinghai Lu wrote:
+>> Alex Williamson wrote: 
+>>> I don't believe the PCI spec dictates whether the upper 32bit base
+>>> should be 0 or -1, so it's purely a BIOS initialization choice and Linux
+>>> should properly handle both.  If the hardware only supports 32bit
+>>> prefetchable windows, the hardware will drop the write, just as it did
+>>> for every 2.6 kernel before 1f82de10.  Thanks,
+>> current code:
+>>
+>> #define  PCI_PREF_RANGE_TYPE_MASK 0x0fUL
+>> #define  PCI_PREF_RANGE_TYPE_32 0x00     
+>> #define  PCI_PREF_RANGE_TYPE_64 0x01
+>> #define  PCI_PREF_RANGE_MASK    (~0x0fUL)
+>>
+>> if the HW state the pref mmio is 64bit, we will touch upper 32bit. otherwise we will not touch it.
+> 
+> Really, where?  Please paste the code that writes to
+> PCI_PREF_BASE_UPPER32 in the case of hardware supporting a 64bit
+> prefetchable window.  I only see this happening if we are assigning it
+> to an IORESOURCE_MEM_64 resources.
 
-The 8390 is essentially a single thread device so treating interrupts as
-events indicating work is to be done might make sense
+IORESOURCE_MEM_64 get set when PCI_PREF_RANGE_TYPE_64 is set.
 
-Unfortunately you cannot check the interrupt flags on the chip without
-switching to page 0, which will cause any parallel tx to crap itself and
-potentially hang the box. It's a design from single CPU days and the
-programming model is solely around 'stack the register window selected,
-do stuff in irq, put it back', so any parallel execution ends in tears,
-even peeking to see if the IRQ is ours.
+in probe.c::pci_read_bridge_bases()
+and
+setup-bus.c::pci_bridge_check_ranges()
 
-These chips still keep popping up in old boxes although the rtl8139 seems
-to have exterminated them at last in all the ultra-cheap devices.
-
-Pushing them into threaded IRQ space with PIC masking seems to make
-complete sense. The wonderously gothic IRQ magic becomes a mutex, the IRQ
-handler may sleep blocking the IRQ during a transmit and the transmit
-path may block during an IRQ thread execution. Reset works as a mutex and
-all the crap and magic goes away.
-
+YH
