@@ -1,123 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZK3Vfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZK3Vhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbZK3Vfc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZK3Vfb
+	id S1753522AbZK3Vhf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbZK3Vhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:35:31 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:63235 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395AbZK3Vf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:35:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=VfXg7vx7TaqrynSAsGnOOsAo5DvYS3pC67jKfHYEaT2A+NI6NVJvMpqUqDI40Pa3uU
-         K9BnewSgCEw5bQWq9cOD1BirKW4LwiRQmdq2sqrxRoNzDEw1DK08mYFixtaqV4VhyB9y
-         S60qAU4JALa/B8NffloEv71vERo4XaeufK6Lo=
+	Mon, 30 Nov 2009 16:37:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38163 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753217AbZK3Vhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 16:37:33 -0500
+Message-ID: <4B143AE5.7040702@kernel.org>
+Date: Mon, 30 Nov 2009 13:36:37 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <BDodiKlXqgB@lirc>
-References: <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
-	 <BDodiKlXqgB@lirc>
-Date: Mon, 30 Nov 2009 16:35:34 -0500
-Message-ID: <9e4733910911301335j6850cac3h784fa7c302e0c0ea@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Christoph Bartelmus <lirc@bartelmus.de>
-Cc: awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com,
-       lirc-list@lists.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alex Williamson <alex.williamson@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32 registers
+References: <20091130212228.7555.43533.stgit@debian.lart>
+In-Reply-To: <20091130212228.7555.43533.stgit@debian.lart>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 7:01 AM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
-> Hi Jon,
->
-> on 27 Nov 09 at 12:49, Jon Smirl wrote:
-> [...]
->> Christoph, take what you know from all of the years of working on LIRC
->> and design the perfect in-kernel system. This is the big chance to
->> redesign IR support and get rid of any past mistakes. Incorporate any
->> useful chunks of code and knowledge from the existing LIRC into the
->> new design. Drop legacy APIs, get rid of daemons, etc. You can do this
->> redesign in parallel with existing LIRC. Everyone can continue using
->> the existing code while the new scheme is being built. Think of it as
->> LIRC 2.0. You can lead this design effort, you're the most experience
->> developer in the IR area.
->
-> This is a very difficult thing for me to do. I must admit that I'm very
-> biased.
-> Because lircd is the only userspace application that uses the LIRC kernel
-> interface, we never had any problems changing the interface when needed.
-> I can't say there's much legacy stuff inside. I'm quite happy with the
-> interface.
-> The other thing is that I can't really move the decoder from userspace to
-> kernel because there are way too many userspace drivers that do require a
-> userspace decoder. LIRC also is running on FreeBSD, MacOS and even Cygwin.
-> So letting the userspace drivers take advantage of a potential Linux in-
-> kernel decoder is not an option for me either.
-> I'm having my 'LIRC maintainer' hat on mostly during this discussion and I
-> do understand that from Linux kernel perspective things look different.
+Alex Williamson wrote:
+> Prior to 1f82de10 we always initialized the upper 32bits of the
+> prefetchable memory window, regardless of the address range used.
+> Now we only touch it for a >32bit address, which means the upper32
+> registers remain whatever the BIOS initialized them too.
+> 
+> It's valid for the BIOS to set the upper32 base/limit to
+> 0xffffffff/0x00000000, which makes us program prefetchable ranges
+> like 0xffffffffabc00000 - 0x00000000abc00000
+> 
+> Revert the chunk of 1f82de10 that made this conditional so we always
+> write the upper32 registers.
+> 
+> Signed-off-by: Alex Williamson <alex.williamson@hp.com>
+> ---
+> 
+>  drivers/pci/setup-bus.c |    8 +++-----
+>  1 files changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+> index cb1a027..127d759 100644
+> --- a/drivers/pci/setup-bus.c
+> +++ b/drivers/pci/setup-bus.c
+> @@ -221,11 +221,9 @@ static void pci_setup_bridge(struct pci_bus *bus)
+>  	}
+>  	pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, l);
+>  
+> -	if (pref_mem64) {
+> -		/* Set the upper 32 bits of PREF base & limit. */
+> -		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+> -		pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+> -	}
+> +	/* Set the upper 32 bits of PREF base & limit. */
+> +	pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32, bu);
+> +	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+>  
+>  	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+>  }
 
-It would be interesting to split the lirc daemon. Put the protocol
-decoder stuff in one daemon and the scripting support in the other.
-The scripting daemon would then be optional.  What would be the
-relative sizes of the two daemons?
+when pref_mem64=0 it means that pref register is only 32 bit, we should not touch upper 32bits.
 
---------------
-
-The LIRC daemon always works with timing data, right? When it reads
-the config files generated by irrecord it internally converts those to
-timing data and then matches the incoming data against it.
-
-Have you looked at the protocol engine idea? Running the protocol
-engines in parallel until a match is achieved. Then map the
-vendor/device/command triplet.  The protocol engine concept fixes the
-problem of Sony remotes in irrecord. Various Sony remote buttons
-transmit  in different protocols. irrecord assumes that a remote is
-only using a single protocol. Since it can't figure out a protocol it
-always records these remotes as raw.
-
-If the IR data is being decoded in a protocol engine it becomes
-possible to get rid of the need to configure IR in some cases. Apps
-like MythTV could pretend like they are a common piece of electronics
-hardware - say a Motorola DVR.  MythTV can then look for the
-vendor/device/command triplet from a Motorola DVR. Set your
-programmable remote to send the Motorola DVR commands and everything
-will "just work".
-
-Button on remote programed to be Mot DVR --> protocol engine -->
-Mot/dev/command --> MythTV which is looking for Mot/dev/command
-No config files needed.
-
-Make a command in MythTV to switch to emulating a different DVR if you
-happen to own this one. Take this a step further and register a MythTV
-profile with the various IR databases.
-
-
-
-
->
->> Take advantage of this window to make a
->> design that is fully integrated with Linux - put IR on equal footing
->> with the keyboard and mouse as it should be.
->
-> That's a question that I have not answered for myself concludingly.
-> Is a remote control really on exactly the same level as a keyboard or
-> mouse?
->
-> Christoph
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+YH
