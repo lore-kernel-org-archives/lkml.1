@@ -1,75 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752965AbZK3I70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZK3JFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752965AbZK3I70 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 03:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZK3I7Z
+	id S1753113AbZK3JFY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 04:05:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZK3JFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 03:59:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38621 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbZK3I7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 03:59:23 -0500
-Message-ID: <4B138950.9040905@kernel.org>
-Date: Mon, 30 Nov 2009 17:58:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
-       kvm@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: WARNING: kernel/smp.c:292 smp_call_function_single [Was: mmotm
- 2009-11-24-16-47 uploaded]
-References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>  <4B0FEA3E.5050108@gmail.com> <1259335036.6483.440.camel@laptop> <alpine.LFD.2.00.0911271730330.24119@localhost.localdomain> <4B1113C0.30505@redhat.com>
-In-Reply-To: <4B1113C0.30505@redhat.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 04:05:23 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:55223 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753040AbZK3JFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 04:05:19 -0500
+Date: Mon, 30 Nov 2009 04:04:50 -0500
+Message-Id: <200911300904.nAU94o0k025981@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>
+Subject: Re: [PATCH 22/41] union-mount: Some checks during namespace changes 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:20 PDT."
+             <1256152779-10054-23-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 11/28/2009 09:12 PM, Avi Kivity wrote:
->> Hmm, commit 498657a moved the fire_sched_in_preempt_notifiers() call
->> into the irqs disabled section recently.
->>
->>      sched, kvm: Fix race condition involving sched_in_preempt_notifers
->>
->>      In finish_task_switch(), fire_sched_in_preempt_notifiers() is
->>      called after finish_lock_switch().
->>
->>      However, depending on architecture, preemption can be enabled after
->>      finish_lock_switch() which breaks the semantics of preempt
->>      notifiers.
->>
->>      So move it before finish_arch_switch(). This also makes the in-
->>      notifiers symmetric to out- notifiers in terms of locking - now
->>      both are called under rq lock.
->>
->> It's not a surprise that this breaks the existing code which does the
->> smp function call.
+In message <1256152779-10054-23-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> From: Jan Blunck <jblunck@suse.de>
 > 
-> Yes, kvm expects preempt notifiers to be run with irqs enabled.  Copying
-> patch author.
+> Add some additional checks when mounting something into an union.
 
-Hmmm... then, it's broken both ways.  The previous code may get
-preempted after scheduling but before the notifier is run (which
-breaks the semantics of the callback horribly), the current code
-doesn't satisfy kvm's requirement.  Another thing is that in the
-previous implementation the context is different between the 'in' and
-'out' callbacks, which is subtle and nasty.  Can kvm be converted to
-not do smp calls directly?
+The text "add some additional checks" seems to imply "code I forgot to add
+earlier".  If this patch is better merged with some other one, then do so;
+otherwise, the subject line and patch header need to give this patch more
+credit than this: better explain what the checks are more precisely.
 
-For the time being, maybe it's best to back out the fix given that the
-only architecture which may be affected by the original bug is ia64
-which is the only one with both kvm and the unlocked context switch.
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> ---
+>  fs/namespace.c |   34 ++++++++++++++++++++++++++++++++++
+>  1 files changed, 34 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/namespace.c b/fs/namespace.c
+> index 81b3188..dc01385 100644
+> --- a/fs/namespace.c
+> +++ b/fs/namespace.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/log2.h>
+>  #include <linux/idr.h>
+>  #include <linux/fs_struct.h>
+> +#include <linux/union.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/unistd.h>
+>  #include "pnode.h"
+> @@ -1427,6 +1428,10 @@ static int do_change_type(struct path *path, int flag)
+>  	if (path->dentry != path->mnt->mnt_root)
+>  		return -EINVAL;
+>  
+> +	/* Don't change the type of union mounts */
+> +	if (IS_MNT_UNION(path->mnt))
+> +		return -EINVAL;
+> +
+>  	down_write(&namespace_sem);
+>  	if (type == MS_SHARED) {
+>  		err = invent_group_ids(mnt, recurse);
+> @@ -1478,6 +1483,18 @@ static int do_loopback(struct path *path, char *old_name, int recurse,
+>  	if (!mnt)
+>  		goto out;
+>  
+> +	/*
+> +	 * Unions couldn't be writable if the filesystem doesn't know about
+> +	 * whiteouts
+> +	 */
+> +	err = -ENOTSUPP;
+> +	if ((mnt_flags & MNT_UNION) &&
+> +	    !(mnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
+> +		goto out;
+> +
+> +	if (mnt_flags & MNT_UNION)
+> +		mnt->mnt_flags |= MNT_UNION;
+> +
+>  	err = graft_tree(mnt, path);
+>  	if (err) {
+>  		LIST_HEAD(umount_list);
+> @@ -1571,6 +1588,13 @@ static int do_move_mount(struct path *path, char *old_name)
+>  	if (err)
+>  		return err;
+>  
+> +	/* moving to or from a union mount is not supported */
+> +	err = -EINVAL;
+> +	if (IS_MNT_UNION(path->mnt))
+> +		goto exit;
+> +	if (IS_MNT_UNION(old_path.mnt))
+> +		goto exit;
+> +
+>  	down_write(&namespace_sem);
+>  	while (d_mountpoint(path->dentry) &&
+>  	       follow_down(path))
+> @@ -1628,6 +1652,7 @@ out:
+>  	up_write(&namespace_sem);
+>  	if (!err)
+>  		path_put(&parent_path);
+> +exit:
+>  	path_put(&old_path);
+>  	return err;
+>  }
 
-Thanks.
+I'd avoid using 'exit' as a label and goto name; use "out_err" or some other
+out_XXX label.  'exit' is almost a reserved word in C. :-)
 
--- 
-tejun
+> @@ -1685,6 +1710,15 @@ int do_add_mount(struct vfsmount *newmnt, struct path *path,
+>  	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
+>  		goto unlock;
+>  
+> +	/*
+> +	 * Unions couldn't be writable if the filesystem doesn't know about
+> +	 * whiteouts
+> +	 */
+> +	err = -ENOTSUPP;
+> +	if ((mnt_flags & MNT_UNION) &&
+> +	    !(newmnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
+> +		goto unlock;
+> +
+>  	newmnt->mnt_flags = mnt_flags;
+>  	if ((err = graft_tree(newmnt, path)))
+>  		goto unlock;
+> -- 
+> 1.6.3.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Erez.
