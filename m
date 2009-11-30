@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZK3J4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZK3J7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZK3J4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 04:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZK3J4Q
+	id S1753866AbZK3J7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 04:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbZK3J7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 04:56:16 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:33534 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbZK3J4Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 04:56:16 -0500
-Message-ID: <4B13969E.3020505@collabora.co.uk>
-Date: Mon, 30 Nov 2009 09:55:42 +0000
-From: Ian Molton <ian.molton@collabora.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+	Mon, 30 Nov 2009 04:59:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49092 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460AbZK3J7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 04:59:51 -0500
+Message-ID: <4B139721.5030808@redhat.com>
+Date: Mon, 30 Nov 2009 07:57:53 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, mpm@selenic.com
-Subject: Re: [PATCH 2/2] virtio: Convert virtio-rng to the new API
-References: <1259177252.2858.17.camel@calx> <1259195127-20086-2-git-send-email-ian.molton@collabora.co.uk> <1259195127-20086-3-git-send-email-ian.molton@collabora.co.uk> <200911282030.32015.rusty@rustcorp.com.au>
-In-Reply-To: <200911282030.32015.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Jon Smirl <jonsmirl@gmail.com>, Andy Walls <awalls@radix.net>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, maximlevitsky@gmail.com,
+       stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <m3r5riy7py.fsf@intrepid.localdomain>	<BDkdITRHqgB@lirc>	<9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>	<m3aay6y2m1.fsf@intrepid.localdomain>	<9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>	<1259469121.3125.28.camel@palomino.walls.org>	<20091129124011.4d8a6080@lxorguk.ukuu.org.uk>	<9e4733910911291019l27e5fea2x3db268311842b17@mail.gmail.com> <20091129190059.02c2a0ff@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091129190059.02c2a0ff@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Thu, 26 Nov 2009 10:55:27 am Ian Molton wrote:
->> 	This patch converts virtio-rng to the new hw_rng API.
->>
->> In the process it fixes a previously untriggered buffering bug where the
->> buffer is not drained correctly if it has a non-multiple-of-4 length.
-> 
-> Hi Ian,
+Hi Alan,
 
-Hi!
+Alan Cox wrote:
 
-> 	Looks good.  Minor comments below:
-> 
->> @@ -16,6 +16,7 @@
->>   *  along with this program; if not, write to the Free Software
->>   *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
->>   */
->> +
->>  #include <linux/err.h>
->>  #include <linux/hw_random.h>
->>  #include <linux/scatterlist.h>
-> 
-> Gratuitous hunk?
+> Does it really make sense to put big chunks of protocol decoding crap for
+> an interface which runs at about 1 character per second on a good day
+> into the kernel ? Does it really make sense ot move 50K of code from user
+> context to kernel context where it must meet strict security
+> requirements, be extensively audited and cannot be paged. For embedded
+> users will also have to be highly modular so no unused bits are loaded.
 
-Didn't look right without a gap :)
+The same logic would apply to mouse, keyboards and serial consoles. 
+It is possible to move everything to userspace. 
 
->> -static unsigned int data_left;
->> +static unsigned int data_avail;
->>  static DECLARE_COMPLETION(have_data);
->> +static int busy;
-> 
-> I prefer bool and true/false for booleans these days.
+However, there are some reassons for they to be in kernelspace:
+	- you may need them during boot time;
+	- they are mandatory to allow the users interaction;
+	- you need low latency.
 
-I was wondering what the current opinion was on that one. I have to say
-I prefer it too, so I'll change that.
+The same arguments apply to IR, especially on embedded devices: some devices,
+like TVs, Set Top TV boxes and IPTV Set Top Boxes have IR as their primary
+input device.
 
->> +
->> +/* The host will fill any buffer we give it with sweet, sweet randomness. */
-> 
-> This comment belongs above register_buffer() now I think.
+Also, as changing a digital TV or an IP TV channel requires to discard the current
+MPEG stream and getting a newer one, and it requires a large time until you'll
+be able to output something to the user, one of the needs is to handle IR keystrokes
+(especially channel up/down) as fast as possible, to try to minimize the discomfort
+of changing a channel.
 
-Yeah, didnt wanna make too much fus over it though. I'll move it too
-then :-)
+Using an approach where you'll send a raw event to userspace, process there and return
+back to kernel will increase the latency and can only be done after when loading
+the SYSV runlevel stuff.
 
-> (But I'm glad you kept it!)
+On the other hand, we already have IR decoding in-kernel. Most of the code are
+at:
+	drivers/media/common/ir-functions.c
 
-I think a sense of humour is important ;-)
+But there are also some other decoders at bttv, saa7134 and cx88 drivers.
 
-Patch to follow.
+In the case of drivers/media stuff, there common case is that the drivers have
+support for both space/pulse decoding and in-hardware decoding. On both cases,
+the scancode is converted to a keystroke via evdev. IMHO, we shouldn't really
+consider dropping those decoders from kernel.
 
--Ian
-
+Cheers,
+Mauro. 
