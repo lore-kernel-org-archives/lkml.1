@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752295AbZK3Lpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZK3LpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752295AbZK3Lpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZK3Lpb
+	id S1751994AbZK3LpM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:45:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZK3LpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:45:31 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:55299 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751217AbZK3Lpa (ORCPT
+	Mon, 30 Nov 2009 06:45:11 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42212 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751205AbZK3LpK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:45:30 -0500
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-To: List Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: rui.zhang@intel.com, jic23@cam.ac.uk, khali@linux-fr.org,
-       alan@linux.intel.com, linux-acpi@vger.kernel.org, gregkh@suse.de
-Subject: [PATCHv2 0/2] Introducing the Ambient Light Sensor (ALS) class
-Date: Mon, 30 Nov 2009 13:45:14 +0200
-Message-Id: <1259581514-15356-1-git-send-email-amit.kucheria@verdurent.com>
-X-Mailer: git-send-email 1.6.3.3
-X-OriginalArrivalTime: 30 Nov 2009 11:45:08.0510 (UTC) FILETIME=[910C4BE0:01CA71B2]
-X-Nokia-AV: Clean
+	Mon, 30 Nov 2009 06:45:10 -0500
+Date: Mon, 30 Nov 2009 11:45:15 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Eduardo Valentin <eduardo.valentin@nokia.com>
+Cc: "Hogander Jouni (Nokia-D/Tampere)" <jouni.hogander@nokia.com>,
+       "De-Schrijver Peter (Nokia-D/Helsinki)" 
+	<Peter.De-Schrijver@nokia.com>,
+       "Keski-Saari Juha.1 (EXT-Teleca/Helsinki)" 
+	<ext-juha.1.keski-saari@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>, lrg@slimlogic.co.uk
+Subject: Re: Doubt about Regulator Framework and VBAT use case
+Message-ID: <20091130114515.GB10968@rakim.wolfsonmicro.main>
+References: <20091130104102.GA16608@esdhcp037198.research.nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130104102.GA16608@esdhcp037198.research.nokia.com>
+X-Cookie: DYSLEXICS OF THE WORLD, UNTIE!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce a new class of devices to handle ambient light sensors. Currently
-only one sysfs inteface, 'illuminance' is introduced. More will be added as
-drivers are ported to use this new class.
+On Mon, Nov 30, 2009 at 12:41:02PM +0200, Eduardo Valentin wrote:
 
-Amit Kucheria (1):
-  als: add unique device-ids to the als device class
+> I'm writing to ask about VBAT use case. What is the expected
+> way to use regulator framework in case of rail coming from battery?
+> Should it be added to the regulator framework at all?
 
-Zhang Rui (1):
-  introduce ALS sysfs class
+...
 
- Documentation/ABI/testing/sysfs-class-als |    9 ++
- MAINTAINERS                               |    6 ++
- drivers/Kconfig                           |    2 +
- drivers/Makefile                          |    1 +
- drivers/als/Kconfig                       |   10 +++
- drivers/als/Makefile                      |    5 +
- drivers/als/als_sys.c                     |  116 +++++++++++++++++++++++++++++
- include/linux/als_sys.h                   |   35 +++++++++
- 8 files changed, 184 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-als
- create mode 100644 drivers/als/Kconfig
- create mode 100644 drivers/als/Makefile
- create mode 100644 drivers/als/als_sys.c
- create mode 100644 include/linux/als_sys.h
+> However, drivers for devices on that rail would require their regulator anyway.
+> And I guess the point would be that drivers should not be aware that they are on VBAT
+> or any other rail.
 
+I'd add it as a fixed voltage regulator and either not specify the
+voltage or specify the nominal voltage.
+
+> - Should drivers fail nicely if a regulator_get fail? And continue even if one fails.
+> - Should drivers disable regfw usage completely in the driver if regulator_get doesn't
+> give valid regulator ?
+
+These are reasonable approaches if the supply is an optional one that
+the device does not need - the driver shouldn't be failing if it doesn't
+need to.
+
+> - or Should a fake fixed regulator be added for vbat so drivers can still get a valid
+> regulator with regulator_get.
+
+That's the way to do it, yes.
+
+> The last options seams to be the one that does not require much changes on drivers.
+> But it will be adding a regulator that does basically nothing in the system.
+
+It's not quite doing nothing, it's mapping out the supply on the board.
+Otherwise there's no good way to tell the difference between a supply
+not being available because the regulator failed to initialise and the
+supply not being available because it's provided by some other invisible 
+means.
+
+If the regulator API starts getting a lot of usage on boards that have
+primarily fixed regulators we may want to have some support in the core
+for automatically faking up supplies if requested by the board but
+there's not been much demand for that yet and there's risks.
