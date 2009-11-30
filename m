@@ -1,49 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbZK3HqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751792AbZK3Hvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbZK3HqQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 02:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZK3HqO
+	id S1751792AbZK3Hvc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 02:51:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZK3Hvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 02:46:14 -0500
-Received: from lazybastard.de ([212.112.238.170]:52180 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753977AbZK3HqN (ORCPT
+	Mon, 30 Nov 2009 02:51:31 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:42106 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbZK3Hva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 02:46:13 -0500
-Date: Mon, 30 Nov 2009 08:46:03 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH/RFC v5 4/5]: core: Add dump device to call on oopses and panics
-Message-ID: <20091130074603.GA30911@logfs.org>
-References: <20091012131528.GC25464@elte.hu> <20091012153937.0dcd73e5@marrow.netinsight.se> <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain> <20091012110954.67d7d8d8.akpm@linux-foundation.org> <20091012182346.GH17138@elte.hu> <alpine.LFD.2.01.0910121130190.3438@localhost.localdomain> <20091013151751.59e217a7@marrow.netinsight.se> <20091013152235.188059d2@marrow.netinsight.se> <20091126093657.GA25430@logfs.org> <1259566071.7518.48.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1259566071.7518.48.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 30 Nov 2009 02:51:30 -0500
+Date: Mon, 30 Nov 2009 02:51:05 -0500
+Message-Id: <200911300751.nAU7p53e022740@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 16/41] whiteout: jffs2 whiteout support 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:14 PDT."
+             <1256152779-10054-17-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 November 2009 09:27:51 +0200, Artem Bityutskiy wrote:
+In message <1256152779-10054-17-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> From: Felix Fietkau <nbd@openwrt.org>
 > 
-> To me it looks like 'log_end' is not supposed to wrap. What makes you
-> think it can? In which cases it can?
+> Add support for whiteout dentries to jffs2.
+> 
+> Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> Cc: David Woodhouse <dwmw2@infradead.org>
+> Cc: linux-mtd@lists.infradead.org
+> ---
+>  fs/jffs2/dir.c        |   77 +++++++++++++++++++++++++++++++++++++++++++++++-
+>  fs/jffs2/fs.c         |    4 ++
+>  fs/jffs2/super.c      |    2 +-
+>  include/linux/jffs2.h |    2 +
+>  4 files changed, 82 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/jffs2/dir.c b/fs/jffs2/dir.c
+> index 6f60cc9..46a2e1b 100644
+> --- a/fs/jffs2/dir.c
+> +++ b/fs/jffs2/dir.c
+> @@ -34,6 +34,8 @@ static int jffs2_mknod (struct inode *,struct dentry *,int,dev_t);
+>  static int jffs2_rename (struct inode *, struct dentry *,
+>  			 struct inode *, struct dentry *);
+>  
+> +static int jffs2_whiteout (struct inode *, struct dentry *, struct dentry *);
+> +
+>  const struct file_operations jffs2_dir_operations =
+>  {
+>  	.read =		generic_read_dir,
+> @@ -55,6 +57,7 @@ const struct inode_operations jffs2_dir_inode_operations =
+>  	.rmdir =	jffs2_rmdir,
+>  	.mknod =	jffs2_mknod,
+>  	.rename =	jffs2_rename,
+> +	.whiteout =     jffs2_whiteout,
+>  	.permission =	jffs2_permission,
+>  	.setattr =	jffs2_setattr,
+>  	.setxattr =	jffs2_setxattr,
+> @@ -98,8 +101,18 @@ static struct dentry *jffs2_lookup(struct inode *dir_i, struct dentry *target,
+>  			fd = fd_list;
+>  		}
+>  	}
+> -	if (fd)
+> -		ino = fd->ino;
+> +	if (fd) {
+> +		spin_lock(&target->d_lock);
+> +		switch(fd->type) {
+> +		case DT_WHT:
+> +			target->d_flags |= DCACHE_WHITEOUT;
+> +			break;
+> +		default:
+> +			ino = fd->ino;
+> +			break;
+> +		}
+> +		spin_unlock(&target->d_lock);
+> +	}
 
-It is a 32bit variable.  Would do you expect happens once you reach
-0xffffffff and add 1?
+The switch statement above should be simplified into this:
 
-Jörn
+ if (fd->type == DT_WHT)
+	target->d_flags |= DCACHE_WHITEOUT;
+ else
+	ino = fd->ino;
 
--- 
-This above all: to thine own self be true.
--- Shakespeare
+> +	/* If it's a directory, then check whether it is really empty
+> +	 */
+
+Format above comment on one line.
+
+Erez.
