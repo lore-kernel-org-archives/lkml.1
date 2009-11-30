@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbZK3JRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbZK3JUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbZK3JRY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 04:17:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbZK3JRX
+	id S1753489AbZK3JUr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 04:20:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbZK3JUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 04:17:23 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48609
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752964AbZK3JRW (ORCPT
+	Mon, 30 Nov 2009 04:20:47 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56766 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753289AbZK3JUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 04:17:22 -0500
-Date: Mon, 30 Nov 2009 01:17:28 -0800 (PST)
-Message-Id: <20091130.011728.178511140.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: IDE
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 30 Nov 2009 04:20:46 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B138E45.4080401@jp.fujitsu.com>
+Date: Mon, 30 Nov 2009 18:20:05 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Stanislaw Gruszka <sgruszka@redhat.com>, linux-kernel@vger.kernel.org
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Spencer Candland <spencer@bluehost.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
+Subject: [PATCH 1/2] cputime: remove prev_{u,s}time if VIRT_CPU_ACCOUNTING
+References: <4AFB9029.9000208@jp.fujitsu.com> <20091112144919.GA6218@dhcp-lab-161.englab.brq.redhat.com> <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com> <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com> <1258464288.7816.305.camel@laptop> <20091119181744.GA3743@dhcp-lab-161.englab.brq.redhat.com> <4B05F835.10401@jp.fujitsu.com> <20091123100925.GB25978@dhcp-lab-161.englab.brq.redhat.com> <20091123101612.GC25978@dhcp-lab-161.englab.brq.redhat.com>
+In-Reply-To: <20091123101612.GC25978@dhcp-lab-161.englab.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+They are used in task_times(), only when !VIRT_CPU_ACCOUNTING.
+Add ifndef-endif for them.
 
-Fix regression in ATA_CMD_SET_FEATURES IDE ioctls done on UDMA modes,
-the code accidently was changed to use a fixed XFER_UDMA_6 when it
-should instead use the given tf->nsect value.
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ include/linux/sched.h |    2 ++
+ kernel/fork.c         |    2 ++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-Please pull, thanks a lot!
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 0395b0f..dff85e5 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1331,7 +1331,9 @@ struct task_struct {
+ 
+ 	cputime_t utime, stime, utimescaled, stimescaled;
+ 	cputime_t gtime;
++#ifndef CONFIG_VIRT_CPU_ACCOUNTING
+ 	cputime_t prev_utime, prev_stime;
++#endif
+ 	unsigned long nvcsw, nivcsw; /* context switch counts */
+ 	struct timespec start_time; 		/* monotonic time */
+ 	struct timespec real_start_time;	/* boot based time */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 166b8c4..ad7cb6d 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1066,8 +1066,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	p->gtime = cputime_zero;
+ 	p->utimescaled = cputime_zero;
+ 	p->stimescaled = cputime_zero;
++#ifndef CONFIG_VIRT_CPU_ACCOUNTING
+ 	p->prev_utime = cputime_zero;
+ 	p->prev_stime = cputime_zero;
++#endif
+ 
+ 	p->default_timer_slack_ns = current->timer_slack_ns;
+ 
+-- 
+1.6.5.3
 
-The following changes since commit a8a8a669ea13d792296737505adc43ccacf3a648:
-  Linus Torvalds (1):
-        Merge branch 'i2c-pnx-fixes' of git://git.fluff.org/bjdooks/linux
 
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-2.6.git master
-
-Hemant Pedanekar (1):
-      ide: fix ioctl to pass requested transfer mode to ide_find_dma_mode instead of UDMA6
-
- drivers/ide/ide-ioctls.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
