@@ -1,57 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbZK3IxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZK3I6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752660AbZK3IxQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 03:53:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZK3IxP
+	id S1752525AbZK3I6A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 03:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZK3I57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 03:53:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40882 "EHLO hera.kernel.org"
+	Mon, 30 Nov 2009 03:57:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42247 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752305AbZK3IxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 03:53:14 -0500
-Message-ID: <4B1387EB.2090506@kernel.org>
-Date: Mon, 30 Nov 2009 17:52:59 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1751503AbZK3I56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 03:57:58 -0500
+Message-ID: <4B138909.1000108@redhat.com>
+Date: Mon, 30 Nov 2009 09:57:45 +0100
+From: Stefan Assmann <sassmann@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Johannes Stezenbach <js@sig21.net>
-CC: Greg KH <greg@kroah.com>, Robert Hancock <hancockrwd@gmail.com>,
-       Mikhail Malygin <mmalygin@ked.de>, Hans Werner <hwerner4@gmx.de>,
-       Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: Samsung N130 ATA exception after 5min uptime -- Phoenix FailSafe
- issue?
-References: <20091126164212.GA24421@sig21.net> <20091128191932.GB24048@kroah.com> <4B11886E.3030906@gmail.com> <20091128213446.GA26420@kroah.com> <20091128222203.GA369@sig21.net> <20091129001745.GA29143@kroah.com> <20091129005157.GA6487@sig21.net>
-In-Reply-To: <20091129005157.GA6487@sig21.net>
-X-Enigmail-Version: 0.97a
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-pci@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Krzysztof Halasa <khc@pm.waw.pl>, Don Dutile <ddutile@redhat.com>,
+       kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH] change PCI nomenclature according to PCI-SIG
+References: <4B110F79.8080405@redhat.com> <4B111ADC.9020800@garzik.org> <4B123A34.5090509@redhat.com> <4B126EEB.1040908@garzik.org>
+In-Reply-To: <4B126EEB.1040908@garzik.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/29/2009 09:51 AM, Johannes Stezenbach wrote:
-> On Sat, Nov 28, 2009 at 04:17:45PM -0800, Greg KH wrote:
->> On Sat, Nov 28, 2009 at 11:22:03PM +0100, Johannes Stezenbach wrote:
+On 29.11.2009 13:54, Jeff Garzik wrote:
+> On 11/29/2009 04:09 AM, Stefan Assmann wrote:
+>> On 28.11.2009 13:43, Jeff Garzik wrote:
+>>> On 11/28/2009 06:54 AM, Stefan Assmann wrote:
+>>>> From: Stefan Assmann<sassmann@redhat.com>
+>>>>
+>>>> Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
+>>>> terms listed in the "Trademark and Logo Usage Guidelines".
+>>>> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
+>>>>
+>>>>
+>>>> Additionally some renames of Gb/s to GT/s where appropriate, concerns
+>>>> PCIe.
+>>>>
+>>>> This is a followup to the discussion at:
+>>>> http://lkml.org/lkml/2009/10/14/107
+>>>> Patch is based on 2.6.32-rc8.
+>>>>
+>>>> Signed-off-by: Stefan Assmann<sassmann@redhat.com>
 >>>
->>> BTW, at 5min after boot it is 99% guaranteed that this ATA
->>> exception will happen during the occasional fsck. That
->>> doesn't feel right.
+>>> NAK, this clearly introduces bugs and changes sysfs output (ABI).
+>>>
+>>> Typically this type of change is pointless churn that creates far more
+>>> problems than it "solves."
 >>
->> Well, I've never been doing a fsck at 5 minutes into boot, and neither do
->> most Windows users :)
+>> Hi Jeff,
+>>
+>> I see you point in not liking this kind of change. What kind of cleanup
+>> would be ok in your opinion?
 > 
-> I've been through a lot of reboots with all the testing, and
-> the fsck took longer than 5min, and the ATA exception  struck.
-> fsck continued after the 30 second stall and succeeded.
+> Think about this from an engineering perspective.  This patch is driven
+> not by any real technical need, but more by marketing and trademark folks.
+> 
+> The absolute best case scenario for this patch is that nothing changes,
+> from an implementation and behavior standpoint.  The worst case, of
+> course, is that it introduces bugs (which it does).
+> 
+> You also incur the standard costs of any kernel change:  you've just
+> made the diff between, for example, a vendor kernel's foo_driver.c and
+> upstream's foo_driver.c a lot larger, and more difficult to discern
+> real, technical changes to the code.
+> 
+> Of course, we change the kernel every day -- but we also know that
+> change itself has cost, and a lot of code changes for cosmetic reasons
+> have the potential for greater negative costs, and fewer positive benefits.
+> 
+> Next, IMO, you don't have any idea how maintainers will react to this
+> patch, because you CC'd so few of them.  People who perform tree-wide
+> changes should take the time to CC __every__ relevant maintainer.  If
+> you are changing somebody's code, you should always let them know about
+> it, and give them an opportunity to review the change.
+> scripts/get_maintainer.pl can help with this.
+> 
+> So, while the PCI maintainer might agree with the nomenclature change,
+> he is not the most qualified person to state that your changes have no
+> effect on drivers/edac/ppc4xx_edac.c, for example.
+> 
+> Finally, split your patch up.  I would suggest starting with 100%
+> comment changes that are guaranteed with mathematical certainty to not
+> change the compiler-generated code at all.  That will make the remaining
+> changes much easier to review, if they are in separate patches from the
+> comment-only changes.
 
-The timeout will happen if the C state switching happens while ATA
-command is in flight so unless there's heavy IO load, it's not very
-likely to hit.  Another factor is that windows uses shorter IO timeout
-(I think it's 7 secs or 15, I'm not sure) so it's gonna be less
-noticeable when it happens.  Hmmm.... there were talks about
-shortening the timeout.  Maybe it's about time we actually do that.
+Thanks for taking the time. I appreciate it and will try to stick to
+your suggestions.
 
-Thanks.
-
--- 
-tejun
+  Stefan
+--
+Stefan Assmann         | Red Hat GmbH
+Software Engineer      | Otto-Hahn-Strasse 20, 85609 Dornach
+                       | HR: Amtsgericht Muenchen HRB 153243
+                       | GF: Brendan Lane, Charlie Peters,
+sassmann at redhat.com |     Michael Cunningham, Charles Cachera
