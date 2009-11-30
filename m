@@ -1,87 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZK3QTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbZK3QU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbZK3QTe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 11:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZK3QTc
+	id S1753268AbZK3QU6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 11:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZK3QU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 11:19:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:26257 "EHLO mx1.redhat.com"
+	Mon, 30 Nov 2009 11:20:56 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:58778 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752720AbZK3QTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 11:19:30 -0500
-Message-ID: <4B13F075.2090806@redhat.com>
-Date: Mon, 30 Nov 2009 14:19:01 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1752903AbZK3QUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 11:20:55 -0500
+Date: Mon, 30 Nov 2009 08:20:58 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] "fair" rw spinlocks
+Message-ID: <20091130162058.GA6762@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091123145409.GA29627@wotan.suse.de> <alpine.LFD.2.00.0911280927180.2561@localhost> <20091130075557.GI17484@wotan.suse.de>
 MIME-Version: 1.0
-To: Andy Walls <awalls@radix.net>
-CC: Ray Lee <ray-lk@madrabbit.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
-       superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>	 <m3aay6y2m1.fsf@intrepid.localdomain>	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>	 <1259469121.3125.28.camel@palomino.walls.org>	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>	 <1259515703.3284.11.camel@maxim-laptop>	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>	 <1259537732.5231.11.camel@palomino.walls.org> <4B13B2FA.4050600@redhat.com> <1259585852.3093.31.camel@palomino.walls.org>
-In-Reply-To: <1259585852.3093.31.camel@palomino.walls.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091130075557.GI17484@wotan.suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Walls wrote:
+On Mon, Nov 30, 2009 at 08:55:57AM +0100, Nick Piggin wrote:
+> On Sat, Nov 28, 2009 at 09:30:18AM -0800, Linus Torvalds wrote:
+> > So as far as I can tell, we have only one real user of rwlocks where 
+> > livelocks might be relevant, but that one real user absolutely _requires_ 
+> > the unfair behavior.
+> 
+> Yes, although the behaviour required is that it can be recursively
+> acquired. So we could still have a lock that disallows new non recursive
+> read acquires when there is a pending write locker.
+> 
+> RCU seems nicer, but tasklist lock locking scares me so I wanted to fix
+> it the easy way :)
 
-> Nonetheless I'd still rather debug a problem with a dead process in
-> userspace than an oops or panic (not that an end user cares) and avoid
-> the risk of filesystem corruption.
+Having a livelock-free tasklist lock would certainly make it easier
+to apply things like RCU on a code-path-by-code-path basis as needed.
+Much less scary than a big-bang rip-and-replace.
 
-Considering my experience adding in-kernel support for IR's, I'd say that
-in general, a driver does some things:
-
-1) it polls or waits IRQ's for an IR event. On raw IR devices, the read value
-means a mark or a space;
-2) it counts the timings between each pulse, and pulse/space duration;
-3) it runs a protocol decoding logic that, based on pulse/space duration, one
-   scancode is produced;
-4) it does a table lookup to convert the scancode into the corresponding keycode;
-5) it generates an evdev event.
-
-Steps 2 and 3 happen only when the device doesn't have hardware decoding capabilities.
-For devices with hardware decoding, the polling/IRQ process already retrieves a scancode.
-
-Based on my experience, I can say that, from the above logic, the one
-where you're more likely to generate an OOPS is at the first one, 
-where you need to do the proper memory barriers for example to avoid
-unregistering an IR while you're in the middle of an IRQ or pull handling.
-In the case of IRQ, you'll also need to take care to not sleep, since you're
-in interrupt mode.
-
-If you're outputing raw pulse/space to userspace (a lirc-like raw interface), 
-you'll still need to do steps (1) and (2) in kernel, and doing a logic close
-to (5) to output an event to userspace.
-
-So, the basic difference is that you won't run the decoder (3) nor do a table lookup (4).
-
-The logic for (4) is trivial (a simple a table lookup). If you do a mistake
-there, the bug will likely arise at the development time. Also, if you're not able
-to write a proper code to get a value from a table, you shouldn't be trying
-to write a driver anyway.
-
-The logic for (3) is as simple as identifying the length of a pulse and the length of
-the spaces. Depending on the length, it will produce a zero or one. Pure integer math.
-The only risk of such logic is if you try to divide by zero. Except of that, this type
-of code shouldn't cause any OOPS or panic.
-
-Also, for (3) and (4), it is very easy to write it first on userspace (if you feel
-more comfortable on doing so) and, after doing enough testing, add the same code to
-kernelspace.
-
-Cheers,
-Mauro.
-
-
-
+							Thanx, Paul
