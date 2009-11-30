@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbZK3QR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZK3QTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753061AbZK3QR3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 11:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbZK3QR2
+	id S1753170AbZK3QTB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 11:19:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZK3QS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 11:17:28 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56203 "EHLO mx2.suse.de"
+	Mon, 30 Nov 2009 11:18:59 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:58968 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752399AbZK3QR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 11:17:28 -0500
-Date: Mon, 30 Nov 2009 17:17:34 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul McKenney <paulmck@us.ibm.com>
-Subject: Re: [rfc] "fair" rw spinlocks
-Message-ID: <20091130161734.GF21639@wotan.suse.de>
-References: <20091123145409.GA29627@wotan.suse.de> <alpine.LFD.2.00.0911280927180.2561@localhost> <20091130075557.GI17484@wotan.suse.de> <alpine.LFD.2.00.0911300706420.2872@localhost.localdomain> <20091130154031.GE21639@wotan.suse.de> <alpine.LFD.2.00.0911300754420.2872@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752470AbZK3QS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 11:18:58 -0500
+Date: Mon, 30 Nov 2009 08:18:45 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+       cl@linux-foundation.org, mpm@selenic.com,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+Subject: Re: lockdep complaints in slab allocator
+Message-ID: <20091130161845.GA8338@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com> <1258709153.11284.429.camel@laptop> <84144f020911200238w3d3ecb38k92ca595beee31de5@mail.gmail.com> <1258714328.11284.522.camel@laptop> <4B067816.6070304@cs.helsinki.fi> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <20091124162311.GA8679@linux.vnet.ibm.com> <84144f020911241259r3a604b29yb59902655ec03a20@mail.gmail.com> <20091124214740.GJ6831@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0911300754420.2872@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091124214740.GJ6831@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 08:07:16AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 30 Nov 2009, Nick Piggin wrote:
+On Tue, Nov 24, 2009 at 01:47:40PM -0800, Paul E. McKenney wrote:
+> On Tue, Nov 24, 2009 at 10:59:44PM +0200, Pekka Enberg wrote:
+> > On Tue, Nov 24, 2009 at 6:23 PM, Paul E. McKenney
+> > <paulmck@linux.vnet.ibm.com> wrote:
+> > > On Mon, Nov 23, 2009 at 09:00:00PM +0200, Pekka Enberg wrote:
+> > >> Hi Peter,
+> > >>
+> > >> On Fri, 2009-11-20 at 16:09 +0100, Peter Zijlstra wrote:
+> > >> > > Uh, ok, so apparently I was right after all. There's a comment in
+> > >> > > free_block() above the slab_destroy() call that refers to the comment
+> > >> > > above alloc_slabmgmt() function definition which explains it all.
+> > >> > >
+> > >> > > Long story short: ->slab_cachep never points to the same kmalloc cache
+> > >> > > we're allocating or freeing from. Where do we need to put the
+> > >> > > spin_lock_nested() annotation? Would it be enough to just use it in
+> > >> > > cache_free_alien() for alien->lock or do we need it in
+> > >> > > cache_flusharray() as well?
+> > >> >
+> > >> > You'd have to somehow push the nested state down from the
+> > >> > kmem_cache_free() call in slab_destroy() to all nc->lock sites below.
+> > >>
+> > >> That turns out to be _very_ hard. How about something like the following
+> > >> untested patch which delays slab_destroy() while we're under nc->lock.
+> > >>
+> > >>                       Pekka
+> > >
+> > > Preliminary tests look good!  The test was a ten-hour rcutorture run on
+> > > an 8-CPU Power system with a half-second delay between randomly chosen
+> > > CPU-hotplug operations.  No lockdep warnings.  ;-)
+> > >
+> > > Will keep hammering on it.
 > > 
-> > Well the simple thing I tried earlier was a per-cpu array of nesting
-> > counter there. It's not _too_ expensive, but it does add another cacheline
-> > access and branch there. It seems to work in solving the livelock though.
+> > Thanks! Please let me know when you're hammered it enough :-). Peter,
+> > may I have your ACK or NAK on the patch, please?
 > 
-> So how did you do the nesting counter? Afaik, it needs to be something 
-> like
-> 
-> 	local_irq_save(flags);
-> 	if (!get_cpu_var(tasklist_counter)++)
-> 		spin_lock(&tasklist_lock);
-> 	local_irq_restore(flags);
-> 
-> on the read_lock side (and the same in reverse on unlock). Which seems 
-> quite a bit more expensive than what we have now. Especially on UP, but I 
-> guess you can make it conditional on CONFIG_SMP (but that won't help 
-> generic kernels).
+> I expect to hammer it over the USA Thanksgiving holiday Thu-Sun this week.
+> It is like this, Pekka: since I don't drink, it is instead your code
+> that is going to get hammered this weekend!
 
-Ah yes the irq manipulations is going to be fairly expensive :(
-Let's see... I was just using local_* ops for the counter, but
-that is sadly racy.
+And the runs with your patch were free from lockdep complaints, while
+those runs lacking your patch did raise lockdep's ire.  So feel free to
+add "Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>" to the
+patch.
 
-Hmm.
+And thank you for the fix!!!
+
+							Thanx, Paul
