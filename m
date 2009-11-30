@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbZK3TAD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZK3TDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753180AbZK3TAD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 14:00:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZK3TAD
+	id S1753234AbZK3TDK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 14:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZK3TDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 14:00:03 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:49294 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1752815AbZK3TAB (ORCPT
+	Mon, 30 Nov 2009 14:03:10 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:51350 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752815AbZK3TDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 14:00:01 -0500
-Message-ID: <4B141670.10906@ru.mvista.com>
-Date: Mon, 30 Nov 2009 22:01:04 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 30 Nov 2009 14:03:09 -0500
+Date: Mon, 30 Nov 2009 13:01:45 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Tejun Heo <tj@kernel.org>
+cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [Patch] percpu: remove two suspicious break statements
+In-Reply-To: <4B13A7ED.9010905@kernel.org>
+Message-ID: <alpine.DEB.2.00.0911301258370.18682@router.home>
+References: <20091130091501.4507.28683.sendpatchset@localhost.localdomain> <4B13A7ED.9010905@kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] slc90e66: fix UDMA handling
-References: <200911301955.18158.bzolnier@gmail.com>
-In-Reply-To: <200911301955.18158.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Mon, 30 Nov 2009, Tejun Heo wrote:
 
-Bartlomiej Zolnierkiewicz wrote:
+> That actually is correct code.  It's checking whether the first
+> iteration covers the whole thing.  I thought the comment there
 
-> Fix checking of the currently programmed UDMA mode.
+A loop statement that never creates a loop? You either execute a goto or a break.
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Some more elaborate documentation is needed.
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-MBR, Sergei
