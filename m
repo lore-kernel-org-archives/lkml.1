@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZK3XrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbZK3Xu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbZK3XrY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 18:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZK3XrY
+	id S1753918AbZK3Xu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 18:50:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZK3Xu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 18:47:24 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:47493 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753854AbZK3XrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 18:47:23 -0500
-Date: Mon, 30 Nov 2009 15:47:27 -0800
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: lm-sensors <lm-sensors@lm-sensors.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] therm_adt746x: Record pwm invert bit at module load time
-Message-ID: <20091130234727.GA10295@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 30 Nov 2009 18:50:27 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:14476 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753395AbZK3Xu0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 18:50:26 -0500
+Subject: Re: Block IO Controller V4
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com
+In-Reply-To: <20091130225640.GO11670@redhat.com>
+References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com>
+	 <4e5e476b0911300734h34a22c88oa5d7d4e5642ead50@mail.gmail.com>
+	 <20091130160024.GD11670@redhat.com>
+	 <4e5e476b0911301334o2440ea8fi7444aa7d5a688ed1@mail.gmail.com>
+	 <1259618433.2701.31.camel@cail>  <20091130225640.GO11670@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Nov 2009 18:50:25 -0500
+Message-ID: <1259625025.2701.33.camel@cail>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 0512a9a8e277a9de2820211eef964473b714ae65, we unilaterally zero the
-"pwm invert" bit in the fan behavior configuration register.  On my PowerBook
-G4, this results in the fans going to full speed at low temperature and
-shutting off at high temperature because the pwm invert bit is supposed to be
-set.
+On Mon, 2009-11-30 at 17:56 -0500, Vivek Goyal wrote:
+> On Mon, Nov 30, 2009 at 05:00:33PM -0500, Alan D. Brunelle wrote:
+> > FYI: Results today from my test suite - haven't had time to parse them
+> > in any depth...
+> 
+> Thanks Alan. I am trying to parse the results below. s0 and s8 still mean
+> slice idle enabled disabled? Instead of that we can try group_isolation
+> enabled or disabled for all the tests.
 
-Therefore, record the pwm invert bit at driver load time, and write the bit
-into the fan behavior control register.  This restores correct behavior on my
-PBG4 and should work around the bit being set to the wrong value after
-suspend/resume (which is what the original patch was trying to fix).  It also
-fixes a minor omission where the pwm invert bit correction is NOT performed
-when switching into automatic mode.
+I'm concerned as well - I think I did the base run /after/ the i1,s0
+run. I'll need to check that out tomorrow...
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
-
- drivers/macintosh/therm_adt746x.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
+Alan
 
 
-diff --git a/drivers/macintosh/therm_adt746x.c b/drivers/macintosh/therm_adt746x.c
-index 556f0fe..386a797 100644
---- a/drivers/macintosh/therm_adt746x.c
-+++ b/drivers/macintosh/therm_adt746x.c
-@@ -79,6 +79,7 @@ struct thermostat {
- 	u8			limits[3];
- 	int			last_speed[2];
- 	int			last_var[2];
-+	int			pwm_inv[2];
- };
- 
- static enum {ADT7460, ADT7467} therm_type;
-@@ -229,19 +230,23 @@ static void write_fan_speed(struct thermostat *th, int speed, int fan)
- 	
- 	if (speed >= 0) {
- 		manual = read_reg(th, MANUAL_MODE[fan]);
-+		manual &= ~INVERT_MASK;
- 		write_reg(th, MANUAL_MODE[fan],
--			(manual|MANUAL_MASK) & (~INVERT_MASK));
-+			manual | MANUAL_MASK | th->pwm_inv[fan]);
- 		write_reg(th, FAN_SPD_SET[fan], speed);
- 	} else {
- 		/* back to automatic */
- 		if(therm_type == ADT7460) {
- 			manual = read_reg(th,
- 				MANUAL_MODE[fan]) & (~MANUAL_MASK);
--
-+			manual &= ~INVERT_MASK;
-+			manual |= th->pwm_inv[fan];
- 			write_reg(th,
- 				MANUAL_MODE[fan], manual|REM_CONTROL[fan]);
- 		} else {
- 			manual = read_reg(th, MANUAL_MODE[fan]);
-+			manual &= ~INVERT_MASK;
-+			manual |= th->pwm_inv[fan];
- 			write_reg(th, MANUAL_MODE[fan], manual&(~AUTO_MASK));
- 		}
- 	}
-@@ -418,6 +423,10 @@ static int probe_thermostat(struct i2c_client *client,
- 
- 	thermostat = th;
- 
-+	/* record invert bit status because fw can corrupt it after suspend */
-+	th->pwm_inv[0] = read_reg(th, MANUAL_MODE[0]) & INVERT_MASK;
-+	th->pwm_inv[1] = read_reg(th, MANUAL_MODE[1]) & INVERT_MASK;
-+
- 	/* be sure to really write fan speed the first time */
- 	th->last_speed[0] = -2;
- 	th->last_speed[1] = -2;
