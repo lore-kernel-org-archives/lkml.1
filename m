@@ -1,73 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751200AbZK3FBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751504AbZK3FMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751200AbZK3FBL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 00:01:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbZK3FBK
+	id S1751504AbZK3FMN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 00:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbZK3FMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 00:01:10 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:34593
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbZK3FBJ convert rfc822-to-8bit (ORCPT
+	Mon, 30 Nov 2009 00:12:13 -0500
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:58573 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751062AbZK3FMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 00:01:09 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:  Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <9e4733910911262106r553bb28brb5bef07dee3aae3b@mail.gmail.com>
-Date: Mon, 30 Nov 2009 00:01:09 -0500
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>, linux-kernel@vger.kernel.org,
-       Mario Limonciello <superm1@ubuntu.com>, linux-input@vger.kernel.org,
-       linux-media@vger.kernel.org, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <AD7A0010-DFD7-42F3-8C3D-E68DB4DCD291@wilsonet.com>
-References: <4B0A765F.7010204@redhat.com> <m36391tjj3.fsf@intrepid.localdomain> <20091123173726.GE17813@core.coreip.homeip.net> <4B0B6321.3050001@wilsonet.com> <20091126053109.GE23244@core.coreip.homeip.net> <A910E742-51B5-45E0-AD80-B9AE0728D9FB@wilsonet.com> <20091126232311.GD6936@core.coreip.homeip.net> <4B0F3963.8040701@wilsonet.com> <9e4733910911261908l122263c3x68854e8a00334eae@mail.gmail.com> <20091127043318.GK6936@core.coreip.homeip.net> <9e4733910911262106r553bb28brb5bef07dee3aae3b@mail.gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-X-Mailer: Apple Mail (2.1077)
+	Mon, 30 Nov 2009 00:12:12 -0500
+Date: Mon, 30 Nov 2009 00:11:51 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: Problem? intel_iommu=off; perf top shows acpi_os_read_port as
+ extremely busy
+In-reply-to: <20091129124731.7d0c9b45@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       linux-kernel@vger.kernel.org
+Message-id: <4B135417.1080302@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B106CC0.4050406@majjas.com> <20091128071808.GA32183@elte.hu>
+ <20091128094530.0ede7b1a@infradead.org> <4B11678D.8020601@majjas.com>
+ <20091129124731.7d0c9b45@infradead.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre)
+ Gecko/20091109 Fedora/3.0-3.10.b4.fc12 Thunderbird/3.0b4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 27, 2009, at 12:06 AM, Jon Smirl wrote:
+Ok - one more rather odd (to me) data point...
+I started playing around with various settings, and traced the calls to 
+acpi_os_read_port.
 
-> On Thu, Nov 26, 2009 at 11:33 PM, Dmitry Torokhov
-> <dmitry.torokhov@gmail.com> wrote:
->>> In the code I posted there is one evdev device for each configured
->>> remote. Mapped single keycodes are presented on these devices for each
->>> IR burst. There is no device for the IR receiver.  A LIRC type process
->>> could watch these devices and then execute scripts based on the
->>> keycodes reported.
->>> 
-> ...
->> 
->> Maybe we should revisit Jon's patchset as well. Regretfully I did not
->> have time to do that when it was submitted the last time.
-> 
-> Consider my patch set a technology demo starting point. It shows a
-> modern architecture for integrating IR into evdev.  Use the input from
-> everyone else to turn these concepts into a real design. I wrote the
-> code for the fun of it, I have no commercial interest in IR. I was
-> annoyed with how LIRC handled Sony remotes on my home system.
-> 
-> The design is a clean slate implementation of IR for the kernel. No
-> attempt was made at legacy compatibility. I was familiar with evdev vs
-> /dev/mouse problems from my work on the X server. Because of working
-> on X I've also always hated keymaps (that's what drove the configfs
-> design).
-> 
-> I wish one of the set top box or TV manufacturers would step up and
-> own this.  They are the ones that would benefit the most. Jarod would
-> probably be open to some consulting, right?
+To summarize:
+With intel_iommu=off, I see a large percentage of calls to 
+acpi_os_read_port resulting from user apps (portsentry is #1).
+With intel_iommu=on, NONE of trace points to any user apps - all derive 
+from the idle loop.
+To make things more interesting, when I enable intel_iommu and disable 
+vt-d in bios, the system performs much better (20% improvement in 
+glxgears, for example), perf top looks like this:
 
-Mauro may actually have better connections on that front than I do... Thus far, I've only talked to a few vendors of IR devices, with mixed results getting any sort of support out of them. But its on my todo list to put out some feelers on the work front to see if we have any connections that we might be able to utilize.
+------------------------------------------------------------------------------
+    PerfTop:    4863 irqs/sec  kernel:62.7% [100000 cycles],  (all, 8 CPUs)
+------------------------------------------------------------------------------
 
--- 
-Jarod Wilson
-jarod@wilsonet.com
+              samples    pcnt   kernel function
+              _______   _____   _______________
 
+              2213.00 -  5.5% : acpi_idle_enter_bm
+              2001.00 -  5.0% : acpi_os_read_port
+              1544.00 -  3.9% : _spin_lock_irqsave
+              1075.00 -  2.7% : ioread32
+               928.00 -  2.3% : find_busiest_group
+               851.00 -  2.1% : _spin_unlock_irqrestore
+               823.00 -  2.1% : hpet_next_event
+               810.00 -  2.0% : tg_shares_up
+               655.00 -  1.6% : fget_light
+               641.00 -  1.6% : schedule
+               639.00 -  1.6% : tick_nohz_stop_sched_tick
+               638.00 -  1.6% : sub_preempt_count
+               634.00 -  1.6% : add_preempt_count
+               548.00 -  1.4% : do_sys_poll
+               446.00 -  1.1% : trace_hardirqs_off
 
+And additionally, one recurring boot warning I've seen since I first 
+booted this box has disappeared - first boot message of IRQ16 disabled.
+
+I'm thinking that bad VT-D bios is causing trouble even when intel_iommu 
+is disabled.
+
+On 11/29/2009 03:47 PM, Arjan van de Ven wrote:
+> On Sat, 28 Nov 2009 13:10:21 -0500
+> Michael Breuer<mbreuer@majjas.com>  wrote:
+>
+>    
+>> Ok - my only question then is why things appear so different with
+>> intel_iommu enabled.
+>>      
+> something else is even more expensive then :0
+>
+>
+>    
 
