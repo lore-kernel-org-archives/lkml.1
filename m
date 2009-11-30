@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbZK3SJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZK3SLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231AbZK3SJp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 13:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZK3SJo
+	id S1753343AbZK3SLI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 13:11:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbZK3SLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 13:09:44 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:60515 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbZK3SJn (ORCPT
+	Mon, 30 Nov 2009 13:11:07 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36790 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752917AbZK3SLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 13:09:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=vevHMSk3lSSBT0ldZ4ZExsypvYINELCBLpGRd+6VX3EMJYcfXrdhOgmDi/W/KC/SM7
-         H1K+Z3aKrchzbY+boLIRIa2dEOFc5Us5yHLLhWpROLTvwIG/AtZ8T8Y2JVpnLQtJe8uz
-         D6Q+IAQ2hZiJ4dix0qzWKov1irFnpm9UZZhmY=
+	Mon, 30 Nov 2009 13:11:07 -0500
+Date: Mon, 30 Nov 2009 19:11:09 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Michal Marek <mmarek@suse.cz>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kbuild@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kbuild: specify absolute paths for cscope
+Message-ID: <20091130181109.GA19614@merkur.ravnborg.org>
+References: <1259238852-21214-1-git-send-email-daniel.vetter@ffwll.ch> <4B13FD4B.5080805@suse.cz>
 MIME-Version: 1.0
-Date: Mon, 30 Nov 2009 21:09:48 +0300
-Message-ID: <53cc795f0911301009y786f5624v7c9f81736e0f18d8@mail.gmail.com>
-Subject: netconsole trouble 2.6.31.6
-From: sbs <gexlie@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B13FD4B.5080805@suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello
+On Mon, Nov 30, 2009 at 06:13:47PM +0100, Michal Marek wrote:
+> On 26.11.2009 13:34, Daniel Vetter wrote:
+> > Some tools (like my favourite editor, vim) can't handle relative
+> > paths from cscope as soon as cscope.out is no longer in $PWD. Use
+> > absolute paths when generating cscope.files, which seems to be
+> > the recommended way to generate cscope.out, anyway (at least according
+> > to cscope.sf.net).
+> 
+> But it will fail if you rename the source directory. I'm not sure what
+> is worse, I myself don't use cscope much. Fixing vim would be the ideal
+> solution of course (it already handles ../tags fine).
 
-I was using dynamic netconsole for some servers with kernel 2.6.31
-It worked fine and great.
+For tags I recall we fall back to absolute path only for O=... builds.
+This made the tags file considerably smaller for a non O=.. build
+thus speeding up the search.
 
-Yesterday I updated kernel to 2.6.31.6 and have found that there is no
-netconsole directory under /sys/kernel/config/ anymore.
+So unconditionally using absolute paths for cscope may have drawbacks.
 
-is that a bug or was anything changed between 2.6.31 and  2.6.31.6
-kernel about netconsole that made this directory gone away?
-
-
-
-my dynamic netconsole  kernel options:
-CONFIG_NETCONSOLE=y
-CONFIG_NETCONSOLE_DYNAMIC=y
-
-CONFIG_SYSFS_DEPRECATED=y
-CONFIG_SYSFS_DEPRECATED_V2=y
-CONFIG_ACPI_SYSFS_POWER=y
-CONFIG_RTC_INTF_SYSFS=y
-CONFIG_SYSFS=y
-
-CONFIG_CONFIGFS_FS=y
+	Sam
