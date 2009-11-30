@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbZK3BRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbZK3CIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753294AbZK3BRp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 20:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZK3BRo
+	id S1753357AbZK3CIk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Nov 2009 21:08:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbZK3CIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 20:17:44 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53818
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751622AbZK3BRn (ORCPT
+	Sun, 29 Nov 2009 21:08:39 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49637 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752641AbZK3CIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 20:17:43 -0500
-Date: Sun, 29 Nov 2009 17:17:49 -0800 (PST)
-Message-Id: <20091129.171749.113308677.davem@davemloft.net>
-To: roger.oksanen@cs.helsinki.fi
-Cc: jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
-       bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
-       john.ronciak@intel.com, akpm@linux-foundation.org,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, karol.k.lewandowski@gmail.com
-Subject: Re: [PATCH] e100: Use pci pool to work around GFP_ATOMIC order 5
- memory allocation failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200911261649.54785.roger.oksanen@cs.helsinki.fi>
-References: <200911261649.54785.roger.oksanen@cs.helsinki.fi>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Nov 2009 21:08:38 -0500
+Date: Sun, 29 Nov 2009 20:43:58 -0500
+Message-Id: <200911300143.nAU1hwav006906@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/41] VFS: BUG() if somebody tries to rehash an already hashed dentry 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:18:59 PDT."
+             <1256152779-10054-2-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
-Date: Thu, 26 Nov 2009 16:49:54 +0200
-
-> e100: Use pci pool to work around GFP_ATOMIC order 5 memory allocation failure.
+In message <1256152779-10054-2-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> From: Jan Blunck <jblunck@suse.de>
 > 
-> pci_alloc_consistent uses GFP_ATOMIC allocation that may fail on some systems
-> with limited memory (Bug #14265). pci_pool_alloc allows waiting with
-> GFP_KERNEL.
+> Break early when somebody tries to rehash an already hashed dentry.
+> Otherwise this leads to interesting corruptions in the dcache hash table
+> later on.
 > 
-> Tested-by: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-> Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> ---
+>  fs/dcache.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index 9e5cd3c..38bf982 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -1550,6 +1550,7 @@ void d_rehash(struct dentry * entry)
+>  {
+>  	spin_lock(&dcache_lock);
+>  	spin_lock(&entry->d_lock);
+> +	BUG_ON(!d_unhashed(entry));
+>  	_d_rehash(entry);
+>  	spin_unlock(&entry->d_lock);
+>  	spin_unlock(&dcache_lock);
 
-Looks good, thanks.
+This patch seems unrelated to union mounts.  If so, can you get it pushed
+upstream sooner?  Or is this a debugging patch useful only when developing
+union mounts?
 
-Applied to net-2.6 and queued up for -stable
+You also said that it can lead to "ineresting corruptions".  What kind of
+corruptions exactly?  Also, would it make more sense to allow _d_rehash() to
+hash in an unhashed dentry for the first time?
+
+Erez.
+
+PS. apologies for the belated review.  I need a thanksgiving break once a
+month to catch up to emails. :-)
