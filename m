@@ -1,122 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbZK3R2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZK3ReX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752719AbZK3R2u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 12:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZK3R2t
+	id S1752947AbZK3ReX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 12:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZK3ReW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 12:28:49 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:41639 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752062AbZK3R2r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 12:28:47 -0500
-Message-ID: <4B1400B3.60300@oracle.com>
-Date: Mon, 30 Nov 2009 09:28:19 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 30 Nov 2009 12:34:22 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60632 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752318AbZK3ReV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 12:34:21 -0500
+Message-ID: <4B140200.9020503@redhat.com>
+Date: Mon, 30 Nov 2009 15:33:52 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Doug Thompson <dougthompson@xmission.com>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: 2.6.32-rc8: amd64_edac slub error
+To: kevin granade <kevin.granade@gmail.com>
+CC: Andy Walls <awalls@radix.net>, Ray Lee <ray-lk@madrabbit.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+References: <m3r5riy7py.fsf@intrepid.localdomain>	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>	 <1259469121.3125.28.camel@palomino.walls.org>	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>	 <1259515703.3284.11.camel@maxim-laptop>	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>	 <1259537732.5231.11.camel@palomino.walls.org>	 <4B13B2FA.4050600@redhat.com>	 <1259585852.3093.31.camel@palomino.walls.org>	 <4B13C799.4060906@redhat.com> <7004b08e0911300814tb474f96s42ec56ca2e43cf7a@mail.gmail.com>
+In-Reply-To: <7004b08e0911300814tb474f96s42ec56ca2e43cf7a@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B1400D0.0150:SCFMA4539814,ss=1,fgs=0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+kevin granade wrote:
+> On Mon, Nov 30, 2009 at 7:24 AM, Mauro Carvalho Chehab
+> <mchehab@redhat.com> wrote:
+> 
+>> After the boot, a device can open the raw API, disabling any in-kernel
+>> decoding/handling and handle IR directly. Alternatively, an udev rule
+>> can load a different keymap based on some config written on a file.
+> 
+> This idea of the in-kernel decoding being disabled when the raw API is
+> opened worries me.  What guarantees that the following scenario will
+> not happen?
+> 
+> User uses apps which retrieve the decoded IR messages from the kernel.
+> User installs an app which decodes messages via the raw API (not lirc).
+> User's other applications no longer receive IR messages.
+> 
+> I know the assumption has been that "only lirc will use the raw API",
+> but this seems like a poor assumption for an API design to me.
 
-Loading amd64_edac_mod on an amd64 system without the expected hardware support
-causes memory usage error(s).
+All those questions are theoretical, as we haven't a raw API code
+already merged in kernel. So, this is just my understanding on how
+this should work.
 
-Is this already fixed/patched?  Do you need more info?
-Thanks.
+If the user wants to use the raw interface, it is because the in-kernel
+decoding is not appropriate for his usage (at least while such application
+is opened). So, not disabling the evdev output seems senseless.
 
+Btw, this is the same behavior that happens when some application directly 
+opens an evdev interface, instead of letting it to be redirected to stdin.
 
+> A related question, what is an application developer who wishes to
+> decode the raw IR signal (for whatever reason) to do?  Are they
+> *required* to implement full decoding and feed all the messages back
+> to the kernel so they don't break other applications?
 
-# modprobe  amd64_edac_mod
-calling  amd64_edac_init+0x0/0x849 [amd64_edac_mod] @ 22156
-EDAC amd64_edac:  Ver: 3.2.0 Nov 24 2009
-EDAC amd64: ECC is enabled by BIOS.
-=============================================================================
-BUG kmalloc-16: Redzone overwritten
------------------------------------------------------------------------------
+If such application won't do it, the IR will stop working, while the
+application is in use.
 
-INFO: 0xffff880139e25600-0xffff880139e25607. First byte 0x1f instead of 0xcc
-INFO: Slab 0xffffea00044a9818 objects=102 used=38 fp=0xffff880139e255c8 flags=0x400000000000c3
-INFO: Object 0xffff880139e255f0 @offset=1520 fp=0xffff880139e255c8
-
-Bytes b4 0xffff880139e255e0:  18 56 e2 39 01 88 ff ff 5a 5a 5a 5a 5a 5a 5a 5a .V�9..����ZZZZZZZZ
-  Object 0xffff880139e255f0:  1f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
- Redzone 0xffff880139e25600:  1f 00 00 00 00 00 00 00                         ........        
- Padding 0xffff880139e25610:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
-Pid: 22158, comm: work_for_cpu Not tainted 2.6.32-rc8 #2
-Call Trace:
- [<ffffffff81109383>] print_trailer+0x12a/0x133
- [<ffffffff81109836>] check_bytes_and_report+0xa9/0xd0
- [<ffffffffa008ba4c>] ? amd64_init_one_instance+0x220/0x33e [amd64_edac_mod]
- [<ffffffff811098bb>] check_object+0x5e/0x1b6
- [<ffffffff8110a889>] __slab_free+0x13a/0x25c
- [<ffffffff8110ac2b>] kfree+0xd6/0xe8
- [<ffffffffa008ba4c>] amd64_init_one_instance+0x220/0x33e [amd64_edac_mod]
- [<ffffffff81072167>] ? do_work_for_cpu+0x0/0x2b
- [<ffffffff812062e5>] local_pci_probe+0x17/0x1b
- [<ffffffff8107217f>] do_work_for_cpu+0x18/0x2b
- [<ffffffff81072167>] ? do_work_for_cpu+0x0/0x2b
- [<ffffffff810769fb>] kthread+0x6e/0x76
- [<ffffffff81012daa>] child_rip+0xa/0x20
- [<ffffffff8107698d>] ? kthread+0x0/0x76
- [<ffffffff81012da0>] ? child_rip+0x0/0x20
-FIX kmalloc-16: Restoring 0xffff880139e25600-0xffff880139e25607=0xcc
-
-EDAC amd64: NB MCE bank disabled, set MSR 0x0000017b[4] on node 0 to enable.
-EDAC amd64: WARNING: ECC is disabled by BIOS. Module will NOT be loaded.
- Either Enable ECC in the BIOS, or set 'ecc_enable_override'.
- Also, use of the override can cause unknown side effects.
-amd64_edac: probe of 0000:00:18.2 failed with error -22
-EDAC amd64: ECC is enabled by BIOS.
-=============================================================================
-BUG kmalloc-16: Redzone overwritten
------------------------------------------------------------------------------
-
-INFO: 0xffff88027582e060-0xffff88027582e067. First byte 0x1f instead of 0xcc
-INFO: Slab 0xffffea00089b4a10 objects=102 used=2 fp=0xffff88027582e028 flags=0xc00000000000c3
-INFO: Object 0xffff88027582e050 @offset=80 fp=0xffff88027582e028
-
-Bytes b4 0xffff88027582e040:  78 e0 82 75 02 88 ff ff 5a 5a 5a 5a 5a 5a 5a 5a x�.u..����ZZZZZZZZ
-  Object 0xffff88027582e050:  1f 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
- Redzone 0xffff88027582e060:  1f 00 00 00 00 00 00 00                  [root@ca-ostest293 ~]#        ........        
- Padding 0xffff88027582e070:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
-Pid: 22161, comm: work_for_cpu Not tainted 2.6.32-rc8 #2
-Call Trace:
- [<ffffffff81109383>] print_trailer+0x12a/0x133
- [<ffffffff81109836>] check_bytes_and_report+0xa9/0xd0
- [<ffffffffa008ba4c>] ? amd64_init_one_instance+0x220/0x33e [amd64_edac_mod]
- [<ffffffff811098bb>] check_object+0x5e/0x1b6
- [<ffffffff8110a889>] __slab_free+0x13a/0x25c
- [<ffffffff8110ac2b>] kfree+0xd6/0xe8
- [<ffffffffa008ba4c>] amd64_init_one_instance+0x220/0x33e [amd64_edac_mod]
- [<ffffffff81072167>] ? do_work_for_cpu+0x0/0x2b
- [<ffffffff812062e5>] local_pci_probe+0x17/0x1b
- [<ffffffff8107217f>] do_work_for_cpu+0x18/0x2b
- [<ffffffff81072167>] ? do_work_for_cpu+0x0/0x2b
- [<ffffffff810769fb>] kthread+0x6e/0x76
- [<ffffffff81012daa>] child_rip+0xa/0x20
- [<ffffffff8107698d>] ? kthread+0x0/0x76
- [<ffffffff81012da0>] ? child_rip+0x0/0x20
-FIX kmalloc-16: Restoring 0xffff88027582e060-0xffff88027582e067=0xcc
-
-EDAC amd64: NB MCE bank disabled, set MSR 0x0000017b[4] on node 1 to enable.
-EDAC amd64: WARNING: ECC is disabled by BIOS. Module will NOT be loaded.
- Either Enable ECC in the BIOS, or set 'ecc_enable_override'.
- Also, use of the override can cause unknown side effects.
-amd64_edac: probe of 0000:00:19.2 failed with error -22
-initcall amd64_edac_init+0x0/0x849 [amd64_edac_mod] returned 0 after 1381423 usecs
-
--- 
-~Randy
+Cheers,
+Mauro.
