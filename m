@@ -1,119 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbZK3LSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbZK3LTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606AbZK3LSt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZK3LSs
+	id S1753794AbZK3LTc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbZK3LTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:18:48 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:42960 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753368AbZK3LSs (ORCPT
+	Mon, 30 Nov 2009 06:19:31 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:57874 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753012AbZK3LTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:18:48 -0500
-X-Trace: 299053986/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.56.48
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AogBALc4E0tPRTgw/2dsb2JhbAAI1TyEMQQ
-X-IronPort-AV: E=Sophos;i="4.47,312,1257120000"; 
-   d="scan'208";a="299053986"
-Date: Mon, 30 Nov 2009 11:18:51 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 5/9] ksm: share anon page without allocating
-In-Reply-To: <20091130090448.71cf6138.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0911301054230.20054@sister.anvils>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
- <Pine.LNX.4.64.0911241645460.25288@sister.anvils>
- <20091130090448.71cf6138.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 30 Nov 2009 06:19:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=n1pOadee/S1HbZMb/XMBGFW06yTohMVCFJJyoJO0uTGSPNTTuLXVWq4eX9MZLcpMqz
+         gyKw2W8MZxOz9zs/5CjDQx1B3QC+/m+UXr/3XcYLj/exfmcwKFhVMpeH9XBBadYj4jBl
+         4oAGYBVEX5rB2c3rD2uC874A7Q4DrektyE9gQ=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <alpine.LFD.2.00.0911281457560.24119@localhost.localdomain>
+References: <20091125081235.25416.32481.sendpatchset@rxone.opensource.se>
+	 <20091125081255.25416.85126.sendpatchset@rxone.opensource.se>
+	 <alpine.LFD.2.00.0911281457560.24119@localhost.localdomain>
+Date: Mon, 30 Nov 2009 20:19:36 +0900
+Message-ID: <aec7e5c30911300319i115efdb6p215984377cb97f22@mail.gmail.com>
+Subject: Re: [PATCH 02/02] clocksource: Start CMT at clocksource resume
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-sh@vger.kernel.org, johnstul@us.ibm.com, lethal@linux-sh.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, KAMEZAWA Hiroyuki wrote:
-> 
-> Sorry for delayed response.
+Hi Thomas,
 
-No, thank you very much for spending your time on it.
+On Sat, Nov 28, 2009 at 11:00 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 25 Nov 2009, Magnus Damm wrote:
+>
+>> From: Magnus Damm <damm@opensource.se>
+>>
+>> Add code to start the CMT timer on clocksource resume.
+>>
+>> This makes sure the timer is started during sysdev_resume().
+>> Without this patch the clocksource may be read as suspended,
+>> this after sysdev resume but before platform device resume.
+>
+> Hmm, don't you have the same situation on suspend ?
+>
+> platform device suspend stops the clock, but the generic code expects
+> it to be running until sysdev shutdown.
 
-> 
-> On Tue, 24 Nov 2009 16:48:46 +0000 (GMT)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> 
-> > When ksm pages were unswappable, it made no sense to include them in
-> > mem cgroup accounting; but now that they are swappable (although I see
-> > no strict logical connection)
-> I asked that for throwing away too complicated but wast of time things.
+You are correct, the same situation exists on suspend.
 
-I'm sorry, I didn't understand that sentence at all!
+> Another thing is that you now run both, the sysdev and the platform
+> resume. Is that by design or accident ?
 
-> If not on LRU, its own limitation (ksm's page limit) works enough.
+By incorrect design. =)
 
-Yes, I think it made sense the way it was before when unswappable,
-but that once they're swappable and that limitation is removed,
-they do then need to participate in mem cgroup accounting.
+To fix this properly I was thinking of adding a clocksource suspend()
+callback and ditch the platform ops all together. If you don't mind
+then I'll post a patch for that tomorrow!
 
-I _think_ you're agreeing, but I'm not quite sure!
+Thank you!
 
-> 
-> > the principle of least surprise implies
-> > that they should be accounted (with the usual dissatisfaction, that a
-> > shared page is accounted to only one of the cgroups using it).
-> > 
-> > This patch was intended to add mem cgroup accounting where necessary;
-> > but turned inside out, it now avoids allocating a ksm page, instead
-> > upgrading an anon page to ksm - which brings its existing mem cgroup
-> > accounting with it.  Thus mem cgroups don't appear in the patch at all.
-> > 
-> ok. then, what I should see is patch 6.
-
-Well, that doesn't have much in it either.  It should all be
-happening naturally, from using the page that's already accounted.
-
-> > @@ -864,15 +865,24 @@ static int try_to_merge_one_page(struct
-...
-> >  
-> > -	if ((vma->vm_flags & VM_LOCKED) && !err) {
-> > +	if ((vma->vm_flags & VM_LOCKED) && kpage && !err) {
-> >  		munlock_vma_page(page);
-> >  		if (!PageMlocked(kpage)) {
-> >  			unlock_page(page);
-> > -			lru_add_drain();
-> 
-> Is this related to memcg ?
-> 
-> >  			lock_page(kpage);
-> >  			mlock_vma_page(kpage);
-
-Is the removal of lru_add_drain() related to memcg?  No, or only to
-the extent that reusing the original anon page is related to memcg.
-
-I put lru_add_drain() in there before, because (for one of the calls
-to try_to_merge_one_page) the kpage had just been allocated an instant
-before, with lru_cache_add_lru putting it into the per-cpu array, so
-in that case mlock_vma_page(kpage) would need an lru_add_drain() to
-find it on the LRU (of course, we might be preempted to a different
-cpu in between, and lru_add_drain not be enough: but I think we've
-all come to the conclusion that lru_add_drain_all should be avoided
-unless there's a very strong reason for it).
-
-But with this patch we're reusing the existing anon page as ksm page,
-and we know that it's been in place for at least one circuit of ksmd
-(ignoring coincidences like the jhash of the page happens to be 0),
-so we've every reason to believe that it will already be on its LRU:
-no need for lru_add_drain().
-
-Hugh
+/ magnus
