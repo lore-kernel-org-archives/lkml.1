@@ -1,57 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbZK3Oku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbZK3OkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866AbZK3Oku (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 09:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZK3Okt
+	id S1752668AbZK3OkQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 09:40:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZK3OkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 09:40:49 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45533 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbZK3Oks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 09:40:48 -0500
-Date: Mon, 30 Nov 2009 14:39:56 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       John Stultz <johnstul@us.ibm.com>, Nicolas Pitre <nico@marvell.com>,
-       Jamie Lokier <jamie@shareable.org>, LKML <linux-kernel@vger.kernel.org>,
-       Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       linux-arm-kernel@lists.infradead.org,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
-	IRQF_SHARED|IRQF_DISABLED)
-Message-ID: <20091130143956.GA8227@n2100.arm.linux.org.uk>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain> <20091130143703.GA7028@n2100.arm.linux.org.uk>
+	Mon, 30 Nov 2009 09:40:16 -0500
+Received: from cantor.suse.de ([195.135.220.2]:48519 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752230AbZK3OkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 09:40:14 -0500
+Message-ID: <4B13D951.8090907@suse.cz>
+Date: Mon, 30 Nov 2009 15:40:17 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.3 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091130143703.GA7028@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: nir.tzachar@gmail.com
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, zippel@linux-m68k.org, andi@firstfloor.org,
+       randy.dunlap@oracle.com, elendil@planet.nl, bn@niasdigital.com
+Subject: Re: [PATCH] nconfig v7
+References: <1257602859-32339-1-git-send-email-nir.tzachar@gmail.com> <1259144923-25362-1-git-send-email-nir.tzachar@gmail.com>
+In-Reply-To: <1259144923-25362-1-git-send-email-nir.tzachar@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 02:37:03PM +0000, Russell King - ARM Linux wrote:
-> Now, at the risk of covering old ground, how about we have two separate
-> irqaction lists, one for handlers to be called with irqs disabled and
-> one for handlers with irqs enabled.  We run the irqs-disabled list
-> first, naturally with irqs disabled.  If, at the end of that run (or
-> maybe after each handler), IRQs have ended being enabled, print some
-> diagnostics.  (We're going to need something like this to ensure that
-> drivers interrupt handlers don't enable IRQs themselves.)  Then enable
-> IRQs and run the irqs-enabled chain.
+On 25.11.2009 11:28, nir.tzachar@gmail.com wrote:
+> Hello.
+> 
+> Attached bellow is version 7 of nconfig, an ncurses based replacement for
+> menuconfig. After a thorough overhaul, addressing all concerns raised in the
+> past by users on these lists, I would be happy if this version is favorably 
+> considered for inclusion. 
+> 
+> Major changes since version 6:
+> 
+> 1) un-selectable menu items have 'XXX' before them, to indicate the fact.
+> 2) there are three separate help menus: main help (bound to F1), symbol help
+>    (bound to F2 and 'h') and short instructions (bound to F3).
 
-Oh, and the other interesting thing to do may be to have a way of
-measuring how much time irq handlers run for, so that handlers taking
-an excessive time (more than 0.5ms or so - thinking about the 1000Hz
-timer rate found on some arches) can be targetted.
+Hi Nir,
+
+I tried it a few times, it's nice :). I get a few warnings about missing
+prototypes when compiling it:
+  HOSTCC  scripts/kconfig/nconf.gui.o
+scripts/kconfig/nconf.gui.c:23: warning: no previous prototype for
+‘set_normal_colors’
+scripts/kconfig/nconf.gui.c:68: warning: no previous prototype for
+‘normal_color_theme’
+scripts/kconfig/nconf.gui.c:100: warning: no previous prototype for
+‘no_colors_theme’
+  HOSTCC  scripts/kconfig/nconf.o
+scripts/kconfig/nconf.c:455: warning: no previous prototype for
+‘process_special_keys’
+scripts/kconfig/nconf.c:487: warning: no previous prototype for
+‘get_next_hot’
+scripts/kconfig/nconf.c:506: warning: no previous prototype for ‘canbhot’
+scripts/kconfig/nconf.c:514: warning: no previous prototype for ‘is_hot’
+scripts/kconfig/nconf.c:522: warning: no previous prototype for ‘make_hot’
+scripts/kconfig/nconf.c:582: warning: no previous prototype for ‘item_make’
+scripts/kconfig/nconf.c:626: warning: no previous prototype for
+‘item_add_str’
+scripts/kconfig/nconf.c:656: warning: no previous prototype for ‘item_tag’
+scripts/kconfig/nconf.c:668: warning: no previous prototype for
+‘curses_item_index’
+scripts/kconfig/nconf.c:673: warning: no previous prototype for ‘item_data’
+scripts/kconfig/nconf.c:684: warning: no previous prototype for
+‘item_is_tag’
+scripts/kconfig/nconf.c:691: warning: no previous prototype for
+‘set_config_filename’
+
+These probably can be static. Oh, and when I suspend the program with
+Ctrl-Z, resume with 'fg' and hit an arrow key, the escape sequence is
+interpreted as a genuine ESC and it either jumps one menu level above or
+wants to exit the program. It happens to me both in xterm and
+gnome-terminal, ncurses version is 5.6. Can you see it as well or is
+there something broken on my side?
+
+Other than that, I found no issues so far (except for the not really
+readable shortcut nOtation, but you say it's hard to fix, so let's
+forget about it for now). I'll use it a bit more and have a look at the
+code. For now, it is in git://repo.or.cz/linux-kbuild.git#for-review as is.
+
+Michal
