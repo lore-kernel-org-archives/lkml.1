@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZK3RBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZK3RGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbZK3RBH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 12:01:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZK3RBF
+	id S1752829AbZK3RGN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 12:06:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZK3RGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 12:01:05 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46490 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbZK3RBD (ORCPT
+	Mon, 30 Nov 2009 12:06:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51856 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752477AbZK3RGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 12:01:03 -0500
-Message-ID: <4B13FA4E.1070901@zytor.com>
-Date: Mon, 30 Nov 2009 09:01:02 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 30 Nov 2009 12:06:11 -0500
+Date: Mon, 30 Nov 2009 09:05:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] "fair" rw spinlocks
+In-Reply-To: <20091130163923.GC6762@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.00.0911300852410.2872@localhost.localdomain>
+References: <20091123145409.GA29627@wotan.suse.de> <alpine.LFD.2.00.0911280927180.2561@localhost> <20091130075557.GI17484@wotan.suse.de> <alpine.LFD.2.00.0911300706420.2872@localhost.localdomain> <20091130154031.GE21639@wotan.suse.de>
+ <alpine.LFD.2.00.0911300754420.2872@localhost.localdomain> <20091130163923.GC6762@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ulrich Drepper <drepper@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: using kernel headers in libc headers
-References: <a36005b50911300837s6fe4da73s973ccbe7401b9989@mail.gmail.com>
-In-Reply-To: <a36005b50911300837s6fe4da73s973ccbe7401b9989@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/30/2009 08:37 AM, Ulrich Drepper wrote:
-> 
-> It's likely in everybody's interest to get the kernel headers used.
-> But for this mode #ifdefs are needed.  I'm willing to do the work.
-> Easy enough to do when I'm going through the headers one-by-one to
-> enable them in glibc.  But I don't want to start this work unless it's
-> going to be accepted.  The symbols would be something like
-> 
->   __USE_MISC
-> 
-> or
-> 
->   __USE_GNU
-> 
-> These are not macros which the user must define.  The user sets macros
-> like _GNU_SOURCE etc which then set all the appropriate __USE_* macros
-> (see "info libc 'Feature Test Macros'" on machines with glibc
-> installed).  These names are somewhat glibc-specific but other libcs
-> can (or already have) adapt them.
-> 
-> So, what do you say?
 
-Speaking for myself, I think #ifdefs utterly suck for this purpose.
-First of all, because they tie back a glibc internal (the naming of
-feature test macros) with the kernel headers.  Second of all, because it
-really makes it much harder to get things right.  Third, because it
-conflicts with the usage model in the kernel itself in a way that is
-likely to cause breakage.
 
-A better way is to factor out subsets; if <linux/sched.h> has too many
-things, we can break out the POSIX parts into <linux/sched_posix.h> or
-(certainly better if we have more than one of these)
-<linux/sched/posix.h> which can also be included by <linux/sched.h>.
+On Mon, 30 Nov 2009, Paul E. McKenney wrote:
+> 
+> My suggestion would be to put the nesting counter in the task structure
+> to avoid this problem.
 
-glibc can then choose to include or not include <linux/sched/posix.h>
-depending on its configuration.  The configuration macros remain a glibc
-internal detail.
+It still doesn't end up being all that cheap. Now you'd need to disable 
+preemption in order to fix the race between the local counter and the real 
+lock.
 
-	-hpa
+That should be cheaper than cli/sti, but the downside is that now you need 
+that task struct pointer (both for the preemption disable and the 
+counter), so now you're adding some register pressure too. Of course, 
+maybe you don't even want to inline it anyway, in which case that doesn't 
+matter.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+One advantage with your suggestion of using preemption is that (unlike irq 
+disables) you can keep the preemt counter over the whole lock, so you 
+don't need to re-do the preempt disable/enable in both read-lock and 
+read-unlock.
 
+So you might end up with something like (UNTESTED!):
+
+	static void tasklist_write_lock(void)
+	{
+		spin_lock_irq(&tasklist_lock);
+	}
+
+	static void tasklist_write_unlock(void)
+	{
+		spin_unlock_irq(&tasklist_lock);
+	}
+
+	static void tasklist_read_lock(void)
+	{
+		preempt_disable();
+		if (!current->tasklist_count++)
+			spin_lock(&tasklist_lock);
+	}
+
+	static void tasklist_read_unlock(void)
+	{
+		if (!--current->tasklist_count)
+			spin_unlock(&tasklist_lock);
+		preempt_enable();
+	}
+
+And the upside, of course, is that a spin_unlock() is cheaper than a 
+read_unlock() (no serializing atomic op), so while there is overhead, 
+there are also some advantages.. Maybe that atomic op advantage is enough 
+to offset the extra instructions.
+
+And maybe we could use 'raw_spin_[un]lock()' in the above read-[un]lock 
+sequences, since tasklist_lock is pretty special, and since we do the 
+preempt disable by hand (no need to do it again in the spinlock code). 
+That looks like it might cut down the overhead of all of the above to 
+almost nothing for what is probably the common case today (ie preemption 
+enabled).
+
+			Linus
