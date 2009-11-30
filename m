@@ -1,63 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbZK3MwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZK3M7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbZK3MwW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 07:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZK3MwV
+	id S1752929AbZK3M7Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 07:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZK3M7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 07:52:21 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55834 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752912AbZK3MwU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 07:52:20 -0500
-Date: Mon, 30 Nov 2009 12:54:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Ben Hutchings <ben@decadent.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, 504391@bugs.debian.org,
-       Wouter van Heyst <larstiq@larstiq.dyndns.org>
-Subject: Re: [PATCH] mmc: add module parameter to set whether cards are
- assumed removable
-Message-ID: <20091130125405.541a6a01@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091130133949.794fef00@mjolnir.ossman.eu>
-References: <1257914676.2237.57.camel@localhost>
-	<20091116122329.847916b6.akpm@linux-foundation.org>
-	<1258410709.2792.9.camel@localhost>
-	<4B02565C.1030406@s5r6.in-berlin.de>
-	<20091130133949.794fef00@mjolnir.ossman.eu>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Mon, 30 Nov 2009 07:59:24 -0500
+Received: from mail1.radix.net ([207.192.128.31]:56832 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752106AbZK3M7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 07:59:23 -0500
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+From: Andy Walls <awalls@radix.net>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
+       superm1@ubuntu.com
+In-Reply-To: <4B13B2FA.4050600@redhat.com>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	 <m3aay6y2m1.fsf@intrepid.localdomain>
+	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+	 <1259469121.3125.28.camel@palomino.walls.org>
+	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
+	 <1259515703.3284.11.camel@maxim-laptop>
+	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
+	 <1259537732.5231.11.camel@palomino.walls.org> <4B13B2FA.4050600@redhat.com>
+Content-Type: text/plain
+Date: Mon, 30 Nov 2009 07:57:32 -0500
+Message-Id: <1259585852.3093.31.camel@palomino.walls.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm afraid that's insufficient. What it would need to do is to is
-> flush everything (to make sure what's on disk matches what's in
-> memory), but also read back the filesystem on resume to verify that
-> nothing else modified it (i.e. making sure what's on disk still matches
-> what's in memory).
+On Mon, 2009-11-30 at 09:56 -0200, Mauro Carvalho Chehab wrote:
+> Andy Walls wrote:
+> > On Sun, 2009-11-29 at 09:49 -0800, Ray Lee wrote:
+> >> On Sun, Nov 29, 2009 at 9:28 AM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> >>> This has zero advantages besides good developer feeling that "My system
+> >>> has one less daemon..."
+> >> Surely it's clear that having an unnecessary daemon is introducing
+> >> another point of failure?
+> > 
+> > A failure in a userspace IR daemon is worst case loss of IR
+> > functionality.
+> > 
+> > A failure in kernel space can oops or panic the machine.
+> 
+> If IR is the only interface between the user and the system (like in a TV
+> or a Set Top Box), both will give you the same practical result: the system
+> will be broken, if you got a crash at the IR driver.
 
-For most file systems it is sufficient to check the superblock related
-information. So we'd need an fs->ops->validate_media() or somesuch but it
-wouldn't be that horrific or need to do much I/O in most cases.
+Yes, true.  I had forgotten about the embedded space.
 
-You could defeat that by being really stupid, but the purpose of the
-check isn't a stupidity filter but to stop accidents happening in normal
-use.
+Nonetheless I'd still rather debug a problem with a dead process in
+userspace than an oops or panic (not that an end user cares) and avoid
+the risk of filesystem corruption.
 
-> Another way of putting it is that the kernel needs to umount/mount
-> around suspend in a way that's transparent to users of the filesystem.
+> Userspace is much more flexible.
+> 
+> Why? The flexibility about the same on both kernelspace and userspace,
+> except for the boot time.
 
-No. The kernel needs to push stuff to media on suspend (which is good
-manners anyway), and validate on resume. if the validate fails you mark
-the media as changed and the block layer will already see to it that
-everything gets aborted as it already does with a truely removable device.
+I suppose my best answer to that is question back to you: Why does udev
+run in userspace versus a kernel thread?
 
-In fact if you did this by media serial numbers and idents you don't even
-need the fs hook, although it would certainly be safer that way.
 
-Alan
+My personal thoughts on why user space is more flexible:
+
+1. You have all of *NIX available to you to use as tools to achieve your
+requirements.
+
+2. You are not constrained to use C.
+
+3. You can link in libraries with functions that are not available in
+the kernel.  (udev has libudev IIRC to handle complexities)
+
+4. Reading a configuration file or other file from the filesystem is
+trivial - file access from usespace is easy.
+
+5. You don't have to be concerned about the running context (am I
+allowed to sleep here or not?).
+
+
+
+
+
+
+> A kernelspace input device driver can start working since boot time.
+> On the other hand, an userspace device driver will be available only 
+> after mounting the filesystems and starting the deamons 
+> (e. g. after running inittab). 
+> 
+> So, you cannot catch a key that would be affecting the boot 
+> (for example to ask the kernel to run a different runlevel or entering
+> on some administrative mode).
+
+Right.  That's another requirement that makes sense, if we're talking
+about systems that don't have any other keyboard handy to the user.
+
+So are we optimizing for the embedded/STB and HTPC with no keyboard use
+case, or the desktop or HTPC with a keyboard for maintencance?
+
+
+Regards,
+Andy
+
+
