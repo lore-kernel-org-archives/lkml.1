@@ -1,149 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZK3Nnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbZK3NuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbZK3Nnc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 08:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZK3Nnb
+	id S1753421AbZK3NuO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 08:50:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbZK3NuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 08:43:31 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:55191 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752943AbZK3Nn3 (ORCPT
+	Mon, 30 Nov 2009 08:50:14 -0500
+Received: from mail.codesourcery.com ([38.113.113.100]:60604 "EHLO
+	mail.codesourcery.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbZK3NuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 08:43:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=AY6qYaptcE5WQuCS69R6uq9O2zCoZz9y2rA5PFLioDR4IiQdrpVn78B18sfSsXgr2n
-         yyYY7IEuaOj7IvLVn3tIPYfzZavkmK3CxhcV2PA7gwTcuhqVHR9E5IQuuztZM3WqebJC
-         8Gw9fxkJV8MA2xMAQMQz1bMDJNjj9N3Z8J2qM=
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Andy Walls <awalls@radix.net>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jon Smirl <jonsmirl@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
-       superm1@ubuntu.com
-In-Reply-To: <1259585852.3093.31.camel@palomino.walls.org>
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
-	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
-	 <m3aay6y2m1.fsf@intrepid.localdomain>
-	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
-	 <1259469121.3125.28.camel@palomino.walls.org>
-	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
-	 <1259515703.3284.11.camel@maxim-laptop>
-	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
-	 <1259537732.5231.11.camel@palomino.walls.org> <4B13B2FA.4050600@redhat.com>
-	 <1259585852.3093.31.camel@palomino.walls.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 30 Nov 2009 15:43:28 +0200
-Message-ID: <1259588608.13049.16.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 30 Nov 2009 08:50:13 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Nov 2009 08:50:13 EST
+Message-ID: <4B13CC00.9080607@codesourcery.com>
+Date: Mon, 30 Nov 2009 16:43:28 +0300
+From: Maxim Kuvyrkov <maxim@codesourcery.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: M68k tree updates
+References: <alpine.DEB.2.00.0911252213340.31650@ayla.of.borg>
+In-Reply-To: <alpine.DEB.2.00.0911252213340.31650@ayla.of.borg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 07:57 -0500, Andy Walls wrote: 
-> On Mon, 2009-11-30 at 09:56 -0200, Mauro Carvalho Chehab wrote:
-> > Andy Walls wrote:
-> > > On Sun, 2009-11-29 at 09:49 -0800, Ray Lee wrote:
-> > >> On Sun, Nov 29, 2009 at 9:28 AM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> > >>> This has zero advantages besides good developer feeling that "My system
-> > >>> has one less daemon..."
-> > >> Surely it's clear that having an unnecessary daemon is introducing
-> > >> another point of failure?
-> > > 
-> > > A failure in a userspace IR daemon is worst case loss of IR
-> > > functionality.
-> > > 
-> > > A failure in kernel space can oops or panic the machine.
-> > 
-> > If IR is the only interface between the user and the system (like in a TV
-> > or a Set Top Box), both will give you the same practical result: the system
-> > will be broken, if you got a crash at the IR driver.
-> 
-> Yes, true.  I had forgotten about the embedded space.
-> 
-> Nonetheless I'd still rather debug a problem with a dead process in
-> userspace than an oops or panic (not that an end user cares) and avoid
-> the risk of filesystem corruption.
-> 
-> > Userspace is much more flexible.
-> > 
-> > Why? The flexibility about the same on both kernelspace and userspace,
-> > except for the boot time.
-> 
-> I suppose my best answer to that is question back to you: Why does udev
-> run in userspace versus a kernel thread?
-> 
-> 
-> My personal thoughts on why user space is more flexible:
-> 
-> 1. You have all of *NIX available to you to use as tools to achieve your
-> requirements.
-> 
-> 2. You are not constrained to use C.
-> 
-> 3. You can link in libraries with functions that are not available in
-> the kernel.  (udev has libudev IIRC to handle complexities)
-> 
-> 4. Reading a configuration file or other file from the filesystem is
-> trivial - file access from usespace is easy.
-> 
-> 5. You don't have to be concerned about the running context (am I
-> allowed to sleep here or not?).
+Geert Uytterhoeven wrote:
+> It took me a while, but finally I managed to update
+> http://git.kernel.org/?p=linux/kernel/git/geert/linux-m68k.git again.
+...
+> If anything is missing, please tell me. Thx!
 
+How about the NPTL patch (0001-Add-NPTL-support-for-m68k.patch,
+http://marc.info/?l=linux-m68k&m=125447760017098&w=2)?
 
-6. You can modify userspace driver easily to cope with all weird setups.
-Like you know that there are remotes that send whole packet of data that
-consist of many numbers that are also displayed on the LCD of the
-remote.
-Otherwise you will have to go through same fight for every minor thing
-you like to add to kernel...
+Also, this trivial fix (0004-Fix-m68k-s-asm-swab.h-for-ColdFire.patch, 
+http://marc.info/?l=linux-m68k&m=125447494213740&w=2) can go in.
 
+Thanks!
 
-7. You don't have an ABI constraints, your userspace program can read a
-configuration file in any format you wish.
-I for example was thinking about putting all lirc config files into an
-sqllite database, and pulling them out when specific remote is detected.
-
-
-> 
-> 
-> 
-> 
-> 
-> 
-> > A kernelspace input device driver can start working since boot time.
-> > On the other hand, an userspace device driver will be available only 
-> > after mounting the filesystems and starting the deamons 
-> > (e. g. after running inittab). 
-> > 
-> > So, you cannot catch a key that would be affecting the boot 
-> > (for example to ask the kernel to run a different runlevel or entering
-> > on some administrative mode).
-> 
-> Right.  That's another requirement that makes sense, if we're talking
-> about systems that don't have any other keyboard handy to the user.
-> 
-> So are we optimizing for the embedded/STB and HTPC with no keyboard use
-> case, or the desktop or HTPC with a keyboard for maintencance?
-> 
-> 
-> Regards,
-> Andy
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
+-- 
+Maxim Kuvyrkov
+CodeSourcery
+maxim@codesourcery.com
+(650) 331-3385 x724
