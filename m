@@ -1,39 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZK3TDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZK3TID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbZK3TDK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 14:03:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZK3TDK
+	id S1753207AbZK3TID (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 14:08:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZK3TIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 14:03:10 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:51350 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbZK3TDJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 14:03:09 -0500
-Date: Mon, 30 Nov 2009 13:01:45 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Tejun Heo <tj@kernel.org>
-cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [Patch] percpu: remove two suspicious break statements
-In-Reply-To: <4B13A7ED.9010905@kernel.org>
-Message-ID: <alpine.DEB.2.00.0911301258370.18682@router.home>
-References: <20091130091501.4507.28683.sendpatchset@localhost.localdomain> <4B13A7ED.9010905@kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 30 Nov 2009 14:08:01 -0500
+Received: from claw.goop.org ([74.207.240.146]:53039 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752839AbZK3TIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 14:08:00 -0500
+Message-ID: <4B1417FA.3050206@goop.org>
+Date: Mon, 30 Nov 2009 11:07:38 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xen: cleanup for xen_pv_domain()/xen_hvm_domain()
+References: <4B13637E.3040400@cn.fujitsu.com>
+In-Reply-To: <4B13637E.3040400@cn.fujitsu.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, Tejun Heo wrote:
+On 11/29/09 22:17, Xiao Guangrong wrote:
+> Remove unnecessary judgment in xen_pv_domain() and xen_hvm_domain()
+>   
 
-> That actually is correct code.  It's checking whether the first
-> iteration covers the whole thing.  I thought the comment there
+I'd prefer not to change it.  These changes make no difference to the
+generated code, and I see a small semantic difference between "is this a
+Xen domain?" and "what kind of Xen domain is it?", as the latter on
+really makes sense if it is in fact a Xen domain; the fact that
+xen_domain() is also implemented in terms of xen_domain_type is just a
+detail.
 
-A loop statement that never creates a loop? You either execute a goto or a break.
+    J
 
-Some more elaborate documentation is needed.
-
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  arch/x86/include/asm/xen/hypervisor.h |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
+> index d5b7e90..f94bd0a 100644
+> --- a/arch/x86/include/asm/xen/hypervisor.h
+> +++ b/arch/x86/include/asm/xen/hypervisor.h
+> @@ -50,10 +50,8 @@ extern enum xen_domain_type xen_domain_type;
+>  #endif
+>  
+>  #define xen_domain()		(xen_domain_type != XEN_NATIVE)
+> -#define xen_pv_domain()		(xen_domain() &&			\
+> -				 xen_domain_type == XEN_PV_DOMAIN)
+> -#define xen_hvm_domain()	(xen_domain() &&			\
+> -				 xen_domain_type == XEN_HVM_DOMAIN)
+> +#define xen_pv_domain()		(xen_domain_type == XEN_PV_DOMAIN)
+> +#define xen_hvm_domain()	(xen_domain_type == XEN_HVM_DOMAIN)
+>  
+>  #ifdef CONFIG_XEN_DOM0
+>  #include <xen/interface/xen.h>
+>   
 
