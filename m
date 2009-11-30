@@ -1,70 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZK3VZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZK3V1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387AbZK3VZV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZK3VZU
+	id S1753403AbZK3V1G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:27:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZK3V1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:25:20 -0500
-Received: from www.tglx.de ([62.245.132.106]:59003 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbZK3VZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:25:19 -0500
-Date: Mon, 30 Nov 2009 22:23:46 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Brownell <dbrownell@users.sourceforge.net>,
+	Mon, 30 Nov 2009 16:27:05 -0500
+Received: from g6t0187.atlanta.hp.com ([15.193.32.64]:25634 "EHLO
+	g6t0187.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753349AbZK3V1D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 16:27:03 -0500
+Subject: Re: [PATCH 1/9] ksm: fix mlockfreed to munlocked
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrea Gallo <andrea.gallo@stericsson.com>,
-       Jamie Lokier <jamie@shareable.org>,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: Get rid of IRQF_DISABLED - (was [PATCH] genirq: warn about
- IRQF_SHARED|IRQF_DISABLED)
-In-Reply-To: <20091130195129.GA19172@pengutronix.de>
-Message-ID: <alpine.LFD.2.00.0911302216030.24119@localhost.localdomain>
-References: <1259356206-14843-1-git-send-email-u.kleine-koenig@pengutronix.de> <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0911301225110.24119@localhost.localdomain> <20091130195129.GA19172@pengutronix.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1107247360-1259616228=:24119"
+       Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0911301200060.24660@sister.anvils>
+References: <20091126162011.GG13095@csn.ul.ie>
+	 <Pine.LNX.4.64.0911271214040.4167@sister.anvils>
+	 <20091130143915.5BD1.A69D9226@jp.fujitsu.com>
+	 <Pine.LNX.4.64.0911301200060.24660@sister.anvils>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Mon, 30 Nov 2009 16:27:01 -0500
+Message-Id: <1259616421.4663.205.camel@useless.americas.hpqcorp.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323328-1107247360-1259616228=:24119
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Mon, 30 Nov 2009, Uwe Kleine-König wrote:
-> I think there is
+On Mon, 2009-11-30 at 12:26 +0000, Hugh Dickins wrote:
+> On Mon, 30 Nov 2009, KOSAKI Motohiro wrote:
+> > > 
+> > > But please clarify: that patch was for mmotm and hopefully 2.6.33,
+> > > but the vmstat issue (minus warning message) is there in 2.6.32-rc.
+> > > Should I
+> > > 
+> > > (a) forget it for 2.6.32
+> > > (b) rush Linus a patch for 2.6.32 final
+> > > (c) send a patch for 2.6.32.stable later on
+> > 
+> > I personally prefer (3). though I don't know ksm so detail.
 > 
->  3) you can only benefit from decent priority hardware if irqs are
->     processed while irqs are enabled.
+> Thanks, I think that would be my preference by now too.
 > 
-> I think 
+> > > There's a remark in munlock_vma_page(), apropos a different issue,
+> > > 			/*
+> > > 			 * We lost the race.  let try_to_unmap() deal
+> > > 			 * with it.  At least we get the page state and
+> > > 			 * mlock stats right.  However, page is still on
+> > > 			 * the noreclaim list.  We'll fix that up when
+> > > 			 * the page is eventually freed or we scan the
+> > > 			 * noreclaim list.
+> > > 			 */
+> > > which implies that sometimes we scan the unevictable list and resolve
+> > > such cases.  But I wonder if that's nowadays the case?
+> > 
+> > We don't scan unevictable list at all. munlock_vma_page() logic is.
+> > 
+> >   1) clear PG_mlock always anyway
+> >   2) isolate page
+> >   3) scan related vma and remark PG_mlock if necessary
+> > 
+> > So, as far as I understand, the above comment describe the case when (2) is
+> > failed. it mean another task already isolated the page. it makes the task
+> > putback the page to evictable list and vmscan's try_to_unmap() move 
+> > the page to unevictable list again.
 > 
-> 	git grep handle_fasteoi_irq
+> That is the case it's addressing, yes; but both references to
+> "the noreclaim list" are untrue and misleading (now: they may well
+> have been accurate when the comment went in).  I'd like to correct
+> it, but cannot do so without spending the time to make sure that
+> what I'm saying instead isn't equally misleading...
 > 
-> gives an overview here: some hits in arch/powerpc, arch/sparc and
-> arch/x86/kernel/apic/io_apic.c.  (There is handle_prio_irq in
+> Even "We lost the race" is worrying: which race? there might be several.
 
-No. That handler is not an indicator for prio hardware actively used
-in the sense of allowing higher prio interrupts to interrupt a current
-running lower priority one. It can be used when the irq controller
-does not fire the interrupt again before the eoi acknowledge has been
-done.
+I agree that this is likely a stale comment.  At the time I wrote it,
+putback_lru_page() didn't recheck whether the page was reclaimable [now
+"evictable"].  isolate_lru_page() preserves the lru state flags Active
+and Unevictable; at that time putback' just put the page back to the
+list indicated.  
 
-Thanks,
+"The race" referred to the "isolation race" discussed in the comment
+block on munlock_vma_page().
 
-	tglx
---8323328-1107247360-1259616228=:24119--
+Had we been munlock()ing or munmap()ing the last VMA holding the page
+locked, we should take it off the unevictable list.  But, we need to
+isolate the page to move it between lists or even to call
+try_to_unlock() to check whether there are other vmas holding the page
+mlocked.  If we were unable to isolate the page in munlock_vma_page()
+and it were "putback" by whatever was holding it [page migration
+maybe?], it would go back onto the unevictable list where it would be
+stranded. 
+
+Now that we recheck the page state in putback_lru_page(), this shouldn't
+be an issue.  We've already cleared the Mlock page flag, so that
+condition won't force it onto the unevictable list.
+
+Even the part about try_to_unmap() dealing with it is stale.  Now,
+vmscan detects VM_LOCKED pages in page_referenced() before it gets to
+try_to_unmap().  The function comment block needs updating as well.  If
+no one beats me to it, I'll post a cleanup patch for consideration
+shortly.
+
+Lee
+
+
+> 
+> Hugh
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
