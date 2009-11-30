@@ -1,43 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbZK3LDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbZK3LEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753109AbZK3LDe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbZK3LDe
+	id S1753395AbZK3LEe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZK3LEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:03:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63896 "EHLO mx1.redhat.com"
+	Mon, 30 Nov 2009 06:04:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47288 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752375AbZK3LDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:03:33 -0500
-Message-ID: <4B13A5FC.10605@redhat.com>
-Date: Mon, 30 Nov 2009 13:01:16 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	id S1752274AbZK3LEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 06:04:33 -0500
+Message-ID: <4B13A654.8030306@kernel.org>
+Date: Mon, 30 Nov 2009 20:02:44 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Gleb Natapov <gleb@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, kvm@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, riel@redhat.com
-Subject: Re: [PATCH v2 10/12] Maintain preemptability count even for !CONFIG_PREEMPT
- kernels
-References: <1258985167-29178-1-git-send-email-gleb@redhat.com>	 <1258985167-29178-11-git-send-email-gleb@redhat.com>	 <1258990455.4531.594.camel@laptop> <20091123155851.GU2999@redhat.com>	 <alpine.DEB.2.00.0911231128190.785@router.home>	 <20091124071250.GC2999@redhat.com>	 <alpine.DEB.2.00.0911240906360.14045@router.home>	 <20091130105612.GF30150@redhat.com>  <20091130105812.GG30150@redhat.com> <1259578793.20516.130.camel@laptop>
-In-Reply-To: <1259578793.20516.130.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+CC: Avi Kivity <avi@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: [PATCH tip/sched/urgent] sched: revert 498657a478c60be092208422fefa9c7b248729c2
+References: <200911250111.nAP1BFg5030254@imap1.linux-foundation.org>  <4B0FEA3E.5050108@gmail.com> <1259335036.6483.440.camel@laptop> <alpine.LFD.2.00.0911271730330.24119@localhost.localdomain> <4B1113C0.30505@redhat.com> <4B138950.9040905@kernel.org> <alpine.LFD.2.00.0911301055000.24119@localhost.localdomain> <4B13A24E.1080100@kernel.org>
+In-Reply-To: <4B13A24E.1080100@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/30/2009 12:59 PM, Peter Zijlstra wrote:
->> Forgot to tell. The results are average between 5 different runs.
->>      
-> Would be good to also report the variance over those 5 runs, allows us
-> to see if the difference is within the noise.
->    
+498657a478c60be092208422fefa9c7b248729c2 incorrectly assumed that
+preempt wasn't disabled around context_switch() and thus was fixing
+imaginary problem.  It also broke kvm because it depended on
+->sched_in() to be called with irq enabled so that it can do smp calls
+from there.
 
-That's the stddev column.
+Revert the incorrect commit and add comment describing different
+contexts under with the two callbacks are invoked.
 
--- 
-error compiling committee.c: too many arguments to function
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Avi Kivity <avi@redhat.com>
+---
+Again, my apologies for the unnecessary fuss.  I for some reason was
+thinking schedule_tail() is always called after context_switch() and
+the ifdefed preemption enable there led me to think that at that point
+preemption was enabled once lock switch is over.
 
+Thank you.
+
+ include/linux/preempt.h |    4 ++++
+ kernel/sched.c          |    2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/preempt.h b/include/linux/preempt.h
+index 72b1a10..736892c 100644
+--- a/include/linux/preempt.h
++++ b/include/linux/preempt.h
+@@ -105,6 +105,10 @@ struct preempt_notifier;
+  * @sched_out: we've just been preempted
+  *    notifier: struct preempt_notifier for the task being preempted
+  *    next: the task that's kicking us out
++ *
++ * Please note that sched_in and out are called under different
++ * contexts.  sched_in is called with rq lock held and irq disabled
++ * while sched_out is called without rq lock and irq enabled.
+  */
+ struct preempt_ops {
+ 	void (*sched_in)(struct preempt_notifier *notifier, int cpu);
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3c91f11..e36c868 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2758,9 +2758,9 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	prev_state = prev->state;
+ 	finish_arch_switch(prev);
+ 	perf_event_task_sched_in(current, cpu_of(rq));
+-	fire_sched_in_preempt_notifiers(current);
+ 	finish_lock_switch(rq, prev);
+ 
++	fire_sched_in_preempt_notifiers(current);
+ 	if (mm)
+ 		mmdrop(mm);
+ 	if (unlikely(prev_state == TASK_DEAD)) {
