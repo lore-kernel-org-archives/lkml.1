@@ -1,99 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbZK3AQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbZK3FQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752732AbZK3AQF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Nov 2009 19:16:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZK3AQF
+	id S1751783AbZK3FQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 00:16:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbZK3FQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Nov 2009 19:16:05 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58494 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbZK3AQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Nov 2009 19:16:04 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 30 Nov 2009 09:13:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Chris Wright <chrisw@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 6/9] ksm: mem cgroup charge swapin copy
-Message-Id: <20091130091316.b804a75c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0911241648520.25288@sister.anvils>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
-	<Pine.LNX.4.64.0911241648520.25288@sister.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Nov 2009 00:16:58 -0500
+Received: from ozlabs.org ([203.10.76.45]:52919 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751077AbZK3FQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 00:16:57 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: percpu tree build warning
+Date: Mon, 30 Nov 2009 11:01:59 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
+Cc: Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Fr??d??ric Weisbecker" <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20091125214219.f37935e8.sfr@canb.auug.org.au> <200911282021.50315.rusty@rustcorp.com.au> <20091129064019.GA19916@elte.hu>
+In-Reply-To: <20091129064019.GA19916@elte.hu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200911301101.59416.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Nov 2009 16:51:13 +0000 (GMT)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-
-> But ksm swapping does require one small change in mem cgroup handling.
-> When do_swap_page()'s call to ksm_might_need_to_copy() does indeed
-> substitute a duplicate page to accommodate a different anon_vma (or a
-> different index), that page escaped mem cgroup accounting, because of
-> the !PageSwapCache check in mem_cgroup_try_charge_swapin().
+On Sun, 29 Nov 2009 05:10:19 pm Ingo Molnar wrote:
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > [...] Again, I'm explaining what you should already know before 
+> > sending email about this stuff.
+> > [...]
+> > Stupidest debate ever.
 > 
-> That was returning success without charging, on the assumption that
-> pte_same() would fail after, which is not the case here.  Originally I
-> proposed that success, so that an unshrinkable mem cgroup at its limit
-> would not fail unnecessarily; but that's a minor point, and there are
-> plenty of other places where we may fail an overallocation which might
-> later prove unnecessary.  So just go ahead and do what all the other
-> exceptions do: proceed to charge current mm.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> What i am making is a somewhat subtle technical argument and making any 
+> progress on it needs at least a minimal form of a working debate. I do 
+> not claim i am right, but still you are dismissing my arguments in a 
+> rather nasty way.
 
-Ok. Maybe commit_charge will work enough. (I hope so.)
+You're right, I was overly abrupt.  Apologies.
 
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+You have a point: the compile-time restrictions on per-cpu misuse was nice.  I know, I wrote it :)  But as we start to pass more per-cpu pointers around, it breaks down.  So the new sparse annotations are a better fit, and cover more.
 
-BTW, I'm happy if you adds "How to test" documenation to
-Documentation/vm/ksm.txt or to share some test programs.
+The separate namespace was an unintended side-effect, and not one I'm fond
+of.  Unfortunately it became more attractive now static-scope per-cpu vars
+are banned for some platforms.  But having two names meaning different things
+is bad for tags, grep and casual readers (your example is trivial enough that
+we don't care, I agree).
 
-1. Map anonymous pages + madvise(MADV_MERGEABLE)
-2. "echo 1 > /sys/kernel/mm/ksm/run"
+> ... alas, i dont care _that_ much about this and i dont think my 
+> concerns deserved your ad hominem attacks so i see no point in further 
+> participating in this thread.
 
-is enough ?
+I just reviewed what I sent.  I don't think my attacks were ad-hominem.
 
-Thanks,
--Kame
+There are very few people on this list who gracefully accept when they are wrong.  The rest of us try to come grasp at some alternate criticism instead, flailing around attacking minor surrounding issue to save face.[1]
 
-> ---
-> 
->  mm/memcontrol.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> --- ksm5/mm/memcontrol.c	2009-11-14 10:17:02.000000000 +0000
-> +++ ksm6/mm/memcontrol.c	2009-11-22 20:40:37.000000000 +0000
-> @@ -1862,11 +1862,12 @@ int mem_cgroup_try_charge_swapin(struct
->  		goto charge_cur_mm;
->  	/*
->  	 * A racing thread's fault, or swapoff, may have already updated
-> -	 * the pte, and even removed page from swap cache: return success
-> -	 * to go on to do_swap_page()'s pte_same() test, which should fail.
-> +	 * the pte, and even removed page from swap cache: in those cases
-> +	 * do_swap_page()'s pte_same() test will fail; but there's also a
-> +	 * KSM case which does need to charge the page.
->  	 */
->  	if (!PageSwapCache(page))
-> -		return 0;
-> +		goto charge_cur_mm;
->  	mem = try_get_mem_cgroup_from_swapcache(page);
->  	if (!mem)
->  		goto charge_cur_mm;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+This behavior is unbecoming and frankly embarrassing, but at least it usually
+motivates people to review the patches!  And, code being what it is, they find some nit to pick and feel better about their prior mistake.
 
+Unfortunately, this debate *is* stupid because neither of us are really going to do anything about it: ie. it did not cause either of us to review code.  It is also stupid because I know I'm not telling you anything you can't think of yourself.  Finally, it's stupid because it's all been said before in commit messages and in previous posts.
+
+Hope that clarifies,
+Rusty.
+[1] If anyone cared, I'm sure they could find excruciating lkml archive
+    examples of me doing this.
