@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbZK3TeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbZK3TkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244AbZK3TeA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 14:34:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZK3Td7
+	id S1753275AbZK3TkT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 14:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZK3TkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 14:33:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35574 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753004AbZK3Td6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 14:33:58 -0500
-Date: Mon, 30 Nov 2009 19:33:38 GMT
-From: "tip-bot for Helight.Xu" <helight.xu@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, helight.xu@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, helight.xu@gmail.com
-In-Reply-To: <4B139F8F.4000907@gmail.com>
-References: <4B139F8F.4000907@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/cleanups] x86: Fix a section mismatch in arch/x86/kernel/setup.c
-Message-ID: <tip-9eaa192d8988d621217a9e6071cd403fd6010496@git.kernel.org>
-Git-Commit-ID: 9eaa192d8988d621217a9e6071cd403fd6010496
-X-Mailer: tip-git-log-daemon
+	Mon, 30 Nov 2009 14:40:18 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:39873 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752722AbZK3TkR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 14:40:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=WnezsHenDmh+QJVsWGcblSSQLAIrmP6Q7N+cF5nWeCybJjJY+JIskAMBynUz8ktGHt
+         sFKV/cbphP9anA6d7Cu1ycqrij2kMaVVduR5Ww7pdOyoGeccz/u09YyLETOfT/kjBKKo
+         JPFazR4i5bfByk7hfh1/KWfnD7BXALS2+7igA=
+Message-ID: <4B141F8B.4040001@gmail.com>
+Date: Mon, 30 Nov 2009 20:39:55 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: William Allen Simpson <william.allen.simpson@gmail.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: warning: massive change to conditional coding style in net?
+References: <4B13A025.7000103@gmail.com>	<20091130134414.GB7114@ff.dom.local> <20091130135435.3895a437@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091130135435.3895a437@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9eaa192d8988d621217a9e6071cd403fd6010496
-Gitweb:     http://git.kernel.org/tip/9eaa192d8988d621217a9e6071cd403fd6010496
-Author:     Helight.Xu <helight.xu@gmail.com>
-AuthorDate: Mon, 30 Nov 2009 18:33:51 +0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 30 Nov 2009 11:16:49 -0800
+Alan Cox wrote, On 11/30/2009 02:54 PM:
 
-x86: Fix a section mismatch in arch/x86/kernel/setup.c
+>>> Miller (with Perches) changed hundreds (thousands?) of these to
+>>> trailing form.  This results in a number of hilarious examples --
+>>> lines with both leading and trailing, lines with only &&, etc.  A
+>>> small sample for illustration:
+>> Yes, it's even enough to make a grown man laugh....
+> 
+> IMHO for left to right languages dangly bits want to be on the right,
+> because that is where your eyes are when you hit the end of the previous
+> line, so the dangly bit is already in your line of vision and probably
+> even in focus.
 
-copy_edd() should be __init.
-warning msg:
-WARNING: vmlinux.o(.text+0x7759): Section mismatch in reference from the
-function copy_edd() to the variable .init.data:boot_params
-The function copy_edd() references
-the variable __initdata boot_params.
-This is often because copy_edd lacks a __initdata
-annotation or the annotation of boot_params is wrong.
+Of course this is right. Plus "IMHO" "habit is the second nature", so
+riding the same side of the road helps, even if it's the wrong side. ;-)
 
-Signed-off-by: ZhenwenXu <helight.xu@gmail.com>
-LKML-Reference: <4B139F8F.4000907@gmail.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/setup.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Jarek P.
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index e09f0e2..e020b2d 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -247,7 +247,7 @@ EXPORT_SYMBOL(edd);
-  *              from boot_params into a safe place.
-  *
-  */
--static inline void copy_edd(void)
-+static inline void __init copy_edd(void)
- {
-      memcpy(edd.mbr_signature, boot_params.edd_mbr_sig_buffer,
- 	    sizeof(edd.mbr_signature));
-@@ -256,7 +256,7 @@ static inline void copy_edd(void)
-      edd.edd_info_nr = boot_params.eddbuf_entries;
- }
- #else
--static inline void copy_edd(void)
-+static inline void __init copy_edd(void)
- {
- }
- #endif
