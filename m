@@ -1,68 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbZK3LTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751277AbZK3Lkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753794AbZK3LTc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 06:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbZK3LTb
+	id S1751277AbZK3Lkp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 06:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbZK3Lko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 06:19:31 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:57874 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753012AbZK3LTa (ORCPT
+	Mon, 30 Nov 2009 06:40:44 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:59406 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750828AbZK3Lko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 06:19:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=n1pOadee/S1HbZMb/XMBGFW06yTohMVCFJJyoJO0uTGSPNTTuLXVWq4eX9MZLcpMqz
-         gyKw2W8MZxOz9zs/5CjDQx1B3QC+/m+UXr/3XcYLj/exfmcwKFhVMpeH9XBBadYj4jBl
-         4oAGYBVEX5rB2c3rD2uC874A7Q4DrektyE9gQ=
+	Mon, 30 Nov 2009 06:40:44 -0500
+X-Trace: 295733893/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.56.48
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AogBAFc+E0tPRTgw/2dsb2JhbAAI1UeEMQSDIA
+X-IronPort-AV: E=Sophos;i="4.47,314,1257120000"; 
+   d="scan'208";a="295733893"
+Date: Mon, 30 Nov 2009 11:40:48 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Chris Wright <chrisw@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 6/9] ksm: mem cgroup charge swapin copy
+In-Reply-To: <20091130091316.b804a75c.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0911301119060.20054@sister.anvils>
+References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
+ <Pine.LNX.4.64.0911241648520.25288@sister.anvils>
+ <20091130091316.b804a75c.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0911281457560.24119@localhost.localdomain>
-References: <20091125081235.25416.32481.sendpatchset@rxone.opensource.se>
-	 <20091125081255.25416.85126.sendpatchset@rxone.opensource.se>
-	 <alpine.LFD.2.00.0911281457560.24119@localhost.localdomain>
-Date: Mon, 30 Nov 2009 20:19:36 +0900
-Message-ID: <aec7e5c30911300319i115efdb6p215984377cb97f22@mail.gmail.com>
-Subject: Re: [PATCH 02/02] clocksource: Start CMT at clocksource resume
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-sh@vger.kernel.org, johnstul@us.ibm.com, lethal@linux-sh.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+On Mon, 30 Nov 2009, KAMEZAWA Hiroyuki wrote:
+> 
+> Ok. Maybe commit_charge will work enough. (I hope so.)
 
-On Sat, Nov 28, 2009 at 11:00 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 25 Nov 2009, Magnus Damm wrote:
->
->> From: Magnus Damm <damm@opensource.se>
->>
->> Add code to start the CMT timer on clocksource resume.
->>
->> This makes sure the timer is started during sysdev_resume().
->> Without this patch the clocksource may be read as suspended,
->> this after sysdev resume but before platform device resume.
->
-> Hmm, don't you have the same situation on suspend ?
->
-> platform device suspend stops the clock, but the generic code expects
-> it to be running until sysdev shutdown.
+                                             Me too.
+> 
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> BTW, I'm happy if you adds "How to test" documenation to
+> Documentation/vm/ksm.txt or to share some test programs.
+> 
+> 1. Map anonymous pages + madvise(MADV_MERGEABLE)
+> 2. "echo 1 > /sys/kernel/mm/ksm/run"
 
-You are correct, the same situation exists on suspend.
+Those are the main points, yes.
 
-> Another thing is that you now run both, the sysdev and the platform
-> resume. Is that by design or accident ?
+Though in testing for races, I do think the default
+/sys/kernel/mm/ksm/sleep_millisecs 20 is probably too relaxed
+to find issues quickly enough, so I usually change that to 0,
+and also raise pages_to_scan from its default of 100 (though
+that should matter less).  In testing for races, something I've
+not done but probably should, is raise the priority of ksmd: we
+have it niced down, but that may leave some nasties unobserved.
 
-By incorrect design. =)
+As to adding Documentation on testing: whilst my primary reason
+for not doing so is certainly laziness (or an interest in moving
+on to somewhere else), a secondary reason is that I'd much rather
+that if someone does have an interest in testing this, that they
+follow their own ideas, rather than copying what's already done.
 
-To fix this properly I was thinking of adding a clocksource suspend()
-callback and ditch the platform ops all together. If you don't mind
-then I'll post a patch for that tomorrow!
+But here's something I'll share with you, please don't show it
+to anyone else ;)  Writing test programs using MADV_MERGEABLE is
+good for testing specific issues, but can't give much coverage,
+so I tend to run with this hack below: boot option "allksm" makes
+as much as it can MADV_MERGEABLE.  (If you wonder why I squashed it
+up, it was to avoid changing the line numbering as much as possible.)
 
-Thank you!
+Hugh
 
-/ magnus
+--- mmotm/mm/mmap.c	2009-11-25 09:28:50.000000000 +0000
++++ allksm/mm/mmap.c	2009-11-25 11:19:13.000000000 +0000
+@@ -902,9 +902,9 @@ void vm_stat_account(struct mm_struct *m
+ #endif /* CONFIG_PROC_FS */
+ 
+ /*
+- * The caller must hold down_write(&current->mm->mmap_sem).
+- */
+-
++ * The caller must hold down_write(&current->mm->mmap_sem). */
++#include <linux/ksm.h>
++unsigned long vm_mergeable;
+ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 			unsigned long len, unsigned long prot,
+ 			unsigned long flags, unsigned long pgoff)
+@@ -1050,7 +1050,7 @@ unsigned long do_mmap_pgoff(struct file
+ 			/*
+ 			 * Set pgoff according to addr for anon_vma.
+ 			 */
+-			pgoff = addr >> PAGE_SHIFT;
++			vm_flags |= vm_mergeable; pgoff = addr >> PAGE_SHIFT;
+ 			break;
+ 		default:
+ 			return -EINVAL;
+@@ -1201,10 +1201,10 @@ munmap_back:
+ 		vma->vm_file = file;
+ 		get_file(file);
+ 		error = file->f_op->mmap(file, vma);
+-		if (error)
+-			goto unmap_and_free_vma;
+-		if (vm_flags & VM_EXECUTABLE)
+-			added_exe_file_vma(mm);
++		if (error) goto unmap_and_free_vma;
++		if (vm_flags & VM_EXECUTABLE) added_exe_file_vma(mm);
++		if (vm_mergeable)
++			ksm_madvise(vma, 0, 0, MADV_MERGEABLE,&vma->vm_flags);
+ 
+ 		/* Can addr have changed??
+ 		 *
+@@ -2030,7 +2030,7 @@ unsigned long do_brk(unsigned long addr,
+ 		return error;
+ 
+ 	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+-
++	flags |= vm_mergeable;
+ 	error = arch_mmap_check(addr, len, flags);
+ 	if (error)
+ 		return error;
+@@ -2179,7 +2179,7 @@ int insert_vm_struct(struct mm_struct *
+ 	if (!vma->vm_file) {
+ 		BUG_ON(vma->anon_vma);
+ 		vma->vm_pgoff = vma->vm_start >> PAGE_SHIFT;
+-	}
++		vma->vm_flags |= vm_mergeable;	}
+ 	__vma = find_vma_prepare(mm,vma->vm_start,&prev,&rb_link,&rb_parent);
+ 	if (__vma && __vma->vm_start < vma->vm_end)
+ 		return -ENOMEM;
+@@ -2518,3 +2518,10 @@ void __init mmap_init(void)
+ 	ret = percpu_counter_init(&vm_committed_as, 0);
+ 	VM_BUG_ON(ret);
+ }
++static int __init allksm(char *s)
++{
++	randomize_va_space = 0;
++	vm_mergeable = VM_MERGEABLE;
++	return 1;
++}
++__setup("allksm", allksm);
