@@ -1,43 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZK3Ve5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZK3Vfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbZK3Ve5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 16:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbZK3Ve4
+	id S1753518AbZK3Vfc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 16:35:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZK3Vfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 16:34:56 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:22113 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbZK3Vez (ORCPT
+	Mon, 30 Nov 2009 16:35:31 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:63235 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753395AbZK3Vf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 16:34:55 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=ip3QjQMW4iWvRuyqI5h8KvY0zKTJtWfUcn3REzYdYtS0CQGKuRK4xgBNwtAwT0/4j
-	RKFNNuVZxiTs07fcWr80A==
-Date: Mon, 30 Nov 2009 13:34:54 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] SLAB: Make synthetic benchmark output more readable
-In-Reply-To: <1259486553-4037-1-git-send-email-penberg@cs.helsinki.fi>
-Message-ID: <alpine.DEB.2.00.0911301333150.30639@chino.kir.corp.google.com>
-References: <1259486553-4037-1-git-send-email-penberg@cs.helsinki.fi>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 30 Nov 2009 16:35:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=VfXg7vx7TaqrynSAsGnOOsAo5DvYS3pC67jKfHYEaT2A+NI6NVJvMpqUqDI40Pa3uU
+         K9BnewSgCEw5bQWq9cOD1BirKW4LwiRQmdq2sqrxRoNzDEw1DK08mYFixtaqV4VhyB9y
+         S60qAU4JALa/B8NffloEv71vERo4XaeufK6Lo=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <BDodiKlXqgB@lirc>
+References: <9e4733910911270949s3e8b5ba9qfe5025d490ad0cfa@mail.gmail.com>
+	 <BDodiKlXqgB@lirc>
+Date: Mon, 30 Nov 2009 16:35:34 -0500
+Message-ID: <9e4733910911301335j6850cac3h784fa7c302e0c0ea@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Christoph Bartelmus <lirc@bartelmus.de>
+Cc: awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com,
+       lirc-list@lists.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Nov 2009, Pekka Enberg wrote:
+On Sun, Nov 29, 2009 at 7:01 AM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
+> Hi Jon,
+>
+> on 27 Nov 09 at 12:49, Jon Smirl wrote:
+> [...]
+>> Christoph, take what you know from all of the years of working on LIRC
+>> and design the perfect in-kernel system. This is the big chance to
+>> redesign IR support and get rid of any past mistakes. Incorporate any
+>> useful chunks of code and knowledge from the existing LIRC into the
+>> new design. Drop legacy APIs, get rid of daemons, etc. You can do this
+>> redesign in parallel with existing LIRC. Everyone can continue using
+>> the existing code while the new scheme is being built. Think of it as
+>> LIRC 2.0. You can lead this design effort, you're the most experience
+>> developer in the IR area.
+>
+> This is a very difficult thing for me to do. I must admit that I'm very
+> biased.
+> Because lircd is the only userspace application that uses the LIRC kernel
+> interface, we never had any problems changing the interface when needed.
+> I can't say there's much legacy stuff inside. I'm quite happy with the
+> interface.
+> The other thing is that I can't really move the decoder from userspace to
+> kernel because there are way too many userspace drivers that do require a
+> userspace decoder. LIRC also is running on FreeBSD, MacOS and even Cygwin.
+> So letting the userspace drivers take advantage of a potential Linux in-
+> kernel decoder is not an option for me either.
+> I'm having my 'LIRC maintainer' hat on mostly during this discussion and I
+> do understand that from Linux kernel perspective things look different.
 
-> This patch makes the synthetic SLAB benchmark output easier to read by hymans
-> and easier to post-process with scripts. The output looks as follows:
-> 
+It would be interesting to split the lirc daemon. Put the protocol
+decoder stuff in one daemon and the scripting support in the other.
+The scripting daemon would then be optional.  What would be the
+relative sizes of the two daemons?
 
-Pekka, are you looking to push slab_test.c through your tree?  If so, it 
-might make it easier to get the other tests (vmstat_test and 
-pagealloc_test) added through Andrew.
+--------------
+
+The LIRC daemon always works with timing data, right? When it reads
+the config files generated by irrecord it internally converts those to
+timing data and then matches the incoming data against it.
+
+Have you looked at the protocol engine idea? Running the protocol
+engines in parallel until a match is achieved. Then map the
+vendor/device/command triplet.  The protocol engine concept fixes the
+problem of Sony remotes in irrecord. Various Sony remote buttons
+transmit  in different protocols. irrecord assumes that a remote is
+only using a single protocol. Since it can't figure out a protocol it
+always records these remotes as raw.
+
+If the IR data is being decoded in a protocol engine it becomes
+possible to get rid of the need to configure IR in some cases. Apps
+like MythTV could pretend like they are a common piece of electronics
+hardware - say a Motorola DVR.  MythTV can then look for the
+vendor/device/command triplet from a Motorola DVR. Set your
+programmable remote to send the Motorola DVR commands and everything
+will "just work".
+
+Button on remote programed to be Mot DVR --> protocol engine -->
+Mot/dev/command --> MythTV which is looking for Mot/dev/command
+No config files needed.
+
+Make a command in MythTV to switch to emulating a different DVR if you
+happen to own this one. Take this a step further and register a MythTV
+profile with the various IR databases.
+
+
+
+
+>
+>> Take advantage of this window to make a
+>> design that is fully integrated with Linux - put IR on equal footing
+>> with the keyboard and mouse as it should be.
+>
+> That's a question that I have not answered for myself concludingly.
+> Is a remote control really on exactly the same level as a keyboard or
+> mouse?
+>
+> Christoph
+>
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
