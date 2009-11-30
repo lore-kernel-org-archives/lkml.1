@@ -1,175 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZK3OB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbZK3OBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbZK3OB1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 09:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZK3OB1
+	id S1753627AbZK3OBx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 09:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZK3OBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 09:01:27 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:51118 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752469AbZK3OBZ convert rfc822-to-8bit (ORCPT
+	Mon, 30 Nov 2009 09:01:53 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:39016 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753490AbZK3OBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 09:01:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UXYbiPHAPQlw2tQqreSU5HAEMusaFKhJ0Re0GvmXi5U975X4aMaCmmkBe1U3ba5DDu
-         x9/yQx+QAAtVhld+txvEYDUJNurmhqTq/pOV6TsIbAeQgHYageV8el72sNGG5+xKkXL/
-         ijbsJuB4wcRC2DDbDRxkP7boYDSVMy+IHqk5w=
-MIME-Version: 1.0
-In-Reply-To: <1259588608.13049.16.camel@maxim-laptop>
-References: <m3r5riy7py.fsf@intrepid.localdomain>
-	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
-	 <1259469121.3125.28.camel@palomino.walls.org>
-	 <20091129124011.4d8a6080@lxorguk.ukuu.org.uk>
-	 <1259515703.3284.11.camel@maxim-laptop>
-	 <2c0942db0911290949p89ae64bjc3c7501c2de6930c@mail.gmail.com>
-	 <1259537732.5231.11.camel@palomino.walls.org>
-	 <4B13B2FA.4050600@redhat.com>
-	 <1259585852.3093.31.camel@palomino.walls.org>
-	 <1259588608.13049.16.camel@maxim-laptop>
-Date: Mon, 30 Nov 2009 09:01:31 -0500
-Message-ID: <9e4733910911300601x513e8ac5n86b9b745536ca955@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Andy Walls <awalls@radix.net>, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Ray Lee <ray-lk@madrabbit.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, stefanr@s5r6.in-berlin.de,
-       superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 30 Nov 2009 09:01:52 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2.6.32] regulator: Initialise wm831x structure pointor for ISINK driver
+Date: Mon, 30 Nov 2009 14:01:56 +0000
+Message-Id: <1259589716-14007-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 8:43 AM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> On Mon, 2009-11-30 at 07:57 -0500, Andy Walls wrote:
->> On Mon, 2009-11-30 at 09:56 -0200, Mauro Carvalho Chehab wrote:
->> > Andy Walls wrote:
->> > > On Sun, 2009-11-29 at 09:49 -0800, Ray Lee wrote:
->> > >> On Sun, Nov 29, 2009 at 9:28 AM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
->> > >>> This has zero advantages besides good developer feeling that "My system
->> > >>> has one less daemon..."
->> > >> Surely it's clear that having an unnecessary daemon is introducing
->> > >> another point of failure?
->> > >
->> > > A failure in a userspace IR daemon is worst case loss of IR
->> > > functionality.
->> > >
->> > > A failure in kernel space can oops or panic the machine.
->> >
->> > If IR is the only interface between the user and the system (like in a TV
->> > or a Set Top Box), both will give you the same practical result: the system
->> > will be broken, if you got a crash at the IR driver.
->>
->> Yes, true.  I had forgotten about the embedded space.
->>
->> Nonetheless I'd still rather debug a problem with a dead process in
->> userspace than an oops or panic (not that an end user cares) and avoid
->> the risk of filesystem corruption.
->>
->> > Userspace is much more flexible.
->> >
->> > Why? The flexibility about the same on both kernelspace and userspace,
->> > except for the boot time.
->>
->> I suppose my best answer to that is question back to you: Why does udev
->> run in userspace versus a kernel thread?
->>
->>
->> My personal thoughts on why user space is more flexible:
->>
->> 1. You have all of *NIX available to you to use as tools to achieve your
->> requirements.
->>
->> 2. You are not constrained to use C.
->>
->> 3. You can link in libraries with functions that are not available in
->> the kernel.  (udev has libudev IIRC to handle complexities)
->>
->> 4. Reading a configuration file or other file from the filesystem is
->> trivial - file access from usespace is easy.
->>
->> 5. You don't have to be concerned about the running context (am I
->> allowed to sleep here or not?).
->
->
-> 6. You can modify userspace driver easily to cope with all weird setups.
-> Like you know that there are remotes that send whole packet of data that
-> consist of many numbers that are also displayed on the LCD of the
-> remote.
-> Otherwise you will have to go through same fight for every minor thing
-> you like to add to kernel...
->
->
-> 7. You don't have an ABI constraints, your userspace program can read a
-> configuration file in any format you wish.
-> I for example was thinking about putting all lirc config files into an
-> sqllite database, and pulling them out when specific remote is detected.
+The version that made it into mainline missed the initialisation of the
+chip handle.
 
-Linux is not a microkernel it is a monolithic kernel.
-http://en.wikipedia.org/wiki/Microkernel
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/wm831x-isink.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-If you want to push all of the device drivers to user space go run a
-microkernel. Even the X server has finally come around to getting rid
-of their cross platform OS in user space model and begun the switch to
-kernel drivers. That transition is going to take ten years to
-complete.
-
-Once things get into the kernel they become far harder to change.
-Stop for a minute and think about designing the best IR system for
-Linux and forget about making a cross platform solution. IR is an
-input device, it should be integrated into the Linux input subsystem.
-You may not like the designs I have proposed, but running IR in user
-space and injecting a keystroke at the end of the process is not
-integrating it into the input subsystem.
-
-
->
->
->>
->>
->>
->>
->>
->>
->> > A kernelspace input device driver can start working since boot time.
->> > On the other hand, an userspace device driver will be available only
->> > after mounting the filesystems and starting the deamons
->> > (e. g. after running inittab).
->> >
->> > So, you cannot catch a key that would be affecting the boot
->> > (for example to ask the kernel to run a different runlevel or entering
->> > on some administrative mode).
->>
->> Right.  That's another requirement that makes sense, if we're talking
->> about systems that don't have any other keyboard handy to the user.
->>
->> So are we optimizing for the embedded/STB and HTPC with no keyboard use
->> case, or the desktop or HTPC with a keyboard for maintencance?
->>
->>
->> Regards,
->> Andy
->>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-media" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->
-
-
-
+diff --git a/drivers/regulator/wm831x-isink.c b/drivers/regulator/wm831x-isink.c
+index 1d8d987..4885700 100644
+--- a/drivers/regulator/wm831x-isink.c
++++ b/drivers/regulator/wm831x-isink.c
+@@ -167,6 +167,8 @@ static __devinit int wm831x_isink_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+ 
++	isink->wm831x = wm831x;
++
+ 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+ 	if (res == NULL) {
+ 		dev_err(&pdev->dev, "No I/O resource\n");
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.6.5.3
+
