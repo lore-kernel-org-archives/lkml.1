@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbZK3IER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752362AbZK3H5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752802AbZK3IER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 03:04:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbZK3IEQ
+	id S1752362AbZK3H5l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 02:57:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZK3H5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 03:04:16 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:32843 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbZK3IEP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 03:04:15 -0500
-Date: Mon, 30 Nov 2009 02:57:30 -0500
-Message-Id: <200911300757.nAU7vU73022810@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jan Blunck <jblunck@suse.org>
-Subject: Re: [PATCH 17/41] whiteout: Add path_whiteout() helper 
-In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:15 PDT."
-             <1256152779-10054-18-git-send-email-vaurora@redhat.com> 
+	Mon, 30 Nov 2009 02:57:41 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33017 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751249AbZK3H5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 02:57:40 -0500
+Date: Mon, 30 Nov 2009 08:57:46 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] "fair" rw spinlocks
+Message-ID: <20091130075746.GJ17484@wotan.suse.de>
+References: <20091123145409.GA29627@wotan.suse.de> <alpine.LFD.2.00.0911280927180.2561@localhost> <20091129185122.GE6883@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091129185122.GE6883@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1256152779-10054-18-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> From: Jan Blunck <jblunck@suse.de>
+On Sun, Nov 29, 2009 at 10:51:22AM -0800, Paul E. McKenney wrote:
+> On Sat, Nov 28, 2009 at 09:30:18AM -0800, Linus Torvalds wrote:
+> > So as far as I can tell, we have only one real user of rwlocks where 
+> > livelocks might be relevant, but that one real user absolutely _requires_ 
+> > the unfair behavior.
 > 
-> Add a path_whiteout() helper for vfs_whiteout().
-> 
-> Signed-off-by: Jan Blunck <jblunck@suse.org>
-> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
-> ---
->  fs/namei.c         |   15 ++++++++++++++-
->  include/linux/fs.h |    1 -
->  2 files changed, 14 insertions(+), 2 deletions(-)
-> 
-> diff --git a/fs/namei.c b/fs/namei.c
-> index 9a62c75..408380d 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -2231,7 +2231,7 @@ static inline int may_whiteout(struct inode *dir, struct dentry *victim,
->   * After this returns with success, don't make any assumptions about the inode.
->   * Just dput() it dentry.
->   */
-> -int vfs_whiteout(struct inode *dir, struct dentry *dentry, int isdir)
-> +static int vfs_whiteout(struct inode *dir, struct dentry *dentry, int isdir)
+> But the required unfairness is limited to unconditionally granting
+> recursive read requests, right?  If I understand correctly, if a given
+> CPU does not already read-hold the lock, then we can safely make that
+> CPU wait for a writer that might otherwise be starved.  Again, is there
+> another requirement that I am missing?
 
-Didn't some other patch introduce vfs_whiteout?  So why have a second patch
-which makes vfs_whiteout a static?  Why not introduce both vfs_whiteout and
-path_whiteout in one patch?
+I think this is the only ordering requirement.
 
->  {
->  	int err;
->  	struct inode *old_inode = dentry->d_inode;
-> @@ -2283,6 +2283,19 @@ int vfs_whiteout(struct inode *dir, struct dentry *dentry, int isdir)
->  	return err;
->  }
->  
-> +int path_whiteout(struct path *dir_path, struct dentry *dentry, int isdir)
-
-Please document the behavior of path_whiteout in a proper comment above ii
-(kernel-doc).  Describe return values, side effects, etc.
-
-Also, isdir in both vfs_whiteout and path_whiteout can be boolean.
-
-Erez.
