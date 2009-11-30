@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbZK3Hox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbZK3HqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbZK3Hox (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 02:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZK3How
+	id S1754062AbZK3HqO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 02:46:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZK3HqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 02:44:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42930 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753953AbZK3How (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 02:44:52 -0500
-Message-ID: <4B1377A6.3050801@kernel.org>
-Date: Sun, 29 Nov 2009 23:43:34 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 0/9] pci: update pci bridge resource to get more big range
- for devices under it - v13
-References: <4ADEB601.8020200@kernel.org>	<4AE80170.6030402@jp.fujitsu.com>	<4AE88305.8020207@kernel.org>	<m1ljivibrt.fsf@fess.ebiederm.org>	<4AE899A0.3020006@kernel.org>	<4AE95247.8080401@jp.fujitsu.com>	<4AE952B9.1010603@kernel.org>	<4AE9588E.90708@jp.fujitsu.com>	<4AE9657F.7010302@kernel.org>	<4AE965D9.9040702@kernel.org> <20091104093044.17ab628a@jbarnes-piketon> <4AF1CD79.4010602@kernel.org> <4AF22CF1.1020508@kernel.org> <4AF22D26.4070500@kernel.org> <4AF508F0.9060105@kernel.org> <4AF91F54.10507@jp.fujitsu.com> <4AF936DB.1030309@kernel.org> <4AFCF7D8.1090207@jp.fujitsu.com> <4AFCFC0D.4030002@kernel.org> <4AFD19DA.7010602@jp.fujitsu.com> <4AFE6F39.5080505@kernel.org> <4B0B321E.4010103@jp.fujitsu.com> <4B0B335E.1070809@kernel.org> <4B0B3C13.9030502@jp.fujit! su.com> <4B0C69AD.3030106@kernel. org> <4B0D13EB.9010403@jp.fujitsu.com> <4B10D286.4020607@kernel .org> <4B136FEE.7060305@jp.fujitsu.com> <4B1370D8.3070600@kernel.org> <4B13738E.2000202@jp.fujitsu.com>
-In-Reply-To: <4B13738E.2000202@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 02:46:13 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:38702 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbZK3HqM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 02:46:12 -0500
+Date: Mon, 30 Nov 2009 02:45:40 -0500
+Message-Id: <200911300745.nAU7jecR022659@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 15/41] whiteout: ext2 whiteout support 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:13 PDT."
+             <1256152779-10054-16-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige wrote:
-> Yinghai Lu wrote:
->> Kenji Kaneshige wrote:
->>> My system doesn't boot (hangup) with the following error messages
->>> from Fusion MPT SAS driver. Those are different from the one
->>> captured with the previous version of your patches.
->>>
->>>
->>> Fusion MPT SAS Host driver 3.04.12
->>> mptsas 0000:09:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
->>> mptbase: ioc0: Initiating bringup
->>> mptbase: ioc0: WARNING - Unexpected doorbell active!
->>> mptbase: ioc0: ERROR - Failed to come READY after reset!
->>> IocState=f0000000
->>> mptbase: ioc0: WARNING - ResetHistory bit failed to clear!
->>> mptbase: ioc0: ERROR - Diagnostic reset FAILED! (ffffffffh)
->>> mptbase: ioc0: WARNING - NOT READY WARNING!
->>> mptbase: ioc0: ERROR - didn't initialize properly! (-1)
->>> mptsas: probe of 0000:09:00.0 failed with error -1
->>> mptsas 0000:0a:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
->>> mptbase: ioc1: Initiating bringup
->>> mptbase: ioc1: WARNING - Unexpected doorbell active!
->>> mptbase: ioc1: ERROR - Failed to come READY after reset!
->>> IocState=f0000000
->>> mptbase: ioc1: WARNING - ResetHistory bit failed to clear!
->>> mptbase: ioc1: ERROR - Diagnostic reset FAILED! (ffffffffh)
->>> mptbase: ioc1: WARNING - NOT READY WARNING!
->>> mptbase: ioc1: ERROR - didn't initialize properly! (-1)
->>> mptsas: probe of 0000:0a:00.0 failed with error -1
->>>
->>>
->>> I'll send the whole boot log privately.
->>
->> thanks, at the same time please try "debug pci=try=1"
->>
+In message <1256152779-10054-16-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> From: Jan Blunck <jblunck@suse.de>
 > 
-> I confirmed system boot up without errors by "pci=try=1".
-> I'll capture the bootlog with "debug" option and send it
-> to you soon.
+> This patch adds whiteout support to EXT2. A whiteout is an empty directory
+> entry (inode == 0) with the file type set to EXT2_FT_WHT. Therefore it
+> allocates space in directories. Due to being implemented as a filetype it is
+> necessary to have the EXT2_FEATURE_INCOMPAT_FILETYPE flag set.
+> 
+> XXX - Whiteouts could be implemented as special symbolic links
+> 
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> Cc: Theodore Tso <tytso@mit.edu>
+> Cc: linux-ext4@vger.kernel.org
+> ---
+>  fs/ext2/dir.c           |   96 +++++++++++++++++++++++++++++++++++++++++++++--
+>  fs/ext2/ext2.h          |    3 +
+>  fs/ext2/inode.c         |   11 ++++-
+>  fs/ext2/namei.c         |   65 ++++++++++++++++++++++++++++++-
+>  fs/ext2/super.c         |    7 +++
+>  include/linux/ext2_fs.h |    4 ++
+>  6 files changed, 176 insertions(+), 10 deletions(-)
+> 
+> diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
+> index cb8ceff..d4628c0 100644
+> --- a/fs/ext2/dir.c
+> +++ b/fs/ext2/dir.c
+> @@ -219,7 +219,7 @@ static inline int ext2_match (int len, const char * const name,
+>  {
+>  	if (len != de->name_len)
+>  		return 0;
+> -	if (!de->inode)
+> +	if (!de->inode && (de->file_type != EXT2_FT_WHT))
 
-thanks.
+The extra parens around (de->file_type != EXT2_FT_WHT) don't hurt but are
+unnecessary.  Ditto in a couple of other places in this patch.
 
-please send one only have "debug" only.
-
-Yinghai
+Erez.
