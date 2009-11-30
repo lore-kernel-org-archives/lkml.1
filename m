@@ -1,128 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbZK3QCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZK3QBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752903AbZK3QCS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 11:02:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbZK3QCQ
+	id S1752608AbZK3QBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 11:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZK3QBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 11:02:16 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11521 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752926AbZK3QCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 11:02:15 -0500
-Date: Mon, 30 Nov 2009 11:00:24 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, Alan.Brunelle@hp.com
-Subject: Re: Block IO Controller V4
-Message-ID: <20091130160024.GD11670@redhat.com>
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <4e5e476b0911300734h34a22c88oa5d7d4e5642ead50@mail.gmail.com>
+	Mon, 30 Nov 2009 11:01:22 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:39171 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbZK3QBW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 11:01:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=WoMQEmYizToL1qn11/1j69WuXrh5GkCfid3M8Q5+4jH03kjCdhNG9FotJ20X4A91+3
+         hyv+UzF/4Mp5bnSUJ3dgEI3w/htValahIU21LiFphzbw5D030goOAuvI+uv8ZLmskqFi
+         WybvbN5AqpO+NiFgWXXVCGg1+8NSJ3kNesSto=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0911300734h34a22c88oa5d7d4e5642ead50@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091130153604.GB11670@redhat.com>
+References: <4B0E1E2F.9080604@cn.fujitsu.com>
+	 <4e5e476b0911260108s2fe4cd86lcb32c7be76b4f75c@mail.gmail.com>
+	 <20091130153604.GB11670@redhat.com>
+Date: Mon, 30 Nov 2009 17:01:28 +0100
+Message-ID: <4e5e476b0911300801n57078c8eicd80bdc0f4cb2a87@mail.gmail.com>
+Subject: Re: [PATCH] cfq: Make use of service count to estimate the rb_key 
+	offset
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 04:34:36PM +0100, Corrado Zoccolo wrote:
-> Hi Vivek,
-> On Mon, Nov 30, 2009 at 3:59 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > Hi Jens,
-> > [snip]
-> > TODO
-> > ====
-> > - Direct random writers seem to be very fickle in terms of workload
-> >  classification. They seem to be switching between sync-idle and sync-noidle
-> >  workload type in a little unpredictable manner. Debug and fix it.
-> >
-> 
-> Are you still experiencing erratic behaviour after my patches were
-> integrated in for-2.6.33?
+On Mon, Nov 30, 2009 at 4:36 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> Hi Corrado,
+>
+> currently rb_key seems to be combination of two things. busy_queues and
+> jiffies.
+>
+> In new scheme, where we decide the share of a workload and then switch to
+> new workload, dependence on busy_queues does not seem to make much sense.
+>
+> Assume, a bunch of sequential readers get backlogged and then few random
+> readers gets backlogged. Now random reader will get higher rb_key because
+> there are 8 sequential reders on sync-idle tree.
+Even if we didn't have busy_queues, we would have the same situation,
+e.g. we have the 8 seq readers at time t (jiffies), and the seeky
+readers at time t+1.
+busy_queues really doesn't add anything when all queues have the same priority.
+>
+> IIUC, with above logic, even if we expire the sync-idle workload duration
+> once, we might not switch to sync-noidle workload and start running the
+> sync-idle workload again. (Because minimum slice length restrictions or
+> if low_latency is not set).
+Yes.
+>
+> So instead of relying on rb_keys to switch the workload type, why not do
+> it in round robin manner across the workload types? So rb_key will be
+> significant only with-in service tree and not across service tree?
+This is a good option. I have also tested it, and it works quite well
+(you can even have an async penalization like in deadline, so you do
+few rounds between seq and seeky, and then one of async). Besides a
+more complex code, I felt it was against the spirit of CFQ, since in
+that way, you are not providing fairness across workloads (especially
+if you don't want low_latency).
 
-Your patches helped with deep seeky queues. But if I am running a random
-writer with default iodepth of 1 (without libaio), I still see that idle
-0/1 flipping happens so frequently during 30 seconds duration of
-execution. 
+BTW, my idea how to improve the rb_key computation is:
+* for NCQ SSD (or when sched_idle = 0):
+  rb_key = jiffies - function(priority)
+* for others:
+  rb_key = jiffies - sched_resid
 
-As per CFQ classification definition, a seeky random writer with shallow
-depth should be classified as sync-noidle and stay there until and unless
-workload changes its nature. But that does not seem to be happening.
+Currently, sched_resid is meaningless for NCQ SSD, since we always
+expire the queue immediately. Subtracting sched_resid would just give
+an advantage to a queue that already dispatched over the ones that
+didn't.
+Priority, instead, should be used only for NCQ SSD. For the others,
+priority already affects time slice, so having it here would cause
+over-prioritization.
 
-Just try two fio random writers and monitor the blktrace and see how
-freqently we enable and disable idle on the queues.
+Thanks,
+Corrado
 
-> 
-> > - Support async IO control (buffered writes).
-> I was thinking about this.
-> Currently, writeback can either be issued by a kernel daemon (when
-> actual dirty ratio is > background dirty ratio, but < dirty_ratio) or
-> from various processes, if the actual dirty ratio is > dirty ratio.
-
-- If dirty_ratio > background_dirty_ratio, then a process will be
-  throttled and it can do one of the following actions.
-
-	- Pick one inode and start flushing its dirty pages. Now these
-	  pages could have been dirtied by another process in another
-	  group.
-
-	- It might just wait for flusher threads to flush some pages and
-	  sleep for that duration.
-
-> Could the writeback issued in the context of a process be marked as sync?
-> In this way:
-> * normal writeback when system is not under pressure will run in the
-> root group, without interferring with sync workload
-> * the writeback issued when we have high dirty ratio will have more
-> priority, so the system will return in a normal condition quicker.
-
-Marking async IO submitted in the context of processes and not kernel
-threads is interesting. We could try that, but in general the processes
-that are being throttled are doing buffered writes and generally these
-are not very latency sensitive.
-
-Group stuff apart, I would rather think of providing consistent share to
-async workload. So that when there is lots of sync as well async IO is
-going on in the system, nobody starves and we provide access to disk in
-a deterministic manner.
-
-That's why I do like the idea of fixing a workload share of async
-workload so that async workload does not starve in the face of lot of sync
-IO going on. Not sure how effectively it is working though.
-
-Thanks
-Vivek
-
-
-> * your code will work out of the box, in fact processes with lower
-> weight will complete less I/O, therefore they will be slowed down more
-> than higher weight ones.
-> 
-> >
-> >  Buffered writes is a beast and requires changes at many a places to solve the
-> >  problem and patchset becomes huge. Hence first we plan to support only sync
-> >  IO in control then work on async IO too.
-> >
-> >  Some of the work items identified are.
-> >
-> >        - Per memory cgroup dirty ratio
-> >        - Possibly modification of writeback to force writeback from a
-> >          particular cgroup.
-> >        - Implement IO tracking support so that a bio can be mapped to a cgroup.
-> >        - Per group request descriptor infrastructure in block layer.
-> >        - At CFQ level, implement per cfq_group async queues.
-> >
-> >  In this patchset, all the async IO goes in system wide queues and there are
-> >  no per group async queues. That means we will see service differentiation
-> >  only for sync IO only. Async IO willl be handled later.
-> >
-> > - Support for higher level policies like max BW controller.
-> > - Support groups of RT class also.
-> 
-> Thanks,
-> Corrado
+> Thanks
+> Vivek
