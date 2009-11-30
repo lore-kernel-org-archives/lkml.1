@@ -1,104 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZK3I6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752993AbZK3I6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZK3I6A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 03:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZK3I57
+	id S1752993AbZK3I6Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 03:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZK3I6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 03:57:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42247 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbZK3I56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 03:57:58 -0500
-Message-ID: <4B138909.1000108@redhat.com>
-Date: Mon, 30 Nov 2009 09:57:45 +0100
-From: Stefan Assmann <sassmann@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-pci@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Krzysztof Halasa <khc@pm.waw.pl>, Don Dutile <ddutile@redhat.com>,
-       kaneshige.kenji@jp.fujitsu.com
-Subject: Re: [PATCH] change PCI nomenclature according to PCI-SIG
-References: <4B110F79.8080405@redhat.com> <4B111ADC.9020800@garzik.org> <4B123A34.5090509@redhat.com> <4B126EEB.1040908@garzik.org>
-In-Reply-To: <4B126EEB.1040908@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Nov 2009 03:58:15 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:52775 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752720AbZK3I6O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 03:58:14 -0500
+Date: Mon, 30 Nov 2009 03:57:46 -0500
+Message-Id: <200911300857.nAU8vkSp024531@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 21/41] union-mount: Drive the union cache via dcache 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:19 PDT."
+             <1256152779-10054-22-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29.11.2009 13:54, Jeff Garzik wrote:
-> On 11/29/2009 04:09 AM, Stefan Assmann wrote:
->> On 28.11.2009 13:43, Jeff Garzik wrote:
->>> On 11/28/2009 06:54 AM, Stefan Assmann wrote:
->>>> From: Stefan Assmann<sassmann@redhat.com>
->>>>
->>>> Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
->>>> terms listed in the "Trademark and Logo Usage Guidelines".
->>>> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
->>>>
->>>>
->>>> Additionally some renames of Gb/s to GT/s where appropriate, concerns
->>>> PCIe.
->>>>
->>>> This is a followup to the discussion at:
->>>> http://lkml.org/lkml/2009/10/14/107
->>>> Patch is based on 2.6.32-rc8.
->>>>
->>>> Signed-off-by: Stefan Assmann<sassmann@redhat.com>
->>>
->>> NAK, this clearly introduces bugs and changes sysfs output (ABI).
->>>
->>> Typically this type of change is pointless churn that creates far more
->>> problems than it "solves."
->>
->> Hi Jeff,
->>
->> I see you point in not liking this kind of change. What kind of cleanup
->> would be ok in your opinion?
+In message <1256152779-10054-22-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> From: Jan Blunck <jblunck@suse.de>
 > 
-> Think about this from an engineering perspective.  This patch is driven
-> not by any real technical need, but more by marketing and trademark folks.
-> 
-> The absolute best case scenario for this patch is that nothing changes,
-> from an implementation and behavior standpoint.  The worst case, of
-> course, is that it introduces bugs (which it does).
-> 
-> You also incur the standard costs of any kernel change:  you've just
-> made the diff between, for example, a vendor kernel's foo_driver.c and
-> upstream's foo_driver.c a lot larger, and more difficult to discern
-> real, technical changes to the code.
-> 
-> Of course, we change the kernel every day -- but we also know that
-> change itself has cost, and a lot of code changes for cosmetic reasons
-> have the potential for greater negative costs, and fewer positive benefits.
-> 
-> Next, IMO, you don't have any idea how maintainers will react to this
-> patch, because you CC'd so few of them.  People who perform tree-wide
-> changes should take the time to CC __every__ relevant maintainer.  If
-> you are changing somebody's code, you should always let them know about
-> it, and give them an opportunity to review the change.
-> scripts/get_maintainer.pl can help with this.
-> 
-> So, while the PCI maintainer might agree with the nomenclature change,
-> he is not the most qualified person to state that your changes have no
-> effect on drivers/edac/ppc4xx_edac.c, for example.
-> 
-> Finally, split your patch up.  I would suggest starting with 100%
-> comment changes that are guaranteed with mathematical certainty to not
-> change the compiler-generated code at all.  That will make the remaining
-> changes much easier to review, if they are in separate patches from the
-> comment-only changes.
+> If a dentry is removed from dentry cache because its usage count drops to
+> zero, the references to the underlying layer of the unions the dentry is in
+> are droped too. Therefore the union cache is driven by the dentry cache.
 
-Thanks for taking the time. I appreciate it and will try to stick to
-your suggestions.
+Hmm, in my review for patch 20, I suggested a way to simplify is_unionized()
+by marking relevant dentries with a flag whether they are in a union or
+not.  If you're driving the entire union cache from the dcache, can't this
+be done easily then?
 
-  Stefan
---
-Stefan Assmann         | Red Hat GmbH
-Software Engineer      | Otto-Hahn-Strasse 20, 85609 Dornach
-                       | HR: Amtsgericht Muenchen HRB 153243
-                       | GF: Brendan Lane, Charlie Peters,
-sassmann at redhat.com |     Michael Cunningham, Charles Cachera
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> ---
+>  fs/dcache.c            |   10 ++++++-
+>  fs/union.c             |   74 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/dcache.h |    8 +++++
+>  include/linux/union.h  |    6 ++++
+>  4 files changed, 97 insertions(+), 1 deletions(-)
+
+> diff --git a/fs/union.c b/fs/union.c
+> index d1950c2..6b99393 100644
+> --- a/fs/union.c
+> +++ b/fs/union.c
+> @@ -14,6 +14,7 @@
+>  
+>  #include <linux/bootmem.h>
+>  #include <linux/init.h>
+> +#include <linux/module.h>
+>  #include <linux/types.h>
+>  #include <linux/hash.h>
+>  #include <linux/fs.h>
+> @@ -255,6 +256,8 @@ int append_to_union(struct vfsmount *mnt, struct dentry *dentry,
+>  		union_put(this);
+>  		return 0;
+>  	}
+> +	list_add(&this->u_unions, &dentry->d_unions);
+> +	dest_dentry->d_unionized++;
+>  	__union_hash(this);
+>  	spin_unlock(&union_lock);
+>  	return 0;
+> @@ -330,3 +333,74 @@ int follow_union_mount(struct vfsmount **mnt, struct dentry **dentry)
+>  
+>  	return res;
+>  }
+> +
+> +/*
+> + * This must be called when unhashing a dentry. This is called with dcache_lock
+> + * and unhashes all unions this dentry is in.
+> + */
+> +void __d_drop_unions(struct dentry *dentry)
+> +{
+> +	struct union_mount *this, *next;
+> +
+> +	spin_lock(&union_lock);
+> +	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions)
+> +		__union_unhash(this);
+> +	spin_unlock(&union_lock);
+> +}
+> +EXPORT_SYMBOL_GPL(__d_drop_unions);
+
+I thought the convention was that internal functions prefixed with __ are
+.. internal, not to be extern'ed and exported.
+
+Besides, why export this symbol?  Which modules need it in your patchset?
+
+> +/*
+> + * This must be called after __d_drop_unions() without holding any locks.
+> + * Note: The dentry might still be reachable via a lookup but at that time it
+> + * already a negative dentry. Otherwise it would be unhashed. The union_mount
+> + * structure itself is still reachable through mnt->mnt_unions (which we
+> + * protect against with union_lock).
+> + */
+> +void shrink_d_unions(struct dentry *dentry)
+> +{
+> +	struct union_mount *this, *next;
+
+See my comments about this/that vs. upper/lower in my review for patch #20.
+
+> +repeat:
+> +	spin_lock(&union_lock);
+> +	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
+> +		BUG_ON(!hlist_unhashed(&this->u_hash));
+> +		BUG_ON(!hlist_unhashed(&this->u_rhash));
+> +		list_del(&this->u_unions);
+> +		this->u_next.dentry->d_unionized--;
+> +		spin_unlock(&union_lock);
+> +		union_put(this);
+> +		goto repeat;
+> +	}
+> +	spin_unlock(&union_lock);
+> +}
+> +
+> +extern void __dput(struct dentry *, struct list_head *, int);
+
+Why this extern here?  Isn't there some header file you can #include more
+cleanly at the top of this .c file?
+
+>  static inline void d_drop(struct dentry *dentry)
+> diff --git a/include/linux/union.h b/include/linux/union.h
+> index 0c85312..b035a82 100644
+> --- a/include/linux/union.h
+> +++ b/include/linux/union.h
+> @@ -46,6 +46,9 @@ extern int append_to_union(struct vfsmount *, struct dentry *,
+>  			   struct vfsmount *, struct dentry *);
+>  extern int follow_union_down(struct vfsmount **, struct dentry **);
+>  extern int follow_union_mount(struct vfsmount **, struct dentry **);
+> +extern void __d_drop_unions(struct dentry *);
+> +extern void shrink_d_unions(struct dentry *);
+> +extern void __shrink_d_unions(struct dentry *, struct list_head *);
+
+Again, I don't understand why the two out of three functions above are
+prefixed with __ while one of them isn't.  I always prefer to name things
+for what they actually do, not rely on magic prefixes and conventions to
+guess what it means.  I suggest trying to find better names to avoid having
+so many FOO and __FOO names in this entire series of patchset.
+
+Erez.
