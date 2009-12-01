@@ -1,100 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbZLAHLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbZLAHWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbZLAHLN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 02:11:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZLAHLN
+	id S1753290AbZLAHWo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 02:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbZLAHWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 02:11:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22930 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750841AbZLAHLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 02:11:12 -0500
-Message-ID: <4B14C217.90203@redhat.com>
-Date: Tue, 01 Dec 2009 15:13:27 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	Tue, 1 Dec 2009 02:22:43 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:42053 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbZLAHWn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 02:22:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=xfhybRSf59L5hywteS4CW/WXG4jBQN7mZFsaVmWSBsAlg41+xut8DgdjmwMtXLxlV1
+         Rztlb+01iP9tExyH4sGxfvMhobxR4VE7DCPoV8I/hYz3UjJeSOohHk5NvlP5JzgfzVK2
+         OpUKmEM2AlYKNpmh3FeQxSpcRoCeA6JduuSdw=
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH] percpu: refactor the code in pcpu_[de]populate_chunk()
-References: <20091130091501.4507.28683.sendpatchset@localhost.localdomain> <4B13A7ED.9010905@kernel.org> <alpine.DEB.2.00.0911301258370.18682@router.home> <4B145CE9.1060608@kernel.org> <4B147918.3000503@redhat.com> <4B14A2E6.1070603@kernel.org> <4B14A51E.2090702@kernel.org> <4B14AC35.3020700@redhat.com> <4B14ADE0.3020007@kernel.org> <4B14B936.8080205@redhat.com> <4B14BEB6.5090105@kernel.org>
-In-Reply-To: <4B14BEB6.5090105@kernel.org>
-Content-Type: multipart/mixed;
- boundary="------------060307030000030902080709"
+Date: Tue, 1 Dec 2009 08:22:48 +0100
+Message-ID: <c006aa4b0911302322v769520bbt733dde1451a8e50@mail.gmail.com>
+Subject: [PATCH]: at91 slowclock: fix two bugs when disabling the PLLs
+From: Julien Langer <julien.langer@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=0015174beac605e7eb0479a5a062
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060307030000030902080709
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+--0015174beac605e7eb0479a5a062
+Content-Type: text/plain; charset=ISO-8859-1
 
-Tejun Heo wrote:
-> On 12/01/2009 03:35 PM, Cong Wang wrote:
->> What do you think about the patch below? Untested.
-> 
-> Oh, yeah, that's prettier.  Just one thing, can you please move rs
-> initialization right above the pcpu_next_[un]pop() call?  The
-> input/output parameters for those functions are already pretty
-> confusing, let's make it at least a bit clearer.
-> 
+Hi,
 
-Sure, done.
+attached are two patches which fix two problems with the at91 slowclock code:
 
-------------->
+the first one fixes a problem during suspend: When turning off the
+PLLs, wait for the LOCKA/LOCKB flags to be unset instead of being set
+(which will never happen).
 
-Using break statement at the end of a for loop is confusing,
-refactor it by replacing the for loop.
-
-Signed-off-by: WANG Cong <amwang@redhat.com>
-
----
+The second patch fixes a problem of trying to turn on/off a PLL which
+was already disabled: ohci-at91 disables PLLB when going to suspend.
+The slowclock code however tries to do the same. In that case the
+slowclock code just stores and restores a 0 to the PLLB register which
+results in the wait_pllblock loop to hang until it reaches the
+timeout. This patches fixes the problem by only restoring the
+PLLA/PLLB registers when they were != 0.
 
 
---------------060307030000030902080709
-Content-Type: text/plain;
- name="mm-percpu_c-remove-two-useless-break.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mm-percpu_c-remove-two-useless-break.diff"
+PS: please CC me, I'm not on the list.
 
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 5adfc26..2941ed9 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -914,11 +914,10 @@ static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk, int off, int size)
- 	int rs, re;
- 
- 	/* quick path, check whether it's empty already */
--	pcpu_for_each_unpop_region(chunk, rs, re, page_start, page_end) {
--		if (rs == page_start && re == page_end)
--			return;
--		break;
--	}
-+	rs = page_start;
-+	pcpu_next_unpop(chunk, &rs, &re, page_end);
-+	if (rs == page_start && re == page_end)
-+		return;
- 
- 	/* immutable chunks can't be depopulated */
- 	WARN_ON(chunk->immutable);
-@@ -969,11 +968,10 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
- 	int rs, re, rc;
- 
- 	/* quick path, check whether all pages are already there */
--	pcpu_for_each_pop_region(chunk, rs, re, page_start, page_end) {
--		if (rs == page_start && re == page_end)
--			goto clear;
--		break;
--	}
-+	rs = page_start;
-+	pcpu_next_pop(chunk, &rs, &re, page_end);
-+	if (rs == page_start && re == page_end)
-+		goto clear;
- 
- 	/* need to allocate and map pages, this chunk can't be immutable */
- 	WARN_ON(chunk->immutable);
+--0015174beac605e7eb0479a5a062
+Content-Type: text/x-patch; charset=US-ASCII; name="at91_slowclock_pll_unlock.patch"
+Content-Disposition: attachment; filename="at91_slowclock_pll_unlock.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g2oca87s0
 
---------------060307030000030902080709--
+YXQ5MTogd2hlbiB0dXJuaW5nIG9mZiB0aGUgcGxscyBkdXJpbmcgc3VzcGVuZCwgZG9uJ3Qgd2Fp
+dCBmb3IgdGhlIGxvY2sKCmZsYWcgdG8gYmUgc2V0LCBpbnN0ZWFkIHdhaXQgZm9yIGl0IHRvIGJl
+IHVuc2V0LiBQcmV2aW91c2x5IHRoZSBjb2RlIHdvdWxkCmFsd2F5cyBydW4gaW50byB0aGUgbG9v
+cCBsaW1pdGF0aW9uIG9mIDEwMDAgaXRlcmF0aW9ucyBiZWNhdXNlIHRoZSBmbGFnIGlzCm5ldmVy
+IHNldCB3aGVuIHR1cm5pbmcgdGhlIHBsbHMgb2ZmLgoKU2lnbmVkLW9mZi1ieTogSnVsaWVuIExh
+bmdlciA8anVsaWVuLmxhbmdlckBnbWFpbC5jb20+Ci0tLQoKIGFyY2gvYXJtL21hY2gtYXQ5MS9w
+bV9zbG93Y2xvY2suUyB8ICAgMzUgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0K
+IDEgZmlsZXMgY2hhbmdlZCwgMzIgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKCgpkaWZm
+IC0tZ2l0IGEvYXJjaC9hcm0vbWFjaC1hdDkxL3BtX3Nsb3djbG9jay5TIGIvYXJjaC9hcm0vbWFj
+aC1hdDkxL3BtX3Nsb3djbG9jay5TCmluZGV4IDk4N2ZhYjMuLmRjNmQ3MzAgMTAwNjQ0Ci0tLSBh
+L2FyY2gvYXJtL21hY2gtYXQ5MS9wbV9zbG93Y2xvY2suUworKysgYi9hcmNoL2FybS9tYWNoLWF0
+OTEvcG1fc2xvd2Nsb2NrLlMKQEAgLTQ1LDcgKzQ1LDkgQEAKICNkZWZpbmUgTUNLUkRZX1RJTUVP
+VVQJCTEwMDAKICNkZWZpbmUgTU9TQ1JEWV9USU1FT1VUIAkxMDAwCiAjZGVmaW5lIFBMTEFMT0NL
+X1RJTUVPVVQJMTAwMAorI2RlZmluZSBQTExBVU5MT0NLX1RJTUVPVVQJMTAwMAogI2RlZmluZSBQ
+TExCTE9DS19USU1FT1VUCTEwMDAKKyNkZWZpbmUgUExMQlVOTE9DS19USU1FT1VUCTEwMDAKIAog
+CiAvKgpAQCAtOTEsNiArOTMsMjAgQEAKIAkuZW5kbQogCiAvKgorICogV2FpdCB1bnRpbCBQTExB
+IGhhcyB1bmxvY2tlZC4KKyAqLworCS5tYWNybyB3YWl0X3BsbGF1bmxvY2sKKwltb3YJcjQsICNQ
+TExBVU5MT0NLX1RJTUVPVVQKKzE6CXN1YglyNCwgcjQsICMxCisJY21wCXI0LCAjMAorCWJlcQky
+ZgorCWxkcglyMywgW3IxLCAjKEFUOTFfUE1DX1NSIC0gQVQ5MV9QTUMpXQorCXRzdAlyMywgI0FU
+OTFfUE1DX0xPQ0tBCisJYm5lCTFiCisyOgorCS5lbmRtCisKKy8qCiAgKiBXYWl0IHVudGlsIFBM
+TEIgaGFzIGxvY2tlZC4KICAqLwogCS5tYWNybyB3YWl0X3BsbGJsb2NrCkBAIC0xMDQsNiArMTIw
+LDIwIEBACiAyOgogCS5lbmRtCiAKKy8qCisgKiBXYWl0IHVudGlsIFBMTEIgaGFzIHVubG9ja2Vk
+LgorICovCisJLm1hY3JvIHdhaXRfcGxsYnVubG9jaworCW1vdglyNCwgI1BMTEJVTkxPQ0tfVElN
+RU9VVAorMToJc3ViCXI0LCByNCwgIzEKKwljbXAJcjQsICMwCisJYmVxCTJmCisJbGRyCXIzLCBb
+cjEsICMoQVQ5MV9QTUNfU1IgLSBBVDkxX1BNQyldCisJdHN0CXIzLCAjQVQ5MV9QTUNfTE9DS0IK
+KwlibmUJMWIKKzI6CisJLmVuZG0KKwogCS50ZXh0CiAKIEVOVFJZKGF0OTFfc2xvd19jbG9jaykK
+QEAgLTE3NSw3ICsyMDUsNyBAQCBFTlRSWShhdDkxX3Nsb3dfY2xvY2spCiAJb3JyCXIzLCByMywg
+IygxIDw8IDI5KQkJLyogYml0IDI5IGFsd2F5cyBzZXQgKi8KIAlzdHIJcjMsIFtyMSwgIyhBVDkx
+X0NLR1JfUExMQVIgLSBBVDkxX1BNQyldCiAKLQl3YWl0X3BsbGFsb2NrCisJd2FpdF9wbGxhdW5s
+b2NrCiAKIAkvKiBTYXZlIFBMTEIgc2V0dGluZyBhbmQgZGlzYWJsZSBpdCAqLwogCWxkcglyMywg
+W3IxLCAjKEFUOTFfQ0tHUl9QTExCUiAtIEFUOTFfUE1DKV0KQEAgLTE4Myw4ICsyMTMsNyBAQCBF
+TlRSWShhdDkxX3Nsb3dfY2xvY2spCiAKIAltb3YJcjMsICNBVDkxX1BNQ19QTExDT1VOVAogCXN0
+cglyMywgW3IxLCAjKEFUOTFfQ0tHUl9QTExCUiAtIEFUOTFfUE1DKV0KLQotCXdhaXRfcGxsYmxv
+Y2sKKwl3YWl0X3BsbGJ1bmxvY2sKIAogCS8qIFR1cm4gb2ZmIHRoZSBtYWluIG9zY2lsbGF0b3Ig
+Ki8KIAlsZHIJcjMsIFtyMSwgIyhBVDkxX0NLR1JfTU9SIC0gQVQ5MV9QTUMpXQo=
+--0015174beac605e7eb0479a5a062
+Content-Type: text/x-patch; charset=US-ASCII; name="at91_slowclock_pll_fix.patch"
+Content-Disposition: attachment; filename="at91_slowclock_pll_fix.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g2ocaay01
+
+YXQ5MTogRG9uJ3QgdHJ5IHRvIHJlc3RvcmUgdGhlIFBMTCBzZXR0aW5ncyB3aGVuIHRoZSBQTExz
+IHdlcmUgdHVybmVkIG9mZgoKcHJldmlvdXNseS4KCldlIHJ1biBpbnRvIHRoaXMgcHJvYmxlbSB3
+aXRoIHRoZSBQTExCIG9uIHRoZSBhdDkxOiBvaGNpLWF0OTEgZGlzYWJsZXMgdGhlIFBMTEIKd2hl
+biBnb2luZyB0byBzdXNwZW5kLiBUaGUgc2xvd2Nsb2NrIGNvZGUgaG93ZXZlciB0cmllcyB0byBk
+byB0aGUgc2FtZTogSXQKc2F2ZXMgdGhlIFBMTEIgcmVnaXN0ZXIgdmFsdWUgYW5kIHdoZW4gcmVz
+dG9yaW5nIHRoZSB2YWx1ZSBkdXJpbmcgcmVzdW1lLCBpdAp3YWl0J3MgZm9yIHRoZSBQTExCIHRv
+IGxvY2sgYWdhaW4uIEhvd2V2ZXIgdGhlIFBMTCB3aWxsIG5ldmVyIGxvY2sgYW5kIHRoZSBsb29w
+CndvdWxkIHJ1biBpbnRvIGl0J3MgdGltZW91dCBiZWNhdXNlIHRoZSBzbG93Y2xvY2sgY29kZSBq
+dXN0IHN0b3JlZCBhbmQgcmVzdG9yZWQKYW4gZW1wdHkgcmVnaXN0ZXIuClRoaXMgZml4ZXMgdGhl
+IHByb2JsZW0gYnkgb25seSByZXN0b3JpbmcgUExMQS9QTExCIHdoZW4gdGhlIHJlZ2lzdGVycyB3
+ZXJlICE9IDAuCgpTaWduZWQtb2ZmLWJ5OiBKdWxpZW4gTGFuZ2VyIDxqdWxpZW4ubGFuZ2VyQGdt
+YWlsLmNvbT4KLS0tCgogYXJjaC9hcm0vbWFjaC1hdDkxL3BtX3Nsb3djbG9jay5TIHwgICAxNCAr
+KysrKysrKysrKysrKwogMSBmaWxlcyBjaGFuZ2VkLCAxNCBpbnNlcnRpb25zKCspLCAwIGRlbGV0
+aW9ucygtKQoKCmRpZmYgLS1naXQgYS9hcmNoL2FybS9tYWNoLWF0OTEvcG1fc2xvd2Nsb2NrLlMg
+Yi9hcmNoL2FybS9tYWNoLWF0OTEvcG1fc2xvd2Nsb2NrLlMKaW5kZXggZGM2ZDczMC4uZGJjOGYw
+YSAxMDA2NDQKLS0tIGEvYXJjaC9hcm0vbWFjaC1hdDkxL3BtX3Nsb3djbG9jay5TCisrKyBiL2Fy
+Y2gvYXJtL21hY2gtYXQ5MS9wbV9zbG93Y2xvY2suUwpAQCAtMjAxLDIwICsyMDEsMjggQEAgRU5U
+UlkoYXQ5MV9zbG93X2Nsb2NrKQogCWxkcglyMywgW3IxLCAjKEFUOTFfQ0tHUl9QTExBUiAtIEFU
+OTFfUE1DKV0KIAlzdHIJcjMsIC5zYXZlZF9wbGxhcgogCisJY21wIHIzLCAjMAorCWJlcSAzZgor
+CiAJbW92CXIzLCAjQVQ5MV9QTUNfUExMQ09VTlQKIAlvcnIJcjMsIHIzLCAjKDEgPDwgMjkpCQkv
+KiBiaXQgMjkgYWx3YXlzIHNldCAqLwogCXN0cglyMywgW3IxLCAjKEFUOTFfQ0tHUl9QTExBUiAt
+IEFUOTFfUE1DKV0KIAogCXdhaXRfcGxsYXVubG9jawogCiszOgogCS8qIFNhdmUgUExMQiBzZXR0
+aW5nIGFuZCBkaXNhYmxlIGl0ICovCiAJbGRyCXIzLCBbcjEsICMoQVQ5MV9DS0dSX1BMTEJSIC0g
+QVQ5MV9QTUMpXQogCXN0cglyMywgLnNhdmVkX3BsbGJyCiAKKwljbXAgcjMsICMwCisJYmVxIDRm
+CisKIAltb3YJcjMsICNBVDkxX1BNQ19QTExDT1VOVAogCXN0cglyMywgW3IxLCAjKEFUOTFfQ0tH
+Ul9QTExCUiAtIEFUOTFfUE1DKV0KIAl3YWl0X3BsbGJ1bmxvY2sKIAorNDoKIAkvKiBUdXJuIG9m
+ZiB0aGUgbWFpbiBvc2NpbGxhdG9yICovCiAJbGRyCXIzLCBbcjEsICMoQVQ5MV9DS0dSX01PUiAt
+IEFUOTFfUE1DKV0KIAliaWMJcjMsIHIzLCAjQVQ5MV9QTUNfTU9TQ0VOCkBAIC0yMzIsMTYgKzI0
+MCwyMiBAQCBFTlRSWShhdDkxX3Nsb3dfY2xvY2spCiAKIAkvKiBSZXN0b3JlIFBMTEIgc2V0dGlu
+ZyAqLwogCWxkcglyMywgLnNhdmVkX3BsbGJyCisJY21wIHIzLCAjMAorCWJlcSA1ZgogCXN0cgly
+MywgW3IxLCAjKEFUOTFfQ0tHUl9QTExCUiAtIEFUOTFfUE1DKV0KIAogCXdhaXRfcGxsYmxvY2sK
+IAorNToKIAkvKiBSZXN0b3JlIFBMTEEgc2V0dGluZyAqLwogCWxkcglyMywgLnNhdmVkX3BsbGFy
+CisJY21wIHIzLCAjMAorCWJlcSA2ZgogCXN0cglyMywgW3IxLCAjKEFUOTFfQ0tHUl9QTExBUiAt
+IEFUOTFfUE1DKV0KIAogCXdhaXRfcGxsYWxvY2sKIAorNjoKICNpZmRlZiBTTE9XRE9XTl9NQVNU
+RVJfQ0xPQ0sKIAkvKgogCSAqIEZpcnN0IHNldCBQUkVTIGlmIGl0IHdhcyBub3QgMCwK
+--0015174beac605e7eb0479a5a062--
