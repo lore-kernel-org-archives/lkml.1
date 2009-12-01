@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbZLAQYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZLAQ07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754363AbZLAQYI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbZLAQYI
+	id S1753354AbZLAQ07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZLAQ06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:24:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45001 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754016AbZLAQYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:24:06 -0500
-Date: Tue, 1 Dec 2009 17:23:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 0/2] Futex fault injection
-Message-ID: <20091201162359.GA1079@elte.hu>
-References: <20091201141642.398e7b7d@sripathi>
- <20091201103351.GA6685@elte.hu>
- <1259664883.1697.28.camel@laptop>
- <20091201125537.GA23382@elte.hu>
- <4B15414A.9040405@us.ibm.com>
+	Tue, 1 Dec 2009 11:26:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55018 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750929AbZLAQ06 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:26:58 -0500
+Date: Tue, 1 Dec 2009 08:24:52 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
+       steved@redhat.com, jens.axboe@oracle.com, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-fsdevel@vger.kernel.org,
+       cluster-devel@redhat.com, linux-kernel@vger.kernel.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: [PATCH] SLOW_WORK: Move slow_work's proc file to debugfs
+In-Reply-To: <20091201161455.GB24897@elte.hu>
+Message-ID: <alpine.LFD.2.00.0912010821170.2872@localhost.localdomain>
+References: <6941.1259681771@redhat.com> <20091201161455.GB24897@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B15414A.9040405@us.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Darren Hart <dvhltc@us.ibm.com> wrote:
 
-> I don't think the "butt-ugly" argument is enough to reject the patch. 
+On Tue, 1 Dec 2009, Ingo Molnar wrote:
+> 
+> Nice - thanks for doing this so quickly! It might sound like nitpicking 
+> but /proc ABIs tend to be a lot harder to get rid of than debugfs 
+> interfaces.
 
-It is in my book - i dont ever apply ugly patches intentionally.
+Ok, I applied it, so we'll not switch interfaces (even if they are just 
+for debugging) across releases.
 
-> It's a fairly subjective metric and I don't think the proposed 
-> solution results in "pretty" code either. In fact the super long 
-> function names and multi-line conditionals are arguably "ugly" (maybe 
-> not "butt-ugly" though). :-)
->
-> However, the arguments are solid and I understand wanting to introduce 
-> a new feature in a particular way. Has there been any work done on 
-> perf event injection up to this point or would this be a completely 
-> new perf feature?
+Btw David, for things like this, it's _really_ nice to use git rename 
+detection. The diffstat (w/ summary) with rename detection looks like 
+this:
 
-Yeah, it would be a brand new one.
+ Documentation/slow-work.txt                      |    4 ++--
+ include/linux/slow-work.h                        |    8 ++++----
+ init/Kconfig                                     |    8 ++++----
+ kernel/Makefile                                  |    2 +-
+ kernel/{slow-work-proc.c => slow-work-debugfs.c} |    4 ++--
+ kernel/slow-work.c                               |   18 ++++++++++++------
+ kernel/slow-work.h                               |    6 +++---
+ 7 files changed, 28 insertions(+), 22 deletions(-)
+ rename kernel/{slow-work-proc.c => slow-work-debugfs.c} (97%)
 
-There's a couple of other usecases as well:
+which makes it obvious that the changes were really just about renaming. 
+Compare to the non-rename-aware one:
 
- - User space logging: apps want to define tracepoints and want to
-   inject events as they happen - mixed properly into the regular perf
-   events flow.
+ Documentation/slow-work.txt |    4 +-
+ include/linux/slow-work.h   |    8 +-
+ init/Kconfig                |    8 +-
+ kernel/Makefile             |    2 +-
+ kernel/slow-work-debugfs.c  |  227 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/slow-work-proc.c     |  227 -------------------------------------------
+ kernel/slow-work.c          |   18 +++-
+ kernel/slow-work.h          |    6 +-
+ 8 files changed, 253 insertions(+), 247 deletions(-)
+ create mode 100644 kernel/slow-work-debugfs.c
+ delete mode 100644 kernel/slow-work-proc.c
 
- - MCE logging: hw faults are so rare that injection is desired to make
-   sure the policy action chain is working properly.
+where you can kind of guess that slow-work-[proc|debugfs].c are largely 
+the same, but you don't actually _see_ that it only has four lines of 
+changes (and the patch then shows that the changes are just to comments).
 
- - Some of the other fault injection sites could be converted to
-   tracepoints + injection-conditions as well, perhaps. That would give
-   a more programmable interface and a generic event logging framework.
-
-So it's nice and important work (and by no means trivial - that comes 
-with the territory) - in case you are interested.
-
-Thanks,
-
-	Ingo
+			Linus
