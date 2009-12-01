@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZLAR1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZLARbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754043AbZLAR1Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:27:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbZLAR1O
+	id S1754058AbZLARbR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbZLARbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:27:14 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:60623 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbZLAR1D (ORCPT
+	Tue, 1 Dec 2009 12:31:16 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:54724 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753402AbZLARbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:27:03 -0500
-Date: Tue, 1 Dec 2009 11:26:37 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Mel Gorman <mel@csn.ul.ie>
-cc: David John <davidjon@xenontk.org>, linux-kernel@vger.kernel.org,
-       Jonathan Miles <jon@cybus.co.uk>, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: OOM kernel behaviour
-In-Reply-To: <4B154E10.7050300@xenontk.org>
-Message-ID: <alpine.DEB.2.00.0912011124490.10426@router.home>
-References: <4B1402FC.80307@cybus.co.uk> <4B1537CA.7020107@xenontk.org> <alpine.DEB.2.00.0912011007360.8841@router.home> <4B154E10.7050300@xenontk.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 1 Dec 2009 12:31:15 -0500
+Message-ID: <4B155252.1040604@nortel.com>
+Date: Tue, 01 Dec 2009 11:28:50 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <alpine.DEB.2.00.0912011124492.10426@router.home>
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: netdev@vger.kernel.org, Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: seeing strange values for tcp sk_rmem_alloc
+References: <4B15416A.2060202@nortel.com> <4B154B29.1030807@cosmosbay.com>
+In-Reply-To: <4B154B29.1030807@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Dec 2009 17:31:11.0211 (UTC) FILETIME=[12FECBB0:01CA72AC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009, David John wrote:
+On 12/01/2009 10:58 AM, Eric Dumazet wrote:
 
-> Here are three logs from three days. Log3.txt is today's log and the OOM
-> killer murdered Thunderbird as I was attempting to write this message.
-> The kernel config is also attached.
+> Me wondering why you think sk_rmem_alloc is about TX side.
+> Its used in RX path. rmem means ReadMemory.
 
-Hmmm... This is all caused by the HIGHMEM zone freecount going beyond min
-which then triggers reclaim which for some reason fails (should not there
-is sufficient material there to reclaim). There is enough memory in the
-NORMAL zone. Wonder if something broke in 2.6.31 in reclaim? Mel?
+Yep, I realize this.
 
+> You can send 1 Gbytes of data, and sk_rmem_alloc doesnt change, if your
+> TCP stream is unidirectionnal.
+> 
+> sk_rmem_alloc grows when skb are queued into receive queue
+> sk_rmem_alloc shrinks when application reads this receive queue.
+
+I realize this.  I sent the data from a socket to itself.  It could just
+as easily be done with two tcp sockets.  The important thing is that I
+control both the tx and rx sides, so I know how much data should be
+present in the rx queue at any point in time.
+
+The part that surprised me was that I could send multiple chunks of data
+without sk_rmem_alloc changing on the socket to which the data was being
+sent.  Then it would jump up by a large amount (up to 20K) all at once.
+
+I'm starting to suspect that the discrepency might have something to do
+with the skb_copy_datagram_iovec() call in tcp_data_queue(), and how
+skb_set_owner_r() is only called if "eaten" is <= 0.  This could be
+totally off-base though.
+
+Chris
