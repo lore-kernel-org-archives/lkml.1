@@ -1,130 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbZLAUYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZLAUYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbZLAUYK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 15:24:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbZLAUYJ
+	id S1754515AbZLAUYa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 15:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbZLAUYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 15:24:09 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40174 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752187AbZLAUYI (ORCPT
+	Tue, 1 Dec 2009 15:24:30 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:38123 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754486AbZLAUY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 15:24:08 -0500
-Subject: Re: [PATCH] perf tools: allow cross compiling of perf tools
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jamie Iles <jamie@jamieiles.com>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>
-In-Reply-To: <1259698310-11025-1-git-send-email-jamie@jamieiles.com>
-References: <1259698310-11025-1-git-send-email-jamie@jamieiles.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 01 Dec 2009 21:24:10 +0100
-Message-ID: <1259699050.4003.15.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 1 Dec 2009 15:24:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=X8pyAZuBXW8qAMRfIPq+1bDSoCK0C9cldGVoWvXPszxPILy91bHfqu7LAvrxV+BE7u
+         Uid2gzt391JT12e6gvH7ZyJAX4dXEFjo97opNZndxVlZFzdmxFnmeID40xynqofRwWQ5
+         HsTFjiU7KAJLN+ay9Am6p/mCSPOsOaMOcq1Ac=
+Message-ID: <4B157B81.9050703@gmail.com>
+Date: Tue, 01 Dec 2009 12:24:33 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: Bisected: s2disk (uswsusp only) hangs just before poweroff
+References: <4B1575AC.6080904@tuffmail.co.uk>
+In-Reply-To: <4B1575AC.6080904@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-01 at 20:11 +0000, Jamie Iles wrote:
-> For embedded systems we need to cross compile applications on
-> the build machine. Use the CROSS_COMPILE variable like the kernel
-> itself.
-> 
-> Additionally, we can't use uname to determine whether we should
-> build for 64 bit. Use the -dumpmachine flag of GCC to determine
-> the target arch.
+On 12/01/09 11:59, Alan Jenkins wrote:
+> Hi
+>
+> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc. I finally
+> got around to bisecting it, which blamed the following commit by Mel:
+>
+> 5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
+>
+> I was able to confirm this by reverting the commit, which fixed the
+> hang. I had to revert one other commit first to avoid a conflict:
+>
+> a6f9edd "page-allocator: maintain rolling count of pages to free from
+> the PCP"
+>
+> -- detail --
+>
+> When I suspend my EeePc 701 to disk, it sometimes hangs after writing
+> out the hibernation image. The system is still able to resume from this
+> image (after working around the hang by pressing the power button).
+> This is specific to s2disk from the uswsusp package (which is now
+> installed by default on debian unstable). It doesn't happen if I
+> uninstall uswsusp and use the in-kernel suspend instead.
+>
+> The hang doesn't happen if I boot with "init=/bin/bash" and run s2disk.
+> Nor does it happen if I boot normally, then switch to single user mode
+> ("telinit 12").
+>
+> It only happens if I've logged in to KDE. In the past, this has
+> indicated a problem in a network driver, since NetworkManager only made
+> a connection once I logged in. But it still hangs if I remove both ath5k
+> and atl2 before I log into KDE. (I actually tried removing as many
+> modules as possible: atl2, ath5k, usbcore, snd-hda-intel, psmouse,
+> pcspkr, battery, ac, themal, fan, and eeepc-laptop). Perhaps it's
+> something to do with the size of the hibernation image.
+>
+> -- confidence in the bisection result --
+>
+> The randomness was a bit annoying, but it's not too bad. The hang would
+> normally show up in the first 3 hibernation cycles; I don't remember
+> having to wait more than 6.
+>
+> I wrote a script to do s2disk + rtcwake so I could leave it testing
+> without constantly hitting the power button. This let me test 2.6.32-rc8
+> with the reverts for at least 20 hibernation cycles.
+>
+> Regards
+> Alan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at http://www.tux.org/lkml/
+>
 
-Hmm, and here I though Michael already send something similar to this..
-but apparently I can't really find it
+hmm.. maybe this is what I'm seeing over here
+i.g. on my macbook(ati gpu) the first s2ram will
+lagg for about 30/40 secs before waking up
+then every other cycle afterwards reacts as it should.
+Threw in kernels 2.6.30,31 before doing anything
+but showed the same results, leading me to beleive maybe
+I have some userspace issue(libx86)going on.
 
-> Signed-off-by: Jamie Iles <jamie@jamieiles.com>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  tools/perf/Makefile |   56 ++++++++++++++++++++++++++++++---------------------
->  1 files changed, 33 insertions(+), 23 deletions(-)
-> 
-> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-> index 7e190d5..aed4812 100644
-> --- a/tools/perf/Makefile
-> +++ b/tools/perf/Makefile
-> @@ -150,27 +150,6 @@ PERF-VERSION-FILE: .FORCE-PERF-VERSION-FILE
->  	@$(SHELL_PATH) util/PERF-VERSION-GEN
->  -include PERF-VERSION-FILE
->  
-> -uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-> -uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
-> -uname_O := $(shell sh -c 'uname -o 2>/dev/null || echo not')
-> -uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
-> -uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
-> -uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
-> -
-> -#
-> -# Add -m32 for cross-builds:
-> -#
-> -ifdef NO_64BIT
-> -  MBITS := -m32
-> -else
-> -  #
-> -  # If we're on a 64-bit kernel, use -m64:
-> -  #
-> -  ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
-> -    MBITS := -m64
-> -  endif
-> -endif
-> -
->  # CFLAGS and LDFLAGS are for the users to override from the command line.
->  
->  #
-> @@ -239,8 +218,16 @@ lib = lib
->  
->  export prefix bindir sharedir sysconfdir
->  
-> -CC = gcc
-> -AR = ar
-> +# CROSS_COMPILE specify the prefix used for all executables used
-> +# during compilation. Only gcc and related bin-utils executables
-> +# are prefixed with $(CROSS_COMPILE).
-> +# CROSS_COMPILE can be set on the command line
-> +# make CROSS_COMPILE=ia64-linux-
-> +# Alternatively CROSS_COMPILE can be set in the environment.
-> +# Default value for CROSS_COMPILE is not to prefix executables
-> +CROSS_COMPILE ?=
-> +CC = $(CROSS_COMPILE)gcc
-> +AR = $(CROSS_COMPILE)ar
->  RM = rm -f
->  TAR = tar
->  FIND = find
-> @@ -252,6 +239,29 @@ PTHREAD_LIBS = -lpthread
->  # explicitly what architecture to check for. Fix this up for yours..
->  SPARSE_FLAGS = -D__BIG_ENDIAN__ -D__powerpc__
->  
-> +uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-> +uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
-> +uname_O := $(shell sh -c 'uname -o 2>/dev/null || echo not')
-> +uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
-> +uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
-> +uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
-> +machine := $(shell sh -c '$(CC) -dumpmachine | cut -d- -f1')
-> +
-> +#
-> +# Add -m32 for cross-builds:
-> +# Note: not all architectures have a -m32/-m64 so only define it if we
-> +# explicitly force to 32 bits or detect a 64 bit arch.
-> +#
-> +ifdef FORCE_32BIT
-> +  MBITS := -m32
-> +else
-> +  #
-> +  # If we're on a 64-bit kernel, use -m64:
-> +  #
-> +  ifneq ($(patsubst %64,%,$(machine)),$(machine))
-> +    MBITS := -m64
-> +  endif
-> +endif
->  
-> 
->  ### --- END CONFIGURATION SECTION ---
+I'll try reverting that commit to see.
 
+Thanks
 
+Justin P. Mattock
