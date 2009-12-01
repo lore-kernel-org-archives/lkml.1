@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZLAREJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZLARJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbZLAREJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZLAREI
+	id S1752722AbZLARJu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbZLARJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:04:08 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:61795 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbZLAREH (ORCPT
+	Tue, 1 Dec 2009 12:09:49 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51128 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbZLARJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:04:07 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc] "fair" rw spinlocks
-Date: Tue, 1 Dec 2009 18:03:24 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20091123145409.GA29627@wotan.suse.de> <20091130171333.GG21639@wotan.suse.de> <alpine.LFD.2.00.0911300914240.2872@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0911300914240.2872@localhost.localdomain>
+	Tue, 1 Dec 2009 12:09:48 -0500
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912011803.24664.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19ab+QImrZPJan+7V/z0Hf0krMIi+efW9QI/Xc
- zeZUBj9a/KBolNn48cacAKL5tZXMFHv5mIxWj7sbNBQVKZBwYx
- nzR5mVkE5LW/f1UFn6WhQ==
+In-Reply-To: <4B154C54.5090906@redhat.com>
+References: <9e4733910912010708u1064e2c6mbc08a01293c3e7fd@mail.gmail.com>
+	 <1259682428.18599.10.camel@maxim-laptop>
+	 <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com>
+	 <4B154C54.5090906@redhat.com>
+Date: Tue, 1 Dec 2009 12:09:53 -0500
+Message-ID: <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com>
+Subject: Re: [RFC v2] Another approach to IR
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
+       superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 November 2009, Linus Torvalds wrote:
-> The best option really would be to try to make it all use RCU, rather than 
-> paper over things. That really should improve performance.
+On Tue, Dec 1, 2009 at 12:03 PM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+> Just taking an example from the dibcom0700 driver (as the same driver
+> supports several different RC5 and NEC codes at the same time),
+> the kernel table has several keycodes added there, all working
+> at the same time. Providing that the scancodes won't overlap, you can
+> map two different scancodes (from different IR's) to return the same
+> keycode (table is not complete - I just got a few common keycodes):
 
-Are there any writers at interrupt time? If not, another option might be
-to first convert all the readers that can happen from interrupts to RCU,
-which lets us get rid of the irq disable in the write path.
+Mauro,
 
-Step two could either be the conversion of all nested readers to RCU,
-or your tasklist_read_lock(), which should then be safe. Doing both of
-these lets us turn tasklist_lock into a plain spinlock, possibly followed
-by converting remaining readers that show measurable lock contention.
+Just to be clear, the dib0700 does not actually support receiving RC5
+or NEC codes at the same time.  You have to tell the chip which mode
+to operate in, via a REQUEST_SET_RC to the firmware (see
+dib0700_core.c:405).  The em28xx works the same way (you have to tell
+it what type of IR format to receive).
 
-	Arnd <><
+The fact that the driver currently uses the same lookup table for both
+types of remote controls however, was perhaps not the best design
+choice.  It really should be separated out, and merged with the
+regular ir-functions.c.  I just never got around to it.
+
+Devin
+
+-- 
+Devin J. Heitmueller - Kernel Labs
+http://www.kernellabs.com
