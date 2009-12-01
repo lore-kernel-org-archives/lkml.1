@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZLAWLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZLAWMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601AbZLAWLo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 17:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbZLAWLo
+	id S1753510AbZLAWMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 17:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbZLAWM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 17:11:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34332 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 17:12:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53430 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753406AbZLAWLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 17:11:43 -0500
-Date: Tue, 1 Dec 2009 23:10:36 +0100
+	id S1753217AbZLAWM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 17:12:28 -0500
+Date: Tue, 1 Dec 2009 23:12:05 +0100
 From: Veaceslav Falico <vfalico@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
@@ -23,9 +23,9 @@ Cc: Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
        Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
        Louis Rilling <louis.rilling@kerlabs.com>,
        David Howells <dhowells@redhat.com>, Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH 1/4] copy_signal cleanup: use zalloc and remove
-	initializations
-Message-ID: <20091201221036.GA10052@darkmag.usersys.redhat.com>
+Subject: [PATCH 2/4] copy_signal cleanup: clean acct_init_pacct() and
+	taskstats_tgid_init()
+Message-ID: <20091201221205.GB10052@darkmag.usersys.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,74 +34,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use kmem_cache_zalloc() on signal creation and remove unneeded initialization
-lines.
+Remove unneeded initializations in acct_init_pacct() and taskstats_tgid_init().
+These are accessed only via copy_signal().
 
 Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
 ---
 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 166b8c4..160477d 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -825,17 +825,6 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
- 	/* Thread group counters. */
- 	thread_group_cputime_init(sig);
+diff --git a/include/linux/taskstats_kern.h b/include/linux/taskstats_kern.h
+index 3398f45..d66167a 100644
+--- a/include/linux/taskstats_kern.h
++++ b/include/linux/taskstats_kern.h
+@@ -16,7 +16,6 @@ extern struct mutex taskstats_exit_mutex;
  
--	/* Expiration times and increments. */
--	sig->it[CPUCLOCK_PROF].expires = cputime_zero;
--	sig->it[CPUCLOCK_PROF].incr = cputime_zero;
--	sig->it[CPUCLOCK_VIRT].expires = cputime_zero;
--	sig->it[CPUCLOCK_VIRT].incr = cputime_zero;
--
--	/* Cached expiration times. */
--	sig->cputime_expires.prof_exp = cputime_zero;
--	sig->cputime_expires.virt_exp = cputime_zero;
--	sig->cputime_expires.sched_exp = 0;
--
- 	if (sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY) {
- 		sig->cputime_expires.prof_exp =
- 			secs_to_cputime(sig->rlim[RLIMIT_CPU].rlim_cur);
-@@ -855,7 +844,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
- 	if (clone_flags & CLONE_THREAD)
- 		return 0;
+ static inline void taskstats_tgid_init(struct signal_struct *sig)
+ {
+-	sig->stats = NULL;
+ }
  
--	sig = kmem_cache_alloc(signal_cachep, GFP_KERNEL);
-+	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
- 	tsk->signal = sig;
- 	if (!sig)
- 		return -ENOMEM;
-@@ -863,33 +852,16 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
- 	atomic_set(&sig->count, 1);
- 	atomic_set(&sig->live, 1);
- 	init_waitqueue_head(&sig->wait_chldexit);
--	sig->flags = 0;
- 	if (clone_flags & CLONE_NEWPID)
- 		sig->flags |= SIGNAL_UNKILLABLE;
--	sig->group_exit_code = 0;
--	sig->group_exit_task = NULL;
--	sig->group_stop_count = 0;
- 	sig->curr_target = tsk;
- 	init_sigpending(&sig->shared_pending);
- 	INIT_LIST_HEAD(&sig->posix_timers);
+ static inline void taskstats_tgid_free(struct signal_struct *sig)
+diff --git a/kernel/acct.c b/kernel/acct.c
+index 9a4715a..8909c26 100644
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -592,8 +592,6 @@ out:
+  */
+ void acct_init_pacct(struct pacct_struct *pacct)
+ {
+-	memset(pacct, 0, sizeof(struct pacct_struct));
+-	pacct->ac_utime = pacct->ac_stime = cputime_zero;
+ }
  
- 	hrtimer_init(&sig->real_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
--	sig->it_real_incr.tv64 = 0;
- 	sig->real_timer.function = it_real_fn;
- 
--	sig->leader = 0;	/* session leadership doesn't inherit */
--	sig->tty_old_pgrp = NULL;
--	sig->tty = NULL;
--
--	sig->utime = sig->stime = sig->cutime = sig->cstime = cputime_zero;
--	sig->gtime = cputime_zero;
--	sig->cgtime = cputime_zero;
--	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
--	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
--	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
--	sig->maxrss = sig->cmaxrss = 0;
- 	task_io_accounting_init(&sig->ioac);
--	sig->sum_sched_runtime = 0;
- 	taskstats_tgid_init(sig);
- 
- 	task_lock(current->group_leader);
+ /**
