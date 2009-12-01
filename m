@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbZLASCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914AbZLASOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbZLASCa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 13:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZLASC3
+	id S1752914AbZLASOD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 13:14:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZLASOC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 13:02:29 -0500
-Received: from kroah.org ([198.145.64.141]:52008 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753398AbZLASC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 13:02:27 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Michal Simek <monstr@monstr.eu>, Arnd Bergmann <arnd@arndb.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 3/3] tty/of_serial: add missing ns16550a id
-Date: Tue,  1 Dec 2009 09:59:06 -0800
-Message-Id: <1259690346-12469-3-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <20091201174341.GB31972@kroah.com>
-References: <20091201174341.GB31972@kroah.com>
+	Tue, 1 Dec 2009 13:14:02 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:36736 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752107AbZLASOB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 13:14:01 -0500
+X-Greylist: delayed 486 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Dec 2009 13:14:01 EST
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 1 Dec 2009 10:05:56 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Mark Hounschell <markh@compro.net>
+cc: Clemens Ladisch <clemens@ladisch.de>,
+       Mai Daftedar <mai.daftedar@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Signal from kernel space to user space
+In-Reply-To: <4B1533B0.1030007@compro.net>
+Message-ID: <alpine.DEB.2.00.0912011003290.20551@makko.or.mcafeemobile.com>
+References: <2cd4ff050912010307h5570a376xc220a95947775eae@mail.gmail.com> <4B151A86.1060505@ladisch.de> <4B1533B0.1030007@compro.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+On Tue, 1 Dec 2009, Mark Hounschell wrote:
 
-Many boards have a bug-free ns16550 compatible serial port, which we should
-register as PORT_16550A. This introduces a new value "ns16550a" for the
-compatible property of of_serial to let a firmware choose that model instead
-of using the crippled PORT_16550 mode.
+> If no "information" is required, which of these are the fastest, say from an interrupt handler?
+> I have a PCI card that handles external interrupts from the outside world and does nothing but
+> report those external interrupts to userland. We use send_sig or wake_up_process depending
+> on whether userland is going to wait for it or not. If there is a better/faster way I would be
+> very interested.
 
-Reported-by: Alon Ziv <alonz@nolaviz.org>
-Signed-off-by: Michal Simek <monstr@monstr.eu>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/serial/of_serial.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+eventfd is. eventfd_signal() is also callable from non-sleeping contexts.
 
-diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
-index 02406ba..cdf172e 100644
---- a/drivers/serial/of_serial.c
-+++ b/drivers/serial/of_serial.c
-@@ -161,6 +161,7 @@ static int of_platform_serial_remove(struct of_device *ofdev)
- static struct of_device_id __devinitdata of_platform_serial_table[] = {
- 	{ .type = "serial", .compatible = "ns8250",   .data = (void *)PORT_8250, },
- 	{ .type = "serial", .compatible = "ns16450",  .data = (void *)PORT_16450, },
-+	{ .type = "serial", .compatible = "ns16550a", .data = (void *)PORT_16550A, },
- 	{ .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
- 	{ .type = "serial", .compatible = "ns16750",  .data = (void *)PORT_16750, },
- 	{ .type = "serial", .compatible = "ns16850",  .data = (void *)PORT_16850, },
--- 
-1.6.4.2
+
+- Davide
+
 
