@@ -1,240 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbZLAA3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZLAAmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753881AbZLAA3L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 19:29:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZLAA3J
+	id S1753323AbZLAAmg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 19:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZLAAme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 19:29:09 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:47479 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751712AbZLAA3I (ORCPT
+	Mon, 30 Nov 2009 19:42:34 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46192 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbZLAAmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 19:29:08 -0500
-Date: Mon, 30 Nov 2009 19:23:25 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-11-30 (security fixes too)
-Message-ID: <20091201002325.GI21401@tuxdriver.com>
-References: <20091130194706.GE21401@tuxdriver.com> <alpine.LFD.2.00.0911301406230.2872@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0911301406230.2872@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 30 Nov 2009 19:42:33 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 1 Dec 2009 09:39:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+Message-Id: <20091201093945.8c24687f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091130120705.GD30235@random.random>
+References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
+	<Pine.LNX.4.64.0911241640590.25288@sister.anvils>
+	<20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091130120705.GD30235@random.random>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 02:08:21PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 30 Nov 2009, John W. Linville wrote:
+On Mon, 30 Nov 2009 13:07:05 +0100
+Andrea Arcangeli <aarcange@redhat.com> wrote:
+
+> On Mon, Nov 30, 2009 at 09:46:16AM +0900, KAMEZAWA Hiroyuki wrote:
+> > Hmm. I'm not sure how many pages are shared in a system but
+> > can't we add some threshold for avoidng too much scan against shared pages ?
+> > (in vmscan.c)
+> > like..
+> >       
+> >        if (page_mapcount(page) > (XXXX >> scan_priority))
+> > 		return 1;
 > > 
-> > If a) you have already taken Dave's latest pull request; and, b) you
-> > don't want to wait for his next one to get the mac80211 security fixes
-> > from Johannes, then you can at your discretion pull from here:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git security
+> > I saw terrible slow downs in shmem-swap-out in old RHELs (at user support).
+> > (Added kosaki to CC.)
 > 
-> Hmm. If I pull the 'security' branch, I get
+> If those ptes are all old there's no reason to keep those pages in ram
+> more... I don't like those magic number levels. If you saw slowdowns
+> it'd be interesting to get more information on those workloads. I
+> never seen swap out workloads in real life that are not 99% I/O
+> dominated, there's nothing that loads the cpu anything close to 100%,
+> so nothing that a magic check like above could affect. 
+
+I saw an user incident that all 64cpus hangs on shmem's spinlock and get
+great slow down, cluster fail over. 
+As workaround, we recommend them to use hugepage. It's not scanned.
+
+Hmm. Can KSM coalesce 10000+ of pages to a page ? In such case, lru
+need to scan 10000+ ptes with 10000+ anon_vma->lock and 10000+ pte locks
+for reclaiming a page.
+
+
+> Besides tmpfs
+> unmap methods are different from ksm and anon pages unmap methods, and
+> certain locks are coarser if there's userland taking i_mmap_lock for
+> I/O during paging.
 > 
->  drivers/net/wireless/iwlwifi/iwl-tx.c |   10 +++++++++-
->  include/net/mac80211.h                |    6 ++++++
->  net/mac80211/agg-rx.c                 |    4 ----
->  net/mac80211/agg-tx.c                 |   17 ++++++++---------
->  net/mac80211/ht.c                     |    8 +++-----
->  net/mac80211/ieee80211_i.h            |    2 ++
->  6 files changed, 28 insertions(+), 19 deletions(-)
-> 
-> which does not match what you then descibe in the rest of the email 
-> (changelog and diffstat).
-> 
-> What you describe seems to be the master branch. 
-> 
-> So I'm not going to pull either, and will wait for confirmation of exactly 
-> what you wanted me to pull.
+maybe. 
 
-Ha!  I confused you... :-)
+Hmm, Larry Woodman reports another? issue.
+http://marc.info/?l=linux-mm&m=125961823921743&w=2
 
-Yes, the diffstat above is correct for the security branch.
-The diffstat lower in the email is for the master branch (which is
-a superset).
+Maybe some modification to lru scanning is necessary independent from ksm.
+I think.
 
-So just for clarity, a pull request tailored for Linus:
+Thanks,
+-Kame
 
-The following changes since commit 3e9848403ad59c53b31facb30b43ca80135ae0b9:
-  Eric Dumazet (1):
-        pktgen: Fix netdevice unregister
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git security
-
-Johannes Berg (2):
-      mac80211: fix two remote exploits
-      mac80211: fix spurious delBA handling
-
- drivers/net/wireless/iwlwifi/iwl-tx.c |   10 +++++++++-
- include/net/mac80211.h                |    6 ++++++
- net/mac80211/agg-rx.c                 |    4 ----
- net/mac80211/agg-tx.c                 |   17 ++++++++---------
- net/mac80211/ht.c                     |    8 +++-----
- net/mac80211/ieee80211_i.h            |    2 ++
- 6 files changed, 28 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c b/drivers/net/wireless/iwlwifi/iwl-tx.c
-index fb9bcfa..b7e196e 100644
---- a/drivers/net/wireless/iwlwifi/iwl-tx.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
-@@ -1277,8 +1277,16 @@ int iwl_tx_agg_stop(struct iwl_priv *priv , const u8 *ra, u16 tid)
- 		return -ENXIO;
- 	}
- 
-+	if (priv->stations[sta_id].tid[tid].agg.state ==
-+				IWL_EMPTYING_HW_QUEUE_ADDBA) {
-+		IWL_DEBUG_HT(priv, "AGG stop before setup done\n");
-+		ieee80211_stop_tx_ba_cb_irqsafe(priv->hw, ra, tid);
-+		priv->stations[sta_id].tid[tid].agg.state = IWL_AGG_OFF;
-+		return 0;
-+	}
-+
- 	if (priv->stations[sta_id].tid[tid].agg.state != IWL_AGG_ON)
--		IWL_WARN(priv, "Stopping AGG while state not IWL_AGG_ON\n");
-+		IWL_WARN(priv, "Stopping AGG while state not ON or starting\n");
- 
- 	tid_data = &priv->stations[sta_id].tid[tid];
- 	ssn = (tid_data->seq_number & IEEE80211_SCTL_SEQ) >> 4;
-diff --git a/include/net/mac80211.h b/include/net/mac80211.h
-index c75b960..998c30f 100644
---- a/include/net/mac80211.h
-+++ b/include/net/mac80211.h
-@@ -1283,6 +1283,12 @@ enum ieee80211_filter_flags {
-  *
-  * These flags are used with the ampdu_action() callback in
-  * &struct ieee80211_ops to indicate which action is needed.
-+ *
-+ * Note that drivers MUST be able to deal with a TX aggregation
-+ * session being stopped even before they OK'ed starting it by
-+ * calling ieee80211_start_tx_ba_cb(_irqsafe), because the peer
-+ * might receive the addBA frame and send a delBA right away!
-+ *
-  * @IEEE80211_AMPDU_RX_START: start Rx aggregation
-  * @IEEE80211_AMPDU_RX_STOP: stop Rx aggregation
-  * @IEEE80211_AMPDU_TX_START: start Tx aggregation
-diff --git a/net/mac80211/agg-rx.c b/net/mac80211/agg-rx.c
-index bc064d7..ce8e0e7 100644
---- a/net/mac80211/agg-rx.c
-+++ b/net/mac80211/agg-rx.c
-@@ -85,10 +85,6 @@ void ieee80211_sta_stop_rx_ba_session(struct ieee80211_sub_if_data *sdata, u8 *r
- 	struct ieee80211_local *local = sdata->local;
- 	struct sta_info *sta;
- 
--	/* stop HW Rx aggregation. ampdu_action existence
--	 * already verified in session init so we add the BUG_ON */
--	BUG_ON(!local->ops->ampdu_action);
--
- 	rcu_read_lock();
- 
- 	sta = sta_info_get(local, ra);
-diff --git a/net/mac80211/agg-tx.c b/net/mac80211/agg-tx.c
-index 206fd82..89e238b 100644
---- a/net/mac80211/agg-tx.c
-+++ b/net/mac80211/agg-tx.c
-@@ -123,13 +123,18 @@ void ieee80211_send_bar(struct ieee80211_sub_if_data *sdata, u8 *ra, u16 tid, u1
- 	ieee80211_tx_skb(sdata, skb, 0);
- }
- 
--static int ___ieee80211_stop_tx_ba_session(struct sta_info *sta, u16 tid,
--					   enum ieee80211_back_parties initiator)
-+int ___ieee80211_stop_tx_ba_session(struct sta_info *sta, u16 tid,
-+				    enum ieee80211_back_parties initiator)
- {
- 	struct ieee80211_local *local = sta->local;
- 	int ret;
- 	u8 *state;
- 
-+#ifdef CONFIG_MAC80211_HT_DEBUG
-+	printk(KERN_DEBUG "Tx BA session stop requested for %pM tid %u\n",
-+	       sta->sta.addr, tid);
-+#endif /* CONFIG_MAC80211_HT_DEBUG */
-+
- 	state = &sta->ampdu_mlme.tid_state_tx[tid];
- 
- 	if (*state == HT_AGG_STATE_OPERATIONAL)
-@@ -143,7 +148,6 @@ static int ___ieee80211_stop_tx_ba_session(struct sta_info *sta, u16 tid,
- 
- 	/* HW shall not deny going back to legacy */
- 	if (WARN_ON(ret)) {
--		*state = HT_AGG_STATE_OPERATIONAL;
- 		/*
- 		 * We may have pending packets get stuck in this case...
- 		 * Not bothering with a workaround for now.
-@@ -525,11 +529,6 @@ int __ieee80211_stop_tx_ba_session(struct sta_info *sta, u16 tid,
- 		goto unlock;
- 	}
- 
--#ifdef CONFIG_MAC80211_HT_DEBUG
--	printk(KERN_DEBUG "Tx BA session stop requested for %pM tid %u\n",
--	       sta->sta.addr, tid);
--#endif /* CONFIG_MAC80211_HT_DEBUG */
--
- 	ret = ___ieee80211_stop_tx_ba_session(sta, tid, initiator);
- 
-  unlock:
-@@ -545,7 +544,7 @@ int ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
- 	struct sta_info *sta;
- 	int ret = 0;
- 
--	if (WARN_ON(!local->ops->ampdu_action))
-+	if (!local->ops->ampdu_action)
- 		return -EINVAL;
- 
- 	if (tid >= STA_TID_NUM)
-diff --git a/net/mac80211/ht.c b/net/mac80211/ht.c
-index 48ef1a2..cdc58e6 100644
---- a/net/mac80211/ht.c
-+++ b/net/mac80211/ht.c
-@@ -141,7 +141,6 @@ void ieee80211_process_delba(struct ieee80211_sub_if_data *sdata,
- 			     struct sta_info *sta,
- 			     struct ieee80211_mgmt *mgmt, size_t len)
- {
--	struct ieee80211_local *local = sdata->local;
- 	u16 tid, params;
- 	u16 initiator;
- 
-@@ -161,10 +160,9 @@ void ieee80211_process_delba(struct ieee80211_sub_if_data *sdata,
- 						 WLAN_BACK_INITIATOR, 0);
- 	else { /* WLAN_BACK_RECIPIENT */
- 		spin_lock_bh(&sta->lock);
--		sta->ampdu_mlme.tid_state_tx[tid] =
--				HT_AGG_STATE_OPERATIONAL;
-+		if (sta->ampdu_mlme.tid_state_tx[tid] & HT_ADDBA_REQUESTED_MSK)
-+			___ieee80211_stop_tx_ba_session(sta, tid,
-+							WLAN_BACK_RECIPIENT);
- 		spin_unlock_bh(&sta->lock);
--		ieee80211_stop_tx_ba_session(&local->hw, sta->sta.addr, tid,
--					     WLAN_BACK_RECIPIENT);
- 	}
- }
-diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
-index a910bf1..10d316e 100644
---- a/net/mac80211/ieee80211_i.h
-+++ b/net/mac80211/ieee80211_i.h
-@@ -1091,6 +1091,8 @@ void ieee80211_process_addba_request(struct ieee80211_local *local,
- 
- int __ieee80211_stop_tx_ba_session(struct sta_info *sta, u16 tid,
- 				   enum ieee80211_back_parties initiator);
-+int ___ieee80211_stop_tx_ba_session(struct sta_info *sta, u16 tid,
-+				    enum ieee80211_back_parties initiator);
- 
- /* Spectrum management */
- void ieee80211_process_measurement_req(struct ieee80211_sub_if_data *sdata,
-
-Sorry for the confusion!  That's what I get for trying to be clever... :-)
-
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
