@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbZLABeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZLABC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752885AbZLABeZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 20:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZLABeX
+	id S1752947AbZLABC7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 20:02:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZLABC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 20:34:23 -0500
-Received: from m50-111.126.com ([123.125.50.111]:45819 "HELO m50-111.126.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751792AbZLABeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 20:34:22 -0500
-X-Greylist: delayed 1927 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Nov 2009 20:34:22 EST
-Message-ID: <4B146B1A.8010607@126.com>
-Date: Tue, 01 Dec 2009 09:02:18 +0800
-From: helight <helight@126.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Mon, 30 Nov 2009 20:02:58 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37846 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbZLABC5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 20:02:57 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B146B2D.9040700@jp.fujitsu.com>
+Date: Tue, 01 Dec 2009 10:02:37 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Brown, Len" <len.brown@intel.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Subject: [PATCH 2/2] fix a Section mismatch in arch/x86/pci/mmconfig-shared.c
- and include/linux/sfi_acpi.h
-References: <4B13A094.2080504@126.com> <4B141A8E.1090104@zytor.com>
-In-Reply-To: <4B141A8E.1090104@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: wKgtcbCr_OPPahRLgN6AAg--.60481S2
-X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
-	VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUU5B7k042IEc7kJM7k042IE42xK82IY6r45
-	ZwAYjxAI6xAIw28IcVAK0I8IjxAxM7k042IE4IxYO2xFxVAqjxCEw4Av424lb7Iv0xC_Jr
-	1lb4IE77IF4wAFYI0v6s8v67xtM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v2
-	0xvaj40_Wr0E3s1l1I0E4x80FVCIwcAKzIAtM7C26IkvcIIF6IxKo4kEV4yl1IIY67AEw4
-	v_Jr0_Jr4l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E
-	14v26rxl6s0DM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14
-	v26rxl6s0DM2vj6xkI62vS6c8GOVWUtr1rJFyl52xGzVA2a4k0FcxF6xCjrcI26cIUMc02
-	F40EFcxC0VAKzVAqx4xG6I80ewAv7VC2z280aVAFwI0_Jr0_Gr1lF7xvr2IY64vIr41lFV
-	AaXTZC67ZELSn0mTvEwaV2v3VFvVW8Mx02cVAKzwCY1Ik26cxK6xAEc7vF6IAIbwCY02Av
-	z4vE14v_KwCY0x0Ix7I2Y4AK6F4j6FyUMxAIw28IcxkI7VAKI48JMxCjnVAqn7xvrwC2zV
-	AF1VAY17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE42xK8VAvwI8IcIk0rVWrZr1j
-	6s0DYxBIdaVFxhVjvjDU0xZFpf9x0zR9ID7UUUUU=
-X-CM-SenderInfo: 5khoxwlkw6ij2wof0z/
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Spencer Candland <spencer@bluehost.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH 2/2] cputime: introduce thread_group_times()
+References: <1258038038.4039.467.camel@laptop> <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com> <4B01A8DB.6090002@bluehost.com> <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com> <1258464288.7816.305.camel@laptop> <20091119181744.GA3743@dhcp-lab-161.englab.brq.redhat.com> <4B05F835.10401@jp.fujitsu.com> <20091123100925.GB25978@dhcp-lab-161.englab.brq.redhat.com> <20091123101612.GC25978@dhcp-lab-161.englab.brq.redhat.com> <4B138EA0.90007@jp.fujitsu.com> <20091130145442.GA2326@dhcp-lab-161.englab.brq.redhat.com>
+In-Reply-To: <20091130145442.GA2326@dhcp-lab-161.englab.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Hi Len,
->
-> Do you want to take this one or should I?
->   
-ooh! both ok！thing is that we fix the problem!
-> 	-hpa
->
->
-> On 11/30/2009 02:38 AM, helight wrote:
->   
->> acpi_sfi_table_parse() should be __init. tested on x86 system!
->>     
->
->   
+Stanislaw Gruszka wrote:
+> Idea is very good IMHO.
+
+Thank you very much!
+
+>>  #ifndef CONFIG_VIRT_CPU_ACCOUNTING
+>> -	cputime_t prev_utime, prev_stime;
+>> +	cputime_t prev_utime, prev_stime, prev_tgutime, prev_tgstime;
+>>  #endif
+> 
+> I think the new values should be part of struct_signal (see below)
+
+Good point.  I'll update patch to do so.
+
+>>  /*
+>> + * Must be called with siglock held.
+>> + */
+>> +void thread_group_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
+>> +{
+>> +	struct task_cputime cputime;
+>> +
+>> +	__thread_group_times(p, &cputime);
+>> +
+>> +	if (ut)
+>> +		*ut = cputime.utime;
+>> +	if (st)
+>> +		*st = cputime.stime;
+> 
+> No thread_group_times() nor task_times() is called with NULL arguments, we
+> can get rid of "if ({u,s}t)" checks. Perhaps thread_group_times() should
+> have "struct task_cputime" argument as it is wrapper for
+> thread_group_cputime();
+
+Removing "if ({u,s}t)" is OK with me.
+I expect all thread_group_times() user should have no interest in members
+of struct task_cputime other than {u,s}time, so I'd like to keep the
+argument as is.
 
 
--- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-
+Thanks,
+H.Seto
 
