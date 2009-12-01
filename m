@@ -1,79 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZLAKWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZLAK26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbZLAKWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 05:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZLAKWS
+	id S1752941AbZLAK26 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 05:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZLAK26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 05:22:18 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44909 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbZLAKWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 05:22:17 -0500
-Date: Tue, 1 Dec 2009 10:21:37 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4B14E220.2050107@cn.fujitsu.com>
-References: <4B14E220.2050107@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_event: Initialize data.period in perf_swevent_hrtimer()
-Message-ID: <tip-59d069eb5ae9b033ed1c124c92e1532c4a958991@git.kernel.org>
-Git-Commit-ID: 59d069eb5ae9b033ed1c124c92e1532c4a958991
-X-Mailer: tip-git-log-daemon
+	Tue, 1 Dec 2009 05:28:58 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:52154 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbZLAK25 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 05:28:57 -0500
+Date: Tue, 1 Dec 2009 10:29:01 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 1
+Message-ID: <20091201102900.GA11715@sirena.org.uk>
+References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
+X-Cookie: I know how to do SPECIAL EFFECTS!!
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  59d069eb5ae9b033ed1c124c92e1532c4a958991
-Gitweb:     http://git.kernel.org/tip/59d069eb5ae9b033ed1c124c92e1532c4a958991
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Tue, 1 Dec 2009 17:30:08 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 1 Dec 2009 11:19:07 +0100
+On Tue, Dec 01, 2009 at 07:03:01PM +1100, Stephen Rothwell wrote:
 
-perf_event: Initialize data.period in perf_swevent_hrtimer()
+> Merging sound/for-next
+> Applying: ASoC: tlv320dac33: Change RT wq to singlethread wq
 
-In current code in perf_swevent_hrtimer(), data.period is not
-initialized, The result is obvious wrong:
+According to this the sound tree should be being merged into the next
+tree but when I look in the master branch of your git I'm not seeing any
+sign of it - am I missing something here?  The head of your master
+branch that I see is 16aa56906ae11bfdb145676a5fb5c5f43394148d "Add
+linux-next specific files for 20091201".
 
- # ./perf record -f -e cpu-clock make
- # ./perf report
- # Samples: 1740
- #
- # Overhead   Command                                   ......
- # ........  ........  ..........................................
- #
-   1025422183050275328.00%        sh  libc-2.9.90.so ...
-   1025422183050275328.00%      perl  libperl.so     ...
-   1025422168240043264.00%      perl  [kernel]       ...
-   1025422030011210752.00%      perl  [kernel]       ...
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: <stable@kernel.org>
-LKML-Reference: <4B14E220.2050107@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/perf_event.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 0b9ca2d..040ee51 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -4010,6 +4010,7 @@ static enum hrtimer_restart perf_swevent_hrtimer(struct hrtimer *hrtimer)
- 	event->pmu->read(event);
- 
- 	data.addr = 0;
-+	data.period = event->hw.last_period;
- 	regs = get_irq_regs();
- 	/*
- 	 * In case we exclude kernel IPs or are somehow not in interrupt
+The same thing happened yesterday.
