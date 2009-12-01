@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZLAAmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZLAAoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753323AbZLAAmg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 19:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZLAAme
+	id S1753902AbZLAAoI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 19:44:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZLAAoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 19:42:34 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46192 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbZLAAmd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 19:42:33 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 1 Dec 2009 09:39:45 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
-Message-Id: <20091201093945.8c24687f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091130120705.GD30235@random.random>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
-	<Pine.LNX.4.64.0911241640590.25288@sister.anvils>
-	<20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091130120705.GD30235@random.random>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Nov 2009 19:44:06 -0500
+Received: from ozlabs.org ([203.10.76.45]:33199 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752123AbZLAAoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 19:44:04 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] sched: Fix isolcpus boot option
+Date: Tue, 1 Dec 2009 11:14:09 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
+Cc: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org
+References: <20091130000532.GW32182@kryten>
+In-Reply-To: <20091130000532.GW32182@kryten>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912011114.09476.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009 13:07:05 +0100
-Andrea Arcangeli <aarcange@redhat.com> wrote:
-
-> On Mon, Nov 30, 2009 at 09:46:16AM +0900, KAMEZAWA Hiroyuki wrote:
-> > Hmm. I'm not sure how many pages are shared in a system but
-> > can't we add some threshold for avoidng too much scan against shared pages ?
-> > (in vmscan.c)
-> > like..
-> >       
-> >        if (page_mapcount(page) > (XXXX >> scan_priority))
-> > 		return 1;
-> > 
-> > I saw terrible slow downs in shmem-swap-out in old RHELs (at user support).
-> > (Added kosaki to CC.)
+On Mon, 30 Nov 2009 10:35:32 am Anton Blanchard wrote:
 > 
-> If those ptes are all old there's no reason to keep those pages in ram
-> more... I don't like those magic number levels. If you saw slowdowns
-> it'd be interesting to get more information on those workloads. I
-> never seen swap out workloads in real life that are not 99% I/O
-> dominated, there's nothing that loads the cpu anything close to 100%,
-> so nothing that a magic check like above could affect. 
-
-I saw an user incident that all 64cpus hangs on shmem's spinlock and get
-great slow down, cluster fail over. 
-As workaround, we recommend them to use hugepage. It's not scanned.
-
-Hmm. Can KSM coalesce 10000+ of pages to a page ? In such case, lru
-need to scan 10000+ ptes with 10000+ anon_vma->lock and 10000+ pte locks
-for reclaiming a page.
-
-
-> Besides tmpfs
-> unmap methods are different from ksm and anon pages unmap methods, and
-> certain locks are coarser if there's userland taking i_mmap_lock for
-> I/O during paging.
+> We allocate and zero cpu_isolated_map after the isolcpus __setup option
+> has run. This means cpu_isolated_map always ends up empty and if
+> CPUMASK_OFFSTACK is enabled we write to a cpumask that hasn't been
+> allocated.
 > 
-maybe. 
+> To keep the fix to a minimum this patch stores a pointer to the cmdline
+> option and parses it after we allocate and zero the cpumask.
 
-Hmm, Larry Woodman reports another? issue.
-http://marc.info/?l=linux-mm&m=125961823921743&w=2
+I introduced this regression in:
 
-Maybe some modification to lru scanning is necessary independent from ksm.
-I think.
+	commit 49557e620339cb134127b5bfbcfecc06b77d0232
+	Author: Rusty Russell <rusty@rustcorp.com.au>
+	Date:   Mon Nov 2 20:37:20 2009 +1030
+
+	    sched: Fix boot crash by zalloc()ing most of the cpu masks
+
+But this change made isolcpus= never work, CPUMASK_OFFSTACK or no.
+
+Your patch works and is minimal.
+
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
 Thanks,
--Kame
+Rusty.
+
+PS. This would have also worked:
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8045,6 +8045,7 @@ static cpumask_var_t cpu_isolated_map;
+ /* Setup the mask of cpus configured for isolated domains */
+ static int __init isolated_cpu_setup(char *str)
+ {
++	alloc_bootmem_cpumask_var(&cpu_isolated_map);
+ 	cpulist_parse(str, cpu_isolated_map);
+ 	return 1;
+ }
+@@ -9571,7 +9572,9 @@ void __init sched_init(void)
+ 	zalloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
+ 	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
+ #endif
+-	zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
++	/* May be allocated at isolcpus cmdline parse time */
++	if (cpu_isolated_map == NULL)
++		zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
+ #endif /* SMP */
+ 
+ 	perf_event_init();
+
+
 
