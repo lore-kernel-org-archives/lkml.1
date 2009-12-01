@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbZLAB6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZLAB7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbZLAB6M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 20:58:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZLAB6L
+	id S1753181AbZLAB7h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 20:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZLAB7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 20:58:11 -0500
-Received: from ozlabs.org ([203.10.76.45]:33705 "EHLO ozlabs.org"
+	Mon, 30 Nov 2009 20:59:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40948 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752557AbZLAB6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 20:58:10 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] staging: fix a silly typo
-Date: Tue, 1 Dec 2009 12:28:14 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-References: <20091130132432.27394.48685.stgit@localhost.localdomain> <20091130161405.GB15572@kroah.com>
-In-Reply-To: <20091130161405.GB15572@kroah.com>
+	id S1752274AbZLAB7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 20:59:35 -0500
+Message-ID: <4B147918.3000503@redhat.com>
+Date: Tue, 01 Dec 2009 10:02:00 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Tejun Heo <tj@kernel.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] percpu: explain quick paths in pcpu_[de]populate_chunk()
+References: <20091130091501.4507.28683.sendpatchset@localhost.localdomain> <4B13A7ED.9010905@kernel.org> <alpine.DEB.2.00.0911301258370.18682@router.home> <4B145CE9.1060608@kernel.org>
+In-Reply-To: <4B145CE9.1060608@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912011228.14927.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009 02:44:05 am Greg KH wrote:
-> On Mon, Nov 30, 2009 at 01:24:49PM +0000, Alan Cox wrote:
-> > (Resend #3)
-> > 
-> > Signed-off-by: Alan Cox <alan@linux.intel.com>
-> > ---
-> > 
-> >  drivers/staging/rtl8187se/r8180_core.c  |    2 +-
-> >  drivers/staging/rtl8192su/r8192U_core.c |    2 +-
-> >  2 files changed, 2 insertions(+), 2 deletions(-)
+Tejun Heo wrote:
+> pcpu_[de]populate_chunk() check whether there's actually any work to
+> do at the beginning and exit early if not.  This checking is done by
+> seeing whether the first iteration of pcpu_for_each_[un]pop_region()
+> covers the whole requested region.  The resulting code is a bit
+> unusual in that it's loop-like but never loops which apparently
+> confuses people.  Add comments to explain it.
 > 
-> This is due to changes in Rusty's tree, not mine.  You aren't the only
-> one constantly sending this patch, Randy is as well.
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reported-by: Amerigo Wang <amwang@redhat.com>
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> ---
+> Added to percpu#for-next.  This should be clear enough, right?
 > 
-> Rusty, I thought you fixed these up?
 
-I did too, but it seems not.  Which is very weird; I don't send replies
-until I've actually done something.
+Nope, comments can never fix bad code.
 
-Fixed and uploaded.
+Since these two break statements are intentional, why not use if?
+Logically, the following two are equalent.
 
-Sorry,
-Rusty.
+for(a1; a2; a3){
+     if (a4)
+        return;
+     break;
+}
+
+
+a1;
+if (a2) {
+    if (a4)
+        return;
+}
+
+
+And the latter is much more readable than the former.
