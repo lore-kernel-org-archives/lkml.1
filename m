@@ -1,114 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbZLARR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbZLARTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753579AbZLARR0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbZLARRZ
+	id S1753789AbZLARTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZLARTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:17:25 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:43031 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752375AbZLARRX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:17:23 -0500
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Pierre Ossman <pierre@ossman.eu>,
-       Eric Miao <eric.y.miao@gmail.com>, linux-mmc@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, stable@kernel.org
-Subject: [PATCH] mmc: pxamci: call mmc_remove_host() before freeing resources
-Date: Tue,  1 Dec 2009 18:17:18 +0100
-Message-Id: <1259687838-31722-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.5.2
+	Tue, 1 Dec 2009 12:19:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48600 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753111AbZLARTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:19:18 -0500
+Date: Tue, 1 Dec 2009 12:18:49 -0500
+From: Jason Baron <jbaron@redhat.com>
+Message-Id: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, mhiramat@redhat.com,
+       wcohen@redhat.com, rostedt@goodmis.org, fweisbec@gmail.com,
+       mathieu.desnoyers@polymtl.ca
+Subject: [PATCH v2] tracing: add DEFINE_EVENT(), DEFINE_SINGLE_EVENT() support to docbook
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mmc_remove_host() will cause the mmc core to switch off the bus power by
-eventually calling pxamci_set_ios(). This function uses the regulator or
-the GPIO which have been freed already.
+The introduction of the new 'DECLARE_EVENT_CLASS()' obviates the need for the
+'TRACE_EVENT()' macro in some cases. Thus, docbook style comments that used
+to live with 'TRACE_EVENT()' are now moved to 'DEFINE_EVENT()'. Thus, we need
+to make the docbook system understand the new 'DEFINE_EVENT()' macro. In
+addition I've tried to futureproof the patch, by also adding support for
+'DEFINE_SINGLE_EVENT()', since there has been discussion about renaming:
+TRACE_EVENT() -> DEFINE_SINGLE_EVENT().
 
-This causes the following Oops on module unload.
+Without this patch the tracepoint docbook fails to build.
 
-[   49.519649] Unable to handle kernel paging request at virtual address 30303a70
-[   49.526878] pgd = c7084000
-[   49.529563] [30303a70] *pgd=00000000
-[   49.533136] Internal error: Oops: 5 [#1]
-[   49.537025] last sysfs file: /sys/devices/platform/pxa27x-ohci/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/scsi_level
-[   49.547471] Modules linked in: pxamci(-) eeti_ts
-[   49.552061] CPU: 0    Not tainted  (2.6.32-rc8 #322)
-[   49.557001] PC is at regulator_is_enabled+0x3c/0xbc
-[   49.561846] LR is at regulator_is_enabled+0x30/0xbc
-[   49.566691] pc : [<c01a2448>]    lr : [<c01a243c>]    psr: 60000013
-[   49.566702] sp : c7083e70  ip : 30303a30  fp : 00000000
-[   49.578093] r10: c705e200  r9 : c7082000  r8 : c705e2e0
-[   49.583280] r7 : c7061340  r6 : c7061340  r5 : c7083e70  r4 : 00000000
-[   49.589759] r3 : c04dc434  r2 : c04dc434  r1 : c03eecea  r0 : 00000047
-[   49.596241] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
-[   49.603329] Control: 0000397f  Table: a7084018  DAC: 00000015
-[   49.609031] Process rmmod (pid: 1101, stack limit = 0xc7082278)
-[   49.614908] Stack: (0xc7083e70 to 0xc7084000)
-[   49.619238] 3e60:                                     c7082000 c703c4f8 c705ea00 c04f4074
-[   49.627366] 3e80: 00000000 c705e3a0 ffffffff c0247ddc c70361a0 00000000 c705e3a0 ffffffff
-[   49.635499] 3ea0: c705e200 bf006400 c78c4f00 c705e200 c705e3a0 ffffffff c705e200 ffffffff
-[   49.643633] 3ec0: c04d8ac8 c02476d0 ffffffff c0247c60 c705e200 c0248678 c705e200 c0249064
-[   49.651765] 3ee0: ffffffff bf006204 c04d8ad0 c04d8ad0 c04d8ac8 bf007490 00000880 c00440c4
-[   49.659898] 3f00: 0000b748 c01c5708 bf007490 c01c44c8 c04d8ac8 c04d8afc bf007490 c01c4570
-[   49.668031] 3f20: bf007490 bf00750c c04f4258 c01c37a4 00000000 bf00750c c7083f44 c007b014
-[   49.676162] 3f40: 4000d000 6d617870 08006963 00000001 00000000 c7085000 00000001 00000000
-[   49.684287] 3f60: 4000d000 c7083f8c 00000001 bea01a54 00005401 c7ab1400 c00440c4 00082000
-[   49.692420] 3f80: bf00750c 00000880 c7083f8c 00000000 4000cfa8 00000000 00000880 bea01cc8
-[   49.700552] 3fa0: 00000081 c0043f40 00000000 00000880 bea01cc8 00000880 00000006 00000000
-[   49.708677] 3fc0: 00000000 00000880 bea01cc8 00000081 00000097 0000cca4 0000b748 00000000
-[   49.716802] 3fe0: 4001a4f0 bea01cc0 00018bf4 4001a4fc 20000010 bea01cc8 a063e021 a063e421
-[   49.724958] [<c01a2448>] (regulator_is_enabled+0x3c/0xbc) from [<c0247ddc>] (mmc_regulator_set_ocr+0x14/0xd8)
-[   49.734836] [<c0247ddc>] (mmc_regulator_set_ocr+0x14/0xd8) from [<bf006400>] (pxamci_set_ios+0xd8/0x17c [pxamci])
-[   49.745044] [<bf006400>] (pxamci_set_ios+0xd8/0x17c [pxamci]) from [<c02476d0>] (mmc_power_off+0x50/0x58)
-[   49.754555] [<c02476d0>] (mmc_power_off+0x50/0x58) from [<c0247c60>] (mmc_detach_bus+0x68/0xc4)
-[   49.763207] [<c0247c60>] (mmc_detach_bus+0x68/0xc4) from [<c0248678>] (mmc_stop_host+0xd4/0x1bc)
-[   49.771944] [<c0248678>] (mmc_stop_host+0xd4/0x1bc) from [<c0249064>] (mmc_remove_host+0xc/0x20)
-[   49.780681] [<c0249064>] (mmc_remove_host+0xc/0x20) from [<bf006204>] (pxamci_remove+0xc8/0x174 [pxamci])
-[   49.790211] [<bf006204>] (pxamci_remove+0xc8/0x174 [pxamci]) from [<c01c5708>] (platform_drv_remove+0x1c/0x24)
-[   49.800164] [<c01c5708>] (platform_drv_remove+0x1c/0x24) from [<c01c44c8>] (__device_release_driver+0x7c/0xc4)
-[   49.810110] [<c01c44c8>] (__device_release_driver+0x7c/0xc4) from [<c01c4570>] (driver_detach+0x60/0x8c)
-[   49.819535] [<c01c4570>] (driver_detach+0x60/0x8c) from [<c01c37a4>] (bus_remove_driver+0x90/0xcc)
-[   49.828452] [<c01c37a4>] (bus_remove_driver+0x90/0xcc) from [<c007b014>] (sys_delete_module+0x1d8/0x254)
-[   49.837891] [<c007b014>] (sys_delete_module+0x1d8/0x254) from [<c0043f40>] (ret_fast_syscall+0x0/0x28)
-[   49.847145] Code: eb06c53a e596c030 e1a0500d e59f106c (e59c0040)
-[   49.853566] ---[ end trace b5fa66a00cea142f ]---
+I've verified that this patch correctly builds the tracepoint docbook which
+currently covers signals, and irqs.
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Reported-by: Sven Neumann <s.neumann@raumfeld.com>
-Cc: Pierre Ossman <pierre@ossman.eu>
-Cc: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-mmc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: stable@kernel.org
+Changes in v2:
+ - properly indent perl 'if' statements
+
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: William Cohen <wcohen@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
 ---
- drivers/mmc/host/pxamci.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ scripts/kernel-doc |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mmc/host/pxamci.c b/drivers/mmc/host/pxamci.c
-index c35df2b..fb0978c 100644
---- a/drivers/mmc/host/pxamci.c
-+++ b/drivers/mmc/host/pxamci.c
-@@ -760,6 +760,8 @@ static int pxamci_remove(struct platform_device *pdev)
- 	if (mmc) {
- 		struct pxamci_host *host = mmc_priv(mmc);
+diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+index ea9f8a5..241310e 100755
+--- a/scripts/kernel-doc
++++ b/scripts/kernel-doc
+@@ -1852,10 +1852,17 @@ sub tracepoint_munge($) {
+ 	my $tracepointname = 0;
+ 	my $tracepointargs = 0;
  
-+		mmc_remove_host(mmc);
-+
- 		if (host->pdata) {
- 			gpio_cd = host->pdata->gpio_card_detect;
- 			gpio_ro = host->pdata->gpio_card_ro;
-@@ -779,8 +781,6 @@ static int pxamci_remove(struct platform_device *pdev)
- 		if (host->pdata && host->pdata->exit)
- 			host->pdata->exit(&pdev->dev, mmc);
- 
--		mmc_remove_host(mmc);
--
- 		pxamci_stop_clock(host);
- 		writel(TXFIFO_WR_REQ|RXFIFO_RD_REQ|CLK_IS_OFF|STOP_CMD|
- 		       END_CMD_RES|PRG_DONE|DATA_TRAN_DONE,
+-	if($prototype =~ m/TRACE_EVENT\((.*?),/) {
++	if ($prototype =~ m/TRACE_EVENT\((.*?),/) {
+ 		$tracepointname = $1;
+ 	}
+-	if($prototype =~ m/TP_PROTO\((.*?)\)/) {
++	if ($prototype =~ m/DEFINE_SINGLE_EVENT\((.*?),/) {
++		$tracepointname = $1;
++	}
++	if ($prototype =~ m/DEFINE_EVENT\((.*?),(.*?),/) {
++		$tracepointname = $2;
++	}
++	$tracepointname =~ s/^\s+//; #strip leading whitespace
++	if ($prototype =~ m/TP_PROTO\((.*?)\)/) {
+ 		$tracepointargs = $1;
+ 	}
+ 	if (($tracepointname eq 0) || ($tracepointargs eq 0)) {
+@@ -1920,7 +1927,9 @@ sub process_state3_function($$) {
+ 	if ($prototype =~ /SYSCALL_DEFINE/) {
+ 		syscall_munge();
+ 	}
+-	if ($prototype =~ /TRACE_EVENT/) {
++	if ($prototype =~ /TRACE_EVENT/ || $prototype =~ /DEFINE_EVENT/ ||
++	    $prototype =~ /DEFINE_SINGLE_EVENT/)
++	{
+ 		tracepoint_munge($file);
+ 	}
+ 	dump_function($prototype, $file);
 -- 
-1.6.5.2
+1.6.5.1
 
