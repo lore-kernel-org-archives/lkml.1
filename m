@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbZLAERx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbZLAESJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753489AbZLAERx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 23:17:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZLAERv
+	id S1753513AbZLAESJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 23:18:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZLAESI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 23:17:51 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51178 "EHLO
+	Mon, 30 Nov 2009 23:18:08 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33006 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753464AbZLAERq (ORCPT
+	with ESMTP id S1753445AbZLAESG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 23:17:46 -0500
-Date: Mon, 30 Nov 2009 23:17:23 -0500
-Message-Id: <200912010417.nB14HN2N030489@agora.fsl.cs.sunysb.edu>
+	Mon, 30 Nov 2009 23:18:06 -0500
+Date: Mon, 30 Nov 2009 23:17:43 -0500
+Message-Id: <200912010417.nB14Hhbm030497@agora.fsl.cs.sunysb.edu>
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: Valerie Aurora <vaurora@redhat.com>
 Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
@@ -23,129 +23,206 @@ Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 33/41] fallthru: jffs2 fallthru support 
-In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:31 PDT."
-             <1256152779-10054-34-git-send-email-vaurora@redhat.com> 
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 34/41] fallthru: tmpfs fallthru support 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:32 PDT."
+             <1256152779-10054-35-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1256152779-10054-34-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> From: Felix Fietkau <nbd@openwrt.org>
+In message <1256152779-10054-35-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> Add support for fallthru directory entries to tmpfs
+
+Need to CC tmpfs maintainers here.
+
+> XXX - Makes up inode number for dirent
 > 
-> Add support for fallthru dentries to jffs2.
-> 
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: linux-mtd@lists.infradead.org
-> Signed-off-by: Felix Fietkau <nbd@openwrt.org>
 > Signed-off-by: Valerie Aurora <vaurora@redhat.com>
 > ---
->  fs/jffs2/dir.c        |   31 ++++++++++++++++++++++++++++++-
->  include/linux/jffs2.h |    6 ++++++
->  2 files changed, 36 insertions(+), 1 deletions(-)
+>  fs/dcache.c |    3 +-
+>  fs/libfs.c  |   21 +++++++++++++++++--
+>  mm/shmem.c  |   60 ++++++++++++++++++++++++++++++++++++++++++++++++++++------
+>  3 files changed, 73 insertions(+), 11 deletions(-)
 > 
-> diff --git a/fs/jffs2/dir.c b/fs/jffs2/dir.c
-> index 46a2e1b..544d6c5 100644
-> --- a/fs/jffs2/dir.c
-> +++ b/fs/jffs2/dir.c
-> @@ -35,6 +35,7 @@ static int jffs2_rename (struct inode *, struct dentry *,
->  			 struct inode *, struct dentry *);
->  
->  static int jffs2_whiteout (struct inode *, struct dentry *, struct dentry *);
-> +static int jffs2_fallthru (struct inode *, struct dentry *);
->  
->  const struct file_operations jffs2_dir_operations =
->  {
-> @@ -57,6 +58,7 @@ const struct inode_operations jffs2_dir_inode_operations =
->  	.rmdir =	jffs2_rmdir,
->  	.mknod =	jffs2_mknod,
->  	.rename =	jffs2_rename,
-> +	.fallthru =     jffs2_fallthru,
->  	.whiteout =     jffs2_whiteout,
->  	.permission =	jffs2_permission,
->  	.setattr =	jffs2_setattr,
-> @@ -107,6 +109,9 @@ static struct dentry *jffs2_lookup(struct inode *dir_i, struct dentry *target,
->  		case DT_WHT:
->  			target->d_flags |= DCACHE_WHITEOUT;
->  			break;
-> +		case JFFS2_DT_FALLTHRU:
-> +			target->d_flags |= DCACHE_FALLTHRU;
-> +			break;
->  		default:
->  			ino = fd->ino;
->  			break;
-> @@ -168,7 +173,10 @@ static int jffs2_readdir(struct file *filp, void *dirent, filldir_t filldir)
->  				  fd->name, fd->ino, fd->type, curofs, offset));
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index ca8a661..8ef2d89 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -2292,7 +2292,8 @@ resume:
+>  		struct dentry *dentry = list_entry(tmp, struct dentry, d_u.d_child);
+>  		next = tmp->next;
+>  		if (d_unhashed(dentry)||(!dentry->d_inode &&
+> -					 !d_is_whiteout(dentry)))
+> +					 !d_is_whiteout(dentry) &&
+> +					 !d_is_fallthru(dentry)))
 >  			continue;
->  		}
-> -		if (!fd->ino) {
-> +		if (fd->type == JFFS2_DT_FALLTHRU)
-> +			/* XXX Should really do a lookup for the real inode number here */
-> +			fd->ino = 100;
+>  		if (!list_empty(&dentry->d_subdirs)) {
+>  			this_parent = dentry;
+> diff --git a/fs/libfs.c b/fs/libfs.c
+> index dcec3d3..01f3e73 100644
+> --- a/fs/libfs.c
+> +++ b/fs/libfs.c
+> @@ -133,6 +133,7 @@ int dcache_readdir(struct file * filp, void * dirent, filldir_t filldir)
+>  	struct dentry *cursor = filp->private_data;
+>  	struct list_head *p, *q = &cursor->d_u.d_child;
+>  	ino_t ino;
+> +	int d_type;
+>  	int i = filp->f_pos;
+>  
+>  	switch (i) {
+> @@ -158,14 +159,28 @@ int dcache_readdir(struct file * filp, void * dirent, filldir_t filldir)
+>  			for (p=q->next; p != &dentry->d_subdirs; p=p->next) {
+>  				struct dentry *next;
+>  				next = list_entry(p, struct dentry, d_u.d_child);
+> -				if (d_unhashed(next) || !next->d_inode)
+> +				if (d_unhashed(next) || (!next->d_inode && !d_is_fallthru(next)))
+>  					continue;
+>  
+> +				if (d_is_fallthru(next)) {
+> +					/* XXX We don't know the inode
+> +					 * number of the directory
+> +					 * entry in the underlying
+> +					 * file system.  Should look
+> +					 * it up, either on fallthru
+> +					 * creation at first readdir
+> +					 * or now at filldir time. */
+> +					ino = 123; /* Made up ino */
 
-In the ext2 patch, it was ino=123, here it's 100.  Is there a consistently
-useful reserved number to use instead, for jffs2 as well?  If not, maybe at
-least we can pick one random inode number and use it for all default inode
-numbers for ext2, jffs2, etc.?
+Ok, so here it's 123, as in ext2, but not jffs2, who had it set to 100...
 
-> +		else if (!fd->ino && (fd->type != DT_WHT)) {
->  			D2(printk(KERN_DEBUG "Skipping deletion dirent \"%s\"\n", fd->name));
->  			offset++;
->  			continue;
-> @@ -797,6 +805,26 @@ static int jffs2_mknod (struct inode *dir_i, struct dentry *dentry, int mode, de
->  	return 0;
+> +					d_type = DT_UNKNOWN;
+> +				} else {
+> +					ino = next->d_inode->i_ino;
+> +					d_type = dt_type(next->d_inode);
+> +				}
+> +
+>  				spin_unlock(&dcache_lock);
+>  				if (filldir(dirent, next->d_name.name, 
+>  					    next->d_name.len, filp->f_pos, 
+> -					    next->d_inode->i_ino, 
+> -					    dt_type(next->d_inode)) < 0)
+> +					    ino, d_type) < 0)
+>  					return 0;
+>  				spin_lock(&dcache_lock);
+>  				/* next is still alive */
+> diff --git a/mm/shmem.c b/mm/shmem.c
+> index 2faa14b..4f4b4b6 100644
+> --- a/mm/shmem.c
+> +++ b/mm/shmem.c
+> @@ -1798,8 +1798,7 @@ static int shmem_rmdir(struct inode *dir, struct dentry *dentry);
+>  static int shmem_unlink(struct inode *dir, struct dentry *dentry);
+>  
+>  /*
+> - * This is the whiteout support for tmpfs. It uses one singleton whiteout
+> - * inode per superblock thus it is very similar to shmem_link().
+> + * Create a dentry to signify a whiteout.
+>   */
+>  static int shmem_whiteout(struct inode *dir, struct dentry *old_dentry,
+>  			  struct dentry *new_dentry)
+> @@ -1830,8 +1829,10 @@ static int shmem_whiteout(struct inode *dir, struct dentry *old_dentry,
+>  		spin_unlock(&sbinfo->stat_lock);
+>  	}
+>  
+> -	if (old_dentry->d_inode) {
+> -		if (S_ISDIR(old_dentry->d_inode->i_mode))
+> +	if (old_dentry->d_inode || d_is_fallthru(old_dentry)) {
+> +		/* A fallthru for a dir is treated like a regular link */
+> +		if (old_dentry->d_inode &&
+> +		    S_ISDIR(old_dentry->d_inode->i_mode))
+>  			shmem_rmdir(dir, old_dentry);
+>  		else
+>  			shmem_unlink(dir, old_dentry);
+> @@ -1848,6 +1849,48 @@ static int shmem_whiteout(struct inode *dir, struct dentry *old_dentry,
 >  }
 >  
-> +static int jffs2_fallthru (struct inode *dir, struct dentry *dentry)
+>  static void shmem_d_instantiate(struct inode *dir, struct dentry *dentry,
+> +				struct inode *inode);
+> +
+> +/*
+> + * Create a dentry to signify a fallthru.  A fallthru in tmpfs is the
+> + * logical equivalent of an in-kernel readdir() cache.  It can't be
+> + * deleted until the file system is unmounted.
+> + */
+> +static int shmem_fallthru(struct inode *dir, struct dentry *dentry)
 > +{
-> +	struct jffs2_sb_info *c = JFFS2_SB_INFO(dir->i_sb);
-> +	uint32_t now;
-> +	int ret;
+> +	struct shmem_sb_info *sbinfo = SHMEM_SB(dir->i_sb);
 > +
-> +	now = get_seconds();
-> +	ret = jffs2_do_link(c, JFFS2_INODE_INFO(dir), 0, DT_UNKNOWN,
-> +			    dentry->d_name.name, dentry->d_name.len, now);
-> +	if (ret)
-> +		return ret;
+> +	/* FIXME: this is stupid */
+> +	if (!(dir->i_sb->s_flags & MS_WHITEOUT))
+> +		return -EPERM;
 > +
-> +	d_instantiate(dentry, NULL);
+> +	if (dentry->d_inode || d_is_fallthru(dentry) || d_is_whiteout(dentry))
+> +		return -EEXIST;
+> +
+> +	/*
+> +	 * Each new link needs a new dentry, pinning lowmem, and tmpfs
+> +	 * dentries cannot be pruned until they are unlinked.
+> +	 */
+> +	if (sbinfo->max_inodes) {
+> +		spin_lock(&sbinfo->stat_lock);
+> +		if (!sbinfo->free_inodes) {
+> +			spin_unlock(&sbinfo->stat_lock);
+> +			return -ENOSPC;
+> +		}
+> +		sbinfo->free_inodes--;
+> +		spin_unlock(&sbinfo->stat_lock);
+> +	}
+> +
+> +	shmem_d_instantiate(dir, dentry, NULL);
+> +	dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+> +
 > +	spin_lock(&dentry->d_lock);
 > +	dentry->d_flags |= DCACHE_FALLTHRU;
 > +	spin_unlock(&dentry->d_lock);
-> +
 > +	return 0;
 > +}
 > +
->  static int jffs2_whiteout (struct inode *dir, struct dentry *old_dentry,
->  			   struct dentry *new_dentry)
+> +static void shmem_d_instantiate(struct inode *dir, struct dentry *dentry,
+>  				struct inode *inode)
 >  {
-> @@ -830,6 +858,7 @@ static int jffs2_whiteout (struct inode *dir, struct dentry *old_dentry,
->  		return ret;
->  
->  	spin_lock(&new_dentry->d_lock);
-> +	new_dentry->d_flags &= ~DCACHE_FALLTHRU;
->  	new_dentry->d_flags |= DCACHE_WHITEOUT;
->  	spin_unlock(&new_dentry->d_lock);
->  	d_add(new_dentry, NULL);
-> diff --git a/include/linux/jffs2.h b/include/linux/jffs2.h
-> index 65533bb..dbe8c93 100644
-> --- a/include/linux/jffs2.h
-> +++ b/include/linux/jffs2.h
-> @@ -114,6 +114,12 @@ struct jffs2_unknown_node
->  	jint32_t hdr_crc;
->  };
->  
-> +/*
-> + * Non-standard directory entry type(s), for on-disk use
-> + */
-> +
-> +#define                JFFS2_DT_FALLTHRU       (DT_WHT + 1)
-> +
->  struct jffs2_raw_dirent
+>  	if (d_is_whiteout(dentry)) {
+> @@ -1855,14 +1898,15 @@ static void shmem_d_instantiate(struct inode *dir, struct dentry *dentry,
+>  		shmem_free_inode(dir->i_sb);
+>  		if (S_ISDIR(inode->i_mode))
+>  			inode->i_mode |= S_OPAQUE;
+> +	} else if (d_is_fallthru(dentry)) {
+> +		shmem_free_inode(dir->i_sb);
+>  	} else {
+>  		/* New dentry */
+>  		dir->i_size += BOGO_DIRENT_SIZE;
+>  		dget(dentry); /* Extra count - pin the dentry in core */
+>  	}
+> -	/* Will clear DCACHE_WHITEOUT flag */
+> +	/* Will clear DCACHE_WHITEOUT and DCACHE_FALLTHRU flags */
+>  	d_instantiate(dentry, inode);
+> -
+>  }
+>  /*
+>   * File creation. Allocate an inode, and we're done..
+> @@ -1947,7 +1991,8 @@ static int shmem_unlink(struct inode *dir, struct dentry *dentry)
 >  {
->  	jint16_t magic;
+>  	struct inode *inode = dentry->d_inode;
+>  
+> -	if (d_is_whiteout(dentry) || (inode->i_nlink > 1 && !S_ISDIR(inode->i_mode)))
+> +	if (d_is_whiteout(dentry) || d_is_fallthru(dentry) ||
+> +	    (inode->i_nlink > 1 && !S_ISDIR(inode->i_mode)))
+>  		shmem_free_inode(dir->i_sb);
+
+I'd reorder this || condition above so the more common sub-conditions to be
+true, show up first (inode->i_nlink > 1 && !S_ISDIR(inode->i_mode).
+d_is_whatever should go last.
+
+>  
+>  	if (inode) {
+> @@ -2583,6 +2628,7 @@ static const struct inode_operations shmem_dir_inode_operations = {
+>  	.mknod		= shmem_mknod,
+>  	.rename		= shmem_rename,
+>  	.whiteout       = shmem_whiteout,
+> +	.fallthru       = shmem_fallthru,
+>  #endif
+>  #ifdef CONFIG_TMPFS_POSIX_ACL
+>  	.setattr	= shmem_notify_change,
 > -- 
 > 1.6.3.3
 > 
@@ -155,4 +232,3 @@ numbers for ext2, jffs2, etc.?
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 Erez.
-
