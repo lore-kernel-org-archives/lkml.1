@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbZLAMDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbZLAMDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbZLAMDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 07:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbZLAMDd
+	id S1753768AbZLAMDY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 07:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZLAMDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 07:03:33 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:41138 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754000AbZLAMDc (ORCPT
+	Tue, 1 Dec 2009 07:03:24 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:51556 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752900AbZLAMDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 07:03:32 -0500
-Date: Tue, 1 Dec 2009 05:03:37 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: liu weni <qingshenlwy@gmail.com>
-Cc: strongzgy <strongzgy@gmail.com>, xgr178 <xgr178@163.com>,
-       Liu Hui <onlyflyer@gmail.com>, viro <viro@zeniv.linux.org.uk>,
-       akpm <akpm@linux-foundation.org>, jack <jack@suse.cz>,
-       npiggin <npiggin@suse.de>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3]fs/inode: iunique() Optimize Performance
-Message-ID: <20091201120337.GV9482@parisc-linux.org>
-References: <200911252209432039291@gmail.com> <20091125141505.GH9482@parisc-linux.org> <a229bc400911251120y220066afjb10d391198c5807c@mail.gmail.com> <20091125195256.GL9482@parisc-linux.org> <b3657a100911302101t59a07518tddfd0a267d4ce64c@mail.gmail.com>
+	Tue, 1 Dec 2009 07:03:23 -0500
+Date: Tue, 1 Dec 2009 12:04:40 +0000
+From: Jamie Iles <jamie@jamieiles.com>
+To: linux-kernel@vger.kernel.org
+Subject: Perf events/ARM
+Message-ID: <20091201120439.GB4061@wear.picochip.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b3657a100911302101t59a07518tddfd0a267d4ce64c@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 01, 2009 at 01:01:57PM +0800, liu weni wrote:
-> Thanks, I will try others way to improve the performance.
+Hi,
 
-Is there a performance problem with iunique?  What benchmark are you
-running to show this?
+I'm looking at adding support for the hardware performance counters in ARMv6
+using the new perf events framework. I have a simple setup that uses the
+counters on their own, but wrt the perf events framework:
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	- what are the requirements of set_perf_event_pending() and
+	perf_event_do_pending()? As far as I can tell from sparc/x86/powerpc,
+	set_perf_event_pending() triggers an interrupt that then calls
+	perf_event_do_pending(). Does perf_event_do_pending need to run in
+	interrupt context or could I use a soft IRQ if platforms don't have a
+	spare IRQ?
+
+	- ARM does not have proper support for atomic64's. Other than
+	performance, would there be any known problems with using the generic
+	spinlocked atomic64's?
+
+Thanks,
+
+Jamie
