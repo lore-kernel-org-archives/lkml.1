@@ -1,390 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZLAAFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZLAAJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbZLAAFG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 19:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZLAAFF
+	id S1754142AbZLAAJO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 19:09:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZLAAJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 19:05:05 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:24035 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754080AbZLAAE4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 19:04:56 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:from:date:message-id:
-	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=nflyei6m/d4zzN7T7qfxMpohNJmvevETF2dkgKD8UnxgMhSwl/YWYShafsLUOx22J
-	sVT6+BZefpa+Xed2iWqdQ==
+	Mon, 30 Nov 2009 19:09:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16382 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753935AbZLAAJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 19:09:07 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v6.1 04/11] kprobes: Jump optimization sysctl interface
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
+       Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
+       Jason Baron <jbaron@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Mon, 30 Nov 2009 19:08:12 -0500
+Message-ID: <20091201000811.8630.30888.stgit@harusame>
+In-Reply-To: <m1my27txdo.fsf@fess.ebiederm.org>
+References: <m1my27txdo.fsf@fess.ebiederm.org>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <1259549968-10369-7-git-send-email-vgoyal@redhat.com>
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> 
-	<1259549968-10369-7-git-send-email-vgoyal@redhat.com>
-From: Divyesh Shah <dpshah@google.com>
-Date: Tue, 1 Dec 2009 05:34:37 +0530
-Message-ID: <af41c7c40911301604k1580bcafg9ef7aa7445ba5d17@mail.gmail.com>
-Subject: Re: [PATCH 06/21] blkio: Introduce blkio controller cgroup interface
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       czoccolo@gmail.com, Alan.Brunelle@hp.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 8:29 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> o This is basic implementation of blkio controller cgroup interface. This is
->  the common interface visible to user space and should be used by different
->  IO control policies as we implement those.
->
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
->  block/Kconfig                 |   13 +++
->  block/Kconfig.iosched         |    1 +
->  block/Makefile                |    1 +
->  block/blk-cgroup.c            |  177 +++++++++++++++++++++++++++++++++++++++++
->  block/blk-cgroup.h            |   58 +++++++++++++
->  include/linux/cgroup_subsys.h |    6 ++
->  include/linux/iocontext.h     |    4 +
->  7 files changed, 260 insertions(+), 0 deletions(-)
->  create mode 100644 block/blk-cgroup.c
->  create mode 100644 block/blk-cgroup.h
->
-> diff --git a/block/Kconfig b/block/Kconfig
-> index 9be0b56..6ba1a8e 100644
-> --- a/block/Kconfig
-> +++ b/block/Kconfig
-> @@ -77,6 +77,19 @@ config BLK_DEV_INTEGRITY
->        T10/SCSI Data Integrity Field or the T13/ATA External Path
->        Protection.  If in doubt, say N.
->
-> +config BLK_CGROUP
-> +       bool
-> +       depends on CGROUPS
-> +       default n
-> +       ---help---
-> +       Generic block IO controller cgroup interface. This is the common
-> +       cgroup interface which should be used by various IO controlling
-> +       policies.
-> +
-> +       Currently, CFQ IO scheduler uses it to recognize task groups and
-> +       control disk bandwidth allocation (proportional time slice allocation)
-> +       to such task groups.
-> +
->  endif # BLOCK
->
->  config BLOCK_COMPAT
-> diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-> index 8bd1051..be0280d 100644
-> --- a/block/Kconfig.iosched
-> +++ b/block/Kconfig.iosched
-> @@ -23,6 +23,7 @@ config IOSCHED_DEADLINE
->
->  config IOSCHED_CFQ
->        tristate "CFQ I/O scheduler"
-> +       select BLK_CGROUP
->        default y
->        ---help---
->          The CFQ I/O scheduler tries to distribute bandwidth equally
-> diff --git a/block/Makefile b/block/Makefile
-> index 7914108..cb2d515 100644
-> --- a/block/Makefile
-> +++ b/block/Makefile
-> @@ -8,6 +8,7 @@ obj-$(CONFIG_BLOCK) := elevator.o blk-core.o blk-tag.o blk-sysfs.o \
->                        blk-iopoll.o ioctl.o genhd.o scsi_ioctl.o
->
->  obj-$(CONFIG_BLK_DEV_BSG)      += bsg.o
-> +obj-$(CONFIG_BLK_CGROUP)       += blk-cgroup.o
->  obj-$(CONFIG_IOSCHED_NOOP)     += noop-iosched.o
->  obj-$(CONFIG_IOSCHED_DEADLINE) += deadline-iosched.o
->  obj-$(CONFIG_IOSCHED_CFQ)      += cfq-iosched.o
-> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
-> new file mode 100644
-> index 0000000..4f6afd7
-> --- /dev/null
-> +++ b/block/blk-cgroup.c
-> @@ -0,0 +1,177 @@
-> +/*
-> + * Common Block IO controller cgroup interface
-> + *
-> + * Based on ideas and code from CFQ, CFS and BFQ:
-> + * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-> + *
-> + * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-> + *                   Paolo Valente <paolo.valente@unimore.it>
-> + *
-> + * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-> + *                   Nauman Rafique <nauman@google.com>
-> + */
-> +#include <linux/ioprio.h>
-> +#include "blk-cgroup.h"
-> +
-> +struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
+Add /proc/sys/debug/kprobes-optimization sysctl which enables and disables
+kprobes jump optimization on the fly for debugging.
 
-This should use BLKIO_WEIGHT_MAX as 2*BLKIO_WEIGHT_DEFAULT is same as
-BLKIO_WEIGHT_MAX unless there is a reason why you would want the value
-to remain as a multiple of default_weight instead of max in case the
-constants change later.
+Changes in v6.1:
+ - Remove ctl_name = CTL_UNNUMBERED for linux-next compatibility.
 
-> +
-> +struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup)
-> +{
-> +       return container_of(cgroup_subsys_state(cgroup, blkio_subsys_id),
-> +                           struct blkio_cgroup, css);
-> +}
-> +
-> +void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-> +                               struct blkio_group *blkg, void *key)
-> +{
-> +       unsigned long flags;
-> +
-> +       spin_lock_irqsave(&blkcg->lock, flags);
-> +       rcu_assign_pointer(blkg->key, key);
-> +       hlist_add_head_rcu(&blkg->blkcg_node, &blkcg->blkg_list);
-> +       spin_unlock_irqrestore(&blkcg->lock, flags);
-> +}
-> +
-> +int blkiocg_del_blkio_group(struct blkio_group *blkg)
-> +{
-> +       /* Implemented later */
-> +       return 0;
-> +}
-> +
-> +/* called under rcu_read_lock(). */
-> +struct blkio_group *blkiocg_lookup_group(struct blkio_cgroup *blkcg, void *key)
-> +{
-> +       struct blkio_group *blkg;
-> +       struct hlist_node *n;
-> +       void *__key;
-> +
-> +       hlist_for_each_entry_rcu(blkg, n, &blkcg->blkg_list, blkcg_node) {
-> +               __key = blkg->key;
-> +               if (__key == key)
-> +                       return blkg;
-> +       }
-> +
-> +       return NULL;
-> +}
-> +
-> +#define SHOW_FUNCTION(__VAR)                                           \
-> +static u64 blkiocg_##__VAR##_read(struct cgroup *cgroup,               \
-> +                                      struct cftype *cftype)           \
-> +{                                                                      \
-> +       struct blkio_cgroup *blkcg;                                     \
-> +                                                                       \
-> +       blkcg = cgroup_to_blkio_cgroup(cgroup);                         \
-> +       return (u64)blkcg->__VAR;                                       \
-> +}
-> +
-> +SHOW_FUNCTION(weight);
-> +#undef SHOW_FUNCTION
-> +
-> +static int
-> +blkiocg_weight_write(struct cgroup *cgroup, struct cftype *cftype, u64 val)
-> +{
-> +       struct blkio_cgroup *blkcg;
-> +
-> +       if (val < BLKIO_WEIGHT_MIN || val > BLKIO_WEIGHT_MAX)
-> +               return -EINVAL;
-> +
-> +       blkcg = cgroup_to_blkio_cgroup(cgroup);
-> +       blkcg->weight = (unsigned int)val;
-> +       return 0;
-> +}
-> +
-> +struct cftype blkio_files[] = {
-> +       {
-> +               .name = "weight",
-> +               .read_u64 = blkiocg_weight_read,
-> +               .write_u64 = blkiocg_weight_write,
-> +       },
-> +};
-> +
-> +static int blkiocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-> +{
-> +       return cgroup_add_files(cgroup, subsys, blkio_files,
-> +                               ARRAY_SIZE(blkio_files));
-> +}
-> +
-> +static void blkiocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-> +{
-> +       struct blkio_cgroup *blkcg = cgroup_to_blkio_cgroup(cgroup);
-> +
-> +       free_css_id(&blkio_subsys, &blkcg->css);
-> +       kfree(blkcg);
-> +}
-> +
-> +static struct cgroup_subsys_state *
-> +blkiocg_create(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-> +{
-> +       struct blkio_cgroup *blkcg, *parent_blkcg;
-> +
-> +       if (!cgroup->parent) {
-> +               blkcg = &blkio_root_cgroup;
-> +               goto done;
-> +       }
-> +
-> +       /* Currently we do not support hierarchy deeper than two level (0,1) */
-> +       parent_blkcg = cgroup_to_blkio_cgroup(cgroup->parent);
-> +       if (css_depth(&parent_blkcg->css) > 0)
-> +               return ERR_PTR(-EINVAL);
-> +
-> +       blkcg = kzalloc(sizeof(*blkcg), GFP_KERNEL);
-> +       if (!blkcg)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       blkcg->weight = BLKIO_WEIGHT_DEFAULT;
-> +done:
-> +       spin_lock_init(&blkcg->lock);
-> +       INIT_HLIST_HEAD(&blkcg->blkg_list);
-> +
-> +       return &blkcg->css;
-> +}
-> +
-> +/*
-> + * We cannot support shared io contexts, as we have no mean to support
-> + * two tasks with the same ioc in two different groups without major rework
-> + * of the main cic data structures.  For now we allow a task to change
-> + * its cgroup only if it's the only owner of its ioc.
-> + */
-> +static int blkiocg_can_attach(struct cgroup_subsys *subsys,
-> +                               struct cgroup *cgroup, struct task_struct *tsk,
-> +                               bool threadgroup)
-> +{
-> +       struct io_context *ioc;
-> +       int ret = 0;
-> +
-> +       /* task_lock() is needed to avoid races with exit_io_context() */
-> +       task_lock(tsk);
-> +       ioc = tsk->io_context;
-> +       if (ioc && atomic_read(&ioc->nr_tasks) > 1)
-> +               ret = -EINVAL;
-> +       task_unlock(tsk);
-> +
-> +       return ret;
-> +}
-> +
-> +static void blkiocg_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
-> +                               struct cgroup *prev, struct task_struct *tsk,
-> +                               bool threadgroup)
-> +{
-> +       struct io_context *ioc;
-> +
-> +       task_lock(tsk);
-> +       ioc = tsk->io_context;
-> +       if (ioc)
-> +               ioc->cgroup_changed = 1;
-> +       task_unlock(tsk);
-> +}
-> +
-> +struct cgroup_subsys blkio_subsys = {
-> +       .name = "blkio",
-> +       .create = blkiocg_create,
-> +       .can_attach = blkiocg_can_attach,
-> +       .attach = blkiocg_attach,
-> +       .destroy = blkiocg_destroy,
-> +       .populate = blkiocg_populate,
-> +       .subsys_id = blkio_subsys_id,
-> +       .use_id = 1,
-> +};
-> diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
-> new file mode 100644
-> index 0000000..ba5703f
-> --- /dev/null
-> +++ b/block/blk-cgroup.h
-> @@ -0,0 +1,58 @@
-> +#ifndef _BLK_CGROUP_H
-> +#define _BLK_CGROUP_H
-> +/*
-> + * Common Block IO controller cgroup interface
-> + *
-> + * Based on ideas and code from CFQ, CFS and BFQ:
-> + * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-> + *
-> + * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-> + *                   Paolo Valente <paolo.valente@unimore.it>
-> + *
-> + * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-> + *                   Nauman Rafique <nauman@google.com>
-> + */
-> +
-> +#include <linux/cgroup.h>
-> +
-> +struct blkio_cgroup {
-> +       struct cgroup_subsys_state css;
-> +       unsigned int weight;
-> +       spinlock_t lock;
-> +       struct hlist_head blkg_list;
-> +};
-> +
-> +struct blkio_group {
-> +       /* An rcu protected unique identifier for the group */
-> +       void *key;
-> +       struct hlist_node blkcg_node;
-> +};
-> +
-> +#define BLKIO_WEIGHT_MIN       100
-> +#define BLKIO_WEIGHT_MAX       1000
-> +#define BLKIO_WEIGHT_DEFAULT   500
-> +
-> +#ifdef CONFIG_BLK_CGROUP
-> +extern struct blkio_cgroup blkio_root_cgroup;
-> +extern struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup);
-> +extern void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-> +                               struct blkio_group *blkg, void *key);
-> +extern int blkiocg_del_blkio_group(struct blkio_group *blkg);
-> +extern struct blkio_group *blkiocg_lookup_group(struct blkio_cgroup *blkcg,
-> +                                               void *key);
-> +#else
-> +static inline struct blkio_cgroup *
-> +cgroup_to_blkio_cgroup(struct cgroup *cgroup) { return NULL; }
-> +
-> +static inline void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-> +                       struct blkio_group *blkg, void *key)
-> +{
-> +}
-> +
-> +static inline int
-> +blkiocg_del_blkio_group(struct blkio_group *blkg) { return 0; }
-> +
-> +static inline struct blkio_group *
-> +blkiocg_lookup_group(struct blkio_cgroup *blkcg, void *key) { return NULL; }
-> +#endif
-> +#endif /* _BLK_CGROUP_H */
-> diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-> index 9c8d31b..ccefff0 100644
-> --- a/include/linux/cgroup_subsys.h
-> +++ b/include/linux/cgroup_subsys.h
-> @@ -60,3 +60,9 @@ SUBSYS(net_cls)
->  #endif
->
->  /* */
-> +
-> +#ifdef CONFIG_BLK_CGROUP
-> +SUBSYS(blkio)
-> +#endif
-> +
-> +/* */
-> diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-> index eb73632..d61b0b8 100644
-> --- a/include/linux/iocontext.h
-> +++ b/include/linux/iocontext.h
-> @@ -68,6 +68,10 @@ struct io_context {
->        unsigned short ioprio;
->        unsigned short ioprio_changed;
->
-> +#ifdef CONFIG_BLK_CGROUP
-> +       unsigned short cgroup_changed;
-> +#endif
-> +
->        /*
->         * For request batching
->         */
-> --
-> 1.6.2.5
->
->
+Changes in v6:
+ - Update comments and coding style.
+
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Anders Kaseorg <andersk@ksplice.com>
+Cc: Tim Abbott <tabbott@ksplice.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+
+ include/linux/kprobes.h |    8 ++++
+ kernel/kprobes.c        |   89 +++++++++++++++++++++++++++++++++++++++++++++--
+ kernel/sysctl.c         |   12 ++++++
+ 3 files changed, 106 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index aed1f95..e7d1b2e 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -283,6 +283,14 @@ extern int arch_within_optimized_kprobe(struct optimized_kprobe *op,
+ 					unsigned long addr);
+ 
+ extern void opt_pre_handler(struct kprobe *p, struct pt_regs *regs);
++
++#ifdef CONFIG_SYSCTL
++extern int sysctl_kprobes_optimization;
++extern int proc_kprobes_optimization_handler(struct ctl_table *table,
++					     int write, void __user *buffer,
++					     size_t *length, loff_t *ppos);
++#endif
++
+ #endif /* CONFIG_OPTPROBES */
+ 
+ /* Get the kprobe at this addr (if any) - called with preemption disabled */
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 273fba7..d88f4c1 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -42,6 +42,7 @@
+ #include <linux/freezer.h>
+ #include <linux/seq_file.h>
+ #include <linux/debugfs.h>
++#include <linux/sysctl.h>
+ #include <linux/kdebug.h>
+ #include <linux/memory.h>
+ #include <linux/cpu.h>
+@@ -383,6 +384,9 @@ static inline void copy_kprobe(struct kprobe *old_p, struct kprobe *p)
+ }
+ 
+ #ifdef CONFIG_OPTPROBES
++/* NOTE: change this value only with kprobe_mutex held */
++static bool kprobes_allow_optimization;
++
+ /*
+  * Call all pre_handler on the list, but ignores its return value.
+  * This must be called from arch-dep optimized caller.
+@@ -447,7 +451,7 @@ static __kprobes void kprobe_optimizer(struct work_struct *work)
+ 	/* Lock modules while optimizing kprobes */
+ 	mutex_lock(&module_mutex);
+ 	mutex_lock(&kprobe_mutex);
+-	if (kprobes_all_disarmed)
++	if (kprobes_all_disarmed || !kprobes_allow_optimization)
+ 		goto end;
+ 
+ 	/*
+@@ -490,7 +494,7 @@ static __kprobes void optimize_kprobe(struct kprobe *p)
+ 	struct optimized_kprobe *op;
+ 
+ 	/* Check if the kprobe is disabled or not ready for optimization. */
+-	if (!kprobe_optready(p) ||
++	if (!kprobe_optready(p) || !kprobes_allow_optimization ||
+ 	    (kprobe_disabled(p) || kprobes_all_disarmed))
+ 		return;
+ 
+@@ -606,6 +610,81 @@ static __kprobes void try_to_optimize_kprobe(struct kprobe *p)
+ 	init_aggr_kprobe(ap, p);
+ 	optimize_kprobe(ap);
+ }
++
++#ifdef CONFIG_SYSCTL
++static void __kprobes optimize_all_kprobes(void)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct kprobe *p;
++	unsigned int i;
++
++	/* If optimization is already allowed, just return */
++	if (kprobes_allow_optimization)
++		return;
++
++	kprobes_allow_optimization = true;
++	mutex_lock(&text_mutex);
++	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
++		head = &kprobe_table[i];
++		hlist_for_each_entry_rcu(p, node, head, hlist)
++			if (!kprobe_disabled(p))
++				optimize_kprobe(p);
++	}
++	mutex_unlock(&text_mutex);
++	printk(KERN_INFO "Kprobes globally optimized\n");
++}
++
++static void __kprobes unoptimize_all_kprobes(void)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct kprobe *p;
++	unsigned int i;
++
++	/* If optimization is already prohibited, just return */
++	if (!kprobes_allow_optimization)
++		return;
++
++	kprobes_allow_optimization = false;
++	printk(KERN_INFO "Kprobes globally unoptimized\n");
++	get_online_cpus();	/* For avoiding text_mutex deadlock */
++	mutex_lock(&text_mutex);
++	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
++		head = &kprobe_table[i];
++		hlist_for_each_entry_rcu(p, node, head, hlist) {
++			if (!kprobe_disabled(p))
++				unoptimize_kprobe(p);
++		}
++	}
++
++	mutex_unlock(&text_mutex);
++	put_online_cpus();
++	/* Allow all currently running kprobes to complete */
++	synchronize_sched();
++}
++
++int sysctl_kprobes_optimization;
++int proc_kprobes_optimization_handler(struct ctl_table *table, int write,
++				      void __user *buffer, size_t *length,
++				      loff_t *ppos)
++{
++	int ret;
++
++	mutex_lock(&kprobe_mutex);
++	sysctl_kprobes_optimization = kprobes_allow_optimization ? 1 : 0;
++	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
++
++	if (sysctl_kprobes_optimization)
++		optimize_all_kprobes();
++	else
++		unoptimize_all_kprobes();
++	mutex_unlock(&kprobe_mutex);
++
++	return ret;
++}
++#endif /* CONFIG_SYSCTL */
++
+ #else /* !CONFIG_OPTPROBES */
+ #define get_optimized_kprobe(addr)		(NULL)
+ #define optimize_kprobe(p)			do {} while (0)
+@@ -1621,10 +1700,14 @@ static int __init init_kprobes(void)
+ 		}
+ 	}
+ 
+-#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
++#if defined(CONFIG_OPTPROBES)
++#if defined(__ARCH_WANT_KPROBES_INSN_SLOT)
+ 	/* Init kprobe_optinsn_slots */
+ 	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
+ #endif
++	/* By default, kprobes can be optimized */
++	kprobes_allow_optimization = true;
++#endif
+ 
+ 	/* By default, kprobes are armed */
+ 	kprobes_all_disarmed = false;
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 0060ce7..71a2c90 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -51,6 +51,7 @@
+ #include <linux/ftrace.h>
+ #include <linux/slow-work.h>
+ #include <linux/perf_event.h>
++#include <linux/kprobes.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -1621,6 +1622,17 @@ static struct ctl_table debug_table[] = {
+ 		.proc_handler	= proc_dointvec
+ 	},
+ #endif
++#if defined(CONFIG_OPTPROBES)
++	{
++		.procname	= "kprobes-optimization",
++		.data		= &sysctl_kprobes_optimization,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= proc_kprobes_optimization_handler,
++		.extra1		= &zero,
++		.extra2		= &one,
++	},
++#endif
+ 	{ .ctl_name = 0 }
+ };
+ 
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
