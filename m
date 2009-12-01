@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZLAEiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbZLAEnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556AbZLAEiA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 23:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbZLAEh7
+	id S1753413AbZLAEnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 23:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZLAEnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 23:37:59 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:45964 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753058AbZLAEh6 (ORCPT
+	Mon, 30 Nov 2009 23:43:32 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57499 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753100AbZLAEnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 23:37:58 -0500
-Date: Tue, 1 Dec 2009 12:37:59 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Ford <firefighterblu3@gmail.com>
-Cc: linux-kernel@vger.kernel.org, david@blue-labs.org, netdev@vger.kernel.org
-Subject: Re: NULL pointer dereference at
-	2.6.32-rc8:net/ipv4/ip_fragment.c:566
-Message-ID: <20091201043759.GA22655@gondor.apana.org.au>
+	Mon, 30 Nov 2009 23:43:31 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrea Arcangeli <aarcange@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, vedran.furac@gmail.com
+In-Reply-To: <alpine.DEB.2.00.0911301502160.12038@chino.kir.corp.google.com>
+References: <20091127182607.GA30235@random.random> <alpine.DEB.2.00.0911301502160.12038@chino.kir.corp.google.com>
+Message-Id: <20091201131509.5C19.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <523e55a00911250152n773f2cbeu9251180c44f0b9a@mail.gmail.com>
-Organization: Core
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  1 Dec 2009 13:43:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Ford <firefighterblu3@gmail.com> wrote:
->
-> hmm.  that shows a patch of code which is just prior to ip_defrag(), i.e.:
+> On Fri, 27 Nov 2009, Andrea Arcangeli wrote:
 > 
->    565 out_fail:
->    566         IP_INC_STATS_BH(dev_net(dev), IPSTATS_MIB_REASMFAILS);
+> > Ok I can see the fact by being dynamic and less predictable worries
+> > you. The "second to last" tasks especially are going to be less
+> > predictable, but the memory hog would normally end up accounting for
+> > most of the memory and this should increase the badness delta between
+> > the offending tasks (or tasks) and the innocent stuff, so making it
+> > more reliable. The innocent stuff should be more and more paged out
+> > from ram. So I tend to think it'll be much less likely to kill an
+> > innocent task this way (as demonstrated in practice by your
+> > measurement too), but it's true there's no guarantee it'll always do
+> > the right thing, because it's a heuristic anyway, but even total_vm
+> > doesn't provide guarantee unless your workload is stationary and your
+> > badness scores are fixed and no virtual memory is ever allocated by
+> > any task in the system and no new task are spawned.
+> > 
+> 
+> The purpose of /proc/pid/oom_adj is not always to polarize the heuristic 
+> for the task it represents, it allows userspace to define when a task is 
+> rogue.  Working with total_vm as a baseline, it is simple to use the 
+> interface to tune the heuristic to prefer a certain task over another when 
+> its memory consumption goes beyond what is expected.  With this interface, 
+> I can easily define when an application should be oom killed because it is 
+> using far more memory than expected.  I can also disable oom killing 
+> completely for it, if necessary.  Unless you have a consistent baseline 
+> for all tasks, the adjustment wouldn't contextually make any sense.  Using 
+> rss does not allow users to statically define when a task is rogue and is 
+> dependent on the current state of memory at the time of oom.
+> 
+> I would support removing most of the other heuristics other than the 
+> baseline and the nodes intersection with mems_allowed to prefer tasks in 
+> the same cpuset, though, to make it easier to understand and tune.
 
-Looks like a namespace problem.
+I feel you talked about oom_adj doesn't fit your use case. probably you need
+/proc/{pid}/oom_priority new knob. oom adjustment doesn't fit you.
+you need job severity based oom killing order. severity doesn't depend on any
+hueristic.
+server administrator should know job severity on his system.
 
-Please open a bug report on bugzilla.kernel.org to ensure that
-this is tracked.
+OOM heuristic should mainly consider desktop usage. because desktop user
+doesn't change oom knob at all. and they doesn't know what deamon is important.
+any userful heuristics have some dynamically aspect. we can't avoid it.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+thought?
+
+
