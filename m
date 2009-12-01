@@ -1,108 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZLARVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZLARVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZLARVO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbZLARVN
+	id S1753937AbZLARVz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZLARVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:21:13 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:56135 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395AbZLARVM (ORCPT
+	Tue, 1 Dec 2009 12:21:54 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:16380 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1752542AbZLARVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:21:12 -0500
-Message-ID: <4B155068.6040003@oracle.com>
-Date: Tue, 01 Dec 2009 09:20:40 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Tue, 1 Dec 2009 12:21:53 -0500
+Message-ID: <4B1550F5.5070909@ru.mvista.com>
+Date: Tue, 01 Dec 2009 20:23:01 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, mhiramat@redhat.com,
-       wcohen@redhat.com, rostedt@goodmis.org, fweisbec@gmail.com,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH v2] tracing: add DEFINE_EVENT(), DEFINE_SINGLE_EVENT()
- support to docbook
-References: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
-In-Reply-To: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 07/86] pata_artop: remove dead 34MHz PCI clock support
+References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125170307.5446.12439.sendpatchset@localhost>
+In-Reply-To: <20091125170307.5446.12439.sendpatchset@localhost>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B15506F.0023:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Baron wrote:
-> The introduction of the new 'DECLARE_EVENT_CLASS()' obviates the need for the
-> 'TRACE_EVENT()' macro in some cases. Thus, docbook style comments that used
-> to live with 'TRACE_EVENT()' are now moved to 'DEFINE_EVENT()'. Thus, we need
-> to make the docbook system understand the new 'DEFINE_EVENT()' macro. In
-> addition I've tried to futureproof the patch, by also adding support for
-> 'DEFINE_SINGLE_EVENT()', since there has been discussion about renaming:
-> TRACE_EVENT() -> DEFINE_SINGLE_EVENT().
-> 
-> Without this patch the tracepoint docbook fails to build.
-> 
-> I've verified that this patch correctly builds the tracepoint docbook which
-> currently covers signals, and irqs.
-> 
-> Changes in v2:
->  - properly indent perl 'if' statements
-> 
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> Acked-by: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Hello.
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Bartlomiej Zolnierkiewicz wrote:
 
-Thanks.
+> It has been dead for the last three years (== since the initial driver
+> merge) and probability that it will ever get fixed is quite low.
 
-> Cc: William Cohen <wcohen@redhat.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Cc: Masami Hiramatsu <mhiramat@redhat.com>
+> Since there is no reason to keep this dead code around any longer just
+> remove it (it can still be retrieved from the git history if necessary).
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 > ---
->  scripts/kernel-doc |   15 ++++++++++++---
->  1 files changed, 12 insertions(+), 3 deletions(-)
-> 
-> diff --git a/scripts/kernel-doc b/scripts/kernel-doc
-> index ea9f8a5..241310e 100755
-> --- a/scripts/kernel-doc
-> +++ b/scripts/kernel-doc
-> @@ -1852,10 +1852,17 @@ sub tracepoint_munge($) {
->  	my $tracepointname = 0;
->  	my $tracepointargs = 0;
+>  drivers/ata/pata_artop.c |   29 ++++++++---------------------
+>  1 file changed, 8 insertions(+), 21 deletions(-)
+
+> Index: b/drivers/ata/pata_artop.c
+> ===================================================================
+> --- a/drivers/ata/pata_artop.c
+> +++ b/drivers/ata/pata_artop.c
+> @@ -30,15 +30,6 @@
+>  #define DRV_NAME	"pata_artop"
+>  #define DRV_VERSION	"0.4.5"
 >  
-> -	if($prototype =~ m/TRACE_EVENT\((.*?),/) {
-> +	if ($prototype =~ m/TRACE_EVENT\((.*?),/) {
->  		$tracepointname = $1;
->  	}
-> -	if($prototype =~ m/TP_PROTO\((.*?)\)/) {
-> +	if ($prototype =~ m/DEFINE_SINGLE_EVENT\((.*?),/) {
-> +		$tracepointname = $1;
-> +	}
-> +	if ($prototype =~ m/DEFINE_EVENT\((.*?),(.*?),/) {
-> +		$tracepointname = $2;
-> +	}
-> +	$tracepointname =~ s/^\s+//; #strip leading whitespace
-> +	if ($prototype =~ m/TP_PROTO\((.*?)\)/) {
->  		$tracepointargs = $1;
->  	}
->  	if (($tracepointname eq 0) || ($tracepointargs eq 0)) {
-> @@ -1920,7 +1927,9 @@ sub process_state3_function($$) {
->  	if ($prototype =~ /SYSCALL_DEFINE/) {
->  		syscall_munge();
->  	}
-> -	if ($prototype =~ /TRACE_EVENT/) {
-> +	if ($prototype =~ /TRACE_EVENT/ || $prototype =~ /DEFINE_EVENT/ ||
-> +	    $prototype =~ /DEFINE_SINGLE_EVENT/)
-> +	{
->  		tracepoint_munge($file);
->  	}
->  	dump_function($prototype, $file);
+> -/*
+> - *	The ARTOP has 33 Mhz and "over clocked" timing tables. Until we
+> - *	get PCI bus speed functionality we leave this as 0. Its a variable
+> - *	for when we get the functionality and also for folks wanting to
+> - *	test stuff.
+> - */
+> -
+> -static int clock = 0;
+> -
+>  /**
+>   *	atp8xx_prereset	-	probe begin
+>   *	@link: link
+[...]
+> @@ -223,7 +210,7 @@ static void atp850_set_dmamode(struct at
+>  
+>  	/* Add ultra DMA bits if in UDMA mode */
+>  	if (adev->dma_mode >= XFER_UDMA_0) {
+> -		u8 mode = (adev->dma_mode - XFER_UDMA_0) + 1 - clock;
+> +		u8 mode = (adev->dma_mode - XFER_UDMA_0) + 1;
+>  		if (mode == 0)
+>  			mode = 1;
 
+    Note that 'mode' can't be 0 anymore, so this check can be removed.
 
--- 
-~Randy
+>  		ultra |= (mode << (2 * dn));
+> @@ -261,7 +248,7 @@ static void atp86x_set_dmamode(struct at
+>  	pci_read_config_byte(pdev, 0x44 + ap->port_no, &ultra);
+>  	ultra &= ~(7 << (4  * adev->devno));	/* One nibble per drive */
+>  	if (adev->dma_mode >= XFER_UDMA_0) {
+> -		u8 mode = adev->dma_mode - XFER_UDMA_0 + 1 - clock;
+> +		u8 mode = adev->dma_mode - XFER_UDMA_0 + 1;
+>  		if (mode == 0)
+>  			mode = 1;
+
+    Same here...
+
+MBR, Sergei
