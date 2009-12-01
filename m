@@ -1,180 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZLAAVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbZLAAWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbZLAAVB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 19:21:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZLAAU7
+	id S1752974AbZLAAWN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 19:22:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZLAAWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 19:20:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61860 "EHLO mx1.redhat.com"
+	Mon, 30 Nov 2009 19:22:11 -0500
+Received: from waste.org ([173.11.57.241]:35374 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752470AbZLAAUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 19:20:54 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 9/9] perf probe: Simplify event naming
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+	id S1752359AbZLAAWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 19:22:10 -0500
+Subject: Re: lockdep complaints in slab allocator
+From: Matt Mackall <mpm@selenic.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
        Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Date: Mon, 30 Nov 2009 19:20:25 -0500
-Message-ID: <20091201002024.10235.2353.stgit@harusame>
-In-Reply-To: <20091201001912.10235.79411.stgit@harusame>
-References: <20091201001912.10235.79411.stgit@harusame>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <alpine.DEB.2.00.0911301512250.12038@chino.kir.corp.google.com>
+References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
+	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
+	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
+	 <1259080406.4531.1645.camel@laptop>
+	 <20091124170032.GC6831@linux.vnet.ibm.com>
+	 <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop>
+	 <1259090615.17871.696.camel@calx>
+	 <84144f020911241307u14cd2cf0h614827137e42378e@mail.gmail.com>
+	 <1259103315.17871.895.camel@calx>
+	 <alpine.DEB.2.00.0911251356130.11347@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0911271127130.20368@router.home>
+	 <alpine.DEB.2.00.0911301512250.12038@chino.kir.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Nov 2009 18:21:15 -0600
+Message-ID: <1259626875.29740.193.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simplify event naming as <symbol>_<seqnum>. Each event name is
-globally unique (group name is not checked). So, if there is
-schedule_0, next probe event on schedule() will be schedule_1.
+On Mon, 2009-11-30 at 15:14 -0800, David Rientjes wrote:
+> On Fri, 27 Nov 2009, Christoph Lameter wrote:
+> 
+> > > > I'm afraid I have only anecdotal reports from SLOB users, and embedded
+> > > > folks are notorious for lack of feedback, but I only need a few people
+> > > > to tell me they're shipping 100k units/mo to be confident that SLOB is
+> > > > in use in millions of devices.
+> > > >
+> > >
+> > > It's much more popular than I had expected; do you think it would be
+> > > possible to merge slob's core into another allocator or will it require
+> > > seperation forever?
+> > 
+> > It would be possible to create a slab-common.c and isolate common handling
+> > of all allocators. SLUB and SLQB share quite a lot of code and SLAB could
+> > be cleaned up and made to fit into such a framework.
+> > 
+> 
+> Right, but the user is still left with a decision of which slab allocator 
+> to compile into their kernel, each with distinct advantages and 
+> disadvantages that get exploited for the wide range of workloads that it 
+> runs.  If slob could be merged into another allocator, it would be simple 
+> to remove the distinction of it being seperate altogether, the differences 
+> would depend on CONFIG_EMBEDDED instead.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Frank Ch. Eigler <fche@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
----
+No no no wrong wrong wrong. Again, SLOB is the least mergeable of the
+set. It has vastly different priorities, design, and code from the rest.
+Literally the only thing it has in common with the other three is the
+interface.
 
- tools/perf/util/probe-event.c |   67 ++++++++++++++++++++++++++++++++---------
- tools/perf/util/probe-event.h |    3 ++
- 2 files changed, 56 insertions(+), 14 deletions(-)
+And it's not even something that -most- of embedded devices will want to
+use, so it can't be keyed off CONFIG_EMBEDDED anyway. If you've got even
+16MB of memory, you probably want to use a SLAB-like allocator (ie not
+SLOB). But there are -millions- of devices being shipped that don't have
+that much memory, a situation that's likely to continue until you can
+fit a larger Linux system entirely in a <$1 microcontroller-sized device
+(probably 5 years off still).
 
-diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index 7f4f288..e42f3ac 100644
---- a/tools/perf/util/probe-event.c
-+++ b/tools/perf/util/probe-event.c
-@@ -403,6 +403,29 @@ void show_perf_probe_events(void)
- 	strlist__delete(rawlist);
- }
- 
-+/* Get current perf-probe event names */
-+static struct strlist *get_perf_event_names(int fd)
-+{
-+	unsigned int i;
-+	char *group, *event;
-+	struct strlist *sl, *rawlist;
-+	struct str_node *ent;
-+
-+	rawlist = get_trace_kprobe_event_rawlist(fd);
-+
-+	sl = strlist__new(false, NULL);
-+	for (i = 0; i < strlist__nr_entries(rawlist); i++) {
-+		ent = strlist__entry(rawlist, i);
-+		parse_trace_kprobe_event(ent->s, &group, &event, NULL);
-+		strlist__add(sl, event);
-+		free(group);
-+	}
-+
-+	strlist__delete(rawlist);
-+
-+	return sl;
-+}
-+
- static int write_trace_kprobe_event(int fd, const char *buf)
- {
- 	int ret;
-@@ -416,30 +439,46 @@ static int write_trace_kprobe_event(int fd, const char *buf)
- 	return ret;
- }
- 
-+static void get_new_event_name(char *buf, size_t len, const char *base,
-+			       struct strlist *namelist)
-+{
-+	int i, ret;
-+	for (i = 0; i < MAX_EVENT_INDEX; i++) {
-+		ret = e_snprintf(buf, len, "%s_%d", base, i);
-+		if (ret < 0)
-+			die("snprintf() failed: %s", strerror(-ret));
-+		if (!strlist__has_entry(namelist, buf))
-+			break;
-+	}
-+	if (i == MAX_EVENT_INDEX)
-+		die("Too many events are on the same function.");
-+}
-+
- void add_trace_kprobe_events(struct probe_point *probes, int nr_probes)
- {
- 	int i, j, fd;
- 	struct probe_point *pp;
- 	char buf[MAX_CMDLEN];
-+	char event[64];
-+	struct strlist *namelist;
- 
--	fd = open_kprobe_events(O_WRONLY, O_APPEND);
-+	fd = open_kprobe_events(O_RDWR, O_APPEND);
-+	/* Get current event names */
-+	namelist = get_perf_event_names(fd);
- 
- 	for (j = 0; j < nr_probes; j++) {
- 		pp = probes + j;
--		if (pp->found == 1) {
--			snprintf(buf, MAX_CMDLEN, "%c:%s/%s_%x %s\n",
--				pp->retprobe ? 'r' : 'p', PERFPROBE_GROUP,
--				pp->function, pp->offset, pp->probes[0]);
-+		for (i = 0; i < pp->found; i++) {
-+			/* Get an unused new event name */
-+			get_new_event_name(event, 64, pp->function, namelist);
-+			snprintf(buf, MAX_CMDLEN, "%c:%s/%s %s\n",
-+				 pp->retprobe ? 'r' : 'p',
-+				 PERFPROBE_GROUP, event,
-+				 pp->probes[i]);
- 			write_trace_kprobe_event(fd, buf);
--		} else
--			for (i = 0; i < pp->found; i++) {
--				snprintf(buf, MAX_CMDLEN, "%c:%s/%s_%x_%d %s\n",
--					pp->retprobe ? 'r' : 'p',
--					PERFPROBE_GROUP,
--					pp->function, pp->offset, i,
--					pp->probes[i]);
--				write_trace_kprobe_event(fd, buf);
--			}
-+			/* Add added event name to namelist */
-+			strlist__add(namelist, event);
-+		}
- 	}
- 	close(fd);
- }
-diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
-index 88db7d1..0c6fe56 100644
---- a/tools/perf/util/probe-event.h
-+++ b/tools/perf/util/probe-event.h
-@@ -12,4 +12,7 @@ extern int synthesize_trace_kprobe_event(struct probe_point *pp);
- extern void add_trace_kprobe_events(struct probe_point *probes, int nr_probes);
- extern void show_perf_probe_events(void);
- 
-+/* Maximum index number of event-name postfix */
-+#define MAX_EVENT_INDEX	1024
-+
- #endif /*_PROBE_EVENT_H */
 
+This thread is annoying. The problem that triggered this thread is not
+in SLOB/SLUB/SLQB, nor even in our bog-standard 10yo deep-maintenance
+known-to-work SLAB code. The problem was a FALSE POSITIVE from lockdep
+on code that PREDATES lockdep itself. There is nothing in this thread to
+indicate that there is a serious problem maintaining multiple
+allocators. In fact, considerably more time has been spent (as usual)
+debating non-existent problems than fixing real ones.
+
+I agree that having only one of SLAB/SLUB/SLQB would be nice, but it's
+going to take a lot of heavy lifting in the form of hacking and
+benchmarking to have confidence that there's a clear performance winner.
+Given the multiple dimensions of performance
+(scalability/throughput/latency for starters), I don't even think
+there's good a priori reason to believe that a clear winner CAN exist.
+SLUB may always have better latency, and SLQB may always have better
+throughput. If you're NYSE, you might have different performance
+priorities than if you're Google or CERN or Sony that amount to millions
+of dollars. Repeatedly saying "but we should have only one allocator"
+isn't going to change that.
 
 -- 
-Masami Hiramatsu
+http://selenic.com : development and support for Mercurial and Linux
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
 
-e-mail: mhiramat@redhat.com
