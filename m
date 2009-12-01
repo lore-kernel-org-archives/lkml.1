@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbZLAPtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbZLAPuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570AbZLAPtB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 10:49:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZLAPtA
+	id S1753754AbZLAPuj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 10:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZLAPuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 10:49:00 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:51365 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbZLAPtA (ORCPT
+	Tue, 1 Dec 2009 10:50:39 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51652 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752107AbZLAPui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 10:49:00 -0500
-Date: Tue, 1 Dec 2009 09:48:07 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Tejun Heo <tj@kernel.org>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, michal.simek@petalogix.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: problems in linux-next (Was: Re: linux-next: Tree for December
- 1)
-In-Reply-To: <4B152D22.9070001@kernel.org>
-Message-ID: <alpine.DEB.2.00.0912010946340.8841@router.home>
-References: <20091201190301.0fb7abad.sfr@canb.auug.org.au> <4B14D6E2.2040704@petalogix.com> <20091201210343.f0a1d353.sfr@canb.auug.org.au> <4B152D22.9070001@kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 1 Dec 2009 10:50:38 -0500
+Date: Tue, 1 Dec 2009 15:52:44 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: divide by zero in termios when setting bluetooth
+Message-ID: <20091201155244.0523d9c9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091201151315.GC2262@elf.ucw.cz>
+References: <20091201151315.GC2262@elf.ucw.cz>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009, Tejun Heo wrote:
+On Tue, 1 Dec 2009 16:13:16 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
 
-> The problem is that on UP configurations.  Percpu memory allocator
-> becomes a simple wrapper around kmalloc and there's no way to specify
-> larger alignment when requesting memory from kmalloc.
+> Hi!
+> 
+> I triggered this by mistake... "W" taint is from the  WARN_ON()
+> before.
 
-There is usually no point in aligning in UP. Alignment is typically done
-for smp configurations to limit cache line bouncing and control cache line
-use/
+This ought to fix it
 
-> It would be best if there's a clean way to allocate memory with
-> alignment larger than SMP_CACHE_BYTES.  If not, I think I'll add a
-> separate cache for cwqs on UP so that the alignment requirement can be
-> met.  Is there any way to get better aligned memory without creating a
-> separate cache or allocating larger memory and aligning by chopping
-> off?
+serial: Fix crash if the minimum rate of the device is > 9600 baud
 
-Simply drop the alignment for UP?
+From: Alan Cox <alan@linux.intel.com>
 
+In that situation if the old rate is invalid and the new rate is invalid
+and the chip cannot do 9600 baud we report zero, which makes all the
+drivers explode.
+
+Instead force the rate based on min/max
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
+
+ drivers/serial/serial_core.c |   17 ++++++++++++-----
+ 1 files changed, 12 insertions(+), 5 deletions(-)
+
+
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index 047530b..bd7ec4b 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -385,13 +385,20 @@ uart_get_baud_rate(struct uart_port *port, struct ktermios *termios,
+ 		}
+ 
+ 		/*
+-		 * As a last resort, if the quotient is zero,
+-		 * default to 9600 bps
++		 * As a last resort, if the range cannot be met then clip to
++		 * the nearest chip supported rate.
+ 		 */
+-		if (!hung_up)
+-			tty_termios_encode_baud_rate(termios, 9600, 9600);
++		if (!hung_up) {
++			if (baud <= min)                
++				tty_termios_encode_baud_rate(termios,
++							min + 1, min + 1);
++			else
++				tty_termios_encode_baud_rate(termios,
++							max - 1, max - 1);
++		}
+ 	}
+-
++	/* Should never happen */
++	WARN_ON(1);
+ 	return 0;
+ }
+ 
