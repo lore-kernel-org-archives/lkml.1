@@ -1,200 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbZLAImO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbZLAIql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbZLAImO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 03:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZLAImO
+	id S1753737AbZLAIql (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 03:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZLAIql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 03:42:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:34492 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752827AbZLAImM (ORCPT
+	Tue, 1 Dec 2009 03:46:41 -0500
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:58443 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752891AbZLAIqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 03:42:12 -0500
-Message-ID: <4B14D6E2.2040704@petalogix.com>
-Date: Tue, 01 Dec 2009 09:42:10 +0100
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 1
-References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
-In-Reply-To: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 1 Dec 2009 03:46:40 -0500
+Date: Tue, 1 Dec 2009 14:16:42 +0530
+From: Sripathi Kodi <sripathik@in.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Darren Hart <dvhltc@us.ibm.com>, sripathik@in.ibm.com
+Subject: [RFC] [PATCH 0/2] Futex fault injection
+Message-ID: <20091201141642.398e7b7d@sripathi>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
-> 
-> Changes since 20091130:
-> 
-> The origin tree gained a build failure for which I reverted a commit.
-> Ingo also reported another build failure for which I applied his patch.
-> 
-> The pxa tree lost its build failure.
-> 
-> The powerpc tree gained a build failure for which I reverted a commit.
-> 
-> The net tree gained a conflict against the wireless-current tree.
-> 
-> The mtd tree gained a conflict against the pxa tree.
-> 
-> The pcmcia tree lost 2 conflicts but gained another against the arm tree.
-> 
-> The trivial tree lost a conflict.
-> 
-> The percpu tree gained a conflict against the slab tree.
+Hi,
 
-
-It seems to me that percpu has more other troubles too.
-Look at boolog below for Microblaze with MMU.
-
-I haven't look at that problem deeper but I will.
-Any suggestion what could be wrong?
-
-Problems started in linux-next from November 27.
-You can look at logs.
-http://www.monstr.eu/wiki/doku.php?id=log:log
+This patch set adds fault injection for futex subsystem. It adds faults at 
+places where reading/writing from user space can return EFAULT. This will
+be useful in testing any significant change to futex subsystem.
 
 Thanks,
-Michal
-
-early_printk_console is enabled at 0x84000000
-Ramdisk addr 0x00000003, FDT at 0x9099c414
-Linux version 2.6.32-rc8-next-20091201 (monstr@monstr.eu) (gcc version 
-4.1.2) #1 Tue Dec 1 09:34:15 CET 2009
-setup_cpuinfo: initialising
-setup_cpuinfo: Using full CPU PVR support
-setup_memory: max_mapnr: 0x10000
-setup_memory: min_low_pfn: 0x90000
-setup_memory: max_low_pfn: 0xa0000
-On node 0 totalpages: 65536
-free_area_init_node: node 0, pgdat c02cc768, node_mem_map c09a1000
-   Normal zone: 512 pages used for memmap
-   Normal zone: 0 pages reserved
-   Normal zone: 65024 pages, LIFO batch:15
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
-Kernel command line: console=ttyUL0,115200
-PID hash table entries: 1024 (order: 0, 4096 bytes)
-Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
-Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
-Memory: 249600k/262144k available
-Hierarchical RCU implementation.
-NR_IRQS:32
-xlnx,xps-intc-1.00.a #0 at 0xd0000000, num_irq=9, edge=0x100
-xlnx,xps-timer-1.00.a #0 at 0xd0004000, irq=3
-microblaze_timer_set_mode: shutdown
-microblaze_timer_set_mode: periodic
-Calibrating delay loop... 119.19 BogoMIPS (lpj=595968)
-Mount-cache hash table entries: 512
-------------[ cut here ]------------
-WARNING: at include/linux/percpu.h:157 __create_workqueue_key+0x1c0/0x1d0()
-Modules linked in:
-
-Stack:
-   cf831f1c c0033694 00000000 00000000 c022dac0 c0013f40 c022836c c022dac0
-   0000009d c0029814 0001ffff c0973e20 cf8032e4 00000000 00000000 c022dad8
-   c002980c 00000000 c02d68f8 c02e6218 00000000 00000000 c022dad8 c02d5860
-Call Trace:
-
-[<c0033694>] atomic_notifier_chain_register+0x40/0x64
-[<c0013f40>] warn_slowpath_null+0xc/0x20
-[<c0029814>] __create_workqueue_key+0x1c0/0x1d0
-[<c002980c>] __create_workqueue_key+0x1b8/0x1d0
-[<c02d68f8>] spawn_softlockup_task+0x0/0xc0
-[<c02d5860>] init_workqueues+0x48/0xa0
-[<c02ce104>] kernel_init+0x0/0x184
-[<c02ce148>] kernel_init+0x44/0x184
-[<c02ce170>] kernel_init+0x6c/0x184
-[<c00023a0>] kernel_thread_helper+0xc/0x20
-[<c0002394>] kernel_thread_helper+0x0/0x20
-
----[ end trace 139ce121c98e96c9 ]---
-NET: Registered protocol family 16
-bio: create slab <bio-0> at 0
-Switching to clocksource microblaze_clocksource
-NET: Registered protocol family 2
-IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
-TCP established hash table entries: 8192 (order: 4, 65536 bytes)
-TCP bind hash table entries: 8192 (order: 5, 163840 bytes)
-TCP: Hash tables configured (established 8192 bind 8192)
-TCP reno registered
-NET: Registered protocol family 1
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-RPC: Registered tcp NFSv4.1 backchannel transport module.
-Slow work thread pool: Starting up
-Slow work thread pool: Ready
-msgmni has been set to 487
-io scheduler noop registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-84000000.serial: ttyUL0 at MMIO 0x84000003 (irq = 8) is a uartlite
-console [ttyUL0] enabled
-brd: module loaded
-TCP cubic registered
-NET: Registered protocol family 17
-Freeing unused kernel memory: 6801k freed
-Mounting proc:
-Mounting var:
-Populating /var:
-Running local start scripts.
-Mounting sysfs:
-Setting hostname:
-Setting up interface lo:
-Setting up interface eth0:
-BUG: failure at kernel/workqueue.c:431/process_one_work()!
-Kernel panic - not syncing: BUG!
-Rebooting in 120 seconds..timeout
-
-
-> 
-> ----------------------------------------------------------------------------
-> 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-> (patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-> are tracking the linux-next tree using git, you should not use "git pull"
-> to do so as that will try to merge the new linux-next release with the
-> old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-> (see below).
-> 
-> You can see which trees have been included by looking in the Next/Trees
-> file in the source.  There are also quilt-import.log and merge.log files
-> in the Next directory.  Between each merge, the tree was built with
-> a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-> final fixups (if any), it is also built with powerpc allnoconfig (32 and
-> 64 bit), ppc44x_defconfig and allyesconfig (minus
-> CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-> and sparc64 defconfig. These builds also have
-> CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-> CONFIG_DEBUG_INFO disabled when necessary.
-> 
-> Below is a summary of the state of the merge.
-> 
-> We are up to 154 trees (counting Linus' and 21 trees of patches pending
-> for Linus' tree), more are welcome (even if they are currently empty).
-> Thanks to those who have contributed, and to those who haven't, please do.
-> 
-> Status of my local build tests will be at
-> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-> advice about cross compilers/configs that work, we are always open to add
-> more builds.
-> 
-> Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-> at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-> Dunlap for doing many randconfig builds.
-> 
-> There is a wiki covering stuff to do with linux-next at
-> http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-> 
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+Sripathi.
