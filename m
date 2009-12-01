@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbZLAQUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbZLAQVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754295AbZLAQUD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:20:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbZLAQUD
+	id S1754273AbZLAQVl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbZLAQVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:20:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61712 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754247AbZLAQUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:20:01 -0500
-Date: Tue, 1 Dec 2009 11:19:06 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/7] trace_syscalls: remove duplications
-Message-ID: <20091201161905.GA2641@redhat.com>
-References: <4B14D26A.1040000@cn.fujitsu.com>
+	Tue, 1 Dec 2009 11:21:40 -0500
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:56076 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753962AbZLAQVj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:21:39 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Date: Tue, 1 Dec 2009 16:21:42 +0000
+From: Tony Finch <dot@dotat.at>
+X-X-Sender: fanf2@hermes-1.csi.cam.ac.uk
+To: Michal Marek <mmarek@suse.cz>
+cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Joe Perches <joe@perches.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: Re: [PATCHv2] unifdef: update to upstream revision 1.190
+In-Reply-To: <4B15406D.6010800@suse.cz>
+Message-ID: <alpine.LSU.2.00.0912011615210.3461@hermes-1.csi.cam.ac.uk>
+References: <4B151704.7020102@suse.cz>    <20091127210408.GA16310@merkur.ravnborg.org>    <E1NE3M6-0003Za-OJ@hermes-1.csi.cam.ac.uk>    <20091127181749.GA16177@merkur.ravnborg.org>    <alpine.LSU.2.00.0911271901430.6581@hermes-1.csi.cam.ac.uk>
+ <E1NFU0t-0002UG-0R@hermes-1.csi.cam.ac.uk> <4B15406D.6010800@suse.cz>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B14D26A.1040000@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 01, 2009 at 04:23:06PM +0800, Lai Jiangshan wrote:
-> trace_syscalls introduces a lot of duplicate functions
-> to all syscalls. These series patches remove them.
-> 
->    text    data     bss     dec     hex filename
->  630068  152084  531376 1313528  140af8 kernel/built-in.o.old
->  593997  151988  531824 1277809  137f71 kernel/built-in.o.new
-> 
-> patch 1~4 is for preparing.
-> patch 5~6 remove duplications
-> patch 7 cleanups
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
->  include/linux/syscalls.h      |   73 ++++--------------------
->  include/trace/syscall.h       |   20 ++----
->  kernel/trace/trace_syscalls.c |  124 ++++++++++++------------------------------
->  3 files changed, 57 insertions(+), 160 deletions(-)
-> 
-> 
+On Tue, 1 Dec 2009, Michal Marek wrote:
+>
+> Thanks, applied.
 
-nice simplifications! ack to the whole series.
+Thank you.
 
-Acked-by: Jason Baron <jbaron@redhat.com>
+> BTW, scripts/checkpatch.pl reports some coding style issues (mostly
+> parentheses in return statements and opening braces directly after
+> function declarations), but as this is not original kernel source but a
+> copy of one file from another project, I think we should be lenient
+> here.
 
+Sorry, I should have explicitly noted that the existing style deviations
+were not fixed by the update to the latest version.
+
+Tony.
+-- 
+f.anthony.n.finch  <dot@dotat.at>  http://dotat.at/
+GERMAN BIGHT HUMBER: SOUTHWEST 5 TO 7. MODERATE OR ROUGH. SQUALLY SHOWERS.
+MODERATE OR GOOD.
