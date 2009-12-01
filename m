@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZLAQIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbZLAQI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbZLAQIf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZLAQIe
+	id S1754131AbZLAQI6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:08:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZLAQI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:08:34 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:33191 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753089AbZLAQIe (ORCPT
+	Tue, 1 Dec 2009 11:08:57 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:42523 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753893AbZLAQI4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:08:34 -0500
-Date: Tue, 1 Dec 2009 10:08:37 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Jonathan Miles <jon@cybus.co.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: OOM kernel behaviour
-In-Reply-To: <4B14E8A2.4020500@cybus.co.uk>
-Message-ID: <alpine.DEB.2.00.0912010949400.8841@router.home>
-References: <4B1402FC.80307@cybus.co.uk> <alpine.DEB.2.00.0911301253410.18682@router.home> <4B14E8A2.4020500@cybus.co.uk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 1 Dec 2009 11:08:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=guDFgsVIZXzCCcbtgcnDCpaorPXt0gYl2yuV+AtrTmce597ymTBjZH2/yEJC7Zc/u4
+         /ywTJYasWEO0R8E/R+bAnVWsT0FWBsPAIICB+6V63QxX70fPeRuuHBfylqyO9WUggcuC
+         CZf+redEFn/ptpR0JoquyDit6BCdtudGDAOKU=
+Message-ID: <4B153F9B.7050502@gmail.com>
+Date: Tue, 01 Dec 2009 11:08:59 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Joe Perches <joe@perches.com>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: warning: massive change to conditional coding style in net?
+References: <4B13A025.7000103@gmail.com> <1259603798.29779.293.camel@Joe-Laptop.home>
+In-Reply-To: <1259603798.29779.293.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009, Jonathan Miles wrote:
+Joe Perches wrote:
+> On Mon, 2009-11-30 at 05:36 -0500, William Allen Simpson wrote:
+>> Over the past several days, David Miller (with help from Joe Perches)
+>> made sweeping changes to the format of conditional statements in the
+>> net tree -- the equivalent of mass patches that change spaces.
+>> This makes writing patches for multiple versions of the tree very
+>> difficult, and will make future pullups problematic.
+> 
+> If it makes getting tcp cookies accepted difficult,
+> a reversion is simple.  That style isn't as important.
+> 
+Then why make an *un*important (yet sweeping) change?
 
-> On 30/11/09 18:57 Christoph Lameter said the following:
-> > On Mon, 30 Nov 2009, Jonathan Miles wrote:
-> >
-> >> I'm running kernel 2.6.31.
-> >
-> > Are you using a 32 bit kernel?
 
-32 bit kernels are forced to use memory below 1G for some allocations. You
-may be running out of memory because the kernel is not able to use all of
-memory.
+> I think writing a single set of patches for multiple
+> versions of linux is not feasible.  Feature changes
+> occur in kernel source daily.
+> 
+My patches were carefully written and applied with small fuzz to .30,
+and .31, and .32-rc3.
 
-> Yep, that's what I intended. I want to tune my workstation so that it
-> doesn't need to use swap. With my workload you can assume that nearly
-> all processes are loaded for a reason and that at some point I want to
-> use any one of them *now*.
 
-Anonymous page use may fluctuate unpredictably based on the processes
-being started. A spike may take out your system.
+>> 	if (condition
+>> 	    && condition
+>> 	    && (condition
+>> 	        || condition
+>> 	        || condition)) {
+> 
+> The above is my personally preferred style.
+> 
+That seems fine to me.  And in some areas of the tree, nearly 100% of
+other contributors, too.
 
-> > In order to find the reason for the OOM (which has not much to do with
-> > memory, the kernel has been unable to reclaim memmory for some reason)
-> > you need to look at the debug output that the kernel generates.
->
-> I've attached a good example which shows Xorg invoking the OOM killer
-> when the page-cache is using ~1.3GB out of 2GB. My understanding from
-> reading linux-mm.org is that the kernel actually prefers to swap than
-> reclaim from the page-cache... is this accurate? However, what if there
-> is no swap, or it's configured not to use it? Should the kernel then try
-> to reclaim instead?
+My personally preferred style is the single spaced variant, that also
+conforms to the strict letter of CodingStyle, to wit:
 
-The kernel will prefer to reclaim from clean page cache over
-swapping in general. The aggressiveness of swap can be controlled via
-/proc/sys/vm/swappiness.
+   Use one space around (on each side of) most binary and ternary operators
 
-The OOM killer output shows that the DMA is zone is marked as
-unreclaimable but the allocation causing it is not using DMA. Other zones
-all seem to have enough memory. Is this straight 2.6.31? No use of
-containers, memory policies etc right?
 
+>> 	if (condition &&
+>>              condition && (condition || condition ||
+>> 	    condition)) {
+> 
+> Except for the odd spacing, this is the significant
+> majority of net/ style.
+> 
+> The leading style was < 10%.  It's less now.
+> 
+That's only true in net/ -- since the overall tree was 18.7%, with
+net/ < 10%, the density was *much* higher elsewhere.
+
+But more important, at least to my thinking, is keeping patches simple
+by conforming to the *existing* style in the section of code.  No
+sweeping changes!
 
