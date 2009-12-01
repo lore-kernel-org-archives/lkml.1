@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbZLANMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZLANP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbZLANMJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 08:12:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbZLANMI
+	id S1754112AbZLANP3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 08:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZLANP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 08:12:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16282 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 08:15:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:20373 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244AbZLANMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 08:12:07 -0500
-Message-ID: <4B15161A.80101@redhat.com>
-Date: Tue, 01 Dec 2009 11:11:54 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Gerd Hoffmann <kraxel@redhat.com>
-CC: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, jonsmirl@gmail.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <BDodf9W1qgB@lirc> <4B13BBBE.3010101@redhat.com> <4B14E747.9060208@redhat.com>
-In-Reply-To: <4B14E747.9060208@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753676AbZLANP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 08:15:28 -0500
+Date: Tue, 1 Dec 2009 08:15:15 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, pavel@ucw.cz,
+       miklos@szeredi.hu, viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks
+ and file bind mounts (try #5)
+Message-ID: <20091201081515.4639de6a@tlielax.poochiereds.net>
+In-Reply-To: <m1my2cdhi3.fsf@fess.ebiederm.org>
+References: <1258998084-26797-1-git-send-email-jlayton@redhat.com>
+	<m1my2cdhi3.fsf@fess.ebiederm.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerd Hoffmann wrote:
-> On 11/30/09 13:34, Mauro Carvalho Chehab wrote:
->> Christoph Bartelmus wrote:
->>> Hi Mauro,
->>>
->>> I just don't want to change a working interface just because it could be
->>> also implemented in a different way, but having no other visible
->>> advantage
->>> than using more recent kernel features.
->>
->> I agree. The main reasons to review the interface is:
->>     1) to avoid any overlaps (if are there any) with the evdev interface;
+On Mon, 23 Nov 2009 14:05:24 -0800
+ebiederm@xmission.com (Eric W. Biederman) wrote:
+
+> Jeff Layton <jlayton@redhat.com> writes:
 > 
-> Use lirc for raw samples.
-> Use evdev for decoded data.
+> > There are a few situations where a lookup can end up returning a dentry
+> > without revalidating it, and without checking whether the calling
+> > process has permissions to access it. Two situations identified so far
+> > are:
+> >
+> > 1) LAST_BIND symlinks (such as those under /proc/<pid>)
+> >
+> > 2) file bind mounts
+> >
+> > This patchset is intended to fix this by forcing revalidation of the
+> > returned dentries at appropriate locations.
+> >
+> > In the case of LAST_BIND symlinks it also adds a check to verify that
+> > the target of the symlink is accessible by the current process by
+> > walking mounts and dentries back up to the root and checking permission
+> > on each inode.
+> >
+> > This set fixes the reproducers I have (including the reproducer that
+> > Pavel provided for the permissions bypass). It's still pretty rough
+> > though and I expect that it'll need revision. At this point, I'm mainly
+> > looking to get these questions answered:
+> >
+> > 1) what should we do if these dentries are found to be invalid? Is it ok
+> > to d_invalidate them? Or is that likely to break something (particularly
+> > in the case of file bind mounts)?
 > 
-> Hardware/drivers which can handle both can support both interfaces.
-> IMHO it makes no sense at all to squeeze raw samples through the input
-> layer.  It looks more like a serial line than a input device.  In fact
-> you can homebrew a receiver and connect it to the serial port, which was
-> quite common in pre-usb-ir-receiver times.
-
-I agree. 
+> The normal sequence in do_revalidate should be safe.  In practice what we
+> should see is d_drop().  If we access the dentries via another path today
+> we already go through d_revalidate.  It is only the reference count on
+> the dentry that keeps them alive and working.  The cases I have looked
+> at for distributed filesystems have to call d_drop themselves so I don't
+> know if it would add anything if the vfs called d_revalidate.  Especially
+> since FS_REVAL_DOT doesn't have that logic.
 > 
->>     2) to have it stable enough to be used, without changes, for a long
->>        time.
-> 
-> It isn't like lirc is a new interface.  It has been used in practice for
-> years.  I don't think API stability is a problem here.
 
-You're probably right here, but, as, currently, changing the API is not a problem,
-I don't doubt that the API has changed during those years (I haven't followed
-lirc API, so this is just an educated guess).
+There seems to be a lot of disagreement about whether the issue that
+Pavel raised is even a bug. I think what I'm going to do at this point
+is respin this patchset without that patch (just add the missing
+revalidations).
 
-So, all I'm saying is that we should do a final review considering API stability
-before merging it, eventually considering to add a few reserved fields there, if
-we suspect that we might need more space for some reason.
+I'll also plan to just have force_reval_path call do_revalidate instead
+so that invalid dentries get d_invalidated too. Any other thoughts on
+the first two patches in this set?
 
->> True, but even if we want to merge lirc drivers "as-is", the drivers will
->> still need changes, due to kernel CodingStyle, due to the usage of
->> some API's
->> that may be deprecated, due to some breakage with non-Intel
->> architectures, due
->> to some bugs that kernel hackers may discover, etc.
-> 
-> I assumed this did happen in already in preparation of this submission?
-
-Yes, for just a few drivers that went on the first series of patches (on Jerod's
-proposal, only 2 drivers were submitted).
-
-Cheers,
-Mauro.
+-- 
+Jeff Layton <jlayton@redhat.com>
