@@ -1,452 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbZLAP24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZLAPI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbZLAP24 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 10:28:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZLAP2y
+	id S1753368AbZLAPI4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 10:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZLAPIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 10:28:54 -0500
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:54740 "EHLO
-	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751824AbZLAP2w (ORCPT
+	Tue, 1 Dec 2009 10:08:55 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:64185 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbZLAPIy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 10:28:52 -0500
-X-Greylist: delayed 866 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Dec 2009 10:28:52 EST
-Subject: Re: [PATCH] Dynamic port labeling V2
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Paul Nuzzi <pjnuzzi@tycho.ncsc.mil>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, jmorris@namei.org,
-       selinux@tycho.nsa.gov, "George S. Coker, II" <gscoker@alpha.ncsc.mil>,
-       Eamon Walsh <ewalsh@tycho.nsa.gov>, Stephen Smalley <sds@tycho.nsa.gov>
-In-Reply-To: <4B14A111.2000703@schaufler-ca.com>
-References: <1259616460.2444.9.camel@moss-stripedbass.epoch.ncsc.mil>
-	 <4B14A111.2000703@schaufler-ca.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 01 Dec 2009 10:06:14 -0500
-Message-Id: <1259679974.2365.29.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Dec 2009 10:08:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=WOaSNXE1O0gW8NueOiZqwYowR+y9OBIhbkrkdyWp3s9E+2Mh09y3CqnxoVGm4i3JHn
+         JMaO42JYz6ZjJGQBfE6J6CPFsb+uTj35WEREJij7p7tGqdISr19SXpuRZfcOw3XwlSt9
+         Jzz6fgcepxTFcWUeiDyA+o7i8ORDipMicRZY4=
+MIME-Version: 1.0
+Date: Tue, 1 Dec 2009 10:08:59 -0500
+Message-ID: <9e4733910912010708u1064e2c6mbc08a01293c3e7fd@mail.gmail.com>
+Subject: [RFC v2] Another approach to IR
+From: Jon Smirl <jonsmirl@gmail.com>
+To: awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
+       mchehab@redhat.com, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have several questions about this.
+While reading all of these IR threads another way of handling IR
+occurred to me that pretty much eliminates the need for LIRC and
+configuration files in default cases. The best way to make everything
+"just work" is to eliminate it.
 
-1) Where is it located?
-2) Is your proposal to implement it as a new fs with a name something
-like portfs?
-3) How does it get populated initially? Do you have a file for each port
-right off the bat? Do you only have files for ports with policy or whose
-permissions differ from the default?
-4) How do I assign a label to the port? You have an issue here that
-these files are objects themselves. You can't just label the file with
-what you want the port labeled because now you can't mediate access to
-these file objects outside of the label on the port itself.
+The first observation is that the IR profile of various devices are
+well known. Most devices profiles are in the published One-for-All
+database. These device profiles consist of vendor/device/command
+triplets. There is one triplet for each command like play, pause, 1,
+2, 3, power, etc.
 
-On Mon, 2009-11-30 at 20:52 -0800, Casey Schaufler wrote:
-> Paul Nuzzi wrote:
-> > Second version of the dynamic port labeling patch.
-> 
-> So I've looked through both versions of this patch and I can't
-> help but think that you'd get better mileage out of a file system
-> interface than this SELinux specific implementation. If you had
-> something like
-> 
->     /port/22
-> 
-> with default owner root and mode rw-------
-> 
->     /port/3306
-> 
-> with default owner root and mode rw-rw-rw-
-> 
-> you could address a bunch of the complaints about port ownership that
-> you hear every day. Further, if the port filesystem supported xattrs
-> you could tie in SELinux as easily as you are doing it below and get
-> Smack for an extra $1.98, not to mention saving every other LSM the
-> grief of defining Yet Another way to define port accesses.
-> 
-> It bothers me that there is a perfectly reasonable way to provide the
-> specific behavior you're looking for (SELinux label on a port) that
-> generalizes so cleanly and that it's not being proposed.
-> 
-> 
-> >   Changed the name of
-> > the selinuxfs interface to portcon and changed the interface to only
-> > allow five arguments instead of the variable four or five.   
-> >
-> > Added a mechanism to add/delete/update port labels with an interface in 
-> > the selinuxfs filesystem.  This will give administrators the ability to
-> > update port labels faster than reloading the entire policy with
-> > semanage.  The administrator will also need less privilege since they
-> > don't have to be authorized to reload the full policy.
-> >
-> > A listing of all port labels will be output if the file /selinux/portcon
-> > is read.  Labels could be added or deleted with the following commands 
-> >
-> > echo -n "del system_u:object_r:ssh_port_t:s0 6 22 22" > /selinux/portcon
-> > echo -n "add system_u:object_r:telnetd_port_t:s0 6 22 22" > /selinux/portcon
-> >
-> > Labels can be atomically changed with the add command.  
-> >
-> >
-> > Signed-off-by: Paul Nuzzi <pjnuzzi@tycho.ncsc.mil>
-> >
-> > --- 
-> >  security/selinux/hooks.c            |    1
-> >  security/selinux/include/classmap.h |    2
-> >  security/selinux/include/security.h |    9 ++
-> >  security/selinux/selinuxfs.c        |   96 ++++++++++++++++++++++
-> >  security/selinux/ss/services.c      |  154 ++++++++++++++++++++++++++++++++++++
-> >  5 files changed, 260 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> > index a29d661..5aceb74 100644
-> > --- a/security/selinux/hooks.c
-> > +++ b/security/selinux/hooks.c
-> > @@ -1224,7 +1224,6 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
-> >  	struct inode_security_struct *isec = inode->i_security;
-> >  	u32 sid;
-> >  	struct dentry *dentry;
-> > -#define INITCONTEXTLEN 255
-> >  	char *context = NULL;
-> >  	unsigned len = 0;
-> >  	int rc = 0;
-> > diff --git a/security/selinux/include/classmap.h b/security/selinux/include/classmap.h
-> > index 8b32e95..925edb6 100644
-> > --- a/security/selinux/include/classmap.h
-> > +++ b/security/selinux/include/classmap.h
-> > @@ -16,7 +16,7 @@ struct security_class_mapping secclass_map[] = {
-> >  	  { "compute_av", "compute_create", "compute_member",
-> >  	    "check_context", "load_policy", "compute_relabel",
-> >  	    "compute_user", "setenforce", "setbool", "setsecparam",
-> > -	    "setcheckreqprot", NULL } },
-> > +	    "setcheckreqprot", "portcon", NULL } },
-> >  	{ "process",
-> >  	  { "fork", "transition", "sigchld", "sigkill",
-> >  	    "sigstop", "signull", "signal", "ptrace", "getsched", "setsched",
-> > diff --git a/security/selinux/include/security.h b/security/selinux/include/security.h
-> > index 2553266..25a5054 100644
-> > --- a/security/selinux/include/security.h
-> > +++ b/security/selinux/include/security.h
-> > @@ -169,6 +169,15 @@ int security_fs_use(const char *fstype, unsigned int *behavior,
-> >  int security_genfs_sid(const char *fstype, char *name, u16 sclass,
-> >  	u32 *sid);
-> >  
-> > +int security_ocon_port_add(u16 protocol, u16 low, u16 high, u32 sid,
-> > +			   char *scontext);
-> > +
-> > +int security_ocon_port_del(u16 protocol, u16 low, u16 high, u32 sid,
-> > +			   char *scontext);
-> > +
-> > +int security_ocon_port_read(char **buf);
-> > +#define INITCONTEXTLEN 255
-> > +
-> >  #ifdef CONFIG_NETLABEL
-> >  int security_netlbl_secattr_to_sid(struct netlbl_lsm_secattr *secattr,
-> >  				   u32 *sid);
-> > diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-> > index fab36fd..a21be6c 100644
-> > --- a/security/selinux/selinuxfs.c
-> > +++ b/security/selinux/selinuxfs.c
-> > @@ -110,6 +110,7 @@ enum sel_inos {
-> >  	SEL_COMPAT_NET,	/* whether to use old compat network packet controls */
-> >  	SEL_REJECT_UNKNOWN, /* export unknown reject handling to userspace */
-> >  	SEL_DENY_UNKNOWN, /* export unknown deny handling to userspace */
-> > +	SEL_OCON_PORT,  /* add OCON_PORT to the list */
-> >  	SEL_INO_NEXT,	/* The next inode number to use */
-> >  };
-> >  
-> > @@ -253,6 +254,100 @@ static const struct file_operations sel_disable_ops = {
-> >  	.write		= sel_write_disable,
-> >  };
-> >  
-> > +static ssize_t sel_write_ocon_port(struct file *file, const char __user *buf,
-> > +				 size_t count, loff_t *ppos)
-> > +{
-> > +	ssize_t length;
-> > +	unsigned int low = 0, high = 0, protocol = 0;
-> > +	char *page, *scontext, *command;
-> > +	u32 sid;
-> > +#define OCONCOMMANDLEN 4
-> > +#define OCON_ADD_COMMAND "add"
-> > +#define OCON_DEL_COMMAND "del"
-> > +
-> > +	length = task_has_security(current, SECURITY__PORTCON);
-> > +	if (length)
-> > +		return length;
-> > +
-> > +	if (count >= PAGE_SIZE)
-> > +		return -ENOMEM;
-> > +	if (*ppos != 0) {
-> > +		/* No partial writes. */
-> > +		return -EINVAL;
-> > +	}
-> > +	page = (char *)get_zeroed_page(GFP_KERNEL);
-> > +	if (!page)
-> > +		goto nomem;
-> > +	scontext = kzalloc(INITCONTEXTLEN, GFP_KERNEL);
-> > +	if (!scontext)
-> > +		goto nomem1;
-> > +	command = kzalloc(OCONCOMMANDLEN, GFP_KERNEL);
-> > +	if (!command)
-> > +		goto nomem2;
-> > +
-> > +	length = -EFAULT;
-> > +	if (copy_from_user(page, buf, count))
-> > +		goto out;
-> > +
-> > +	length = sscanf(page, "%3s %255s %u %u %u", command, scontext,
-> > +			 &protocol, &low, &high);
-> > +	if (length < 5) {
-> > +		length = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +	length = security_context_to_sid(scontext, strlen(scontext), &sid);
-> > +	if (length < 0) {
-> > +		length = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	if (strncmp(OCON_ADD_COMMAND, command, strlen(OCON_ADD_COMMAND)) == 0)
-> > +		length = security_ocon_port_add(protocol, low, high, sid,
-> > +						 scontext);
-> > +	else if (strncmp(OCON_DEL_COMMAND, command, strlen(OCON_DEL_COMMAND))
-> > +		 == 0)
-> > +		length = security_ocon_port_del(protocol, low, high, sid,
-> > +						scontext);
-> > +	else {
-> > +		length = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +	if (length < 0)
-> > +		goto out;
-> > +	length = count;
-> > +out:
-> > +	kfree(command);
-> > +	kfree(scontext);
-> > +	free_page((unsigned long) page);
-> > +	return length;
-> > +
-> > +nomem2:
-> > +	kfree(scontext);
-> > +nomem1:
-> > +	free_page((unsigned long) page);
-> > +nomem:
-> > +	return -ENOMEM;
-> > +}
-> > +
-> > +static ssize_t sel_read_ocon_port(struct file *filp, char __user *buf,
-> > +				   size_t count, loff_t *ppos)
-> > +{
-> > +	ssize_t length;
-> > +	char *buf_tmp = NULL;
-> > +
-> > +	length = task_has_security(current, SECURITY__PORTCON);
-> > +	if (length)
-> > +		return length;
-> > +
-> > +	length = security_ocon_port_read(&buf_tmp);
-> > +	return simple_read_from_buffer(buf, count, ppos, buf_tmp, length);
-> > +}
-> > +
-> > +static const struct file_operations sel_ocon_port_ops = {
-> > +	.write		= sel_write_ocon_port,
-> > +	.read		= sel_read_ocon_port,
-> > +};
-> > +
-> >  static ssize_t sel_read_policyvers(struct file *filp, char __user *buf,
-> >  				   size_t count, loff_t *ppos)
-> >  {
-> > @@ -1596,6 +1691,7 @@ static int sel_fill_super(struct super_block *sb, void *data, int silent)
-> >  		[SEL_CHECKREQPROT] = {"checkreqprot", &sel_checkreqprot_ops, S_IRUGO|S_IWUSR},
-> >  		[SEL_REJECT_UNKNOWN] = {"reject_unknown", &sel_handle_unknown_ops, S_IRUGO},
-> >  		[SEL_DENY_UNKNOWN] = {"deny_unknown", &sel_handle_unknown_ops, S_IRUGO},
-> > +		[SEL_OCON_PORT] = {"portcon", &sel_ocon_port_ops, S_IRUSR|S_IWUSR},
-> >  		/* last one */ {""}
-> >  	};
-> >  	ret = simple_fill_super(sb, SELINUX_MAGIC, selinux_files);
-> > diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-> > index f270e37..3b920e3 100644
-> > --- a/security/selinux/ss/services.c
-> > +++ b/security/selinux/ss/services.c
-> > @@ -1827,6 +1827,160 @@ err:
-> >  
-> >  }
-> >  
-> > +int security_ocon_port_add(u16 protocol, u16 low, u16 high, u32 sid,
-> > +							 char *scontext)
-> > +{
-> > +	int rc = 0;
-> > +	struct ocontext *c;
-> > +	struct context ctx;
-> > +	struct ocontext *add = kzalloc(sizeof(struct ocontext), GFP_KERNEL);
-> > +
-> > +	if (!add)
-> > +		return -ENOMEM;
-> > +	else if (low > high) {
-> > +		kfree(add);
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	read_lock(&policy_rwlock);
-> > +	rc = string_to_context_struct(&policydb, &sidtab, scontext,
-> > +					 strlen(scontext), &ctx, sid);
-> > +	if (rc) {
-> > +		rc = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +
-> > +	add->u.port.protocol = protocol;
-> > +	add->u.port.low_port = low;
-> > +	add->u.port.high_port = high;
-> > +	add->sid[0] = sid;
-> > +	add->context[0] = ctx;
-> > +	for (c = policydb.ocontexts[OCON_PORT]; c; c = c->next) {
-> > +		if (add->u.port.protocol == c->u.port.protocol &&
-> > +		    add->u.port.low_port == c->u.port.low_port &&
-> > +		    add->u.port.high_port == c->u.port.high_port) {
-> > +			printk(KERN_DEBUG "Duplicate netport %d - %d.. "
-> > +					  "changing permissions\n",
-> > +			       add->u.port.low_port, add->u.port.high_port);
-> > +			c->sid[0] = add->sid[0];
-> > +			context_destroy(&c->context[0]);
-> > +			c->context[0] = add->context[0];
-> > +			context_destroy(&add->context[0]);
-> > +			kfree(add);
-> > +			avc_ss_reset(0);
-> > +			goto out;
-> > +		}
-> > +	}
-> > +
-> > +	add->next = policydb.ocontexts[OCON_PORT];
-> > +	policydb.ocontexts[OCON_PORT] = add;
-> > +	avc_ss_reset(0);
-> > +out:
-> > +	if (rc) {
-> > +		context_destroy(&add->context[0]);
-> > +		kfree(add);
-> > +	}
-> > +	read_unlock(&policy_rwlock);
-> > +	return rc;
-> > +}
-> > +
-> > +int security_ocon_port_del(u16 protocol, u16 low, u16 high, u32 sid,
-> > +							char *scontext)
-> > +{
-> > +	int rc = 0;
-> > +	struct ocontext *c, *before_c;
-> > +	struct context ctx;
-> > +
-> > +	if (low > high)
-> > +		return -EINVAL;
-> > +
-> > +	read_lock(&policy_rwlock);
-> > +	rc = string_to_context_struct(&policydb, &sidtab, scontext,
-> > +					 strlen(scontext), &ctx, sid);
-> > +	if (rc) {
-> > +		rc = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +	for (before_c = NULL, c = policydb.ocontexts[OCON_PORT]; c;
-> > +	     before_c = c, c = c->next) {
-> > +		if (c->u.port.protocol == protocol &&
-> > +		    c->u.port.low_port == low &&
-> > +		    c->u.port.high_port == high &&
-> > +		    c->context[0].type == ctx.type &&
-> > +		    c->context[0].role == ctx.role &&
-> > +		    c->context[0].user == ctx.user) {
-> > +			if (before_c == NULL)
-> > +				policydb.ocontexts[OCON_PORT] = c->next;
-> > +			else
-> > +				before_c->next = c->next;
-> > +			context_destroy(&c->context[0]);
-> > +			kfree(c);
-> > +			avc_ss_reset(0);
-> > +			break;
-> > +		}
-> > +	}
-> > +	if (c == NULL) {
-> > +		printk(KERN_DEBUG "Netport not found %d - %d\n", low, high);
-> > +		rc = -ENXIO;
-> > +	}
-> > +out:
-> > +	context_destroy(&ctx);
-> > +	read_unlock(&policy_rwlock);
-> > +	return rc;
-> > +}
-> > +
-> > +int security_ocon_port_read(char **buf)
-> > +{
-> > +	unsigned int buf_size = 0, old_size = 0, len;
-> > +	struct ocontext *c;
-> > +	char *scontext;
-> > +	char *buf_tmp = NULL;
-> > +	int rc = 0;
-> > +	int line_size = INITCONTEXTLEN + (sizeof(unsigned int) * 3) +
-> > +			 (sizeof(char) * 5);
-> > +	char addline[line_size];
-> > +
-> > +	/* protocol low-high scontext */
-> > +	read_lock(&policy_rwlock);
-> > +	if (policydb.ocontexts[OCON_PORT] == NULL)
-> > +		goto out;
-> > +
-> > +	for (c = policydb.ocontexts[OCON_PORT]; c; c = c->next) {
-> > +		rc = context_struct_to_string(&(c->context[0]), &scontext,
-> > +					      &len);
-> > +		if (rc < 0) {
-> > +			kfree(buf_tmp);
-> > +			rc = -EINVAL;
-> > +			goto out;
-> > +		}
-> > +		if (len > INITCONTEXTLEN) {
-> > +			kfree(buf_tmp);
-> > +			kfree(scontext);
-> > +			rc = -EOVERFLOW;
-> > +			goto out;
-> > +		}
-> > +		snprintf(addline, line_size, "%u %u-%u %s\n",
-> > +			c->u.port.protocol, c->u.port.low_port,
-> > +			c->u.port.high_port, scontext);
-> > +		kfree(scontext);
-> > +		buf_size += strlen(addline);
-> > +		buf_tmp = krealloc(buf_tmp, buf_size, GFP_KERNEL);
-> > +		if (!buf_tmp) {
-> > +			rc = -ENOMEM;
-> > +			goto out;
-> > +		}
-> > +		for (rc = old_size; rc < buf_size; rc++)
-> > +			buf_tmp[rc] = '\0';
-> > +		strncat(buf_tmp, addline, buf_size);
-> > +		old_size = buf_size;
-> > +	}
-> > +
-> > +	*buf = buf_tmp;
-> > +out:
-> > +	read_unlock(&policy_rwlock);
-> > +	return rc;
-> > +}
-> > +
-> >  /**
-> >   * security_port_sid - Obtain the SID for a port.
-> >   * @protocol: protocol number
-> >
-> >
-> >
-> > --
-> > This message was distributed to subscribers of the selinux mailing list.
-> > If you no longer wish to subscribe, send mail to majordomo@tycho.nsa.gov with
-> > the words "unsubscribe selinux" without quotes as the message.
-> >
-> >
-> >   
-> 
-> 
-> --
-> This message was distributed to subscribers of the selinux mailing list.
-> If you no longer wish to subscribe, send mail to majordomo@tycho.nsa.gov with
-> the words "unsubscribe selinux" without quotes as the message.
+The second observation is that universal remotes know how to generate
+commands for all of the common devices.
 
+Let's define evdev messages for IR than contain vendor/device/command
+triplets. I already posted code for doing that in my original patch
+set. These messages are generated from in-kernel code.
+
+Now add a small amount of code to MythTV, etc to act on these evdev
+messages. Default MythTV, etc to respond to the IR commands for a
+common DVR device. Program your universal remote to send the commands
+for this device. You're done. Everything will "just work" - no LIRC,
+no irrecord, no config files, no command mapping, etc.
+
+Of course there are details involved in making this work. MythTV will
+have to have a config option to allow it to emulate several different
+DVR devices so that you can pick one that you don't own. It should
+also have choices for emulating the common devices defined for the
+remotes included with various Linux video board like the Hauppauge
+remote.
+
+For apps that haven't been modified you will have to run a daemon
+which will capture vendor/device/command evdev events and convert them
+into keystroke commands than work the menus. You'll need a config file
+for this and have to write scripts. Instead I'd just go modify the app
+the respond to the IR events, it is easy to do.
+
+Long run, we define a MythTV IR profile, mplayer profile, etc and get
+these into the IR database for universal remotes. Now MythTV can stop
+emulating another vendor's device.
+
+For the default MythTV case no external support will need to be
+installed if the protocol decode engines are in the kernel. The raw
+data will come in, run through the engines, and pop out as evdev
+messages with a vendor/device/command triplet. Devices that decode in
+hardware will just send vendor/device/command triplets.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
