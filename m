@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZLARyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZLARyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbZLARyJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:54:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZLARyH
+	id S1754484AbZLARyB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:54:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZLARyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:54:07 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:50002 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754321AbZLARyA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Dec 2009 12:54:00 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:42523 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753012AbZLARx7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:53:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=Te14ZlmHZn64+fM9hP9cscNp03fIkvJqjxtJyELjTjGd+FWDthMhqqSty9nenTetFX
-         klZsOcv3HIck9BXMYMM+h/Fhpl4TxM02gJUdlQzi/I3NIUk7cxuag+aVKl+gtBKyIQQM
-         NzgFEo6cCUXx4LQb/kyTgzlWh7uUEt2zmeKgQ=
-Date: Tue, 1 Dec 2009 09:54:01 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
-       superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-Message-ID: <20091201175400.GA19259@core.coreip.homeip.net>
-References: <9e4733910912010708u1064e2c6mbc08a01293c3e7fd@mail.gmail.com> <1259682428.18599.10.camel@maxim-laptop> <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com> <4B154C54.5090906@redhat.com> <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com> <4B155288.1060509@redhat.com>
+        b=j8GfqNuhboRotkjdEcPk/RNUy6/bWKCvoMYa9io/WeIy7Nr1BE+w748misXu1tB4Cx
+         XfsoArC9hAGWIABeToZcCD2kx9swOO2JqSkoam9mAF9ImokjqX1zFUEMgAYn7cVaNk2U
+         1wzZvmjQCpRojCJu8wwdDIg0mP24MyDCQs1Ac=
+Date: Tue, 1 Dec 2009 18:54:06 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, jbaron@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/core] trace_syscalls: Remove unused
+	event_syscall_enter and event_syscall_exit
+Message-ID: <20091201175403.GC5080@nowhere>
+References: <4B14D278.4090209@cn.fujitsu.com> <tip-bf56a4ea9f1683c5b223fd3a5dbea23f1fa91c34@git.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B155288.1060509@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <tip-bf56a4ea9f1683c5b223fd3a5dbea23f1fa91c34@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 01, 2009 at 03:29:44PM -0200, Mauro Carvalho Chehab wrote:
+On Tue, Dec 01, 2009 at 04:42:35PM +0000, tip-bot for Lai Jiangshan wrote:
+> Commit-ID:  bf56a4ea9f1683c5b223fd3a5dbea23f1fa91c34
+> Gitweb:     http://git.kernel.org/tip/bf56a4ea9f1683c5b223fd3a5dbea23f1fa91c34
+> Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+> AuthorDate: Tue, 1 Dec 2009 16:23:20 +0800
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Tue, 1 Dec 2009 17:33:28 +0100
 > 
-> For sure we need to add an EVIOSETPROTO ioctl to allow the driver 
-> to change the protocol in runtime.
+> trace_syscalls: Remove unused event_syscall_enter and event_syscall_exit
 > 
+> fix event_enter_##sname->event
+> fix event_exit_##sname->event
+> 
+> remove unused event_syscall_enter and event_syscall_exit
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Acked-by: Jason Baron <jbaron@redhat.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> LKML-Reference: <4B14D278.4090209@cn.fujitsu.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Mauro,
 
-I think this kind of confuguration belongs to lirc device space,
-not input/evdev. This is the same as protocol selection for psmouse
-module: while it is normally auto-detected we have sysfs attribute to
-force one or another and it is tied to serio device, not input
-device.
+Except for this patch. The whole series is really nice, thanks
+a lot for this cleanup!
 
--- 
-Dmitry
