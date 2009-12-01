@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZLARvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbZLARwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbZLARvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbZLARvW
+	id S1754500AbZLARwM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbZLARwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:51:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19211 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752907AbZLARvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:51:22 -0500
-Date: Tue, 1 Dec 2009 18:49:57 +0100
-From: Michal Schmidt <mschmidt@redhat.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, jkj@kapsi.fi, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, serue@us.ibm.com, jmorris@namei.org,
-       stable@kernel.org
-Subject: Re: [PATCH] bsdacct: fix uid/gid misreporting (#14676)
-Message-ID: <20091201184957.27a2aaab@leela>
-In-Reply-To: <20091130224032.GA5598@x200.malnet.ru>
-References: <20091130224032.GA5598@x200.malnet.ru>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Dec 2009 12:52:11 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:45766 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754272AbZLARwK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:52:10 -0500
+Message-ID: <4B1557CC.4060503@gmail.com>
+Date: Tue, 01 Dec 2009 18:52:12 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Chris Friesen <cfriesen@nortel.com>
+CC: netdev@vger.kernel.org, Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: seeing strange values for tcp sk_rmem_alloc
+References: <4B15416A.2060202@nortel.com> <4B154B29.1030807@cosmosbay.com> <4B155252.1040604@nortel.com>
+In-Reply-To: <4B155252.1040604@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 01 Dec 2009 18:52:13 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009 01:40:32 +0300 Alexey Dobriyan wrote:
-> commit d8e180dcd5bbbab9cd3ff2e779efcf70692ef541
-> "bsdacct: switch credentials for writing to the accounting file"
-> introduced credential switching during final acct data collecting.
-> However, uid/gid pair continued to be collected from current which
-> became credentials of who created acct file, not who exits.
-> 
-> Fix http://bugzilla.kernel.org/show_bug.cgi?id=14676
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Chris Friesen a écrit :
 
-Ah, indeed. The original commit went into 2.6.31-stable so this one
-should too.
+> I realize this.  I sent the data from a socket to itself.  It could just
+> as easily be done with two tcp sockets.  The important thing is that I
+> control both the tx and rx sides, so I know how much data should be
+> present in the rx queue at any point in time.
+> 
+> The part that surprised me was that I could send multiple chunks of data
+> without sk_rmem_alloc changing on the socket to which the data was being
+> sent.  Then it would jump up by a large amount (up to 20K) all at once.
+> 
+> I'm starting to suspect that the discrepency might have something to do
+> with the skb_copy_datagram_iovec() call in tcp_data_queue(), and how
+> skb_set_owner_r() is only called if "eaten" is <= 0.  This could be
+> totally off-base though.
+> 
 
-Reviewed-by: Michal Schmidt <mschmidt@redhat.com>
+If you dont read() your socket, then skb_copy_datagram_iovec() is not called
 
-> 
->  Juho, please, confirm.
-> 
->  kernel/acct.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> --- a/kernel/acct.c
-> +++ b/kernel/acct.c
-> @@ -536,7 +536,8 @@ static void do_acct_process(struct
-> bsd_acct_struct *acct, do_div(elapsed, AHZ);
->  	ac.ac_btime = get_seconds() - elapsed;
->  	/* we really need to bite the bullet and change layout */
-> -	current_uid_gid(&ac.ac_uid, &ac.ac_gid);
-> +	ac.ac_uid = orig_cred->uid;
-> +	ac.ac_gid = orig_cred->gid;
->  #if ACCT_VERSION==2
->  	ac.ac_ahz = AHZ;
->  #endif
+But be careful of sender tcp stack : It might be delayed a bit,
+because it waits for receiver to open its window (slow start)
+
+You probably need something like
+
+while (1) {
+	send(fd1, buffer, 2Kbytes);
+	sleep(2); // let tcp stack flush its write buffers
+	display_sk_rmem_alloc(fd2);
+}
 
