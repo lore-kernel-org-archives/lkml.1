@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZLAT7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbZLAUFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZLAT7q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 14:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZLAT7p
+	id S1753986AbZLAUFg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 15:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZLAUFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 14:59:45 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:43810 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753825AbZLAT7o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 14:59:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=K2S8IJidxxsl38fTMWjx/+jkINq7Zi8DDFTCTQ+oLZ9BOvzjWSsq7MypyQnM7J+kkk
-         XI43D9XIiyJtoAvhP53WXmXaOVETPtOp5cV5QhtrFJsCcWPuAtFUfuHO/eBZVQQDPQfG
-         Ttc4zpZhedR910V1A/Te8qw/wHy0sSfRr+2Z4=
-Message-ID: <4B1575AC.6080904@tuffmail.co.uk>
-Date: Tue, 01 Dec 2009 19:59:40 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 1 Dec 2009 15:05:35 -0500
+Received: from mga02.intel.com ([134.134.136.20]:21255 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751352AbZLAUFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 15:05:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,322,1257148800"; 
+   d="scan'208";a="471975822"
+From: =?UTF-8?q?Kristian=20H=C3=B8gsberg?= <krh@bitplanet.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] perf: Don't free perf_mmap_data until work has been done.
+Date: Tue,  1 Dec 2009 15:05:01 -0500
+Message-Id: <1259697901-1747-1-git-send-email-krh@bitplanet.net>
+X-Mailer: git-send-email 1.6.5.rc2
 MIME-Version: 1.0
-To: pm list <linux-pm@lists.linux-foundation.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Bisected: s2disk (uswsusp only) hangs just before poweroff
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+In the CONFIG_PERF_USE_VMALLOC case, perf_mmap_data_free() only
+schedules the cleanup of the perf_mmap_data struct.  In that case
+we have to wait until the work has been done before we free data.
 
-Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I finally 
-got around to bisecting it, which blamed the following commit by Mel:
+Signed-off-by: Kristian Høgsberg <krh@bitplanet.net>
+---
+ kernel/perf_event.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 7f29643..f1854b9 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -2174,6 +2174,7 @@ static void perf_mmap_data_free(struct perf_mmap_data *data)
+ 	perf_mmap_free_page((unsigned long)data->user_page);
+ 	for (i = 0; i < data->nr_pages; i++)
+ 		perf_mmap_free_page((unsigned long)data->data_pages[i]);
++	kfree(data);
+ }
+ 
+ #else
+@@ -2214,6 +2215,7 @@ static void perf_mmap_data_free_work(struct work_struct *work)
+ 		perf_mmap_unmark_page(base + (i * PAGE_SIZE));
+ 
+ 	vfree(base);
++	kfree(data);
+ }
+ 
+ static void perf_mmap_data_free(struct perf_mmap_data *data)
+@@ -2319,7 +2321,6 @@ static void perf_mmap_data_free_rcu(struct rcu_head *rcu_head)
+ 
+ 	data = container_of(rcu_head, struct perf_mmap_data, rcu_head);
+ 	perf_mmap_data_free(data);
+-	kfree(data);
+ }
+ 
+ static void perf_mmap_data_release(struct perf_event *event)
+-- 
+1.6.5.rc2
 
-I was able to confirm this by reverting the commit, which fixed the 
-hang.  I had to revert one other commit first to avoid a conflict:
-
-a6f9edd "page-allocator: maintain rolling count of pages to free from 
-the PCP"
-
--- detail --
-
-When I suspend my EeePc 701 to disk, it sometimes hangs after writing 
-out the hibernation image.  The system is still able to resume from this 
-image (after working around the hang by pressing the power button). 
-
-This is specific to s2disk from the uswsusp package (which is now 
-installed by default on debian unstable).  It doesn't happen if I 
-uninstall uswsusp and use the in-kernel suspend instead.
-
-The hang doesn't happen if I boot with "init=/bin/bash" and run s2disk.  
-Nor does it happen if I boot normally, then switch to single user mode 
-("telinit 12").
-
-It only happens if I've logged in to KDE.  In the past, this has 
-indicated a problem in a network driver, since NetworkManager only made 
-a connection once I logged in.  But it still hangs if I remove both 
-ath5k and atl2 before I log into KDE.  (I actually tried removing as 
-many modules as possible: atl2, ath5k, usbcore, snd-hda-intel, psmouse, 
-pcspkr, battery, ac, themal, fan, and eeepc-laptop).  Perhaps it's 
-something to do with the size of the hibernation image.
-
--- confidence in the bisection result --
-
-The randomness was a bit annoying, but it's not too bad.  The hang would 
-normally show up in the first 3 hibernation cycles; I don't remember 
-having to wait more than 6.
-
-I wrote a script to do s2disk + rtcwake so I could leave it testing 
-without constantly hitting the power button.  This let me test 
-2.6.32-rc8 with the reverts for at least 20 hibernation cycles.
-
-Regards
-Alan
