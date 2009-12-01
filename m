@@ -1,45 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZLAQD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZLAPrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbZLAQD5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:03:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbZLAQD4
+	id S1753463AbZLAPrM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 10:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZLAPrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:03:56 -0500
-Received: from mga05.intel.com ([192.55.52.89]:53705 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753617AbZLAQD4 (ORCPT
+	Tue, 1 Dec 2009 10:47:11 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:51798 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbZLAPrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:03:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,321,1257148800"; 
-   d="scan'208";a="751769236"
-Date: Tue, 1 Dec 2009 15:44:12 +0000
-From: Alan Cox <alan@linux.intel.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, Joe Peterson <joe@skyrush.com>,
-       Amerigo Wang <amwang@redhat.com>
-Subject: Re: [Patch] tty: move a definition out of switch block
-Message-ID: <20091201154412.4002a0d8@linux.intel.com>
-In-Reply-To: <20091201075744.4456.48125.sendpatchset@localhost.localdomain>
-References: <20091201075744.4456.48125.sendpatchset@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	Tue, 1 Dec 2009 10:47:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=oXuE8W5vm9U7W+VsOlWfwbutqYpFIJyRhjRDVJ9OjKhETLgcjUMTyvYLACl6ONAm7d
+         1l35lRVQAH8ncK3AgSIFxzPTvFjQMrVbnOfPetm3auS+8N9lG1tkcU2k2LVOQZh8blbt
+         oBhH9WZrOxobNz2gePESkqCoOYNaKEYbcqsJM=
+Subject: Re: [RFC v2] Another approach to IR
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
+       mchehab@redhat.com, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+In-Reply-To: <9e4733910912010708u1064e2c6mbc08a01293c3e7fd@mail.gmail.com>
+References: <9e4733910912010708u1064e2c6mbc08a01293c3e7fd@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 01 Dec 2009 17:47:08 +0200
+Message-ID: <1259682428.18599.10.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009 02:54:44 -0500
-Amerigo Wang <amwang@redhat.com> wrote:
+On Tue, 2009-12-01 at 10:08 -0500, Jon Smirl wrote: 
+> While reading all of these IR threads another way of handling IR
+> occurred to me that pretty much eliminates the need for LIRC and
+> configuration files in default cases. The best way to make everything
+> "just work" is to eliminate it.
+> 
+> The first observation is that the IR profile of various devices are
+> well known. Most devices profiles are in the published One-for-All
+> database. These device profiles consist of vendor/device/command
+> triplets. There is one triplet for each command like play, pause, 1,
+> 2, 3, power, etc.
+> 
+> The second observation is that universal remotes know how to generate
+> commands for all of the common devices.
+> 
+> Let's define evdev messages for IR than contain vendor/device/command
+> triplets. I already posted code for doing that in my original patch
+> set. These messages are generated from in-kernel code.
+> 
+> Now add a small amount of code to MythTV, etc to act on these evdev
+> messages. Default MythTV, etc to respond to the IR commands for a
+> common DVR device. Program your universal remote to send the commands
+> for this device. You're done. Everything will "just work" - no LIRC,
+> no irrecord, no config files, no command mapping, etc.
+You are making one  big wrong assumption that everyone that has a remote
+uses mythtv, and only it.
+
+Many users including me, use the remote just like a keyboard, or even
+like a mouse.
+
 
 > 
-> It's not good to leave a definition between 'switch'
-> and its first label. Move it out of the switch block.
+> Of course there are details involved in making this work. MythTV will
+> have to have a config option to allow it to emulate several different
+> DVR devices so that you can pick one that you don't own. It should
+> also have choices for emulating the common devices defined for the
+> remotes included with various Linux video board like the Hauppauge
+> remote.
+> 
+> For apps that haven't been modified you will have to run a daemon
+> which will capture vendor/device/command evdev events and convert them
+> into keystroke commands than work the menus. You'll need a config file
+> for this and have to write scripts. Instead I'd just go modify the app
+> the respond to the IR events, it is easy to do.
+> 
+> Long run, we define a MythTV IR profile, mplayer profile, etc and get
+> these into the IR database for universal remotes. Now MythTV can stop
+> emulating another vendor's device.
+> 
+> For the default MythTV case no external support will need to be
+> installed if the protocol decode engines are in the kernel. The raw
+> data will come in, run through the engines, and pop out as evdev
+> messages with a vendor/device/command triplet. Devices that decode in
+> hardware will just send vendor/device/command triplets.
+> 
 
-"Not good". On what basis is it not good to put variables local to
-their scope ?
 
-Alan
