@@ -1,86 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbZLAPuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbZLAPxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753754AbZLAPuj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 10:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZLAPuj
+	id S1753656AbZLAPxs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 10:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZLAPxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 10:50:39 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51652 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752107AbZLAPui (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 10:50:38 -0500
-Date: Tue, 1 Dec 2009 15:52:44 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: divide by zero in termios when setting bluetooth
-Message-ID: <20091201155244.0523d9c9@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091201151315.GC2262@elf.ucw.cz>
-References: <20091201151315.GC2262@elf.ucw.cz>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Dec 2009 10:53:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:47881 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751944AbZLAPxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 10:53:46 -0500
+Message-ID: <4B153BEC.5070501@redhat.com>
+Date: Tue, 01 Dec 2009 17:53:16 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Adam Litke <agl@us.ibm.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: virtio: Add memory statistics reporting to the balloon driver
+ (V4)
+References: <1259597655.30369.2.camel@aglitke> <4B152EA4.7080207@redhat.com> <1259679905.2816.5.camel@aglitke>
+In-Reply-To: <1259679905.2816.5.camel@aglitke>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009 16:13:16 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
+On 12/01/2009 05:05 PM, Adam Litke wrote:
+> On Tue, 2009-12-01 at 16:56 +0200, Avi Kivity wrote:
+>    
+>> What about a spec update?  Did that happen and I just missed it?
+>>      
+> Yes it did.  I forgot to update this patch leader note with the link:
+> http://ozlabs.org/~rusty/virtio-spec/virtio-spec-0.8.2.pdf
+>    
 
-> Hi!
-> 
-> I triggered this by mistake... "W" taint is from the  WARN_ON()
-> before.
-
-This ought to fix it
-
-serial: Fix crash if the minimum rate of the device is > 9600 baud
-
-From: Alan Cox <alan@linux.intel.com>
-
-In that situation if the old rate is invalid and the new rate is invalid
-and the chip cannot do 9600 baud we report zero, which makes all the
-drivers explode.
-
-Instead force the rate based on min/max
-
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
-
- drivers/serial/serial_core.c |   17 ++++++++++++-----
- 1 files changed, 12 insertions(+), 5 deletions(-)
+Great, thanks.
 
 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 047530b..bd7ec4b 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -385,13 +385,20 @@ uart_get_baud_rate(struct uart_port *port, struct ktermios *termios,
- 		}
- 
- 		/*
--		 * As a last resort, if the quotient is zero,
--		 * default to 9600 bps
-+		 * As a last resort, if the range cannot be met then clip to
-+		 * the nearest chip supported rate.
- 		 */
--		if (!hung_up)
--			tty_termios_encode_baud_rate(termios, 9600, 9600);
-+		if (!hung_up) {
-+			if (baud <= min)                
-+				tty_termios_encode_baud_rate(termios,
-+							min + 1, min + 1);
-+			else
-+				tty_termios_encode_baud_rate(termios,
-+							max - 1, max - 1);
-+		}
- 	}
--
-+	/* Should never happen */
-+	WARN_ON(1);
- 	return 0;
- }
- 
+-- 
+error compiling committee.c: too many arguments to function
+
