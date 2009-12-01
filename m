@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbZLABbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbZLABbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbZLABbL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 20:31:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZLABbJ
+	id S1752749AbZLABbq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 20:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZLABbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 20:31:09 -0500
-Received: from wacom-nt10.wacom.com ([204.119.25.43]:30245 "EHLO
-	wacom-nt10.wacom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbZLABbI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 20:31:08 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] serial/8250_pnp.c: add new Wacom devices
-Date: Mon, 30 Nov 2009 17:31:14 -0800
-Message-ID: <6753EB6004AFF34FAA275742C104F952016A12D0@wacom-nt10.wacom.com>
-In-Reply-To: <6753EB6004AFF34FAA275742C104F952BDD5E0@wacom-nt10.wacom.com>
-References: <6753EB6004AFF34FAA275742C104F952BDD5E0@wacom-nt10.wacom.com>
-From: "Ping Cheng" <pingc@wacom.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <pinglinux@gmail.com>
+	Mon, 30 Nov 2009 20:31:45 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43432 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751017AbZLABbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 20:31:44 -0500
+Date: Tue, 1 Dec 2009 12:31:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: linux-next: manual merge of the net tree with the wireless-current
+ tree
+Message-Id: <20091201123142.fe6bc824.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__1_Dec_2009_12_31_42_+1100_N1++7VOr=RMixzvR"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a resend. I forgot to update the subject line last time. I am
-not in the mailing list. Please cc me with your reply.  Thank you.
+--Signature=_Tue__1_Dec_2009_12_31_42_+1100_N1++7VOr=RMixzvR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-Add 10 serial Wacom Tablet PC devices. In fact, 
-The last 3 bytes of WACF### are all reserved 
-for Wacom serial OEMs.
+Today's linux-next merge of the net tree got a conflict in net/mac80211/ht.=
+c between commit 827d42c9ac91ddd728e4f4a31fefb906ef2ceff7 ("mac80211: fix s=
+purious delBA handling") from the wireless-current tree and commit c951ad35=
+50ab40071bb0f222ba6125845769c08a ("mac80211: convert aggregation to operate=
+ on vifs/stas") from the net tree.
 
-Signed-off-by: Ping Cheng <pingc@wacom.com>
----
- drivers/serial/8250_pnp.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+I fixed it up (by using the version from the wireless-current tree) and
+can carry the fix as necessary.  This may well not be correct.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/drivers/serial/8250_pnp.c b/drivers/serial/8250_pnp.c
-index d71dfe3..898c0f0 100644
---- a/drivers/serial/8250_pnp.c
-+++ b/drivers/serial/8250_pnp.c
-@@ -337,6 +337,15 @@ static const struct pnp_device_id pnp_dev_table[] =
-{
- 	{       "WACF00A",              0       },
- 	{       "WACF00B",              0       },
- 	{       "WACF00C",              0       },
-+	{       "WACF00D",              0       },
-+	{       "WACF00E",              0       },
-+	{       "WACF00F",              0       },
-+	{       "WACF010",              0       },
-+	{       "WACF011",              0       },
-+	{       "WACF012",              0       },
-+	{       "WACF013",              0       },
-+	{       "WACF014",              0       },
-+	{       "WACF015",              0       },
- 	/* Compaq touchscreen */
- 	{       "FPI2002",              0 },
- 	/* Fujitsu Stylistic touchscreens */
-@@ -354,6 +363,8 @@ static const struct pnp_device_id pnp_dev_table[] =
-{
- 	{	"FUJ02E5",		0	},
- 	/* Fujitsu P-series tablet PC device */
- 	{	"FUJ02E6",		0	},
-+	/* Fujitsu Wacom Tablet PC device */
-+	{	"FUJ02E7",		0	},
- 	/*
- 	 * LG C1 EXPRESS DUAL (C1-PB11A3) touch screen (actually a
-FUJ02E6 in
- 	 * disguise)
--- 
-1.6.5.2
+--Signature=_Tue__1_Dec_2009_12_31_42_+1100_N1++7VOr=RMixzvR
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksUcf4ACgkQjjKRsyhoI8yb4wCgugZsKIOHAw2ii8QNPk4SXx+J
+r9IAoLyKEiz62T4iAxRd73VPSTVYdU1b
+=XAFd
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__1_Dec_2009_12_31_42_+1100_N1++7VOr=RMixzvR--
