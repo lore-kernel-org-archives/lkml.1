@@ -1,68 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbZLAUFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbZLAUcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbZLAUFg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 15:05:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZLAUFf
+	id S1754584AbZLAUcC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 15:32:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbZLAUcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 15:05:35 -0500
-Received: from mga02.intel.com ([134.134.136.20]:21255 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751352AbZLAUFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 15:05:35 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,322,1257148800"; 
-   d="scan'208";a="471975822"
-From: =?UTF-8?q?Kristian=20H=C3=B8gsberg?= <krh@bitplanet.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] perf: Don't free perf_mmap_data until work has been done.
-Date: Tue,  1 Dec 2009 15:05:01 -0500
-Message-Id: <1259697901-1747-1-git-send-email-krh@bitplanet.net>
-X-Mailer: git-send-email 1.6.5.rc2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 1 Dec 2009 15:32:01 -0500
+Received: from jamieiles.v.servelocity.net ([85.8.132.214]:34787 "EHLO
+	jamieiles.v.servelocity.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754394AbZLAUcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 15:32:00 -0500
+X-Greylist: delayed 1199 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Dec 2009 15:31:59 EST
+From: Jamie Iles <jamie@jamieiles.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jamie Iles <jamie@jamieiles.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] perf tools: allow cross compiling of perf tools
+Date: Tue,  1 Dec 2009 20:11:50 +0000
+Message-Id: <1259698310-11025-1-git-send-email-jamie@jamieiles.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the CONFIG_PERF_USE_VMALLOC case, perf_mmap_data_free() only
-schedules the cleanup of the perf_mmap_data struct.  In that case
-we have to wait until the work has been done before we free data.
+For embedded systems we need to cross compile applications on
+the build machine. Use the CROSS_COMPILE variable like the kernel
+itself.
 
-Signed-off-by: Kristian Høgsberg <krh@bitplanet.net>
+Additionally, we can't use uname to determine whether we should
+build for 64 bit. Use the -dumpmachine flag of GCC to determine
+the target arch.
+
+Signed-off-by: Jamie Iles <jamie@jamieiles.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/perf_event.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ tools/perf/Makefile |   56 ++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 33 insertions(+), 23 deletions(-)
 
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 7f29643..f1854b9 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -2174,6 +2174,7 @@ static void perf_mmap_data_free(struct perf_mmap_data *data)
- 	perf_mmap_free_page((unsigned long)data->user_page);
- 	for (i = 0; i < data->nr_pages; i++)
- 		perf_mmap_free_page((unsigned long)data->data_pages[i]);
-+	kfree(data);
- }
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 7e190d5..aed4812 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -150,27 +150,6 @@ PERF-VERSION-FILE: .FORCE-PERF-VERSION-FILE
+ 	@$(SHELL_PATH) util/PERF-VERSION-GEN
+ -include PERF-VERSION-FILE
  
- #else
-@@ -2214,6 +2215,7 @@ static void perf_mmap_data_free_work(struct work_struct *work)
- 		perf_mmap_unmark_page(base + (i * PAGE_SIZE));
+-uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+-uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
+-uname_O := $(shell sh -c 'uname -o 2>/dev/null || echo not')
+-uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+-uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+-uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+-
+-#
+-# Add -m32 for cross-builds:
+-#
+-ifdef NO_64BIT
+-  MBITS := -m32
+-else
+-  #
+-  # If we're on a 64-bit kernel, use -m64:
+-  #
+-  ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
+-    MBITS := -m64
+-  endif
+-endif
+-
+ # CFLAGS and LDFLAGS are for the users to override from the command line.
  
- 	vfree(base);
-+	kfree(data);
- }
+ #
+@@ -239,8 +218,16 @@ lib = lib
  
- static void perf_mmap_data_free(struct perf_mmap_data *data)
-@@ -2319,7 +2321,6 @@ static void perf_mmap_data_free_rcu(struct rcu_head *rcu_head)
+ export prefix bindir sharedir sysconfdir
  
- 	data = container_of(rcu_head, struct perf_mmap_data, rcu_head);
- 	perf_mmap_data_free(data);
--	kfree(data);
- }
+-CC = gcc
+-AR = ar
++# CROSS_COMPILE specify the prefix used for all executables used
++# during compilation. Only gcc and related bin-utils executables
++# are prefixed with $(CROSS_COMPILE).
++# CROSS_COMPILE can be set on the command line
++# make CROSS_COMPILE=ia64-linux-
++# Alternatively CROSS_COMPILE can be set in the environment.
++# Default value for CROSS_COMPILE is not to prefix executables
++CROSS_COMPILE ?=
++CC = $(CROSS_COMPILE)gcc
++AR = $(CROSS_COMPILE)ar
+ RM = rm -f
+ TAR = tar
+ FIND = find
+@@ -252,6 +239,29 @@ PTHREAD_LIBS = -lpthread
+ # explicitly what architecture to check for. Fix this up for yours..
+ SPARSE_FLAGS = -D__BIG_ENDIAN__ -D__powerpc__
  
- static void perf_mmap_data_release(struct perf_event *event)
++uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
++uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
++uname_O := $(shell sh -c 'uname -o 2>/dev/null || echo not')
++uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
++uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
++uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
++machine := $(shell sh -c '$(CC) -dumpmachine | cut -d- -f1')
++
++#
++# Add -m32 for cross-builds:
++# Note: not all architectures have a -m32/-m64 so only define it if we
++# explicitly force to 32 bits or detect a 64 bit arch.
++#
++ifdef FORCE_32BIT
++  MBITS := -m32
++else
++  #
++  # If we're on a 64-bit kernel, use -m64:
++  #
++  ifneq ($(patsubst %64,%,$(machine)),$(machine))
++    MBITS := -m64
++  endif
++endif
+ 
+ 
+ ### --- END CONFIGURATION SECTION ---
 -- 
-1.6.5.rc2
+1.6.3.3
 
