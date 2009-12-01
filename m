@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZLALTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbZLALX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbZLALTa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 06:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZLALT3
+	id S1753474AbZLALX5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 06:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZLALX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 06:19:29 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:35199 "EHLO smtps.tip.net.au"
+	Tue, 1 Dec 2009 06:23:56 -0500
+Received: from ns.firmix.at ([62.141.48.66]:1225 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbZLALT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 06:19:28 -0500
-Date: Tue, 1 Dec 2009 22:19:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 1
-Message-Id: <20091201221924.48b5a988.sfr@canb.auug.org.au>
-In-Reply-To: <s5h8wdn0yal.wl%tiwai@suse.de>
-References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
-	<20091201102900.GA11715@sirena.org.uk>
-	<s5h8wdn0yal.wl%tiwai@suse.de>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	id S1753275AbZLALXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 06:23:55 -0500
+Subject: Re: [BUG] Linux-2.6.32-rc8-git2 Fails To Compile With GCC-4.4.2
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Tarkan Erimer <tarkane@netone.com.tr>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4B14FB56.4040608@netone.com.tr>
+References: <4B14FB56.4040608@netone.com.tr>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Firmix Software GmbH
+Date: Tue, 01 Dec 2009 12:23:51 +0100
+Message-Id: <1259666631.23038.7.camel@tara.firmix.at>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__1_Dec_2009_22_19_24_+1100_dUJKF=1p1.BydaSe"
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-Firmix-Scanned-By: MIMEDefang 2.67 on ns.firmix.at
+X-Firmix-Spam-Score: -2.287 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.287 required=5
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+X-Firmix-Received-Date: Tue, 01 Dec 2009 12:24:01 CET
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__1_Dec_2009_22_19_24_+1100_dUJKF=1p1.BydaSe
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-12-01 at 13:17 +0200, Tarkan Erimer wrote:
+> I wanted to compile linux-2.6.32-rc8-git2 with gcc-4.2.2 on opensuse
+> 11.2. But, it failed with the following error :
+> 
+> PS: When I googled, I found the same error on Ubuntu Lucid forums with
+> gcc-4.4.2, too.
+[...]
+> CC kernel/audit_tree.o
+> kernel/audit_tree.c: In function ‘find_chunk’:
+> kernel/audit_tree.c:206: internal compiler error: Segmentation fault
+> Please submit a full bug report,
+> with preprocessed source if appropriate.
+That's a clear gcc bug. So please throw it in their bugzilla (or whatever they hav).
 
-Hi Takashi,
+> tarkane:/usr/src/linux-2.6.32-rc8-git2 # gcc --version
+> gcc (SUSE Linux) 4.4.2 [gcc-4_4-branch revision 153890]
+> Copyright (C) 2009 Free Software Foundation, Inc.
+> This is free software; see the source for copying conditions. There is NO
+> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-On Tue, 01 Dec 2009 11:43:46 +0100 Takashi Iwai <tiwai@suse.de> wrote:
->
-> Stephen, please drop that specific patch from your tree (if it's really
-> applied).  It's been already in sound git tree, so the build should be
-> OK now without it.
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-Yeah, that is what I missed yesterday.  I will not try to apply it
-tomorrow so everything should be well again.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__1_Dec_2009_22_19_24_+1100_dUJKF=1p1.BydaSe
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksU+7wACgkQjjKRsyhoI8wTTQCfWCjCQ77T5xtUF499AQHNDBdT
-cKMAniRss3Vw2vLTWScTphsOuf6TnX4W
-=+877
------END PGP SIGNATURE-----
-
---Signature=_Tue__1_Dec_2009_22_19_24_+1100_dUJKF=1p1.BydaSe--
