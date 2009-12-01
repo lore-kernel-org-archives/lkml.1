@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZLAVf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZLAVih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbZLAVf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 16:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbZLAVf3
+	id S1754653AbZLAVih (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 16:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZLAVig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 16:35:29 -0500
-Received: from mga09.intel.com ([134.134.136.24]:58271 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbZLAVf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 16:35:28 -0500
+	Tue, 1 Dec 2009 16:38:36 -0500
+Received: from mga10.intel.com ([192.55.52.92]:34613 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754568AbZLAVif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 16:38:35 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.47,322,1257148800"; 
-   d="scan'208";a="574735133"
-Date: Tue, 1 Dec 2009 13:35:32 -0800
+   d="scan'208";a="751871738"
+Date: Tue, 1 Dec 2009 13:38:40 -0800
 From: mark gross <mgross@linux.intel.com>
 To: linux-pm <linux-pm@lists.linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
-Subject: [PATCH]PM_QOS-to-use-handle-based-requests-wireless-update 4/5
-Message-ID: <20091201213532.GD19688@linux.intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, tiwai@suse.de, perex@perex.cz,
+       alsa-devel@alsa-project.org
+Subject: [PATCH]PM_QOS-to-use-handle-based-requests-pcm-update 5/5
+Message-ID: <20091201213840.GE19688@linux.intel.com>
 Reply-To: mgross@linux.intel.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,87 +29,96 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Updates to wireless clients to pm_qos associeated with api change to use
-handles.
+This is the patch to update sound pcm's dependencies on the pmqos api
+that was changed in the first patch in this series.
+
+Updated per input from RFC.
 
 --mgross
 
 Signed-off-by: mark gross <mgross@linux.intel.com>
 
 
->From 64fdd9afd7d705368448548c8c3555c014fb318a Mon Sep 17 00:00:00 2001
+
+>From 7a0daea4708a2fca0e615ba36daeac60efea3cd6 Mon Sep 17 00:00:00 2001
 From: mark gross <mgross@mgross-hp8510w.(none)>
-Date: Tue, 1 Dec 2009 13:00:31 -0800
-Subject: [PATCH 4/5] PM_QOS to use handle based requests wireless update
+Date: Tue, 1 Dec 2009 13:01:04 -0800
+Subject: [PATCH 5/5] PM_QOS to use handle based requests pcm update
 
 ---
- drivers/net/wireless/ipw2x00/ipw2100.c |   11 ++++++-----
- net/mac80211/mlme.c                    |    2 +-
- 2 files changed, 7 insertions(+), 6 deletions(-)
+ include/sound/pcm.h     |    3 ++-
+ sound/core/pcm.c        |    3 ---
+ sound/core/pcm_native.c |   14 ++++++++------
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/wireless/ipw2x00/ipw2100.c b/drivers/net/wireless/ipw2x00/ipw2100.c
-index 6e2fc0c..6fe87f0 100644
---- a/drivers/net/wireless/ipw2x00/ipw2100.c
-+++ b/drivers/net/wireless/ipw2x00/ipw2100.c
-@@ -174,6 +174,8 @@ that only one external action is invoked at a time.
- #define DRV_DESCRIPTION	"Intel(R) PRO/Wireless 2100 Network Driver"
- #define DRV_COPYRIGHT	"Copyright(c) 2003-2006 Intel Corporation"
+diff --git a/include/sound/pcm.h b/include/sound/pcm.h
+index de6d981..91daac3 100644
+--- a/include/sound/pcm.h
++++ b/include/sound/pcm.h
+@@ -29,6 +29,7 @@
+ #include <linux/poll.h>
+ #include <linux/mm.h>
+ #include <linux/bitops.h>
++#include <linux/pm_qos_params.h>
  
-+struct pm_qos_request_list *ipw2100_pm_qos_req;
-+
- /* Debugging stuff */
- #ifdef CONFIG_IPW2100_DEBUG
- #define IPW2100_RX_DEBUG	/* Reception debugging */
-@@ -1708,7 +1710,7 @@ static int ipw2100_up(struct ipw2100_priv *priv, int deferred)
- 	/* the ipw2100 hardware really doesn't want power management delays
- 	 * longer than 175usec
- 	 */
--	pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100", 175);
-+	pm_qos_update_request(ipw2100_pm_qos_req, 175);
+ #define snd_pcm_substream_chip(substream) ((substream)->private_data)
+ #define snd_pcm_chip(pcm) ((pcm)->private_data)
+@@ -355,7 +356,7 @@ struct snd_pcm_substream {
+ 	int number;
+ 	char name[32];			/* substream name */
+ 	int stream;			/* stream (direction) */
+-	char latency_id[20];		/* latency identifier */
++	struct pm_qos_request_list *latency_pm_qos_req; /* pm_qos latency request */
+ 	size_t buffer_bytes_max;	/* limit ring buffer size */
+ 	struct snd_dma_buffer dma_buffer;
+ 	unsigned int dma_buf_id;
+diff --git a/sound/core/pcm.c b/sound/core/pcm.c
+index c69c60b..6faf4b5 100644
+--- a/sound/core/pcm.c
++++ b/sound/core/pcm.c
+@@ -647,9 +647,6 @@ int snd_pcm_new_stream(struct snd_pcm *pcm, int stream, int substream_count)
+ 		substream->number = idx;
+ 		substream->stream = stream;
+ 		sprintf(substream->name, "subdevice #%i", idx);
+-		snprintf(substream->latency_id, sizeof(substream->latency_id),
+-			 "ALSA-PCM%d-%d%c%d", pcm->card->number, pcm->device,
+-			 (stream ? 'c' : 'p'), idx);
+ 		substream->buffer_bytes_max = UINT_MAX;
+ 		if (prev == NULL)
+ 			pstr->substream = substream;
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index ab73edf..2aab6cf 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -447,11 +447,13 @@ static int snd_pcm_hw_params(struct snd_pcm_substream *substream,
+ 	snd_pcm_timer_resolution_change(substream);
+ 	runtime->status->state = SNDRV_PCM_STATE_SETUP;
  
- 	/* If the interrupt is enabled, turn it off... */
- 	spin_lock_irqsave(&priv->low_lock, flags);
-@@ -1863,8 +1865,7 @@ static void ipw2100_down(struct ipw2100_priv *priv)
- 	ipw2100_disable_interrupts(priv);
- 	spin_unlock_irqrestore(&priv->low_lock, flags);
- 
--	pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100",
--			PM_QOS_DEFAULT_VALUE);
-+	pm_qos_update_request(ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
- 
- 	/* We have to signal any supplicant if we are disassociating */
- 	if (associated)
-@@ -6572,7 +6573,7 @@ static int __init ipw2100_init(void)
- 	if (ret)
- 		goto out;
- 
--	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100",
-+	ipw2100_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
- 			PM_QOS_DEFAULT_VALUE);
- #ifdef CONFIG_IPW2100_DEBUG
- 	ipw2100_debug_level = debug;
-@@ -6595,7 +6596,7 @@ static void __exit ipw2100_exit(void)
- 			   &driver_attr_debug_level);
- #endif
- 	pci_unregister_driver(&ipw2100_pci_driver);
--	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100");
-+	pm_qos_remove_request(ipw2100_pm_qos_req);
+-	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
+-				substream->latency_id);
++	if (substream->latency_pm_qos_req) {
++		pm_qos_remove_request(substream->latency_pm_qos_req);
++		substream->latency_pm_qos_req = NULL;
++	}
+ 	if ((usecs = period_to_usecs(runtime)) >= 0)
+-		pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY,
+-					substream->latency_id, usecs);
++		substream->latency_pm_qos_req = pm_qos_add_request(
++					PM_QOS_CPU_DMA_LATENCY, usecs);
+ 	return 0;
+  _error:
+ 	/* hardware might be unuseable from this time,
+@@ -506,8 +508,8 @@ static int snd_pcm_hw_free(struct snd_pcm_substream *substream)
+ 	if (substream->ops->hw_free)
+ 		result = substream->ops->hw_free(substream);
+ 	runtime->status->state = SNDRV_PCM_STATE_OPEN;
+-	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
+-		substream->latency_id);
++	pm_qos_remove_request(substream->latency_pm_qos_req);
++	substream->latency_pm_qos_req = NULL;
+ 	return result;
  }
  
- module_init(ipw2100_init);
-diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index dc5049d..ed1d2dd 100644
---- a/net/mac80211/mlme.c
-+++ b/net/mac80211/mlme.c
-@@ -696,7 +696,7 @@ void ieee80211_recalc_ps(struct ieee80211_local *local, s32 latency)
- 		s32 beaconint_us;
- 
- 		if (latency < 0)
--			latency = pm_qos_requirement(PM_QOS_NETWORK_LATENCY);
-+			latency = pm_qos_request(PM_QOS_NETWORK_LATENCY);
- 
- 		beaconint_us = ieee80211_tu_to_usec(
- 					found->vif.bss_conf.beacon_int);
 -- 
 1.6.3.3
 
