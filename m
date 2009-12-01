@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbZLAKzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbZLAK5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753294AbZLAKzA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 05:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZLAKy7
+	id S1753398AbZLAK5J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 05:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZLAK5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 05:54:59 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:44210 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752702AbZLAKy6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 05:54:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=X9gDVlGAwgDNwIBQ89A0CBNSc3fhFH0+IxBcyKlagPYVl9Qi0/agR76EmlcrLngJG6
-         DoDf3ixiqs96WkB1321VlGs3OYR9vJl3/BimxQtE9miNq1eB5fLD8SgiHRQah+OljL//
-         doLCVWa1q9ApYJ308IhIOOnX7Ikv7/V5WkbHY=
-MIME-Version: 1.0
-Date: Tue, 1 Dec 2009 11:55:03 +0100
-Message-ID: <ffd8902a0912010255k1bad9886l420b32df8c66551f@mail.gmail.com>
-Subject: Problem KMS: TTM Failed moving buffer. Proposed placement 0x00060004 
-	/ Out of aperture space or DRM memory quota && invalid framebuffer id
-From: Christian Hartmann <cornogle@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Cc: airlied@gmail.com, jglisse@redhat.com, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 1 Dec 2009 05:57:08 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53200 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752302AbZLAK5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 05:57:06 -0500
+Date: Tue, 1 Dec 2009 21:57:01 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 1
+Message-Id: <20091201215701.9e121809.sfr@canb.auug.org.au>
+In-Reply-To: <20091201102900.GA11715@sirena.org.uk>
+References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
+	<20091201102900.GA11715@sirena.org.uk>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__1_Dec_2009_21_57_01_+1100_khADc9Aigv.f8r+4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Todays test with KMS  w/o AGP (radeon.agopmode=-1)
+--Signature=_Tue__1_Dec_2009_21_57_01_+1100_khADc9Aigv.f8r+4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Mark,
 
-Starting Xorg I got instead of a normal X session a GDM login again,
-the last dmesg messages are:
+On Tue, 1 Dec 2009 10:29:01 +0000 Mark Brown <broonie@opensource.wolfsonmic=
+ro.com> wrote:
+>
+> On Tue, Dec 01, 2009 at 07:03:01PM +1100, Stephen Rothwell wrote:
+>=20
+> > Merging sound/for-next
+> > Applying: ASoC: tlv320dac33: Change RT wq to singlethread wq
+>=20
+> According to this the sound tree should be being merged into the next
+> tree but when I look in the master branch of your git I'm not seeing any
+> sign of it - am I missing something here?  The head of your master
+> branch that I see is 16aa56906ae11bfdb145676a5fb5c5f43394148d "Add
+> linux-next specific files for 20091201".
+>=20
+> The same thing happened yesterday.
 
+Thanks for letting me know.  A bug in my procedures.  It will be fixed
+tomorrow, sorry for the inconvenience.
 
-[  904.459254] wlan1: associated
-[ 1459.645513] [TTM] Failed moving buffer. Proposed placement 0x00060004
-[ 1459.645525] [TTM] Out of aperture space or DRM memory quota.
-[ 1459.645533] [drm:radeon_object_list_validate] *ERROR* radeon:
-failed to validate.
-[ 1459.645540] [drm:radeon_cs_ioctl] *ERROR* Failed to parse relocation !
-[ 1461.208487] [drm:drm_mode_getfb] *ERROR* invalid framebuffer id
-[ 1461.218685] [drm] LVDS-13: set mode 1024x768 1e
+Because the above patch is no longer needed all the changes in the sound
+tree have been applied in the merge of the crypto tree, so all the
+changes are there, just not very obvious.
 
-Linux oddysseus 2.6.32-rc8a #7 Tue Dec 1 10:24:42 CET 2009 i686 GNU/Linux
-This build is from today with the latest pull till commit
-d6fdb37126aa4f67484a9962b68963c5d3a506af.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-If more info is needed, I'' try my best so ask for it.
+--Signature=_Tue__1_Dec_2009_21_57_01_+1100_khADc9Aigv.f8r+4
+Content-Type: application/pgp-signature
 
-Sincerelly yours
-C. Hartmann
--- 
-......oooO..............
-.....(....).....Oooo...
-......)../.....(....)....
-.....(_/.......)../.....
-...............(_/.......
-... I WAS ..............
-.......... HERE...... ;)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksU9n0ACgkQjjKRsyhoI8xRFACdFwGR3sxGKV+CuJPP1jIPU4Ct
+pcoAoIvPDh2uKVxFxSQL/HZbC4nUZ0wT
+=0tR1
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__1_Dec_2009_21_57_01_+1100_khADc9Aigv.f8r+4--
