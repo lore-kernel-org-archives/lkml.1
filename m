@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZLAI4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbZLAJCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZLAI4h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 03:56:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZLAI4g
+	id S1753814AbZLAJCy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 04:02:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbZLAJCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 03:56:36 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:52709 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752947AbZLAI4f (ORCPT
+	Tue, 1 Dec 2009 04:02:53 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:61662 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753109AbZLAJCu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 03:56:35 -0500
+	Tue, 1 Dec 2009 04:02:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=pTYAT+ixvnoh99iW04KH+OqPlQOKy6q0krR2/C7ab8gXU+9vQkXadHHkyw+JkMdsz7
-         RJcj7qYPKh7JucZsactmPUK8HFuEoCbcC0Q6hN+4iT2ntO+8H47cBpTQ5YY5bY8NoXa2
-         AhdhBPMu+4emuBR4fXyGrzG++S4Mb6L23mzEo=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=WB0hzyO9N2gnqgclZ4JmRwHiQ4k7fqqZqBZstKM76K1FRAyZkGVkp81TgXzqqrKL/F
+         ocdpau+2zRPdjb3A0/rih+oIht9ll0H6qk9u7X1HCdS12q0OV4+LuqVa08zGrRxLFvuj
+         mqWMgE3DfJNPInhP97XqwZL3c+6Yzb6h0I5ZQ=
 MIME-Version: 1.0
-In-Reply-To: <20091130190030.GA5560@shareable.org>
-References: <20091123173616.75c3f600@tlielax.poochiereds.net>
-	 <20091123181545.05ad004d@tlielax.poochiereds.net>
-	 <m1ljhwbyr3.fsf@fess.ebiederm.org>
-	 <20091123193426.55f1530a@tlielax.poochiereds.net>
-	 <20091124012027.GA14645@shareable.org>
-	 <20091124062621.744beddb@tlielax.poochiereds.net>
-	 <E1NCtxF-0000rn-1z@pomaz-ex.szeredi.hu> <20091124120906.GA1700@ucw.cz>
-	 <e9e943910911240513g31e633ffg2e878a874f1110ba@mail.gmail.com>
-	 <20091130190030.GA5560@shareable.org>
-Date: Tue, 1 Dec 2009 08:56:40 +0000
-X-Google-Sender-Auth: 36f8b96a27684b8a
-Message-ID: <e9e943910912010056r6028b2c0u2474d7c0359acd0d@mail.gmail.com>
-Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks and 
-	file bind mounts (try #5)
-From: Duane Griffin <duaneg@dghda.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Miklos Szeredi <miklos@szeredi.hu>,
-       Jeff Layton <jlayton@redhat.com>, ebiederm@xmission.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
+Date: Tue, 1 Dec 2009 15:02:56 +0600
+Message-ID: <b9df5fa10912010102p405b429dg102843fe88932b9d@mail.gmail.com>
+Subject: [PATCH] ip2: Remove #ifdef MODULE from ip2main.c
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Michael H. Warfield" <mhw@wittsend.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/11/30 Jamie Lokier <jamie@shareable.org>:
-> Duane Griffin wrote:
->> 2009/11/24 Pavel Machek <pavel@ucw.cz>:
->> > On Tue 2009-11-24 12:53:09, Miklos Szeredi wrote:
->> >> I still believe leaving the current semantics and documenting them is
->> >> the best option.
->> >
->> > I believe that current semantics is ugly enough that 'documenting' it
->> > is not enough... and people want to port from other systems, too, not
->> > expecting nasty surprises like this...
->>
->> Solaris 10 works the same way as Linux does now, so I don't think the
->> porting argument gets you anywhere.
->
-> It certainly must be similar, as gnulib uses the same technique on
-> both Solaris and Linux.
->
-> I don't have a Solaris to try this on.  Can you use /proc to re-open
-> with O_RDWR a file descriptor previously opened with O_RDONLY on
-> Solaris 10, assuming the underlying inode allows writing?
+ ip2: Remove #ifdef MODULE completely.
 
-Yep, I basically followed Pavel's recipe and got the same result. On
-the other hand, it didn't work on AIX.
+>From kernel command line we can pass "module parameters".
+So #ifdef MODULE is obsolute now. Remove it completely.
+When CONFIG_PCI=n and building ip2main.c then we are hit
+by the following warning. So move *pdev into #ifdef CONFIG_PCI.
 
-> -- Jamie
+drivers/char/ip2/ip2main.c: In function `ip2_loadmain':
+drivers/char/ip2/ip2main.c:542: warning: unused variable `pdev'
 
-Cheers,
-Duane.
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+---
 
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+--- linus/drivers/char/ip2/ip2main.c	2009-12-01 12:41:53.000000000 +0600
++++ rakib/drivers/char/ip2/ip2main.c	2009-12-01 12:56:56.000000000 +0600
+@@ -263,7 +263,7 @@ static int tracewrap;
+ /* Macros */
+ /**********/
+
+-#if defined(MODULE) && defined(IP2DEBUG_OPEN)
++#ifdef IP2DEBUG_OPEN
+ #define DBG_CNT(s) printk(KERN_DEBUG "(%s): [%x] ttyc=%d, modc=%x -> %s\n", \
+ 		    tty->name,(pCh->flags), \
+ 		    tty->count,/*GET_USE_COUNT(module)*/0,s)
+@@ -487,7 +487,6 @@ static const struct firmware *ip2_reques
+ 	return fw;
+ }
+
+-#ifndef MODULE
+ /******************************************************************************
+  *	ip2_setup:
+  *		str: kernel command line string
+@@ -531,7 +530,6 @@ static int __init ip2_setup(char *str)
+ 	return 1;
+ }
+ __setup("ip2=", ip2_setup);
+-#endif /* !MODULE */
+
+ static int __init ip2_loadmain(void)
+ {
+@@ -539,7 +537,6 @@ static int __init ip2_loadmain(void)
+ 	int err = 0;
+ 	i2eBordStrPtr pB = NULL;
+ 	int rc = -1;
+-	struct pci_dev *pdev = NULL;
+ 	const struct firmware *fw = NULL;
+
+ 	if (poll_only) {
+@@ -612,6 +609,7 @@ static int __init ip2_loadmain(void)
+ 		case PCI:
+ #ifdef CONFIG_PCI
+ 		{
++			struct pci_dev *pdev = NULL;
+ 			u32 addr;
+ 			int status;
