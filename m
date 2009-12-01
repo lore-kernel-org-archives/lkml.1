@@ -1,46 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZLAVPD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZLAVOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521AbZLAVPD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 16:15:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZLAVPC
+	id S1754321AbZLAVOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 16:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZLAVOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 16:15:02 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43092 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752070AbZLAVPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 16:15:01 -0500
-Message-ID: <4B158720.9030008@kernel.org>
-Date: Tue, 01 Dec 2009 13:14:08 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 1 Dec 2009 16:14:17 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:44034 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbZLAVOQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 16:14:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=RvYhaElznChEkEcA2/JIq3SvMW9fE5e4If6FbTHSXJHJPnKULk6xVg1tMZTl1M8cX+
+         2jnF+/NxoK8tb9gqC5mKZjvGURfDqSWDDO8dOURIwtel+WaSCR//LYs0S+gPc6TA8bzc
+         KaRdu0M5tV1hIJYdrAQI5SF0OiISJrVHzk9no=
+Message-ID: <4B15872E.2070707@gmail.com>
+Date: Tue, 01 Dec 2009 13:14:22 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Grant Grundler <grundler@parisc-linux.org>
-CC: Alex Williamson <alex.williamson@hp.com>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] PCI: Always set prefetchable base/limit upper32	registers
-References: <20091130214954.10845.23072.stgit@debian.lart> <20091201000332.GD24539@lackof.org> <20091201001942.GF24539@lackof.org> <1259640654.10482.44.camel@2710p.home> <20091201195523.GA16534@lackof.org> <4B157F23.4040701@kernel.org> <20091201205910.GB16534@lackof.org>
-In-Reply-To: <20091201205910.GB16534@lackof.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: Bisected: s2disk (uswsusp only) hangs just before poweroff
+References: <4B1575AC.6080904@tuffmail.co.uk> <4B157B81.9050703@gmail.com> <4B157C29.6090805@tuffmail.co.uk>
+In-Reply-To: <4B157C29.6090805@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Grundler wrote:
-> On Tue, Dec 01, 2009 at 12:40:03PM -0800, Yinghai Lu wrote:
-> ...
->>> I assumed Yinghai's objection was based on a specific problem he had
->>> seen with writing upper32 register. Bjorn asked the right question.
->>> If there isn't a specific problem, I'd prefer AW's simpler patch.
->> we just should not touch that register if the HW only support 32bit pref mmio.
-> 
-> Why not?
-> 
-> I agree the PCI-PCI spec defines how to determine if a PCI Bridge supports
-> 64-bit Pref MMIO (using upper32 - or not). But spec also doesn't prohibit
-> writing to a read-only register.  Writing this Read-Only register so far
-> hasn't caused any problems.
+On 12/01/09 12:27, Alan Jenkins wrote:
+> Justin P. Mattock wrote:
+>> On 12/01/09 11:59, Alan Jenkins wrote:
+>>> Hi
+>>>
+>>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc. I finally
+>>> got around to bisecting it, which blamed the following commit by Mel:
+>>>
+>>> 5f8dcc2 "page-allocator: split per-cpu list into
+>>> one-list-per-migrate-type"
+>>>
+>>> I was able to confirm this by reverting the commit, which fixed the
+>>> hang. I had to revert one other commit first to avoid a conflict:
+>>>
+>>> a6f9edd "page-allocator: maintain rolling count of pages to free from
+>>> the PCP"
+>>>
+>>> -- detail --
+>>>
+>>> When I suspend my EeePc 701 to disk, it sometimes hangs after writing
+>>> out the hibernation image. The system is still able to resume from this
+>>> image (after working around the hang by pressing the power button).
+>>> This is specific to s2disk from the uswsusp package (which is now
+>>> installed by default on debian unstable). It doesn't happen if I
+>>> uninstall uswsusp and use the in-kernel suspend instead.
+>>>
+>>> The hang doesn't happen if I boot with "init=/bin/bash" and run s2disk.
+>>> Nor does it happen if I boot normally, then switch to single user mode
+>>> ("telinit 12").
+>>>
+>>> It only happens if I've logged in to KDE. In the past, this has
+>>> indicated a problem in a network driver, since NetworkManager only made
+>>> a connection once I logged in. But it still hangs if I remove both ath5k
+>>> and atl2 before I log into KDE. (I actually tried removing as many
+>>> modules as possible: atl2, ath5k, usbcore, snd-hda-intel, psmouse,
+>>> pcspkr, battery, ac, themal, fan, and eeepc-laptop). Perhaps it's
+>>> something to do with the size of the hibernation image.
+>>>
+>>> -- confidence in the bisection result --
+>>>
+>>> The randomness was a bit annoying, but it's not too bad. The hang would
+>>> normally show up in the first 3 hibernation cycles; I don't remember
+>>> having to wait more than 6.
+>>>
+>>> I wrote a script to do s2disk + rtcwake so I could leave it testing
+>>> without constantly hitting the power button. This let me test 2.6.32-rc8
+>>> with the reverts for at least 20 hibernation cycles.
+>>>
+>>> Regards
+>>> Alan
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe
+>>> linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at http://www.tux.org/lkml/
+>>>
+>>
+>> hmm.. maybe this is what I'm seeing over here
+>> i.g. on my macbook(ati gpu) the first s2ram will
+>> lagg for about 30/40 secs before waking up
+>> then every other cycle afterwards reacts as it should.
+>> Threw in kernels 2.6.30,31 before doing anything
+>> but showed the same results, leading me to beleive maybe
+>> I have some userspace issue(libx86)going on.
+>>
+>> I'll try reverting that commit to see.
+>>
+>> Thanks
+>>
+>> Justin P. Mattock
+>
+> I don't expect so. My problem doesn't affect s2ram. And as far as I can
+> tell, my hang is forever... it's more than just 40 seconds.
+>
+> Regards
+> Alan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at http://www.tux.org/lkml/
+>
 
-if we can find out that is 32bit mmio pref, why waste cycle to write value to them?
+then weve two totally different issues.
 
-YH
+looking more into it, I think my problem
+is somewhere in udev i.e.
+I get stuckage during boot becuase of some
+rule in rules.d for about the same time
+as what I see with s2ram.
+
+my guess udev is sitting with some command
+in *.rules in of which doesn't
+know what to do(reason for 30 secs)before
+going onto the next task.
+(but could be wrong).
+
+interesting thing is my other machine
+all though different, is running the same
+udev and rules with no problem.
+
+
+Justin P. Mattock
