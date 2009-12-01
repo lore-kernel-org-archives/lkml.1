@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbZLAOS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbZLAOUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753088AbZLAOS6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 09:18:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZLAOS5
+	id S1753341AbZLAOUL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 09:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbZLAOUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 09:18:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45018 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 09:20:10 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36051 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751898AbZLAOS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 09:18:56 -0500
-Message-ID: <4B1525A7.1020307@redhat.com>
-Date: Tue, 01 Dec 2009 12:18:15 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1751898AbZLAOUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 09:20:09 -0500
+Date: Tue, 1 Dec 2009 15:20:08 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Ping Cheng <pingc@wacom.com>
+Cc: linux-kernel@vger.kernel.org, pinglinux@gmail.com,
+       Alan Cox <alan@etchedpixels.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] serial/8250_pnp.c: add new Wacom devices
+In-Reply-To: <6753EB6004AFF34FAA275742C104F952016A12D0@wacom-nt10.wacom.com>
+Message-ID: <alpine.LRH.2.00.0912011519260.9567@twin.jikos.cz>
+References: <6753EB6004AFF34FAA275742C104F952BDD5E0@wacom-nt10.wacom.com> <6753EB6004AFF34FAA275742C104F952016A12D0@wacom-nt10.wacom.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Gerd Hoffmann <kraxel@redhat.com>
-CC: Andy Walls <awalls@radix.net>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Jon Smirl <jonsmirl@gmail.com>, Christoph Bartelmus <lirc@bartelmus.de>,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       maximlevitsky@gmail.com, stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>	 <m3aay6y2m1.fsf@intrepid.localdomain>	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>	 <1259450815.3137.19.camel@palomino.walls.org>	 <m3ocml6ppt.fsf@intrepid.localdomain>	 <1259542097.5231.78.camel@palomino.walls.org> <4B14F3EA.4090000@redhat.com> <1259668143.3100.18.camel@palomino.walls.org> <4B1521EA.6050306@redhat.com>
-In-Reply-To: <4B1521EA.6050306@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerd Hoffmann wrote:
-> On 12/01/09 12:49, Andy Walls wrote:
->> On Tue, 2009-12-01 at 11:46 +0100, Gerd Hoffmann wrote:
->>> Once lirc_dev is merged you can easily fix this:  You'll have *one*
->>> driver which supports *both* evdev and lirc interfaces.  If lircd opens
->>> the lirc interface raw data will be sent there, keystrokes come in via
->>> uinput.  Otherwise keystrokes are send directly via evdev.  Problem
->>> solved.
->>
->> This will be kind of strange for lirc_zilog (aka lirc_pvr150).  It
->> supports IR transmit on the PVR-150, HVR-1600, and HD-PVR.  I don't know
->> if transmit is raw pulse timings, but I'm sure the unit provides codes
->> on receive.  Occasionally blocks of "boot data" need to be programmed
->> into the transmitter side.  I suspect lirc_zilog will likely need
->> rework....
-> 
-> Well, for IR *output* it doesn't make sense to disable evdev.  One more
-> reason which indicates it probaably is better to introduce a ioctl to
-> disable evdev reporting.  lircd will probably turn it off, especially
-> when sending data to uevent.  debug tools might not, likewise apps
-> sending IR.
-> 
->>>   so killing the in-kernel IR limits to make ir-kbd-i2c
->>                    ^^^^^^^^^^^^^^^^^^^
->>>        being on par with lirc_i2c might be more useful in this case.
->>
->> I didn't quite understand that.  Can you provide a little more info?
-> 
-> Such as throwing away the address part of rc5 codes ...
 
-This limit were already removed from the subsystem core by the patches
-I committed recently (still only at the devel tree - I should be adding
-those patches to my linux-next tree likely today). 
+[ added CCs ]
 
-The remaining issue is that we'll need to re-scan the IR tables for 
-every supported remote to be sure that we're getting the full RC5 code.
-It is not complex, but requires lots of work from people that actually have
-those IR's.
+On Mon, 30 Nov 2009, Ping Cheng wrote:
 
-Cheers,
-Mauro.
+> This is a resend. I forgot to update the subject line last time. I am
+> not in the mailing list. Please cc me with your reply.  Thank you.
+> 
+> 
+> Add 10 serial Wacom Tablet PC devices. In fact, 
+> The last 3 bytes of WACF### are all reserved 
+> for Wacom serial OEMs.
+> 
+> Signed-off-by: Ping Cheng <pingc@wacom.com>
+> ---
+>  drivers/serial/8250_pnp.c |   11 +++++++++++
+>  1 files changed, 11 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/serial/8250_pnp.c b/drivers/serial/8250_pnp.c
+> index d71dfe3..898c0f0 100644
+> --- a/drivers/serial/8250_pnp.c
+> +++ b/drivers/serial/8250_pnp.c
+> @@ -337,6 +337,15 @@ static const struct pnp_device_id pnp_dev_table[] =
+> {
+>  	{       "WACF00A",              0       },
+>  	{       "WACF00B",              0       },
+>  	{       "WACF00C",              0       },
+> +	{       "WACF00D",              0       },
+> +	{       "WACF00E",              0       },
+> +	{       "WACF00F",              0       },
+> +	{       "WACF010",              0       },
+> +	{       "WACF011",              0       },
+> +	{       "WACF012",              0       },
+> +	{       "WACF013",              0       },
+> +	{       "WACF014",              0       },
+> +	{       "WACF015",              0       },
+>  	/* Compaq touchscreen */
+>  	{       "FPI2002",              0 },
+>  	/* Fujitsu Stylistic touchscreens */
+> @@ -354,6 +363,8 @@ static const struct pnp_device_id pnp_dev_table[] =
+> {
+>  	{	"FUJ02E5",		0	},
+>  	/* Fujitsu P-series tablet PC device */
+>  	{	"FUJ02E6",		0	},
+> +	/* Fujitsu Wacom Tablet PC device */
+> +	{	"FUJ02E7",		0	},
+>  	/*
+>  	 * LG C1 EXPRESS DUAL (C1-PB11A3) touch screen (actually a
+> FUJ02E6 in
+>  	 * disguise)
+> 
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
