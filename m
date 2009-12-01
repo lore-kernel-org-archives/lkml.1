@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZLARrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbZLARoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbZLARrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbZLARrO
+	id S1754223AbZLARoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZLARoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:47:14 -0500
-Received: from kroah.org ([198.145.64.141]:58558 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754315AbZLARrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:47:11 -0500
-Date: Tue, 1 Dec 2009 09:43:47 -0800
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: [GIT PATCH] STAGING fixes for 2.6.32-git
-Message-ID: <20091201174347.GC31972@kroah.com>
+	Tue, 1 Dec 2009 12:44:21 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:57927 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbZLARoU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:44:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QqHOU+XM3vzjWXDvWPhOVWT9wIGYvrvU8z3lTwcj4BeURAwl//Br9s2nMVPYSEu6/e
+         zUzy5eqfJILxGwYuIhA5OBamHgi8jDw1CQ3cVIPjfpZkZ2oo1vXcEJv/jICaj3j2E2t4
+         BTrCug5KrjXy1iPwXcY79KkcJbfzMUF1x7byg=
+Message-ID: <4B1555D4.70704@gmail.com>
+Date: Tue, 01 Dec 2009 18:43:48 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+CC: Joe Perches <joe@perches.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: warning: massive change to conditional coding style in net?
+References: <4B13A025.7000103@gmail.com> <1259603798.29779.293.camel@Joe-Laptop.home> <4B153F9B.7050502@gmail.com>
+In-Reply-To: <4B153F9B.7050502@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some staging fixes for your 2.6.32-git tree.
+William Allen Simpson wrote, On 12/01/2009 05:08 PM:
 
-There's 2 hyper-v driver bugfixes, and 2 documentation updates (to the
-TODO file, and to comments in the hyper-v driver.)
+> But more important, at least to my thinking, is keeping patches simple
+> by conforming to the *existing* style in the section of code.  No
+> sweeping changes!
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+How about new sections in between transit smoothly from one style
+to another? (Or 50/50?)
 
-All of these patches have been in the linux-next and mm trees for a
-while.
-
-The patches will be sent as a follow-on to this message to the
-driver-devel list for people to see.
-
-thanks,
-
-greg k-h
-
---------------
-
- drivers/staging/hv/BlkVsc.c      |    1 +
- drivers/staging/hv/Channel.c     |   16 ++++------------
- drivers/staging/hv/ChannelMgmt.c |    2 +-
- drivers/staging/hv/NetVsc.c      |    1 +
- drivers/staging/hv/NetVsc.h      |    1 +
- drivers/staging/hv/StorVsc.c     |   10 +++++-----
- drivers/staging/hv/blkvsc_drv.c  |    1 +
- drivers/staging/hv/netvsc_drv.c  |    1 +
- drivers/staging/rtl8187se/TODO   |    3 +--
- drivers/staging/rtl8192su/TODO   |    3 +--
- drivers/staging/vt6655/TODO      |    5 ++---
- drivers/staging/vt6656/TODO      |    5 ++---
- 12 files changed, 21 insertions(+), 28 deletions(-)
-
----------------
-
-Bartlomiej Zolnierkiewicz (1):
-      Staging: update TODO files
-
-Dave Jones (1):
-      Staging: hv: Fix argument order in incorrect memset invocations in hyperv driver.
-
-Haiyang Zhang (2):
-      Staging: hv: Fix vmbus event handler bug
-      Staging: hv: Fix some missing author names
-
+Jarek P.
