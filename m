@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZLAKUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZLAKWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZLAKUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 05:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZLAKUb
+	id S1753181AbZLAKWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 05:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZLAKWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 05:20:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32207 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 05:22:18 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44909 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbZLAKUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 05:20:30 -0500
-Message-ID: <4B14EDE3.5050201@redhat.com>
-Date: Tue, 01 Dec 2009 11:20:19 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	id S1752150AbZLAKWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 05:22:17 -0500
+Date: Tue, 1 Dec 2009 10:21:37 GMT
+From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
+       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
+       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4B14E220.2050107@cn.fujitsu.com>
+References: <4B14E220.2050107@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf_event: Initialize data.period in perf_swevent_hrtimer()
+Message-ID: <tip-59d069eb5ae9b033ed1c124c92e1532c4a958991@git.kernel.org>
+Git-Commit-ID: 59d069eb5ae9b033ed1c124c92e1532c4a958991
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Christoph Bartelmus <lirc@bartelmus.de>
-CC: mchehab@redhat.com, awalls@radix.net, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, jonsmirl@gmail.com,
-       khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <BDodf9W1qgB@lirc>
-In-Reply-To: <BDodf9W1qgB@lirc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-   Hi,
+Commit-ID:  59d069eb5ae9b033ed1c124c92e1532c4a958991
+Gitweb:     http://git.kernel.org/tip/59d069eb5ae9b033ed1c124c92e1532c4a958991
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Tue, 1 Dec 2009 17:30:08 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 1 Dec 2009 11:19:07 +0100
 
->> The point is that for simple usage, like an user plugging his new USB stick
->> he just bought, he should be able to use the shipped IR without needing to
->> configure anything or manually calling any daemon. This currently works
->> with the existing drivers and it is a feature that needs to be kept.
->
-> Admittedly, LIRC is way behind when it comes to plug'n'play.
+perf_event: Initialize data.period in perf_swevent_hrtimer()
 
-Should not be that hard to fixup.
+In current code in perf_swevent_hrtimer(), data.period is not
+initialized, The result is obvious wrong:
 
-When moving the keytable loading from kernel to userspace the kernel 
-drivers have to inform userspace anyway what kind of hardware the IR 
-device is, so udev can figure what keytable it should load.  A sysfs 
-attribute is the way to go here I think.
+ # ./perf record -f -e cpu-clock make
+ # ./perf report
+ # Samples: 1740
+ #
+ # Overhead   Command                                   ......
+ # ........  ........  ..........................................
+ #
+   1025422183050275328.00%        sh  libc-2.9.90.so ...
+   1025422183050275328.00%      perl  libperl.so     ...
+   1025422168240043264.00%      perl  [kernel]       ...
+   1025422030011210752.00%      perl  [kernel]       ...
 
-lirc drivers can do the same, and lircd can startup with a reasonable 
-(default) configuration.
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <4B14E220.2050107@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/perf_event.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Of course evdev and lirc subsytems/drivers should agree on which 
-attributes should be defined and how they are filled.
-
-cheers,
-   Gerd
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 0b9ca2d..040ee51 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -4010,6 +4010,7 @@ static enum hrtimer_restart perf_swevent_hrtimer(struct hrtimer *hrtimer)
+ 	event->pmu->read(event);
+ 
+ 	data.addr = 0;
++	data.period = event->hw.last_period;
+ 	regs = get_irq_regs();
+ 	/*
+ 	 * In case we exclude kernel IPs or are somehow not in interrupt
