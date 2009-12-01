@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbZLAKuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZLAKzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753268AbZLAKuK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 05:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbZLAKuK
+	id S1753518AbZLAKzL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 05:55:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZLAKzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 05:50:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25262 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbZLAKuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 05:50:09 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20091201065626.GN28962@bombadil.infradead.org>
-References: <20091201065626.GN28962@bombadil.infradead.org>
-To: Kyle McMartin <kyle@mcmartin.ca>, Xiaotian Feng <dfeng@redhat.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, ericvh@gmail.com
-Subject: Re: [PATCH] 9p: fix build breakage introduced by 201a15428bd54f83eccec8b7c64a04b8f9431204
-Date: Tue, 01 Dec 2009 10:50:02 +0000
-Message-ID: <6574.1259664602@redhat.com>
+	Tue, 1 Dec 2009 05:55:08 -0500
+Received: from casper.infradead.org ([85.118.1.10]:39803 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753403AbZLAKzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 05:55:07 -0500
+Subject: Re: [RFC] [PATCH 0/2] Futex fault injection
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sripathi Kodi <sripathik@in.ibm.com>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <20091201103351.GA6685@elte.hu>
+References: <20091201141642.398e7b7d@sripathi>
+	 <20091201103351.GA6685@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 01 Dec 2009 11:54:43 +0100
+Message-ID: <1259664883.1697.28.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle McMartin <kyle@mcmartin.ca> wrote:
+On Tue, 2009-12-01 at 11:33 +0100, Ingo Molnar wrote:
+> * Sripathi Kodi <sripathik@in.ibm.com> wrote:
+> 
+> > Hi,
+> > 
+> > This patch set adds fault injection for futex subsystem. It adds 
+> > faults at places where reading/writing from user space can return 
+> > EFAULT. This will be useful in testing any significant change to futex 
+> > subsystem.
+> 
+> Instead of this unacceptably ugly and special-purpose debugfs interface, 
+> please extend perf events to allow event injection. Some other places in 
+> the kernel (which deal with rare events) want/need this capability too.
 
-> fs/9p/cache.c: In function '__v9fs_fscache_release_page':
-> fs/9p/cache.c:346: error: 'vnode' undeclared (first use in this function)
-> fs/9p/cache.c:346: error: (Each undeclared identifier is reported only once
-> fs/9p/cache.c:346: error: for each function it appears in.)
+Thing is, he's using the 'normal' fault injection code to do this, I see
+no objection to doing that.
 
-Seems I didn't turn on all the 9P options I needed :-(
+If you want to redo the fault injection subsystem, then that's another
+story, but then we need to convert all of its users over.
 
-David
