@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbZLAQsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbZLAQsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbZLAQsM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:48:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbZLAQsL
+	id S1754380AbZLAQsD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:48:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZLAQsC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:48:11 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:35913 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754398AbZLAQsG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:48:06 -0500
-Date: Tue, 1 Dec 2009 10:47:44 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: David Rientjes <rientjes@google.com>
-cc: Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>
-Subject: Re: lockdep complaints in slab allocator
-In-Reply-To: <alpine.DEB.2.00.0911301512250.12038@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.0912011045200.9896@router.home>
-References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi> <1259080406.4531.1645.camel@laptop>
- <20091124170032.GC6831@linux.vnet.ibm.com> <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop> <1259090615.17871.696.camel@calx> <84144f020911241307u14cd2cf0h614827137e42378e@mail.gmail.com> <1259103315.17871.895.camel@calx>
- <alpine.DEB.2.00.0911251356130.11347@chino.kir.corp.google.com> <alpine.DEB.2.00.0911271127130.20368@router.home> <alpine.DEB.2.00.0911301512250.12038@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 1 Dec 2009 11:48:02 -0500
+Received: from mail.gmx.net ([213.165.64.20]:51435 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753665AbZLAQsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:48:01 -0500
+X-Authenticated: #14349119
+X-Provags-ID: V01U2FsdGVkX1+yHqAZKEeyZmF/6/8X/UE7ru8K6GG3Zu9j4EB+Mn
+	UU9KCIlYWibNbi
+Subject: Re: writev data loss bug in (at least) 2.6.31 and 2.6.32pre8 x86-64
+From: Mike Galbraith <gleep@gmx.de>
+To: Jan Kara <jack@suse.cz>
+Cc: James Y Knight <foom@fuhm.net>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, npiggin@suse.de
+In-Reply-To: <20091201160324.GA25873@quack.suse.cz>
+References: <1F5364AE-321E-44E9-8B0D-B8E17597A0DA@fuhm.net>
+	 <907888CC-F4B2-448F-8F48-B96A566D323B@fuhm.net>
+	 <1259667765.9614.19.camel@marge.simson.net>
+	 <20091201143558.GB12730@quack.suse.cz>
+	 <20091201160324.GA25873@quack.suse.cz>
+Content-Type: text/plain
+Date: Tue, 01 Dec 2009 17:47:58 +0100
+Message-Id: <1259686078.6229.1.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.79
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, David Rientjes wrote:
+On Tue, 2009-12-01 at 17:03 +0100, Jan Kara wrote:
 
-> Right, but the user is still left with a decision of which slab allocator
-> to compile into their kernel, each with distinct advantages and
-> disadvantages that get exploited for the wide range of workloads that it
-> runs.  If slob could be merged into another allocator, it would be simple
-> to remove the distinction of it being seperate altogether, the differences
-> would depend on CONFIG_EMBEDDED instead.
+>   The patch below fixes the issue for me...
 
-No embedded folks that I know are using SLOB. CONFIG_EMBEDDED still would
-require a selection of allocators. I have no direct knowledge of anyone
-using SLOB (despite traveling widely this year) aside from what Matt tells
-me.
+Ditto.
+
+	-Mike
 
