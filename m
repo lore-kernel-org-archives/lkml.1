@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZLAQ6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZLARAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbZLAQ6i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZLAQ6h
+	id S1754455AbZLARAa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZLARA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:58:37 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:47621 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbZLAQ6h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:58:37 -0500
-Message-ID: <4B154B29.1030807@cosmosbay.com>
-Date: Tue, 01 Dec 2009 17:58:17 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: netdev@vger.kernel.org, Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: seeing strange values for tcp sk_rmem_alloc
-References: <4B15416A.2060202@nortel.com>
-In-Reply-To: <4B15416A.2060202@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 01 Dec 2009 17:58:18 +0100 (CET)
+	Tue, 1 Dec 2009 12:00:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27859 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752107AbZLARA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:00:29 -0500
+Date: Tue, 1 Dec 2009 12:00:02 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, utrace-devel <utrace-devel@redhat.com>,
+       Roland McGrath <roland@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
+Message-ID: <20091201170002.GD10331@redhat.com>
+References: <20091130120345.GA18879@linux.vnet.ibm.com> <1259582952.20516.209.camel@laptop> <20091130123257.GB18879@linux.vnet.ibm.com> <1259584907.20516.246.camel@laptop> <20091130131928.GC18879@linux.vnet.ibm.com> <1259588232.20516.307.camel@laptop> <20091130150314.GA10331@redhat.com> <20091130151650.GA24316@elte.hu> <20091130152910.GB10331@redhat.com> <20091201161132.GA24897@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091201161132.GA24897@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen a écrit :
-> I'm hoping someone might be able to explain some odd behaviour that I'm
-> seeing.
-> 
-> Some of our developers wanted to be able to see how much of their rx
-> socket buffer space was in use, so I added the following to sock_ioctl()
-> 
-> 
-> 		case SIOCGSKRMEMALLOC:
-> 		{
-> 			int tmp;
-> 			err = -EINVAL;
-> 			if(!sock->sk)
-> 				break;
-> 			tmp = atomic_read(&sock->sk->sk_rmem_alloc);
-> 			err = copy_to_user(argp, &tmp, sizeof(tmp));
-> 			break;
-> 		}
-> 
-> To validate it, I wrote a testcase that opened a tcp socket, then looped
-> sending 2k of data at a time to it and calling the above ioctl to check
-> the sk_rmem_alloc value (without ever reading from the socket).
-> 
-> The results were odd--I've copied them below.  Can anyone explain how I
-> can send 20K of data but sk_rmem_alloc still only shows 4.8K used, then
-> it suddenly jumps by a lot on the next packet to something that more
-> reflects reality, then repeats that pattern again?  Is there some
-> additional buffering happening somewhere in the TCP stack?
-> 
+Hi -
 
-Me wondering why you think sk_rmem_alloc is about TX side.
+On Tue, Dec 01, 2009 at 05:11:32PM +0100, Ingo Molnar wrote:
+> Those facilities are not overlapping with kgdb though so my point doesnt 
+> apply to them. An in-kernel gdb server sure overlaps/extends kgdb 
+> though.
 
-Its used in RX path. rmem means ReadMemory.
+Only in name.  One is highly invasive, for debugging the kernel across
+serial consoles.  The other is highly noninvasive, for debugging user
+processes across normal userspace channels.  They both happen to talk
+to gdb, but that's the end of the natural "overlap".
 
-You can send 1 Gbytes of data, and sk_rmem_alloc doesnt change, if your
-TCP stream is unidirectionnal.
+Even if kgdb was extended to be able to manage userspace, and if gdb
+itself was extended to be able to use that same single channel, this
+would still not duplicate the use scenario for an ordinary user
+debugging his own processes.
 
-sk_rmem_alloc grows when skb are queued into receive queue
-sk_rmem_alloc shrinks when application reads this receive queue.
+(Plus, in the future where at least gdb is applied toward kernel+user
+debugging, it is unlikely to be the case that this would need to be
+done *over a single channel*.  A separate channel for kernel and
+separate channels for userspace programs are no less likely.)
 
+> Btw., perf does meet that definition: it functionally replaces all 
+> facilities that it overlaps/extends - such as Oprofile. [...]
 
+(And they currently separately coexist.)
 
-
+- FChE
