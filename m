@@ -1,84 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZLAIei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZLAIfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZLAIei (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 03:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZLAIeh
+	id S1753856AbZLAIfg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 03:35:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbZLAIfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 03:34:37 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:33239 "EHLO
+	Tue, 1 Dec 2009 03:35:34 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:33245 "EHLO
 	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753601AbZLAIee (ORCPT
+	with ESMTP id S1753724AbZLAIei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 03:34:34 -0500
+	Tue, 1 Dec 2009 03:34:38 -0500
 From: Samu Onkalo <samu.p.onkalo@nokia.com>
 To: eric.piel@tremplin-utc.net
 Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
        Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH v4 0/5] LIS3 feature update
-Date: Tue,  1 Dec 2009 10:33:37 +0200
-Message-Id: <1259656422-7697-1-git-send-email-samu.p.onkalo@nokia.com>
+Subject: [PATCH v4 1/5] lis3: Selftest support
+Date: Tue,  1 Dec 2009 10:33:38 +0200
+Message-Id: <1259656422-7697-2-git-send-email-samu.p.onkalo@nokia.com>
 X-Mailer: git-send-email 1.6.0.4
-X-OriginalArrivalTime: 01 Dec 2009 08:33:45.0033 (UTC) FILETIME=[FEC68390:01CA7260]
+In-Reply-To: <1259656422-7697-1-git-send-email-samu.p.onkalo@nokia.com>
+References: <1259656422-7697-1-git-send-email-samu.p.onkalo@nokia.com>
+X-OriginalArrivalTime: 01 Dec 2009 08:33:47.0092 (UTC) FILETIME=[0000B140:01CA7261]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes since v3 patch set:
+Implement selftest feature as specified by chip manufacturer.
+Control: read selftest sysfs entry
+Response: "OK x y z" or "FAIL x y z"
+where x, y, and z are difference between selftest mode and normal mode.
+Test is passed when values are within acceptance limit values.
 
-0001: two if statements combined to one
+Acceptance limits are provided via platform data. See chip spesifications
+for acceptance limits. If limits are not properly set, OK / FAIL decision is
+meaningless. However, userspace application can still make decision based on
+the numeric x, y, z values.
 
-0002: added "Acked by Eric Piel" to description
+Selftest is meant for HW diagnostic purposes. It is not meant to be called
+during normal use of the chip. It may cause false interrupt events.
+Selftest mode delays polling of the normal results but it doesn't cause
+wrong values. Chip must be in static state during selftest.
+Any acceration during the test causes most probably failure.
 
-0003: Replaced with edited version by Eric Piel. Tested on 8 bit device
-by me.
+Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
+---
+ drivers/hwmon/lis3lv02d.c |   67 ++++++++++++++++++++++++++++++++++++++++++++-
+ drivers/hwmon/lis3lv02d.h |   14 ++++++++-
+ include/linux/lis3lv02d.h |    3 ++
+ 3 files changed, 81 insertions(+), 3 deletions(-)
 
-0004: Constant names changed to shorter ones. Shorter names allowed some clean
-up. No functional changes
-
-0005: added "Acked by Eric Piel" to description
-
-Description from version 3 patch set:
-
-This patch set is made to top of 7 previously accepted lis3 related patches in
-mm-tree:
-- I2C bus support for lis3lv02d and variant accelerometer chips...
-- Add the possibility to remap axes via platform data...
-- Send input_sync after each measurement round...
-- polled input device itself was not free'd....
-- riginally the driver was only targeted to 12bits sensors...
-- Most of the documentation and comments were written when the driver ..
-- Lis3 accelerometer sensors have quite long power on delay ..
-
-Tested with 2.6.32-RC7 which was patched with above 7 lis3 related patches.
-Tested only with 8 bit lis3 device since I don't have possibility to test other chips.
-
-0001:
-Implement selftest feature for HW diagnostic purposes. This feature can be used to detect if the sensor is electrically or mechanically damaged.
-
-0002:
-Calibration functionality is removed from the driver. Chip is allready calibrated by the manufacturer. SW calibration doesn't improve the situation.
-
-0003:
-Added possibility to set chip sampling rate. Position entry in sysfs allows reading at sampling rate.
-
-0004:
-Scale output values to mg (1/1000 of earth gravity).
-Behaviour of the joystick interface is not changed. All other interfaces will have different scale after this patch. See further information from patch itself.
-
-0005:
-Update documentation to cover changes which were made by these patches.
-
-Samu Onkalo (5):
-  lis3: Selftest support
-  LIS3LV02D: Remove calibaration functionality
-  lis3: Sysfs entry for setting chip measurement rate
-  lis3: Scale output values to mg
-  LIS3: Update documentation to match latest changes
-
- Documentation/hwmon/lis3lv02d |   31 ++++++--
- drivers/hwmon/lis3lv02d.c     |  174 ++++++++++++++++++++++++++++++++---------
- drivers/hwmon/lis3lv02d.h     |   23 ++++-
- include/linux/lis3lv02d.h     |    3 +
- 4 files changed, 182 insertions(+), 49 deletions(-)
+diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
+index 39b9ac8..55ec883 100644
+--- a/drivers/hwmon/lis3lv02d.c
++++ b/drivers/hwmon/lis3lv02d.c
+@@ -106,9 +106,11 @@ static void lis3lv02d_get_xyz(struct lis3lv02d *lis3, int *x, int *y, int *z)
+ {
+ 	int position[3];
+ 
++	mutex_lock(&lis3->mutex);
+ 	position[0] = lis3->read_data(lis3, OUTX);
+ 	position[1] = lis3->read_data(lis3, OUTY);
+ 	position[2] = lis3->read_data(lis3, OUTZ);
++	mutex_unlock(&lis3->mutex);
+ 
+ 	*x = lis3lv02d_get_axis(lis3->ac.x, position);
+ 	*y = lis3lv02d_get_axis(lis3->ac.y, position);
+@@ -133,6 +135,55 @@ static int lis3lv02d_get_odr(void)
+ 	return val;
+ }
+ 
++static int lis3lv02d_selftest(struct lis3lv02d *lis3, s16 results[3])
++{
++	u8 reg;
++	s16 x, y, z;
++	u8 selftest;
++	int ret;
++
++	mutex_lock(&lis3->mutex);
++	if (lis3_dev.whoami == WAI_12B)
++		selftest = CTRL1_ST;
++	else
++		selftest = CTRL1_STP;
++
++	lis3->read(lis3, CTRL_REG1, &reg);
++	lis3->write(lis3, CTRL_REG1, (reg | selftest));
++	msleep(lis3->pwron_delay / lis3lv02d_get_odr());
++
++	/* Read directly to avoid axis remap */
++	x = lis3->read_data(lis3, OUTX);
++	y = lis3->read_data(lis3, OUTY);
++	z = lis3->read_data(lis3, OUTZ);
++
++	/* back to normal settings */
++	lis3->write(lis3, CTRL_REG1, reg);
++	msleep(lis3->pwron_delay / lis3lv02d_get_odr());
++
++	results[0] = x - lis3->read_data(lis3, OUTX);
++	results[1] = y - lis3->read_data(lis3, OUTY);
++	results[2] = z - lis3->read_data(lis3, OUTZ);
++
++	ret = 0;
++	if (lis3->pdata) {
++		int i;
++		for (i = 0; i < 3; i++) {
++			/* Check against selftest acceptance limits */
++			if ((results[i] < lis3->pdata->st_min_limits[i]) ||
++			    (results[i] > lis3->pdata->st_max_limits[i])) {
++				ret = -EIO;
++				goto fail;
++			}
++		}
++	}
++
++	/* test passed */
++fail:
++	mutex_unlock(&lis3->mutex);
++	return ret;
++}
++
+ void lis3lv02d_poweroff(struct lis3lv02d *lis3)
+ {
+ 	/* disable X,Y,Z axis and power down */
+@@ -365,6 +416,17 @@ void lis3lv02d_joystick_disable(void)
+ EXPORT_SYMBOL_GPL(lis3lv02d_joystick_disable);
+ 
+ /* Sysfs stuff */
++static ssize_t lis3lv02d_selftest_show(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	int result;
++	s16 values[3];
++
++	result = lis3lv02d_selftest(&lis3_dev, values);
++	return sprintf(buf, "%s %d %d %d\n", result == 0 ? "OK" : "FAIL",
++		values[0], values[1], values[2]);
++}
++
+ static ssize_t lis3lv02d_position_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+ {
+@@ -394,12 +456,14 @@ static ssize_t lis3lv02d_rate_show(struct device *dev,
+ 	return sprintf(buf, "%d\n", lis3lv02d_get_odr());
+ }
+ 
++static DEVICE_ATTR(selftest, S_IRUSR, lis3lv02d_selftest_show, NULL);
+ static DEVICE_ATTR(position, S_IRUGO, lis3lv02d_position_show, NULL);
+ static DEVICE_ATTR(calibrate, S_IRUGO|S_IWUSR, lis3lv02d_calibrate_show,
+ 	lis3lv02d_calibrate_store);
+ static DEVICE_ATTR(rate, S_IRUGO, lis3lv02d_rate_show, NULL);
+ 
+ static struct attribute *lis3lv02d_attributes[] = {
++	&dev_attr_selftest.attr,
+ 	&dev_attr_position.attr,
+ 	&dev_attr_calibrate.attr,
+ 	&dev_attr_rate.attr,
+@@ -455,6 +519,8 @@ int lis3lv02d_init_device(struct lis3lv02d *dev)
+ 		return -EINVAL;
+ 	}
+ 
++	mutex_init(&dev->mutex);
++
+ 	lis3lv02d_add_fs(dev);
+ 	lis3lv02d_poweron(dev);
+ 
+@@ -507,4 +573,3 @@ EXPORT_SYMBOL_GPL(lis3lv02d_init_device);
+ MODULE_DESCRIPTION("ST LIS3LV02Dx three-axis digital accelerometer driver");
+ MODULE_AUTHOR("Yan Burman, Eric Piel, Pavel Machek");
+ MODULE_LICENSE("GPL");
+-
+diff --git a/drivers/hwmon/lis3lv02d.h b/drivers/hwmon/lis3lv02d.h
+index c57f21f..166794c 100644
+--- a/drivers/hwmon/lis3lv02d.h
++++ b/drivers/hwmon/lis3lv02d.h
+@@ -98,7 +98,7 @@ enum lis3_who_am_i {
+ 	WAI_6B		= 0x52, /* 6 bits: LIS331DLF - not supported */
+ };
+ 
+-enum lis3lv02d_ctrl1 {
++enum lis3lv02d_ctrl1_12b {
+ 	CTRL1_Xen	= 0x01,
+ 	CTRL1_Yen	= 0x02,
+ 	CTRL1_Zen	= 0x04,
+@@ -107,8 +107,17 @@ enum lis3lv02d_ctrl1 {
+ 	CTRL1_DF1	= 0x20,
+ 	CTRL1_PD0	= 0x40,
+ 	CTRL1_PD1	= 0x80,
+-	CTRL1_DR	= 0x80, /* Data rate on 8 bits */
+ };
++
++/* Delta to ctrl1_12b version */
++enum lis3lv02d_ctrl1_8b {
++	CTRL1_STM	= 0x08,
++	CTRL1_STP	= 0x10,
++	CTRL1_FS	= 0x20,
++	CTRL1_PD	= 0x40,
++	CTRL1_DR	= 0x80,
++};
++
+ enum lis3lv02d_ctrl2 {
+ 	CTRL2_DAS	= 0x01,
+ 	CTRL2_SIM	= 0x02,
+@@ -218,6 +227,7 @@ struct lis3lv02d {
+ 	unsigned long		misc_opened; /* bit0: whether the device is open */
+ 
+ 	struct lis3lv02d_platform_data *pdata;	/* for passing board config */
++	struct mutex		mutex;     /* Serialize poll and selftest */
+ };
+ 
+ int lis3lv02d_init_device(struct lis3lv02d *lis3);
+diff --git a/include/linux/lis3lv02d.h b/include/linux/lis3lv02d.h
+index 8970135..f1ca0dc 100644
+--- a/include/linux/lis3lv02d.h
++++ b/include/linux/lis3lv02d.h
+@@ -55,6 +55,9 @@ struct lis3lv02d_platform_data {
+ 	s8 axis_z;
+ 	int (*setup_resources)(void);
+ 	int (*release_resources)(void);
++	/* Limits for selftest are specified in chip data sheet */
++	s16 st_min_limits[3]; /* min pass limit x, y, z */
++	s16 st_max_limits[3]; /* max pass limit x, y, z */
+ };
+ 
+ #endif /* __LIS3LV02D_H_ */
+-- 
+1.6.0.4
 
