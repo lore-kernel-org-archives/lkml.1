@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbZLALX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbZLALb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753474AbZLALX5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 06:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZLALX4
+	id S1753378AbZLALb6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 06:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZLALb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 06:23:56 -0500
-Received: from ns.firmix.at ([62.141.48.66]:1225 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753275AbZLALXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 06:23:55 -0500
-Subject: Re: [BUG] Linux-2.6.32-rc8-git2 Fails To Compile With GCC-4.4.2
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Tarkan Erimer <tarkane@netone.com.tr>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4B14FB56.4040608@netone.com.tr>
-References: <4B14FB56.4040608@netone.com.tr>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Firmix Software GmbH
-Date: Tue, 01 Dec 2009 12:23:51 +0100
-Message-Id: <1259666631.23038.7.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-Firmix-Scanned-By: MIMEDefang 2.67 on ns.firmix.at
-X-Firmix-Spam-Score: -2.287 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.287 required=5
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-X-Firmix-Received-Date: Tue, 01 Dec 2009 12:24:01 CET
-Content-Disposition: inline
+	Tue, 1 Dec 2009 06:31:57 -0500
+Received: from perceval.irobotique.be ([92.243.18.41]:54732 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751503AbZLALb4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 06:31:56 -0500
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: =?utf-8?q?N=C3=A9meth_M=C3=A1rton?= <nm127@freemail.hu>
+Subject: Re: [PATCH] usbvideo: limit the length of string creation
+Date: Tue, 1 Dec 2009 12:33:12 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.31.1; KDE/4.3.3; x86_64; ; )
+Cc: V4L Mailing List <linux-media@vger.kernel.org>, cocci@diku.dk,
+       LKML <linux-kernel@vger.kernel.org>
+References: <4B081D40.9030607@freemail.hu>
+In-Reply-To: <4B081D40.9030607@freemail.hu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200912011233.12290.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-01 at 13:17 +0200, Tarkan Erimer wrote:
-> I wanted to compile linux-2.6.32-rc8-git2 with gcc-4.2.2 on opensuse
-> 11.2. But, it failed with the following error :
+On Saturday 21 November 2009 18:02:56 Németh Márton wrote:
+> From: Márton Németh <nm127@freemail.hu>
 > 
-> PS: When I googled, I found the same error on Ubuntu Lucid forums with
-> gcc-4.4.2, too.
-[...]
-> CC kernel/audit_tree.o
-> kernel/audit_tree.c: In function ‘find_chunk’:
-> kernel/audit_tree.c:206: internal compiler error: Segmentation fault
-> Please submit a full bug report,
-> with preprocessed source if appropriate.
-That's a clear gcc bug. So please throw it in their bugzilla (or whatever they hav).
+> Use strlcat() to append a string to the previously created first part.
+> The strlcat() function limits the size of the string to the whole
+> destination buffer.
+> 
+> The semantic match that finds this kind of problem is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression dev;
+> expression phys;
+> expression str;
+> expression size;
+> @@
+>  	usb_make_path(dev, phys, size);
+> -	strncat(phys, str, size);
+> +	strlcat(phys, str, size);
+> // </smpl>
+> 
+> Signed-off-by: Márton Németh <nm127@freemail.hu>
 
-> tarkane:/usr/src/linux-2.6.32-rc8-git2 # gcc --version
-> gcc (SUSE Linux) 4.4.2 [gcc-4_4-branch revision 153890]
-> Copyright (C) 2009 Free Software Foundation, Inc.
-> This is free software; see the source for copying conditions. There is NO
-> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-	Bernd
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+Regards,
 
-
+Laurent Pinchart
