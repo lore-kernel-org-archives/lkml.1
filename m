@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbZLARtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZLARqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754376AbZLARtd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZLARtc
+	id S1754294AbZLARqV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZLARqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:49:32 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:43340 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbZLARtc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:49:32 -0500
-Message-ID: <4B155669.5050402@oracle.com>
-Date: Tue, 01 Dec 2009 09:46:17 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: mike@mspradling.com
-CC: Johannes Berg <johannes@sipsolutions.net>, davem@davemloft.net,
-       hugh.dickins@ticali.co.uk, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fixed bug in Wireless Extension Code (CONFIG_WEXT_CORE).
-References: <1258936602-6110-1-git-send-email-mike@mspradling.com> <1258969541.7094.138.camel@johannes.local> <20091123154225.GA26103@MSServer> <1258991626.7094.174.camel@johannes.local> <20091124011202.GC26103@MSServer>
-In-Reply-To: <20091124011202.GC26103@MSServer>
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 Dec 2009 12:46:20 -0500
+Received: from mail.perches.com ([173.55.12.10]:1209 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753555AbZLARqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:46:20 -0500
+Subject: Re: [PATCH] drivers/block/floppy.c: stylistic cleanups
+From: Joe Perches <joe@perches.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091201173635.GB2688@joi.lan>
+References: <1259001504.16503.79.camel@Joe-Laptop.home>
+	 <20091123.104130.117837098.davem@davemloft.net>
+	 <1259528449.29779.194.camel@Joe-Laptop.home>
+	 <20091129.165557.84377714.davem@davemloft.net>
+	 <20091130092837.4998f961@nehalam>
+	 <1259640820.13592.37.camel@Joe-Laptop.home> <20091201173635.GB2688@joi.lan>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 01 Dec 2009 09:46:25 -0800
+Message-ID: <1259689585.21388.32.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B1556DC.0022:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Spradling wrote:
-> Sorry, I lost my config file and haven't been able to reproduce it.
-> If I come across this again I will email you directly.
-
-
-> --
-> Mike Spradling
+On Tue, 2009-12-01 at 18:36 +0100, Marcin Slusarz wrote: 
+> On Mon, Nov 30, 2009 at 08:13:40PM -0800, Joe Perches wrote:
+> > +#define CALL(x)		do { if ((x) == -EINTR) return -EINTR; } while (0)
+> > +#define ECALL(x)	do { if ((ret = (x))) return ret; } while (0)
+> > +#define _WAIT(x, i)	CALL(ret = wait_til_done((x), i))
+> > +#define WAIT(x)		_WAIT((x), interruptible)
+> > +#define IWAIT(x)	_WAIT((x), 1)
 > 
-> On Mon, Nov 23, 2009 at 04:53:46PM +0100, Johannes Berg wrote:
->> On Mon, 2009-11-23 at 10:42 -0500, Michael Spradling wrote:
->>> I don't think its a Kconfig issue, see notes below.  However,
->>> I have included my config file just in case I may be wrong.
->> You config file doesn't have _any_ wireless options set. Not even
->> CONFIG_NET.
->>
->> johannes
+> why not remove these macros too? (probably in a seperate patch)
+> macros which hide "return" are very annoying...
 
-All of the cases that I have seen where call_commit_handler() is undefined
-have been kconfig errors -- mostly in drivers/staging/.
+Hence the "still ugly".  I agree these aren't good.
 
-If you do have this problem again, please be sure to send the problem
-.config file.
+> > +#define LOCK_FDC(drive, interruptible)	    \
+> > +	if (lock_fdc(drive, interruptible)) \
+> > +		return -EINTR;
+> 
+> another annoying macro
 
--- 
-~Randy
+True. 
+  
+> > +	if (UNIT(current_drive) < 0) {
+> > +		reset_fdc();
+> > +		return;
+> > +	}
+> >  }
+> 
+> unneeded return
+
+> >  	 * installing the new fdutils package */
+> > -	if (cmd == CDROMEJECT ||	/* CD-ROM eject */
+> > -	    cmd == 0x6470 /* SunOS floppy eject */ ) {
+> > +	if (cmd == CDROMEJECT || cmd == 0x6470) {
+> 
+> please add descriptive constant
+
+Patches are apparently welcomed by Stephen.
+Don't wait for me, I'll catch up.
+
+cheers, Joe
+
