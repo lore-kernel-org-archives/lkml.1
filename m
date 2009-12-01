@@ -1,76 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbZLAKac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZLAKid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbZLAKac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 05:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbZLAKab
+	id S1753368AbZLAKid (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 05:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZLAKid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 05:30:31 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:54325 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbZLAKab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 05:30:31 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-netdev@vger.kernel.org
-Subject: Re: [linux-pm] intermittent suspend problem again
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911290129.25505.rjw@sisk.pl>
-	<873a3x4p36.fsf@tac.ki.iif.hu> <200911291607.05348.rjw@sisk.pl>
-Date: Tue, 01 Dec 2009 11:29:54 +0100
-In-Reply-To: <200911291607.05348.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sun, 29 Nov 2009 16:07:05 +0100")
-Message-ID: <87y6ln0yxp.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 Dec 2009 05:38:33 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:54517 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752834AbZLAKic (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 05:38:32 -0500
+From: Li Yang <leoli@freescale.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Li Yang <leoli@freescale.com>
+Subject: [PATCH] powerpc/mm: setting mmaped page cache property through device tree
+Date: Tue,  1 Dec 2009 18:30:50 +0800
+Message-Id: <1259663450-28790-1-git-send-email-leoli@freescale.com>
+X-Mailer: git-send-email 1.6.4
+X-OriginalArrivalTime: 01 Dec 2009 10:38:24.0868 (UTC) FILETIME=[691AC240:01CA7272]
+X-Brightmail-Tracker: AAAAAQAAAWE=
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+The patch adds the ability for powerpc architecture to set page cache
+property of mmaped area through device tree.  This is useful for two
+cases.  First, for memory shared with other OS'es to have the same cache
+property to avoid cache paradoxes.  Second, enabling application to map
+memory which is not managed by kernel as cacheable for better performance.
 
-> On Sunday 29 November 2009, Ferenc Wagner wrote:
->
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> 
->>> On Saturday 28 November 2009, Ferenc Wagner wrote:
->>>
->>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->>>> 
->>>>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
->>>> 
->>>> The last message now was:
->>>> 
->>>> e100: 0000:02:08.0: hibernate, may wakeup
->>>> 
->>>> Looks like hibernating the e100 driver is unstable.
->>>
->>> Can you verify that by trying to hibernate without the e100 driver?
->> 
->> Not really, as I still can't reliable reproduce the issue.  Since I'm
->> running with suspend loglevel = 8, it's happened only twice (in a row),
->> with seemingly exact same console output.  Some earlier freezes also
->> happened in dpm_suspend_start, at least.  However, I can certainly add
->> e100 to SUSPEND_MODULES under /etc/pm/config.d, and continue running
->> with that.
->
-> That's what I'd do.
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+Although it will be better if we can come up with a generic solution
+not only for powerpc arch.  Changing the behavior of O_SYNC seems to
+draw concerns over compatibility of old applications.  Suggestions
+are welcomed.
 
-That worked out mosty OK (no freeze in quite some hibernation cycles),
-but I'm continuing testing it.
+ arch/powerpc/mm/mem.c          |   49 +++++++++++++++++++++++++++++++++++++--
+ arch/powerpc/platforms/Kconfig |    7 +++++
+ 2 files changed, 53 insertions(+), 3 deletions(-)
 
-On the other hand, I reverted 8fbd962e3, recompiled and replaced the
-module, and got the freeze during hibernation.  And that was the bulk of
-the changes since 2.6.31...  I'll revert the rest and test again, but
-that seems purely cosmetic, so no high hopes.
-
-> In addition to that, you can run multiple hibernation/resume cycles in
-> a tight loop using the RTC wakealarm.
-
-I'll do so, as soon as I find a way to automatically supply the dm-crypt
-passphrase... or even better, learn to hibernate to ramdisk from the
-initramfs. :)
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 579382c..02da2c8 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -95,16 +95,59 @@ int page_is_ram(unsigned long pfn)
+ #endif
+ }
+ 
++#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
++pgprot_t pgprot_from_dt(unsigned long pfn, pgprot_t vma_prot)
++{
++	struct device_node *np;
++	struct resource res;
++	unsigned long paddr = (pfn << PAGE_SHIFT);
++	int i;
++	const int *prop;
++
++	for_each_node_by_name(np, "mmap-region")
++		for (i = 0; of_address_to_resource(np, i, &res) == 0; i++)
++			if ((paddr >= res.start) && (paddr <= res.end)) {
++				unsigned long _prot;
++				prop = of_get_property(np, "cache-property",
++						NULL);
++
++				if (prop == NULL)
++					return vma_prot;
++
++				_prot = pgprot_val(vma_prot) & ~_PAGE_CACHE_CTL;
++
++				/* bit map of WIMG */
++				if (*prop & 0x8)
++					_prot |= _PAGE_WRITETHRU;
++				if (*prop & 0x4)
++					_prot |= _PAGE_NO_CACHE;
++				if (*prop & 0x2)
++					_prot |= _PAGE_COHERENT;
++				if (*prop & 0x1)
++					_prot |= _PAGE_GUARDED;
++
++				return __pgprot(_prot);
++			}
++
++	return vma_prot;
++}
++#endif
++
+ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 			      unsigned long size, pgprot_t vma_prot)
+ {
+ 	if (ppc_md.phys_mem_access_prot)
+ 		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
+ 
+-	if (!page_is_ram(pfn))
+-		vma_prot = pgprot_noncached(vma_prot);
++	/* kernel managed memory is always mapped as cacheable */
++	if (page_is_ram(pfn))
++		return vma_prot;
+ 
+-	return vma_prot;
++#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
++	return pgprot_from_dt(pfn, vma_prot);
++#else
++	return pgprot_noncached(vma_prot);
++#endif
+ }
+ EXPORT_SYMBOL(phys_mem_access_prot);
+ 
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 12bc2ce..de0f57c 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -333,4 +333,11 @@ config MCU_MPC8349EMITX
+ 	  also register MCU GPIOs with the generic GPIO API, so you'll able
+ 	  to use MCU pins as GPIOs.
+ 
++config OF_MMAP_CACHE_PROPERTY
++	bool "Support setting cache property of mmap through device tree"
++	default n
++	help
++	  Say Y here to support setting cache property of mmaped region via
++	  mmap-region device tree node.
++
+ endmenu
 -- 
-Cheers,
-Feri.
+1.6.4
+
