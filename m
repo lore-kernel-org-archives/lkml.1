@@ -1,62 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZLANGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZLANLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbZLANGN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 08:06:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbZLANGN
+	id S1753995AbZLANLK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 08:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbZLANLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 08:06:13 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60453 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753181AbZLANGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 08:06:12 -0500
-Message-ID: <4B1514C8.3000505@suse.cz>
-Date: Tue, 01 Dec 2009 14:06:16 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.3 Thunderbird/3.0b4
+	Tue, 1 Dec 2009 08:11:09 -0500
+Received: from mail.gmx.net ([213.165.64.20]:43024 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752426AbZLANLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 08:11:09 -0500
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX180ZGd9+WM08D9lONKHdSnQOanOWj4oXulVZ9zx60
+	K7kZv1yYmjOADf
+From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: FS-Cache: Handle pages pending storage that get evicted under OOM conditions
+Date: Tue, 1 Dec 2009 14:11:10 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc8-sidux-amd64; KDE/4.3.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       v9fs-developer@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200911302259.nAUMx9Ij031249@hera.kernel.org>
+In-Reply-To: <200911302259.nAUMx9Ij031249@hera.kernel.org>
 MIME-Version: 1.0
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kbuild@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: specify absolute paths for cscope
-References: <1259238852-21214-1-git-send-email-daniel.vetter@ffwll.ch> <4B13FD4B.5080805@suse.cz> <20091130181109.GA19614@merkur.ravnborg.org> <20091201094222.GC9177@viiv.ffwll.ch>
-In-Reply-To: <20091201094222.GC9177@viiv.ffwll.ch>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912011411.12570.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1.12.2009 10:42, Daniel Vetter wrote:
-> I've just tried to use cscope with a working directory not equal to the
-> directory where cscope.out resides:
+Hi
+
+On Tuesday 01 December 2009, Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/linus/201a15428bd54f83eccec8b7c64a04b8f9431204
+> Commit:     201a15428bd54f83eccec8b7c64a04b8f9431204
+> Parent:     e3d4d28b1c8cc7c26536a50b43d86ccd39878550
+> Author:     David Howells <dhowells@redhat.com>
+> AuthorDate: Thu Nov 19 18:11:35 2009 +0000
+> Committer:  David Howells <dhowells@redhat.com>
+> CommitDate: Thu Nov 19 18:11:35 2009 +0000
 > 
-> $ cscope -d -f src/cscope.out
-> 
-> It can't handle relative paths. When I try to open a file (via a
-> reference) from within cscope, it calls up vim with the wrong path.  So I
-> think this is a fundamental cscope bug (and not a vim problem).  As I've
-> already said, every tutorial on the web I could find uses absolute paths,
-> too, so the problem seems to be common, as is the work-around.  Therefore
-> please apply this patch (perhaps changing my comment to "cscope is broken
-> with relative paths, work around it via absolute paths").
+>     FS-Cache: Handle pages pending storage that get evicted under OOM conditions
+>     
+>     Handle netfs pages that the vmscan algorithm wants to evict from the pagecache
+>     under OOM conditions, but that are waiting for write to the cache.  Under these
+>     conditions, vmscan calls the releasepage() function of the netfs, asking if a
+>     page can be discarded.
+[...]
 
-OK, you convinced me. I applied it to for-next, with a minor edit to fix
-O= builds (the tree variable is an absolute path already):
-http://repo.or.cz/w/linux-kbuild.git/commitdiff/037aaae02ecf3925b843316868743c755d73fb22
-I hope the next guy won't come and complain the he moved linux-2.6.xy to
-linux-2.6.xy.orig and cscope stopped working :).
+This commit breaks compiling 9p in 2.6.32-rc8-git2:
+
+  CC [M]  fs/9p/cache.o
+fs/9p/cache.c: In function '__v9fs_fscache_release_page':
+fs/9p/cache.c:346: error: 'vnode' undeclared (first use in this function)
+fs/9p/cache.c:346: error: (Each undeclared identifier is reported only once
+fs/9p/cache.c:346: error: for each function it appears in.)
+make[2]: *** [fs/9p/cache.o] Error 1
+
+> diff --git a/fs/9p/cache.c b/fs/9p/cache.c
+> index 51c94e2..bcc5357 100644
+> --- a/fs/9p/cache.c
+> +++ b/fs/9p/cache.c
+> @@ -343,18 +343,7 @@ int __v9fs_fscache_release_page(struct page *page, gfp_t gfp)
+>  
+>  	BUG_ON(!vcookie->fscache);
+>  
+> -	if (PageFsCache(page)) {
+> -		if (fscache_check_page_write(vcookie->fscache, page)) {
+> -			if (!(gfp & __GFP_WAIT))
+> -				return 0;
+> -			fscache_wait_on_page_write(vcookie->fscache, page);
+> -		}
+> -
+> -		fscache_uncache_page(vcookie->fscache, page);
+> -		ClearPageFsCache(page);
+> -	}
+> -
+> -	return 1;
+> +	return fscache_maybe_release_page(vnode->cache, page, gfp);
+>  }
+>  
+[...]
+
+Regards
+	Stefan Lippers-Hollmann
 
 
-On 30.11.2009 19:11, Sam Ravnborg wrote:
-> For tags I recall we fall back to absolute path only for O=... builds.
-> This made the tags file considerably smaller for a non O=.. build
-> thus speeding up the search.
-> 
-> So unconditionally using absolute paths for cscope may have drawbacks.
 
-I tried it and this part seems OK. Generating the database took more or
-less the same time, cscope.out grew by less than 1% and opening cscope
-and running a query for 'printk' slowed down by about 8%, I think that's
-bearable.
+9p: fix build failure introduced by 201a15428bd54f83eccec8b7c64a04b8f9431204
 
-Michal
+  CC [M]  fs/9p/cache.o
+fs/9p/cache.c: In function '__v9fs_fscache_release_page':
+fs/9p/cache.c:346: error: 'vnode' undeclared (first use in this function)
+fs/9p/cache.c:346: error: (Each undeclared identifier is reported only once
+fs/9p/cache.c:346: error: for each function it appears in.)
+make[2]: *** [fs/9p/cache.o] Error 1
+
+Signed-off-by: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+---
+build tested only.
+
+ fs/9p/cache.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/9p/cache.c b/fs/9p/cache.c
+index bcc5357..e777961 100644
+--- a/fs/9p/cache.c
++++ b/fs/9p/cache.c
+@@ -343,7 +343,7 @@ int __v9fs_fscache_release_page(struct page *page, gfp_t gfp)
+ 
+ 	BUG_ON(!vcookie->fscache);
+ 
+-	return fscache_maybe_release_page(vnode->cache, page, gfp);
++	return fscache_maybe_release_page(vcookie->fscache, page, gfp);
+ }
+ 
+ void __v9fs_fscache_invalidate_page(struct page *page)
