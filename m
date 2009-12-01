@@ -1,67 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbZLAObT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZLAOcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288AbZLAObT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 09:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbZLAObS
+	id S1753416AbZLAOcC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 09:32:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZLAOcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 09:31:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42980 "EHLO mx3.mail.elte.hu"
+	Tue, 1 Dec 2009 09:32:01 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34453 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbZLAObS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 09:31:18 -0500
-Date: Tue, 1 Dec 2009 15:31:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jamie Iles <jamie@jamieiles.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Perf events/ARM
-Message-ID: <20091201143105.GB1183@elte.hu>
-References: <20091201120439.GB4061@wear.picochip.com>
+	id S1750849AbZLAOcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 09:32:00 -0500
+Message-ID: <4B1528CA.1060207@kernel.org>
+Date: Tue, 01 Dec 2009 23:31:38 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091201120439.GB4061@wear.picochip.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Cong Wang <amwang@redhat.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] percpu: refactor the code in pcpu_[de]populate_chunk()
+References: <20091130091501.4507.28683.sendpatchset@localhost.localdomain> <4B13A7ED.9010905@kernel.org> <alpine.DEB.2.00.0911301258370.18682@router.home> <4B145CE9.1060608@kernel.org> <4B147918.3000503@redhat.com> <4B14A2E6.1070603@kernel.org> <4B14A51E.2090702@kernel.org> <4B14AC35.3020700@redhat.com> <4B14ADE0.3020007@kernel.org> <4B14B936.8080205@redhat.com> <4B14BEB6.5090105@kernel.org> <4B14C217.90203@redhat.com>
+In-Reply-To: <4B14C217.90203@redhat.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jamie Iles <jamie@jamieiles.com> wrote:
-
-> Hi,
+On 12/01/2009 04:13 PM, Cong Wang wrote:
+> Using break statement at the end of a for loop is confusing,
+> refactor it by replacing the for loop.
 > 
-> I'm looking at adding support for the hardware performance counters in ARMv6
-> using the new perf events framework. I have a simple setup that uses the
-> counters on their own, but wrt the perf events framework:
-> 
-> 	- what are the requirements of set_perf_event_pending() and
-> 	perf_event_do_pending()? As far as I can tell from sparc/x86/powerpc,
-> 	set_perf_event_pending() triggers an interrupt that then calls
-> 	perf_event_do_pending(). Does perf_event_do_pending need to run in
-> 	interrupt context or could I use a soft IRQ if platforms don't have a
-> 	spare IRQ?
+> Signed-off-by: WANG Cong <amwang@redhat.com>
 
-softirq would be fine too i suspect - but then you need to increase the 
-buffering of perf_pending_head, as multiple hardirqs could hit before 
-the softirq processing has finished.
+Applied to percpu#for-next.  Thanks.
 
-As that gets complex quick, an acceptable first-order approach would be 
-to just ignore those lost events and run it from a softirq - i _think_ 
-everything should be OK.
-
-> 	- ARM does not have proper support for atomic64's. Other than
-> 	performance, would there be any known problems with using the generic
-> 	spinlocked atomic64's?
-
-Not a problem at all. Even performance-wise they are pretty nice - Paul 
-has done a nice job hashing it along 16 spinlocks - so for small SMP 
-systems there should be no global cacheline bounce.
-
-	Ingo
+-- 
+tejun
