@@ -1,161 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZLAGnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZLAGno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbZLAGnA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 01:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZLAGm7
+	id S1753463AbZLAGno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 01:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZLAGnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 01:42:59 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:17402 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752062AbZLAGm6 (ORCPT
+	Tue, 1 Dec 2009 01:43:43 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:32220 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbZLAGnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 01:42:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KVgLWDoXwR8EE4SlUljiV7N7XTwDGhEcQeD3MoeIJhb4fiVrMmJgazcsAtjZ+T97d5
-         Be1f05WkHUMIk27UEi7JxsfuzSZeNedZVTPK5WmL4ygdTF6LQ/tLujwWSaPjJ7J/16q8
-         61qvPJoIjPMbH+RmvifFKYs2Hc8OcylzwA3tQ=
-Date: Tue, 1 Dec 2009 07:43:05 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jan Kiszka <jan.kiszka@web.de>,
-       Jiri Slaby <jirislaby@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [GIT PULL v6] hw-breakpoints: Rewrite on top of perf events v6
-Message-ID: <20091201064302.GB5063@nowhere>
-References: <1257694141-5670-1-git-send-email-fweisbec@gmail.com> <20091124094421.GA3468@in.ibm.com> <20091124101342.GB5570@elte.hu> <20091124132127.GA5355@in.ibm.com> <20091126055903.GB5649@nowhere> <20091127190705.GB18408@in.ibm.com>
+	Tue, 1 Dec 2009 01:43:42 -0500
+Message-ID: <4B14BB04.9000800@oracle.com>
+Date: Mon, 30 Nov 2009 22:43:16 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091127190705.GB18408@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Michal Nazarewicz <m.nazarewicz@samsung.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH] USB: Added USB_ETH_RNDIS to use instead of CONFIG_USB_ETH_RNDIS
+References: <20091128103429.705670b2.randy.dunlap@oracle.com> <1259574940-25345-1-git-send-email-m.nazarewicz@samsung.com>
+In-Reply-To: <1259574940-25345-1-git-send-email-m.nazarewicz@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4B14BB19.001F:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 28, 2009 at 12:37:05AM +0530, K.Prasad wrote:
-> I think the register_<> interfaces can become wrappers around functions
-> that do the following:
+Michal Nazarewicz wrote:
+> From: Michal Nazarewicz <m.nazarewicz@samsung.com>
 > 
-> - arch_validate(): Validate request by invoking an arch-dependant
->   routine. Proceed if returned valid.
-> - arch-specific debugreg availability: Do something like
->   if (arch_hw_breakpoint_availabile())
-> 	bp = perf_event_create_kernel_counter();
-
-
-The current state is settled for Bp Api clients
-(perf_event_create_kernel_counter()) and perf clients (perf syscall)
-to have the same endpoint, which is the arch_validate() + reg reservation.
-This is already what is done. It's just done at the pmu level.
-
-I don't understand your point.
-
-
->   perf_event_create_kernel_counter()--->arch_install_hw_breakpoint();
-
-
-But this is what is done, when perf_event_alloc() get the breakpoint
-pmu.
-
-
-> This way, all book-keeping related work (no. of pinned/flexible/per-cpu)
-> will be moved to arch-specific files (will be helpful for PPC Book-E
-> implementation having two types of debug registers). Every new
-> architecture that intends to port to the new hw-breakpoint
-> implementation must define their arch_validate(),
-> arch_hw_breakpoint_available() and an arch_install_hw_breakpoint(),
-> while the hw-breakpoint code will be flexible enough to extend itself to
-> each of these archs.
-
-
-We just need to move reserve_bp_slot() and release_bp_slot() in arch code
-then.
-
-But I would prefer to move more efforts in generalizing what can
-generalized in the register reservation topic, and have the smallest
-possible part in arch code.
-
-
-> This implementation would be even superior (in terms of extensibility)
-> to even the older hw-breakpoint layer implementation (despite it providing
-> a working layer for x86 and PPC64).
-
-
-The older breakpoint API was very tight to x86. It had a single linear
-breakpoint refcounting that wasn't handling different natures of breakpoint
-registers (different registers between instruction and data).
-Neither was this linear refcounting handling the fact a single cpu could
-share a single breakpoint register between hardware threads.
-
-So, no I don't think it was providing a working layer for PPC64.
-
-That said the current state of the constraints sucks :) as it is too much
-tight to x86 too.
-
-But I want to avoid the trap of moving all the constraint checks
-to the arch. If possible, I would like to extract the arch specificity
-only.
-It's possible that in the case of PPC64, we want a totally different
-constraint check, but what about other archs? Do they have very close
-needs than x86 or another bunck of tricky constraints? In the former
-case, I would prefer to have the current constraints defined as
-__weak and let the tricky archs implement their own constraints.
-That will only work if the _tricky_ arch are a minority of course.
-
-
-> > > As pointed out in 20091111130207.GA5676@in.ibm.com and
-> > > 20091112042502.GA3145@in.ibm.com, ptrace requests can a) lose register
-> > > slots when modifying the breakpoint addresses and b) new implementation
-> > > assumes that every DR7 write to be preceded by a write on DR0-DR3 which
-> > > need not be true.
-> > 
-> > The a) case is going to be fixed.
-> > But the b) situation must be reported as a user mistake (which is what is
-> > done currently): -EINVAL, -EIO or whatever. Enabling a breakpoint without
-> > having given an address is a userland bug.
-> > 
+> If g_ether and g_multi are both built CONFIG_USB_ETH_RNDIS symbol
+> may be redefined in the later and, whats even worse, g_ether's settings
+> may affect g_multi's.  This adds a USB_ETH_RNDIS symbol defined at the
+> beginning of ether.c and multi.c according toproper KConfig settings.
 > 
-> b) need not be a user mistake always (except perhaps the first time). As I
-> mentioned here 20091112042502.GA3145@in.ibm.com, DR7 enable/disable
-> without a DR0-DR3 write can be done by the user through ptrace for
-> optimising the number of write operations (and hence ptrace syscalls).
+> Signed-off-by: Michal Nazarewicz <m.nazarewicz@samsung.com>
+> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  drivers/usb/gadget/ether.c   |   16 ++++++++++++----
+>  drivers/usb/gadget/multi.c   |   13 ++++++++-----
+>  drivers/usb/gadget/u_ether.h |    2 +-
+>  3 files changed, 21 insertions(+), 10 deletions(-)
+> 
+>> On Wed, 25 Nov 2009 12:59:46 +0100 Michal Nazarewicz wrote:
+>>> CONFIG_USB_ETH_RNDIS may be defined when g_ether is built causing
+>>> warning when multi.c tries to redefine its value.  Changed to first
+>>> undefine CONFIG_USB_ETH_RNDIS in multi.c.
+> 
+> On Sat, 28 Nov 2009 19:34:29 +0100, Randy Dunlap wrote:
+>> Is there no kconfig way to solve this?
+>> You shouldn't be messing with kconfig symbols in source files...
+> 
+> Messing with KConfig symbols was less intrusive method of fixing the
+> warning but if anyone feels like it's not the proper method here's
+> another patch.
+
+This is a little better -- thanks.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
 
-I really think this is a wrong workflow as the address register
-is undefined.
+> diff --git a/drivers/usb/gadget/ether.c b/drivers/usb/gadget/ether.c
+> index 167cb2a..141372b 100644
+> --- a/drivers/usb/gadget/ether.c
+> +++ b/drivers/usb/gadget/ether.c
+> @@ -25,6 +25,14 @@
+>  #include <linux/kernel.h>
+>  #include <linux/utsname.h>
+> 
+> +
+> +#if defined USB_ETH_RNDIS
+> +#  undef USB_ETH_RNDIS
+> +#endif
+> +#ifdef CONFIG_USB_ETH_RNDIS
+> +#  define USB_ETH_RNDIS y
+> +#endif
+> +
+>  #include "u_ether.h"
+> 
+> 
+> @@ -66,7 +74,7 @@
+>  #define DRIVER_DESC		"Ethernet Gadget"
+>  #define DRIVER_VERSION		"Memorial Day 2008"
+> 
+> -#ifdef CONFIG_USB_ETH_RNDIS
+> +#ifdef USB_ETH_RNDIS
+>  #define PREFIX			"RNDIS/"
+>  #else
+>  #define PREFIX			""
+> @@ -87,7 +95,7 @@
+> 
+>  static inline bool has_rndis(void)
+>  {
+> -#ifdef	CONFIG_USB_ETH_RNDIS
+> +#ifdef	USB_ETH_RNDIS
+>  	return true;
+>  #else
+>  	return false;
+> @@ -110,7 +118,7 @@ static inline bool has_rndis(void)
+> 
+>  #include "f_ecm.c"
+>  #include "f_subset.c"
+> -#ifdef	CONFIG_USB_ETH_RNDIS
+> +#ifdef	USB_ETH_RNDIS
+>  #include "f_rndis.c"
+>  #include "rndis.c"
+>  #endif
+> @@ -251,7 +259,7 @@ static struct usb_configuration rndis_config_driver = {
+> 
+>  /*-------------------------------------------------------------------------*/
+> 
+> -#ifdef CONFIG_USB_ETH_EEM
+> +#ifdef USB_ETH_EEM
+>  static int use_eem = 1;
+>  #else
+>  static int use_eem;
+> diff --git a/drivers/usb/gadget/multi.c b/drivers/usb/gadget/multi.c
+> index 64711fe..4295601 100644
+> --- a/drivers/usb/gadget/multi.c
+> +++ b/drivers/usb/gadget/multi.c
+> @@ -26,8 +26,11 @@
+>  #include <linux/utsname.h>
+> 
+> 
+> -#if defined CONFIG_USB_G_MULTI_RNDIS
+> -#  define CONFIG_USB_ETH_RNDIS y
+> +#if defined USB_ETH_RNDIS
+> +#  undef USB_ETH_RNDIS
+> +#endif
+> +#ifdef CONFIG_USB_ETH_RNDIS
+> +#  define USB_ETH_RNDIS y
+>  #endif
+> 
+> 
+> @@ -59,7 +62,7 @@
+> 
+>  #include "f_ecm.c"
+>  #include "f_subset.c"
+> -#ifdef CONFIG_USB_ETH_RNDIS
+> +#ifdef USB_ETH_RNDIS
+>  #  include "f_rndis.c"
+>  #  include "rndis.c"
+>  #endif
+> @@ -150,7 +153,7 @@ FSG_MODULE_PARAMETERS(/* no prefix */, mod_data);
+>  static struct fsg_common *fsg_common;
+> 
+> 
+> -#ifdef CONFIG_USB_ETH_RNDIS
+> +#ifdef USB_ETH_RNDIS
+> 
+>  static int __init rndis_do_config(struct usb_configuration *c)
+>  {
+> @@ -292,7 +295,7 @@ static int __init multi_bind(struct usb_composite_dev *cdev)
+>  	strings_dev[STRING_PRODUCT_IDX].id = status;
+>  	device_desc.iProduct = status;
+> 
+> -#ifdef CONFIG_USB_ETH_RNDIS
+> +#ifdef USB_ETH_RNDIS
+>  	/* register our first configuration */
+>  	status = usb_add_config(cdev, &rndis_config_driver);
+>  	if (status < 0)
+> diff --git a/drivers/usb/gadget/u_ether.h b/drivers/usb/gadget/u_ether.h
+> index 91b39ff..fd55f45 100644
+> --- a/drivers/usb/gadget/u_ether.h
+> +++ b/drivers/usb/gadget/u_ether.h
+> @@ -112,7 +112,7 @@ int geth_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN]);
+>  int ecm_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN]);
+>  int eem_bind_config(struct usb_configuration *c);
+> 
+> -#ifdef CONFIG_USB_ETH_RNDIS
+> +#ifdef USB_ETH_RNDIS
+> 
+>  int rndis_bind_config(struct usb_configuration *c, u8 ethaddr[ETH_ALEN]);
+> 
 
-I think this is a user bug. In the current upstream state, I guess
-the addr debugreg are initialized to 0. So is this going to
-set a breakpoint to 0?
+There are still some g_multi build problems.
+The following patch is also needed -- please apply.
 
-I doubt there are much user app that rely on such buggy behaviour,
-but I can probably support that by creating a temporary disabled
-breakpoint in this case.
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+USB_G_MULTI uses block and net interface functions, so make it
+depend on both of those.  Otherwise there are lots of build errors.
 
+Fix USB_G_MULTI config help text typos and copy/paste error.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/usb/gadget/Kconfig |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+--- linux-next-20091130.orig/drivers/usb/gadget/Kconfig
++++ linux-next-20091130/drivers/usb/gadget/Kconfig
+@@ -814,16 +814,17 @@ config USB_CDC_COMPOSITE
  
-> Consider the following steps which is entirely valid (in mainline ptrace)
-> but which would fail if assumed that a DR0-DR3 write precedes a DR7 write:
-> i) Set address on DR0
-> ii) Enable bits corresponding to DR0 in DR7
-> iii) Disable DR0 bits in DR7
-> iv) Re-enable DR0 bits in DR7
-
-
-Agreed. I need to fix this. I thought you were talking about enabling
-dr0 in dr7 without having ever set dr0.
-
-Ok I'll fix this case.
-
-Thanks.
-
+ config USB_G_MULTI
+ 	tristate "Multifunction Composite Gadget (EXPERIMENTAL)"
++	depends on BLOCK && NET
+ 	help
+ 	  The Multifunction Composite Gadget provides Ethernet (RNDIS
+ 	  and/or CDC Ethernet), mass storage and ACM serial link
+ 	  interfaces.
+ 
+-	  You will be asked too choose which of the two configurations are
++	  You will be asked to choose which of the two configurations is
+ 	  to be available in the gadget.  At least one configuration must
+-	  be choosen to make gadget usable.  Selecting more then one
++	  be chosen to make the gadget usable.  Selecting more than one
+ 	  configuration will prevent Windows from automatically detecting
+-	  the gadget as a composite gadget an INF file will be needed to
++	  the gadget as a composite gadget, so an INF file will be needed to
+ 	  use the gadget.
+ 
+ 	  Say "y" to link the driver statically, or "m" to build a
+@@ -836,8 +837,8 @@ config USB_G_MULTI_RNDIS
+ 	help
+ 	  This option enables a configuration with RNDIS, CDC Serial and
+ 	  Mass Storage functions available in the Multifunction Composite
+-	  Gadget.  This is configuration dedicated for Windows since RNDIS
+-	  is Microsfot's protocol.
++	  Gadget.  This is the configuration dedicated for Windows since RNDIS
++	  is Microsoft's protocol.
+ 
+ 	  If unsure, say "y".
+ 
+@@ -848,8 +849,7 @@ config USB_G_MULTI_CDC
+ 	help
+ 	  This option enables a configuration with CDC Ethernet (ECM), CDC
+ 	  Serial and Mass Storage functions available in the Multifunction
+-	  Composite Gadget.  This is configuration dedicated for Windows
+-	  since RNDIS is Microsfot's protocol.
++	  Composite Gadget.
+ 
+ 	  If unsure, say "y".
+ 
