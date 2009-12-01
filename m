@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbZLAWls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZLAWtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbZLAWls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 17:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbZLAWls
+	id S1754614AbZLAWtk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 17:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZLAWtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 17:41:48 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:26842 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754002AbZLAWlr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 17:41:47 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=LXNgxmoQAuMjbX1S/tsjGHVDiRoGY+xH5OGj4bztbBOqEgD5pLk2y+OgZEMEw2yNu
-	xfoJ0yBNFZgbt/SmANPtA==
-Date: Tue, 1 Dec 2009 14:41:44 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>
-Subject: Re: lockdep complaints in slab allocator
-In-Reply-To: <1259626875.29740.193.camel@calx>
-Message-ID: <alpine.DEB.2.00.0912011436420.27500@chino.kir.corp.google.com>
-References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com> <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop> <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi> <1259080406.4531.1645.camel@laptop>
- <20091124170032.GC6831@linux.vnet.ibm.com> <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop> <1259090615.17871.696.camel@calx> <84144f020911241307u14cd2cf0h614827137e42378e@mail.gmail.com> <1259103315.17871.895.camel@calx>
- <alpine.DEB.2.00.0911251356130.11347@chino.kir.corp.google.com> <alpine.DEB.2.00.0911271127130.20368@router.home> <alpine.DEB.2.00.0911301512250.12038@chino.kir.corp.google.com> <1259626875.29740.193.camel@calx>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 1 Dec 2009 17:49:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46877 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750929AbZLAWti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 17:49:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFC][PATCH 11/12] PCI PM: Run-time callbacks for PCI bus type (rev. 2)
+Date: Tue, 1 Dec 2009 23:50:13 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
+References: <200911160047.46299.rjw@sisk.pl> <200911291643.15603.rjw@sisk.pl> <20091201220043.GA17093@srcf.ucam.org>
+In-Reply-To: <20091201220043.GA17093@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912012350.13384.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009, Matt Mackall wrote:
-
-> And it's not even something that -most- of embedded devices will want to
-> use, so it can't be keyed off CONFIG_EMBEDDED anyway. If you've got even
-> 16MB of memory, you probably want to use a SLAB-like allocator (ie not
-> SLOB). But there are -millions- of devices being shipped that don't have
-> that much memory, a situation that's likely to continue until you can
-> fit a larger Linux system entirely in a <$1 microcontroller-sized device
-> (probably 5 years off still).
+On Tuesday 01 December 2009, Matthew Garrett wrote:
+> On Sun, Nov 29, 2009 at 04:43:15PM +0100, Rafael J. Wysocki wrote:
 > 
-
-What qualifying criteria can we use to automatically select slob for a 
-kernel or the disqualifying criteria to automatically select slub as a 
-default, then?  It currently depends on CONFIG_EMBEDDED, but it still 
-requires the user to specifically chose the allocator over another.  Could 
-we base this decision on another config option enabled for systems with 
-less than 16MB?
-
-> This thread is annoying. The problem that triggered this thread is not
-> in SLOB/SLUB/SLQB, nor even in our bog-standard 10yo deep-maintenance
-> known-to-work SLAB code. The problem was a FALSE POSITIVE from lockdep
-> on code that PREDATES lockdep itself. There is nothing in this thread to
-> indicate that there is a serious problem maintaining multiple
-> allocators. In fact, considerably more time has been spent (as usual)
-> debating non-existent problems than fixing real ones.
+> > -	if (enable && !device_may_wakeup(&dev->dev))
+> > +	if (enable && runtime && !device_may_wakeup(&dev->dev))
 > 
+> Should this be !runtime? We only care about device_may_wakeup() in the 
+> system suspend case.
 
-We could move the discussion on the long-term maintainable aspects of 
-multiple slab allocators to a new thread if you'd like.
+Yes, it should, thanks!
