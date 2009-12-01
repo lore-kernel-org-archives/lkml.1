@@ -1,40 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbZLADwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbZLAEGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752702AbZLADwW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 22:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZLADwT
+	id S1753002AbZLAEGs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 23:06:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZLAEGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 22:52:19 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:38372 "EHLO
+	Mon, 30 Nov 2009 23:06:47 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:49145 "EHLO
 	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbZLADwR (ORCPT
+	with ESMTP id S1752442AbZLAEGq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 22:52:17 -0500
+	Mon, 30 Nov 2009 23:06:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=W7arXCtB8OIKgeRqnny/EwmlizDZOHcamCUf/m89IGz/AyT/C1HX3HbhJJCEk3+IwJ
-         p2BZ4Q+JdgXOUxHVQ9qkOoC54/tM3IWCCswhKAdwOxzQc/cYYJa2NqOejbSFsGmMLKnL
-         HQdVYCD9NK3lkbL/NTWMwpFTYnTe2RjDofSdM=
+        b=NG/tZQuXMdI3wiYPob9bGYfSp6gq4KGsxsO5b+lue3naOCoMPcx5GmotcPKBZ7Tlub
+         kGd1bKu8q+H3SR/iT7m3KqpaivsOvbTedSuKPwtFCQJ8mxrX0WR87gT1RtiYRPV3ewU+
+         EpZ0vnrO9nwFVr4UFeD2pmY1J9irlhq03RCF4=
 MIME-Version: 1.0
-In-Reply-To: <20091117224916.818389220@linutronix.de>
-References: <20091117224852.846805939@linutronix.de>
-	 <20091117224916.818389220@linutronix.de>
-Date: Mon, 30 Nov 2009 22:52:23 -0500
-Message-ID: <b4198de60911301952n79c3002dke5f4922b0bd5c41a@mail.gmail.com>
-Subject: Re: [patch 12/13] alpha: Fixup last users of irq_chip->typename
+In-Reply-To: <1256956383-2652-1-git-send-email-mcree@orcon.net.nz>
+References: <4AE8D005.1030302@twiddle.net>
+	 <1256956383-2652-1-git-send-email-mcree@orcon.net.nz>
+Date: Mon, 30 Nov 2009 23:06:52 -0500
+Message-ID: <b4198de60911302006u43f52bd5xe198615971352696@mail.gmail.com>
+Subject: Re: [PATCH] Alpha: Rearrange thread info flags fixing two regressions
 From: Matt Turner <mattst88@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Richard Henderson <rth@twiddle.net>, linux-alpha@vger.kernel.org
+To: Michael Cree <mcree@orcon.net.nz>
+Cc: Richard Henderson <rth@twiddle.net>, linux-alpha@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ink@jurassic.park.msu.ru,
+       David Howells <dhowells@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nB13qs16017213
 
-On Tue, Nov 17, 2009 at 5:51 PM, Thomas Gleixner <tglx@linutronix.de> wrote:> The typename member of struct irq_chip was kept for migration purposes> and is obsolete since more than 2 years. Fix up the leftovers.>> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>> Cc: Richard Henderson <rth@twiddle.net>> Cc: linux-alpha@vger.kernel.org> --->  arch/alpha/kernel/irq.c           |    2 +->  arch/alpha/kernel/irq_alpha.c     |    2 +->  arch/alpha/kernel/irq_i8259.c     |    2 +->  arch/alpha/kernel/irq_pyxis.c     |    2 +->  arch/alpha/kernel/irq_srm.c       |    2 +->  arch/alpha/kernel/sys_alcor.c     |    2 +->  arch/alpha/kernel/sys_cabriolet.c |    2 +->  arch/alpha/kernel/sys_dp264.c     |    4 ++-->  arch/alpha/kernel/sys_eb64p.c     |    2 +->  arch/alpha/kernel/sys_eiger.c     |    2 +->  arch/alpha/kernel/sys_jensen.c    |    2 +->  arch/alpha/kernel/sys_marvel.c    |    6 +++--->  arch/alpha/kernel/sys_mikasa.c    |    2 +->  arch/alpha/kernel/sys_noritake.c  |    2 +->  arch/alpha/kernel/sys_rawhide.c   |    2 +->  arch/alpha/kernel/sys_rx164.c     |    2 +->  arch/alpha/kernel/sys_sable.c     |    2 +->  arch/alpha/kernel/sys_takara.c    |    2 +->  arch/alpha/kernel/sys_titan.c     |    2 +->  arch/alpha/kernel/sys_wildfire.c  |    2 +->  20 files changed, 23 insertions(+), 23 deletions(-)>> Index: linux-2.6/arch/alpha/kernel/irq.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/irq.c> +++ linux-2.6/arch/alpha/kernel/irq.c> @@ -92,7 +92,7 @@ show_interrupts(struct seq_file *p, void>                for_each_online_cpu(j)>                        seq_printf(p, "%10u ", kstat_irqs_cpu(irq, j));>  #endif> -               seq_printf(p, " %14s", irq_desc[irq].chip->typename);> +               seq_printf(p, " %14s", irq_desc[irq].chip->name);>                seq_printf(p, "  %c%s",>                        (action->flags & IRQF_DISABLED)?'+':' ',>                        action->name);> Index: linux-2.6/arch/alpha/kernel/irq_alpha.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/irq_alpha.c> +++ linux-2.6/arch/alpha/kernel/irq_alpha.c> @@ -228,7 +228,7 @@ struct irqaction timer_irqaction = {>  };>>  static struct irq_chip rtc_irq_type = {> -       .typename       = "RTC",> +       .name           = "RTC",>        .startup        = rtc_startup,>        .shutdown       = rtc_enable_disable,>        .enable         = rtc_enable_disable,> Index: linux-2.6/arch/alpha/kernel/irq_i8259.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/irq_i8259.c> +++ linux-2.6/arch/alpha/kernel/irq_i8259.c> @@ -84,7 +84,7 @@ i8259a_end_irq(unsigned int irq)>  }>>  struct irq_chip i8259a_irq_type = {> -       .typename       = "XT-PIC",> +       .name           = "XT-PIC",>        .startup        = i8259a_startup_irq,>        .shutdown       = i8259a_disable_irq,>        .enable         = i8259a_enable_irq,> Index: linux-2.6/arch/alpha/kernel/irq_pyxis.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/irq_pyxis.c> +++ linux-2.6/arch/alpha/kernel/irq_pyxis.c> @@ -71,7 +71,7 @@ pyxis_mask_and_ack_irq(unsigned int irq)>  }>>  static struct irq_chip pyxis_irq_type = {> -       .typename       = "PYXIS",> +       .name           = "PYXIS",>        .startup        = pyxis_startup_irq,>        .shutdown       = pyxis_disable_irq,>        .enable         = pyxis_enable_irq,> Index: linux-2.6/arch/alpha/kernel/irq_srm.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/irq_srm.c> +++ linux-2.6/arch/alpha/kernel/irq_srm.c> @@ -49,7 +49,7 @@ srm_end_irq(unsigned int irq)>>  /* Handle interrupts from the SRM, assuming no additional weirdness.  */>  static struct irq_chip srm_irq_type = {> -       .typename       = "SRM",> +       .name           = "SRM",>        .startup        = srm_startup_irq,>        .shutdown       = srm_disable_irq,>        .enable         = srm_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_alcor.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_alcor.c> +++ linux-2.6/arch/alpha/kernel/sys_alcor.c> @@ -90,7 +90,7 @@ alcor_end_irq(unsigned int irq)>  }>>  static struct irq_chip alcor_irq_type = {> -       .typename       = "ALCOR",> +       .name           = "ALCOR",>        .startup        = alcor_startup_irq,>        .shutdown       = alcor_disable_irq,>        .enable         = alcor_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_cabriolet.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_cabriolet.c> +++ linux-2.6/arch/alpha/kernel/sys_cabriolet.c> @@ -72,7 +72,7 @@ cabriolet_end_irq(unsigned int irq)>  }>>  static struct irq_chip cabriolet_irq_type = {> -       .typename       = "CABRIOLET",> +       .name           = "CABRIOLET",>        .startup        = cabriolet_startup_irq,>        .shutdown       = cabriolet_disable_irq,>        .enable         = cabriolet_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_dp264.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_dp264.c> +++ linux-2.6/arch/alpha/kernel/sys_dp264.c> @@ -199,7 +199,7 @@ clipper_set_affinity(unsigned int irq, c>  }>>  static struct irq_chip dp264_irq_type = {> -       .typename       = "DP264",> +       .name           = "DP264",>        .startup        = dp264_startup_irq,>        .shutdown       = dp264_disable_irq,>        .enable         = dp264_enable_irq,> @@ -210,7 +210,7 @@ static struct irq_chip dp264_irq_type =>  };>>  static struct irq_chip clipper_irq_type = {> -       .typename       = "CLIPPER",> +       .name           = "CLIPPER",>        .startup        = clipper_startup_irq,>        .shutdown       = clipper_disable_irq,>        .enable         = clipper_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_eb64p.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_eb64p.c> +++ linux-2.6/arch/alpha/kernel/sys_eb64p.c> @@ -70,7 +70,7 @@ eb64p_end_irq(unsigned int irq)>  }>>  static struct irq_chip eb64p_irq_type = {> -       .typename       = "EB64P",> +       .name           = "EB64P",>        .startup        = eb64p_startup_irq,>        .shutdown       = eb64p_disable_irq,>        .enable         = eb64p_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_eiger.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_eiger.c> +++ linux-2.6/arch/alpha/kernel/sys_eiger.c> @@ -81,7 +81,7 @@ eiger_end_irq(unsigned int irq)>  }>>  static struct irq_chip eiger_irq_type = {> -       .typename       = "EIGER",> +       .name           = "EIGER",>        .startup        = eiger_startup_irq,>        .shutdown       = eiger_disable_irq,>        .enable         = eiger_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_jensen.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_jensen.c> +++ linux-2.6/arch/alpha/kernel/sys_jensen.c> @@ -119,7 +119,7 @@ jensen_local_end(unsigned int irq)>  }>>  static struct irq_chip jensen_local_irq_type = {> -       .typename       = "LOCAL",> +       .name           = "LOCAL",>        .startup        = jensen_local_startup,>        .shutdown       = jensen_local_shutdown,>        .enable         = jensen_local_enable,> Index: linux-2.6/arch/alpha/kernel/sys_marvel.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_marvel.c> +++ linux-2.6/arch/alpha/kernel/sys_marvel.c> @@ -170,7 +170,7 @@ marvel_irq_noop_return(unsigned int irq)>  }>>  static struct irq_chip marvel_legacy_irq_type = {> -       .typename       = "LEGACY",> +       .name           = "LEGACY",>        .startup        = marvel_irq_noop_return,>        .shutdown       = marvel_irq_noop,>        .enable         = marvel_irq_noop,> @@ -180,7 +180,7 @@ static struct irq_chip marvel_legacy_irq>  };>>  static struct irq_chip io7_lsi_irq_type = {> -       .typename       = "LSI",> +       .name           = "LSI",>        .startup        = io7_startup_irq,>        .shutdown       = io7_disable_irq,>        .enable         = io7_enable_irq,> @@ -190,7 +190,7 @@ static struct irq_chip io7_lsi_irq_type>  };>>  static struct irq_chip io7_msi_irq_type = {> -       .typename       = "MSI",> +       .name           = "MSI",>        .startup        = io7_startup_irq,>        .shutdown       = io7_disable_irq,>        .enable         = io7_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_mikasa.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_mikasa.c> +++ linux-2.6/arch/alpha/kernel/sys_mikasa.c> @@ -69,7 +69,7 @@ mikasa_end_irq(unsigned int irq)>  }>>  static struct irq_chip mikasa_irq_type = {> -       .typename       = "MIKASA",> +       .name           = "MIKASA",>        .startup        = mikasa_startup_irq,>        .shutdown       = mikasa_disable_irq,>        .enable         = mikasa_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_noritake.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_noritake.c> +++ linux-2.6/arch/alpha/kernel/sys_noritake.c> @@ -74,7 +74,7 @@ noritake_end_irq(unsigned int irq)>  }>>  static struct irq_chip noritake_irq_type = {> -       .typename       = "NORITAKE",> +       .name           = "NORITAKE",>        .startup        = noritake_startup_irq,>        .shutdown       = noritake_disable_irq,>        .enable         = noritake_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_rawhide.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_rawhide.c> +++ linux-2.6/arch/alpha/kernel/sys_rawhide.c> @@ -136,7 +136,7 @@ rawhide_end_irq(unsigned int irq)>  }>>  static struct irq_chip rawhide_irq_type = {> -       .typename       = "RAWHIDE",> +       .name           = "RAWHIDE",>        .startup        = rawhide_startup_irq,>        .shutdown       = rawhide_disable_irq,>        .enable         = rawhide_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_rx164.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_rx164.c> +++ linux-2.6/arch/alpha/kernel/sys_rx164.c> @@ -73,7 +73,7 @@ rx164_end_irq(unsigned int irq)>  }>>  static struct irq_chip rx164_irq_type = {> -       .typename       = "RX164",> +       .name           = "RX164",>        .startup        = rx164_startup_irq,>        .shutdown       = rx164_disable_irq,>        .enable         = rx164_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_sable.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_sable.c> +++ linux-2.6/arch/alpha/kernel/sys_sable.c> @@ -502,7 +502,7 @@ sable_lynx_mask_and_ack_irq(unsigned int>  }>>  static struct irq_chip sable_lynx_irq_type = {> -       .typename       = "SABLE/LYNX",> +       .name           = "SABLE/LYNX",>        .startup        = sable_lynx_startup_irq,>        .shutdown       = sable_lynx_disable_irq,>        .enable         = sable_lynx_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_takara.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_takara.c> +++ linux-2.6/arch/alpha/kernel/sys_takara.c> @@ -75,7 +75,7 @@ takara_end_irq(unsigned int irq)>  }>>  static struct irq_chip takara_irq_type = {> -       .typename       = "TAKARA",> +       .name           = "TAKARA",>        .startup        = takara_startup_irq,>        .shutdown       = takara_disable_irq,>        .enable         = takara_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_titan.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_titan.c> +++ linux-2.6/arch/alpha/kernel/sys_titan.c> @@ -195,7 +195,7 @@ init_titan_irqs(struct irq_chip * ops, i>  }>>  static struct irq_chip titan_irq_type = {> -       .typename       = "TITAN",> +       .name          = "TITAN",>        .startup        = titan_startup_irq,>        .shutdown       = titan_disable_irq,>        .enable         = titan_enable_irq,> Index: linux-2.6/arch/alpha/kernel/sys_wildfire.c> ===================================================================> --- linux-2.6.orig/arch/alpha/kernel/sys_wildfire.c> +++ linux-2.6/arch/alpha/kernel/sys_wildfire.c> @@ -158,7 +158,7 @@ wildfire_end_irq(unsigned int irq)>  }>>  static struct irq_chip wildfire_irq_type = {> -       .typename       = "WILDFIRE",> +       .name           = "WILDFIRE",>        .startup        = wildfire_startup_irq,>        .shutdown       = wildfire_disable_irq,>        .enable         = wildfire_enable_irq,>>> --
-Thanks. Applied to alpha-2.6.git.
-Mattÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Fri, Oct 30, 2009 at 9:33 PM, Michael Cree <mcree@orcon.net.nz> wrote:
+> The removal of the TIF_NOTIFY_RESUME flag, commit a583f1b54249b
+> "remove unused TIF_NOTIFY_RESUME flag," resulted in incorrect
+> setting of the unaligned access control flags by the prctl syscall.
+>
+> The re-addition of the TIF_NOTIFY_RESUME flag, commit d0420c83f39f
+> "KEYS: Extend TIF_NOTIFY_RESUME to (almost) all architectures [try #6]"
+> further caused problems, namely incorrect operands to assembler code
+> as evidenced by:
+>
+> AS      arch/alpha/kernel/entry.o
+> arch/alpha/kernel/entry.S: Assembler messages:
+> arch/alpha/kernel/entry.S:326: Warning: operand out of range (0x0000000000000406 is not between 0x0000000000000000 and 0x00000000000000ff)
+>
+> Both regressions fixed by (1) rearranging TIF_NOTIFY_RESUME flag to be
+> in lower 8 bits of the thread info flags, and (2) making sure that
+> ALPHA_UAC_SHIFT matches the rearrangement of the thread info flags.
+>
+> Signed-off-by: Michael Cree <mcree@orcon.net.nz>
+> ---
+>  arch/alpha/include/asm/thread_info.h |   27 +++++++++++++++------------
+>  1 files changed, 15 insertions(+), 12 deletions(-)
+>
+> diff --git a/arch/alpha/include/asm/thread_info.h b/arch/alpha/include/asm/thread_info.h
+> index e7a07f6..3ba4ded 100644
+> --- a/arch/alpha/include/asm/thread_info.h
+> +++ b/arch/alpha/include/asm/thread_info.h
+> @@ -61,21 +61,24 @@ register struct thread_info *__current_thread_info __asm__("$8");
+>  /*
+>  * Thread information flags:
+>  * - these are process state flags and used from assembly
+> - * - pending work-to-be-done flags come first to fit in and immediate operand.
+> + * - pending work-to-be-done flags come first and must be assigned to be
+> + *   within bits 0 to 7 to fit in and immediate operand.
+> + * - ALPHA_UAC_SHIFT below must be kept consistent with the unaligned
+> + *   control flags.
+>  *
+>  * TIF_SYSCALL_TRACE is known to be 0 via blbs.
+>  */
+>  #define TIF_SYSCALL_TRACE      0       /* syscall trace active */
+> -#define TIF_SIGPENDING         1       /* signal pending */
+> -#define TIF_NEED_RESCHED       2       /* rescheduling necessary */
+> -#define TIF_POLLING_NRFLAG     3       /* poll_idle is polling NEED_RESCHED */
+> -#define TIF_DIE_IF_KERNEL      4       /* dik recursion lock */
+> -#define TIF_UAC_NOPRINT                5       /* see sysinfo.h */
+> -#define TIF_UAC_NOFIX          6
+> -#define TIF_UAC_SIGBUS         7
+> -#define TIF_MEMDIE             8
+> -#define TIF_RESTORE_SIGMASK    9       /* restore signal mask in do_signal */
+> -#define TIF_NOTIFY_RESUME      10      /* callback before returning to user */
+> +#define TIF_NOTIFY_RESUME      1       /* callback before returning to user */
+> +#define TIF_SIGPENDING         2       /* signal pending */
+> +#define TIF_NEED_RESCHED       3       /* rescheduling necessary */
+> +#define TIF_POLLING_NRFLAG     8       /* poll_idle is polling NEED_RESCHED */
+> +#define TIF_DIE_IF_KERNEL      9       /* dik recursion lock */
+> +#define TIF_UAC_NOPRINT                10      /* see sysinfo.h */
+> +#define TIF_UAC_NOFIX          11
+> +#define TIF_UAC_SIGBUS         12
+> +#define TIF_MEMDIE             13
+> +#define TIF_RESTORE_SIGMASK    14      /* restore signal mask in do_signal */
+>  #define TIF_FREEZE             16      /* is freezing for suspend */
+>
+>  #define _TIF_SYSCALL_TRACE     (1<<TIF_SYSCALL_TRACE)
+> @@ -94,7 +97,7 @@ register struct thread_info *__current_thread_info __asm__("$8");
+>  #define _TIF_ALLWORK_MASK      (_TIF_WORK_MASK         \
+>                                 | _TIF_SYSCALL_TRACE)
+>
+> -#define ALPHA_UAC_SHIFT                6
+> +#define ALPHA_UAC_SHIFT                10
+>  #define ALPHA_UAC_MASK         (1 << TIF_UAC_NOPRINT | 1 << TIF_UAC_NOFIX | \
+>                                 1 << TIF_UAC_SIGBUS)
+>
+> --
+> 1.6.3.3
+>
+> --
+
+Applied to alpha-2.6.git. Thanks!
+
+Matt
