@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbZLAQsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbZLAQtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754380AbZLAQsD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:48:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZLAQsC
+	id S1754400AbZLAQtf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:49:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbZLAQtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:48:02 -0500
-Received: from mail.gmx.net ([213.165.64.20]:51435 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753665AbZLAQsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:48:01 -0500
-X-Authenticated: #14349119
-X-Provags-ID: V01U2FsdGVkX1+yHqAZKEeyZmF/6/8X/UE7ru8K6GG3Zu9j4EB+Mn
-	UU9KCIlYWibNbi
-Subject: Re: writev data loss bug in (at least) 2.6.31 and 2.6.32pre8 x86-64
-From: Mike Galbraith <gleep@gmx.de>
-To: Jan Kara <jack@suse.cz>
-Cc: James Y Knight <foom@fuhm.net>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, npiggin@suse.de
-In-Reply-To: <20091201160324.GA25873@quack.suse.cz>
-References: <1F5364AE-321E-44E9-8B0D-B8E17597A0DA@fuhm.net>
-	 <907888CC-F4B2-448F-8F48-B96A566D323B@fuhm.net>
-	 <1259667765.9614.19.camel@marge.simson.net>
-	 <20091201143558.GB12730@quack.suse.cz>
-	 <20091201160324.GA25873@quack.suse.cz>
-Content-Type: text/plain
-Date: Tue, 01 Dec 2009 17:47:58 +0100
-Message-Id: <1259686078.6229.1.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.79
+	Tue, 1 Dec 2009 11:49:35 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:42813 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752305AbZLAQte (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:49:34 -0500
+Message-ID: <4B154920.40203@gmail.com>
+Date: Tue, 01 Dec 2009 17:49:36 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+CC: Joe Perches <joe@perches.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+Subject: Re: warning: massive change to conditional coding style in net?
+References: <4B13A025.7000103@gmail.com> <1259603798.29779.293.camel@Joe-Laptop.home> <4B153F9B.7050502@gmail.com>
+In-Reply-To: <4B153F9B.7050502@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 01 Dec 2009 17:49:37 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-01 at 17:03 +0100, Jan Kara wrote:
+William Allen Simpson a écrit :
+> Joe Perches wrote:
+>> If it makes getting tcp cookies accepted difficult,
+>> a reversion is simple.  That style isn't as important.
+>>
+> Then why make an *un*important (yet sweeping) change?
 
->   The patch below fixes the issue for me...
+Because this is time :
 
-Ditto.
+We usually makes cleanup patches just before the release
+of a new linux kernel, to minimize effects on developer trees.
 
-	-Mike
+We know linux-2.6.32 is about to be released by Linus,
+and all major 2.6.33 patches are already queued in net-next-2.6
+to be pushed to Linus as soon as the window opens.
+
+This is the perfect time for cleanups. Doing cleanups is a good
+way to learn linux code, before doing more complex things.
+
+If you take a look at queued patches in net-next-2.6, maybe less
+than 5 % are cleanups.
+
+But this rule can be changed, if your patches are ready for inclusion,
+David might revert the jumbo cleanup to ease your job. Just ask.
 
