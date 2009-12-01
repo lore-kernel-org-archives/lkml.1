@@ -1,119 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZLAPLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZLAPNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548AbZLAPLd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 10:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZLAPLc
+	id S1753590AbZLAPNe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 10:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZLAPNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 10:11:32 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:34360 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753080AbZLAPLc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 10:11:32 -0500
-Date: Tue, 1 Dec 2009 10:11:36 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ondrej Zary <linux@rainbow-software.org>
-cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
-Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
-In-Reply-To: <200912011106.12027.linux@rainbow-software.org>
-Message-ID: <Pine.LNX.4.44L0.0912011005140.2983-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 1 Dec 2009 10:13:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58960 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753080AbZLAPNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 10:13:31 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20091201142611.GA1183@elte.hu>
+References: <20091201142611.GA1183@elte.hu> <25668.1259675528@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
+       steved@redhat.com, jens.axboe@oracle.com, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-fsdevel@vger.kernel.org,
+       cluster-devel@redhat.com, linux-kernel@vger.kernel.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: [PATCH] SLOW_WORK: Fix the CONFIG_MODULES=n case
+Date: Tue, 01 Dec 2009 15:13:08 +0000
+Message-ID: <31860.1259680388@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009, Ondrej Zary wrote:
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Monday 30 November 2009, Alan Stern wrote:
-> > On Mon, 30 Nov 2009, Ondrej Zary wrote:
-> > > It does not make much sense to me but I think that it crashes iside this
-> > > list manipulation:
-> > >
-> > >         prev = ehci->async;
-> > >         while (prev->qh_next.qh != qh)
-> > >                 prev = prev->qh_next.qh;
-> >
-> > Yes, it's crashing in the "while" test because prev is NULL.  This
-> > means the code is looking for qh in the async list but not finding it.
-> > That's supposed to be impossible.
-> >
-> > The assembly code is peculiar because it includes stuff that isn't in
-> > the source code!  For example, right at this point (after the end of
-> > the loop) there's a test to see whether prev is NULL.  Where could that
-> > have come from?  Do you have any idea?
-> 
-> I'm not sure, I might did something wrong and left it there from my previous
-> debugging attempt.
+> this slow_work_wait_for_items() function should move into the #ifdef 
+> block too.
 
-Okay.  But it was part of the reason you had difficulty matching up the 
-ehci-hcd.s file with the crash code dump.
+I disagree: I want to keep the variable declaration blocks small; I'd rather
+not even put the inline functions in there that I did.  I only did that because
+you wanted the #ifdef count reduced.
 
-> > >         prev->hw_next = qh->hw_next;
-> > >         prev->qh_next = qh->qh_next;
-> > >         wmb ();
-> >
-> > These lines aren't reached.
-> >
-> > Does this happen every time you disconnect the Nexio?
-> 
-> The crash happens almost always when disconnecting the touchscreen.
-> When booted without X, it often survives the first disconnect.
+> In terms of .32 i guess it's OK too and the fix is needed - but i'd really
+> not have done even the preceding changes - why again did we need
+> /proc/slow_work_rq via 8fba10a
 
-Then it will be easy to recreate the problem.  :-)
+The slow_work_rq debugging interface is not strictly necessary, but it proved a
+useful debugging tool.  I emailed Linus before I went on holiday and asked if
+he was willing to take these not-strictly-necessary patches on which other
+patches were built, or whether he'd prefer me to drop those patches and adjust
+the rest.
 
-> > You can try patching that loop.  If prev is NULL then print an error
-> > message in the log, including the value of qh and the value of
-> > ehci->async, and jump past the following three statements.
-> >
-> > With that change the system shouldn't crash, although khubd might hang.
-> > But we still need to find out how this could have happened.  Try
-> > collecting a usbmon trace while running the test; then let's compare
-> > the usbmon output with the error messages in the log.
-> 
-> gcc version is: gcc (Debian 4.3.4-6) 4.3.4
-> 
-> Tried something like that before but it did not help at all.
-> The check is not triggered and it still oopses. Now it looks like this:
-> 
->         qh->qh_state = QH_STATE_UNLINK;
->         ehci->reclaim = qh = qh_get (qh);
-> 
->         prev = ehci->async;
->         if (!prev) {
->                 printk("prev is NULL, qh=%p, ehci->async=%p\n", qh, ehci->async);
->                 goto after;
->         }
-[*] >         while (prev->qh_next.qh != qh) {
->                 if (!prev) {
->                         printk("prev is NULL, qh=%p, ehci->async=%p\n", qh, ehci->async);
->                         goto after;
->                 }
->                 prev = prev->qh_next.qh;
->         }
-> 
->         prev->hw_next = qh->hw_next;
->         prev->qh_next = qh->qh_next;
->         wmb ();
-> 
-> after:
+> and why did it have to happen right before the final kernel?
 
-No, that is wrong.  The [*] line can still perform an invalid
-dereference.  You need to move the inside test to the end of the loop,
-after the assignment statement.  Or else do this:
+Because it did.  That's when I finished my set of patches and published them
+before going on holiday for a week - and that in turn was related to when I
+came up with a better test case.  Sometimes coincidences do happen.
 
-	prev = ehci->async;
-	for (;;) {
-		if (!prev) {
-			printk(KERN_ERR "prev is NULL, qh=%p, "
-					"ehci->async=%p\n", qh, ehci->async);
-			goto after;
-			}
-		if (prev->qh_next.qh == qh)
-			break;
-		prev = prev->qh_next.qh;
-	}
+> If then it should have been done in debugfs - we dont need yet another 
+> /proc ABI.
 
-Alan Stern
+Possibly.  That just means we have a debugfs ABI instead of a proc ABI - it
+needs maintaining either way.  On the other hand, it can be moved there easily
+and the docs changed, and doing so makes a reasonable amount of sense - except
+that debugfs isn't normally mounted by at least Fedora for some reason.
 
+David
