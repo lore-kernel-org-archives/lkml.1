@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZLASaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZLASbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbZLASaP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 13:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbZLASaO
+	id S1753787AbZLASbi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 13:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZLASbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 13:30:14 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:44071 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbZLASaN (ORCPT
+	Tue, 1 Dec 2009 13:31:37 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:30569 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752513AbZLASbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 13:30:13 -0500
-Message-ID: <4B1560B6.3020907@gmail.com>
-Date: Tue, 01 Dec 2009 19:30:14 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 1 Dec 2009 13:31:36 -0500
+Message-ID: <4B1560C2.8040603@oracle.com>
+Date: Tue, 01 Dec 2009 10:30:26 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: warning: massive change to conditional coding style in net?
-References: <4B13A025.7000103@gmail.com> <20091130.123644.203668577.davem@davemloft.net> <4B1558D8.4010804@gmail.com>
-In-Reply-To: <4B1558D8.4010804@gmail.com>
+To: Tejun Heo <tj@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org
+Subject: percpu error in linux-next (CONFIG_SMP=n)
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 01 Dec 2009 19:30:16 +0100 (CET)
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt358.oracle.com [141.146.40.158]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B1560E1.0175:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Allen Simpson a écrit :
- 
-> If these changes had been mentioned a month or two ago, as part of a
-> thorough review, it could have been discussed earlier.  Instead, it's
-> like being nibbled by mice.
+hi Tejun,
 
-William,
+drivers/base/cpu.c: line 100: fails to build when CONFIG_SMP=n:
 
-This is absolutely _not_ possible to comment a 1000+ lines patches in one shot,
-being your patch or not.
+	addr = per_cpu_ptr_to_phys(per_cpu_ptr(crash_notes, cpunum));
 
-It would take _hours_ of work, even for David.
+Can you suggest a fix for that, please?
 
-We use a step-by-step process, with limited feedbacks, because nobody is paid
-to make your life easier. We patiently gave you a lot of advices and yet
-you complain again and again.
-
-After 15/30 minutes of reviewing patches, and collecting some suggestions,
-the average reviewer stops its review, sends a feedback, and waits for next
-patch submission. [hoping patch author will be pro_active and check all its
-patches, not the precise points that were specificaly raised.]
-
-Yes, sometime we notice a point at round eleven, instead of first/second round,
-because more important things were noticed at prior rounds.
-
-I honestly hope you change your mind, or I wont even read your next patch
-submissions, wait for the official RFC and code the damn thing myself or wait for
-some kind developper willing to do the job, in the normal process.
-
-You can copy this mail to all man kind, it wont make your patches magically
-ready for inclusion.
-
-Respectfully,
-Eric
+thanks,
+-- 
+~Randy
