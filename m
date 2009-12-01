@@ -1,93 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbZLAPNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbZLAPQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559AbZLAPNd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 10:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZLAPNc
+	id S1752885AbZLAPQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 10:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbZLAPQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 10:13:32 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49164 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753025AbZLAPNb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 10:13:31 -0500
-Date: Tue, 1 Dec 2009 16:13:16 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
-Subject: divide by zero in termios when setting bluetooth
-Message-ID: <20091201151315.GC2262@elf.ucw.cz>
+	Tue, 1 Dec 2009 10:16:52 -0500
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:29102
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750815AbZLAPQv convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 10:16:51 -0500
+X-SpamScore: -21
+X-BigFish: VPS-21(z21eWz179dN1102Kzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KTZBRP-01-M43-02
+X-M-MSG: 
+Date: Tue, 1 Dec 2009 16:16:39 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Borislav Petkov <petkovbb@googlemail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: Re: 2.6.32-rc8: amd64_edac slub error
+Message-ID: <20091201151639.GA670@aftab>
+References: <4B1400B3.60300@oracle.com>
+ <20091130203547.GA2838@liondog.tnic>
+ <20091130141629.44401d86.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20091130141629.44401d86.randy.dunlap@oracle.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 01 Dec 2009 15:16:38.0497 (UTC) FILETIME=[47486510:01CA7299]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+> EDAC DEBUG: in drivers/edac/amd64_edac.c, line at 2367:     DRAM MEM-CTL PCI Bus ID:	0000:00:18.2
+> EDAC DEBUG: in drivers/edac/amd64_edac.c, line at 2369:     Misc device PCI Bus ID:	0000:00:18.3
+> calling  alsa_pcm_init+0x0/0x71 [snd_pcm] @ 1402
+> initcall alsa_pcm_init+0x0/0x71 [snd_pcm] returned 0 after 17 usecs
+> EDAC amd64: ECC is enabled by BIOS.
+> get_cpus_on_this_dct_cpumask: nid: 0, cpu: 0
+> get_cpus_on_this_dct_cpumask: nid: 0, cpu: 2
+> amd64_nb_mce_bank_enabled_on_node: weight: 2
+> EDAC DEBUG: in drivers/edac/amd64_edac.c, line at 2776: core: 0, MCG_CTL: 0x1f, NB MSR is enabled
+> EDAC DEBUG: in drivers/edac/amd64_edac.c, line at 2776: core: 2, MCG_CTL: 0x0, NB MSR is disabled
+> =============================================================================
+> BUG kmalloc-16: Redzone overwritten
+> -----------------------------------------------------------------------------
 
-I triggered this by mistake... "W" taint is from the  WARN_ON()
-before.
-							Pavel
+Hmm, I think I know what happens. This machine has non-contigious
+core enumeration on a node (e.g. 0,2 on node 0 instead of 0,1) but
+rdmsr_on_cpus assumes the former. Therefore we write outside of the
+allocated msrs struct and thus the redzone overwrite. Here's a simple
+fix that should take care of it. Please apply on top of the debugging
+patch and catch the output again so that we could verify it.
 
-root@amd:~# setserial /dev/ttyBT baud_base $[115200*1]
-root@amd:~# echo $[115200/8]
-14400
-root@amd:~# hciattach -s 14400 /dev/ttyS0 bcsp 1440
-divide error: 0000 [#1] SMP DEBUG_PAGEALLOC
-last sysfs file:
-/sys/devices/pci0000:00/0000:00:1c.1/0000:03:00.0/firmware/0000:03:00.0/loading
-Modules linked in:
+I'll fix this properly when I get back and then maybe even backport it
+depending on the intrusiveness of the changes.
 
-Pid: 2058, comm: hciattach Tainted: G        W
-(2.6.32-rc8-00165-g2471433-dirty #92) 17097HU
-EIP: 0060:[<c043de2f>] EFLAGS: 00010246 CPU: 1
-EIP is at uart_get_divisor+0x1f/0x40
-EAX: 001c2000 EBX: 00000000 ECX: c0f9bf40 EDX: 00000000
-ESI: c0f9bf40 EDI: f6316550 EBP: c5fe7d0c ESP: c5fe7d08
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process hciattach (pid: 2058, ti=c5fe6000 task=f6096680
-task.ti=c5fe6000)
-Stack:
- 00000013 c5fe7d3c c0442780 00000007 00007080 00000000 00000001
-00000000
-<0> 00000001 c03e1d6b c09e6d80 c0f9bf40 c5fe7d98 c5fe7d50 c043deaf
-f631f7f0
-<0> c5fe7d98 f631f7f0 c5fe7d7c c043e57d f58fc7f0 f631f868 00001cb7
-22222222
-Call Trace:
- [<c0442780>] ? serial8250_set_termios+0x360/0x420
- [<c03e1d6b>] ? set_termios+0xcb/0x430
- [<c043deaf>] ? uart_change_speed+0x5f/0x90
- [<c043e57d>] ? uart_set_termios+0x3d/0x250
- [<c03e1efd>] ? set_termios+0x25d/0x430
- [<c03e2560>] ? tty_mode_ioctl+0x3c0/0x5b0
- [<c03dcf33>] ? tty_wakeup+0x33/0x70
- [<c03e299b>] ? tty_ldisc_try+0x1b/0x50
- [<c03e278a>] ? n_tty_ioctl_helper+0x3a/0x190
-Dec  1 12:30:25 amd kernel:  [<c0594c5e>] ?
-hci_uart_tty_ioctl+0x5e/0x240
-Dec  1 12:30:25 amd kernel:  [<c0594c00>] ?
-hci_uart_tty_ioctl+0x0/0x240
-Dec  1 12:30:25 amd kernel:  [<c0594c00>] ?
-hci_uart_tty_ioctl+0x0/0x240
-Dec  1 12:30:25 amd kernel:  [<c03dd1be>] ? tty_ioctl+0xae/0x880
-Dec  1 12:30:25 amd kernel:  [<c03dd110>] ? tty_ioctl+0x0/0x880
-Dec  1 12:30:25 amd kernel:  [<c02a4ae8>] ? vfs_ioctl+0x28/0x80
-Dec  1 12:30:25 amd kernel:  [<c02a4faa>] ? do_vfs_ioctl+0x39a/0x590
-Dec  1 12:30:25 amd kernel:  [<c0282037>] ? handle_mm_fault+0xe7/0x5e0
-Dec  1 12:30:25 amd kernel:  [<c0249646>] ? up_read+0x16/0x30
-Dec  1 12:30:25 amd kernel:  [<c02a51d9>] ? sys_ioctl+0x39/0x70
-Dec  1 12:30:25 amd kernel:  [<c0202e50>] ? sysenter_do_call+0x12/0x31
-Dec  1 12:30:25 amd kernel: Code: 86 84 00 00 00 5e 5d c3 8d 74 26 00
-55 81 fa 00 96 00 00 89 e5 89 c1 53 89 d3 74 18 8d 04 dd 00 00 00 00
-31 d2 03 41 34 c1 e3 04 <f7> f3 5b 5d c3 8d 74 26 00 8b 40 7c 25
-30 10 00 00 83 f8 30 75
-Dec  1 12:30:25 amd kernel: EIP: [<c043de2f>]
-uart_get_divisor+0x1f/0x40 SS:ESP 0068:c5fe7d08
-Dec  1 12:30:25 amd kernel: ---[ end trace bab0b3b26c16fcf6 ]---
+Thanks.
+
+---
+ drivers/edac/amd64_edac.c |   15 +++++++++++++--
+ 1 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index 139bc14..c013261 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2750,7 +2750,8 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
+ {
+ 	cpumask_t mask;
+ 	struct msr *msrs;
+-	int cpu, nbe, idx = 0;
++	int cpu, nbe, i, idx = 0;
++	int first_cpu, last_cpu = 0;
+ 	bool ret = false;
+ 
+ 	cpumask_clear(&mask);
+@@ -2759,7 +2760,17 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
+ 
+ 	pr_err("%s: weight: %d\n", __func__, cpumask_weight(&mask));
+ 
+-	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(&mask), GFP_KERNEL);
++	/*
++	 * calc. cores interval when non-contigious core enumeration
++	 */
++	first_cpu = cpumask_first(&mask);
++
++	for (i = first_cpu; i < nr_cpu_ids; i++)
++		if (cpumask_test_cpu(i, &mask))
++			last_cpu = i;
++
++	msrs = kzalloc(sizeof(struct msr) * (last_cpu - first_cpu + 1),
++		       GFP_KERNEL);
+ 	if (!msrs) {
+ 		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+ 			      __func__);
+-- 
+1.6.4.3
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
