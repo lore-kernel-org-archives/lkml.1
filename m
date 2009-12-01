@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZLAODG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbZLAOGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752932AbZLAODG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 09:03:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZLAODG
+	id S1753070AbZLAOGJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 09:06:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZLAOGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 09:03:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53699 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 09:06:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38477 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbZLAODF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 09:03:05 -0500
-Message-ID: <4B1521EA.6050306@redhat.com>
-Date: Tue, 01 Dec 2009 15:02:18 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Andy Walls <awalls@radix.net>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Jon Smirl <jonsmirl@gmail.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, maximlevitsky@gmail.com,
-       mchehab@redhat.com, stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>	 <m3aay6y2m1.fsf@intrepid.localdomain>	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>	 <1259450815.3137.19.camel@palomino.walls.org>	 <m3ocml6ppt.fsf@intrepid.localdomain>	 <1259542097.5231.78.camel@palomino.walls.org> <4B14F3EA.4090000@redhat.com> <1259668143.3100.18.camel@palomino.walls.org>
-In-Reply-To: <1259668143.3100.18.camel@palomino.walls.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751366AbZLAOGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 09:06:06 -0500
+Subject: Re: [GIT PATCH] SCSI fixes for 2.6.32-rc8
+From: James Bottomley <James.Bottomley@suse.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kai Makisara <Kai.Makisara@kolumbus.fi>
+In-Reply-To: <20091201080346W.fujita.tomonori@lab.ntt.co.jp>
+References: <1259620194.11762.137.camel@mulgrave.site>
+	 <20091201080346W.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 01 Dec 2009 09:06:06 -0500
+Message-Id: <1259676366.11762.239.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01/09 12:49, Andy Walls wrote:
-> On Tue, 2009-12-01 at 11:46 +0100, Gerd Hoffmann wrote:
->> Once lirc_dev is merged you can easily fix this:  You'll have *one*
->> driver which supports *both* evdev and lirc interfaces.  If lircd opens
->> the lirc interface raw data will be sent there, keystrokes come in via
->> uinput.  Otherwise keystrokes are send directly via evdev.  Problem solved.
->
-> This will be kind of strange for lirc_zilog (aka lirc_pvr150).  It
-> supports IR transmit on the PVR-150, HVR-1600, and HD-PVR.  I don't know
-> if transmit is raw pulse timings, but I'm sure the unit provides codes
-> on receive.  Occasionally blocks of "boot data" need to be programmed
-> into the transmitter side.  I suspect lirc_zilog will likely need
-> rework....
+On Tue, 2009-12-01 at 08:03 +0900, FUJITA Tomonori wrote:
+> On Mon, 30 Nov 2009 17:29:54 -0500
+> James Bottomley <James.Bottomley@suse.de> wrote:
+> 
+> > This is a set of miscellaneous (but small) fixes for SCSI.
+> > 
+> > The patch is available here:
+> > 
+> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> > 
+> > The short changelog is:
+> > 
+> > Alexey Kuznetsov (1):
+> >       fix crash when disconnecting usb storage
+> > 
+> > James Bottomley (1):
+> >       fix async scan add/remove race resulting in an oops
+> > 
+> > Martin K. Petersen (1):
+> >       sd: Return correct error code for DIF
+> > 
+> > The diffstat is:
+> > 
+> >  drivers/scsi/hosts.c       |    2 -
+> >  drivers/scsi/scsi_scan.c   |   18 ++----------
+> >  drivers/scsi/scsi_sysfs.c  |   63 +++++++++++++++++++--------------------------
+> >  drivers/scsi/sd_dif.c      |    2 -
+> >  include/scsi/scsi_device.h |    1 
+> >  5 files changed, 34 insertions(+), 52 deletions(-)
+> 
+> Can you add the tape driver fix?
 
-Well, for IR *output* it doesn't make sense to disable evdev.  One more 
-reason which indicates it probaably is better to introduce a ioctl to 
-disable evdev reporting.  lircd will probably turn it off, especially 
-when sending data to uevent.  debug tools might not, likewise apps 
-sending IR.
+Sure ... can I have an acked-by from Kai?
 
->>   so killing the in-kernel IR limits to make ir-kbd-i2c
->                    ^^^^^^^^^^^^^^^^^^^
->>        being on par with lirc_i2c might be more useful in this case.
->
-> I didn't quite understand that.  Can you provide a little more info?
+Thanks,
 
-Such as throwing away the address part of rc5 codes ...
+James
 
-cheers,
-   Gerd
+
