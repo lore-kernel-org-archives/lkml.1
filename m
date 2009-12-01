@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbZLAQI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbZLAQKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbZLAQI6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZLAQI5
+	id S1754035AbZLAQKE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZLAQKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:08:57 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:42523 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753893AbZLAQI4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:08:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=guDFgsVIZXzCCcbtgcnDCpaorPXt0gYl2yuV+AtrTmce597ymTBjZH2/yEJC7Zc/u4
-         /ywTJYasWEO0R8E/R+bAnVWsT0FWBsPAIICB+6V63QxX70fPeRuuHBfylqyO9WUggcuC
-         CZf+redEFn/ptpR0JoquyDit6BCdtudGDAOKU=
-Message-ID: <4B153F9B.7050502@gmail.com>
-Date: Tue, 01 Dec 2009 11:08:59 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 1 Dec 2009 11:10:04 -0500
+Received: from web37601.mail.mud.yahoo.com ([209.191.87.84]:23647 "HELO
+	web37601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752839AbZLAQKD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:10:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=nQ+q/B5M1Wiw1/2JpGvKiOiui029SPCPsEuFnOaiNmA4ZjFgjGXfHG6VymNgfvVMux3VzUP5oPk0yBskyAdmB6qe0NU4E0rJCKuY4DmTZ1kEjMLyKaVzKw+dAp+kGJvnZ7KWIsr8kiNoq3f4CFAsoTZecaJJaqbgFVdHEFMsmq0=;
+Message-ID: <621988.63882.qm@web37601.mail.mud.yahoo.com>
+X-YMail-OSG: MLYUmuYVM1nTxIDTTVO3938g6YMM.HGzNegb1NJMc1cVcJzLNn0pYnj_B5FeWoEy5Ifbiq6b3BXJMzTe9hjL3JzKKfqoxS6JIt8uY2.jBO4rHuxfHm610PGN6i60i_4DPQee6lHKyh8OcMFQTp12B0F3U5qDf_yBURShLnNzqnb_84xH_El_G3x6v1N0d7RGMeiCcvp0qY6bb2Ee47RglelihRf_HzSdQxDGrvN3Hp02AidTW7VdoDBEYOil.lgeLMttsLXH24QPp82_5nZEcYD6jAfCmTDl5Iy8svwyyp426o7.UXjaKdyGG_i.hBzNAUifrlOnj5daflmI7mU9KD7E1.8xbZUlvnmz8u9YYcg8mrk1Linta36YDLsj59R9HzJR
+X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
+Date: Tue, 1 Dec 2009 08:10:09 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: XD/smartmedia - how to implement it right?
+To: Maxim Levitsky <maximlevitsky@gmail.com>,
+       =?iso-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, arnd@arndb.de,
+       tglx@linutonix.de
+In-Reply-To: <20091201082236.GA27691@logfs.org>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-Subject: Re: warning: massive change to conditional coding style in net?
-References: <4B13A025.7000103@gmail.com> <1259603798.29779.293.camel@Joe-Laptop.home>
-In-Reply-To: <1259603798.29779.293.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Mon, 2009-11-30 at 05:36 -0500, William Allen Simpson wrote:
->> Over the past several days, David Miller (with help from Joe Perches)
->> made sweeping changes to the format of conditional statements in the
->> net tree -- the equivalent of mass patches that change spaces.
->> This makes writing patches for multiple versions of the tree very
->> difficult, and will make future pullups problematic.
+
+
+--- On Tue, 12/1/09, Jörn Engel <joern@logfs.org> wrote:
+
+> From: Jörn Engel <joern@logfs.org>
+> Subject: Re: XD/smartmedia - how to implement it right?
+> To: "Maxim Levitsky" <maximlevitsky@gmail.com>
+> Cc: "Alex Dubov" <oakad@yahoo.com>, "linux-kernel" <linux-kernel@vger.kernel.org>, arnd@arndb.de, tglx@linutonix.de
+> Date: Tuesday, December 1, 2009, 12:22 AM
+> On Tue, 1 December 2009 01:04:26
+> +0200, Maxim Levitsky wrote:
+> > 
+> > Alex, could you do me a favor, and explain why partial
+> block writes
+> > don't work?
+> > What happens if its done?
 > 
-> If it makes getting tcp cookies accepted difficult,
-> a reversion is simple.  That style isn't as important.
+> With the Alauda and the limited set of cards I tried they
+> work.
 > 
-Then why make an *un*important (yet sweeping) change?
-
-
-> I think writing a single set of patches for multiple
-> versions of linux is not feasible.  Feature changes
-> occur in kernel source daily.
+> Jörn
 > 
-My patches were carefully written and applied with small fuzz to .30,
-and .31, and .32-rc3.
+
+It's a bug particular to jmicron controllers.
 
 
->> 	if (condition
->> 	    && condition
->> 	    && (condition
->> 	        || condition
->> 	        || condition)) {
-> 
-> The above is my personally preferred style.
-> 
-That seems fine to me.  And in some areas of the tree, nearly 100% of
-other contributors, too.
 
-My personally preferred style is the single spaced variant, that also
-conforms to the strict letter of CodingStyle, to wit:
-
-   Use one space around (on each side of) most binary and ternary operators
-
-
->> 	if (condition &&
->>              condition && (condition || condition ||
->> 	    condition)) {
-> 
-> Except for the odd spacing, this is the significant
-> majority of net/ style.
-> 
-> The leading style was < 10%.  It's less now.
-> 
-That's only true in net/ -- since the overall tree was 18.7%, with
-net/ < 10%, the density was *much* higher elsewhere.
-
-But more important, at least to my thinking, is keeping patches simple
-by conforming to the *existing* style in the section of code.  No
-sweeping changes!
-
+      
