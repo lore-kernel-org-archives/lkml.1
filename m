@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZLAOPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbZLAOS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbZLAOPI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 09:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZLAOPH
+	id S1753088AbZLAOS6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 09:18:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZLAOS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 09:15:07 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19485 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 09:18:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45018 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbZLAOPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 09:15:05 -0500
-Message-ID: <4B1524DD.3080708@redhat.com>
-Date: Tue, 01 Dec 2009 12:14:53 -0200
+	id S1751898AbZLAOS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 09:18:56 -0500
+Message-ID: <4B1525A7.1020307@redhat.com>
+Date: Tue, 01 Dec 2009 12:18:15 -0200
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
 To: Gerd Hoffmann <kraxel@redhat.com>
-CC: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
+CC: Andy Walls <awalls@radix.net>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Jon Smirl <jonsmirl@gmail.com>, Christoph Bartelmus <lirc@bartelmus.de>,
        dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, jonsmirl@gmail.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
+       jarod@wilsonet.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       maximlevitsky@gmail.com, stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
 Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
  IR  system?
-References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com>
-In-Reply-To: <4B14EDE3.5050201@redhat.com>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>	 <m3aay6y2m1.fsf@intrepid.localdomain>	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>	 <1259450815.3137.19.camel@palomino.walls.org>	 <m3ocml6ppt.fsf@intrepid.localdomain>	 <1259542097.5231.78.camel@palomino.walls.org> <4B14F3EA.4090000@redhat.com> <1259668143.3100.18.camel@palomino.walls.org> <4B1521EA.6050306@redhat.com>
+In-Reply-To: <4B1521EA.6050306@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,105 +32,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Gerd Hoffmann wrote:
->   Hi,
-> 
->>> The point is that for simple usage, like an user plugging his new USB
->>> stick
->>> he just bought, he should be able to use the shipped IR without
->>> needing to
->>> configure anything or manually calling any daemon. This currently works
->>> with the existing drivers and it is a feature that needs to be kept.
+> On 12/01/09 12:49, Andy Walls wrote:
+>> On Tue, 2009-12-01 at 11:46 +0100, Gerd Hoffmann wrote:
+>>> Once lirc_dev is merged you can easily fix this:  You'll have *one*
+>>> driver which supports *both* evdev and lirc interfaces.  If lircd opens
+>>> the lirc interface raw data will be sent there, keystrokes come in via
+>>> uinput.  Otherwise keystrokes are send directly via evdev.  Problem
+>>> solved.
 >>
->> Admittedly, LIRC is way behind when it comes to plug'n'play.
+>> This will be kind of strange for lirc_zilog (aka lirc_pvr150).  It
+>> supports IR transmit on the PVR-150, HVR-1600, and HD-PVR.  I don't know
+>> if transmit is raw pulse timings, but I'm sure the unit provides codes
+>> on receive.  Occasionally blocks of "boot data" need to be programmed
+>> into the transmitter side.  I suspect lirc_zilog will likely need
+>> rework....
 > 
-> Should not be that hard to fixup.
+> Well, for IR *output* it doesn't make sense to disable evdev.  One more
+> reason which indicates it probaably is better to introduce a ioctl to
+> disable evdev reporting.  lircd will probably turn it off, especially
+> when sending data to uevent.  debug tools might not, likewise apps
+> sending IR.
 > 
-> When moving the keytable loading from kernel to userspace the kernel
-> drivers have to inform userspace anyway what kind of hardware the IR
-> device is, so udev can figure what keytable it should load.  A sysfs
-> attribute is the way to go here I think.
+>>>   so killing the in-kernel IR limits to make ir-kbd-i2c
+>>                    ^^^^^^^^^^^^^^^^^^^
+>>>        being on par with lirc_i2c might be more useful in this case.
+>>
+>> I didn't quite understand that.  Can you provide a little more info?
 > 
-> lirc drivers can do the same, and lircd can startup with a reasonable
-> (default) configuration.
-> 
-> Of course evdev and lirc subsytems/drivers should agree on which
-> attributes should be defined and how they are filled.
+> Such as throwing away the address part of rc5 codes ...
 
-Yes, a sysfs attribute seems appropriate in this case.
+This limit were already removed from the subsystem core by the patches
+I committed recently (still only at the devel tree - I should be adding
+those patches to my linux-next tree likely today). 
 
-This is the attributes that are currently available via sysfs:
-
-  looking at device '/class/input/input13/event5':
-    KERNEL=="event5"
-    SUBSYSTEM=="input"
-    SYSFS{dev}=="13:69"
-
-  looking at parent device '/class/input/input13':
-    ID=="input13"
-    BUS=="input"
-    DRIVER==""
-    SYSFS{name}=="em28xx IR _em28xx #0_"
-    SYSFS{phys}=="usb-0000:00:1d.7-8/input0"
-    SYSFS{uniq}==""
-
-For the currently used attributes, we have:
-
-The name attribute. If we do some effort to standardize it, it could be an option.
-However, on several drivers, this attribute is filled with something that is generic
-for the entire driver, and on several cases like the above, it adds a device number. 
-
-The phys attribute has to do only with the bus address. Btw, the lirc drivers need
-to follow the conventions here. We did a great effort at 2.6.30 or 2.6.31 to standardize
-the phys attribute, as some drivers were using different conventions for it.
-
-The uniq attribute is meant to be used as a serial number (no driver seems to use
-it currently, from my tests with git grep).
-
-By looking on other subsystems, ALSA defines two name attributes: a shortname and a longname.
-
-The current board naming schema at the V4L drivers are a long name. For example:
-"Pinnacle Dazzle DVC 90/100/101/107 / Kaiser Baas Video to DVD maker"
-
-The rationale is that they should be user-friendly.
-
-Maybe a similar concept could be used here: we can add a sort of shortname string
-that will uniquely describe a device and will have a rule to describe them unically.
-
-For example, the above device is a Hauppauge HVR950 usb stick, that is supported
-by em28xx driver.
-
-We may call it as "EM28xxHVR950-00" (the last 2 chars is to allow having board revisions, 
-as some devices may have more than one variant).
-
-Another alternative would be to create an integer SYSFS atribute and use some rule to
-associate the device number with the driver.
-
-The big issue here is: how do we document that "EM28xxHVR950-00" is the Hauppauge Grey IR that
-is shipped with their newer devices.
-
-A third approach would be to identify, instead, the Remote Controller directly. So, we would
-add a sysfs field like ir_type.
-
-There are two issues here:
-	1) What's the name for this IR? We'll need to invent names for the existing IR's, as
-those devices don't have a known brand name;
-	2) there are cases where the same device is provided with two or more different IR
-types. If we identify the board type instead of the IR type, userspace can better handle
-it, by providing a list of the possibilities.
-
----
-
-No matter how we map, we'll still need to document it somehow to userspace. What would be
-the better? A header file? A set of keymaps from the default IR's that will be added
-on some directory at the Linux tree? A Documentation/IR ?
-
-I'm for having the keymaps on some file at the kernel tree, maybe at Documentation/IR,
-but this is just my 2 cents. We need to think more about that.
-
-Comments?
-
-Anyway, we shouldn't postpone lirc drivers addition due to that. There are still lots of work
-to do before we'll be able to split the tables from the kernel drivers.
+The remaining issue is that we'll need to re-scan the IR tables for 
+every supported remote to be sure that we're getting the full RC5 code.
+It is not complex, but requires lots of work from people that actually have
+those IR's.
 
 Cheers,
 Mauro.
+
