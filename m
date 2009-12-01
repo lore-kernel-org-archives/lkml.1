@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZLAEPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbZLAERh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753415AbZLAEPv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 23:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZLAEPu
+	id S1753458AbZLAERh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 23:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZLAERg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 23:15:50 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51149 "EHLO
+	Mon, 30 Nov 2009 23:17:36 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51168 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752907AbZLAEPt (ORCPT
+	with ESMTP id S1753323AbZLAERe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 23:15:49 -0500
-Date: Mon, 30 Nov 2009 23:15:23 -0500
-Message-Id: <200912010415.nB14FNBV030439@agora.fsl.cs.sunysb.edu>
+	Mon, 30 Nov 2009 23:17:34 -0500
+Date: Mon, 30 Nov 2009 23:17:11 -0500
+Message-Id: <200912010417.nB14HBsi030481@agora.fsl.cs.sunysb.edu>
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: Valerie Aurora <vaurora@redhat.com>
 Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
@@ -23,221 +23,280 @@ Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
        "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
        Vladimir Dronnikov <dronnikov@gmail.com>,
        Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 31/41] fallthru: Support for fallthru entries in union mount lookup 
-In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:29 PDT."
-             <1256152779-10054-32-git-send-email-vaurora@redhat.com> 
+       linux-kernel@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 32/41] fallthru: ext2 fallthru support 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:30 PDT."
+             <1256152779-10054-33-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <1256152779-10054-32-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> A fallthru directory entry overrides the opaque flag for its parent
-> directory (for this directory entry only).  Before, we stopped
-> building the union stack when we encountered an opaque directory; now
-> we include directories below opaque directories in the union stack and
-> check for opacity during lookup.
+In message <1256152779-10054-33-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> Add support for fallthru directory entries to ext2.
 > 
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> XXX - Makes up inode number for fallthru entry
+> XXX - Might be better implemented as special symlinks
+> 
+> Cc: Theodore Tso <tytso@mit.edu>
+> Cc: linux-ext4@vger.kernel.org
 > Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
 > ---
->  fs/dcache.c |    7 +++----
->  fs/namei.c  |   59 +++++++++++++++++++++++++++++++++++++++++++++--------------
->  2 files changed, 48 insertions(+), 18 deletions(-)
+>  fs/ext2/dir.c           |   92 ++++++++++++++++++++++++++++++++++++++++++++--
+>  fs/ext2/ext2.h          |    1 +
+>  fs/ext2/namei.c         |   20 ++++++++++
+>  include/linux/ext2_fs.h |    1 +
+>  4 files changed, 110 insertions(+), 4 deletions(-)
 > 
-> diff --git a/fs/dcache.c b/fs/dcache.c
-> index d80a3bb..ca8a661 100644
-> --- a/fs/dcache.c
-> +++ b/fs/dcache.c
-> @@ -1086,7 +1086,7 @@ struct dentry *d_alloc_name(struct dentry *parent, const char *name)
->  static void __d_instantiate(struct dentry *dentry, struct inode *inode)
+> diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
+> index d4628c0..2665bc6 100644
+> --- a/fs/ext2/dir.c
+> +++ b/fs/ext2/dir.c
+> @@ -219,7 +219,8 @@ static inline int ext2_match (int len, const char * const name,
 >  {
->  	if (inode) {
-> -		dentry->d_flags &= ~DCACHE_WHITEOUT;
-> +		dentry->d_flags &= ~(DCACHE_WHITEOUT|DCACHE_FALLTHRU);
->  		list_add(&dentry->d_alias, &inode->i_dentry);
->  	}
->  	dentry->d_inode = inode;
-> @@ -1638,9 +1638,8 @@ void d_delete(struct dentry * dentry)
+>  	if (len != de->name_len)
+>  		return 0;
+> -	if (!de->inode && (de->file_type != EXT2_FT_WHT))
+> +	if (!de->inode && ((de->file_type != EXT2_FT_WHT) &&
+> +			   (de->file_type != EXT2_FT_FALLTHRU)))
+
+Extra set of () unnecessary here and in several places below.
+
+>  		return 0;
+>  	return !memcmp(name, de->name, len);
+>  }
+> @@ -256,6 +257,7 @@ static unsigned char ext2_filetype_table[EXT2_FT_MAX] = {
+>  	[EXT2_FT_SOCK]		= DT_SOCK,
+>  	[EXT2_FT_SYMLINK]	= DT_LNK,
+>  	[EXT2_FT_WHT]		= DT_WHT,
+> +	[EXT2_FT_FALLTHRU]	= DT_UNKNOWN,
+>  };
 >  
->  static void __d_rehash(struct dentry * entry, struct hlist_head *list)
->  {
-> -
-> - 	entry->d_flags &= ~DCACHE_UNHASHED;
-> - 	hlist_add_head_rcu(&entry->d_hash, list);
-> +	entry->d_flags &= ~DCACHE_UNHASHED;
-> +	hlist_add_head_rcu(&entry->d_hash, list);
+>  #define S_SHIFT 12
+> @@ -342,6 +344,24 @@ ext2_readdir (struct file * filp, void * dirent, filldir_t filldir)
+>  					ext2_put_page(page);
+>  					return 0;
+>  				}
+> +			} else if (de->file_type == EXT2_FT_FALLTHRU) {
+> +				int over;
+> +				unsigned char d_type = DT_UNKNOWN;
+> +
+> +				offset = (char *)de - kaddr;
+> +				/* XXX We don't know the inode number
+> +				 * of the directory entry in the
+> +				 * underlying file system.  Should
+> +				 * look it up, either on fallthru
+> +				 * creation at first readdir or now at
+> +				 * filldir time. */
+> +				over = filldir(dirent, de->name, de->name_len,
+> +					       (n<<PAGE_CACHE_SHIFT) | offset,
+> +					       123 /* Made up ino */, d_type);
+
+So, why 123 and not at least some other unused number below 10: at least
+that way it's in the ext2 "reserved" range should something go horribly
+wrong (like a power failure right shortly thereafter).
+
+BTW, this yet-unimplemented functionality should be mentioned under
+"limitations" or something in the current design doc.  I also think the
+design doc should list all short-term and long-term things that need to be
+implemented, and in what order.
+
+> +				if (over) {
+> +					ext2_put_page(page);
+> +					return 0;
+> +				}
+>  			}
+>  			filp->f_pos += ext2_rec_len_from_disk(de->rec_len);
+>  		}
+> @@ -463,6 +483,10 @@ ino_t ext2_inode_by_dentry(struct inode *dir, struct dentry *dentry)
+>  			spin_lock(&dentry->d_lock);
+>  			dentry->d_flags |= DCACHE_WHITEOUT;
+>  			spin_unlock(&dentry->d_lock);
+> +		} else if(!res && de->file_type == EXT2_FT_FALLTHRU) {
+> +			spin_lock(&dentry->d_lock);
+> +			dentry->d_flags |= DCACHE_FALLTHRU;
+> +			spin_unlock(&dentry->d_lock);
+>  		}
+>  		ext2_put_page(page);
+>  	}
+> @@ -532,6 +556,7 @@ static ext2_dirent * ext2_append_entry(struct dentry * dentry,
+>  				de->name_len = 0;
+>  				de->rec_len = ext2_rec_len_to_disk(chunk_size);
+>  				de->inode = 0;
+> +				de->file_type = 0;
+>  				goto got_it;
+>  			}
+>  			if (de->rec_len == 0) {
+> @@ -545,6 +570,7 @@ static ext2_dirent * ext2_append_entry(struct dentry * dentry,
+>  			name_len = EXT2_DIR_REC_LEN(de->name_len);
+>  			rec_len = ext2_rec_len_from_disk(de->rec_len);
+>  			if (!de->inode && (de->file_type != EXT2_FT_WHT) &&
+> +			    (de->file_type != EXT2_FT_FALLTHRU) &&
+>  			    (rec_len >= reclen))
+>  				goto got_it;
+>  			if (rec_len >= name_len + reclen)
+> @@ -587,7 +613,8 @@ int ext2_add_link (struct dentry *dentry, struct inode *inode)
+>  
+>  	err = -EEXIST;
+>  	if (ext2_match (namelen, name, de)) {
+> -		if (de->file_type == EXT2_FT_WHT)
+> +		if ((de->file_type == EXT2_FT_WHT) ||
+> +		    (de->file_type == EXT2_FT_FALLTHRU))
+>  			goto got_it;
+>  		goto out_unlock;
+>  	}
+> @@ -602,7 +629,8 @@ got_it:
+>  							&page, NULL);
+>  	if (err)
+>  		goto out_unlock;
+> -	if (de->inode || ((de->file_type == EXT2_FT_WHT) &&
+> +	if (de->inode || (((de->file_type == EXT2_FT_WHT) ||
+> +			   (de->file_type == EXT2_FT_FALLTHRU)) &&
+>  			  !ext2_match (namelen, name, de))) {
+>  		ext2_dirent *de1 = (ext2_dirent *) ((char *) de + name_len);
+>  		de1->rec_len = ext2_rec_len_to_disk(rec_len - name_len);
+> @@ -627,6 +655,60 @@ out_unlock:
 >  }
 >  
->  static void _d_rehash(struct dentry * entry)
-> diff --git a/fs/namei.c b/fs/namei.c
-> index 8d95eb1..61e94aa 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -416,6 +416,28 @@ static struct dentry *cache_lookup(struct dentry *parent, struct qstr *name,
->  	return dentry;
+>  /*
+> + * Create a fallthru entry.
+> + */
+> +int ext2_fallthru_entry (struct inode *dir, struct dentry *dentry)
+> +{
+> +	const char *name = dentry->d_name.name;
+> +	int namelen = dentry->d_name.len;
+> +	unsigned short rec_len, name_len;
+> +	ext2_dirent * de;
+> +	struct page *page;
+> +	loff_t pos;
+> +	int err;
+> +
+> +	de = ext2_append_entry(dentry, &page);
+> +	if (IS_ERR(de))
+> +		return PTR_ERR(de);
+> +
+> +	err = -EEXIST;
+> +	if (ext2_match (namelen, name, de))
+> +		goto out_unlock;
+> +
+> +	name_len = EXT2_DIR_REC_LEN(de->name_len);
+> +	rec_len = ext2_rec_len_from_disk(de->rec_len);
+> +
+> +	pos = page_offset(page) +
+> +		(char*)de - (char*)page_address(page);
+> +	err = __ext2_write_begin(NULL, page->mapping, pos, rec_len, 0,
+> +							&page, NULL);
+> +	if (err)
+> +		goto out_unlock;
+> +	if (de->inode || (de->file_type == EXT2_FT_WHT) ||
+> +	    (de->file_type == EXT2_FT_FALLTHRU)) {
+> +		ext2_dirent *de1 = (ext2_dirent *) ((char *) de + name_len);
+> +		de1->rec_len = ext2_rec_len_to_disk(rec_len - name_len);
+> +		de->rec_len = ext2_rec_len_to_disk(name_len);
+> +		de = de1;
+> +	}
+> +	de->name_len = namelen;
+> +	memcpy(de->name, name, namelen);
+> +	de->inode = 0;
+> +	de->file_type = EXT2_FT_FALLTHRU;
+> +	err = ext2_commit_chunk(page, pos, rec_len);
+> +	dir->i_mtime = dir->i_ctime = CURRENT_TIME_SEC;
+> +	EXT2_I(dir)->i_flags &= ~EXT2_BTREE_FL;
+> +	mark_inode_dirty(dir);
+> +	/* OFFSET_CACHE */
+> +out_put:
+> +	ext2_put_page(page);
+> +	return err;
+> +out_unlock:
+> +	unlock_page(page);
+> +	goto out_put;
+> +}
+> +
+> +/*
+>   * ext2_delete_entry deletes a directory entry by merging it with the
+>   * previous entry. Page is up-to-date. Releases the page.
+>   */
+> @@ -711,7 +793,9 @@ int ext2_whiteout_entry (struct inode * dir, struct dentry * dentry,
+>  	 */
+>  	if (ext2_match (namelen, name, de))
+>  		de->inode = 0;
+> -	if (de->inode || (de->file_type == EXT2_FT_WHT)) {
+> +	if (de->inode || (((de->file_type == EXT2_FT_WHT) ||
+> +			   (de->file_type == EXT2_FT_FALLTHRU)) &&
+> +			  !ext2_match (namelen, name, de))) {
+>  		ext2_dirent *de1 = (ext2_dirent *) ((char *) de + name_len);
+>  		de1->rec_len = ext2_rec_len_to_disk(rec_len - name_len);
+>  		de->rec_len = ext2_rec_len_to_disk(name_len);
+> diff --git a/fs/ext2/ext2.h b/fs/ext2/ext2.h
+> index a7f057f..328fc1c 100644
+> --- a/fs/ext2/ext2.h
+> +++ b/fs/ext2/ext2.h
+> @@ -108,6 +108,7 @@ extern struct ext2_dir_entry_2 * ext2_find_entry (struct inode *,struct qstr *,
+>  extern int ext2_delete_entry (struct ext2_dir_entry_2 *, struct page *);
+>  extern int ext2_whiteout_entry (struct inode *, struct dentry *,
+>  				struct ext2_dir_entry_2 *, struct page *);
+> +extern int ext2_fallthru_entry (struct inode *, struct dentry *);
+>  extern int ext2_empty_dir (struct inode *);
+>  extern struct ext2_dir_entry_2 * ext2_dotdot (struct inode *, struct page **);
+>  extern void ext2_set_link(struct inode *, struct ext2_dir_entry_2 *, struct page *, struct inode *, int);
+> diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
+> index 9c4eef2..2ac44f1 100644
+> --- a/fs/ext2/namei.c
+> +++ b/fs/ext2/namei.c
+> @@ -333,6 +333,7 @@ static int ext2_whiteout(struct inode *dir, struct dentry *dentry,
+>  		goto out;
+>  
+>  	spin_lock(&new_dentry->d_lock);
+> +	new_dentry->d_flags &= ~DCACHE_FALLTHRU;
+>  	new_dentry->d_flags |= DCACHE_WHITEOUT;
+>  	spin_unlock(&new_dentry->d_lock);
+>  	d_add(new_dentry, NULL);
+> @@ -351,6 +352,24 @@ out:
+>  	return err;
 >  }
 >  
 > +/*
-> + * Theory of operation for opaque, whiteout, and fallthru:
-> + *
-> + * whiteout: Unconditionally stop lookup here - ENOENT
-> + *
-> + * opaque: Don't lookup in directories lower in the union stack
-> + *
-> + * fallthru: While looking up an entry, ignore the opaque flag for the
-> + * current directory only.
-> + *
-> + * A union stack is a linked list of directory dentries which appear
-> + * in the same place in the namespace.  When constructing the union
-> + * stack, we include directories below opaque directories so that we
-> + * can properly handle fallthrus.  All non-fallthru lookups have to
-> + * check for the opaque flag on the parent directory and obey it.
-> + *
-> + * In general, the code pattern is to lookup the the topmost entry
-> + * first (either the first visible non-negative dentry or a negative
-> + * dentry in the topmost layer of the union), then build the union
-> + * stack for the newly looked-up entry (if it is a directory).
+> + * Create a fallthru entry.
 > + */
-
-Excellent comment; even better said and clearer that the UM design doc.
-It's almost a pity such excellent description is buried in the middle of
-namei.c.
-
+> +static int ext2_fallthru (struct inode *dir, struct dentry *dentry)
+> +{
+> +	int err;
 > +
->  /**
->   * __cache_lookup_topmost - lookup the topmost (non-)negative dentry
->   *
-> @@ -445,6 +467,10 @@ static int __cache_lookup_topmost(struct nameidata *nd, struct qstr *name,
->  	if (!dentry || (dentry->d_inode || d_is_whiteout(dentry)))
->  		return !dentry;
->  
-> +	/* Keep going through opaque directories if we found a fallthru */
-> +	if (IS_OPAQUE(nd->path.dentry->d_inode) && !d_is_fallthru(dentry))
-> +		return !dentry;
+> +	err = ext2_fallthru_entry(dir, dentry);
+> +	if (err)
+> +		return err;
 > +
->  	/* look for the first non-negative or whiteout dentry */
->  
->  	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
-> @@ -470,6 +496,10 @@ static int __cache_lookup_topmost(struct nameidata *nd, struct qstr *name,
->  		if (dentry->d_inode || d_is_whiteout(dentry))
->  			goto out_dput;
->  
-> +		/* Stop the lookup on opaque parent and non-fallthru child */
-> +		if (IS_OPAQUE(nd->path.dentry->d_inode) && !d_is_fallthru(dentry))
-
-There's a lot of repetition of this condition:
-
-	IS_OPAQUE(dentry->d_inode) && !d_is_fallthru(dentry)
-
-in this patch.  Perhaps this should be macro'ized?
-
-#define CANT_GO_ON(d)	(IS_OPAQUE((d)->d_inode) && !d_is_fallthru((d))) // :-)
-
-> +			goto out_dput;
+> +	d_instantiate(dentry, NULL);
+> +	spin_lock(&dentry->d_lock);
+> +	dentry->d_flags |= DCACHE_FALLTHRU;
+> +	spin_unlock(&dentry->d_lock);
+> +	return 0;
+> +}
 > +
->  		dput(dentry);
->  	}
->  
-> @@ -528,9 +558,6 @@ static int __cache_lookup_build_union(struct nameidata *nd, struct qstr *name,
->  			path_put(&last);
->  		last.dentry = dentry;
->  		last.mnt = mntget(nd->path.mnt);
-> -
-> -		if (IS_OPAQUE(last.dentry->d_inode))
-> -			break;
->  	}
->  
->  	if (last.dentry != path->dentry)
-> @@ -570,8 +597,7 @@ static int cache_lookup_union(struct nameidata *nd, struct qstr *name,
->  
->  		/* only directories can be part of a union stack */
->  		if (!path->dentry->d_inode ||
-> -		    !S_ISDIR(path->dentry->d_inode->i_mode) ||
-> -		    IS_OPAQUE(path->dentry->d_inode))
-> +		    !S_ISDIR(path->dentry->d_inode->i_mode))
->  			goto out;
->  
->  		/* Build the union stack for this part */
-> @@ -738,6 +764,9 @@ static int __real_lookup_topmost(struct nameidata *nd, struct qstr *name,
->  	if (path->dentry->d_inode || d_is_whiteout(path->dentry))
->  		return 0;
->  
-> +	if (IS_OPAQUE(nd->path.dentry->d_inode) && !d_is_fallthru(path->dentry))
-> +		return 0;
-> +
->  	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
->  		name->hash = full_name_hash(name->name, name->len);
->  		if (nd->path.dentry->d_op && nd->path.dentry->d_op->d_hash) {
-> @@ -758,6 +787,9 @@ static int __real_lookup_topmost(struct nameidata *nd, struct qstr *name,
->  			goto out;
->  		}
->  
-> +		if (IS_OPAQUE(nd->path.dentry->d_inode) && !d_is_fallthru(next.dentry))
-> +			goto out;
-> +
->  		dput(next.dentry);
->  	}
->  out:
-> @@ -817,9 +849,6 @@ static int __real_lookup_build_union(struct nameidata *nd, struct qstr *name,
->  			path_put(&last);
->  		last.dentry = next.dentry;
->  		last.mnt = mntget(next.mnt);
-> -
-> -		if (IS_OPAQUE(last.dentry->d_inode))
-> -			break;
->  	}
->  
->  	if (last.dentry != path->dentry)
-> @@ -841,8 +870,7 @@ static int real_lookup_union(struct nameidata *nd, struct qstr *name,
->  
->  	/* only directories can be part of a union stack */
->  	if (!path->dentry->d_inode ||
-> -	    !S_ISDIR(path->dentry->d_inode->i_mode) ||
-> -	    IS_OPAQUE(path->dentry->d_inode))
-> +	    !S_ISDIR(path->dentry->d_inode->i_mode))
->  		goto out;
->  
->  	/* Build the union stack for this part */
-> @@ -1128,7 +1156,7 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
+>  static int ext2_rename (struct inode * old_dir, struct dentry * old_dentry,
+>  	struct inode * new_dir,	struct dentry * new_dentry )
 >  {
->  	int err;
+> @@ -451,6 +470,7 @@ const struct inode_operations ext2_dir_inode_operations = {
+>  	.rmdir		= ext2_rmdir,
+>  	.mknod		= ext2_mknod,
+>  	.whiteout	= ext2_whiteout,
+> +	.fallthru	= ext2_fallthru,
+>  	.rename		= ext2_rename,
+>  #ifdef CONFIG_EXT2_FS_XATTR
+>  	.setxattr	= generic_setxattr,
+> diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
+> index bd10826..f6b68ec 100644
+> --- a/include/linux/ext2_fs.h
+> +++ b/include/linux/ext2_fs.h
+> @@ -577,6 +577,7 @@ enum {
+>  	EXT2_FT_SOCK,
+>  	EXT2_FT_SYMLINK,
+>  	EXT2_FT_WHT,
+> +	EXT2_FT_FALLTHRU,
+>  	EXT2_FT_MAX
+>  };
 >  
-> -	if (IS_MNT_UNION(nd->path.mnt) && !IS_OPAQUE(nd->path.dentry->d_inode))
-> +	if (IS_MNT_UNION(nd->path.mnt))
->  		goto need_union_lookup;
->  
->  	path->dentry = __d_lookup(nd->path.dentry, name);
-> @@ -1679,6 +1707,9 @@ static int __hash_lookup_topmost(struct nameidata *nd, struct qstr *name,
->  	if (path->dentry->d_inode || d_is_whiteout(path->dentry))
->  		return 0;
->  
-> +	if (IS_OPAQUE(nd->path.dentry->d_inode) && !d_is_fallthru(path->dentry))
-> +		return 0;
-> +
->  	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
->  		name->hash = full_name_hash(name->name, name->len);
->  		if (nd->path.dentry->d_op && nd->path.dentry->d_op->d_hash) {
-> @@ -1701,6 +1732,9 @@ static int __hash_lookup_topmost(struct nameidata *nd, struct qstr *name,
->  			goto out;
->  		}
->  
-> +		if (IS_OPAQUE(nd->path.dentry->d_inode) && !d_is_fallthru(next.dentry))
-> +			goto out;
-> +
->  		dput(next.dentry);
->  	}
->  out:
-> @@ -1755,9 +1789,6 @@ static int __hash_lookup_build_union(struct nameidata *nd, struct qstr *name,
->  			path_put(&last);
->  		last.dentry = next.dentry;
->  		last.mnt = mntget(next.mnt);
-> -
-> -		if (IS_OPAQUE(last.dentry->d_inode))
-> -			break;
->  	}
->  
->  	if (last.dentry != path->dentry)
 > -- 
 > 1.6.3.3
 > 
