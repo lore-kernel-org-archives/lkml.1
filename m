@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbZLAEnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZLAEup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbZLAEnd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 23:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZLAEnc
+	id S1753351AbZLAEup (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 23:50:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZLAEun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 23:43:32 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57499 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753100AbZLAEnb (ORCPT
+	Mon, 30 Nov 2009 23:50:43 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:60868 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751503AbZLAEum (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 23:43:31 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrea Arcangeli <aarcange@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, vedran.furac@gmail.com
-In-Reply-To: <alpine.DEB.2.00.0911301502160.12038@chino.kir.corp.google.com>
-References: <20091127182607.GA30235@random.random> <alpine.DEB.2.00.0911301502160.12038@chino.kir.corp.google.com>
-Message-Id: <20091201131509.5C19.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  1 Dec 2009 13:43:34 +0900 (JST)
+	Mon, 30 Nov 2009 23:50:42 -0500
+Date: Mon, 30 Nov 2009 23:50:13 -0500
+Message-Id: <200912010450.nB14oDPc030851@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 40/41] union-mount: Make truncate work in all its glorious UNIX variations 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:38 PDT."
+             <1256152779-10054-41-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 27 Nov 2009, Andrea Arcangeli wrote:
+In message <1256152779-10054-41-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> Implement truncate(), ftruncate(), and open(O_TRUNC) for union mounts.
 > 
-> > Ok I can see the fact by being dynamic and less predictable worries
-> > you. The "second to last" tasks especially are going to be less
-> > predictable, but the memory hog would normally end up accounting for
-> > most of the memory and this should increase the badness delta between
-> > the offending tasks (or tasks) and the innocent stuff, so making it
-> > more reliable. The innocent stuff should be more and more paged out
-> > from ram. So I tend to think it'll be much less likely to kill an
-> > innocent task this way (as demonstrated in practice by your
-> > measurement too), but it's true there's no guarantee it'll always do
-> > the right thing, because it's a heuristic anyway, but even total_vm
-> > doesn't provide guarantee unless your workload is stationary and your
-> > badness scores are fixed and no virtual memory is ever allocated by
-> > any task in the system and no new task are spawned.
-> > 
+> This moves the union_copyup() in do_filp_open() down below may_open()
+> - this way you don't copy up a file you don't even have permission to
+> open.
 > 
-> The purpose of /proc/pid/oom_adj is not always to polarize the heuristic 
-> for the task it represents, it allows userspace to define when a task is 
-> rogue.  Working with total_vm as a baseline, it is simple to use the 
-> interface to tune the heuristic to prefer a certain task over another when 
-> its memory consumption goes beyond what is expected.  With this interface, 
-> I can easily define when an application should be oom killed because it is 
-> using far more memory than expected.  I can also disable oom killing 
-> completely for it, if necessary.  Unless you have a consistent baseline 
-> for all tasks, the adjustment wouldn't contextually make any sense.  Using 
-> rss does not allow users to statically define when a task is rogue and is 
-> dependent on the current state of memory at the time of oom.
-> 
-> I would support removing most of the other heuristics other than the 
-> baseline and the nodes intersection with mems_allowed to prefer tasks in 
-> the same cpuset, though, to make it easier to understand and tune.
+> may_open() now takes a nameidata * because it may have to do a
+> union_copyup() internally if O_TRUNC is specified.  It's a trivial
+> change, all callers were just doing "may_open(&nd.path, ...)" anyway.
+> It kinda sucks, but may_open() auto-magically doing a truncate also
+> sucks (may open? may truncate, too!).
 
-I feel you talked about oom_adj doesn't fit your use case. probably you need
-/proc/{pid}/oom_priority new knob. oom adjustment doesn't fit you.
-you need job severity based oom killing order. severity doesn't depend on any
-hueristic.
-server administrator should know job severity on his system.
+Hmmm, perhaps may_open needs to be renamed then? (may_rename_and_truncate?)
 
-OOM heuristic should mainly consider desktop usage. because desktop user
-doesn't change oom knob at all. and they doesn't know what deamon is important.
-any userful heuristics have some dynamically aspect. we can't avoid it.
+> XXX - Only copy up the bytes that won't be truncated.
+> XXX - Re-organize code. may_open() especially blah.
+> XXX - truncate() implemented as in-kernel file open and ftruncate()
+> XXX - Split up into smaller pieces
+[...]
 
-thought?
-
-
+Erez.
