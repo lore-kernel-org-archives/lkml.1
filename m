@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZLARrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZLARrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbZLARrg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbZLARrf
+	id S1754490AbZLARrR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbZLARrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:47:35 -0500
-Received: from kroah.org ([198.145.64.141]:58557 "EHLO coco.kroah.org"
+	Tue, 1 Dec 2009 12:47:14 -0500
+Received: from kroah.org ([198.145.64.141]:58558 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754411AbZLARrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754315AbZLARrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Dec 2009 12:47:11 -0500
-Date: Tue, 1 Dec 2009 09:43:41 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] TTY fixes for 2.6.32-git
-Message-ID: <20091201174341.GB31972@kroah.com>
+Date: Tue, 1 Dec 2009 09:43:47 -0800
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
+Subject: [GIT PATCH] STAGING fixes for 2.6.32-git
+Message-ID: <20091201174347.GC31972@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,37 +23,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are 3 tty bugfixs for your kernel tree.  One fixes a regression
-from 2.6.30, one fixes a build error, and the last one adds a new device
-id.
+Here are some staging fixes for your 2.6.32-git tree.
+
+There's 2 hyper-v driver bugfixes, and 2 documentation updates (to the
+TODO file, and to comments in the hyper-v driver.)
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/tty-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
 
-Both of these patches have been in the -next and -mm trees for a while.
+All of these patches have been in the linux-next and mm trees for a
+while.
 
-Both patches will be sent to the linux-kernel mailing list, if anyone
-wants to see it.
+The patches will be sent as a follow-on to this message to the
+driver-devel list for people to see.
 
 thanks,
 
 greg k-h
 
-------------
+--------------
 
- drivers/char/tty_port.c       |    7 +++++--
- drivers/serial/bcm63xx_uart.c |    4 ++--
- drivers/serial/of_serial.c    |    1 +
- 3 files changed, 8 insertions(+), 4 deletions(-)
+ drivers/staging/hv/BlkVsc.c      |    1 +
+ drivers/staging/hv/Channel.c     |   16 ++++------------
+ drivers/staging/hv/ChannelMgmt.c |    2 +-
+ drivers/staging/hv/NetVsc.c      |    1 +
+ drivers/staging/hv/NetVsc.h      |    1 +
+ drivers/staging/hv/StorVsc.c     |   10 +++++-----
+ drivers/staging/hv/blkvsc_drv.c  |    1 +
+ drivers/staging/hv/netvsc_drv.c  |    1 +
+ drivers/staging/rtl8187se/TODO   |    3 +--
+ drivers/staging/rtl8192su/TODO   |    3 +--
+ drivers/staging/vt6655/TODO      |    5 ++---
+ drivers/staging/vt6656/TODO      |    5 ++---
+ 12 files changed, 21 insertions(+), 28 deletions(-)
 
 ---------------
 
-Alan Cox (1):
-      tty_port: handle the nonblocking open of a dead port corner case
+Bartlomiej Zolnierkiewicz (1):
+      Staging: update TODO files
 
-Maxime Bizon (1):
-      bcm63xx_uart: Fix serial driver compile breakage.
+Dave Jones (1):
+      Staging: hv: Fix argument order in incorrect memset invocations in hyperv driver.
 
-Michal Simek (1):
-      tty/of_serial: add missing ns16550a id
+Haiyang Zhang (2):
+      Staging: hv: Fix vmbus event handler bug
+      Staging: hv: Fix some missing author names
 
