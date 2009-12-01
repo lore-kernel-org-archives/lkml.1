@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZLAPI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZLAPKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbZLAPI4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 10:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZLAPIz
+	id S1753363AbZLAPKz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 10:10:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZLAPKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 10:08:55 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:64185 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbZLAPIy (ORCPT
+	Tue, 1 Dec 2009 10:10:54 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47154 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbZLAPKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 10:08:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=WOaSNXE1O0gW8NueOiZqwYowR+y9OBIhbkrkdyWp3s9E+2Mh09y3CqnxoVGm4i3JHn
-         JMaO42JYz6ZjJGQBfE6J6CPFsb+uTj35WEREJij7p7tGqdISr19SXpuRZfcOw3XwlSt9
-         Jzz6fgcepxTFcWUeiDyA+o7i8ORDipMicRZY4=
+	Tue, 1 Dec 2009 10:10:53 -0500
+Date: Tue, 1 Dec 2009 16:10:52 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>
+Cc: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
+Subject: warn_on in mutex_lock_nested after hciattach
+Message-ID: <20091201151052.GB2262@elf.ucw.cz>
 MIME-Version: 1.0
-Date: Tue, 1 Dec 2009 10:08:59 -0500
-Message-ID: <9e4733910912010708u1064e2c6mbc08a01293c3e7fd@mail.gmail.com>
-Subject: [RFC v2] Another approach to IR
-From: Jon Smirl <jonsmirl@gmail.com>
-To: awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
-       mchehab@redhat.com, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While reading all of these IR threads another way of handling IR
-occurred to me that pretty much eliminates the need for LIRC and
-configuration files in default cases. The best way to make everything
-"just work" is to eliminate it.
+Hi!
 
-The first observation is that the IR profile of various devices are
-well known. Most devices profiles are in the published One-for-All
-database. These device profiles consist of vendor/device/command
-triplets. There is one triplet for each command like play, pause, 1,
-2, 3, power, etc.
+I get this, repeatably.
 
-The second observation is that universal remotes know how to generate
-commands for all of the common devices.
+								Pavel
 
-Let's define evdev messages for IR than contain vendor/device/command
-triplets. I already posted code for doing that in my original patch
-set. These messages are generated from in-kernel code.
+root@amd:~# setserial /dev/ttyBT baud_base 921600
+root@amd:~# hciattach -s 921600 /dev/ttyS0 bcsp
+Device setup complete
+root@amd:~# ------------[ cut here ]------------
+WARNING: at kernel/mutex.c:207 mutex_lock_nested+0x219/0x230()
+Hardware name: 17097HU
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.32-rc8-00165-g2471433-dirty #92
+Call Trace:
+ [<c07824d9>] ? printk+0x18/0x1a
+ [<c07843c9>] ? mutex_lock_nested+0x219/0x230
+ [<c023131c>] warn_slowpath_common+0x6c/0xc0
+ [<c07843c9>] ? mutex_lock_nested+0x219/0x230
+ [<c0231385>] warn_slowpath_null+0x15/0x20
+ [<c07843c9>] mutex_lock_nested+0x219/0x230
+ [<c03e1afb>] ? tty_unthrottle+0x1b/0x50
+ [<c0594bf2>] ? hci_uart_tty_receive+0x62/0x70
+ [<c03e1afb>] tty_unthrottle+0x1b/0x50
+ [<c0594bf9>] hci_uart_tty_receive+0x69/0x70
+ [<c03e380b>] flush_to_ldisc+0x15b/0x190
+ [<c03e38ab>] tty_flip_buffer_push+0x6b/0x80
+ [<c0443587>] serial8250_handle_port+0x197/0x230
+ [<c078545a>] ? _spin_lock+0x3a/0x40
+ [<c044368e>] serial8250_interrupt+0x6e/0xf0
+ [<c026801e>] handle_IRQ_event+0x2e/0xc0
+ [<c0269ac4>] handle_fasteoi_irq+0x64/0xd0
+ [<c02053fa>] handle_irq+0x1a/0x30
+ [<c0204bb6>] do_IRQ+0x46/0xc0
+ [<c024abb2>] ? sched_clock_local+0xd2/0x170
+ [<c02034a9>] common_interrupt+0x29/0x30
+ [<c024007b>] ? sys_setpgid+0xfb/0x180
+ [<c03cf298>] ? acpi_idle_enter_simple+0x132/0x15d
+ [<c03cef8b>] acpi_idle_enter_bm+0xc3/0x29e
+ [<c05a360d>] cpuidle_idle_call+0x7d/0xc0
+ [<c0201efd>] cpu_idle+0x4d/0x80
+ [<c075e943>] rest_init+0x53/0x60
+ [<c0a5981a>] start_kernel+0x272/0x2ad
+ [<c0a5936e>] ? unknown_bootoption+0x0/0x1e9
+ [<c0a5906b>] i386_start_kernel+0x6b/0x6d
+---[ end trace bab0b3b26c16fcf5 ]---
 
-Now add a small amount of code to MythTV, etc to act on these evdev
-messages. Default MythTV, etc to respond to the IR commands for a
-common DVR device. Program your universal remote to send the commands
-for this device. You're done. Everything will "just work" - no LIRC,
-no irrecord, no config files, no command mapping, etc.
-
-Of course there are details involved in making this work. MythTV will
-have to have a config option to allow it to emulate several different
-DVR devices so that you can pick one that you don't own. It should
-also have choices for emulating the common devices defined for the
-remotes included with various Linux video board like the Hauppauge
-remote.
-
-For apps that haven't been modified you will have to run a daemon
-which will capture vendor/device/command evdev events and convert them
-into keystroke commands than work the menus. You'll need a config file
-for this and have to write scripts. Instead I'd just go modify the app
-the respond to the IR events, it is easy to do.
-
-Long run, we define a MythTV IR profile, mplayer profile, etc and get
-these into the IR database for universal remotes. Now MythTV can stop
-emulating another vendor's device.
-
-For the default MythTV case no external support will need to be
-installed if the protocol decode engines are in the kernel. The raw
-data will come in, run through the engines, and pop out as evdev
-messages with a vendor/device/command triplet. Devices that decode in
-hardware will just send vendor/device/command triplets.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
