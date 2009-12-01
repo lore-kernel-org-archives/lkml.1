@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbZLAOut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbZLAOvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753292AbZLAOut (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 09:50:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZLAOus
+	id S1753244AbZLAOvu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 09:51:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZLAOvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 09:50:48 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37792 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751898AbZLAOur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 09:50:47 -0500
-Message-ID: <4B152D22.9070001@kernel.org>
-Date: Tue, 01 Dec 2009 23:50:10 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Tue, 1 Dec 2009 09:51:49 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:34057 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbZLAOvt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 09:51:49 -0500
+Date: Tue, 1 Dec 2009 14:53:05 +0000
+From: Jamie Iles <jamie@jamieiles.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jamie Iles <jamie@jamieiles.com>,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: Perf events/ARM
+Message-ID: <20091201145305.GC4061@wear.picochip.com>
+References: <20091201120439.GB4061@wear.picochip.com> <20091201143105.GB1183@elte.hu> <1259678444.1697.487.camel@laptop>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: michal.simek@petalogix.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: problems in linux-next (Was: Re: linux-next: Tree for December
- 1)
-References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>	<4B14D6E2.2040704@petalogix.com> <20091201210343.f0a1d353.sfr@canb.auug.org.au>
-In-Reply-To: <20091201210343.f0a1d353.sfr@canb.auug.org.au>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259678444.1697.487.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Pete, Ingo,
 
-On 12/01/2009 07:03 PM, Stephen Rothwell wrote:
->> WARNING: at include/linux/percpu.h:157 __create_workqueue_key+0x1c0/0x1d0()
->> Modules linked in:
+On Tue, Dec 01, 2009 at 03:40:44PM +0100, Peter Zijlstra wrote:
+> Things like wakeups and ->event_limit might get delayed.
+> 
+> Delayed wakeups can be mitigated by larger buffers, delayed disable on
+> ->event_limit is not something you can fix up.
+> 
+> Does your PMU generate regular interrupts or actual NMIs? If its normal
+> interrupts you can simply call perf_event_do_pending() at the
+> pmu-interrupt tail.
+The PMU generates regular interrupts and in the case of the platform I'm
+working on these go to a regular vectored interrupt controller all sharing the
+same vector. So I'll add a call to perf_event_do_pending() at the tail of the
+PMU IRQ and leave set_perf_event_pending() as a nop.
 
-Argh... The warning is about requested alignment larger than
-SMP_CACHE_BYTES.  93fba1c02ec10870a9d41085ef036b6a44cb0234 aligns cwqs
-to 8 bytes and later one will push it to 128 bytes so that color codes
-for flushes can be put there too.  As the number of cwqs will be
-significantly reduced and cwq is supposed to be aligned to cacheline
-anyway, 128 byte alignment in itself isn't too bad and percpu
-allocator can handle it just fine.
+Thanks,
 
-The problem is that on UP configurations.  Percpu memory allocator
-becomes a simple wrapper around kmalloc and there's no way to specify
-larger alignment when requesting memory from kmalloc.
-
-It would be best if there's a clean way to allocate memory with
-alignment larger than SMP_CACHE_BYTES.  If not, I think I'll add a
-separate cache for cwqs on UP so that the alignment requirement can be
-met.  Is there any way to get better aligned memory without creating a
-separate cache or allocating larger memory and aligning by chopping
-off?
-
-Thanks.
-
--- 
-tejun
+Jamie
