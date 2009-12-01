@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZLAR1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZLAR1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbZLAR1E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:27:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZLAR1D
+	id S1754043AbZLAR1Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:27:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbZLAR1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 1 Dec 2009 12:27:14 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:60623 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752553AbZLAR1D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Dec 2009 12:27:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:20609 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752553AbZLAR1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:27:01 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0912010821170.2872@localhost.localdomain>
-References: <alpine.LFD.2.00.0912010821170.2872@localhost.localdomain> <6941.1259681771@redhat.com> <20091201161455.GB24897@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, steved@redhat.com, jens.axboe@oracle.com,
-       linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
-       linux-fsdevel@vger.kernel.org, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
-Subject: Re: [PATCH] SLOW_WORK: Move slow_work's proc file to debugfs
-Date: Tue, 01 Dec 2009 17:26:22 +0000
-Message-ID: <9330.1259688382@redhat.com>
+Date: Tue, 1 Dec 2009 11:26:37 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Mel Gorman <mel@csn.ul.ie>
+cc: David John <davidjon@xenontk.org>, linux-kernel@vger.kernel.org,
+       Jonathan Miles <jon@cybus.co.uk>, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: OOM kernel behaviour
+In-Reply-To: <4B154E10.7050300@xenontk.org>
+Message-ID: <alpine.DEB.2.00.0912011124490.10426@router.home>
+References: <4B1402FC.80307@cybus.co.uk> <4B1537CA.7020107@xenontk.org> <alpine.DEB.2.00.0912011007360.8841@router.home> <4B154E10.7050300@xenontk.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+Content-ID: <alpine.DEB.2.00.0912011124492.10426@router.home>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Tue, 1 Dec 2009, David John wrote:
 
-> Btw David, for things like this, it's _really_ nice to use git rename 
-> detection. The diffstat (w/ summary) with rename detection looks like 
-> this:
+> Here are three logs from three days. Log3.txt is today's log and the OOM
+> killer murdered Thunderbird as I was attempting to write this message.
+> The kernel config is also attached.
 
-Yeah...  I upgraded to F12 and now StGIT is fighting Exim when I try to mail
-patches, so I'm having to do my patches my hand until I fix it:-(
+Hmmm... This is all caused by the HIGHMEM zone freecount going beyond min
+which then triggers reclaim which for some reason fails (should not there
+is sufficient material there to reclaim). There is enough memory in the
+NORMAL zone. Wonder if something broke in 2.6.31 in reclaim? Mel?
 
-David
