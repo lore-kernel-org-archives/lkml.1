@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbZLAIYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbZLAIYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753578AbZLAIYH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 03:24:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbZLAIYH
+	id S1753676AbZLAIYR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 03:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZLAIYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 03:24:07 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60435 "EHLO song.cn.fujitsu.com"
+	Tue, 1 Dec 2009 03:24:15 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49428 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752913AbZLAIYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 03:24:05 -0500
-Message-ID: <4B14D282.7050709@cn.fujitsu.com>
-Date: Tue, 01 Dec 2009 16:23:30 +0800
+	id S1752784AbZLAIYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 03:24:11 -0500
+Message-ID: <4B14D288.7030001@cn.fujitsu.com>
+Date: Tue, 01 Dec 2009 16:23:36 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -18,8 +18,7 @@ To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Jason Baron <jbaron@redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/7] trace_syscalls: set event_enter_##sname->data to its
- metadata
+Subject: [PATCH 3/7] trace_syscalls: remove enter_id exit_id
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,161 +26,150 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Set event_enter_##sname->data to its metadata,
-it makes codes simpler.
+use ->enter_event->id instead of ->enter_id
+use ->exit_event->id instead of ->exit_id
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 2f7c539..d3c9fd0 100644
+index d3c9fd0..b9af875 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -153,6 +153,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
- #define __SC_STR_TDECL6(t, a, ...)	#t, __SC_STR_TDECL5(__VA_ARGS__)
- 
- #define SYSCALL_TRACE_ENTER_EVENT(sname)				\
-+	static const struct syscall_metadata __syscall_meta_##sname;	\
- 	static struct ftrace_event_call event_enter_##sname;		\
- 	struct trace_event enter_syscall_print_##sname = {		\
- 		.trace                  = print_syscall_enter,		\
-@@ -184,11 +185,12 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
- 		.define_fields		= syscall_enter_define_fields,	\
- 		.regfunc		= reg_event_syscall_enter,	\
- 		.unregfunc		= unreg_event_syscall_enter,	\
--		.data			= "sys"#sname,			\
-+		.data			= (void *)&__syscall_meta_##sname,\
- 		TRACE_SYS_ENTER_PROFILE_INIT(sname)			\
- 	}
- 
- #define SYSCALL_TRACE_EXIT_EVENT(sname)					\
-+	static const struct syscall_metadata __syscall_meta_##sname;	\
- 	static struct ftrace_event_call event_exit_##sname;		\
- 	struct trace_event exit_syscall_print_##sname = {		\
- 		.trace                  = print_syscall_exit,		\
-@@ -220,7 +222,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
- 		.define_fields		= syscall_exit_define_fields,	\
- 		.regfunc		= reg_event_syscall_exit,	\
- 		.unregfunc		= unreg_event_syscall_exit,	\
--		.data			= "sys"#sname,			\
-+		.data			= (void *)&__syscall_meta_##sname,\
- 		TRACE_SYS_EXIT_PROFILE_INIT(sname)			\
- 	}
- 
+@@ -168,7 +168,6 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
+ 		if (!id)						\
+ 			return -ENODEV;					\
+ 		event_enter_##sname.id = id;				\
+-		set_syscall_enter_id(num, id);				\
+ 		INIT_LIST_HEAD(&event_enter_##sname.fields);		\
+ 		return 0;						\
+ 	}								\
+@@ -205,7 +204,6 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
+ 		if (!id)						\
+ 			return -ENODEV;					\
+ 		event_exit_##sname.id = id;				\
+-		set_syscall_exit_id(num, id);				\
+ 		INIT_LIST_HEAD(&event_exit_##sname.fields);		\
+ 		return 0;						\
+ 	}								\
 diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-index 5f8827c..c5265c8 100644
+index c5265c8..ca09561 100644
 --- a/include/trace/syscall.h
 +++ b/include/trace/syscall.h
-@@ -34,7 +34,7 @@ struct syscall_metadata {
+@@ -15,8 +15,6 @@
+  * @nb_args: number of parameters it takes
+  * @types: list of types as strings
+  * @args: list of args as strings (args[i] matches types[i])
+- * @enter_id: associated ftrace enter event id
+- * @exit_id: associated ftrace exit event id
+  * @enter_event: associated syscall_enter trace event
+  * @exit_event: associated syscall_exit trace event
+  */
+@@ -25,8 +23,6 @@ struct syscall_metadata {
+ 	int		nb_args;
+ 	const char	**types;
+ 	const char	**args;
+-	int		enter_id;
+-	int		exit_id;
  
+ 	struct ftrace_event_call *enter_event;
+ 	struct ftrace_event_call *exit_event;
+@@ -35,8 +31,6 @@ struct syscall_metadata {
  #ifdef CONFIG_FTRACE_SYSCALLS
  extern unsigned long arch_syscall_addr(int nr);
--extern int syscall_name_to_nr(char *name);
-+extern int syscall_name_to_nr(const char *name);
- void set_syscall_enter_id(int num, int id);
- void set_syscall_exit_id(int num, int id);
+ extern int syscall_name_to_nr(const char *name);
+-void set_syscall_enter_id(int num, int id);
+-void set_syscall_exit_id(int num, int id);
  
+ extern int syscall_enter_format(struct ftrace_event_call *call,
+ 				struct trace_seq *s);
 diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index 00d6e17..39649b1 100644
+index 39649b1..27eb18d 100644
 --- a/kernel/trace/trace_syscalls.c
 +++ b/kernel/trace/trace_syscalls.c
-@@ -51,7 +51,7 @@ static struct syscall_metadata *syscall_nr_to_meta(int nr)
- 	return syscalls_metadata[nr];
+@@ -67,16 +67,6 @@ int syscall_name_to_nr(const char *name)
+ 	return -1;
  }
  
--int syscall_name_to_nr(char *name)
-+int syscall_name_to_nr(const char *name)
- {
- 	int i;
- 
-@@ -172,18 +172,11 @@ extern char *__bad_type_size(void);
- int syscall_enter_format(struct ftrace_event_call *call, struct trace_seq *s)
- {
- 	int i;
--	int nr;
- 	int ret;
--	struct syscall_metadata *entry;
-+	struct syscall_metadata *entry = call->data;
- 	struct syscall_trace_enter trace;
- 	int offset = offsetof(struct syscall_trace_enter, args);
- 
--	nr = syscall_name_to_nr(call->data);
--	entry = syscall_nr_to_meta(nr);
+-void set_syscall_enter_id(int num, int id)
+-{
+-	syscalls_metadata[num]->enter_id = id;
+-}
 -
--	if (!entry)
--		return 0;
+-void set_syscall_exit_id(int num, int id)
+-{
+-	syscalls_metadata[num]->exit_id = id;
+-}
 -
- 	ret = trace_seq_printf(s, "\tfield:%s %s;\toffset:%zu;\tsize:%zu;"
- 			       "\tsigned:%u;\n",
- 			       SYSCALL_FIELD(int, nr));
-@@ -245,18 +238,11 @@ int syscall_exit_format(struct ftrace_event_call *call, struct trace_seq *s)
- int syscall_enter_define_fields(struct ftrace_event_call *call)
+ enum print_line_t
+ print_syscall_enter(struct trace_iterator *iter, int flags)
  {
- 	struct syscall_trace_enter trace;
--	struct syscall_metadata *meta;
-+	struct syscall_metadata *meta = call->data;
- 	int ret;
--	int nr;
- 	int i;
- 	int offset = offsetof(typeof(trace), args);
+@@ -93,7 +83,7 @@ print_syscall_enter(struct trace_iterator *iter, int flags)
+ 	if (!entry)
+ 		goto end;
  
--	nr = syscall_name_to_nr(call->data);
--	meta = syscall_nr_to_meta(nr);
--
--	if (!meta)
--		return 0;
--
- 	ret = trace_define_common_fields(call);
- 	if (ret)
- 		return ret;
-@@ -366,9 +352,9 @@ int reg_event_syscall_enter(struct ftrace_event_call *call)
- {
- 	int ret = 0;
- 	int num;
--	char *name;
-+	const char *name;
+-	if (entry->enter_id != ent->type) {
++	if (entry->enter_event->id != ent->type) {
+ 		WARN_ON_ONCE(1);
+ 		goto end;
+ 	}
+@@ -148,7 +138,7 @@ print_syscall_exit(struct trace_iterator *iter, int flags)
+ 		return TRACE_TYPE_HANDLED;
+ 	}
  
--	name = (char *)call->data;
-+	name = ((struct syscall_metadata *)call->data)->name;
- 	num = syscall_name_to_nr(name);
- 	if (num < 0 || num >= NR_syscalls)
- 		return -ENOSYS;
-@@ -389,9 +375,9 @@ int reg_event_syscall_enter(struct ftrace_event_call *call)
- void unreg_event_syscall_enter(struct ftrace_event_call *call)
- {
- 	int num;
--	char *name;
-+	const char *name;
+-	if (entry->exit_id != ent->type) {
++	if (entry->exit_event->id != ent->type) {
+ 		WARN_ON_ONCE(1);
+ 		return TRACE_TYPE_UNHANDLED;
+ 	}
+@@ -302,8 +292,8 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
  
--	name = (char *)call->data;
-+	name = ((struct syscall_metadata *)call->data)->name;
- 	num = syscall_name_to_nr(name);
- 	if (num < 0 || num >= NR_syscalls)
+ 	size = sizeof(*entry) + sizeof(unsigned long) * sys_data->nb_args;
+ 
+-	event = trace_current_buffer_lock_reserve(&buffer, sys_data->enter_id,
+-						  size, 0, 0);
++	event = trace_current_buffer_lock_reserve(&buffer,
++			sys_data->enter_event->id, size, 0, 0);
+ 	if (!event)
  		return;
-@@ -407,9 +393,9 @@ int reg_event_syscall_exit(struct ftrace_event_call *call)
- {
- 	int ret = 0;
- 	int num;
--	char *name;
-+	const char *name;
  
--	name = call->data;
-+	name = ((struct syscall_metadata *)call->data)->name;
- 	num = syscall_name_to_nr(name);
- 	if (num < 0 || num >= NR_syscalls)
- 		return -ENOSYS;
-@@ -430,9 +416,9 @@ int reg_event_syscall_exit(struct ftrace_event_call *call)
- void unreg_event_syscall_exit(struct ftrace_event_call *call)
- {
- 	int num;
--	char *name;
-+	const char *name;
- 
--	name = call->data;
-+	name = ((struct syscall_metadata *)call->data)->name;
- 	num = syscall_name_to_nr(name);
- 	if (num < 0 || num >= NR_syscalls)
+@@ -334,8 +324,8 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
+ 	if (!sys_data)
  		return;
-
-
+ 
+-	event = trace_current_buffer_lock_reserve(&buffer, sys_data->exit_id,
+-				sizeof(*entry), 0, 0);
++	event = trace_current_buffer_lock_reserve(&buffer,
++			sys_data->exit_event->id, sizeof(*entry), 0, 0);
+ 	if (!event)
+ 		return;
+ 
+@@ -510,11 +500,11 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
+ 
+ 	rec = (struct syscall_trace_enter *) raw_data;
+ 	tracing_generic_entry_update(&rec->ent, 0, 0);
+-	rec->ent.type = sys_data->enter_id;
++	rec->ent.type = sys_data->enter_event->id;
+ 	rec->nr = syscall_nr;
+ 	syscall_get_arguments(current, regs, 0, sys_data->nb_args,
+ 			       (unsigned long *)&rec->args);
+-	perf_tp_event(sys_data->enter_id, 0, 1, rec, size);
++	perf_tp_event(sys_data->enter_event->id, 0, 1, rec, size);
+ 
+ end:
+ 	perf_swevent_put_recursion_context(rctx);
+@@ -615,11 +605,11 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
+ 	rec = (struct syscall_trace_exit *)raw_data;
+ 
+ 	tracing_generic_entry_update(&rec->ent, 0, 0);
+-	rec->ent.type = sys_data->exit_id;
++	rec->ent.type = sys_data->exit_event->id;
+ 	rec->nr = syscall_nr;
+ 	rec->ret = syscall_get_return_value(current, regs);
+ 
+-	perf_tp_event(sys_data->exit_id, 0, 1, rec, size);
++	perf_tp_event(sys_data->exit_event->id, 0, 1, rec, size);
+ 
+ end:
+ 	perf_swevent_put_recursion_context(rctx);
 
 
