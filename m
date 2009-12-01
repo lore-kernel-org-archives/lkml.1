@@ -1,77 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbZLAK5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZLAK6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbZLAK5J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 05:57:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZLAK5I
+	id S1753425AbZLAK6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 05:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZLAK6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 05:57:08 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53200 "EHLO smtps.tip.net.au"
+	Tue, 1 Dec 2009 05:58:52 -0500
+Received: from gate.crashing.org ([63.228.1.57]:58695 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752302AbZLAK5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 05:57:06 -0500
-Date: Tue, 1 Dec 2009 21:57:01 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 1
-Message-Id: <20091201215701.9e121809.sfr@canb.auug.org.au>
-In-Reply-To: <20091201102900.GA11715@sirena.org.uk>
-References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
-	<20091201102900.GA11715@sirena.org.uk>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
+	id S1752201AbZLAK6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 05:58:51 -0500
+Subject: Re: [PATCH] powerpc/mm: setting mmaped page cache property through
+ device tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1259663450-28790-1-git-send-email-leoli@freescale.com>
+References: <1259663450-28790-1-git-send-email-leoli@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 01 Dec 2009 21:58:47 +1100
+Message-ID: <1259665127.2076.363.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__1_Dec_2009_21_57_01_+1100_khADc9Aigv.f8r+4"
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__1_Dec_2009_21_57_01_+1100_khADc9Aigv.f8r+4
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-12-01 at 18:30 +0800, Li Yang wrote:
+> The patch adds the ability for powerpc architecture to set page cache
+> property of mmaped area through device tree.  This is useful for two
+> cases.  First, for memory shared with other OS'es to have the same cache
+> property to avoid cache paradoxes.  Second, enabling application to map
+> memory which is not managed by kernel as cacheable for better performance.
 
-Hi Mark,
+But that doesn't solve the problem of those same pages being mapped
+cachable as part of the linear mapping does it ?
 
-On Tue, 1 Dec 2009 10:29:01 +0000 Mark Brown <broonie@opensource.wolfsonmic=
-ro.com> wrote:
->
-> On Tue, Dec 01, 2009 at 07:03:01PM +1100, Stephen Rothwell wrote:
->=20
-> > Merging sound/for-next
-> > Applying: ASoC: tlv320dac33: Change RT wq to singlethread wq
->=20
-> According to this the sound tree should be being merged into the next
-> tree but when I look in the master branch of your git I'm not seeing any
-> sign of it - am I missing something here?  The head of your master
-> branch that I see is 16aa56906ae11bfdb145676a5fb5c5f43394148d "Add
-> linux-next specific files for 20091201".
->=20
-> The same thing happened yesterday.
+Can you tell us more about your precise usage scenario ? What are you
+trying to achieve here ? We can find a solution though it might involve
+a specific driver to handle that memory.
 
-Thanks for letting me know.  A bug in my procedures.  It will be fixed
-tomorrow, sorry for the inconvenience.
-
-Because the above patch is no longer needed all the changes in the sound
-tree have been applied in the merge of the crypto tree, so all the
-changes are there, just not very obvious.
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
 
---Signature=_Tue__1_Dec_2009_21_57_01_+1100_khADc9Aigv.f8r+4
-Content-Type: application/pgp-signature
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> Although it will be better if we can come up with a generic solution
+> not only for powerpc arch.  Changing the behavior of O_SYNC seems to
+> draw concerns over compatibility of old applications.  Suggestions
+> are welcomed.
+> 
+>  arch/powerpc/mm/mem.c          |   49 +++++++++++++++++++++++++++++++++++++--
+>  arch/powerpc/platforms/Kconfig |    7 +++++
+>  2 files changed, 53 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 579382c..02da2c8 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -95,16 +95,59 @@ int page_is_ram(unsigned long pfn)
+>  #endif
+>  }
+>  
+> +#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
+> +pgprot_t pgprot_from_dt(unsigned long pfn, pgprot_t vma_prot)
+> +{
+> +	struct device_node *np;
+> +	struct resource res;
+> +	unsigned long paddr = (pfn << PAGE_SHIFT);
+> +	int i;
+> +	const int *prop;
+> +
+> +	for_each_node_by_name(np, "mmap-region")
+> +		for (i = 0; of_address_to_resource(np, i, &res) == 0; i++)
+> +			if ((paddr >= res.start) && (paddr <= res.end)) {
+> +				unsigned long _prot;
+> +				prop = of_get_property(np, "cache-property",
+> +						NULL);
+> +
+> +				if (prop == NULL)
+> +					return vma_prot;
+> +
+> +				_prot = pgprot_val(vma_prot) & ~_PAGE_CACHE_CTL;
+> +
+> +				/* bit map of WIMG */
+> +				if (*prop & 0x8)
+> +					_prot |= _PAGE_WRITETHRU;
+> +				if (*prop & 0x4)
+> +					_prot |= _PAGE_NO_CACHE;
+> +				if (*prop & 0x2)
+> +					_prot |= _PAGE_COHERENT;
+> +				if (*prop & 0x1)
+> +					_prot |= _PAGE_GUARDED;
+> +
+> +				return __pgprot(_prot);
+> +			}
+> +
+> +	return vma_prot;
+> +}
+> +#endif
+> +
+>  pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+>  			      unsigned long size, pgprot_t vma_prot)
+>  {
+>  	if (ppc_md.phys_mem_access_prot)
+>  		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
+>  
+> -	if (!page_is_ram(pfn))
+> -		vma_prot = pgprot_noncached(vma_prot);
+> +	/* kernel managed memory is always mapped as cacheable */
+> +	if (page_is_ram(pfn))
+> +		return vma_prot;
+>  
+> -	return vma_prot;
+> +#ifdef CONFIG_OF_MMAP_CACHE_PROPERTY
+> +	return pgprot_from_dt(pfn, vma_prot);
+> +#else
+> +	return pgprot_noncached(vma_prot);
+> +#endif
+>  }
+>  EXPORT_SYMBOL(phys_mem_access_prot);
+>  
+> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+> index 12bc2ce..de0f57c 100644
+> --- a/arch/powerpc/platforms/Kconfig
+> +++ b/arch/powerpc/platforms/Kconfig
+> @@ -333,4 +333,11 @@ config MCU_MPC8349EMITX
+>  	  also register MCU GPIOs with the generic GPIO API, so you'll able
+>  	  to use MCU pins as GPIOs.
+>  
+> +config OF_MMAP_CACHE_PROPERTY
+> +	bool "Support setting cache property of mmap through device tree"
+> +	default n
+> +	help
+> +	  Say Y here to support setting cache property of mmaped region via
+> +	  mmap-region device tree node.
+> +
+>  endmenu
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAksU9n0ACgkQjjKRsyhoI8xRFACdFwGR3sxGKV+CuJPP1jIPU4Ct
-pcoAoIvPDh2uKVxFxSQL/HZbC4nUZ0wT
-=0tR1
------END PGP SIGNATURE-----
-
---Signature=_Tue__1_Dec_2009_21_57_01_+1100_khADc9Aigv.f8r+4--
