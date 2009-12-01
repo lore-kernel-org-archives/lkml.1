@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZLAJqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZLAJwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbZLAJqH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 04:46:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZLAJqH
+	id S1754002AbZLAJwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 04:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZLAJwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 04:46:07 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43997 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753838AbZLAJqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 04:46:06 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20091201093738.GL30235@random.random>
-References: <20091201181633.5C31.A69D9226@jp.fujitsu.com> <20091201093738.GL30235@random.random>
-Message-Id: <20091201184535.5C37.A69D9226@jp.fujitsu.com>
+	Tue, 1 Dec 2009 04:52:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:47639 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753735AbZLAJwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 04:52:31 -0500
+Message-ID: <4B14E747.9060208@redhat.com>
+Date: Tue, 01 Dec 2009 10:52:07 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+CC: Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, jonsmirl@gmail.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <BDodf9W1qgB@lirc> <4B13BBBE.3010101@redhat.com>
+In-Reply-To: <4B13BBBE.3010101@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  1 Dec 2009 18:46:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Dec 01, 2009 at 06:28:16PM +0900, KOSAKI Motohiro wrote:
-> > This patch doesn't works correctly. shrink_active_list() use page_referenced() for
-> > clear young bit and doesn't use return value.
-> 
-> The whole point is that it's inefficient to clear all young bits just
-> to move it to inactive list in the hope that new young bits will be
-> set right before the page reaches the end of the inactive list.
-> 
-> > after this patch apply, shrink_active_list() move the page to inactive list although
-> > the page still have many young bit. then, next shrink_inactive_list() move the page
-> > to active list again.
-> 
-> yes it's not the end of the world, this only alter behavior for pages
-> that have plenty of mappings. However I still it's inefficient to
-> pretend to clear all young bits at once when page is deactivated. But
-> this is not something I'm interested to argue about... let do what you
-> like there, but as long as you pretend to clear all dirty bits there
-> is no way we can fix anything. Plus we should touch ptes only in
-> presence of heavy memory pressure, with light memory pressure ptes
-> should _never_ be touched, and we should only shrink unmapped
-> cache. And active/inactive movements must still happen even in
-> presence of light memory pressure. The reason is that with light
-> memory pressure we're not I/O bound and we don't want to waste time
-> there. My patch is ok, what is not ok is the rest, you got to change
-> the rest to deal with this.
+On 11/30/09 13:34, Mauro Carvalho Chehab wrote:
+> Christoph Bartelmus wrote:
+>> Hi Mauro,
+>>
+>> I just don't want to change a working interface just because it could be
+>> also implemented in a different way, but having no other visible advantage
+>> than using more recent kernel features.
+>
+> I agree. The main reasons to review the interface is:
+> 	1) to avoid any overlaps (if are there any) with the evdev interface;
 
-Ah, well. please wait a bit. I'm under reviewing Larry's patch. I don't
-dislike your idea. last mail only pointed out implementation thing.
+Use lirc for raw samples.
+Use evdev for decoded data.
 
+Hardware/drivers which can handle both can support both interfaces.
+
+IMHO it makes no sense at all to squeeze raw samples through the input 
+layer.  It looks more like a serial line than a input device.  In fact 
+you can homebrew a receiver and connect it to the serial port, which was 
+quite common in pre-usb-ir-receiver times.
+
+> 	2) to have it stable enough to be used, without changes, for a long
+> 	   time.
+
+It isn't like lirc is a new interface.  It has been used in practice for 
+years.  I don't think API stability is a problem here.
+
+> True, but even if we want to merge lirc drivers "as-is", the drivers will
+> still need changes, due to kernel CodingStyle, due to the usage of some API's
+> that may be deprecated, due to some breakage with non-Intel architectures, due
+> to some bugs that kernel hackers may discover, etc.
+
+I assumed this did happen in already in preparation of this submission?
+
+cheers,
+   Gerd
 
