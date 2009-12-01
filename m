@@ -1,139 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637AbZLAJLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbZLAJOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753637AbZLAJLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 04:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZLAJLS
+	id S1753918AbZLAJOq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 04:14:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZLAJOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 04:11:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23307 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752764AbZLAJLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 04:11:15 -0500
-Date: Tue, 1 Dec 2009 10:11:11 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
-Message-ID: <20091201091111.GK30235@random.random>
-References: <Pine.LNX.4.64.0911241634170.24427@sister.anvils>
- <Pine.LNX.4.64.0911241640590.25288@sister.anvils>
- <20091130094616.8f3d94a7.kamezawa.hiroyu@jp.fujitsu.com>
- <20091130120705.GD30235@random.random>
- <20091201093945.8c24687f.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091201093945.8c24687f.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 1 Dec 2009 04:14:43 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:38253 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbZLAJOk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 04:14:40 -0500
+Subject: Re: linux-next: net/wireless/wireless-current tree build warning
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20091201133524.32756cef.sfr@canb.auug.org.au>
+References: <20091201133524.32756cef.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tEG7/D3K2eJZ0eLBtnAH"
+Date: Tue, 01 Dec 2009 10:14:33 +0100
+Message-ID: <1259658873.32171.39.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 01, 2009 at 09:39:45AM +0900, KAMEZAWA Hiroyuki wrote:
-> Maybe some modification to lru scanning is necessary independent from ksm.
-> I think.
 
-It looks independent from ksm yes. Larry case especially has cpus
-hanging in fork, and for those cpus to make progress it'd be enough to
-release the anon_vma lock for a little while. I think counting the
-number of young bits we found might be enough to fix this (at least
-for anon_vma were we can easily randomize the ptes we scan). Let's
-just break the rmap loop of page_referenced() after we cleared N young
-bits. If we found so many young bits it's pointless to continue. It
-still looks preferable than doing nothing or a full scan depending on
-a magic mapcount value. It's preferable because we'll do real work
-incrementally and we give a chance to heavily mapped but totally
-unused pages to go away in perfect lru order.
+--=-tEG7/D3K2eJZ0eLBtnAH
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Sure we can still end up with a 10000 length of anon_vma chain (or
-rmap_item chain, or prio_tree scan) with all N young bits set in the
-very last N vmas we check. But statistically with so many mappings
-such a scenario has a very low probability to materialize. It's not
-very useful to be so aggressive on a page where the young bits are
-refreshed quick all the time because of plenty of mappings and many of
-them using the page. If we do this, we've also to rotate the anon_vma
-list too to start from a new vma, which globally it means randomizing
-it. For anon_vma (and conceptually for ksm rmap_item, not sure in
-implementation terms) it's trivial to rotate to randomize the young
-bit scan. For prio_tree (that includes tmpfs) it's much harder.
+Stephen,
 
-In addition to returning 1 every N young bit cleared, we should
-ideally also have a spin_needbreak() for the rmap lock so things like
-fork can continue against page_referenced one and try_to_unmap
-too. Even for the prio_tree we could record the prio_tree position on
-the stack and we can add a bit that signals when the prio_tree got
-modified under us. But if the rmap structure modified from under us
-we're in deep trouble: after that we have to either restart from
-scratch (risking a livelock in page_referenced(), so not really
-feasible) or alternatively to return 1 breaking the loop which would
-make the VM less reliable (which means we would be increasing the
-probability of a suprious OOM) . Somebody could just mmap the hugely
-mapped file from another task in a loop, and prevent the
-page_referenced_one and try_to_unmap to ever complete on all pages of
-that file! So I don't really know how to implement the spin_needbreak
-without making the VM exploitable. But I'm quite confident there is no
-way the below can make the VM less reliable, and the spin_needbreak is
-much less relevant for anon_vma than it is for prio_tree because it's
-trivial to randomize the ptes we scan for young bit with
-anon_vma. Maybe this also is enough to fix tmpfs.
+On Tue, 2009-12-01 at 13:35 +1100, Stephen Rothwell wrote:
+> Hi John,
+>=20
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
+>=20
+> drivers/net/wireless/iwlwifi/iwl-tx.c: In function 'iwl_tx_agg_stop':
+> drivers/net/wireless/iwlwifi/iwl-tx.c:1356: warning: passing argument 1 o=
+f 'ieee80211_stop_tx_ba_cb_irqsafe' from incompatible pointer type
+> include/net/mac80211.h:2128: note: expected 'struct ieee80211_vif *' but =
+argument is of type 'struct ieee80211_hw *'
+>=20
+> Introduced by a bad merge (mine) between commit
+> 827d42c9ac91ddd728e4f4a31fefb906ef2ceff7 ("mac80211: fix spurious delBA
+> handling") form the wireless-current tree and commit
+> c951ad3550ab40071bb0f222ba6125845769c08a ("mac80211: convert aggregation
+> to operate on vifs/stas") from the net/wireless trees.  I didn't notice
+> that the former had added a call to the function modified in the latter.
+>=20
+> I applied the following patch for today:
+>=20
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Tue, 1 Dec 2009 13:19:44 +1100
+> Subject: [PATCH] wireless: fix for mismerge
+>=20
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/net/wireless/iwlwifi/iwl-tx.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c b/drivers/net/wireless=
+/iwlwifi/iwl-tx.c
+> index 58b132f..00da5e1 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-tx.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
+> @@ -1353,7 +1353,7 @@ int iwl_tx_agg_stop(struct iwl_priv *priv , const u=
+8 *ra, u16 tid)
+>  	if (priv->stations[sta_id].tid[tid].agg.state =3D=3D
+>  				IWL_EMPTYING_HW_QUEUE_ADDBA) {
+>  		IWL_DEBUG_HT(priv, "AGG stop before setup done\n");
+> -		ieee80211_stop_tx_ba_cb_irqsafe(priv->hw, ra, tid);
+> +		ieee80211_stop_tx_ba_cb_irqsafe(priv->vif, ra, tid);
 
-Signed-off-by: Andrea Arcangeli <aarcange@redhat.com>
----
+Perfect fixup, I had originally sent different versions of the patch for
+different trees, but you couldn't know that, especially not since the
+delba handling fix didn't (and won't) make it into wireless-next at all.
 
-diff --git a/mm/rmap.c b/mm/rmap.c
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -60,6 +60,8 @@
- 
- #include "internal.h"
- 
-+#define MAX_YOUNG_BIT_CLEARED 64
-+
- static struct kmem_cache *anon_vma_cachep;
- 
- static inline struct anon_vma *anon_vma_alloc(void)
-@@ -420,6 +422,24 @@ static int page_referenced_anon(struct p
- 						  &mapcount, vm_flags);
- 		if (!mapcount)
- 			break;
-+
-+		/*
-+		 * Break the loop early if we found many active
-+		 * mappings and go deep into the long chain only if
-+		 * this looks a fully unused page. Otherwise we only
-+		 * waste this cpu and we hang other CPUs too that
-+		 * might be waiting on our lock to be released.
-+		 */
-+		if (referenced >= MAX_YOUNG_BIT_CLEARED) {
-+			/*
-+			 * randomize the MAX_YOUNG_BIT_CLEARED ptes
-+			 * that we scan at every page_referenced_one()
-+			 * call on this page.
-+			 */
-+			list_del(&anon_vma->head);
-+			list_add(&anon_vma->head, &vma->anon_vma_node);
-+			break;
-+		}
- 	}
- 
- 	page_unlock_anon_vma(anon_vma);
-@@ -485,6 +505,16 @@ static int page_referenced_file(struct p
- 						  &mapcount, vm_flags);
- 		if (!mapcount)
- 			break;
-+
-+		/*
-+		 * Break the loop early if we found many active
-+		 * mappings and go deep into the long chain only if
-+		 * this looks a fully unused page. Otherwise we only
-+		 * waste this cpu and we hang other CPUs too that
-+		 * might be waiting on our lock to be released.
-+		 */
-+		if (referenced >= MAX_YOUNG_BIT_CLEARED)
-+			break;
- 	}
- 
- 	spin_unlock(&mapping->i_mmap_lock);
+johannes
+
+--=-tEG7/D3K2eJZ0eLBtnAH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLFN50AAoJEODzc/N7+QmaFd0P/0dtyZrGjClLGZwymLqGLyGF
+cPGv5lig6kdsFqByVp6Su10rIPviUs14XoYBV64Tb9v3lyOapJD0nMIBDlanqeM1
+FWijtk2yq4SIcdfuXSuhvA/VREI2d5bbQcvdKdeOGljCUq7hZAUFZl+H/xjQrKeS
+kUrbFMm4YOXgXrhTFp6xlaVh8vEMj77L1YWnvHGbt+bQOWo+o7i5AgOMYz3UYLa4
+PgOkA9l4YBH6wd77s7GVzJgquenv8PVFdSIOm1yr6T7mP3iPJfHw3O/Vn3W1ynMH
+xgEizGtGBCfQU8ttXWUFLVXtixz/9IpAoEXm4YwsbutgcbIZEbYjeKyXH6DfoEM1
+JeAQhy+Y6DhaJZ3NVGE3Y3QdO+8RRg6S1vbjcqGJ2B4IfNBMYm0uNuEGCliLnnFc
+ViQn9c7xE6iEbIwzN8OTih9IqxhNcG0A7+cgjnILnqh4qXKY7GC+mJJBKcfwdkEN
+CIOAdz8meRAN4Ax2lTgLV8NCev7+3js6S+Pp3Tg20eL9NeCJXwybEYgEccoLRgnL
+Fyo8WWb8pV5PHEMPg3svikcCzXAaPN9G66wrSusjOzNTUJqWRf2QwwZYOvvWHOtA
+2rPu6U+8RGi9AGzn4Yk96Jjh/+1Q1G91chdQX/uMuZgOrjAOxmbk48IV/IakEFj0
+2W0ZTmgRn586rcnxVbeS
+=tVGd
+-----END PGP SIGNATURE-----
+
+--=-tEG7/D3K2eJZ0eLBtnAH--
+
