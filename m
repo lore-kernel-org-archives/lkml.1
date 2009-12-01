@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZLAAUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbZLAAYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbZLAAUt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 19:20:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZLAAUs
+	id S1753564AbZLAAYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 19:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZLAAYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 19:20:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33772 "EHLO mx1.redhat.com"
+	Mon, 30 Nov 2009 19:24:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8839 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753039AbZLAAUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 19:20:46 -0500
+	id S1752496AbZLAAYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 19:24:13 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 7/9] perf probe: Add argv_split() from lib/argv_split.c
+Subject: [PATCH -tip 8/9] perf probe: Add --list option for listing current
+	probe events
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
@@ -26,8 +27,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>
-Date: Mon, 30 Nov 2009 19:20:05 -0500
-Message-ID: <20091201002005.10235.55602.stgit@harusame>
+Date: Mon, 30 Nov 2009 19:20:17 -0500
+Message-ID: <20091201002017.10235.76575.stgit@harusame>
 In-Reply-To: <20091201001912.10235.79411.stgit@harusame>
 References: <20091201001912.10235.79411.stgit@harusame>
 User-Agent: StGIT/0.14.3
@@ -38,8 +39,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add argv_split() ported from lib/argv_split.c to string.c and use it
-in util/probe-event.c.
+Add --list option for listing currently defined probe events
+in the kernel. This shows events in below format;
+
+[group:event]	<perf-probe probe-definition>
+
+e.g.
+[probe:schedule_0]	schedule+30 cpu
+
+Note that source file/line information is not supported yet.
+So even if you added a probe by line, it will be shown in
+<symbol+offset>.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
@@ -56,222 +66,365 @@ Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
 
- tools/perf/util/probe-event.c |   55 ++++++----------------
- tools/perf/util/string.c      |  101 +++++++++++++++++++++++++++++++++++++++++
- tools/perf/util/string.h      |    2 +
- 3 files changed, 118 insertions(+), 40 deletions(-)
+ tools/perf/builtin-probe.c    |   12 ++
+ tools/perf/util/probe-event.c |  231 ++++++++++++++++++++++++++++++++++++++---
+ tools/perf/util/probe-event.h |    5 +
+ 3 files changed, 230 insertions(+), 18 deletions(-)
 
+diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+index bf20df2..b5d15cf 100644
+--- a/tools/perf/builtin-probe.c
++++ b/tools/perf/builtin-probe.c
+@@ -62,6 +62,8 @@ static struct {
+ 	struct probe_point probes[MAX_PROBES];
+ } session;
+ 
++static bool listing;
++
+ /* Parse an event definition. Note that any error must die. */
+ static void parse_probe_event(const char *str)
+ {
+@@ -119,6 +121,7 @@ static int open_default_vmlinux(void)
+ static const char * const probe_usage[] = {
+ 	"perf probe [<options>] 'PROBEDEF' ['PROBEDEF' ...]",
+ 	"perf probe [<options>] --add 'PROBEDEF' [--add 'PROBEDEF' ...]",
++	"perf probe --list",
+ 	NULL
+ };
+ 
+@@ -129,6 +132,7 @@ static const struct option options[] = {
+ 	OPT_STRING('k', "vmlinux", &session.vmlinux, "file",
+ 		"vmlinux/module pathname"),
+ #endif
++	OPT_BOOLEAN('l', "list", &listing, "list up current probes"),
+ 	OPT_CALLBACK('a', "add", NULL,
+ #ifdef NO_LIBDWARF
+ 		"FUNC[+OFFS|%return] [ARG ...]",
+@@ -164,9 +168,15 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
+ 	for (i = 0; i < argc; i++)
+ 		parse_probe_event(argv[i]);
+ 
+-	if (session.nr_probe == 0)
++	if ((session.nr_probe == 0 && !listing) ||
++	    (session.nr_probe != 0 && listing))
+ 		usage_with_options(probe_usage, options);
+ 
++	if (listing) {
++		show_perf_probe_events();
++		return 0;
++	}
++
+ 	if (session.need_dwarf)
+ #ifdef NO_LIBDWARF
+ 		die("Debuginfo-analysis is not supported");
 diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index 7335a3b..e3a683a 100644
+index e3a683a..7f4f288 100644
 --- a/tools/perf/util/probe-event.c
 +++ b/tools/perf/util/probe-event.c
-@@ -32,6 +32,7 @@
+@@ -29,10 +29,13 @@
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <stdarg.h>
++#include <limits.h>
  
  #undef _GNU_SOURCE
  #include "event.h"
-+#include "string.h"
+ #include "string.h"
++#include "strlist.h"
  #include "debug.h"
  #include "parse-events.h"  /* For debugfs_path */
  #include "probe-event.h"
-@@ -132,62 +133,36 @@ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
- /* Parse perf-probe event definition */
- int parse_perf_probe_event(const char *str, struct probe_point *pp)
+@@ -43,6 +46,19 @@
+ 
+ #define semantic_error(msg ...) die("Semantic error :" msg)
+ 
++/* If there is no space to write, returns -E2BIG. */
++static int e_snprintf(char *str, size_t size, const char *format, ...)
++{
++	int ret;
++	va_list ap;
++	va_start(ap, format);
++	ret = vsnprintf(str, size, format, ap);
++	va_end(ap);
++	if (ret >= (int)size)
++		ret = -E2BIG;
++	return ret;
++}
++
+ /* Parse probepoint definition. */
+ static void parse_perf_probe_probepoint(char *arg, struct probe_point *pp)
  {
--	char *argv[MAX_PROBE_ARGS + 1];	/* probe + args */
-+	char **argv;
- 	int argc, i, need_dwarf = 0;
- 
--	/* Separate arguments, similar to argv_split */
--	argc = 0;
--	do {
--		/* Skip separators */
--		while (isspace(*str))
--			str++;
--
--		/* Add an argument */
--		if (*str != '\0') {
--			const char *s = str;
--			/* Check the limit number of arguments */
--			if (argc == MAX_PROBE_ARGS + 1)
--				semantic_error("Too many arguments");
--
--			/* Skip the argument */
--			while (!isspace(*str) && *str != '\0')
--				str++;
--
--			/* Duplicate the argument */
--			argv[argc] = strndup(s, str - s);
--			if (argv[argc] == NULL)
--				die("strndup");
--			pr_debug("argv[%d]=%s\n", argc, argv[argc]);
--			argc++;
--		}
--	} while (*str != '\0');
--	if (!argc)
--		semantic_error("An empty argument.");
-+	argv = argv_split(str, &argc);
-+	if (!argv)
-+		die("argv_split failed.");
-+	if (argc > MAX_PROBE_ARGS + 1)
-+		semantic_error("Too many arguments");
- 
- 	/* Parse probe point */
- 	parse_perf_probe_probepoint(argv[0], pp);
--	free(argv[0]);
- 	if (pp->file || pp->line)
- 		need_dwarf = 1;
- 
--	/* Copy arguments */
-+	/* Copy arguments and ensure return probe has no C argument */
- 	pp->nr_args = argc - 1;
--	if (pp->nr_args > 0) {
--		pp->args = (char **)malloc(sizeof(char *) * pp->nr_args);
--		if (!pp->args)
--			die("malloc");
--		memcpy(pp->args, &argv[1], sizeof(char *) * pp->nr_args);
--	}
--
--	/* Ensure return probe has no C argument */
--	for (i = 0; i < pp->nr_args; i++)
-+	pp->args = zalloc(sizeof(char *) * pp->nr_args);
-+	for (i = 0; i < pp->nr_args; i++) {
-+		pp->args[i] = strdup(argv[i + 1]);
-+		if (!pp->args[i])
-+			die("Failed to copy argument.");
- 		if (is_c_varname(pp->args[i])) {
- 			if (pp->retprobe)
- 				semantic_error("You can't specify local"
- 						" variable for kretprobe");
- 			need_dwarf = 1;
- 		}
-+	}
- 
-+	argv_free(argv);
+@@ -166,6 +182,103 @@ int parse_perf_probe_event(const char *str, struct probe_point *pp)
  	return need_dwarf;
  }
  
-diff --git a/tools/perf/util/string.c b/tools/perf/util/string.c
-index 2270435..0977cf4 100644
---- a/tools/perf/util/string.c
-+++ b/tools/perf/util/string.c
-@@ -127,3 +127,104 @@ out_err:
- out:
- 	return length;
- }
-+
-+/*
-+ * Helper function for splitting a string into an argv-like array.
-+ * originaly copied from lib/argv_split.c
-+ */
-+static const char *skip_sep(const char *cp)
++/* Parse kprobe_events event into struct probe_point */
++void parse_trace_kprobe_event(const char *str, char **group, char **event,
++			      struct probe_point *pp)
 +{
-+	while (*cp && isspace(*cp))
-+		cp++;
++	char pr;
++	char *p;
++	int ret, i, argc;
++	char **argv;
 +
-+	return cp;
-+}
++	pr_debug("Parsing kprobe_events: %s\n", str);
++	argv = argv_split(str, &argc);
++	if (!argv)
++		die("argv_split failed.");
++	if (argc < 2)
++		semantic_error("Too less arguments.");
 +
-+static const char *skip_arg(const char *cp)
-+{
-+	while (*cp && !isspace(*cp))
-+		cp++;
++	/* Scan event and group name. */
++	ret = sscanf(argv[0], "%c:%m[^/ \t]/%m[^ \t]",
++		     &pr, group, event);
++	if (ret != 3)
++		semantic_error("Failed to parse event name: %s", argv[0]);
++	pr_debug("Group:%s Event:%s probe:%c\n", *group, *event, pr);
 +
-+	return cp;
-+}
++	if (!pp)
++		goto end;
 +
-+static int count_argc(const char *str)
-+{
-+	int count = 0;
++	pp->retprobe = (pr == 'r');
 +
-+	while (*str) {
-+		str = skip_sep(str);
-+		if (*str) {
-+			count++;
-+			str = skip_arg(str);
-+		}
++	/* Scan function name and offset */
++	ret = sscanf(argv[1], "%m[^+]+%d", &pp->function, &pp->offset);
++	if (ret == 1)
++		pp->offset = 0;
++
++	/* kprobe_events doesn't have this information */
++	pp->line = 0;
++	pp->file = NULL;
++
++	pp->nr_args = argc - 2;
++	pp->args = zalloc(sizeof(char *) * pp->nr_args);
++	for (i = 0; i < pp->nr_args; i++) {
++		p = strchr(argv[i + 2], '=');
++		if (p)	/* We don't need which register is assigned. */
++			*p = '\0';
++		pp->args[i] = strdup(argv[i + 2]);
++		if (!pp->args[i])
++			die("Failed to copy argument.");
 +	}
 +
-+	return count;
-+}
-+
-+/**
-+ * argv_free - free an argv
-+ * @argv - the argument vector to be freed
-+ *
-+ * Frees an argv and the strings it points to.
-+ */
-+void argv_free(char **argv)
-+{
-+	char **p;
-+	for (p = argv; *p; p++)
-+		free(*p);
-+
-+	free(argv);
-+}
-+
-+/**
-+ * argv_split - split a string at whitespace, returning an argv
-+ * @str: the string to be split
-+ * @argcp: returned argument count
-+ *
-+ * Returns an array of pointers to strings which are split out from
-+ * @str.  This is performed by strictly splitting on white-space; no
-+ * quote processing is performed.  Multiple whitespace characters are
-+ * considered to be a single argument separator.  The returned array
-+ * is always NULL-terminated.  Returns NULL on memory allocation
-+ * failure.
-+ */
-+char **argv_split(const char *str, int *argcp)
-+{
-+	int argc = count_argc(str);
-+	char **argv = zalloc(sizeof(*argv) * (argc+1));
-+	char **argvp;
-+
-+	if (argv == NULL)
-+		goto out;
-+
-+	if (argcp)
-+		*argcp = argc;
-+
-+	argvp = argv;
-+
-+	while (*str) {
-+		str = skip_sep(str);
-+
-+		if (*str) {
-+			const char *p = str;
-+			char *t;
-+
-+			str = skip_arg(str);
-+
-+			t = strndup(p, str-p);
-+			if (t == NULL)
-+				goto fail;
-+			*argvp++ = t;
-+		}
-+	}
-+	*argvp = NULL;
-+
-+out:
-+	return argv;
-+
-+fail:
++end:
 +	argv_free(argv);
-+	return NULL;
 +}
-diff --git a/tools/perf/util/string.h b/tools/perf/util/string.h
-index e50b07f..bfecec2 100644
---- a/tools/perf/util/string.h
-+++ b/tools/perf/util/string.h
-@@ -6,6 +6,8 @@
- int hex2u64(const char *ptr, u64 *val);
- char *strxfrchar(char *s, char from, char to);
- s64 perf_atoll(const char *str);
-+char **argv_split(const char *str, int *argcp);
-+void argv_free(char **argv);
++
++int synthesize_perf_probe_event(struct probe_point *pp)
++{
++	char *buf;
++	char offs[64] = "", line[64] = "";
++	int i, len, ret;
++
++	pp->probes[0] = buf = zalloc(MAX_CMDLEN);
++	if (!buf)
++		die("Failed to allocate memory by zalloc.");
++	if (pp->offset) {
++		ret = e_snprintf(offs, 64, "+%d", pp->offset);
++		if (ret <= 0)
++			goto error;
++	}
++	if (pp->line) {
++		ret = e_snprintf(line, 64, ":%d", pp->line);
++		if (ret <= 0)
++			goto error;
++	}
++
++	if (pp->function)
++		ret = e_snprintf(buf, MAX_CMDLEN, "%s%s%s%s", pp->function,
++				 offs, pp->retprobe ? "%return" : "", line);
++	else
++		ret = e_snprintf(buf, MAX_CMDLEN, "%s%s%s%s", pp->file, line);
++	if (ret <= 0)
++		goto error;
++	len = ret;
++
++	for (i = 0; i < pp->nr_args; i++) {
++		ret = e_snprintf(&buf[len], MAX_CMDLEN - len, " %s",
++				 pp->args[i]);
++		if (ret <= 0)
++			goto error;
++		len += ret;
++	}
++	pp->found = 1;
++
++	return pp->found;
++error:
++	free(pp->probes[0]);
++
++	return ret;
++}
++
+ int synthesize_trace_kprobe_event(struct probe_point *pp)
+ {
+ 	char *buf;
+@@ -174,15 +287,15 @@ int synthesize_trace_kprobe_event(struct probe_point *pp)
+ 	pp->probes[0] = buf = zalloc(MAX_CMDLEN);
+ 	if (!buf)
+ 		die("Failed to allocate memory by zalloc.");
+-	ret = snprintf(buf, MAX_CMDLEN, "%s+%d", pp->function, pp->offset);
+-	if (ret <= 0 || ret >= MAX_CMDLEN)
++	ret = e_snprintf(buf, MAX_CMDLEN, "%s+%d", pp->function, pp->offset);
++	if (ret <= 0)
+ 		goto error;
+ 	len = ret;
  
- #define _STR(x) #x
- #define STR(x) _STR(x)
+ 	for (i = 0; i < pp->nr_args; i++) {
+-		ret = snprintf(&buf[len], MAX_CMDLEN - len, " %s",
+-			       pp->args[i]);
+-		if (ret <= 0 || ret >= MAX_CMDLEN - len)
++		ret = e_snprintf(&buf[len], MAX_CMDLEN - len, " %s",
++				 pp->args[i]);
++		if (ret <= 0)
+ 			goto error;
+ 		len += ret;
+ 	}
+@@ -191,12 +304,105 @@ int synthesize_trace_kprobe_event(struct probe_point *pp)
+ 	return pp->found;
+ error:
+ 	free(pp->probes[0]);
+-	if (ret > 0)
+-		ret = -E2BIG;
+ 
+ 	return ret;
+ }
+ 
++static int open_kprobe_events(int flags, int mode)
++{
++	char buf[PATH_MAX];
++	int ret;
++
++	ret = e_snprintf(buf, PATH_MAX, "%s/../kprobe_events", debugfs_path);
++	if (ret < 0)
++		die("Failed to make kprobe_events path.");
++
++	ret = open(buf, flags, mode);
++	if (ret < 0) {
++		if (errno == ENOENT)
++			die("kprobe_events file does not exist -"
++			    " please rebuild with CONFIG_KPROBE_TRACER.");
++		else
++			die("Could not open kprobe_events file: %s",
++			    strerror(errno));
++	}
++	return ret;
++}
++
++/* Get raw string list of current kprobe_events */
++static struct strlist *get_trace_kprobe_event_rawlist(int fd)
++{
++	int ret, idx;
++	FILE *fp;
++	char buf[MAX_CMDLEN];
++	char *p;
++	struct strlist *sl;
++
++	sl = strlist__new(true, NULL);
++
++	fp = fdopen(dup(fd), "r");
++	while (!feof(fp)) {
++		p = fgets(buf, MAX_CMDLEN, fp);
++		if (!p)
++			break;
++
++		idx = strlen(p) - 1;
++		if (p[idx] == '\n')
++			p[idx] = '\0';
++		ret = strlist__add(sl, buf);
++		if (ret < 0)
++			die("strlist__add failed: %s", strerror(-ret));
++	}
++	fclose(fp);
++
++	return sl;
++}
++
++/* Free and zero clear probe_point */
++static void clear_probe_point(struct probe_point *pp)
++{
++	int i;
++
++	if (pp->function)
++		free(pp->function);
++	if (pp->file)
++		free(pp->file);
++	for (i = 0; i < pp->nr_args; i++)
++		free(pp->args[i]);
++	if (pp->args)
++		free(pp->args);
++	for (i = 0; i < pp->found; i++)
++		free(pp->probes[i]);
++	memset(pp, 0, sizeof(pp));
++}
++
++/* List up current perf-probe events */
++void show_perf_probe_events(void)
++{
++	unsigned int i;
++	int fd;
++	char *group, *event;
++	struct probe_point pp;
++	struct strlist *rawlist;
++	struct str_node *ent;
++
++	fd = open_kprobe_events(O_RDONLY, 0);
++	rawlist = get_trace_kprobe_event_rawlist(fd);
++	close(fd);
++
++	for (i = 0; i < strlist__nr_entries(rawlist); i++) {
++		ent = strlist__entry(rawlist, i);
++		parse_trace_kprobe_event(ent->s, &group, &event, &pp);
++		synthesize_perf_probe_event(&pp);
++		printf("[%s:%s]\t%s\n", group, event, pp.probes[0]);
++		free(group);
++		free(event);
++		clear_probe_point(&pp);
++	}
++
++	strlist__delete(rawlist);
++}
++
+ static int write_trace_kprobe_event(int fd, const char *buf)
+ {
+ 	int ret;
+@@ -216,16 +422,7 @@ void add_trace_kprobe_events(struct probe_point *probes, int nr_probes)
+ 	struct probe_point *pp;
+ 	char buf[MAX_CMDLEN];
+ 
+-	snprintf(buf, MAX_CMDLEN, "%s/../kprobe_events", debugfs_path);
+-	fd = open(buf, O_WRONLY, O_APPEND);
+-	if (fd < 0) {
+-		if (errno == ENOENT)
+-			die("kprobe_events file does not exist -"
+-			    " please rebuild with CONFIG_KPROBE_TRACER.");
+-		else
+-			die("Could not open kprobe_events file: %s",
+-			    strerror(errno));
+-	}
++	fd = open_kprobe_events(O_WRONLY, O_APPEND);
+ 
+ 	for (j = 0; j < nr_probes; j++) {
+ 		pp = probes + j;
+diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
+index 0089c45..88db7d1 100644
+--- a/tools/perf/util/probe-event.h
++++ b/tools/perf/util/probe-event.h
+@@ -2,9 +2,14 @@
+ #define _PROBE_EVENT_H
+ 
+ #include "probe-finder.h"
++#include "strlist.h"
+ 
+ extern int parse_perf_probe_event(const char *str, struct probe_point *pp);
++extern int synthesize_perf_probe_event(struct probe_point *pp);
++extern void parse_trace_kprobe_event(const char *str, char **group,
++				     char **event, struct probe_point *pp);
+ extern int synthesize_trace_kprobe_event(struct probe_point *pp);
+ extern void add_trace_kprobe_events(struct probe_point *probes, int nr_probes);
++extern void show_perf_probe_events(void);
+ 
+ #endif /*_PROBE_EVENT_H */
 
 
 -- 
