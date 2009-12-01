@@ -1,78 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbZLAOgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbZLAOmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838AbZLAOgF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 09:36:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZLAOgE
+	id S1753520AbZLAOmH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 09:42:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZLAOmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 09:36:04 -0500
-Received: from cantor.suse.de ([195.135.220.2]:37072 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751004AbZLAOgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 09:36:02 -0500
-Date: Tue, 1 Dec 2009 15:35:59 +0100
-From: Jan Kara <jack@suse.cz>
-To: Mike Galbraith <gleep@gmx.de>
-Cc: James Y Knight <foom@fuhm.net>, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       npiggin@suse.de
-Subject: Re: writev data loss bug in (at least) 2.6.31 and 2.6.32pre8 x86-64
-Message-ID: <20091201143558.GB12730@quack.suse.cz>
-References: <1F5364AE-321E-44E9-8B0D-B8E17597A0DA@fuhm.net>
- <907888CC-F4B2-448F-8F48-B96A566D323B@fuhm.net>
- <1259667765.9614.19.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259667765.9614.19.camel@marge.simson.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 1 Dec 2009 09:42:06 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:35330 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752727AbZLAOmE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 09:42:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=VY0di4eoJPdoRR9bwVgnWz/LzW6XMhDGRdj/6XJvFoklCfSAICzNP9uMqXoW5GHN4R
+         9drcacEjfsoLoZofS5Alnu4/EcnHt/ma+8q90M8jDg2RtK5gMLGKxGK0Zn1HKrMP+5Yj
+         zzrMRvFBFH3Z0NgOYpL2BL0wWFHifjNoRvH1w=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, johnstul@us.ibm.com, lethal@linux-sh.org,
+       linux-pm@lists.linux-foundation.org,
+       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
+Date: Tue, 01 Dec 2009 23:36:39 +0900
+Message-Id: <20091201143639.15075.36789.sendpatchset@rxone.opensource.se>
+Subject: [PATCH] clocksource: Add suspend callback
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 01-12-09 12:42:45, Mike Galbraith wrote:
-> On Mon, 2009-11-30 at 19:48 -0500, James Y Knight wrote:
-> > On Nov 30, 2009, at 3:55 PM, James Y Knight wrote:
-> > 
-> > > This test case fails in 2.6.23-2.6.25, because of the bug fixed in 864f24395c72b6a6c48d13f409f986dc71a5cf4a, and now again in at least 2.6.31 and 2.6.32pre8 because of a *different* bug. This test *does not* fail 2.6.26. I have not tested anything between 2.6.26 and 2.6.31.
-> > > 
-> > > The bug in 2.6.31 is definitely not the same bug as 2.6.23's. This time, the zero'd area of the file doesn't show up immediately upon writing the file. Instead, the kernel waits to mangle the file until it has to flush the buffer to disk. *THEN* it zeros out parts of the file.
-> > > 
-> > > So, after writing out the new file with writev, and checking the md5sum (which is correct), this test case asks the kernel to flush the cache for that file, and then checks the md5sum again. ONLY THEN is the file corrupted. That is, I won't hesitate to say *incredibly evil* behavior: it took me quite some time to figure out WTH was going wrong with my program before determining it was a kernel bug.
-> > > 
-> > > This test case is distilled from an actual application which doesn't even intentionally use writev: it just uses C++'s ofstream class to write data to a file. Unfortunately, that class smart and uses writev under the covers. Unfortunately, I guess nobody ever tests linux writev behavior, since it's broken _so_much_of_the_time_. I really am quite astounded to see such a bad track record for such a fundamental core system call....
-> > > 
-> > > My /tmp is an ext3 filesystem, in case that matters.
-> > 
-> > Further testing shows that the filesystem type *does* matter. The bug does not exhibit when the test is run on ext2, ext4, vfat, btrfs, jfs, or xfs (and probably all the others too). Only, so far as I can determine, on ext3.
-> 
-> I bisected it this morning.  Bisected cleanly to...
-> 
-> 9eaaa2d5759837402ec5eee13b2a97921808c3eb is the first bad commit
-  OK, I've debugged it. This commit is really at fault. The problem is
-following:
-  When using writev, the page we copy from is not paged in (while when we
-use ordinary write, it is paged in). This difference might be worth
-investigation on its own (as it is likely to heavily impact performance of
-writev) but is irrelevant for us now - we should handle this without data
-corruption anyway. Because the source page is not available, we pass 0 as
-the number of copied bytes to write_end and thus ext3_write_end decides to
-truncate the file to original size. This is perfectly fine. The problem is
-that we do this by ext3_truncate() which just frees corresponding block but
-does not unmap buffers. So we leave mapped buffers beyond i_size (they
-actually never were inside i_size) but the blocks they are mapped to are
-already free. The write is then retried (after mapping the page),
-block_write_begin() sees the buffer is mapped (although it is beyond
-i_size) and thus it does not call ext3_get_block() anymore. So as a result,
-data is written to a block that is no longer allocated to the file. Bummer
-- welcome filesystem corruption.
-  Ext4 also has this problem but delayed allocation mitigates the effect to
-an error in accounting of blocks reserved for delayed allocation and thus
-under normal circumstances nothing bad happens.
-  The question is how to solve this in the cleanest way. We can call
-vmtruncate() instead of ext3_truncate() as we used to do but Nick wants to
-get rid of that (that's why I originally changed the code to what it is
-now). So probably we could just manually call truncate_pagecache() instead.
-Nick, I think your truncate calling sequence patch set needs similar fix
-for all filesystems as well.
+From: Magnus Damm <damm@opensource.se>
 
-								Honza
+Add a clocksource suspend callback. This callback can
+be used by the clocksource driver to shutdown and perform
+any kind of late suspend activities even though the
+clocksource driver itself is a non-sysdev driver.
+
+One example where this is useful is to fix the sh_cmt.c
+platform driver that today suspends using the platform bus
+and shuts down the clocksource too early.
+
+With this callback in place the sh_cmt driver will suspend
+using the clocksource and clockevent hooks and leave the
+platform device pm callbacks unused.
+
+Signed-off-by: Magnus Damm <damm@opensource.se>
+---
+
+ Applies to linux-next
+
+ include/linux/clocksource.h |    3 +++
+ kernel/time/clocksource.c   |   12 ++++++++++++
+ kernel/time/timekeeping.c   |    1 +
+ 3 files changed, 16 insertions(+)
+
+--- 0002/include/linux/clocksource.h
++++ work/include/linux/clocksource.h	2009-11-30 13:31:40.000000000 +0900
+@@ -154,6 +154,7 @@ extern u64 timecounter_cyc2time(struct t
+  * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
+  * @flags:		flags describing special properties
+  * @vread:		vsyscall based read
++ * @suspend:		suspend function for the clocksource, if necessary
+  * @resume:		resume function for the clocksource, if necessary
+  */
+ struct clocksource {
+@@ -172,6 +173,7 @@ struct clocksource {
+ 	u64 max_idle_ns;
+ 	unsigned long flags;
+ 	cycle_t (*vread)(void);
++	void (*suspend)(struct clocksource *cs);
+ 	void (*resume)(struct clocksource *cs);
+ #ifdef CONFIG_IA64
+ 	void *fsys_mmio;        /* used by fsyscall asm code */
+@@ -277,6 +279,7 @@ extern void clocksource_unregister(struc
+ extern void clocksource_touch_watchdog(void);
+ extern struct clocksource* clocksource_get_next(void);
+ extern void clocksource_change_rating(struct clocksource *cs, int rating);
++extern void clocksource_suspend(void);
+ extern void clocksource_resume(void);
+ extern struct clocksource * __init __weak clocksource_default_clock(void);
+ 
+--- 0002/kernel/time/clocksource.c
++++ work/kernel/time/clocksource.c	2009-11-30 13:30:52.000000000 +0900
+@@ -441,6 +441,18 @@ static inline int clocksource_watchdog_k
+ #endif /* CONFIG_CLOCKSOURCE_WATCHDOG */
+ 
+ /**
++ * clocksource_suspend - suspend the clocksource(s)
++ */
++void clocksource_suspend(void)
++{
++	struct clocksource *cs;
++
++	list_for_each_entry_reverse(cs, &clocksource_list, list)
++		if (cs->suspend)
++			cs->suspend(cs);
++}
++
++/**
+  * clocksource_resume - resume the clocksource(s)
+  */
+ void clocksource_resume(void)
+--- 0001/kernel/time/timekeeping.c
++++ work/kernel/time/timekeeping.c	2009-11-30 13:42:56.000000000 +0900
+@@ -611,6 +611,7 @@ static int timekeeping_suspend(struct sy
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 
+ 	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
++	clocksource_suspend();
+ 
+ 	return 0;
+ }
