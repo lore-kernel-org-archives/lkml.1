@@ -1,94 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZLAVaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbZLAVcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbZLAVaj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 16:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZLAVaj
+	id S1754631AbZLAVcZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 16:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZLAVcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 16:30:39 -0500
-Received: from mga06.intel.com ([134.134.136.21]:30596 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754527AbZLAVai (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 16:30:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,322,1257148800"; 
-   d="scan'208";a="471998567"
-Date: Tue, 1 Dec 2009 13:30:39 -0800
-From: mark gross <mgross@linux.intel.com>
-To: linux-pm <linux-pm@lists.linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH]PM_QOS-to-use-handle-based-requests-cpuidle-update 2/5
-Message-ID: <20091201213039.GB19688@linux.intel.com>
-Reply-To: mgross@linux.intel.com
+	Tue, 1 Dec 2009 16:32:24 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46627 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750929AbZLAVcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 16:32:23 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: [linux-pm] intermittent suspend problem again
+Date: Tue, 1 Dec 2009 22:32:50 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200912011328.15551.rjw@sisk.pl> <877ht68u4h.fsf@tac.ki.iif.hu>
+In-Reply-To: <877ht68u4h.fsf@tac.ki.iif.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912012232.50951.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is patch 2 in the update to the pm_qos api to use handles.  This
-patch updates the cpuidle dependencies on pm_qos
+On Tuesday 01 December 2009, Ferenc Wagner wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > On Tuesday 01 December 2009, Ferenc Wagner wrote:
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >> 
+> >>> On Sunday 29 November 2009, Ferenc Wagner wrote:
+> >>>
+> >>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >>>> 
+> >>>>> On Saturday 28 November 2009, Ferenc Wagner wrote:
+> >>>>>
+> >>>>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >>>>>> 
+> >>>>>>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
+> >>>>>> 
+> >>>>>> The last message now was:
+> >>>>>> 
+> >>>>>> e100: 0000:02:08.0: hibernate, may wakeup
+> >>>>>> 
+> >>>>>> Looks like hibernating the e100 driver is unstable.
+> >>>>>
+> >>>>> Can you verify that by trying to hibernate without the e100 driver?
+> >>>> 
+> >>>> Not really, as I still can't reliable reproduce the issue.  Since I'm
+> >>>> running with suspend loglevel = 8, it's happened only twice (in a row),
+> >>>> with seemingly exact same console output.  Some earlier freezes also
+> >>>> happened in dpm_suspend_start, at least.  However, I can certainly add
+> >>>> e100 to SUSPEND_MODULES under /etc/pm/config.d, and continue running
+> >>>> with that.
+> >>>
+> >>> That's what I'd do.
+> >> 
+> >> That worked out mosty OK (no freeze in quite some hibernation cycles),
+> >> but I'm continuing testing it.
+> >
+> > Great, please let me know how it works out.
+> 
+> Will do.  On the negative side, this tends to confuse NetworkManager.
+> 
+> >> On the other hand, I reverted 8fbd962e3, recompiled and replaced the
+> >> module, and got the freeze during hibernation.  And that was the bulk of
+> >> the changes since 2.6.31...  I'll revert the rest and test again, but
+> >> that seems purely cosmetic, so no high hopes.
+> >> 
+> >>> In addition to that, you can run multiple hibernation/resume cycles in
+> >>> a tight loop using the RTC wakealarm.
+> >> 
+> >> I'll do so, as soon as I find a way to automatically supply the dm-crypt
+> >> passphrase... or even better, learn to hibernate to ramdisk from the
+> >> initramfs. :)
+> >
+> > Well, you don't need to use swap encryption for _testing_. :-)
+> 
+> I use partition encryption, everything except for /boot is encrypted.
 
---mgross
+If /boot is big enough, you could use a swap file in /boot for the testing.
 
+> Apropos: does s2disk perform encryption with a temporary key even if I
+> don't supply and RSA key, to protect mlocked application data from being
+> present in the swap after restore?
 
-Signed-off-by: mark gross <mgross@linux.intel.com>
+It can do that, but you need to provide a key during suspend and resume.
 
+Otherwise it doesn't use a random key, because it would have to store it in
+the clear in the image header.
 
->From 136d6a38482fe6213bd3bc368409fb51ab6939e3 Mon Sep 17 00:00:00 2001
-From: mark gross <mgross@mgross-hp8510w.(none)>
-Date: Tue, 1 Dec 2009 12:58:59 -0800
-Subject: [PATCH 2/5] PM_QOS to use handle based requests cpuidle update
-
----
- drivers/acpi/processor_idle.c      |    2 +-
- drivers/cpuidle/governors/ladder.c |    2 +-
- drivers/cpuidle/governors/menu.c   |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index bbd066e..1f524a2 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -696,7 +696,7 @@ static int acpi_processor_power_seq_show(struct seq_file *seq, void *offset)
- 		   "max_cstate:              C%d\n"
- 		   "maximum allowed latency: %d usec\n",
- 		   pr->power.state ? pr->power.state - pr->power.states : 0,
--		   max_cstate, pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY));
-+		   max_cstate, pm_qos_request(PM_QOS_CPU_DMA_LATENCY));
- 
- 	seq_puts(seq, "states:\n");
- 
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index a4bec3f..5f93084 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -67,7 +67,7 @@ static int ladder_select_state(struct cpuidle_device *dev)
- 	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
- 	struct ladder_device_state *last_state;
- 	int last_residency, last_idx = ldev->last_state_idx;
--	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
-+	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 
- 	if (unlikely(!ldev))
- 		return 0;
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 6810443..f75aec5 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -176,7 +176,7 @@ static void menu_update(struct cpuidle_device *dev);
- static int menu_select(struct cpuidle_device *dev)
- {
- 	struct menu_device *data = &__get_cpu_var(menu_devices);
--	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
-+	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
- 	int multiplier;
- 
--- 
-1.6.3.3
-
-
-
+Thanks,
+Rafael
