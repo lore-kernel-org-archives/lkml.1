@@ -1,106 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZLAOtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbZLAOut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbZLAOtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 09:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZLAOtl
+	id S1753292AbZLAOut (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 09:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZLAOus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 09:49:41 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:52318 "EHLO e9.ny.us.ibm.com"
+	Tue, 1 Dec 2009 09:50:48 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37792 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751940AbZLAOtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 09:49:40 -0500
-Subject: Re: virtio: Add memory statistics reporting to the balloon driver
- (V4)
-From: Adam Litke <agl@us.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Anthony Liguori <anthony@codemonkey.ws>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200912011254.22861.rusty@rustcorp.com.au>
-References: <1259597655.30369.2.camel@aglitke>
-	 <200912011254.22861.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset="UTF-8"
-Organization: IBM
-Date: Tue, 01 Dec 2009 08:49:45 -0600
-Message-ID: <1259678985.2816.0.camel@aglitke>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1751898AbZLAOur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 09:50:47 -0500
+Message-ID: <4B152D22.9070001@kernel.org>
+Date: Tue, 01 Dec 2009 23:50:10 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: michal.simek@petalogix.com, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: problems in linux-next (Was: Re: linux-next: Tree for December
+ 1)
+References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>	<4B14D6E2.2040704@petalogix.com> <20091201210343.f0a1d353.sfr@canb.auug.org.au>
+In-Reply-To: <20091201210343.f0a1d353.sfr@canb.auug.org.au>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Rusty.
+Hello,
 
-Acked-by: Adam Litke <agl@us.ibm.com>
+On 12/01/2009 07:03 PM, Stephen Rothwell wrote:
+>> WARNING: at include/linux/percpu.h:157 __create_workqueue_key+0x1c0/0x1d0()
+>> Modules linked in:
 
-On Tue, 2009-12-01 at 12:54 +1030, Rusty Russell wrote:
-> On Tue, 1 Dec 2009 02:44:15 am Adam Litke wrote:
-> > Changes since V3:
-> 
-> OK, I applied this.  And here's the fixes I applied afterwards (to save YA
-> round trip: please ack and I'll fold them together)
-> 
-> virtio: balloon fixes
-> 
-> 1) Tag and val args to update_stat() are no longer __le.
-> 2) pages_to_bytes() should promote to u64 so we don't truncate.
-> 3) Fix two checkpatch.pl warnings.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  drivers/virtio/virtio_balloon.c |    8 +++++---
->  include/linux/virtio_balloon.h  |    3 +--
->  2 files changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
-> --- a/drivers/virtio/virtio_balloon.c
-> +++ b/drivers/virtio/virtio_balloon.c
-> @@ -158,14 +158,15 @@ static void leak_balloon(struct virtio_b
->  }
-> 
->  static inline void update_stat(struct virtio_balloon *vb, int idx,
-> -				__le16 tag, __le64 val)
-> +			       u16 tag, u64 val)
->  {
->  	BUG_ON(idx >= VIRTIO_BALLOON_S_NR);
->  	vb->stats[idx].tag = tag;
->  	vb->stats[idx].val = val;
->  }
-> 
-> -#define pages_to_bytes(x) ((x) << PAGE_SHIFT)
-> +#define pages_to_bytes(x) ((u64)(x) << PAGE_SHIFT)
-> +
->  static void update_balloon_stats(struct virtio_balloon *vb)
->  {
->  	unsigned long events[NR_VM_EVENT_ITEMS];
-> @@ -296,7 +297,8 @@ static int virtballoon_probe(struct virt
->  		 * use it to signal us later.
->  		 */
->  		sg_init_one(&sg, vb->stats, sizeof vb->stats);
-> -		if (vb->stats_vq->vq_ops->add_buf(vb->stats_vq, &sg, 1, 0, vb) < 0)
-> +		if (vb->stats_vq->vq_ops->add_buf(vb->stats_vq,
-> +						  &sg, 1, 0, vb) < 0)
->  			BUG();
->  		vb->stats_vq->vq_ops->kick(vb->stats_vq);
->  	}
-> diff --git a/include/linux/virtio_balloon.h b/include/linux/virtio_balloon.h
-> --- a/include/linux/virtio_balloon.h
-> +++ b/include/linux/virtio_balloon.h
-> @@ -28,8 +28,7 @@ struct virtio_balloon_config
->  #define VIRTIO_BALLOON_S_MEMTOT   5   /* Total amount of memory */
->  #define VIRTIO_BALLOON_S_NR       6
-> 
-> -struct virtio_balloon_stat
-> -{
-> +struct virtio_balloon_stat {
->  	u16 tag;
->  	u64 val;
->  } __attribute__((packed));
-> 
-> 
+Argh... The warning is about requested alignment larger than
+SMP_CACHE_BYTES.  93fba1c02ec10870a9d41085ef036b6a44cb0234 aligns cwqs
+to 8 bytes and later one will push it to 128 bytes so that color codes
+for flushes can be put there too.  As the number of cwqs will be
+significantly reduced and cwq is supposed to be aligned to cacheline
+anyway, 128 byte alignment in itself isn't too bad and percpu
+allocator can handle it just fine.
 
+The problem is that on UP configurations.  Percpu memory allocator
+becomes a simple wrapper around kmalloc and there's no way to specify
+larger alignment when requesting memory from kmalloc.
+
+It would be best if there's a clean way to allocate memory with
+alignment larger than SMP_CACHE_BYTES.  If not, I think I'll add a
+separate cache for cwqs on UP so that the alignment requirement can be
+met.  Is there any way to get better aligned memory without creating a
+separate cache or allocating larger memory and aligning by chopping
+off?
+
+Thanks.
 
 -- 
-Thanks,
-Adam
-
+tejun
