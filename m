@@ -1,63 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZLAPcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZLAP1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481AbZLAPcK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 10:32:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZLAPcK
+	id S1753296AbZLAP1U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 10:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZLAP1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 10:32:10 -0500
-Received: from mx2.compro.net ([12.186.155.4]:46451 "EHLO mx2.compro.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbZLAPcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 10:32:09 -0500
-X-Greylist: delayed 846 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Dec 2009 10:32:09 EST
-X-IronPort-AV: E=Sophos;i="4.47,321,1257138000"; 
-   d="scan'208";a="4729507"
-Message-ID: <4B1533B0.1030007@compro.net>
-Date: Tue, 01 Dec 2009 10:18:08 -0500
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 1 Dec 2009 10:27:19 -0500
+Received: from mail.turknet.net.tr ([193.192.98.182]:34517 "EHLO
+	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbZLAP1S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 10:27:18 -0500
+Message-ID: <4B1535DA.2060102@netone.com.tr>
+Date: Tue, 01 Dec 2009 17:27:22 +0200
+From: Tarkan Erimer <tarkane@netone.com.tr>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.8 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Clemens Ladisch <clemens@ladisch.de>
-CC: Mai Daftedar <mai.daftedar@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Signal from kernel space to user space
-References: <2cd4ff050912010307h5570a376xc220a95947775eae@mail.gmail.com> <4B151A86.1060505@ladisch.de>
-In-Reply-To: <4B151A86.1060505@ladisch.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Michal Marek <mmarek@suse.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Linux-2.6.32-rc8-git2 Fails To Compile With GCC-4.4.2
+References: <4B14FB56.4040608@netone.com.tr>	 <1259666631.23038.7.camel@tara.firmix.at>  <4B15006C.2020207@netone.com.tr> <1259667823.23038.9.camel@tara.firmix.at> <4B15029D.8090105@netone.com.tr> <4B152424.1080101@suse.cz>
+In-Reply-To: <4B152424.1080101@suse.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Dec 2009 15:27:22.0861 (UTC) FILETIME=[C75A89D0:01CA729A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clemens Ladisch wrote:
-> Mai Daftedar wrote:
->>    Im still new to the kernel development world :)and  I was wondering
->> what functions I can use in the kernel space for a signal to be sent
->> to the userspace
-> 
-
-I have some interest in this. Might I inject a couple of probably stupid related questions?
-
-> kill_pid_(info) is to be preferred over send_sig_info because it ensures
-> that the destination process has the same identity (a plain pid number
-> might have wrappend around and be in use by another process).
-> 
-
-Does that mean I can't assume my process pid will unique for the life of the process?
-
-> However, why are you using a signal? What information are you trying to
-> send, and why wouldn't eventfd or a plain device thaz becomes readable
-> be a better solution?
-> 
-
-If no "information" is required, which of these are the fastest, say from an interrupt handler?
-I have a PCI card that handles external interrupts from the outside world and does nothing but
-report those external interrupts to userland. We use send_sig or wake_up_process depending
-on whether userland is going to wait for it or not. If there is a better/faster way I would be
-very interested.
-
-
-Thanks and sorry for butting in
-Mark
-
+On 12/01/2009 04:11 PM, Michal Marek wrote:
+> BTW, It was already reported and fixed: https://bugzilla.novell.com/558005 .
+>
+> Michal
+>
+>   
+Thanks Michal, for the info.
