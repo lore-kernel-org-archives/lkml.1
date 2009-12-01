@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbZLAQBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbZLAQBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753849AbZLAQBn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZLAQBm
+	id S1753920AbZLAQBy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:01:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZLAQBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:01:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59181 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753821AbZLAQBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:01:41 -0500
-Date: Tue, 1 Dec 2009 17:01:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       michal.simek@petalogix.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: problems in linux-next (Was: Re: linux-next: Tree for December 1)
-Message-ID: <20091201160119.GA10826@elte.hu>
-References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
- <4B14D6E2.2040704@petalogix.com>
- <20091201210343.f0a1d353.sfr@canb.auug.org.au>
- <4B152D22.9070001@kernel.org>
- <alpine.DEB.2.00.0912010946340.8841@router.home>
+	Tue, 1 Dec 2009 11:01:53 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45042 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835AbZLAQBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:01:51 -0500
+Date: Tue, 1 Dec 2009 17:01:51 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: divide by zero in termios when setting bluetooth
+Message-ID: <20091201160151.GD2262@elf.ucw.cz>
+References: <20091201151315.GC2262@elf.ucw.cz>
+ <20091201155244.0523d9c9@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0912010946340.8841@router.home>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20091201155244.0523d9c9@lxorguk.ukuu.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Christoph Lameter <cl@linux-foundation.org> wrote:
-
-> On Tue, 1 Dec 2009, Tejun Heo wrote:
+> > I triggered this by mistake... "W" taint is from the  WARN_ON()
+> > before.
 > 
-> > The problem is that on UP configurations.  Percpu memory allocator 
-> > becomes a simple wrapper around kmalloc and there's no way to 
-> > specify larger alignment when requesting memory from kmalloc.
+> This ought to fix it
 > 
-> There is usually no point in aligning in UP. Alignment is typically 
-> done for smp configurations to limit cache line bouncing and control 
-> cache line use/
+> serial: Fix crash if the minimum rate of the device is > 9600 baud
+> 
+> From: Alan Cox <alan@linux.intel.com>
+> 
+> In that situation if the old rate is invalid and the new rate is invalid
+> and the chip cannot do 9600 baud we report zero, which makes all the
+> drivers explode.
+> 
+> Instead force the rate based on min/max
+> 
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
 
-There is a natural minimum alignment for UP and it's smaller than the 
-cache-line size: machine word size. All our allocators (except bootmem) 
-align to machine word so there's no need to specify this explicitly.
+>  		}
+>  
+>  		/*
+> -		 * As a last resort, if the quotient is zero,
+> -		 * default to 9600 bps
+> +		 * As a last resort, if the range cannot be met then clip to
+> +		 * the nearest chip supported rate.
+>  		 */
+> -		if (!hung_up)
+> -			tty_termios_encode_baud_rate(termios, 9600, 9600);
+> +		if (!hung_up) {
+> +			if (baud <= min)                
+> +				tty_termios_encode_baud_rate(termios,
+> +							min + 1, min + 1);
+> +			else
+> +				tty_termios_encode_baud_rate(termios,
+> +							max - 1, max - 1);
+> +		}
+>  	}
+> -
+> +	/* Should never happen */
+> +	WARN_ON(1);
+>  	return 0;
 
-Larger alignment than that just wastes memory - which waste UP systems 
-can afford the least.
-
-	Ingo
+Does this mean WARN_ON() on user error? Maybe printk(KERN_ERR) with
+explanation would be better?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
