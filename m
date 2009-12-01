@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbZLATC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbZLATJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbZLATC4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 14:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZLATCz
+	id S1753936AbZLATJw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 14:09:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZLATJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 14:02:55 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:36281 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbZLATCy (ORCPT
+	Tue, 1 Dec 2009 14:09:51 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:54788 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZLATJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 14:02:54 -0500
-Message-ID: <4B156862.5020903@hp.com>
-Date: Tue, 01 Dec 2009 14:02:58 -0500
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 1 Dec 2009 14:09:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=Lpb5sejP05KDx7fDH0sLVBcnpNrDMBY065qkWk4WooduZwqwip45K+NySyT+vyN8iy
+         FftuHUBtA+rw9PSo0/uQ7ep7wlMtJinIIJ3gEcKkhNxvlJrO9V/33SEP1r8yqQ2T+gOC
+         9eJBVq/R+YnKR6Jp8j27qIU+cunlV6YrksRZc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH] drivers/block/floppy.c: stylistic cleanups
+Date: Tue, 1 Dec 2009 20:09:00 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1259001504.16503.79.camel@Joe-Laptop.home> <1259640820.13592.37.camel@Joe-Laptop.home> <20091201084550.586a728b@nehalam>
+In-Reply-To: <20091201084550.586a728b@nehalam>
 MIME-Version: 1.0
-To: Andrei Pelinescu-Onciul <andrei@iptel.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-sctp@vger.kernel.org
-Subject: Re: [PATCH] sctp: fix sctp_setsockopt_autoclose compile warning
-References: <20091130164015.9bb8f6a3.sfr@canb.auug.org.au> <20091130094929.GY10897@shell.iptel.org> <20091130095250.GZ10897@shell.iptel.org>
-In-Reply-To: <20091130095250.GZ10897@shell.iptel.org>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <200912012009.00812.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Andrei Pelinescu-Onciul wrote:
-> Fix the following warning, when building on 64 bits:
+On Tuesday 01 December 2009 05:45:50 pm Stephen Hemminger wrote:
+> On Mon, 30 Nov 2009 20:13:40 -0800
+> Joe Perches <joe@perches.com> wrote:
 > 
-> net/sctp/socket.c:2091: warning: large integer implicitly
->                         truncated to unsigned type
+> > On Mon, 2009-11-30 at 09:28 -0800, Stephen Hemminger wrote:
+> > > Rather than playing with the dangling operator format which seems to be a coding
+> > > style that only David cares about. Why not go through and fix the really ugly old
+> > > drivers that need it. For a good horror experience, go look at the floppy driver.
+> > 
+> > Just for you Stephen, here's a cleaned up version.
+> > Now to see if it gets applied, which I rather doubt.
+> > 
+> > Changes:
+> > 
+> > Removed macro definitions and uses of
+> > 	IN, OUT, LAST_OUT, CLEARSTRUCT, and CHECK_RESET
+> > Used C99 initializers
+> > Removed assigns from if statements
+> > Converted printks without KERN_ levels to pr_info and pr_cont
+> > Removed unnecessary braces
+> > Used print_hex_dump
+> > Moved leading logical tests to end of previous line
+> > Surrounded still ugly CALL and ECALL macro with do {} while (0)
+> > 
+> > Checkpatch complaints before:
+> > total: 393 errors, 132 warnings, 4647 lines checked
+> > 
+> > after:
+> > total: 1 errors, 11 warnings, 5352 lines checked
+> > 
+> > Compile tested only, x86 allyesconfig
+> > 
+> > Signed-off-by: Joe Perches <joe@perches.com>
 > 
-> Signed-off-by: Andrei Pelinescu-Onciul <andrei@iptel.org>
+> I have a fix (to get rid of Buffer I/O error when testing for drive present),
+> so I'll put your cleanup in first.
 
-Ack.
+Could you please tell us how are we going to back-port your fix to
+-stable after such amount of changes:
 
--vlad
+  drivers/block/floppy.c | 1853 +++++++++++++++++++++++++++++++++---------------
+  1 files changed, 1279 insertions(+), 574 deletions(-)
 
-> ---
->  net/sctp/socket.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/sctp/socket.c b/net/sctp/socket.c
-> index 71513b3..8961863 100644
-> --- a/net/sctp/socket.c
-> +++ b/net/sctp/socket.c
-> @@ -2088,7 +2088,7 @@ static int sctp_setsockopt_autoclose(struct sock *sk, char __user *optval,
->  		return -EFAULT;
->  	/* make sure it won't exceed MAX_SCHEDULE_TIMEOUT */
->  	if (sp->autoclose > (MAX_SCHEDULE_TIMEOUT / HZ) )
-> -		sp->autoclose = MAX_SCHEDULE_TIMEOUT / HZ ;
-> +		sp->autoclose = (__u32)(MAX_SCHEDULE_TIMEOUT / HZ) ;
->  
->  	return 0;
->  }
+gets applied first?
+
+--
+Bartlomiej Zolnierkiewicz
