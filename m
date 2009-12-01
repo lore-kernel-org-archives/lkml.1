@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZLASC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZLASC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZLASC1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 13:02:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZLASC0
+	id S1753519AbZLASC3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 13:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZLASC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 13:02:26 -0500
-Received: from kroah.org ([198.145.64.141]:52002 "EHLO coco.kroah.org"
+	Tue, 1 Dec 2009 13:02:28 -0500
+Received: from kroah.org ([198.145.64.141]:52005 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753267AbZLASCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 13:02:25 -0500
+	id S1753280AbZLASC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 13:02:26 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@linux.intel.com>, stable <stable@kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/3] tty_port: handle the nonblocking open of a dead port corner case
-Date: Tue,  1 Dec 2009 09:59:04 -0800
-Message-Id: <1259690346-12469-1-git-send-email-gregkh@suse.de>
+Cc: Maxime Bizon <mbizon@freebox.fr>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 2/3] bcm63xx_uart: Fix serial driver compile breakage.
+Date: Tue,  1 Dec 2009 09:59:05 -0800
+Message-Id: <1259690346-12469-2-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.5.3
 In-Reply-To: <20091201174341.GB31972@kroah.com>
 References: <20091201174341.GB31972@kroah.com>
@@ -23,36 +22,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@linux.intel.com>
+From: Maxime Bizon <mbizon@freebox.fr>
 
-Some drivers allow O_NDELAY of a dead port (eg for setserial to work). In that
-situation we must not try to raise the carrier.
+The driver missed a small API change while sitting in Ralf's tree, this
+patch makes it compile again.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Cc: stable <stable@kernel.org>
+Signed-off-by: Maxime Bizon <mbizon@freebox.fr>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/tty_port.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/serial/bcm63xx_uart.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
-index 2e8552d..c63f3d3 100644
---- a/drivers/char/tty_port.c
-+++ b/drivers/char/tty_port.c
-@@ -219,8 +219,11 @@ int tty_port_block_til_ready(struct tty_port *port,
+diff --git a/drivers/serial/bcm63xx_uart.c b/drivers/serial/bcm63xx_uart.c
+index beddaa6..37ad0c4 100644
+--- a/drivers/serial/bcm63xx_uart.c
++++ b/drivers/serial/bcm63xx_uart.c
+@@ -242,7 +242,7 @@ static void bcm_uart_do_rx(struct uart_port *port)
+ 	 * higher than fifo size anyway since we're much faster than
+ 	 * serial port */
+ 	max_count = 32;
+-	tty = port->info->port.tty;
++	tty = port->state->port.tty;
+ 	do {
+ 		unsigned int iestat, c, cstat;
+ 		char flag;
+@@ -318,7 +318,7 @@ static void bcm_uart_do_tx(struct uart_port *port)
+ 		return;
+ 	}
  
- 	/* if non-blocking mode is set we can pass directly to open unless
- 	   the port has just hung up or is in another error state */
--	if ((filp->f_flags & O_NONBLOCK) ||
--			(tty->flags & (1 << TTY_IO_ERROR))) {
-+	if (tty->flags & (1 << TTY_IO_ERROR)) {
-+		port->flags |= ASYNC_NORMAL_ACTIVE;
-+		return 0;
-+	}
-+	if (filp->f_flags & O_NONBLOCK) {
- 		/* Indicate we are open */
- 		if (tty->termios->c_cflag & CBAUD)
- 			tty_port_raise_dtr_rts(port);
+-	xmit = &port->info->xmit;
++	xmit = &port->state->xmit;
+ 	if (uart_circ_empty(xmit))
+ 		goto txq_empty;
+ 
 -- 
 1.6.4.2
 
