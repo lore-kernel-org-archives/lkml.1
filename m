@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbZLAWqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbZLAWNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754604AbZLAWqu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 17:46:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbZLAWqt
+	id S1753689AbZLAWNr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 17:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbZLAWNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 17:46:49 -0500
-Received: from v-smtp-auth-relay-3.gradwell.net ([79.135.125.42]:49813 "EHLO
-	v-smtp-auth-relay-3.gradwell.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753525AbZLAWqt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 17:46:49 -0500
-X-Greylist: delayed 472 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Dec 2009 17:46:48 EST
-Subject: RE: Fat64 / exFat fs and Linux
-From: Alex Buell <alex.buell@munted.org.uk>
-Reply-To: alex.buell@munted.org.uk
-To: Yuhong Bao <yuhongbao_386@hotmail.com>
-Cc: hirofumi@mail.parknet.co.jp, hpa@zytor.com, linux-kernel@vger.kernel.org
-In-Reply-To: <SNT125-W20BE0DDA8ACAC2F1B4D240C3960@phx.gbl>
-References: <54747.12003.qm@web25801.mail.ukl.yahoo.com>
-	 <871vul3g14.fsf@devron.myhome.or.jp> <49822E2A.3020601@zytor.com>
-	 <957266.96237.qm@web25805.mail.ukl.yahoo.com>
-	 <87bptp1njj.fsf@devron.myhome.or.jp> <87bptouoid.fsf@devron.myhome.or.jp>
-	 <473359.26476.qm@web258,<20090208094333.490abcc1@lithium.local.net>
-	 <SNT125-W20BE0DDA8ACAC2F1B4D240C3960@phx.gbl>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: One very high maintenance cat for company
-Date: Tue, 01 Dec 2009 22:12:46 +0000
-Message-Id: <1259705570.12087.2.camel@lithium>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 1 Dec 2009 17:13:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36163 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750929AbZLAWNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 17:13:46 -0500
+Date: Tue, 1 Dec 2009 23:12:58 +0100
+From: Veaceslav Falico <vfalico@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
+       Miloslav Trmac <mitr@redhat.com>, James Morris <jmorris@namei.org>,
+       Alan Cox <alan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
+       Louis Rilling <louis.rilling@kerlabs.com>,
+       David Howells <dhowells@redhat.com>, Oleg Nesterov <oleg@redhat.com>
+Subject: [PATCH 3/4] copy_signal cleanup: clean thread_group_cputime_init()
+Message-ID: <20091201221258.GC10052@darkmag.usersys.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-01 at 13:58 -0800, Yuhong Bao wrote:
-> > The bz2 tarball can be found at:
-> > http://www.munted.org.uk/programming/exfat.tar.bz2
+Remove unneeded initializations in thread_group_cputime_init().
 
-> Both of these links are now dead. It was alive, I remember downloading
-> it.
+Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
+---
 
-My most abject apologies, I hadn't noticed the files had disappeared
-from my website. I've just re-uploaded the files. Thanks for letting me
-know!
-
-Regards,
-Alex
--- 
-http://www.munted.org.uk
-
-One very high maintenance cat living here.
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 75e6e60..4778ef7 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2419,9 +2419,7 @@ void thread_group_cputimer(struct task_struct *tsk, struct task_cputime *times);
+ 
+ static inline void thread_group_cputime_init(struct signal_struct *sig)
+ {
+-	sig->cputimer.cputime = INIT_CPUTIME;
+ 	spin_lock_init(&sig->cputimer.lock);
+-	sig->cputimer.running = 0;
+ }
+ 
+ static inline void thread_group_cputime_free(struct signal_struct *sig)
