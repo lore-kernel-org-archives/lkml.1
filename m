@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZLAQP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZLAQQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZLAQP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZLAQPZ
+	id S1754261AbZLAQQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:16:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbZLAQQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:15:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47934 "EHLO mx3.mail.elte.hu"
+	Tue, 1 Dec 2009 11:16:24 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:36384 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754067AbZLAQPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:15:25 -0500
-Date: Tue, 1 Dec 2009 17:14:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, steved@redhat.com,
-       jens.axboe@oracle.com, linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
-       linux-fsdevel@vger.kernel.org, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
-Subject: Re: [PATCH] SLOW_WORK: Move slow_work's proc file to debugfs
-Message-ID: <20091201161455.GB24897@elte.hu>
-References: <6941.1259681771@redhat.com>
+	id S1754245AbZLAQQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:16:22 -0500
+Message-ID: <4B15414A.9040405@us.ibm.com>
+Date: Tue, 01 Dec 2009 08:16:10 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6941.1259681771@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH 0/2] Futex fault injection
+References: <20091201141642.398e7b7d@sripathi> <20091201103351.GA6685@elte.hu> <1259664883.1697.28.camel@laptop> <20091201125537.GA23382@elte.hu>
+In-Reply-To: <20091201125537.GA23382@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Howells <dhowells@redhat.com> wrote:
-
-> Move slow_work's debugging proc file to debugfs.
+Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
+>> On Tue, 2009-12-01 at 11:33 +0100, Ingo Molnar wrote:
+>>> * Sripathi Kodi <sripathik@in.ibm.com> wrote:
+>>>
+>>>> Hi,
+>>>>
+>>>> This patch set adds fault injection for futex subsystem. It adds 
+>>>> faults at places where reading/writing from user space can return 
+>>>> EFAULT. This will be useful in testing any significant change to futex 
+>>>> subsystem.
+>>> Instead of this unacceptably ugly and special-purpose debugfs 
+>>> interface, please extend perf events to allow event injection. Some 
+>>> other places in the kernel (which deal with rare events) want/need 
+>>> this capability too.
+>> Thing is, he's using the 'normal' fault injection code to do this, I 
+>> see no objection to doing that.
 > 
->  Documentation/slow-work.txt |    4 -
->  include/linux/slow-work.h   |    8 +-
->  init/Kconfig                |    8 +-
->  kernel/Makefile             |    2 
->  kernel/slow-work-debugfs.c  |  227 +++++++++++++++++++++++++++++++++++++++++++
->  kernel/slow-work-proc.c     |  227 -------------------------------------------
->  kernel/slow-work.c          |   18 ++-
->  kernel/slow-work.h          |    6 +
->  8 files changed, 253 insertions(+), 247 deletions(-)
->  create mode 100644 kernel/slow-work-debugfs.c
->  delete mode 100644 kernel/slow-work-proc.c
+> Yes - but its impact to the futex code is butt-ugly. That some facility 
+> is in the kernel does not mean it gets a free pass to be applied 
+> everywhere and anywhere.
 
-Nice - thanks for doing this so quickly! It might sound like nitpicking 
-but /proc ABIs tend to be a lot harder to get rid of than debugfs 
-interfaces.
+I don't think the "butt-ugly" argument is enough to reject the patch. 
+It's a fairly subjective metric and I don't think the proposed solution 
+results in "pretty" code either. In fact the super long function names 
+and multi-line conditionals are arguably "ugly" (maybe not "butt-ugly" 
+though). :-)
 
-	Ingo
+However, the arguments are solid and I understand wanting to introduce a 
+new feature in a particular way. Has there been any work done on perf 
+event injection up to this point or would this be a completely new perf 
+feature?
+
+--
+Darren
+
+> 
+> An example of that would be tracepoints - there's no free pass to add 
+> tracepoints in new places and some maintainers elect to use different 
+> facilities. (or reject all current facilities)
+> 
+>> If you want to redo the fault injection subsystem, then that's another 
+>> story, but then we need to convert all of its users over.
+> 
+> What i want to see is sane code in futex.c. If we add hooks/callbacks 
+> i'd like it to be a complete solution helping a lot of usecases not some 
+> limited approach helping testability only.
+> 
+> Thanks,
+> 
+> 	Ingo
+
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
