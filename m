@@ -1,33 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbZLAQWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbZLAQUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754331AbZLAQWA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZLAQWA
+	id S1754295AbZLAQUD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:20:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbZLAQUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:22:00 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:56605 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754255AbZLAQV7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:21:59 -0500
-Message-ID: <4B1541EE.9000305@nortel.com>
-Date: Tue, 01 Dec 2009 10:18:54 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Tue, 1 Dec 2009 11:20:03 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61712 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754247AbZLAQUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:20:01 -0500
+Date: Tue, 1 Dec 2009 11:19:06 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/7] trace_syscalls: remove duplications
+Message-ID: <20091201161905.GA2641@redhat.com>
+References: <4B14D26A.1040000@cn.fujitsu.com>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org, Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: seeing strange values for tcp sk_rmem_alloc
-References: <4B15416A.2060202@nortel.com>
-In-Reply-To: <4B15416A.2060202@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Dec 2009 16:21:53.0586 (UTC) FILETIME=[64DB9120:01CA72A2]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B14D26A.1040000@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 01, 2009 at 04:23:06PM +0800, Lai Jiangshan wrote:
+> trace_syscalls introduces a lot of duplicate functions
+> to all syscalls. These series patches remove them.
+> 
+>    text    data     bss     dec     hex filename
+>  630068  152084  531376 1313528  140af8 kernel/built-in.o.old
+>  593997  151988  531824 1277809  137f71 kernel/built-in.o.new
+> 
+> patch 1~4 is for preparing.
+> patch 5~6 remove duplications
+> patch 7 cleanups
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+>  include/linux/syscalls.h      |   73 ++++--------------------
+>  include/trace/syscall.h       |   20 ++----
+>  kernel/trace/trace_syscalls.c |  124 ++++++++++++------------------------------
+>  3 files changed, 57 insertions(+), 160 deletions(-)
+> 
+> 
 
-I forgot to mention that this was on 2.6.27.  I haven't tried it on
-current git.
+nice simplifications! ack to the whole series.
 
-Chris
+Acked-by: Jason Baron <jbaron@redhat.com>
+
