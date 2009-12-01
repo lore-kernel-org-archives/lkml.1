@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbZLAXuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZLAXxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754758AbZLAXuT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 18:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbZLAXuS
+	id S1754788AbZLAXxL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 18:53:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbZLAXxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 18:50:18 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:36306 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754080AbZLAXuR (ORCPT
+	Tue, 1 Dec 2009 18:53:10 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:65203 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754748AbZLAXxK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 18:50:17 -0500
+	Tue, 1 Dec 2009 18:53:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=OtSDyQj2A/s7KzuNp8vB21A872+I8sTWX8v69xDqaXtUw6CJwYy7dRiGhN9PInsiPo
-         WJNxpTY0AKdiQ3UmWxbqoUXLyvzFTUWZ1SSg4WWsoH6+2S2qg+baka5MbWaLCBCW0ikO
-         zuRgoeXqQZCjfVc3WqZkTqtc+1eqnArSHdjEU=
-Message-ID: <4B15ABBE.90101@gmail.com>
-Date: Tue, 01 Dec 2009 15:50:22 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=n5anm1nn5k0W7yGTe7G/T2ahdgk1KU5+KoJVEkvjpudqc2Q9VSb9/F+xHrNkJaX7xu
+         zreRaYfxOAbeRa1ClUgrcFF2X6mVihnj4ANn/RgxmDreVttOLdZiHXVJ8H+RJQ5cHKFw
+         WSdSm2lWb6s+Rj0VjBDhQaCvbGb+BNuRuNjSk=
 MIME-Version: 1.0
-To: Larry Finger <Larry.Finger@lwfinger.net>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Re: Kernel BUG during suspend to disk with 2.6.32-rc8-git3
-References: <4B159EAC.1010006@lwfinger.net> <4B15A2F6.4020206@gmail.com> <4B15A9FB.2030808@lwfinger.net>
-In-Reply-To: <4B15A9FB.2030808@lwfinger.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1258723764-4399-1-git-send-email-jglisse@redhat.com>
+References: <1258723764-4399-1-git-send-email-jglisse@redhat.com>
+Date: Wed, 2 Dec 2009 09:53:15 +1000
+Message-ID: <21d7e9970912011553v391fa720j140a8c5ea3f3c06@mail.gmail.com>
+Subject: Re:
+From: Dave Airlie <airlied@gmail.com>
+To: Jerome Glisse <jglisse@redhat.com>
+Cc: dri-devel@lists.sf.net, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Hellstrom <thellstrom@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01/09 15:42, Larry Finger wrote:
-> On 12/01/2009 05:12 PM, Justin P. Mattock wrote:
->>
->>
->> looks familiar with what I'm getting
->> over here.
->> bugreport: http://bugzilla.kernel.org/show_bug.cgi?id= 14483
->>
->> at the bottom reverting that commit
->> worked here(but still need to see
->> what others say).
->
-> Reverting commit 138d15692bf76841f252d4b836a535cf5f9154e9 fixed the
-> problem on my computer. Thanks for the info.
->
-> Larry
->
->
+On Fri, Nov 20, 2009 at 11:29 PM, Jerome Glisse <jglisse@redhat.com> wrote:
+> This patch series add ttm range validation function. Aim is to
+> include this in 2.6.33 so i have time to iron out issue, comments.
 
-cool,
-finally some kind of handle
-on this. Now I guess the
-best thing todo now is to
-wait and see what the acpi guys have
-to say.
+I missed these first time around,
 
-Justin P. Mattock
+Thomas if you have any opinions on the TTM stuff please see if you
+can take a look.
 
+> ttm:
+> I duplicated a bunch of ttm functions but now i think, best would
+> be to add range to all function and use free list if range cover
+> all the manager space. Doing so we might also be able to simplify
+> mem_space alocation into a simpler function like ttm_bo_mem_space_range
+>
+> radeon:
+> The second patch is a rework/cleanup of radeon object, it solves
+> few issues along the way (i can't remember them now after fews
+> days testing the patches). Biggest change is that we now rely
+> on BO being validated before doing any change to radeon bo structure.
+> As with any big patch i might introduce regressions, so far after
+> testing on AGP:R1XX,R2XX,R3XX,R6XX PCIE:R3XX,R4XX,R5XX,R6XX,R7XX
+> and RS480,RS690 i didn't found anythings obvious (test being X +
+> glxgears + compiz(on hw which support it) + suspend/resume).
+
+I'll try and take a look at this here it doesn't seem to depend on the first
+patch so I can push it separate if needed.
+
+Dave.
+
+>
+> Last patch is smaller, it just use the interface introduced by
+> the first patch.
+>
+>
