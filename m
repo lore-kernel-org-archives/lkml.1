@@ -1,75 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbZLARpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbZLARqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754255AbZLARpo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZLARpo
+	id S1754333AbZLARqY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbZLARqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:45:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60865 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 12:46:22 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:35736 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752305AbZLARpn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:45:43 -0500
-Date: Tue, 1 Dec 2009 12:45:34 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, utrace-devel <utrace-devel@redhat.com>,
-       Roland McGrath <roland@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
-Message-ID: <20091201174534.GE10331@redhat.com>
-References: <20091130123257.GB18879@linux.vnet.ibm.com> <1259584907.20516.246.camel@laptop> <20091130131928.GC18879@linux.vnet.ibm.com> <1259588232.20516.307.camel@laptop> <20091130150314.GA10331@redhat.com> <20091130151650.GA24316@elte.hu> <20091130152910.GB10331@redhat.com> <20091201161132.GA24897@elte.hu> <20091201170002.GD10331@redhat.com> <20091201170954.GA4699@elte.hu>
-Mime-Version: 1.0
+	id S1753555AbZLARqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:46:21 -0500
+Date: Tue, 1 Dec 2009 17:46:12 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Pull request for MIPS-specific driver bits
+Message-ID: <20091201174612.GA18799@linux-mips.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091201170954.GA4699@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -  
+Below three patches for MIPS-specific drivers that I can't get anybody
+else interested in merging.  To be accurate drivers/video/gbefb.c is
+shared with SGI's x86-based Visual Workstation which is more or less
+the same system architecture than the MIPS-based O2.
 
-> > Only in name.  One is highly invasive, for debugging the kernel across 
-> > serial consoles.  The other is highly noninvasive, for debugging user 
-> > processes across normal userspace channels.  They both happen to talk 
-> > to gdb, but that's the end of the natural "overlap".
-> [...]
+Please pull them from
 
-> Well nothing that you mention here changes our obvious suggestion that 
-> an in-kernel gdb stub should obviously either be a kgdb extension, or a 
-> replacement of it.
+    git://ftp.linux-mips.org/pub/scm/upstream-linus.git upstream
 
-Help me out here: by "kgdb extension" do you imagine "something new
-that an unprivileged user can use to debug his own process"?  Or do
-you imagine a new userspace facility that single-steps the kernel? 
+This would be the last MIPS-related patches I have pending for 2.6.32.
 
+Thanks,
 
-> We dont want to separate facilities for the same conceptual thing:
-> examining application state (be that in user-space and
-> kernel-space).
+  Ralf
 
-This seems like a shallow sort of consistency.  kgdb was added after
-ptrace existed -- why not extend ptrace instead to target the kernel?
-After all, it's "examining application state".  The answer is that it
-doesn't make a heck of a lot of sense.
+commit 3063ae66aa9024d92d613e41264b590838a56a92
+Author: Maxime Bizon <mbizon@freebox.fr>
+Date:   Wed Nov 4 14:11:15 2009 +0100
 
+    MIPS: BCM63xx: Fix serial driver compile breakage.
+    
+    The driver missed an API change.
+    
+    Signed-off-by: Maxime Bizon <mbizon@freebox.fr>
+    Cc: linux-mips@linux-mips.org
+    Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-> > > Btw., perf does meet that definition: it functionally replaces all 
-> > > facilities that it overlaps/extends - such as Oprofile. [...]
-> > 
-> > (And they currently separately coexist.)
-> 
-> You didnt get my point apparently. Keeping the overlapped facility for 
-> compatibility (and general user inertia) is fine. Creating a new 
-> facility that doesnt do everything that the existing facility does, and 
-> not integrating it either, is not fine.
+commit 6a830e0a79a530328fb24aca0dc1682db9e163e0
+Author: Julia Lawall <julia@diku.dk>
+Date:   Sun Aug 9 11:42:32 2009 +0200
 
-oprofile and perfctr are closer in concept than kgdb and ptrace, yet
-AFAIK perfctr doesn't "interface" to oprofile, except perhaps to the
-extent of resolving contention over the underlying physical resources.
-In any case this is not a great analogy.
+    VIDEO: Correct use of request_region/request_mem_region
+    
+    request_region should be used with release_region, not request_mem_region.
+    
+    Geert Uytterhoeven pointed out that in the case of drivers/video/gbefb.c,
+    the problem is actually the other way around; request_mem_region should be
+    used instead of request_region.
+    
+    The semantic patch that finds/fixes this problem is as follows:
+    (http://coccinelle.lip6.fr/)
+    
+    // <smpl>
+    @r1@
+    expression start;
+    @@
+    
+    request_region(start,...)
+    
+    @b1@
+    expression r1.start;
+    @@
+    
+    request_mem_region(start,...)
+    
+    @depends on !b1@
+    expression r1.start;
+    expression E;
+    @@
+    
+    - release_mem_region
+    + release_region
+      (start,E)
+    // </smpl>
+    
+    Signed-off-by: Julia Lawall <julia@diku.dk>
+    Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
+commit 5a635a204e649d997b9f67c62d6e7d0e615d2619
+Author: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Date:   Thu Sep 3 22:59:01 2009 +0900
 
-- FChE
+    SPI: spi_txx9: Fix bit rate calculation
+    
+    TXx9 SPI bit rate is calculated by:
+            fBR = (spi-baseclk) / (n + 1)
+    Fix calculation of min_speed_hz, max_speed_hz and n.
+    
+    Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+    Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+
+ drivers/serial/bcm63xx_uart.c |    4 ++--
+ drivers/spi/spi_txx9.c        |   13 ++++++-------
+ drivers/video/gbefb.c         |    2 +-
+ 3 files changed, 9 insertions(+), 10 deletions(-)
