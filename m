@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbZLAUa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZLAUb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbZLAUa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 15:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZLAUaZ
+	id S1754560AbZLAUb6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 15:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZLAUb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 15:30:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56324 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbZLAUaY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 15:30:24 -0500
-Subject: Re: [PATCH] perf tools: allow cross compiling of perf tools
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jamie Iles <jamie@jamieiles.com>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>
-In-Reply-To: <1259699050.4003.15.camel@laptop>
-References: <1259698310-11025-1-git-send-email-jamie@jamieiles.com>
-	 <1259699050.4003.15.camel@laptop>
+	Tue, 1 Dec 2009 15:31:57 -0500
+Received: from waste.org ([173.11.57.241]:60076 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754540AbZLAUb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 15:31:57 -0500
+Subject: Re: [Bug 14662] drm/i915: Select CONFIG_SHMEM
+From: Matt Mackall <mpm@selenic.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Chris Wilson <chris@chris-wilson.co.uk>,
+       Mateusz Kaduk <mateusz.kaduk@gmail.com>, Eric Anholt <eric@anholt.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0912011906290.8058@sister.anvils>
+References: <Pine.LNX.4.64.0912011906290.8058@sister.anvils>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 01 Dec 2009 21:30:28 +0100
-Message-ID: <1259699428.4003.23.camel@laptop>
+Date: Tue, 01 Dec 2009 14:31:23 -0600
+Message-ID: <1259699483.29740.1456.camel@calx>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -28,20 +28,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-01 at 21:24 +0100, Peter Zijlstra wrote:
-> On Tue, 2009-12-01 at 20:11 +0000, Jamie Iles wrote:
-> > For embedded systems we need to cross compile applications on
-> > the build machine. Use the CROSS_COMPILE variable like the kernel
-> > itself.
-> > 
-> > Additionally, we can't use uname to determine whether we should
-> > build for 64 bit. Use the -dumpmachine flag of GCC to determine
-> > the target arch.
+On Tue, 2009-12-01 at 19:26 +0000, Hugh Dickins wrote:
+> Hi Chris,
 > 
-> Hmm, and here I though Michael already send something similar to this..
-> but apparently I can't really find it
+> I'm slightly worried by this patch which went into Linus's git yesterday.
+> 
+> Thank you for looking into the issue, and coming up with what Mateusz
+> has found to be a good workaround.
+> 
+> But is it the right fix?
 
-Ah, I'm turning senile, was looking at the wrong kernel tree.
+This really does look like a band-aid. There's either a real problem in
+tiny-shmem or alternately something scribbling on its aops? In which
+case turning shmem on is just causing something different to get
+scribbled on.
 
-Your patch is against something ancient too ;-)
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
 
