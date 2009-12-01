@@ -1,288 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZLAQhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZLAQlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbZLAQhu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZLAQhu
+	id S1752947AbZLAQlv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZLAQlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:37:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38615 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbZLAQhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:37:48 -0500
-Subject: Re: [RFC] high system time & lock contention running large mixed
-	workload
-From: Larry Woodman <lwoodman@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>
-In-Reply-To: <20091201102645.5C0A.A69D9226@jp.fujitsu.com>
-References: <20091125133752.2683c3e4@bree.surriel.com>
-	 <1259618429.2345.3.camel@dhcp-100-19-198.bos.redhat.com>
-	 <20091201102645.5C0A.A69D9226@jp.fujitsu.com>
-Content-Type: multipart/mixed; boundary="=-PgS2TVA1s1fkKlAMWv6Z"
-Date: Tue, 01 Dec 2009 11:41:02 -0500
-Message-Id: <1259685662.2345.11.camel@dhcp-100-19-198.bos.redhat.com>
+	Tue, 1 Dec 2009 11:41:51 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:57430 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752199AbZLAQlu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:41:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=EaTzhdk8FhPRYQ9Lx7wYye8v9XdScWi50i4BNWMCwqWCK2uesvwpAsfZXG3E8gBFi9
+         L7OSyE6db00pJgAv9NCa5URYdDRS9fa2u5uxiQ3ydydXIA4hPYKbtG+0nce5ZU6NAhlm
+         byDfwcZlYqDmEI9QCqMczy+c/7b1wpzvOpqbQ=
+Subject: Re: XD/smartmedia - how to implement it right?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alex Dubov <oakad@yahoo.com>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, arnd <arnd@arndb.de>
+In-Reply-To: <621988.63882.qm@web37601.mail.mud.yahoo.com>
+References: <621988.63882.qm@web37601.mail.mud.yahoo.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 01 Dec 2009 18:41:51 +0200
+Message-ID: <1259685711.18599.22.camel@maxim-laptop>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-PgS2TVA1s1fkKlAMWv6Z
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Tue, 2009-12-01 at 21:23 +0900, KOSAKI Motohiro wrote:
-> (cc to some related person)
-
+On Tue, 2009-12-01 at 08:10 -0800, Alex Dubov wrote: 
 > 
-> At first look,
+> --- On Tue, 12/1/09, Jörn Engel <joern@logfs.org> wrote:
 > 
->    - We have to fix this issue certenally.
->    - But your patch is a bit risky. 
+> > From: Jörn Engel <joern@logfs.org>
+> > Subject: Re: XD/smartmedia - how to implement it right?
+> > To: "Maxim Levitsky" <maximlevitsky@gmail.com>
+> > Cc: "Alex Dubov" <oakad@yahoo.com>, "linux-kernel" <linux-kernel@vger.kernel.org>, arnd@arndb.de, tglx@linutonix.de
+> > Date: Tuesday, December 1, 2009, 12:22 AM
+> > On Tue, 1 December 2009 01:04:26
+> > +0200, Maxim Levitsky wrote:
+> > > 
+> > > Alex, could you do me a favor, and explain why partial
+> > block writes
+> > > don't work?
+> > > What happens if its done?
+> > 
+> > With the Alauda and the limited set of cards I tried they
+> > work.
+> > 
+> > Jörn
+> > 
 > 
-> Your patch treat trylock(pte-lock) failure as no accessced. but
-> generally lock contention imply to have contention peer. iow, the page
-> have reference bit typically. then, next shrink_inactive_list() move it
-> active list again. that's suboptimal result.
-> 
-> However, we can't treat lock-contention as page-is-referenced simply. if it does,
-> the system easily go into OOM.
-> 
-> So, 
-> 	if (priority < DEF_PRIORITY - 2)
-> 		page_referenced()
-> 	else
-> 		page_refenced_trylock()
-> 
-> is better?
-> On typical workload, almost vmscan only use DEF_PRIORITY. then,
-> if priority==DEF_PRIORITY situation don't cause heavy lock contention,
-> the system don't need to mind the contention. anyway we can't avoid
-> contention if the system have heavy memory pressure.
-> 
+> It's a bug particular to jmicron controllers.
+
+Thanks!
+
+So, I will write the driver for my controller using nand subsystem, and
+then, I see what to do next.
+If you write your mtd driver, I have no objection to port my driver to
+yours (I assume that there will be a common core, just like the nand
+subsystem, and small drivers.)
 
 
-Agreed.  The attached updated patch only does a trylock in the
-page_referenced() call from shrink_inactive_list() and only for
-anonymous pages when the priority is either 10, 11 or
-12(DEF_PRIORITY-2).  I have never seen a problem like this with active
-pagecache pages and it does not alter the existing shrink_page_list
-behavior.  What do you think about this???
+And the last question probably:
+
+I know that xD is very similar to nand, but due to things like the
+above, maybe full mtd driver is really better.
+There will be some code duplication, but on the other hand the driver
+could follow the way windows driver works more closely, thus making it
+more compatable with xD cards.
+
+So if I or Alex write the full blown mtd driver, there will be no
+objections because of code duplication?
 
 
+Anyway, now I am going to stop talking and start coding (I did quite in
+depth review of mtd and nand systems already)
 
 
-
---=-PgS2TVA1s1fkKlAMWv6Z
-Content-Disposition: attachment; filename=pageout.diff
-Content-Type: text/x-patch; name=pageout.diff; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index cb0ba70..d7eaeca 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -80,7 +80,7 @@ static inline void page_dup_rmap(struct page *page)
-  * Called from mm/vmscan.c to handle paging out
-  */
- int page_referenced(struct page *, int is_locked,
--			struct mem_cgroup *cnt, unsigned long *vm_flags);
-+			struct mem_cgroup *cnt, unsigned long *vm_flags, int try);
- enum ttu_flags {
- 	TTU_UNMAP = 0,			/* unmap mode */
- 	TTU_MIGRATION = 1,		/* migration mode */
-@@ -99,7 +99,7 @@ int try_to_unmap(struct page *, enum ttu_flags flags);
-  * Called from mm/filemap_xip.c to unmap empty zero page
-  */
- pte_t *page_check_address(struct page *, struct mm_struct *,
--				unsigned long, spinlock_t **, int);
-+				unsigned long, spinlock_t **, int, int);
- 
- /*
-  * Used by swapoff to help locate where page is expected in vma.
-@@ -135,7 +135,8 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
- 
- static inline int page_referenced(struct page *page, int is_locked,
- 				  struct mem_cgroup *cnt,
--				  unsigned long *vm_flags)
-+				  unsigned long *vm_flags,
-+				  int try)
- {
- 	*vm_flags = 0;
- 	return TestClearPageReferenced(page);
-diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
-index 1888b2d..35be29d 100644
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -188,7 +188,7 @@ retry:
- 		address = vma->vm_start +
- 			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
- 		BUG_ON(address < vma->vm_start || address >= vma->vm_end);
--		pte = page_check_address(page, mm, address, &ptl, 1);
-+		pte = page_check_address(page, mm, address, &ptl, 1, 0);
- 		if (pte) {
- 			/* Nuke the page table entry. */
- 			flush_cache_page(vma, address, pte_pfn(*pte));
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 5575f86..8abb14b 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -623,7 +623,7 @@ static int write_protect_page(struct vm_area_struct *vma, struct page *page,
- 	if (addr == -EFAULT)
- 		goto out;
- 
--	ptep = page_check_address(page, mm, addr, &ptl, 0);
-+	ptep = page_check_address(page, mm, addr, &ptl, 0, 0);
- 	if (!ptep)
- 		goto out;
- 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index dd43373..d8afe1a 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -270,7 +270,7 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
-  * On success returns with pte mapped and locked.
-  */
- pte_t *page_check_address(struct page *page, struct mm_struct *mm,
--			  unsigned long address, spinlock_t **ptlp, int sync)
-+			  unsigned long address, spinlock_t **ptlp, int sync, int try)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
-@@ -298,7 +298,13 @@ pte_t *page_check_address(struct page *page, struct mm_struct *mm,
- 	}
- 
- 	ptl = pte_lockptr(mm, pmd);
--	spin_lock(ptl);
-+	if (try) {
-+		if (!spin_trylock(ptl)) {
-+			pte_unmap(pte);
-+			return NULL;
-+		}
-+	} else
-+		spin_lock(ptl);
- 	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
- 		*ptlp = ptl;
- 		return pte;
-@@ -325,7 +331,7 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
- 	address = vma_address(page, vma);
- 	if (address == -EFAULT)		/* out of vma range */
- 		return 0;
--	pte = page_check_address(page, vma->vm_mm, address, &ptl, 1);
-+	pte = page_check_address(page, vma->vm_mm, address, &ptl, 1, 0);
- 	if (!pte)			/* the page is not in this mm */
- 		return 0;
- 	pte_unmap_unlock(pte, ptl);
-@@ -340,7 +346,8 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
- static int page_referenced_one(struct page *page,
- 			       struct vm_area_struct *vma,
- 			       unsigned int *mapcount,
--			       unsigned long *vm_flags)
-+			       unsigned long *vm_flags,
-+			       int try)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	unsigned long address;
-@@ -352,7 +359,7 @@ static int page_referenced_one(struct page *page,
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl, 0);
-+	pte = page_check_address(page, mm, address, &ptl, 0, try);
- 	if (!pte)
- 		goto out;
- 
-@@ -396,7 +403,8 @@ out:
- 
- static int page_referenced_anon(struct page *page,
- 				struct mem_cgroup *mem_cont,
--				unsigned long *vm_flags)
-+				unsigned long *vm_flags,
-+				int try)
- {
- 	unsigned int mapcount;
- 	struct anon_vma *anon_vma;
-@@ -417,7 +425,7 @@ static int page_referenced_anon(struct page *page,
- 		if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
- 			continue;
- 		referenced += page_referenced_one(page, vma,
--						  &mapcount, vm_flags);
-+						  &mapcount, vm_flags, try);
- 		if (!mapcount)
- 			break;
- 	}
-@@ -482,7 +490,7 @@ static int page_referenced_file(struct page *page,
- 		if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
- 			continue;
- 		referenced += page_referenced_one(page, vma,
--						  &mapcount, vm_flags);
-+						  &mapcount, vm_flags, 0);
- 		if (!mapcount)
- 			break;
- 	}
-@@ -504,7 +512,8 @@ static int page_referenced_file(struct page *page,
- int page_referenced(struct page *page,
- 		    int is_locked,
- 		    struct mem_cgroup *mem_cont,
--		    unsigned long *vm_flags)
-+		    unsigned long *vm_flags,
-+		    int try)
- {
- 	int referenced = 0;
- 
-@@ -515,7 +524,7 @@ int page_referenced(struct page *page,
- 	if (page_mapped(page) && page->mapping) {
- 		if (PageAnon(page))
- 			referenced += page_referenced_anon(page, mem_cont,
--								vm_flags);
-+								vm_flags, try);
- 		else if (is_locked)
- 			referenced += page_referenced_file(page, mem_cont,
- 								vm_flags);
-@@ -547,7 +556,7 @@ static int page_mkclean_one(struct page *page, struct vm_area_struct *vma)
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl, 1);
-+	pte = page_check_address(page, mm, address, &ptl, 1, 0);
- 	if (!pte)
- 		goto out;
- 
-@@ -774,7 +783,7 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
- 	if (address == -EFAULT)
- 		goto out;
- 
--	pte = page_check_address(page, mm, address, &ptl, 0);
-+	pte = page_check_address(page, mm, address, &ptl, 0, 0);
- 	if (!pte)
- 		goto out;
- 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 777af57..fff63a0 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -643,7 +643,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		}
- 
- 		referenced = page_referenced(page, 1,
--						sc->mem_cgroup, &vm_flags);
-+						sc->mem_cgroup, &vm_flags, 0);
- 		/*
- 		 * In active use or really unfreeable?  Activate it.
- 		 * If page which have PG_mlocked lost isoltation race,
-@@ -1355,7 +1355,8 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
- 
- 		/* page_referenced clears PageReferenced */
- 		if (page_mapping_inuse(page) &&
--		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
-+		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags,
-+						priority<DEF_PRIORITY-2?0:1)) {
- 			nr_rotated++;
- 			/*
- 			 * Identify referenced, file-backed active pages and
-
---=-PgS2TVA1s1fkKlAMWv6Z--
+Best regards,
+Maxim Levitsky
 
