@@ -1,34 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbZLAMnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbZLAMq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753768AbZLAMnM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 07:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZLAMnL
+	id S1753506AbZLAMq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 07:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZLAMq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 07:43:11 -0500
-Received: from fencepost.gnu.org ([140.186.70.10]:49625 "EHLO
-	fencepost.gnu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753265AbZLAMnK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 07:43:10 -0500
-Date: Tue, 1 Dec 2009 07:43:15 -0500
-From: Davidlohr Bueso <dave@gnu.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/20] SCSI: No longer use Scsi_Cmd typedef
-Message-ID: <20091201124315.GA21771@fencepost.gnu.org>
-References: <1257711411.4759.105.camel@dbueso-pc> <4AF7CDE7.8030008@panasas.com>
+	Tue, 1 Dec 2009 07:46:27 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38490 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752305AbZLAMq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 07:46:27 -0500
+Date: Tue, 1 Dec 2009 13:46:19 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Larry Woodman <lwoodman@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, akpm@linux-foundation.org,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC] high system time & lock contention running large mixed
+ workload
+Message-ID: <20091201124619.GO30235@random.random>
+References: <1259618429.2345.3.camel@dhcp-100-19-198.bos.redhat.com>
+ <20091201100444.GN30235@random.random>
+ <20091201212357.5C3A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AF7CDE7.8030008@panasas.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20091201212357.5C3A.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thanks for doing this. What a grate relief.
+On Tue, Dec 01, 2009 at 09:31:09PM +0900, KOSAKI Motohiro wrote:
+> Ummm. I can't agree this. 7 is too small priority. if large system have prio==7,
+> the system have unacceptable big latency trouble.
+> if only prio==DEF_PRIOTIRY or something, I can agree you probably.
 
-Just following up on the status of the patch.
+I taken number 7 purely as mentioned by Larry about old code, but I
+don't mind what is the actual breakpoint level where we start to send
+the ipi flood to destroy all userland tlbs mapping the page so the
+young bit can be set by the cpu on the old pte. If you agree with me
+at the lowest priority we shouldn't flood ipi and destroy tlb when
+there's plenty of clean unmapped clean cache, we already agree ;). If
+that's 7 or DEV_PRIORITY-1, that's ok. All I care is that it escalates
+gradually, first clean cache and re-activate mapped pages, then when
+we're low on clean cache we start to check ptes and unmap whatever is
+not found referenced.
 
-Thanks,
-Davidlohr
+> Avoiding lock contention on light VM pressure is important than
+> strict lru order. I guess we don't need knob.
+
+Hope so indeed. It's not just lock contention, that is exacerbated by
+certain workloads, but even in total absence of any lock contention I
+generally dislike the cpu waste itself of the pte loop to clear the
+young bit, and the interruption of userland as well when it receives a
+tlb flush for no good reason because 99% of the time plenty of
+unmapped clean cache is available. I know this performs best, even if
+there will be always someone that will want mapped and unmapped cache
+to be threat totally equal in lru terms (which then make me wonder why
+there are still & VM_EXEC magics in vmscan.c if all pages shall be
+threaded equal in the lru... especially given VM_EXEC is often
+meaningless [because potentially randomly set] unlike page_mapcount
+[which is never randomly set]), which is the reason I mentioned the
+knob.
