@@ -1,142 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZLAVOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbZLAVPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbZLAVOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 16:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZLAVOR
+	id S1754555AbZLAVPk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 16:15:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZLAVPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 16:14:17 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:44034 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbZLAVOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 16:14:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=RvYhaElznChEkEcA2/JIq3SvMW9fE5e4If6FbTHSXJHJPnKULk6xVg1tMZTl1M8cX+
-         2jnF+/NxoK8tb9gqC5mKZjvGURfDqSWDDO8dOURIwtel+WaSCR//LYs0S+gPc6TA8bzc
-         KaRdu0M5tV1hIJYdrAQI5SF0OiISJrVHzk9no=
-Message-ID: <4B15872E.2070707@gmail.com>
-Date: Tue, 01 Dec 2009 13:14:22 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+	Tue, 1 Dec 2009 16:15:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59072 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750999AbZLAVPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 16:15:38 -0500
+Date: Tue, 1 Dec 2009 22:15:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, utrace-devel <utrace-devel@redhat.com>,
+       Roland McGrath <roland@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
+Message-ID: <20091201211518.GA32376@elte.hu>
+References: <1259584907.20516.246.camel@laptop>
+ <20091130131928.GC18879@linux.vnet.ibm.com>
+ <1259588232.20516.307.camel@laptop>
+ <20091130150314.GA10331@redhat.com>
+ <20091130151650.GA24316@elte.hu>
+ <20091130152910.GB10331@redhat.com>
+ <20091201161132.GA24897@elte.hu>
+ <20091201170002.GD10331@redhat.com>
+ <20091201170954.GA4699@elte.hu>
+ <20091201174534.GE10331@redhat.com>
 MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: Bisected: s2disk (uswsusp only) hangs just before poweroff
-References: <4B1575AC.6080904@tuffmail.co.uk> <4B157B81.9050703@gmail.com> <4B157C29.6090805@tuffmail.co.uk>
-In-Reply-To: <4B157C29.6090805@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091201174534.GE10331@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01/09 12:27, Alan Jenkins wrote:
-> Justin P. Mattock wrote:
->> On 12/01/09 11:59, Alan Jenkins wrote:
->>> Hi
->>>
->>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc. I finally
->>> got around to bisecting it, which blamed the following commit by Mel:
->>>
->>> 5f8dcc2 "page-allocator: split per-cpu list into
->>> one-list-per-migrate-type"
->>>
->>> I was able to confirm this by reverting the commit, which fixed the
->>> hang. I had to revert one other commit first to avoid a conflict:
->>>
->>> a6f9edd "page-allocator: maintain rolling count of pages to free from
->>> the PCP"
->>>
->>> -- detail --
->>>
->>> When I suspend my EeePc 701 to disk, it sometimes hangs after writing
->>> out the hibernation image. The system is still able to resume from this
->>> image (after working around the hang by pressing the power button).
->>> This is specific to s2disk from the uswsusp package (which is now
->>> installed by default on debian unstable). It doesn't happen if I
->>> uninstall uswsusp and use the in-kernel suspend instead.
->>>
->>> The hang doesn't happen if I boot with "init=/bin/bash" and run s2disk.
->>> Nor does it happen if I boot normally, then switch to single user mode
->>> ("telinit 12").
->>>
->>> It only happens if I've logged in to KDE. In the past, this has
->>> indicated a problem in a network driver, since NetworkManager only made
->>> a connection once I logged in. But it still hangs if I remove both ath5k
->>> and atl2 before I log into KDE. (I actually tried removing as many
->>> modules as possible: atl2, ath5k, usbcore, snd-hda-intel, psmouse,
->>> pcspkr, battery, ac, themal, fan, and eeepc-laptop). Perhaps it's
->>> something to do with the size of the hibernation image.
->>>
->>> -- confidence in the bisection result --
->>>
->>> The randomness was a bit annoying, but it's not too bad. The hang would
->>> normally show up in the first 3 hibernation cycles; I don't remember
->>> having to wait more than 6.
->>>
->>> I wrote a script to do s2disk + rtcwake so I could leave it testing
->>> without constantly hitting the power button. This let me test 2.6.32-rc8
->>> with the reverts for at least 20 hibernation cycles.
->>>
->>> Regards
->>> Alan
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe
->>> linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at http://www.tux.org/lkml/
->>>
->>
->> hmm.. maybe this is what I'm seeing over here
->> i.g. on my macbook(ati gpu) the first s2ram will
->> lagg for about 30/40 secs before waking up
->> then every other cycle afterwards reacts as it should.
->> Threw in kernels 2.6.30,31 before doing anything
->> but showed the same results, leading me to beleive maybe
->> I have some userspace issue(libx86)going on.
->>
->> I'll try reverting that commit to see.
->>
->> Thanks
->>
->> Justin P. Mattock
->
-> I don't expect so. My problem doesn't affect s2ram. And as far as I can
-> tell, my hang is forever... it's more than just 40 seconds.
->
-> Regards
-> Alan
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at http://www.tux.org/lkml/
->
 
-then weve two totally different issues.
+* Frank Ch. Eigler <fche@redhat.com> wrote:
 
-looking more into it, I think my problem
-is somewhere in udev i.e.
-I get stuckage during boot becuase of some
-rule in rules.d for about the same time
-as what I see with s2ram.
+> Hi -  
+> 
+> > > Only in name.  One is highly invasive, for debugging the kernel across 
+> > > serial consoles.  The other is highly noninvasive, for debugging user 
+> > > processes across normal userspace channels.  They both happen to talk 
+> > > to gdb, but that's the end of the natural "overlap".
+> > [...]
+> 
+> > Well nothing that you mention here changes our obvious suggestion 
+> > that an in-kernel gdb stub should obviously either be a kgdb 
+> > extension, or a replacement of it.
+> 
+> Help me out here: by "kgdb extension" do you imagine "something new 
+> that an unprivileged user can use to debug his own process"?  Or do 
+> you imagine a new userspace facility that single-steps the kernel?
 
-my guess udev is sitting with some command
-in *.rules in of which doesn't
-know what to do(reason for 30 secs)before
-going onto the next task.
-(but could be wrong).
+Is this a trick question? Single-stepping the kernel on the same system 
+[especially if it's an UP system] would certainly be a challenge ;-)
 
-interesting thing is my other machine
-all though different, is running the same
-udev and rules with no problem.
+What i mean is what i said: if you provide a new framework (especially 
+if it's user visible - which both kgdb and the gdb stub is) you should 
+either fully replace existing functionality or extend it. Overlapping it 
+in an incomplete way is not useful to anyone.
 
+Extending kgdb to allow the use of it as if we used gdb locally would 
+certainly be interesting - and then you could drop into the kernel 
+anytime as well. But i'm not siding with any particular solution - i'm 
+just seconding Peter's point that there's very clear overlap and 
+inconsistency, and that ought to be resolved one way or another.
 
-Justin P. Mattock
+> > We dont want to separate facilities for the same conceptual thing:
+> > examining application state (be that in user-space and
+> > kernel-space).
+> 
+> This seems like a shallow sort of consistency.  kgdb was added after 
+> ptrace existed -- why not extend ptrace instead to target the kernel? 
+> After all, it's "examining application state".  The answer is that it 
+> doesn't make a heck of a lot of sense.
+
+kgdb simply used gdb's preferred way of remote debugging. That's 
+certainly the ugliest bit of it btw - but it's an externality to kgdb.
+
+Had it extended ptrace it wouldnt have gdb compatibility.
+
+So i think this example of yours is inapposite as well.
+
+Having said all that, i certainly subscribe to the view that neither 
+kgdb nor ptrace is particularly cleanly done. So i wouldnt mind if 
+something new existed that had a modern, flexible, extensible and 
+generally pleasant interface and implementation. If you are heading in 
+that direction, please let me know.
+
+> > > > Btw., perf does meet that definition: it functionally replaces all 
+> > > > facilities that it overlaps/extends - such as Oprofile. [...]
+> > > 
+> > > (And they currently separately coexist.)
+> > 
+> > You didnt get my point apparently. Keeping the overlapped facility for 
+> > compatibility (and general user inertia) is fine. Creating a new 
+> > facility that doesnt do everything that the existing facility does, and 
+> > not integrating it either, is not fine.
+> 
+> oprofile and perfctr are closer in concept than kgdb and ptrace, yet 
+> AFAIK perfctr doesn't "interface" to oprofile, except perhaps to the 
+> extent of resolving contention over the underlying physical resources. 
+> In any case this is not a great analogy.
+
+(FYI, 'perfctr' is a different project that has existed for years, i 
+suspect you meant perf events?)
+
+perf replaces oprofile functionally. If the in-kernel gdb stub replaced 
+kgdb functionally you'd hear no complaints from me.
+
+	Ingo
