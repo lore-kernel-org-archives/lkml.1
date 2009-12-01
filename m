@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZLARll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbZLARrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbZLARll (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZLARll
+	id S1754454AbZLARrN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbZLARrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:41:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4160 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 12:47:12 -0500
+Received: from kroah.org ([198.145.64.141]:58555 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752812AbZLARlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:41:40 -0500
-Message-ID: <4B155534.6060907@redhat.com>
-Date: Tue, 01 Dec 2009 15:41:08 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1754278AbZLARrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:47:10 -0500
+Date: Tue, 1 Dec 2009 09:43:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB bugfixes for 2.6.32-git
+Message-ID: <20091201174333.GA31972@kroah.com>
 MIME-Version: 1.0
-To: Patrick Boettcher <pboettcher@kernellabs.com>
-CC: Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-References: <9e4733910912010708u1064e2c6mbc08a01293c3e7fd@mail.gmail.com>  <1259682428.18599.10.camel@maxim-laptop>  <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com>  <4B154C54.5090906@redhat.com> <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com> <alpine.LRH.2.00.0912011833070.11226@pub6.ifh.de>
-In-Reply-To: <alpine.LRH.2.00.0912011833070.11226@pub6.ifh.de>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick Boettcher wrote:
+Here are a few bugfixes for your 2.6.32-git tree.
 
->> The fact that the driver currently uses the same lookup table for both
->> types of remote controls however, was perhaps not the best design
->> choice.  It really should be separated out, and merged with the
->> regular ir-functions.c.  I just never got around to it.
-> 
-> I did not follow all the discussion, still I have a comment:
-> 
-> I will soon work on a device where it is the driver who is doing the
-> decoding of the IR-frames. It is (maybe, I'm still missing some pieces
-> to be sure) possible to receive different protocols at the same time
-> with this hardware.
+These fix:
+	- ehci timeout issue that fixes a well-reported uvc video device
+	  problem due to some messed up host controller hardware.
+	- musb driver issues
+	- gadget driver irq bugs
+	- ftdi_sio bugfix.
+	- new device ids.
 
-That's good news! Needing to pass a modprobe parameter to select the protocol
-is not nice, and, while an ioctl will be needed to select IR protocols
-(as there are some hardwares where this is not possible at all), the better
-is to auto-detect the protocol.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-Cheers,
-Mauro.
+All of these patches have been in the linux-next and mm trees for a
+while.
+
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
+
+------------
+
+ drivers/usb/core/hub.c             |    2 +-
+ drivers/usb/gadget/amd5536udc.c    |   49 ++++++++++++++---------
+ drivers/usb/host/ehci-hcd.c        |    2 +
+ drivers/usb/host/ehci-pci.c        |    4 ++
+ drivers/usb/host/ehci-q.c          |   16 ++++++-
+ drivers/usb/host/ehci-sched.c      |   12 +++++
+ drivers/usb/host/ehci.h            |    2 +
+ drivers/usb/musb/cppi_dma.c        |   10 ++--
+ drivers/usb/musb/musb_core.c       |    4 +-
+ drivers/usb/musb/musb_gadget.c     |   79 +++++++++++++++--------------------
+ drivers/usb/musb/musb_gadget_ep0.c |    3 +-
+ drivers/usb/musb/musb_host.c       |    5 ++-
+ drivers/usb/serial/ftdi_sio.c      |    3 +-
+ drivers/usb/serial/option.c        |    5 ++
+ 14 files changed, 118 insertions(+), 78 deletions(-)
+
+---------------
+
+Ajay Kumar Gupta (2):
+      USB: musb: Remove unwanted message in boot log
+      USB: musb: fix ISOC Tx programming for CPPI DMAs
+
+Alan Stern (1):
+      USB: EHCI: don't send Clear-TT-Buffer following a STALL
+
+Daniel Glöckner (2):
+      USB: musb: respect usb_request->zero in control requests
+      USB: musb: Fix CPPI IRQs not being signaled
+
+Eric W. Biederman (1):
+      USB: ftdi_sio: Keep going when write errors are encountered.
+
+Gernot Hillier (1):
+      USB: Add support for Mobilcom Debitel USB UMTS Surf-Stick to option driver
+
+Oliver Neukum (1):
+      USB: work around for EHCI with quirky periodic schedules
+
+Sergei Shtylyov (1):
+      USB: musb_gadget: fix STALL handling
+
+Thomas Dahlmann (1):
+      usb: amd5536udc: fixed shared interrupt bug and warning oops
+
