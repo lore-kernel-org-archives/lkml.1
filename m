@@ -1,105 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbZLAAWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbZLAAXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752974AbZLAAWN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 19:22:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZLAAWL
+	id S1752891AbZLAAXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 19:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZLAAXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 19:22:11 -0500
-Received: from waste.org ([173.11.57.241]:35374 "EHLO waste.org"
+	Mon, 30 Nov 2009 19:23:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58759 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752359AbZLAAWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 19:22:10 -0500
-Subject: Re: lockdep complaints in slab allocator
-From: Matt Mackall <mpm@selenic.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <alpine.DEB.2.00.0911301512250.12038@chino.kir.corp.google.com>
-References: <84144f020911192249l6c7fa495t1a05294c8f5b6ac8@mail.gmail.com>
-	 <1258729748.4104.223.camel@laptop> <1259002800.5630.1.camel@penberg-laptop>
-	 <1259003425.17871.328.camel@calx> <4B0ADEF5.9040001@cs.helsinki.fi>
-	 <1259080406.4531.1645.camel@laptop>
-	 <20091124170032.GC6831@linux.vnet.ibm.com>
-	 <1259082756.17871.607.camel@calx> <1259086459.4531.1752.camel@laptop>
-	 <1259090615.17871.696.camel@calx>
-	 <84144f020911241307u14cd2cf0h614827137e42378e@mail.gmail.com>
-	 <1259103315.17871.895.camel@calx>
-	 <alpine.DEB.2.00.0911251356130.11347@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0911271127130.20368@router.home>
-	 <alpine.DEB.2.00.0911301512250.12038@chino.kir.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 30 Nov 2009 18:21:15 -0600
-Message-ID: <1259626875.29740.193.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1752446AbZLAAXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 19:23:22 -0500
+Message-ID: <4B1461CB.2070000@kernel.org>
+Date: Mon, 30 Nov 2009 16:22:35 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Alex Williamson <alex.williamson@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32 registers
+References: <20091130212228.7555.43533.stgit@debian.lart>	 <4B143AE5.7040702@kernel.org> <1259617381.8949.281.camel@8530w.home>	 <4B143E83.6020105@kernel.org> <1259618496.8949.290.camel@8530w.home>	 <4B144346.50608@kernel.org> <1259619578.8949.295.camel@8530w.home>	 <4B1455FD.90002@kernel.org> <1259625224.8949.319.camel@8530w.home>
+In-Reply-To: <1259625224.8949.319.camel@8530w.home>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 15:14 -0800, David Rientjes wrote:
-> On Fri, 27 Nov 2009, Christoph Lameter wrote:
+Alex Williamson wrote:
+> On Mon, 2009-11-30 at 15:32 -0800, Yinghai Lu wrote:
+>> Alex Williamson wrote:
+>>> On Mon, 2009-11-30 at 14:12 -0800, Yinghai Lu wrote:
+>>>> Alex Williamson wrote: 
+>>>>> I don't believe the PCI spec dictates whether the upper 32bit base
+>>>>> should be 0 or -1, so it's purely a BIOS initialization choice and Linux
+>>>>> should properly handle both.  If the hardware only supports 32bit
+>>>>> prefetchable windows, the hardware will drop the write, just as it did
+>>>>> for every 2.6 kernel before 1f82de10.  Thanks,
+>>>> current code:
+>>>>
+>>>> #define  PCI_PREF_RANGE_TYPE_MASK 0x0fUL
+>>>> #define  PCI_PREF_RANGE_TYPE_32 0x00     
+>>>> #define  PCI_PREF_RANGE_TYPE_64 0x01
+>>>> #define  PCI_PREF_RANGE_MASK    (~0x0fUL)
+>>>>
+>>>> if the HW state the pref mmio is 64bit, we will touch upper 32bit. otherwise we will not touch it.
+>>> Really, where?  Please paste the code that writes to
+>>> PCI_PREF_BASE_UPPER32 in the case of hardware supporting a 64bit
+>>> prefetchable window.  I only see this happening if we are assigning it
+>>> to an IORESOURCE_MEM_64 resources.
+>> IORESOURCE_MEM_64 get set when PCI_PREF_RANGE_TYPE_64 is set.
+>>
+>> in probe.c::pci_read_bridge_bases()
 > 
-> > > > I'm afraid I have only anecdotal reports from SLOB users, and embedded
-> > > > folks are notorious for lack of feedback, but I only need a few people
-> > > > to tell me they're shipping 100k units/mo to be confident that SLOB is
-> > > > in use in millions of devices.
-> > > >
-> > >
-> > > It's much more popular than I had expected; do you think it would be
-> > > possible to merge slob's core into another allocator or will it require
-> > > seperation forever?
-> > 
-> > It would be possible to create a slab-common.c and isolate common handling
-> > of all allocators. SLUB and SLQB share quite a lot of code and SLAB could
-> > be cleaned up and made to fit into such a framework.
-> > 
+> Ah, I think I see where you're going.  We only set IORESOURCE_MEM_64 if
+> base <= limit, ie. the BIOS has programmed the prefetchable range.  This
+> is not a requirement by the PCI spec.  In my case the BIOS has left base
+>> limit, just as Linux would do if it disabled the range, so we never
+> set this flag.
 > 
-> Right, but the user is still left with a decision of which slab allocator 
-> to compile into their kernel, each with distinct advantages and 
-> disadvantages that get exploited for the wide range of workloads that it 
-> runs.  If slob could be merged into another allocator, it would be simple 
-> to remove the distinction of it being seperate altogether, the differences 
-> would depend on CONFIG_EMBEDDED instead.
+>> setup-bus.c::pci_bridge_check_ranges()
+> 
+> This is only checking that the upper 32bits is actually implemented,
+> should we have already set the IORESOURCE_MEM_64 from the function
+> above, which we haven't.  
+> 
+> So, in my case I have a 64bit capable prefetchable range, that the BIOS
+> has not programmed and is not required to program.  We assign it to a
+> 32bit window, and never touch the UPPER32 registers.
 
-No no no wrong wrong wrong. Again, SLOB is the least mergeable of the
-set. It has vastly different priorities, design, and code from the rest.
-Literally the only thing it has in common with the other three is the
-interface.
+are you using 32bit kernel?
 
-And it's not even something that -most- of embedded devices will want to
-use, so it can't be keyed off CONFIG_EMBEDDED anyway. If you've got even
-16MB of memory, you probably want to use a SLAB-like allocator (ie not
-SLOB). But there are -millions- of devices being shipped that don't have
-that much memory, a situation that's likely to continue until you can
-fit a larger Linux system entirely in a <$1 microcontroller-sized device
-(probably 5 years off still).
-
-
-This thread is annoying. The problem that triggered this thread is not
-in SLOB/SLUB/SLQB, nor even in our bog-standard 10yo deep-maintenance
-known-to-work SLAB code. The problem was a FALSE POSITIVE from lockdep
-on code that PREDATES lockdep itself. There is nothing in this thread to
-indicate that there is a serious problem maintaining multiple
-allocators. In fact, considerably more time has been spent (as usual)
-debating non-existent problems than fixing real ones.
-
-I agree that having only one of SLAB/SLUB/SLQB would be nice, but it's
-going to take a lot of heavy lifting in the form of hacking and
-benchmarking to have confidence that there's a clear performance winner.
-Given the multiple dimensions of performance
-(scalability/throughput/latency for starters), I don't even think
-there's good a priori reason to believe that a clear winner CAN exist.
-SLUB may always have better latency, and SLQB may always have better
-throughput. If you're NYSE, you might have different performance
-priorities than if you're Google or CERN or Sony that amount to millions
-of dollars. Repeatedly saying "but we should have only one allocator"
-isn't going to change that.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+YH
