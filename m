@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZLAMXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZLAM1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995AbZLAMXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 07:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZLAMXU
+	id S1754095AbZLAM1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 07:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZLAM1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 07:23:20 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49140 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbZLAMXT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 07:23:19 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Larry Woodman <lwoodman@redhat.com>
-Subject: Re: [RFC] high system time & lock contention running large mixed workload
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>
-In-Reply-To: <1259618429.2345.3.camel@dhcp-100-19-198.bos.redhat.com>
-References: <20091125133752.2683c3e4@bree.surriel.com> <1259618429.2345.3.camel@dhcp-100-19-198.bos.redhat.com>
-Message-Id: <20091201102645.5C0A.A69D9226@jp.fujitsu.com>
+	Tue, 1 Dec 2009 07:27:53 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44631 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753933AbZLAM1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 07:27:53 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: [linux-pm] intermittent suspend problem again
+Date: Tue, 1 Dec 2009 13:28:15 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-netdev@vger.kernel.org
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911291607.05348.rjw@sisk.pl> <87y6ln0yxp.fsf@tac.ki.iif.hu>
+In-Reply-To: <87y6ln0yxp.fsf@tac.ki.iif.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  1 Dec 2009 21:23:23 +0900 (JST)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912011328.15551.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc to some related person)
-
-> The cause was determined to be the unconditional call to
-> page_referenced() for every mapped page encountered in
-> shrink_active_list().  page_referenced() takes the anon_vma->lock and
-> calls page_referenced_one() for each vma.  page_referenced_one() then
-> calls page_check_address() which takes the pte_lockptr spinlock.   If
-> several CPUs are doing this at the same time there is a lot of
-> pte_lockptr spinlock contention with the anon_vma->lock held.  This
-> causes contention on the anon_vma->lock, stalling in the fo and very
-> high system time.
+On Tuesday 01 December 2009, Ferenc Wagner wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Before the splitLRU patch shrink_active_list() would only call
-> page_referenced() when reclaim_mapped got set.  reclaim_mapped only got
-> set when the priority worked its way from 12 all the way to 7. This
-> prevented page_referenced() from being called from shrink_active_list()
-> until the system was really struggling to reclaim memory.
+> > On Sunday 29 November 2009, Ferenc Wagner wrote:
+> >
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >> 
+> >>> On Saturday 28 November 2009, Ferenc Wagner wrote:
+> >>>
+> >>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >>>> 
+> >>>>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
+> >>>> 
+> >>>> The last message now was:
+> >>>> 
+> >>>> e100: 0000:02:08.0: hibernate, may wakeup
+> >>>> 
+> >>>> Looks like hibernating the e100 driver is unstable.
+> >>>
+> >>> Can you verify that by trying to hibernate without the e100 driver?
+> >> 
+> >> Not really, as I still can't reliable reproduce the issue.  Since I'm
+> >> running with suspend loglevel = 8, it's happened only twice (in a row),
+> >> with seemingly exact same console output.  Some earlier freezes also
+> >> happened in dpm_suspend_start, at least.  However, I can certainly add
+> >> e100 to SUSPEND_MODULES under /etc/pm/config.d, and continue running
+> >> with that.
+> >
+> > That's what I'd do.
 > 
-> On way to prevent this is to change page_check_address() to execute a
-> spin_trylock(ptl) when it was called by shrink_active_list() and simply
-> fail if it could not get the pte_lockptr spinlock.  This will make
-> shrink_active_list() consider the page not referenced and allow the
-> anon_vma->lock to be dropped much quicker.
+> That worked out mosty OK (no freeze in quite some hibernation cycles),
+> but I'm continuing testing it.
+
+Great, please let me know how it works out.
+
+> On the other hand, I reverted 8fbd962e3, recompiled and replaced the
+> module, and got the freeze during hibernation.  And that was the bulk of
+> the changes since 2.6.31...  I'll revert the rest and test again, but
+> that seems purely cosmetic, so no high hopes.
 > 
-> The attached patch does just that, thoughts???
+> > In addition to that, you can run multiple hibernation/resume cycles in
+> > a tight loop using the RTC wakealarm.
+> 
+> I'll do so, as soon as I find a way to automatically supply the dm-crypt
+> passphrase... or even better, learn to hibernate to ramdisk from the
+> initramfs. :)
 
-At first look,
+Well, you don't need to use swap encryptuon for _testing_. :-)
 
-   - We have to fix this issue certenally.
-   - But your patch is a bit risky. 
-
-Your patch treat trylock(pte-lock) failure as no accessced. but
-generally lock contention imply to have contention peer. iow, the page
-have reference bit typically. then, next shrink_inactive_list() move it
-active list again. that's suboptimal result.
-
-However, we can't treat lock-contention as page-is-referenced simply. if it does,
-the system easily go into OOM.
-
-So, 
-	if (priority < DEF_PRIORITY - 2)
-		page_referenced()
-	else
-		page_refenced_trylock()
-
-is better?
-On typical workload, almost vmscan only use DEF_PRIORITY. then,
-if priority==DEF_PRIORITY situation don't cause heavy lock contention,
-the system don't need to mind the contention. anyway we can't avoid
-contention if the system have heavy memory pressure.
-
-btw, current shrink_active_list() have unnecessary page_mapping_inuse() call.
-it prevent to drop page reference bit from unmapped cache page. it mean
-we protect unmapped cache page than mapped page. it is strange.
-
-Unfortunately, I don't have enough development time today. I'll
-working on tommorow.
-
-
-
-
+Thanks,
+Rafael
