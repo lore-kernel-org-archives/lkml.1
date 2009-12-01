@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZLAM1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZLAMbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754095AbZLAM1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 07:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZLAM1x
+	id S1754077AbZLAMbG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 07:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZLAMbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 07:27:53 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44631 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753933AbZLAM1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 07:27:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ferenc Wagner <wferi@niif.hu>
-Subject: Re: [linux-pm] intermittent suspend problem again
-Date: Tue, 1 Dec 2009 13:28:15 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-netdev@vger.kernel.org
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911291607.05348.rjw@sisk.pl> <87y6ln0yxp.fsf@tac.ki.iif.hu>
-In-Reply-To: <87y6ln0yxp.fsf@tac.ki.iif.hu>
+	Tue, 1 Dec 2009 07:31:06 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49308 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbZLAMbE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 07:31:04 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [RFC] high system time & lock contention running large mixed workload
+Cc: kosaki.motohiro@jp.fujitsu.com, Larry Woodman <lwoodman@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <20091201100444.GN30235@random.random>
+References: <1259618429.2345.3.camel@dhcp-100-19-198.bos.redhat.com> <20091201100444.GN30235@random.random>
+Message-Id: <20091201212357.5C3A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912011328.15551.rjw@sisk.pl>
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  1 Dec 2009 21:31:09 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 December 2009, Ferenc Wagner wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> On Mon, Nov 30, 2009 at 05:00:29PM -0500, Larry Woodman wrote:
+> > Before the splitLRU patch shrink_active_list() would only call
+> > page_referenced() when reclaim_mapped got set.  reclaim_mapped only got
+> > set when the priority worked its way from 12 all the way to 7. This
+> > prevented page_referenced() from being called from shrink_active_list()
+> > until the system was really struggling to reclaim memory.
 > 
-> > On Sunday 29 November 2009, Ferenc Wagner wrote:
-> >
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >>> On Saturday 28 November 2009, Ferenc Wagner wrote:
-> >>>
-> >>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >>>> 
-> >>>>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
-> >>>> 
-> >>>> The last message now was:
-> >>>> 
-> >>>> e100: 0000:02:08.0: hibernate, may wakeup
-> >>>> 
-> >>>> Looks like hibernating the e100 driver is unstable.
-> >>>
-> >>> Can you verify that by trying to hibernate without the e100 driver?
-> >> 
-> >> Not really, as I still can't reliable reproduce the issue.  Since I'm
-> >> running with suspend loglevel = 8, it's happened only twice (in a row),
-> >> with seemingly exact same console output.  Some earlier freezes also
-> >> happened in dpm_suspend_start, at least.  However, I can certainly add
-> >> e100 to SUSPEND_MODULES under /etc/pm/config.d, and continue running
-> >> with that.
-> >
-> > That's what I'd do.
+> page_referenced should never be called and nobody should touch ptes
+> until priority went down to 7. This is a regression in splitLRU that
+> should be fixed. With light VM pressure we should never touch ptes ever.
+
+Ummm. I can't agree this. 7 is too small priority. if large system have prio==7,
+the system have unacceptable big latency trouble.
+if only prio==DEF_PRIOTIRY or something, I can agree you probably.
+
+
+> > On way to prevent this is to change page_check_address() to execute a
+> > spin_trylock(ptl) when it was called by shrink_active_list() and simply
+> > fail if it could not get the pte_lockptr spinlock.  This will make
+> > shrink_active_list() consider the page not referenced and allow the
+> > anon_vma->lock to be dropped much quicker.
+> > 
+> > The attached patch does just that, thoughts???
 > 
-> That worked out mosty OK (no freeze in quite some hibernation cycles),
-> but I'm continuing testing it.
-
-Great, please let me know how it works out.
-
-> On the other hand, I reverted 8fbd962e3, recompiled and replaced the
-> module, and got the freeze during hibernation.  And that was the bulk of
-> the changes since 2.6.31...  I'll revert the rest and test again, but
-> that seems purely cosmetic, so no high hopes.
+> Just stop calling page_referenced there...
 > 
-> > In addition to that, you can run multiple hibernation/resume cycles in
-> > a tight loop using the RTC wakealarm.
+> Even if we ignore the above, one problem later in skipping over the PT
+> lock, is also to assume the page is not referenced when it actually
+> is, so it won't be activated again when page_referenced is called
+> again to move the page back in the active list... Not the end of the
+> world to lose a young bit sometime though.
 > 
-> I'll do so, as soon as I find a way to automatically supply the dm-crypt
-> passphrase... or even better, learn to hibernate to ramdisk from the
-> initramfs. :)
+> There may be all reasons in the world why we have to mess with ptes
+> when there's light VM pressure, for whatever terabyte machine or
+> whatever workload that performs better that way, but I know in 100% of
+> my systems I don't ever want the VM to touch ptes when there's light
+> VM pressure, no matter what. So if you want the default to be messing
+> with ptes, just give me a sysctl knob to let me run faster.
 
-Well, you don't need to use swap encryptuon for _testing_. :-)
+Um.
+Avoiding lock contention on light VM pressure is important than
+strict lru order. I guess we don't need knob.
 
-Thanks,
-Rafael
+
