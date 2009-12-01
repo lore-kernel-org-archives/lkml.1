@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZLAHbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbZLAHbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbZLAHbb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 02:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZLAHba
+	id S1753613AbZLAHbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 02:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZLAHbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 02:31:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34689 "EHLO hera.kernel.org"
+	Tue, 1 Dec 2009 02:31:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37181 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753328AbZLAHb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 02:31:29 -0500
-Date: Tue, 1 Dec 2009 07:30:52 GMT
+	id S1753548AbZLAHbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 02:31:41 -0500
+Date: Tue, 1 Dec 2009 07:31:06 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        lizf@cn.fujitsu.com, peterz@infradead.org, arjan@infradead.org,
@@ -19,12 +19,12 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        lizf@cn.fujitsu.com, peterz@infradead.org, arjan@infradead.org,
        fweisbec@gmail.com, acme@infradead.org, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <4B14B201.9030708@cn.fujitsu.com>
-References: <4B14B201.9030708@cn.fujitsu.com>
+In-Reply-To: <4B14B21C.2040406@cn.fujitsu.com>
+References: <4B14B21C.2040406@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf annotate: Fix perf data parsing
-Message-ID: <tip-bab81b624e970f1138535a465ad2b26b6bb0dd6c@git.kernel.org>
-Git-Commit-ID: bab81b624e970f1138535a465ad2b26b6bb0dd6c
+Subject: [tip:perf/core] perf timechart: Remove open-coded event parsing code
+Message-ID: <tip-5cbd08056142dcb2aea0dca7261afcb810a63c55@git.kernel.org>
+Git-Commit-ID: 5cbd08056142dcb2aea0dca7261afcb810a63c55
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,104 +33,96 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  bab81b624e970f1138535a465ad2b26b6bb0dd6c
-Gitweb:     http://git.kernel.org/tip/bab81b624e970f1138535a465ad2b26b6bb0dd6c
+Commit-ID:  5cbd08056142dcb2aea0dca7261afcb810a63c55
+Gitweb:     http://git.kernel.org/tip/5cbd08056142dcb2aea0dca7261afcb810a63c55
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Tue, 1 Dec 2009 14:04:49 +0800
+AuthorDate: Tue, 1 Dec 2009 14:05:16 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 1 Dec 2009 08:14:08 +0100
+CommitDate: Tue, 1 Dec 2009 08:14:09 +0100
 
-perf annotate: Fix perf data parsing
+perf timechart: Remove open-coded event parsing code
 
-perf-annotate doesn't parse perf.data correctly in that it
-doesn't read perf header. Fix this by using
-mmap_dispatch_perf_file().
-
-Before:
-
-TOTAL events:      17565
-      MMAP events:       3221
-      LOST events:         10
-      COMM events:        235
-      EXIT events:          2
-  THROTTLE events:          1
-UNTHROTTLE events:          2
-      FORK events:         10
-      READ events:          1
-    SAMPLE events:      14083
-
-After:
-
-TOTAL events:      17290
-      MMAP events:       3203
-      LOST events:          0
-      COMM events:        234
-      EXIT events:          1
-  THROTTLE events:          0
-UNTHROTTLE events:          0
-      FORK events:          0
-      READ events:          0
-    SAMPLE events:      13852
+Convert builtin-timechart.c to mmap_dispatch_perf_file() +
+perf_file_handler.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Arjan van de Ven <arjan@infradead.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Arnaldo Carvalho de Melo <acme@infradead.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arjan van de Ven <arjan@infradead.org>
-LKML-Reference: <4B14B201.9030708@cn.fujitsu.com>
+LKML-Reference: <4B14B21C.2040406@cn.fujitsu.com>
+[ v2: cleaned up the printout, fixed a whitespace detail ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/builtin-annotate.c |  143 +++++-----------------------------------
- tools/perf/util/event.c       |    3 +-
- 2 files changed, 19 insertions(+), 127 deletions(-)
+ tools/perf/builtin-timechart.c |  170 +++++++---------------------------------
+ 1 files changed, 30 insertions(+), 140 deletions(-)
 
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 7f85c6e..0bf2e8f 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -25,19 +25,16 @@
- #include "util/thread.h"
- #include "util/sort.h"
- #include "util/hist.h"
+diff --git a/tools/perf/builtin-timechart.c b/tools/perf/builtin-timechart.c
+index dd4d82a..cb58b66 100644
+--- a/tools/perf/builtin-timechart.c
++++ b/tools/perf/builtin-timechart.c
+@@ -29,14 +29,14 @@
+ #include "util/header.h"
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"
++#include "util/event.h"
 +#include "util/data_map.h"
+ #include "util/svghelper.h"
  
  static char		const *input_name = "perf.data";
+ static char		const *output_name = "output.svg";
  
- static int		force;
--static int		input;
- 
- static int		full_paths;
- 
- static int		print_line;
  
 -static unsigned long	page_size;
 -static unsigned long	mmap_window = 32;
+ static u64		sample_type;
+ 
+ static unsigned int	numcpus;
+@@ -49,8 +49,6 @@ static u64		first_time, last_time;
+ static int		power_only;
+ 
+ 
+-static struct perf_header	*header;
 -
- struct sym_hist {
- 	u64		sum;
- 	u64		ip[0];
-@@ -156,35 +153,6 @@ static int process_sample_event(event_t *event)
- 	return 0;
+ struct per_pid;
+ struct per_pidcomm;
+ 
+@@ -156,9 +154,9 @@ struct sample_wrapper *all_samples;
+ 
+ struct process_filter;
+ struct process_filter {
+-	char 			*name;
+-	int  			pid;
+-	struct process_filter 	*next;
++	char			*name;
++	int			pid;
++	struct process_filter	*next;
+ };
+ 
+ static struct process_filter *process_filter;
+@@ -1045,36 +1043,6 @@ static void write_svg_file(const char *filename)
+ 	svg_close();
  }
  
--static int event__process(event_t *self)
+-static int
+-process_event(event_t *event)
 -{
--	switch (self->header.type) {
--	case PERF_RECORD_SAMPLE:
--		return process_sample_event(self);
 -
--	case PERF_RECORD_MMAP:
--		return event__process_mmap(self);
+-	switch (event->header.type) {
 -
 -	case PERF_RECORD_COMM:
--		return event__process_comm(self);
--
+-		return process_comm_event(event);
 -	case PERF_RECORD_FORK:
--		return event__process_task(self);
+-		return process_fork_event(event);
+-	case PERF_RECORD_EXIT:
+-		return process_exit_event(event);
+-	case PERF_RECORD_SAMPLE:
+-		return queue_sample_event(event);
+-
 -	/*
 -	 * We dont process them right now but they are fine:
 -	 */
--
+-	case PERF_RECORD_MMAP:
 -	case PERF_RECORD_THROTTLE:
 -	case PERF_RECORD_UNTHROTTLE:
 -		return 0;
@@ -142,53 +134,64 @@ index 7f85c6e..0bf2e8f 100644
 -	return 0;
 -}
 -
- static int parse_line(FILE *file, struct hist_entry *he, u64 len)
+ static void process_samples(void)
  {
- 	struct symbol *sym = he->sym;
-@@ -485,99 +453,26 @@ static void find_annotations(void)
+ 	struct sample_wrapper *cursor;
+@@ -1090,114 +1058,38 @@ static void process_samples(void)
  	}
  }
  
-+static struct perf_file_handler file_handler = {
-+	.process_sample_event	= process_sample_event,
-+	.process_mmap_event	= event__process_mmap,
-+	.process_comm_event	= event__process_comm,
-+	.process_fork_event	= event__process_task,
-+};
-+
- static int __cmd_annotate(void)
+-
+-static int __cmd_timechart(void)
++static int sample_type_check(u64 type)
  {
--	int ret, rc = EXIT_FAILURE;
+-	int err, rc = EXIT_FAILURE;
 -	unsigned long offset = 0;
--	unsigned long head = 0;
--	struct stat input_stat;
+-	unsigned long head, shift;
+-	struct stat statbuf;
 -	event_t *event;
 -	uint32_t size;
 -	char *buf;
--
--	register_idle_thread();
+-	int input;
 -
 -	input = open(input_name, O_RDONLY);
 -	if (input < 0) {
--		perror("failed to open file");
+-		fprintf(stderr, " failed to open file: %s", input_name);
+-		if (!strcmp(input_name, "perf.data"))
+-			fprintf(stderr, "  (try 'perf record' first)");
+-		fprintf(stderr, "\n");
 -		exit(-1);
 -	}
 -
--	ret = fstat(input, &input_stat);
--	if (ret < 0) {
+-	err = fstat(input, &statbuf);
+-	if (err < 0) {
 -		perror("failed to stat file");
 -		exit(-1);
 -	}
 -
--	if (!force && input_stat.st_uid && (input_stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
--		exit(-1);
--	}
--
--	if (!input_stat.st_size) {
+-	if (!statbuf.st_size) {
 -		fprintf(stderr, "zero-sized file, nothing to do!\n");
 -		exit(0);
 -	}
++	sample_type = type;
+ 
+-	header = perf_header__new();
+-	if (header == NULL)
+-		return -ENOMEM;
+-
+-	err = perf_header__read(header, input);
+-	if (err < 0) {
+-		perf_header__delete(header);
+-		return err;
+-	}
+-
+-	head = header->data_offset;
+-
+-	sample_type = perf_header__sample_type(header);
+-
+-	shift = page_size * (head / page_size);
+-	offset += shift;
+-	head -= shift;
 -
 -remap:
 -	buf = (char *)mmap(NULL, page_size * mmap_window, PROT_READ,
@@ -206,11 +209,12 @@ index 7f85c6e..0bf2e8f 100644
 -		size = 8;
 -
 -	if (head + event->header.size >= page_size * mmap_window) {
--		unsigned long shift = page_size * (head / page_size);
--		int munmap_ret;
+-		int ret2;
 -
--		munmap_ret = munmap(buf, page_size * mmap_window);
--		assert(munmap_ret == 0);
+-		shift = page_size * (head / page_size);
+-
+-		ret2 = munmap(buf, page_size * mmap_window);
+-		assert(ret2 == 0);
 -
 -		offset += shift;
 -		head -= shift;
@@ -219,17 +223,11 @@ index 7f85c6e..0bf2e8f 100644
 -
 -	size = event->header.size;
 -
--	dump_printf("%p [%p]: event: %d\n",
--			(void *)(offset + head),
--			(void *)(long)event->header.size,
--			event->header.type);
--
--	if (!size || event__process(event) < 0) {
--
--		dump_printf("%p [%p]: skipping unknown header type: %d\n",
--			(void *)(offset + head),
--			(void *)(long)(event->header.size),
--			event->header.type);
+-	if (!size || process_event(event) < 0) {
+-		pr_warning("%p [%p]: skipping unknown header type: %d\n",
+-			   (void *)(offset + head),
+-			   (void *)(long)(event->header.size),
+-			   event->header.type);
 -		/*
 -		 * assume we lost track of the stream, check alignment, and
 -		 * increment a single u64 in the hope to catch on again 'soon'.
@@ -239,57 +237,60 @@ index 7f85c6e..0bf2e8f 100644
 -			head &= ~7ULL;
 -
 -		size = 8;
--	}
--
++	if (!(sample_type & PERF_SAMPLE_RAW)) {
++		fprintf(stderr, "No trace samples found in the file.\n"
++				"Have you used 'perf timechart record' to record it?\n");
++		return -1;
+ 	}
+ 
 -	head += size;
--
--	if (offset + head < (unsigned long)input_stat.st_size)
++	return 0;
++}
+ 
+-	if (offset + head >= header->data_offset + header->data_size)
+-		goto done;
++static struct perf_file_handler file_handler = {
++	.process_comm_event	= process_comm_event,
++	.process_fork_event	= process_fork_event,
++	.process_exit_event	= process_exit_event,
++	.process_sample_event	= queue_sample_event,
++	.sample_type_check	= sample_type_check,
++};
+ 
+-	if (offset + head < (unsigned long)statbuf.st_size)
 -		goto more;
++static int __cmd_timechart(void)
++{
 +	struct perf_header *header;
-+	struct thread *idle;
 +	int ret;
  
+-done:
 -	rc = EXIT_SUCCESS;
 -	close(input);
-+	idle = register_idle_thread();
 +	register_perf_file_handler(&file_handler);
  
 +	ret = mmap_dispatch_perf_file(&header, input_name, 0, 0,
 +				      &event__cwdlen, &event__cwd);
 +	if (ret)
-+		return ret;
++		return EXIT_FAILURE;
  
- 	if (dump_trace) {
- 		event__print_totals();
-@@ -595,7 +490,7 @@ more:
+ 	process_samples();
  
- 	find_annotations();
+@@ -1210,7 +1102,7 @@ done:
+ 	pr_info("Written %2.1f seconds of trace to %s.\n",
+ 		(last_time - first_time) / 1000000000.0, output_name);
  
 -	return rc;
-+	return ret;
++	return EXIT_SUCCESS;
  }
  
- static const char * const annotate_usage[] = {
-@@ -644,8 +539,6 @@ int cmd_annotate(int argc, const char **argv, const char *prefix __used)
- 	if (symbol__init(&symbol_conf) < 0)
- 		return -1;
+ static const char * const timechart_usage[] = {
+@@ -1277,8 +1169,6 @@ int cmd_timechart(int argc, const char **argv, const char *prefix __used)
+ {
+ 	symbol__init(0);
  
 -	page_size = getpagesize();
 -
- 	argc = parse_options(argc, argv, options, annotate_usage, 0);
+ 	argc = parse_options(argc, argv, options, timechart_usage,
+ 			PARSE_OPT_STOP_AT_NON_OPTION);
  
- 	setup_sorting();
-diff --git a/tools/perf/util/event.c b/tools/perf/util/event.c
-index 233d7ad..414b89d 100644
---- a/tools/perf/util/event.c
-+++ b/tools/perf/util/event.c
-@@ -186,8 +186,7 @@ int event__process_comm(event_t *self)
- {
- 	struct thread *thread = threads__findnew(self->comm.pid);
- 
--	dump_printf("PERF_RECORD_COMM: %s:%d\n",
--		    self->comm.comm, self->comm.pid);
-+	dump_printf(": %s:%d\n", self->comm.comm, self->comm.pid);
- 
- 	if (thread == NULL || thread__set_comm(thread, self->comm.comm)) {
- 		dump_printf("problem processing PERF_RECORD_COMM, skipping event.\n");
