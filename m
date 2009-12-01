@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbZLAJOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZLAJTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753753AbZLAJOf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 04:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbZLAJOe
+	id S1753838AbZLAJTa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 04:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZLAJT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 04:14:34 -0500
-Received: from mail-px0-f173.google.com ([209.85.216.173]:40032 "EHLO
-	mail-px0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753416AbZLAJOd (ORCPT
+	Tue, 1 Dec 2009 04:19:29 -0500
+Received: from bhuna.collabora.co.uk ([93.93.128.226]:59799 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753497AbZLAJT2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 04:14:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JFZLfL0XfGCcwwG5WOVbn/6vd4xM/hhd33cZp2WYS2EtkbWsO0D8gUTPgrbSkasnOR
-         YhIn69YyKyvjB6Gii6huzJKJ6+iVQbC8Iw5dVVEtZWPo7x0tYIKWIepJZd6R6pNfTEsD
-         Dm59Q+5fOKKht6r2gYc95QfGN9vNJIbqlv5ds=
-Date: Tue, 1 Dec 2009 01:14:35 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Philip Downer <phil@csldevices.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: firmware loading interface
-Message-ID: <20091201091435.GB16910@core.coreip.homeip.net>
-References: <4AFD971C.3090204@csldevices.co.uk> <4AFD9BAF.1010200@csldevices.co.uk> <aday6mac5ai.fsf@roland-alpha.cisco.com>
+	Tue, 1 Dec 2009 04:19:28 -0500
+Message-ID: <4B14DF79.8010908@collabora.co.uk>
+Date: Tue, 01 Dec 2009 09:18:49 +0000
+From: Ian Molton <ian.molton@collabora.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aday6mac5ai.fsf@roland-alpha.cisco.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Matt Mackall <mpm@selenic.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] hw_random: core updates to allow more efficient 
+ drivers
+References: <1259177252.2858.17.camel@calx>	 <1259195127-20086-2-git-send-email-ian.molton@collabora.co.uk>	 <1259197403.2858.88.camel@calx> <200911282035.26847.rusty@rustcorp.com.au>	 <4B139E3D.1020905@collabora.co.uk> <1259606656.29740.48.camel@calx>
+In-Reply-To: <1259606656.29740.48.camel@calx>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 13, 2009 at 04:35:01PM -0800, Roland Dreier wrote:
+Matt Mackall wrote:
+> On Mon, 2009-11-30 at 10:28 +0000, Ian Molton wrote:
+>> Rusty Russell wrote:
+>>
+>>> And might as well just #defube RNG_BUFFSIZE SMP_CACHE_BYTES (or use
+>>> SMP_CACHE_BYTES here and sizeof() elsewhere).
+>> This can lead to a rather small (4 byte) buffer on some systems, however
+>> I don't know if in practice a tiny buffer or a big one would be better
+>> for performance on those machines. I guess if its a problem someone can
+>> patch the code to allocate a minimum of (say) 16 bytes in future...
 > 
->  > However our device will have flash to store the firmware in and, whilst
->  > it looks as though it would be possible for us to use request_firmware
->  > to provide occasional firmware upgrades from userspace, I can't find any
->  > reference as to whether this is an accepted method for doing so. Could
->  > someone please confirm for me whether or not it's a good idea to use
->  > request_firmware for this, or perhaps point me at another standard
->  > method for doing firmware updates from userspace?
-> 
-> I think request_firmware() is fine for this... you could have a look at
-> drivers/net/cxgb3 to see a device that writes new firmware to flash when
-> it detects a version mismatch between driver and device.
-> 
+> Hmmm, I think this was bad advice from Rusty.
 
-Doesn't dell_rbu also uses request-firmware for flashing BIOS?
+Not entirely...
 
--- 
-Dmitry
+> The goal is to size and align the buffer so that we know it will always
+> work. Thus 64 bytes (always big enough but not so big that anyone will
+> complain) and cache aligned (makes stupid things like Via Padlock happy
+> -on Vias-). 
+
+yep. Although making it the size of a cacheline makes sense on /most/
+modern architectures - 32 bytes is a very common size - I think the
+(current) worst case is one of the drivers wants to dump 3 u64s in one
+go. virtio-rng will take what it can...
+
+> Rusty's suggestion could easily have us in trouble if some driver wants
+> to hand us a mere 64 bits on an architecture with 4-byte cache alignment
+> but is otherwise perfectly happy with 64-bit stores. 
+
+How about SNP_CACHE_BYTES or if less, then 32 bytes minimum? Or just
+stick with 64 bytes. Either way works for me.
+
+-Ian
