@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbZLAQoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbZLAQoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbZLAQoM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 11:44:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZLAQoK
+	id S1754213AbZLAQoB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 11:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbZLAQoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 11:44:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42330 "EHLO hera.kernel.org"
+	Tue, 1 Dec 2009 11:44:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42324 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754187AbZLAQoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 11:44:06 -0500
-Date: Tue, 1 Dec 2009 16:43:17 GMT
+	id S1753573AbZLAQn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 11:43:59 -0500
+Date: Tue, 1 Dec 2009 16:43:30 GMT
 From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
@@ -17,12 +17,12 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        fweisbec@gmail.com, rostedt@goodmis.org, jbaron@redhat.com,
        tglx@linutronix.de, laijs@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <4B14D293.6090800@cn.fujitsu.com>
-References: <4B14D293.6090800@cn.fujitsu.com>
+In-Reply-To: <4B14D29B.6090708@cn.fujitsu.com>
+References: <4B14D29B.6090708@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] trace_syscalls: Add syscall_nr field to struct syscall_metadata
-Message-ID: <tip-c252f65793874b56d50395ab604db465ce688665@git.kernel.org>
-Git-Commit-ID: c252f65793874b56d50395ab604db465ce688665
+Subject: [tip:perf/core] trace_syscalls: Remove duplicate init_enter_##sname()
+Message-ID: <tip-a1301da0997bf73c44dbe584e9070a13adc89672@git.kernel.org>
+Git-Commit-ID: a1301da0997bf73c44dbe584e9070a13adc89672
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,149 +31,124 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c252f65793874b56d50395ab604db465ce688665
-Gitweb:     http://git.kernel.org/tip/c252f65793874b56d50395ab604db465ce688665
+Commit-ID:  a1301da0997bf73c44dbe584e9070a13adc89672
+Gitweb:     http://git.kernel.org/tip/a1301da0997bf73c44dbe584e9070a13adc89672
 Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Tue, 1 Dec 2009 16:23:47 +0800
+AuthorDate: Tue, 1 Dec 2009 16:23:55 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 1 Dec 2009 17:33:29 +0100
+CommitDate: Tue, 1 Dec 2009 17:33:30 +0100
 
-trace_syscalls: Add syscall_nr field to struct syscall_metadata
+trace_syscalls: Remove duplicate init_enter_##sname()
 
-Add syscall_nr field to struct syscall_metadata,
-it helps us to get syscall number easier.
+use only one init_syscall_trace instead of
+many init_enter_##sname()/init_exit_##sname()
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 Acked-by: Jason Baron <jbaron@redhat.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4B14D293.6090800@cn.fujitsu.com>
+LKML-Reference: <4B14D29B.6090708@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/syscalls.h      |    4 ++--
- include/trace/syscall.h       |    3 ++-
- kernel/trace/trace_syscalls.c |   22 +++++++++-------------
- 3 files changed, 13 insertions(+), 16 deletions(-)
+ include/linux/syscalls.h      |   30 ++----------------------------
+ include/trace/syscall.h       |    1 +
+ kernel/trace/trace_syscalls.c |   12 ++++++++++++
+ 3 files changed, 15 insertions(+), 28 deletions(-)
 
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index b9af875..3c280d7 100644
+index 3c280d7..cf0d923 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -161,7 +161,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
- 	static int init_enter_##sname(struct ftrace_event_call *call)	\
- 	{								\
- 		int num, id;						\
--		num = syscall_name_to_nr("sys"#sname);			\
-+		num = __syscall_meta_##sname.syscall_nr;		\
- 		if (num < 0)						\
- 			return -ENOSYS;					\
- 		id = register_ftrace_event(&enter_syscall_print_##sname);\
-@@ -197,7 +197,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
- 	static int init_exit_##sname(struct ftrace_event_call *call)	\
- 	{								\
- 		int num, id;						\
--		num = syscall_name_to_nr("sys"#sname);			\
-+		num = __syscall_meta_##sname.syscall_nr;		\
- 		if (num < 0)						\
- 			return -ENOSYS;					\
- 		id = register_ftrace_event(&exit_syscall_print_##sname);\
+@@ -158,19 +158,6 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
+ 	struct trace_event enter_syscall_print_##sname = {		\
+ 		.trace                  = print_syscall_enter,		\
+ 	};								\
+-	static int init_enter_##sname(struct ftrace_event_call *call)	\
+-	{								\
+-		int num, id;						\
+-		num = __syscall_meta_##sname.syscall_nr;		\
+-		if (num < 0)						\
+-			return -ENOSYS;					\
+-		id = register_ftrace_event(&enter_syscall_print_##sname);\
+-		if (!id)						\
+-			return -ENODEV;					\
+-		event_enter_##sname.id = id;				\
+-		INIT_LIST_HEAD(&event_enter_##sname.fields);		\
+-		return 0;						\
+-	}								\
+ 	TRACE_SYS_ENTER_PROFILE(sname);					\
+ 	static struct ftrace_event_call __used				\
+ 	  __attribute__((__aligned__(4)))				\
+@@ -179,7 +166,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
+ 		.name                   = "sys_enter"#sname,		\
+ 		.system                 = "syscalls",			\
+ 		.event                  = &enter_syscall_print_##sname,	\
+-		.raw_init		= init_enter_##sname,		\
++		.raw_init		= init_syscall_trace,		\
+ 		.show_format		= syscall_enter_format,		\
+ 		.define_fields		= syscall_enter_define_fields,	\
+ 		.regfunc		= reg_event_syscall_enter,	\
+@@ -194,19 +181,6 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
+ 	struct trace_event exit_syscall_print_##sname = {		\
+ 		.trace                  = print_syscall_exit,		\
+ 	};								\
+-	static int init_exit_##sname(struct ftrace_event_call *call)	\
+-	{								\
+-		int num, id;						\
+-		num = __syscall_meta_##sname.syscall_nr;		\
+-		if (num < 0)						\
+-			return -ENOSYS;					\
+-		id = register_ftrace_event(&exit_syscall_print_##sname);\
+-		if (!id)						\
+-			return -ENODEV;					\
+-		event_exit_##sname.id = id;				\
+-		INIT_LIST_HEAD(&event_exit_##sname.fields);		\
+-		return 0;						\
+-	}								\
+ 	TRACE_SYS_EXIT_PROFILE(sname);					\
+ 	static struct ftrace_event_call __used				\
+ 	  __attribute__((__aligned__(4)))				\
+@@ -215,7 +189,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
+ 		.name                   = "sys_exit"#sname,		\
+ 		.system                 = "syscalls",			\
+ 		.event                  = &exit_syscall_print_##sname,	\
+-		.raw_init		= init_exit_##sname,		\
++		.raw_init		= init_syscall_trace,		\
+ 		.show_format		= syscall_exit_format,		\
+ 		.define_fields		= syscall_exit_define_fields,	\
+ 		.regfunc		= reg_event_syscall_exit,	\
 diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-index ca09561..1531eef 100644
+index 1531eef..dff9371 100644
 --- a/include/trace/syscall.h
 +++ b/include/trace/syscall.h
-@@ -12,6 +12,7 @@
-  * A syscall entry in the ftrace syscalls array.
-  *
-  * @name: name of the syscall
-+ * @syscall_nr: number of the syscall
-  * @nb_args: number of parameters it takes
-  * @types: list of types as strings
-  * @args: list of args as strings (args[i] matches types[i])
-@@ -20,6 +21,7 @@
-  */
- struct syscall_metadata {
- 	const char	*name;
-+	int		syscall_nr;
- 	int		nb_args;
- 	const char	**types;
- 	const char	**args;
-@@ -30,7 +32,6 @@ struct syscall_metadata {
+@@ -32,6 +32,7 @@ struct syscall_metadata {
  
  #ifdef CONFIG_FTRACE_SYSCALLS
  extern unsigned long arch_syscall_addr(int nr);
--extern int syscall_name_to_nr(const char *name);
++extern int init_syscall_trace(struct ftrace_event_call *call);
  
  extern int syscall_enter_format(struct ftrace_event_call *call,
  				struct trace_seq *s);
 diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index 27eb18d..144cc14 100644
+index 144cc14..c651409 100644
 --- a/kernel/trace/trace_syscalls.c
 +++ b/kernel/trace/trace_syscalls.c
-@@ -51,7 +51,7 @@ static struct syscall_metadata *syscall_nr_to_meta(int nr)
- 	return syscalls_metadata[nr];
+@@ -412,6 +412,18 @@ void unreg_event_syscall_exit(struct ftrace_event_call *call)
+ 	mutex_unlock(&syscall_trace_lock);
  }
  
--int syscall_name_to_nr(const char *name)
-+static int syscall_name_to_nr(const char *name)
- {
- 	int i;
- 
-@@ -342,10 +342,8 @@ int reg_event_syscall_enter(struct ftrace_event_call *call)
- {
- 	int ret = 0;
- 	int num;
--	const char *name;
- 
--	name = ((struct syscall_metadata *)call->data)->name;
--	num = syscall_name_to_nr(name);
-+	num = ((struct syscall_metadata *)call->data)->syscall_nr;
- 	if (num < 0 || num >= NR_syscalls)
- 		return -ENOSYS;
- 	mutex_lock(&syscall_trace_lock);
-@@ -365,10 +363,8 @@ int reg_event_syscall_enter(struct ftrace_event_call *call)
- void unreg_event_syscall_enter(struct ftrace_event_call *call)
- {
- 	int num;
--	const char *name;
- 
--	name = ((struct syscall_metadata *)call->data)->name;
--	num = syscall_name_to_nr(name);
-+	num = ((struct syscall_metadata *)call->data)->syscall_nr;
- 	if (num < 0 || num >= NR_syscalls)
- 		return;
- 	mutex_lock(&syscall_trace_lock);
-@@ -383,10 +379,8 @@ int reg_event_syscall_exit(struct ftrace_event_call *call)
- {
- 	int ret = 0;
- 	int num;
--	const char *name;
- 
--	name = ((struct syscall_metadata *)call->data)->name;
--	num = syscall_name_to_nr(name);
-+	num = ((struct syscall_metadata *)call->data)->syscall_nr;
- 	if (num < 0 || num >= NR_syscalls)
- 		return -ENOSYS;
- 	mutex_lock(&syscall_trace_lock);
-@@ -406,10 +400,8 @@ int reg_event_syscall_exit(struct ftrace_event_call *call)
- void unreg_event_syscall_exit(struct ftrace_event_call *call)
- {
- 	int num;
--	const char *name;
- 
--	name = ((struct syscall_metadata *)call->data)->name;
--	num = syscall_name_to_nr(name);
-+	num = ((struct syscall_metadata *)call->data)->syscall_nr;
- 	if (num < 0 || num >= NR_syscalls)
- 		return;
- 	mutex_lock(&syscall_trace_lock);
-@@ -436,6 +428,10 @@ int __init init_ftrace_syscalls(void)
- 	for (i = 0; i < NR_syscalls; i++) {
- 		addr = arch_syscall_addr(i);
- 		meta = find_syscall_meta(addr);
-+		if (!meta)
-+			continue;
++int init_syscall_trace(struct ftrace_event_call *call)
++{
++	int id;
 +
-+		meta->syscall_nr = i;
- 		syscalls_metadata[i] = meta;
- 	}
- 
++	id = register_ftrace_event(call->event);
++	if (!id)
++		return -ENODEV;
++	call->id = id;
++	INIT_LIST_HEAD(&call->fields);
++	return 0;
++}
++
+ int __init init_ftrace_syscalls(void)
+ {
+ 	struct syscall_metadata *meta;
