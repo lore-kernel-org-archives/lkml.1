@@ -1,269 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZLAAJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZLAAKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbZLAAJO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 19:09:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZLAAJI
+	id S1754192AbZLAAKK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 19:10:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZLAAKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 19:09:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16382 "EHLO mx1.redhat.com"
+	Mon, 30 Nov 2009 19:10:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39146 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753935AbZLAAJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 19:09:07 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v6.1 04/11] kprobes: Jump optimization sysctl interface
-To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
-       Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Mon, 30 Nov 2009 19:08:12 -0500
-Message-ID: <20091201000811.8630.30888.stgit@harusame>
-In-Reply-To: <m1my27txdo.fsf@fess.ebiederm.org>
-References: <m1my27txdo.fsf@fess.ebiederm.org>
-User-Agent: StGIT/0.14.3
+	id S1754121AbZLAAKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 19:10:08 -0500
+Message-ID: <4B145EAF.8030909@kernel.org>
+Date: Mon, 30 Nov 2009 16:09:19 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: Alex Williamson <alex.williamson@hp.com>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32	registers
+References: <20091130212228.7555.43533.stgit@debian.lart> <4B143AE5.7040702@kernel.org> <1259617381.8949.281.camel@8530w.home> <4B143E83.6020105@kernel.org> <1259618496.8949.290.camel@8530w.home> <4B144346.50608@kernel.org> <1259619578.8949.295.camel@8530w.home> <4B1455FD.90002@kernel.org> <20091201000049.GC24539@lackof.org>
+In-Reply-To: <20091201000049.GC24539@lackof.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add /proc/sys/debug/kprobes-optimization sysctl which enables and disables
-kprobes jump optimization on the fly for debugging.
+Grant Grundler wrote:
+> On Mon, Nov 30, 2009 at 03:32:13PM -0800, Yinghai Lu wrote:
+>> IORESOURCE_MEM_64 get set when PCI_PREF_RANGE_TYPE_64 is set.
+> 
+> PCI_PREF_RANGE_TYPE_64 is when we read BARs. It doesn't indicate
+> anything about PCI Bridge Window registers AFAIK.
+> 
 
-Changes in v6.1:
- - Remove ctl_name = CTL_UNNUMBERED for linux-next compatibility.
+please double check pci-to-pci bridge 1.2, in page 47.
 
-Changes in v6:
- - Update comments and coding style.
-
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Anders Kaseorg <andersk@ksplice.com>
-Cc: Tim Abbott <tabbott@ksplice.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
-
- include/linux/kprobes.h |    8 ++++
- kernel/kprobes.c        |   89 +++++++++++++++++++++++++++++++++++++++++++++--
- kernel/sysctl.c         |   12 ++++++
- 3 files changed, 106 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index aed1f95..e7d1b2e 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -283,6 +283,14 @@ extern int arch_within_optimized_kprobe(struct optimized_kprobe *op,
- 					unsigned long addr);
- 
- extern void opt_pre_handler(struct kprobe *p, struct pt_regs *regs);
-+
-+#ifdef CONFIG_SYSCTL
-+extern int sysctl_kprobes_optimization;
-+extern int proc_kprobes_optimization_handler(struct ctl_table *table,
-+					     int write, void __user *buffer,
-+					     size_t *length, loff_t *ppos);
-+#endif
-+
- #endif /* CONFIG_OPTPROBES */
- 
- /* Get the kprobe at this addr (if any) - called with preemption disabled */
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 273fba7..d88f4c1 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -42,6 +42,7 @@
- #include <linux/freezer.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-+#include <linux/sysctl.h>
- #include <linux/kdebug.h>
- #include <linux/memory.h>
- #include <linux/cpu.h>
-@@ -383,6 +384,9 @@ static inline void copy_kprobe(struct kprobe *old_p, struct kprobe *p)
- }
- 
- #ifdef CONFIG_OPTPROBES
-+/* NOTE: change this value only with kprobe_mutex held */
-+static bool kprobes_allow_optimization;
-+
- /*
-  * Call all pre_handler on the list, but ignores its return value.
-  * This must be called from arch-dep optimized caller.
-@@ -447,7 +451,7 @@ static __kprobes void kprobe_optimizer(struct work_struct *work)
- 	/* Lock modules while optimizing kprobes */
- 	mutex_lock(&module_mutex);
- 	mutex_lock(&kprobe_mutex);
--	if (kprobes_all_disarmed)
-+	if (kprobes_all_disarmed || !kprobes_allow_optimization)
- 		goto end;
- 
- 	/*
-@@ -490,7 +494,7 @@ static __kprobes void optimize_kprobe(struct kprobe *p)
- 	struct optimized_kprobe *op;
- 
- 	/* Check if the kprobe is disabled or not ready for optimization. */
--	if (!kprobe_optready(p) ||
-+	if (!kprobe_optready(p) || !kprobes_allow_optimization ||
- 	    (kprobe_disabled(p) || kprobes_all_disarmed))
- 		return;
- 
-@@ -606,6 +610,81 @@ static __kprobes void try_to_optimize_kprobe(struct kprobe *p)
- 	init_aggr_kprobe(ap, p);
- 	optimize_kprobe(ap);
- }
-+
-+#ifdef CONFIG_SYSCTL
-+static void __kprobes optimize_all_kprobes(void)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p;
-+	unsigned int i;
-+
-+	/* If optimization is already allowed, just return */
-+	if (kprobes_allow_optimization)
-+		return;
-+
-+	kprobes_allow_optimization = true;
-+	mutex_lock(&text_mutex);
-+	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-+		head = &kprobe_table[i];
-+		hlist_for_each_entry_rcu(p, node, head, hlist)
-+			if (!kprobe_disabled(p))
-+				optimize_kprobe(p);
-+	}
-+	mutex_unlock(&text_mutex);
-+	printk(KERN_INFO "Kprobes globally optimized\n");
-+}
-+
-+static void __kprobes unoptimize_all_kprobes(void)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p;
-+	unsigned int i;
-+
-+	/* If optimization is already prohibited, just return */
-+	if (!kprobes_allow_optimization)
-+		return;
-+
-+	kprobes_allow_optimization = false;
-+	printk(KERN_INFO "Kprobes globally unoptimized\n");
-+	get_online_cpus();	/* For avoiding text_mutex deadlock */
-+	mutex_lock(&text_mutex);
-+	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-+		head = &kprobe_table[i];
-+		hlist_for_each_entry_rcu(p, node, head, hlist) {
-+			if (!kprobe_disabled(p))
-+				unoptimize_kprobe(p);
-+		}
-+	}
-+
-+	mutex_unlock(&text_mutex);
-+	put_online_cpus();
-+	/* Allow all currently running kprobes to complete */
-+	synchronize_sched();
-+}
-+
-+int sysctl_kprobes_optimization;
-+int proc_kprobes_optimization_handler(struct ctl_table *table, int write,
-+				      void __user *buffer, size_t *length,
-+				      loff_t *ppos)
-+{
-+	int ret;
-+
-+	mutex_lock(&kprobe_mutex);
-+	sysctl_kprobes_optimization = kprobes_allow_optimization ? 1 : 0;
-+	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
-+
-+	if (sysctl_kprobes_optimization)
-+		optimize_all_kprobes();
-+	else
-+		unoptimize_all_kprobes();
-+	mutex_unlock(&kprobe_mutex);
-+
-+	return ret;
-+}
-+#endif /* CONFIG_SYSCTL */
-+
- #else /* !CONFIG_OPTPROBES */
- #define get_optimized_kprobe(addr)		(NULL)
- #define optimize_kprobe(p)			do {} while (0)
-@@ -1621,10 +1700,14 @@ static int __init init_kprobes(void)
- 		}
- 	}
- 
--#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
-+#if defined(CONFIG_OPTPROBES)
-+#if defined(__ARCH_WANT_KPROBES_INSN_SLOT)
- 	/* Init kprobe_optinsn_slots */
- 	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
- #endif
-+	/* By default, kprobes can be optimized */
-+	kprobes_allow_optimization = true;
-+#endif
- 
- 	/* By default, kprobes are armed */
- 	kprobes_all_disarmed = false;
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 0060ce7..71a2c90 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -51,6 +51,7 @@
- #include <linux/ftrace.h>
- #include <linux/slow-work.h>
- #include <linux/perf_event.h>
-+#include <linux/kprobes.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -1621,6 +1622,17 @@ static struct ctl_table debug_table[] = {
- 		.proc_handler	= proc_dointvec
- 	},
- #endif
-+#if defined(CONFIG_OPTPROBES)
-+	{
-+		.procname	= "kprobes-optimization",
-+		.data		= &sysctl_kprobes_optimization,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_kprobes_optimization_handler,
-+		.extra1		= &zero,
-+		.extra2		= &one,
-+	},
-+#endif
- 	{ .ctl_name = 0 }
- };
- 
+YH
 
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
