@@ -1,112 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZLATVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZLAT0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009AbZLATVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 14:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZLATVR
+	id S1753899AbZLAT0d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 14:26:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZLAT0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 14:21:17 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49075 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbZLATVQ (ORCPT
+	Tue, 1 Dec 2009 14:26:32 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:18434 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750999AbZLAT0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 14:21:16 -0500
-Message-ID: <4B156CAA.1080900@infradead.org>
-Date: Tue, 01 Dec 2009 17:21:14 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Tue, 1 Dec 2009 14:26:32 -0500
+X-Trace: 296582275/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.56.48/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.56.48
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhoBANL8FEtPRTgw/2dsb2JhbAAIkFIByACEMQQ
+X-IronPort-AV: E=Sophos;i="4.47,322,1257120000"; 
+   d="scan'208";a="296582275"
+Date: Tue, 1 Dec 2009 19:26:32 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Chris Wilson <chris@chris-wilson.co.uk>
+cc: Matt Mackall <mpm@selenic.com>, Mateusz Kaduk <mateusz.kaduk@gmail.com>,
+       Eric Anholt <eric@anholt.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+Subject: [Bug 14662] drm/i915: Select CONFIG_SHMEM
+Message-ID: <Pine.LNX.4.64.0912011906290.8058@sister.anvils>
 MIME-Version: 1.0
-To: Mike Isely <isely@isely.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org
-Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
-References: <4B103CE1.8050303@redhat.com> <200911272240.02930.s.L-H@gmx.de> <200911280357.58116.hverkuil@xs4all.nl> <alpine.DEB.1.10.0911281425240.5482@ivanova.isely.net> <20091130115701.40c92b2c@pedra> <alpine.DEB.1.10.0911301341320.20937@cnc.isely.net>
-In-Reply-To: <alpine.DEB.1.10.0911301341320.20937@cnc.isely.net>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Isely wrote:
-> On Mon, 30 Nov 2009, Mauro Carvalho Chehab wrote:
-> 
->> Em Sat, 28 Nov 2009 14:33:30 -0600 (CST)
->> Mike Isely <isely@isely.net> escreveu:
->>
->>> Mauro:
->>>
->>> I had also posted up two high priority pvrusb2 patches that should 
->>> really be cherry-picked for 2.6.32.  You've already pulled them into 
->>> v4l/dvb and I did mark them as high priority at the time.
->>>
->>> These patches enable use of FX2 microcontroller firmware that is 16KB in 
->>> size.  Hauppauge is no longer shipping 8KB firmware for HVR-1950 and 
->>> HVR-1900 and without these changes then those devices won't work AT ALL 
->>> in kernel 2.6.32.
->>>
->>> You can find these within the v4l-dvb Mercurial repository here:
->>>
->>> Changeset 13495:87c3853fe2b3 
->>> Subject: pvrusb2: Support 16KB FX2 firmware
->>> http://linuxtv.org/hg/v4l-dvb/rev/87c3853fe2b3
->>>
->>> Changeset 13500:d4c418d4b25c
->>> Subject: pvrusb2: Fix lingering 16KB FX2 Firmware issues
->>> http://linuxtv.org/hg/v4l-dvb/rev/d4c418d4b25c
->>>
->>> I do not believe these patches have any ordering dependencies with other 
->>> patches, though between the two the second one technically should come 
->>> after the first.
-> 
-> 
-> 
->> There are. Picking just those patches broke compilation.
-> 
-> Mauro:
-> 
-> Please forward to me the compilation errors.  Right now I am just not 
-> seeing how a patch this trivial could have any compilation dependencies.  
-> And unfortunately I will not be able to reproduce your build setup until 
-> at least Tuesday night.  I must be blind.
-> 
-> 
->> Also, it seemed too late for adding support for newer boards/firmware when Linus
->> is about to release a kernel.
-> 
-> This is not a new feature.  It's a bug fix due to something that 
-> Hauppauge recently did.  Hauppauge is NO LONGER officially distributing 
-> FX2 firmware with their hardware which the driver can use.  This simply 
-> prevents any new HVR-1950 / HVR-1900 users from working under Linux.  
-> This fixes breakage for previously working hardware.  The root cause is 
-> simple - the firmware blob is just larger now - and the fix is trivial.  
-> It absolutely needs to go in.  In fact, this should go back to a 
-> 2.6.31.x and a 2.6.27.x release as well, though in those cases I have to 
-> figure out if driver source code is still close enough for the same 
-> patches to still work.
-> 
-> I am sorry this is showing up late for you.  There are multiple reasons 
-> for this.  However I did mark these patches as "high priority", 
-> following your v4l-dvb changeset process.  I did comment on the pull 
-> request that these were important but I guess I needed to also 
-> specifically call these out in the pull request text as well.
-> 
-> If these don't get in now as part of the official 2.6.32 release, these 
-> absolutely need to be queued for 2.6.32.1.
+Hi Chris,
 
-We are very late for 2.6.32. I'm not sure if are there still time for it.
+I'm slightly worried by this patch which went into Linus's git yesterday.
 
-I'll seek for some time during this week to add those patches at the upstream
-tree and removing them from the development tree and see what compilation
-issues arise.
+Thank you for looking into the issue, and coming up with what Mateusz
+has found to be a good workaround.
 
-Cheers,
-Mauro.
-> 
->   -Mike
-> 
-> 
+But is it the right fix?
 
+drm/i915 ought to be working without CONFIG_SHMEM: it then falls back
+to using ramfs instead of shmem.  So why isn't that working here?
+
+I'd take the NULL function pointer in read_cache_page_async() to be a
+NULL filler function; but that should be pointing to simple_readpage(),
+as specified in ramfs_aops.
+
+You don't go into more detail in the comments: do you have any more
+info on how this came about?  I don't get it.
+
+I'd prefer not to "select SHMEM" there, because it shouldn't be
+necessary; and will put CONFIG_SHMEM=y into the .configs of users
+who chose not to have it before, and who will forget to reverse it
+if we come up with a better fix letter.
+
+If there is a better fix: I just don't understand what happened here.
+
+Thanks,
+Hugh
+
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Date: Sun, 22 Nov 2009 15:40:31 +0000 (+0000)
+Subject: drm/i915: Select CONFIG_SHMEM
+X-Git-Url: http://git.kernel.org/gitweb.cgi?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=commitdiff_plain;h=ca9ab10033d190c1ede85fdf456307bdfdabf079
+
+drm/i915: Select CONFIG_SHMEM
+
+The driver requires shmfs as the backing filesystem to handle the buffer
+objects, so ensure it is selected if the user chooses to build our
+driver.
+
+Fixes: Bug 14662 - Dell E5500 kernel panic with KMS
+http://bugzilla.kernel.org/show_bug.cgi?id=14662
+
+The revealing nature of the panic is the NULL function pointer
+dereference in read_cache_page_async().
+
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Reported-and-tested-by: Mateusz Kaduk <mateusz.kaduk@gmail.com>
+Signed-off-by: Eric Anholt <eric@anholt.net>
+Cc: stable@kernel.org
+---
+
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index f831ea1..96eddd1 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -92,6 +92,7 @@ config DRM_I830
+ config DRM_I915
+ 	tristate "i915 driver"
+ 	depends on AGP_INTEL
++	select SHMEM
+ 	select DRM_KMS_HELPER
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
