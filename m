@@ -1,73 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZLAEKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbZLAELY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbZLAEKx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 23:10:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZLAEKw
+	id S1752231AbZLAELY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 23:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZLAELW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 23:10:52 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:1715 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbZLAEKv (ORCPT
+	Mon, 30 Nov 2009 23:11:22 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50728 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753206AbZLAELS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 23:10:51 -0500
-Subject: Re: [PATCH v2] PCI: Always set prefetchable base/limit upper32
- registers
-From: Alex Williamson <alex.williamson@hp.com>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: jbarnes@virtuousgeek.org, yinghai@kernel.org, linux-pci@vger.kernel.org,
+	Mon, 30 Nov 2009 23:11:18 -0500
+Date: Mon, 30 Nov 2009 23:10:58 -0500
+Message-Id: <200912010410.nB14AwWh030303@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20091201001942.GF24539@lackof.org>
-References: <20091130214954.10845.23072.stgit@debian.lart>
-	 <20091201000332.GD24539@lackof.org>  <20091201001942.GF24539@lackof.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 30 Nov 2009 21:10:54 -0700
-Message-ID: <1259640654.10482.44.camel@2710p.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 25/41] union-mount: stop lookup when directory has S_OPAQUE flag set 
+In-reply-to: Your message of "Wed, 21 Oct 2009 12:19:23 PDT."
+             <1256152779-10054-26-git-send-email-vaurora@redhat.com> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 17:19 -0700, Grant Grundler wrote:
-> On Mon, Nov 30, 2009 at 05:03:32PM -0700, Grant Grundler wrote:
-> > On Mon, Nov 30, 2009 at 02:51:44PM -0700, Alex Williamson wrote:
-> > > Prior to 1f82de10 we always initialized the upper 32bits of the
-> > > prefetchable memory window, regardless of the address range used.
-> > > Now we only touch it for a >32bit address, which means the upper32
-> > > registers remain whatever the BIOS initialized them too.
-> > > 
-> > > It's valid for the BIOS to set the upper32 base/limit to
-> > > 0xffffffff/0x00000000, which makes us program prefetchable ranges
-> > > like 0xffffffffabc00000 - 0x00000000abc00000
-> > > 
-> > > Revert the chunk of 1f82de10 that made this conditional so we always
-> > > write the upper32 registers and remove now unused pref_mem64 variable.
-> > > 
-> > > Signed-off-by: Alex Williamson <alex.williamson@hp.com>
-> > 
-> > Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
+In message <1256152779-10054-26-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> From: Jan Blunck <jblunck@suse.de>
 > 
-> NAK this - I messed up. Yinghai is correct. Something else is going on.
+> Honor the S_OPAQUE flag in the union path lookup.
+
+Was it intentional to have a separate patch which adds opaque directories
+support, or should it be part of the larger patch #24?
+
 > 
-> It might be perfectly OK to read 0xffffffffabc00000 if the bridge
-> isn't using the upper32 Prefetchable register. Maybe the problem is
-> some code is reading the upper32 value without checking that it's valid?
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> ---
+>  fs/namei.c |   17 ++++++++++++++---
+>  1 files changed, 14 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/namei.c b/fs/namei.c
+> index b279686..8ebbf4f 100644
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -523,6 +523,9 @@ static int __cache_lookup_build_union(struct nameidata *nd, struct qstr *name,
+>  			path_put(&last);
+>  		last.dentry = dentry;
+>  		last.mnt = mntget(nd->path.mnt);
+> +
+> +		if (IS_OPAQUE(last.dentry->d_inode))
+> +			break;
+>  	}
+>  
+>  	if (last.dentry != path->dentry)
+> @@ -562,7 +565,8 @@ static int cache_lookup_union(struct nameidata *nd, struct qstr *name,
+>  
+>  		/* only directories can be part of a union stack */
+>  		if (!path->dentry->d_inode ||
+> -		    !S_ISDIR(path->dentry->d_inode->i_mode))
+> +		    !S_ISDIR(path->dentry->d_inode->i_mode) ||
+> +		    IS_OPAQUE(path->dentry->d_inode))
+>  			goto out;
+>  
+>  		/* Build the union stack for this part */
+> @@ -804,6 +808,9 @@ static int __real_lookup_build_union(struct nameidata *nd, struct qstr *name,
+>  			path_put(&last);
+>  		last.dentry = next.dentry;
+>  		last.mnt = mntget(next.mnt);
+> +
+> +		if (IS_OPAQUE(last.dentry->d_inode))
+> +			break;
+>  	}
+>  
+>  	if (last.dentry != path->dentry)
+> @@ -825,7 +832,8 @@ static int real_lookup_union(struct nameidata *nd, struct qstr *name,
+>  
+>  	/* only directories can be part of a union stack */
+>  	if (!path->dentry->d_inode ||
+> -	    !S_ISDIR(path->dentry->d_inode->i_mode))
+> +	    !S_ISDIR(path->dentry->d_inode->i_mode) ||
+> +	    IS_OPAQUE(path->dentry->d_inode))
+>  		goto out;
+>  
+>  	/* Build the union stack for this part */
+> @@ -1111,7 +1119,7 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
+>  {
+>  	int err;
+>  
+> -	if (IS_MNT_UNION(nd->path.mnt))
+> +	if (IS_MNT_UNION(nd->path.mnt) && !IS_OPAQUE(nd->path.dentry->d_inode))
+>  		goto need_union_lookup;
+>  
+>  	path->dentry = __d_lookup(nd->path.dentry, name);
+> @@ -1676,6 +1684,9 @@ static int __hash_lookup_build_union(struct nameidata *nd, struct qstr *name,
+>  			path_put(&last);
+>  		last.dentry = next.dentry;
+>  		last.mnt = mntget(next.mnt);
+> +
+> +		if (IS_OPAQUE(last.dentry->d_inode))
+> +			break;
+>  	}
+>  
+>  	if (last.dentry != path->dentry)
+> -- 
+> 1.6.3.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Apologies for not threading the v2 patch into the original thread.  The
-prefetchable base register does support the upper32 bits and it does
-work correctly.  However per the pci-to-pci bridge spec, a little lower
-on page 47, devices only supporting 32bit prefetchable ranges are to
-implement the upper32 registers as read-only registers that return zero.
-In the example above, -1 in the upper32 base simply means that base >
-limit, which disables the range.
-
-Further investigation shows that the MEM_64 resource flag is setup for
-this range based on hardware capabilities, but then it gets removed in
-pbus_size_mem() because we want to use the range to map a 32bit option
-ROM.  This leaves us entering pci_setup_bridge() with -1 in the upper32
-base and the MEM_64 flag clear, so we never touch the upper32 base
-register.  I think this patch is still a simple, safe solution.  Thanks,
-
-Alex
-
+Erez.
