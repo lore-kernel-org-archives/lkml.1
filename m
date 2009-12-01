@@ -1,38 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbZLALsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbZLALut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbZLALsm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 06:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZLALsl
+	id S1754007AbZLALut (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 06:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZLALut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 06:48:41 -0500
-Received: from mail.turknet.net.tr ([193.192.98.182]:12011 "EHLO
-	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753773AbZLALsl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 06:48:41 -0500
-Message-ID: <4B15029D.8090105@netone.com.tr>
-Date: Tue, 01 Dec 2009 13:48:45 +0200
-From: Tarkan Erimer <tarkane@netone.com.tr>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.8 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Bernd Petrovitsch <bernd@firmix.at>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Linux-2.6.32-rc8-git2 Fails To Compile With GCC-4.4.2
-References: <4B14FB56.4040608@netone.com.tr>	 <1259666631.23038.7.camel@tara.firmix.at>  <4B15006C.2020207@netone.com.tr> <1259667823.23038.9.camel@tara.firmix.at>
-In-Reply-To: <1259667823.23038.9.camel@tara.firmix.at>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 1 Dec 2009 06:50:49 -0500
+Received: from mail1.radix.net ([207.192.128.31]:49603 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753480AbZLALus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 06:50:48 -0500
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+From: Andy Walls <awalls@radix.net>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, maximlevitsky@gmail.com,
+       mchehab@redhat.com, stefanr@s5r6.in-berlin.de, superm1@ubuntu.com
+In-Reply-To: <4B14F3EA.4090000@redhat.com>
+References: <m3r5riy7py.fsf@intrepid.localdomain> <BDkdITRHqgB@lirc>
+	 <9e4733910911280906if1191a1jd3d055e8b781e45c@mail.gmail.com>
+	 <m3aay6y2m1.fsf@intrepid.localdomain>
+	 <9e4733910911280937k37551b38g90f4a60b73665853@mail.gmail.com>
+	 <1259450815.3137.19.camel@palomino.walls.org>
+	 <m3ocml6ppt.fsf@intrepid.localdomain>
+	 <1259542097.5231.78.camel@palomino.walls.org> <4B14F3EA.4090000@redhat.com>
+Content-Type: text/plain
+Date: Tue, 01 Dec 2009 06:49:03 -0500
+Message-Id: <1259668143.3100.18.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Dec 2009 11:48:46.0363 (UTC) FILETIME=[3D4FC6B0:01CA727C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01/2009 01:43 PM, Bernd Petrovitsch wrote:
->
-> Just to make sure: I meant OpenSUSEs bug tracker since you produced the
-> error with OpenSUSEs gcc.
->
-> 	Bernd
->   
-Ah, thanks for the warning. I was,almost, filing the bug report to GCC's
-bugzilla! ;-)
+On Tue, 2009-12-01 at 11:46 +0100, Gerd Hoffmann wrote:
+> Hi,
+> 
+> > A current related problem is that i2c based devices can only be bound to
+> > only one of ir-kbd-i2c *or* lirc_i2c *or* lirc_zilog at any one time.
+> > Currently it is somewhat up to the bridge driver which binding is
+> > preferred.  Discussion about this for the pvrusb2 module had the biggest
+> > email churn IIRC.
+> 
+> Once lirc_dev is merged you can easily fix this:  You'll have *one* 
+> driver which supports *both* evdev and lirc interfaces.  If lircd opens 
+> the lirc interface raw data will be sent there, keystrokes come in via 
+> uinput.  Otherwise keystrokes are send directly via evdev.  Problem solved.
+
+This will be kind of strange for lirc_zilog (aka lirc_pvr150).  It
+supports IR transmit on the PVR-150, HVR-1600, and HD-PVR.  I don't know
+if transmit is raw pulse timings, but I'm sure the unit provides codes
+on receive.  Occasionally blocks of "boot data" need to be programmed
+into the transmitter side.  I suspect lirc_zilog will likely need
+rework....
+
+
+> cheers,
+>    Gerd
+> 
+> PS:  Not sure this actually makes sense for the i2c case, as far I know
+>       these do decoding in hardware and don't provide access to the raw
+>       samples,
+
+True.
+
+>  so killing the in-kernel IR limits to make ir-kbd-i2c
+                  ^^^^^^^^^^^^^^^^^^^ 
+>       being on par with lirc_i2c might be more useful in this case.
+
+I didn't quite understand that.  Can you provide a little more info?
+
+
+Thanks,
+Andy
+
