@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbZLADIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbZLADXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752753AbZLADIO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 22:08:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZLADIM
+	id S1752720AbZLADXX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 22:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZLADXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 22:08:12 -0500
-Received: from ozlabs.org ([203.10.76.45]:53736 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752107AbZLADIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 22:08:11 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH 1/2] hw_random: core updates to allow more efficient drivers
-Date: Tue, 1 Dec 2009 13:38:15 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
-Cc: Ian Molton <ian.molton@collabora.co.uk>, linux-kernel@vger.kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>, Jeff Garzik <jeff@garzik.org>
-References: <1259177252.2858.17.camel@calx> <4B139E3D.1020905@collabora.co.uk> <1259606656.29740.48.camel@calx>
-In-Reply-To: <1259606656.29740.48.camel@calx>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Mon, 30 Nov 2009 22:23:22 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:29580 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbZLADXV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 22:23:21 -0500
+Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32
+ registers
+From: Alex Williamson <alex.williamson@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4B148485.3000107@kernel.org>
+References: <20091130212228.7555.43533.stgit@debian.lart>
+	 <4B143AE5.7040702@kernel.org> <1259617381.8949.281.camel@8530w.home>
+	 <4B143E83.6020105@kernel.org> <1259618496.8949.290.camel@8530w.home>
+	 <4B144346.50608@kernel.org> <1259619578.8949.295.camel@8530w.home>
+	 <4B1455FD.90002@kernel.org> <1259625224.8949.319.camel@8530w.home>
+	 <4B145C9D.70601@kernel.org> <1259632564.10482.10.camel@2710p.home>
+	 <4B147EE0.8080209@kernel.org>  <4B148485.3000107@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Nov 2009 20:23:24 -0700
+Message-ID: <1259637804.10482.20.camel@2710p.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912011338.15763.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009 05:14:16 am Matt Mackall wrote:
-> On Mon, 2009-11-30 at 10:28 +0000, Ian Molton wrote:
-> > Rusty Russell wrote:
+On Mon, 2009-11-30 at 18:50 -0800, Yinghai Lu wrote:
+> Yinghai Lu wrote:
+> > Alex Williamson wrote:
+> >> Ok, sorry I missed this.  Yes, this is getting called, but when we get
+> >> back to pci_setup_bridge() that flag is missing IORESOURCE_MEM_64.
+> >> Perhaps these are different resources?  I'm still tracing the code to
+> >> find out what happened to that flag.
+> >>
+> >> Also, I'm running 64bit(x86_64), and if lspci is wrong, then so is
+> >> setpci.  I don't think there's an "ignore upper32" anywhere, so the
+> >> result of 0xffffffffabc00000 - 0x00000000abc00000 is that base > limit
+> >> thus the range is disabled at the bridge and the ROM resource we
+> >> assigned into the window behind the bridge is inaccessible.
 > > 
-> > > And might as well just #defube RNG_BUFFSIZE SMP_CACHE_BYTES (or use
-> > > SMP_CACHE_BYTES here and sizeof() elsewhere).
-> > 
-> > This can lead to a rather small (4 byte) buffer on some systems, however
-> > I don't know if in practice a tiny buffer or a big one would be better
-> > for performance on those machines. I guess if its a problem someone can
-> > patch the code to allocate a minimum of (say) 16 bytes in future...
-> 
-> Hmmm, I think this was bad advice from Rusty.
+> > can you check
+[snip]
 
-Me too.  But really, it's because we're using cacheline alignment
-as a proxy for something else, and it's not a good fit.
+The upper32 base register works as advertised, that's not where we clear
+the MEM_64 flag.  I tracked that down to pbus_size_mem().  So, we have a
+MEM_64 capable prefetchable base, but we want to use it to map a 32bit
+resource behind the bridge (a ROM in this case), so we drop the MEM_64
+flag, causing us to hit pci_setup_bridge() with the flag clear and thus
+not touching UPPER32.  I think your second patch would also solve this
+since it separates the desired resource size from the register size.
+However, it seems much more simple to unconditionally write the upper32
+registers as was done for all 2.6 kernels up to 2.6.30.  Thanks,
 
-But we're bikeshedding, so apply or revert.
+Alex
 
-	/* A buffer which can hold any fundamental type: drivers are fussy. */
-	static u8 rng_buffer[SMP_CACHE_BYTES < 8 ? 8 : SMP_CACHE_BYTES]
-		__cacheline_aligned;
-
-Either way, both patches: Acked-by: Rusty Russell <rusty@rustcorp.com.au>
-
-Thanks,
-Rusty.
