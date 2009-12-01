@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbZLASXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbZLASS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426AbZLASXZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 13:23:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbZLASXY
+	id S1753285AbZLASS6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 13:18:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZLASS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 13:23:24 -0500
-Received: from emh05.mail.saunalahti.fi ([62.142.5.111]:38210 "EHLO
-	emh05.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbZLASXY (ORCPT
+	Tue, 1 Dec 2009 13:18:57 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:59679 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbZLASS4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 13:23:24 -0500
-X-Greylist: delayed 491 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Dec 2009 13:23:24 EST
-Date: Tue, 1 Dec 2009 20:14:39 +0200 (EET)
-From: Kai Makisara <Kai.Makisara@kolumbus.fi>
-X-X-Sender: makisara@kai.makisara.local
-To: James Bottomley <James.Bottomley@suse.de>
-cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] SCSI fixes for 2.6.32-rc8
-In-Reply-To: <1259676366.11762.239.camel@mulgrave.site>
-Message-ID: <alpine.LNX.2.00.0912012011190.21616@kai.makisara.local>
-References: <1259620194.11762.137.camel@mulgrave.site>  <20091201080346W.fujita.tomonori@lab.ntt.co.jp> <1259676366.11762.239.camel@mulgrave.site>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Tue, 1 Dec 2009 13:18:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=DG134FiTGw7VHML3c0EPhzkV6gHg4n9+MnRNzoNYSJ/ksxyHXrKSckFHVaqe+gkqgl
+         Mde8ukki8AyvWwfhv1x5AEkd2V4fjZiPLp7UEPxL1/VzZDVJ2lN44qkFh1JhcyErlSbc
+         Cs2p/0REcm9dorNr+w57oeVfTpkhl6a+30vcc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+In-Reply-To: <4B154C54.5090906@redhat.com>
+References: <9e4733910912010708u1064e2c6mbc08a01293c3e7fd@mail.gmail.com>
+	 <1259682428.18599.10.camel@maxim-laptop>
+	 <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com>
+	 <4B154C54.5090906@redhat.com>
+Date: Tue, 1 Dec 2009 13:19:02 -0500
+Message-ID: <9e4733910912011019n798c7552i6f9b16f9e8e90c58@mail.gmail.com>
+Subject: Re: [RFC v2] Another approach to IR
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009, James Bottomley wrote:
+On Tue, Dec 1, 2009 at 12:03 PM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+> Hi Jon,
+> So, what we can do is to have a "default" keycode table mapping several
+> different IR's there to be used by drivers that are shipped with an IR
+> that can be fully mapped by the default table. However, for devices
+> with scancodes that overlaps with the default table, we'll need a separate
+> table.
 
-> On Tue, 2009-12-01 at 08:03 +0900, FUJITA Tomonori wrote:
-> > On Mon, 30 Nov 2009 17:29:54 -0500
-> > James Bottomley <James.Bottomley@suse.de> wrote:
-> > 
-> > > This is a set of miscellaneous (but small) fixes for SCSI.
-> > > 
-> > > The patch is available here:
-> > > 
-> > > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
-> > > 
-> > > The short changelog is:
-> > > 
-> > > Alexey Kuznetsov (1):
-> > >       fix crash when disconnecting usb storage
-> > > 
-> > > James Bottomley (1):
-> > >       fix async scan add/remove race resulting in an oops
-> > > 
-> > > Martin K. Petersen (1):
-> > >       sd: Return correct error code for DIF
-> > > 
-> > > The diffstat is:
-> > > 
-> > >  drivers/scsi/hosts.c       |    2 -
-> > >  drivers/scsi/scsi_scan.c   |   18 ++----------
-> > >  drivers/scsi/scsi_sysfs.c  |   63 +++++++++++++++++++--------------------------
-> > >  drivers/scsi/sd_dif.c      |    2 -
-> > >  include/scsi/scsi_device.h |    1 
-> > >  5 files changed, 34 insertions(+), 52 deletions(-)
-> > 
-> > Can you add the tape driver fix?
-> 
-> Sure ... can I have an acked-by from Kai?
-> 
-There was already tested-by but here is
+The goal is to try and design a set of zero config defaults that can
+work for 90% of users.
 
-Acked-by: Kai Makisara <kai.makisara@kolumbus.fi>
+LIRC merges two different things, basic IR driver support and
+application scripting for non-IR aware apps. Application scripting for
+unaware apps is always going to happen in user space and it will
+always need to be manually configured.  But scripting should be
+optional.
 
-Thanks,
-Kai
+I'm looking at the driver half and I'd like to explore how zero config
+support can be built for IR aware apps. Of course we don't have any IR
+aware apps today because no kernel IR event types have been defined
+yet. It is better to simply make the apps IR aware and have them
+process IR events from evdev (in other words forget about the configs
+code it was a poor man's scripting scheme).
 
+For mouse/keyboard support something parallel to USB HID is needed. A
+couple of common device profiles would be mapped to keyboard/mouse
+events by default. That should support 90% of users. The other 10% can
+use a set keys IOCTL to change the mappings.
+
+A couple of use cases:
+  insert MSMCE IR device
+  kernel automatically loads all drivers
+  IR events appear in evdev as vendor/device/command triplets
+
+  apt-get mythtv
+  set universal remote to xmit DVR commands
+  everything just works
+
+  set universal remote to xmit device A commands
+  device A commands mapped to keyboard/mouse movements
+  everything just works
+
+For these default cases you just have to read enough docs to know what
+device to set your universal remote to.
+
+The scenario I'd like to achieve
+   install TV app
+   install audio app
+   install home automation app
+   use multi-function remote to control in parallel with zero config
+other than setting three devices into the remote.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
