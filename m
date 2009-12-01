@@ -1,172 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZLARis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbZLARkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbZLARis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 12:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZLARir
+	id S1754214AbZLARkC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 12:40:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZLARkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 12:38:47 -0500
-Received: from www.tglx.de ([62.245.132.106]:50678 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753707AbZLARiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 12:38:46 -0500
-Date: Tue, 1 Dec 2009 18:37:35 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH] audit: Call tty_audit_push_task() outside preempt disabled
- region
-In-Reply-To: <alpine.LFD.2.00.0911301443110.2872@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0912011608070.24119@localhost.localdomain>
-References: <20091123145409.GA29627@wotan.suse.de>  <alpine.LFD.2.00.0911280927180.2561@localhost>  <20091130100041.GA29610@infradead.org>  <alpine.LFD.2.00.0911300722370.2872@localhost.localdomain>  <20091130174638.GA9782@elte.hu> 
- <alpine.LFD.2.00.0911302206370.24119@localhost.localdomain> <1259616429.26472.499.camel@laptop> <alpine.LFD.2.00.0911302300550.24119@localhost.localdomain> <alpine.LFD.2.00.0911301409560.2872@localhost.localdomain> <alpine.LFD.2.00.0911302328350.24119@localhost.localdomain>
- <alpine.LFD.2.00.0911301443110.2872@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 1 Dec 2009 12:40:01 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:39843 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753840AbZLARkA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 12:40:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iQmAivc+UCYO2GiVem3VREx3tWWo60nmGeI0aM964+2AoanNje5cRMHPu8pM2iLysu
+         KS69GyyePnSc5pHj0QAooivvOFUHTs9J0qhTCGxL41q7B/m18T/VyBaHJraF/33IUeT7
+         HCr3ojroKjdMDoTXHGu4hz8wJdY462BaE9glk=
+Date: Tue, 1 Dec 2009 18:40:05 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, jbaron@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/core] trace_syscalls: Remove unused
+	event_syscall_enter and event_syscall_exit
+Message-ID: <20091201174002.GA5080@nowhere>
+References: <4B14D278.4090209@cn.fujitsu.com> <tip-bf56a4ea9f1683c5b223fd3a5dbea23f1fa91c34@git.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tip-bf56a4ea9f1683c5b223fd3a5dbea23f1fa91c34@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While auditing all tasklist_lock read_lock sites I stumbled over the
-following call chain:
+On Tue, Dec 01, 2009 at 04:42:35PM +0000, tip-bot for Lai Jiangshan wrote:
+> Commit-ID:  bf56a4ea9f1683c5b223fd3a5dbea23f1fa91c34
+> Gitweb:     http://git.kernel.org/tip/bf56a4ea9f1683c5b223fd3a5dbea23f1fa91c34
+> Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+> AuthorDate: Tue, 1 Dec 2009 16:23:20 +0800
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Tue, 1 Dec 2009 17:33:28 +0100
+> 
+> trace_syscalls: Remove unused event_syscall_enter and event_syscall_exit
+> 
+> fix event_enter_##sname->event
+> fix event_exit_##sname->event
+> 
+> remove unused event_syscall_enter and event_syscall_exit
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Acked-by: Jason Baron <jbaron@redhat.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> LKML-Reference: <4B14D278.4090209@cn.fujitsu.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
 
-audit_prepare_user_tty()
-  read_lock(&tasklist_lock);
-  tty_audit_push_task();
-     mutex_lock(&buf->mutex);
 
-     --> buf->mutex is locked with preemption disabled.
 
-Solve this by acquiring a reference to the task struct under
-rcu_read_lock and call tty_audit_push_task outside of the preempt
-disabled region.
+I'm confused.
+Each syscall has a enter_syscall_print_##sname,
+all of them are identical (they all map to print_syscall_enter())
 
-Move all code which needs to be protected by sighand lock into
-tty_audit_push_task() and use lock/unlock_sighand as we do not hold
-tasklist_lock.
+OTOH we have event_syscall_enter, which is exactly
+the same than enter_syscall_print_##sname.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- drivers/char/tty_audit.c |   29 +++++++++++++++++++++--------
- include/linux/tty.h      |    8 ++++----
- kernel/audit.c           |   25 +++++++++----------------
- 3 files changed, 34 insertions(+), 28 deletions(-)
+But we are using a strange mix of them: we do that on
+init: register_ftrace_event(&enter_syscall_print_##sname)
+but we use event_syscall_enter as the "event" field
+of the trace_event. It means that we unregister the wrong
+event when we remove a module.
 
-Index: linux-2.6-tip/drivers/char/tty_audit.c
-===================================================================
---- linux-2.6-tip.orig/drivers/char/tty_audit.c
-+++ linux-2.6-tip/drivers/char/tty_audit.c
-@@ -188,25 +188,38 @@ void tty_audit_tiocsti(struct tty_struct
- }
- 
- /**
-- *	tty_audit_push_task	-	Flush task's pending audit data
-+ * tty_audit_push_task	-	Flush task's pending audit data
-+ * @tsk:		task pointer
-+ * @loginuid:		sender login uid
-+ * @sessionid:		sender session id
-+ *
-+ * Called with a ref on @tsk held. Try to lock sighand and get a
-+ * reference to the tty audit buffer if available.
-+ * Flush the buffer or return an appropriate error code.
-  */
--void tty_audit_push_task(struct task_struct *tsk, uid_t loginuid, u32 sessionid)
-+int tty_audit_push_task(struct task_struct *tsk, uid_t loginuid, u32 sessionid)
- {
--	struct tty_audit_buf *buf;
-+	struct tty_audit_buf *buf = NULL;
-+	unsigned long flags;
- 
--	spin_lock_irq(&tsk->sighand->siglock);
--	buf = tsk->signal->tty_audit_buf;
--	if (buf)
-+	if (!lock_task_sighand(tsk, &flags))
-+		return -ESRCH;
-+
-+	if (tsk->signal->audit_tty && tsk->signal->tty_audit_buf) {
-+		buf = tsk->signal->tty_audit_buf;
- 		atomic_inc(&buf->count);
--	spin_unlock_irq(&tsk->sighand->siglock);
-+	}
-+	unlock_task_sighand(tsk, &flags);
-+
- 	if (!buf)
--		return;
-+		return -EPERM;
- 
- 	mutex_lock(&buf->mutex);
- 	tty_audit_buf_push(tsk, loginuid, sessionid, buf);
- 	mutex_unlock(&buf->mutex);
- 
- 	tty_audit_buf_put(buf);
-+	return 0;
- }
- 
- /**
-Index: linux-2.6-tip/include/linux/tty.h
-===================================================================
---- linux-2.6-tip.orig/include/linux/tty.h
-+++ linux-2.6-tip/include/linux/tty.h
-@@ -494,8 +494,8 @@ extern void tty_audit_exit(void);
- extern void tty_audit_fork(struct signal_struct *sig);
- extern void tty_audit_tiocsti(struct tty_struct *tty, char ch);
- extern void tty_audit_push(struct tty_struct *tty);
--extern void tty_audit_push_task(struct task_struct *tsk,
--					uid_t loginuid, u32 sessionid);
-+extern int tty_audit_push_task(struct task_struct *tsk,
-+			       uid_t loginuid, u32 sessionid);
- #else
- static inline void tty_audit_add_data(struct tty_struct *tty,
- 				      unsigned char *data, size_t size)
-@@ -513,8 +513,8 @@ static inline void tty_audit_fork(struct
- static inline void tty_audit_push(struct tty_struct *tty)
- {
- }
--static inline void tty_audit_push_task(struct task_struct *tsk,
--					uid_t loginuid, u32 sessionid)
-+static inline int tty_audit_push_task(struct task_struct *tsk,
-+				      uid_t loginuid, u32 sessionid)
- {
- }
- #endif
-Index: linux-2.6-tip/kernel/audit.c
-===================================================================
---- linux-2.6-tip.orig/kernel/audit.c
-+++ linux-2.6-tip/kernel/audit.c
-@@ -467,23 +467,16 @@ static int audit_prepare_user_tty(pid_t 
- 	struct task_struct *tsk;
- 	int err;
- 
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	tsk = find_task_by_vpid(pid);
--	err = -ESRCH;
--	if (!tsk)
--		goto out;
--	err = 0;
--
--	spin_lock_irq(&tsk->sighand->siglock);
--	if (!tsk->signal->audit_tty)
--		err = -EPERM;
--	spin_unlock_irq(&tsk->sighand->siglock);
--	if (err)
--		goto out;
--
--	tty_audit_push_task(tsk, loginuid, sessionid);
--out:
--	read_unlock(&tasklist_lock);
-+	if (!tsk) {
-+		rcu_read_unlock();
-+		return -ESRCH;
-+	}
-+	get_task_struct(tsk);
-+	rcu_read_unlock();
-+	err = tty_audit_push_task(tsk, loginuid, sessionid);
-+	put_task_struct(tsk);
- 	return err;
- }
- 
+Thanks for fixing this!
+But I think you fixed it the wrong way.
+
+Why do we need a copy of this event_syscall_enter
+for each syscall event?
+Can't we actually drop enter_syscall_print_##sname
+and always use event_syscall_enter instead?
+
+The same applies to exit syscall events.
+
+Thanks.
+
+
+
+
+>  include/linux/syscalls.h      |    4 ++--
+>  include/trace/syscall.h       |    2 --
+>  kernel/trace/trace_syscalls.c |    8 --------
+>  3 files changed, 2 insertions(+), 12 deletions(-)
+> 
+> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> index b50974a..2f7c539 100644
+> --- a/include/linux/syscalls.h
+> +++ b/include/linux/syscalls.h
+> @@ -178,7 +178,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
+>  	  event_enter_##sname = {					\
+>  		.name                   = "sys_enter"#sname,		\
+>  		.system                 = "syscalls",			\
+> -		.event                  = &event_syscall_enter,		\
+> +		.event                  = &enter_syscall_print_##sname,	\
+>  		.raw_init		= init_enter_##sname,		\
+>  		.show_format		= syscall_enter_format,		\
+>  		.define_fields		= syscall_enter_define_fields,	\
+> @@ -214,7 +214,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *unused)     \
+>  	  event_exit_##sname = {					\
+>  		.name                   = "sys_exit"#sname,		\
+>  		.system                 = "syscalls",			\
+> -		.event                  = &event_syscall_exit,		\
+> +		.event                  = &exit_syscall_print_##sname,	\
+>  		.raw_init		= init_exit_##sname,		\
+>  		.show_format		= syscall_exit_format,		\
+>  		.define_fields		= syscall_exit_define_fields,	\
+> diff --git a/include/trace/syscall.h b/include/trace/syscall.h
+> index 51ee17d..5f8827c 100644
+> --- a/include/trace/syscall.h
+> +++ b/include/trace/syscall.h
+> @@ -37,8 +37,6 @@ extern unsigned long arch_syscall_addr(int nr);
+>  extern int syscall_name_to_nr(char *name);
+>  void set_syscall_enter_id(int num, int id);
+>  void set_syscall_exit_id(int num, int id);
+> -extern struct trace_event event_syscall_enter;
+> -extern struct trace_event event_syscall_exit;
+>  
+>  extern int syscall_enter_format(struct ftrace_event_call *call,
+>  				struct trace_seq *s);
+> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+> index 63aa807..00d6e17 100644
+> --- a/kernel/trace/trace_syscalls.c
+> +++ b/kernel/trace/trace_syscalls.c
+> @@ -444,14 +444,6 @@ void unreg_event_syscall_exit(struct ftrace_event_call *call)
+>  	mutex_unlock(&syscall_trace_lock);
+>  }
+>  
+> -struct trace_event event_syscall_enter = {
+> -	.trace			= print_syscall_enter,
+> -};
+> -
+> -struct trace_event event_syscall_exit = {
+> -	.trace			= print_syscall_exit,
+> -};
+> -
+>  int __init init_ftrace_syscalls(void)
+>  {
+>  	struct syscall_metadata *meta;
+
