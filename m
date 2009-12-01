@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZLAUkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZLAUoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbZLAUkS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 15:40:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbZLAUkR
+	id S1754575AbZLAUoJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 15:44:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZLAUoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 15:40:17 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:15640 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbZLAUkQ (ORCPT
+	Tue, 1 Dec 2009 15:44:09 -0500
+Received: from mail2.racsa.co.cr ([196.40.31.26]:30505 "EHLO
+	barracuda4.racsa.co.cr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbZLAUoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 15:40:16 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the acpi tree with the pci tree
-Date: Tue, 1 Dec 2009 13:40:19 -0700
-User-Agent: KMail/1.9.10
-Cc: Len Brown <lenb@kernel.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>,
-       Bob Moore <robert.moore@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <20091126132228.85a63dee.sfr@canb.auug.org.au> <200911301526.07220.bjorn.helgaas@hp.com>
-In-Reply-To: <200911301526.07220.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912011340.21370.bjorn.helgaas@hp.com>
+	Tue, 1 Dec 2009 15:44:08 -0500
+X-ASG-Debug-ID: 1259700258-7bd401500000-xx1T2L
+X-Barracuda-URL: http://172.16.1.13:8000/cgi-bin/mark.cgi
+X-Barracuda-Envelope-From: osobosque@racsa.co.cr
+Date: Tue, 01 Dec 2009 14:44:05 -0600 (CST)
+From: Joseph Parmelee <jparmele@wildbear.com>
+X-X-Sender: jparmele@bruno
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Darren Hart <dvhltc@us.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, linux-kernel@vger.kernel.org
+X-ASG-Orig-Subj: Re: futex_cmpxchg_enabled not set in futex_init on pentium3
+Subject: Re: futex_cmpxchg_enabled not set in futex_init on pentium3
+In-reply-to: <alpine.LFD.2.00.0911302307440.24119@localhost.localdomain>
+Message-id: <alpine.LNX.2.00.0912011428350.855@bruno>
+References: <alpine.LNX.2.00.0911291057100.2912@bruno>
+ <4B143AE8.5090608@us.ibm.com>
+ <alpine.LFD.2.00.0911302307440.24119@localhost.localdomain>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Barracuda-Connect: UNKNOWN[172.16.7.12]
+X-Barracuda-Start-Time: 1259700258
+X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at racsa.co.cr
+X-Barracuda-Spam-Score: 0.00
+X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=4.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=6.0 tests=
+X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.2.16044
+	Rule breakdown below
+	 pts rule name              description
+	---- ---------------------- --------------------------------------------------
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 November 2009 03:26:05 pm Bjorn Helgaas wrote:
-> On Wednesday 25 November 2009 07:22:28 pm Stephen Rothwell wrote:
-> > Today's linux-next merge of the acpi tree got a conflict in
-> > drivers/pci/hotplug/acpiphp_glue.c between commit
-> > 204d49a5613a06eb2fa5c3b842a29b1336cc7995 ("PCI hotplug: move IOAPIC
-> > support from acpiphp to ioapic driver") from the pci tree and commit
-> > 2263576cfc6e8f6ab038126c3254404b9fcb1c33 ("ACPICA: Add post-order
-> > callback to acpi_walk_namespace") from the acpi tree.
-> > 
-> > The former moved part of the code modified by the latter into another
-> > file.  All the calls to acpi_walk_namespace() seem to have been removed
-> > in this process.
-> 
-> I was on vacation last week, so couldn't respond earlier, sorry.
-> 
-> As you noticed, 204d49a56 removed some acpi_walk_namespace() calls.
-> It removed calls to the old "pre-order only" version, while 263576cfc
-> converted acpi_walk_namespace() to a new "pre-order and post-order"
-> version.
-> 
-> This is conceptually simple because 204d49a56 is just removing uses
-> of acpi_walk_namespace(), so we don't care at all whether it removes
-> calls to the old or new version.  But I don't have enough git-fu to
-> know how to fix this.
 
-Has this been resolved already?  Is there anything I can do to help?
 
-Bjorn
+
+On Mon, 30 Nov 2009, Thomas Gleixner wrote:
+
+> Could you also please do a quick check in which kernel version this
+> got introduced ?
+>
+
+I tested by reinstalling the old glibc-2.9, rebooting test kernels, and
+rerunning offending mutex tests from the glibc-2.9 test suite.  I needed to
+reinstall the old glibc because the new glibc-2.11 wants kernels in the
+2.6.31 series or later.
+
+The problem first appears in 2.6.31 and persists through the current
+2.6.31.6.
+
+The problem does not appear in 2.6.29 and 2.6.30 versions.
+
+
+
+Yours,
+
+Joseph
