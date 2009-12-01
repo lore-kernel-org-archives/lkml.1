@@ -1,37 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZLANZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbZLAN2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZLANZt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 08:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZLANZs
+	id S1751821AbZLAN2I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 08:28:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbZLAN2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 08:25:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:14221 "EHLO mx1.redhat.com"
+	Tue, 1 Dec 2009 08:28:07 -0500
+Received: from nox.protox.org ([88.191.38.29]:59679 "EHLO nox.protox.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754169AbZLANZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 08:25:47 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200912011411.12570.s.L-H@gmx.de>
-References: <200912011411.12570.s.L-H@gmx.de> <200911302259.nAUMx9Ij031249@hera.kernel.org>
-To: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-Cc: dhowells@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       v9fs-developer@lists.sourceforge.net,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: FS-Cache: Handle pages pending storage that get evicted under OOM conditions
-Date: Tue, 01 Dec 2009 13:24:42 +0000
-Message-ID: <24956.1259673882@redhat.com>
+	id S1750815AbZLAN2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 08:28:07 -0500
+Date: Tue, 1 Dec 2009 14:25:18 +0100
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Christian Hartmann <cornogle@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, airlied@gmail.com, jglisse@redhat.com,
+       dri-devel@lists.sf.net
+Subject: Re: Problem KMS: TTM Failed moving buffer. Proposed placement
+ 0x00060004 / Out of aperture space or DRM memory quota && invalid
+ framebuffer id
+Message-ID: <20091201132518.GA2074@localhost.localdomain>
+References: <ffd8902a0912010255k1bad9886l420b32df8c66551f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ffd8902a0912010255k1bad9886l420b32df8c66551f@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Lippers-Hollmann <s.L-H@gmx.de> wrote:
+On Tue, Dec 01, 2009 at 11:55:03AM +0100, Christian Hartmann wrote:
+> Todays test with KMS  w/o AGP (radeon.agopmode=-1)
+> 
+> 
+> Starting Xorg I got instead of a normal X session a GDM login again,
+> the last dmesg messages are:
+> 
+> 
+> [  904.459254] wlan1: associated
+> [ 1459.645513] [TTM] Failed moving buffer. Proposed placement 0x00060004
+> [ 1459.645525] [TTM] Out of aperture space or DRM memory quota.
+> [ 1459.645533] [drm:radeon_object_list_validate] *ERROR* radeon:
+> failed to validate.
+> [ 1459.645540] [drm:radeon_cs_ioctl] *ERROR* Failed to parse relocation !
+> [ 1461.208487] [drm:drm_mode_getfb] *ERROR* invalid framebuffer id
+> [ 1461.218685] [drm] LVDS-13: set mode 1024x768 1e
 
-> This commit breaks compiling 9p in 2.6.32-rc8-git2:
+Full dmesg of when this happen will be helpfull.
 
-Yep.  I have two other patches for that so far.
-
-David
+Cheers,
+Jerome
