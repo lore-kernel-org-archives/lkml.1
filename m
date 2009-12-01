@@ -1,39 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZLAOcC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbZLAOcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZLAOcC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 09:32:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZLAOcB
+	id S1753474AbZLAOcq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 09:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZLAOcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 09:32:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34453 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbZLAOcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 09:32:00 -0500
-Message-ID: <4B1528CA.1060207@kernel.org>
-Date: Tue, 01 Dec 2009 23:31:38 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Cong Wang <amwang@redhat.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] percpu: refactor the code in pcpu_[de]populate_chunk()
-References: <20091130091501.4507.28683.sendpatchset@localhost.localdomain> <4B13A7ED.9010905@kernel.org> <alpine.DEB.2.00.0911301258370.18682@router.home> <4B145CE9.1060608@kernel.org> <4B147918.3000503@redhat.com> <4B14A2E6.1070603@kernel.org> <4B14A51E.2090702@kernel.org> <4B14AC35.3020700@redhat.com> <4B14ADE0.3020007@kernel.org> <4B14B936.8080205@redhat.com> <4B14BEB6.5090105@kernel.org> <4B14C217.90203@redhat.com>
-In-Reply-To: <4B14C217.90203@redhat.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Dec 2009 09:32:45 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:35409
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752667AbZLAOco convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 09:32:44 -0500
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <4B14E747.9060208@redhat.com>
+Date: Tue, 1 Dec 2009 09:32:42 -0500
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jonsmirl@gmail.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+Content-Transfer-Encoding: 8BIT
+Message-Id: <119343FC-A4FF-456A-8709-36ED941AC9C3@wilsonet.com>
+References: <BDodf9W1qgB@lirc> <4B13BBBE.3010101@redhat.com> <4B14E747.9060208@redhat.com>
+To: Gerd Hoffmann <kraxel@redhat.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01/2009 04:13 PM, Cong Wang wrote:
-> Using break statement at the end of a for loop is confusing,
-> refactor it by replacing the for loop.
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
+On Dec 1, 2009, at 4:52 AM, Gerd Hoffmann wrote:
 
-Applied to percpu#for-next.  Thanks.
+> On 11/30/09 13:34, Mauro Carvalho Chehab wrote:
+>> Christoph Bartelmus wrote:
+>>> Hi Mauro,
+>>> 
+>>> I just don't want to change a working interface just because it could be
+>>> also implemented in a different way, but having no other visible advantage
+>>> than using more recent kernel features.
+>> 
+>> I agree. The main reasons to review the interface is:
+>> 	1) to avoid any overlaps (if are there any) with the evdev interface;
+> 
+> Use lirc for raw samples.
+> Use evdev for decoded data.
+
+This is the approach I'm pretty well settled on wanting to take myself.
+
+> Hardware/drivers which can handle both can support both interfaces.
+
+Exactly.
+
+> IMHO it makes no sense at all to squeeze raw samples through the input layer.  It looks more like a serial line than a input device.  In fact you can homebrew a receiver and connect it to the serial port, which was quite common in pre-usb-ir-receiver times.
+> 
+>> 	2) to have it stable enough to be used, without changes, for a long
+>> 	   time.
+> 
+> It isn't like lirc is a new interface.  It has been used in practice for years.  I don't think API stability is a problem here.
+
+Yeah, in the ~3 years I've been maintaining lirc patches for the Fedora kernels, only once has something happened where new userspace could no longer talk to old kernelspace. The majority of the work has been keeping things running as kernel interfaces change -- the 2.6.31 i2c changes are still biting us, as some capture card devices lagged behind a bit on converting to the new i2c scheme, making it impossible for lirc_i2c and/or lirc_zilog to bind (and ir-kbd-i2c, for that matter).
+
+>> True, but even if we want to merge lirc drivers "as-is", the drivers will
+>> still need changes, due to kernel CodingStyle, due to the usage of some API's
+>> that may be deprecated, due to some breakage with non-Intel architectures, due
+>> to some bugs that kernel hackers may discover, etc.
+> 
+> I assumed this did happen in already in preparation of this submission?
+
+Yes. There may still be a bit of work to do here, but there was a crew of us about a year, year and a half ago, that did a major sweep through all the lirc drivers, reformatting things so that we were at least mostly checkpatch-clean. The original lirc patches I put into the Fedora Core 6 kernel had several thousand lines of warnings and errors, while with the current lirc patches in Fedora 12, I get:
+
+total: 1 errors, 12 warnings, 15987 lines checked
+
+The error is new, hadn't seen that one before, going to fix it now... :) The warnings are almost all the same thing, "WARNING: struct file_operations should normally be const", need to fix that too, though we actually do edit the lirc_fops on a per-device basis right now, so they can't be const...
+
+Okay, the error and one of the warnings are gone from my local tree, now its all just the above.
+
+But yeah, for the most part, I think the coding style and formatting of the lirc drivers *does* look like kernel code these days, minor fixages suggested in Mauro's review aside. I submitted only a 3-part series (lirc_dev, lirc_mceusb and lirc_imon) to keep from overwhelming anyone (myself included) with too much code at once, and went with the two device drivers that I've personally done the most work on and have several devices driven by (which includes the IR parts I've been using in my "production" MythTV setup for years now).
 
 -- 
-tejun
+Jarod Wilson
+jarod@wilsonet.com
+
+
+
