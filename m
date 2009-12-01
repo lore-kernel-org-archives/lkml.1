@@ -1,91 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZLAIej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbZLAImO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZLAIej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 03:34:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbZLAIeg
+	id S1753596AbZLAImO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 03:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZLAImO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 03:34:36 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:59116 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbZLAIef (ORCPT
+	Tue, 1 Dec 2009 03:42:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:34492 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752827AbZLAImM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 03:34:35 -0500
-From: Samu Onkalo <samu.p.onkalo@nokia.com>
-To: eric.piel@tremplin-utc.net
-Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH v4 5/5] LIS3: Update documentation to match latest changes
-Date: Tue,  1 Dec 2009 10:33:42 +0200
-Message-Id: <1259656422-7697-6-git-send-email-samu.p.onkalo@nokia.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1259656422-7697-5-git-send-email-samu.p.onkalo@nokia.com>
-References: <1259656422-7697-1-git-send-email-samu.p.onkalo@nokia.com>
- <1259656422-7697-2-git-send-email-samu.p.onkalo@nokia.com>
- <1259656422-7697-3-git-send-email-samu.p.onkalo@nokia.com>
- <1259656422-7697-4-git-send-email-samu.p.onkalo@nokia.com>
- <1259656422-7697-5-git-send-email-samu.p.onkalo@nokia.com>
+	Tue, 1 Dec 2009 03:42:12 -0500
+Message-ID: <4B14D6E2.2040704@petalogix.com>
+Date: Tue, 01 Dec 2009 09:42:10 +0100
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 01 Dec 2009 08:33:52.0064 (UTC) FILETIME=[02F75C00:01CA7261]
-X-Nokia-AV: Clean
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 1
+References: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
+In-Reply-To: <20091201190301.0fb7abad.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
-Acked-by: Éric Piel <eric.piel@tremplin-utc.net>
----
- Documentation/hwmon/lis3lv02d |   31 ++++++++++++++++++++++++-------
- 1 files changed, 24 insertions(+), 7 deletions(-)
+Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20091130:
+> 
+> The origin tree gained a build failure for which I reverted a commit.
+> Ingo also reported another build failure for which I applied his patch.
+> 
+> The pxa tree lost its build failure.
+> 
+> The powerpc tree gained a build failure for which I reverted a commit.
+> 
+> The net tree gained a conflict against the wireless-current tree.
+> 
+> The mtd tree gained a conflict against the pxa tree.
+> 
+> The pcmcia tree lost 2 conflicts but gained another against the arm tree.
+> 
+> The trivial tree lost a conflict.
+> 
+> The percpu tree gained a conflict against the slab tree.
 
-diff --git a/Documentation/hwmon/lis3lv02d b/Documentation/hwmon/lis3lv02d
-index 21f0902..cd354e3 100644
---- a/Documentation/hwmon/lis3lv02d
-+++ b/Documentation/hwmon/lis3lv02d
-@@ -20,18 +20,35 @@ sporting the feature officially called "HP Mobile Data Protection System 3D" or
- models (full list can be found in drivers/hwmon/hp_accel.c) will have their
- axis automatically oriented on standard way (eg: you can directly play
- neverball). The accelerometer data is readable via
--/sys/devices/platform/lis3lv02d.
-+/sys/devices/platform/lis3lv02d. Reported values are scaled
-+to mg values (1/1000th of earth gravity).
- 
- Sysfs attributes under /sys/devices/platform/lis3lv02d/:
- position - 3D position that the accelerometer reports. Format: "(x,y,z)"
--calibrate - read: values (x, y, z) that are used as the base for input
--		  class device operation.
--            write: forces the base to be recalibrated with the current
--		   position.
--rate - reports the sampling rate of the accelerometer device in HZ
-+rate - read reports the sampling rate of the accelerometer device in HZ.
-+	write changes sampling rate of the accelerometer device.
-+	Only values which are supported by HW are accepted.
-+selftest - performs selftest for the chip as specified by chip manufacturer.
- 
- This driver also provides an absolute input class device, allowing
--the laptop to act as a pinball machine-esque joystick.
-+the laptop to act as a pinball machine-esque joystick. Joystick device can be
-+calibrated. Joystick device can be in two different modes.
-+By default output values are scaled between -32768 .. 32767. In joystick raw
-+mode, joystick and sysfs position entry have the same scale. There can be
-+small difference due to input system fuzziness feature.
-+Events are also available as input event device.
-+
-+Selftest is meant only for hardware diagnostic purposes. It is not meant to be
-+used during normal operations. Position data is not corrupted during selftest
-+but interrupt behaviour is not quaranteed to work reliably. In test mode, the
-+sensing element is internally moved little bit. Selftest measures difference
-+between normal mode and test mode. Chip specifications tell the acceptance
-+limit for each type of the chip. Limits are provided via platform data
-+to allow adjustment of the limits without a change to the actual driver.
-+Seltest returns either "OK x y z" or "FAIL x y z" where x, y and z are
-+measured difference between modes. Axes are not remapped in selftest mode.
-+Measurement values are provided to help HW diagnostic applications to make
-+final decision.
- 
- On HP laptops, if the led infrastructure is activated, support for a led
- indicating disk protection will be provided as /sys/class/leds/hp::hddprotect.
+
+It seems to me that percpu has more other troubles too.
+Look at boolog below for Microblaze with MMU.
+
+I haven't look at that problem deeper but I will.
+Any suggestion what could be wrong?
+
+Problems started in linux-next from November 27.
+You can look at logs.
+http://www.monstr.eu/wiki/doku.php?id=log:log
+
+Thanks,
+Michal
+
+early_printk_console is enabled at 0x84000000
+Ramdisk addr 0x00000003, FDT at 0x9099c414
+Linux version 2.6.32-rc8-next-20091201 (monstr@monstr.eu) (gcc version 
+4.1.2) #1 Tue Dec 1 09:34:15 CET 2009
+setup_cpuinfo: initialising
+setup_cpuinfo: Using full CPU PVR support
+setup_memory: max_mapnr: 0x10000
+setup_memory: min_low_pfn: 0x90000
+setup_memory: max_low_pfn: 0xa0000
+On node 0 totalpages: 65536
+free_area_init_node: node 0, pgdat c02cc768, node_mem_map c09a1000
+   Normal zone: 512 pages used for memmap
+   Normal zone: 0 pages reserved
+   Normal zone: 65024 pages, LIFO batch:15
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
+Kernel command line: console=ttyUL0,115200
+PID hash table entries: 1024 (order: 0, 4096 bytes)
+Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+Memory: 249600k/262144k available
+Hierarchical RCU implementation.
+NR_IRQS:32
+xlnx,xps-intc-1.00.a #0 at 0xd0000000, num_irq=9, edge=0x100
+xlnx,xps-timer-1.00.a #0 at 0xd0004000, irq=3
+microblaze_timer_set_mode: shutdown
+microblaze_timer_set_mode: periodic
+Calibrating delay loop... 119.19 BogoMIPS (lpj=595968)
+Mount-cache hash table entries: 512
+------------[ cut here ]------------
+WARNING: at include/linux/percpu.h:157 __create_workqueue_key+0x1c0/0x1d0()
+Modules linked in:
+
+Stack:
+   cf831f1c c0033694 00000000 00000000 c022dac0 c0013f40 c022836c c022dac0
+   0000009d c0029814 0001ffff c0973e20 cf8032e4 00000000 00000000 c022dad8
+   c002980c 00000000 c02d68f8 c02e6218 00000000 00000000 c022dad8 c02d5860
+Call Trace:
+
+[<c0033694>] atomic_notifier_chain_register+0x40/0x64
+[<c0013f40>] warn_slowpath_null+0xc/0x20
+[<c0029814>] __create_workqueue_key+0x1c0/0x1d0
+[<c002980c>] __create_workqueue_key+0x1b8/0x1d0
+[<c02d68f8>] spawn_softlockup_task+0x0/0xc0
+[<c02d5860>] init_workqueues+0x48/0xa0
+[<c02ce104>] kernel_init+0x0/0x184
+[<c02ce148>] kernel_init+0x44/0x184
+[<c02ce170>] kernel_init+0x6c/0x184
+[<c00023a0>] kernel_thread_helper+0xc/0x20
+[<c0002394>] kernel_thread_helper+0x0/0x20
+
+---[ end trace 139ce121c98e96c9 ]---
+NET: Registered protocol family 16
+bio: create slab <bio-0> at 0
+Switching to clocksource microblaze_clocksource
+NET: Registered protocol family 2
+IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
+TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+TCP bind hash table entries: 8192 (order: 5, 163840 bytes)
+TCP: Hash tables configured (established 8192 bind 8192)
+TCP reno registered
+NET: Registered protocol family 1
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+RPC: Registered tcp NFSv4.1 backchannel transport module.
+Slow work thread pool: Starting up
+Slow work thread pool: Ready
+msgmni has been set to 487
+io scheduler noop registered
+io scheduler deadline registered
+io scheduler cfq registered (default)
+84000000.serial: ttyUL0 at MMIO 0x84000003 (irq = 8) is a uartlite
+console [ttyUL0] enabled
+brd: module loaded
+TCP cubic registered
+NET: Registered protocol family 17
+Freeing unused kernel memory: 6801k freed
+Mounting proc:
+Mounting var:
+Populating /var:
+Running local start scripts.
+Mounting sysfs:
+Setting hostname:
+Setting up interface lo:
+Setting up interface eth0:
+BUG: failure at kernel/workqueue.c:431/process_one_work()!
+Kernel panic - not syncing: BUG!
+Rebooting in 120 seconds..timeout
+
+
+> 
+> ----------------------------------------------------------------------------
+> 
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+> (patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+> are tracking the linux-next tree using git, you should not use "git pull"
+> to do so as that will try to merge the new linux-next release with the
+> old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+> (see below).
+> 
+> You can see which trees have been included by looking in the Next/Trees
+> file in the source.  There are also quilt-import.log and merge.log files
+> in the Next directory.  Between each merge, the tree was built with
+> a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+> final fixups (if any), it is also built with powerpc allnoconfig (32 and
+> 64 bit), ppc44x_defconfig and allyesconfig (minus
+> CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+> and sparc64 defconfig. These builds also have
+> CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+> CONFIG_DEBUG_INFO disabled when necessary.
+> 
+> Below is a summary of the state of the merge.
+> 
+> We are up to 154 trees (counting Linus' and 21 trees of patches pending
+> for Linus' tree), more are welcome (even if they are currently empty).
+> Thanks to those who have contributed, and to those who haven't, please do.
+> 
+> Status of my local build tests will be at
+> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+> advice about cross compilers/configs that work, we are always open to add
+> more builds.
+> 
+> Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+> at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+> Dunlap for doing many randconfig builds.
+> 
+> There is a wiki covering stuff to do with linux-next at
+> http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+> 
+
+
 -- 
-1.6.0.4
-
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
