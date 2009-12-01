@@ -1,93 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752311AbZLACY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZLAC1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752311AbZLACY0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Nov 2009 21:24:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZLACYY
+	id S1752470AbZLAC1b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Nov 2009 21:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZLAC1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Nov 2009 21:24:24 -0500
-Received: from ozlabs.org ([203.10.76.45]:40467 "EHLO ozlabs.org"
+	Mon, 30 Nov 2009 21:27:31 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39610 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751964AbZLACYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Nov 2009 21:24:23 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Adam Litke <agl@us.ibm.com>
-Subject: Re: virtio: Add memory statistics reporting to the balloon driver (V4)
-Date: Tue, 1 Dec 2009 12:54:22 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
-Cc: Anthony Liguori <anthony@codemonkey.ws>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1259597655.30369.2.camel@aglitke>
-In-Reply-To: <1259597655.30369.2.camel@aglitke>
+	id S1751503AbZLAC1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Nov 2009 21:27:30 -0500
+Message-ID: <4B147EE0.8080209@kernel.org>
+Date: Mon, 30 Nov 2009 18:26:40 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Alex Williamson <alex.williamson@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: Always set prefetchable base/limit upper32 registers
+References: <20091130212228.7555.43533.stgit@debian.lart>	 <4B143AE5.7040702@kernel.org> <1259617381.8949.281.camel@8530w.home>	 <4B143E83.6020105@kernel.org> <1259618496.8949.290.camel@8530w.home>	 <4B144346.50608@kernel.org> <1259619578.8949.295.camel@8530w.home>	 <4B1455FD.90002@kernel.org> <1259625224.8949.319.camel@8530w.home>	 <4B145C9D.70601@kernel.org> <1259632564.10482.10.camel@2710p.home>
+In-Reply-To: <1259632564.10482.10.camel@2710p.home>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912011254.22861.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009 02:44:15 am Adam Litke wrote:
-> Changes since V3:
+Alex Williamson wrote:
+> On Mon, 2009-11-30 at 16:00 -0800, Yinghai Lu wrote:
+>> Alex Williamson wrote:
+>>  
+>>> Ah, I think I see where you're going.  We only set IORESOURCE_MEM_64 if
+>>> base <= limit, ie. the BIOS has programmed the prefetchable range.  This
+>>> is not a requirement by the PCI spec.  In my case the BIOS has left base
+>>>> limit, just as Linux would do if it disabled the range, so we never
+>>> set this flag.
+>>>
+>>>> setup-bus.c::pci_bridge_check_ranges()
+>>> This is only checking that the upper 32bits is actually implemented,
+>>> should we have already set the IORESOURCE_MEM_64 from the function
+>>> above, which we haven't.  
+>>>
+>>> So, in my case I have a 64bit capable prefetchable range, that the BIOS
+>>> has not programmed and is not required to program.  We assign it to a
+>>> 32bit window, and never touch the UPPER32 registers.
+>> no.
+>>
+>> before assign range to that resource.
+>> pci_bridge_check_ranges is called, it will check those two bit to make sure that is set correcly
+>>
+>>         if (pmem) {
+>>                 b_res[2].flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH;
+>>                 if ((pmem & PCI_PREF_RANGE_TYPE_MASK) == PCI_PREF_RANGE_TYPE_64)
+>>                         b_res[2].flags |= IORESOURCE_MEM_64;
+>>         }
+> 
+> Ok, sorry I missed this.  Yes, this is getting called, but when we get
+> back to pci_setup_bridge() that flag is missing IORESOURCE_MEM_64.
+> Perhaps these are different resources?  I'm still tracing the code to
+> find out what happened to that flag.
+> 
+> Also, I'm running 64bit(x86_64), and if lspci is wrong, then so is
+> setpci.  I don't think there's an "ignore upper32" anywhere, so the
+> result of 0xffffffffabc00000 - 0x00000000abc00000 is that base > limit
+> thus the range is disabled at the bridge and the ROM resource we
+> assigned into the window behind the bridge is inaccessible.
 
-OK, I applied this.  And here's the fixes I applied afterwards (to save YA
-round trip: please ack and I'll fold them together)
+can you check
 
-virtio: balloon fixes
-
-1) Tag and val args to update_stat() are no longer __le.
-2) pages_to_bytes() should promote to u64 so we don't truncate.
-3) Fix two checkpatch.pl warnings.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- drivers/virtio/virtio_balloon.c |    8 +++++---
- include/linux/virtio_balloon.h  |    3 +--
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/pci/setup-bus.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
---- a/drivers/virtio/virtio_balloon.c
-+++ b/drivers/virtio/virtio_balloon.c
-@@ -158,14 +158,15 @@ static void leak_balloon(struct virtio_b
- }
- 
- static inline void update_stat(struct virtio_balloon *vb, int idx,
--				__le16 tag, __le64 val)
-+			       u16 tag, u64 val)
- {
- 	BUG_ON(idx >= VIRTIO_BALLOON_S_NR);
- 	vb->stats[idx].tag = tag;
- 	vb->stats[idx].val = val;
- }
- 
--#define pages_to_bytes(x) ((x) << PAGE_SHIFT)
-+#define pages_to_bytes(x) ((u64)(x) << PAGE_SHIFT)
-+
- static void update_balloon_stats(struct virtio_balloon *vb)
- {
- 	unsigned long events[NR_VM_EVENT_ITEMS];
-@@ -296,7 +297,8 @@ static int virtballoon_probe(struct virt
- 		 * use it to signal us later.
- 		 */
- 		sg_init_one(&sg, vb->stats, sizeof vb->stats);
--		if (vb->stats_vq->vq_ops->add_buf(vb->stats_vq, &sg, 1, 0, vb) < 0)
-+		if (vb->stats_vq->vq_ops->add_buf(vb->stats_vq,
-+						  &sg, 1, 0, vb) < 0)
- 			BUG();
- 		vb->stats_vq->vq_ops->kick(vb->stats_vq);
+Index: linux-2.6/drivers/pci/setup-bus.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/setup-bus.c
++++ linux-2.6/drivers/pci/setup-bus.c
+@@ -397,10 +397,17 @@ static void pci_bridge_check_ranges(stru
+ 		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32,
+ 					       0xffffffff);
+ 		pci_read_config_dword(bridge, PCI_PREF_BASE_UPPER32, &tmp);
+-		if (!tmp)
++		if (!tmp) {
+ 			b_res[2].flags &= ~IORESOURCE_MEM_64;
+-		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32,
+-				       mem_base_hi);
++			dev_info(&bridge->dev, "%pR MEM_64 clearred\n", &b_res[2]);
++			/* not sure if we can clear it */
++			pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32,
++						 0);
++			pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32,
++						 0);
++		} else
++			pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32,
++					       mem_base_hi);
  	}
-diff --git a/include/linux/virtio_balloon.h b/include/linux/virtio_balloon.h
---- a/include/linux/virtio_balloon.h
-+++ b/include/linux/virtio_balloon.h
-@@ -28,8 +28,7 @@ struct virtio_balloon_config
- #define VIRTIO_BALLOON_S_MEMTOT   5   /* Total amount of memory */
- #define VIRTIO_BALLOON_S_NR       6
+ }
  
--struct virtio_balloon_stat
--{
-+struct virtio_balloon_stat {
- 	u16 tag;
- 	u64 val;
- } __attribute__((packed));
-
-
