@@ -1,192 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbZLBH4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZLBHz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753881AbZLBH4r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 02:56:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZLBH4q
+	id S1753644AbZLBHz5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 02:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZLBHz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 02:56:46 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33513 "EHLO hera.kernel.org"
+	Wed, 2 Dec 2009 02:55:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40956 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbZLBH4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 02:56:46 -0500
-Message-ID: <4B161D70.3030301@kernel.org>
-Date: Tue, 01 Dec 2009 23:55:28 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752755AbZLBHzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 02:55:55 -0500
+Message-ID: <4B161D7A.6040208@kernel.org>
+Date: Wed, 02 Dec 2009 16:55:38 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
-References: <4B14C8C8.9020604@kernel.org>	<20091202144156N.fujita.tomonori@lab.ntt.co.jp>	<4B160FE1.1090307@kernel.org> <20091202162510Q.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091202162510Q.fujita.tomonori@lab.ntt.co.jp>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, michal.simek@petalogix.com,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: problems in linux-next (Was: Re: linux-next: Tree for December
+ 1)
+References: <20091201190301.0fb7abad.sfr@canb.auug.org.au> <4B14D6E2.2040704@petalogix.com> <20091201210343.f0a1d353.sfr@canb.auug.org.au> <4B152D22.9070001@kernel.org> <alpine.DEB.2.00.0912010946340.8841@router.home> <20091201160119.GA10826@elte.hu> <4B15A5A6.2090200@kernel.org>
+In-Reply-To: <4B15A5A6.2090200@kernel.org>
+X-Enigmail-Version: 0.97a
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Tue, 01 Dec 2009 22:57:37 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> FUJITA Tomonori wrote:
->>> On Mon, 30 Nov 2009 23:42:00 -0800
->>> Yinghai Lu <yinghai@kernel.org> wrote:
->>>
->>>> FUJITA Tomonori wrote:
->>>>> On Thu, 26 Nov 2009 23:45:33 -0800
->>>>> Yinghai Lu <yinghai@kernel.org> wrote:
->>>>>
->>>>>>>> when AMD64 mem > 4g, no AGP, BIOS set all gart iommu on all nodes size to 32M, and enable bit are set.
->>>>>>> I have such machine (with sane BIOS).
->>>>>>>
->>>>>>> But if BIOS is broken, early_gart_iommu_check() disables GART_EN bit
->>>>>>> (bits 0)?
->>>>>> not for 32M small size.
->>>>>>
->>>>>> that function only clear that bit when different nodes have different setting.
->>>>>>
->>>>>>>> 1. iommu=soft, will go through POINT A and POINT B
->>>>>>> Not always. if aperture_valid() is true, it doesn't go POINT A. My
->>>>>>> GART machine doesn't go.
->>>>>> maybe your bios set GART iommu set to 64M?
->>>>> Yeah, my machine has sane BIOS.
->>>>>
->>>>>
->>>>>>>> 2. no "iommu=soft", will go through POINT A and POINT C
->>>>>>> As I said, it's not true about POINT A.
->>>>>> maybe your bios set GART iommu set to 64M?
->>>>>>
->>>>>>>> and all will reach POINT X to make sure ENABLE bit is not set.
->>>>>>> POINT X doesn't look make sure ENABLE bit is not set. It just fixes up
->>>>>>> (sets) the address and its size.
->>>>>>                         write_pci_config(bus, slot, 3, AMD64_GARTAPERTURECTL, aper_order << 1);
->>>>>>
->>>>>> that bit is that bit 0 of AMD64_GARTAPERTURECTL reg.
->>>>> Oops, thanks.
->>>>>
->>>>> But as I wrote in the previous mail, can you tell me why we need this?
->>>>> With 2.6.31 my machine uses swiotlb with GART_EN bit enabled.
->>>>>
->>>>> My another question is that why can't early_gart_iommu_check()
->>>>> _always_ disable GART_EN bit?
->>>> please check
->>> Thanks.
->>>
->>> As I said, it looks cleaner if early_gart_iommu_check() disables
->>> GART_EN bit. So this patch looks better but I still have some
->>> questions.
->>>
->>>
->>>> [PATCH] x86: fix gart iommu using for amd 64 bit system -v4
->>>>
->>>> after
->>>> |commit 75f1cdf1dda92cae037ec848ae63690d91913eac
->>>> |Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>>> |Date:   Tue Nov 10 19:46:20 2009 +0900
->>>> |
->>>> |    x86: Handle HW IOMMU initialization failure gracefully
->>>> |    
->>>> |    If HW IOMMU initialization fails (Intel VT-d often does this,
->>>> |    typically due to BIOS bugs), we fall back to nommu. It doesn't
->>>> |    work for the majority since nowadays we have more than 4GB
->>>> |    memory so we must use swiotlb instead of nommu.
->>>> ...
->>>>
->>>> amd 64 systems that
->>>> 1. do not have  AGP
->>>> 2. do not have IOMMU
->>>> 3. mem > 4g
->>>> 4. BIOS do not allocate  correct gart in NB.
->>>> will leave them to use SWIOTLB forcely.
->>> As I asked earlier, can you tell me what dma ops such system is
->>> supposed to use?
->> gart_dma_ops
-> 
-> How does gart_dma_ops work on systems without IOMMU?
+Hello,
 
-?
+It will look like the following.
 
-> 
-> 
->>>> -v2: call shutdown when no agp is there
->>> Is this change related with my above patchset?
->> looks like one bug that is exposed by
->> commit 338bac527ed0e35b4cb50390972f15d3cbce92ca
->> Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->> Date:   Tue Oct 27 16:34:44 2009 +0900
->>
->>     x86: Use x86_platform for iommu_shutdown
->>     
->>     This patch cleans up pci_iommu_shutdown() a bit to use
->>     x86_platform (similar to how IA64 initializes an IOMMU driver).
->>     
->>     This adds iommu_shutdown() to x86_platform to avoid calling
->>     every IOMMUs' shutdown functions in pci_iommu_shutdown() in
->>     order. The IOMMU shutdown functions are platform specific (we
->>     don't have multiple different IOMMU hardware) so the current way
->>     is pointless.
->>     
->>     An IOMMU driver sets x86_platform.iommu_shutdown to the shutdown
->>     function if necessary.
->>     
->>     Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>     Cc: joerg.roedel@amd.com
->>     LKML-Reference: <20091027163358F.fujita.tomonori@lab.ntt.co.jp>
->>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>
->> diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
->> index a7f1b64..a9bcdf7 100644
->> --- a/arch/x86/kernel/pci-gart_64.c
->> +++ b/arch/x86/kernel/pci-gart_64.c
->> @@ -39,6 +39,7 @@
->>  #include <asm/swiotlb.h>
->>  #include <asm/dma.h>
->>  #include <asm/k8.h>
->> +#include <asm/x86_init.h>
->>  
->>  static unsigned long iommu_bus_base;   /* GART remapping area (physical) */
->>  static unsigned long iommu_size;       /* size of remapping area bytes */
->> @@ -688,12 +689,12 @@ static struct dma_map_ops gart_dma_ops = {
->>         .free_coherent                  = gart_free_coherent,
->>  };
->>  
->> -void gart_iommu_shutdown(void)
->> +static void gart_iommu_shutdown(void)
->>  {
->>         struct pci_dev *dev;
->>         int i;
->>  
->> -       if (no_agp && (dma_ops != &gart_dma_ops))
->> +       if (no_agp)
->>                 return;
->>  
->>         for (i = 0; i < num_k8_northbridges; i++) {
->> @@ -838,6 +839,7 @@ void __init gart_iommu_init(void)
->>  
->>         flush_gart();
->>         dma_ops = &gart_dma_ops;
->> +       x86_platform.iommu_shutdown = gart_iommu_shutdown;
->>  }
->>  
->>  void __init gart_parse_options(char *p)
->>
->> on system without agp, the gart should be shutdown during system shutdown. so make next kexeced kernel happy.
-> 
-> Ah, I see. Sorry about this mess-up.
-> 
-> 
->>>> -v3: add check_store to restore state for swiotlb
->>>>      separate pci_swiotlb_detect and pci_swiotlb_init from FUJITA
->>>> -v4: disable translating in early_gart_iommu_check according to FUJITA
->>> Why can't we always disable translation in early_gart_iommu_check? We
->>> really need search_agp_bridge() in early_gart_iommu_check()?
->> just don't want to messed them up.
-> 
-> Sorry, I can't follow you. What does 'always disabling' mess up?
+Thanks.
 
-the AMD K8 system with AGP etc...those systems are some kind of 5 years old.
+=========================================================================
+Subject: workqueue: update cwq alignement
 
-and don't have those kind of system to verify...
+work->data field is used for two purposes.  It points to cwq it's
+queued on and the lower bits are used for flags.  Currently, two bits
+are reserved which is always safe as 4 byte alignment is guaranteed on
+every architecture.  However, future changes will need more flag bits.
 
-YH
+On SMP, the percpu allocator is capable of honoring larger alignment
+(there are other users which depend on it) and larger alignment works
+just fine.  On UP, percpu allocator is a thin wrapper around
+kzalloc/kfree() and don't honor alignment request.
+
+This patch introduces WORK_STRUCT_FLAG_BITS, aligns cwqs accordingly
+and implements alloc/free_cwqs() which guarantees the alignment both
+on SMP and UP.  On SMP, simply wrapping percpu allocator is enouhg.
+On UP, extra space is allocated so that cwq can be aligned and the
+original pointer can be stored after it which is used in the free
+path.
+
+While at it, as cwqs are now forced aligned, make sure the resulting
+alignment is at least equal to or larger than that of long long.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/workqueue.h |    4 ++-
+ kernel/workqueue.c        |   58 ++++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 56 insertions(+), 6 deletions(-)
+
+Index: work/include/linux/workqueue.h
+===================================================================
+--- work.orig/include/linux/workqueue.h
++++ work/include/linux/workqueue.h
+@@ -29,7 +29,9 @@ enum {
+ 	WORK_STRUCT_PENDING	= 1 << WORK_STRUCT_PENDING_BIT,
+ 	WORK_STRUCT_STATIC	= 1 << WORK_STRUCT_STATIC_BIT,
+ 
+-	WORK_STRUCT_FLAG_MASK	= 3UL,
++	WORK_STRUCT_FLAG_BITS	= 2,
++
++	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
+ 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
+ };
+ 
+Index: work/kernel/workqueue.c
+===================================================================
+--- work.orig/kernel/workqueue.c
++++ work/kernel/workqueue.c
+@@ -46,7 +46,9 @@
+ 
+ /*
+  * The per-CPU workqueue (if single thread, we always use the first
+- * possible cpu).
++ * possible cpu).  The lower WORK_STRUCT_FLAG_BITS of
++ * work_struct->data are used for flags and thus cwqs need to be
++ * aligned at two's power of the number of flag bits.
+  */
+ struct cpu_workqueue_struct {
+ 
+@@ -58,7 +60,7 @@ struct cpu_workqueue_struct {
+ 
+ 	struct workqueue_struct *wq;		/* I: the owning workqueue */
+ 	struct task_struct	*thread;
+-} ____cacheline_aligned;
++} __attribute__((aligned(1 << WORK_STRUCT_FLAG_BITS)));
+ 
+ /*
+  * The externally visible workqueue abstraction is an array of
+@@ -932,6 +934,44 @@ int current_is_keventd(void)
+ 
+ }
+ 
++static struct cpu_workqueue_struct *alloc_cwqs(void)
++{
++	const size_t size = sizeof(struct cpu_workqueue_struct);
++	const size_t align = __alignof__(struct cpu_workqueue_struct);
++	struct cpu_workqueue_struct *cwqs;
++#ifndef CONFIG_SMP
++	void *ptr;
++
++	/*
++	 * On UP, percpu allocator doesn't honor alignment parameter
++	 * and simply uses arch-dependent default.  Allocate enough
++	 * room to align cwq and put an extra pointer at the end
++	 * pointing back to the originally allocated pointer which
++	 * will be used for free.
++	 */
++	ptr = __alloc_percpu(size + align + sizeof(void *), 1);
++	cwqs = PTR_ALIGN(ptr, align);
++	*(void **)per_cpu_ptr(cwqs + 1, 0) = ptr;
++#else
++	/* On SMP, percpu allocator can do it itself */
++	cwqs = __alloc_percpu(size, align);
++#endif
++	/* just in case, make sure it's actually aligned */
++	BUG_ON(!IS_ALIGNED((unsigned long)cwqs, align));
++	return cwqs;
++}
++
++static void free_cwqs(struct cpu_workqueue_struct *cwqs)
++{
++#ifndef CONFIG_SMP
++	/* on UP, the pointer to free is stored right after the cwq */
++	if (cwqs)
++		free_percpu(*(void **)per_cpu_ptr(cwqs + 1, 0));
++#else
++	free_percpu(cwqs);
++#endif
++}
++
+ static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
+ {
+ 	struct workqueue_struct *wq = cwq->wq;
+@@ -977,7 +1017,7 @@ struct workqueue_struct *__create_workqu
+ 	if (!wq)
+ 		goto err;
+ 
+-	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
++	wq->cpu_wq = alloc_cwqs();
+ 	if (!wq->cpu_wq)
+ 		goto err;
+ 
+@@ -1023,7 +1063,7 @@ struct workqueue_struct *__create_workqu
+ 	return wq;
+ err:
+ 	if (wq) {
+-		free_percpu(wq->cpu_wq);
++		free_cwqs(wq->cpu_wq);
+ 		kfree(wq);
+ 	}
+ 	return NULL;
+@@ -1074,7 +1114,7 @@ void destroy_workqueue(struct workqueue_
+ 	for_each_possible_cpu(cpu)
+ 		cleanup_workqueue_thread(get_cwq(cpu, wq));
+ 
+-	free_percpu(wq->cpu_wq);
++	free_cwqs(wq->cpu_wq);
+ 	kfree(wq);
+ }
+ EXPORT_SYMBOL_GPL(destroy_workqueue);
+@@ -1163,6 +1203,14 @@ EXPORT_SYMBOL_GPL(work_on_cpu);
+ 
+ void __init init_workqueues(void)
+ {
++	/*
++	 * cwqs are forced aligned according to WORK_STRUCT_FLAG_BITS.
++	 * Make sure that the alignment isn't lower than that of
++	 * unsigned long long.
++	 */
++	BUILD_BUG_ON(__alignof__(struct cpu_workqueue_struct) <
++		     __alignof__(unsigned long long));
++
+ 	singlethread_cpu = cpumask_first(cpu_possible_mask);
+ 	hotcpu_notifier(workqueue_cpu_callback, 0);
+ 	keventd_wq = create_workqueue("events");
