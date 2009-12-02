@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZLBPIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZLBPHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZLBPIK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 10:08:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZLBPII
+	id S1754590AbZLBPHu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 10:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZLBPHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 10:08:08 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:39155 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754649AbZLBPIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 10:08:06 -0500
-X-IronPort-AV: E=Sophos;i="4.47,328,1257138000"; 
-   d="scan'208";a="9808368"
-Message-ID: <4B1682B9.406@analog.com>
-Date: Wed, 2 Dec 2009 23:07:37 +0800
-From: Jie Zhang <jie.zhang@analog.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091202 Shredder/3.0
+	Wed, 2 Dec 2009 10:07:49 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36500 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752784AbZLBPHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 10:07:49 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: regression: 2.6.32-rc8 shuts down after reaching critical temperature
+Date: Wed, 2 Dec 2009 16:07:52 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Zhang Rui <rui.zhang@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20091125102857.GA28310@lst.de> <200912021256.21683.trenn@suse.de> <20091202133032.GA9265@lst.de>
+In-Reply-To: <20091202133032.GA9265@lst.de>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: Mike Frysinger <vapier@gentoo.org>, uclinux-dev@uclinux.org,
-       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
-References: <1259128503-28276-1-git-send-email-vapier@gentoo.org> <16399.1259765124@redhat.com>
-In-Reply-To: <16399.1259765124@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Dec 2009 15:08:07.0265 (UTC) FILETIME=[40FA5510:01CA7361]
+Content-Disposition: inline
+Message-Id: <200912021607.53237.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/02/2009 10:45 PM, David Howells wrote:
-> Mike Frysinger<vapier@gentoo.org>  wrote:
->
->> The mmu code uses the copy_*_user_page() variants in access_process_vm()
->> rather than copy_*_user() as the former includes an icache flush.  This is
->> important when doing things like setting software breakpoints with gdb.
->> So switch the nommu code over to do the same.
->
-> Note that we may only really want to do an icache flush if the target region
-> is mapped executable somewhere.  On the other hand, for debugging stuff on an
-> embedded board, it probably doesn't matter.
->
-It is not checked before icache flush even for MMU. This is a place we 
-can do some improvement. But it's not important for debugging.
+On Wednesday 02 December 2009 14:30:32 Christoph Hellwig wrote:
+> On Wed, Dec 02, 2009 at 12:56:20PM +0100, Thomas Renninger wrote:
+... 
+> > 2.6.31 works?
+> 
+> Yes, perfectly.  Have been running it for a couple of days now again
+> after I had all these reproducible .32-rc shutdowns when testiong it.
+> 
+> > Also the latest stable one?
+> 
+> Haven't tried that yet, will do if it helps you.
+No need. Looks unrelated, the one system seem to overheat because of
+no fan activity at all, yours seem to have a "passive cooling does not work
+or kicks in too late" (and possibly also fan?) problem(s).
 
+Best would be to open a bug on bugzilla.kernel.org and assign it to the
+acpi component (and add Rui, Henrique and myself to CC. I won't be that
+active, at least not the next days, just wanted to make sure whether
+this isn't a duplicate).
+dmesg, acpidump, grep . /proc/acpi/thermal_zone/*/*
+and the shutdown messages should be most important info which
+should show up there.
 
-Jie
+Some more hints you may want to try:
+
+  - Does cpufreq work at all?
+    Does this dir exist: /sys/devices/system/cpu/cpu*/cpufreq
+    If temp of:
+    watch -n1 cat /proc/acpi/thermal_zone/THM1/temperature
+    goes beyond 96 C
+    an ACPI processor event must get thrown and this:
+    /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+    will get limited (lower than ../cpufreq/cpuinfo_max_freq).
+    echo xy >/sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+    may be bad workaround.
+    These boot params: thermal.psv=90 thermal.tzp=10
+    lowering all passive trip points to 90 and enabling polling
+    might be a better one (with which you might be able to better
+    test passive cooling). This really should be a runtime sysfs
+    per thermal_zone parameter, but this is another story...
+    
+  - Is the ACPI event thrown at all?:
+    SUSE has acpi_listen, not sure whether it's part of the acpid
+    mainline project, I think it is. Do you see an ACPI event when
+    96 C is past?
+    If not this might workaround your issue:
+    echo 10 >/proc/acpi/thermal_zone/THM1/polling_frequency (or similar)
+
+  - T500 sounds pretty new. Still, make sure your fans are clean.
+    E.g. the air must be really hot coming out at some point of time.
+
+  - Also listen a bit to the fans. with thinkpad-acpi driver you might
+    be able to monitor (T500 is rather new/untested) the fans:
+    cat /proc/acpi/ibm/fan  # path out of my mind
+    You might also be able to alter the fan behavior there.
+
+Good luck,
+
+    Thomas
