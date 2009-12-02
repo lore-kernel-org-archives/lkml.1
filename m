@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbZLBTfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbZLBThU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbZLBTfg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZLBTff
+	id S1755539AbZLBThU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZLBThT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:35:35 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:59800 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385AbZLBTfe (ORCPT
+	Wed, 2 Dec 2009 14:37:19 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:52664 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1755311AbZLBThS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:35:34 -0500
-Subject: Re: [PATCH 2.6.32] regulator: Initialise wm831x structure pointor
- for ISINK driver
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1259589716-14007-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1259589716-14007-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 02 Dec 2009 19:35:32 +0000
-Message-ID: <1259782532.3588.192.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 2 Dec 2009 14:37:18 -0500
+Message-ID: <4B16C233.6020808@ru.mvista.com>
+Date: Wed, 02 Dec 2009 22:38:27 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: pancho horrillo <pancho@pancho.name>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Fix a bug on appledisplay.c regarding signedness
+References: <20091202191942.GA7362@pancho.name> <20091202193104.GB7362@pancho.name>
+In-Reply-To: <20091202193104.GB7362@pancho.name>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 14:01 +0000, Mark Brown wrote:
-> The version that made it into mainline missed the initialisation of the
-> chip handle.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/regulator/wm831x-isink.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/regulator/wm831x-isink.c b/drivers/regulator/wm831x-isink.c
-> index 1d8d987..4885700 100644
-> --- a/drivers/regulator/wm831x-isink.c
-> +++ b/drivers/regulator/wm831x-isink.c
-> @@ -167,6 +167,8 @@ static __devinit int wm831x_isink_probe(struct platform_device *pdev)
->  		return -ENOMEM;
->  	}
->  
-> +	isink->wm831x = wm831x;
-> +
->  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
->  	if (res == NULL) {
->  		dev_err(&pdev->dev, "No I/O resource\n");
+Hello.
 
-Applied.
+pancho horrillo wrote:
 
-Thanks
+> Please, review and push the patch, if you deem it adequate.
 
-Liam
+> Thanks a bunch!
 
+> Signed-off-by: pancho horrillo <pancho@pancho.name>
+
+> diff -purN a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledisplay.c
+> --- a/drivers/usb/misc/appledisplay.c	2009-11-10 01:32:31.000000000 +0100
+> +++ b/drivers/usb/misc/appledisplay.c	2009-12-02 20:05:00.000000000 +0100
+> @@ -72,8 +72,8 @@ struct appledisplay {
+>  	struct usb_device *udev;	/* usb device */
+>  	struct urb *urb;		/* usb request block */
+>  	struct backlight_device *bd;	/* backlight device */
+> -	char *urbdata;			/* interrupt URB data buffer */
+> -	char *msgdata;			/* control message data buffer */
+> +	uint8_t *urbdata;		/* interrupt URB data buffer */
+> +	uint8_t *msgdata;		/* control message data buffer */
+
+    That 'uint8_t' is for userspace, use 'u8' instead.
+
+WBR, Sergei
