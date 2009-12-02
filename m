@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbZLBW7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZLBW7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755003AbZLBW7S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZLBW7R
+	id S1755174AbZLBW7l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:59:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbZLBW7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:59:17 -0500
-Received: from imap.ru.mvista.com ([213.79.90.228]:31806 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753850AbZLBW7Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:59:16 -0500
-Date: Thu, 3 Dec 2009 01:59:22 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Felipe Balbi <felipe.balbi@nokia.com>
-Cc: Grazvydas Ignotas <notasas@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
- charger
-Message-ID: <20091202225922.GA15568@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
- <20091202173321.GA23738@nokia.com>
- <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
- <20091202204946.GB25682@nokia.com>
- <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
- <20091202215442.GA30658@oksana.dev.rtsoft.ru>
- <20091202223156.GA14921@nokia.com>
+	Wed, 2 Dec 2009 17:59:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51124 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754950AbZLBW7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 17:59:40 -0500
+Message-ID: <4B16F198.20100@kernel.org>
+Date: Thu, 03 Dec 2009 08:00:40 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20091202223156.GA14921@nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       michal.simek@petalogix.com, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: problems in linux-next (Was: Re: linux-next: Tree for December
+ 1)
+References: <20091201190301.0fb7abad.sfr@canb.auug.org.au> <4B14D6E2.2040704@petalogix.com> <20091201210343.f0a1d353.sfr@canb.auug.org.au> <4B152D22.9070001@kernel.org> <alpine.DEB.2.00.0912010946340.8841@router.home> <20091201160119.GA10826@elte.hu> <4B15A5A6.2090200@kernel.org> <alpine.DEB.2.00.0912020853320.31731@router.home> <4B16E727.9070104@kernel.org> <alpine.DEB.2.00.0912021623560.6282@router.home>
+In-Reply-To: <alpine.DEB.2.00.0912021623560.6282@router.home>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 12:31:56AM +0200, Felipe Balbi wrote:
-> Hi,
+Hello,
+
+On 12/03/2009 07:24 AM, Christoph Lameter wrote:
+> On Thu, 3 Dec 2009, Tejun Heo wrote:
 > 
-> On Wed, Dec 02, 2009 at 10:54:42PM +0100, ext Anton Vorontsov wrote:
-> >As for the default USB VBUS current value, it could be Kconfig
-> >option (something alike to USB_GADGET_VBUS_DRAW) and/or module
-> >parameter, or hw default, or hardcoded for now. Either will
-> >work.
+>> For colored workqueue flushing, it ends up using more than three bits.
+>> I haven't decided it fully yet but total of six or seven depending on
+>> how many colors are used.  So, we need forced alignment anyway.
 > 
-> cannot be Kconfig, it's mandated by usb battery charging spec 1.x to
-> be 100mA for 100ms, then if you don't enumerate, you have to cut
-> charging.
+> If it is that much then why not stick it into the structure?
 
-Oh, I thought TWL4030 does the USB stuff somewhat transparently
-so the checks in twl4030_charger_check_vbus() would be enough.
-Is there any TWL4030 reference manual available?
+There'll only be a handful of cwqs but a lot of works.  Adding a flags
+field to work_struct might not hurt too much but all the code to
+handle it is already there except for alignment on UP, so I'm a bit
+reluctant to enlarge work_struct just for it.
 
-If TWL4030 just draws the VBUS directly, then it might be a good
-idea to integrate the driver with OTG framework, as an example
-see
+> It only makes sense to use the flags in the address if you otherwise
+> do not touch the structure.
 
-commit 5bf2b994bfe11bfe86231050897b2d881ca544d9
-Author: Philipp Zabel <philipp.zabel@gmail.com>
-Date:   Sun Jan 18 17:40:27 2009 +0100
+work_struct isn't being changed at all.  What gets aligned is
+cpu_workqueue_struct which allows more bits for flags in work_struct.
 
-    pda_power: Add optional OTG transceiver and voltage regulator support
-
-Though, instead of just a boolean is_usb_online() stuff, you'll
-have to get the allowed current draw value and configure the
-charger appropriately.
-
-Will this work?
+Thanks.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+tejun
