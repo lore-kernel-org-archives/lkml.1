@@ -1,116 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZLBUmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbZLBUoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbZLBUmP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 15:42:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbZLBUmO
+	id S1755149AbZLBUoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 15:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbZLBUoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 15:42:14 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:46306
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754300AbZLBUmN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 15:42:13 -0500
-Subject: Re: [RFC v2] Another approach to IR
-Mime-Version: 1.0 (Apple Message framework v1077)
+	Wed, 2 Dec 2009 15:44:17 -0500
+Received: from pancho.name ([92.48.73.7]:54051 "EHLO pancho.name"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753251AbZLBUoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 15:44:16 -0500
+Date: Wed, 2 Dec 2009 21:44:21 +0100
+From: pancho horrillo <pancho@pancho.name>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Fix a bug on appledisplay.c regarding signedness
+Message-ID: <20091202204421.GA1786@pancho.name>
+References: <20091202191942.GA7362@pancho.name>
+ <20091202193104.GB7362@pancho.name>
+ <4B16C233.6020808@ru.mvista.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <20091202201404.GD22689@core.coreip.homeip.net>
-Date: Wed, 2 Dec 2009 15:42:13 -0500
-Cc: Jarod Wilson <jarod@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <434927DD-0E66-4D0E-B705-022B7FCCCDB0@wilsonet.com>
-References: <4B1567D8.7080007@redhat.com> <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <20091202201404.GD22689@core.coreip.homeip.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-X-Mailer: Apple Mail (2.1077)
+Content-Disposition: inline
+In-Reply-To: <4B16C233.6020808@ru.mvista.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 2, 2009, at 3:14 PM, Dmitry Torokhov wrote:
-
-> On Wed, Dec 02, 2009 at 03:04:30PM -0500, Jarod Wilson wrote:
->> On Dec 2, 2009, at 2:56 PM, Dmitry Torokhov wrote:
->> 
->>> On Wed, Dec 02, 2009 at 02:22:18PM -0500, Jarod Wilson wrote:
->>>> On 12/2/09 12:30 PM, Jon Smirl wrote:
->>>>>>>> (for each remote/substream that they can recognize).
->>>>>>>>> 
->>>>>>>>> I'm assuming that, by remote, you're referring to a remote receiver (and not to
->>>>>>>>> the remote itself), right?
->>>>>>> 
->>>>>>> If we could separate by remote transmitter that would be the best I
->>>>>>> think, but I understand that it is rarely possible?
->>>>> 
->>>>> The code I posted using configfs did that. Instead of making apps IR
->>>>> aware it mapped the vendor/device/command triplets into standard Linux
->>>>> keycodes.  Each remote was its own evdev device.
->>>> 
->>>> Note, of course, that you can only do that iff each remote uses distinct  
->>>> triplets. A good portion of mythtv users use a universal of some sort,  
->>>> programmed to emulate another remote, such as the mce remote bundled  
->>>> with mceusb transceivers, or the imon remote bundled with most imon  
->>>> receivers. I do just that myself.
->>>> 
->>>> Personally, I've always considered the driver/interface to be the  
->>>> receiver, not the remote. The lirc drivers operate at the receiver  
->>>> level, anyway, and the distinction between different remotes is made by  
->>>> the lirc daemon.
->>> 
->>> The fact that lirc does it this way does not necessarily mean it is the
->>> most corerct way.
->> 
->> No, I know that, I'm just saying that's how I've always looked at it, and that's how lirc does it right now, not that it must be that way.
->> 
->>> Do you expect all bluetooth input devices be presented
->>> as a single blob just because they happen to talk to the sane receiver
->>> in yoru laptop? Do you expect your USB mouse and keyboard be merged
->>> together just because they end up being serviced by the same host
->>> controller? If not why remotes should be any different?
->> 
->> A bluetooth remote has a specific device ID that the receiver has to
->> pair with. Your usb mouse and keyboard each have specific device IDs.
->> A usb IR *receiver* has a specific device ID, the remotes do not. So
->> there's the major difference from your examples.
->> 
+On Wed, Dec 02, 2009 at 10:38:27PM +0300, Sergei Shtylyov wrote:
+> Hello.
 > 
-> Not exactly... I can have 2 identical USB keyboadrs form the same
-> manufacturer and they will still be treated separately. BT has session
-> ID to help distinguish between devices.
-
-Semantics. :)
-
-My main point is that each of these devices has device ID that can be determined without having to first do some protocol analysis and table lookups to figure out which "device" some random IR input is actually coming from.
-
->>> Now I understand that if 2 remotes send completely identical signals we
->>> won't be able to separete them, but in cases when we can I think we
->>> should.
->> 
->> I don't have a problem with that, if its a truly desired feature. But
->> for the most part, I don't see the point. Generally, you go from
->> having multiple remotes, one per device (where "device" is your TV,
->> amplifier, set top box, htpc, etc), to having a single universal
->> remote that controls all of those devices. But for each device (IR
->> receiver), *one* IR command set. The desire to use multiple distinct
->> remotes with a single IR receiver doesn't make sense to me. Perhaps
->> I'm just not creative enough in my use of IR. :)
+> pancho horrillo wrote:
 > 
-> Didn't Jon posted his example whith programmable remote pretending to be
-> several separate remotes (depending on the mode of operation) so that
-> several devices/applications can be controlled without interfering with
-> each other?
+> >Please, review and push the patch, if you deem it adequate.
+> 
+> >Thanks a bunch!
+> 
+>    That 'uint8_t' is for userspace, use 'u8' instead.
+> 
+> WBR, Sergei
 
-Yes. But that's an atypical usage, in my experience, and as Mauro said, something that can be done trivially in userspace (lirc can do this today, even for the same remote and mode of operation, on a per-key basis if you want). If it doesn't add too much complexity and people will actually use it, I don't have a problem with implementing one input device per distinct remote, but I doubt many people would use that functionality.
+Thanks for the coaching, Sergei!
 
+BTW, there are about 4863 of uint8_t in the kernel sources :-)
+
+Cheers,
+
+pancho.
+
+Signed-off-by: pancho horrillo <pancho@pancho.name>
+
+diff -purN a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledisplay.c
+--- a/drivers/usb/misc/appledisplay.c	2009-11-10 01:32:31.000000000 +0100
++++ b/drivers/usb/misc/appledisplay.c	2009-12-02 20:05:00.000000000 +0100
+@@ -72,8 +72,8 @@ struct appledisplay {
+ 	struct usb_device *udev;	/* usb device */
+ 	struct urb *urb;		/* usb request block */
+ 	struct backlight_device *bd;	/* backlight device */
+-	char *urbdata;			/* interrupt URB data buffer */
+-	char *msgdata;			/* control message data buffer */
++	u8 *urbdata;			/* interrupt URB data buffer */
++	u8 *msgdata;			/* control message data buffer */
+ 
+ 	struct delayed_work work;
+ 	int button_pressed;
 -- 
-Jarod Wilson
-jarod@wilsonet.com
+pancho horrillo
 
+To be conscious that
+you are ignorant is a great step
+to knowledge.
 
-
+		Benjamin Disraeli
