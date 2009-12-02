@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbZLBNza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZLBNzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754405AbZLBNza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 08:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZLBNz2
+	id S1754130AbZLBNzY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZLBNzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 08:55:28 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:40302 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752274AbZLBNz0 convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 08:55:24 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:46726 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbZLBNzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 08:55:26 -0500
-To: ext Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: "Valentin Eduardo \(Nokia-D\/Helsinki\)" <eduardo.valentin@nokia.com>,
-       "De-Schrijver Peter \(Nokia-D\/Helsinki\)" 
-	<Peter.De-Schrijver@nokia.com>,
-       "Keski-Saari Juha.1 \(EXT-Teleca\/Helsinki\)" 
-	<ext-juha.1.keski-saari@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "lrg\@slimlogic.co.uk" <lrg@slimlogic.co.uk>
-Subject: Re: Doubt about Regulator Framework and VBAT use case
-References: <20091130104102.GA16608@esdhcp037198.research.nokia.com>
-	<20091130114515.GB10968@rakim.wolfsonmicro.main>
-	<87iqcpk3wp.fsf@trdhcp146196.ntc.nokia.com>
-	<20091202120240.GA19094@sirena.org.uk>
-From: jouni.hogander@nokia.com (=?utf-8?Q?H=C3=B6gander?= Jouni)
-Date: Wed, 02 Dec 2009 15:55:14 +0200
-In-Reply-To: <20091202120240.GA19094@sirena.org.uk> (ext Mark Brown's message of "Wed\, 2 Dec 2009 13\:02\:41 +0100")
-Message-ID: <877ht5jxa5.fsf@trdhcp146196.ntc.nokia.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 2 Dec 2009 08:55:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Os3Bj1qBB8sOoqOWRG9haAR5ChaJKCcrgq6BbKZa3ZYUIqo3E6SDBBpOdXs+lhULUw
+         8XMZhX5TVmitmaQhqL5e+YVjQa+La6ig9I88yQcrMhdjSXWjW8OIlNF+WZ0D9W58GYL7
+         6tN5e8jYZyC7P9T6UYkY9k5ceTlf7KX3xUsig=
+Message-ID: <4B1671C8.1030205@gmail.com>
+Date: Wed, 02 Dec 2009 21:55:20 +0800
+From: Wan ZongShun <mcuos.com@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 02 Dec 2009 13:55:20.0593 (UTC) FILETIME=[163D1010:01CA7357]
-X-Nokia-AV: Clean
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Russell King <linux@arm.linux.org.uk>
+Subject: [PATCH 3/4]ARM: NUC900: enable timer clock for nuc932
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
+Dear Russell,
 
-> On Wed, Dec 02, 2009 at 01:32:06PM +0200, H??gander Jouni wrote:
->> ext Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
->
->> > I'd add it as a fixed voltage regulator and either not specify the
->> > voltage or specify the nominal voltage.
->
->> I was preparing patch for this when I noticed that fixed voltage
->> regulator can control only one regulator. Are you aware of any ongoing
->> work to enable control for multiple regulators in
->> fixed-voltage-regulator?
->
-> It's just a platform device configured with platform data, you can
-> instantiate as many fixed voltage regulators in your system as you care
-> to using the current driver.
+This patch enables timer clock support for nuc932.
 
-Yes, you are right. This was just my mistake in usage of the
-driver. Thanks for the clarification.
+Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
 
+---
+ arch/arm/mach-w90x900/time_932.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-w90x900/time_932.c b/arch/arm/mach-w90x900/time_932.c
+index c50f9c0..3f315fe 100644
+--- a/arch/arm/mach-w90x900/time_932.c
++++ b/arch/arm/mach-w90x900/time_932.c
+@@ -38,10 +38,12 @@
+ static void __init nuc900_timer_init(void)
+ {
+ 	struct clk *ck_ext = clk_get(NULL, "ext");
++	struct clk *ck_timer = clk_get(NULL, "timer");
+ 	unsigned int	rate;
+ 
+-	BUG_ON(IS_ERR(ck_ext));
++	BUG_ON(IS_ERR(ck_ext) || IS_ERR(ck_timer));
+ 
++	clk_enable(ck_timer);
+ 	rate = clk_get_rate(ck_ext);
+ 	clk_put(ck_ext);
+ 	rate = rate / (PRESCALE + 0x01);
 -- 
-Jouni Högander
+1.5.6.3
