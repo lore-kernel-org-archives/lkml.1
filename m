@@ -1,56 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZLBHBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZLBHPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753207AbZLBHBK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 02:01:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZLBHBJ
+	id S1752946AbZLBHPg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 02:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZLBHPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 02:01:09 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:41195 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbZLBHBJ (ORCPT
+	Wed, 2 Dec 2009 02:15:35 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38583 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbZLBHPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 02:01:09 -0500
-Message-ID: <4B1610BA.5090906@cs.helsinki.fi>
-Date: Wed, 02 Dec 2009 09:01:14 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Wed, 2 Dec 2009 02:15:34 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC][PATCH 4/4] vmscan: vmscan don't use pcp list
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20091127161715.GO13095@csn.ul.ie>
+References: <20091127091920.A7D5.A69D9226@jp.fujitsu.com> <20091127161715.GO13095@csn.ul.ie>
+Message-Id: <20091202140125.5C5E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: hooanon05@yahoo.co.jp
-CC: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
-Subject: Re: Q, slab, kmemleak_erase() and redzone?
-References: <4B1502E3.4000304@cs.helsinki.fi> <1259690210.2121.233.camel@pc1117.cambridge.arm.com> <4B1609D0.6030809@cs.helsinki.fi> <4B160A16.90703@cs.helsinki.fi> <9890.1259737038@jrobl>
-In-Reply-To: <9890.1259737038@jrobl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  2 Dec 2009 16:15:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi
 
-hooanon05@yahoo.co.jp kirjoitti:
-> Pekka Enberg:
->>> No, you are absolutely correct. Can you please send an updated patch to 
->>> Catalin that adds a comment on top of the cpu_cache_get() call that 
->>> explains why we need it there?
->> Doh, this was supposed to be a reply to Okajima's email :-).
+sorry for the delayed reply. I've got stucked in Larry's serious bug report awhile.
+
+> On Fri, Nov 27, 2009 at 09:23:57AM +0900, KOSAKI Motohiro wrote:
+> > 
+> > note: Last year,  Andy Whitcroft reported pcp prevent to make contenious
+> > high order page when lumpy reclaim is running.
 > 
-> Before I send a small patch, let me make sure about other small issues.
+> I don't remember the specifics of the discussion but I know that when
+> that patch series was being prototyped, it was because order-0
+> allocations were racing with lumpy reclaimers. A lumpy reclaim might
+> free up an order-9 page say but while it was freeing, an order-0 page
+> would be allocated from the middle. It wasn't the PCP lists as such that
+> were a problem once they were getting drained as part of a high-order
+> allocation attempt. It would be just as bad if the order-0 page was
+> taken from the buddy lists.
+
+Hm, probably I have to update my patch description.
+if we use pavevec_free(), batch size is PAGEVEC_SIZE(=14).
+then, order-9 lumpy reclaim makes 37 times pagevec_free(). it makes lots
+temporary uncontenious memory block and the chance of stealing it from
+order-0 allocator task.
+
+This patch free all reclaimed pages at once to buddy.
+
+
+> > He posted "capture pages freed during direct reclaim for allocation by the reclaimer"
+> > patch series, but Christoph mentioned simple bypass pcp instead.
+> > I made it. I'd hear Christoph and Mel's mention.
+> > 
+> > ==========================
+> > Currently vmscan free unused pages by __pagevec_free().  It mean free pages one by one
+> > and use pcp. it makes two suboptimal result.
+> > 
+> >  - The another task can steal the freed page in pcp easily. it decrease
+> >    lumpy reclaim worth.
+> >  - To pollute pcp cache, vmscan freed pages might kick out cache hot
+> >    pages from pcp.
+> > 
 > 
-> - How heavy is 'ac = cpu_cache_get(cachep)' (which will be inserted by
->   the patch)?
->   It will be compiled and executed regardless CONFIG_DEBUG_KMEMLEAK, and
->   it is totally meaningless when DEBUG_KMEMLEAK is disabled. Can we
->   ignore this loss?
+> The latter point is interesting.
 
-No, it won't be. The compiler should notice it's dead code and remove it 
-when CONFIG_KMEMLEAK is disabled.
+Thank you.
 
-> - Should we add a condition 'if (objp)' before calling kmemleak_erase()?
->   As Catalin wrote, it may be harmless. But setting NULL is unnecessary.
->   Do you accept this change too?
+> > This patch make new free_pages_bulk() function and vmscan use it.
+> > 
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> >  include/linux/gfp.h |    2 +
+> >  mm/page_alloc.c     |   56 +++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  mm/vmscan.c         |   23 +++++++++++----------
+> >  3 files changed, 70 insertions(+), 11 deletions(-)
+> > 
+> > diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+> > index f53e9b8..403584d 100644
+> > --- a/include/linux/gfp.h
+> > +++ b/include/linux/gfp.h
+> > @@ -330,6 +330,8 @@ extern void free_hot_page(struct page *page);
+> >  #define __free_page(page) __free_pages((page), 0)
+> >  #define free_page(addr) free_pages((addr),0)
+> >  
+> > +void free_pages_bulk(struct zone *zone, int count, struct list_head *list);
+> > +
+> >  void page_alloc_init(void);
+> >  void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
+> >  void drain_all_pages(void);
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 11ae66e..f77f8a8 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -2037,6 +2037,62 @@ void free_pages(unsigned long addr, unsigned int order)
+> >  
+> >  EXPORT_SYMBOL(free_pages);
+> >  
+> > +/*
+> > + * Frees a number of pages from the list
+> > + * Assumes all pages on list are in same zone and order==0.
+> > + * count is the number of pages to free.
+> > + *
+> > + * This is similar to __pagevec_free(), but receive list instead pagevec.
+> > + * and this don't use pcp cache. it is good characteristics for vmscan.
+> > + */
+> > +void free_pages_bulk(struct zone *zone, int count, struct list_head *list)
+> > +{
+> > +	unsigned long flags;
+> > +	struct page *page;
+> > +	struct page *page2;
+> > +
+> > +	list_for_each_entry_safe(page, page2, list, lru) {
+> > +		int wasMlocked = __TestClearPageMlocked(page);
+> > +
+> > +		kmemcheck_free_shadow(page, 0);
+> > +
+> > +		if (PageAnon(page))
+> > +			page->mapping = NULL;
+> > +		if (free_pages_check(page)) {
+> > +			/* orphan this page. */
+> > +			list_del(&page->lru);
+> > +			continue;
+> > +		}
+> > +		if (!PageHighMem(page)) {
+> > +			debug_check_no_locks_freed(page_address(page),
+> > +						   PAGE_SIZE);
+> > +			debug_check_no_obj_freed(page_address(page), PAGE_SIZE);
+> > +		}
+> > +		arch_free_page(page, 0);
+> > +		kernel_map_pages(page, 1, 0);
+> > +
+> > +		local_irq_save(flags);
+> > +		if (unlikely(wasMlocked))
+> > +			free_page_mlock(page);
+> > +		local_irq_restore(flags);
+> > +	}
+> > +
+> > +	spin_lock_irqsave(&zone->lock, flags);
+> > +	__count_vm_events(PGFREE, count);
+> > +	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
+> > +	zone->pages_scanned = 0;
+> > +
+> > +	__mod_zone_page_state(zone, NR_FREE_PAGES, count);
+> > +
+> > +	list_for_each_entry_safe(page, page2, list, lru) {
+> > +		/* have to delete it as __free_one_page list manipulates */
+> > +		list_del(&page->lru);
+> > +		trace_mm_page_free_direct(page, 0);
+> > +		__free_one_page(page, zone, 0, page_private(page));
+> > +	}
+> > +	spin_unlock_irqrestore(&zone->lock, flags);
+> > +}
+> 
+> It would be preferable that the bulk free code would use as much of the
+> existing free logic in the page allocator as possible. This is making a
+> lot of checks that are done elsewhere. As this is an RFC, it's not
+> critical but worth bearing in mind.
 
-Yeah, I'd prefer to see the check there. While Catalin is correct, 
-that's not obvious from reading the code.
+Sure. I have to merge common block. thanks.
 
-			Pekka
+
+> > +
+> >  /**
+> >   * alloc_pages_exact - allocate an exact number physically-contiguous pages.
+> >   * @size: the number of bytes to allocate
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index 56faefb..00156f2 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -598,18 +598,17 @@ redo:
+> >   * shrink_page_list() returns the number of reclaimed pages
+> >   */
+> >  static unsigned long shrink_page_list(struct list_head *page_list,
+> > +				      struct list_head *freed_pages_list,
+> >  					struct scan_control *sc,
+> 
+> Should the freed_pages_list be part of scan_control?
+
+OK.
+
+> 
+> >  					enum pageout_io sync_writeback)
+> >  {
+> >  	LIST_HEAD(ret_pages);
+> > -	struct pagevec freed_pvec;
+> >  	int pgactivate = 0;
+> >  	unsigned long nr_reclaimed = 0;
+> >  	unsigned long vm_flags;
+> >  
+> >  	cond_resched();
+> >  
+> > -	pagevec_init(&freed_pvec, 1);
+> >  	while (!list_empty(page_list)) {
+> >  		struct address_space *mapping;
+> >  		struct page *page;
+> > @@ -785,10 +784,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+> >  		__clear_page_locked(page);
+> >  free_it:
+> >  		nr_reclaimed++;
+> > -		if (!pagevec_add(&freed_pvec, page)) {
+> > -			__pagevec_free(&freed_pvec);
+> > -			pagevec_reinit(&freed_pvec);
+> > -		}
+> > +		list_add(&page->lru, freed_pages_list);
+> >  		continue;
+> >  
+> >  cull_mlocked:
+> > @@ -812,8 +808,6 @@ keep:
+> >  		VM_BUG_ON(PageLRU(page) || PageUnevictable(page));
+> >  	}
+> >  	list_splice(&ret_pages, page_list);
+> > -	if (pagevec_count(&freed_pvec))
+> > -		__pagevec_free(&freed_pvec);
+> >  	count_vm_events(PGACTIVATE, pgactivate);
+> >  	return nr_reclaimed;
+> >  }
+> > @@ -1100,6 +1094,7 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+> >  					  int priority, int file)
+> >  {
+> >  	LIST_HEAD(page_list);
+> > +	LIST_HEAD(freed_pages_list);
+> >  	struct pagevec pvec;
+> >  	unsigned long nr_scanned;
+> >  	unsigned long nr_reclaimed = 0;
+> > @@ -1174,7 +1169,8 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+> >  
+> >  	spin_unlock_irq(&zone->lru_lock);
+> >  
+> > -	nr_reclaimed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
+> > +	nr_reclaimed = shrink_page_list(&page_list, &freed_pages_list, sc,
+> > +					PAGEOUT_IO_ASYNC);
+> >  
+> >  	/*
+> >  	 * If we are direct reclaiming for contiguous pages and we do
+> > @@ -1192,10 +1188,15 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+> >  		nr_active = clear_active_flags(&page_list, count);
+> >  		count_vm_events(PGDEACTIVATE, nr_active);
+> >  
+> > -		nr_reclaimed += shrink_page_list(&page_list, sc,
+> > -						 PAGEOUT_IO_SYNC);
+> > +		nr_reclaimed += shrink_page_list(&page_list, &freed_pages_list,
+> > +						 sc, PAGEOUT_IO_SYNC);
+> >  	}
+> >  
+> > +	/*
+> > +	 * Free unused pages.
+> > +	 */
+> > +	free_pages_bulk(zone, nr_reclaimed, &freed_pages_list);
+> > +
+> >  	local_irq_disable();
+> >  	if (current_is_kswapd())
+> >  		__count_vm_events(KSWAPD_STEAL, nr_reclaimed);
+> 
+> This patch does not stand-alone so it's not easy to test. I'll think about
+> the idea more although I do see how it might help slightly in the same way
+> capture-reclaim did by closing the race window with other allocators.
+> 
+> I'm curious, how did you evaluate this and what problem did you
+> encounter that this might help?
+
+Honestly I didn't it yet. I only tested changing locking scheme didn't cause
+reclaim throughput under light VM pressure. Probably I have to contact 
+Andy and test his original problem workload.
+
+btw, if you have good high order allocation workload, can you please tell me it?
+
+
+
