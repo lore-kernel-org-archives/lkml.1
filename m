@@ -1,119 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbZLBCVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbZLBCik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbZLBCVr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 21:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbZLBCVq
+	id S1755179AbZLBCik (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 21:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZLBCij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 21:21:46 -0500
-Received: from cnc.isely.net ([64.81.146.143]:35962 "EHLO cnc.isely.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754283AbZLBCVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 21:21:46 -0500
-Date: Tue, 1 Dec 2009 20:21:52 -0600 (CST)
-From: Mike Isely <isely@isely.net>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org
-Subject: Re: [GIT PULL for 2.6.32] V4L/DVB updates
-In-Reply-To: <4B156CAA.1080900@infradead.org>
-Message-ID: <alpine.DEB.1.10.0912012020310.5581@ivanova.isely.net>
-References: <4B103CE1.8050303@redhat.com> <200911272240.02930.s.L-H@gmx.de> <200911280357.58116.hverkuil@xs4all.nl> <alpine.DEB.1.10.0911281425240.5482@ivanova.isely.net> <20091130115701.40c92b2c@pedra> <alpine.DEB.1.10.0911301341320.20937@cnc.isely.net>
- <4B156CAA.1080900@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 Dec 2009 21:38:39 -0500
+Received: from smtp105.prem.mail.sp1.yahoo.com ([98.136.44.60]:25097 "HELO
+	smtp105.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752466AbZLBCii (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 21:38:38 -0500
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: ZtmQHcYVM1lcoCtSL.TR9CRjCOe30wByrj2ugtlWzogZA3SVMrJF5ZxOfnejslb6veWDenLTJSxgWgBV1f6Rgj01VkpMgbztREsfk8.prvXnbfWfbgQc8DAQDnVLWnsq2tB9Fpl8vflyv1XJlnyui2M2zv9N0WrH57gT4v9DxKsStxU9DJALWVDG0tkTcYTpwqE2gTL9XwxJif8DTevdrXZFoaxcWaxsRFAjQy6cZlbDV6wtYihjGkKJ5zmJrFRgyZYZe5Fk8BAQ0R7vYjhSmBCFb903tcGdFSML..uJHsv7b9FLeoiZYh80BrGJCwHTAAKiB8y74RLMmsnJMlq3vnhyu42REh5Gn85iCNp7zkab8RfC8Q--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4B15D331.7090903@schaufler-ca.com>
+Date: Tue, 01 Dec 2009 18:38:41 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Paul Nuzzi <pjnuzzi@tycho.ncsc.mil>
+CC: "David P. Quigley" <dpquigl@tycho.nsa.gov>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, jmorris@namei.org,
+       selinux@tycho.nsa.gov, "George S. Coker, II" <gscoker@alpha.ncsc.mil>,
+       Eamon Walsh <ewalsh@tycho.nsa.gov>, Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH] Dynamic port labeling V2
+References: <1259616460.2444.9.camel@moss-stripedbass.epoch.ncsc.mil>	 <4B14A111.2000703@schaufler-ca.com>	 <1259679974.2365.29.camel@moss-terrapins.epoch.ncsc.mil> <1259681350.2444.20.camel@moss-stripedbass.epoch.ncsc.mil>
+In-Reply-To: <1259681350.2444.20.camel@moss-stripedbass.epoch.ncsc.mil>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009, Mauro Carvalho Chehab wrote:
+Paul Nuzzi wrote:
+> Dave brought up some good questions.
 
-> Mike Isely wrote:
-> > On Mon, 30 Nov 2009, Mauro Carvalho Chehab wrote:
-> > 
-> >> Em Sat, 28 Nov 2009 14:33:30 -0600 (CST)
-> >> Mike Isely <isely@isely.net> escreveu:
-> >>
-> >>> Mauro:
-> >>>
-> >>> I had also posted up two high priority pvrusb2 patches that should 
-> >>> really be cherry-picked for 2.6.32.  You've already pulled them into 
-> >>> v4l/dvb and I did mark them as high priority at the time.
-> >>>
-> >>> These patches enable use of FX2 microcontroller firmware that is 16KB in 
-> >>> size.  Hauppauge is no longer shipping 8KB firmware for HVR-1950 and 
-> >>> HVR-1900 and without these changes then those devices won't work AT ALL 
-> >>> in kernel 2.6.32.
-> >>>
-> >>> You can find these within the v4l-dvb Mercurial repository here:
-> >>>
-> >>> Changeset 13495:87c3853fe2b3 
-> >>> Subject: pvrusb2: Support 16KB FX2 firmware
-> >>> http://linuxtv.org/hg/v4l-dvb/rev/87c3853fe2b3
-> >>>
-> >>> Changeset 13500:d4c418d4b25c
-> >>> Subject: pvrusb2: Fix lingering 16KB FX2 Firmware issues
-> >>> http://linuxtv.org/hg/v4l-dvb/rev/d4c418d4b25c
-> >>>
-> >>> I do not believe these patches have any ordering dependencies with other 
-> >>> patches, though between the two the second one technically should come 
-> >>> after the first.
-> > 
-> > 
-> > 
-> >> There are. Picking just those patches broke compilation.
-> > 
-> > Mauro:
-> > 
-> > Please forward to me the compilation errors.  Right now I am just not 
-> > seeing how a patch this trivial could have any compilation dependencies.  
-> > And unfortunately I will not be able to reproduce your build setup until 
-> > at least Tuesday night.  I must be blind.
-> > 
-> > 
-> >> Also, it seemed too late for adding support for newer boards/firmware when Linus
-> >> is about to release a kernel.
-> > 
-> > This is not a new feature.  It's a bug fix due to something that 
-> > Hauppauge recently did.  Hauppauge is NO LONGER officially distributing 
-> > FX2 firmware with their hardware which the driver can use.  This simply 
-> > prevents any new HVR-1950 / HVR-1900 users from working under Linux.  
-> > This fixes breakage for previously working hardware.  The root cause is 
-> > simple - the firmware blob is just larger now - and the fix is trivial.  
-> > It absolutely needs to go in.  In fact, this should go back to a 
-> > 2.6.31.x and a 2.6.27.x release as well, though in those cases I have to 
-> > figure out if driver source code is still close enough for the same 
-> > patches to still work.
-> > 
-> > I am sorry this is showing up late for you.  There are multiple reasons 
-> > for this.  However I did mark these patches as "high priority", 
-> > following your v4l-dvb changeset process.  I did comment on the pull 
-> > request that these were important but I guess I needed to also 
-> > specifically call these out in the pull request text as well.
-> > 
-> > If these don't get in now as part of the official 2.6.32 release, these 
-> > absolutely need to be queued for 2.6.32.1.
-> 
-> We are very late for 2.6.32. I'm not sure if are there still time for it.
-> 
-> I'll seek for some time during this week to add those patches at the upstream
-> tree and removing them from the development tree and see what compilation
-> issues arise.
+He often does. He's like that.
 
-Mauro:
+>  A pseudo file-system based on ports
+> seems like a good idea but I think there is going be scaling issues.
+>   
 
-Thanks.
+I'm curious what those scaling issues might be, given the success
+of /proc which deals with many processes.
 
-Guess I also really need to get up to speed on git, finally...
+> SELinux also supports multiple labels for ports.
 
-  -Mike
+Is there a fixed set? There's no reason you couldn't do what Smack
+does with sockets, which is multiple well known attribute names.
+That will work even if there isn't a fixed set, come to think of
+it.
 
+>  Port 22 can be labeled
+> as ssh_port and if the label is removed, reverts to reserved_port. Do
+> you know of a way xattrs can handle this? 
+>   
 
--- 
+setxattr SELINIX_PORTXATTR_UNLABELED_CONTEXT reserved_port
+setxattr SELINIX_PORTXATTR_CONTEXT ssh_port
 
-Mike Isely
-isely @ isely (dot) net
-PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
+if you delete the SELINIX_PORTXATTR_CONTEXT attribute it gets
+reset to SELINIX_PORTXATTR_UNLABELED_CONTEXT. Simple.
+
+> On Tue, 2009-12-01 at 10:06 -0500, David P. Quigley wrote:
+>   
+>> I have several questions about this.
+>>
+>> 1) Where is it located?
+>>     
+
+Don't know, don't much care. /sys or /sysfs or /security or /dev.
+
+>> 2) Is your proposal to implement it as a new fs with a name something
+>> like portfs?
+>>     
+
+Yes. Alternatively it could be an extension to an existing special
+purpose filesystem, but I don't have a favorite candidate.
+
+>> 3) How does it get populated initially? Do you have a file for each port
+>> right off the bat? Do you only have files for ports with policy or whose
+>> permissions differ from the default?
+>>     
+
+I like the notion of populating it all at once, but I expect
+that there are those who'd holler for doing in on demand.
+
+>> 4) How do I assign a label to the port? You have an issue here that
+>> these files are objects themselves. You can't just label the file with
+>> what you want the port labeled because now you can't mediate access to
+>> these file objects outside of the label on the port itself.
+>>     
+
+On some systems you could in fact put the label of the bound process
+on the object and be very happy, but I understand that SELinux is
+not an example of such a system.
+
+Put as many xattrs on the object as you like and let the LSM decide
+which matters to what purpose. setxattr to put labels explicitly on
+the port, and the LSM gets to decide what xattr to put on the port
+when it is bound or closed. Of course, there will need to be a way
+to associate the portfs entry with the port (I don't know, maybe the
+port number gets you the inode number as /proc maps pid to inode?)
+Yes, that implies LSM specific code in portfs, or maybe portfs
+specific code in the LSM. Smack already treats attribute setting
+specially on socket fd's, and it's not so terrible.
+
+>> On Mon, 2009-11-30 at 20:52 -0800, Casey Schaufler wrote:
+>>     
+>>> Paul Nuzzi wrote:
+>>>       
+>>>> Second version of the dynamic port labeling patch.
+>>>>         
+>>> So I've looked through both versions of this patch and I can't
+>>> help but think that you'd get better mileage out of a file system
+>>> interface than this SELinux specific implementation. If you had
+>>> something like
+>>>
+>>>     /port/22
+>>>
+>>> with default owner root and mode rw-------
+>>>
+>>>     /port/3306
+>>>
+>>> with default owner root and mode rw-rw-rw-
+>>>
+>>> you could address a bunch of the complaints about port ownership that
+>>> you hear every day. Further, if the port filesystem supported xattrs
+>>> you could tie in SELinux as easily as you are doing it below and get
+>>> Smack for an extra $1.98, not to mention saving every other LSM the
+>>> grief of defining Yet Another way to define port accesses.
+>>>
+>>> It bothers me that there is a perfectly reasonable way to provide the
+>>> specific behavior you're looking for (SELinux label on a port) that
+>>> generalizes so cleanly and that it's not being proposed.
+>>>
+>>>
+>>>       
+>>>>   Changed the name of
+>>>> the selinuxfs interface to portcon and changed the interface to only
+>>>> allow five arguments instead of the variable four or five.   
+>>>>
+>>>> Added a mechanism to add/delete/update port labels with an interface in 
+>>>> the selinuxfs filesystem.  This will give administrators the ability to
+>>>> update port labels faster than reloading the entire policy with
+>>>> semanage.  The administrator will also need less privilege since they
+>>>> don't have to be authorized to reload the full policy.
+>>>>
+>>>> A listing of all port labels will be output if the file /selinux/portcon
+>>>> is read.  Labels could be added or deleted with the following commands 
+>>>>
+>>>> echo -n "del system_u:object_r:ssh_port_t:s0 6 22 22" > /selinux/portcon
+>>>> echo -n "add system_u:object_r:telnetd_port_t:s0 6 22 22" > /selinux/portcon
+>>>>
+>>>> Labels can be atomically changed with the add command.  
+>>>>
+>>>>
+>>>> Signed-off-by: Paul Nuzzi <pjnuzzi@tycho.ncsc.mil>
+>>>>
+>>>>         
+>
+>
+>
+>   
+
