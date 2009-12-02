@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZLBP3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbZLBPei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbZLBP3a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 10:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbZLBP3a
+	id S1754121AbZLBPei (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 10:34:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZLBPeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 10:29:30 -0500
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:35788 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753135AbZLBP33 (ORCPT
+	Wed, 2 Dec 2009 10:34:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751791AbZLBPeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 10:29:29 -0500
-Date: Wed, 2 Dec 2009 20:59:30 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Stanislaw Gruszka <sgruszka@redhat.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Spencer Candland <spencer@bluehost.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH -v2 1/2] sched, cputime: cleanups related to task_times()
-Message-ID: <20091202152929.GE3545@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091112154050.GC6218@dhcp-lab-161.englab.brq.redhat.com>
- <4B01A8DB.6090002@bluehost.com>
- <20091117130851.GA3842@dhcp-lab-161.englab.brq.redhat.com>
- <1258464288.7816.305.camel@laptop>
- <20091119181744.GA3743@dhcp-lab-161.englab.brq.redhat.com>
- <4B05F835.10401@jp.fujitsu.com>
- <20091123100925.GB25978@dhcp-lab-161.englab.brq.redhat.com>
- <20091123101612.GC25978@dhcp-lab-161.englab.brq.redhat.com>
- <4B1624C7.7040302@jp.fujitsu.com>
- <1259767055.4003.1037.camel@laptop>
+	Wed, 2 Dec 2009 10:34:36 -0500
+Date: Wed, 2 Dec 2009 07:33:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jan Beulich <JBeulich@novell.com>
+cc: Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl,
+       Jeremy Fitzhardinge <jeremy@goop.org>, tglx@linutronix.de,
+       mingo@redhat.com, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       linux-tip-commits@vger.kernel.org, hpa@zytor.com
+Subject: Re: [tip:core/locking] locking, x86: Slightly shorten 
+ __ticket_spin_trylock()
+In-Reply-To: <4B168E7702000078000230C5@vpn.id2.novell.com>
+Message-ID: <alpine.LFD.2.00.0912020727410.2872@localhost.localdomain>
+References: <4B0FF9AC0200007800022713@vpn.id2.novell.com> <tip-133ec7a235160dd44cbd4d82fff65a9983331df9@git.kernel.org> <20091202132937.GA1564@elte.hu> <4B168293020000780002308E@vpn.id2.novell.com> <20091202142108.GA5815@elte.hu>
+ <4B168E7702000078000230C5@vpn.id2.novell.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1259767055.4003.1037.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <peterz@infradead.org> [2009-12-02 16:17:35]:
 
-> Could you, in the future, please start a new thread for new patches?
+
+On Wed, 2 Dec 2009, Jan Beulich wrote:
+
+> >>> Ingo Molnar <mingo@elte.hu> 02.12.09 15:21 >>>
+> 792a99a9 <_raw_spin_lock>:
+> ...
+> >792a99f3:	89 d8                	mov    %ebx,%eax
+> >792a99f5:	ff 15 d0 6c f2 79    	call   *0x79f26cd0
+> >792a99fb:	85 c0                	test   %eax,%eax
+> ...
+> >792a9a2e:	89 f8                	mov    %edi,%eax
+> >792a9a30:	ff 15 d0 6c f2 79    	call   *0x79f26cd0
+> >792a9a36:	85 c0                	test   %eax,%eax
 > 
+> Assuming that these are the calls to __raw_spin_trylock, it is clear that
+> the generated code isn't what we want: It should be test %al, %al in
+> both cases.
 
-Yes, I almost missed it, cause I marked the thread as read. Let me
-look
+See my previous email.  Using 'bool' was a mistake. It's _always_ a 
+mistake. 
 
+'bool' basically says that the compiler can assume magic things, and 
+compile the thing to be anything it wants that is convenient for it. 
+Put another way, 'bool' has a magic API. For all you know, the rule might 
+even be that a 'bool' return value is always returned in a flag register 
+(ok, on x86 that would be _very_ inconvenient, but it's _possible_). 
 
--- 
-	Balbir
+So the calling convention could have been
+
+	call <bool-returning-function>
+	jne ..	// jump if it returned non-zero
+
+because the rule about bool is that it is just one bit of information, 
+but exactly _how_ that bit is done is totally up to the compiler ABI.
+
+In this case, the rule gcc implements on x86 is probably just "we pass it 
+around as an 'int' that contains 0 or 1". So the code would work if you 
+had left in the 'movzbl'.
+
+End result: don't use bool.
+
+			Linus
