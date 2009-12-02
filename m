@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZLBXZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZLBX23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbZLBXZv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 18:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZLBXZv
+	id S1755657AbZLBX23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 18:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZLBX22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 18:25:51 -0500
-Received: from relay2-v.mail.gandi.net ([217.70.178.76]:42561 "EHLO
-	relay2-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752199AbZLBXZu (ORCPT
+	Wed, 2 Dec 2009 18:28:28 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:58933 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754091AbZLBX22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 18:25:50 -0500
-Date: Wed, 2 Dec 2009 15:25:42 -0800
-From: Josh Triplett <josh@joshtriplett.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 2/4] rcu: enable fourth level of TREE_RCU
- hierarchy
-Message-ID: <20091202232541.GB5479@feather>
-References: <20091202200955.GA12950@linux.vnet.ibm.com>
- <12597846161257-git-send-email->
+	Wed, 2 Dec 2009 18:28:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=AwPNU+g0wu2fxB3zXjjKFZXZTeRZkXG/vPZVGz5WvgYMBWy9lPMXDDXq3NtVBu3RPG
+         gBHPAUe2dmzPezYFdhRfYUXjV7O3wKg5T0QWtDQXWXQeOBFHMl1cy6G9dQ76FR65Me0P
+         dhOkPDGeNTf4VXi5tAIv99IRTIHOr5WPEstGw=
+Message-ID: <4B16F822.9050807@gmail.com>
+Date: Wed, 02 Dec 2009 15:28:34 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12597846161257-git-send-email->
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ath9k-devel@venema.h4ckr.net
+Subject: Re: [ath9k-devel] BUG kmalloc-8192: Poison overwritten
+References: <dd18b0c30912021427x4d1d952tcdd98bb9d816b67c@mail.gmail.com> <43e72e890912021516k736db118j217dc92496db8f19@mail.gmail.com>
+In-Reply-To: <43e72e890912021516k736db118j217dc92496db8f19@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 12:10:14PM -0800, Paul E. McKenney wrote:
-> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> Enable a fourth level of rcu_node hierarchy for TREE_RCU and
-> TREE_PREEMPT_RCU.  This is for stress-testing and experiemental
-> purposes only, although in theory this would enable 16,777,216 CPUs
-> on 64-bit systems, though only 1,048,576 CPUs on 32-bit systems.
-> Normal experimental use of this fourth level will normally set
-> CONFIG_RCU_FANOUT=2, requiring a 16-CPU system, though the more
-> adventurous (and more fortunate) experimenters may wish to chose
-> CONFIG_RCU_FANOUT=3 for 81-CPU systems or even CONFIG_RCU_FANOUT=4 for
-> 256-CPU systems.
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+On 12/02/09 15:16, Luis R. Rodriguez wrote:
+> On Wed, Dec 2, 2009 at 2:27 PM, Justin Mattock<justinmattock@gmail.com>  wrote:
+>> I have no idea what this is:
+>> (first time I've seen this);
+>>
+>>
+>> [   13.055592] =============================================================================
+>> [   13.055865] BUG kmalloc-8192: Poison overwritten
+>> [   13.056046] -----------------------------------------------------------------------------
+>
+> I believe this means we write to an area in memory after we freed an skb.
+>
+>> [   13.056366] INFO: 0xffff88003290a100-0xffff88003290a143. First byte
+>> 0x50 instead of 0x6b
+>> [   13.056366] INFO: Allocated in ath_rxbuf_alloc+0x25/0x94 [ath]
+>> age=8898 cpu=0 pid=892
+>> [   13.056366] INFO: Freed in skb_release_data+0xc1/0xc6 age=99 cpu=0 pid=0
+>> [   13.056366] INFO: Slab 0xffffea0000b0f9c0 objects=3 used=0
+>> fp=0xffff88003290c090 flags=0x4000000000004082
+>> [   13.056366] INFO: Object 0xffff88003290a048 @offset=8264
+>> fp=0xffff880032908000
+>> [   13.056366]
+>> [   13.056366] Bytes b4 0xffff88003290a038:  b9 9e fb ff 00 00 00 00
+>> 5a 5a 5a 5a 5a 5a 5a 5a ¹.ûÿ....ZZZZZZZZ
+>
+> Can you reproduce this? We had a similar report from Miles Lanes I
+> have been trying to followup on for a while now. The suggested patches
+> to try are:
+>
+> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/70-mac80211-total-ampdu-tx-info.patch
+> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/71-ath9k-remove-tx_info_priv.patch
+>
+>    Luis
+>
 
-I like this idea in general, but I have one suggestion on your boot-up
-message:
+just noticed the other thread.
+I can tryout these patches and see.
 
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-[...]
-> @@ -1877,6 +1878,9 @@ void __init rcu_init(void)
->  #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
->  	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
->  #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-> +#if NUM_RCU_LVL_4 != 0
-> +	printk(KERN_INFO "Experimental four-level hierarchy is enabled.\n");
-> +#endif /* #if NUM_RCU_LVL_4 != 0 */
+As for reproducing this, tough to say...
+during my looking into udev I was rebooting
+a few times(maybe 10/15) then hit this.
 
-Rather than printing a message when people use the four-level hierarchy,
-how about just printing a message any time someone has set
-CONFIG_RCU_FANOUT manually rather than automatically, and including
-NR_CPUS in that message?  That should only occur when testing or when
-trying to do NUMA optimization, and either way it seems worth noting.
+I'll try and reproduce this,before using these
+patches so I can verify they take care of the issue.
+(but could be difficult to reproduce);
 
-Either way the change seems fine to me.  With or without that suggested
-change:
-
-Acked-by: Josh Triplett <josh@joshtriplett.org>
+Justin P. Mattock
