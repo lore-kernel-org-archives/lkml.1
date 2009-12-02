@@ -1,74 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZLBUAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZLBUBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbZLBUAK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 15:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZLBUAK
+	id S1754857AbZLBUBD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 15:01:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZLBUBC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 15:00:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49440 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752402AbZLBUAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 15:00:08 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: jamie@shareable.org, pavel@ucw.cz, miklos@szeredi.hu,
-       viro@ZenIV.linux.org.uk, duaneg@dghda.com, ebiederm@xmission.com
-Subject: [PATCH 2/2] vfs: force reval on dentry of bind mounted files on FS_REVAL_DOT filesystems
-Date: Wed,  2 Dec 2009 14:59:43 -0500
-Message-Id: <1259783983-26884-3-git-send-email-jlayton@redhat.com>
-In-Reply-To: <1259783983-26884-1-git-send-email-jlayton@redhat.com>
-References: <1259783983-26884-1-git-send-email-jlayton@redhat.com>
+	Wed, 2 Dec 2009 15:01:02 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:39274 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753823AbZLBUBA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 15:01:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Hc/qoKi9VqjpzkwE0HOn4ZJryWk4n5gHufahubapVfkPojPzTGcgXHBz59t+QVEPc8
+         qJJUAXRP38Fg7kdedyEEsTPObU8f2pKaS9rAIv19H6kUOpqbrt2AxjApyQno5FoYa1vM
+         1JzesdXYbyzx8LTUbMEe/QlgMy5wt3BGz007k=
+Date: Wed, 2 Dec 2009 12:01:01 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
+       superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+Message-ID: <20091202200101.GC22689@core.coreip.homeip.net>
+References: <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com> <4B155288.1060509@redhat.com> <20091201175400.GA19259@core.coreip.homeip.net> <4B1567D8.7080007@redhat.com> <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <4B16C10E.6040907@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B16C10E.6040907@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the case of a bind mounted file, the path walking code will assume
-that the cached dentry that was bind mounted is valid. This is a problem
-problem for NFSv4 in a way that's similar to LAST_BIND symlinks.
+On Wed, Dec 02, 2009 at 05:33:34PM -0200, Mauro Carvalho Chehab wrote:
+> Dmitry Torokhov wrote:
+> >> The raw interface applies only to the devices that doesn't have a hardware decoder
+> >> (something between 40%-60% of the currently supported devices).
+> > 
+> > 50% is quite a number I think. But if driver does not allow access to
+> > the raw stream - it will refuse binding to lirc_dev interface.
+> 
+> Ok.
+> 
+> > We need to cater to the future cases as well. I don't want to redesign
+> > it in 2 years. But for devices that have only hardware decoders I
+> > suppose we can short-curcuit "interfaces" and have a library-like module
+> > creating input devices directly.
+> 
+> We really need only one interface for those devices. However, protocol selection
+> is needed, as it is associated with the scantable on those devices.
+> a sysfs entry would solve this issue.
+> 
+> Also, we need a better schema to cleanup the keycode table. Currently, the only way 
+> I'm aware is to run a loop from 0 to 65535 associating a scancode to KEY_UNKNOWN or
+> to KEY_RESERVED.
 
-Fix this by revalidating the dentry if FS_FOLLOW_DOT is set and
-__follow_mount returns true.
+I guess we could entertain EVIOCSKMAPFLUSH or something...
 
-Note that in the non-open codepath, we cannot return an error to the
-lookup if the revalidation fails. Doing so will leave a bind mount in
-a state such that we can't unmount it. In that case we'll just have to
-settle for d_invalidating it (which should mostly turn out to be a
-d_drop in this case) and returning success.
+> 
+> >> In the case of the cheap devices with just raw interfaces, running in-kernel
+> >> decoders, while it will work if you create one interface per protocol
+> >> per IR receiver, this also seems overkill. Why to do that? It sounds that it will
+> >> just create additional complexity at the kernelspace and at the userspace, since
+> >> now userspace programs will need to open more than one device to receive the
+> >> keycodes.
+> > 
+> > _Yes_!!! You open as many event devices as there are devices you are
+> > interested in receiving data from. Multiplexing devices are bad, bad,
+> > bad. Witness /dev/input/mouse and all the attempts at working around the
+> > fact that if you have a special driver for one of your devices you
+> > receive events from the same device through 2 interfaces and all kind of
+> > "grab", "super-grab", "smart-grab" schemes are born.
+> 
+> The only device that the driver can actually see is the IR receiver. There's no way to
+> know if there is only one physical IR sending signals to it or several different models,
+> especially if we consider that programmable IR's can be able even to generate more than one
+> protocol at the same time, and can emulate other IR types.
+> 
+> You might create some artificial schema to try to deal with different IR's being received
+> at the same IR receiver, but, IMHO, this will just add a complex abstraction layer.
+> 
+> Also, this won't give any real gain, as either both IR's will generate the same scancodes (and you can't distinguish what IR generated that code), or the scancode is different, and you
+> can handle it differently.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/namei.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+No it will. User will have _an option_ of assigning a particular remote
+to a particular application. Whether he or she will chose to entertain
+this option is up to that user.
 
-diff --git a/fs/namei.c b/fs/namei.c
-index 339789e..0d55b6f 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -851,7 +851,13 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
- done:
- 	path->mnt = mnt;
- 	path->dentry = dentry;
--	__follow_mount(path);
-+
-+	/*
-+	 * cannot return the error returned by force_reval_path as that can
-+	 * make it impossible to unmount a bind mounted dentry if it's stale.
-+	 */
-+	if (__follow_mount(path))
-+		force_reval_path(path, nd);
- 	return 0;
- 
- need_lookup:
-@@ -1840,6 +1846,9 @@ do_last:
- 		error = -ELOOP;
- 		if (flag & O_NOFOLLOW)
- 			goto exit_dput;
-+		error = force_reval_path(&path, &nd);
-+		if (error)
-+			goto exit_dput;
- 	}
- 
- 	error = -ENOENT;
+> 
+> >>> (for each remote/substream that they can recognize).
+> >> I'm assuming that, by remote, you're referring to a remote receiver (and not to 
+> >> the remote itself), right?
+> > 
+> > If we could separate by remote transmitter that would be the best I
+> > think, but I understand that it is rarely possible?
+> 
+> IMHO, the better is to use a separate interface for the IR transmitters,
+> on the devices that support this feature. There are only a few devices
+> I'm aware of that are able to transmit IR codes.
+
+-ENOOPINION at the moment.
+
 -- 
-1.5.5.6
-
+Dmitry
