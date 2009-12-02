@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbZLBVjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbZLBVk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbZLBVjH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:39:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbZLBVjG
+	id S1755315AbZLBVk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZLBVk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:39:06 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51481 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754393AbZLBVjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:39:05 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Lior Dotan <liodot@gmail.com>
-Subject: Re: Linux 2.6.32-rc8 - T500 fails to suspend to RAM
-Date: Wed, 2 Dec 2009 22:39:05 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-rjw; KDE/4.3.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <4B151FE2.3090807@gmail.com> <200912012246.58383.rjw@sisk.pl> <4B166032.8050005@gmail.com>
-In-Reply-To: <4B166032.8050005@gmail.com>
+	Wed, 2 Dec 2009 16:40:29 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:39622 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbZLBVk2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 16:40:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=cuhCGATY+Lasxis7BkBNI/I/gmKCIMQcgKYNxyTaA2ze/3DzNCcwwv7xoAYSOxocoU
+         fTqzoucDUhrUnYjEXGsePIMYrHAhIrTBlngj8IJeGYRs9ZqP950koHAVa8TWYpp2ohwj
+         OE/gUF9yoBqrhp2TZL6V3pn6u0XoVTwksFY2M=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912022239.05528.rjw@sisk.pl>
+In-Reply-To: <15859.1259763330@redhat.com>
+References: <8bd0f97a0911280740p24ad49bal64b924a427abfa39@mail.gmail.com> 
+	<15859.1259763330@redhat.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 2 Dec 2009 16:40:15 -0500
+Message-ID: <8bd0f97a0912021340l47b861a6l8444f8246581375@mail.gmail.com>
+Subject: Re: avoiding duplicate icache flushing of shared maps on nommu
+To: David Howells <dhowells@redhat.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Jie Zhang <jie.zhang@analog.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 December 2009, Lior Dotan wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday 01 December 2009, Lior Dotan wrote:
-> >   
-> >> Hi,
-> >>
-> >> Ever since I've upgraded to rc8, my T500 fails to suspend to RAM for the
-> >> second time. Suspending for the first time works ok but when I resume and
-> >> later try to suspend again the screen gets blank and the moon LED blinks
-> >> forever. rc6 & rc7 as well as 2.6.31 worked great with out a problem.
-> >>     
-> >
-> > Well, I don't see any particular change that might cause the symptoms you
-> > describe between -rc7 and -rc8.  If this is 100% reproducible, I guess
-> > bisecting is the only option at the moment.
-> >   
-> I tried bisecting it, not sure if it's any good but this is what I got:
+On Wed, Dec 2, 2009 at 09:15, David Howells wrote:
+> Mike Frysinger wrote:
+>> (yes, this now does the icache flush while holding the
+>> nommu_region_sem, but i'm interested if the _idea_ is OK)
+>
+> Yes...  But it's not quite as simple as you think.  The first mapping made of
+> a file could be PROT_READ only, in which case a second, executable mapping
+> made that shares it would not get flushed from the icache.
 
-Thanks for the effort.
+that is a tricky edge case ;)
 
-> ldot@topaz ~/linux/linux-2.6 $ git bisect bad
-> Bisecting: 0 revisions left to test after this (roughly 0 steps)
-> [1456edbb1476db735715ddcc7ac306de587024eb] kconfig: Make zconf.y work 
-> with current bison
-> ldot@topaz ~/linux/linux-2.6 $ git bisect log
-> git bisect start
-> # bad: [648f4e3e50c4793d9dbf9a09afa193631f76fa26] Linux 2.6.32-rc8
-> git bisect bad 648f4e3e50c4793d9dbf9a09afa193631f76fa26
-> # good: [156171c71a0dc4bce12b4408bb1591f8fe32dc1a] Linux 2.6.32-rc7
-> git bisect good 156171c71a0dc4bce12b4408bb1591f8fe32dc1a
-> # bad: [b6b24c73d56a166a829318a1f06803ff9b54857b] spi: error status 
-> should be negative
-> git bisect bad b6b24c73d56a166a829318a1f06803ff9b54857b
-> # bad: [82abc2a97a4a3c7635c40e6dff571816062ec506] Merge branch 
-> 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2
-> git bisect bad 82abc2a97a4a3c7635c40e6dff571816062ec506
-> # good: [24dfb2b5867df24ba03b6c4418312e23b1300aa8] Merge branch 
-> 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
-> git bisect good 24dfb2b5867df24ba03b6c4418312e23b1300aa8
-> # bad: [e8e63cbf9a339c972eeb5ccf8777c8067bdfd869] oss: Mark loadhex 
-> static in hex2hex.c
-> git bisect bad e8e63cbf9a339c972eeb5ccf8777c8067bdfd869
-> # bad: [ad0cd62ab632afe9b562b5f09343c21e1521505d] 
-> arch/alpha/boot/tools/objstrip.c: Mark "usage" static
-> git bisect bad ad0cd62ab632afe9b562b5f09343c21e1521505d
-> # bad: [65166571800af0f63f21e5576d7db12d2bf73790] kconfig: Mark various 
-> internal functions static
-> git bisect bad 65166571800af0f63f21e5576d7db12d2bf73790
+> How about the attached patch?
 
-This commit is not very likely to be the source of the issue.
-
-Perhaps one of the commits you marked as 'good' was in fact a bad one.
-
-Best,
-Rafael
+it works, but i think we want to put the vm_icache_flushed in
+linux/mm_types.h behind NOMMU so we dont bloat the MMU guys ?
+-mike
