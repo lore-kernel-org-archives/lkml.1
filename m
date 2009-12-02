@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZLBOWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZLBOTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbZLBOWJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:22:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZLBOWI
+	id S1754388AbZLBOTa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 09:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZLBOT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:22:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57447 "EHLO mx1.redhat.com"
+	Wed, 2 Dec 2009 09:19:29 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:36931 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752129AbZLBOWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 09:22:08 -0500
-Date: Wed, 2 Dec 2009 15:15:33 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Veaceslav Falico <vfalico@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Al Viro <viro@zeniv.linux.org.uk>, Miloslav Trmac <mitr@redhat.com>,
-       James Morris <jmorris@namei.org>, Alan Cox <alan@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
-       Louis Rilling <louis.rilling@kerlabs.com>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 4/4] copy_signal cleanup: clean tty_audit_fork()
-Message-ID: <20091202141533.GC791@redhat.com>
-References: <20091201221346.GD10052@darkmag.usersys.redhat.com>
+	id S1753585AbZLBOT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 09:19:28 -0500
+Date: Wed, 2 Dec 2009 14:19:30 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] hugetlb: Acquire the i_mmap_lock before walking the
+	prio_tree to unmap a page
+Message-ID: <20091202141930.GF1457@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20091201221346.GD10052@darkmag.usersys.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01, Veaceslav Falico wrote:
->
-> Remove unneeded initialization in tty_audit_fork().
->
-> Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
-> ---
->
-> diff --git a/drivers/char/tty_audit.c b/drivers/char/tty_audit.c
-> index ac16fbe..283a15b 100644
-> --- a/drivers/char/tty_audit.c
-> +++ b/drivers/char/tty_audit.c
-> @@ -148,7 +148,6 @@ void tty_audit_fork(struct signal_struct *sig)
->  	spin_lock_irq(&current->sighand->siglock);
->  	sig->audit_tty = current->signal->audit_tty;
->  	spin_unlock_irq(&current->sighand->siglock);
-> -	sig->tty_audit_buf = NULL;
->  }
+When the owner of a mapping fails COW because a child process is holding a
+reference and no pages are available, the children VMAs are walked and the
+page is unmapped. The i_mmap_lock is taken for the unmapping of the page but
+not the walking of the prio_tree. In theory, that tree could be changing
+while the lock is released although in practice it is protected by the
+hugetlb_instantiation_mutex. This patch takes the i_mmap_lock properly for
+the duration of the prio_tree walk in case the hugetlb_instantiation_mutex
+ever goes away.
 
-OK, but given that this function is "far" from copy_signal() path
-and it is not inline, perhaps it makes sense to add the comment which
-explains *sig must be zeroed, and the only caller is copy_signal().
+[hugh.dickins@tiscali.co.uk: Spotted the problem in the first place]
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/hugetlb.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-
-Hmm. Off-topic, but why do we take ->siglock? ->audit_tty is boolean,
-afaics ->siglock buys nothing.
-
-Oleg.
-
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index a952cb8..5adc284 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1906,6 +1906,12 @@ static int unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		+ (vma->vm_pgoff >> PAGE_SHIFT);
+ 	mapping = (struct address_space *)page_private(page);
+ 
++	/*
++	 * Take the mapping lock for the duration of the table walk. As
++	 * this mapping should be shared between all the VMAs,
++	 * __unmap_hugepage_range() is called as the lock is already held
++	 */
++	spin_lock(&mapping->i_mmap_lock);
+ 	vma_prio_tree_foreach(iter_vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
+ 		/* Do not unmap the current VMA */
+ 		if (iter_vma == vma)
+@@ -1919,10 +1925,11 @@ static int unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		 * from the time of fork. This would look like data corruption
+ 		 */
+ 		if (!is_vma_resv_set(iter_vma, HPAGE_RESV_OWNER))
+-			unmap_hugepage_range(iter_vma,
++			__unmap_hugepage_range(iter_vma,
+ 				address, address + huge_page_size(h),
+ 				page);
+ 	}
++	spin_unlock(&mapping->i_mmap_lock);
+ 
+ 	return 1;
+ }
