@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZLBD5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZLBD53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbZLBD5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 22:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbZLBD5e
+	id S1755253AbZLBD53 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 22:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbZLBD51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 22:57:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56260 "EHLO hera.kernel.org"
+	Tue, 1 Dec 2009 22:57:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56249 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755262AbZLBD5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 22:57:31 -0500
+	id S1754967AbZLBD5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 22:57:23 -0500
 From: Tejun Heo <tj@kernel.org>
 To: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, peterz@infradead.org,
        efault@gmx.de, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 2/7] sched: rename preempt_notifiers to sched_notifiers and refactor implementation
-Date: Wed,  2 Dec 2009 12:56:47 +0900
-Message-Id: <1259726212-30259-3-git-send-email-tj@kernel.org>
+Subject: [PATCH 3/7] sched: refactor try_to_wake_up()
+Date: Wed,  2 Dec 2009 12:56:48 +0900
+Message-Id: <1259726212-30259-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1259726212-30259-1-git-send-email-tj@kernel.org>
 References: <1259726212-30259-1-git-send-email-tj@kernel.org>
@@ -23,474 +23,164 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename preempt_notifiers to sched_notifiers and move it to sched.h.
-Also, refactor implementation in sched.c such that adding new
-callbacks is easier.
+Factor ttwu_activate() and ttwu_woken_up() out of try_to_wake_up().
+The factoring out doesn't affect try_to_wake_up() much
+code-generation-wise.  Depending on configuration options, it ends up
+generating the same object code as before or slightly different one
+due to different register assignment.
 
-This patch does not introduce any functional change and in fact
-generates the same binary at least with my configuration (x86_64 SMP,
-kvm and some debug options).
+This is to help future implementation of try_to_wake_up_local().
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Avi Kivity <avi@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/ia64/kvm/Kconfig    |    2 +-
- arch/powerpc/kvm/Kconfig |    2 +-
- arch/s390/kvm/Kconfig    |    2 +-
- arch/x86/kvm/Kconfig     |    2 +-
- include/linux/kvm_host.h |    4 +-
- include/linux/preempt.h  |   48 --------------------
- include/linux/sched.h    |   53 +++++++++++++++++++++-
- init/Kconfig             |    2 +-
- kernel/sched.c           |  108 +++++++++++++++++++---------------------------
- virt/kvm/kvm_main.c      |   26 +++++------
- 10 files changed, 113 insertions(+), 136 deletions(-)
+ kernel/sched.c |  112 +++++++++++++++++++++++++++++++------------------------
+ 1 files changed, 63 insertions(+), 49 deletions(-)
 
-diff --git a/arch/ia64/kvm/Kconfig b/arch/ia64/kvm/Kconfig
-index ef3e7be..a38b72e 100644
---- a/arch/ia64/kvm/Kconfig
-+++ b/arch/ia64/kvm/Kconfig
-@@ -22,7 +22,7 @@ config KVM
- 	depends on HAVE_KVM && MODULES && EXPERIMENTAL
- 	# for device assignment:
- 	depends on PCI
--	select PREEMPT_NOTIFIERS
-+	select SCHED_NOTIFIERS
- 	select ANON_INODES
- 	select HAVE_KVM_IRQCHIP
- 	select KVM_APIC_ARCHITECTURE
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index c299268..6447702 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -18,7 +18,7 @@ if VIRTUALIZATION
- 
- config KVM
- 	bool
--	select PREEMPT_NOTIFIERS
-+	select SCHED_NOTIFIERS
- 	select ANON_INODES
- 
- config KVM_440
-diff --git a/arch/s390/kvm/Kconfig b/arch/s390/kvm/Kconfig
-index bf164fc..3bc7045 100644
---- a/arch/s390/kvm/Kconfig
-+++ b/arch/s390/kvm/Kconfig
-@@ -18,7 +18,7 @@ if VIRTUALIZATION
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support"
- 	depends on HAVE_KVM && EXPERIMENTAL
--	select PREEMPT_NOTIFIERS
-+	select SCHED_NOTIFIERS
- 	select ANON_INODES
- 	select S390_SWITCH_AMODE
- 	---help---
-diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-index b84e571..23609bd 100644
---- a/arch/x86/kvm/Kconfig
-+++ b/arch/x86/kvm/Kconfig
-@@ -22,7 +22,7 @@ config KVM
- 	depends on HAVE_KVM
- 	# for device assignment:
- 	depends on PCI
--	select PREEMPT_NOTIFIERS
-+	select SCHED_NOTIFIERS
- 	select MMU_NOTIFIER
- 	select ANON_INODES
- 	select HAVE_KVM_IRQCHIP
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index b7bbb5d..d05fadc 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -74,8 +74,8 @@ void kvm_io_bus_unregister_dev(struct kvm *kvm, struct kvm_io_bus *bus,
- 
- struct kvm_vcpu {
- 	struct kvm *kvm;
--#ifdef CONFIG_PREEMPT_NOTIFIERS
--	struct preempt_notifier preempt_notifier;
-+#ifdef CONFIG_SCHED_NOTIFIERS
-+	struct sched_notifier sched_notifier;
- #endif
- 	int vcpu_id;
- 	struct mutex mutex;
-diff --git a/include/linux/preempt.h b/include/linux/preempt.h
-index 2e681d9..538c675 100644
---- a/include/linux/preempt.h
-+++ b/include/linux/preempt.h
-@@ -93,52 +93,4 @@ do { \
- 
- #endif
- 
--#ifdef CONFIG_PREEMPT_NOTIFIERS
--
--struct preempt_notifier;
--
--/**
-- * preempt_ops - notifiers called when a task is preempted and rescheduled
-- * @sched_in: we're about to be rescheduled:
-- *    notifier: struct preempt_notifier for the task being scheduled
-- *    cpu:  cpu we're scheduled on
-- * @sched_out: we've just been preempted
-- *    notifier: struct preempt_notifier for the task being preempted
-- *    next: the task that's kicking us out
-- *
-- * Please note that sched_in and out are called under different
-- * contexts.  sched_out is called with rq lock held and irq disabled
-- * while sched_in is called without rq lock and irq enabled.  This
-- * difference is intentional and depended upon by its users.
-- */
--struct preempt_ops {
--	void (*sched_in)(struct preempt_notifier *notifier, int cpu);
--	void (*sched_out)(struct preempt_notifier *notifier,
--			  struct task_struct *next);
--};
--
--/**
-- * preempt_notifier - key for installing preemption notifiers
-- * @link: internal use
-- * @ops: defines the notifier functions to be called
-- *
-- * Usually used in conjunction with container_of().
-- */
--struct preempt_notifier {
--	struct hlist_node link;
--	struct preempt_ops *ops;
--};
--
--void preempt_notifier_register(struct preempt_notifier *notifier);
--void preempt_notifier_unregister(struct preempt_notifier *notifier);
--
--static inline void preempt_notifier_init(struct preempt_notifier *notifier,
--				     struct preempt_ops *ops)
--{
--	INIT_HLIST_NODE(&notifier->link);
--	notifier->ops = ops;
--}
--
--#endif
--
- #endif /* __LINUX_PREEMPT_H */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 0395b0f..a6f64cb 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1210,6 +1210,53 @@ struct sched_rt_entity {
- #endif
- };
- 
-+#ifdef CONFIG_SCHED_NOTIFIERS
-+
-+struct sched_notifier;
-+
-+/**
-+ * sched_notifier_ops - notifiers called for scheduling events
-+ * @in: we're about to be rescheduled:
-+ *    notifier: struct sched_notifier for the task being scheduled
-+ *    cpu:  cpu we're scheduled on
-+ * @out: we've just been preempted
-+ *    notifier: struct sched_notifier for the task being preempted
-+ *    next: the task that's kicking us out
-+ *
-+ * Please note that in and out are called under different contexts.
-+ * out is called with rq lock held and irq disabled while in is called
-+ * without rq lock and irq enabled.  This difference is intentional
-+ * and depended upon by its users.
-+ */
-+struct sched_notifier_ops {
-+	void (*in)(struct sched_notifier *notifier, int cpu);
-+	void (*out)(struct sched_notifier *notifier, struct task_struct *next);
-+};
-+
-+/**
-+ * sched_notifier - key for installing scheduler notifiers
-+ * @link: internal use
-+ * @ops: defines the notifier functions to be called
-+ *
-+ * Usually used in conjunction with container_of().
-+ */
-+struct sched_notifier {
-+	struct hlist_node link;
-+	struct sched_notifier_ops *ops;
-+};
-+
-+void sched_notifier_register(struct sched_notifier *notifier);
-+void sched_notifier_unregister(struct sched_notifier *notifier);
-+
-+static inline void sched_notifier_init(struct sched_notifier *notifier,
-+				       struct sched_notifier_ops *ops)
-+{
-+	INIT_HLIST_NODE(&notifier->link);
-+	notifier->ops = ops;
-+}
-+
-+#endif	/* CONFIG_SCHED_NOTIFIERS */
-+
- struct rcu_node;
- 
- struct task_struct {
-@@ -1233,9 +1280,9 @@ struct task_struct {
- 	struct sched_entity se;
- 	struct sched_rt_entity rt;
- 
--#ifdef CONFIG_PREEMPT_NOTIFIERS
--	/* list of struct preempt_notifier: */
--	struct hlist_head preempt_notifiers;
-+#ifdef CONFIG_SCHED_NOTIFIERS
-+	/* list of struct sched_notifier: */
-+	struct hlist_head sched_notifiers;
- #endif
- 
- 	/*
-diff --git a/init/Kconfig b/init/Kconfig
-index 9e03ef8..c7eef2b 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1207,6 +1207,6 @@ config STOP_MACHINE
- 
- source "block/Kconfig"
- 
--config PREEMPT_NOTIFIERS
-+config SCHED_NOTIFIERS
- 	bool
- 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 1031cae..204ca3e 100644
+index 204ca3e..dd8c91c 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -1433,6 +1433,44 @@ static inline void cpuacct_update_stats(struct task_struct *tsk,
- 		enum cpuacct_stat_index idx, cputime_t val) {}
- #endif
- 
-+#ifdef CONFIG_SCHED_NOTIFIERS
-+
-+#define fire_sched_notifiers(p, callback, args...) do {			\
-+	struct sched_notifier *__sn;					\
-+	struct hlist_node *__pos;					\
-+									\
-+	hlist_for_each_entry(__sn, __pos, &(p)->sched_notifiers, link)	\
-+		__sn->ops->callback(__sn , ##args);			\
-+} while (0)
-+
-+/**
-+ * sched_notifier_register - register scheduler notifier
-+ * @notifier: notifier struct to register
-+ */
-+void sched_notifier_register(struct sched_notifier *notifier)
-+{
-+	hlist_add_head(&notifier->link, &current->sched_notifiers);
-+}
-+EXPORT_SYMBOL_GPL(sched_notifier_register);
-+
-+/**
-+ * sched_notifier_unregister - unregister scheduler notifier
-+ * @notifier: notifier struct to unregister
-+ *
-+ * This is safe to call from within a scheduler notifier.
-+ */
-+void sched_notifier_unregister(struct sched_notifier *notifier)
-+{
-+	hlist_del(&notifier->link);
-+}
-+EXPORT_SYMBOL_GPL(sched_notifier_unregister);
-+
-+#else	/* !CONFIG_SCHED_NOTIFIERS */
-+
-+#define fire_sched_notifiers(p, callback, args...)	do { } while (0)
-+
-+#endif	/* CONFIG_SCHED_NOTIFIERS */
-+
- static inline void inc_cpu_load(struct rq *rq, unsigned long load)
- {
- 	update_load_add(&rq->load, load);
-@@ -2539,8 +2577,8 @@ static void __sched_fork(struct task_struct *p)
- 	p->se.on_rq = 0;
- 	INIT_LIST_HEAD(&p->se.group_node);
- 
--#ifdef CONFIG_PREEMPT_NOTIFIERS
--	INIT_HLIST_HEAD(&p->preempt_notifiers);
-+#ifdef CONFIG_SCHED_NOTIFIERS
-+	INIT_HLIST_HEAD(&p->sched_notifiers);
- #endif
- 
- 	/*
-@@ -2651,64 +2689,6 @@ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- 	task_rq_unlock(rq, &flags);
- }
- 
--#ifdef CONFIG_PREEMPT_NOTIFIERS
--
--/**
-- * preempt_notifier_register - tell me when current is being preempted & rescheduled
-- * @notifier: notifier struct to register
-- */
--void preempt_notifier_register(struct preempt_notifier *notifier)
--{
--	hlist_add_head(&notifier->link, &current->preempt_notifiers);
--}
--EXPORT_SYMBOL_GPL(preempt_notifier_register);
--
--/**
-- * preempt_notifier_unregister - no longer interested in preemption notifications
-- * @notifier: notifier struct to unregister
-- *
-- * This is safe to call from within a preemption notifier.
-- */
--void preempt_notifier_unregister(struct preempt_notifier *notifier)
--{
--	hlist_del(&notifier->link);
--}
--EXPORT_SYMBOL_GPL(preempt_notifier_unregister);
--
--static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
--{
--	struct preempt_notifier *notifier;
--	struct hlist_node *node;
--
--	hlist_for_each_entry(notifier, node, &curr->preempt_notifiers, link)
--		notifier->ops->sched_in(notifier, raw_smp_processor_id());
--}
--
--static void
--fire_sched_out_preempt_notifiers(struct task_struct *curr,
--				 struct task_struct *next)
--{
--	struct preempt_notifier *notifier;
--	struct hlist_node *node;
--
--	hlist_for_each_entry(notifier, node, &curr->preempt_notifiers, link)
--		notifier->ops->sched_out(notifier, next);
--}
--
--#else /* !CONFIG_PREEMPT_NOTIFIERS */
--
--static void fire_sched_in_preempt_notifiers(struct task_struct *curr)
--{
--}
--
--static void
--fire_sched_out_preempt_notifiers(struct task_struct *curr,
--				 struct task_struct *next)
--{
--}
--
--#endif /* CONFIG_PREEMPT_NOTIFIERS */
--
- /**
-  * prepare_task_switch - prepare to switch tasks
-  * @rq: the runqueue preparing to switch
-@@ -2726,7 +2706,7 @@ static inline void
- prepare_task_switch(struct rq *rq, struct task_struct *prev,
- 		    struct task_struct *next)
- {
--	fire_sched_out_preempt_notifiers(prev, next);
-+	fire_sched_notifiers(prev, out, next);
- 	prepare_lock_switch(rq, next);
- 	prepare_arch_switch(next);
- }
-@@ -2770,7 +2750,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	perf_event_task_sched_in(current, cpu_of(rq));
- 	finish_lock_switch(rq, prev);
- 
--	fire_sched_in_preempt_notifiers(current);
-+	fire_sched_notifiers(current, in, raw_smp_processor_id());
- 	if (mm)
- 		mmdrop(mm);
- 	if (unlikely(prev_state == TASK_DEAD)) {
-@@ -9569,8 +9549,8 @@ void __init sched_init(void)
- 
- 	set_load_weight(&init_task);
- 
--#ifdef CONFIG_PREEMPT_NOTIFIERS
--	INIT_HLIST_HEAD(&init_task.preempt_notifiers);
-+#ifdef CONFIG_SCHED_NOTIFIERS
-+	INIT_HLIST_HEAD(&init_task.sched_notifiers);
- #endif
- 
- #ifdef CONFIG_SMP
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 7495ce3..4e8e33f 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -79,7 +79,7 @@ static cpumask_var_t cpus_hardware_enabled;
- struct kmem_cache *kvm_vcpu_cache;
- EXPORT_SYMBOL_GPL(kvm_vcpu_cache);
- 
--static __read_mostly struct preempt_ops kvm_preempt_ops;
-+static __read_mostly struct sched_notifier_ops kvm_sched_notifier_ops;
- 
- struct dentry *kvm_debugfs_dir;
- 
-@@ -713,7 +713,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
- 
- 	mutex_lock(&vcpu->mutex);
- 	cpu = get_cpu();
--	preempt_notifier_register(&vcpu->preempt_notifier);
-+	sched_notifier_register(&vcpu->sched_notifier);
- 	kvm_arch_vcpu_load(vcpu, cpu);
- 	put_cpu();
- }
-@@ -722,7 +722,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
- {
- 	preempt_disable();
- 	kvm_arch_vcpu_put(vcpu);
--	preempt_notifier_unregister(&vcpu->preempt_notifier);
-+	sched_notifier_unregister(&vcpu->sched_notifier);
+@@ -2361,11 +2361,67 @@ void task_oncpu_function_call(struct task_struct *p,
  	preempt_enable();
- 	mutex_unlock(&vcpu->mutex);
- }
-@@ -1772,7 +1772,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, u32 id)
- 	if (IS_ERR(vcpu))
- 		return PTR_ERR(vcpu);
- 
--	preempt_notifier_init(&vcpu->preempt_notifier, &kvm_preempt_ops);
-+	sched_notifier_init(&vcpu->sched_notifier, &kvm_sched_notifier_ops);
- 
- 	r = kvm_arch_vcpu_setup(vcpu);
- 	if (r)
-@@ -2690,23 +2690,21 @@ static struct sys_device kvm_sysdev = {
- struct page *bad_page;
- pfn_t bad_pfn;
- 
--static inline
--struct kvm_vcpu *preempt_notifier_to_vcpu(struct preempt_notifier *pn)
-+static inline struct kvm_vcpu *sched_notifier_to_vcpu(struct sched_notifier *sn)
- {
--	return container_of(pn, struct kvm_vcpu, preempt_notifier);
-+	return container_of(sn, struct kvm_vcpu, sched_notifier);
  }
  
--static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
-+static void kvm_sched_in(struct sched_notifier *sn, int cpu)
- {
--	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
-+	struct kvm_vcpu *vcpu = sched_notifier_to_vcpu(sn);
+-/***
++static inline void ttwu_activate(struct task_struct *p, struct rq *rq,
++				 bool is_sync, bool is_migrate, bool is_local)
++{
++	schedstat_inc(p, se.nr_wakeups);
++	if (is_sync)
++		schedstat_inc(p, se.nr_wakeups_sync);
++	if (is_migrate)
++		schedstat_inc(p, se.nr_wakeups_migrate);
++	if (is_local)
++		schedstat_inc(p, se.nr_wakeups_local);
++	else
++		schedstat_inc(p, se.nr_wakeups_remote);
++
++	activate_task(rq, p, 1);
++
++	/*
++	 * Only attribute actual wakeups done by this task.
++	 */
++	if (!in_interrupt()) {
++		struct sched_entity *se = &current->se;
++		u64 sample = se->sum_exec_runtime;
++
++		if (se->last_wakeup)
++			sample -= se->last_wakeup;
++		else
++			sample -= se->start_runtime;
++		update_avg(&se->avg_wakeup, sample);
++
++		se->last_wakeup = se->sum_exec_runtime;
++	}
++}
++
++static inline void ttwu_woken_up(struct task_struct *p, struct rq *rq,
++				 int wake_flags, bool success)
++{
++	trace_sched_wakeup(rq, p, success);
++	check_preempt_curr(rq, p, wake_flags);
++
++	p->state = TASK_RUNNING;
++#ifdef CONFIG_SMP
++	if (p->sched_class->task_wake_up)
++		p->sched_class->task_wake_up(rq, p);
++
++	if (unlikely(rq->idle_stamp)) {
++		u64 delta = rq->clock - rq->idle_stamp;
++		u64 max = 2*sysctl_sched_migration_cost;
++
++		if (delta > max)
++			rq->avg_idle = max;
++		else
++			update_avg(&rq->avg_idle, delta);
++		rq->idle_stamp = 0;
++	}
++#endif
++}
++
++/**
+  * try_to_wake_up - wake up a thread
+  * @p: the to-be-woken-up thread
+  * @state: the mask of task states that can be woken
+- * @sync: do a synchronous wakeup?
++ * @wake_flags: wake modifier flags (WF_*)
+  *
+  * Put it on the run-queue if it's not already there. The "current"
+  * thread is always on the run-queue (except when the actual
+@@ -2373,7 +2429,8 @@ void task_oncpu_function_call(struct task_struct *p,
+  * the simpler "current->state = TASK_RUNNING" to mark yourself
+  * runnable without the overhead of this.
+  *
+- * returns failure only if the task is already active.
++ * Returns %true if @p was woken up, %false if it was already running
++ * or @state didn't match @p's state.
+  */
+ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+ 			  int wake_flags)
+@@ -2444,54 +2501,11 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
  
- 	kvm_arch_vcpu_load(vcpu, cpu);
- }
- 
--static void kvm_sched_out(struct preempt_notifier *pn,
--			  struct task_struct *next)
-+static void kvm_sched_out(struct sched_notifier *sn, struct task_struct *next)
- {
--	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
-+	struct kvm_vcpu *vcpu = sched_notifier_to_vcpu(sn);
- 
- 	kvm_arch_vcpu_put(vcpu);
- }
-@@ -2780,8 +2778,8 @@ int kvm_init(void *opaque, unsigned int vcpu_size,
- 		goto out_free;
- 	}
- 
--	kvm_preempt_ops.sched_in = kvm_sched_in;
--	kvm_preempt_ops.sched_out = kvm_sched_out;
-+	kvm_sched_notifier_ops.in = kvm_sched_in;
-+	kvm_sched_notifier_ops.out = kvm_sched_out;
- 
- 	kvm_init_debug();
- 
+ out_activate:
+ #endif /* CONFIG_SMP */
+-	schedstat_inc(p, se.nr_wakeups);
+-	if (wake_flags & WF_SYNC)
+-		schedstat_inc(p, se.nr_wakeups_sync);
+-	if (orig_cpu != cpu)
+-		schedstat_inc(p, se.nr_wakeups_migrate);
+-	if (cpu == this_cpu)
+-		schedstat_inc(p, se.nr_wakeups_local);
+-	else
+-		schedstat_inc(p, se.nr_wakeups_remote);
+-	activate_task(rq, p, 1);
++	ttwu_activate(p, rq, wake_flags & WF_SYNC, orig_cpu != cpu,
++		      cpu == this_cpu);
+ 	success = 1;
+-
+-	/*
+-	 * Only attribute actual wakeups done by this task.
+-	 */
+-	if (!in_interrupt()) {
+-		struct sched_entity *se = &current->se;
+-		u64 sample = se->sum_exec_runtime;
+-
+-		if (se->last_wakeup)
+-			sample -= se->last_wakeup;
+-		else
+-			sample -= se->start_runtime;
+-		update_avg(&se->avg_wakeup, sample);
+-
+-		se->last_wakeup = se->sum_exec_runtime;
+-	}
+-
+ out_running:
+-	trace_sched_wakeup(rq, p, success);
+-	check_preempt_curr(rq, p, wake_flags);
+-
+-	p->state = TASK_RUNNING;
+-#ifdef CONFIG_SMP
+-	if (p->sched_class->task_wake_up)
+-		p->sched_class->task_wake_up(rq, p);
+-
+-	if (unlikely(rq->idle_stamp)) {
+-		u64 delta = rq->clock - rq->idle_stamp;
+-		u64 max = 2*sysctl_sched_migration_cost;
+-
+-		if (delta > max)
+-			rq->avg_idle = max;
+-		else
+-			update_avg(&rq->avg_idle, delta);
+-		rq->idle_stamp = 0;
+-	}
+-#endif
++	ttwu_woken_up(p, rq, wake_flags, success);
+ out:
+ 	task_rq_unlock(rq, &flags);
+ 	put_cpu();
 -- 
 1.6.4.2
 
