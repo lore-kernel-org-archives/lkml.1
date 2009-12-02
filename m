@@ -1,104 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZLBOQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZLBOWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbZLBOQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:16:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZLBOQZ
+	id S1754445AbZLBOWJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 09:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZLBOWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:16:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61922 "EHLO mx1.redhat.com"
+	Wed, 2 Dec 2009 09:22:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57447 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754007AbZLBOQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 09:16:25 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <8bd0f97a0911280740p24ad49bal64b924a427abfa39@mail.gmail.com>
-References: <8bd0f97a0911280740p24ad49bal64b924a427abfa39@mail.gmail.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: dhowells@redhat.com, Paul Mundt <lethal@linux-sh.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Jie Zhang <jie.zhang@analog.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
-Subject: Re: avoiding duplicate icache flushing of shared maps on nommu
-Date: Wed, 02 Dec 2009 14:15:30 +0000
-Message-ID: <15859.1259763330@redhat.com>
+	id S1752129AbZLBOWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 09:22:08 -0500
+Date: Wed, 2 Dec 2009 15:15:33 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Veaceslav Falico <vfalico@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       Al Viro <viro@zeniv.linux.org.uk>, Miloslav Trmac <mitr@redhat.com>,
+       James Morris <jmorris@namei.org>, Alan Cox <alan@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
+       Louis Rilling <louis.rilling@kerlabs.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 4/4] copy_signal cleanup: clean tty_audit_fork()
+Message-ID: <20091202141533.GC791@redhat.com>
+References: <20091201221346.GD10052@darkmag.usersys.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091201221346.GD10052@darkmag.usersys.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger <vapier.adi@gmail.com> wrote:
+On 12/01, Veaceslav Falico wrote:
+>
+> Remove unneeded initialization in tty_audit_fork().
+>
+> Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
+> ---
+>
+> diff --git a/drivers/char/tty_audit.c b/drivers/char/tty_audit.c
+> index ac16fbe..283a15b 100644
+> --- a/drivers/char/tty_audit.c
+> +++ b/drivers/char/tty_audit.c
+> @@ -148,7 +148,6 @@ void tty_audit_fork(struct signal_struct *sig)
+>  	spin_lock_irq(&current->sighand->siglock);
+>  	sig->audit_tty = current->signal->audit_tty;
+>  	spin_unlock_irq(&current->sighand->siglock);
+> -	sig->tty_audit_buf = NULL;
+>  }
 
-> (yes, this now does the icache flush while holding the
-> nommu_region_sem, but i'm interested if the _idea_ is OK)
-
-Yes...  But it's not quite as simple as you think.  The first mapping made of
-a file could be PROT_READ only, in which case a second, executable mapping
-made that shares it would not get flushed from the icache.
-
-How about the attached patch?
-
-David
----
-From: Mike Frysinger <vapier.adi@gmail.com>
-Subject: [PATCH] NOMMU: Avoiding duplicate icache flushes of shared maps
-
-When working with FDPIC, there are many shared mappings of read-only code
-regions between applications (the C library, applet packages like busybox,
-etc.), but the current do_mmap_pgoff() function will issue an icache flush
-whenever a VMA is added to an MM instead of only doing it when the map is
-initially created.
-
-The flush can instead be done when a region is first mmapped PROT_EXEC.  Note
-that we may not rely on the first mapping of a region being executable - it's
-possible for it to be PROT_READ only, so we have to remember whether we've
-flushed the region or not, and then flush the entire region when a bit of it is
-made executable.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- include/linux/mm_types.h |    2 ++
- mm/nommu.c               |   11 ++++++++---
- 2 files changed, 10 insertions(+), 3 deletions(-)
+OK, but given that this function is "far" from copy_signal() path
+and it is not inline, perhaps it makes sense to add the comment which
+explains *sig must be zeroed, and the only caller is copy_signal().
 
 
-diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 84a524a..84d020b 100644
---- a/include/linux/mm_types.h
-+++ b/include/linux/mm_types.h
-@@ -123,6 +123,8 @@ struct vm_region {
- 	struct file	*vm_file;	/* the backing file or NULL */
- 
- 	atomic_t	vm_usage;	/* region usage count */
-+	bool		vm_icache_flushed : 1; /* true if the icache has been flushed for
-+						* this region */
- };
- 
- /*
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 969392c..95159a1 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -1353,10 +1353,15 @@ unsigned long do_mmap_pgoff(struct file *file,
- share:
- 	add_vma_to_mm(current->mm, vma);
- 
--	up_write(&nommu_region_sem);
-+	/* we flush the region from the icache only when the first executable
-+	 * mapping of it is made  */
-+	if (vma->vm_flags & VM_EXEC && !region->vm_icache_flushed) {
-+		flush_icache_range(region->vm_start,
-+				   region->vm_end - region->vm_start);
-+		region->vm_icache_flushed = true;
-+	}
- 
--	if (prot & PROT_EXEC)
--		flush_icache_range(result, result + len);
-+	up_write(&nommu_region_sem);
- 
- 	kleave(" = %lx", result);
- 	return result;
+Hmm. Off-topic, but why do we take ->siglock? ->audit_tty is boolean,
+afaics ->siglock buys nothing.
+
+Oleg.
 
