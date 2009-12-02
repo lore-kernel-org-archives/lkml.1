@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZLBPv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZLBPwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbZLBPv1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 10:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbZLBPv0
+	id S1754755AbZLBPwP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 10:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbZLBPwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 10:51:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13053 "EHLO mx1.redhat.com"
+	Wed, 2 Dec 2009 10:52:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:20253 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753663AbZLBPv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 10:51:26 -0500
-Date: Wed, 2 Dec 2009 10:49:29 -0500
+	id S1753002AbZLBPwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 10:52:14 -0500
+Date: Wed, 2 Dec 2009 10:50:27 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
@@ -17,274 +17,189 @@ Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, czoccolo@gmail.com,
        Alan.Brunelle@hp.com
-Subject: Re: [PATCH 05/21] blkio: Introduce the root service tree for cfq
-	groups
-Message-ID: <20091202154929.GF31715@redhat.com>
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <1259549968-10369-6-git-send-email-vgoyal@redhat.com>
+Subject: Re: [PATCH 07/21] blkio: Introduce per cfq group weights and
+	vdisktime calculations
+Message-ID: <20091202155027.GG31715@redhat.com>
+References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <1259549968-10369-8-git-send-email-vgoyal@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1259549968-10369-6-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1259549968-10369-8-git-send-email-vgoyal@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 09:59:12PM -0500, Vivek Goyal wrote:
-> o So far we just had one cfq_group in cfq_data. To create space for more than
->   one cfq_group, we need to have a service tree of groups where all the groups
->   can be queued if they have active cfq queues backlogged in these.
+On Sun, Nov 29, 2009 at 09:59:14PM -0500, Vivek Goyal wrote:
+> o Bring in the per cfq group weight and how vdisktime is calculated for the
+>   group. Also bring in the functionality of updating the min_vdisktime of
+>   the group service tree.
 > 
 
-Reposting this patch. Introduced a new macro rb_entry_cfqg() along the
-lines of rb_entry_rq().
+Reposting this patch to make use of newly introduced rb_entry_cfqg().
 
 
-o So far we just had one cfq_group in cfq_data. To create space for more than
-  one cfq_group, we need to have a service tree of groups where all the groups
-  can be queued if they have active cfq queues backlogged in these.
+o Bring in the per cfq group weight and how vdisktime is calculated for the
+  group. Also bring in the functionality of updating the min_vdisktime of
+  the group service tree.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/cfq-iosched.c |  137 ++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 134 insertions(+), 3 deletions(-)
+ block/Kconfig.iosched |    9 ++++++-
+ block/cfq-iosched.c   |   62 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 69 insertions(+), 2 deletions(-)
 
 Index: linux10/block/cfq-iosched.c
 ===================================================================
---- linux10.orig/block/cfq-iosched.c	2009-11-30 17:22:57.000000000 -0500
-+++ linux10/block/cfq-iosched.c	2009-12-02 10:47:17.000000000 -0500
-@@ -66,6 +66,7 @@ static DEFINE_SPINLOCK(ioc_gone_lock);
- #define cfq_class_rt(cfqq)	((cfqq)->ioprio_class == IOPRIO_CLASS_RT)
- 
- #define sample_valid(samples)	((samples) > 80)
-+#define rb_entry_cfqg(node)	rb_entry((node), struct cfq_group, rb_node)
+--- linux10.orig/block/cfq-iosched.c	2009-12-02 10:47:17.000000000 -0500
++++ linux10/block/cfq-iosched.c	2009-12-02 10:47:53.000000000 -0500
+@@ -13,6 +13,7 @@
+ #include <linux/rbtree.h>
+ #include <linux/ioprio.h>
+ #include <linux/blktrace_api.h>
++#include "blk-cgroup.h"
  
  /*
-  * Most of our rbtree usage is for sorting with min extraction, so
-@@ -77,8 +78,9 @@ struct cfq_rb_root {
- 	struct rb_root rb;
+  * tunables
+@@ -49,6 +50,7 @@ static const int cfq_hist_divisor = 4;
+ 
+ #define CFQ_SLICE_SCALE		(5)
+ #define CFQ_HW_QUEUE_MIN	(5)
++#define CFQ_SERVICE_SHIFT       12
+ 
+ #define RQ_CIC(rq)		\
+ 	((struct cfq_io_context *) (rq)->elevator_private)
+@@ -79,6 +81,7 @@ struct cfq_rb_root {
  	struct rb_node *left;
  	unsigned count;
-+	u64 min_vdisktime;
+ 	u64 min_vdisktime;
++	struct rb_node *active;
  };
--#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, }
-+#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
+ #define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, 0, 0, }
  
- /*
-  * Per process-grouping structure
-@@ -156,6 +158,16 @@ enum wl_type_t {
+@@ -163,6 +166,7 @@ struct cfq_group {
  
- /* This is per cgroup per device grouping structure */
- struct cfq_group {
-+	/* group service_tree member */
-+	struct rb_node rb_node;
-+
-+	/* group service_tree key */
-+	u64 vdisktime;
-+	bool on_st;
-+
-+	/* number of cfqq currently on this group */
-+	int nr_cfqq;
-+
- 	/*
- 	 * rr lists of queues with requests, onle rr for each priority class.
- 	 * Counts are embedded in the cfq_rb_root
-@@ -169,6 +181,8 @@ struct cfq_group {
-  */
- struct cfq_data {
- 	struct request_queue *queue;
-+	/* Root service tree for cfq_groups */
-+	struct cfq_rb_root grp_service_tree;
- 	struct cfq_group root_group;
+ 	/* group service_tree key */
+ 	u64 vdisktime;
++	unsigned int weight;
+ 	bool on_st;
  
- 	/*
-@@ -251,6 +265,9 @@ static struct cfq_rb_root *service_tree_
- 					    enum wl_type_t type,
- 					    struct cfq_data *cfqd)
- {
-+	if (!cfqg)
-+		return NULL;
-+
- 	if (prio == IDLE_WORKLOAD)
- 		return &cfqg->service_tree_idle;
- 
-@@ -589,6 +606,17 @@ static struct cfq_queue *cfq_rb_first(st
- 	return NULL;
+ 	/* number of cfqq currently on this group */
+@@ -434,6 +438,51 @@ cfq_prio_to_slice(struct cfq_data *cfqd,
+ 	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
  }
  
-+static struct cfq_group *cfq_rb_first_group(struct cfq_rb_root *root)
++static inline u64 cfq_scale_slice(unsigned long delta, struct cfq_group *cfqg)
 +{
-+	if (!root->left)
-+		root->left = rb_first(&root->rb);
++	u64 d = delta << CFQ_SERVICE_SHIFT;
 +
-+	if (root->left)
-+		return rb_entry_cfqg(root->left);
-+
-+	return NULL;
++	d = d * BLKIO_WEIGHT_DEFAULT;
++	do_div(d, cfqg->weight);
++	return d;
 +}
 +
- static void rb_erase_init(struct rb_node *n, struct rb_root *root)
- {
- 	rb_erase(n, root);
-@@ -645,6 +673,83 @@ static unsigned long cfq_slice_offset(st
- 		   cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
- }
- 
-+static inline s64
-+cfqg_key(struct cfq_rb_root *st, struct cfq_group *cfqg)
++static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
 +{
-+	return cfqg->vdisktime - st->min_vdisktime;
++	s64 delta = (s64)(vdisktime - min_vdisktime);
++	if (delta > 0)
++		min_vdisktime = vdisktime;
++
++	return min_vdisktime;
 +}
 +
-+static void
-+__cfq_group_service_tree_add(struct cfq_rb_root *st, struct cfq_group *cfqg)
++static inline u64 min_vdisktime(u64 min_vdisktime, u64 vdisktime)
 +{
-+	struct rb_node **node = &st->rb.rb_node;
-+	struct rb_node *parent = NULL;
-+	struct cfq_group *__cfqg;
-+	s64 key = cfqg_key(st, cfqg);
-+	int left = 1;
++	s64 delta = (s64)(vdisktime - min_vdisktime);
++	if (delta < 0)
++		min_vdisktime = vdisktime;
 +
-+	while (*node != NULL) {
-+		parent = *node;
-+		__cfqg = rb_entry_cfqg(parent);
++	return min_vdisktime;
++}
 +
-+		if (key < cfqg_key(st, __cfqg))
-+			node = &parent->rb_left;
-+		else {
-+			node = &parent->rb_right;
-+			left = 0;
-+		}
++static void update_min_vdisktime(struct cfq_rb_root *st)
++{
++	u64 vdisktime = st->min_vdisktime;
++	struct cfq_group *cfqg;
++
++	if (st->active) {
++		cfqg = rb_entry_cfqg(st->active);
++		vdisktime = cfqg->vdisktime;
 +	}
 +
-+	if (left)
-+		st->left = &cfqg->rb_node;
++	if (st->left) {
++		cfqg = rb_entry_cfqg(st->left);
++		vdisktime = min_vdisktime(vdisktime, cfqg->vdisktime);
++	}
 +
-+	rb_link_node(&cfqg->rb_node, parent, node);
-+	rb_insert_color(&cfqg->rb_node, &st->rb);
-+}
-+
-+static void
-+cfq_group_service_tree_add(struct cfq_data *cfqd, struct cfq_group *cfqg)
-+{
-+	struct cfq_rb_root *st = &cfqd->grp_service_tree;
-+	struct cfq_group *__cfqg;
-+	struct rb_node *n;
-+
-+	cfqg->nr_cfqq++;
-+	if (cfqg->on_st)
-+		return;
-+
-+	/*
-+	 * Currently put the group at the end. Later implement something
-+	 * so that groups get lesser vtime based on their weights, so that
-+	 * if group does not loose all if it was not continously backlogged.
-+	 */
-+	n = rb_last(&st->rb);
-+	if (n) {
-+		__cfqg = rb_entry_cfqg(n);
-+		cfqg->vdisktime = __cfqg->vdisktime + CFQ_IDLE_DELAY;
-+	} else
-+		cfqg->vdisktime = st->min_vdisktime;
-+
-+	__cfq_group_service_tree_add(st, cfqg);
-+	cfqg->on_st = true;
-+}
-+
-+static void
-+cfq_group_service_tree_del(struct cfq_data *cfqd, struct cfq_group *cfqg)
-+{
-+	struct cfq_rb_root *st = &cfqd->grp_service_tree;
-+
-+	BUG_ON(cfqg->nr_cfqq < 1);
-+	cfqg->nr_cfqq--;
-+	/* If there are other cfq queues under this group, don't delete it */
-+	if (cfqg->nr_cfqq)
-+		return;
-+
-+	cfqg->on_st = false;
-+	if (!RB_EMPTY_NODE(&cfqg->rb_node))
-+		cfq_rb_erase(&cfqg->rb_node, st);
++	st->min_vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
 +}
 +
  /*
-  * The cfqd->service_trees holds all pending cfq_queue's that have
-  * requests waiting to be processed. It is sorted in the order that
-@@ -727,6 +832,7 @@ static void cfq_service_tree_add(struct 
- 	rb_link_node(&cfqq->rb_node, parent, p);
- 	rb_insert_color(&cfqq->rb_node, &service_tree->rb);
- 	service_tree->count++;
-+	cfq_group_service_tree_add(cfqd, cfqq->cfqg);
- }
+  * get averaged number of queues of RT/BE priority.
+  * average is updated, with a formula that gives more weight to higher numbers,
+@@ -739,8 +788,12 @@ cfq_group_service_tree_del(struct cfq_da
+ {
+ 	struct cfq_rb_root *st = &cfqd->grp_service_tree;
  
- static struct cfq_queue *
-@@ -837,6 +943,7 @@ static void cfq_del_cfqq_rr(struct cfq_d
- 		cfqq->p_root = NULL;
- 	}
++	if (st->active == &cfqg->rb_node)
++		st->active = NULL;
++
+ 	BUG_ON(cfqg->nr_cfqq < 1);
+ 	cfqg->nr_cfqq--;
++
+ 	/* If there are other cfq queues under this group, don't delete it */
+ 	if (cfqg->nr_cfqq)
+ 		return;
+@@ -1659,10 +1712,14 @@ static void choose_service_tree(struct c
+ static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd)
+ {
+ 	struct cfq_rb_root *st = &cfqd->grp_service_tree;
++	struct cfq_group *cfqg;
  
-+	cfq_group_service_tree_del(cfqd, cfqq->cfqg);
- 	BUG_ON(!cfqd->busy_queues);
- 	cfqd->busy_queues--;
- }
-@@ -1113,6 +1220,9 @@ static struct cfq_queue *cfq_get_next_qu
- 	if (!cfqd->rq_queued)
+ 	if (RB_EMPTY_ROOT(&st->rb))
  		return NULL;
- 
-+	/* There is nothing to dispatch */
-+	if (!service_tree)
-+		return NULL;
- 	if (RB_EMPTY_ROOT(&service_tree->rb))
- 		return NULL;
- 	return cfq_rb_first(service_tree);
-@@ -1482,6 +1592,12 @@ static void choose_service_tree(struct c
- 	unsigned count;
- 	struct cfq_rb_root *st;
- 
-+	if (!cfqg) {
-+		cfqd->serving_prio = IDLE_WORKLOAD;
-+		cfqd->workload_expires = jiffies + 1;
-+		return;
-+	}
-+
- 	/* Choose next priority. RT > BE > IDLE */
- 	if (cfq_busy_queues_wl(RT_WORKLOAD, cfqd))
- 		cfqd->serving_prio = RT_WORKLOAD;
-@@ -1540,10 +1656,21 @@ static void choose_service_tree(struct c
- 	cfqd->noidle_tree_requires_idle = false;
+-	return cfq_rb_first_group(st);
++	cfqg = cfq_rb_first_group(st);
++	st->active = &cfqg->rb_node;
++	update_min_vdisktime(st);
++	return cfqg;
  }
  
-+static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd)
-+{
-+	struct cfq_rb_root *st = &cfqd->grp_service_tree;
-+
-+	if (RB_EMPTY_ROOT(&st->rb))
-+		return NULL;
-+	return cfq_rb_first_group(st);
-+}
-+
  static void cfq_choose_cfqg(struct cfq_data *cfqd)
- {
--	cfqd->serving_group = &cfqd->root_group;
--	choose_service_tree(cfqd, &cfqd->root_group);
-+	struct cfq_group *cfqg = cfq_get_next_cfqg(cfqd);
-+
-+	cfqd->serving_group = cfqg;
-+	choose_service_tree(cfqd, cfqg);
- }
- 
- /*
-@@ -3019,10 +3146,14 @@ static void *cfq_init_queue(struct reque
- 	if (!cfqd)
- 		return NULL;
- 
-+	/* Init root service tree */
-+	cfqd->grp_service_tree = CFQ_RB_ROOT;
-+
- 	/* Init root group */
- 	cfqg = &cfqd->root_group;
- 	for_each_cfqg_st(cfqg, i, j, st)
+@@ -3155,6 +3212,9 @@ static void *cfq_init_queue(struct reque
  		*st = CFQ_RB_ROOT;
-+	RB_CLEAR_NODE(&cfqg->rb_node);
+ 	RB_CLEAR_NODE(&cfqg->rb_node);
  
++	/* Give preference to root group over other groups */
++	cfqg->weight = 2*BLKIO_WEIGHT_DEFAULT;
++
  	/*
  	 * Not strictly needed (since RB_ROOT just clears the node and we
+ 	 * zeroed cfqd on alloc), but better be safe in case someone decides
+Index: linux10/block/Kconfig.iosched
+===================================================================
+--- linux10.orig/block/Kconfig.iosched	2009-12-02 10:47:22.000000000 -0500
++++ linux10/block/Kconfig.iosched	2009-12-02 10:47:24.000000000 -0500
+@@ -23,7 +23,6 @@ config IOSCHED_DEADLINE
+ 
+ config IOSCHED_CFQ
+ 	tristate "CFQ I/O scheduler"
+-	select BLK_CGROUP
+ 	default y
+ 	---help---
+ 	  The CFQ I/O scheduler tries to distribute bandwidth equally
+@@ -33,6 +32,14 @@ config IOSCHED_CFQ
+ 
+ 	  This is the default I/O scheduler.
+ 
++config CFQ_GROUP_IOSCHED
++	bool "CFQ Group Scheduling support"
++	depends on IOSCHED_CFQ && CGROUPS
++	select BLK_CGROUP
++	default n
++	---help---
++	  Enable group IO scheduling in CFQ.
++
+ choice
+ 	prompt "Default I/O scheduler"
+ 	default DEFAULT_CFQ
