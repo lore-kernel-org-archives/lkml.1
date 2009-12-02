@@ -1,278 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZLBWMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbZLBWPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbZLBWMB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbZLBWMB
+	id S1755803AbZLBWPV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZLBWPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:12:01 -0500
-Received: from web50101.mail.re2.yahoo.com ([206.190.38.29]:41294 "HELO
-	web50101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754378AbZLBWMA convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:12:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=33B8HRDIhu8ri5vkEbcE2t8B4NLQ6/BMCKTP5ZWkUCvGznZSJ9bxeHXfnRdSJIMpE372xjJMq0StqBGzV2oqU64LZVKg5WB9qiVfvICrBuB6Pi3BZbCVs6zAQbNg7+sa9ml0Xot3KBcfxLZbxXU/zk/a/jpspmerHEgcpEvc3VM=;
-Message-ID: <353238.3571.qm@web50101.mail.re2.yahoo.com>
-X-YMail-OSG: aii4PokVM1ljJfgVlcEJbMRHzlS3PrBs4GfCQ5KiK_CXEbfkNNP7ViNF.xirGW19gABd3_BFrc.o8Hgfvo31Y2DuYDQ4LgJhlalYfImJcxX.moCtSskCkae1X3fVoM1lNRF25B6ndlxKtZlpNLGPfiVjuYPf9GTjMYl50sbZd7XWWsIXcp72aBAzWq5YdwEIsPoSk8ir1uNl700o688FR0TK5cGxrUWNeP0kczm3bt0nA45RCNfPREM57aN3ra0eIFABiSAjjdOVGF.Q_KFyTmvrRgH8kxAppCs3RnpdO5odvj9_tpFaiq1ajFNzEyjF_T0LQPwP0wz1VfLl6YYmY44POXvKQW33JHzE..om8Z73
-X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.8.100.260964
-Date: Wed, 2 Dec 2009 14:12:06 -0800 (PST)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: 2.6.32-rc8: amd64_edac slub error
-To: Borislav Petkov <borislav.petkov@amd.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Borislav Petkov <petkovbb@googlemail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Doug Thompson <dougthompson@xmission.com>
-In-Reply-To: <20091202101108.11b84c5c.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 2 Dec 2009 17:15:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50369 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754621AbZLBWPT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 17:15:19 -0500
+Date: Wed, 2 Dec 2009 14:14:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
+       linux-fsdevel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [Patch] fs: remove a useless BUG()
+Message-Id: <20091202141458.66b5f069.akpm@linux-foundation.org>
+In-Reply-To: <20091201023714.3863.92566.sendpatchset@localhost.localdomain>
+References: <20091201023714.3863.92566.sendpatchset@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
---- On Wed, 12/2/09, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> Subject: Re: 2.6.32-rc8: amd64_edac slub error
-> To: "Borislav Petkov" <borislav.petkov@amd.com>
-> Cc: "Borislav Petkov" <petkovbb@googlemail.com>, "LKML" <linux-kernel@vger.kernel.org>, "Doug Thompson" <dougthompson@xmission.com>
-> Date: Wednesday, December 2, 2009, 11:11 AM
-> On Wed, 2 Dec 2009 11:58:38 +0100
-> Borislav Petkov wrote:
-> 
-> > On Tue, Dec 01, 2009 at 09:19:31AM -0800, Randy Dunlap
-> wrote:
-> > > Here's the new log file (attached).
-> > 
-> > Thanks for testing. Meanwhile, I noticed that the
-> other places where
-> > rdmsr_on_cpus() gets called with non-contigious
-> cpumasks need fixing
-> > too. Here's a version that takes care of that, I'd be
-> nice if you could
-> > give it a run too (patch against today's upstream).
-> You could also
-> > enforce the module loading by setting
-> 'ecc_enable_override=1' to verify
-> > the other rdmsr_on_cpus calls.
-> > 
-> > Thanks.
-> 
-> This patch also works for me.  Thanks.
-> 
-> Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-Acked-by: Doug Thompson <dougthompson@xmission.com>
+On Mon, 30 Nov 2009 21:34:14 -0500
+Amerigo Wang <amwang@redhat.com> wrote:
 
 > 
+> This BUG() is suspicious, it makes its following statements
+> unreachable, and it seems to be useless, since the caller
+> of this function already handles the failure properly.
+> Remove it.
 > 
-> boot log attached.
-> 
-> > ---
-> > diff --git a/drivers/edac/amd64_edac.c
-> b/drivers/edac/amd64_edac.c
-> > index a38831c..da2428b 100644
-> > --- a/drivers/edac/amd64_edac.c
-> > +++ b/drivers/edac/amd64_edac.c
-> > @@ -2618,6 +2618,9 @@ static int
-> amd64_init_csrows(struct mem_ctl_info *mci)
-> >      return empty;
-> >  }
-> >  
-> > +static struct msr *alloc_msrs(const cpumask_t
-> *mask);
-> > +static void free_msrs(struct msr *msrs);
-> > +
-> >  /*
-> >   * Only if 'ecc_enable_override' is
-> set AND BIOS had ECC disabled, do "we"
-> >   * enable it.
-> > @@ -2627,14 +2630,16 @@ static void
-> amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
-> >      struct amd64_pvt *pvt =
-> mci->pvt_info;
-> >      const cpumask_t *cpumask =
-> cpumask_of_node(pvt->mc_node_id);
-> >      int cpu, idx = 0, err = 0;
-> > -    struct msr
-> msrs[cpumask_weight(cpumask)];
-> > +    struct msr *msrs;
-> >      u32 value;
-> >      u32 mask = K8_NBCTL_CECCEn |
-> K8_NBCTL_UECCEn;
-> >  
-> >      if (!ecc_enable_override)
-> >          return;
-> >  
-> > -    memset(msrs, 0, sizeof(msrs));
-> > +    msrs = alloc_msrs(cpumask);
-> > +    if (!msrs)
-> > +        return;
-> >  
-> >      amd64_printk(KERN_WARNING,
-> >         
-> "'ecc_enable_override' parameter is active, "
-> > @@ -2697,20 +2702,24 @@ static void
-> amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
-> >          (value
-> & K8_NBCFG_ECC_ENABLE) ? "Enabled" : "Disabled");
-> >  
-> >      pvt->ctl_error_info.nbcfg
-> = value;
-> > +
-> > +    free_msrs(msrs);
-> >  }
-> >  
-> >  static void
-> amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
-> >  {
-> >      const cpumask_t *cpumask =
-> cpumask_of_node(pvt->mc_node_id);
-> >      int cpu, idx = 0, err = 0;
-> > -    struct msr
-> msrs[cpumask_weight(cpumask)];
-> > +    struct msr *msrs;
-> >      u32 value;
-> >      u32 mask = K8_NBCTL_CECCEn |
-> K8_NBCTL_UECCEn;
-> >  
-> >      if
-> (!pvt->nbctl_mcgctl_saved)
-> >          return;
-> >  
-> > -    memset(msrs, 0, sizeof(msrs));
-> > +    msrs = alloc_msrs(cpumask);
-> > +    if (!msrs)
-> > +        return;
-> >  
-> >      err =
-> pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCTL,
-> &value);
-> >      if (err)
-> > @@ -2731,6 +2740,8 @@ static void
-> amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
-> >      }
-> >  
-> >      wrmsr_on_cpus(cpumask,
-> K8_MSR_MCGCTL, msrs);
-> > +
-> > +    free_msrs(msrs);
-> >  }
-> >  
-> >  /* get all cores on this DCT */
-> > @@ -2743,6 +2754,40 @@ static void
-> get_cpus_on_this_dct_cpumask(cpumask_t *mask, int nid)
-> >         
->     cpumask_set_cpu(cpu, mask);
-> >  }
-> >  
-> > +/*
-> > + * Allocate enough msr structs for the supplied
-> cpumask. Also, take care of
-> > + * non-contigious bitmasks.
-> > + */
-> > +static struct msr *alloc_msrs(const cpumask_t *mask)
-> > +{
-> > +    struct msr *msrs;
-> > +    int i, first_cpu, last_cpu = 0;
-> > +
-> > +    if (cpumask_empty(mask)) {
-> > +       
-> amd64_printk(KERN_WARNING, "%s: Empty cpumask!\n",
-> __func__);
-> > +        return NULL;
-> > +    }
-> > +
-> > +    first_cpu = cpumask_first(mask);
-> > +    for (i = first_cpu; i <
-> nr_cpu_ids; i++)
-> > +        if
-> (cpumask_test_cpu(i, mask))
-> > +       
->     last_cpu = i;
-> > +
-> > +    msrs = kzalloc(sizeof(*msrs) *
-> (last_cpu - first_cpu + 1), GFP_KERNEL);
-> > +    if (!msrs) {
-> > +       
-> amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
-> > +       
->           __func__);
-> > +   
->      return NULL;
-> > +    }
-> > +
-> > +    return msrs;
-> > +}
-> > +
-> > +static void free_msrs(struct msr *msrs)
-> > +{
-> > +     kfree(msrs);
-> > +}
-> > +
-> >  /* check MCG_CTL on all the cpus on this node
-> */
-> >  static bool
-> amd64_nb_mce_bank_enabled_on_node(int nid)
-> >  {
-> > @@ -2755,12 +2800,9 @@ static bool
-> amd64_nb_mce_bank_enabled_on_node(int nid)
-> >  
-> >     
-> get_cpus_on_this_dct_cpumask(&mask, nid);
-> >  
-> > -    msrs = kzalloc(sizeof(struct msr)
-> * cpumask_weight(&mask), GFP_KERNEL);
-> > -    if (!msrs) {
-> > -       
-> amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
-> > -       
->           __func__);
-> > -   
->      return false;
-> > -    }
-> > +    msrs = alloc_msrs(&mask);
-> > +    if (!msrs)
-> > +        goto out_err;
-> >  
-> >      rdmsr_on_cpus(&mask,
-> MSR_IA32_MCG_CTL, msrs);
-> >  
-> > @@ -2779,7 +2821,9 @@ static bool
-> amd64_nb_mce_bank_enabled_on_node(int nid)
-> >      ret = true;
-> >  
-> >  out:
-> > -    kfree(msrs);
-> > +    free_msrs(msrs);
-> > +
-> > +out_err:
-> >      return ret;
-> >  }
-> >  
-> > 
-> > -- 
-> > Regards/Gruss,
-> > Boris.
-> > 
-> > Operating | Advanced Micro Devices GmbH
-> >   System  |
-> Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München,
-> Germany
-> >  Research | Geschäftsführer: Andrew Bowd,
-> Thomas M. McCoy, Giuliano Meroni
-> >   Center  | Sitz: Dornach,
-> Gemeinde Aschheim, Landkreis München
-> >   (OSRC)  | Registergericht
-> München, HRB Nr. 43632
-> > 
-> 
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: "Theodore Ts'o" <tytso@mit.edu>
 > 
 > ---
-> ~Randy
-> 
+> diff --git a/fs/buffer.c b/fs/buffer.c
+> index 6fa5302..ac111d7 100644
+> --- a/fs/buffer.c
+> +++ b/fs/buffer.c
+> @@ -1041,7 +1041,6 @@ grow_dev_page(struct block_device *bdev, sector_t block,
+>  	return page;
+>  
+>  failed:
+> -	BUG();
+>  	unlock_page(page);
+>  	page_cache_release(page);
+>  	return NULL;
+
+The caller doesn't handle this properly.  If we return zero here,
+grow_buffers() will say sheesh and will retry and the kernel goes into
+an infinite retry loop.
+
+If there is a blockdev page which is sitting in pagecache and for some
+reason it has buffers and we cannot release them, we're kind of stuck
+and don't know what to do.  Going BUG() is a decent thing to do here.
+
+I don't think I've ever seen a report of the BUG triggering.  It could
+happen as a result of memory corruption or a missed bh_put() or
+whatever.
+
+I think a better patch would be to remove the
+unlock_page()/page_cache_release(), add a comment (culled from the
+above) and leave the BUG() there.
+
