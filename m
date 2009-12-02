@@ -1,114 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZLBVa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZLBVcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbZLBVa0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbZLBVaX
+	id S1755657AbZLBVcs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:32:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbZLBVcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:30:23 -0500
-Received: from james.oetiker.ch ([213.144.138.195]:60586 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755684AbZLBVaS (ORCPT
+	Wed, 2 Dec 2009 16:32:47 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:32878 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614AbZLBVcq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:30:18 -0500
-Date: Wed, 2 Dec 2009 22:30:23 +0100 (CET)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
-       Sven Geggus <lists@fuchsschwanzdomain.de>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Stephan von Krawczynski <skraw@ithnet.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: still getting allocation failures (was Re: [PATCH] vmscan: Stop
- kswapd waiting on congestion when the min watermark is not being met V2)
-In-Reply-To: <20091202113241.GC1457@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0912022210220.30023@sebohet.brgvxre.pu>
-References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091113135443.GF29804@csn.ul.ie> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie> <2f11576a0911131033w4a9e6042k3349f0be290a167e@mail.gmail.com> <20091113200357.GO29804@csn.ul.ie>
- <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu> <alpine.DEB.2.00.0911290834470.20857@sebohet.brgvxre.pu> <20091202113241.GC1457@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 2 Dec 2009 16:32:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FRHm0NB92TzDK8AJSWF3dRjW7hV7A9pnkp+lDoAdiwx4LxHdQIasn5OaY07PtRZ//3
+         V/ER1Q81Fiez4Y9u2MZrQkeeACJheula5bpGL0y28SJjkyWKQfkuhI2GtiiKcOqhST3R
+         nPnB9jG14SLggXdvqUM1Y7OtREXUn404MQPfc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20091202212710.GA24789@oksana.dev.rtsoft.ru>
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+	 <012301ca71ed$449cb930$544ff780@am.dhcp.ti.com>
+	 <20091130185813.GA32522@oksana.dev.rtsoft.ru>
+	 <6ed0b2680912021238o29d7e773i9379369d7b277614@mail.gmail.com>
+	 <20091202212710.GA24789@oksana.dev.rtsoft.ru>
+Date: Wed, 2 Dec 2009 23:32:50 +0200
+Message-ID: <6ed0b2680912021332q5f00deb2id1b1b60ec7a69c41@mail.gmail.com>
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI charger
+From: Grazvydas Ignotas <notasas@gmail.com>
+To: avorontsov@ru.mvista.com
+Cc: Madhusudhan <madhu.cr@ti.com>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
-
-Today Mel Gorman wrote:
-
-> On Sun, Nov 29, 2009 at 08:42:09AM +0100, Tobi Oetiker wrote:
-> > Hi Mel,
-> >
-> > Thursday Tobias Oetiker wrote:
-> > > Hi Mel,
-> > >
-> > > Nov 13 Mel Gorman wrote:
-> > >
-> > > > The last version has a stupid bug in it. Sorry.
-> > > >
-> > > > Changelog since V1
-> > > >   o Fix incorrect negation
-> > > >   o Rename kswapd_no_congestion_wait to kswapd_skip_congestion_wait as
-> > > >     suggested by Rik
-> > > >
-> > > > If reclaim fails to make sufficient progress, the priority is raised.
-> > > > Once the priority is higher, kswapd starts waiting on congestion.  However,
-> > > > if the zone is below the min watermark then kswapd needs to continue working
-> > > > without delay as there is a danger of an increased rate of GFP_ATOMIC
-> > > > allocation failure.
-> > > >
-> > > > This patch changes the conditions under which kswapd waits on
-> > > > congestion by only going to sleep if the min watermarks are being met.
-> > >
-> > > I finally got around to test this together with the whole series on
-> > > 2.6.31.6. after running it for a day I have not yet seen a single
-> > > order:5 allocation problem ... (while I had several an hour before)
-> >
-> > > for the record, my kernel is now running with the following
-> > > patches:
-> > >
-> > > patch1:Date: Thu, 12 Nov 2009 19:30:31 +0000
-> > > patch1:Subject: [PATCH 1/5] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
-> > >
-> > > patch2:Date: Thu, 12 Nov 2009 19:30:32 +0000
-> > > patch2:Subject: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
-> > >
-> > > patch3:Date: Thu, 12 Nov 2009 19:30:33 +0000
-> > > patch3:Subject: [PATCH 3/5] page allocator: Wait on both sync and async congestion after direct reclaim
-> > >
-> > > patch4:Date: Thu, 12 Nov 2009 19:30:34 +0000
-> > > patch4:Subject: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and double check it should be asleep
-> > >
-> > > patch5:Date: Fri, 13 Nov 2009 20:03:57 +0000
-> > > patch5:Subject: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met V2
-> > >
-> > > patch6:Date: Tue, 17 Nov 2009 10:34:21 +0000
-> > > patch6:Subject: [PATCH] vmscan: Have kswapd sleep for a short interval and double check it should be asleep fix 1
-> > >
-> > I have now been running the new kernel for a few days and I am
-> > sorry to report that about a day after booting the allocation
-> > failures started showing again. More order:4 instead of order:5 ...
-> >
+On Wed, Dec 2, 2009 at 11:27 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Wed, Dec 02, 2009 at 10:38:31PM +0200, Grazvydas Ignotas wrote:
+>> On Mon, Nov 30, 2009 at 8:58 PM, Anton Vorontsov
+>> <avorontsov@ru.mvista.com> wrote:
+>> > On Mon, Nov 30, 2009 at 12:45:20PM -0600, Madhusudhan wrote:
+>> > [...]
+>> >> > +   case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+>> >> > +           /* charging must be active for meaningful result */
+>> >> > +           if (!is_charging) {
+>> >>
+>> >> How about putting a kern_info here?
+>> >
+>> > It might be better to return -EINVAL.
+>>
+>> That causes lots of warnings from power_supply core (driver failed to
+>> report XXX property), Not sure what to do here, I'd prefer to keep
+>> returning 0.
 >
-> Why has the order changed?
+> Lying to userspace is a bad idea.
+>
+> How about this patch + changing the driver to return -ENODATA?
 
-? no idea ... the order has changed after applying the patches
-cited above.
+This is fine for me, thanks.
 
-> Also, what allocator were you using in 2.6.30 and 2.6.31.6, SLAB or
-> SLUB? Did you happen to change them when upgrading the kernel?
-
-I have been and still am using SLUB  ...
-
-cheers
-tobi
-
-
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
+>
+> From 0fe4c834b551c4d4454d57acaf75645675d199ee Mon Sep 17 00:00:00 2001
+> From: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Date: Thu, 3 Dec 2009 00:24:51 +0300
+> Subject: [PATCH] power_supply_sysfs: Handle -ENODATA in a special way
+>
+> There are cases when some device can not report any meaningful value,
+> e.g. TWL4030 charger can report voltage only when charging is
+> active.
+>
+> In these cases drivers will return -ENODATA, and we shouldn't flood
+> kernel log with error messages.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  drivers/power/power_supply_sysfs.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+> index 0814439..c790e0c 100644
+> --- a/drivers/power/power_supply_sysfs.c
+> +++ b/drivers/power/power_supply_sysfs.c
+> @@ -65,7 +65,10 @@ static ssize_t power_supply_show_property(struct device *dev,
+>        ret = psy->get_property(psy, off, &value);
+>
+>        if (ret < 0) {
+> -               if (ret != -ENODEV)
+> +               if (ret == -ENODATA)
+> +                       dev_dbg(dev, "driver has no data for `%s' property\n",
+> +                               attr->attr.name);
+> +               else if (ret != -ENODEV)
+>                        dev_err(dev, "driver failed to report `%s' property\n",
+>                                attr->attr.name);
+>                return ret;
+> --
+> 1.6.3.3
+>
+>
