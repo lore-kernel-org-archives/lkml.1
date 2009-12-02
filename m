@@ -1,220 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbZLBPTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZLBPYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641AbZLBPTz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 10:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbZLBPTy
+	id S1754790AbZLBPYr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 10:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZLBPYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 10:19:54 -0500
-Received: from cantor.suse.de ([195.135.220.2]:37086 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753365AbZLBPTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 10:19:54 -0500
-Subject: [PATCH]serial-core: resume serial hardware with no_console_suspend
- (resend)
-From: Stanislav Brabec <sbrabec@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux@arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk, gregkh@suse.de, Pavel Machek <pavel@ucw.cz>,
-       Daniel Mack <daniel@caiaq.de>, saxena@laptop.org,
-       Eric Miao <eric.y.miao@gmail.com>, s.hauer@pengutronix.de,
-       Haojian Zhuang <haojian.zhuang@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-2"
-Organization: SuSE CR, s. r. o.
-Date: Wed, 02 Dec 2009 16:20:56 +0100
-Message-Id: <1259767256.8709.323.camel@hammer.suse.cz>
+	Wed, 2 Dec 2009 10:24:46 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:58495 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754415AbZLBPYo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 10:24:44 -0500
+Subject: Re: [PATCH] hugetlb: Abort a hugepage pool resize if a signal is
+ pending
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091202141504.GE1457@csn.ul.ie>
+References: <20091202141504.GE1457@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 02 Dec 2009 07:24:35 -0800
+Message-Id: <1259767475.24696.2368.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Perform a tricky suspend/resume even with no_console_suspend.
+On Wed, 2009-12-02 at 14:15 +0000, Mel Gorman wrote:
+> If a user asks for a hugepage pool resize but specified a large number, the
+> machine can begin trashing. In response, they might hit ctrl-c but signals
+> are ignored and the pool resize continues until it fails an allocation. This
+> can take a considerable amount of time so this patch aborts a pool resize
+> if a signal is pending.
+> 
+> [dave@linux.vnet.ibm.com: His idea]
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  mm/hugetlb.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index af02ee8..a952cb8 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -1238,6 +1238,9 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count)
+>  		if (!ret)
+>  			goto out;
+> 
+> +		/* Bail for signals. Probably ctrl-c from user */
+> +		if (signal_pending(current))
+> +			goto out;
 
-With no_console_suspend, kernel skips serial port suspend/resume and the
-serial hardware may remain in undefined state after resume. It actually
-happens on devices that don't have BIOS that handle serial
-initialization. It makes impossible to use serial console after resume. 
+Thanks, Mel!
 
-Devices affected by this problem include:
-Sharp Zaurus devices
-Several PXA based ARM embedded boards
+This will help m unwedge my system the next time I fat-finger an extra
+zero or two into my hugepage pool size.
 
-The patch does:
-- Save the hardware state
-- Perform buffer flush in time of its suspend call
-- Tell the driver that port is suspended
-- But still accept new data
-- And keep console hardware in state that allows to send them
-
-It allows to capture late console messages without breaking console
-after resume.
-
-This is just a resend of a patch discussed in these threads, as the
-patch was not yet applied.
-
-"Possible suspend/resume regression in .32-rc?" (Nov 1-5, 2009, ARM
-list, later LKML)
-
-"serial-core: resume serial hardware with no_console_suspend" (Sep
-15-Oct 18, 2009, LKML & ARM lists)
-
-Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
-Tested-by: Haojian Zhuang <haojian.zhuang@gmail.com>
-
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index dcc7244..f1e1ab2 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2008,12 +2008,6 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 
- 	mutex_lock(&port->mutex);
- 
--	if (!console_suspend_enabled && uart_console(uport)) {
--		/* we're going to avoid suspending serial console */
--		mutex_unlock(&port->mutex);
--		return 0;
--	}
--
- 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
- 	if (device_may_wakeup(tty_dev)) {
- 		enable_irq_wake(uport->irq);
-@@ -2021,20 +2015,23 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 		mutex_unlock(&port->mutex);
- 		return 0;
- 	}
--	uport->suspended = 1;
-+	if (console_suspend_enabled || !uart_console(uport))
-+		uport->suspended = 1;
- 
- 	if (port->flags & ASYNC_INITIALIZED) {
- 		const struct uart_ops *ops = uport->ops;
- 		int tries;
- 
--		set_bit(ASYNCB_SUSPENDED, &port->flags);
--		clear_bit(ASYNCB_INITIALIZED, &port->flags);
-+		if (console_suspend_enabled || !uart_console(uport)) {
-+			set_bit(ASYNCB_SUSPENDED, &port->flags);
-+			clear_bit(ASYNCB_INITIALIZED, &port->flags);
- 
--		spin_lock_irq(&uport->lock);
--		ops->stop_tx(uport);
--		ops->set_mctrl(uport, 0);
--		ops->stop_rx(uport);
--		spin_unlock_irq(&uport->lock);
-+			spin_lock_irq(&uport->lock);
-+			ops->stop_tx(uport);
-+			ops->set_mctrl(uport, 0);
-+			ops->stop_rx(uport);
-+			spin_unlock_irq(&uport->lock);
-+		}
- 
- 		/*
- 		 * Wait for the transmitter to empty.
-@@ -2049,16 +2046,18 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
- 			       drv->dev_name,
- 			       drv->tty_driver->name_base + uport->line);
- 
--		ops->shutdown(uport);
-+		if (console_suspend_enabled || !uart_console(uport))
-+			ops->shutdown(uport);
- 	}
- 
- 	/*
- 	 * Disable the console device before suspending.
- 	 */
--	if (uart_console(uport))
-+	if (console_suspend_enabled && uart_console(uport))
- 		console_stop(uport->cons);
- 
--	uart_change_pm(state, 3);
-+	if (console_suspend_enabled || !uart_console(uport))
-+		uart_change_pm(state, 3);
- 
- 	mutex_unlock(&port->mutex);
- 
-@@ -2075,29 +2074,6 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 
- 	mutex_lock(&port->mutex);
- 
--	if (!console_suspend_enabled && uart_console(uport)) {
--		/* no need to resume serial console, it wasn't suspended */
--		/*
--		 * First try to use the console cflag setting.
--		 */
--		memset(&termios, 0, sizeof(struct ktermios));
--		termios.c_cflag = uport->cons->cflag;
--		/*
--		 * If that's unset, use the tty termios setting.
--		 */
--		if (termios.c_cflag == 0)
--			termios = *state->port.tty->termios;
--		else {
--			termios.c_ispeed = termios.c_ospeed =
--				tty_termios_input_baud_rate(&termios);
--			termios.c_ispeed = termios.c_ospeed =
--				tty_termios_baud_rate(&termios);
--		}
--		uport->ops->set_termios(uport, &termios, NULL);
--		mutex_unlock(&port->mutex);
--		return 0;
--	}
--
- 	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
- 	if (!uport->suspended && device_may_wakeup(tty_dev)) {
- 		disable_irq_wake(uport->irq);
-@@ -2123,21 +2099,23 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
- 		spin_lock_irq(&uport->lock);
- 		ops->set_mctrl(uport, 0);
- 		spin_unlock_irq(&uport->lock);
--		ret = ops->startup(uport);
--		if (ret == 0) {
--			uart_change_speed(state, NULL);
--			spin_lock_irq(&uport->lock);
--			ops->set_mctrl(uport, uport->mctrl);
--			ops->start_tx(uport);
--			spin_unlock_irq(&uport->lock);
--			set_bit(ASYNCB_INITIALIZED, &port->flags);
--		} else {
--			/*
--			 * Failed to resume - maybe hardware went away?
--			 * Clear the "initialized" flag so we won't try
--			 * to call the low level drivers shutdown method.
--			 */
--			uart_shutdown(state);
-+		if (console_suspend_enabled || !uart_console(uport)) {
-+			ret = ops->startup(uport);
-+			if (ret == 0) {
-+				uart_change_speed(state, NULL);
-+				spin_lock_irq(&uport->lock);
-+				ops->set_mctrl(uport, uport->mctrl);
-+				ops->start_tx(uport);
-+				spin_unlock_irq(&uport->lock);
-+				set_bit(ASYNCB_INITIALIZED, &port->flags);
-+			} else {
-+				/*
-+				 * Failed to resume - maybe hardware went away?
-+				 * Clear the "initialized" flag so we won't try
-+				 * to call the low level drivers shutdown method.
-+				 */
-+				uart_shutdown(state);
-+			}
- 		}
- 
- 		clear_bit(ASYNCB_SUSPENDED, &port->flags);
-
-
--- 
-Best Regards / S pozdravem,
-
-Stanislav Brabec
-software developer
----------------------------------------------------------------------
-SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
-Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
-190 00 Praha 9                                  fax: +420 284 028 951
-Czech Republic                                    http://www.suse.cz/
-
-
-
+-- Dave
 
