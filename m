@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbZLBCLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbZLBCVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbZLBCLU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 21:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZLBCLT
+	id S1754468AbZLBCVH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 21:21:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZLBCVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 21:11:19 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:42791 "EHLO smtps.tip.net.au"
+	Tue, 1 Dec 2009 21:21:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59117 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755111AbZLBCLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 21:11:18 -0500
-Date: Wed, 2 Dec 2009 13:11:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Aristeu Rozanski <aris@redhat.com>
-Subject: Re: linux-next: i7core_edac tree build failure
-Message-Id: <20091202131122.10f61abf.sfr@canb.auug.org.au>
-In-Reply-To: <20091116103002.82e8a2bb.sfr@canb.auug.org.au>
-References: <20091112165852.855d1e5d.sfr@canb.auug.org.au>
-	<200911122340.26317.rusty@rustcorp.com.au>
-	<20091113105435.1b9b0060.sfr@canb.auug.org.au>
-	<20091116103002.82e8a2bb.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752265AbZLBCVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 21:21:06 -0500
+Message-ID: <4B15CEE0.2030503@redhat.com>
+Date: Tue, 01 Dec 2009 21:20:16 -0500
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Larry Woodman <lwoodman@redhat.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [RFC] high system time & lock contention running large mixed
+ workload
+References: <20091125133752.2683c3e4@bree.surriel.com>	 <1259618429.2345.3.camel@dhcp-100-19-198.bos.redhat.com>	 <20091201102645.5C0A.A69D9226@jp.fujitsu.com> <1259685662.2345.11.camel@dhcp-100-19-198.bos.redhat.com>
+In-Reply-To: <1259685662.2345.11.camel@dhcp-100-19-198.bos.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mauro,
-
-On Mon, 16 Nov 2009 10:30:02 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On 12/01/2009 11:41 AM, Larry Woodman wrote:
 >
-> On Fri, 13 Nov 2009 10:54:35 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > Yeah, the i7core_edac fix needs to stay in my tree as it is an
-> > interaction between two trees in linux-next.  The others should be
-> > applied to the powerpc and sparc trees, as you say, since they fix the
-> > current code in those trees.
-> 
-> Actually, Mauro, this patch should be applied to the i7core_edac as that
-> symbol never needed to be exported and the patch to export it is in that
-> tree.
+> Agreed.  The attached updated patch only does a trylock in the
+> page_referenced() call from shrink_inactive_list() and only for
+> anonymous pages when the priority is either 10, 11 or
+> 12(DEF_PRIORITY-2).  I have never seen a problem like this with active
+> pagecache pages and it does not alter the existing shrink_page_list
+> behavior.  What do you think about this???
+This is reasonable, except for the fact that pages that are moved
+to the inactive list without having the referenced bit cleared are
+guaranteed to be moved back to the active list.
 
-Is there any reason that this patch (copied below) cannot be applied to
-the i7core_edac tree?
+You'll be better off without that excess list movement, by simply
+moving pages directly back onto the active list if the trylock
+fails.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Yes, this means that page_referenced can now return 3 different
+return values (not accessed, accessed, lock contended), which
+should probably be an enum so we can test for the values
+symbolically in the calling functions.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 12 Nov 2009 16:55:38 +1100
-Subject: [PATCH] i7core_edac: do not export static functions
+That way only pages where we did manage to clear the referenced bit
+will be moved onto the inactive list.  This not only reduces the
+amount of excess list movement, it also makes sure that the pages
+which do get onto the inactive list get a fair chance at being
+referenced again, instead of potentially being flooded out by pages
+where the trylock failed.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/x86/pci/legacy.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
-index 5e22d83..a8194c8 100644
---- a/arch/x86/pci/legacy.c
-+++ b/arch/x86/pci/legacy.c
-@@ -38,7 +38,6 @@ static int __init pci_legacy_init(void)
- 
- 	return 0;
- }
--EXPORT_SYMBOL_GPL(pci_legacy_init);
- 
- void pcibios_scan_specific_bus(int busn)
- {
--- 
-1.6.5.2
+A minor nitpick: maybe it would be good to rename the "try" parameter
+to "noblock".  That more closely matches the requested behaviour.
 
