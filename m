@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZLBLD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbZLBLMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZLBLD0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 06:03:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZLBLDZ
+	id S1752838AbZLBLMo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 06:12:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZLBLMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 06:03:25 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:35484 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbZLBLDZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 06:03:25 -0500
-Date: Wed, 2 Dec 2009 12:03:26 +0100
-From: Daniel Mack <daniel@caiaq.de>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Pierre Ossman <pierre@ossman.eu>, linux-mmc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       stable@kernel.org
-Subject: Re: [PATCH] mmc: pxamci: call mmc_remove_host() before freeing
- resources
-Message-ID: <20091202110326.GZ14091@buzzloop.caiaq.de>
-References: <1259687838-31722-1-git-send-email-daniel@caiaq.de>
- <f17812d70912011650h48a6c391s426ffc8b4b653fc8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 2 Dec 2009 06:12:44 -0500
+Received: from f0.cmpxchg.org ([85.214.51.133]:56418 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbZLBLMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 06:12:43 -0500
+Date: Wed, 2 Dec 2009 12:07:32 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, Larry Woodman <lwoodman@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [PATCH] Replace page_mapping_inuse() with page_mapped()
+Message-ID: <20091202110732.GA8693@cmpxchg.org>
+References: <20091202115358.5C4F.A69D9226@jp.fujitsu.com> <4B15D9F8.9090800@redhat.com> <20091202121152.5C52.A69D9226@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f17812d70912011650h48a6c391s426ffc8b4b653fc8@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091202121152.5C52.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 08:50:44AM +0800, Eric Miao wrote:
-> On Wed, Dec 2, 2009 at 1:17 AM, Daniel Mack <daniel@caiaq.de> wrote:
-> > mmc_remove_host() will cause the mmc core to switch off the bus power by
-> > eventually calling pxamci_set_ios(). This function uses the regulator or
-> > the GPIO which have been freed already.
-> >
-> > This causes the following Oops on module unload.
-> >
+On Wed, Dec 02, 2009 at 12:28:26PM +0900, KOSAKI Motohiro wrote:
 
-[...]
-
-> >
-> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> > Reported-by: Sven Neumann <s.neumann@raumfeld.com>
-> > Cc: Pierre Ossman <pierre@ossman.eu>
-> > Cc: Eric Miao <eric.y.miao@gmail.com>
-> > Cc: linux-mmc@vger.kernel.org
-> > Cc: linux-arm-kernel@lists.infradead.org
-> > Cc: stable@kernel.org
-> > ---
-> >  drivers/mmc/host/pxamci.c |    4 ++--
+> From 61340720e6e66b645db8d5410e89fd3b67eda907 Mon Sep 17 00:00:00 2001
+> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Date: Wed, 2 Dec 2009 12:05:26 +0900
+> Subject: [PATCH] Replace page_mapping_inuse() with page_mapped()
 > 
-> Looks like a correct fix to me.
+> page reclaim logic need to distingish mapped and unmapped pages.
+> However page_mapping_inuse() don't provide proper test way. it test
+> the address space (i.e. file) is mmpad(). Why `page' reclaim need
+> care unrelated page's mapped state? it's unrelated.
 > 
-> Acked-by: Eric Miao <eric.y.miao@gmail.com>
+> Thus, This patch replace page_mapping_inuse() with page_mapped()
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Would be good to still get this into .32 - who will take care of picking
-this?
-
+Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
