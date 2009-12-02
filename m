@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbZLBQpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbZLBQxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987AbZLBQpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 11:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbZLBQpw
+	id S1755023AbZLBQxO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 11:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZLBQxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 11:45:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48778 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754743AbZLBQpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 11:45:52 -0500
-Message-ID: <4B1699B9.6010106@redhat.com>
-Date: Wed, 02 Dec 2009 11:45:45 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 2 Dec 2009 11:53:13 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35563 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753988AbZLBQxN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 11:53:13 -0500
+Message-ID: <4B169B1B.8010007@zytor.com>
+Date: Wed, 02 Dec 2009 08:51:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Liming Wang <liming.wang@windriver.com>
-CC: Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com, peterz@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf tools: replace %m with %a in sscanf
-References: <20091202083120.GA20120@elte.hu> <1259743374-9950-1-git-send-email-liming.wang@windriver.com>
-In-Reply-To: <1259743374-9950-1-git-send-email-liming.wang@windriver.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Ingo Molnar <mingo@elte.hu>
+CC: Xiaotian Feng <dfeng@redhat.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH -tip] x86: reboot_fixup_32.c add missing pci_dev_put
+References: <1259291762-17735-1-git-send-email-dfeng@redhat.com> <20091202100928.GE22654@elte.hu>
+In-Reply-To: <20091202100928.GE22654@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Liming Wang wrote:
-> Not all glibc support %m and it results in a compile error if
-> %m not supported. Replace it with %a and (float *) casts.
+On 12/02/2009 02:09 AM, Ingo Molnar wrote:
 > 
-> Signed-off-by: Liming Wang<liming.wang@windriver.com>
-> Acked-by: Frederic Weisbecker<fweisbec@gmail.com>
-> ---
->   tools/perf/util/probe-event.c |    6 +++---
->   1 files changed, 3 insertions(+), 3 deletions(-)
+> * Xiaotian Feng <dfeng@redhat.com> wrote:
 > 
-> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-> index e42f3ac..cd7fbda 100644
-> --- a/tools/perf/util/probe-event.c
-> +++ b/tools/perf/util/probe-event.c
-> @@ -199,8 +199,8 @@ void parse_trace_kprobe_event(const char *str, char **group, char **event,
->   		semantic_error("Too less arguments.");
+>> pci_get_device increments reference count to the found pci device, 
+>> that should be decremented using pci_dev_put.
 > 
->   	/* Scan event and group name. */
-> -	ret = sscanf(argv[0], "%c:%m[^/ \t]/%m[^ \t]",
-> -		&pr, group, event);
-> +	ret = sscanf(argv[0], "%c:%a[^/ \t]/%a[^ \t]",
-> +		&pr, (float *)(void *)group, (float *)(void *)event);
+>> +++ b/arch/x86/kernel/reboot_fixups_32.c
+>> @@ -80,6 +80,7 @@ void mach_reboot_fixups(void)
+>>  			continue;
+>>  
+>>  		cur->reboot_fixup(dev);
+>> +		pci_dev_put(dev);
+> 
+> Does this matter in practice? We are about to reboot. (but if it's 
+> cleaner to do it like this or if there's some real bug fixed by this 
+> then please spell it out in the changelog.)
+> 
 
-Hmm, the code itself is OK for me, but I think we need a comment
-why we cast (void *) to (float *)...
+Even if it doesn't actually matter, doing things cleanly makes it easier
+to handle failure scenarios, possibly that are discovered in the future.
 
-Thank you,
-
->   	if (ret != 3)
->   		semantic_error("Failed to parse event name: %s", argv[0]);
->   	pr_debug("Group:%s Event:%s probe:%c\n", *group, *event, pr);
-> @@ -211,7 +211,7 @@ void parse_trace_kprobe_event(const char *str, char **group, char **event,
->   	pp->retprobe = (pr == 'r');
-> 
->   	/* Scan function name and offset */
-> -	ret = sscanf(argv[1], "%m[^+]+%d",&pp->function,&pp->offset);
-> +	ret = sscanf(argv[1], "%a[^+]+%d", (float *)(void *)&pp->function,&pp->offset);
->   	if (ret == 1)
->   		pp->offset = 0;
-> 
+	-hpa
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
