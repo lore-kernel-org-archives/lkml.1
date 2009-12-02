@@ -1,112 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbZLBUUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbZLBUQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbZLBUUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 15:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbZLBUUi
+	id S1755598AbZLBUQf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 15:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbZLBUQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 15:20:38 -0500
-Received: from mail-pz0-f184.google.com ([209.85.222.184]:58692 "EHLO
-	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751824AbZLBUUh (ORCPT
+	Wed, 2 Dec 2009 15:16:34 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:39001 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754618AbZLBUQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 15:20:37 -0500
-X-Greylist: delayed 390 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Dec 2009 15:20:37 EST
+	Wed, 2 Dec 2009 15:16:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=M9hXC2Ed2uSqTZmB8n2V+CDUJxURzx5Opq5S1bH8J1IXtyRSTFEX7tQcfYJ37S0N7l
-         ggThfokoJDvNyOxau4Xu/zP5+MONmqUZ7k946udxlwmeRhh4HWlUEeHH77+6k+my8/d0
-         qbxw/d43+AuIL1PPl7lElNtaQvu+dRuH0KoD8=
-Date: Wed, 2 Dec 2009 12:14:05 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jarod Wilson <jarod@wilsonet.com>
-Cc: Jarod Wilson <jarod@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-Message-ID: <20091202201404.GD22689@core.coreip.homeip.net>
-References: <4B1567D8.7080007@redhat.com> <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
+        b=AlN6ANHtdXwqjB4solFGK/SfkbZGmQVu+kOZG6mdcUdk0lcRL/xauLoKVIHT8+PhSW
+         yT615rXyWn/yA3cGgSUfAxYRH9vlZEalMLtr2/JrG/1oZ07vLrwryIjXVPG4oPO59RjT
+         gKtJ1EZPgXI2Xi36VlNnmr0GtnSuCoxJ/XMAY=
+Date: Wed, 2 Dec 2009 21:16:38 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, hpa@zytor.com, randy.dunlap@oracle.com,
+       wcohen@redhat.com, tglx@linutronix.de, jbaron@redhat.com,
+       mhiramat@redhat.com, linux-tip-commits@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH][tip/perf/core] tracing: Rename TRACE_EVENT and others
+	to something resonable
+Message-ID: <20091202201635.GA5141@nowhere>
+References: <20091202140128.GA2611@elte.hu> <1259764109.12870.37.camel@gandalf.stny.rr.com> <20091202144334.GA30359@elte.hu> <1259765735.12870.42.camel@gandalf.stny.rr.com> <20091202162715.GB9710@Krystal> <1259773888.12870.61.camel@gandalf.stny.rr.com> <20091202180633.GF9710@Krystal> <1259777987.12870.70.camel@gandalf.stny.rr.com> <20091202190135.GA23316@Krystal> <1259784683.12870.100.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1259784683.12870.100.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 03:04:30PM -0500, Jarod Wilson wrote:
-> On Dec 2, 2009, at 2:56 PM, Dmitry Torokhov wrote:
+On Wed, Dec 02, 2009 at 03:11:23PM -0500, Steven Rostedt wrote:
+> With the addition of TRACE_EVENT templates (or classes) the issue of
+> naming has come up.
 > 
-> > On Wed, Dec 02, 2009 at 02:22:18PM -0500, Jarod Wilson wrote:
-> >> On 12/2/09 12:30 PM, Jon Smirl wrote:
-> >>>>>> (for each remote/substream that they can recognize).
-> >>>>>>> 
-> >>>>>>> I'm assuming that, by remote, you're referring to a remote receiver (and not to
-> >>>>>>> the remote itself), right?
-> >>>>> 
-> >>>>> If we could separate by remote transmitter that would be the best I
-> >>>>> think, but I understand that it is rarely possible?
-> >>> 
-> >>> The code I posted using configfs did that. Instead of making apps IR
-> >>> aware it mapped the vendor/device/command triplets into standard Linux
-> >>> keycodes.  Each remote was its own evdev device.
-> >> 
-> >> Note, of course, that you can only do that iff each remote uses distinct  
-> >> triplets. A good portion of mythtv users use a universal of some sort,  
-> >> programmed to emulate another remote, such as the mce remote bundled  
-> >> with mceusb transceivers, or the imon remote bundled with most imon  
-> >> receivers. I do just that myself.
-> >> 
-> >> Personally, I've always considered the driver/interface to be the  
-> >> receiver, not the remote. The lirc drivers operate at the receiver  
-> >> level, anyway, and the distinction between different remotes is made by  
-> >> the lirc daemon.
-> > 
-> > The fact that lirc does it this way does not necessarily mean it is the
-> > most corerct way.
+> Originally, the template was called TRACE_EVENT_TEMPLATE. This was to be
+> used to consolidate similar TRACE_EVENTs because a single TRACE_EVENT
+> takes up quite a bit of code. One TRACE_EVENT creates a function to
+> register and unregister a trace point, a function to record the event in
+> a buffer, a function to display the binary output to user space, a
+> function to add counters to record the number of times the event is
+> reached, and so on.
 > 
-> No, I know that, I'm just saying that's how I've always looked at it, and that's how lirc does it right now, not that it must be that way.
+> All these functions creates a lot of bloat, especially since these
+> functions are almost identical to each other. Unfortunately, these
+> functions require specific parameters and structure fields, and can't
+> always be the same. But for those events that share the same structure
+> and parameters, a class/template allows them to share the same functions
+> and this cuts down the bloat substantially.
 > 
-> > Do you expect all bluetooth input devices be presented
-> > as a single blob just because they happen to talk to the sane receiver
-> > in yoru laptop? Do you expect your USB mouse and keyboard be merged
-> > together just because they end up being serviced by the same host
-> > controller? If not why remotes should be any different?
+> But what to call these macros to satisfy the already confused kernel
+> developers?
 > 
-> A bluetooth remote has a specific device ID that the receiver has to
-> pair with. Your usb mouse and keyboard each have specific device IDs.
-> A usb IR *receiver* has a specific device ID, the remotes do not. So
-> there's the major difference from your examples.
+> Ideally, DECLARE_EVENT_CLASS to create the class, DEFINE_EVENT to create
+> an instance of the class, and even DEFINE_EVENT_CLASS to replace the
+> current TRACE_EVENT that defines a class and creates an event of the
+> same name as the class. New DEFINE_EVENTs may also reference a class
+> declared by DEFINE_EVENT_CLASS.
 > 
+> But us kernel developers stay up too late at night, drinking jolt (or
+> beer if you are in Europe), and our brain cells have fused to only
+> logical circuitry, thus understanding concepts that are not engraved in
+> stone becomes a bit too straining for us, and we may finally have to
+> give up on solving this one last bug to get some rest with our love one
+> that's been sleeping since 9pm.
+> 
+> This means using DECLARE_* and DEFINE_* will push us over that brink to
+> normalcy and must be avoided. A new name must be established to clearly
+> describe the mystical CPP magic that comprises the TRACE_EVENT hackery.
+> Something that can bring us back to our roots. Something where it all
+> begins. The stone age.
+> 
+> Thus, this patch renames the MACROS to the most obvious definitions
+> around. Something we should have thought of at the start.
+> 
+> 
+> s/DEFINE_EVENT_CLASS/FRED/g
+> s/DEFINE_EVENT/WILMA/g
+> s/TRACE_EVENT/BARNEY/g
+> 
+> 
+> Thus with the new naming convention:
+> 
+> FRED(x, ...) -- will declare a class but will not make any events
+> WILMA(x, y, ...) -- will create an event based off of class made by FRED
+> BARNEY(x, ...) -- will create both a class and an event
+> 
+> /* Little known secret, WILMA can also fool around with BARNEY and can
+> create new events with BARNEY as well as with FRED */
+> 
+>   (apologies to Thomas Gleixner and his renaming to "fred")
+> 
+> Signed-off-by: Steven Rostedt <flintstone@goodmis.org>
 
-Not exactly... I can have 2 identical USB keyboadrs form the same
-manufacturer and they will still be treated separately. BT has session
-ID to help distinguish between devices.
 
-> > Now I understand that if 2 remotes send completely identical signals we
-> > won't be able to separete them, but in cases when we can I think we
-> > should.
-> 
-> I don't have a problem with that, if its a truly desired feature. But
-> for the most part, I don't see the point. Generally, you go from
-> having multiple remotes, one per device (where "device" is your TV,
-> amplifier, set top box, htpc, etc), to having a single universal
-> remote that controls all of those devices. But for each device (IR
-> receiver), *one* IR command set. The desire to use multiple distinct
-> remotes with a single IR receiver doesn't make sense to me. Perhaps
-> I'm just not creative enough in my use of IR. :)
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-Didn't Jon posted his example whith programmable remote pretending to be
-several separate remotes (depending on the mode of operation) so that
-several devices/applications can be controlled without interfering with
-each other?
-
--- 
-Dmitry
