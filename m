@@ -1,91 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZLBVOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbZLBVTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614AbZLBVOP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbZLBVOO
+	id S1755115AbZLBVTp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:19:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZLBVTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:14:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19585 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753800AbZLBVON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:14:13 -0500
-Message-ID: <4B16D87F.7080701@redhat.com>
-Date: Wed, 02 Dec 2009 19:13:35 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Wed, 2 Dec 2009 16:19:44 -0500
+Received: from 2605ds1-ynoe.0.fullrate.dk ([90.184.12.24]:41501 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753016AbZLBVTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 16:19:43 -0500
+Message-ID: <4B16D9EC.7080009@krogh.cc>
+Date: Wed, 02 Dec 2009 22:19:40 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Jarod Wilson <jarod@wilsonet.com>, Jarod Wilson <jarod@redhat.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-References: <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <20091202201404.GD22689@core.coreip.homeip.net> <4B16CCD7.20601@redhat.com> <20091202205323.GF22689@core.coreip.homeip.net>
-In-Reply-To: <20091202205323.GF22689@core.coreip.homeip.net>
+To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: 2.6.31.6, unresponsiveness and something with nfs
+References: <4B13FBE7.9040304@krogh.cc>
+In-Reply-To: <4B13FBE7.9040304@krogh.cc>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Wed, Dec 02, 2009 at 06:23:51PM -0200, Mauro Carvalho Chehab wrote:
->> Dmitry Torokhov wrote:
->>> On Wed, Dec 02, 2009 at 03:04:30PM -0500, Jarod Wilson wrote:
->>>> On Dec 2, 2009, at 2:56 PM, Dmitry Torokhov wrote:
->>>>> Now I understand that if 2 remotes send completely identical signals we
->>>>> won't be able to separete them, but in cases when we can I think we
->>>>> should.
->>>> I don't have a problem with that, if its a truly desired feature. But
->>>> for the most part, I don't see the point. Generally, you go from
->>>> having multiple remotes, one per device (where "device" is your TV,
->>>> amplifier, set top box, htpc, etc), to having a single universal
->>>> remote that controls all of those devices. But for each device (IR
->>>> receiver), *one* IR command set. The desire to use multiple distinct
->>>> remotes with a single IR receiver doesn't make sense to me. Perhaps
->>>> I'm just not creative enough in my use of IR. :)
->>> Didn't Jon posted his example whith programmable remote pretending to be
->>> several separate remotes (depending on the mode of operation) so that
->>> several devices/applications can be controlled without interfering with
->>> each other?
->>>
->> From what I understood, he is using the same physical remote, but creating different
->> IR groups of keys on it, each group meant to be used by a different application.
->>
->> For such usage, some software will need to filter the scancode group and send
->> them only for a certain application. This can be done easily by using lirc,
->> purely in userspace.
->>
->> Another alternative (that will also work for multimedia keys on a keyboard) is
->> to add a filtering subsystem at evdev that will send certain events for just certain
->> PID's.
+> I have a system running 2.6.31.6 that when running a particular process
+> become "unresponsive". I cannot really tell what it is but the effect is
+> that logins as ordinary users hangs, when that user has its home on a
+> remote NFS-server.
 > 
-> They are the same key events (Lets's say KEY_PLAY) but one is supposed
-> to affect CD player while another DVD player application. Evdev will not
-> be able to distinguish them but if we had 2 separate devices then
-> applications could read from the one thet user assigned to them.
+> so from root "su - localuser" works excellent. But su - user-with-home
+> on-nfs doesnt.
 
-This is clear, but the point is that the two distinguish scancodes can 
-(and, in practice, will) be generated by the same IR. For example, my Satellite IR
-produces two different sets of codes. if you press <SAT>, all keys you press after
-that will have the "sat" address. If you press <TV>, they'll get a different address.
+Ok, the situation is more advanced than just that. I now have the
+"sorting" process running while there is high cpu-only load and that
+doesn't trigger the problem, so it seems to be that I have to have
+"large merging, high cpu-load and lots of networktraffic on the NIC
+(10GbitE)" before I encounter the prooblem.
 
-So, the needed feature is not to really distinguish two different IR's, but to allow
-to create groups of scancodes that will be directed to a distinct interface.
+Is there anything I can do to get a trace or other information about
+what's holding the "login" process back the next time I get into this
+situation?
 
-I won't object about such interface, but the default should be to have just one interface
-and having all conversion applied to that interface.
+Thanks
+-- 
+Jesper
 
-Maybe we can have a separate module for IR evdev filtering to fulfill this need.
-
-Basically, such module will get the events from one input interface and create an
-arbitrary number of evdev devices, and will apply different scancode->keycode tables
-for each different interfaces. I don't see why to limit the input interface to be IR. It
-can eventually be any input interface (bluetooth, keyboard, PS/3 control, Wii control, ...). 
-
-Cheers,
-Mauro.
