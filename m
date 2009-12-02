@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZLBWe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbZLBWhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZLBWe0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbZLBWeZ
+	id S1755928AbZLBWhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbZLBWhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:34:25 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:57106 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755652AbZLBWeY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:34:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=XHyaZErL/MNQbFPUNtKQ0i9GRSil7SzrPX9hNRiBex24vXr/NWL22mA1/Vum3oZr1J
-         CqFCpsKUrRZ7cDQ9JdTIjWjVR752G5H+GsR7jSWXzLtITAsC2ipQbIwp1HFkBtEKCQS4
-         wW+MW/f9hrEan4XqmXMLIqVYN8j4awHeBRZq4=
+	Wed, 2 Dec 2009 17:37:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64817 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755807AbZLBWhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 17:37:39 -0500
+Message-ID: <4B16EC06.6010706@redhat.com>
+Date: Wed, 02 Dec 2009 17:36:54 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Date: Wed, 2 Dec 2009 14:34:30 -0800
-Message-ID: <dd18b0c30912021434t4a247646q48f32c0d0e40faae@mail.gmail.com>
-Subject: root hub lost power or was reset
-From: Justin Mattock <justinmattock@gmail.com>
-To: Linux-usb <linux-usb@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: rostedt@goodmis.org
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, wcohen@redhat.com, fweisbec@gmail.com,
+       tglx@linutronix.de, jbaron@redhat.com,
+       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+Subject: Re: trace/events: DECLARE vs DEFINE semantic
+References: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>	 <1259761934.12870.12.camel@gandalf.stny.rr.com>	 <20091202140128.GA2611@elte.hu>	 <1259764109.12870.37.camel@gandalf.stny.rr.com>	 <20091202144334.GA30359@elte.hu>	 <1259765735.12870.42.camel@gandalf.stny.rr.com>	 <20091202162715.GB9710@Krystal>	 <1259773888.12870.61.camel@gandalf.stny.rr.com>	 <20091202180633.GF9710@Krystal>	 <1259777987.12870.70.camel@gandalf.stny.rr.com>	 <20091202190135.GA23316@Krystal> <1259781578.12870.78.camel@gandalf.stny.rr.com>
+In-Reply-To: <1259781578.12870.78.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been getting a 45 sec
-pause when waking my machine up
-on the first cycle using s2ram.
-At first thought it was udev, but later
-am not sure it is. With further looking
-if I remove the isight_firmware module from the kernel
-suspend wakes up the first cycle as it should.(I don't have
-isight-firmware-tools installed, leading me to believe this might
-be the issue with isight-firmware.ko.)
+Steven Rostedt wrote:
+>>> I think the kernel developers are smart enough to figure out that these
+>>> macros are not a typical DECLARE/DEFINE that is elsewhere. But I think
+>>> using the DECLARE/DEFINE names will give them a better idea of what is
+>>> happening than to make up something completely new.
+>>
+>> In my opinion, re-using a well-known keyword (e.g. DECLARE/DEFINE) but
+>> applying a different semantic to what is generally agreed upon is a
+>> recipe for confusing developers and users, who will skip the review of
+>> some pieces of code assuming they already know what "DECLARE" and
+>> "DEFINE" stands for.
+>>
+>> I argue here that the content of trace/events/ headers are _not_ per se
+>> declarations nor definitions, and hence they should not confuse people
+>> by using inappropriately well-known keywords. They are actually more
+>> evolved macros that can be turned in either a declaration or definition,
+>> depending if CREATE_TRACE_POINTS is declared.
+> 
+> And I argue that the semantics here are not too far off to what those
+> are. Yes, these macros behave differently if CREATE_TRACE_POINTS is
+> declared or not, but I argue that the average (and below average) kernel
+> developer is smart enough to understand this difference.
+> 
+> 
+>>
+>> When I created the markers/tracepoints, Andrew Morton explained to me
+>> the importance of distinguishing DECLARE vs DEFINE macros. I would
+>> really like to hear his point of view on the current question.
+> 
+> I would like to hear Andrew's comments too, as well as anyone else.
+> Randy Dunlap seemed to already approve of these naming conventions, and
+> he's a pretty picky person too.
+> 
+> Randy, do you agree that the use of DECLARE/DEFINE here is fine, or do
+> you think that we should come up with a better naming. I do not want to
+> add any needless abstraction layer for the sake of naming. These macros
+> are confusing enough without that.
+> 
+> Or do you (or anyone else) have a better name?
 
-Now looking at dmesg I see:
+How about renaming DEFINE_EVENT to TRACE_EVENT_CLASS?
 
-[  413.551845] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
-[  413.551855] uhci_hcd 0000:00:1d.0: setting latency timer to 64
-[  413.551887] usb usb2: root hub lost power or was reset
-[  413.551927] uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-[  413.551937] uhci_hcd 0000:00:1d.1: setting latency timer to 64
-[  413.551967] usb usb3: root hub lost power or was reset
-[  413.552019] uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-[  413.552029] uhci_hcd 0000:00:1d.2: setting latency timer to 64
-[  413.552058] usb usb4: root hub lost power or was reset
-[  413.552094] uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 16 (level, low) -> IRQ 16
-[  413.552104] uhci_hcd 0000:00:1d.3: setting latency timer to 64
-[  413.552134] usb usb5: root hub lost power or was reset
-[  413.552172] ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
-[  413.552182] ehci_hcd 0000:00:1d.7: setting latency timer to 64
-[  413.552200] pci 0000:00:1e.0: setting latency timer to 64
-[  413.552217] ata_piix 0000:00:1f.1: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-[  413.552225] ata_piix 0000:00:1f.1: setting latency timer to 64
-[  413.554437] ata_piix 0000:00:1f.2: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-[  413.554446] ata_piix 0000:00:1f.2: setting latency timer to 64
-[  413.554548] pci 0000:00:1f.3: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-[  413.554559] pci 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[  413.554567] pci 0000:01:00.0: setting latency timer to 64
+DECLARE_EVENT_CLASS(y, ...)	declare an event-class y
+TRACE_EVENT_CLASS(x, y, ...)	define/declare a trace event x from event-class y
+TRACE_EVENT(x, ...)		define/declare a trace event x
 
-for a bit I thought that this was also the cause of the delay
-but the system wakes up as it should even with this happening to
-usb.
+Thus TRACE_EVENT_* implies that this macro will be expanded
+to both of definition and declaration.
+I don't think separating it is good idea from the viewpoint
+of maintaining code.
 
-BTW: Is CONFIG_USB_PERSIST in the kernel anymore
-with 2.6.32*?(I can't seem to find that option);
+Thank you,
 
 -- 
-Justin P. Mattock
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
