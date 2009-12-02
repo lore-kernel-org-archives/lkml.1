@@ -1,127 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZLBEhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbZLBEli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbZLBEhv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 23:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbZLBEht
+	id S1755438AbZLBEli (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 23:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbZLBEhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 23:37:49 -0500
-Received: from mga03.intel.com ([143.182.124.21]:35897 "EHLO mga03.intel.com"
+	Tue, 1 Dec 2009 23:37:51 -0500
+Received: from mga14.intel.com ([143.182.124.37]:42823 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755327AbZLBEhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755326AbZLBEhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Dec 2009 23:37:31 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="217764913"
-Message-Id: <20091202043045.991390038@intel.com>
+   d="scan'208";a="217764931"
+Message-Id: <20091202043046.127781753@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 02 Dec 2009 11:12:49 +0800
+Date: Wed, 02 Dec 2009 11:12:50 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 TO: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Wu Fengguang <fengguang.wu@intel.com>
+CC: Nick Piggin <npiggin@suse.de>
 CC: <linux-mm@kvack.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 18/24] HWPOISON: add page flags filter
+Subject: [PATCH 19/24] memcg: rename and export try_get_mem_cgroup_from_page()
 References: <20091202031231.735876003@intel.com>
-Content-Disposition: inline; filename=hwpoison-filter-pgflags.patch
+Content-Disposition: inline; filename=memcg-try_get_mem_cgroup_from_page.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When specified, only poison pages if ((page_flags & mask) == value).
+So that the hwpoison injector can get mem_cgroup for arbitrary page
+and thus know whether it is owned by some mem_cgroup task(s).
 
--       corrupt-filter-flags-mask
--       corrupt-filter-flags-value
-
-This allows stress testing of many kinds of pages.
-
-Strictly speaking, the buddy pages requires taking zone lock, to avoid
-setting PG_hwpoison on a "was buddy but now allocated to someone" page.
-However we can just do nothing because we set PG_locked in the beginning,
-this prevents the page allocator from allocating it to someone. (It will
-BUG() on the unexpected PG_locked, which is fine for hwpoison testing.)
-
-CC: Nick Piggin <npiggin@suse.de>
-CC: Andi Kleen <andi@firstfloor.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/hwpoison-inject.c |   10 ++++++++++
- mm/internal.h        |    2 ++
- mm/memory-failure.c  |   18 ++++++++++++++++++
- 3 files changed, 30 insertions(+)
+ include/linux/memcontrol.h |    6 ++++++
+ mm/memcontrol.c            |   11 ++++-------
+ 2 files changed, 10 insertions(+), 7 deletions(-)
 
---- linux-mm.orig/mm/hwpoison-inject.c	2009-12-01 09:56:00.000000000 +0800
-+++ linux-mm/mm/hwpoison-inject.c	2009-12-01 09:56:06.000000000 +0800
-@@ -85,6 +85,16 @@ static int pfn_inject_init(void)
- 	if (!dentry)
- 		goto fail;
- 
-+	dentry = debugfs_create_u64("corrupt-filter-flags-mask", 0600,
-+				    hwpoison_dir, &hwpoison_filter_flags_mask);
-+	if (!dentry)
-+		goto fail;
-+
-+	dentry = debugfs_create_u64("corrupt-filter-flags-value", 0600,
-+				    hwpoison_dir, &hwpoison_filter_flags_value);
-+	if (!dentry)
-+		goto fail;
-+
- 	return 0;
- fail:
- 	pfn_inject_exit();
---- linux-mm.orig/mm/internal.h	2009-12-01 09:56:00.000000000 +0800
-+++ linux-mm/mm/internal.h	2009-12-01 09:56:06.000000000 +0800
-@@ -268,3 +268,5 @@ extern int hwpoison_filter(struct page *
- 
- extern u32 hwpoison_filter_dev_major;
- extern u32 hwpoison_filter_dev_minor;
-+extern u64 hwpoison_filter_flags_mask;
-+extern u64 hwpoison_filter_flags_value;
---- linux-mm.orig/mm/memory-failure.c	2009-11-30 20:51:22.000000000 +0800
-+++ linux-mm/mm/memory-failure.c	2009-12-01 09:56:06.000000000 +0800
-@@ -34,6 +34,7 @@
- #include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/page-flags.h>
-+#include <linux/kernel-page-flags.h>
- #include <linux/sched.h>
- #include <linux/ksm.h>
- #include <linux/rmap.h>
-@@ -50,6 +51,8 @@ atomic_long_t mce_bad_pages __read_mostl
- 
- u32 hwpoison_filter_dev_major = ~0U;
- u32 hwpoison_filter_dev_minor = ~0U;
-+u64 hwpoison_filter_flags_mask;
-+u64 hwpoison_filter_flags_value;
- 
- static int hwpoison_filter_dev(struct page *p)
- {
-@@ -81,11 +84,26 @@ static int hwpoison_filter_dev(struct pa
- 	return 0;
+--- linux-mm.orig/mm/memcontrol.c	2009-11-02 10:18:42.000000000 +0800
++++ linux-mm/mm/memcontrol.c	2009-11-02 10:26:21.000000000 +0800
+@@ -1379,25 +1379,22 @@ static struct mem_cgroup *mem_cgroup_loo
+ 	return container_of(css, struct mem_cgroup, css);
  }
  
-+static int hwpoison_filter_flags(struct page *p)
+-static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
++struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
+ {
+-	struct mem_cgroup *mem;
++	struct mem_cgroup *mem = NULL;
+ 	struct page_cgroup *pc;
+ 	unsigned short id;
+ 	swp_entry_t ent;
+ 
+ 	VM_BUG_ON(!PageLocked(page));
+ 
+-	if (!PageSwapCache(page))
+-		return NULL;
+-
+ 	pc = lookup_page_cgroup(page);
+ 	lock_page_cgroup(pc);
+ 	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		if (mem && !css_tryget(&mem->css))
+ 			mem = NULL;
+-	} else {
++	} else if (PageSwapCache(page)) {
+ 		ent.val = page_private(page);
+ 		id = lookup_swap_cgroup(ent);
+ 		rcu_read_lock();
+@@ -1742,7 +1739,7 @@ int mem_cgroup_try_charge_swapin(struct 
+ 	 */
+ 	if (!PageSwapCache(page))
+ 		return 0;
+-	mem = try_get_mem_cgroup_from_swapcache(page);
++	mem = try_get_mem_cgroup_from_page(page);
+ 	if (!mem)
+ 		goto charge_cur_mm;
+ 	*ptr = mem;
+--- linux-mm.orig/include/linux/memcontrol.h	2009-11-02 10:18:42.000000000 +0800
++++ linux-mm/include/linux/memcontrol.h	2009-11-02 10:26:21.000000000 +0800
+@@ -68,6 +68,7 @@ extern unsigned long mem_cgroup_isolate_
+ extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
+ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
+ 
++extern struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page);
+ extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
+ 
+ static inline
+@@ -189,6 +190,11 @@ mem_cgroup_move_lists(struct page *page,
+ {
+ }
+ 
++static inline struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
 +{
-+	if (!hwpoison_filter_flags_mask)
-+		return 0;
-+
-+	if ((stable_page_flags(p) & hwpoison_filter_flags_mask) ==
-+				    hwpoison_filter_flags_value)
-+		return 0;
-+	else
-+		return -EINVAL;
++	return NULL;
 +}
 +
- int hwpoison_filter(struct page *p)
+ static inline int mm_match_cgroup(struct mm_struct *mm, struct mem_cgroup *mem)
  {
- 	if (hwpoison_filter_dev(p))
- 		return -EINVAL;
- 
-+	if (hwpoison_filter_flags(p))
-+		return -EINVAL;
-+
- 	return 0;
- }
- 
+ 	return 1;
 
 
