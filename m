@@ -1,97 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbZLBTTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZLBTTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053AbZLBTTO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZLBTTN
+	id S1755517AbZLBTTf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:19:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbZLBTTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:19:13 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39983 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752929AbZLBTTN (ORCPT
+	Wed, 2 Dec 2009 14:19:34 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57212 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755277AbZLBTTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:19:13 -0500
-Date: Wed, 2 Dec 2009 14:19:16 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
-       nhorman@tuxdriver.com
-Subject: [PATCH] Fix tracing infrastructure to support multiple includes
-	when defining CREATE_TRACE_POINTS
-Message-ID: <20091202191916.GA7589@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-Score: -4.4 (----)
+	Wed, 2 Dec 2009 14:19:33 -0500
+Subject: Re: trace/events: DECLARE vs DEFINE semantic
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
+       jbaron@redhat.com, mhiramat@redhat.com,
+       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20091202190135.GA23316@Krystal>
+References: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
+	 <1259761934.12870.12.camel@gandalf.stny.rr.com>
+	 <20091202140128.GA2611@elte.hu>
+	 <1259764109.12870.37.camel@gandalf.stny.rr.com>
+	 <20091202144334.GA30359@elte.hu>
+	 <1259765735.12870.42.camel@gandalf.stny.rr.com>
+	 <20091202162715.GB9710@Krystal>
+	 <1259773888.12870.61.camel@gandalf.stny.rr.com>
+	 <20091202180633.GF9710@Krystal>
+	 <1259777987.12870.70.camel@gandalf.stny.rr.com>
+	 <20091202190135.GA23316@Krystal>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 02 Dec 2009 14:19:38 -0500
+Message-Id: <1259781578.12870.78.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix tracing infrastructure to allow multiple header files with TRACE_EVENTS to
-be included with CREATE_TRACE_EVENTS defined
+On Wed, 2009-12-02 at 14:01 -0500, Mathieu Desnoyers wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > On Wed, 2009-12-02 at 13:06 -0500, Mathieu Desnoyers wrote:
+> > > *
+> > > Hrm. I wonder if having DEFINE_EVENT_CLASS is really worth having,
+> > > considering that it really just does 2 things at once and may be
+> > > confusing.
+> > 
+> > We keep it because that's what TRACE_EVENT currently is. It would suck
+> > to have to replace every TRACE_EVENT there is now with a
+> > DECLARE_EVENT_CLASS and DEFINE_EVENT. Although this would push
+> > developers into using classes.
+> 
+> I agree that keeping something for backward compatibility is good, but
+> what I dislike the most is the similarity between the
+> DECLARE_EVENT_CLASS and DEFINE_EVENT_CLASS which have completely
+> unrelated semantics. This is really misleading.
 
-I've been workingon adding a few tracepoints to the network stack, and in so
-doing it was convienient for me to add a second include file to
-net/core/net-traces.c with TRACE_EVENTS defined in them.  net-traces.c defines
-CREATE_TRACE_EVENTS, and during the build it was failing, complaining about
-duplicate definitions of __tpstrtab_<name>.  I tracked down the bug to find that
-define_trace.h redefined DECLARE_TRACE to be DEFINE_TRACE, so after the first
-run through define_trace.h (which is included from skb.h, included in
-net-trace.c first), the DECLARE_TRACE macro was left with an improper definition
-to start a new cycle with the next header.
+Not really, they are almost identical. But one creates an event with the
+class, whereas the other does not. I find this quite convenient.
 
-The fix I came up with was to make sure that DECLARE_TRACE was undefined at the
-end of define_trace.h, and to add a conditional re-definition in tracepoint.h.
-This places us back in the proper state to define a new set of tracepoints in a
-subsequent header file.  Not sure if theres a better way to handle this, but
-this worked well for me, allowing me to include multiple headers with
-TRACE_EVENT macros in a c file with CREATE_TRACE_POINTS defined.
+> > 
+> > Egad No! It would make it a living nightmare. The internals reuse the
+> > define macro, and there's no intermediate. By changing the
+> > DECLARE_EVENT_CLASS to another name (SKETCH_EVENT_CLASS) we would have
+> > to add something like this:
+> > 
+> > #define SKETCH_EVENT_CLASS(name, proto, args, tstruct, print) \
+> > 	DECLARE_EVENT_CLASS(name, PARAMS(proto), PARAMS(args),\
+> > 		PARAMS(tstruct), PARAMS(print))
+> > 
+> > We don't have a intermediate or "low level" macro in use here. Whatever
+> > we give to the user is what we use.
+> > 
+> 
+> Maybe we should consider having one. e.g.:
+> 
+> #ifdef CREATE_TRACE_POINTS
+> 
+> SKETCH_EVENT_CLASS maps to DEFINE_EVENT_CLASS
+> 
+> #else
+> 
+> SKETCH_EVENT_CLASS maps to DECLARE_EVENT_CLASS
+> 
+> #endif
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+And what? Make another level of needless abstraction? That's sure to not
+confuse people.
+
+> 
+> > 
+> > I think the kernel developers are smart enough to figure out that these
+> > macros are not a typical DECLARE/DEFINE that is elsewhere. But I think
+> > using the DECLARE/DEFINE names will give them a better idea of what is
+> > happening than to make up something completely new.
+> 
+> In my opinion, re-using a well-known keyword (e.g. DECLARE/DEFINE) but
+> applying a different semantic to what is generally agreed upon is a
+> recipe for confusing developers and users, who will skip the review of
+> some pieces of code assuming they already know what "DECLARE" and
+> "DEFINE" stands for.
+> 
+> I argue here that the content of trace/events/ headers are _not_ per se
+> declarations nor definitions, and hence they should not confuse people
+> by using inappropriately well-known keywords. They are actually more
+> evolved macros that can be turned in either a declaration or definition,
+> depending if CREATE_TRACE_POINTS is declared.
+
+And I argue that the semantics here are not too far off to what those
+are. Yes, these macros behave differently if CREATE_TRACE_POINTS is
+declared or not, but I argue that the average (and below average) kernel
+developer is smart enough to understand this difference.
 
 
-linux/tracepoint.h   |   18 ++++++++++++++++++
-trace/define_trace.h |    1 +
-2 files changed, 19 insertions(+)
+> 
+> When I created the markers/tracepoints, Andrew Morton explained to me
+> the importance of distinguishing DECLARE vs DEFINE macros. I would
+> really like to hear his point of view on the current question.
 
-diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-index 2aac8a8..562d8ba 100644
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -173,6 +173,24 @@ static inline void tracepoint_synchronize_unregister(void)
-  *  trace event headers under one "CREATE_TRACE_POINTS" the first include
-  *  will override the TRACE_EVENT and break the second include.
-  */
-+#ifndef DECLARE_TRACE
-+#define DECLARE_TRACE(name, proto, args)                                \
-+	extern struct tracepoint __tracepoint_##name;                   \
-+	static inline void trace_##name(proto)                          \
-+	{                                                               \
-+		if (unlikely(__tracepoint_##name.state))                \
-+			__DO_TRACE(&__tracepoint_##name,                \
-+				TP_PROTO(proto), TP_ARGS(args));        \
-+	}                                                               \
-+	static inline int register_trace_##name(void (*probe)(proto))   \
-+	{                                                               \
-+		return tracepoint_probe_register(#name, (void *)probe); \
-+	}                                                               \
-+	static inline int unregister_trace_##name(void (*probe)(proto)) \
-+	{                                                               \
-+		return tracepoint_probe_unregister(#name, (void *)probe);\
-+	}
-+#endif
- 
- #ifndef TRACE_EVENT
- /*
-diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-index 2a4b3bf..a3e0095 100644
---- a/include/trace/define_trace.h
-+++ b/include/trace/define_trace.h
-@@ -64,6 +64,7 @@
- #undef TRACE_EVENT
- #undef TRACE_EVENT_FN
- #undef TRACE_HEADER_MULTI_READ
-+#undef DECLARE_TRACE
- 
- /* Only undef what we defined in this file */
- #ifdef UNDEF_TRACE_INCLUDE_FILE
+I would like to hear Andrew's comments too, as well as anyone else.
+Randy Dunlap seemed to already approve of these naming conventions, and
+he's a pretty picky person too.
+
+Randy, do you agree that the use of DECLARE/DEFINE here is fine, or do
+you think that we should come up with a better naming. I do not want to
+add any needless abstraction layer for the sake of naming. These macros
+are confusing enough without that.
+
+Or do you (or anyone else) have a better name?
+
+
+-- Steve
+
+
