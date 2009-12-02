@@ -1,128 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZLBAle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbZLBAfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbZLBAle (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 19:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZLBAld
+	id S1754894AbZLBAfR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 19:35:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbZLBAfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 19:41:33 -0500
-Received: from web52904.mail.re2.yahoo.com ([206.190.49.14]:48419 "HELO
-	web52904.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754923AbZLBAlc convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 19:41:32 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Dec 2009 19:41:32 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=E2FfvkaYJIAew2rA20FP+8RZn+CNjH6ty0pnrNnOpqhq/pkK1x0NroL14FtB/OXbBUfqSVh+/gd4uvFNmqjRJXlPN99hgGlfrpxyV8nxZVZs1SPooRY1mHDyakgt3zh+7pKqUVdxj0M6bwVRIlhzvN+sZfD2IWuTBLcDI+NEHdI=;
-Message-ID: <43332.67750.qm@web52904.mail.re2.yahoo.com>
-X-YMail-OSG: qmEj5bcVM1lskiQM_kab8bLEACOg9CRaDvcyHVcktS7uu7AqvctG1mRfCfYL2KYtcKSVKpRnkt9ops.6rHrkzmzuDissJjg8qtqkJEuO8NwKs2jQEGc0.z40txfJJa9ieJa_lpOVnjMMxbwhO2ucF0WOnb19I4ixOk6jg07ZFEFkqkPeqQqsfwaXKqSEyyCRh7vcPi560.fv28FNCDvTjSQDe77c_QPc8qKAb7oZAUDcFy0NIiEE8o4Fpmgusgfp8pmxMCvU39UTJfqAIRTaET2vBxX3ScZ4VoNob3yZetf6DBuPGtVbvrSH.g--
-X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
-Date: Tue, 1 Dec 2009 16:34:57 -0800 (PST)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: [WARNING] Network-related warnings with 2.6.31.6
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org
+	Tue, 1 Dec 2009 19:35:17 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33636 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754787AbZLBAfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 19:35:15 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH] oom_kill: use rss value instead of vm size for badness
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrea Arcangeli <aarcange@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, vedran.furac@gmail.com
+In-Reply-To: <alpine.DEB.2.00.0912011414510.27500@chino.kir.corp.google.com>
+References: <20091201131509.5C19.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0912011414510.27500@chino.kir.corp.google.com>
+Message-Id: <20091202091739.5C3D.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  2 Dec 2009 09:35:19 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> On Tue, 1 Dec 2009, KOSAKI Motohiro wrote:
+> 
+> > > The purpose of /proc/pid/oom_adj is not always to polarize the heuristic 
+> > > for the task it represents, it allows userspace to define when a task is 
+> > > rogue.  Working with total_vm as a baseline, it is simple to use the 
+> > > interface to tune the heuristic to prefer a certain task over another when 
+> > > its memory consumption goes beyond what is expected.  With this interface, 
+> > > I can easily define when an application should be oom killed because it is 
+> > > using far more memory than expected.  I can also disable oom killing 
+> > > completely for it, if necessary.  Unless you have a consistent baseline 
+> > > for all tasks, the adjustment wouldn't contextually make any sense.  Using 
+> > > rss does not allow users to statically define when a task is rogue and is 
+> > > dependent on the current state of memory at the time of oom.
+> > > 
+> > > I would support removing most of the other heuristics other than the 
+> > > baseline and the nodes intersection with mems_allowed to prefer tasks in 
+> > > the same cpuset, though, to make it easier to understand and tune.
+> > 
+> > I feel you talked about oom_adj doesn't fit your use case. probably you need
+> > /proc/{pid}/oom_priority new knob. oom adjustment doesn't fit you.
+> > you need job severity based oom killing order. severity doesn't depend on any
+> > hueristic.
+> > server administrator should know job severity on his system.
+> 
+> That's the complete opposite of what I wrote above, we use oom_adj to 
+> define when a user application is considered "rogue," meaning that it is 
+> using far more memory than expected and so we want it killed.  As you 
+> mentioned weeks ago, the kernel cannot identify a memory leaker; this is 
+> the user interface to allow the oom killer to identify a memory-hogging 
+> rogue task that will (probably) consume all system memory eventually.  
+> The way oom_adj is implemented, with a bit shift on a baseline of 
+> total_vm, it can also polarize the badness heuristic to kill an 
+> application based on priority by examining /proc/pid/oom_score, but that 
+> wasn't my concern in this case.  Using rss as a baseline reduces my 
+> ability to tune oom_adj appropriately to identify those rogue tasks 
+> because it is highly dynamic depending on the state of the VM at the time 
+> of oom.
 
-I've just noticed these warnings in my dmesg log, and have no idea what might have triggered them. e1000 related, perhaps?
+ - I mean you don't need almost kernel heuristic. but desktop user need it.
+ - All job scheduler provide memory limitation feature. but OOM killer isn't
+   for to implement memory limitation. we have memory cgroup.
+ - if you need memory usage based know, read /proc/{pid}/statm and write
+   /proc/{pid}/oom_priority works well probably.
+ - Unfortunatelly, We can't continue to use VSZ based heuristics. because
+   modern application waste 10x VSZ more than RSS comsumption. in nowadays,
+   VSZ isn't good approximation value of RSS. There isn't any good reason to
+   continue form desktop user view.
 
-Cheers,
-Chris
+IOW, kernel hueristic should adjust to target majority user. we provide a knob
+to help minority user.
 
-------------[ cut here ]------------
-WARNING: at /home/chris/LINUX/linux-2.6.31/net/core/stream.c:202 inet_csk_destroy_sock+0x77/0xd3()
-Hardware name: Precision WorkStation 650    
-Modules linked in: tun snd_seq_oss snd_seq_midi snd_seq_dummy fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib snd_rawmidi snd_seq_device snd_timer firewire_ohci ppdev uvcvideo floppy firewire_core snd_page_alloc snd_util_mem snd_hwdep parport_pc pwc psmouse videodev parport v4l1_compat crc_itu_t pcspkr snd sg i2c_i801 serio_raw soundcore dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix libata scsi_mod ehci_hcd e1000 usbcore thermal button radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt
- cfbfillrect [last unloaded: processor]
-Pid: 32056, comm: rpm Not tainted 2.6.31.6 #1
-Call Trace:
- [<c1023ba8>] ? warn_slowpath_common+0x5d/0x70
- [<c1023bc6>] ? warn_slowpath_null+0xb/0xd
- [<c11871ca>] ? inet_csk_destroy_sock+0x77/0xd3
- [<c119188f>] ? tcp_rcv_state_process+0x81f/0x9e8
- [<c11966c3>] ? tcp_v4_do_rcv+0x128/0x16d
- [<c1196b0d>] ? tcp_v4_rcv+0x405/0x640
- [<c118003e>] ? ip_local_deliver_finish+0xf3/0x1ab
- [<c117fcd9>] ? ip_rcv_finish+0x2a9/0x2cf
- [<c117fa30>] ? ip_rcv_finish+0x0/0x2cf
- [<c116b7c5>] ? netif_receive_skb+0x261/0x281
- [<f8527bfc>] ? e1000_clean_rx_irq+0x31c/0x3c3 [e1000]
- [<f852a6fa>] ? e1000_clean+0x2a7/0x3f5 [e1000]
- [<c11c783c>] ? _spin_unlock_irqrestore+0xe/0x21
- [<c10354c0>] ? hrtimer_run_pending+0xd/0xa5
- [<c11c769b>] ? _spin_lock_irq+0xe/0x24
- [<c116bce5>] ? net_rx_action+0x57/0xfd
- [<c1027ea3>] ? __do_softirq+0x7a/0xe3
- [<c1027e29>] ? __do_softirq+0x0/0xe3
- <IRQ>  [<c1027c3c>] ? irq_exit+0x29/0x63
- [<c1004320>] ? do_IRQ+0x7c/0x8d
- [<c1002f29>] ? common_interrupt+0x29/0x30
----[ end trace e643d9455a26ccf3 ]---
-------------[ cut here ]------------
-WARNING: at /home/chris/LINUX/linux-2.6.31/net/ipv4/af_inet.c:151 inet_sock_destruct+0xd8/0x138()
-Hardware name: Precision WorkStation 650    
-Modules linked in: tun snd_seq_oss snd_seq_midi snd_seq_dummy fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib snd_rawmidi snd_seq_device snd_timer firewire_ohci ppdev uvcvideo floppy firewire_core snd_page_alloc snd_util_mem snd_hwdep parport_pc pwc psmouse videodev parport v4l1_compat crc_itu_t pcspkr snd sg i2c_i801 serio_raw soundcore dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix libata scsi_mod ehci_hcd e1000 usbcore thermal button radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt
- cfbfillrect [last unloaded: processor]
-Pid: 32056, comm: rpm Tainted: G        W  2.6.31.6 #1
-Call Trace:
- [<c1023ba8>] ? warn_slowpath_common+0x5d/0x70
- [<c1023bc6>] ? warn_slowpath_null+0xb/0xd
- [<c11a1414>] ? inet_sock_destruct+0xd8/0x138
- [<c1163243>] ? __sk_free+0x10/0xa2
- [<c1196b4a>] ? tcp_v4_rcv+0x442/0x640
- [<c118003e>] ? ip_local_deliver_finish+0xf3/0x1ab
- [<c117fcd9>] ? ip_rcv_finish+0x2a9/0x2cf
- [<c117fa30>] ? ip_rcv_finish+0x0/0x2cf
- [<c116b7c5>] ? netif_receive_skb+0x261/0x281
- [<f8527bfc>] ? e1000_clean_rx_irq+0x31c/0x3c3 [e1000]
- [<f852a6fa>] ? e1000_clean+0x2a7/0x3f5 [e1000]
- [<c11c783c>] ? _spin_unlock_irqrestore+0xe/0x21
- [<c10354c0>] ? hrtimer_run_pending+0xd/0xa5
- [<c11c769b>] ? _spin_lock_irq+0xe/0x24
- [<c116bce5>] ? net_rx_action+0x57/0xfd
- [<c1027ea3>] ? __do_softirq+0x7a/0xe3
- [<c1027e29>] ? __do_softirq+0x0/0xe3
- <IRQ>  [<c1027c3c>] ? irq_exit+0x29/0x63
- [<c1004320>] ? do_IRQ+0x7c/0x8d
- [<c1002f29>] ? common_interrupt+0x29/0x30
----[ end trace e643d9455a26ccf4 ]---
-------------[ cut here ]------------
-WARNING: at /home/chris/LINUX/linux-2.6.31/net/ipv4/af_inet.c:154 inet_sock_destruct+0x11e/0x138()
-Hardware name: Precision WorkStation 650    
-Modules linked in: tun snd_seq_oss snd_seq_midi snd_seq_dummy fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib snd_rawmidi snd_seq_device snd_timer firewire_ohci ppdev uvcvideo floppy firewire_core snd_page_alloc snd_util_mem snd_hwdep parport_pc pwc psmouse videodev parport v4l1_compat crc_itu_t pcspkr snd sg i2c_i801 serio_raw soundcore dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix libata scsi_mod ehci_hcd e1000 usbcore thermal button radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt
- cfbfillrect [last unloaded: processor]
-Pid: 32056, comm: rpm Tainted: G        W  2.6.31.6 #1
-Call Trace:
- [<c1023ba8>] ? warn_slowpath_common+0x5d/0x70
- [<c1023bc6>] ? warn_slowpath_null+0xb/0xd
- [<c11a145a>] ? inet_sock_destruct+0x11e/0x138
- [<c1163243>] ? __sk_free+0x10/0xa2
- [<c1196b4a>] ? tcp_v4_rcv+0x442/0x640
- [<c118003e>] ? ip_local_deliver_finish+0xf3/0x1ab
- [<c117fcd9>] ? ip_rcv_finish+0x2a9/0x2cf
- [<c117fa30>] ? ip_rcv_finish+0x0/0x2cf
- [<c116b7c5>] ? netif_receive_skb+0x261/0x281
- [<f8527bfc>] ? e1000_clean_rx_irq+0x31c/0x3c3 [e1000]
- [<f852a6fa>] ? e1000_clean+0x2a7/0x3f5 [e1000]
- [<c11c783c>] ? _spin_unlock_irqrestore+0xe/0x21
- [<c10354c0>] ? hrtimer_run_pending+0xd/0xa5
- [<c11c769b>] ? _spin_lock_irq+0xe/0x24
- [<c116bce5>] ? net_rx_action+0x57/0xfd
- [<c1027ea3>] ? __do_softirq+0x7a/0xe3
- [<c1027e29>] ? __do_softirq+0x0/0xe3
- <IRQ>  [<c1027c3c>] ? irq_exit+0x29/0x63
- [<c1004320>] ? do_IRQ+0x7c/0x8d
- [<c1002f29>] ? common_interrupt+0x29/0x30
----[ end trace e643d9455a26ccf5 ]---
+or, Can you have any detection idea to distigish typical desktop and your use case?
 
 
 
-      
