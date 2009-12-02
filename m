@@ -1,134 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZLBV3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZLBVaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbZLBV3H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:29:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbZLBV3G
+	id S1755664AbZLBVaN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:30:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZLBVaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:29:06 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:36513 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755658AbZLBV3F convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 16:30:12 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:39481 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbZLBVaL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:29:05 -0500
+	Wed, 2 Dec 2009 16:30:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
          :cc:content-type:content-transfer-encoding;
-        b=BdL+3mBq+wWurloyaoh07qbx31F2cFMAJmPO0HkOFK9i+0r5HWXinNcNT8F9KRp441
-         eZqM+DUioYKp8IEbNbPb6ca85kP81JYrjLdc+RMRXjAlgQyoeO9Nto7dyBRvmeo2NlH3
-         2ke67wSM7x+ojvW0Adwjq1QILs1phI6sdUW6w=
+        b=gSKIg3KGH+nV6RhP0Kyoh5SzUVOw+8QxH09AM0dqXntto+iggaTqFQrYNyECqVDeQQ
+         7rrXktqUKOE5Cw1aNzGWU/43fweaf0Vcid1/zdhiYm5KkI/VlSVfiyn04B07EsIlG9Al
+         027yCUPeAx0VW0xZokDRnue5HXs0hlsr+G3lE=
 MIME-Version: 1.0
-In-Reply-To: <20091202204946.GB25682@nokia.com>
-References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
-	 <20091202173321.GA23738@nokia.com>
-	 <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
-	 <20091202204946.GB25682@nokia.com>
-Date: Wed, 2 Dec 2009 23:29:10 +0200
-Message-ID: <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
-Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI charger
-From: Grazvydas Ignotas <notasas@gmail.com>
-To: felipe.balbi@nokia.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <7946.1259761452@redhat.com>
+References: <1259421863-12777-1-git-send-email-vapier@gentoo.org> 
+	<7946.1259761452@redhat.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 2 Dec 2009 16:29:52 -0500
+Message-ID: <8bd0f97a0912021329y7be05434wc9c39d383bfb7ce4@mail.gmail.com>
+Subject: Re: [uClinux-dev] Re: [PATCH] FDPIC: respect PT_GNU_STACK exec 
+	markings when creating NOMMU stack
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       David McCullough <davidm@snapgear.com>,
+       uClinux development list <uclinux-dev@uclinux.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 2, 2009 at 10:49 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
-> Hi,
+On Wed, Dec 2, 2009 at 08:44, David Howells wrote:
+> Mike Frysinger wrote:
+>> that tends to be 128kB of waste.
 >
-> On Wed, Dec 02, 2009 at 09:34:00PM +0100, ext Grazvydas Ignotas wrote:
->>>>
->>>> +#define BCI_DELAY � � � � � � �100
->>>
->>> 100ms ??? that's too quick for battery monitoring. Imagine that you'll
->>> have
->>> 10 i2c transfers per-second forever with this one. Don't you think you're
->>> waking up omap for nothing ??
->>
->> The work item doesn't queue itself, so this is only used once after
->> every interrupt. The delay itself is needed because charge state
->> machine needs some time to switch states and is not yet in expected
->> state at the time VBUS/AC detect interrupt kicks.
+> While your patch is reasonable, at least in concept, I don't see where you get
+> this bit of the description from.
+
+well, you need the rest of my sentence:
+... it causes a pointless icache flush when starting every ...
+
+so i mean iflushing the stack is a waste, and default FDPIC stack
+tends to be 128kB
+
+>> +                                      (executable_stack & EXSTACK_ENABLE_X ? PROT_EXEC : 0),
 >
-> ok got it... not so bad then ;-)
+> executable_stack might be EXSTACK_DEFAULT, but the default might be to enable
+> stack exec - in which case, this is wrong.
 >
->>>> +static struct twl4030_bci_device_info twl4030_bci = {
->>>
->>> this should be allocated on probe() time.
->>
->> I need to access it from twl4030charger_usb_en().. Could only leave
->> delayed_work global and allocate everything else in probe() if you
->> prefer that.
->
-> well, you could keep only a global static pointer and after allocating that
-> in probe, make the global static pointer, point to it... Anyways, I think
-> twl4030charger_usb_en() should change its prototype to something like
->
-> twl4030charger_usb_en(struct twl4030_bci *bci, int enable);
+> I also don't think that the EXSTACK_xxx constants are a bitmask; I think
+> they're an enumeration - in which case you shouldn't be using '&' to test
+> them.  setup_arg_pages() uses '=='.
 
-This function is called by twl4030-usb, where will it get this bci pointer from?
+err, right, this probably should have read something like:
+(executable_stack == EXSTACK_DISABLE_X ? 0 : PROT_EXEC)
 
-> you could leave userland to decide whether to start charging, specially in
-> usb charging case where we still need to know if we where enumerated with
-> 100mA or 500mA configuration.
+> Further, I think it only matters for MMU and MPU modes, not for NOMMU mode.
 
->From what I saw in other drivers they are setup to start charging
-automatically as soon as they see VBUS. Maybe Anton can give more
-details here.
+it matters for all modes wrt the iflush that execution perms imply.
+in terms of actually being able to execute anything (and having the
+permissions respected), you are correct.  my concern was more for the
+former issue ... the latter is just a nice side effect.
 
-> How are you differing between those currently?
+> There is one further consequence of your patch that you don't mention: the brk
+> area _also_ becomes non-executable.  In NOMMU, I suspect this is irrelevant,
+> as I'm not sure brk is used at all (should we make sys_brk() return ENOSYS?).
 
-Not handled at all at the moment (uses BCI defaults).
+i didnt realize this ... that's why we have you here ;).  i have seen
+a few apps use brk()/sbrk() to query the size of things (like
+e2fsprogs), but not to try and increase mappings, let alone to try and
+load dynamic code and jump there (i havent even seen this on mmu
+systems).  certainly the uClibc malloc implementations dont use these
+functions for nommu systems, nor would they work reliably since we
+dont have the luxury of assuming the brk() space is wide open (since
+it can easily be sitting against another mapping).
 
->>> I don't like the way you did this. I would expect twl4030-usb to kick the
->>> charger detection based on the VBUS irq. You have to consider the
->>> possibility of boards which won't use BCI module and will have some
->>> bq24xxx
->>> chip dealing with that like RX51. So instead of implementing this here
->>> and
->>> forcing people to have this driver enabled on e.g. RX51, you should
->>> implement the charger_enable_usb() logic in twl4030-usb itself. /me
->>> thinks
->>
->> I don't think charging is twl4030-usb's business, also notifying
->> power_supply core about charge state changes that I do here.
->
-> I was talking about the charger detection.
+> How about the attached instead?
 
-The USB_PRES interrupt belongs to twl4030-usb, so it gets it's
-detection as before and does not need this driver, where is the
-problem? This driver only registers CHG_PRES, which is AC charger
-detect interrupt.
+ive tested it and it works fine for me.  my fdpic apps get an exec
+stack if the PT_GNU_STACK has E, and they dont if it doesnt.
 
-> The start of charge you could leave to userland to handle, no ?
+> Probably VM_DATA_DEFAULT_FLAGS should not
+> include VM_EXEC for either Blackfin or FRV, but it may be required for SH.
+> The if-statement that calls elf_read_implies_exec() will be optimised away
+> unless the arch specifically sets it (which none of FRV, Blackfin or SH do).
 
-Maybe, I wonder if there is standard way to do that.
-Anton?
+while true, wont the later personality test (in VM_DATA_DEFAULT_FLAGS)
+be left there ?  guess it's not that big of a deal.
 
->
->> What about just returning early from twl4030charger_usb_en() if this
->> driver is not started? TWL4030-core requires twl4030_bci_platform_data
->> to be present to even register this driver, so it won't start on RX51.
->> RX51 can also choose not to compile this driver in, then
->> twl4030charger_usb_en() call won't even be done fom twl4030-usb.
->
-> still we need to detect the charger...
->
->>> how about using request_threaded_irq() ?? then you avoid having that
->>> workqueue.
->>
->> I need to do some delayed processing after VBUS/AC detect interrupts
->> kick, delayed_work looked perfect for this. Also note that I can't get
->> USB_PRES interrupt (taken by twl4030-usb), only a callback from
->> twl4030-usb.
->
-> or you let userland to handle a bit more of this logic (??)
-
-Still need to autostart AC charging, who would plug AC adapter and
-want to fiddle with the GUI to start charging instead it having it go
-automatically? Agree about USB userspace switch though..
+perhaps this define should be added to asm-generic/page.h though
+rather than each arch.  the default value you use seems reasonable for
+everyone.
+-mike
