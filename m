@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZLBMvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbZLBMzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZLBMvZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 07:51:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZLBMvZ
+	id S1753990AbZLBMzN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 07:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZLBMzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 07:51:25 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:52722 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751727AbZLBMvY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 07:51:24 -0500
-From: Ian Molton <ian.molton@collabora.co.uk>
-To: linux-kernel@vger.kernel.org
-Cc: rusty@rustcorp.com.au, herbert@gondor.apana.org.au,
-       Ian Molton <ian.molton@collabora.co.uk>
-Subject: [PATCH] hw_random: prevent too-small buffer sizes
-Date: Wed,  2 Dec 2009 12:50:38 +0000
-Message-Id: <1259758238-3507-1-git-send-email-ian.molton@collabora.co.uk>
-X-Mailer: git-send-email 1.6.5
+	Wed, 2 Dec 2009 07:55:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10106 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753699AbZLBMzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 07:55:11 -0500
+Date: Wed, 2 Dec 2009 13:55:01 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+Message-ID: <20091202125501.GD28697@random.random>
+References: <20091201181633.5C31.A69D9226@jp.fujitsu.com>
+ <20091201093738.GL30235@random.random>
+ <20091201184535.5C37.A69D9226@jp.fujitsu.com>
+ <20091201095947.GM30235@random.random>
+ <4B15F642.1080308@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B15F642.1080308@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	This patch prevents the hw_random core using too small of a buffer
-on machines with small cacheline sizes.
+On Wed, Dec 02, 2009 at 12:08:18AM -0500, Rik van Riel wrote:
+> The VM needs to touch a few (but only a few) PTEs in
+> that situation, to make sure that anonymous pages get
+> moved to the inactive anon list and get to a real chance
+> at being referenced before we try to evict anonymous
+> pages.
+> 
+> Without a small amount of pre-aging, we would end up
+> essentially doing FIFO replacement of anonymous memory,
+> which has been known to be disastrous to performance
+> for over 40 years now.
 
-Signed-off-by: Ian Molton <ian.molton@collabora.co.uk>
----
- drivers/char/hw_random/core.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+So far the only kernel that hangs in fork is the newer one...
 
-diff --git a/drivers/char/hw_random/core.c b/drivers/char/hw_random/core.c
-index 5c2d13c..8b7d56a 100644
---- a/drivers/char/hw_random/core.c
-+++ b/drivers/char/hw_random/core.c
-@@ -53,7 +53,8 @@ static struct hwrng *current_rng;
- static LIST_HEAD(rng_list);
- static DEFINE_MUTEX(rng_mutex);
- static int data_avail;
--static u8 rng_buffer[SMP_CACHE_BYTES] __cacheline_aligned;
-+static u8 rng_buffer[SMP_CACHE_BYTES < 32 ? 32 : SMP_CACHE_BYTES]
-+	__cacheline_aligned;
- 
- static inline int hwrng_init(struct hwrng *rng)
- {
--- 
-1.6.5
+In general I cannot care less about FIFO, I care about no CPU waste on
+100% of my systems were swap is not needed. All my unmapped cache is
+100% garbage collectable, and there is never any reason to flush any
+tlb and walk the rmap chain. Give me a knob to disable the CPU waste
+given I know what is going on, on my systems. I am totally ok with
+slightly slower swap performance and fifo replacement in case I
+eventually hit swap for a little while, then over time if memory
+pressure stays high swap behavior will improve regardless of
+flooding ipis to clear young bit when there are hundred gigabytes of
+freeaeble cache unmapped and clean.
 
+> Having said that - it may be beneficial to keep very heavily
+> shared pages on the active list, without ever trying to scan
+> the ptes associated with them.
+
+Just mapped pages in general, not heavily... The other thing that is
+beneficial likely is to stop page_referenced after 64 young bit clear,
+that is referenced enough, you can enable this under my knob so that
+it won't screw your algorithm. I don't have 1 terabyte of memory, so
+you don't have to worry for me, I just want every cycle out of my cpu
+without having to use O_DIRECT all the time.
