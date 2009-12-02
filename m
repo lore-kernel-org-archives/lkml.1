@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZLBUyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZLBU5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbZLBUyr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 15:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbZLBUyq
+	id S1754724AbZLBU5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 15:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZLBU5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 15:54:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57696 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754442AbZLBUyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 15:54:45 -0500
-Message-ID: <4B16D3FC.6070702@redhat.com>
-Date: Wed, 02 Dec 2009 18:54:20 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Wed, 2 Dec 2009 15:57:39 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:46701
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402AbZLBU5i convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 15:57:38 -0500
+Subject: Re: [RFC v2] Another approach to IR
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <20091202204811.GE22689@core.coreip.homeip.net>
+Date: Wed, 2 Dec 2009 15:57:38 -0500
+Cc: Jarod Wilson <jarod@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
        Devin Heitmueller <dheitmueller@kernellabs.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
-       superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-References: <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com>	 <20091201175400.GA19259@core.coreip.homeip.net>	 <4B1567D8.7080007@redhat.com>	 <20091201201158.GA20335@core.coreip.homeip.net>	 <4B15852D.4050505@redhat.com>	 <20091202093803.GA8656@core.coreip.homeip.net>	 <4B16614A.3000208@redhat.com>	 <20091202171059.GC17839@core.coreip.homeip.net>	 <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>	 <20091202182329.GA20530@core.coreip.homeip.net> <9e4733910912021057s3e4ec06an906e3fb0d32aa301@mail.gmail.com>
-In-Reply-To: <9e4733910912021057s3e4ec06an906e3fb0d32aa301@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <B8514BFF-DB1B-4475-9E6D-E2A567A998FA@wilsonet.com>
+References: <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <20091202201404.GD22689@core.coreip.homeip.net> <434927DD-0E66-4D0E-B705-022B7FCCCDB0@wilsonet.com> <20091202204811.GE22689@core.coreip.homeip.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
-> Some major use cases:
-> using IR as a keyboard replacement, controlling X and apps with it in
-> via mouse and keyboard emulation.
-> using IR to control a headless embedded device possibly running
-> multiple apps - like audio and home automation (my app)
-> IR during boot when it is the only input device the box has.
-> multifunction remote controlling several apps
-> using several different remotes to control a single app
-
-I think you reasonably described the major usecases.
-
->>> If everyone hates configfs the same mapping can be done via the set
->>> keys IOCTL and making changes to the user space apps like loadkeys.
->>>
->> It is not the hate of configfs per se, but rather concern that configfs
->> takes too much resources and is not normally enabled.
+On Dec 2, 2009, at 3:48 PM, Dmitry Torokhov wrote:
+...
+>>>>>> Personally, I've always considered the driver/interface to be the  
+>>>>>> receiver, not the remote. The lirc drivers operate at the receiver  
+>>>>>> level, anyway, and the distinction between different remotes is made by  
+>>>>>> the lirc daemon.
+>>>>> 
+>>>>> The fact that lirc does it this way does not necessarily mean it is the
+>>>>> most corerct way.
+>>>> 
+>>>> No, I know that, I'm just saying that's how I've always looked at it, and that's how lirc does it right now, not that it must be that way.
+>>>> 
+>>>>> Do you expect all bluetooth input devices be presented
+>>>>> as a single blob just because they happen to talk to the sane receiver
+>>>>> in yoru laptop? Do you expect your USB mouse and keyboard be merged
+>>>>> together just because they end up being serviced by the same host
+>>>>> controller? If not why remotes should be any different?
+>>>> 
+>>>> A bluetooth remote has a specific device ID that the receiver has to
+>>>> pair with. Your usb mouse and keyboard each have specific device IDs.
+>>>> A usb IR *receiver* has a specific device ID, the remotes do not. So
+>>>> there's the major difference from your examples.
+>>>> 
+>>> 
+>>> Not exactly... I can have 2 identical USB keyboadrs form the same
+>>> manufacturer and they will still be treated separately. BT has session
+>>> ID to help distinguish between devices.
+>> 
+>> Semantics. :)
+>> 
+>> My main point is that each of these devices has device ID that can be determined without having to first do some protocol analysis and table lookups to figure out which "device" some random IR input is actually coming from.
+>> 
 > 
-> It adds about 35K on 64b x86. 30K on 32b powerpc. If it gets turned on
-> by default other subsystems might start using it too. I work on an
-> embedded system. These arguments about non-swapable vs swapable are
-> pointless. Embedded systems don't have swap devices.
+> Heh, right back at ya ;) The fact that you need to do some more work
+> to separate 2 physical devices does not mean it should not be done.
 
-> Of course config can be eliminated by modifying the setkeys IOCTL and
-> user space tools. It will require some more mods to input to allow
-> multiple maps monitoring the input stream and splitting them onto
-> multiple evdev devices. This is an equally valid way of building the
-> maps.
-> 
-> The code I posted is just demo code. It is clearly not in shape to be
-> merged. Its purpose was to spark a design discussion around creating a
-> good long-term architecture for IR.
+No, but it means added complexity inside the kernel. I'm questioning whether the added complexity is worth it, when I doubt the vast majority of users would take advantage of it, and it can already be done in userspace. Although... Damn. The userspace approach would only work if the device were passing raw IR to userspace, so in the in-kernel decoding case, yeah, I guess you'd need separate input devices for each remote to use them independently. Meh. Doubt I'd ever use it, but I guess I'll concede that it makes some sense to do the extra work.
 
-Unfortunately, afaik, most distros don't enable configfs yet. I have to
-manually compile my kernel when I need some useful stuff there.
+-- 
+Jarod Wilson
+jarod@wilsonet.com
 
-I agree with Dmitry: IR is probably not enough to have this enabled by
-default on distros. I prefer a more traditional approach like ioctls 
-(and/or sysfs) instead of configfs.
 
-Cheers,
-Mauro.
+
