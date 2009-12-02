@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbZLBNbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZLBNcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155AbZLBNbQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 08:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZLBNbQ
+	id S1754130AbZLBNcc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZLBNcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 08:31:16 -0500
-Received: from mga14.intel.com ([143.182.124.37]:28448 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753518AbZLBNbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 08:31:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="217909077"
-Date: Wed, 2 Dec 2009 21:31:01 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/24] HWPOISON: remove the free buddy page handler
-Message-ID: <20091202133101.GD13277@localhost>
-References: <20091202031231.735876003@intel.com> <20091202043044.878843398@intel.com> <20091202131330.GF18989@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091202131330.GF18989@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 2 Dec 2009 08:32:31 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:64966 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbZLBNca (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 08:32:30 -0500
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+To: List Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>,
+       List Linux Omap <linux-omap@vger.kernel.org>
+Subject: [PATCH] mfd: twl4030: clarify the return value for read and write
+Date: Wed,  2 Dec 2009 15:31:18 +0200
+Message-Id: <1259760678-18707-1-git-send-email-amit.kucheria@verdurent.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 02 Dec 2009 13:31:23.0496 (UTC) FILETIME=[BDA97680:01CA7353]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 09:13:30PM +0800, Andi Kleen wrote:
-> On Wed, Dec 02, 2009 at 11:12:41AM +0800, Wu Fengguang wrote:
-> > The buddy page has already be handled in the very beginning.
-> > So remove redundant code.
-> 
-> I think I prefer the table to be complete, even if some of the 
-> cases might not happen currently. A BUG() would be reasonable though.
+We should be checking if all the messages were tranferred or not. Currently we
+return success even if none of messages were transferred successfully.
 
-I'd prefer not to carry around some useless bytes in kernel.
+Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
+---
+ drivers/mfd/twl4030-core.c |   21 +++++++++++++--------
+ 1 files changed, 13 insertions(+), 8 deletions(-)
 
-What if we replace it with a comment line in the table?
+diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+index cf462b9..6ace378 100644
+--- a/drivers/mfd/twl4030-core.c
++++ b/drivers/mfd/twl4030-core.c
+@@ -298,10 +298,12 @@ int twl4030_i2c_write(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
+ 	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 1);
+ 	mutex_unlock(&twl->xfer_lock);
+ 
+-	/* i2cTransfer returns num messages.translate it pls.. */
+-	if (ret >= 0)
+-		ret = 0;
+-	return ret;
++	/* i2c_transfer returns number of messages transferred */
++	if (ret != 1) {
++		pr_err("%s: twl4030_i2c_write failed to transfer all messages\n", DRIVER_NAME);
++		return ret;
++	} else
++		return 0;
+ }
+ EXPORT_SYMBOL(twl4030_i2c_write);
+ 
+@@ -350,10 +352,13 @@ int twl4030_i2c_read(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
+ 	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 2);
+ 	mutex_unlock(&twl->xfer_lock);
+ 
+-	/* i2cTransfer returns num messages.translate it pls.. */
+-	if (ret >= 0)
+-		ret = 0;
+-	return ret;
++	/* i2c_transfer returns number of messages transferred */
++	if (ret != 2) {
++		pr_err("%s: twl4030_i2c_read failed to transfer all messages\n", DRIVER_NAME);
++		return ret;
++	}
++	else
++		return 0;
+ }
+ EXPORT_SYMBOL(twl4030_i2c_read);
+ 
+-- 
+1.6.3.3
 
-Thanks,
-Fengguang
