@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZLBGH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZLBGIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbZLBGH6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 01:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbZLBGHz
+	id S1754130AbZLBGIn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 01:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZLBGH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 01:07:55 -0500
-Received: from mail.perches.com ([173.55.12.10]:1239 "EHLO mail.perches.com"
+	Wed, 2 Dec 2009 01:07:57 -0500
+Received: from mail.perches.com ([173.55.12.10]:1225 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752907AbZLBGHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752915AbZLBGHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Dec 2009 01:07:50 -0500
 From: Joe Perches <joe@perches.com>
 To: Stephen Hemminger <shemminger@vyatta.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH 11/13] drivers/block/floppy.c: Add function is_ready_state
-Date: Tue,  1 Dec 2009 22:07:51 -0800
-Message-Id: <7ab46de8d857b9bb5c91ea759b65a7ae5bcce870.1259733457.git.joe@perches.com>
+Subject: [PATCH 12/13] drivers/block/floppy.c: Readd SunOS eject cmd comment
+Date: Tue,  1 Dec 2009 22:07:52 -0800
+Message-Id: <2559266325cef800503beb097b24bb0cbe3ef215.1259733457.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1259733456.git.joe@perches.com>
 References: <cover.1259733456.git.joe@perches.com>
@@ -23,64 +23,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Used a couple of times, might simplify the code a bit.
+And a little comment neatening
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/block/floppy.c |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/block/floppy.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 4a9cb15..e054fae 100644
+index e054fae..7c33f61 100644
 --- a/drivers/block/floppy.c
 +++ b/drivers/block/floppy.c
-@@ -1307,6 +1307,12 @@ static inline int is_selected(int dor, int unit)
- 	return ((dor & (0x10 << unit)) && (dor & 3) == unit);
+@@ -1814,8 +1814,7 @@ static int fdc_configure(void)
+ 		return 0;
+ 	output_byte(0);
+ 	output_byte(0x10 | (no_fifo & 0x20) | (fifo_depth & 0xf));
+-	output_byte(0);		/* pre-compensation from track
+-				   0 upwards */
++	output_byte(0);		/* pre-compensation from track 0 upwards */
+ 	return 1;
  }
  
-+static bool is_ready_state(int status)
-+{
-+	int state = status & (STATUS_READY | STATUS_DIR | STATUS_DMA);
-+	return state == STATUS_READY;
-+}
-+
- static int set_dor(int fdc, char mask, char data)
- {
- 	unsigned char unit;
-@@ -1348,8 +1354,10 @@ static void twaddle(void)
- 	DRS->select_date = jiffies;
- }
+@@ -3991,9 +3990,12 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
+ 	} inparam;		/* parameters coming from user space */
+ 	const char *outparam;	/* parameters passed back to user space */
  
--/* reset all driver information about the current fdc. This is needed after
-- * a reset, and after a raw command. */
-+/*
-+ * Reset all driver information about the current fdc.
-+ * This is needed after a reset, and after a raw command.
-+ */
- static void reset_fdc_info(int mode)
- {
- 	int drive;
-@@ -1688,7 +1696,7 @@ static int output_byte(char byte)
- 	if (status < 0)
- 		return -1;
+-	/* convert compatibility eject ioctls into floppy eject ioctl.
++	/*
++	 * convert compatibility eject ioctls into floppy eject ioctl.
+ 	 * We do this in order to provide a means to eject floppy disks before
+-	 * installing the new fdutils package */
++	 * installing the new fdutils package,
++	 * 0x6470 is SunOS floppy eject
++	 */
+ 	if (cmd == CDROMEJECT || cmd == 0x6470) {
+ 		DPRINT("obsolete eject ioctl\n");
+ 		DPRINT("please use floppycontrol --eject\n");
+@@ -4029,8 +4031,8 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
+ 		if (lock_fdc(drive, true))
+ 			return -EINTR;
  
--	if ((status & (STATUS_READY | STATUS_DIR | STATUS_DMA)) == STATUS_READY) {
-+	if (is_ready_state(status)) {
- 		fd_outb(byte, FD_DATA);
- #ifdef FLOPPY_SANITY_CHECK
- 		output_log[output_log_pos].data = byte;
-@@ -1748,8 +1756,10 @@ static int need_more_output(void)
+-		/* do the actual eject. Fails on
+-		 * non-Sparc architectures */
++		/* Do the actual eject.
++		 * Fails on non-Sparc architectures */
+ 		ret = fd_eject(UNIT(drive));
  
- 	if (status < 0)
- 		return -1;
--	if ((status & (STATUS_READY | STATUS_DIR | STATUS_DMA)) == STATUS_READY)
-+
-+	if (is_ready_state(status))
- 		return MORE_OUTPUT;
-+
- 	return result();
- }
- 
+ 		set_bit(FD_DISK_CHANGED_BIT, &UDRS->flags);
 -- 
 1.6.6.rc0.57.gad7a
 
