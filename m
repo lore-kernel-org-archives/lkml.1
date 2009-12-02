@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZLBNoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZLBNor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbZLBNoK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 08:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZLBNoJ
+	id S1754305AbZLBNor (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZLBNoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 08:44:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51893 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753457AbZLBNoJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 08:44:09 -0500
-Date: Wed, 2 Dec 2009 14:44:15 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/24] HWPOISON: abort on failed unmap
-Message-ID: <20091202134415.GJ18989@one.firstfloor.org>
-References: <20091202031231.735876003@intel.com> <20091202043044.293905787@intel.com> <20091202131150.GE18989@one.firstfloor.org> <20091202132819.GC13277@localhost>
+	Wed, 2 Dec 2009 08:44:46 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36746 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbZLBNoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 08:44:46 -0500
+Subject: [PATCH][stable] b44 WOL setup: one-bit-off stack corruption kernel
+ panic fix
+From: Stanislav Brabec <sbrabec@suse.cz>
+To: Gary Zambrano <zambrano@broadcom.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="ISO-8859-2"
+Organization: SuSE CR, s. r. o.
+Date: Wed, 02 Dec 2009 14:45:47 +0100
+Message-Id: <1259761547.8709.264.camel@hammer.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091202132819.GC13277@localhost>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 09:28:19PM +0800, Wu Fengguang wrote:
-> On Wed, Dec 02, 2009 at 09:11:50PM +0800, Andi Kleen wrote:
-> > >  	 * Now take care of user space mappings.
-> > > +	 * Abort on fail: __remove_from_page_cache() assumes unmapped page.
-> > >  	 */
-> > > -	hwpoison_user_mappings(p, pfn, trapno);
-> > > +	if (hwpoison_user_mappings(p, pfn, trapno) != SWAP_SUCCESS) {
-> > > +		res = -EBUSY;
-> > > +		goto out;
-> > 
-> > It would be good to print something in this case.
-> 
-> OK.
+About 50% of shutdowns of b44 Ethernet adapter ends by kernel panic with
+kernels compiled with stack-protector.
 
-I'll add it.
+Checking b44_magic_pattern() return values, one call of
+b44_magic_pattern() returns 127. It means, that set_bit(128, pmask) was
+called on line 1509. It means that bit 0 of 17th byte of pmask was
+overwritten. But pmask has only 16 bytes. Stack corruption happens.
+ 
+It seems that set_bit() on line 1509 always writes one bit off.
 
-> 
-> > Did you actually see it during testing?
-> 
-> Perhaps not.
-> 
-> > Or maybe loop forever in the unmapper.
-> 
-> !SWAP_SUCCESS should be rare, so not necessary to loop forever?
+The fix does not only solve the stack corruption, but also makes Wake On
+LAN working on my onboard B44 on Asus A7V-333X mainboard.
 
-I think the loop I originally added was overcautious and could
-be even removed possibly now. It probably needs some more analysis how l
-ikely unmapping failures really are.
+It seems that this problem affects all kernel versions since commit
+725ad800 on 2006-06-20.
 
--Andi
+Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
+
+diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+index 2a91323..4869adb 100644
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -1505,8 +1505,7 @@ static int b44_magic_pattern(u8 *macaddr, u8 *ppattern, u8 *pmask, int offset)
+ 		for (k = 0; k< ethaddr_bytes; k++) {
+ 			ppattern[offset + magicsync +
+ 				(j * ETH_ALEN) + k] = macaddr[k];
+-			len++;
+-			set_bit(len, (unsigned long *) pmask);
++			set_bit(len++, (unsigned long *) pmask);
+ 		}
+ 	}
+ 	return len - 1;
+
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Best Regards / S pozdravem,
+
+Stanislav Brabec
+software developer
+---------------------------------------------------------------------
+SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
+Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
+190 00 Praha 9                                  fax: +420 284 028 951
+Czech Republic                                    http://www.suse.cz/
+
