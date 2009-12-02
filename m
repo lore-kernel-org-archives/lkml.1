@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbZLBKnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbZLBKnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752302AbZLBKnD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 05:43:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZLBKnD
+	id S1753555AbZLBKnm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 05:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZLBKnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 05:43:03 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44837 "EHLO hera.kernel.org"
+	Wed, 2 Dec 2009 05:43:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44867 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751055AbZLBKnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 05:43:01 -0500
-Date: Wed, 2 Dec 2009 10:42:34 GMT
-From: tip-bot for Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tj@kernel.org, tglx@linutronix.de, mingo@elte.hu, avi@redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tj@kernel.org, tglx@linutronix.de, avi@redhat.com, mingo@elte.hu
-In-Reply-To: <1259726212-30259-2-git-send-email-tj@kernel.org>
-References: <1259726212-30259-2-git-send-email-tj@kernel.org>
+	id S1753431AbZLBKni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 05:43:38 -0500
+Date: Wed, 2 Dec 2009 10:42:48 GMT
+From: tip-bot for Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
+       mingo@redhat.com, randy.dunlap@oracle.com, wcohen@redhat.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       jbaron@redhat.com, mhiramat@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       wcohen@redhat.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, jbaron@redhat.com, mhiramat@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
+References: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Revert 498657a478c60be092208422fefa9c7b248729c2
-Message-ID: <tip-8592e6486a177a02f048567cb928bc3a1f9a86c3@git.kernel.org>
-Git-Commit-ID: 8592e6486a177a02f048567cb928bc3a1f9a86c3
+Subject: [tip:perf/core] tracing: Add DEFINE_EVENT(), DEFINE_SINGLE_EVENT() support to docbook
+Message-ID: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
+Git-Commit-ID: 3a9089fd78367e2c6c815129030b790a0f5c2715
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,66 +34,77 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8592e6486a177a02f048567cb928bc3a1f9a86c3
-Gitweb:     http://git.kernel.org/tip/8592e6486a177a02f048567cb928bc3a1f9a86c3
-Author:     Tejun Heo <tj@kernel.org>
-AuthorDate: Wed, 2 Dec 2009 12:56:46 +0900
+Commit-ID:  3a9089fd78367e2c6c815129030b790a0f5c2715
+Gitweb:     http://git.kernel.org/tip/3a9089fd78367e2c6c815129030b790a0f5c2715
+Author:     Jason Baron <jbaron@redhat.com>
+AuthorDate: Tue, 1 Dec 2009 12:18:49 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 2 Dec 2009 09:55:33 +0100
+CommitDate: Wed, 2 Dec 2009 09:57:37 +0100
 
-sched: Revert 498657a478c60be092208422fefa9c7b248729c2
+tracing: Add DEFINE_EVENT(), DEFINE_SINGLE_EVENT() support to docbook
 
-498657a478c60be092208422fefa9c7b248729c2 incorrectly assumed
-that preempt wasn't disabled around context_switch() and thus
-was fixing imaginary problem.  It also broke KVM because it
-depended on ->sched_in() to be called with irq enabled so that
-it can do smp calls from there.
+The introduction of the new 'DECLARE_EVENT_CLASS()' obviates the
+need for the 'TRACE_EVENT()' macro in some cases. Thus, docbook
+style comments that used to live with 'TRACE_EVENT()' are now
+moved to 'DEFINE_EVENT()'. Thus, we need to make the docbook
+system understand the new 'DEFINE_EVENT()' macro. In addition
+I've tried to futureproof the patch, by also adding support for
+'DEFINE_SINGLE_EVENT()', since there has been discussion about
+renaming: TRACE_EVENT() -> DEFINE_SINGLE_EVENT().
 
-Revert the incorrect commit and add comment describing different
-contexts under with the two callbacks are invoked.
+Without this patch the tracepoint docbook fails to build.
 
-Avi: spotted transposed in/out in the added comment.
+I've verified that this patch correctly builds the tracepoint
+docbook which currently covers signals, and irqs.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Acked-by: Avi Kivity <avi@redhat.com>
-Cc: peterz@infradead.org
-Cc: efault@gmx.de
-Cc: rusty@rustcorp.com.au
-LKML-Reference: <1259726212-30259-2-git-send-email-tj@kernel.org>
+Changes in v2:
+ - properly indent perl 'if' statements
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: William Cohen <wcohen@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+LKML-Reference: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/preempt.h |    5 +++++
- kernel/sched.c          |    2 +-
- 2 files changed, 6 insertions(+), 1 deletions(-)
+ scripts/kernel-doc |   15 ++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/preempt.h b/include/linux/preempt.h
-index 72b1a10..2e681d9 100644
---- a/include/linux/preempt.h
-+++ b/include/linux/preempt.h
-@@ -105,6 +105,11 @@ struct preempt_notifier;
-  * @sched_out: we've just been preempted
-  *    notifier: struct preempt_notifier for the task being preempted
-  *    next: the task that's kicking us out
-+ *
-+ * Please note that sched_in and out are called under different
-+ * contexts.  sched_out is called with rq lock held and irq disabled
-+ * while sched_in is called without rq lock and irq enabled.  This
-+ * difference is intentional and depended upon by its users.
-  */
- struct preempt_ops {
- 	void (*sched_in)(struct preempt_notifier *notifier, int cpu);
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b3d4e2b..1031cae 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2768,9 +2768,9 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	prev_state = prev->state;
- 	finish_arch_switch(prev);
- 	perf_event_task_sched_in(current, cpu_of(rq));
--	fire_sched_in_preempt_notifiers(current);
- 	finish_lock_switch(rq, prev);
+diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+index ea9f8a5..241310e 100755
+--- a/scripts/kernel-doc
++++ b/scripts/kernel-doc
+@@ -1852,10 +1852,17 @@ sub tracepoint_munge($) {
+ 	my $tracepointname = 0;
+ 	my $tracepointargs = 0;
  
-+	fire_sched_in_preempt_notifiers(current);
- 	if (mm)
- 		mmdrop(mm);
- 	if (unlikely(prev_state == TASK_DEAD)) {
+-	if($prototype =~ m/TRACE_EVENT\((.*?),/) {
++	if ($prototype =~ m/TRACE_EVENT\((.*?),/) {
+ 		$tracepointname = $1;
+ 	}
+-	if($prototype =~ m/TP_PROTO\((.*?)\)/) {
++	if ($prototype =~ m/DEFINE_SINGLE_EVENT\((.*?),/) {
++		$tracepointname = $1;
++	}
++	if ($prototype =~ m/DEFINE_EVENT\((.*?),(.*?),/) {
++		$tracepointname = $2;
++	}
++	$tracepointname =~ s/^\s+//; #strip leading whitespace
++	if ($prototype =~ m/TP_PROTO\((.*?)\)/) {
+ 		$tracepointargs = $1;
+ 	}
+ 	if (($tracepointname eq 0) || ($tracepointargs eq 0)) {
+@@ -1920,7 +1927,9 @@ sub process_state3_function($$) {
+ 	if ($prototype =~ /SYSCALL_DEFINE/) {
+ 		syscall_munge();
+ 	}
+-	if ($prototype =~ /TRACE_EVENT/) {
++	if ($prototype =~ /TRACE_EVENT/ || $prototype =~ /DEFINE_EVENT/ ||
++	    $prototype =~ /DEFINE_SINGLE_EVENT/)
++	{
+ 		tracepoint_munge($file);
+ 	}
+ 	dump_function($prototype, $file);
