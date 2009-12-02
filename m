@@ -1,337 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZLBSAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbZLBRms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755405AbZLBSAH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 13:00:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZLBSAG
+	id S1755128AbZLBRms (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 12:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZLBRmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 13:00:06 -0500
-Received: from openezx.org ([213.95.46.71]:33871 "EHLO openezx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754658AbZLBSAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 13:00:04 -0500
-X-Greylist: delayed 1164 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Dec 2009 13:00:04 EST
-From: Antonio Ospite <ospite@studenti.unina.it>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Antonio Ospite <ospite@studenti.unina.it>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Ribeiro <drwyrm@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       openezx-devel@lists.openezx.org
-Subject: [PATCH] leds: Add LED class driver for regulator driven LEDs.
-Date: Wed,  2 Dec 2009 18:40:25 +0100
-Message-Id: <1259775625-25973-1-git-send-email-ospite@studenti.unina.it>
-X-Mailer: git-send-email 1.6.5.3
-X-Face: z*RaLf`X<@C75u6Ig9}{oW$H;1_\2t5)({*|jhM<pyWR#k60!#=#>/Vb;]yA5<GWI5`6u&+ ;6b'@y|8w"wB;4/e!7wYYrcqdJFY,~%Gk_4]cq$Ei/7<j&N3ah(m`ku?pX.&+~:_/wC~dwn^)MizBG !pE^+iDQQ1yC6^,)YDKkxDd!T>\I~93>J<_`<4)A{':UrE
+	Wed, 2 Dec 2009 12:42:47 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:54902 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754584AbZLBRmq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 12:42:46 -0500
+Date: Wed, 2 Dec 2009 09:40:59 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Samu Onkalo <samu.p.onkalo@nokia.com>
+Cc: eric.piel@tremplin-utc.net, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v4 5/5] LIS3: Update documentation to match latest
+ changes
+Message-Id: <20091202094059.9cec6e27.randy.dunlap@oracle.com>
+In-Reply-To: <1259656422-7697-6-git-send-email-samu.p.onkalo@nokia.com>
+References: <1259656422-7697-1-git-send-email-samu.p.onkalo@nokia.com>
+	<1259656422-7697-2-git-send-email-samu.p.onkalo@nokia.com>
+	<1259656422-7697-3-git-send-email-samu.p.onkalo@nokia.com>
+	<1259656422-7697-4-git-send-email-samu.p.onkalo@nokia.com>
+	<1259656422-7697-5-git-send-email-samu.p.onkalo@nokia.com>
+	<1259656422-7697-6-git-send-email-samu.p.onkalo@nokia.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt358.oracle.com [141.146.40.158]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4B16A6D2.0080:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver provides an interface for controlling LEDs (or vibrators)
-connected to PMICs for which there is a regulator framework driver.
+On Tue,  1 Dec 2009 10:33:42 +0200 Samu Onkalo wrote:
 
-This driver can be used, for instance, to control vibrator on all Motorola EZX
-phones using the pcap-regulator driver services.
+> Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
+> Acked-by: Éric Piel <eric.piel@tremplin-utc.net>
+> ---
+>  Documentation/hwmon/lis3lv02d |   31 ++++++++++++++++++++++++-------
+>  1 files changed, 24 insertions(+), 7 deletions(-)
+> 
+> diff --git a/Documentation/hwmon/lis3lv02d b/Documentation/hwmon/lis3lv02d
+> index 21f0902..cd354e3 100644
+> --- a/Documentation/hwmon/lis3lv02d
+> +++ b/Documentation/hwmon/lis3lv02d
+> @@ -20,18 +20,35 @@ sporting the feature officially called "HP Mobile Data Protection System 3D" or
+>  
+>  This driver also provides an absolute input class device, allowing
+> -the laptop to act as a pinball machine-esque joystick.
+> +the laptop to act as a pinball machine-esque joystick. Joystick device can be
+> +calibrated. Joystick device can be in two different modes.
+> +By default output values are scaled between -32768 .. 32767. In joystick raw
+> +mode, joystick and sysfs position entry have the same scale. There can be
+> +small difference due to input system fuzziness feature.
+> +Events are also available as input event device.
+> +
+> +Selftest is meant only for hardware diagnostic purposes. It is not meant to be
+> +used during normal operations. Position data is not corrupted during selftest
+> +but interrupt behaviour is not quaranteed to work reliably. In test mode, the
 
-Signed-off-by: Antonio Ospite <ospite@studenti.unina.it>
+                                  guaranteed
+
+Otherwise looks good.  Thanks.
+
+> +sensing element is internally moved little bit. Selftest measures difference
+> +between normal mode and test mode. Chip specifications tell the acceptance
+> +limit for each type of the chip. Limits are provided via platform data
+> +to allow adjustment of the limits without a change to the actual driver.
+> +Seltest returns either "OK x y z" or "FAIL x y z" where x, y and z are
+> +measured difference between modes. Axes are not remapped in selftest mode.
+> +Measurement values are provided to help HW diagnostic applications to make
+> +final decision.
+>  
+>  On HP laptops, if the led infrastructure is activated, support for a led
+>  indicating disk protection will be provided as /sys/class/leds/hp::hddprotect.
+
+
 ---
-The patch is against:
-git://git.o-hand.com/linux-rpurdie-leds for-mm
-
-A doubt I had was about leaving the 'supply' variable configurable from
-platform data, or relying on some fixed value like "vled", but leaving it
-configurable covers the case when we have different regulators used for
-different LEDs or vibrators.
-
-Should I add a note in Documentation/ about how to use it? Tell me if so.
-
-Thanks,
-   Antonio
-
-P.S.: for those who get the mail from LKML, please Cc me on reply.
-
- drivers/leds/Kconfig           |    6 +
- drivers/leds/Makefile          |    1 +
- drivers/leds/leds-regulator.c  |  214 ++++++++++++++++++++++++++++++++++++++++
- include/linux/leds-regulator.h |   20 ++++
- 4 files changed, 241 insertions(+), 0 deletions(-)
- create mode 100644 drivers/leds/leds-regulator.c
- create mode 100644 include/linux/leds-regulator.h
-
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index f12a996..8a0e1ec 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -229,6 +229,12 @@ config LEDS_PWM
- 	help
- 	  This option enables support for pwm driven LEDs
- 
-+config LEDS_REGULATOR
-+	tristate "REGULATOR driven LED support"
-+	depends on LEDS_CLASS && REGULATOR
-+	help
-+	  This option enables support for regulator driven LEDs.
-+
- config LEDS_BD2802
- 	tristate "LED driver for BD2802 RGB LED"
- 	depends on LEDS_CLASS && I2C
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index 176f0c6..9e63869 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -29,6 +29,7 @@ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
- obj-$(CONFIG_LEDS_WM831X_STATUS)	+= leds-wm831x-status.o
- obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
- obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
-+obj-$(CONFIG_LEDS_REGULATOR)		+= leds-regulator.o
- obj-$(CONFIG_LEDS_INTEL_SS4200)		+= leds-ss4200.o
- obj-$(CONFIG_LEDS_LT3593)		+= leds-lt3593.o
- obj-$(CONFIG_LEDS_ADP5520)		+= leds-adp5520.o
-diff --git a/drivers/leds/leds-regulator.c b/drivers/leds/leds-regulator.c
-new file mode 100644
-index 0000000..fca5d42
---- /dev/null
-+++ b/drivers/leds/leds-regulator.c
-@@ -0,0 +1,214 @@
-+/*
-+ * leds-regulator.c - LED class driver for regulator driven LEDs.
-+ *
-+ * Copyright (C) 2009 Antonio Ospite <ospite@studenti.unina.it>
-+ *
-+ * Inspired by leds-wm8350 driver.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/err.h>
-+#include <linux/workqueue.h>
-+#include <linux/leds.h>
-+#include <linux/leds-regulator.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
-+
-+#define to_regulator_led(led_cdev) \
-+	container_of(led_cdev, struct regulator_led, cdev)
-+
-+struct regulator_led {
-+	struct led_classdev cdev;
-+	enum led_brightness value;
-+	int enabled;
-+	struct mutex mutex;
-+	struct work_struct work;
-+
-+	struct regulator *vcc;
-+};
-+
-+static inline int led_regulator_get_max_brightness(struct regulator *supply)
-+{
-+	return regulator_count_voltages(supply);
-+}
-+
-+static int led_regulator_get_vdd(struct regulator *supply,
-+		enum led_brightness brightness)
-+{
-+	if (brightness == 0)
-+		return 0;
-+
-+	return regulator_list_voltage(supply, brightness - 1);
-+}
-+
-+
-+static void regulator_led_enable(struct regulator_led *led)
-+{
-+	int ret;
-+
-+	if (led->enabled)
-+		return;
-+
-+	ret = regulator_enable(led->vcc);
-+	if (ret != 0) {
-+		dev_err(led->cdev.dev, "Failed to enable vcc: %d\n", ret);
-+		return;
-+	}
-+
-+	led->enabled = 1;
-+}
-+
-+static void regulator_led_disable(struct regulator_led *led)
-+{
-+	int ret;
-+
-+	if (!led->enabled)
-+		return;
-+
-+	ret = regulator_disable(led->vcc);
-+	if (ret != 0) {
-+		dev_err(led->cdev.dev, "Failed to disable vcc: %d\n", ret);
-+		return;
-+	}
-+
-+	led->enabled = 0;
-+}
-+
-+static void led_work(struct work_struct *work)
-+{
-+	struct regulator_led *led;
-+	int voltage;
-+	int ret;
-+
-+	led = container_of(work, struct regulator_led, work);
-+
-+	mutex_lock(&led->mutex);
-+
-+	if (led->value == 0) {
-+		regulator_led_disable(led);
-+		goto out;
-+	}
-+
-+	voltage = led_regulator_get_vdd(led->vcc, led->value);
-+	dev_dbg(led->cdev.dev, "brightness: %d voltage: %d",
-+			led->value, voltage);
-+
-+	ret = regulator_set_voltage(led->vcc, voltage, voltage);
-+	if (ret != 0)
-+		dev_err(led->cdev.dev, "Failed to set voltage %d: %d\n",
-+			voltage, ret);
-+
-+	regulator_led_enable(led);
-+
-+out:
-+	mutex_unlock(&led->mutex);
-+}
-+
-+static void regulator_led_brightness_set(struct led_classdev *led_cdev,
-+			   enum led_brightness value)
-+{
-+	struct regulator_led *led = to_regulator_led(led_cdev);
-+
-+	led->value = value;
-+	schedule_work(&led->work);
-+}
-+
-+static int regulator_led_probe(struct platform_device *pdev)
-+{
-+	struct led_regulator_platform_data *pdata = pdev->dev.platform_data;
-+	struct regulator_led *led;
-+	struct regulator *vcc;
-+	int ret;
-+
-+	if (pdata == NULL) {
-+		dev_err(&pdev->dev, "no platform data\n");
-+		return -ENODEV;
-+	}
-+
-+	vcc = regulator_get(&pdev->dev, pdata->supply);
-+	if (IS_ERR(vcc)) {
-+		dev_err(&pdev->dev, "Cannot get vcc for %s\n", pdata->name);
-+		return PTR_ERR(vcc);;
-+	}
-+
-+	led = kzalloc(sizeof(*led), GFP_KERNEL);
-+	if (led == NULL) {
-+		ret = -ENOMEM;
-+		goto err_vcc;
-+	}
-+
-+	ret = led_regulator_get_max_brightness(vcc);
-+	if (ret < 0)
-+		goto err_led;
-+
-+	led->cdev.max_brightness = ret;
-+
-+	led->cdev.brightness_set = regulator_led_brightness_set;
-+	led->cdev.name = pdata->name;
-+	led->cdev.flags |= LED_CORE_SUSPENDRESUME;
-+	led->enabled = regulator_is_enabled(vcc);
-+	led->vcc = vcc;
-+
-+	mutex_init(&led->mutex);
-+	INIT_WORK(&led->work, led_work);
-+
-+	led->value = LED_OFF;
-+	platform_set_drvdata(pdev, led);
-+
-+	ret = led_classdev_register(&pdev->dev, &led->cdev);
-+	if (ret < 0) {
-+		cancel_work_sync(&led->work);
-+		goto err_led;
-+	}
-+
-+	return 0;
-+
-+err_led:
-+	kfree(led);
-+err_vcc:
-+	regulator_put(vcc);
-+	return ret;
-+}
-+
-+static int regulator_led_remove(struct platform_device *pdev)
-+{
-+	struct regulator_led *led = platform_get_drvdata(pdev);
-+
-+	led_classdev_unregister(&led->cdev);
-+	cancel_work_sync(&led->work);
-+	regulator_led_disable(led);
-+	regulator_put(led->vcc);
-+	kfree(led);
-+	return 0;
-+}
-+
-+static struct platform_driver regulator_led_driver = {
-+	.driver = {
-+		   .name  = "leds-regulator",
-+		   .owner = THIS_MODULE,
-+		   },
-+	.probe  = regulator_led_probe,
-+	.remove = regulator_led_remove,
-+};
-+
-+static int __devinit regulator_led_init(void)
-+{
-+	return platform_driver_register(&regulator_led_driver);
-+}
-+module_init(regulator_led_init);
-+
-+static void regulator_led_exit(void)
-+{
-+	platform_driver_unregister(&regulator_led_driver);
-+}
-+module_exit(regulator_led_exit);
-+
-+MODULE_AUTHOR("Antonio Ospite <ospite@studenti.unina.it>");
-+MODULE_DESCRIPTION("Regulator driven LED driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:leds-regulator");
-diff --git a/include/linux/leds-regulator.h b/include/linux/leds-regulator.h
-new file mode 100644
-index 0000000..a5850fd
---- /dev/null
-+++ b/include/linux/leds-regulator.h
-@@ -0,0 +1,20 @@
-+/*
-+ * leds-regulator.h - platform data structure for regulator driven LEDs.
-+ *
-+ * Copyright (C) 2009 Antonio Ospite <ospite@studenti.unina.it>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#ifndef __LINUX_LEDS_REGULATOR_H
-+#define __LINUX_LEDS_REGULATOR_H
-+
-+struct led_regulator_platform_data {
-+	char *name;	/* LED name as expected by LED class */
-+	char *supply;
-+};
-+
-+#endif /* __LINUX_LEDS_REGULATOR_H */
--- 
-1.6.5.3
-
+~Randy
