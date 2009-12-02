@@ -1,113 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZLBQ1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZLBQjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbZLBQ1M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 11:27:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbZLBQ1M
+	id S1754910AbZLBQjN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 11:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbZLBQjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 11:27:12 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:41984 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753135AbZLBQ1L (ORCPT
+	Wed, 2 Dec 2009 11:39:12 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:22890 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754568AbZLBQjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 11:27:11 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoFACMkFktGGNlG/2dsb2JhbACBTtY2hDEE
-Date: Wed, 2 Dec 2009 11:27:15 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
-       jbaron@redhat.com, mhiramat@redhat.com,
-       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-Subject: Re: [tip:perf/core] tracing: Add DEFINE_EVENT(),
-	DEFINE_SINGLE_EVENT() support to docbook
-Message-ID: <20091202162715.GB9710@Krystal>
-References: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com> <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org> <1259761934.12870.12.camel@gandalf.stny.rr.com> <20091202140128.GA2611@elte.hu> <1259764109.12870.37.camel@gandalf.stny.rr.com> <20091202144334.GA30359@elte.hu> <1259765735.12870.42.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 2 Dec 2009 11:39:12 -0500
+Message-ID: <4B1697ED.1050602@oracle.com>
+Date: Wed, 02 Dec 2009 08:38:05 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH] percpu: add missing per_cpu_ptr_to_phys() definition
+ for UP
+References: <4B1560C2.8040603@oracle.com> <4B15A9EA.3090108@kernel.org>
+In-Reply-To: <4B15A9EA.3090108@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1259765735.12870.42.camel@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 11:23:29 up  7:14,  1 user,  load average: 0.00, 0.03, 0.01
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B1697F9.0038:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Wed, 2009-12-02 at 15:43 +0100, Ingo Molnar wrote:
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > On Wed, 2009-12-02 at 15:01 +0100, Ingo Molnar wrote:
-> > > 
-> > > > >  DECLARE_CLASS_AND_DEFINE_EVENT()
-> > > > 
-> > > > Hm, that's a bit too long. How about 'DEFINE_CLASS_EVENT()' as a 
-> > > > compromise? It's similarly short-ish to TRACE_EVENT(), and it also 
-> > > > conveys the fact that we create both a class and an event there.
-> > > > 
-> > > > The full series would thus be:
-> > > > 
-> > > > 	DECLARE_EVENT_CLASS
-> > > > 	DEFINE_EVENT
-> > > > 	DEFINE_CLASS_EVENT
-> > > > 
-> > > > hm?
-> > > 
-> > > I thought about that too, but it actually makes it more confusing. 
-> > > Because, looking at this with a fresh POV, I would think that after I 
-> > > declare a class, I would use DEFINE_CLASS_EVENT with that class.
-> > 
-> > yeah. Hence was my second-best choice 'DEFINE_STANDALONE_EVENT' or 
-> > 'DEFINE_SINGLE_EVENT' - to stress the special nature it, and to actually 
-> > nudge people towards creating classes of events instead of doing 
-> > separate, standalone points. (which are a waste in the majority of 
-> > cases)
+Tejun Heo wrote:
+> Commit 3b034b0d084221596bf35c8d893e1d4d5477b9cc implemented
+> per_cpu_ptr_to_phys() but forgot to add UP definition.  Add UP
+> definition which is simple wrapper around __pa().
 > 
-> But the current TRACE_EVENT is still defining a class. Thus, you could
-> create a TRACE_EVENT (or whatever it is called) and then create
-> DEFINE_EVENTs based on the TRACE_EVENT.
-> 
-> That's why I want a name that describes this.
-> 
-> DEFINE_EVENT_CLASS?
-> 
-> Perhaps that's the best.
-> 
-> DECLARE_EVENT_CLASS - only creates a class
-> DEFINE_EVENT - defines an event based off of a class
-> DEFINE_EVENT_CLASS - creates a class and defines an event by the same name
-> 
-> Perhaps this is best in keeping with linux kernel naming conventions?
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Vivek Goyal <vgoyal@redhat.com>
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Hi Steve,
+Yes, that builds now.  Thanks.
 
-A few questions about the semantic:
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Is "declare" here always only used as a declaration ? (e.g. only in
-headers, never impacted by CREATE_TRACE_POINT ?)
 
-Is "define" here always mapping to a definition ? (e.g. to be used in a
-C file to define the class or event handling stub)
-
-I feel that your DEFINE_EVENT_CLASS might actually be doing a bit more
-than just "defining", it would actually also perform the declaration.
-Same goes for "DEFINE_EVENT". So can you tell us a bit more about that
-is the context of templates ?
-
-Thanks,
-
-Mathieu
-
+> ---
+> Hello,
 > 
-> -- Steve
+>> drivers/base/cpu.c: line 100: fails to build when CONFIG_SMP=n:
+>>
+>> 	addr = per_cpu_ptr_to_phys(per_cpu_ptr(crash_notes, cpunum));
+>>
+>> Can you suggest a fix for that, please?
 > 
+> Oops, right, UP definition was missing.  This patch should do it.
 > 
+> Thanks.
+> 
+>  include/linux/percpu.h |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+> index 6ac984f..8e4ead6 100644
+> --- a/include/linux/percpu.h
+> +++ b/include/linux/percpu.h
+> @@ -180,6 +180,11 @@ static inline void free_percpu(void *p)
+>  	kfree(p);
+>  }
+>  
+> +static inline phys_addr_t per_cpu_ptr_to_phys(void *addr)
+> +{
+> +	return __pa(addr);
+> +}
+> +
+>  static inline void __init setup_per_cpu_areas(void) { }
+>  
+>  static inline void *pcpu_lpage_remapped(void *kaddr)
+
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+~Randy
