@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbZLBWPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZLBWPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755803AbZLBWPV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZLBWPU
+	id S1755824AbZLBWPb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbZLBWP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:15:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50369 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754621AbZLBWPT (ORCPT
+	Wed, 2 Dec 2009 17:15:28 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55572 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755818AbZLBWPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:15:19 -0500
-Date: Wed, 2 Dec 2009 14:14:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       linux-fsdevel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [Patch] fs: remove a useless BUG()
-Message-Id: <20091202141458.66b5f069.akpm@linux-foundation.org>
-In-Reply-To: <20091201023714.3863.92566.sendpatchset@localhost.localdomain>
-References: <20091201023714.3863.92566.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 17:15:25 -0500
+Date: Wed, 2 Dec 2009 23:15:24 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH] uswsusp: automatically free the in-memory image once
+ s2disk has finished with it
+Message-ID: <20091202221524.GB20830@elf.ucw.cz>
+References: <4B1575AC.6080904@tuffmail.co.uk>
+ <20091201214529.GA1457@csn.ul.ie>
+ <200912012253.08522.rjw@sisk.pl>
+ <4B16545B.3090703@tuffmail.co.uk>
+ <20091202122019.GD1457@csn.ul.ie>
+ <4B16797C.3010304@tuffmail.co.uk>
+ <20091202211107.GA20830@elf.ucw.cz>
+ <20091202220718.GI1457@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091202220718.GI1457@csn.ul.ie>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Nov 2009 21:34:14 -0500
-Amerigo Wang <amwang@redhat.com> wrote:
-
+On Wed 2009-12-02 22:07:18, Mel Gorman wrote:
+> On Wed, Dec 02, 2009 at 10:11:07PM +0100, Pavel Machek wrote:
+> > On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
+> > > The original in-kernel suspend (swsusp) frees the in-memory hibernation
+> > > image before powering off the machine.  s2disk doesn't, so there is
+> > > _much_ less free memory when it tries to power off.
+> > > 
+> > > This is a gratuitous difference.  The userspace suspend interface
+> > > /dev/snapshot only allows the hibernation image to be read once.
+> > > Once the s2disk program has read the last page, we can free the entire
+> > > image.
+> > > 
+> > > This avoids a hang after writing the hibernation image which was
+> > > triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+> > > "page-allocator: split per-cpu list into one-list-per-migrate-type":
+> > 
+> > Yes, you work around page-allocator hang. But is it right thing to do?
+> > 
 > 
-> This BUG() is suspicious, it makes its following statements
-> unreachable, and it seems to be useless, since the caller
-> of this function already handles the failure properly.
-> Remove it.
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: "Theodore Ts'o" <tytso@mit.edu>
-> 
-> ---
-> diff --git a/fs/buffer.c b/fs/buffer.c
-> index 6fa5302..ac111d7 100644
-> --- a/fs/buffer.c
-> +++ b/fs/buffer.c
-> @@ -1041,7 +1041,6 @@ grow_dev_page(struct block_device *bdev, sector_t block,
->  	return page;
->  
->  failed:
-> -	BUG();
->  	unlock_page(page);
->  	page_cache_release(page);
->  	return NULL;
+> What's wrong with it? The hang is likely because the allocator has no
+> memory to work with. The patch in question makes small changes to the
+> amount of available memory but it shouldn't matter on uni-core. Some
+> structures are slightly larger but it's extremely borderline. I'm at a
+> loss to explain actually why it makes a difference untill things were
+> extremely borderline to begin with.
 
-The caller doesn't handle this properly.  If we return zero here,
-grow_buffers() will say sheesh and will retry and the kernel goes into
-an infinite retry loop.
+We reserve 4MB, for such purposes, and we already wrote image to disk
+with such constrains, so memory should not be _too_ tight.
 
-If there is a blockdev page which is sitting in pagecache and for some
-reason it has buffers and we cannot release them, we're kind of stuck
-and don't know what to do.  Going BUG() is a decent thing to do here.
+Can you try increasing PAGES_FOR_IO to 8MB or something like that?
 
-I don't think I've ever seen a report of the BUG triggering.  It could
-happen as a result of memory corruption or a missed bh_put() or
-whatever.
-
-I think a better patch would be to remove the
-unlock_page()/page_cache_release(), add a comment (culled from the
-above) and leave the BUG() there.
-
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
