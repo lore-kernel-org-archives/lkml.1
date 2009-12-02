@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZLBN5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbZLBNwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbZLBN5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 08:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZLBN5a
+	id S1754325AbZLBNwM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbZLBNwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 08:57:30 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:52359 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbZLBN5a (ORCPT
+	Wed, 2 Dec 2009 08:52:11 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52674 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753899AbZLBNwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 08:57:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=HKZHkRAbVoCg1q/Deec6sMkweAb4LaxzkYawbHnWdYOV3n/Ik5o4471izf5ajrmt/I
-         zw9NW6wh3DeAZHSO/NxQqN3rPQNF5F0rfKgbA8T70m5hw76etcOHwFrY6MjWONoI5z2b
-         XArDeGuqxhEHv94GoUr42YDXfIvdUS/6B9DE8=
-Message-ID: <4B1670CA.5070500@gmail.com>
-Date: Wed, 02 Dec 2009 21:51:06 +0800
-From: Wan ZongShun <mcuos.com@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Russell King <linux@arm.linux.org.uk>
-Subject: [PATCH 1/4]ARM: NUC900: change condition of IRQ_ADC to NR_IRQS for
- nuc932
-Content-Type: text/plain; charset=GB2312
+	Wed, 2 Dec 2009 08:52:10 -0500
+Subject: Re: [tip:perf/core] tracing: Add DEFINE_EVENT(),
+ DEFINE_SINGLE_EVENT() support to docbook
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
+       jbaron@redhat.com, mhiramat@redhat.com, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
+References: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
+	 <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 02 Dec 2009 08:52:14 -0500
+Message-Id: <1259761934.12870.12.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Russell,
+On Wed, 2009-12-02 at 10:42 +0000, tip-bot for Jason Baron wrote:
+> Commit-ID:  3a9089fd78367e2c6c815129030b790a0f5c2715
+> Gitweb:     http://git.kernel.org/tip/3a9089fd78367e2c6c815129030b790a0f5c2715
+> Author:     Jason Baron <jbaron@redhat.com>
+> AuthorDate: Tue, 1 Dec 2009 12:18:49 -0500
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 2 Dec 2009 09:57:37 +0100
+> 
+> tracing: Add DEFINE_EVENT(), DEFINE_SINGLE_EVENT() support to docbook
 
-For applying to nuc932, I modified the 'for' loop condition.
+Ug, I need more sleep, because I never noticed the "SINGLE" when I acked
+this :-p
 
-Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
----
- arch/arm/mach-w90x900/irq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I thought the DEFINE_SINGLE_EVENT was still under discussion because it
+is a confusing name. I suggested to call it exactly what is was.
 
-diff --git a/arch/arm/mach-w90x900/irq.c b/arch/arm/mach-w90x900/irq.c
-index 5444a27..633ac8b 100644
---- a/arch/arm/mach-w90x900/irq.c
-+++ b/arch/arm/mach-w90x900/irq.c
-@@ -73,7 +73,7 @@ void __init nuc900_init_irq(void)
- 
- 	__raw_writel(0xFFFFFFFE, REG_AIC_MDCR);
- 
--	for (irqno = IRQ_WDT; irqno <= IRQ_ADC; irqno++) {
-+	for (irqno = IRQ_WDT; irqno < NR_IRQS; irqno++) {
- 		set_irq_chip(irqno, &nuc900_irq_chip);
- 		set_irq_handler(irqno, handle_level_irq);
- 		set_irq_flags(irqno, IRQF_VALID);
--- 
-1.5.6.3
+ DECLARE_CLASS_AND_DEFINE_EVENT()
+
+-- Steve
+
+> 
+> The introduction of the new 'DECLARE_EVENT_CLASS()' obviates the
+> need for the 'TRACE_EVENT()' macro in some cases. Thus, docbook
+> style comments that used to live with 'TRACE_EVENT()' are now
+> moved to 'DEFINE_EVENT()'. Thus, we need to make the docbook
+> system understand the new 'DEFINE_EVENT()' macro. In addition
+> I've tried to futureproof the patch, by also adding support for
+> 'DEFINE_SINGLE_EVENT()', since there has been discussion about
+> renaming: TRACE_EVENT() -> DEFINE_SINGLE_EVENT().
+> 
+> Without this patch the tracepoint docbook fails to build.
+> 
+> I've verified that this patch correctly builds the tracepoint
+> docbook which currently covers signals, and irqs.
+> 
+> Changes in v2:
+>  - properly indent perl 'if' statements
+> 
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
+> Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: William Cohen <wcohen@redhat.com>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Cc: Masami Hiramatsu <mhiramat@redhat.com>
+> LKML-Reference: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
