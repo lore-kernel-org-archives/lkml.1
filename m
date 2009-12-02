@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755037AbZLBBH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbZLBBLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755037AbZLBBH5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 20:07:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbZLBBH4
+	id S1755079AbZLBBLs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 20:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbZLBBLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 20:07:56 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:48923 "EHLO
+	Tue, 1 Dec 2009 20:11:47 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43350 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754809AbZLBBHz (ORCPT
+	with ESMTP id S1754862AbZLBBLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 20:07:55 -0500
+	Tue, 1 Dec 2009 20:11:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=UDwLuQl5449ZOmmbwID0GrAQ6vw9eEx43bZ/oUFSd8UaH8B/Zl2ws3T2+p+ozaQ+v5
-         k/PuQzoonmFAN7w15XEv+uD2plteDMdkmws85kEELr2qVtcYs6ctbnqfYzN/WOijAOhT
-         FBZdny9FBN1b2hZlMEufpzQ+X7gaIsz0hadN4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Ryan Mallon <ryan@bluewatersys.com>
-Subject: Re: [PATCH] add PATA host controller support for Cirrus Logic's EP93xx CPUs
-Date: Wed, 2 Dec 2009 02:06:59 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-ide@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.montavista.com>,
-       Joao Ramos <joao.ramos@inov.pt>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>
-References: <200911261651.40928.bzolnier@gmail.com> <4B15BAA1.2010408@bluewatersys.com>
-In-Reply-To: <4B15BAA1.2010408@bluewatersys.com>
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=lic4bXeKvffLuA+9dK33crB6KlkcXcsQQXdPBIwrzah+EUeuEWuLI/PSjk4h9nawje
+         Y5P5KdKI42NYoLmOssuz3OYEP7Rp+4B/Bof3ZPjHVqG6IylTFNUI5GcXYPzSW3qtdklA
+         Lx7jsUtwmeCJ5ai1AzWr/diHEEGI68Hs/h6kE=
 MIME-Version: 1.0
-Message-Id: <200912020206.59659.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Date: Wed, 2 Dec 2009 04:11:52 +0300
+Message-ID: <a4423d670912011711s584f46d2y8a583618abe4a620@mail.gmail.com>
+Subject: 2.6.32-rc8: pohmelfs: NULL pointer dereference
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: zbr@ioremap.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jens.axboe@oracle.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 December 2009 01:53:53 am Ryan Mallon wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > Based on the older IDE host driver by Joao Ramos and review comments
-> > for it from Sergei Shtylyov.  Not yet tested with the real hardware.
-> >
-> 
-> Hi Bartlomiej,
-> 
-> I have got as far as patching this into my kernel and doing a build test
-> (still need to find a hard-disk to test). I got some build errors, see
-> below:
+Hi
 
-Hi,
+BUG: unable to handle kernel NULL pointer dereference at 000000b8
+IP: [<c10a96f9>] bdi_queue_work+0x9/0xa0
 
-Many thanks for picking this driver up.
+ [<c10a97e6>] ? sync_inodes_sb+0x46/0x120
+ [<c13cbafd>] ? printk+0x18/0x1b
+ [<f840d8cb>] ? pohmelfs_kill_super+0xb/0x20 [pohmelfs]
+ [<c1090b8a>] ? deactivate_locked_super+0x4a/0x70
+ [<c1090ccf>] ? get_sb_nodev+0x6f/0x80
+ [<f840d8fc>] ? pohmelfs_get_sb+0x1c/0x20 [pohmelfs]
+ [<f840e120>] ? pohmelfs_fill_super+0x0/0x530 [pohmelfs]
+ [<c108fe50>] ? vfs_kern_mount+0x40/0xd0
 
-The following preparatory libata one-liner is needed to make it build:
 
-	http://patchwork.kernel.org/patch/62926/
-
-and you may also need to update ep93xx ide gpio patch:
-
-	http://thread.gmane.org/gmane.linux.ports.arm.kernel/57688/focus=58730
-
-to current kernels to make the hardware work.
-
---
-Bartlomiej Zolnierkiewicz
+The problem is that pohmelfs_fill_super() does not set sb->s_bdi.
+Behavior was changed by
+b6e51316da writeback: separate starting of sync vs opportunistic writeback
+d8a8559cd7 writeback: get rid of generic_sync_sb_inodes() export
