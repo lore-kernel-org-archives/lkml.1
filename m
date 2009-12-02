@@ -1,113 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbZLBT3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZLBTXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbZLBT3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZLBT3T
+	id S1755174AbZLBTXN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:23:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZLBTXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:29:19 -0500
-Received: from pancho.name ([92.48.73.7]:53216 "EHLO pancho.name"
+	Wed, 2 Dec 2009 14:23:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24923 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755367AbZLBT3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:29:19 -0500
-X-Greylist: delayed 582 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Dec 2009 14:29:18 EST
-Date: Wed, 2 Dec 2009 20:19:42 +0100
-From: pancho horrillo <pancho@pancho.name>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] Add USB device ID for Apple Cinema Display 23in 2007
-Message-ID: <20091202191942.GA7362@pancho.name>
+	id S1751429AbZLBTXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 14:23:12 -0500
+Message-ID: <4B16BE6A.7000601@redhat.com>
+Date: Wed, 02 Dec 2009 14:22:18 -0500
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091121 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, jarod@wilsonet.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
+       superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+References: <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com>	 <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com>	 <4B155288.1060509@redhat.com>	 <20091201175400.GA19259@core.coreip.homeip.net>	 <4B1567D8.7080007@redhat.com>	 <20091201201158.GA20335@core.coreip.homeip.net>	 <4B15852D.4050505@redhat.com>	 <20091202093803.GA8656@core.coreip.homeip.net>	 <4B16614A.3000208@redhat.com>	 <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
+In-Reply-To: <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 12/2/09 12:30 PM, Jon Smirl wrote:
+>>>> (for each remote/substream that they can recognize).
+>>> >>
+>>> >>  I'm assuming that, by remote, you're referring to a remote receiver (and not to
+>>> >>  the remote itself), right?
+>> >
+>> >  If we could separate by remote transmitter that would be the best I
+>> >  think, but I understand that it is rarely possible?
+ >
+> The code I posted using configfs did that. Instead of making apps IR
+> aware it mapped the vendor/device/command triplets into standard Linux
+> keycodes.  Each remote was its own evdev device.
 
-$ lsusb -v
-Bus 001 Device 008: ID 05ac:921c Apple, Inc. 
-Device Descriptor:
-  bLength                18
-  bDescriptorType         1
-  bcdUSB               1.10
-  bDeviceClass            0 (Defined at Interface level)
-  bDeviceSubClass         0 
-  bDeviceProtocol         0 
-  bMaxPacketSize0         8
-  idVendor           0x05ac Apple, Inc.
-  idProduct          0x921c 
-  bcdDevice            1.15
-  iManufacturer           1 
-  iProduct                2 
-  iSerial                 0 
-  bNumConfigurations      1
-  Configuration Descriptor:
-    bLength                 9
-    bDescriptorType         2
-    wTotalLength           34
-    bNumInterfaces          1
-    bConfigurationValue     1
-    iConfiguration          0 
-    bmAttributes         0xe0
-      Self Powered
-      Remote Wakeup
-    MaxPower                2mA
-    Interface Descriptor:
-      bLength                 9
-      bDescriptorType         4
-      bInterfaceNumber        0
-      bAlternateSetting       0
-      bNumEndpoints           1
-      bInterfaceClass         3 Human Interface Device
-      bInterfaceSubClass      0 No Subclass
-      bInterfaceProtocol      0 None
-      iInterface              0 
-        HID Device Descriptor:
-          bLength                 9
-          bDescriptorType        33
-          bcdHID               1.11
-          bCountryCode            0 Not supported
-          bNumDescriptors         1
-          bDescriptorType        34 Report
-          wDescriptorLength      92
-         Report Descriptors: 
-           ** UNAVAILABLE **
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x81  EP 1 IN
-        bmAttributes            3
-          Transfer Type            Interrupt
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0008  1x 8 bytes
-        bInterval              16
+Note, of course, that you can only do that iff each remote uses distinct 
+triplets. A good portion of mythtv users use a universal of some sort, 
+programmed to emulate another remote, such as the mce remote bundled 
+with mceusb transceivers, or the imon remote bundled with most imon 
+receivers. I do just that myself.
 
+Personally, I've always considered the driver/interface to be the 
+receiver, not the remote. The lirc drivers operate at the receiver 
+level, anyway, and the distinction between different remotes is made by 
+the lirc daemon.
 
+> For IR to "just work" the irrecord training process needs be
+> eliminated for 90% of users.
 
-(Against linux-2.6.31.6)
-
-Signed-off-by: pancho horrillo <pancho@pancho.name>
-
-diff -purN a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledisplay.c
---- a/drivers/usb/misc/appledisplay.c	2009-11-10 01:32:31.000000000 +0100
-+++ b/drivers/usb/misc/appledisplay.c	2009-12-02 20:01:25.000000000 +0100
-@@ -60,6 +60,7 @@
- static struct usb_device_id appledisplay_table [] = {
- 	{ APPLEDISPLAY_DEVICE(0x9218) },
- 	{ APPLEDISPLAY_DEVICE(0x9219) },
-+	{ APPLEDISPLAY_DEVICE(0x921c) },
- 	{ APPLEDISPLAY_DEVICE(0x921d) },
- 
- 	/* Terminating entry */
+Pretty sure that's already the case. I have upwards of 20 remotes and 15 
+receivers. I've had to run irrecord maybe two times in five years to get 
+any of them working. The existing lirc remote database is fairly extensive.
 
 -- 
-pancho horrillo
-
-To be conscious that
-you are ignorant is a great step
-to knowledge.
-
-		Benjamin Disraeli
+Jarod Wilson
+jarod@redhat.com
