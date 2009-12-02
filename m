@@ -1,139 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZLBMUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbZLBMVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZLBMUU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 07:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbZLBMUT
+	id S1753457AbZLBMVy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 07:21:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbZLBMVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 07:20:19 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:58253 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbZLBMUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 07:20:17 -0500
-Date: Wed, 2 Dec 2009 12:20:19 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: Bisected: s2disk (uswsusp only) hangs just before poweroff
-Message-ID: <20091202122019.GD1457@csn.ul.ie>
-References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie> <200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk>
+	Wed, 2 Dec 2009 07:21:53 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:39670 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821AbZLBMVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 07:21:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:date:subject:mime-version:x-uid:x-length:organization
+         :to:cc:content-type:content-transfer-encoding:message-id;
+        b=cxVxW/9tp3p/BeZTv+t9J2Rm1quNTPYionKPyS+HWBYEmn2H6mByBaqArpFP8PtD3Z
+         iXKHO5/lv6tpgU2pzqBzK2+bUVfAO9d4aDRBFBEYUjshycYGj2tX7AQU2YzCn1SZeatf
+         z41KdzS5k9QZllLNkGhj6yP9cJwfoxqQ2W2Ik=
+From: Florian Fainelli <florian@openwrt.org>
+Date: Wed, 2 Dec 2009 13:21:23 +0100
+Subject: [PATCH] rc32434_wdt: fix compilation failure
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4B16545B.3090703@tuffmail.co.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Length: 1439
+Organization: OpenWrt
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       ralf@linux-mips.org
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912021321.24198.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 11:49:47AM +0000, Alan Jenkins wrote:
-> Rafael J. Wysocki wrote:
->> On Tuesday 01 December 2009, Mel Gorman wrote:
->>   
->>> On Tue, Dec 01, 2009 at 07:59:40PM +0000, Alan Jenkins wrote:
->>>     
->>>> Hi
->>>>
->>>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I 
->>>> finally  got around to bisecting it, which blamed the following 
->>>> commit by Mel:
->>>>
->>>> 5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
->>>>
->>>> I was able to confirm this by reverting the commit, which fixed the 
->>>>  hang.  I had to revert one other commit first to avoid a conflict:
->>>>
->>>> a6f9edd "page-allocator: maintain rolling count of pages to free 
->>>> from  the PCP"
->>>>
->>>>       
->>> Which RC kernel? Specifically, are the commits
->>>
->>> cc4a6851466039a8a688c843962a05689059ff3b always wake kswapd when restarting an allocation attempt
->>> 9d0ed60fe9cd1fbf57f755cd27a23ae9114d7210 Do not allow interrupts to use ALLOC_HARDER
->>>
->>> applied?
->>>
->>> The latter one in particular might make a difference if s2disk is
->>> pushing the system far below the watermarks. I don't suppose you know
->>> where it's hanging? i.e. is it hanging in the allocator itself?
->>>
->>> If those patches are applied, then one difference that 5f8dcc2 makes is
->>> that pages on the PCP lists but not of the right migratetype are not
->>> used. Prior to that commit, an allocation might succeed even if the
->>> buddy lists were empty because one of the other PCP page types would be
->>> used.
->>>
->>>     
->>>> -- detail --
->>>>
->>>> When I suspend my EeePc 701 to disk, it sometimes hangs after 
->>>> writing  out the hibernation image.  The system is still able to 
->>>> resume from this  image (after working around the hang by pressing 
->>>> the power button). 
->>>>
->>>> This is specific to s2disk from the uswsusp package (which is now   
->>>> installed by default on debian unstable).  It doesn't happen if I   
->>>> uninstall uswsusp and use the in-kernel suspend instead.
->>>>
->>>>       
->>> This leads me to believe that uswsusp is able to push available pages
->>> far below what is expected. It's a total guess though, I have no idea
->>> how uswsusp is implemented or how it differs from what is in kernel.
->>>     
->>
->> It doesn't differ at all in that respect.  Actually, it uses the same code, but
->> the distro configuration may be such that it leaves fewer available pages
->> than the default in-kernel hibernation.
->>
->> Thanks,
->> Rafael
->>   
->
-> It seems unintuitive that lack of memory is a problem _after we've  
-> written out the hibernation image_.  The backtrace I captured shows the  
-> hang happens within hibernation_platform_enter()...
->
+Hi Wim,
 
-I think the backtrace is also showing that it's trying to create a kernel
-thread. For this to be getting locked up, memory must be exceptionally
-tight. One thing that the patch changes is that in certain circumstances,
-an additional 128K of memory per-CPU could be on each the PCP lists.
+This is a pretty critical fix, please try to get it in 2.6.32. Thank you
+very much!
+---
+From: Florian Fainelli <florian@openwrt.org>
+Subject: [PATCH] rc32434_wdt: fix compilation failure
 
-Ordinarily it doesn't matter because reclaim would resolve the situation
-or the PCP lists would be drained very shortly after. However, if the
-CPUs were no longer being used but still have pages pinned, it could be
-causing a problem.
+This patch fixes the compilation failure of
+rc32434 due to a bad module parameter description.
 
-> Hmm.  Doesn't the in-kernel suspend free the in-memory image before  
-> powering off?
->
-> int hibernate(void)
-> ...
->        pr_debug("PM: writing image.\n");
->        error = swsusp_write(flags);
->        swsusp_free();
->        if (!error)
->            power_down();
->
->
->
-> Would that explain why only uswsusp is affected?  Do we want to fix  
-> snapshot_read() in user.c, so that it calls swsusp_free() once all the  
-> data has been read?
->
-
-Could you try it please?
-
-Another possibility would be to call drain_all_pages() before powering
-off. If that makes a difference, it would confirm that pages are pinned
-on PCP lists of inactive processors.
-
-Thanks
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Signed-off-by: Florian Fainelli <florian@openwrt.org>
+---
+diff --git a/drivers/watchdog/rc32434_wdt.c b/drivers/watchdog/rc32434_wdt.c
+index f6cccc9..47588de 100644
+--- a/drivers/watchdog/rc32434_wdt.c
++++ b/drivers/watchdog/rc32434_wdt.c
+@@ -62,7 +62,7 @@ extern unsigned int idt_cpu_freq;
+ static int timeout = WATCHDOG_TIMEOUT;
+ module_param(timeout, int, 0);
+ MODULE_PARM_DESC(timeout, "Watchdog timeout value, in seconds (default="
+-		WATCHDOG_TIMEOUT ")");
++		__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
+ 
+ static int nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, int, 0);
