@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZLBNcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbZLBNbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbZLBNcc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 08:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZLBNcb
+	id S1754333AbZLBNbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbZLBNbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 08:32:31 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:64966 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292AbZLBNca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 08:32:30 -0500
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-To: List Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       List Linux Omap <linux-omap@vger.kernel.org>
-Subject: [PATCH] mfd: twl4030: clarify the return value for read and write
-Date: Wed,  2 Dec 2009 15:31:18 +0200
-Message-Id: <1259760678-18707-1-git-send-email-amit.kucheria@verdurent.com>
-X-Mailer: git-send-email 1.6.3.3
-X-OriginalArrivalTime: 02 Dec 2009 13:31:23.0496 (UTC) FILETIME=[BDA97680:01CA7353]
-X-Nokia-AV: Clean
+	Wed, 2 Dec 2009 08:31:39 -0500
+Received: from mga14.intel.com ([143.182.124.37]:43356 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754308AbZLBNbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 08:31:38 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="217909187"
+Date: Wed, 2 Dec 2009 21:31:26 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 12/24] HWPOISON: make it possible to unpoison pages
+Message-ID: <20091202133126.GE13277@localhost>
+References: <20091202031231.735876003@intel.com> <20091202043045.150526892@intel.com> <20091202131530.GG18989@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091202131530.GG18989@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We should be checking if all the messages were tranferred or not. Currently we
-return success even if none of messages were transferred successfully.
+On Wed, Dec 02, 2009 at 09:15:30PM +0800, Andi Kleen wrote:
+> > Note that it may leak pages silently - those who have been removed from
+> > LRU cache, but not isolated from page cache/swap cache at hwpoison time.
+> 
+> It would be better if we could detect that somehow and at least warn.
+> 
+> >  }
+> >  
+> > +static int hwpoison_forget(void *data, u64 val)
+> > +{
+> > +	if (!capable(CAP_SYS_ADMIN))
+> > +		return -EPERM;
+> > +
+> > +	return forget_memory_failure(val);
+> > +}
+> > +
+> >  DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
+> > +DEFINE_SIMPLE_ATTRIBUTE(unpoison_fops, NULL, hwpoison_forget, "%lli\n");
+> 
+> I'll rename it to unpoison, not forget. I think that's a more clear
+> name.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
----
- drivers/mfd/twl4030-core.c |   21 +++++++++++++--------
- 1 files changed, 13 insertions(+), 8 deletions(-)
+OK. Will repost the whole updated patchset.
 
-diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-index cf462b9..6ace378 100644
---- a/drivers/mfd/twl4030-core.c
-+++ b/drivers/mfd/twl4030-core.c
-@@ -298,10 +298,12 @@ int twl4030_i2c_write(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
- 	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 1);
- 	mutex_unlock(&twl->xfer_lock);
- 
--	/* i2cTransfer returns num messages.translate it pls.. */
--	if (ret >= 0)
--		ret = 0;
--	return ret;
-+	/* i2c_transfer returns number of messages transferred */
-+	if (ret != 1) {
-+		pr_err("%s: twl4030_i2c_write failed to transfer all messages\n", DRIVER_NAME);
-+		return ret;
-+	} else
-+		return 0;
- }
- EXPORT_SYMBOL(twl4030_i2c_write);
- 
-@@ -350,10 +352,13 @@ int twl4030_i2c_read(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
- 	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 2);
- 	mutex_unlock(&twl->xfer_lock);
- 
--	/* i2cTransfer returns num messages.translate it pls.. */
--	if (ret >= 0)
--		ret = 0;
--	return ret;
-+	/* i2c_transfer returns number of messages transferred */
-+	if (ret != 2) {
-+		pr_err("%s: twl4030_i2c_read failed to transfer all messages\n", DRIVER_NAME);
-+		return ret;
-+	}
-+	else
-+		return 0;
- }
- EXPORT_SYMBOL(twl4030_i2c_read);
- 
--- 
-1.6.3.3
-
+Thanks,
+Fengguang
