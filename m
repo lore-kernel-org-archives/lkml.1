@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbZLBIhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZLBJIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852AbZLBIhP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 03:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbZLBIhO
+	id S1754899AbZLBJIY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 04:08:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZLBJIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 03:37:14 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53934
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752755AbZLBIhN (ORCPT
+	Wed, 2 Dec 2009 04:08:23 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47936 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbZLBJIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 03:37:13 -0500
-Date: Wed, 02 Dec 2009 00:37:19 -0800 (PST)
-Message-Id: <20091202.003719.233698986.davem@davemloft.net>
-To: Jie.Yang@Atheros.com
-Cc: ben@decadent.org.uk, 558426@bugs.debian.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net-next]atl1e:disable NETIF_F_TSO6 for hardware limit
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <72981EBCFD196144B7C6999B9FC34A9A494C6DABC3@SHEXMB-01.global.atheros.com>
-References: <1259723914457-git-send-email-jie.yang@atheros.com>
-	<20091202.003151.77443093.davem@davemloft.net>
-	<72981EBCFD196144B7C6999B9FC34A9A494C6DABC3@SHEXMB-01.global.atheros.com>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 04:08:21 -0500
+From: Liming Wang <liming.wang@windriver.com>
+To: Ingo Molnar <mingo@elte.hu>, mhiramat@redhat.com, fweisbec@gmail.com
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
+       Liming Wang <liming.wang@windriver.com>
+Subject: [PATCH] perf tools: replace %m with %a in sscanf
+Date: Wed,  2 Dec 2009 16:42:54 +0800
+Message-Id: <1259743374-9950-1-git-send-email-liming.wang@windriver.com>
+X-Mailer: git-send-email 1.6.0.3
+In-Reply-To: <20091202083120.GA20120@elte.hu>
+References: <20091202083120.GA20120@elte.hu>
+X-OriginalArrivalTime: 02 Dec 2009 09:08:01.0766 (UTC) FILETIME=[F318D060:01CA732E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jie Yang <Jie.Yang@Atheros.com>
-Date: Wed, 2 Dec 2009 16:34:18 +0800
+Not all glibc support %m and it results in a compile error if
+%m not supported. Replace it with %a and (float *) casts.
 
-> On Wednesday, December 02, 2009 4:32 PM
-> David Miller <davem@davemloft.net> wrote:
->>
->> From: <jie.yang@atheros.com>
->> Date: Wed, 2 Dec 2009 11:18:34 +0800
->>
->> > From: Jie Yang <jie.yang@atheros.com>
->> >
->> > For hardware limit to support TSOV6, just disable this feature
->> > Signed-off-by: Jie Yang <jie.yang@atheros.com>
->>
->> Shouldn't we be applying this to net-2.6 since it's a bug fix?
->>
-> oh, It should applying to net-2.6.
+Signed-off-by: Liming Wang <liming.wang@windriver.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ tools/perf/util/probe-event.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Great, that's where I've applied it.
+diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+index e42f3ac..cd7fbda 100644
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -199,8 +199,8 @@ void parse_trace_kprobe_event(const char *str, char **group, char **event,
+ 		semantic_error("Too less arguments.");
+ 
+ 	/* Scan event and group name. */
+-	ret = sscanf(argv[0], "%c:%m[^/ \t]/%m[^ \t]",
+-		     &pr, group, event);
++	ret = sscanf(argv[0], "%c:%a[^/ \t]/%a[^ \t]",
++		     &pr, (float *)(void *)group, (float *)(void *)event);
+ 	if (ret != 3)
+ 		semantic_error("Failed to parse event name: %s", argv[0]);
+ 	pr_debug("Group:%s Event:%s probe:%c\n", *group, *event, pr);
+@@ -211,7 +211,7 @@ void parse_trace_kprobe_event(const char *str, char **group, char **event,
+ 	pp->retprobe = (pr == 'r');
+ 
+ 	/* Scan function name and offset */
+-	ret = sscanf(argv[1], "%m[^+]+%d", &pp->function, &pp->offset);
++	ret = sscanf(argv[1], "%a[^+]+%d", (float *)(void *)&pp->function, &pp->offset);
+ 	if (ret == 1)
+ 		pp->offset = 0;
+ 
+-- 
+1.6.0.3
 
-Thanks.
