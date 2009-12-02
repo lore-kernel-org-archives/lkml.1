@@ -1,157 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZLBOZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbZLBOZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbZLBOZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZLBOZX
+	id S1754104AbZLBOZf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 09:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZLBOZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:25:23 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:49812 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751429AbZLBOZW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 09:25:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=uoAyiwKARJS6Am4m49+/LIstp6R3pPIsQX36WXxSRUmr4ZNKUwkIQYwOkIXg7tG0Oj
-         vpwF123a1C5Nh9UXKZCQyG4ftaIuyAKuI7rs2c538hcij9D/uWQebXLZ9v7yeqI0Lk5k
-         6NA9azOFcP65RHeXzxXy5UAzcAOPRvZrwgtIk=
+	Wed, 2 Dec 2009 09:25:34 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:52698 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752199AbZLBOZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 09:25:33 -0500
+Date: Wed, 2 Dec 2009 14:25:34 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [RFC][PATCH 4/4] vmscan: vmscan don't use pcp list
+Message-ID: <20091202142534.GG1457@csn.ul.ie>
+References: <20091127091920.A7D5.A69D9226@jp.fujitsu.com> <20091127161715.GO13095@csn.ul.ie> <20091202140125.5C5E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20091202122019.GD1457@csn.ul.ie>
-References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
-	 <200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk>
-	 <20091202122019.GD1457@csn.ul.ie>
-Date: Wed, 2 Dec 2009 14:25:27 +0000
-Message-ID: <9b2b86520912020625j31d180a1t1bc2a9b13a9d988d@mail.gmail.com>
-Subject: Re: Bisected: s2disk (uswsusp only) hangs just before poweroff
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091202140125.5C5E.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/2/09, Mel Gorman <mel@csn.ul.ie> wrote:
-> On Wed, Dec 02, 2009 at 11:49:47AM +0000, Alan Jenkins wrote:
->> Rafael J. Wysocki wrote:
->>> On Tuesday 01 December 2009, Mel Gorman wrote:
->>>
->>>> On Tue, Dec 01, 2009 at 07:59:40PM +0000, Alan Jenkins wrote:
->>>>
->>>>> Hi
->>>>>
->>>>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I
->>>>> finally  got around to bisecting it, which blamed the following
->>>>> commit by Mel:
->>>>>
->>>>> 5f8dcc2 "page-allocator: split per-cpu list into
->>>>> one-list-per-migrate-type"
->>>>>
->>>>> I was able to confirm this by reverting the commit, which fixed the
->>>>>  hang.  I had to revert one other commit first to avoid a conflict:
->>>>>
->>>>> a6f9edd "page-allocator: maintain rolling count of pages to free
->>>>> from  the PCP"
->>>>>
->>>>>
->>>> Which RC kernel? Specifically, are the commits
->>>>
->>>> cc4a6851466039a8a688c843962a05689059ff3b always wake kswapd when
->>>> restarting an allocation attempt
->>>> 9d0ed60fe9cd1fbf57f755cd27a23ae9114d7210 Do not allow interrupts to use
->>>> ALLOC_HARDER
->>>>
->>>> applied?
->>>>
->>>> The latter one in particular might make a difference if s2disk is
->>>> pushing the system far below the watermarks. I don't suppose you know
->>>> where it's hanging? i.e. is it hanging in the allocator itself?
->>>>
->>>> If those patches are applied, then one difference that 5f8dcc2 makes is
->>>> that pages on the PCP lists but not of the right migratetype are not
->>>> used. Prior to that commit, an allocation might succeed even if the
->>>> buddy lists were empty because one of the other PCP page types would be
->>>> used.
->>>>
->>>>
->>>>> -- detail --
->>>>>
->>>>> When I suspend my EeePc 701 to disk, it sometimes hangs after
->>>>> writing  out the hibernation image.  The system is still able to
->>>>> resume from this  image (after working around the hang by pressing
->>>>> the power button).
->>>>>
->>>>> This is specific to s2disk from the uswsusp package (which is now
->>>>> installed by default on debian unstable).  It doesn't happen if I
->>>>> uninstall uswsusp and use the in-kernel suspend instead.
->>>>>
->>>>>
->>>> This leads me to believe that uswsusp is able to push available pages
->>>> far below what is expected. It's a total guess though, I have no idea
->>>> how uswsusp is implemented or how it differs from what is in kernel.
->>>>
->>>
->>> It doesn't differ at all in that respect.  Actually, it uses the same
->>> code, but
->>> the distro configuration may be such that it leaves fewer available pages
->>> than the default in-kernel hibernation.
->>>
->>> Thanks,
->>> Rafael
->>>
->>
->> It seems unintuitive that lack of memory is a problem _after we've
->> written out the hibernation image_.  The backtrace I captured shows the
->> hang happens within hibernation_platform_enter()...
->>
->
-> I think the backtrace is also showing that it's trying to create a kernel
-> thread. For this to be getting locked up, memory must be exceptionally
-> tight. One thing that the patch changes is that in certain circumstances,
-> an additional 128K of memory per-CPU could be on each the PCP lists.
->
-> Ordinarily it doesn't matter because reclaim would resolve the situation
-> or the PCP lists would be drained very shortly after. However, if the
-> CPUs were no longer being used but still have pages pinned, it could be
-> causing a problem.
->
->> Hmm.  Doesn't the in-kernel suspend free the in-memory image before
->> powering off?
->>
->> int hibernate(void)
->> ...
->>        pr_debug("PM: writing image.\n");
->>        error = swsusp_write(flags);
->>        swsusp_free();
->>        if (!error)
->>            power_down();
->>
->>
->>
->> Would that explain why only uswsusp is affected?  Do we want to fix
->> snapshot_read() in user.c, so that it calls swsusp_free() once all the
->> data has been read?
->>
->
-> Could you try it please?
+On Wed, Dec 02, 2009 at 04:15:37PM +0900, KOSAKI Motohiro wrote:
+> Hi
+> 
+> sorry for the delayed reply. I've got stucked in Larry's serious bug report awhile.
+> 
 
-Yes, that fixes it.  I left it running over lunch, and it did 24
-hibernations cycles without hanging.  I'll post it and we'll see what
-Rafael thinks.  It's only four lines of code, and I think there's a
-strong case for it.
+No worries. I am slow to respond at the best of times.
 
-> Another possibility would be to call drain_all_pages() before powering
-> off. If that makes a difference, it would confirm that pages are pinned
-> on PCP lists of inactive processors.
+> > On Fri, Nov 27, 2009 at 09:23:57AM +0900, KOSAKI Motohiro wrote:
+> > > 
+> > > note: Last year,  Andy Whitcroft reported pcp prevent to make contenious
+> > > high order page when lumpy reclaim is running.
+> > 
+> > I don't remember the specifics of the discussion but I know that when
+> > that patch series was being prototyped, it was because order-0
+> > allocations were racing with lumpy reclaimers. A lumpy reclaim might
+> > free up an order-9 page say but while it was freeing, an order-0 page
+> > would be allocated from the middle. It wasn't the PCP lists as such that
+> > were a problem once they were getting drained as part of a high-order
+> > allocation attempt. It would be just as bad if the order-0 page was
+> > taken from the buddy lists.
+> 
+> Hm, probably I have to update my patch description.
+> if we use pavevec_free(), batch size is PAGEVEC_SIZE(=14).
+> then, order-9 lumpy reclaim makes 37 times pagevec_free(). it makes lots
+> temporary uncontenious memory block and the chance of stealing it from
+> order-0 allocator task.
+> 
 
-Probably not, since this is a single processor machine :).  It's the
-original EeePC model with a Celeron processor, no fancy dual cores or
-hyperthreading.
+Very true. It opens a wide window during with other allocation requests
+can race with the lumpy reclaimer and undo their work.
 
-Thanks
-Alan
+> This patch free all reclaimed pages at once to buddy.
+> 
+
+Which is good. It reduces the window during which trouble can happen
+considerably.
+
+> > > He posted "capture pages freed during direct reclaim for allocation by the reclaimer"
+> > > patch series, but Christoph mentioned simple bypass pcp instead.
+> > > I made it. I'd hear Christoph and Mel's mention.
+> > > 
+> > > ==========================
+> > > Currently vmscan free unused pages by __pagevec_free().  It mean free pages one by one
+> > > and use pcp. it makes two suboptimal result.
+> > > 
+> > >  - The another task can steal the freed page in pcp easily. it decrease
+> > >    lumpy reclaim worth.
+> > >  - To pollute pcp cache, vmscan freed pages might kick out cache hot
+> > >    pages from pcp.
+> > > 
+> > 
+> > The latter point is interesting.
+> 
+> Thank you.
+> 
+
+Another point is that lumpy reclaim releases pages via the PCP means that
+a part of the contiguous page is "stuck" in the PCP lists. This is evaded
+by doing a drain_all_pages() for high-order allocation requests that are
+failing. I suspect that your patch will reduce the number of times the PCP
+lists are drained.
+
+> > > This patch make new free_pages_bulk() function and vmscan use it.
+> > > 
+> > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > ---
+> > >  include/linux/gfp.h |    2 +
+> > >  mm/page_alloc.c     |   56 +++++++++++++++++++++++++++++++++++++++++++++++++++
+> > >  mm/vmscan.c         |   23 +++++++++++----------
+> > >  3 files changed, 70 insertions(+), 11 deletions(-)
+> > > 
+> > > diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+> > > index f53e9b8..403584d 100644
+> > > --- a/include/linux/gfp.h
+> > > +++ b/include/linux/gfp.h
+> > > @@ -330,6 +330,8 @@ extern void free_hot_page(struct page *page);
+> > >  #define __free_page(page) __free_pages((page), 0)
+> > >  #define free_page(addr) free_pages((addr),0)
+> > >  
+> > > +void free_pages_bulk(struct zone *zone, int count, struct list_head *list);
+> > > +
+> > >  void page_alloc_init(void);
+> > >  void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp);
+> > >  void drain_all_pages(void);
+> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > index 11ae66e..f77f8a8 100644
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -2037,6 +2037,62 @@ void free_pages(unsigned long addr, unsigned int order)
+> > >  
+> > >  EXPORT_SYMBOL(free_pages);
+> > >  
+> > > +/*
+> > > + * Frees a number of pages from the list
+> > > + * Assumes all pages on list are in same zone and order==0.
+> > > + * count is the number of pages to free.
+> > > + *
+> > > + * This is similar to __pagevec_free(), but receive list instead pagevec.
+> > > + * and this don't use pcp cache. it is good characteristics for vmscan.
+> > > + */
+> > > +void free_pages_bulk(struct zone *zone, int count, struct list_head *list)
+> > > +{
+> > > +	unsigned long flags;
+> > > +	struct page *page;
+> > > +	struct page *page2;
+> > > +
+> > > +	list_for_each_entry_safe(page, page2, list, lru) {
+> > > +		int wasMlocked = __TestClearPageMlocked(page);
+> > > +
+> > > +		kmemcheck_free_shadow(page, 0);
+> > > +
+> > > +		if (PageAnon(page))
+> > > +			page->mapping = NULL;
+> > > +		if (free_pages_check(page)) {
+> > > +			/* orphan this page. */
+> > > +			list_del(&page->lru);
+> > > +			continue;
+> > > +		}
+> > > +		if (!PageHighMem(page)) {
+> > > +			debug_check_no_locks_freed(page_address(page),
+> > > +						   PAGE_SIZE);
+> > > +			debug_check_no_obj_freed(page_address(page), PAGE_SIZE);
+> > > +		}
+> > > +		arch_free_page(page, 0);
+> > > +		kernel_map_pages(page, 1, 0);
+> > > +
+> > > +		local_irq_save(flags);
+> > > +		if (unlikely(wasMlocked))
+> > > +			free_page_mlock(page);
+> > > +		local_irq_restore(flags);
+> > > +	}
+> > > +
+> > > +	spin_lock_irqsave(&zone->lock, flags);
+> > > +	__count_vm_events(PGFREE, count);
+> > > +	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
+> > > +	zone->pages_scanned = 0;
+> > > +
+> > > +	__mod_zone_page_state(zone, NR_FREE_PAGES, count);
+> > > +
+> > > +	list_for_each_entry_safe(page, page2, list, lru) {
+> > > +		/* have to delete it as __free_one_page list manipulates */
+> > > +		list_del(&page->lru);
+> > > +		trace_mm_page_free_direct(page, 0);
+> > > +		__free_one_page(page, zone, 0, page_private(page));
+> > > +	}
+> > > +	spin_unlock_irqrestore(&zone->lock, flags);
+> > > +}
+> > 
+> > It would be preferable that the bulk free code would use as much of the
+> > existing free logic in the page allocator as possible. This is making a
+> > lot of checks that are done elsewhere. As this is an RFC, it's not
+> > critical but worth bearing in mind.
+> 
+> Sure. I have to merge common block. thanks.
+> 
+> 
+> > > +
+> > >  /**
+> > >   * alloc_pages_exact - allocate an exact number physically-contiguous pages.
+> > >   * @size: the number of bytes to allocate
+> > > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > > index 56faefb..00156f2 100644
+> > > --- a/mm/vmscan.c
+> > > +++ b/mm/vmscan.c
+> > > @@ -598,18 +598,17 @@ redo:
+> > >   * shrink_page_list() returns the number of reclaimed pages
+> > >   */
+> > >  static unsigned long shrink_page_list(struct list_head *page_list,
+> > > +				      struct list_head *freed_pages_list,
+> > >  					struct scan_control *sc,
+> > 
+> > Should the freed_pages_list be part of scan_control?
+> 
+> OK.
+> 
+> > 
+> > >  					enum pageout_io sync_writeback)
+> > >  {
+> > >  	LIST_HEAD(ret_pages);
+> > > -	struct pagevec freed_pvec;
+> > >  	int pgactivate = 0;
+> > >  	unsigned long nr_reclaimed = 0;
+> > >  	unsigned long vm_flags;
+> > >  
+> > >  	cond_resched();
+> > >  
+> > > -	pagevec_init(&freed_pvec, 1);
+> > >  	while (!list_empty(page_list)) {
+> > >  		struct address_space *mapping;
+> > >  		struct page *page;
+> > > @@ -785,10 +784,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+> > >  		__clear_page_locked(page);
+> > >  free_it:
+> > >  		nr_reclaimed++;
+> > > -		if (!pagevec_add(&freed_pvec, page)) {
+> > > -			__pagevec_free(&freed_pvec);
+> > > -			pagevec_reinit(&freed_pvec);
+> > > -		}
+> > > +		list_add(&page->lru, freed_pages_list);
+> > >  		continue;
+> > >  
+> > >  cull_mlocked:
+> > > @@ -812,8 +808,6 @@ keep:
+> > >  		VM_BUG_ON(PageLRU(page) || PageUnevictable(page));
+> > >  	}
+> > >  	list_splice(&ret_pages, page_list);
+> > > -	if (pagevec_count(&freed_pvec))
+> > > -		__pagevec_free(&freed_pvec);
+> > >  	count_vm_events(PGACTIVATE, pgactivate);
+> > >  	return nr_reclaimed;
+> > >  }
+> > > @@ -1100,6 +1094,7 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+> > >  					  int priority, int file)
+> > >  {
+> > >  	LIST_HEAD(page_list);
+> > > +	LIST_HEAD(freed_pages_list);
+> > >  	struct pagevec pvec;
+> > >  	unsigned long nr_scanned;
+> > >  	unsigned long nr_reclaimed = 0;
+> > > @@ -1174,7 +1169,8 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+> > >  
+> > >  	spin_unlock_irq(&zone->lru_lock);
+> > >  
+> > > -	nr_reclaimed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
+> > > +	nr_reclaimed = shrink_page_list(&page_list, &freed_pages_list, sc,
+> > > +					PAGEOUT_IO_ASYNC);
+> > >  
+> > >  	/*
+> > >  	 * If we are direct reclaiming for contiguous pages and we do
+> > > @@ -1192,10 +1188,15 @@ static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+> > >  		nr_active = clear_active_flags(&page_list, count);
+> > >  		count_vm_events(PGDEACTIVATE, nr_active);
+> > >  
+> > > -		nr_reclaimed += shrink_page_list(&page_list, sc,
+> > > -						 PAGEOUT_IO_SYNC);
+> > > +		nr_reclaimed += shrink_page_list(&page_list, &freed_pages_list,
+> > > +						 sc, PAGEOUT_IO_SYNC);
+> > >  	}
+> > >  
+> > > +	/*
+> > > +	 * Free unused pages.
+> > > +	 */
+> > > +	free_pages_bulk(zone, nr_reclaimed, &freed_pages_list);
+> > > +
+> > >  	local_irq_disable();
+> > >  	if (current_is_kswapd())
+> > >  		__count_vm_events(KSWAPD_STEAL, nr_reclaimed);
+> > 
+> > This patch does not stand-alone so it's not easy to test. I'll think about
+> > the idea more although I do see how it might help slightly in the same way
+> > capture-reclaim did by closing the race window with other allocators.
+> > 
+> > I'm curious, how did you evaluate this and what problem did you
+> > encounter that this might help?
+> 
+> Honestly I didn't it yet. I only tested changing locking scheme didn't cause
+> reclaim throughput under light VM pressure. Probably I have to contact 
+> Andy and test his original problem workload.
+> 
+> btw, if you have good high order allocation workload, can you please tell me it?
+> 
+
+For the most part, he was using the same tests as I was using for the
+anti-fragmentation patches - high-order allocation requests under a heavy
+compile-load. The expectation was that capture-based reclaim would increase
+success rates and reduce latencies.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
