@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZLBIcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZLBIcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZLBIcE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 03:32:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbZLBIcC
+	id S1754794AbZLBIcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 03:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZLBIcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 03:32:02 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46671 "EHLO hera.kernel.org"
+	Wed, 2 Dec 2009 03:32:32 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56968 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754704AbZLBIb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 03:31:59 -0500
-Date: Wed, 2 Dec 2009 08:31:06 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, xiaoguangrong@cn.fujitsu.com,
-       tglx@linutronix.de, mhiramat@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       xiaoguangrong@cn.fujitsu.com, mhiramat@redhat.com, mingo@elte.hu
-In-Reply-To: <4B162089.8000907@cn.fujitsu.com>
-References: <4B162089.8000907@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_event: Fix compile error
-Message-ID: <tip-bdad0db7dbdb37d0bb3c7d0f65cd3ff599ea6ecb@git.kernel.org>
-Git-Commit-ID: bdad0db7dbdb37d0bb3c7d0f65cd3ff599ea6ecb
-X-Mailer: tip-git-log-daemon
+	id S1752501AbZLBIcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 03:32:31 -0500
+Date: Wed, 2 Dec 2009 09:31:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Wang Liming <liming.wang@windriver.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>, mingo@redhat.com,
+       peterz@infradead.org, linux-kernel@vger.kernel.org, acme@redhat.com,
+       rostedt@goodmis.org, jbaron@redhat.com, tglx@linutronix.de,
+       fche@redhat.com, jkenisto@us.ibm.com, hch@infradead.org,
+       ananth@in.ibm.com, srikar@linux.vnet.ibm.com, prasad@linux.vnet.ibm.com
+Subject: Re: [tip:perf/core] perf probe: Add --list option for listing
+ current probe events
+Message-ID: <20091202083120.GA20120@elte.hu>
+References: <20091201002017.10235.76575.stgit@harusame>
+ <tip-4de189fe6e5ad8241f6f8709d2e2ba4c3aeae33a@git.kernel.org>
+ <4B15E913.1040105@windriver.com>
+ <4B15F36F.5040304@redhat.com>
+ <4B15FCAB.7000209@windriver.com>
+ <20091202060655.GB5719@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091202060655.GB5719@nowhere>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  bdad0db7dbdb37d0bb3c7d0f65cd3ff599ea6ecb
-Gitweb:     http://git.kernel.org/tip/bdad0db7dbdb37d0bb3c7d0f65cd3ff599ea6ecb
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Wed, 2 Dec 2009 16:08:41 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 2 Dec 2009 09:27:01 +0100
 
-perf_event: Fix compile error
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Fix:
+> On Wed, Dec 02, 2009 at 01:35:39PM +0800, Wang Liming wrote:
+> > Yes, my glibc is old so that "perf" can't be built. I'm using ubuntu 8.04.
+> >
+> > Thanks a lot.
+> 
+> 
+> 
+> What is your glibc version?
+> %m appears to be supported since 2.7
+> 
+> But if possible we would like perf to be buildable on most
+> boxes. May be should we use %a instead there.
 
- cc1: warnings being treated as errors
- builtin-probe.c: In function 'cmd_probe':
- builtin-probe.c:163: error: unused variable 'fd'
+Definitely so.
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <4B162089.8000907@cn.fujitsu.com>
-[ v2: use NO_LIBDWARF instead of __used ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/builtin-probe.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+Wang, mind sending a patch for that?
 
-diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index b5d15cf..a58e11b 100644
---- a/tools/perf/builtin-probe.c
-+++ b/tools/perf/builtin-probe.c
-@@ -160,7 +160,10 @@ static const struct option options[] = {
- 
- int cmd_probe(int argc, const char **argv, const char *prefix __used)
- {
--	int i, j, fd, ret;
-+	int i, j, ret;
-+#ifndef NO_LIBDWARF
-+	int fd;
-+#endif
- 	struct probe_point *pp;
- 
- 	argc = parse_options(argc, argv, options, probe_usage,
+Thanks,
+
+	Ingo
