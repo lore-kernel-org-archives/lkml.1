@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZLBS2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZLBSgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbZLBS2t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 13:28:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbZLBS2s
+	id S1754398AbZLBSgt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 13:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbZLBSgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 13:28:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755272AbZLBS2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 13:28:47 -0500
-Date: Wed, 2 Dec 2009 19:27:58 +0100
-From: Veaceslav Falico <vfalico@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Al Viro <viro@zeniv.linux.org.uk>, Miloslav Trmac <mitr@redhat.com>,
-       James Morris <jmorris@namei.org>, Alan Cox <alan@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
-       Louis Rilling <louis.rilling@kerlabs.com>,
-       David Howells <dhowells@redhat.com>,
-       Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: Re: [PATCH 1/4] copy_signal cleanup: use zalloc and remove
-	initializations
-Message-ID: <20091202182758.GG10052@darkmag.usersys.redhat.com>
-References: <20091201221036.GA10052@darkmag.usersys.redhat.com> <20091202135759.GA791@redhat.com>
+	Wed, 2 Dec 2009 13:36:48 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:38987 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752305AbZLBSgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 13:36:47 -0500
+Message-ID: <4B16B32D.9030106@nortel.com>
+Date: Wed, 02 Dec 2009 12:34:21 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091202135759.GA791@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: question on type conversions in show_map_vma()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Dec 2009 18:36:51.0355 (UTC) FILETIME=[69EACEB0:01CA737E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 02:57:59PM +0100, Oleg Nesterov wrote:
-> 
-> Personally I don't mind, but perhaps it is better to move this change
-> into 3/4 which changes thread_group_cputime_init().
-> 
 
-Thank you for your review. I'll repost the fixed patchset tommorow.
+Another developer and I were looking at show_map_vma() and started
+wondering about the "pgoff" value:
 
---
-Veaceslav 
+pgoff = ((loff_t)vma->vm_pgoff) << PAGE_SHIFT;
+
+Here we take a variable of type "unsigned long", we cast it to "long
+long", shift it, then assign the result to a variable of type "unsigned
+long long".
+
+I realize that there isn't any danger of invalid sign extension, but it
+does seem a bit odd to be casting to a signed value when the result is
+going to be unsigned.
+
+Is there a historical reason why pgoff is unsigned rather than just of
+type "loff_t"?
+
+Chris
