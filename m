@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbZLBVyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZLBWHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780AbZLBVyi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:54:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZLBVyh
+	id S1755229AbZLBWHS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZLBWHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:54:37 -0500
-Received: from imap.ru.mvista.com ([213.79.90.228]:31694 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755714AbZLBVyg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:54:36 -0500
-Date: Thu, 3 Dec 2009 00:54:42 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grazvydas Ignotas <notasas@gmail.com>
-Cc: felipe.balbi@nokia.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
- charger
-Message-ID: <20091202215442.GA30658@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
- <20091202173321.GA23738@nokia.com>
- <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
- <20091202204946.GB25682@nokia.com>
- <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
+	Wed, 2 Dec 2009 17:07:18 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:56138 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753800AbZLBWHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 17:07:17 -0500
+Date: Wed, 2 Dec 2009 22:07:18 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH] uswsusp: automatically free the in-memory image once
+	s2disk has finished with it
+Message-ID: <20091202220718.GI1457@csn.ul.ie>
+References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie> <200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk> <20091202122019.GD1457@csn.ul.ie> <4B16797C.3010304@tuffmail.co.uk> <20091202211107.GA20830@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091202211107.GA20830@elf.ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 11:29:10PM +0200, Grazvydas Ignotas wrote:
-[...]
-> From what I saw in other drivers they are setup to start charging
-> automatically as soon as they see VBUS.
-
-Yes. I see nothing wrong here.
-
-> > How are you differing between those currently?
+On Wed, Dec 02, 2009 at 10:11:07PM +0100, Pavel Machek wrote:
+> On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
+> > The original in-kernel suspend (swsusp) frees the in-memory hibernation
+> > image before powering off the machine.  s2disk doesn't, so there is
+> > _much_ less free memory when it tries to power off.
+> > 
+> > This is a gratuitous difference.  The userspace suspend interface
+> > /dev/snapshot only allows the hibernation image to be read once.
+> > Once the s2disk program has read the last page, we can free the entire
+> > image.
+> > 
+> > This avoids a hang after writing the hibernation image which was
+> > triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+> > "page-allocator: split per-cpu list into one-list-per-migrate-type":
 > 
-> Not handled at all at the moment (uses BCI defaults).
-[...]
-> Agree about USB userspace switch though..
+> Yes, you work around page-allocator hang. But is it right thing to do?
+> 
 
-Yes, so far we don't have any writable properties in power supply
-class, though the feature is in demand by various drivers.
-Somebody should step up and implement it. ;-)
+What's wrong with it? The hang is likely because the allocator has no
+memory to work with. The patch in question makes small changes to the
+amount of available memory but it shouldn't matter on uni-core. Some
+structures are slightly larger but it's extremely borderline. I'm at a
+loss to explain actually why it makes a difference untill things were
+extremely borderline to begin with.
 
-But for the start, I like this driver the way it is.
+> I mean... Power down should not be too memory-critical. Why can't new
+> page allocator handle that?
+> 
 
-As for the default USB VBUS current value, it could be Kconfig
-option (something alike to USB_GADGET_VBUS_DRAW) and/or module
-parameter, or hw default, or hardcoded for now. Either will
-work.
+The allocator isn't new. I wouldn't have expected power-down to make any
+allocation at all but clearly it is.
+
+> (And yes, when page allocator is fixed we may want to do something
+> like that, but...)
+> 
+
+At the moment, I'm not sure what needs fixing in there. There is no
+memory and it gets stuck in a loop. I better stand up if I'm going to
+pull something out of my ass :/
+
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
