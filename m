@@ -1,124 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbZLBKfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbZLBKnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbZLBKfj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 05:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbZLBKfi
+	id S1752302AbZLBKnD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 05:43:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZLBKnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 05:35:38 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:46231 "EHLO gir.skynet.ie"
+	Wed, 2 Dec 2009 05:43:03 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44837 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbZLBKfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 05:35:37 -0500
-Date: Wed, 2 Dec 2009 10:35:38 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Bisected: s2disk (uswsusp only) hangs just before poweroff
-Message-ID: <20091202103538.GB1457@csn.ul.ie>
-References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie> <4B162BE1.7070709@tuffmail.co.uk>
+	id S1751055AbZLBKnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 05:43:01 -0500
+Date: Wed, 2 Dec 2009 10:42:34 GMT
+From: tip-bot for Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tj@kernel.org, tglx@linutronix.de, mingo@elte.hu, avi@redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tj@kernel.org, tglx@linutronix.de, avi@redhat.com, mingo@elte.hu
+In-Reply-To: <1259726212-30259-2-git-send-email-tj@kernel.org>
+References: <1259726212-30259-2-git-send-email-tj@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Revert 498657a478c60be092208422fefa9c7b248729c2
+Message-ID: <tip-8592e6486a177a02f048567cb928bc3a1f9a86c3@git.kernel.org>
+Git-Commit-ID: 8592e6486a177a02f048567cb928bc3a1f9a86c3
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4B162BE1.7070709@tuffmail.co.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 08:57:05AM +0000, Alan Jenkins wrote:
-> Mel Gorman wrote:
->> On Tue, Dec 01, 2009 at 07:59:40PM +0000, Alan Jenkins wrote:
->>   
->>> Hi
->>>
->>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I 
->>> finally  got around to bisecting it, which blamed the following 
->>> commit by Mel:
->>>
->>> 5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
->>>
->>> I was able to confirm this by reverting the commit, which fixed the   
->>> hang.  I had to revert one other commit first to avoid a conflict:
->>>
->>> a6f9edd "page-allocator: maintain rolling count of pages to free from 
->>>  the PCP"
->>>
->>>     
->>
->> Which RC kernel? Specifically, are the commits
->>
->> cc4a6851466039a8a688c843962a05689059ff3b always wake kswapd when restarting an allocation attempt
->> 9d0ed60fe9cd1fbf57f755cd27a23ae9114d7210 Do not allow interrupts to use ALLOC_HARDER
->>
->> applied?
->>
->> The latter one in particular might make a difference if s2disk is
->> pushing the system far below the watermarks. I don't suppose you know
->> where it's hanging? i.e. is it hanging in the allocator itself?
->>
->> If those patches are applied, then one difference that 5f8dcc2 makes is
->> that pages on the PCP lists but not of the right migratetype are not
->> used. Prior to that commit, an allocation might succeed even if the
->> buddy lists were empty because one of the other PCP page types would be
->> used.
->>
->>   
->>> -- detail --
->>>
->>> When I suspend my EeePc 701 to disk, it sometimes hangs after writing 
->>>  out the hibernation image.  The system is still able to resume from 
->>> this  image (after working around the hang by pressing the power 
->>> button). 
->>>
->>> This is specific to s2disk from the uswsusp package (which is now   
->>> installed by default on debian unstable).  It doesn't happen if I   
->>> uninstall uswsusp and use the in-kernel suspend instead.
->>>
->>>     
->>
->> This leads me to believe that uswsusp is able to push available pages
->> far below what is expected. It's a total guess though, I have no idea
->> how uswsusp is implemented or how it differs from what is in kernel.
->>
->>   
->>> The hang doesn't happen if I boot with "init=/bin/bash" and run 
->>> s2disk.   Nor does it happen if I boot normally, then switch to 
->>> single user mode  ("telinit 12").
->>>
->>> It only happens if I've logged in to KDE.  In the past, this has   
->>> indicated a problem in a network driver, since NetworkManager only 
->>> made  a connection once I logged in.  But it still hangs if I remove 
->>> both  ath5k and atl2 before I log into KDE.  (I actually tried 
->>> removing as  many modules as possible: atl2, ath5k, usbcore, 
->>> snd-hda-intel, psmouse,  pcspkr, battery, ac, themal, fan, and 
->>> eeepc-laptop).  Perhaps it's  something to do with the size of the 
->>> hibernation image.
->>>
->>>     
->>
->> I believe you are correct in that it's something to do with the size of
->> the hibernation image and how close to the edge the kernel gets pushed
->> as a result.
->>
->> Please confirm first that the two commits I mentioned above are in your
->> kernel. If not, would you mind trying the following patch?
->> Unfortunately, it's totally untested. The intention of the patch is to
->> use other PCP lists if the desired one cannot be refilled.
->>
->> Thanks.
->>   
->
-> The hang happens on 2.6.32-rc8, which includes the two commits above.
->
+Commit-ID:  8592e6486a177a02f048567cb928bc3a1f9a86c3
+Gitweb:     http://git.kernel.org/tip/8592e6486a177a02f048567cb928bc3a1f9a86c3
+Author:     Tejun Heo <tj@kernel.org>
+AuthorDate: Wed, 2 Dec 2009 12:56:46 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 2 Dec 2009 09:55:33 +0100
 
-Ok, that was somewhat expected as they only had an impact if there was a
-storm of interrupts which was unlikely in this case. How about the
-additional patch?
+sched: Revert 498657a478c60be092208422fefa9c7b248729c2
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+498657a478c60be092208422fefa9c7b248729c2 incorrectly assumed
+that preempt wasn't disabled around context_switch() and thus
+was fixing imaginary problem.  It also broke KVM because it
+depended on ->sched_in() to be called with irq enabled so that
+it can do smp calls from there.
+
+Revert the incorrect commit and add comment describing different
+contexts under with the two callbacks are invoked.
+
+Avi: spotted transposed in/out in the added comment.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Avi Kivity <avi@redhat.com>
+Cc: peterz@infradead.org
+Cc: efault@gmx.de
+Cc: rusty@rustcorp.com.au
+LKML-Reference: <1259726212-30259-2-git-send-email-tj@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/preempt.h |    5 +++++
+ kernel/sched.c          |    2 +-
+ 2 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/preempt.h b/include/linux/preempt.h
+index 72b1a10..2e681d9 100644
+--- a/include/linux/preempt.h
++++ b/include/linux/preempt.h
+@@ -105,6 +105,11 @@ struct preempt_notifier;
+  * @sched_out: we've just been preempted
+  *    notifier: struct preempt_notifier for the task being preempted
+  *    next: the task that's kicking us out
++ *
++ * Please note that sched_in and out are called under different
++ * contexts.  sched_out is called with rq lock held and irq disabled
++ * while sched_in is called without rq lock and irq enabled.  This
++ * difference is intentional and depended upon by its users.
+  */
+ struct preempt_ops {
+ 	void (*sched_in)(struct preempt_notifier *notifier, int cpu);
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b3d4e2b..1031cae 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2768,9 +2768,9 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 	prev_state = prev->state;
+ 	finish_arch_switch(prev);
+ 	perf_event_task_sched_in(current, cpu_of(rq));
+-	fire_sched_in_preempt_notifiers(current);
+ 	finish_lock_switch(rq, prev);
+ 
++	fire_sched_in_preempt_notifiers(current);
+ 	if (mm)
+ 		mmdrop(mm);
+ 	if (unlikely(prev_state == TASK_DEAD)) {
