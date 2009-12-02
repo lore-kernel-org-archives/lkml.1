@@ -1,69 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZLBV2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZLBV3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbZLBV2w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZLBV2w
+	id S1755673AbZLBV3H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:29:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbZLBV3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:28:52 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:35562
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754378AbZLBV2v convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 16:29:06 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:36513 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755658AbZLBV3F convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:28:51 -0500
-Subject: Re: [RFC v2] Another approach to IR
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <Pine.LNX.4.58.0912021300270.4729@shell2.speakeasy.net>
-Date: Wed, 2 Dec 2009 16:28:51 -0500
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
+	Wed, 2 Dec 2009 16:29:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=BdL+3mBq+wWurloyaoh07qbx31F2cFMAJmPO0HkOFK9i+0r5HWXinNcNT8F9KRp441
+         eZqM+DUioYKp8IEbNbPb6ca85kP81JYrjLdc+RMRXjAlgQyoeO9Nto7dyBRvmeo2NlH3
+         2ke67wSM7x+ojvW0Adwjq1QILs1phI6sdUW6w=
+MIME-Version: 1.0
+In-Reply-To: <20091202204946.GB25682@nokia.com>
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+	 <20091202173321.GA23738@nokia.com>
+	 <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
+	 <20091202204946.GB25682@nokia.com>
+Date: Wed, 2 Dec 2009 23:29:10 +0200
+Message-ID: <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI charger
+From: Grazvydas Ignotas <notasas@gmail.com>
+To: felipe.balbi@nokia.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Message-Id: <582D7897-47F8-44B6-959F-510790EAEA79@wilsonet.com>
-References: <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <20091202201404.GD22689@core.coreip.homeip.net> <434927DD-0E66-4D0E-B705-022B7FCCCDB0@wilsonet.com> <20091202204811.GE22689@core.coreip.homeip.net> <B8514BFF-DB1B-4475-9E6D-E2A567A998FA@wilsonet.com> <Pine.LNX.4.58.0912021300270.4729@shell2.speakeasy.net>
-To: Trent Piepho <xyzzy@speakeasy.org>
-X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 2, 2009, at 4:12 PM, Trent Piepho wrote:
+On Wed, Dec 2, 2009 at 10:49 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
+> Hi,
+>
+> On Wed, Dec 02, 2009 at 09:34:00PM +0100, ext Grazvydas Ignotas wrote:
+>>>>
+>>>> +#define BCI_DELAY              100
+>>>
+>>> 100ms ??? that's too quick for battery monitoring. Imagine that you'll
+>>> have
+>>> 10 i2c transfers per-second forever with this one. Don't you think you're
+>>> waking up omap for nothing ??
+>>
+>> The work item doesn't queue itself, so this is only used once after
+>> every interrupt. The delay itself is needed because charge state
+>> machine needs some time to switch states and is not yet in expected
+>> state at the time VBUS/AC detect interrupt kicks.
+>
+> ok got it... not so bad then ;-)
+>
+>>>> +static struct twl4030_bci_device_info twl4030_bci = {
+>>>
+>>> this should be allocated on probe() time.
+>>
+>> I need to access it from twl4030charger_usb_en().. Could only leave
+>> delayed_work global and allocate everything else in probe() if you
+>> prefer that.
+>
+> well, you could keep only a global static pointer and after allocating that
+> in probe, make the global static pointer, point to it... Anyways, I think
+> twl4030charger_usb_en() should change its prototype to something like
+>
+> twl4030charger_usb_en(struct twl4030_bci *bci, int enable);
 
-> On Wed, 2 Dec 2009, Jarod Wilson wrote:
->>>> 
->>>> My main point is that each of these devices has device ID that can be determined without having to first do some protocol analysis and table lookups to figure out which "device" some random IR input is actually coming from.
->>>> 
->>> 
->>> Heh, right back at ya ;) The fact that you need to do some more work
->>> to separate 2 physical devices does not mean it should not be done.
->> 
->> No, but it means added complexity inside the kernel. I'm questioning whether the added complexity is worth it, when I doubt the vast majority of users would take advantage of it, and it can already be done in userspace. Although... Damn. The userspace approach would only work if the device were passing raw IR to userspace, so in the in-kernel decoding case, yeah, I guess you'd need separate input devices for each remote to use them independently. Meh. Doubt I'd ever use it, but I guess I'll concede that it makes some sense to do the extra work.
-> 
-> You just need to send a tuple that contrains the keycode plus some kind of
-> id for the remote it came from.  That's what I did for lirc, it decodes the
-> sparc/mark into a remote id and key code tuple.  It's certainly a common
-> thing to want.  Anyone who has existing remotes and components that use
-> them would want it.
+This function is called by twl4030-usb, where will it get this bci pointer from?
 
-What for, exactly?
+> you could leave userland to decide whether to start charging, specially in
+> usb charging case where we still need to know if we where enumerated with
+> 100mA or 500mA configuration.
 
-> You don't want your computer turning off when you push
-> the power button on the DVD player's remote, do you?
+>From what I saw in other drivers they are setup to start charging
+automatically as soon as they see VBUS. Maybe Anton can give more
+details here.
 
-No, I don't.
+> How are you differing between those currently?
 
-Perhaps we should clarify something here. Are we intending to auto-create a new input device for every IR command set we see arrive at the IR receiver? I've been assuming we're not going to willy-nilly just auto-create a new device for every IR signal we happen to catch passing by. The receiver should only be passing along input events for the codeset/remote I've told it to listen for (which by default, is the codes for the receiver's bundled remote). Otherwise, yeah, I'm going to wind up with my htpc powering off when I hit the button on my harmony remote that is supposed to turn off my tv and amp.
+Not handled at all at the moment (uses BCI defaults).
 
--- 
-Jarod Wilson
-jarod@wilsonet.com
+>>> I don't like the way you did this. I would expect twl4030-usb to kick the
+>>> charger detection based on the VBUS irq. You have to consider the
+>>> possibility of boards which won't use BCI module and will have some
+>>> bq24xxx
+>>> chip dealing with that like RX51. So instead of implementing this here
+>>> and
+>>> forcing people to have this driver enabled on e.g. RX51, you should
+>>> implement the charger_enable_usb() logic in twl4030-usb itself. /me
+>>> thinks
+>>
+>> I don't think charging is twl4030-usb's business, also notifying
+>> power_supply core about charge state changes that I do here.
+>
+> I was talking about the charger detection.
 
+The USB_PRES interrupt belongs to twl4030-usb, so it gets it's
+detection as before and does not need this driver, where is the
+problem? This driver only registers CHG_PRES, which is AC charger
+detect interrupt.
 
+> The start of charge you could leave to userland to handle, no ?
 
+Maybe, I wonder if there is standard way to do that.
+Anton?
+
+>
+>> What about just returning early from twl4030charger_usb_en() if this
+>> driver is not started? TWL4030-core requires twl4030_bci_platform_data
+>> to be present to even register this driver, so it won't start on RX51.
+>> RX51 can also choose not to compile this driver in, then
+>> twl4030charger_usb_en() call won't even be done fom twl4030-usb.
+>
+> still we need to detect the charger...
+>
+>>> how about using request_threaded_irq() ?? then you avoid having that
+>>> workqueue.
+>>
+>> I need to do some delayed processing after VBUS/AC detect interrupts
+>> kick, delayed_work looked perfect for this. Also note that I can't get
+>> USB_PRES interrupt (taken by twl4030-usb), only a callback from
+>> twl4030-usb.
+>
+> or you let userland to handle a bit more of this logic (??)
+
+Still need to autostart AC charging, who would plug AC adapter and
+want to fiddle with the GUI to start charging instead it having it go
+automatically? Agree about USB userspace switch though..
