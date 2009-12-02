@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbZLBSzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbZLBSxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbZLBSzZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 13:55:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbZLBSzY
+	id S1755478AbZLBSxY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 13:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbZLBSxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 13:55:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58092 "EHLO mx1.redhat.com"
+	Wed, 2 Dec 2009 13:53:23 -0500
+Received: from cantor.suse.de ([195.135.220.2]:46991 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752938AbZLBSzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 13:55:24 -0500
-Date: Wed, 2 Dec 2009 19:49:38 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: Re: [RFC,PATCH 14/14] utrace core
-Message-ID: <20091202184938.GB14799@redhat.com>
-References: <20091124200220.GA5828@redhat.com> <1259697242.1697.1075.camel@laptop>
-MIME-Version: 1.0
+	id S1755198AbZLBSxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 13:53:22 -0500
+Date: Wed, 2 Dec 2009 19:53:28 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+Subject: some recent scheduler patches
+Message-ID: <20091202185328.GI31517@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1259697242.1697.1075.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01, Peter Zijlstra wrote:
->
-> > +void utrace_resume(struct task_struct *task, struct pt_regs *regs)
-> > +{
-> > +	struct utrace *utrace = task_utrace_struct(task);
-> > +	INIT_REPORT(report);
-> > +	struct utrace_engine *engine;
-> > +
-> > +	/*
-> > +	 * Some machines get here with interrupts disabled.  The same arch
-> > +	 * code path leads to calling into get_signal_to_deliver(), which
-> > +	 * implicitly reenables them by virtue of spin_unlock_irq.
-> > +	 */
-> > +	local_irq_enable();
->
-> Hrmm, I would much prefer to fix up the calling conventions of
-> tracehook_notify_resume() than to bury something like this in the guts
-> of a tracehook user.
+Hi,
 
-Missed this part too.
+I'm just been looking through some of the recent scheduler patches
+while bisecting something...
 
-May be, I dunno...
+83f54960c11a14942ab00b54c51e91906b9d8235: sched: for_each_domain() vs RCU
+I don't see what is the step that causes FAIL? sched-domains code is
+using synchronize_sched(), so that part should be safe.
 
-But in any case, imho it would be better to do this after we merge utrace,
-otherwise we need more subtle arch-dependent changes before.
+And b8a543ea5a5896830a9969bacfd047f9d15940b2... This changelog is not
+correct to start with. The _idx stuff does not just shift the time
+that balancing decisions are made, it damps balancing choices to be
+more conservative if they might have been wrong over more than a single
+instant sample.
 
-Oleg.
+And secondly there is no reason give for the change. Ditto for a lot of
+other tuning changes really. Not that there was always exact reasons
+for every single one of the defaults I found, but they a) always tried
+to get reasonable performance with as conservative balancing as
+possible (ie. so 2 different tunings with no distinguishable difference
+then tuning that result in fewer task movements would be preferred).
+And b) they were relatively well tested.
+
+Are people really not reporting enough regressions against CFS that it
+is time to just tweak things?
 
