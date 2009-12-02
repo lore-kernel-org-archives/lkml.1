@@ -1,115 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZLBEh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZLBEmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbZLBEh5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 23:37:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbZLBEhy
+	id S1755381AbZLBEmO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 23:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZLBEhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 23:37:54 -0500
-Received: from mga14.intel.com ([143.182.124.37]:57394 "EHLO mga14.intel.com"
+	Tue, 1 Dec 2009 23:37:46 -0500
+Received: from mga03.intel.com ([143.182.124.21]:3797 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755313AbZLBEha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 23:37:30 -0500
+	id S1755330AbZLBEhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 23:37:31 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="217764920"
-Message-Id: <20091202043045.711553780@intel.com>
+   d="scan'208";a="217764927"
+Message-Id: <20091202043045.852342473@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 02 Dec 2009 11:12:47 +0800
+Date: Wed, 02 Dec 2009 11:12:48 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 TO: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Haicheng Li <haicheng.li@intel.com>,
+CC: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
+       Nick Piggin <npiggin@suse.de>, Christoph Lameter <clameter@sgi.com>,
        Wu Fengguang <fengguang.wu@intel.com>
-CC: Nick Piggin <npiggin@suse.de>
 CC: <linux-mm@kvack.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 16/24] HWPOISON: limit hwpoison injector to known page types
+Subject: [PATCH 17/24] mm: export stable page flags
 References: <20091202031231.735876003@intel.com>
-Content-Disposition: inline; filename=hwpoison-filter-limit-scope.patch
+Content-Disposition: inline; filename=kpageflags-export-page_uflags.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__memory_failure()'s workflow is
+Rename get_uflags() to stable_page_flags() and make it a global function
+for use in the hwpoison page flags filter, which need to compare user
+page flags with the value provided by user space.
 
-	set PG_hwpoison
-	//...
-	unset PG_hwpoison if didn't pass hwpoison filter
+Also move KPF_* to kernel-page-flags.h for use by user space tools.
 
-That could kill unrelated process if it happens to page fault on the
-page with the (temporary) PG_hwpoison. The race should be big enough to
-appear in stress tests.
-
-Fix it by grabbing the page and checking filter at inject time.  This
-also avoids the very noisy "Injecting memory failure..." messages.
-
-- we don't touch madvise() based injection, because the filters are
-  generally not necessary for it.
-- if we want to apply the filters to h/w aided injection, we'd better to
-  rearrange the logic in __memory_failure() instead of this patch.
-
-CC: Haicheng Li <haicheng.li@intel.com>
-CC: Andi Kleen <andi@firstfloor.org> 
+CC: Matt Mackall <mpm@selenic.com>
+CC: Nick Piggin <npiggin@suse.de>
+CC: Christoph Lameter <clameter@sgi.com>
+CC: Andi Kleen <andi@firstfloor.org>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/hwpoison-inject.c |   27 ++++++++++++++++++++++++++-
- mm/internal.h        |    2 ++
- 2 files changed, 28 insertions(+), 1 deletion(-)
+ fs/proc/page.c                    |   45 +--------------------------
+ include/linux/kernel-page-flags.h |   46 ++++++++++++++++++++++++++++
+ include/linux/page-flags.h        |    2 +
+ 3 files changed, 51 insertions(+), 42 deletions(-)
 
---- linux-mm.orig/mm/hwpoison-inject.c	2009-11-30 20:44:41.000000000 +0800
-+++ linux-mm/mm/hwpoison-inject.c	2009-11-30 20:58:20.000000000 +0800
-@@ -3,16 +3,41 @@
- #include <linux/debugfs.h>
- #include <linux/kernel.h>
- #include <linux/mm.h>
-+#include <linux/swap.h>
+--- linux-mm.orig/fs/proc/page.c	2009-11-07 20:23:59.000000000 +0800
++++ linux-mm/fs/proc/page.c	2009-11-07 20:37:31.000000000 +0800
+@@ -8,6 +8,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/hugetlb.h>
++#include <linux/kernel-page-flags.h>
+ #include <asm/uaccess.h>
  #include "internal.h"
  
- static struct dentry *hwpoison_dir;
+@@ -71,52 +72,12 @@ static const struct file_operations proc
+  * physical page flags.
+  */
  
- static int hwpoison_inject(void *data, u64 val)
+-/* These macros are used to decouple internal flags from exported ones */
+-
+-#define KPF_LOCKED		0
+-#define KPF_ERROR		1
+-#define KPF_REFERENCED		2
+-#define KPF_UPTODATE		3
+-#define KPF_DIRTY		4
+-#define KPF_LRU			5
+-#define KPF_ACTIVE		6
+-#define KPF_SLAB		7
+-#define KPF_WRITEBACK		8
+-#define KPF_RECLAIM		9
+-#define KPF_BUDDY		10
+-
+-/* 11-20: new additions in 2.6.31 */
+-#define KPF_MMAP		11
+-#define KPF_ANON		12
+-#define KPF_SWAPCACHE		13
+-#define KPF_SWAPBACKED		14
+-#define KPF_COMPOUND_HEAD	15
+-#define KPF_COMPOUND_TAIL	16
+-#define KPF_HUGE		17
+-#define KPF_UNEVICTABLE		18
+-#define KPF_HWPOISON		19
+-#define KPF_NOPAGE		20
+-
+-#define KPF_KSM			21
+-
+-/* kernel hacking assistances
+- * WARNING: subject to change, never rely on them!
+- */
+-#define KPF_RESERVED		32
+-#define KPF_MLOCKED		33
+-#define KPF_MAPPEDTODISK	34
+-#define KPF_PRIVATE		35
+-#define KPF_PRIVATE_2		36
+-#define KPF_OWNER_PRIVATE	37
+-#define KPF_ARCH		38
+-#define KPF_UNCACHED		39
+-
+ static inline u64 kpf_copy_bit(u64 kflags, int ubit, int kbit)
  {
-+	unsigned long pfn = val;
-+	struct page *p;
-+
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
-+
-+	if (!pfn_valid(pfn))
-+		return -ENXIO;
-+
-+	/*
-+	 * This implies unable to support free buddy pages.
-+	 */
-+	p = pfn_to_page(pfn);
-+	if (!get_page_unless_zero(p))
-+		return 0;
-+
-+	if (!PageLRU(p))
-+		lru_add_drain_all();
-+	/*
-+	 * do a racy check with elevated page count, to make sure PG_hwpoison
-+	 * will only be set for the targeted owner (or on a free page).
-+	 * __memory_failure() will redo the check reliably inside page lock.
-+	 */
-+	if (hwpoison_filter(p))
-+		return 0;
-+
- 	printk(KERN_INFO "Injecting memory failure at pfn %Lx\n", val);
--	return __memory_failure(val, 18, 0);
-+	return __memory_failure(val, 18, 1);
+ 	return ((kflags >> kbit) & 1) << ubit;
  }
  
- static int hwpoison_forget(void *data, u64 val)
---- linux-mm.orig/mm/internal.h	2009-11-30 20:44:41.000000000 +0800
-+++ linux-mm/mm/internal.h	2009-11-30 20:52:11.000000000 +0800
-@@ -264,5 +264,7 @@ int __get_user_pages(struct task_struct 
- #define ZONE_RECLAIM_SUCCESS	1
+-static u64 get_uflags(struct page *page)
++u64 stable_page_flags(struct page *page)
+ {
+ 	u64 k;
+ 	u64 u;
+@@ -219,7 +180,7 @@ static ssize_t kpageflags_read(struct fi
+ 		else
+ 			ppage = NULL;
+ 
+-		if (put_user(get_uflags(ppage), out)) {
++		if (put_user(stable_page_flags(ppage), out)) {
+ 			ret = -EFAULT;
+ 			break;
+ 		}
+--- linux-mm.orig/include/linux/page-flags.h	2009-11-07 20:37:27.000000000 +0800
++++ linux-mm/include/linux/page-flags.h	2009-11-07 20:37:31.000000000 +0800
+@@ -284,6 +284,8 @@ PAGEFLAG_FALSE(HWPoison)
+ #define __PG_HWPOISON 0
  #endif
  
-+extern int hwpoison_filter(struct page *p);
++u64 stable_page_flags(struct page *page);
 +
- extern u32 hwpoison_filter_dev_major;
- extern u32 hwpoison_filter_dev_minor;
+ static inline int PageUptodate(struct page *page)
+ {
+ 	int ret = test_bit(PG_uptodate, &(page)->flags);
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-mm/include/linux/kernel-page-flags.h	2009-11-07 20:37:31.000000000 +0800
+@@ -0,0 +1,46 @@
++#ifndef LINUX_KERNEL_PAGE_FLAGS_H
++#define  LINUX_KERNEL_PAGE_FLAGS_H
++
++/*
++ * Stable page flag bits exported to user space
++ */
++
++#define KPF_LOCKED		0
++#define KPF_ERROR		1
++#define KPF_REFERENCED		2
++#define KPF_UPTODATE		3
++#define KPF_DIRTY		4
++#define KPF_LRU			5
++#define KPF_ACTIVE		6
++#define KPF_SLAB		7
++#define KPF_WRITEBACK		8
++#define KPF_RECLAIM		9
++#define KPF_BUDDY		10
++
++/* 11-20: new additions in 2.6.31 */
++#define KPF_MMAP		11
++#define KPF_ANON		12
++#define KPF_SWAPCACHE		13
++#define KPF_SWAPBACKED		14
++#define KPF_COMPOUND_HEAD	15
++#define KPF_COMPOUND_TAIL	16
++#define KPF_HUGE		17
++#define KPF_UNEVICTABLE		18
++#define KPF_HWPOISON		19
++#define KPF_NOPAGE		20
++
++#define KPF_KSM			21
++
++/* kernel hacking assistances
++ * WARNING: subject to change, never rely on them!
++ */
++#define KPF_RESERVED		32
++#define KPF_MLOCKED		33
++#define KPF_MAPPEDTODISK	34
++#define KPF_PRIVATE		35
++#define KPF_PRIVATE_2		36
++#define KPF_OWNER_PRIVATE	37
++#define KPF_ARCH		38
++#define KPF_UNCACHED		39
++
++#endif /* LINUX_KERNEL_PAGE_FLAGS_H */
 
 
