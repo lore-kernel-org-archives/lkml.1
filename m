@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZLBROs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbZLBRTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbZLBROs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 12:14:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbZLBROs
+	id S1755286AbZLBRTM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 12:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZLBRTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 12:14:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51588 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755187AbZLBROr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 12:14:47 -0500
-Date: Wed, 2 Dec 2009 18:14:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Xiaotian Feng <dfeng@redhat.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH -tip] x86: reboot_fixup_32.c add missing pci_dev_put
-Message-ID: <20091202171422.GB28061@elte.hu>
-References: <1259291762-17735-1-git-send-email-dfeng@redhat.com>
- <20091202100928.GE22654@elte.hu>
- <4B169B1B.8010007@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B169B1B.8010007@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Wed, 2 Dec 2009 12:19:10 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:42290 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755137AbZLBRTJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 12:19:09 -0500
+From: Rodolfo Giometti <giometti@linux.it>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Date: Wed,  2 Dec 2009 18:18:38 +0100
+Message-Id: <1259774329-29663-1-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.6.3.3
+X-SA-Exim-Connect-IP: 192.168.32.37
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: LinuxPPS new functionalities
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patchset adds several PPS functionalities.
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+All patches have a specific comment but I prefer say something more:
 
-> On 12/02/2009 02:09 AM, Ingo Molnar wrote:
-> > 
-> > * Xiaotian Feng <dfeng@redhat.com> wrote:
-> > 
-> >> pci_get_device increments reference count to the found pci device, 
-> >> that should be decremented using pci_dev_put.
-> > 
-> >> +++ b/arch/x86/kernel/reboot_fixups_32.c
-> >> @@ -80,6 +80,7 @@ void mach_reboot_fixups(void)
-> >>  			continue;
-> >>  
-> >>  		cur->reboot_fixup(dev);
-> >> +		pci_dev_put(dev);
-> > 
-> > Does this matter in practice? We are about to reboot. (but if it's 
-> > cleaner to do it like this or if there's some real bug fixed by this 
-> > then please spell it out in the changelog.)
-> > 
-> 
-> Even if it doesn't actually matter, doing things cleanly makes it 
-> easier to handle failure scenarios, possibly that are discovered in 
-> the future.
+* Patches 01-02 are just documentation about PPS support.
 
-certainly - but it would be nice to know whether there's any other 
-reason for this but cleanliness/consistency.
+* Patch 03 adds PPS client support skeleton.
 
-	Ingo
+* Patches 04-06 add generic PPS serial support.
+
+* Patches 07 and 10 add PPS serial support for specific hardware.
+
+* Patch 08 adds PPS parallel support.
+
+* Patch 09 is going to add a low level IRQ timestamps recording. Here
+  some notes:
+
+   1) This is just a proposal, so I'm quite sure it will be rejected,
+      but I decided to propose it anyway in order to have some
+      feedbacks.
+
+   2) Due previous point I didn't split up the patch into several (and
+      more logical) sub-parts in order to have a better review about
+      what I wish to do.
+
+* Patch 11 shows how to add a low level IRQ timestamps recording for a
+  new platform once patch 09 has been added into main tree.
+
+Even if patches 09 and 11 will be rejected I hope the others are
+ok. :)
+
+Ciao,
+
+Rodolfo
+
