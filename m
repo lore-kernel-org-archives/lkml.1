@@ -1,278 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZLBEwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZLBEyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324AbZLBEwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 23:52:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZLBEwJ
+	id S1755356AbZLBEyF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 23:54:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZLBEyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 23:52:09 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:36522 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754447AbZLBEwH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 23:52:07 -0500
-Message-ID: <4B15F27C.9020707@gmail.com>
-Date: Wed, 02 Dec 2009 05:52:12 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 1 Dec 2009 23:54:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:47041 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753434AbZLBEyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 23:54:03 -0500
+Message-ID: <4B15F36F.5040304@redhat.com>
+Date: Tue, 01 Dec 2009 23:56:15 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Chris Rankin <rankincj@yahoo.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [WARNING] Network-related warnings with 2.6.31.6
-References: <43332.67750.qm@web52904.mail.re2.yahoo.com>
-In-Reply-To: <43332.67750.qm@web52904.mail.re2.yahoo.com>
+To: Wang Liming <liming.wang@windriver.com>
+CC: mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
+       linux-kernel@vger.kernel.org, acme@redhat.com, rostedt@goodmis.org,
+       jbaron@redhat.com, tglx@linutronix.de, fche@redhat.com,
+       jkenisto@us.ibm.com, hch@infradead.org, ananth@in.ibm.com,
+       srikar@linux.vnet.ibm.com, prasad@linux.vnet.ibm.com
+Subject: Re: [tip:perf/core] perf probe: Add --list option for listing current
+ probe events
+References: <20091201002017.10235.76575.stgit@harusame> <tip-4de189fe6e5ad8241f6f8709d2e2ba4c3aeae33a@git.kernel.org> <4B15E913.1040105@windriver.com>
+In-Reply-To: <4B15E913.1040105@windriver.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 02 Dec 2009 05:52:13 +0100 (CET)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Rankin a écrit :
-> Hi,
+Wang Liming wrote:
+> Hi Masami,
 > 
-> I've just noticed these warnings in my dmesg log, and have no idea what might have triggered them. e1000 related, perhaps?
+> tip-bot for Masami Hiramatsu wrote:
+>> Commit-ID:  4de189fe6e5ad8241f6f8709d2e2ba4c3aeae33a
+>> Gitweb:    
+>> http://git.kernel.org/tip/4de189fe6e5ad8241f6f8709d2e2ba4c3aeae33a
+>> Author:     Masami Hiramatsu <mhiramat@redhat.com>
+>> AuthorDate: Mon, 30 Nov 2009 19:20:17 -0500
+>> Committer:  Ingo Molnar <mingo@elte.hu>
+>> CommitDate: Tue, 1 Dec 2009 08:20:02 +0100
+>>
+>> perf probe: Add --list option for listing current probe events
+>>
+>> Add --list option for listing currently defined probe events
+>> in the kernel. This shows events in below format;
+>>
+>>  [group:event]    <perf-probe probe-definition>
+>>
+>> for example:
+>>
+>>  [probe:schedule_0]    schedule+30 cpu
+>>
+>> Note that source file/line information is not supported yet.
+>> So even if you added a probe by line, it will be shown in
+>> <symbol+offset>.
+> ...
+>> +
+>> +    /* Scan event and group name. */
+>> +    ret = sscanf(argv[0], "%c:%m[^/ \t]/%m[^ \t]",
+>> +             &pr, group, event);
+> "%m" are typos?
+
+No, %m is glibc extension of sscanf modifier, which allocate
+memory for scanned string in sscanf. You can see "man sscanf"
+if your glibc is not so old (hopefully..). Please refer below;
+
+http://www.kernel.org/doc/man-pages/online/pages/man3/scanf.3.html#NOTES
+
+Anyway, thank you for reviewing!
+
+>> +    if (ret != 3)
+>> +        semantic_error("Failed to parse event name: %s", argv[0]);
+>> +    pr_debug("Group:%s Event:%s probe:%c\n", *group, *event, pr);
+>> +
+>> +    if (!pp)
+>> +        goto end;
+>> +
+>> +    pp->retprobe = (pr == 'r');
+>> +
+>> +    /* Scan function name and offset */
+>> +    ret = sscanf(argv[1], "%m[^+]+%d", &pp->function, &pp->offset);
+> the same error? fix attached below.
 > 
-> Cheers,
-> Chris
+> -- 
 > 
-> ------------[ cut here ]------------
-> WARNING: at /home/chris/LINUX/linux-2.6.31/net/core/stream.c:202 inet_csk_destroy_sock+0x77/0xd3()
-> Hardware name: Precision WorkStation 650    
-> Modules linked in: tun snd_seq_oss snd_seq_midi snd_seq_dummy fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib snd_rawmidi snd_seq_device snd_timer firewire_ohci ppdev uvcvideo floppy firewire_core snd_page_alloc snd_util_mem snd_hwdep parport_pc pwc psmouse videodev parport v4l1_compat crc_itu_t pcspkr snd sg i2c_i801 serio_raw soundcore dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix libata scsi_mod ehci_hcd e1000 usbcore thermal button radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt
->  cfbfillrect [last unloaded: processor]
-> Pid: 32056, comm: rpm Not tainted 2.6.31.6 #1
-> Call Trace:
->  [<c1023ba8>] ? warn_slowpath_common+0x5d/0x70
->  [<c1023bc6>] ? warn_slowpath_null+0xb/0xd
->  [<c11871ca>] ? inet_csk_destroy_sock+0x77/0xd3
->  [<c119188f>] ? tcp_rcv_state_process+0x81f/0x9e8
->  [<c11966c3>] ? tcp_v4_do_rcv+0x128/0x16d
->  [<c1196b0d>] ? tcp_v4_rcv+0x405/0x640
->  [<c118003e>] ? ip_local_deliver_finish+0xf3/0x1ab
->  [<c117fcd9>] ? ip_rcv_finish+0x2a9/0x2cf
->  [<c117fa30>] ? ip_rcv_finish+0x0/0x2cf
->  [<c116b7c5>] ? netif_receive_skb+0x261/0x281
->  [<f8527bfc>] ? e1000_clean_rx_irq+0x31c/0x3c3 [e1000]
->  [<f852a6fa>] ? e1000_clean+0x2a7/0x3f5 [e1000]
->  [<c11c783c>] ? _spin_unlock_irqrestore+0xe/0x21
->  [<c10354c0>] ? hrtimer_run_pending+0xd/0xa5
->  [<c11c769b>] ? _spin_lock_irq+0xe/0x24
->  [<c116bce5>] ? net_rx_action+0x57/0xfd
->  [<c1027ea3>] ? __do_softirq+0x7a/0xe3
->  [<c1027e29>] ? __do_softirq+0x0/0xe3
->  <IRQ>  [<c1027c3c>] ? irq_exit+0x29/0x63
->  [<c1004320>] ? do_IRQ+0x7c/0x8d
->  [<c1002f29>] ? common_interrupt+0x29/0x30
-> ---[ end trace e643d9455a26ccf3 ]---
-> ------------[ cut here ]------------
-> WARNING: at /home/chris/LINUX/linux-2.6.31/net/ipv4/af_inet.c:151 inet_sock_destruct+0xd8/0x138()
-> Hardware name: Precision WorkStation 650    
-> Modules linked in: tun snd_seq_oss snd_seq_midi snd_seq_dummy fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib snd_rawmidi snd_seq_device snd_timer firewire_ohci ppdev uvcvideo floppy firewire_core snd_page_alloc snd_util_mem snd_hwdep parport_pc pwc psmouse videodev parport v4l1_compat crc_itu_t pcspkr snd sg i2c_i801 serio_raw soundcore dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix libata scsi_mod ehci_hcd e1000 usbcore thermal button radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt
->  cfbfillrect [last unloaded: processor]
-> Pid: 32056, comm: rpm Tainted: G        W  2.6.31.6 #1
-> Call Trace:
->  [<c1023ba8>] ? warn_slowpath_common+0x5d/0x70
->  [<c1023bc6>] ? warn_slowpath_null+0xb/0xd
->  [<c11a1414>] ? inet_sock_destruct+0xd8/0x138
->  [<c1163243>] ? __sk_free+0x10/0xa2
->  [<c1196b4a>] ? tcp_v4_rcv+0x442/0x640
->  [<c118003e>] ? ip_local_deliver_finish+0xf3/0x1ab
->  [<c117fcd9>] ? ip_rcv_finish+0x2a9/0x2cf
->  [<c117fa30>] ? ip_rcv_finish+0x0/0x2cf
->  [<c116b7c5>] ? netif_receive_skb+0x261/0x281
->  [<f8527bfc>] ? e1000_clean_rx_irq+0x31c/0x3c3 [e1000]
->  [<f852a6fa>] ? e1000_clean+0x2a7/0x3f5 [e1000]
->  [<c11c783c>] ? _spin_unlock_irqrestore+0xe/0x21
->  [<c10354c0>] ? hrtimer_run_pending+0xd/0xa5
->  [<c11c769b>] ? _spin_lock_irq+0xe/0x24
->  [<c116bce5>] ? net_rx_action+0x57/0xfd
->  [<c1027ea3>] ? __do_softirq+0x7a/0xe3
->  [<c1027e29>] ? __do_softirq+0x0/0xe3
->  <IRQ>  [<c1027c3c>] ? irq_exit+0x29/0x63
->  [<c1004320>] ? do_IRQ+0x7c/0x8d
->  [<c1002f29>] ? common_interrupt+0x29/0x30
-> ---[ end trace e643d9455a26ccf4 ]---
-> ------------[ cut here ]------------
-> WARNING: at /home/chris/LINUX/linux-2.6.31/net/ipv4/af_inet.c:154 inet_sock_destruct+0x11e/0x138()
-> Hardware name: Precision WorkStation 650    
-> Modules linked in: tun snd_seq_oss snd_seq_midi snd_seq_dummy fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib snd_rawmidi snd_seq_device snd_timer firewire_ohci ppdev uvcvideo floppy firewire_core snd_page_alloc snd_util_mem snd_hwdep parport_pc pwc psmouse videodev parport v4l1_compat crc_itu_t pcspkr snd sg i2c_i801 serio_raw soundcore dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix libata scsi_mod ehci_hcd e1000 usbcore thermal button radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt
->  cfbfillrect [last unloaded: processor]
-> Pid: 32056, comm: rpm Tainted: G        W  2.6.31.6 #1
-> Call Trace:
->  [<c1023ba8>] ? warn_slowpath_common+0x5d/0x70
->  [<c1023bc6>] ? warn_slowpath_null+0xb/0xd
->  [<c11a145a>] ? inet_sock_destruct+0x11e/0x138
->  [<c1163243>] ? __sk_free+0x10/0xa2
->  [<c1196b4a>] ? tcp_v4_rcv+0x442/0x640
->  [<c118003e>] ? ip_local_deliver_finish+0xf3/0x1ab
->  [<c117fcd9>] ? ip_rcv_finish+0x2a9/0x2cf
->  [<c117fa30>] ? ip_rcv_finish+0x0/0x2cf
->  [<c116b7c5>] ? netif_receive_skb+0x261/0x281
->  [<f8527bfc>] ? e1000_clean_rx_irq+0x31c/0x3c3 [e1000]
->  [<f852a6fa>] ? e1000_clean+0x2a7/0x3f5 [e1000]
->  [<c11c783c>] ? _spin_unlock_irqrestore+0xe/0x21
->  [<c10354c0>] ? hrtimer_run_pending+0xd/0xa5
->  [<c11c769b>] ? _spin_lock_irq+0xe/0x24
->  [<c116bce5>] ? net_rx_action+0x57/0xfd
->  [<c1027ea3>] ? __do_softirq+0x7a/0xe3
->  [<c1027e29>] ? __do_softirq+0x0/0xe3
->  <IRQ>  [<c1027c3c>] ? irq_exit+0x29/0x63
->  [<c1004320>] ? do_IRQ+0x7c/0x8d
->  [<c1002f29>] ? common_interrupt+0x29/0x30
-> ---[ end trace e643d9455a26ccf5 ]---
+> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> index e42f3ac..8d46521 100644
+> --- a/tools/perf/util/probe-event.c
+> +++ b/tools/perf/util/probe-event.c
+> @@ -199,8 +199,8 @@ void parse_trace_kprobe_event(const char *str, char
+> **group, char **event,
+>          semantic_error("Too less arguments.");
+> 
+>      /* Scan event and group name. */
+> -    ret = sscanf(argv[0], "%c:%m[^/ \t]/%m[^ \t]",
+> -             &pr, group, event);
+> +    ret = sscanf(argv[0], "%c:%s[^/ \t]/%s[^ \t]",
+> +             &pr, *group, *event);
+>      if (ret != 3)
+>          semantic_error("Failed to parse event name: %s", argv[0]);
+>      pr_debug("Group:%s Event:%s probe:%c\n", *group, *event, pr);
+> @@ -211,7 +211,7 @@ void parse_trace_kprobe_event(const char *str, char
+> **group, char **event,
+>      pp->retprobe = (pr == 'r');
+> 
+>      /* Scan function name and offset */
+> -    ret = sscanf(argv[1], "%m[^+]+%d", &pp->function, &pp->offset);
+> +    ret = sscanf(argv[1], "%s[^+]+%d", pp->function, &pp->offset);
+>      if (ret == 1)
+>          pp->offset = 0;
+> 
 > 
 > 
 > 
 
+-- 
+Masami Hiramatsu
 
-Hmm, one other sk_forward_alloc corruption I guess...
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-I fixed one corruption but this is only about UDP sockets used by SUNRPC,
-while your traces seems to point a TCP problem.
-
-
-This is a note to let you know that we have just queued up the patch titled
-
-    Subject: net: fix sk_forward_alloc corruption
-
-to the 2.6.31-stable tree.  Its filename is
-
-    net-fix-sk_forward_alloc-corruption.patch
-
-A git repo of this tree can be found at 
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-
->From 4432366eece70b6cf72a7e862945ea8c9e576e3d Mon Sep 17 00:00:00 2001
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Sun, 15 Nov 2009 20:50:00 -0800
-Subject: net: fix sk_forward_alloc corruption
-
-From: Eric Dumazet <eric.dumazet@gmail.com>
-
-[ Upstream commit: 9d410c796067686b1e032d54ce475b7055537138 ]
-
-On UDP sockets, we must call skb_free_datagram() with socket locked,
-or risk sk_forward_alloc corruption. This requirement is not respected
-in SUNRPC.
-
-Add a convenient helper, skb_free_datagram_locked() and use it in SUNRPC
-
-Reported-by: Francis Moreau <francis.moro@gmail.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- include/linux/skbuff.h |    2 ++
- net/core/datagram.c    |   10 +++++++++-
- net/ipv4/udp.c         |    4 +---
- net/ipv6/udp.c         |    4 +---
- net/sunrpc/svcsock.c   |   10 +++++-----
- 5 files changed, 18 insertions(+), 12 deletions(-)
-
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -1761,6 +1761,8 @@ extern int	       skb_copy_datagram_cons
- 						     int to_offset,
- 						     int size);
- extern void	       skb_free_datagram(struct sock *sk, struct sk_buff *skb);
-+extern void	       skb_free_datagram_locked(struct sock *sk,
-+						struct sk_buff *skb);
- extern int	       skb_kill_datagram(struct sock *sk, struct sk_buff *skb,
- 					 unsigned int flags);
- extern __wsum	       skb_checksum(const struct sk_buff *skb, int offset,
---- a/net/core/datagram.c
-+++ b/net/core/datagram.c
-@@ -223,6 +223,15 @@ void skb_free_datagram(struct sock *sk, 
- 	consume_skb(skb);
- 	sk_mem_reclaim_partial(sk);
- }
-+EXPORT_SYMBOL(skb_free_datagram);
-+
-+void skb_free_datagram_locked(struct sock *sk, struct sk_buff *skb)
-+{
-+	lock_sock(sk);
-+	skb_free_datagram(sk, skb);
-+	release_sock(sk);
-+}
-+EXPORT_SYMBOL(skb_free_datagram_locked);
- 
- /**
-  *	skb_kill_datagram - Free a datagram skbuff forcibly
-@@ -749,5 +758,4 @@ unsigned int datagram_poll(struct file *
- EXPORT_SYMBOL(datagram_poll);
- EXPORT_SYMBOL(skb_copy_and_csum_datagram_iovec);
- EXPORT_SYMBOL(skb_copy_datagram_iovec);
--EXPORT_SYMBOL(skb_free_datagram);
- EXPORT_SYMBOL(skb_recv_datagram);
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -987,9 +987,7 @@ try_again:
- 		err = ulen;
- 
- out_free:
--	lock_sock(sk);
--	skb_free_datagram(sk, skb);
--	release_sock(sk);
-+	skb_free_datagram_locked(sk, skb);
- out:
- 	return err;
- 
---- a/net/ipv6/udp.c
-+++ b/net/ipv6/udp.c
-@@ -288,9 +288,7 @@ try_again:
- 		err = ulen;
- 
- out_free:
--	lock_sock(sk);
--	skb_free_datagram(sk, skb);
--	release_sock(sk);
-+	skb_free_datagram_locked(sk, skb);
- out:
- 	return err;
- 
---- a/net/sunrpc/svcsock.c
-+++ b/net/sunrpc/svcsock.c
-@@ -110,7 +110,7 @@ static void svc_release_skb(struct svc_r
- 		rqstp->rq_xprt_ctxt = NULL;
- 
- 		dprintk("svc: service %p, releasing skb %p\n", rqstp, skb);
--		skb_free_datagram(svsk->sk_sk, skb);
-+		skb_free_datagram_locked(svsk->sk_sk, skb);
- 	}
- }
- 
-@@ -537,7 +537,7 @@ static int svc_udp_recvfrom(struct svc_r
- 			printk("rpcsvc: received unknown control message:"
- 			       "%d/%d\n",
- 			       cmh->cmsg_level, cmh->cmsg_type);
--		skb_free_datagram(svsk->sk_sk, skb);
-+		skb_free_datagram_locked(svsk->sk_sk, skb);
- 		return 0;
- 	}
- 	svc_udp_get_dest_address(rqstp, cmh);
-@@ -548,18 +548,18 @@ static int svc_udp_recvfrom(struct svc_r
- 		if (csum_partial_copy_to_xdr(&rqstp->rq_arg, skb)) {
- 			local_bh_enable();
- 			/* checksum error */
--			skb_free_datagram(svsk->sk_sk, skb);
-+			skb_free_datagram_locked(svsk->sk_sk, skb);
- 			return 0;
- 		}
- 		local_bh_enable();
--		skb_free_datagram(svsk->sk_sk, skb);
-+		skb_free_datagram_locked(svsk->sk_sk, skb);
- 	} else {
- 		/* we can use it in-place */
- 		rqstp->rq_arg.head[0].iov_base = skb->data +
- 			sizeof(struct udphdr);
- 		rqstp->rq_arg.head[0].iov_len = len;
- 		if (skb_checksum_complete(skb)) {
--			skb_free_datagram(svsk->sk_sk, skb);
-+			skb_free_datagram_locked(svsk->sk_sk, skb);
- 			return 0;
- 		}
- 		rqstp->rq_xprt_ctxt = skb;
-
-
+e-mail: mhiramat@redhat.com
 
