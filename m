@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbZLBEjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZLBEjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbZLBEjT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 23:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZLBEjP
+	id S1755549AbZLBEjN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 23:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbZLBEh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 23:39:15 -0500
-Received: from mga03.intel.com ([143.182.124.21]:35897 "EHLO mga03.intel.com"
+	Tue, 1 Dec 2009 23:37:59 -0500
+Received: from mga14.intel.com ([143.182.124.37]:57394 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755295AbZLBEha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755266AbZLBEha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 Dec 2009 23:37:30 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="217764903"
-Message-Id: <20091202043044.709570707@intel.com>
+   d="scan'208";a="217764904"
+Message-Id: <20091202043044.878843398@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 02 Dec 2009 11:12:40 +0800
+Date: Wed, 02 Dec 2009 11:12:41 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 TO: Andi Kleen <andi@firstfloor.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
@@ -22,129 +22,46 @@ CC: Andrew Morton <akpm@linux-foundation.org>,
 CC: Nick Piggin <npiggin@suse.de>
 CC: <linux-mm@kvack.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 09/24] HWPOISON: introduce delete_from_lru_cache()
+Subject: [PATCH 10/24] HWPOISON: remove the free buddy page handler
 References: <20091202031231.735876003@intel.com>
-Content-Disposition: inline; filename=lru-flags.patch
+Content-Disposition: inline; filename=hwpoison-remove-free-handler.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce delete_from_lru_cache() to
-- clear PG_active, PG_unevictable to avoid complains at unpoison time
-- move the isolate_lru_page() call back to the handlers instead of the
-  entrance of __memory_failure(), this is more hwpoison filter friendly
+The buddy page has already be handled in the very beginning.
+So remove redundant code.
 
 CC: Andi Kleen <andi@firstfloor.org>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/memory-failure.c |   45 ++++++++++++++++++++++++++++++++++--------
- 1 file changed, 37 insertions(+), 8 deletions(-)
+ mm/memory-failure.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
---- linux-mm.orig/mm/memory-failure.c	2009-11-30 11:12:41.000000000 +0800
-+++ linux-mm/mm/memory-failure.c	2009-11-30 20:04:43.000000000 +0800
-@@ -328,6 +328,30 @@ static const char *action_name[] = {
- };
+--- linux-mm.orig/mm/memory-failure.c	2009-11-09 10:57:50.000000000 +0800
++++ linux-mm/mm/memory-failure.c	2009-11-09 10:59:26.000000000 +0800
+@@ -379,14 +379,6 @@ static int me_unknown(struct page *p, un
+ }
  
  /*
-+ * XXX: It is possible that a page is isolated from LRU cache,
-+ * and then kept in swap cache or failed to remove from page cache.
-+ * The page count will stop it from being freed by unpoison.
-+ * Stress tests should be aware of this memory leak problem.
-+ */
-+static int delete_from_lru_cache(struct page *p)
-+{
-+	if (!isolate_lru_page(p)) {
-+		/*
-+		 * Clear sensible page flags, so that the buddy system won't
-+		 * complain when the page is unpoison-and-freed.
-+		 */
-+		ClearPageActive(p);
-+		ClearPageUnevictable(p);
-+		/*
-+		 * drop the page count elevated by isolate_lru_page()
-+		 */
-+		page_cache_release(p);
-+		return 0;
-+	}
-+	return -EIO;
-+}
-+
-+/*
-  * Error hit kernel page.
-  * Do nothing, try to be lucky and not touch this instead. For a few cases we
-  * could be more sophisticated.
-@@ -371,6 +395,8 @@ static int me_pagecache_clean(struct pag
- 	int ret = FAILED;
- 	struct address_space *mapping;
- 
-+	delete_from_lru_cache(p);
-+
- 	/*
- 	 * For anonymous pages we're done the only reference left
- 	 * should be the one m_f() holds.
-@@ -500,14 +526,20 @@ static int me_swapcache_dirty(struct pag
- 	/* Trigger EIO in shmem: */
- 	ClearPageUptodate(p);
- 
+- * Free memory
+- */
+-static int me_free(struct page *p, unsigned long pfn)
+-{
 -	return DELAYED;
-+	if (!delete_from_lru_cache(p))
-+		return DELAYED;
-+	else
-+		return FAILED;
- }
- 
- static int me_swapcache_clean(struct page *p, unsigned long pfn)
- {
- 	delete_from_swap_cache(p);
- 
--	return RECOVERED;
-+	if (!delete_from_lru_cache(p))
-+		return RECOVERED;
-+	else
-+		return FAILED;
- }
- 
- /*
-@@ -726,7 +758,6 @@ static int hwpoison_user_mappings(struct
- 
- int __memory_failure(unsigned long pfn, int trapno, int ref)
- {
--	unsigned long lru_flag;
- 	struct page_state *ps;
- 	struct page *p;
- 	int res;
-@@ -775,13 +806,11 @@ int __memory_failure(unsigned long pfn, 
- 	 */
- 	if (!PageLRU(p))
- 		lru_add_drain_all();
--	lru_flag = p->flags & lru;
--	if (isolate_lru_page(p)) {
-+	if (!PageLRU(p)) {
- 		action_result(pfn, "non LRU", IGNORED);
- 		put_page(p);
- 		return -EBUSY;
- 	}
--	page_cache_release(p);
+-}
+-
+-/*
+  * Clean (or cleaned) page cache page.
+  */
+ static int me_pagecache_clean(struct page *p, unsigned long pfn)
+@@ -592,7 +584,6 @@ static struct page_state {
+ 	int (*action)(struct page *p, unsigned long pfn);
+ } error_states[] = {
+ 	{ reserved,	reserved,	"reserved kernel",	me_ignore },
+-	{ buddy,	buddy,		"free kernel",	me_free },
  
  	/*
- 	 * Lock the page and wait for writeback to finish.
-@@ -803,7 +832,7 @@ int __memory_failure(unsigned long pfn, 
- 	/*
- 	 * Torn down by someone else?
- 	 */
--	if ((lru_flag & lru) && !PageSwapCache(p) && p->mapping == NULL) {
-+	if (PageLRU(p) && !PageSwapCache(p) && p->mapping == NULL) {
- 		action_result(pfn, "already truncated LRU", IGNORED);
- 		res = 0;
- 		goto out;
-@@ -811,7 +840,7 @@ int __memory_failure(unsigned long pfn, 
- 
- 	res = -EBUSY;
- 	for (ps = error_states;; ps++) {
--		if (((p->flags | lru_flag)& ps->mask) == ps->res) {
-+		if ((p->flags & ps->mask) == ps->res) {
- 			res = page_action(ps, p, pfn);
- 			break;
- 		}
+ 	 * Could in theory check if slab page is free or if we can drop
 
 
