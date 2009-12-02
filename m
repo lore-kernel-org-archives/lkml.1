@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbZLBWQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbZLBWOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755840AbZLBWQB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:16:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZLBWQA
+	id S1755773AbZLBWOw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbZLBWOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:16:00 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:48651 "EHLO gir.skynet.ie"
+	Wed, 2 Dec 2009 17:14:51 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33502 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755727AbZLBWQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:16:00 -0500
-Date: Wed, 2 Dec 2009 22:16:02 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hugetlb: Acquire the i_mmap_lock before walking the
-	prio_tree to unmap a page
-Message-ID: <20091202221602.GA26702@csn.ul.ie>
-References: <20091202141930.GF1457@csn.ul.ie> <Pine.LNX.4.64.0912022003100.8113@sister.anvils>
+	id S1755682AbZLBWOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 17:14:51 -0500
+Message-ID: <4B16E727.9070104@kernel.org>
+Date: Thu, 03 Dec 2009 07:16:07 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0912022003100.8113@sister.anvils>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       michal.simek@petalogix.com, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: problems in linux-next (Was: Re: linux-next: Tree for December
+ 1)
+References: <20091201190301.0fb7abad.sfr@canb.auug.org.au> <4B14D6E2.2040704@petalogix.com> <20091201210343.f0a1d353.sfr@canb.auug.org.au> <4B152D22.9070001@kernel.org> <alpine.DEB.2.00.0912010946340.8841@router.home> <20091201160119.GA10826@elte.hu> <4B15A5A6.2090200@kernel.org> <alpine.DEB.2.00.0912020853320.31731@router.home>
+In-Reply-To: <alpine.DEB.2.00.0912020853320.31731@router.home>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 08:13:39PM +0000, Hugh Dickins wrote:
-> On Wed, 2 Dec 2009, Mel Gorman wrote:
+On 12/02/2009 11:55 PM, Christoph Lameter wrote:
+> On Wed, 2 Dec 2009, Tejun Heo wrote:
 > 
-> > When the owner of a mapping fails COW because a child process is holding a
-> > reference and no pages are available, the children VMAs are walked and the
-> > page is unmapped. The i_mmap_lock is taken for the unmapping of the page but
-> > not the walking of the prio_tree. In theory, that tree could be changing
-> > while the lock is released although in practice it is protected by the
-> > hugetlb_instantiation_mutex. This patch takes the i_mmap_lock properly for
-> > the duration of the prio_tree walk in case the hugetlb_instantiation_mutex
-> > ever goes away.
-> > 
-> > [hugh.dickins@tiscali.co.uk: Spotted the problem in the first place]
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+>> This isn't usual alignment.  struct work_struct has one data fields
+>> which is overloaded for two purposes.  Lower few bits are used to
+>> carry flags while upper bits are used to point to sruct
+>> cpu_workqueue_struct.  So, the number of available bits for flags are
+>> determined by the alignment of cpu_workqueue_struct.  Memory usage for
 > 
-> The patch looks good - thanks for taking care of that, Mel.
-> 
-> But the comment seems wrong to me: hugetlb_instantiation_mutex
-> guards against concurrent hugetlb_fault()s; but the structure of
-> the prio_tree shifts as vmas based on that inode are inserted into
-> (mmap'ed) and removed from (munmap'ed) that tree (always while
-> holding i_mmap_lock).  I don't see hugetlb_instantiation_mutex
-> giving us any protection against this at present.
-> 
+> The default mininum slab alignment in UP is 8 bytes which means you can
+> use 3 bits. And as far as I can see only the lower two bits are used. You
+> still have one bit leftover. (current upstream that is did not check if
+> you modified it).
 
-You're right of course. I'll report without that nonsense included.
+For colored workqueue flushing, it ends up using more than three bits.
+I haven't decided it fully yet but total of six or seven depending on
+how many colors are used.  So, we need forced alignment anyway.
 
-Thanks
-
-> 
-> > ---
-> >  mm/hugetlb.c |    9 ++++++++-
-> >  1 files changed, 8 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> > index a952cb8..5adc284 100644
-> > --- a/mm/hugetlb.c
-> > +++ b/mm/hugetlb.c
-> > @@ -1906,6 +1906,12 @@ static int unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
-> >  		+ (vma->vm_pgoff >> PAGE_SHIFT);
-> >  	mapping = (struct address_space *)page_private(page);
-> >  
-> > +	/*
-> > +	 * Take the mapping lock for the duration of the table walk. As
-> > +	 * this mapping should be shared between all the VMAs,
-> > +	 * __unmap_hugepage_range() is called as the lock is already held
-> > +	 */
-> > +	spin_lock(&mapping->i_mmap_lock);
-> >  	vma_prio_tree_foreach(iter_vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
-> >  		/* Do not unmap the current VMA */
-> >  		if (iter_vma == vma)
-> > @@ -1919,10 +1925,11 @@ static int unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
-> >  		 * from the time of fork. This would look like data corruption
-> >  		 */
-> >  		if (!is_vma_resv_set(iter_vma, HPAGE_RESV_OWNER))
-> > -			unmap_hugepage_range(iter_vma,
-> > +			__unmap_hugepage_range(iter_vma,
-> >  				address, address + huge_page_size(h),
-> >  				page);
-> >  	}
-> > +	spin_unlock(&mapping->i_mmap_lock);
-> >  
-> >  	return 1;
-> >  }
-> 
+Thanks.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+tejun
