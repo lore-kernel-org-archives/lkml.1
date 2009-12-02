@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZLBJu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbZLBJww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbZLBJu2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 04:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbZLBJu1
+	id S1754113AbZLBJww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 04:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZLBJwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 04:50:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41082 "EHLO mx3.mail.elte.hu"
+	Wed, 2 Dec 2009 04:52:51 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38271 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751072AbZLBJu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 04:50:27 -0500
-Date: Wed, 2 Dec 2009 10:50:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, dhowells@redhat.com,
-       hidehiro.kawai.ez@hitachi.com, lethal@linux-sh.org, roland@redhat.com,
-       vapier@gentoo.org, Takahiro Yasui <tyasui@redhat.com>
-Subject: Re: [PATCH v2] mm: Introduce coredump parameter structure
-Message-ID: <20091202095012.GD22654@elte.hu>
-References: <200911202212.nAKMCF2v012068@imap1.linux-foundation.org>
- <20091126174835.5A73.A69D9226@jp.fujitsu.com>
- <4B0EA3AA.5070003@redhat.com>
- <20091126165108.GA13231@redhat.com>
- <4B11FB6F.4040403@redhat.com>
- <20091201161800.fa6b6ae4.akpm@linux-foundation.org>
- <4B15B4ED.8010209@redhat.com>
+	id S1751355AbZLBJwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 04:52:51 -0500
+Message-ID: <4B16388F.90707@kernel.org>
+Date: Wed, 02 Dec 2009 18:51:11 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B15B4ED.8010209@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mike Galbraith <efault@gmx.de>
+CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, peterz@infradead.org,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/7] sched: refactor try_to_wake_up()
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>	 <1259726212-30259-4-git-send-email-tj@kernel.org> <1259744733.6028.233.camel@marge.simson.net>
+In-Reply-To: <1259744733.6028.233.camel@marge.simson.net>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> Andrew Morton wrote:
-> >On Sat, 28 Nov 2009 23:41:19 -0500
-> >Masami Hiramatsu<mhiramat@redhat.com>  wrote:
-> >
-> >>Introduce coredump parameter data structure (struct coredump_params)
-> >>for simplifying binfmt->core_dump() arguments.
-> >>
-> >>Changes in v2:
-> >>    - Don't remove DUMP_WRITE() macro.
-> >
-> >What is the reason for this change?
-> >
-> >Please always include both the "what" and the "why" in changelog text.
+On 12/02/2009 06:05 PM, Mike Galbraith wrote:
+> On Wed, 2009-12-02 at 12:56 +0900, Tejun Heo wrote:
+>> Factor ttwu_activate() and ttwu_woken_up() out of try_to_wake_up().
 > 
-> I see.
+> Nit: ttwu_woken_up() sounds decidedly strange to my ear. Perhaps
+> ttwu_post_activation()?
 
-I think Andrew wanted to see a longer explanation about precisely what 
-we need for these tracepoints and what the various specific usecases are 
-to utilize it.
+Sure, I can rename it.
 
-I.e. a basic cost/benefit analysis is needed. By looking at the patch we 
-can see the cost - but you have to counter-balance that with enough 
-stuff in the 'benefits' column of the equation.
+> As a $.02 comment, factoring here doesn't look nice, reader scrolls
+> around whereas he currently sees all the why/wherefore at a glance.
+> Needing to pass three booleans for stats also looks bad.
 
-	Ingo
+The three bools aren't the prettiest thing in the world but I couldn't
+prevent gcc from re-evaluating expressions without those.
+
+> I think it would _look_ better with the thing just
+> duplicated/stripped down and called what it is,
+> sched_notifier_wakeup() or such.
+
+Sorry, I'm not following.  Can you elaborate a bit?
+
+> Which leaves growth in it's wake though...
+>
+>> +/**
+>>   * try_to_wake_up - wake up a thread
+>>   * @p: the to-be-woken-up thread
+> 
+> Nit: thread to be awakened sounds better.
+
+Will update.
+
+Thanks.
+
+-- 
+tejun
