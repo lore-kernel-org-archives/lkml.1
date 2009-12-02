@@ -1,90 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZLBAq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbZLBAvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbZLBAq4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 19:46:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbZLBAqz
+	id S1754948AbZLBAvA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 19:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbZLBAu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 19:46:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46868 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755003AbZLBAqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 19:46:54 -0500
+	Tue, 1 Dec 2009 19:50:59 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:56065 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753329AbZLBAu6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Dec 2009 19:50:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=iyS49sSjvJv3A+Uh7WEadhl2RdRazqWQee/vWjNEj4q46Xu4+9umJ+HE04//Gvq8cI
+         I6dyZaaCFaRT7xBGBexbyl3eatzWK4eq2tUh0BS1QQ/rFQ2mq36qHxLd3WeCZWeAwq/E
+         jPxT0OineAGQ8Rj/XWBuU4SkoE+xRYXqN4B2w=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/utrace
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: Re: [RFC,PATCH 0/14] utrace/ptrace
-In-Reply-To: Oleg Nesterov's message of  Thursday, 26 November 2009 15:27:45 +0100 <20091126142745.GA4382@redhat.com>
-References: <20091124200127.GA5751@redhat.com>
-	<20091125214818.GA4916@infradead.org>
-	<20091126091052.GF1389@elte.hu>
-	<20091126104722.GA8316@infradead.org>
-	<20091126142745.GA4382@redhat.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20091202004643.C9B26258B@magilla.sf.frob.com>
-Date: Tue,  1 Dec 2009 16:46:43 -0800 (PST)
+In-Reply-To: <1259687838-31722-1-git-send-email-daniel@caiaq.de>
+References: <1259687838-31722-1-git-send-email-daniel@caiaq.de>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Wed, 2 Dec 2009 08:50:44 +0800
+Message-ID: <f17812d70912011650h48a6c391s426ffc8b4b653fc8@mail.gmail.com>
+Subject: Re: [PATCH] mmc: pxamci: call mmc_remove_host() before freeing 
+	resources
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>,
+       linux-mmc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       stable@kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Note to all: I'm on the road this week (having had a holiday last week)
-and will be somewhat slow in replying on these threads, but I will be
-sure to get to them all.
+On Wed, Dec 2, 2009 at 1:17 AM, Daniel Mack <daniel@caiaq.de> wrote:
+> mmc_remove_host() will cause the mmc core to switch off the bus power by
+> eventually calling pxamci_set_ios(). This function uses the regulator or
+> the GPIO which have been freed already.
+>
+> This causes the following Oops on module unload.
+>
+> [   49.519649] Unable to handle kernel paging request at virtual address 30303a70
+> [   49.526878] pgd = c7084000
+> [   49.529563] [30303a70] *pgd=00000000
+> [   49.533136] Internal error: Oops: 5 [#1]
+> [   49.537025] last sysfs file: /sys/devices/platform/pxa27x-ohci/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/scsi_level
+> [   49.547471] Modules linked in: pxamci(-) eeti_ts
+> [   49.552061] CPU: 0    Not tainted  (2.6.32-rc8 #322)
+> [   49.557001] PC is at regulator_is_enabled+0x3c/0xbc
+> [   49.561846] LR is at regulator_is_enabled+0x30/0xbc
+> [   49.566691] pc : [<c01a2448>]    lr : [<c01a243c>]    psr: 60000013
+> [   49.566702] sp : c7083e70  ip : 30303a30  fp : 00000000
+> [   49.578093] r10: c705e200  r9 : c7082000  r8 : c705e2e0
+> [   49.583280] r7 : c7061340  r6 : c7061340  r5 : c7083e70  r4 : 00000000
+> [   49.589759] r3 : c04dc434  r2 : c04dc434  r1 : c03eecea  r0 : 00000047
+> [   49.596241] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
+> [   49.603329] Control: 0000397f  Table: a7084018  DAC: 00000015
+> [   49.609031] Process rmmod (pid: 1101, stack limit = 0xc7082278)
+> [   49.614908] Stack: (0xc7083e70 to 0xc7084000)
+> [   49.619238] 3e60:                                     c7082000 c703c4f8 c705ea00 c04f4074
+> [   49.627366] 3e80: 00000000 c705e3a0 ffffffff c0247ddc c70361a0 00000000 c705e3a0 ffffffff
+> [   49.635499] 3ea0: c705e200 bf006400 c78c4f00 c705e200 c705e3a0 ffffffff c705e200 ffffffff
+> [   49.643633] 3ec0: c04d8ac8 c02476d0 ffffffff c0247c60 c705e200 c0248678 c705e200 c0249064
+> [   49.651765] 3ee0: ffffffff bf006204 c04d8ad0 c04d8ad0 c04d8ac8 bf007490 00000880 c00440c4
+> [   49.659898] 3f00: 0000b748 c01c5708 bf007490 c01c44c8 c04d8ac8 c04d8afc bf007490 c01c4570
+> [   49.668031] 3f20: bf007490 bf00750c c04f4258 c01c37a4 00000000 bf00750c c7083f44 c007b014
+> [   49.676162] 3f40: 4000d000 6d617870 08006963 00000001 00000000 c7085000 00000001 00000000
+> [   49.684287] 3f60: 4000d000 c7083f8c 00000001 bea01a54 00005401 c7ab1400 c00440c4 00082000
+> [   49.692420] 3f80: bf00750c 00000880 c7083f8c 00000000 4000cfa8 00000000 00000880 bea01cc8
+> [   49.700552] 3fa0: 00000081 c0043f40 00000000 00000880 bea01cc8 00000880 00000006 00000000
+> [   49.708677] 3fc0: 00000000 00000880 bea01cc8 00000081 00000097 0000cca4 0000b748 00000000
+> [   49.716802] 3fe0: 4001a4f0 bea01cc0 00018bf4 4001a4fc 20000010 bea01cc8 a063e021 a063e421
+> [   49.724958] [<c01a2448>] (regulator_is_enabled+0x3c/0xbc) from [<c0247ddc>] (mmc_regulator_set_ocr+0x14/0xd8)
+> [   49.734836] [<c0247ddc>] (mmc_regulator_set_ocr+0x14/0xd8) from [<bf006400>] (pxamci_set_ios+0xd8/0x17c [pxamci])
+> [   49.745044] [<bf006400>] (pxamci_set_ios+0xd8/0x17c [pxamci]) from [<c02476d0>] (mmc_power_off+0x50/0x58)
+> [   49.754555] [<c02476d0>] (mmc_power_off+0x50/0x58) from [<c0247c60>] (mmc_detach_bus+0x68/0xc4)
+> [   49.763207] [<c0247c60>] (mmc_detach_bus+0x68/0xc4) from [<c0248678>] (mmc_stop_host+0xd4/0x1bc)
+> [   49.771944] [<c0248678>] (mmc_stop_host+0xd4/0x1bc) from [<c0249064>] (mmc_remove_host+0xc/0x20)
+> [   49.780681] [<c0249064>] (mmc_remove_host+0xc/0x20) from [<bf006204>] (pxamci_remove+0xc8/0x174 [pxamci])
+> [   49.790211] [<bf006204>] (pxamci_remove+0xc8/0x174 [pxamci]) from [<c01c5708>] (platform_drv_remove+0x1c/0x24)
+> [   49.800164] [<c01c5708>] (platform_drv_remove+0x1c/0x24) from [<c01c44c8>] (__device_release_driver+0x7c/0xc4)
+> [   49.810110] [<c01c44c8>] (__device_release_driver+0x7c/0xc4) from [<c01c4570>] (driver_detach+0x60/0x8c)
+> [   49.819535] [<c01c4570>] (driver_detach+0x60/0x8c) from [<c01c37a4>] (bus_remove_driver+0x90/0xcc)
+> [   49.828452] [<c01c37a4>] (bus_remove_driver+0x90/0xcc) from [<c007b014>] (sys_delete_module+0x1d8/0x254)
+> [   49.837891] [<c007b014>] (sys_delete_module+0x1d8/0x254) from [<c0043f40>] (ret_fast_syscall+0x0/0x28)
+> [   49.847145] Code: eb06c53a e596c030 e1a0500d e59f106c (e59c0040)
+> [   49.853566] ---[ end trace b5fa66a00cea142f ]---
+>
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Reported-by: Sven Neumann <s.neumann@raumfeld.com>
+> Cc: Pierre Ossman <pierre@ossman.eu>
+> Cc: Eric Miao <eric.y.miao@gmail.com>
+> Cc: linux-mmc@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: stable@kernel.org
+> ---
+>  drivers/mmc/host/pxamci.c |    4 ++--
 
-> Yes, nobody likes 2 implementations. I guess Roland and me hate
-> CONFIG_UTRACE much more than anybody else.
+Looks like a correct fix to me.
 
-:-) We both hate maintaining the old ptrace implementation, that is true!
-The other thing we hate is having our work delayed arbitrarily again and
-again to wait for the arch maintainers of arch's we don't use ourselves.
-
-Oleg and I have been trying to follow the advice we get on how to get this
-work merged in.  When multiple gate-keepers give conflicting advice, we
-really don't know what to do next.  Our interest is in whatever path
-smooths the merging of our work.  We'd greatly prefer to spend our time
-hacking on our new code to make it better or different in cool and useful
-ways than to spend more time guessing what order of patches and rejuggling
-of the work will fit the changing whims of the next round of review.
-
-We don't want to rush anyone, like uninterested arch maintainers.  We don't
-want to break anyone who doesn't care about our work (we do test for ptrace
-regressions but of course new code will always have new bugs so some
-instances of instability in the transition to a new ptrace implementation
-have to be expected no matter how hard we try).  We just don't want to keep
-working out of tree.
-
-The advantage of making the new code optional is, obviously, that you can
-turn it off.  That is, lagging arch's won't be broken, just unable to turn
-it on.  And, anyone who doesn't want to try anything new yet can just turn
-it off and not be exposed to new code.
-
-The advantage of making the new code nonoptional is, obviously, that you
-can't turn it off.  The old implementation will be gone and we won't have
-to maintain it any more (outside some -stable streams for a while).  The
-kernel source will be cleaner with no optional old cruft code duplicating
-functionality.  All ptrace users will be testing the new code, and so we'll
-find its bugs and gain confidence that it works solidly.
-
-Like I've said, we want to do whatever the people want.  My concern about
-what Christoph has suggested is that it really seems like an open-ended
-delay depending on some arch people who are not even in the conversation.
-For anyone either who likes utrace or who is concerned about its details,
-the sooner we are working in-tree the sooner we can really hash it out
-thoroughly and get to having merged code that works well.  As long as there
-is anything unfinished like arch work that we've decided is a gating event,
-then the review and hashing out of the new code itself does not seem to get
-very serious.  (To wit, this thread is still talking about merge order and
-such, another long thread was about incidental trivia, and we've only just
-started to see a tiny bit of actual code review today.)
-
-
-Thanks,
-Roland
+Acked-by: Eric Miao <eric.y.miao@gmail.com>
