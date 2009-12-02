@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbZLBKnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZLBKng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753555AbZLBKnm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 05:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZLBKnl
+	id S1753415AbZLBKng (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 05:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZLBKnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 05:43:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44867 "EHLO hera.kernel.org"
+	Wed, 2 Dec 2009 05:43:35 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44861 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753431AbZLBKni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 05:43:38 -0500
-Date: Wed, 2 Dec 2009 10:42:48 GMT
-From: tip-bot for Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
-       mingo@redhat.com, randy.dunlap@oracle.com, wcohen@redhat.com,
+	id S1751055AbZLBKne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 05:43:34 -0500
+Date: Wed, 2 Dec 2009 10:43:03 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       jbaron@redhat.com, mhiramat@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       wcohen@redhat.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, jbaron@redhat.com, mhiramat@redhat.com,
-       mingo@elte.hu
-In-Reply-To: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
-References: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
+       jbaron@redhat.com, laijs@cn.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, jbaron@redhat.com,
+       tglx@linutronix.de, laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <1259734990-9034-1-git-send-regression-fweisbec@gmail.com>
+References: <1259734990-9034-1-git-send-regression-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] tracing: Add DEFINE_EVENT(), DEFINE_SINGLE_EVENT() support to docbook
-Message-ID: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
-Git-Commit-ID: 3a9089fd78367e2c6c815129030b790a0f5c2715
+Subject: [tip:perf/core] tracing/syscalls: Make syscall events print callbacks static
+Message-ID: <tip-6b62fe019e39edfd1dbe3f224ecd0a87d9365223@git.kernel.org>
+Git-Commit-ID: 6b62fe019e39edfd1dbe3f224ecd0a87d9365223
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -34,77 +31,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3a9089fd78367e2c6c815129030b790a0f5c2715
-Gitweb:     http://git.kernel.org/tip/3a9089fd78367e2c6c815129030b790a0f5c2715
-Author:     Jason Baron <jbaron@redhat.com>
-AuthorDate: Tue, 1 Dec 2009 12:18:49 -0500
+Commit-ID:  6b62fe019e39edfd1dbe3f224ecd0a87d9365223
+Gitweb:     http://git.kernel.org/tip/6b62fe019e39edfd1dbe3f224ecd0a87d9365223
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Wed, 2 Dec 2009 07:23:10 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 2 Dec 2009 09:57:37 +0100
+CommitDate: Wed, 2 Dec 2009 09:59:02 +0100
 
-tracing: Add DEFINE_EVENT(), DEFINE_SINGLE_EVENT() support to docbook
+tracing/syscalls: Make syscall events print callbacks static
 
-The introduction of the new 'DECLARE_EVENT_CLASS()' obviates the
-need for the 'TRACE_EVENT()' macro in some cases. Thus, docbook
-style comments that used to live with 'TRACE_EVENT()' are now
-moved to 'DEFINE_EVENT()'. Thus, we need to make the docbook
-system understand the new 'DEFINE_EVENT()' macro. In addition
-I've tried to futureproof the patch, by also adding support for
-'DEFINE_SINGLE_EVENT()', since there has been discussion about
-renaming: TRACE_EVENT() -> DEFINE_SINGLE_EVENT().
+enter_syscall_print_##sname and exit_syscall_print_##sname don't
+need to have a global scope. Make them static.
 
-Without this patch the tracepoint docbook fails to build.
-
-I've verified that this patch correctly builds the tracepoint
-docbook which currently covers signals, and irqs.
-
-Changes in v2:
- - properly indent perl 'if' statements
-
-Signed-off-by: Jason Baron <jbaron@redhat.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: William Cohen <wcohen@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-LKML-Reference: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <1259734990-9034-1-git-send-regression-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- scripts/kernel-doc |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
+ include/linux/syscalls.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/scripts/kernel-doc b/scripts/kernel-doc
-index ea9f8a5..241310e 100755
---- a/scripts/kernel-doc
-+++ b/scripts/kernel-doc
-@@ -1852,10 +1852,17 @@ sub tracepoint_munge($) {
- 	my $tracepointname = 0;
- 	my $tracepointargs = 0;
- 
--	if($prototype =~ m/TRACE_EVENT\((.*?),/) {
-+	if ($prototype =~ m/TRACE_EVENT\((.*?),/) {
- 		$tracepointname = $1;
- 	}
--	if($prototype =~ m/TP_PROTO\((.*?)\)/) {
-+	if ($prototype =~ m/DEFINE_SINGLE_EVENT\((.*?),/) {
-+		$tracepointname = $1;
-+	}
-+	if ($prototype =~ m/DEFINE_EVENT\((.*?),(.*?),/) {
-+		$tracepointname = $2;
-+	}
-+	$tracepointname =~ s/^\s+//; #strip leading whitespace
-+	if ($prototype =~ m/TP_PROTO\((.*?)\)/) {
- 		$tracepointargs = $1;
- 	}
- 	if (($tracepointname eq 0) || ($tracepointargs eq 0)) {
-@@ -1920,7 +1927,9 @@ sub process_state3_function($$) {
- 	if ($prototype =~ /SYSCALL_DEFINE/) {
- 		syscall_munge();
- 	}
--	if ($prototype =~ /TRACE_EVENT/) {
-+	if ($prototype =~ /TRACE_EVENT/ || $prototype =~ /DEFINE_EVENT/ ||
-+	    $prototype =~ /DEFINE_SINGLE_EVENT/)
-+	{
- 		tracepoint_munge($file);
- 	}
- 	dump_function($prototype, $file);
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index c2df3a5..e79e2f3 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -134,7 +134,7 @@ struct perf_event_attr;
+ #define SYSCALL_TRACE_ENTER_EVENT(sname)				\
+ 	static const struct syscall_metadata __syscall_meta_##sname;	\
+ 	static struct ftrace_event_call event_enter_##sname;		\
+-	struct trace_event enter_syscall_print_##sname = {		\
++	static struct trace_event enter_syscall_print_##sname = {	\
+ 		.trace                  = print_syscall_enter,		\
+ 	};								\
+ 	static struct ftrace_event_call __used				\
+@@ -156,7 +156,7 @@ struct perf_event_attr;
+ #define SYSCALL_TRACE_EXIT_EVENT(sname)					\
+ 	static const struct syscall_metadata __syscall_meta_##sname;	\
+ 	static struct ftrace_event_call event_exit_##sname;		\
+-	struct trace_event exit_syscall_print_##sname = {		\
++	static struct trace_event exit_syscall_print_##sname = {	\
+ 		.trace                  = print_syscall_exit,		\
+ 	};								\
+ 	static struct ftrace_event_call __used				\
