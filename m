@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbZLBBZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZLBB2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbZLBBZt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 20:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZLBBZt
+	id S1755191AbZLBB2c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 20:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZLBB2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 20:25:49 -0500
-Received: from mail.bluewatersys.com ([202.124.120.130]:53903 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752274AbZLBBZs (ORCPT
+	Tue, 1 Dec 2009 20:28:32 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:33386 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753446AbZLBB2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 20:25:48 -0500
-Message-ID: <4B15C238.70909@bluewatersys.com>
-Date: Wed, 02 Dec 2009 14:26:16 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.montavista.com>,
-       Joao Ramos <joao.ramos@inov.pt>
-Subject: Re: [PATCH] add PATA host controller support for Cirrus Logic's EP93xx
- CPUs
-References: <200911261651.40928.bzolnier@gmail.com> <4B15BAA1.2010408@bluewatersys.com> <200912020206.59659.bzolnier@gmail.com> <BD79186B4FD85F4B8E60E381CAEE190901FB03AB@mi8nycmail19.Mi8.com>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB03AB@mi8nycmail19.Mi8.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 1 Dec 2009 20:28:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Tg7pxXre7ad7SGnnRD9qv8MdMyJzAd/m6WtY8RX2vDB3wuh5BMvwjfUk8rFroNVhEp
+         ytcuH1ZfF+Zo6HXk79E5oWAC+KkrFI0b1VHm43+wLrsL8OpFrggfSskse8P2ptTWGlyJ
+         mZdpXPRKNr598yCefoZHR6HqApf1xQXikJJks=
+Subject: Re: General kernel question about waiting for events
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091202002424.1e430662@lxorguk.ukuu.org.uk>
+References: <1259712620.23837.22.camel@maxim-laptop>
+	 <20091202002424.1e430662@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 02 Dec 2009 03:28:32 +0200
+Message-ID: <1259717312.24723.10.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H Hartley Sweeten wrote:
-> On Tuesday, December 01, 2009 6:07 PM, Bartlomiej Zolnierkiewicz wrote:
->> On Wednesday 02 December 2009 01:53:53 am Ryan Mallon wrote:
->>> Bartlomiej Zolnierkiewicz wrote:
->>>> Based on the older IDE host driver by Joao Ramos and review comments
->>>> for it from Sergei Shtylyov.  Not yet tested with the real hardware.
->>>>
->>> Hi Bartlomiej,
->>>
->>> I have got as far as patching this into my kernel and doing a build test
->>> (still need to find a hard-disk to test). I got some build errors, see
->>> below:
->> Hi,
->>
->> Many thanks for picking this driver up.
->>
->> The following preparatory libata one-liner is needed to make it build:
->>
->> 	http://patchwork.kernel.org/patch/62926/
->>
->> and you may also need to update ep93xx ide gpio patch:
->>
->> 	http://thread.gmane.org/gmane.linux.ports.arm.kernel/57688/focus=58730
->>
->> to current kernels to make the hardware work.
+On Wed, 2009-12-02 at 00:24 +0000, Alan Cox wrote: 
+> > In that case, wrapped in different packages, it always ends with
+> > following loop:
+> > 
+> > while( event == false )
+> > schedule();
 > 
-> Ryan,
+> No. If it were to do that then real time processes could spin eating the
+> CPU forever.
 > 
-> I updated the core parts of this patch with the ide gpio stuff.  This will
-> patch cleanly to 2.6.32-rc8 but will have problems after the 2.6.33 merge
-> due to the core keypad support already in Russell's tree.
+> There is a difference between rescheduling and sleeping for an event.
+> Sleeping for an event (ie on a waitqueue) means that you will not be
+> woken until the wait queue is woken (or certain other things like signals
+> if interruptible). Rescheduling gives the CPU to someone else if anyone
+> wants it.
 > 
-> But, for what it's worth....
+> In short the different task states that are set are the important bit to
+> look at to understand this further.
+Thanks you very much!
 
-Thanks. I had planned reposting this as a patch series for the driver
-and the core stuff once I get it working. At my current pace, I think it
-will be after 2.6.33 :-).
+I already begin to investigate in that area, but your answer sums
+everything up, sorry for silly (as I expected) question.
 
-~Ryan
+So, current task state is set to TASK_UNINTERRUPTIBLE or
+TASK_INTERRUPTIBLE which differ in signal delivery (that I understood,
+the TASK_INTERRUPTIBLE will break the wait when signal is received) but
+both mean that current task is removed from scheduler pool until it is
+woken up, or in case of schedule_timeout() also after the timeout
+expires.
+Also wait_event_interruptible_timeout does check the condition to avoid
+useless sleeps, but if another thread or interrupt handler want to wake
+it up, it not only sets that condition (it is optional at all) but
+actually wakes the task up using literally wake_up() or related
+functions.
 
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
+Best regards,
+Maxim Levitsky
 
-Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
-ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
-http://www.bluewatersys.com	New Zealand
-Phone: +64 3 3779127		Freecall: Australia 1800 148 751
-Fax:   +64 3 3779135			  USA 1800 261 2934
+
