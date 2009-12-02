@@ -1,58 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbZLBP6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZLBQLE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754918AbZLBP6a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 10:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZLBP63
+	id S1754881AbZLBQLE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 11:11:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZLBQLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 10:58:29 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:60053 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754273AbZLBP61 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 10:58:27 -0500
-Date: Wed, 2 Dec 2009 10:58:28 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ondrej Zary <linux@rainbow-software.org>
-cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
-Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
-In-Reply-To: <200912020952.09354.linux@rainbow-software.org>
-Message-ID: <Pine.LNX.4.44L0.0912021037420.11361-100000@iolanthe.rowland.org>
+	Wed, 2 Dec 2009 11:11:04 -0500
+Received: from kroah.org ([198.145.64.141]:42152 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753644AbZLBQLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 11:11:02 -0500
+Date: Wed, 2 Dec 2009 08:05:57 -0800
+From: Greg KH <greg@kroah.com>
+To: Thiago Farina <tfransosi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
+       Luiz.Rodrigues@atheros.com
+Subject: Re: [PATCH v3] staging/otus: fix some sparse waring.
+Message-ID: <20091202160557.GA23083@kroah.com>
+References: <1258927200-3703-1-git-send-email-tfransosi@gmail.com>
+ <a4c8a6d00912020459p5aa5fa2fg50302d405f2eefc8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4c8a6d00912020459p5aa5fa2fg50302d405f2eefc8@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Dec 2009, Ondrej Zary wrote:
+On Wed, Dec 02, 2009 at 10:59:51AM -0200, Thiago Farina wrote:
+> Ping?
 
-> It shows "prev is NULL, qh=f6581080, ehci->async=f6581000".
-> 
-> The problem is that activating usbmon causes the problem to disappear. No errors
-> in maybe 15 attempts. It appeared on 2nd attempt after unloading usbmon.
+It's still in my "to-apply" queue, still digging out after the holidays
+last week.
 
-Nevertheless, the usbmon output might be useful.  Try going through a 
-couple of cycles with usbmon installed, then unload usbmon and create a 
-crash.
+thanks for your patience,
 
-Also, try adding some more debugging output (and let's hope it doesn't
-also make the problem disappear).  In start_unlink_async(), just before
-your "after:" label, add
-
-	ehci_info(ehci, "unlink qh %p %p\n", qh, qh->qh_next);
-
-In qh_link_async(), just after the wmb(), add
-
-	ehci_info(ehci, "link qh %p %p\n", qh, qh->qh_next);
-
-In end_unlink_async(), just after the iaa_watchdog_done(ehci), add
-
-	ehci_info(ehci, "end unlink qh %p %p\n", qh, qh->next);
-
-And in qh_make(), just before the end, add
-
-	ehci_info(ehci, "create qh %p, dev %s, ep %x\n",
-		qh, urb->dev->devpath, urb->ep->desc.bEndpointAddress);
-
-Alan Stern
-
+greg k-h
