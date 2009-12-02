@@ -1,80 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZLBQY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZLBQ1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbZLBQY1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 11:24:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbZLBQY0
+	id S1754830AbZLBQ1M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 11:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbZLBQ1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 11:24:26 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:4310 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754817AbZLBQYZ convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;7:1>);
-	Wed, 2 Dec 2009 11:24:25 -0500
-Message-Id: <4B16A2CC020000780002313A@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 02 Dec 2009 16:24:28 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <tglx@linutronix.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>, <mingo@redhat.com>,
-       <npiggin@suse.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [tip:core/locking] locking, x86: Slightly shorten
-	 __ticket_spin_trylock()
-References: <4B0FF9AC0200007800022713@vpn.id2.novell.com>
- <tip-133ec7a235160dd44cbd4d82fff65a9983331df9@git.kernel.org>
- <alpine.LFD.2.00.0912020714420.2872@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912020714420.2872@localhost.localdomain>
+	Wed, 2 Dec 2009 11:27:12 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:41984 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753135AbZLBQ1L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 11:27:11 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgoFACMkFktGGNlG/2dsb2JhbACBTtY2hDEE
+Date: Wed, 2 Dec 2009 11:27:15 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
+       jbaron@redhat.com, mhiramat@redhat.com,
+       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+Subject: Re: [tip:perf/core] tracing: Add DEFINE_EVENT(),
+	DEFINE_SINGLE_EVENT() support to docbook
+Message-ID: <20091202162715.GB9710@Krystal>
+References: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com> <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org> <1259761934.12870.12.camel@gandalf.stny.rr.com> <20091202140128.GA2611@elte.hu> <1259764109.12870.37.camel@gandalf.stny.rr.com> <20091202144334.GA30359@elte.hu> <1259765735.12870.42.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+In-Reply-To: <1259765735.12870.42.camel@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 11:23:29 up  7:14,  1 user,  load average: 0.00, 0.03, 0.01
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Linus Torvalds <torvalds@linux-foundation.org> 02.12.09 16:26 >>>
->You have zero idea what type "bool" is, do you? It can well be "int", it 
->can be "char", it can be some compiler-internal type ("_Bool"). You have 
->no idea what size it is.
->
->And maybe it _is_ just a byte. But even if it is, using 'bool' here is 
->wrong. The fact is, bool has magic semantic properties outside of sizing. 
->You can't mix it with inline asm, because you simply don't know what the 
->compiler rules for 'bool' are.
->
->For example, maybe the rules are that it's always passed as an integer, 
->and is always guaranteed to have the values 0/1. So even if 'sizeof' 
->returns 1, that doesn't actually mean that you can necessarily pass it 
->around as a char - it only means that it will take one byte in a structure 
->(except that bool arrays might be packed, I think).
->
->In other words, the semantics of 'bool' are such that you have no clue 
->what the actual ABI for 'bool' is. You cannot mix this with asm.
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> On Wed, 2009-12-02 at 15:43 +0100, Ingo Molnar wrote:
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > On Wed, 2009-12-02 at 15:01 +0100, Ingo Molnar wrote:
+> > > 
+> > > > >  DECLARE_CLASS_AND_DEFINE_EVENT()
+> > > > 
+> > > > Hm, that's a bit too long. How about 'DEFINE_CLASS_EVENT()' as a 
+> > > > compromise? It's similarly short-ish to TRACE_EVENT(), and it also 
+> > > > conveys the fact that we create both a class and an event there.
+> > > > 
+> > > > The full series would thus be:
+> > > > 
+> > > > 	DECLARE_EVENT_CLASS
+> > > > 	DEFINE_EVENT
+> > > > 	DEFINE_CLASS_EVENT
+> > > > 
+> > > > hm?
+> > > 
+> > > I thought about that too, but it actually makes it more confusing. 
+> > > Because, looking at this with a fresh POV, I would think that after I 
+> > > declare a class, I would use DEFINE_CLASS_EVENT with that class.
+> > 
+> > yeah. Hence was my second-best choice 'DEFINE_STANDALONE_EVENT' or 
+> > 'DEFINE_SINGLE_EVENT' - to stress the special nature it, and to actually 
+> > nudge people towards creating classes of events instead of doing 
+> > separate, standalone points. (which are a waste in the majority of 
+> > cases)
+> 
+> But the current TRACE_EVENT is still defining a class. Thus, you could
+> create a TRACE_EVENT (or whatever it is called) and then create
+> DEFINE_EVENTs based on the TRACE_EVENT.
+> 
+> That's why I want a name that describes this.
+> 
+> DEFINE_EVENT_CLASS?
+> 
+> Perhaps that's the best.
+> 
+> DECLARE_EVENT_CLASS - only creates a class
+> DEFINE_EVENT - defines an event based off of a class
+> DEFINE_EVENT_CLASS - creates a class and defines an event by the same name
+> 
+> Perhaps this is best in keeping with linux kernel naming conventions?
 
-This just can't be the case: In order for two compilers to be
-interoperable, the processor specific ABI has to define the handling of
-bool, just like it has to for any other data type.
+Hi Steve,
 
->Secondly, the notion of using a union here is just totally broken. There's 
->no point to it, and it just makes the code look horrible.
+A few questions about the semantic:
 
-There is a point: Avoiding to have the compiler allocate yet another
-register for the asm().
+Is "declare" here always only used as a declaration ? (e.g. only in
+headers, never impacted by CREATE_TRACE_POINT ?)
 
->So if you want to do this, then just keep 'new' as an int, and make sure 
->that the function returns a 'char'. No games with 'bool' which is badly 
->defined, no games with unions.
+Is "define" here always mapping to a definition ? (e.g. to be used in a
+C file to define the class or event handling stub)
 
-I considered that, but since the code means to return a boolean value,
-using a char here is as bogus as (mis-)using int-s for returning boolean
-values.
+I feel that your DEFINE_EVENT_CLASS might actually be doing a bit more
+than just "defining", it would actually also perform the declaration.
+Same goes for "DEFINE_EVENT". So can you tell us a bit more about that
+is the context of templates ?
 
->And please do make sure that it actually doesn't deprove code at the 
->callers too.
+Thanks,
 
-Not sure what you mean here (or whether it's a typo) - neither I nor
-my dictionary know the word "deprove". I assume you mean that I ought
-to check that this doesn't make worse the code at the call sites, which
-I did.
+Mathieu
 
-Jan
+> 
+> -- Steve
+> 
+> 
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
