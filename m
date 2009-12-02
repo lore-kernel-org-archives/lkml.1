@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZLBGZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbZLBGdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbZLBGZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 01:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZLBGZ3
+	id S1755011AbZLBGdN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 01:33:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZLBGdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 01:25:29 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51961 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751743AbZLBGZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 01:25:28 -0500
-Date: Wed, 2 Dec 2009 17:25:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       =?UTF-8?B?QW7DrWJhbA==?= Monsalve Salazar <anibal@debian.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: linux-kbuild.git
-Message-Id: <20091202172528.193757ed.sfr@canb.auug.org.au>
-In-Reply-To: <4B13A015.8010407@suse.cz>
-References: <4B0E73E1.50900@suse.cz>
-	<20091126193750.GA15453@merkur.ravnborg.org>
-	<20091127152211.55043dbb.sfr@canb.auug.org.au>
-	<4B0F9F0D.6010601@suse.cz>
-	<20091130085713.75f56423.sfr@canb.auug.org.au>
-	<4B13A015.8010407@suse.cz>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__2_Dec_2009_17_25_28_+1100_73ZZg71umZ_x2Oqa"
+	Wed, 2 Dec 2009 01:33:13 -0500
+Received: from mail-px0-f188.google.com ([209.85.216.188]:44991 "EHLO
+	mail-px0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753922AbZLBGdM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 01:33:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=CUX0kMKbmOxKuUuFj1eVJqzDUSlUBgw7wotF0M3AWyv/iZzX9zHe3FJM96pkLoNzVa
+         5iQCpeVN7bwfn5HqXGpmHiuye44fmDzOcYYmG/zSTyC2M3Gvcd6ovbGIs23RvxxH3OjX
+         DkB1i7sWSanUQ7YQkcG0Ky+gC/DhgHOEwXduA=
+MIME-Version: 1.0
+In-Reply-To: <E389CC83-307F-4A7D-B90B-CD928A1D1D1D@kernel.crashing.org>
+References: <1259663450-28790-1-git-send-email-leoli@freescale.com>
+	 <1259665127.2076.363.camel@pasglop>
+	 <2a27d3730912010334q24bf0e06g84839aae131475ec@mail.gmail.com>
+	 <E389CC83-307F-4A7D-B90B-CD928A1D1D1D@kernel.crashing.org>
+Date: Wed, 2 Dec 2009 14:25:47 +0800
+X-Google-Sender-Auth: c56de1bb33664719
+Message-ID: <2a27d3730912012225h3deab5dao2211bc404d247192@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mm: setting mmaped page cache property through 
+	device tree
+From: Li Yang <leoli@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       paulus@samba.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__2_Dec_2009_17_25_28_+1100_73ZZg71umZ_x2Oqa
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Michal,
-
-On Mon, 30 Nov 2009 11:36:05 +0100 Michal Marek <mmarek@suse.cz> wrote:
+On Tue, Dec 1, 2009 at 10:35 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+>> The scenario for the first case is that in a multicore system running
+>> ASMP which means different OS runs on different cores.  They might
+>> communicate through a shared memory region.  The region on every OS
+>> need to be mapped with the same cache perperty to avoid cache paradox.
 >
-> OK, I created a for-linus branch in git://repo.or.cz/linux-kbuild.git.
-> Currently it's empty, as there are no urgent kbuild fixes for 2.6.32.
+> This isn't true.  In ASMP, you cannot usually do coherency between
+> the different CPUs at all.  Also, in most PowerPC implementations,
 
-OK, it will be included from tomorrow in case you find anything urgent.
+Coherency can't be achieved with proper configuration and management?  Why so?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> it is fine if one CPU maps a memory range as coherent while another
+> maps it as non-coherent; sure, you have to be careful or you will
 
---Signature=_Wed__2_Dec_2009_17_25_28_+1100_73ZZg71umZ_x2Oqa
-Content-Type: application/pgp-signature
+But we do want the shared region to be coherent.  So mappings should
+have the same cacheability property.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> read stale data, but things won't wedge.
+>
+>> The scenario for the second case is to pre-allocate some memory to a
+>> certain application or device (probably through mem=XXX kernel
+>> parameter or limit through device tree).  The memory is not known to
+>> kernel, but fully managed by the application/device.  We need being
+>> able to map the region cachable for better performance.
+>
+> So make the memory known to the kernel, just tell the kernel not to
+> use it.  If it's normal system RAM, just put it in the "memory" node
+> and do a memreserve on it (or do something in your platform code); if
+> it's some other memory, do a device driver for it, map it there.
 
-iEYEARECAAYFAksWCFgACgkQjjKRsyhoI8xFJACfb2XILITIG39iW5GoWxYQeaB+
-fO8AniTTJDo5X3/aRQQcgq23nvhnDIGU
-=P2gJ
------END PGP SIGNATURE-----
+Your solution is feasible.  But the memory allocation is a software
+configuration.  IMHO, it should be better and easier addressed by
+changing configurations(like mem parameter) rather than the kernel
+platform code which should address hardware configuration.
 
---Signature=_Wed__2_Dec_2009_17_25_28_+1100_73ZZg71umZ_x2Oqa--
+- Leo
