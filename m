@@ -1,99 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZLBPGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZLBPIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbZLBPGK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 10:06:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbZLBPGI
+	id S1754817AbZLBPIK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 10:08:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZLBPII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 10:06:08 -0500
-Received: from arroyo.ext.ti.com ([192.94.94.40]:39280 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753699AbZLBPGD convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 10:08:08 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:39155 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754649AbZLBPIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 10:06:03 -0500
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: Amit Kucheria <amit.kucheria@verdurent.com>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Samuel Ortiz <sameo@linux.intel.com>,
-       List Linux Omap <linux-omap@vger.kernel.org>
-Date: Wed, 2 Dec 2009 20:35:57 +0530
-Subject: RE: [PATCHv2] mfd: twl4030: clarify the return value for read and
- write
-Thread-Topic: [PATCHv2] mfd: twl4030: clarify the return value for read and
- write
-Thread-Index: AcpzV/kTKkdlGCHTT1u5oeblSSLwugACJnsQ
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB0309DAC23C@dbde02.ent.ti.com>
-References: <1259760678-18707-1-git-send-email-amit.kucheria@verdurent.com>
- <1259762450-7385-1-git-send-email-amit.kucheria@verdurent.com>
-In-Reply-To: <1259762450-7385-1-git-send-email-amit.kucheria@verdurent.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Wed, 2 Dec 2009 10:08:06 -0500
+X-IronPort-AV: E=Sophos;i="4.47,328,1257138000"; 
+   d="scan'208";a="9808368"
+Message-ID: <4B1682B9.406@analog.com>
+Date: Wed, 2 Dec 2009 23:07:37 +0800
+From: Jie Zhang <jie.zhang@analog.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091202 Shredder/3.0
 MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: Mike Frysinger <vapier@gentoo.org>, uclinux-dev@uclinux.org,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
+References: <1259128503-28276-1-git-send-email-vapier@gentoo.org> <16399.1259765124@redhat.com>
+In-Reply-To: <16399.1259765124@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Dec 2009 15:08:07.0265 (UTC) FILETIME=[40FA5510:01CA7361]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amit Kucheria wrote:
-> Infact, we can just return -1 so that caller knows for sure that all messages
-> were not tranferred. Please consider fixed patch instead.
-> 
-> We should be checking if all the messages were tranferred or not. And return
-> -1 for failure. Currently we return success (0) even if none of messages were
-> transferred successfully.
-> 
-> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> ---
->  drivers/mfd/twl4030-core.c |   25 +++++++++++++++++--------
->  1 files changed, 17 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-> index 56f1de5..8f9ba79 100644
-> --- a/drivers/mfd/twl4030-core.c
-> +++ b/drivers/mfd/twl4030-core.c
-> @@ -292,10 +292,14 @@ int twl4030_i2c_write(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
->  	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 1);
->  	mutex_unlock(&twl->xfer_lock);
->  
-> -	/* i2cTransfer returns num messages.translate it pls.. */
-> -	if (ret >= 0)
-> -		ret = 0;
-> -	return ret;
-> +	/* i2c_transfer returns number of messages transferred */
-> +	if (ret != 1) {
-> +		pr_err("%s: i2c_write failed to transfer all messages\n",
-> +			DRIVER_NAME);
-> +		return -1;
-> +	} else {
-> +		return 0;
-> +	}
->  }
->  EXPORT_SYMBOL(twl4030_i2c_write);
->  
-> @@ -344,10 +348,15 @@ int twl4030_i2c_read(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes)
->  	ret = i2c_transfer(twl->client->adapter, twl->xfer_msg, 2);
->  	mutex_unlock(&twl->xfer_lock);
->  
-> -	/* i2cTransfer returns num messages.translate it pls.. */
-> -	if (ret >= 0)
-> -		ret = 0;
-> -	return ret;
-> +	/* i2c_transfer returns number of messages transferred */
-> +	if (ret != 2) {
-> +		pr_err("%s: i2c_read failed to transfer all messages\n",
-> +			DRIVER_NAME);
-> +		return -1;
-> +	}
-> +	else {
-> +		return 0;
-> +	}
+On 12/02/2009 10:45 PM, David Howells wrote:
+> Mike Frysinger<vapier@gentoo.org>  wrote:
+>
+>> The mmu code uses the copy_*_user_page() variants in access_process_vm()
+>> rather than copy_*_user() as the former includes an icache flush.  This is
+>> important when doing things like setting software breakpoints with gdb.
+>> So switch the nommu code over to do the same.
+>
+> Note that we may only really want to do an icache flush if the target region
+> is mapped executable somewhere.  On the other hand, for debugging stuff on an
+> embedded board, it probably doesn't matter.
+>
+It is not checked before icache flush even for MMU. This is a place we 
+can do some improvement. But it's not important for debugging.
 
-The else clause should be on the same line as the brace closing the if clause.
-like you did above
 
-So says Documentation/CodingStyle.
-
-- Anand
+Jie
