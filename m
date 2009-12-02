@@ -1,139 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZLBTTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbZLBT3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbZLBTTf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbZLBTTe
+	id S1755537AbZLBT3U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZLBT3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:19:34 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57212 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755277AbZLBTTd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:19:33 -0500
-Subject: Re: trace/events: DECLARE vs DEFINE semantic
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
-       jbaron@redhat.com, mhiramat@redhat.com,
-       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20091202190135.GA23316@Krystal>
-References: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
-	 <1259761934.12870.12.camel@gandalf.stny.rr.com>
-	 <20091202140128.GA2611@elte.hu>
-	 <1259764109.12870.37.camel@gandalf.stny.rr.com>
-	 <20091202144334.GA30359@elte.hu>
-	 <1259765735.12870.42.camel@gandalf.stny.rr.com>
-	 <20091202162715.GB9710@Krystal>
-	 <1259773888.12870.61.camel@gandalf.stny.rr.com>
-	 <20091202180633.GF9710@Krystal>
-	 <1259777987.12870.70.camel@gandalf.stny.rr.com>
-	 <20091202190135.GA23316@Krystal>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 02 Dec 2009 14:19:38 -0500
-Message-Id: <1259781578.12870.78.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 14:29:19 -0500
+Received: from pancho.name ([92.48.73.7]:53216 "EHLO pancho.name"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755367AbZLBT3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 14:29:19 -0500
+X-Greylist: delayed 582 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Dec 2009 14:29:18 EST
+Date: Wed, 2 Dec 2009 20:19:42 +0100
+From: pancho horrillo <pancho@pancho.name>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] Add USB device ID for Apple Cinema Display 23in 2007
+Message-ID: <20091202191942.GA7362@pancho.name>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-02 at 14:01 -0500, Mathieu Desnoyers wrote:
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > On Wed, 2009-12-02 at 13:06 -0500, Mathieu Desnoyers wrote:
-> > > *
-> > > Hrm. I wonder if having DEFINE_EVENT_CLASS is really worth having,
-> > > considering that it really just does 2 things at once and may be
-> > > confusing.
-> > 
-> > We keep it because that's what TRACE_EVENT currently is. It would suck
-> > to have to replace every TRACE_EVENT there is now with a
-> > DECLARE_EVENT_CLASS and DEFINE_EVENT. Although this would push
-> > developers into using classes.
-> 
-> I agree that keeping something for backward compatibility is good, but
-> what I dislike the most is the similarity between the
-> DECLARE_EVENT_CLASS and DEFINE_EVENT_CLASS which have completely
-> unrelated semantics. This is really misleading.
+Hi!
 
-Not really, they are almost identical. But one creates an event with the
-class, whereas the other does not. I find this quite convenient.
-
-> > 
-> > Egad No! It would make it a living nightmare. The internals reuse the
-> > define macro, and there's no intermediate. By changing the
-> > DECLARE_EVENT_CLASS to another name (SKETCH_EVENT_CLASS) we would have
-> > to add something like this:
-> > 
-> > #define SKETCH_EVENT_CLASS(name, proto, args, tstruct, print) \
-> > 	DECLARE_EVENT_CLASS(name, PARAMS(proto), PARAMS(args),\
-> > 		PARAMS(tstruct), PARAMS(print))
-> > 
-> > We don't have a intermediate or "low level" macro in use here. Whatever
-> > we give to the user is what we use.
-> > 
-> 
-> Maybe we should consider having one. e.g.:
-> 
-> #ifdef CREATE_TRACE_POINTS
-> 
-> SKETCH_EVENT_CLASS maps to DEFINE_EVENT_CLASS
-> 
-> #else
-> 
-> SKETCH_EVENT_CLASS maps to DECLARE_EVENT_CLASS
-> 
-> #endif
-
-And what? Make another level of needless abstraction? That's sure to not
-confuse people.
-
-> 
-> > 
-> > I think the kernel developers are smart enough to figure out that these
-> > macros are not a typical DECLARE/DEFINE that is elsewhere. But I think
-> > using the DECLARE/DEFINE names will give them a better idea of what is
-> > happening than to make up something completely new.
-> 
-> In my opinion, re-using a well-known keyword (e.g. DECLARE/DEFINE) but
-> applying a different semantic to what is generally agreed upon is a
-> recipe for confusing developers and users, who will skip the review of
-> some pieces of code assuming they already know what "DECLARE" and
-> "DEFINE" stands for.
-> 
-> I argue here that the content of trace/events/ headers are _not_ per se
-> declarations nor definitions, and hence they should not confuse people
-> by using inappropriately well-known keywords. They are actually more
-> evolved macros that can be turned in either a declaration or definition,
-> depending if CREATE_TRACE_POINTS is declared.
-
-And I argue that the semantics here are not too far off to what those
-are. Yes, these macros behave differently if CREATE_TRACE_POINTS is
-declared or not, but I argue that the average (and below average) kernel
-developer is smart enough to understand this difference.
+$ lsusb -v
+Bus 001 Device 008: ID 05ac:921c Apple, Inc. 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0 
+  bDeviceProtocol         0 
+  bMaxPacketSize0         8
+  idVendor           0x05ac Apple, Inc.
+  idProduct          0x921c 
+  bcdDevice            1.15
+  iManufacturer           1 
+  iProduct                2 
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           34
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0xe0
+      Self Powered
+      Remote Wakeup
+    MaxPower                2mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         3 Human Interface Device
+      bInterfaceSubClass      0 No Subclass
+      bInterfaceProtocol      0 None
+      iInterface              0 
+        HID Device Descriptor:
+          bLength                 9
+          bDescriptorType        33
+          bcdHID               1.11
+          bCountryCode            0 Not supported
+          bNumDescriptors         1
+          bDescriptorType        34 Report
+          wDescriptorLength      92
+         Report Descriptors: 
+           ** UNAVAILABLE **
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval              16
 
 
-> 
-> When I created the markers/tracepoints, Andrew Morton explained to me
-> the importance of distinguishing DECLARE vs DEFINE macros. I would
-> really like to hear his point of view on the current question.
 
-I would like to hear Andrew's comments too, as well as anyone else.
-Randy Dunlap seemed to already approve of these naming conventions, and
-he's a pretty picky person too.
+(Against linux-2.6.31.6)
 
-Randy, do you agree that the use of DECLARE/DEFINE here is fine, or do
-you think that we should come up with a better naming. I do not want to
-add any needless abstraction layer for the sake of naming. These macros
-are confusing enough without that.
+Signed-off-by: pancho horrillo <pancho@pancho.name>
 
-Or do you (or anyone else) have a better name?
+diff -purN a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledisplay.c
+--- a/drivers/usb/misc/appledisplay.c	2009-11-10 01:32:31.000000000 +0100
++++ b/drivers/usb/misc/appledisplay.c	2009-12-02 20:01:25.000000000 +0100
+@@ -60,6 +60,7 @@
+ static struct usb_device_id appledisplay_table [] = {
+ 	{ APPLEDISPLAY_DEVICE(0x9218) },
+ 	{ APPLEDISPLAY_DEVICE(0x9219) },
++	{ APPLEDISPLAY_DEVICE(0x921c) },
+ 	{ APPLEDISPLAY_DEVICE(0x921d) },
+ 
+ 	/* Terminating entry */
 
+-- 
+pancho horrillo
 
--- Steve
+To be conscious that
+you are ignorant is a great step
+to knowledge.
 
-
+		Benjamin Disraeli
