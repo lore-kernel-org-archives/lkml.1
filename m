@@ -1,230 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZLBVKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbZLBVLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523AbZLBVKo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZLBVKm
+	id S1755586AbZLBVLK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZLBVLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:10:42 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:40762 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755184AbZLBVKk (ORCPT
-	<rfc822;groupwise-PMullaney@novell.com:0:0>);
-	Wed, 2 Dec 2009 16:10:40 -0500
-From: Patrick Mullaney <pmullaney@novell.com>
-Subject: [PATCH 2/2] venet: Fixes for shutdown and re-registration of venet
-	devices.
-To: alacrityvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Date: Wed, 02 Dec 2009 16:10:33 -0500
-Message-ID: <20091202211033.5116.63285.stgit@mimic.site>
-In-Reply-To: <20091202204722.5116.33183.stgit@mimic.site>
-References: <20091202204722.5116.33183.stgit@mimic.site>
-User-Agent: StGIT/0.14.3
+	Wed, 2 Dec 2009 16:11:09 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33324 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754500AbZLBVLI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 16:11:08 -0500
+Date: Wed, 2 Dec 2009 22:11:07 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH] uswsusp: automatically free the in-memory image once
+ s2disk has finished with it
+Message-ID: <20091202211107.GA20830@elf.ucw.cz>
+References: <4B1575AC.6080904@tuffmail.co.uk>
+ <20091201214529.GA1457@csn.ul.ie>
+ <200912012253.08522.rjw@sisk.pl>
+ <4B16545B.3090703@tuffmail.co.uk>
+ <20091202122019.GD1457@csn.ul.ie>
+ <4B16797C.3010304@tuffmail.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B16797C.3010304@tuffmail.co.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed a problem with simple re-registration of the venet netdevice. The
-netdev core infrastructure appears to have a problem with re-registering
-a previously registered netdevice(reg_state and kobj.state_initialized
-need to be reset to their default values). I now do this prior to calling
-register_netdev but this probably should be moved to net/core. Fixed an
-issue with the removal of the lower level device of a venet-macvlan. I'm
-planning a cleaner solution in the future. Fixed a lock issue with
-venet-macvlan stop method that was causing a hang.
+On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
+> The original in-kernel suspend (swsusp) frees the in-memory hibernation
+> image before powering off the machine.  s2disk doesn't, so there is
+> _much_ less free memory when it tries to power off.
+> 
+> This is a gratuitous difference.  The userspace suspend interface
+> /dev/snapshot only allows the hibernation image to be read once.
+> Once the s2disk program has read the last page, we can free the entire
+> image.
+> 
+> This avoids a hang after writing the hibernation image which was
+> triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+> "page-allocator: split per-cpu list into one-list-per-migrate-type":
 
-Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
----
+Yes, you work around page-allocator hang. But is it right thing to do?
 
- kernel/vbus/devices/venet/device.c      |   11 +++++-
- kernel/vbus/devices/venet/macvlan.c     |   55 +++++++++++++++++++++++++------
- kernel/vbus/devices/venet/venetdevice.h |    7 +++-
- 3 files changed, 58 insertions(+), 15 deletions(-)
+I mean... Power down should not be too memory-critical. Why can't new
+page allocator handle that?
 
-diff --git a/kernel/vbus/devices/venet/device.c b/kernel/vbus/devices/venet/device.c
-index 01d6f1c..b4cf397 100644
---- a/kernel/vbus/devices/venet/device.c
-+++ b/kernel/vbus/devices/venet/device.c
-@@ -2300,7 +2300,7 @@ client_mac_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
- struct vbus_device_attribute attr_cmac =
- 	__ATTR(client_mac, S_IRUGO | S_IWUSR, client_mac_show, cmac_store);
- 
--static ssize_t
-+ssize_t
- enabled_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
- 	 char *buf)
- {
-@@ -2309,7 +2309,7 @@ enabled_show(struct vbus_device *dev, struct vbus_device_attribute *attr,
- 	return snprintf(buf, PAGE_SIZE, "%d\n", priv->netif.enabled);
- }
- 
--static ssize_t
-+ssize_t
- enabled_store(struct vbus_device *dev, struct vbus_device_attribute *attr,
- 	      const char *buf, size_t count)
- {
-@@ -2323,8 +2323,13 @@ enabled_store(struct vbus_device *dev, struct vbus_device_attribute *attr,
- 	if (enabled != 0 && enabled != 1)
- 		return -EINVAL;
- 
--	if (enabled && !priv->netif.enabled)
-+	if (enabled && !priv->netif.enabled) {
-+		/* need to un-initialize certain fields of the
-+		   net_device so that it may be re-registered */
-+		priv->netif.dev->reg_state = NETREG_UNINITIALIZED;
-+		priv->netif.dev->dev.kobj.state_initialized = 0;
- 		ret = register_netdev(priv->netif.dev);
-+	}
- 
- 	if (!enabled && priv->netif.enabled)
- 		venetdev_netdev_unregister(priv);
-diff --git a/kernel/vbus/devices/venet/macvlan.c b/kernel/vbus/devices/venet/macvlan.c
-index 432ff5d..60479a6 100644
---- a/kernel/vbus/devices/venet/macvlan.c
-+++ b/kernel/vbus/devices/venet/macvlan.c
-@@ -137,7 +137,7 @@ venetmacv_vlink_up(struct venetdev *vdev)
- 		ret = macv->macvlan_netdev_ops->ndo_open(vdev->netif.dev);
- 		rtnl_unlock();
- 		if (ret)
--			printk(KERN_ERR "macvlanopen failed %d!\n", ret);
-+			printk(KERN_ERR "macvlan_open failed %d!\n", ret);
- 	}
- }
- 
-@@ -320,8 +320,10 @@ venetmacv_device_release(struct vbus_device *dev)
- {
- 	struct venetmacv *macv = vbusdev_to_macv(dev);
- 
--	if (macv->mdev.lowerdev)
-+	if (macv->mdev.lowerdev) {
- 		dev_put(macv->mdev.lowerdev);
-+		macv->mdev.lowerdev = NULL;
-+	}
- 
- 	venetdev_netdev_unregister(&macv->dev);
- 	free_netdev(macv->mdev.dev);
-@@ -397,12 +399,31 @@ clientmac_store(struct vbus_device *dev, struct vbus_device_attribute *attr,
- 	return ret;
- }
- 
--struct vbus_device_attribute attr_clientmac =
-+static struct vbus_device_attribute attr_clientmac =
- 	__ATTR(client_mac, S_IRUGO | S_IWUSR, client_mac_show, clientmac_store);
- 
-+
-+static ssize_t
-+macv_enabled_store(struct vbus_device *dev, struct vbus_device_attribute *attr,
-+		   const char *buf, size_t count)
-+{
-+	struct venetmacv *macv = vbusdev_to_macv(dev);
-+	int ret;
-+
-+	if (!macv->mdev.lowerdev)
-+		return -ENXIO;
-+
-+	ret = attr_enabled.store(dev, attr, buf, count);
-+
-+	return ret;
-+}
-+
-+static struct vbus_device_attribute attr_macv_enabled =
-+	__ATTR(enabled, S_IRUGO | S_IWUSR, enabled_show, macv_enabled_store);
-+
- static struct attribute *attrs[] = {
- 	&attr_clientmac.attr,
--	&attr_enabled.attr,
-+	&attr_macv_enabled.attr,
- 	&attr_burstthresh.attr,
- 	&attr_txmitigation.attr,
- 	&attr_ifname.attr,
-@@ -423,9 +444,7 @@ venetmacv_netdev_open(struct net_device *dev)
- 	venetdev_open(&priv->dev);
- 
- 	if (priv->dev.vbus.link) {
--		rtnl_lock();
- 		ret = priv->macvlan_netdev_ops->ndo_open(priv->mdev.dev);
--		rtnl_unlock();
- 	}
- 
- 	return ret;
-@@ -443,15 +462,26 @@ venetmacv_netdev_stop(struct net_device *dev)
- 
- 	venetdev_stop(&priv->dev);
- 
--	if (priv->dev.vbus.link && needs_stop) {
--		rtnl_lock();
-+	if (priv->dev.vbus.link && needs_stop)
- 		ret = priv->macvlan_netdev_ops->ndo_stop(dev);
--		rtnl_unlock();
--	}
- 
- 	return ret;
- }
- 
-+static void
-+venetmacv_netdev_uninit(struct net_device *dev)
-+{
-+	struct venetmacv *macv = netdev_priv(dev);
-+
-+	if (macv->mdev.lowerdev) {
-+		dev_put(macv->mdev.lowerdev);
-+		macv->mdev.lowerdev = NULL;
-+		memset(macv->ll_ifname, '\0', IFNAMSIZ);
-+	}
-+
-+	macv->dev.netif.enabled = 0;
-+}
-+
- /*
-  * out routine for macvlan
-  */
-@@ -527,9 +557,9 @@ static struct net_device_ops venetmacv_netdev_ops = {
- 	.ndo_start_xmit         = venetmacv_netdev_tx,
- 	.ndo_do_ioctl           = venetdev_netdev_ioctl,
- 	.ndo_get_stats          = venetmacv_netdev_stats,
-+	.ndo_uninit             = venetmacv_netdev_uninit,
- };
- 
--
- /*
-  * This is called whenever the admin instantiates our devclass via
-  * "mkdir /config/vbus/devices/$(inst)/venet-tap"
-@@ -545,6 +575,9 @@ venetmacv_device_create(struct vbus_devclass *dc,
- 	dev = alloc_netdev(sizeof(struct venetmacv), "macvenet%d",
- 					   macvlan_setup);
- 
-+
-+	dev->destructor = NULL;
-+
- 	if (!dev)
- 		return -ENOMEM;
- 
-diff --git a/kernel/vbus/devices/venet/venetdevice.h b/kernel/vbus/devices/venet/venetdevice.h
-index 1a74723..edee570 100644
---- a/kernel/vbus/devices/venet/venetdevice.h
-+++ b/kernel/vbus/devices/venet/venetdevice.h
-@@ -150,7 +150,7 @@ struct net_device_stats *venetdev_get_stats(struct venetdev *dev);
- static inline void venetdev_netdev_unregister(struct venetdev *priv)
- {
- 	if (priv->netif.enabled) {
--		venetdev_netdev_stop(priv->netif.dev);
-+		venetdev_stop(priv);
- 		unregister_netdev(priv->netif.dev);
- 	}
- }
-@@ -173,6 +173,11 @@ extern struct vbus_device_attribute attr_ifname;
- extern struct vbus_device_attribute attr_txmitigation;
- extern struct vbus_device_attribute attr_zcthresh;
- 
-+ssize_t enabled_store(struct vbus_device *dev,
-+		struct vbus_device_attribute *attr,
-+		 const char *buf, size_t count);
-+ssize_t enabled_show(struct vbus_device *dev,
-+			struct vbus_device_attribute *attr, char *buf);
- ssize_t cmac_store(struct vbus_device *dev,
- 		struct vbus_device_attribute *attr,
- 		 const char *buf, size_t count);
+(And yes, when page allocator is fixed we may want to do something
+like that, but...)
 
+								Pavel
+
+> --- a/kernel/power/user.c
+> +++ b/kernel/power/user.c
+> @@ -165,6 +165,10 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
+> 			res = -EFAULT;
+> 		else
+> 			*offp = data->handle.offset;
+> +	} else {
+> +		swsusp_free();
+> +		memset(&data->handle, 0, sizeof(struct snapshot_handle));
+> +		data->ready = 0;
+> 	}
+> 
+>  Unlock:
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
