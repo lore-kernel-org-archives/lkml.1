@@ -1,68 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZLBTEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZLBTOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbZLBTEc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:04:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbZLBTEc
+	id S1754010AbZLBTOz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:14:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZLBTOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:04:32 -0500
-Received: from cantor.suse.de ([195.135.220.2]:47667 "EHLO mx1.suse.de"
+	Wed, 2 Dec 2009 14:14:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7986 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752938AbZLBTEb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:04:31 -0500
-Date: Wed, 2 Dec 2009 20:04:26 +0100
-From: Jan Kara <jack@suse.cz>
-To: Mike Galbraith <gleep@gmx.de>
-Cc: James Y Knight <foom@fuhm.net>, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       npiggin@suse.de
-Subject: Re: writev data loss bug in (at least) 2.6.31 and 2.6.32pre8 x86-64
-Message-ID: <20091202190425.GA30315@quack.suse.cz>
-References: <1F5364AE-321E-44E9-8B0D-B8E17597A0DA@fuhm.net>
- <907888CC-F4B2-448F-8F48-B96A566D323B@fuhm.net>
- <1259667765.9614.19.camel@marge.simson.net>
- <20091201143558.GB12730@quack.suse.cz>
+	id S1751688AbZLBTOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 14:14:53 -0500
+Date: Wed, 2 Dec 2009 14:12:53 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com
+Subject: Re: Block IO Controller V4
+Message-ID: <20091202191253.GH31715@redhat.com>
+References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <4e5e476b0911300734h34a22c88oa5d7d4e5642ead50@mail.gmail.com> <20091130160024.GD11670@redhat.com> <4e5e476b0911301334o2440ea8fi7444aa7d5a688ed1@mail.gmail.com> <1259618433.2701.31.camel@cail> <20091130225640.GO11670@redhat.com> <1259625025.2701.33.camel@cail>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091201143558.GB12730@quack.suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1259625025.2701.33.camel@cail>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 01-12-09 15:35:59, Jan Kara wrote:
-> On Tue 01-12-09 12:42:45, Mike Galbraith wrote:
-> > On Mon, 2009-11-30 at 19:48 -0500, James Y Knight wrote:
-> > > On Nov 30, 2009, at 3:55 PM, James Y Knight wrote:
-> > > 
-> > > > This test case fails in 2.6.23-2.6.25, because of the bug fixed in 864f24395c72b6a6c48d13f409f986dc71a5cf4a, and now again in at least 2.6.31 and 2.6.32pre8 because of a *different* bug. This test *does not* fail 2.6.26. I have not tested anything between 2.6.26 and 2.6.31.
-> > > > 
-> > > > The bug in 2.6.31 is definitely not the same bug as 2.6.23's. This time, the zero'd area of the file doesn't show up immediately upon writing the file. Instead, the kernel waits to mangle the file until it has to flush the buffer to disk. *THEN* it zeros out parts of the file.
-> > > > 
-> > > > So, after writing out the new file with writev, and checking the md5sum (which is correct), this test case asks the kernel to flush the cache for that file, and then checks the md5sum again. ONLY THEN is the file corrupted. That is, I won't hesitate to say *incredibly evil* behavior: it took me quite some time to figure out WTH was going wrong with my program before determining it was a kernel bug.
-> > > > 
-> > > > This test case is distilled from an actual application which doesn't even intentionally use writev: it just uses C++'s ofstream class to write data to a file. Unfortunately, that class smart and uses writev under the covers. Unfortunately, I guess nobody ever tests linux writev behavior, since it's broken _so_much_of_the_time_. I really am quite astounded to see such a bad track record for such a fundamental core system call....
-> > > > 
-> > > > My /tmp is an ext3 filesystem, in case that matters.
-> > > 
-> > > Further testing shows that the filesystem type *does* matter. The bug does not exhibit when the test is run on ext2, ext4, vfat, btrfs, jfs, or xfs (and probably all the others too). Only, so far as I can determine, on ext3.
+On Mon, Nov 30, 2009 at 06:50:25PM -0500, Alan D. Brunelle wrote:
+> On Mon, 2009-11-30 at 17:56 -0500, Vivek Goyal wrote:
+> > On Mon, Nov 30, 2009 at 05:00:33PM -0500, Alan D. Brunelle wrote:
+> > > FYI: Results today from my test suite - haven't had time to parse them
+> > > in any depth...
 > > 
-> > I bisected it this morning.  Bisected cleanly to...
-> > 
-> > 9eaaa2d5759837402ec5eee13b2a97921808c3eb is the first bad commit
->   OK, I've debugged it. This commit is really at fault. The problem is
-> following:
->   When using writev, the page we copy from is not paged in (while when we
-> use ordinary write, it is paged in). This difference might be worth
-> investigation on its own (as it is likely to heavily impact performance of
-> writev) but is irrelevant for us now - we should handle this without data
-> corruption anyway.
-  I've looked into why writev fails reliably the writes. The reason is that
-iov_iter_fault_in_readable() faults in only the first IO buffer. Because
-this is just 600 bytes big, following iov_iter_copy_from_user_atomic copies
-only 600 bytes and block_write_end sets number of copied bytes to 0. Thus
-we restart the write and do it one iov per iteration which succeeds. So
-everything works as designed only it gets inefficient in this particular
-case.
+> > Thanks Alan. I am trying to parse the results below. s0 and s8 still mean
+> > slice idle enabled disabled? Instead of that we can try group_isolation
+> > enabled or disabled for all the tests.
+> 
+> I'm concerned as well - I think I did the base run /after/ the i1,s0
+> run. I'll need to check that out tomorrow...
+> 
 
-								Honza
+Hi Alan, Gui,
+
+Currently fio does not have support for putting jobs in appropriate
+cgroups. Hence I wrote the scripts to move jobs in to right cgroup. But
+this had the issue of synchronization between threads so that they all
+start at same time after laying out the files. I had written some programs
+to synchronize on external semaphore. This was getting complicated.
+
+Now I have written this small hacky patch to modify fio to launch a job
+in specified cgroup. Just use following in your job file or command line.
+
+cgroup=<cgroup dir path>
+
+In my initial testing it seems to be working both from command line and
+from job file. I will test it more. Sending the patch in this thread because
+you and Gui seems to be testing this stuff and life will become little easier.
+
+Thanks
+Vivek
+
+
+o A simple patch to put run a fio job in a specific cgroup. Its a simple hack
+  and not much of error checking. So make sure cgroup exists.
+
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ HOWTO     |    3 +++
+ fio.c     |    8 ++++++++
+ fio.h     |    1 +
+ options.c |    7 +++++++
+ 4 files changed, 19 insertions(+)
+
+Index: fio/options.c
+===================================================================
+--- fio.orig/options.c	2009-12-02 11:10:36.000000000 -0500
++++ fio/options.c	2009-12-02 13:40:49.000000000 -0500
+@@ -1727,6 +1727,13 @@ static struct fio_option options[] = {
+ 		.help	= "Select a specific builtin performance test",
+ 	},
+ 	{
++		.name	= "cgroup",
++		.type	= FIO_OPT_STR_STORE,
++		.off1	= td_var_offset(cgroup),
++		.cb	= str_directory_cb,
++		.help	= "cgroup directory to run the job in",
++	},
++	{
+ 		.name = NULL,
+ 	},
+ };
+Index: fio/fio.h
+===================================================================
+--- fio.orig/fio.h	2009-12-02 11:10:36.000000000 -0500
++++ fio/fio.h	2009-12-02 13:42:26.000000000 -0500
+@@ -271,6 +271,7 @@ struct thread_options {
+ 	 * Benchmark profile type
+ 	 */
+ 	unsigned int profile;
++	char *cgroup;
+ };
+ 
+ #define FIO_VERROR_SIZE	128
+Index: fio/fio.c
+===================================================================
+--- fio.orig/fio.c	2009-12-02 11:10:36.000000000 -0500
++++ fio/fio.c	2009-12-02 13:51:16.000000000 -0500
+@@ -1025,6 +1025,14 @@ static void *thread_main(void *data)
+ 	pthread_cond_init(&td->verify_cond, &attr);
+ 	pthread_cond_init(&td->free_cond, &attr);
+ 
++	/* Move thread to right cgroup */
++	if (td->o.cgroup) {
++		char str[50];
++		sprintf(str, "echo %d > %s/tasks", td->pid, td->o.cgroup);
++		if (system(str) == -1)
++			log_err("fio: exec of cmd <%s> failed\n", str);
++	}
++
+ 	td_set_runstate(td, TD_INITIALIZED);
+ 	dprint(FD_MUTEX, "up startup_mutex\n");
+ 	fio_mutex_up(startup_mutex);
+Index: fio/HOWTO
+===================================================================
+--- fio.orig/HOWTO	2009-12-02 11:10:36.000000000 -0500
++++ fio/HOWTO	2009-12-02 14:04:55.000000000 -0500
+@@ -1003,6 +1003,9 @@ continue_on_error=bool	Normally fio will
+ 		given in the stats is the first error that was hit during the
+ 		run.
+ 
++cgroup=str	Specify the cgroup directory in which a job should run.
++		ex. cgroup=/cgroup/blkio/test1/
++
+ 
+ 6.0 Interpreting the output
+ ---------------------------
