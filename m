@@ -1,170 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZLBM65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZLBM7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbZLBM65 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 07:58:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZLBM64
+	id S1754091AbZLBM7v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 07:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZLBM7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 07:58:56 -0500
-Received: from mga14.intel.com ([143.182.124.37]:16946 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753822AbZLBM6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 07:58:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="217899534"
-Date: Wed, 2 Dec 2009 20:58:42 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 22/24] HWPOISON: add memory cgroup filter
-Message-ID: <20091202125842.GA13277@localhost>
-References: <20091202031231.735876003@intel.com> <20091202043046.519053333@intel.com> <20091202124446.GA18989@one.firstfloor.org>
+	Wed, 2 Dec 2009 07:59:51 -0500
+Received: from mail-fx0-f221.google.com ([209.85.220.221]:52742 "EHLO
+	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbZLBM7u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 07:59:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=c+AcfTekw+jN5mp23BCsanqiJzaWhSL9tyxHr9jLkBWE0K+rHf5kz7D8r/hHoBRRAR
+         VcpwOYjxZz8Ja1bJMEMQa9kdcqqk9CASfI89+GmvGOLgK6zH6S7pC/WO3z5VVVgnEBD4
+         8oiuc1q6aRHJQNRld5tavh6UW8ArGwk6eEY44=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091202124446.GA18989@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1258927200-3703-1-git-send-email-tfransosi@gmail.com>
+References: <1258927200-3703-1-git-send-email-tfransosi@gmail.com>
+Date: Wed, 2 Dec 2009 10:59:51 -0200
+Message-ID: <a4c8a6d00912020459p5aa5fa2fg50302d405f2eefc8@mail.gmail.com>
+Subject: Re: [PATCH v3] staging/otus: fix some sparse waring.
+From: Thiago Farina <tfransosi@gmail.com>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
+       Luiz.Rodrigues@atheros.com, Thiago Farina <tfransosi@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 08:44:46PM +0800, Andi Kleen wrote:
-> >  
-> > +static int hwpoison_filter_task(struct page *p)
-> > +{
-> 
-> Can we make that ifdef instead of depends on ?
-
-Sure. Here is the updated patch.
-
----
-HWPOISON: add memory cgroup filter
-
-The hwpoison test suite need to inject hwpoison to a collection of
-selected task pages, and must not touch pages not owned by them and
-thus kill important system processes such as init. (But it's OK to
-mis-hwpoison free/unowned pages as well as shared clean pages.
-Mis-hwpoison of shared dirty pages will kill all tasks, so the test
-suite will target all or non of such tasks in the first place.)
-
-The memory cgroup serves this purpose well. We can put the target
-processes under the control of a memory cgroup, and tell the hwpoison
-injection code to only kill pages associated with some active memory
-cgroup.
-
-The prerequisite for doing hwpoison stress tests with mem_cgroup is,
-the mem_cgroup code tracks task pages _accurately_ (unless page is
-locked).  Which we believe is/should be true.
-
-The benifits are simplification of hwpoison injector code. Also the
-mem_cgroup code will automatically be tested by hwpoison test cases.
-
-The alternative interfaces pin-pfn/unpin-pfn can also delegate the
-(process and page flags) filtering functions reliably to user space.
-However prototype implementation shows that this scheme adds more
-complexity than we wanted.
-
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Li Zefan <lizf@cn.fujitsu.com>
-CC: Paul Menage <menage@google.com>
-CC: Nick Piggin <npiggin@suse.de> 
-CC: Andi Kleen <andi@firstfloor.org> 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/Kconfig           |    2 +-
- mm/hwpoison-inject.c |    7 +++++++
- mm/internal.h        |    1 +
- mm/memory-failure.c  |   28 ++++++++++++++++++++++++++++
- 4 files changed, 37 insertions(+), 1 deletion(-)
-
---- linux-mm.orig/mm/memory-failure.c	2009-12-01 09:56:06.000000000 +0800
-+++ linux-mm/mm/memory-failure.c	2009-12-02 20:56:55.000000000 +0800
-@@ -96,6 +96,31 @@ static int hwpoison_filter_flags(struct 
- 		return -EINVAL;
- }
- 
-+#ifdef	CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-+u32 hwpoison_filter_memcg;
-+static int hwpoison_filter_task(struct page *p)
-+{
-+	struct mem_cgroup *mem;
-+	struct cgroup_subsys_state *css;
-+
-+	if (!hwpoison_filter_memcg)
-+		return 0;
-+
-+	mem = try_get_mem_cgroup_from_page(p);
-+	if (!mem)
-+		return -EINVAL;
-+
-+	css = mem_cgroup_css(mem);
-+	if (!css)
-+		return -EINVAL;
-+
-+	css_put(css);
-+	return 0;
-+}
-+#else
-+static int hwpoison_filter_task(struct page *p) {}
-+#endif
-+
- int hwpoison_filter(struct page *p)
- {
- 	if (hwpoison_filter_dev(p))
-@@ -104,6 +129,9 @@ int hwpoison_filter(struct page *p)
- 	if (hwpoison_filter_flags(p))
- 		return -EINVAL;
- 
-+	if (hwpoison_filter_task(p))
-+		return -EINVAL;
-+
- 	return 0;
- }
- 
---- linux-mm.orig/mm/internal.h	2009-12-01 09:56:06.000000000 +0800
-+++ linux-mm/mm/internal.h	2009-12-02 20:54:53.000000000 +0800
-@@ -270,3 +270,4 @@ extern u32 hwpoison_filter_dev_major;
- extern u32 hwpoison_filter_dev_minor;
- extern u64 hwpoison_filter_flags_mask;
- extern u64 hwpoison_filter_flags_value;
-+extern u32 hwpoison_filter_memcg;
---- linux-mm.orig/mm/hwpoison-inject.c	2009-12-01 09:56:06.000000000 +0800
-+++ linux-mm/mm/hwpoison-inject.c	2009-12-02 20:55:49.000000000 +0800
-@@ -95,6 +95,13 @@ static int pfn_inject_init(void)
- 	if (!dentry)
- 		goto fail;
- 
-+#ifdef	CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-+	dentry = debugfs_create_u32("corrupt-filter-memcg", 0600,
-+				    hwpoison_dir, &hwpoison_filter_memcg);
-+	if (!dentry)
-+		goto fail;
-+#endif
-+
- 	return 0;
- fail:
- 	pfn_inject_exit();
---- linux-mm.orig/mm/Kconfig	2009-11-30 11:08:30.000000000 +0800
-+++ linux-mm/mm/Kconfig	2009-12-02 20:55:15.000000000 +0800
-@@ -257,7 +257,7 @@ config MEMORY_FAILURE
- 	  special hardware support and typically ECC memory.
- 
- config HWPOISON_INJECT
--	tristate "Poison pages injector"
-+	tristate "HWPoison pages injector"
- 	depends on MEMORY_FAILURE && DEBUG_KERNEL
- 
- config NOMMU_INITIAL_TRIM_EXCESS
+Ping?
