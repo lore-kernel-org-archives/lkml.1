@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZLBAWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZLBA1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbZLBAWR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 19:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbZLBAWR
+	id S1754864AbZLBA1E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 19:27:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZLBA1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 19:22:17 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58234 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754629AbZLBAWQ (ORCPT
+	Tue, 1 Dec 2009 19:27:03 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33270 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754734AbZLBA1C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 19:22:16 -0500
-Date: Wed, 2 Dec 2009 00:24:24 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: General kernel question about waiting for events
-Message-ID: <20091202002424.1e430662@lxorguk.ukuu.org.uk>
-In-Reply-To: <1259712620.23837.22.camel@maxim-laptop>
-References: <1259712620.23837.22.camel@maxim-laptop>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Dec 2009 19:27:02 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] mm: Introduce coredump parameter structure
+Cc: kosaki.motohiro@jp.fujitsu.com, Masami Hiramatsu <mhiramat@redhat.com>,
+       Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com, hidehiro.kawai.ez@hitachi.com, lethal@linux-sh.org,
+       mingo@elte.hu, roland@redhat.com, vapier@gentoo.org,
+       Takahiro Yasui <tyasui@redhat.com>
+In-Reply-To: <20091201161800.fa6b6ae4.akpm@linux-foundation.org>
+References: <4B11FB6F.4040403@redhat.com> <20091201161800.fa6b6ae4.akpm@linux-foundation.org>
+Message-Id: <20091202092607.5C40.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  2 Dec 2009 09:27:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In that case, wrapped in different packages, it always ends with
-> following loop:
+> On Sat, 28 Nov 2009 23:41:19 -0500
+> Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> while( event == false )
-> schedule();
+> > Introduce coredump parameter data structure (struct coredump_params)
+> > for simplifying binfmt->core_dump() arguments.
+> > 
+> > Changes in v2:
+> >    - Don't remove DUMP_WRITE() macro.
+> 
+> What is the reason for this change?
+> 
+> Please always include both the "what" and the "why" in changelog text.
 
-No. If it were to do that then real time processes could spin eating the
-CPU forever.
+I reported v1 break ia64 and uml. its arch specific code still use DUMP_WRITE().
 
-There is a difference between rescheduling and sleeping for an event.
-Sleeping for an event (ie on a waitqueue) means that you will not be
-woken until the wait queue is woken (or certain other things like signals
-if interruptible). Rescheduling gives the CPU to someone else if anyone
-wants it.
+Thanks.
 
-In short the different task states that are set are the important bit to
-look at to understand this further.
+
