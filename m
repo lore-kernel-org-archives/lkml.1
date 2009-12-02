@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZLBV1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZLBV2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbZLBV1J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:27:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbZLBV1I
+	id S1755644AbZLBV2w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:28:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZLBV2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:27:08 -0500
-Received: from imap.ru.mvista.com ([213.79.90.228]:31630 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754266AbZLBV1H (ORCPT
+	Wed, 2 Dec 2009 16:28:52 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:35562
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754378AbZLBV2v convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:27:07 -0500
-Date: Thu, 3 Dec 2009 00:27:10 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grazvydas Ignotas <notasas@gmail.com>
-Cc: Madhusudhan <madhu.cr@ti.com>, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
- charger
-Message-ID: <20091202212710.GA24789@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
- <012301ca71ed$449cb930$544ff780@am.dhcp.ti.com>
- <20091130185813.GA32522@oksana.dev.rtsoft.ru>
- <6ed0b2680912021238o29d7e773i9379369d7b277614@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6ed0b2680912021238o29d7e773i9379369d7b277614@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 2 Dec 2009 16:28:51 -0500
+Subject: Re: [RFC v2] Another approach to IR
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <Pine.LNX.4.58.0912021300270.4729@shell2.speakeasy.net>
+Date: Wed, 2 Dec 2009 16:28:51 -0500
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <582D7897-47F8-44B6-959F-510790EAEA79@wilsonet.com>
+References: <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <20091202201404.GD22689@core.coreip.homeip.net> <434927DD-0E66-4D0E-B705-022B7FCCCDB0@wilsonet.com> <20091202204811.GE22689@core.coreip.homeip.net> <B8514BFF-DB1B-4475-9E6D-E2A567A998FA@wilsonet.com> <Pine.LNX.4.58.0912021300270.4729@shell2.speakeasy.net>
+To: Trent Piepho <xyzzy@speakeasy.org>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 10:38:31PM +0200, Grazvydas Ignotas wrote:
-> On Mon, Nov 30, 2009 at 8:58 PM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > On Mon, Nov 30, 2009 at 12:45:20PM -0600, Madhusudhan wrote:
-> > [...]
-> >> > +   case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> >> > +           /* charging must be active for meaningful result */
-> >> > +           if (!is_charging) {
-> >>
-> >> How about putting a kern_info here?
-> >
-> > It might be better to return -EINVAL.
+On Dec 2, 2009, at 4:12 PM, Trent Piepho wrote:
+
+> On Wed, 2 Dec 2009, Jarod Wilson wrote:
+>>>> 
+>>>> My main point is that each of these devices has device ID that can be determined without having to first do some protocol analysis and table lookups to figure out which "device" some random IR input is actually coming from.
+>>>> 
+>>> 
+>>> Heh, right back at ya ;) The fact that you need to do some more work
+>>> to separate 2 physical devices does not mean it should not be done.
+>> 
+>> No, but it means added complexity inside the kernel. I'm questioning whether the added complexity is worth it, when I doubt the vast majority of users would take advantage of it, and it can already be done in userspace. Although... Damn. The userspace approach would only work if the device were passing raw IR to userspace, so in the in-kernel decoding case, yeah, I guess you'd need separate input devices for each remote to use them independently. Meh. Doubt I'd ever use it, but I guess I'll concede that it makes some sense to do the extra work.
 > 
-> That causes lots of warnings from power_supply core (driver failed to
-> report XXX property), Not sure what to do here, I'd prefer to keep
-> returning 0.
+> You just need to send a tuple that contrains the keycode plus some kind of
+> id for the remote it came from.  That's what I did for lirc, it decodes the
+> sparc/mark into a remote id and key code tuple.  It's certainly a common
+> thing to want.  Anyone who has existing remotes and components that use
+> them would want it.
 
-Lying to userspace is a bad idea.
+What for, exactly?
 
-How about this patch + changing the driver to return -ENODATA?
+> You don't want your computer turning off when you push
+> the power button on the DVD player's remote, do you?
 
+No, I don't.
 
->From 0fe4c834b551c4d4454d57acaf75645675d199ee Mon Sep 17 00:00:00 2001
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Thu, 3 Dec 2009 00:24:51 +0300
-Subject: [PATCH] power_supply_sysfs: Handle -ENODATA in a special way
+Perhaps we should clarify something here. Are we intending to auto-create a new input device for every IR command set we see arrive at the IR receiver? I've been assuming we're not going to willy-nilly just auto-create a new device for every IR signal we happen to catch passing by. The receiver should only be passing along input events for the codeset/remote I've told it to listen for (which by default, is the codes for the receiver's bundled remote). Otherwise, yeah, I'm going to wind up with my htpc powering off when I hit the button on my harmony remote that is supposed to turn off my tv and amp.
 
-There are cases when some device can not report any meaningful value,
-e.g. TWL4030 charger can report voltage only when charging is
-active.
-
-In these cases drivers will return -ENODATA, and we shouldn't flood
-kernel log with error messages.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/power/power_supply_sysfs.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-index 0814439..c790e0c 100644
---- a/drivers/power/power_supply_sysfs.c
-+++ b/drivers/power/power_supply_sysfs.c
-@@ -65,7 +65,10 @@ static ssize_t power_supply_show_property(struct device *dev,
- 	ret = psy->get_property(psy, off, &value);
- 
- 	if (ret < 0) {
--		if (ret != -ENODEV)
-+		if (ret == -ENODATA)
-+			dev_dbg(dev, "driver has no data for `%s' property\n",
-+				attr->attr.name);
-+		else if (ret != -ENODEV)
- 			dev_err(dev, "driver failed to report `%s' property\n",
- 				attr->attr.name);
- 		return ret;
 -- 
-1.6.3.3
+Jarod Wilson
+jarod@wilsonet.com
+
+
 
