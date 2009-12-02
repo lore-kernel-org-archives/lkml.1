@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbZLBVTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbZLBVYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbZLBVTp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZLBVTo
+	id S1754543AbZLBVYI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZLBVYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:19:44 -0500
-Received: from 2605ds1-ynoe.0.fullrate.dk ([90.184.12.24]:41501 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbZLBVTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:19:43 -0500
-Message-ID: <4B16D9EC.7080009@krogh.cc>
-Date: Wed, 02 Dec 2009 22:19:40 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: 2.6.31.6, unresponsiveness and something with nfs
-References: <4B13FBE7.9040304@krogh.cc>
-In-Reply-To: <4B13FBE7.9040304@krogh.cc>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 16:24:08 -0500
+Received: from 207-172-212-176.c3-0.smr-ubr2.sbo-smr.ma.static.cable.rcn.com ([207.172.212.176]:58643
+	"EHLO torpor.static.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753800AbZLBVYH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 16:24:07 -0500
+Subject: Re: writev data loss bug in (at least) 2.6.31 and 2.6.32pre8 x86-64
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: James Y Knight <foom@fuhm.net>
+In-Reply-To: <20091201160324.GA25873@quack.suse.cz>
+Date: Wed, 2 Dec 2009 16:24:01 -0500
+Cc: Mike Galbraith <gleep@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, npiggin@suse.de
+Content-Transfer-Encoding: 8BIT
+Message-Id: <A352FA76-1107-42CF-95D3-FE97D71EF7D9@fuhm.net>
+References: <1F5364AE-321E-44E9-8B0D-B8E17597A0DA@fuhm.net> <907888CC-F4B2-448F-8F48-B96A566D323B@fuhm.net> <1259667765.9614.19.camel@marge.simson.net> <20091201143558.GB12730@quack.suse.cz> <20091201160324.GA25873@quack.suse.cz>
+To: Jan Kara <jack@suse.cz>
+X-Mailer: Apple Mail (2.1077)
+X-Spam-Score: -10.0
+X-Spam-Report: ALL_TRUSTED=-10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have a system running 2.6.31.6 that when running a particular process
-> become "unresponsive". I cannot really tell what it is but the effect is
-> that logins as ordinary users hangs, when that user has its home on a
-> remote NFS-server.
-> 
-> so from root "su - localuser" works excellent. But su - user-with-home
-> on-nfs doesnt.
+On Dec 1, 2009, at 11:03 AM, Jan Kara wrote:
+> On Tue 01-12-09 15:35:59, Jan Kara wrote:
+>> On Tue 01-12-09 12:42:45, Mike Galbraith wrote:
+>>> I bisected it this morning.  Bisected cleanly to...
+>>> 
+>>> 9eaaa2d5759837402ec5eee13b2a97921808c3eb is the first bad commit
+>>  OK, I've debugged it. This commit is really at fault. The problem is
+>> following:
+>>  When using writev, the page we copy from is not paged in (while when we
+>> use ordinary write, it is paged in). This difference might be worth
+>> investigation on its own (as it is likely to heavily impact performance of
+>> writev) but is irrelevant for us now - we should handle this without data
+>> corruption anyway. Because the source page is not available, we pass 0 as
+>> the number of copied bytes to write_end and thus ext3_write_end decides to
+>> truncate the file to original size. This is perfectly fine. The problem is
+>> that we do this by ext3_truncate() which just frees corresponding block but
+>> does not unmap buffers. So we leave mapped buffers beyond i_size (they
+>> actually never were inside i_size) but the blocks they are mapped to are
+>> already free. The write is then retried (after mapping the page),
+>> block_write_begin() sees the buffer is mapped (although it is beyond
+>> i_size) and thus it does not call ext3_get_block() anymore. So as a result,
+>> data is written to a block that is no longer allocated to the file. Bummer
+>> - welcome filesystem corruption.
+>>  Ext4 also has this problem but delayed allocation mitigates the effect to
+>> an error in accounting of blocks reserved for delayed allocation and thus
+>> under normal circumstances nothing bad happens.
+>>  The question is how to solve this in the cleanest way. We can call
+>> vmtruncate() instead of ext3_truncate() as we used to do but Nick wants to
+>> get rid of that (that's why I originally changed the code to what it is
+>> now). So probably we could just manually call truncate_pagecache() instead.
+>> Nick, I think your truncate calling sequence patch set needs similar fix
+>> for all filesystems as well.
+>  The patch below fixes the issue for me...
 
-Ok, the situation is more advanced than just that. I now have the
-"sorting" process running while there is high cpu-only load and that
-doesn't trigger the problem, so it seems to be that I have to have
-"large merging, high cpu-load and lots of networktraffic on the NIC
-(10GbitE)" before I encounter the prooblem.
+Thank you! I can confirm that the patch fixes the issue in my real application as well.
 
-Is there anything I can do to get a trace or other information about
-what's holding the "login" process back the next time I get into this
-situation?
-
-Thanks
--- 
-Jesper
-
+James
