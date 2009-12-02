@@ -1,121 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZLBI5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751791AbZLBJBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbZLBI5H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 03:57:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZLBI5F
+	id S1751791AbZLBJBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 04:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZLBJBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 03:57:05 -0500
-Received: from ey-out-1920.google.com ([74.125.78.144]:49735 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754825AbZLBI5D (ORCPT
+	Wed, 2 Dec 2009 04:01:21 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51971 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750927AbZLBJBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 03:57:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=NJhVkZOcj3KTi8mOvCfjYlOd15216vvHVZwpL8cHxxiYPbmeIWF6o64MYNgPU3LH4F
-         GhGBny7w0HJJBCZ3HKUCVA37Q7nxY1sUMVaeWUnziDTWOfqnewLWu7Syg2/yyDBVSoF7
-         UtTAEenDeIG+i1KRBmR825y6XKkFY5pkoHgx0=
-Message-ID: <4B162BE1.7070709@tuffmail.co.uk>
-Date: Wed, 02 Dec 2009 08:57:05 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 2 Dec 2009 04:01:21 -0500
+X-Sasl-enc: LITVqzuLMqRth3/hZTYqh59CCprhdRI9EKoVmqGTiEln 1259744487
+Message-ID: <4B162CE4.3080606@imap.cc>
+Date: Wed, 02 Dec 2009 10:01:24 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Bisected: s2disk (uswsusp only) hangs just before poweroff
-References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
-In-Reply-To: <20091201214529.GA1457@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       isdn@linux-pingi.de, mac@melware.de
+Subject: Re: [PATCH] proc_fops: convert drivers/isdn/ to seq_file
+References: <20091123015625.GA32088@x200.localdomain> <20091124162541.03e7e375.akpm@linux-foundation.org> <20091125045914.GA3528@x200.malnet.ru> <4B1314F8.10500@imap.cc> <20091130201709.GA4507@x200.malnet.ru>
+In-Reply-To: <20091130201709.GA4507@x200.malnet.ru>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-> On Tue, Dec 01, 2009 at 07:59:40PM +0000, Alan Jenkins wrote:
->   
->> Hi
->>
->> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I finally  
->> got around to bisecting it, which blamed the following commit by Mel:
->>
->> 5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
->>
->> I was able to confirm this by reverting the commit, which fixed the  
->> hang.  I had to revert one other commit first to avoid a conflict:
->>
->> a6f9edd "page-allocator: maintain rolling count of pages to free from  
->> the PCP"
->>
->>     
->
-> Which RC kernel? Specifically, are the commits
->
-> cc4a6851466039a8a688c843962a05689059ff3b always wake kswapd when restarting an allocation attempt
-> 9d0ed60fe9cd1fbf57f755cd27a23ae9114d7210 Do not allow interrupts to use ALLOC_HARDER
->
-> applied?
->
-> The latter one in particular might make a difference if s2disk is
-> pushing the system far below the watermarks. I don't suppose you know
-> where it's hanging? i.e. is it hanging in the allocator itself?
->
-> If those patches are applied, then one difference that 5f8dcc2 makes is
-> that pages on the PCP lists but not of the right migratetype are not
-> used. Prior to that commit, an allocation might succeed even if the
-> buddy lists were empty because one of the other PCP page types would be
-> used.
->
->   
->> -- detail --
->>
->> When I suspend my EeePc 701 to disk, it sometimes hangs after writing  
->> out the hibernation image.  The system is still able to resume from this  
->> image (after working around the hang by pressing the power button). 
->>
->> This is specific to s2disk from the uswsusp package (which is now  
->> installed by default on debian unstable).  It doesn't happen if I  
->> uninstall uswsusp and use the in-kernel suspend instead.
->>
->>     
->
-> This leads me to believe that uswsusp is able to push available pages
-> far below what is expected. It's a total guess though, I have no idea
-> how uswsusp is implemented or how it differs from what is in kernel.
->
->   
->> The hang doesn't happen if I boot with "init=/bin/bash" and run s2disk.   
->> Nor does it happen if I boot normally, then switch to single user mode  
->> ("telinit 12").
->>
->> It only happens if I've logged in to KDE.  In the past, this has  
->> indicated a problem in a network driver, since NetworkManager only made  
->> a connection once I logged in.  But it still hangs if I remove both  
->> ath5k and atl2 before I log into KDE.  (I actually tried removing as  
->> many modules as possible: atl2, ath5k, usbcore, snd-hda-intel, psmouse,  
->> pcspkr, battery, ac, themal, fan, and eeepc-laptop).  Perhaps it's  
->> something to do with the size of the hibernation image.
->>
->>     
->
-> I believe you are correct in that it's something to do with the size of
-> the hibernation image and how close to the edge the kernel gets pushed
-> as a result.
->
-> Please confirm first that the two commits I mentioned above are in your
-> kernel. If not, would you mind trying the following patch?
-> Unfortunately, it's totally untested. The intention of the patch is to
-> use other PCP lists if the desired one cannot be refilled.
->
-> Thanks.
->   
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-The hang happens on 2.6.32-rc8, which includes the two commits above.
+Am 2009-11-30 21:17 schrieb Alexey Dobriyan:
+> On Mon, Nov 30, 2009 at 01:42:32AM +0100, Tilman Schmidt wrote:
+>> Am 25.11.2009 05:59 schrieb Alexey Dobriyan:
+>>> --- a/drivers/isdn/gigaset/capi.c
+>>> +++ b/drivers/isdn/gigaset/capi.c
+>>> @@ -2106,35 +2106,22 @@ static char *gigaset_procinfo(struct capi_ctr *ctr)
+>>>  	return ctr->name;	/* ToDo: more? */
+>>>  }
+>>>  
+>>> -/**
+>>> - * gigaset_ctr_read_proc() - build controller proc file entry
+>>> - * @page:	buffer of PAGE_SIZE bytes for receiving the entry.
+>>> - * @start:	unused.
+>>> - * @off:	unused.
+>>> - * @count:	unused.
+>>> - * @eof:	unused.
+>>> - * @ctr:	controller descriptor structure.
+>>> - *
+>>> - * Return value: length of generated entry
+>>> - */
+>>> -static int gigaset_ctr_read_proc(char *page, char **start, off_t off,
+>>> -			  int count, int *eof, struct capi_ctr *ctr)
+>>> +static int gigaset_proc_show(struct seq_file *m, void *v)
+>> I would prefer that, instead of throwing the kerneldoc comment away,
+>> you adapted it to the new function. Specifically, I would like to
+>> know what the second argument "void *v" is for.
+> 
+> Sorry, no.
 
-Thanks!
-Alan
+Ok, if you don't want to do it, I'll wait whether this is merged
+and see if I can come up with something sensible as a follow-up.
+I guess that's part of the job of a driver maintainer.
+
+>>> +static int gigaset_proc_open(struct inode *inode, struct file *file)
+>>> +{
+>>> +	return single_open(file, gigaset_proc_show, PDE(inode)->data);
+[...]
+>> So what is PDE(inode)->data and where does it get set to the
+>> capi_ctr pointer for the device?
+> 
+> When you create proc entry, you set ->data for proc entry,
+> it's accessible as PDE(inode)->data.
+
+I see. So in the context of CAPI subsystem - CAPI driver relations,
+it's the CAPI subsystem that assures this. You should mention that
+in your patch to Documentation/isdn/INTERFACE.CAPI.
+
+Thanks,
+Tilman
+
+- --
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFLFizkQ3+did9BuFsRAqOEAJ9hHkwjQoPZUEw1ivKI3J+c2/lgigCgmH0j
+Y3t7ifiCcLpr9Gqb8gnNhe4=
+=HlV+
+-----END PGP SIGNATURE-----
