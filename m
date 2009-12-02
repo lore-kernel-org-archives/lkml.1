@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZLBTzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZLBT4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754307AbZLBTzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZLBTzi
+	id S1754397AbZLBT4g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZLBT4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:55:38 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:44037
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753945AbZLBTzh convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 14:56:36 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:61543 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754258AbZLBT4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:55:37 -0500
-Subject: Re: [RFC v2] Another approach to IR
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <4B16C10E.6040907@redhat.com>
-Date: Wed, 2 Dec 2009 14:55:38 -0500
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Wed, 2 Dec 2009 14:56:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mZTpdD+ZV+QdC0GD1aGzAq05XfEzm4J7vRROxIChoanrfTnAV5ovX7NP1u9r0KMDK1
+         vARLBfW4wKdbTMVFbMiOsyT5b/9QxemrH7oaJEp3IHrmGhcoOhH+/y4EYUlSm/sgf0HY
+         TVMtfyQHO80rB+EhuIeX1wIPkRdQp6n8c0niM=
+Date: Wed, 2 Dec 2009 11:56:34 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jarod Wilson <jarod@redhat.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
        Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, jarod@redhat.com, khc@pm.waw.pl,
+       j@jannau.net, jarod@wilsonet.com, khc@pm.waw.pl,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
        superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <1CA77278-9B8E-4169-8F10-78764A35F64E@wilsonet.com>
-References: <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com> <4B154C54.5090906@redhat.com> <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com> <4B155288.1060509@redhat.com> <20091201175400.GA19259@core.coreip.homeip.net> <4B1567D8.7080007@redhat.com> <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <4B16C10E.6040907@redhat.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-X-Mailer: Apple Mail (2.1077)
+Subject: Re: [RFC v2] Another approach to IR
+Message-ID: <20091202195634.GB22689@core.coreip.homeip.net>
+References: <4B155288.1060509@redhat.com> <20091201175400.GA19259@core.coreip.homeip.net> <4B1567D8.7080007@redhat.com> <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B16BE6A.7000601@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 2, 2009, at 2:33 PM, Mauro Carvalho Chehab wrote:
+On Wed, Dec 02, 2009 at 02:22:18PM -0500, Jarod Wilson wrote:
+> On 12/2/09 12:30 PM, Jon Smirl wrote:
+>>>>> (for each remote/substream that they can recognize).
+>>>> >>
+>>>> >>  I'm assuming that, by remote, you're referring to a remote receiver (and not to
+>>>> >>  the remote itself), right?
+>>> >
+>>> >  If we could separate by remote transmitter that would be the best I
+>>> >  think, but I understand that it is rarely possible?
+> >
+>> The code I posted using configfs did that. Instead of making apps IR
+>> aware it mapped the vendor/device/command triplets into standard Linux
+>> keycodes.  Each remote was its own evdev device.
+>
+> Note, of course, that you can only do that iff each remote uses distinct  
+> triplets. A good portion of mythtv users use a universal of some sort,  
+> programmed to emulate another remote, such as the mce remote bundled  
+> with mceusb transceivers, or the imon remote bundled with most imon  
+> receivers. I do just that myself.
+>
+> Personally, I've always considered the driver/interface to be the  
+> receiver, not the remote. The lirc drivers operate at the receiver  
+> level, anyway, and the distinction between different remotes is made by  
+> the lirc daemon.
 
-> Dmitry Torokhov wrote:
->> 
-...
->>>> (for each remote/substream that they can recognize).
->>> I'm assuming that, by remote, you're referring to a remote receiver (and not to 
->>> the remote itself), right?
->> 
->> If we could separate by remote transmitter that would be the best I
->> think, but I understand that it is rarely possible?
-> 
-> IMHO, the better is to use a separate interface for the IR transmitters,
-> on the devices that support this feature. There are only a few devices
-> I'm aware of that are able to transmit IR codes.
+The fact that lirc does it this way does not necessarily mean it is the
+most corerct way. Do you expect all bluetooth input devices be presented
+as a single blob just because they happen to talk to the sane receiver
+in yoru laptop? Do you expect your USB mouse and keyboard be merged
+together just because they end up being serviced by the same host
+controller? If not why remotes should be any different?
 
-If I'm thinking clearly, there are only three lirc kernel drivers that support transmit, lirc_mceusb, lirc_zilog and lirc_serial. The mceusb driver was posted, so I won't rehash what it is here. The zilog driver binds to a Zilog z80 microprocessor thingy (iirc) exposed via i2c, found on many Hauppauge v4l/dvb devices (PVR-150, HVR-1600, HD-PVR, etc). The serial driver is fairly self-explanatory as well.
-
-There are also a few userspace-driven devices that do transmit, but I'm assuming they're (currently) irrelevant to this discussion.
+Now I understand that if 2 remotes send completely identical signals we
+won't be able to separete them, but in cases when we can I think we
+should.
 
 -- 
-Jarod Wilson
-jarod@wilsonet.com
-
-
-
+Dmitry
