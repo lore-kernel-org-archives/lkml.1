@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbZLBGdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbZLBGbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755011AbZLBGdN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 01:33:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZLBGdN
+	id S1754392AbZLBGbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 01:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbZLBGbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 01:33:13 -0500
-Received: from mail-px0-f188.google.com ([209.85.216.188]:44991 "EHLO
-	mail-px0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753922AbZLBGdM convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 01:31:38 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51316 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750882AbZLBGbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 01:33:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=CUX0kMKbmOxKuUuFj1eVJqzDUSlUBgw7wotF0M3AWyv/iZzX9zHe3FJM96pkLoNzVa
-         5iQCpeVN7bwfn5HqXGpmHiuye44fmDzOcYYmG/zSTyC2M3Gvcd6ovbGIs23RvxxH3OjX
-         DkB1i7sWSanUQ7YQkcG0Ky+gC/DhgHOEwXduA=
+	Wed, 2 Dec 2009 01:31:38 -0500
+Message-ID: <4B1609D0.6030809@cs.helsinki.fi>
+Date: Wed, 02 Dec 2009 08:31:44 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-In-Reply-To: <E389CC83-307F-4A7D-B90B-CD928A1D1D1D@kernel.crashing.org>
-References: <1259663450-28790-1-git-send-email-leoli@freescale.com>
-	 <1259665127.2076.363.camel@pasglop>
-	 <2a27d3730912010334q24bf0e06g84839aae131475ec@mail.gmail.com>
-	 <E389CC83-307F-4A7D-B90B-CD928A1D1D1D@kernel.crashing.org>
-Date: Wed, 2 Dec 2009 14:25:47 +0800
-X-Google-Sender-Auth: c56de1bb33664719
-Message-ID: <2a27d3730912012225h3deab5dao2211bc404d247192@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mm: setting mmaped page cache property through 
-	device tree
-From: Li Yang <leoli@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: hooanon05@yahoo.co.jp, linux-kernel@vger.kernel.org
+Subject: Re: Q, slab, kmemleak_erase() and redzone?
+References: <4B1502E3.4000304@cs.helsinki.fi> <1259690210.2121.233.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <1259690210.2121.233.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 1, 2009 at 10:35 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->> The scenario for the first case is that in a multicore system running
->> ASMP which means different OS runs on different cores.  They might
->> communicate through a shared memory region.  The region on every OS
->> need to be mapped with the same cache perperty to avoid cache paradox.
->
-> This isn't true.  In ASMP, you cannot usually do coherency between
-> the different CPUs at all.  Also, in most PowerPC implementations,
+Catalin Marinas kirjoitti:
+> On Tue, 2009-12-01 at 11:49 +0000, Pekka Enberg wrote:
+>> hooanon05@yahoo.co.jp kirjoitti:
+>>> Pekka Enberg:
+>>>> We are setting an element in the per CPU array to NULL so the the
+>>>> kmemleak code in ____cache_alloc() is safe. Red-zoning is done at the
+>>>> _object_ which is not touched by kmemleak. Looking at the oops, it
+>>>> does seem likely that you have a bug in your module (or in some other
+>>>> part of the kernel).
+>>> Thanks for reply.
+>>> In ____cache_alloc(), the variable 'ac' is assigned before
+>>> cache_alloc_refill() call, and it is used for the parameter of
+>>> kmemleak_erase(). The value may be changed by cache_alloc_refill(),
+>>> isn't it?
+>> No. The pointer returned by cpu_cache_get() is not changed by
+>> cache_alloc_refill(). The contents of the array might change, yes. That
+>> said, we should check if objp is NULL before calling kmemleak_erase().
+> 
+> Possibly but I don't understand why that's needed. The kmemleak_erase()
+> call just sets the ac->entry[ac->avail] to NULL. If ac->avail is 0, it
+> doesn't cause any harm.
 
-Coherency can't be achieved with proper configuration and management?  Why so?
+No, you are absolutely correct. Can you please send an updated patch to 
+Catalin that adds a comment on top of the cpu_cache_get() call that 
+explains why we need it there?
 
-> it is fine if one CPU maps a memory range as coherent while another
-> maps it as non-coherent; sure, you have to be careful or you will
-
-But we do want the shared region to be coherent.  So mappings should
-have the same cacheability property.
-
-> read stale data, but things won't wedge.
->
->> The scenario for the second case is to pre-allocate some memory to a
->> certain application or device (probably through mem=XXX kernel
->> parameter or limit through device tree).  The memory is not known to
->> kernel, but fully managed by the application/device.  We need being
->> able to map the region cachable for better performance.
->
-> So make the memory known to the kernel, just tell the kernel not to
-> use it.  If it's normal system RAM, just put it in the "memory" node
-> and do a memreserve on it (or do something in your platform code); if
-> it's some other memory, do a device driver for it, map it there.
-
-Your solution is feasible.  But the memory allocation is a software
-configuration.  IMHO, it should be better and easier addressed by
-changing configurations(like mem parameter) rather than the kernel
-platform code which should address hardware configuration.
-
-- Leo
+			Pekka
