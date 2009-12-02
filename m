@@ -1,68 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbZLBVYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZLBV1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754543AbZLBVYI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZLBVYI
+	id S1755184AbZLBV1J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:27:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbZLBV1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:24:08 -0500
-Received: from 207-172-212-176.c3-0.smr-ubr2.sbo-smr.ma.static.cable.rcn.com ([207.172.212.176]:58643
-	"EHLO torpor.static.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbZLBVYH convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 16:27:08 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:31630 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754266AbZLBV1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:24:07 -0500
-Subject: Re: writev data loss bug in (at least) 2.6.31 and 2.6.32pre8 x86-64
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: James Y Knight <foom@fuhm.net>
-In-Reply-To: <20091201160324.GA25873@quack.suse.cz>
-Date: Wed, 2 Dec 2009 16:24:01 -0500
-Cc: Mike Galbraith <gleep@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, npiggin@suse.de
-Content-Transfer-Encoding: 8BIT
-Message-Id: <A352FA76-1107-42CF-95D3-FE97D71EF7D9@fuhm.net>
-References: <1F5364AE-321E-44E9-8B0D-B8E17597A0DA@fuhm.net> <907888CC-F4B2-448F-8F48-B96A566D323B@fuhm.net> <1259667765.9614.19.camel@marge.simson.net> <20091201143558.GB12730@quack.suse.cz> <20091201160324.GA25873@quack.suse.cz>
-To: Jan Kara <jack@suse.cz>
-X-Mailer: Apple Mail (2.1077)
-X-Spam-Score: -10.0
-X-Spam-Report: ALL_TRUSTED=-10
+	Wed, 2 Dec 2009 16:27:07 -0500
+Date: Thu, 3 Dec 2009 00:27:10 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: Madhusudhan <madhu.cr@ti.com>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+ charger
+Message-ID: <20091202212710.GA24789@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+ <012301ca71ed$449cb930$544ff780@am.dhcp.ti.com>
+ <20091130185813.GA32522@oksana.dev.rtsoft.ru>
+ <6ed0b2680912021238o29d7e773i9379369d7b277614@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6ed0b2680912021238o29d7e773i9379369d7b277614@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 1, 2009, at 11:03 AM, Jan Kara wrote:
-> On Tue 01-12-09 15:35:59, Jan Kara wrote:
->> On Tue 01-12-09 12:42:45, Mike Galbraith wrote:
->>> I bisected it this morning.  Bisected cleanly to...
->>> 
->>> 9eaaa2d5759837402ec5eee13b2a97921808c3eb is the first bad commit
->>  OK, I've debugged it. This commit is really at fault. The problem is
->> following:
->>  When using writev, the page we copy from is not paged in (while when we
->> use ordinary write, it is paged in). This difference might be worth
->> investigation on its own (as it is likely to heavily impact performance of
->> writev) but is irrelevant for us now - we should handle this without data
->> corruption anyway. Because the source page is not available, we pass 0 as
->> the number of copied bytes to write_end and thus ext3_write_end decides to
->> truncate the file to original size. This is perfectly fine. The problem is
->> that we do this by ext3_truncate() which just frees corresponding block but
->> does not unmap buffers. So we leave mapped buffers beyond i_size (they
->> actually never were inside i_size) but the blocks they are mapped to are
->> already free. The write is then retried (after mapping the page),
->> block_write_begin() sees the buffer is mapped (although it is beyond
->> i_size) and thus it does not call ext3_get_block() anymore. So as a result,
->> data is written to a block that is no longer allocated to the file. Bummer
->> - welcome filesystem corruption.
->>  Ext4 also has this problem but delayed allocation mitigates the effect to
->> an error in accounting of blocks reserved for delayed allocation and thus
->> under normal circumstances nothing bad happens.
->>  The question is how to solve this in the cleanest way. We can call
->> vmtruncate() instead of ext3_truncate() as we used to do but Nick wants to
->> get rid of that (that's why I originally changed the code to what it is
->> now). So probably we could just manually call truncate_pagecache() instead.
->> Nick, I think your truncate calling sequence patch set needs similar fix
->> for all filesystems as well.
->  The patch below fixes the issue for me...
+On Wed, Dec 02, 2009 at 10:38:31PM +0200, Grazvydas Ignotas wrote:
+> On Mon, Nov 30, 2009 at 8:58 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > On Mon, Nov 30, 2009 at 12:45:20PM -0600, Madhusudhan wrote:
+> > [...]
+> >> > +   case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> >> > +           /* charging must be active for meaningful result */
+> >> > +           if (!is_charging) {
+> >>
+> >> How about putting a kern_info here?
+> >
+> > It might be better to return -EINVAL.
+> 
+> That causes lots of warnings from power_supply core (driver failed to
+> report XXX property), Not sure what to do here, I'd prefer to keep
+> returning 0.
 
-Thank you! I can confirm that the patch fixes the issue in my real application as well.
+Lying to userspace is a bad idea.
 
-James
+How about this patch + changing the driver to return -ENODATA?
+
+
+>From 0fe4c834b551c4d4454d57acaf75645675d199ee Mon Sep 17 00:00:00 2001
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date: Thu, 3 Dec 2009 00:24:51 +0300
+Subject: [PATCH] power_supply_sysfs: Handle -ENODATA in a special way
+
+There are cases when some device can not report any meaningful value,
+e.g. TWL4030 charger can report voltage only when charging is
+active.
+
+In these cases drivers will return -ENODATA, and we shouldn't flood
+kernel log with error messages.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/power/power_supply_sysfs.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+index 0814439..c790e0c 100644
+--- a/drivers/power/power_supply_sysfs.c
++++ b/drivers/power/power_supply_sysfs.c
+@@ -65,7 +65,10 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 	ret = psy->get_property(psy, off, &value);
+ 
+ 	if (ret < 0) {
+-		if (ret != -ENODEV)
++		if (ret == -ENODATA)
++			dev_dbg(dev, "driver has no data for `%s' property\n",
++				attr->attr.name);
++		else if (ret != -ENODEV)
+ 			dev_err(dev, "driver failed to report `%s' property\n",
+ 				attr->attr.name);
+ 		return ret;
+-- 
+1.6.3.3
+
