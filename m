@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZLBOnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZLBOqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbZLBOnw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:43:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZLBOnv
+	id S1754009AbZLBOqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 09:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZLBOqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:43:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56469 "EHLO mx3.mail.elte.hu"
+	Wed, 2 Dec 2009 09:46:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49697 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751791AbZLBOnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 09:43:51 -0500
-Date: Wed, 2 Dec 2009 15:43:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
-       jbaron@redhat.com, mhiramat@redhat.com,
-       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-Subject: Re: [tip:perf/core] tracing: Add DEFINE_EVENT(),
- DEFINE_SINGLE_EVENT() support to docbook
-Message-ID: <20091202144334.GA30359@elte.hu>
-References: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
- <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
- <1259761934.12870.12.camel@gandalf.stny.rr.com>
- <20091202140128.GA2611@elte.hu>
- <1259764109.12870.37.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259764109.12870.37.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1751791AbZLBOqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 09:46:17 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1259128503-28276-1-git-send-email-vapier@gentoo.org>
+References: <1259128503-28276-1-git-send-email-vapier@gentoo.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: dhowells@redhat.com, uclinux-dev@uclinux.org,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Jie Zhang <jie.zhang@analog.com>
+Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
+Date: Wed, 02 Dec 2009 14:45:24 +0000
+Message-ID: <16399.1259765124@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mike Frysinger <vapier@gentoo.org> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> The mmu code uses the copy_*_user_page() variants in access_process_vm()
+> rather than copy_*_user() as the former includes an icache flush.  This is
+> important when doing things like setting software breakpoints with gdb.
+> So switch the nommu code over to do the same.
 
-> On Wed, 2009-12-02 at 15:01 +0100, Ingo Molnar wrote:
-> 
-> > >  DECLARE_CLASS_AND_DEFINE_EVENT()
-> > 
-> > Hm, that's a bit too long. How about 'DEFINE_CLASS_EVENT()' as a 
-> > compromise? It's similarly short-ish to TRACE_EVENT(), and it also 
-> > conveys the fact that we create both a class and an event there.
-> > 
-> > The full series would thus be:
-> > 
-> > 	DECLARE_EVENT_CLASS
-> > 	DEFINE_EVENT
-> > 	DEFINE_CLASS_EVENT
-> > 
-> > hm?
-> 
-> I thought about that too, but it actually makes it more confusing. 
-> Because, looking at this with a fresh POV, I would think that after I 
-> declare a class, I would use DEFINE_CLASS_EVENT with that class.
+Note that we may only really want to do an icache flush if the target region
+is mapped executable somewhere.  On the other hand, for debugging stuff on an
+embedded board, it probably doesn't matter.
 
-yeah. Hence was my second-best choice 'DEFINE_STANDALONE_EVENT' or 
-'DEFINE_SINGLE_EVENT' - to stress the special nature it, and to actually 
-nudge people towards creating classes of events instead of doing 
-separate, standalone points. (which are a waste in the majority of 
-cases)
-
-	Ingo
+David
