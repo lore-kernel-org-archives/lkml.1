@@ -1,111 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbZLBUtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbZLBUuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbZLBUtJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 15:49:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbZLBUtJ
+	id S1755397AbZLBUuQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 15:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZLBUuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 15:49:09 -0500
-Received: from smtp-out13.alice.it ([85.33.2.18]:1660 "EHLO
-	smtp-out13.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755159AbZLBUtI (ORCPT
+	Wed, 2 Dec 2009 15:50:15 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:61072 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755183AbZLBUuO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 15:49:08 -0500
-Date: Wed, 2 Dec 2009 21:48:53 +0100
-From: Antonio Ospite <ospite@studenti.unina.it>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Daniel Ribeiro <drwyrm@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, openezx-devel@lists.openezx.org
-Subject: Re: [PATCH] leds: Add LED class driver for regulator driven LEDs.
-Message-Id: <20091202214853.d97b860c.ospite@studenti.unina.it>
-In-Reply-To: <20091202204026.GA18311@rakim.wolfsonmicro.main>
-References: <1259775625-25973-1-git-send-email-ospite@studenti.unina.it>
-	<20091202180658.GA12292@rakim.wolfsonmicro.main>
-	<20091202212521.500f7a46.ospite@studenti.unina.it>
-	<20091202204026.GA18311@rakim.wolfsonmicro.main>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i686-pc-linux-gnu)
-X-Face: z*RaLf`X<@C75u6Ig9}{oW$H;1_\2t5)({*|jhM<pyWR#k60!#=#>/Vb;]yA5<GWI5`6u&+
- ;6b'@y|8w"wB;4/e!7wYYrcqdJFY,~%Gk_4]cq$Ei/7<j&N3ah(m`ku?pX.&+~:_/wC~dwn^)MizBG !pE^+iDQQ1yC6^,)YDKkxDd!T>\I~93>J<_`<4)A{':UrE
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__2_Dec_2009_21_48_53_+0100_lJTsaa1SG.Bc4z=D"
-X-OriginalArrivalTime: 02 Dec 2009 20:49:12.0002 (UTC) FILETIME=[E6E96220:01CA7390]
+	Wed, 2 Dec 2009 15:50:14 -0500
+Date: Wed, 2 Dec 2009 22:49:46 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Grazvydas Ignotas <notasas@gmail.com>
+Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+ charger
+Message-ID: <20091202204946.GB25682@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+ <20091202173321.GA23738@nokia.com>
+ <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 02 Dec 2009 20:50:05.0993 (UTC) FILETIME=[0717C190:01CA7391]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__2_Dec_2009_21_48_53_+0100_lJTsaa1SG.Bc4z=D
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Wed, 2 Dec 2009 20:40:26 +0000
-Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-
-> On Wed, Dec 02, 2009 at 09:25:21PM +0100, Antonio Ospite wrote:
-> > Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
->=20
-> > > There's no need to do this since the regulator API matches consumers
-> > > based on struct device as well as name so you can have as many LEDs as
-> > > you like all using the same supply name mapping to different regulato=
-rs.
->=20
-> > I need some more explanation here, I am currently using the driver with
-> > this code:
->=20
-> > +/* VVIB: Vibrator on A780, A1200, A910, E6, E2 */
-> > +static struct regulator_consumer_supply pcap_regulator_VVIB_consumers
-> > [] =3D {
-> > +	{ .dev_name =3D "leds-regulator", .supply =3D "vibrator", },
->=20
-> So you're instantiating the device with .id set to -1 (as your code
-> below shows), meaning there's only one leds-regulator in the system and
-> there's no need to number them.  If you had more than one of them then
-> you'd number them and then have something like:
->=20
-> 	{ .dev_name =3D "leds-regulator.0", supply =3D "vled" },
-> 	{ .dev_name =3D "leds-regulator.1", supply =3D "vled" },
->=20
-> when setting up the supplies.
+On Wed, Dec 02, 2009 at 09:34:00PM +0100, ext Grazvydas Ignotas wrote:
+>>> +#define BCI_DELAY              100
+>>
+>> 100ms ??? that's too quick for battery monitoring. Imagine that you'll have
+>> 10 i2c transfers per-second forever with this one. Don't you think you're
+>> waking up omap for nothing ??
 >
+>The work item doesn't queue itself, so this is only used once after
+>every interrupt. The delay itself is needed because charge state
+>machine needs some time to switch states and is not yet in expected
+>state at the time VBUS/AC detect interrupt kicks.
 
-Ok, the .id in .dev_name is what I was missing.
+ok got it... not so bad then ;-)
 
-> > If I set the .supply value fixed, how can I assign different
-> > regulators to different leds? Should I use the address to the platform
-> > device (a780_vibrator in this case) for .dev when defining the
-> > regulator in the first place?
->=20
-> There is no need to use the .dev field, that is kept to avoid build
-> breakage transitioning to dev_name.
+>>> +static struct twl4030_bci_device_info twl4030_bci = {
+>>
+>> this should be allocated on probe() time.
+>
+>I need to access it from twl4030charger_usb_en().. Could only leave
+>delayed_work global and allocate everything else in probe() if you
+>prefer that.
 
-Now everything is clear.
+well, you could keep only a global static pointer and after allocating 
+that in probe, make the global static pointer, point to it... Anyways, 
+I think twl4030charger_usb_en() should change its prototype to something 
+like
 
-Thanks,
-   Antonio
+twl4030charger_usb_en(struct twl4030_bci *bci, int enable);
 
---=20
-Antonio Ospite
-http://ao2.it
+you could leave userland to decide whether to start charging, specially 
+in usb charging case where we still need to know if we where enumerated 
+with 100mA or 500mA configuration. How are you differing between those 
+currently ?
 
-PGP public key ID: 0x4553B001
+>> I don't like the way you did this. I would expect twl4030-usb to kick the
+>> charger detection based on the VBUS irq. You have to consider the
+>> possibility of boards which won't use BCI module and will have some bq24xxx
+>> chip dealing with that like RX51. So instead of implementing this here and
+>> forcing people to have this driver enabled on e.g. RX51, you should
+>> implement the charger_enable_usb() logic in twl4030-usb itself. /me thinks
+>
+>I don't think charging is twl4030-usb's business, also notifying
+>power_supply core about charge state changes that I do here.
 
-A: Because it messes up the order in which people normally read text.
-   See http://en.wikipedia.org/wiki/Posting_style
-Q: Why is top-posting such a bad thing?
-A: Top-posting.
-Q: What is the most annoying thing in e-mail?
+I was talking about the charger detection. The start of charge you could 
+leave to userland to handle, no ?
 
---Signature=_Wed__2_Dec_2009_21_48_53_+0100_lJTsaa1SG.Bc4z=D
-Content-Type: application/pgp-signature
+>What about just returning early from twl4030charger_usb_en() if this
+>driver is not started? TWL4030-core requires twl4030_bci_platform_data
+>to be present to even register this driver, so it won't start on RX51.
+>RX51 can also choose not to compile this driver in, then
+>twl4030charger_usb_en() call won't even be done fom twl4030-usb.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+still we need to detect the charger...
 
-iEYEARECAAYFAksW0rUACgkQ5xr2akVTsAFA8wCeM0lOZK+JVZwpNT8PaPdK/7Z6
-M+QAn0elN2DC2xixTSCm4NlCQrEkIs71
-=W0NG
------END PGP SIGNATURE-----
+>> how about using request_threaded_irq() ?? then you avoid having that
+>> workqueue.
+>
+>I need to do some delayed processing after VBUS/AC detect interrupts
+>kick, delayed_work looked perfect for this. Also note that I can't get
+>USB_PRES interrupt (taken by twl4030-usb), only a callback from
+>twl4030-usb.
 
---Signature=_Wed__2_Dec_2009_21_48_53_+0100_lJTsaa1SG.Bc4z=D--
+or you let userland to handle a bit more of this logic (??)
+
+-- 
+balbi
