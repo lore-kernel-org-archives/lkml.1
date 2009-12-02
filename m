@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbZLBKoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZLBKo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753574AbZLBKoO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 05:44:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbZLBKoN
+	id S1753824AbZLBKo2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 05:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbZLBKoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 05:44:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44907 "EHLO hera.kernel.org"
+	Wed, 2 Dec 2009 05:44:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44921 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751055AbZLBKoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 05:44:12 -0500
-Date: Wed, 2 Dec 2009 10:43:31 GMT
-From: "tip-bot for Maciej W. Rozycki" <macro@linux-mips.org>
+	id S1753691AbZLBKoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 05:44:22 -0500
+Date: Wed, 2 Dec 2009 10:43:44 GMT
+From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       suresh.b.siddha@intel.com, macro@linux-mips.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        macro@linux-mips.org, suresh.b.siddha@intel.com, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <20091201233334.975416130@sbs-t61.sc.intel.com>
-References: <20091201233334.975416130@sbs-t61.sc.intel.com>
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com, macro@linux-mips.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20091201233335.065361533@sbs-t61.sc.intel.com>
+References: <20091201233335.065361533@sbs-t61.sc.intel.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/apic] x86, io-apic: Move the effort of clearing remoteIRR explicitly before migrating the irq
-Message-ID: <tip-ca64c47cecd0321b2e0dcbd7aaff44b68ce20654@git.kernel.org>
-Git-Commit-ID: ca64c47cecd0321b2e0dcbd7aaff44b68ce20654
+Subject: [tip:x86/apic] x86, ioapic: Fix the EOI register detection mechanism
+Message-ID: <tip-c29d9db338db606c3335a03f337e1d4b7f6bb727@git.kernel.org>
+Git-Commit-ID: c29d9db338db606c3335a03f337e1d4b7f6bb727
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,68 +31,198 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ca64c47cecd0321b2e0dcbd7aaff44b68ce20654
-Gitweb:     http://git.kernel.org/tip/ca64c47cecd0321b2e0dcbd7aaff44b68ce20654
-Author:     Maciej W. Rozycki <macro@linux-mips.org>
-AuthorDate: Tue, 1 Dec 2009 15:31:15 -0800
+Commit-ID:  c29d9db338db606c3335a03f337e1d4b7f6bb727
+Gitweb:     http://git.kernel.org/tip/c29d9db338db606c3335a03f337e1d4b7f6bb727
+Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+AuthorDate: Tue, 1 Dec 2009 15:31:16 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 2 Dec 2009 10:11:00 +0100
+CommitDate: Wed, 2 Dec 2009 10:11:01 +0100
 
-x86, io-apic: Move the effort of clearing remoteIRR explicitly before migrating the irq
+x86, ioapic: Fix the EOI register detection mechanism
 
-When the level-triggered interrupt is seen as an edge interrupt,
-we try to clear the remoteIRR explicitly (using either an
-io-apic eoi register when present or through the idea of
-changing trigger mode of the io-apic RTE to edge and then back
-to level). But this explicit try also needs to happen before we
-try to migrate the irq. Otherwise irq migration attempt will
-fail anyhow, as it postpones the irq migration to a later
-attempt when it sees the remoteIRR in the io-apic RTE still set.
+Maciej W. Rozycki reported:
 
-Signed-off-by: "Maciej W. Rozycki" <macro@linux-mips.org>
-Reviewed-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> 82093AA I/O APIC has its version set to 0x11 and it
+> does not support the EOI register.  Similarly I/O APICs
+> integrated into the 82379AB south bridge and the 82374EB/SB
+> EISA component.
+
+IO-APIC versions below 0x20 don't support EOI register.
+
+Some of the Intel ICH Specs (ICH2 to ICH5) documents the io-apic
+version as 0x2. This is an error with documentation and these
+ICH chips use io-apic's of version 0x20 and indeed has a working
+EOI register for the io-apic.
+
+Fix the EOI register detection mechanism to check for version
+0x20 and beyond.
+
+And also, a platform can potentially  have io-apic's with
+different versions. Make the EOI register check per io-apic.
+
+Reported-by: Maciej W. Rozycki <macro@linux-mips.org>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Cc: ebiederm@xmission.com
 Cc: garyhade@us.ibm.com
-LKML-Reference: <20091201233334.975416130@sbs-t61.sc.intel.com>
+LKML-Reference: <20091201233335.065361533@sbs-t61.sc.intel.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/apic/io_apic.c |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |  115 +++++++++++++++++++++-------------------
+ 1 files changed, 61 insertions(+), 54 deletions(-)
 
 diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 085e60e..b377b97 100644
+index b377b97..78960a3 100644
 --- a/arch/x86/kernel/apic/io_apic.c
 +++ b/arch/x86/kernel/apic/io_apic.c
-@@ -2583,6 +2583,20 @@ static void ack_apic_level(unsigned int irq)
- 	 */
- 	ack_APIC_irq();
+@@ -539,23 +539,41 @@ static void __init replace_pin_at_irq_node(struct irq_cfg *cfg, int node,
+ 	add_pin_to_irq_node(cfg, node, newapic, newpin);
+ }
  
-+	/* Tail end of version 0x11 I/O APIC bug workaround */
-+	if (!(v & (1 << (i & 0x1f)))) {
-+		atomic_inc(&irq_mis_count);
++static void __io_apic_modify_irq(struct irq_pin_list *entry,
++				 int mask_and, int mask_or,
++				 void (*final)(struct irq_pin_list *entry))
++{
++	unsigned int reg, pin;
 +
-+		if (use_eoi_reg)
-+			eoi_ioapic_irq(desc);
-+		else {
-+			spin_lock(&ioapic_lock);
-+			__mask_and_edge_IO_APIC_irq(cfg);
-+			__unmask_and_level_IO_APIC_irq(cfg);
-+			spin_unlock(&ioapic_lock);
++	pin = entry->pin;
++	reg = io_apic_read(entry->apic, 0x10 + pin * 2);
++	reg &= mask_and;
++	reg |= mask_or;
++	io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
++	if (final)
++		final(entry);
++}
++
+ static void io_apic_modify_irq(struct irq_cfg *cfg,
+ 			       int mask_and, int mask_or,
+ 			       void (*final)(struct irq_pin_list *entry))
+ {
+-	int pin;
+ 	struct irq_pin_list *entry;
+ 
+-	for_each_irq_pin(entry, cfg->irq_2_pin) {
+-		unsigned int reg;
+-		pin = entry->pin;
+-		reg = io_apic_read(entry->apic, 0x10 + pin * 2);
+-		reg &= mask_and;
+-		reg |= mask_or;
+-		io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
+-		if (final)
+-			final(entry);
+-	}
++	for_each_irq_pin(entry, cfg->irq_2_pin)
++		__io_apic_modify_irq(entry, mask_and, mask_or, final);
++}
++
++static void __mask_and_edge_IO_APIC_irq(struct irq_pin_list *entry)
++{
++	__io_apic_modify_irq(entry, ~IO_APIC_REDIR_LEVEL_TRIGGER,
++			     IO_APIC_REDIR_MASKED, NULL);
++}
++
++static void __unmask_and_level_IO_APIC_irq(struct irq_pin_list *entry)
++{
++	__io_apic_modify_irq(entry, ~IO_APIC_REDIR_MASKED,
++			     IO_APIC_REDIR_LEVEL_TRIGGER, NULL);
+ }
+ 
+ static void __unmask_IO_APIC_irq(struct irq_cfg *cfg)
+@@ -579,18 +597,6 @@ static void __mask_IO_APIC_irq(struct irq_cfg *cfg)
+ 	io_apic_modify_irq(cfg, ~0, IO_APIC_REDIR_MASKED, &io_apic_sync);
+ }
+ 
+-static void __mask_and_edge_IO_APIC_irq(struct irq_cfg *cfg)
+-{
+-	io_apic_modify_irq(cfg, ~IO_APIC_REDIR_LEVEL_TRIGGER,
+-			IO_APIC_REDIR_MASKED, NULL);
+-}
+-
+-static void __unmask_and_level_IO_APIC_irq(struct irq_cfg *cfg)
+-{
+-	io_apic_modify_irq(cfg, ~IO_APIC_REDIR_MASKED,
+-			IO_APIC_REDIR_LEVEL_TRIGGER, NULL);
+-}
+-
+ static void mask_IO_APIC_irq_desc(struct irq_desc *desc)
+ {
+ 	struct irq_cfg *cfg = desc->chip_data;
+@@ -2492,17 +2498,42 @@ static void ack_apic_edge(unsigned int irq)
+ 
+ atomic_t irq_mis_count;
+ 
+-static int use_eoi_reg __read_mostly;
+-
++/*
++ * IO-APIC versions below 0x20 don't support EOI register.
++ * For the record, here is the information about various versions:
++ *     0Xh     82489DX
++ *     1Xh     I/OAPIC or I/O(x)APIC which are not PCI 2.2 Compliant
++ *     2Xh     I/O(x)APIC which is PCI 2.2 Compliant
++ *     30h-FFh Reserved
++ *
++ * Some of the Intel ICH Specs (ICH2 to ICH5) documents the io-apic
++ * version as 0x2. This is an error with documentation and these ICH chips
++ * use io-apic's of version 0x20.
++ *
++ * For IO-APIC's with EOI register, we use that to do an explicit EOI.
++ * Otherwise, we simulate the EOI message manually by changing the trigger
++ * mode to edge and then back to level, with RTE being masked during this.
++*/
+ static void __eoi_ioapic_irq(unsigned int irq, struct irq_cfg *cfg)
+ {
+ 	struct irq_pin_list *entry;
+ 
+ 	for_each_irq_pin(entry, cfg->irq_2_pin) {
+-		if (irq_remapped(irq))
+-			io_apic_eoi(entry->apic, entry->pin);
+-		else
+-			io_apic_eoi(entry->apic, cfg->vector);
++		if (mp_ioapics[entry->apic].apicver >= 0x20) {
++			/*
++			 * Intr-remapping uses pin number as the virtual vector
++			 * in the RTE. Actual vector is programmed in
++			 * intr-remapping table entry. Hence for the io-apic
++			 * EOI we use the pin number.
++			 */
++			if (irq_remapped(irq))
++				io_apic_eoi(entry->apic, entry->pin);
++			else
++				io_apic_eoi(entry->apic, cfg->vector);
++		} else {
++			__mask_and_edge_IO_APIC_irq(entry);
++			__unmask_and_level_IO_APIC_irq(entry);
 +		}
-+	}
-+
- 	/* Now we can move and renable the irq */
- 	if (unlikely(do_unmask_irq)) {
- 		/* Only migrate the irq if the ack has been received.
-@@ -2616,20 +2630,6 @@ static void ack_apic_level(unsigned int irq)
- 			move_masked_irq(irq);
- 		unmask_IO_APIC_irq_desc(desc);
  	}
+ }
+ 
+@@ -2520,23 +2551,6 @@ static void eoi_ioapic_irq(struct irq_desc *desc)
+ 	spin_unlock_irqrestore(&ioapic_lock, flags);
+ }
+ 
+-static int ioapic_supports_eoi(void)
+-{
+-	struct pci_dev *root;
 -
--	/* Tail end of version 0x11 I/O APIC bug workaround */
--	if (!(v & (1 << (i & 0x1f)))) {
--		atomic_inc(&irq_mis_count);
+-	root = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
+-	if (root && root->vendor == PCI_VENDOR_ID_INTEL &&
+-	    mp_ioapics[0].apicver >= 0x2) {
+-		use_eoi_reg = 1;
+-		printk(KERN_INFO "IO-APIC supports EOI register\n");
+-	} else
+-		printk(KERN_INFO "IO-APIC doesn't support EOI\n");
 -
+-	return 0;
+-}
+-
+-fs_initcall(ioapic_supports_eoi);
+-
+ static void ack_apic_level(unsigned int irq)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
+@@ -2587,14 +2601,7 @@ static void ack_apic_level(unsigned int irq)
+ 	if (!(v & (1 << (i & 0x1f)))) {
+ 		atomic_inc(&irq_mis_count);
+ 
 -		if (use_eoi_reg)
 -			eoi_ioapic_irq(desc);
 -		else {
@@ -101,7 +231,7 @@ index 085e60e..b377b97 100644
 -			__unmask_and_level_IO_APIC_irq(cfg);
 -			spin_unlock(&ioapic_lock);
 -		}
--	}
- }
++		eoi_ioapic_irq(desc);
+ 	}
  
- #ifdef CONFIG_INTR_REMAP
+ 	/* Now we can move and renable the irq */
