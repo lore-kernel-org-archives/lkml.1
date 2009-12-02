@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZLBOIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753775AbZLBOG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbZLBOIh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbZLBOIh
+	id S1753775AbZLBOG7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 09:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZLBOG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:08:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5709 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751312AbZLBOIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 09:08:36 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, czoccolo@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [PATCH 01/21] blkio: Set must_dispatch only if we decided to not dispatch the request
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com>
-	<1259549968-10369-2-git-send-email-vgoyal@redhat.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 02 Dec 2009 09:06:28 -0500
-In-Reply-To: <1259549968-10369-2-git-send-email-vgoyal@redhat.com> (Vivek
-	Goyal's message of "Sun, 29 Nov 2009 21:59:08 -0500")
-Message-ID: <x49iqcplbbv.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 2 Dec 2009 09:06:59 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:51851 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752601AbZLBOG6 convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;7:1>);
+	Wed, 2 Dec 2009 09:06:58 -0500
+Message-Id: <4B168293020000780002308E@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Wed, 02 Dec 2009 14:06:59 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <a.p.zijlstra@chello.nl>, <tglx@linutronix.de>,
+       <torvalds@linux-foundation.org>, <mingo@redhat.com>, <npiggin@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-tip-commits@vger.kernel.org>,
+       <hpa@zytor.com>
+Subject: Re: [tip:core/locking] locking, x86: Slightly shorten
+	 __ticket_spin_trylock()
+References: <4B0FF9AC0200007800022713@vpn.id2.novell.com>
+ <tip-133ec7a235160dd44cbd4d82fff65a9983331df9@git.kernel.org>
+ <20091202132937.GA1564@elte.hu>
+In-Reply-To: <20091202132937.GA1564@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@redhat.com> writes:
-
-> o must_dispatch flag should be set only if we decided not to run the quue
->   dispatch the request.
+>>> Ingo Molnar <mingo@elte.hu> 02.12.09 14:29 >>>
+>at first quick sight, this bit looks odd:
 >
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
->  block/cfq-iosched.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+>+       union { int i; bool b; } new;
 >
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index a5de31f..9adfa48 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -2494,9 +2494,9 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->  			if (blk_rq_bytes(rq) > PAGE_CACHE_SIZE ||
->  			    cfqd->busy_queues > 1) {
->  				del_timer(&cfqd->idle_slice_timer);
-> -			__blk_run_queue(cfqd->queue);
-> -			}
-> -			cfq_mark_cfqq_must_dispatch(cfqq);
-> +				__blk_run_queue(cfqd->queue);
-> +			} else
-> +				cfq_mark_cfqq_must_dispatch(cfqq);
->  		}
->  	} else if (cfq_should_preempt(cfqd, cfqq, rq)) {
->  		/*
+>+       return new.b;
+>
+>shouldnt that be short based, to work correctly in the 0-255 CPUs case?
 
-This makes sense, but could be submitted as a bugfix on its own.
+No, I can't see why. In both instances, we're using (and had been
+using previously, just with the added movzbl) the outcome of a
+setCC instruction, which produces valid bool (single byte) values.
+It is precisely that reason why I needed to introduce these unions,
+since the upper bytes of the register aren't valid (and shouldn't be
+looked at by the caller).
 
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
+Do you happen to have the vmlinux binary still around, to look at
+the code your compiler generated (I went through the code I got
+in quite a bit of detail to make sure it got translated correctly)?
+
+Jan
+
