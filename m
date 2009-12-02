@@ -1,77 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZLBWHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZLBWMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbZLBWHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZLBWHS
+	id S1755514AbZLBWMB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:12:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbZLBWMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:07:18 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:56138 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753800AbZLBWHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:07:17 -0500
-Date: Wed, 2 Dec 2009 22:07:18 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH] uswsusp: automatically free the in-memory image once
-	s2disk has finished with it
-Message-ID: <20091202220718.GI1457@csn.ul.ie>
-References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie> <200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk> <20091202122019.GD1457@csn.ul.ie> <4B16797C.3010304@tuffmail.co.uk> <20091202211107.GA20830@elf.ucw.cz>
+	Wed, 2 Dec 2009 17:12:01 -0500
+Received: from web50101.mail.re2.yahoo.com ([206.190.38.29]:41294 "HELO
+	web50101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754378AbZLBWMA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 17:12:00 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=33B8HRDIhu8ri5vkEbcE2t8B4NLQ6/BMCKTP5ZWkUCvGznZSJ9bxeHXfnRdSJIMpE372xjJMq0StqBGzV2oqU64LZVKg5WB9qiVfvICrBuB6Pi3BZbCVs6zAQbNg7+sa9ml0Xot3KBcfxLZbxXU/zk/a/jpspmerHEgcpEvc3VM=;
+Message-ID: <353238.3571.qm@web50101.mail.re2.yahoo.com>
+X-YMail-OSG: aii4PokVM1ljJfgVlcEJbMRHzlS3PrBs4GfCQ5KiK_CXEbfkNNP7ViNF.xirGW19gABd3_BFrc.o8Hgfvo31Y2DuYDQ4LgJhlalYfImJcxX.moCtSskCkae1X3fVoM1lNRF25B6ndlxKtZlpNLGPfiVjuYPf9GTjMYl50sbZd7XWWsIXcp72aBAzWq5YdwEIsPoSk8ir1uNl700o688FR0TK5cGxrUWNeP0kczm3bt0nA45RCNfPREM57aN3ra0eIFABiSAjjdOVGF.Q_KFyTmvrRgH8kxAppCs3RnpdO5odvj9_tpFaiq1ajFNzEyjF_T0LQPwP0wz1VfLl6YYmY44POXvKQW33JHzE..om8Z73
+X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.8.100.260964
+Date: Wed, 2 Dec 2009 14:12:06 -0800 (PST)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: 2.6.32-rc8: amd64_edac slub error
+To: Borislav Petkov <borislav.petkov@amd.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Borislav Petkov <petkovbb@googlemail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Doug Thompson <dougthompson@xmission.com>
+In-Reply-To: <20091202101108.11b84c5c.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091202211107.GA20830@elf.ucw.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 10:11:07PM +0100, Pavel Machek wrote:
-> On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
-> > The original in-kernel suspend (swsusp) frees the in-memory hibernation
-> > image before powering off the machine.  s2disk doesn't, so there is
-> > _much_ less free memory when it tries to power off.
+
+
+--- On Wed, 12/2/09, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> Subject: Re: 2.6.32-rc8: amd64_edac slub error
+> To: "Borislav Petkov" <borislav.petkov@amd.com>
+> Cc: "Borislav Petkov" <petkovbb@googlemail.com>, "LKML" <linux-kernel@vger.kernel.org>, "Doug Thompson" <dougthompson@xmission.com>
+> Date: Wednesday, December 2, 2009, 11:11 AM
+> On Wed, 2 Dec 2009 11:58:38 +0100
+> Borislav Petkov wrote:
+> 
+> > On Tue, Dec 01, 2009 at 09:19:31AM -0800, Randy Dunlap
+> wrote:
+> > > Here's the new log file (attached).
 > > 
-> > This is a gratuitous difference.  The userspace suspend interface
-> > /dev/snapshot only allows the hibernation image to be read once.
-> > Once the s2disk program has read the last page, we can free the entire
-> > image.
+> > Thanks for testing. Meanwhile, I noticed that the
+> other places where
+> > rdmsr_on_cpus() gets called with non-contigious
+> cpumasks need fixing
+> > too. Here's a version that takes care of that, I'd be
+> nice if you could
+> > give it a run too (patch against today's upstream).
+> You could also
+> > enforce the module loading by setting
+> 'ecc_enable_override=1' to verify
+> > the other rdmsr_on_cpus calls.
 > > 
-> > This avoids a hang after writing the hibernation image which was
-> > triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
-> > "page-allocator: split per-cpu list into one-list-per-migrate-type":
+> > Thanks.
 > 
-> Yes, you work around page-allocator hang. But is it right thing to do?
+> This patch also works for me.  Thanks.
 > 
+> Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-What's wrong with it? The hang is likely because the allocator has no
-memory to work with. The patch in question makes small changes to the
-amount of available memory but it shouldn't matter on uni-core. Some
-structures are slightly larger but it's extremely borderline. I'm at a
-loss to explain actually why it makes a difference untill things were
-extremely borderline to begin with.
+Acked-by: Doug Thompson <dougthompson@xmission.com>
 
-> I mean... Power down should not be too memory-critical. Why can't new
-> page allocator handle that?
 > 
-
-The allocator isn't new. I wouldn't have expected power-down to make any
-allocation at all but clearly it is.
-
-> (And yes, when page allocator is fixed we may want to do something
-> like that, but...)
 > 
-
-At the moment, I'm not sure what needs fixing in there. There is no
-memory and it gets stuck in a loop. I better stand up if I'm going to
-pull something out of my ass :/
-
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> boot log attached.
+> 
+> > ---
+> > diff --git a/drivers/edac/amd64_edac.c
+> b/drivers/edac/amd64_edac.c
+> > index a38831c..da2428b 100644
+> > --- a/drivers/edac/amd64_edac.c
+> > +++ b/drivers/edac/amd64_edac.c
+> > @@ -2618,6 +2618,9 @@ static int
+> amd64_init_csrows(struct mem_ctl_info *mci)
+> >      return empty;
+> >  }
+> >  
+> > +static struct msr *alloc_msrs(const cpumask_t
+> *mask);
+> > +static void free_msrs(struct msr *msrs);
+> > +
+> >  /*
+> >   * Only if 'ecc_enable_override' is
+> set AND BIOS had ECC disabled, do "we"
+> >   * enable it.
+> > @@ -2627,14 +2630,16 @@ static void
+> amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
+> >      struct amd64_pvt *pvt =
+> mci->pvt_info;
+> >      const cpumask_t *cpumask =
+> cpumask_of_node(pvt->mc_node_id);
+> >      int cpu, idx = 0, err = 0;
+> > -    struct msr
+> msrs[cpumask_weight(cpumask)];
+> > +    struct msr *msrs;
+> >      u32 value;
+> >      u32 mask = K8_NBCTL_CECCEn |
+> K8_NBCTL_UECCEn;
+> >  
+> >      if (!ecc_enable_override)
+> >          return;
+> >  
+> > -    memset(msrs, 0, sizeof(msrs));
+> > +    msrs = alloc_msrs(cpumask);
+> > +    if (!msrs)
+> > +        return;
+> >  
+> >      amd64_printk(KERN_WARNING,
+> >         
+> "'ecc_enable_override' parameter is active, "
+> > @@ -2697,20 +2702,24 @@ static void
+> amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
+> >          (value
+> & K8_NBCFG_ECC_ENABLE) ? "Enabled" : "Disabled");
+> >  
+> >      pvt->ctl_error_info.nbcfg
+> = value;
+> > +
+> > +    free_msrs(msrs);
+> >  }
+> >  
+> >  static void
+> amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
+> >  {
+> >      const cpumask_t *cpumask =
+> cpumask_of_node(pvt->mc_node_id);
+> >      int cpu, idx = 0, err = 0;
+> > -    struct msr
+> msrs[cpumask_weight(cpumask)];
+> > +    struct msr *msrs;
+> >      u32 value;
+> >      u32 mask = K8_NBCTL_CECCEn |
+> K8_NBCTL_UECCEn;
+> >  
+> >      if
+> (!pvt->nbctl_mcgctl_saved)
+> >          return;
+> >  
+> > -    memset(msrs, 0, sizeof(msrs));
+> > +    msrs = alloc_msrs(cpumask);
+> > +    if (!msrs)
+> > +        return;
+> >  
+> >      err =
+> pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCTL,
+> &value);
+> >      if (err)
+> > @@ -2731,6 +2740,8 @@ static void
+> amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
+> >      }
+> >  
+> >      wrmsr_on_cpus(cpumask,
+> K8_MSR_MCGCTL, msrs);
+> > +
+> > +    free_msrs(msrs);
+> >  }
+> >  
+> >  /* get all cores on this DCT */
+> > @@ -2743,6 +2754,40 @@ static void
+> get_cpus_on_this_dct_cpumask(cpumask_t *mask, int nid)
+> >         
+>     cpumask_set_cpu(cpu, mask);
+> >  }
+> >  
+> > +/*
+> > + * Allocate enough msr structs for the supplied
+> cpumask. Also, take care of
+> > + * non-contigious bitmasks.
+> > + */
+> > +static struct msr *alloc_msrs(const cpumask_t *mask)
+> > +{
+> > +    struct msr *msrs;
+> > +    int i, first_cpu, last_cpu = 0;
+> > +
+> > +    if (cpumask_empty(mask)) {
+> > +       
+> amd64_printk(KERN_WARNING, "%s: Empty cpumask!\n",
+> __func__);
+> > +        return NULL;
+> > +    }
+> > +
+> > +    first_cpu = cpumask_first(mask);
+> > +    for (i = first_cpu; i <
+> nr_cpu_ids; i++)
+> > +        if
+> (cpumask_test_cpu(i, mask))
+> > +       
+>     last_cpu = i;
+> > +
+> > +    msrs = kzalloc(sizeof(*msrs) *
+> (last_cpu - first_cpu + 1), GFP_KERNEL);
+> > +    if (!msrs) {
+> > +       
+> amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+> > +       
+>           __func__);
+> > +   
+>      return NULL;
+> > +    }
+> > +
+> > +    return msrs;
+> > +}
+> > +
+> > +static void free_msrs(struct msr *msrs)
+> > +{
+> > +     kfree(msrs);
+> > +}
+> > +
+> >  /* check MCG_CTL on all the cpus on this node
+> */
+> >  static bool
+> amd64_nb_mce_bank_enabled_on_node(int nid)
+> >  {
+> > @@ -2755,12 +2800,9 @@ static bool
+> amd64_nb_mce_bank_enabled_on_node(int nid)
+> >  
+> >     
+> get_cpus_on_this_dct_cpumask(&mask, nid);
+> >  
+> > -    msrs = kzalloc(sizeof(struct msr)
+> * cpumask_weight(&mask), GFP_KERNEL);
+> > -    if (!msrs) {
+> > -       
+> amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+> > -       
+>           __func__);
+> > -   
+>      return false;
+> > -    }
+> > +    msrs = alloc_msrs(&mask);
+> > +    if (!msrs)
+> > +        goto out_err;
+> >  
+> >      rdmsr_on_cpus(&mask,
+> MSR_IA32_MCG_CTL, msrs);
+> >  
+> > @@ -2779,7 +2821,9 @@ static bool
+> amd64_nb_mce_bank_enabled_on_node(int nid)
+> >      ret = true;
+> >  
+> >  out:
+> > -    kfree(msrs);
+> > +    free_msrs(msrs);
+> > +
+> > +out_err:
+> >      return ret;
+> >  }
+> >  
+> > 
+> > -- 
+> > Regards/Gruss,
+> > Boris.
+> > 
+> > Operating | Advanced Micro Devices GmbH
+> >   System  |
+> Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München,
+> Germany
+> >  Research | Geschäftsführer: Andrew Bowd,
+> Thomas M. McCoy, Giuliano Meroni
+> >   Center  | Sitz: Dornach,
+> Gemeinde Aschheim, Landkreis München
+> >   (OSRC)  | Registergericht
+> München, HRB Nr. 43632
+> > 
+> 
+> 
+> ---
+> ~Randy
+> 
