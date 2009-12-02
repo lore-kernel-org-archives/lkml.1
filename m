@@ -1,60 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZLBRe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZLBRfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbZLBRe0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 12:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZLBRe0
+	id S1755496AbZLBRfM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 12:35:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbZLBRfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 12:34:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:23878 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754611AbZLBReZ (ORCPT
+	Wed, 2 Dec 2009 12:35:10 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:50435 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754700AbZLBRfI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 12:34:25 -0500
+	Wed, 2 Dec 2009 12:35:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=S4ekUknKGCdlnQfQaozsjOZv5uv2jBoqWgNKlWRlgvzzU78k1c238EhKzGcTZq8WI3
-         GeUvfk66eAwNvkwS63khQ0JTEyRfalKoj6SpApcpo5g8MLW+OeBQ9CMzGtYAX2+EPHzu
-         J3p4AICo67SDCA+WfVfYt78rzUzmnnXMCGNDE=
-Subject: Maybe we can make no_console_suspend fine grained?
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 02 Dec 2009 19:34:26 +0200
-Message-ID: <1259775266.4314.10.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=TcHsuSWCbHu61qvosR6n5BBoG6t57PxYyjplJ5bdLeuRVy9cSaLCuLMSwjiSsLt2Ka
+         cOqHQs4NCbBYa5Qv9j07SrT9COSLOs5Q1T0rqXV4rR0wvbwHV5/m5NXJwu8m2Mxz5oyc
+         rxZHWi59afUy1Kxuzwmaqn/RDIT5wlx6IF99A=
+MIME-Version: 1.0
+In-Reply-To: <43e72e890911302354i1b17265ckb3aa81171a24174b@mail.gmail.com>
+References: <4ADE2F66.1070703@gmail.com> <43e72e890911161515q64ff527cyefd7d769f3c501b@mail.gmail.com> 
+	<a44ae5cd0911161641n36d3c746pb69a9cac1eba1784@mail.gmail.com> 
+	<43e72e890911161708o607da2a5hefe98e92fd13ee7a@mail.gmail.com> 
+	<43e72e890911191519h73bd6699if860257c049ba1a0@mail.gmail.com> 
+	<43e72e890911231347k48f105dcw24dd99c1c39f034@mail.gmail.com> 
+	<43e72e890911302354i1b17265ckb3aa81171a24174b@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Wed, 2 Dec 2009 09:34:55 -0800
+Message-ID: <43e72e890912020934s35df08dfp28520e32b9bea2b2@mail.gmail.com>
+Subject: Re: 2.6.32-rc5-git1 -- BUG kmalloc-8192: Poison overwritten (ath9k 
+	implicated)
+To: Miles Lane <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Felix Fietkau <nbd@openwrt.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, if the no_console_suspend isn't set, as soon as system begins
-the suspend, at core printk level output is suppressed.
+On Mon, Nov 30, 2009 at 11:54 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+> On Mon, Nov 23, 2009 at 1:47 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>> On Thu, Nov 19, 2009 at 3:19 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>>> On Mon, Nov 16, 2009 at 5:08 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>>>> On Mon, Nov 16, 2009 at 4:41 PM, Miles Lane <miles.lane@gmail.com> wrote:
+>>>>> On Mon, Nov 16, 2009 at 6:15 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>>>>>> On Tue, Oct 20, 2009 at 1:45 PM, Miles Lane <miles.lane@gmail.com> wrote:
+>>>>>>> Let me know if you want my .config file.  I think this was triggered by
+>>>>>>> suspending my laptop.
+>>>>>>>
+>>>>>>> BUG kmalloc-8192: Poison overwritten
+>>>>>>
+>>>>>> Thanks for your report Miles.
+>>>>>>
+>>>>>> Are you using Linus' tree? Felix wrote some patches that got rid of
+>>>>>> the rate control private area which we kmalloc/kfree and at least one
+>>>>>> user reported that these patches fixed a memory leak. I'm curious if
+>>>>>> the same patches would resolve this issue.
+>>>>>>
+>>>>>> Only thing is these patches apply against wireless-testing and not
+>>>>>> 2.6.32. To test them you'd have to pull wireless-testing master to
+>>>>>> your tree and then apply the patches both before and after.
+>>>>>>
+>>>>>> Would you be up to try that?
+>>>>>
+>>>>> Yes, definitely.  Thanks.  I will try to accomplish this and let you
+>>>>> know if I get stuck.
+>>>>
+>>>> OK, not sure if a merge of wireless-testing will be clean so you may
+>>>> want to just clone fresh.. Anyway after you get wireless-testing bits
+>>>> you'll want to apply these:
+>>>>
+>>>> http://patchwork.kernel.org/patch/60127/
+>>>> http://patchwork.kernel.org/patch/60128/
+>>>> http://patchwork.kernel.org/patch/60126/
+>>>>
+>>>> If you want to merge wireless-testing you can try:
+>>>>
+>>>> git merge git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git
+>>>> master
+>>>>
+>>>> If that'd doesn't gos smooth just clone it and I think you should be
+>>>> able to safely --reference your current tree for objects for Linus'
+>>>> tree.
+>>>
+>>> Miles I see no reply from you yet so I backported the patches in
+>>> question for you. Can you please try 2.6.32-rc7 and apply these
+>>> patches on top:
+>>>
+>>> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/70-mac80211-total-ampdu-tx-info.patch
+>>> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/71-ath9k-remove-tx_info_priv.patch
+>>
+>> Miles, any luck testing this?
+>
+> Miles -- poke. The patches provided should apply on Linus' tree,
+> please let us know if they fix the issue you reported.
 
-However, I want to have a simple and clean way to have all console
-messages in the memory, because on my laptop memory isn't cleared on
-reboots.
+Miles -- have you had a chance to test these backported patches?
 
-My first approach was just to put printk buffer at predefined address.
-This wasn't favored by kernel developers, and even I myself found this
-to be not such great solution.
-
-Other approach is to create a console driver, however it won't be used
-by printk ether during suspend and resume.
-
-So, maybe we can add a flag that console should always be used,
-regardless of no_console_suspend?
-(This is the particular console is safe for that purpose)
-
-I can even make the new console pm aware, thus make is possible to avoid
-collisions between  every stage of the hibernation.
-( Which happen today because resume kernel overwrites the printk
-predefined buffer, and that is annoying because my system works just
-fine now, but I want to keep that feature on)
-
-Best regards,
-Maxim Levitsky
-
+  Luis
