@@ -1,101 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZLBVaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZLBVa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbZLBVaN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:30:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZLBVaM
+	id S1755702AbZLBVa0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbZLBVaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:30:12 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:39481 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753882AbZLBVaL convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 16:30:23 -0500
+Received: from james.oetiker.ch ([213.144.138.195]:60586 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755684AbZLBVaS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:30:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=gSKIg3KGH+nV6RhP0Kyoh5SzUVOw+8QxH09AM0dqXntto+iggaTqFQrYNyECqVDeQQ
-         7rrXktqUKOE5Cw1aNzGWU/43fweaf0Vcid1/zdhiYm5KkI/VlSVfiyn04B07EsIlG9Al
-         027yCUPeAx0VW0xZokDRnue5HXs0hlsr+G3lE=
+	Wed, 2 Dec 2009 16:30:18 -0500
+Date: Wed, 2 Dec 2009 22:30:23 +0100 (CET)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: still getting allocation failures (was Re: [PATCH] vmscan: Stop
+ kswapd waiting on congestion when the min watermark is not being met V2)
+In-Reply-To: <20091202113241.GC1457@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0912022210220.30023@sebohet.brgvxre.pu>
+References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091113135443.GF29804@csn.ul.ie> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie> <2f11576a0911131033w4a9e6042k3349f0be290a167e@mail.gmail.com> <20091113200357.GO29804@csn.ul.ie>
+ <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu> <alpine.DEB.2.00.0911290834470.20857@sebohet.brgvxre.pu> <20091202113241.GC1457@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <7946.1259761452@redhat.com>
-References: <1259421863-12777-1-git-send-email-vapier@gentoo.org> 
-	<7946.1259761452@redhat.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 2 Dec 2009 16:29:52 -0500
-Message-ID: <8bd0f97a0912021329y7be05434wc9c39d383bfb7ce4@mail.gmail.com>
-Subject: Re: [uClinux-dev] Re: [PATCH] FDPIC: respect PT_GNU_STACK exec 
-	markings when creating NOMMU stack
-To: David Howells <dhowells@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       David McCullough <davidm@snapgear.com>,
-       uClinux development list <uclinux-dev@uclinux.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 2, 2009 at 08:44, David Howells wrote:
-> Mike Frysinger wrote:
->> that tends to be 128kB of waste.
+Hi Mel,
+
+Today Mel Gorman wrote:
+
+> On Sun, Nov 29, 2009 at 08:42:09AM +0100, Tobi Oetiker wrote:
+> > Hi Mel,
+> >
+> > Thursday Tobias Oetiker wrote:
+> > > Hi Mel,
+> > >
+> > > Nov 13 Mel Gorman wrote:
+> > >
+> > > > The last version has a stupid bug in it. Sorry.
+> > > >
+> > > > Changelog since V1
+> > > >   o Fix incorrect negation
+> > > >   o Rename kswapd_no_congestion_wait to kswapd_skip_congestion_wait as
+> > > >     suggested by Rik
+> > > >
+> > > > If reclaim fails to make sufficient progress, the priority is raised.
+> > > > Once the priority is higher, kswapd starts waiting on congestion.  However,
+> > > > if the zone is below the min watermark then kswapd needs to continue working
+> > > > without delay as there is a danger of an increased rate of GFP_ATOMIC
+> > > > allocation failure.
+> > > >
+> > > > This patch changes the conditions under which kswapd waits on
+> > > > congestion by only going to sleep if the min watermarks are being met.
+> > >
+> > > I finally got around to test this together with the whole series on
+> > > 2.6.31.6. after running it for a day I have not yet seen a single
+> > > order:5 allocation problem ... (while I had several an hour before)
+> >
+> > > for the record, my kernel is now running with the following
+> > > patches:
+> > >
+> > > patch1:Date: Thu, 12 Nov 2009 19:30:31 +0000
+> > > patch1:Subject: [PATCH 1/5] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
+> > >
+> > > patch2:Date: Thu, 12 Nov 2009 19:30:32 +0000
+> > > patch2:Subject: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
+> > >
+> > > patch3:Date: Thu, 12 Nov 2009 19:30:33 +0000
+> > > patch3:Subject: [PATCH 3/5] page allocator: Wait on both sync and async congestion after direct reclaim
+> > >
+> > > patch4:Date: Thu, 12 Nov 2009 19:30:34 +0000
+> > > patch4:Subject: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and double check it should be asleep
+> > >
+> > > patch5:Date: Fri, 13 Nov 2009 20:03:57 +0000
+> > > patch5:Subject: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met V2
+> > >
+> > > patch6:Date: Tue, 17 Nov 2009 10:34:21 +0000
+> > > patch6:Subject: [PATCH] vmscan: Have kswapd sleep for a short interval and double check it should be asleep fix 1
+> > >
+> > I have now been running the new kernel for a few days and I am
+> > sorry to report that about a day after booting the allocation
+> > failures started showing again. More order:4 instead of order:5 ...
+> >
 >
-> While your patch is reasonable, at least in concept, I don't see where you get
-> this bit of the description from.
+> Why has the order changed?
 
-well, you need the rest of my sentence:
-... it causes a pointless icache flush when starting every ...
+? no idea ... the order has changed after applying the patches
+cited above.
 
-so i mean iflushing the stack is a waste, and default FDPIC stack
-tends to be 128kB
+> Also, what allocator were you using in 2.6.30 and 2.6.31.6, SLAB or
+> SLUB? Did you happen to change them when upgrading the kernel?
 
->> +                                      (executable_stack & EXSTACK_ENABLE_X ? PROT_EXEC : 0),
->
-> executable_stack might be EXSTACK_DEFAULT, but the default might be to enable
-> stack exec - in which case, this is wrong.
->
-> I also don't think that the EXSTACK_xxx constants are a bitmask; I think
-> they're an enumeration - in which case you shouldn't be using '&' to test
-> them.  setup_arg_pages() uses '=='.
+I have been and still am using SLUB  ...
 
-err, right, this probably should have read something like:
-(executable_stack == EXSTACK_DISABLE_X ? 0 : PROT_EXEC)
+cheers
+tobi
 
-> Further, I think it only matters for MMU and MPU modes, not for NOMMU mode.
 
-it matters for all modes wrt the iflush that execution perms imply.
-in terms of actually being able to execute anything (and having the
-permissions respected), you are correct.  my concern was more for the
-former issue ... the latter is just a nice side effect.
-
-> There is one further consequence of your patch that you don't mention: the brk
-> area _also_ becomes non-executable.  In NOMMU, I suspect this is irrelevant,
-> as I'm not sure brk is used at all (should we make sys_brk() return ENOSYS?).
-
-i didnt realize this ... that's why we have you here ;).  i have seen
-a few apps use brk()/sbrk() to query the size of things (like
-e2fsprogs), but not to try and increase mappings, let alone to try and
-load dynamic code and jump there (i havent even seen this on mmu
-systems).  certainly the uClibc malloc implementations dont use these
-functions for nommu systems, nor would they work reliably since we
-dont have the luxury of assuming the brk() space is wide open (since
-it can easily be sitting against another mapping).
-
-> How about the attached instead?
-
-ive tested it and it works fine for me.  my fdpic apps get an exec
-stack if the PT_GNU_STACK has E, and they dont if it doesnt.
-
-> Probably VM_DATA_DEFAULT_FLAGS should not
-> include VM_EXEC for either Blackfin or FRV, but it may be required for SH.
-> The if-statement that calls elf_read_implies_exec() will be optimised away
-> unless the arch specifically sets it (which none of FRV, Blackfin or SH do).
-
-while true, wont the later personality test (in VM_DATA_DEFAULT_FLAGS)
-be left there ?  guess it's not that big of a deal.
-
-perhaps this define should be added to asm-generic/page.h though
-rather than each arch.  the default value you use seems reasonable for
-everyone.
--mike
+-- 
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
