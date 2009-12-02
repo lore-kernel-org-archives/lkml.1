@@ -1,143 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZLBLqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZLBLtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZLBLqf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 06:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZLBLqe
+	id S1753518AbZLBLtq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 06:49:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbZLBLtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 06:46:34 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57172 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbZLBLqd (ORCPT
+	Wed, 2 Dec 2009 06:49:45 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:59036 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752477AbZLBLto (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 06:46:33 -0500
-Subject: Re: [patch]  f83f9ac causes tasks running at MAX_PRIO
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Williams <pwil3058@bigpond.net.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1259501027.6268.9.camel@marge.simson.net>
-References: <1259501027.6268.9.camel@marge.simson.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 02 Dec 2009 12:46:23 +0100
-Message-ID: <1259754383.4003.610.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 2 Dec 2009 06:49:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=i3f1hO2a8Xw49Qnr/7AK6/DMEoepmxWlpc6Tl9PQNyE/EhikQaekkMd4F42mIp6jFf
+         OyKshGaQDFEn+mzwVmNnn6t+GJMR823Y1xipQn6Xtj77Xjp24V8FgMy9WuCjMS5+WtEr
+         HBxu+PpSo24Kr0w0xpHUC5xH28qq5HXGZHzNw=
+Message-ID: <4B16545B.3090703@tuffmail.co.uk>
+Date: Wed, 02 Dec 2009 11:49:47 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Mel Gorman <mel@csn.ul.ie>, pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: Bisected: s2disk (uswsusp only) hangs just before poweroff
+References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie> <200912012253.08522.rjw@sisk.pl>
+In-Reply-To: <200912012253.08522.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-11-29 at 14:23 +0100, Mike Galbraith wrote:
+Rafael J. Wysocki wrote:
+> On Tuesday 01 December 2009, Mel Gorman wrote:
+>   
+>> On Tue, Dec 01, 2009 at 07:59:40PM +0000, Alan Jenkins wrote:
+>>     
+>>> Hi
+>>>
+>>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I finally  
+>>> got around to bisecting it, which blamed the following commit by Mel:
+>>>
+>>> 5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
+>>>
+>>> I was able to confirm this by reverting the commit, which fixed the  
+>>> hang.  I had to revert one other commit first to avoid a conflict:
+>>>
+>>> a6f9edd "page-allocator: maintain rolling count of pages to free from  
+>>> the PCP"
+>>>
+>>>       
+>> Which RC kernel? Specifically, are the commits
+>>
+>> cc4a6851466039a8a688c843962a05689059ff3b always wake kswapd when restarting an allocation attempt
+>> 9d0ed60fe9cd1fbf57f755cd27a23ae9114d7210 Do not allow interrupts to use ALLOC_HARDER
+>>
+>> applied?
+>>
+>> The latter one in particular might make a difference if s2disk is
+>> pushing the system far below the watermarks. I don't suppose you know
+>> where it's hanging? i.e. is it hanging in the allocator itself?
+>>
+>> If those patches are applied, then one difference that 5f8dcc2 makes is
+>> that pages on the PCP lists but not of the right migratetype are not
+>> used. Prior to that commit, an allocation might succeed even if the
+>> buddy lists were empty because one of the other PCP page types would be
+>> used.
+>>
+>>     
+>>> -- detail --
+>>>
+>>> When I suspend my EeePc 701 to disk, it sometimes hangs after writing  
+>>> out the hibernation image.  The system is still able to resume from this  
+>>> image (after working around the hang by pressing the power button). 
+>>>
+>>> This is specific to s2disk from the uswsusp package (which is now  
+>>> installed by default on debian unstable).  It doesn't happen if I  
+>>> uninstall uswsusp and use the in-kernel suspend instead.
+>>>
+>>>       
+>> This leads me to believe that uswsusp is able to push available pages
+>> far below what is expected. It's a total guess though, I have no idea
+>> how uswsusp is implemented or how it differs from what is in kernel.
+>>     
+>
+> It doesn't differ at all in that respect.  Actually, it uses the same code, but
+> the distro configuration may be such that it leaves fewer available pages
+> than the default in-kernel hibernation.
+>
+> Thanks,
+> Rafael
+>   
 
-> sched: fix task priority bug.
-> 
-> f83f9ac removed a call to effective_prio() in wake_up_new_task(), which
-> leads to tasks running at MAX_PRIO.  That call set both the child's prio
-> and normal_prio fields to normal_prio(child).  Do the same fork time by
-> setting both to normal_prio(parent).
-> 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Peter Williams <pwil3058@bigpond.net.au>
-> LKML-Reference: <new-submission>
-> 
-> ---
->  kernel/sched.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -2609,7 +2609,7 @@ void sched_fork(struct task_struct *p, i
->  	/*
->  	 * Make sure we do not leak PI boosting priority to the child.
->  	 */
-> -	p->prio = current->normal_prio;
-> +	p->prio = p->normal_prio = normal_prio(current);
->  
->  	if (!rt_prio(p->prio))
->  		p->sched_class = &fair_sched_class;
-> 
+It seems unintuitive that lack of memory is a problem _after we've 
+written out the hibernation image_.  The backtrace I captured shows the 
+hang happens within hibernation_platform_enter()...
 
-Damn PI stuff makes my head hurt ;-)
+Hmm.  Doesn't the in-kernel suspend free the in-memory image before 
+powering off?
 
-So we've got:
-
- ->prio        - the actual effective priority    [ prio scale ]
- ->normal_prio - the task's normal priority       [ prio scale ]
- ->static_prio - SCHED_OTHER's nice value         [ prio scale ]
- ->rt_priority - SCHED_FIFO/RR prio value  [ sched_param scale ]
-
-[ with prio scale being:
-
-  [0,    MAX_RT_PRIO-1]     [MAX_RT_PRIO, MAX_PRIO-1]
-   RT-100, RT-99..RT-1           NICE-20, NICE+19
-]
-
-So at sched_fork() we do the
-
- p->prio = p->normal_prio;
-
-thing, to unboost.
-
-If that results in MAX_PRIO, then our parent's ->normal_prio is stuffed.
-
-Looking at the code I can see that happening because we've got:
-
-init_idle() doing:
-  idle->prio = idle->normal_prio = MAX_PRIO;
-
-Which will propagate... like reported.
-
-Now, since the idle-threads usually run on &idle_sched_class, nobody
-will actually look at their ->prio, so having that out-of-range might
-make sense.
-
-Just needs to get fixed up when we fork a normal thread, which would be
-in sched_fork(), now your call to normal_prio() fixes this by setting
-everything to ->static_prio for SCHED_OTHER tasks, however
-
-migration_call()
-  CPU_DEAD:
-    rq->idle->static_prio = MAX_PRIO;
-
-spoils that too, then again, at that point nothing will fork from that
-idle thread.
-
-Funny thing though, INIT_TASK() sets everything at MAX_PRIO-20.
-
-Ingo, any particular reason we set idle threads at MAX_PRIO? Can't we
-simply do something like below and be done with it?
-
----
- kernel/sched.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c0e4e9d..5ad5a66 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6963,7 +6963,6 @@ void __cpuinit init_idle(struct task_struct *idle,
-int cpu)
- 	__sched_fork(idle);
- 	idle->se.exec_start = sched_clock();
- 
--	idle->prio = idle->normal_prio = MAX_PRIO;
- 	cpumask_copy(&idle->cpus_allowed, cpumask_of(cpu));
- 	__set_task_cpu(idle, cpu);
- 
-@@ -7667,7 +7666,6 @@ migration_call(struct notifier_block *nfb,
-unsigned long action, void *hcpu)
- 		spin_lock_irq(&rq->lock);
- 		update_rq_clock(rq);
- 		deactivate_task(rq, rq->idle, 0);
--		rq->idle->static_prio = MAX_PRIO;
- 		__setscheduler(rq, rq->idle, SCHED_NORMAL, 0);
- 		rq->idle->sched_class = &idle_sched_class;
- 		migrate_dead_tasks(cpu);
+int hibernate(void)
+...
+        pr_debug("PM: writing image.\n");
+        error = swsusp_write(flags);
+        swsusp_free();
+        if (!error)
+            power_down();
 
 
+
+Would that explain why only uswsusp is affected?  Do we want to fix 
+snapshot_read() in user.c, so that it calls swsusp_free() once all the 
+data has been read?
+
+Regards
+Alan
