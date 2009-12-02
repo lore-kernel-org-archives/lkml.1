@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbZLBVLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZLBVMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755586AbZLBVLK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZLBVLJ
+	id S1755454AbZLBVMO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:12:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbZLBVMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:11:09 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33324 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754500AbZLBVLI (ORCPT
+	Wed, 2 Dec 2009 16:12:14 -0500
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:44386 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbZLBVMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:11:08 -0500
-Date: Wed, 2 Dec 2009 22:11:07 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH] uswsusp: automatically free the in-memory image once
- s2disk has finished with it
-Message-ID: <20091202211107.GA20830@elf.ucw.cz>
-References: <4B1575AC.6080904@tuffmail.co.uk>
- <20091201214529.GA1457@csn.ul.ie>
- <200912012253.08522.rjw@sisk.pl>
- <4B16545B.3090703@tuffmail.co.uk>
- <20091202122019.GD1457@csn.ul.ie>
- <4B16797C.3010304@tuffmail.co.uk>
+	Wed, 2 Dec 2009 16:12:13 -0500
+Date: Wed, 2 Dec 2009 13:12:18 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Jarod Wilson <jarod@wilsonet.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+In-Reply-To: <B8514BFF-DB1B-4475-9E6D-E2A567A998FA@wilsonet.com>
+Message-ID: <Pine.LNX.4.58.0912021300270.4729@shell2.speakeasy.net>
+References: <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net>
+ <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net>
+ <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
+ <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net>
+ <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
+ <20091202201404.GD22689@core.coreip.homeip.net> <434927DD-0E66-4D0E-B705-022B7FCCCDB0@wilsonet.com>
+ <20091202204811.GE22689@core.coreip.homeip.net> <B8514BFF-DB1B-4475-9E6D-E2A567A998FA@wilsonet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B16797C.3010304@tuffmail.co.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
-> The original in-kernel suspend (swsusp) frees the in-memory hibernation
-> image before powering off the machine.  s2disk doesn't, so there is
-> _much_ less free memory when it tries to power off.
-> 
-> This is a gratuitous difference.  The userspace suspend interface
-> /dev/snapshot only allows the hibernation image to be read once.
-> Once the s2disk program has read the last page, we can free the entire
-> image.
-> 
-> This avoids a hang after writing the hibernation image which was
-> triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
-> "page-allocator: split per-cpu list into one-list-per-migrate-type":
+On Wed, 2 Dec 2009, Jarod Wilson wrote:
+> >>
+> >> My main point is that each of these devices has device ID that can be determined without having to first do some protocol analysis and table lookups to figure out which "device" some random IR input is actually coming from.
+> >>
+> >
+> > Heh, right back at ya ;) The fact that you need to do some more work
+> > to separate 2 physical devices does not mean it should not be done.
+>
+> No, but it means added complexity inside the kernel. I'm questioning whether the added complexity is worth it, when I doubt the vast majority of users would take advantage of it, and it can already be done in userspace. Although... Damn. The userspace approach would only work if the device were passing raw IR to userspace, so in the in-kernel decoding case, yeah, I guess you'd need separate input devices for each remote to use them independently. Meh. Doubt I'd ever use it, but I guess I'll concede that it makes some sense to do the extra work.
 
-Yes, you work around page-allocator hang. But is it right thing to do?
+You just need to send a tuple that contrains the keycode plus some kind of
+id for the remote it came from.  That's what I did for lirc, it decodes the
+sparc/mark into a remote id and key code tuple.  It's certainly a common
+thing to want.  Anyone who has existing remotes and components that use
+them would want it.  You don't want your computer turning off when you push
+the power button on the DVD player's remote, do you?
 
-I mean... Power down should not be too memory-critical. Why can't new
-page allocator handle that?
-
-(And yes, when page allocator is fixed we may want to do something
-like that, but...)
-
-								Pavel
-
-> --- a/kernel/power/user.c
-> +++ b/kernel/power/user.c
-> @@ -165,6 +165,10 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
-> 			res = -EFAULT;
-> 		else
-> 			*offp = data->handle.offset;
-> +	} else {
-> +		swsusp_free();
-> +		memset(&data->handle, 0, sizeof(struct snapshot_handle));
-> +		data->ready = 0;
-> 	}
-> 
->  Unlock:
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Each host connected to a network interface doesn't get its own device.
