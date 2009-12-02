@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZLBNor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbZLBNrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbZLBNor (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 08:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZLBNoq
+	id S1754324AbZLBNrD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:47:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbZLBNrC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 08:44:46 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:36746 "EHLO mx2.suse.de"
+	Wed, 2 Dec 2009 08:47:02 -0500
+Received: from mga03.intel.com ([143.182.124.21]:6869 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752503AbZLBNoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 08:44:46 -0500
-Subject: [PATCH][stable] b44 WOL setup: one-bit-off stack corruption kernel
- panic fix
-From: Stanislav Brabec <sbrabec@suse.cz>
-To: Gary Zambrano <zambrano@broadcom.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="ISO-8859-2"
-Organization: SuSE CR, s. r. o.
-Date: Wed, 02 Dec 2009 14:45:47 +0100
-Message-Id: <1259761547.8709.264.camel@hammer.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 8bit
+	id S1753988AbZLBNrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 08:47:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="217913615"
+Date: Wed, 2 Dec 2009 21:46:45 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 12/24] HWPOISON: make it possible to unpoison pages
+Message-ID: <20091202134645.GA19274@localhost>
+References: <20091202031231.735876003@intel.com> <20091202043045.150526892@intel.com> <20091202131530.GG18989@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091202131530.GG18989@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-About 50% of shutdowns of b44 Ethernet adapter ends by kernel panic with
-kernels compiled with stack-protector.
+On Wed, Dec 02, 2009 at 09:15:30PM +0800, Andi Kleen wrote:
+> > Note that it may leak pages silently - those who have been removed from
+> > LRU cache, but not isolated from page cache/swap cache at hwpoison time.
+> 
+> It would be better if we could detect that somehow and at least warn.
 
-Checking b44_magic_pattern() return values, one call of
-b44_magic_pattern() returns 127. It means, that set_bit(128, pmask) was
-called on line 1509. It means that bit 0 of 17th byte of pmask was
-overwritten. But pmask has only 16 bytes. Stack corruption happens.
- 
-It seems that set_bit() on line 1509 always writes one bit off.
+We warned when some page cannot be isolated (but didn't mention it may
+lead to memory leak).
 
-The fix does not only solve the stack corruption, but also makes Wake On
-LAN working on my onboard B44 on Asus A7V-333X mainboard.
+We exported the hwpoison counter in /proc/meminfo.  The memory leak is
+mainly a problem with stress testing, and the test cases can make use
+of that counter to do sanity checking.
 
-It seems that this problem affects all kernel versions since commit
-725ad800 on 2006-06-20.
+> >  }
+> >  
+> > +static int hwpoison_forget(void *data, u64 val)
+> > +{
+> > +	if (!capable(CAP_SYS_ADMIN))
+> > +		return -EPERM;
+> > +
+> > +	return forget_memory_failure(val);
+> > +}
+> > +
+> >  DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
+> > +DEFINE_SIMPLE_ATTRIBUTE(unpoison_fops, NULL, hwpoison_forget, "%lli\n");
+> 
+> I'll rename it to unpoison, not forget. I think that's a more clear
+> name.
 
-Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
-
-diff --git a/drivers/net/b44.c b/drivers/net/b44.c
-index 2a91323..4869adb 100644
---- a/drivers/net/b44.c
-+++ b/drivers/net/b44.c
-@@ -1505,8 +1505,7 @@ static int b44_magic_pattern(u8 *macaddr, u8 *ppattern, u8 *pmask, int offset)
- 		for (k = 0; k< ethaddr_bytes; k++) {
- 			ppattern[offset + magicsync +
- 				(j * ETH_ALEN) + k] = macaddr[k];
--			len++;
--			set_bit(len, (unsigned long *) pmask);
-+			set_bit(len++, (unsigned long *) pmask);
- 		}
- 	}
- 	return len - 1;
-
-
--- 
-Best Regards / S pozdravem,
-
-Stanislav Brabec
-software developer
----------------------------------------------------------------------
-SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
-Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
-190 00 Praha 9                                  fax: +420 284 028 951
-Czech Republic                                    http://www.suse.cz/
-
+btw, do you feel comfortable with the interface name "renew-pfn"?
+(versus "unpoison-pfn")
