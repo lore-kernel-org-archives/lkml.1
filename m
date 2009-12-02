@@ -1,125 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZLBVxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbZLBVyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755753AbZLBVxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 16:53:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714AbZLBVxd
+	id S1755780AbZLBVyi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 16:54:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZLBVyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 16:53:33 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:18648 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755494AbZLBVxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 16:53:33 -0500
-Message-ID: <4B16E1C0.7000401@redhat.com>
-Date: Wed, 02 Dec 2009 16:53:04 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Wed, 2 Dec 2009 16:54:37 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:31694 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755714AbZLBVyg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 16:54:36 -0500
+Date: Thu, 3 Dec 2009 00:54:42 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: felipe.balbi@nokia.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+ charger
+Message-ID: <20091202215442.GA30658@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+ <20091202173321.GA23738@nokia.com>
+ <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
+ <20091202204946.GB25682@nokia.com>
+ <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip 0/9] perf-probe updates
-References: <20091201001912.10235.79411.stgit@harusame> <20091201072902.GA4587@elte.hu>
-In-Reply-To: <20091201072902.GA4587@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->
-> * Masami Hiramatsu<mhiramat@redhat.com>  wrote:
->
->> Hi,
->>
->> Here are bugfixes and updates for perf-probe and kprobe-tracer. I've
->> fixed some minor bugs and added --list option and simple probe naming.
->
-> Applied, thanks Masami!
->
->> TODO:
->>   - Support build-id checking.
->>   - Support --del option to remove probes.
->>   - Support --line option to show which lines user can probe.
->>   - Support lazy string matching.
->
-> ok, cool!
->
-> One other small detail i noticed wrt. probe naming. Right now if we
-> insert a single probe into a function it gets named schedule_0:
->
->   # perf probe schedule
->   Could not open vmlinux/module file. Try to use symbols.
->   Added new event: p:probe/schedule_0 schedule+0
->
-> the next one gets named schedule_1, schedule_2, etc.
->
-> It would be nice to special-case the first one and name it 'schedule'.
-> Most of the time people insert a single probe into a function, so the _0
-> postfix is extra and in most cases unnecessary typing for them.
+On Wed, Dec 02, 2009 at 11:29:10PM +0200, Grazvydas Ignotas wrote:
+[...]
+> From what I saw in other drivers they are setup to start charging
+> automatically as soon as they see VBUS.
 
-Sure, that's reasonable.
+Yes. I see nothing wrong here.
 
->
-> Another small detail is that i dont think we should emit this line:
->
->   Could not open vmlinux/module file. Try to use symbols.
->
-> when we can create a probe successfully - it's just unnecessary noise,
-> the user does not care how we pulled it off, as long as we were able to
-> get a reliable symbol address and the insertion worked fine.
+> > How are you differing between those currently?
+> 
+> Not handled at all at the moment (uses BCI defaults).
+[...]
+> Agree about USB userspace switch though..
 
-OK, I'll make it a debug message.
+Yes, so far we don't have any writable properties in power supply
+class, though the feature is in demand by various drivers.
+Somebody should step up and implement it. ;-)
 
-> A third detail is this line:
->
->   Added new event: p:probe/schedule_0 schedule+0
->
-> If that is pasted to perf stat directly it wont work because the syntax
-> is probe:schedule_0. So i'd suggest to print something like:
->
->   Added new event: probe/schedule_0 (on schedule+0)
+But for the start, I like this driver the way it is.
 
-Sure, perf always use ':' for event group separator, so
-
-Added new event: probe:schedule (on schedule+0 [with ...(args)])
-
->
-> Perhaps even print another line:
->
->    You can now use it on all perf tools, such as:
->
->      perf probe -e probe/schedule_0 -a sleep 1
->      perf record -e probe/schedule_0 -a sleep 1
-
-OK.
-
-Thank you for good advice!
-
->
-> ... to show people how to make use of it.
->
-> Thanks,
->
-> 	Ingo
+As for the default USB VBUS current value, it could be Kconfig
+option (something alike to USB_GADGET_VBUS_DRAW) and/or module
+parameter, or hw default, or hardcoded for now. Either will
+work.
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
