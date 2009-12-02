@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbZLBSGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZLBSHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755272AbZLBSGz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 13:06:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbZLBSGz
+	id S1755374AbZLBSHp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 13:07:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbZLBSHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 13:06:55 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36411 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755150AbZLBSGy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 13:06:54 -0500
-Date: Wed, 2 Dec 2009 18:06:58 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Antonio Ospite <ospite@studenti.unina.it>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Daniel Ribeiro <drwyrm@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, openezx-devel@lists.openezx.org
-Subject: Re: [PATCH] leds: Add LED class driver for regulator driven LEDs.
-Message-ID: <20091202180658.GA12292@rakim.wolfsonmicro.main>
-References: <1259775625-25973-1-git-send-email-ospite@studenti.unina.it>
+	Wed, 2 Dec 2009 13:07:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3681 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755174AbZLBSHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 13:07:44 -0500
+Message-ID: <4B16ACD6.3030402@redhat.com>
+Date: Wed, 02 Dec 2009 13:07:18 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259775625-25973-1-git-send-email-ospite@studenti.unina.it>
-X-Cookie: Look ere ye leap.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com,
+       hidehiro.kawai.ez@hitachi.com, lethal@linux-sh.org, roland@redhat.com,
+       vapier@gentoo.org, Takahiro Yasui <tyasui@redhat.com>
+Subject: Re: [PATCH v2] mm: Introduce coredump parameter structure
+References: <200911202212.nAKMCF2v012068@imap1.linux-foundation.org> <20091126174835.5A73.A69D9226@jp.fujitsu.com> <4B0EA3AA.5070003@redhat.com> <20091126165108.GA13231@redhat.com> <4B11FB6F.4040403@redhat.com> <20091201161800.fa6b6ae4.akpm@linux-foundation.org> <4B15B4ED.8010209@redhat.com> <20091202095012.GD22654@elte.hu>
+In-Reply-To: <20091202095012.GD22654@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 06:40:25PM +0100, Antonio Ospite wrote:
+Ingo Molnar wrote:
+> * Masami Hiramatsu<mhiramat@redhat.com>  wrote:
+>
+>> Andrew Morton wrote:
+>>> On Sat, 28 Nov 2009 23:41:19 -0500
+>>> Masami Hiramatsu<mhiramat@redhat.com>   wrote:
+>>>
+>>>> Introduce coredump parameter data structure (struct coredump_params)
+>>>> for simplifying binfmt->core_dump() arguments.
+>>>>
+>>>> Changes in v2:
+>>>>     - Don't remove DUMP_WRITE() macro.
+>>>
+>>> What is the reason for this change?
+>>>
+>>> Please always include both the "what" and the "why" in changelog text.
+>>
+>> I see.
+>
+> I think Andrew wanted to see a longer explanation about precisely what
+> we need for these tracepoints and what the various specific usecases are
+> to utilize it.
 
-> A doubt I had was about leaving the 'supply' variable configurable from
-> platform data, or relying on some fixed value like "vled", but leaving it
-> configurable covers the case when we have different regulators used for
-> different LEDs or vibrators.
+Ah, OK.
 
-There's no need to do this since the regulator API matches consumers
-based on struct device as well as name so you can have as many LEDs as
-you like all using the same supply name mapping to different regulators.
+>
+> I.e. a basic cost/benefit analysis is needed. By looking at the patch we
+> can see the cost - but you have to counter-balance that with enough
+> stuff in the 'benefits' column of the equation.
 
-> Should I add a note in Documentation/ about how to use it? Tell me if so.
+Hmm, actually, this tracepoint requirement comes from the viewpoint of
+administrators (not developers). Since now we have introduced many
+coredump configurations (e.g. dumpable, coredump_filter, core_pattern, etc)
+and some of them can be modified by users, we assume it is hard to know
+what was actually dumped (or not dumped) after some problem happened on the
+system. For example, a process didn't generated core, coredump doesn't have
+some sections, etc. In those cases, the coredump tracepoint can help us to
+know why the core file is so big or small, or not generated, by recording
+all configurations for all processes on the system. That will reduce
+system-administration cost.
 
-If you wish to, it's not essential (only one existing LED driver appears
-to do this) and the comment in the header file is probably adequate.
+Thank you,
 
-> +static inline int led_regulator_get_max_brightness(struct regulator *supply)
-> +{
-> +	return regulator_count_voltages(supply);
-> +}
+-- 
+Masami Hiramatsu
 
-More graceful handling of regulators that don't implement list_voltage
-might be nice (for simple on/off control - not all regulators have
-configurable voltages).  If a regulator doesn't support list_voltage
-you'll get -EINVAL.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-> +	vcc = regulator_get(&pdev->dev, pdata->supply);
-> +	if (IS_ERR(vcc)) {
-> +		dev_err(&pdev->dev, "Cannot get vcc for %s\n", pdata->name);
-> +		return PTR_ERR(vcc);;
-> +	}
+e-mail: mhiramat@redhat.com
 
-You almost certainly want regulator_get_exclusive() here; this driver
-can't function properly if something else is using the regulator and
-holding the LED on or off without it.  You'll also want to check the
-status of the LED on startup and update your internal status to match
-that.
