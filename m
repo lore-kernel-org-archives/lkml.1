@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbZLBJXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbZLBJRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353AbZLBJXL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 04:23:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZLBJXL
+	id S1752749AbZLBJRM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 04:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZLBJRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 04:23:11 -0500
-Received: from mx0.datapatterns.co.in ([121.242.18.2]:36889 "EHLO
-	ns0.datapatterns.co.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751320AbZLBJXJ (ORCPT
+	Wed, 2 Dec 2009 04:17:12 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53336
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751320AbZLBJRK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 04:23:09 -0500
-X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Dec 2009 04:23:09 EST
-Message-ID: <E31AB0C22654470FBD53A7717381F293@itd210>
-From: "Thirumalai" <thirumalai.p@datapatterns.co.in>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: How to use mpic timer of mpc8640d
-Date: Wed, 2 Dec 2009 14:42:57 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Wed, 2 Dec 2009 04:17:10 -0500
+Date: Wed, 02 Dec 2009 01:17:16 -0800 (PST)
+Message-Id: <20091202.011716.144426726.davem@davemloft.net>
+To: vladislav.yasevich@hp.com
+Cc: andrei@iptel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-sctp@vger.kernel.org
+Subject: Re: [PATCH] sctp: fix sctp_setsockopt_autoclose compile warning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B156862.5020903@hp.com>
+References: <20091130094929.GY10897@shell.iptel.org>
+	<20091130095250.GZ10897@shell.iptel.org>
+	<4B156862.5020903@hp.com>
+X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6001.18000
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6001.18049
-X--MailScanner-Information: Please contact your system administrator for more information
-X-DataPatterns-MailScanner-ID: nB29CXKF016781
-X--MailScanner: Found to be clean
-X--MailScanner-From: thirumalai.p@datapatterns.co.in
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi kumar,
-    I just want to know how to use the global timer of the MPC8640D on linux 
-environment. I am having a Freescale HPCN evaluation board on which 
-linux-2.6.21 kernel is running. How to use the timer.
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+Date: Tue, 01 Dec 2009 14:02:58 -0500
 
-Thank you
-T. 
+> 
+> 
+> Andrei Pelinescu-Onciul wrote:
+>> Fix the following warning, when building on 64 bits:
+>> 
+>> net/sctp/socket.c:2091: warning: large integer implicitly
+>>                         truncated to unsigned type
+>> 
+>> Signed-off-by: Andrei Pelinescu-Onciul <andrei@iptel.org>
+> 
+> Ack.
 
+Applied, but please submit networking patches always CC:'d
+to netdev@vger.kernel.org otherwise they won't get logged
+in patchwork and therefore are most likely to get lost.
