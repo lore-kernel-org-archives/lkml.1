@@ -1,94 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZLBTeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZLBTg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbZLBTeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZLBTeP
+	id S1755470AbZLBTg4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:36:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZLBTg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:34:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3961 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbZLBTeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:34:14 -0500
-Message-ID: <4B16C10E.6040907@redhat.com>
-Date: Wed, 02 Dec 2009 17:33:34 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
-       superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-References: <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com> <4B154C54.5090906@redhat.com> <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com> <4B155288.1060509@redhat.com> <20091201175400.GA19259@core.coreip.homeip.net> <4B1567D8.7080007@redhat.com> <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net>
-In-Reply-To: <20091202171059.GC17839@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 2 Dec 2009 14:36:56 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:55437 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753618AbZLBTgz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 14:36:55 -0500
+Date: Wed, 2 Dec 2009 11:34:32 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: rostedt@goodmis.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
+       jbaron@redhat.com, mhiramat@redhat.com,
+       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+Subject: Re: trace/events: DECLARE vs DEFINE semantic
+Message-Id: <20091202113432.0a434499.randy.dunlap@oracle.com>
+In-Reply-To: <1259781578.12870.78.camel@gandalf.stny.rr.com>
+References: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
+	<1259761934.12870.12.camel@gandalf.stny.rr.com>
+	<20091202140128.GA2611@elte.hu>
+	<1259764109.12870.37.camel@gandalf.stny.rr.com>
+	<20091202144334.GA30359@elte.hu>
+	<1259765735.12870.42.camel@gandalf.stny.rr.com>
+	<20091202162715.GB9710@Krystal>
+	<1259773888.12870.61.camel@gandalf.stny.rr.com>
+	<20091202180633.GF9710@Krystal>
+	<1259777987.12870.70.camel@gandalf.stny.rr.com>
+	<20091202190135.GA23316@Krystal>
+	<1259781578.12870.78.camel@gandalf.stny.rr.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4B16C150.00B1:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
->> The raw interface applies only to the devices that doesn't have a hardware decoder
->> (something between 40%-60% of the currently supported devices).
+On Wed, 02 Dec 2009 14:19:38 -0500 Steven Rostedt wrote:
+
+> On Wed, 2009-12-02 at 14:01 -0500, Mathieu Desnoyers wrote:
+> > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > On Wed, 2009-12-02 at 13:06 -0500, Mathieu Desnoyers wrote:
+> > > > *
+> > > > Hrm. I wonder if having DEFINE_EVENT_CLASS is really worth having,
+> > > > considering that it really just does 2 things at once and may be
+> > > > confusing.
+> > > 
+> > > We keep it because that's what TRACE_EVENT currently is. It would suck
+> > > to have to replace every TRACE_EVENT there is now with a
+> > > DECLARE_EVENT_CLASS and DEFINE_EVENT. Although this would push
+> > > developers into using classes.
+> > 
+> > I agree that keeping something for backward compatibility is good, but
+> > what I dislike the most is the similarity between the
+> > DECLARE_EVENT_CLASS and DEFINE_EVENT_CLASS which have completely
+> > unrelated semantics. This is really misleading.
 > 
-> 50% is quite a number I think. But if driver does not allow access to
-> the raw stream - it will refuse binding to lirc_dev interface.
-
-Ok.
-
-> We need to cater to the future cases as well. I don't want to redesign
-> it in 2 years. But for devices that have only hardware decoders I
-> suppose we can short-curcuit "interfaces" and have a library-like module
-> creating input devices directly.
-
-We really need only one interface for those devices. However, protocol selection
-is needed, as it is associated with the scantable on those devices.
-a sysfs entry would solve this issue.
-
-Also, we need a better schema to cleanup the keycode table. Currently, the only way 
-I'm aware is to run a loop from 0 to 65535 associating a scancode to KEY_UNKNOWN or
-to KEY_RESERVED.
-
->> In the case of the cheap devices with just raw interfaces, running in-kernel
->> decoders, while it will work if you create one interface per protocol
->> per IR receiver, this also seems overkill. Why to do that? It sounds that it will
->> just create additional complexity at the kernelspace and at the userspace, since
->> now userspace programs will need to open more than one device to receive the
->> keycodes.
+> Not really, they are almost identical. But one creates an event with the
+> class, whereas the other does not. I find this quite convenient.
 > 
-> _Yes_!!! You open as many event devices as there are devices you are
-> interested in receiving data from. Multiplexing devices are bad, bad,
-> bad. Witness /dev/input/mouse and all the attempts at working around the
-> fact that if you have a special driver for one of your devices you
-> receive events from the same device through 2 interfaces and all kind of
-> "grab", "super-grab", "smart-grab" schemes are born.
-
-The only device that the driver can actually see is the IR receiver. There's no way to
-know if there is only one physical IR sending signals to it or several different models,
-especially if we consider that programmable IR's can be able even to generate more than one
-protocol at the same time, and can emulate other IR types.
-
-You might create some artificial schema to try to deal with different IR's being received
-at the same IR receiver, but, IMHO, this will just add a complex abstraction layer.
-
-Also, this won't give any real gain, as either both IR's will generate the same scancodes (and you can't distinguish what IR generated that code), or the scancode is different, and you
-can handle it differently.
-
->>> (for each remote/substream that they can recognize).
->> I'm assuming that, by remote, you're referring to a remote receiver (and not to 
->> the remote itself), right?
+> > > 
+> > > Egad No! It would make it a living nightmare. The internals reuse the
+> > > define macro, and there's no intermediate. By changing the
+> > > DECLARE_EVENT_CLASS to another name (SKETCH_EVENT_CLASS) we would have
+> > > to add something like this:
+> > > 
+> > > #define SKETCH_EVENT_CLASS(name, proto, args, tstruct, print) \
+> > > 	DECLARE_EVENT_CLASS(name, PARAMS(proto), PARAMS(args),\
+> > > 		PARAMS(tstruct), PARAMS(print))
+> > > 
+> > > We don't have a intermediate or "low level" macro in use here. Whatever
+> > > we give to the user is what we use.
+> > > 
+> > 
+> > Maybe we should consider having one. e.g.:
+> > 
+> > #ifdef CREATE_TRACE_POINTS
+> > 
+> > SKETCH_EVENT_CLASS maps to DEFINE_EVENT_CLASS
+> > 
+> > #else
+> > 
+> > SKETCH_EVENT_CLASS maps to DECLARE_EVENT_CLASS
+> > 
+> > #endif
 > 
-> If we could separate by remote transmitter that would be the best I
-> think, but I understand that it is rarely possible?
+> And what? Make another level of needless abstraction? That's sure to not
+> confuse people.
+> 
+> > 
+> > > 
+> > > I think the kernel developers are smart enough to figure out that these
+> > > macros are not a typical DECLARE/DEFINE that is elsewhere. But I think
+> > > using the DECLARE/DEFINE names will give them a better idea of what is
+> > > happening than to make up something completely new.
+> > 
+> > In my opinion, re-using a well-known keyword (e.g. DECLARE/DEFINE) but
+> > applying a different semantic to what is generally agreed upon is a
+> > recipe for confusing developers and users, who will skip the review of
+> > some pieces of code assuming they already know what "DECLARE" and
+> > "DEFINE" stands for.
+> > 
+> > I argue here that the content of trace/events/ headers are _not_ per se
+> > declarations nor definitions, and hence they should not confuse people
+> > by using inappropriately well-known keywords. They are actually more
+> > evolved macros that can be turned in either a declaration or definition,
+> > depending if CREATE_TRACE_POINTS is declared.
+> 
+> And I argue that the semantics here are not too far off to what those
+> are. Yes, these macros behave differently if CREATE_TRACE_POINTS is
+> declared or not, but I argue that the average (and below average) kernel
+> developer is smart enough to understand this difference.
+> 
+> 
+> > 
+> > When I created the markers/tracepoints, Andrew Morton explained to me
+> > the importance of distinguishing DECLARE vs DEFINE macros. I would
+> > really like to hear his point of view on the current question.
+> 
+> I would like to hear Andrew's comments too, as well as anyone else.
+> Randy Dunlap seemed to already approve of these naming conventions, and
+> he's a pretty picky person too.
+> 
+> Randy, do you agree that the use of DECLARE/DEFINE here is fine, or do
+> you think that we should come up with a better naming. I do not want to
+> add any needless abstraction layer for the sake of naming. These macros
+> are confusing enough without that.
 
-IMHO, the better is to use a separate interface for the IR transmitters,
-on the devices that support this feature. There are only a few devices
-I'm aware of that are able to transmit IR codes.
+Yes, that's what I would expect to see used, although I haven't
+been following this with the same level of detail that Mathieu has been.
 
-Cheers,
-Mauro.
+Hopefully Andrew can chime in here also.
 
+> Or do you (or anyone else) have a better name?
+
+
+
+---
+~Randy
