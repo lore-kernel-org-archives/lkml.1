@@ -1,58 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZLBGct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbZLBGt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbZLBGct (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 01:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZLBGcs
+	id S1752640AbZLBGt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 01:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZLBGt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 01:32:48 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:60397 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751322AbZLBGcs (ORCPT
+	Wed, 2 Dec 2009 01:49:57 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:21926 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751080AbZLBGt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 01:32:48 -0500
-Message-ID: <4B160A16.90703@cs.helsinki.fi>
-Date: Wed, 02 Dec 2009 08:32:54 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: hooanon05@yahoo.co.jp, linux-kernel@vger.kernel.org
-Subject: Re: Q, slab, kmemleak_erase() and redzone?
-References: <4B1502E3.4000304@cs.helsinki.fi> <1259690210.2121.233.camel@pc1117.cambridge.arm.com> <4B1609D0.6030809@cs.helsinki.fi>
-In-Reply-To: <4B1609D0.6030809@cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 01:49:56 -0500
+From: Artem Bityutskiy <Artem.Bityutskiy@Nokia.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] UBI: flush wl before clearing update marker
+Date: Wed,  2 Dec 2009 08:48:43 +0200
+Message-Id: <1259736523-13091-1-git-send-email-Artem.Bityutskiy@nokia.com>
+X-Mailer: git-send-email 1.6.2.5
+X-OriginalArrivalTime: 02 Dec 2009 06:48:50.0368 (UTC) FILETIME=[81469C00:01CA731B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg kirjoitti:
-> Catalin Marinas kirjoitti:
->> On Tue, 2009-12-01 at 11:49 +0000, Pekka Enberg wrote:
->>> hooanon05@yahoo.co.jp kirjoitti:
->>>> Pekka Enberg:
->>>>> We are setting an element in the per CPU array to NULL so the the
->>>>> kmemleak code in ____cache_alloc() is safe. Red-zoning is done at the
->>>>> _object_ which is not touched by kmemleak. Looking at the oops, it
->>>>> does seem likely that you have a bug in your module (or in some other
->>>>> part of the kernel).
->>>> Thanks for reply.
->>>> In ____cache_alloc(), the variable 'ac' is assigned before
->>>> cache_alloc_refill() call, and it is used for the parameter of
->>>> kmemleak_erase(). The value may be changed by cache_alloc_refill(),
->>>> isn't it?
->>> No. The pointer returned by cpu_cache_get() is not changed by
->>> cache_alloc_refill(). The contents of the array might change, yes. That
->>> said, we should check if objp is NULL before calling kmemleak_erase().
->>
->> Possibly but I don't understand why that's needed. The kmemleak_erase()
->> call just sets the ac->entry[ac->avail] to NULL. If ac->avail is 0, it
->> doesn't cause any harm.
-> 
-> No, you are absolutely correct. Can you please send an updated patch to 
-> Catalin that adds a comment on top of the cpu_cache_get() call that 
-> explains why we need it there?
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
 
-Doh, this was supposed to be a reply to Okajima's email :-).
+ubiupdatevol -t does the following:
+- ubi_start_update()
+  - set_update_marker()
+  - for all LEBs ubi_eba_unmap_leb()
+  - clear_update_marker()
+  - ubi_wl_flush()
 
-			Pekka
+ubi_wl_flush() physically erases all PEB, once it returns all PEBs are
+empty. clear_update_marker() has the update marker written after return.
+If there is a power cut between the last two functions then the UBI
+volume has no longer the "update" marker set and may have some valid
+LEBs while some of them may be gone.
+If that volume in question happens to be a UBIFS volume, then mount
+will fail with
+
+|UBIFS error (pid 1361): ubifs_read_node: bad node type (255 but expected 6)
+|UBIFS error (pid 1361): ubifs_read_node: bad node at LEB 0:0
+|Not a node, first 24 bytes:
+|00000000: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+
+if there is at least one valid LEB and the wear-leveling worker managed
+to clear LEB 0.
+
+The patch waits for the wl worker to finish prior clearing the "update"
+marker on flash. The two new LEB which are scheduled for erasing after
+clear_update_marker() should not matter because they are only visible to
+UBI.
+
+Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: stable@kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/mtd/ubi/upd.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/mtd/ubi/upd.c b/drivers/mtd/ubi/upd.c
+index 74fdc40..c1d7b88 100644
+--- a/drivers/mtd/ubi/upd.c
++++ b/drivers/mtd/ubi/upd.c
+@@ -147,12 +147,14 @@ int ubi_start_update(struct ubi_device *ubi, struct ubi_volume *vol,
+ 	}
+ 
+ 	if (bytes == 0) {
++		err = ubi_wl_flush(ubi);
++		if (err)
++			return err;
++
+ 		err = clear_update_marker(ubi, vol, 0);
+ 		if (err)
+ 			return err;
+-		err = ubi_wl_flush(ubi);
+-		if (!err)
+-			vol->updating = 0;
++		vol->updating = 0;
+ 	}
+ 
+ 	vol->upd_buf = vmalloc(ubi->leb_size);
+@@ -362,16 +364,16 @@ int ubi_more_update_data(struct ubi_device *ubi, struct ubi_volume *vol,
+ 
+ 	ubi_assert(vol->upd_received <= vol->upd_bytes);
+ 	if (vol->upd_received == vol->upd_bytes) {
++		err = ubi_wl_flush(ubi);
++		if (err)
++			return err;
+ 		/* The update is finished, clear the update marker */
+ 		err = clear_update_marker(ubi, vol, vol->upd_bytes);
+ 		if (err)
+ 			return err;
+-		err = ubi_wl_flush(ubi);
+-		if (err == 0) {
+-			vol->updating = 0;
+-			err = to_write;
+-			vfree(vol->upd_buf);
+-		}
++		vol->updating = 0;
++		err = to_write;
++		vfree(vol->upd_buf);
+ 	}
+ 
+ 	return err;
+-- 
+1.6.2.5
+
