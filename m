@@ -1,75 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZLBLcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZLBLcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZLBLcP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 06:32:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZLBLcO
+	id S1753524AbZLBLcl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 06:32:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZLBLck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 06:32:14 -0500
-Received: from mail.klingt.org ([86.59.21.178]:37987 "EHLO klingt.org"
+	Wed, 2 Dec 2009 06:32:40 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:38997 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751821AbZLBLcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 06:32:12 -0500
-Message-ID: <4B16503A.8030508@klingt.org>
-Date: Wed, 02 Dec 2009 12:32:10 +0100
-From: Tim Blechmann <tim@klingt.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.6pre) Gecko/20091128 Shredder/3.0.1pre
+	id S1753267AbZLBLcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 06:32:39 -0500
+Date: Wed, 2 Dec 2009 11:32:41 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Tobi Oetiker <tobi@oetiker.ch>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Frans Pop <elendil@planet.nl>, Jiri Kosina <jkosina@suse.cz>,
+       Sven Geggus <lists@fuchsschwanzdomain.de>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
+       linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephan von Krawczynski <skraw@ithnet.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: still getting allocation failures (was Re: [PATCH] vmscan:
+	Stop kswapd waiting on congestion when the min watermark is not
+	being met V2)
+Message-ID: <20091202113241.GC1457@csn.ul.ie>
+References: <20091113142608.33B9.A69D9226@jp.fujitsu.com> <20091113135443.GF29804@csn.ul.ie> <20091114023138.3DA5.A69D9226@jp.fujitsu.com> <20091113181557.GM29804@csn.ul.ie> <2f11576a0911131033w4a9e6042k3349f0be290a167e@mail.gmail.com> <20091113200357.GO29804@csn.ul.ie> <alpine.DEB.2.00.0911261542500.21450@sebohet.brgvxre.pu> <alpine.DEB.2.00.0911290834470.20857@sebohet.brgvxre.pu>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Revert "sched, x86: Optimize branch hint in __switch_to()"
-References: <tip-a3a1de0c34de6f5f8332cd6151c46af7813c0fcb@git.kernel.org>
-In-Reply-To: <tip-a3a1de0c34de6f5f8332cd6151c46af7813c0fcb@git.kernel.org>
-Content-Type: multipart/mixed;
- boundary="------------000901070508040408030808"
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [127.0.0.1]); Wed, 02 Dec 2009 12:32:11 +0100 (CET)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0911290834470.20857@sebohet.brgvxre.pu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000901070508040408030808
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sun, Nov 29, 2009 at 08:42:09AM +0100, Tobi Oetiker wrote:
+> Hi Mel,
+> 
+> Thursday Tobias Oetiker wrote:
+> > Hi Mel,
+> >
+> > Nov 13 Mel Gorman wrote:
+> >
+> > > The last version has a stupid bug in it. Sorry.
+> > >
+> > > Changelog since V1
+> > >   o Fix incorrect negation
+> > >   o Rename kswapd_no_congestion_wait to kswapd_skip_congestion_wait as
+> > >     suggested by Rik
+> > >
+> > > If reclaim fails to make sufficient progress, the priority is raised.
+> > > Once the priority is higher, kswapd starts waiting on congestion.  However,
+> > > if the zone is below the min watermark then kswapd needs to continue working
+> > > without delay as there is a danger of an increased rate of GFP_ATOMIC
+> > > allocation failure.
+> > >
+> > > This patch changes the conditions under which kswapd waits on
+> > > congestion by only going to sleep if the min watermarks are being met.
+> >
+> > I finally got around to test this together with the whole series on
+> > 2.6.31.6. after running it for a day I have not yet seen a single
+> > order:5 allocation problem ... (while I had several an hour before)
+> 
+> > for the record, my kernel is now running with the following
+> > patches:
+> >
+> > patch1:Date: Thu, 12 Nov 2009 19:30:31 +0000
+> > patch1:Subject: [PATCH 1/5] page allocator: Always wake kswapd when restarting an allocation attempt after direct reclaim failed
+> >
+> > patch2:Date: Thu, 12 Nov 2009 19:30:32 +0000
+> > patch2:Subject: [PATCH 2/5] page allocator: Do not allow interrupts to use ALLOC_HARDER
+> >
+> > patch3:Date: Thu, 12 Nov 2009 19:30:33 +0000
+> > patch3:Subject: [PATCH 3/5] page allocator: Wait on both sync and async congestion after direct reclaim
+> >
+> > patch4:Date: Thu, 12 Nov 2009 19:30:34 +0000
+> > patch4:Subject: [PATCH 4/5] vmscan: Have kswapd sleep for a short interval and double check it should be asleep
+> >
+> > patch5:Date: Fri, 13 Nov 2009 20:03:57 +0000
+> > patch5:Subject: [PATCH] vmscan: Stop kswapd waiting on congestion when the min watermark is not being met V2
+> >
+> > patch6:Date: Tue, 17 Nov 2009 10:34:21 +0000
+> > patch6:Subject: [PATCH] vmscan: Have kswapd sleep for a short interval and double check it should be asleep fix 1
+> >
+> I have now been running the new kernel for a few days and I am
+> sorry to report that about a day after booting the allocation
+> failures started showing again. More order:4 instead of order:5 ...
+> 
 
+Why has the order changed?
 
-This reverts commit a3a1de0c34de6f5f8332cd6151c46af7813c0fcb.
+Also, what allocator were you using in 2.6.30 and 2.6.31.6, SLAB or
+SLUB? Did you happen to change them when upgrading the kernel?
 
-Commit 8ec6993d9f7d961014af970ded57542961fe9ad9 cleared the es and ds
-selectors, so the original branch hints are correct now. Therefore
-the branch hint doesn't need to be removed.
-
-Signed-off-by: Tim Blechmann <tim@klingt.org>
----
-  arch/x86/kernel/process_64.c |    5 +++--
-  1 files changed, 3 insertions(+), 2 deletions(-)
-
-
-
---------------000901070508040408030808
-Content-Type: text/x-patch;
- name="0001-Revert-sched-x86-Optimize-branch-hint-in-__switch_to.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename*0="0001-Revert-sched-x86-Optimize-branch-hint-in-__switch_to.pa";
- filename*1="tch"
-
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 93c501d..eb62cbc 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -406,10 +406,11 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	 * This won't pick up thread selector changes, but I guess that is ok.
- 	 */
- 	savesegment(es, prev->es);
--	if (next->es | prev->es)
-+	if (unlikely(next->es | prev->es))
- 		loadsegment(es, next->es);
-+
- 	savesegment(ds, prev->ds);
--	if (next->ds | prev->ds)
-+	if (unlikely(next->ds | prev->ds))
- 		loadsegment(ds, next->ds);
- 
- 
-
-
---------------000901070508040408030808--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
