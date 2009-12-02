@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbZLBR7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbZLBSE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311AbZLBR7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 12:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZLBR7U
+	id S1755258AbZLBSE2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 13:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZLBSE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 12:59:20 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47500 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751824AbZLBR7U (ORCPT
+	Wed, 2 Dec 2009 13:04:27 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:29228 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755105AbZLBSE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 12:59:20 -0500
-Message-ID: <4B16AAD1.7090900@zytor.com>
-Date: Wed, 02 Dec 2009 09:58:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jan Beulich <JBeulich@novell.com>, a.p.zijlstra@chello.nl, mingo@elte.hu,
-       tglx@linutronix.de, mingo@redhat.com, npiggin@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [tip:core/locking] locking, x86: Slightly shorten  __ticket_spin_trylock()
-References: <4B0FF9AC0200007800022713@vpn.id2.novell.com> <tip-133ec7a235160dd44cbd4d82fff65a9983331df9@git.kernel.org> <alpine.LFD.2.00.0912020714420.2872@localhost.localdomain> <4B16A2CC020000780002313A@vpn.id2.novell.com> <alpine.LFD.2.00.0912020853240.2872@localhost.localdomain> <alpine.LFD.2.00.0912020857270.2872@localhost.localdomain> <4B16A2A5.2030307@zytor.com> <alpine.LFD.2.00.0912020938330.2872@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912020938330.2872@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 2 Dec 2009 13:04:26 -0500
+Date: Wed, 2 Dec 2009 10:04:06 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-next@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
+Subject: Re: linux-next: Tree for November 30 (media/common/tuners/max2165)
+Message-Id: <20091202100406.e25b2322.randy.dunlap@oracle.com>
+In-Reply-To: <4B1409D9.1050901@oracle.com>
+References: <20091130175346.3f3345ed.sfr@canb.auug.org.au>
+	<4B1409D9.1050901@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4B16AC2A.0119:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/02/2009 09:48 AM, Linus Torvalds wrote:
-> 
-> Hmm. Odd. I just checked:
-> 
-> 	_Bool myfunction(char val)
-> 	{
-> 		return val;
-> 	}
-> 
-> and compiling it with
-> 
-> 	gcc -O2 -S -m32 -mregparm=3 -fomit-frame-pointer t.c
-> 
-> I get
-> 
-> 	myfunction:
-> 		testb	%al, %al
-> 		setne	%al
-> 		ret
-> 
-> which only sets the low 8 bits. So my gcc actually seems to think that 
-> _Bool is just 8 bits, at least for return values, and then upper 24 bits 
-> are undefined. It also generates 'testb' for a test of a return value.
-> 
+On Mon, 30 Nov 2009 10:07:21 -0800 Randy Dunlap wrote:
 
-Damn.  I stand corrected :-/  I just tested it on x86-64, and gcc 4.4.1
-actually *violates the documented ABI* for x86-64.
+> Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20091127:
+> > 
+> > The v4l-dvb tree lost its conflict.
+> 
+> 
+> on i386 (X86_32):
+> 
+> a 'double' variable is used, causing:
+> 
+> ERROR: "__floatunsidf" [drivers/media/common/tuners/max2165.ko] undefined!
+> ERROR: "__adddf3" [drivers/media/common/tuners/max2165.ko] undefined!
+> ERROR: "__fixunsdfsi" [drivers/media/common/tuners/max2165.ko] undefined!
 
-> So it so happens that I think Jan's patch would have worked - except for 
-> the PV_OPS mess. _Bool does act like a 'char' on x86 at least with gcc. I 
-> still think that it's fundamentally wrong to use 'bool' because of how 
-> subtly it can act.
 
-I personally think using "bool" for C values is a good thing -- people
-have a very nasty tendency to come up with the clever idea of "oh, there
-is this flag which is 'int'... well, in this special case let's set it
-to -1 or 2", and of course there is absolutely no way to know, globally,
-that this value once in a blue moon gets set to a bizarre value.  I have
-seen this a number of times in the kernel.  It doesn't mean one should
-pass it to assembly code.
+linux-next-20091202:
 
-	-hpa
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+still have this one (above) and similar with
+drivers/media/dvb/frontends/atbm8830.c:
 
+drivers/built-in.o: In function `atbm8830_init':
+atbm8830.c:(.text+0x9012f9): undefined reference to `__udivdi3'
+atbm8830.c:(.text+0x901384): undefined reference to `__floatunsidf'
+atbm8830.c:(.text+0x901395): undefined reference to `__muldf3'
+atbm8830.c:(.text+0x9013a5): undefined reference to `__floatunsidf'
+atbm8830.c:(.text+0x9013b2): undefined reference to `__divdf3'
+atbm8830.c:(.text+0x9013c3): undefined reference to `__muldf3'
+atbm8830.c:(.text+0x9013cd): undefined reference to `__fixunsdfsi'
+
+---
+~Randy
