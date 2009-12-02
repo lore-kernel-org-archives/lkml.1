@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZLBXCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbZLBW7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbZLBXCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 18:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZLBXCh
+	id S1755003AbZLBW7S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZLBW7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 18:02:37 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:60812 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755120AbZLBXCg (ORCPT
+	Wed, 2 Dec 2009 17:59:17 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:31806 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753850AbZLBW7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 18:02:36 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAEAIp/FktGGNlG/2dsb2JhbACBTtY6hDEE
-Date: Wed, 2 Dec 2009 17:57:36 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
-       jbaron@redhat.com, linux-tip-commits@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: trace/events: DECLARE vs DEFINE semantic
-Message-ID: <20091202225736.GA14770@Krystal>
-References: <20091202144334.GA30359@elte.hu> <1259765735.12870.42.camel@gandalf.stny.rr.com> <20091202162715.GB9710@Krystal> <1259773888.12870.61.camel@gandalf.stny.rr.com> <20091202180633.GF9710@Krystal> <1259777987.12870.70.camel@gandalf.stny.rr.com> <20091202190135.GA23316@Krystal> <1259781578.12870.78.camel@gandalf.stny.rr.com> <4B16EC06.6010706@redhat.com> <1259794005.12870.102.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 17:59:16 -0500
+Date: Thu, 3 Dec 2009 01:59:22 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Felipe Balbi <felipe.balbi@nokia.com>
+Cc: Grazvydas Ignotas <notasas@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+ charger
+Message-ID: <20091202225922.GA15568@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+ <20091202173321.GA23738@nokia.com>
+ <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
+ <20091202204946.GB25682@nokia.com>
+ <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
+ <20091202215442.GA30658@oksana.dev.rtsoft.ru>
+ <20091202223156.GA14921@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1259794005.12870.102.camel@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 17:53:39 up 13:44,  4 users,  load average: 1.07, 0.93, 0.82
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091202223156.GA14921@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Wed, 2009-12-02 at 17:36 -0500, Masami Hiramatsu wrote:
+On Thu, Dec 03, 2009 at 12:31:56AM +0200, Felipe Balbi wrote:
+> Hi,
 > 
-> > > Or do you (or anyone else) have a better name?
-> > 
-> > How about renaming DEFINE_EVENT to TRACE_EVENT_CLASS?
-> > 
-> > DECLARE_EVENT_CLASS(y, ...)	declare an event-class y
-> > TRACE_EVENT_CLASS(x, y, ...)	define/declare a trace event x from event-class y
-> > TRACE_EVENT(x, ...)		define/declare a trace event x
-> > 
-> > Thus TRACE_EVENT_* implies that this macro will be expanded
-> > to both of definition and declaration.
-> > I don't think separating it is good idea from the viewpoint
-> > of maintaining code.
+> On Wed, Dec 02, 2009 at 10:54:42PM +0100, ext Anton Vorontsov wrote:
+> >As for the default USB VBUS current value, it could be Kconfig
+> >option (something alike to USB_GADGET_VBUS_DRAW) and/or module
+> >parameter, or hw default, or hardcoded for now. Either will
+> >work.
 > 
-> Hmm, what about just:
-> 
-> TRACE_CLASS - Declares a class
-> TRACE_CLASS_EVENT - defines an event for said class
-> TRACE_EVENT - Declares a class and defines an event (as is today)
+> cannot be Kconfig, it's mandated by usb battery charging spec 1.x to
+> be 100mA for 100ms, then if you don't enumerate, you have to cut
+> charging.
 
-Yep, it looks good! It's self-descriptive and don't require to explain
-what the thing is doing each time we refer to it. (however I feel a bit
-sad for Fred, Wilma and Barney) ;)
+Oh, I thought TWL4030 does the USB stuff somewhat transparently
+so the checks in twl4030_charger_check_vbus() would be enough.
+Is there any TWL4030 reference manual available?
 
-For that semantic, you have my
+If TWL4030 just draws the VBUS directly, then it might be a good
+idea to integrate the driver with OTG framework, as an example
+see
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+commit 5bf2b994bfe11bfe86231050897b2d881ca544d9
+Author: Philipp Zabel <philipp.zabel@gmail.com>
+Date:   Sun Jan 18 17:40:27 2009 +0100
 
-Thanks,
+    pda_power: Add optional OTG transceiver and voltage regulator support
 
-Mathieu
+Though, instead of just a boolean is_usb_online() stuff, you'll
+have to get the allowed current draw value and configure the
+charger appropriately.
 
-> 
-> -- Steve
-> 
-> 
+Will this work?
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
