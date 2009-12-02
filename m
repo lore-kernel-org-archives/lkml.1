@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZLBWqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbZLBWqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbZLBWqE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:46:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZLBWqD
+	id S1754649AbZLBWqm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbZLBWqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:46:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37729 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752199AbZLBWqD (ORCPT
+	Wed, 2 Dec 2009 17:46:42 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:64251 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753850AbZLBWqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:46:03 -0500
-Date: Wed, 2 Dec 2009 14:45:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Patch] ipc: remove unreachable code in sem.c
-Message-Id: <20091202144552.ea635692.akpm@linux-foundation.org>
-In-Reply-To: <20091201070008.4311.16191.sendpatchset@localhost.localdomain>
-References: <20091201070008.4311.16191.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Wed, 2 Dec 2009 17:46:40 -0500
+Subject: Re: trace/events: DECLARE vs DEFINE semantic
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, wcohen@redhat.com, fweisbec@gmail.com,
+       tglx@linutronix.de, jbaron@redhat.com,
+       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+In-Reply-To: <4B16EC06.6010706@redhat.com>
+References: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
+	 <1259761934.12870.12.camel@gandalf.stny.rr.com>
+	 <20091202140128.GA2611@elte.hu>
+	 <1259764109.12870.37.camel@gandalf.stny.rr.com>
+	 <20091202144334.GA30359@elte.hu>
+	 <1259765735.12870.42.camel@gandalf.stny.rr.com>
+	 <20091202162715.GB9710@Krystal>
+	 <1259773888.12870.61.camel@gandalf.stny.rr.com>
+	 <20091202180633.GF9710@Krystal>
+	 <1259777987.12870.70.camel@gandalf.stny.rr.com>
+	 <20091202190135.GA23316@Krystal>
+	 <1259781578.12870.78.camel@gandalf.stny.rr.com>
+	 <4B16EC06.6010706@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 02 Dec 2009 17:46:45 -0500
+Message-Id: <1259794005.12870.102.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Dec 2009 01:57:09 -0500
-Amerigo Wang <amwang@redhat.com> wrote:
+On Wed, 2009-12-02 at 17:36 -0500, Masami Hiramatsu wrote:
 
-> This line is unreachable, remove it.
+> > Or do you (or anyone else) have a better name?
 > 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
+> How about renaming DEFINE_EVENT to TRACE_EVENT_CLASS?
 > 
-> ---
-> diff --git a/ipc/sem.c b/ipc/sem.c
-> index 87c2b64..8439f2f 100644
-> --- a/ipc/sem.c
-> +++ b/ipc/sem.c
-> @@ -652,7 +652,6 @@ static int semctl_nolock(struct ipc_namespace *ns, int semid,
->  	default:
->  		return -EINVAL;
->  	}
-> -	return err;
->  out_unlock:
->  	sem_unlock(sma);
->  	return err;
+> DECLARE_EVENT_CLASS(y, ...)	declare an event-class y
+> TRACE_EVENT_CLASS(x, y, ...)	define/declare a trace event x from event-class y
+> TRACE_EVENT(x, ...)		define/declare a trace event x
+> 
+> Thus TRACE_EVENT_* implies that this macro will be expanded
+> to both of definition and declaration.
+> I don't think separating it is good idea from the viewpoint
+> of maintaining code.
 
-If we're going to do that then there's no point in initialising `err':
+Hmm, what about just:
 
---- a/ipc/sem.c~ipc-remove-unreachable-code-in-semc-fix
-+++ a/ipc/sem.c
-@@ -624,7 +624,7 @@ static unsigned long copy_semid_to_user(
- static int semctl_nolock(struct ipc_namespace *ns, int semid,
- 			 int cmd, int version, union semun arg)
- {
--	int err = -EINVAL;
-+	int err;
- 	struct sem_array *sma;
- 
- 	switch(cmd) {
-_
+TRACE_CLASS - Declares a class
+TRACE_CLASS_EVENT - defines an event for said class
+TRACE_EVENT - Declares a class and defines an event (as is today)
+
+-- Steve
 
 
-you should have noticed this!
