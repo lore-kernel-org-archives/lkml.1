@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZLBUJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZLBUJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbZLBUJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 15:09:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbZLBUJz
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1754819AbZLBUJz (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 2 Dec 2009 15:09:55 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:1546 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754528AbZLBUJx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZLBUJy
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 2 Dec 2009 15:09:54 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:41388 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754575AbZLBUJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Dec 2009 15:09:53 -0500
-Subject: [GIT PULL] regulator fix for 2.6.32
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 02 Dec 2009 20:09:53 +0000
-Message-ID: <1259784593.3588.197.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Date: Wed, 2 Dec 2009 12:09:55 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: [PATCH tip/core/rcu 0/4] rcu: preemptible expedited grace periods
+	and cleanups
+Message-ID: <20091202200955.GA12950@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+This patchset includes some cleanups, improved diagnostics, and an
+implementation of expedited preemptible RCU grace periods that is
+actually expedited:
 
-Hope it's not too late. Please pull the following regulator bug fix for
-2.6.32. This one fixes an oops in the WM831x ISINK driver.
+1.	Rename the "quiet" functions.  The name rcu_quiet_cpu() was
+	clear enough, but now that we have four flavors of quietness
+	with more on the way, we need more meaningful names.
 
-Thanks
+2.	Enable a fourth level of the rcu_node hierarchy.  No, we really
+	don't need the ability to run on million-CPU SMP systems at the
+	moment, but the additional level allows more vigorous
+	stress-testing on 16-CPU systems.
 
-Liam 
+3.	Add an implementation of synchronize_rcu_expedited() that
+	actually expedites preemptible-RCU grace periods.
 
----
+4.	Make RCU_CPU_STALL_DETECTOR be on by default.  If this works
+	well, the #ifdefs will eventually be removed to reduce testing
+	load.
 
-The following changes since commit 2127816366e0ffbc1426fa69e7b9b2bebd2e2288:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../gregkh/staging-2.6
+This patchset is intended for 2.6.34, but has passed sufficient testing
+that it could safely be included in 2.6.33, if desired.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git for-linus
-
-Mark Brown (1):
-      regulator: Initialise wm831x structure pointor for ISINK driver
-
- drivers/regulator/wm831x-isink.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-
+ b/kernel/rcutorture.c     |   34 +++++--
+ b/kernel/rcutree.c        |   66 ++++++++-------
+ b/kernel/rcutree.h        |    3 
+ b/kernel/rcutree_plugin.h |   13 +--
+ b/kernel/rcutree_trace.c  |   11 +-
+ b/lib/Kconfig.debug       |    3 
+ kernel/rcutree.c          |   16 ++-
+ kernel/rcutree.h          |   51 ++++++++++-
+ kernel/rcutree_plugin.h   |  198 +++++++++++++++++++++++++++++++++++++++++++---
+ 9 files changed, 324 insertions(+), 71 deletions(-)
