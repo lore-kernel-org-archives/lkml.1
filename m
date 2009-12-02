@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZLBA1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZLBAc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbZLBA1E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 19:27:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZLBA1D
+	id S1754887AbZLBAc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 19:32:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbZLBAc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 19:27:03 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33270 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754734AbZLBA1C (ORCPT
+	Tue, 1 Dec 2009 19:32:58 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:47779 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754757AbZLBAc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 19:27:02 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2] mm: Introduce coredump parameter structure
-Cc: kosaki.motohiro@jp.fujitsu.com, Masami Hiramatsu <mhiramat@redhat.com>,
-       Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, hidehiro.kawai.ez@hitachi.com, lethal@linux-sh.org,
-       mingo@elte.hu, roland@redhat.com, vapier@gentoo.org,
-       Takahiro Yasui <tyasui@redhat.com>
-In-Reply-To: <20091201161800.fa6b6ae4.akpm@linux-foundation.org>
-References: <4B11FB6F.4040403@redhat.com> <20091201161800.fa6b6ae4.akpm@linux-foundation.org>
-Message-Id: <20091202092607.5C40.A69D9226@jp.fujitsu.com>
+	Tue, 1 Dec 2009 19:32:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=pQCMyVrnWdVBDqUeOrW27E3FyGchT0whvkBJ3GfeeR+GrsDBSsNmjlyuID1IK9A3ft
+         e7dsKG/E8mYsBRxzWqGN/g+TNZtHY5dxsEfkCx3o0owcpBWBDH0ICL/JcEEx3e0Mwq1A
+         GE28YUO0T7a+Idp89uM6nP6N4aPzlamclyEHg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  2 Dec 2009 09:27:05 +0900 (JST)
+Date: Tue, 1 Dec 2009 16:27:41 -0800
+Message-ID: <911b679e0912011627q568132e8x655f109c75030725@mail.gmail.com>
+Subject: Key change for TCP_MD5
+From: Xiaochun Lu <xiaoclu@gmail.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sat, 28 Nov 2009 23:41:19 -0500
-> Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
-> > Introduce coredump parameter data structure (struct coredump_params)
-> > for simplifying binfmt->core_dump() arguments.
-> > 
-> > Changes in v2:
-> >    - Don't remove DUMP_WRITE() macro.
-> 
-> What is the reason for this change?
-> 
-> Please always include both the "what" and the "why" in changelog text.
+Hi, ALL
 
-I reported v1 break ia64 and uml. its arch specific code still use DUMP_WRITE().
+This is regarding to TCP-MD5 option [RFC2385].  In current
+implementation, only one md5 password is saved in the kernel and it
+brings in the problem for changing key:  Changing key in the middle of
+tcp session will break the session unless new md5 password is updated
+at both ends at the same time (there is no window for key change).
+Does anybody know any patches currently exist to address this issue? I
+know rfc4808 is targeting to solve this issue. Does there any plan to
+implement rfc4808 for linux?
 
-Thanks.
+Best Regards!
 
 
+Shawn Lu
