@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbZLBJww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbZLBJyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbZLBJww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 04:52:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZLBJwv
+	id S1754155AbZLBJyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 04:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZLBJyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 04:52:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38271 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751355AbZLBJwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 04:52:51 -0500
-Message-ID: <4B16388F.90707@kernel.org>
-Date: Wed, 02 Dec 2009 18:51:11 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Wed, 2 Dec 2009 04:54:23 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:48580 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751366AbZLBJyX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 04:54:23 -0500
+To: "J. R. Okajima" <hooanon05@yahoo.co.jp>
+Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi
+Subject: Re: [PATCH 1/2] slab, kmemleak, minor, stop calling kmemleak_erase() unconditionally
+References: <1259740550-10394-1-git-send-email-hooanon05@yahoo.co.jp>
+	<1259740550-10394-2-git-send-email-hooanon05@yahoo.co.jp>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Wed, 02 Dec 2009 09:54:25 +0000
+In-Reply-To: <1259740550-10394-2-git-send-email-hooanon05@yahoo.co.jp> (J. R. Okajima's message of "Wed\,  2 Dec 2009 16\:55\:49 +0900")
+Message-ID: <tnxr5rd4s6m.fsf@pc1117.cambridge.arm.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, peterz@infradead.org,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] sched: refactor try_to_wake_up()
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>	 <1259726212-30259-4-git-send-email-tj@kernel.org> <1259744733.6028.233.camel@marge.simson.net>
-In-Reply-To: <1259744733.6028.233.camel@marge.simson.net>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 02 Dec 2009 09:54:27.0204 (UTC) FILETIME=[6F58EC40:01CA7335]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 12/02/2009 06:05 PM, Mike Galbraith wrote:
-> On Wed, 2009-12-02 at 12:56 +0900, Tejun Heo wrote:
->> Factor ttwu_activate() and ttwu_woken_up() out of try_to_wake_up().
-> 
-> Nit: ttwu_woken_up() sounds decidedly strange to my ear. Perhaps
-> ttwu_post_activation()?
-
-Sure, I can rename it.
-
-> As a $.02 comment, factoring here doesn't look nice, reader scrolls
-> around whereas he currently sees all the why/wherefore at a glance.
-> Needing to pass three booleans for stats also looks bad.
-
-The three bools aren't the prettiest thing in the world but I couldn't
-prevent gcc from re-evaluating expressions without those.
-
-> I think it would _look_ better with the thing just
-> duplicated/stripped down and called what it is,
-> sched_notifier_wakeup() or such.
-
-Sorry, I'm not following.  Can you elaborate a bit?
-
-> Which leaves growth in it's wake though...
+"J. R. Okajima" <hooanon05@yahoo.co.jp> wrote:
+> When the gotten object is NULL (probably due to ENOMEM),
+> kmemleak_erase() is unnecessary here, It just sets NULL to where already
+> is NULL.
+> Add a condition.
 >
->> +/**
->>   * try_to_wake_up - wake up a thread
->>   * @p: the to-be-woken-up thread
-> 
-> Nit: thread to be awakened sounds better.
+> Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+> ---
+>  mm/slab.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+>
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 7dfa481..4e61449 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -3109,7 +3109,8 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+>  	 * per-CPU caches is leaked, we need to make sure kmemleak doesn't
+>  	 * treat the array pointers as a reference to the object.
+>  	 */
+> -	kmemleak_erase(&ac->entry[ac->avail]);
+> +	if (objp)
+> +		kmemleak_erase(&ac->entry[ac->avail]);
+>  	return objp;
+>  }
 
-Will update.
-
-Thanks.
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 
 -- 
-tejun
+Catalin
