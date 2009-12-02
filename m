@@ -1,93 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZLBOEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZLBN61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbZLBOEp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZLBOEp
+	id S1754256AbZLBN61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:58:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZLBN61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:04:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:36784 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753579AbZLBOEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 09:04:44 -0500
-Date: Wed, 2 Dec 2009 14:57:59 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Veaceslav Falico <vfalico@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Al Viro <viro@zeniv.linux.org.uk>, Miloslav Trmac <mitr@redhat.com>,
-       James Morris <jmorris@namei.org>, Alan Cox <alan@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
-       Louis Rilling <louis.rilling@kerlabs.com>,
-       David Howells <dhowells@redhat.com>,
-       Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: Re: [PATCH 1/4] copy_signal cleanup: use zalloc and remove
-	initializations
-Message-ID: <20091202135759.GA791@redhat.com>
-References: <20091201221036.GA10052@darkmag.usersys.redhat.com>
+	Wed, 2 Dec 2009 08:58:27 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:55917 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbZLBN60 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 08:58:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=cfLkKUS8smbG3v+yC7UFPFFzgu5wetBlSqiq8b5cBUedYh4GYIjI8xGEQGXAbnr3B6
+         wL79yJjtR6Htx++ly3CE0Osy8keEJLr6/NHiPfrlK43gVUR0rs4C3uOYLOog4tsP3Hn4
+         fxaUYssgk5/w4AHvpt1V2ijy0zMBsr8NzYkmc=
+Message-ID: <4B167281.1090708@gmail.com>
+Date: Wed, 02 Dec 2009 21:58:25 +0800
+From: Wan ZongShun <mcuos.com@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091201221036.GA10052@darkmag.usersys.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Russell King <linux@arm.linux.org.uk>
+Subject: [PATCH 4/4]ARM: NUC900: enable uart support for nuc932
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01, Veaceslav Falico wrote:
->
-> Use kmem_cache_zalloc() on signal creation and remove unneeded initialization
-> lines.
+Dear Russell,
 
-I like this series very much. Not only it cleanups and lessens the code,
-it opens the possibility to do more cleanups. Say, we can simplify
-exit_notify() a bit, we can remove ->group_exit_task check since we know
-->notify_count < 0 can be false positive.
+This patch enables uart support for nuc932.
 
-A couple of nits though,
+Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
 
-> Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
-> ---
->
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index 166b8c4..160477d 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -825,17 +825,6 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
->  	/* Thread group counters. */
->  	thread_group_cputime_init(sig);
->
-> -	/* Expiration times and increments. */
-> -	sig->it[CPUCLOCK_PROF].expires = cputime_zero;
-> -	sig->it[CPUCLOCK_PROF].incr = cputime_zero;
-> -	sig->it[CPUCLOCK_VIRT].expires = cputime_zero;
-> -	sig->it[CPUCLOCK_VIRT].incr = cputime_zero;
-> -
-> -	/* Cached expiration times. */
-> -	sig->cputime_expires.prof_exp = cputime_zero;
-> -	sig->cputime_expires.virt_exp = cputime_zero;
-> -	sig->cputime_expires.sched_exp = 0;
-> -
->  	if (sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY) {
->  		sig->cputime_expires.prof_exp =
->  			secs_to_cputime(sig->rlim[RLIMIT_CPU].rlim_cur);
+---
+ arch/arm/mach-w90x900/clock.h          |    2 ++
+ arch/arm/mach-w90x900/cpu.h            |    2 +-
+ arch/arm/mach-w90x900/mach-nuc932evb.c |    1 +
+ arch/arm/mach-w90x900/nuc932.c         |   10 ++++++++++
+ arch/arm/mach-w90x900/nuc932.h         |    1 +
+ 5 files changed, 15 insertions(+), 1 deletions(-)
 
-Personally I don't mind, but perhaps it is better to move this change
-into 3/4 which changes thread_group_cputime_init().
-
-> @@ -855,7 +844,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
->  	if (clone_flags & CLONE_THREAD)
->  		return 0;
->
-> -	sig = kmem_cache_alloc(signal_cachep, GFP_KERNEL);
-> +	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
->
-> [...snip...]
-
-Imho, very nice change.
-
-Oleg.
-
+diff --git a/arch/arm/mach-w90x900/clock.h b/arch/arm/mach-w90x900/clock.h
+index b9ea2e6..2a2a54a 100644
+--- a/arch/arm/mach-w90x900/clock.h
++++ b/arch/arm/mach-w90x900/clock.h
+@@ -14,8 +14,10 @@
+ 
+ #ifndef CONFIG_CPU_NUC932
+ #define EXTCLK	15000000
++#define UARTCLK	11313600
+ #else
+ #define EXTCLK	27000000
++#define UARTCLK	57139200
+ #endif
+ 
+ void nuc900_clk_enable(struct clk *clk, int enable);
+diff --git a/arch/arm/mach-w90x900/cpu.h b/arch/arm/mach-w90x900/cpu.h
+index 4493d4d..300e35b 100644
+--- a/arch/arm/mach-w90x900/cpu.h
++++ b/arch/arm/mach-w90x900/cpu.h
+@@ -30,7 +30,7 @@
+ 	.membase	= name##_BA,				\
+ 	.mapbase	= name##_PA,				\
+ 	.irq		= IRQ_##name,				\
+-	.uartclk	= 11313600,				\
++	.uartclk	= UARTCLK,				\
+ 	.regshift	= 2,					\
+ 	.iotype		= UPIO_MEM,				\
+ 	.flags		= UPF_BOOT_AUTOCONF | UPF_SKIP_TEST,	\
+diff --git a/arch/arm/mach-w90x900/mach-nuc932evb.c b/arch/arm/mach-w90x900/mach-nuc932evb.c
+index bcc67d2..9f8a3f9 100644
+--- a/arch/arm/mach-w90x900/mach-nuc932evb.c
++++ b/arch/arm/mach-w90x900/mach-nuc932evb.c
+@@ -23,6 +23,7 @@ static void __init nuc932evb_map_io(void)
+ {
+ 	nuc932_map_io();
+ 	nuc932_init_clocks();
++	nuc932_init_uartclk();
+ }
+ 
+ static void __init nuc932evb_init(void)
+diff --git a/arch/arm/mach-w90x900/nuc932.c b/arch/arm/mach-w90x900/nuc932.c
+index 140fa2f..44b1347 100644
+--- a/arch/arm/mach-w90x900/nuc932.c
++++ b/arch/arm/mach-w90x900/nuc932.c
+@@ -80,6 +80,16 @@ void __init nuc932_map_io(void)
+ 	nuc900_map_io(nuc932evb_iodesc, ARRAY_SIZE(nuc932evb_iodesc));
+ }
+ 
++/*enable NUC932 uart clock*/
++
++void __init nuc932_init_uartclk(void)
++{
++	struct clk *ck_uart = clk_get(NULL, "uart");
++	BUG_ON(IS_ERR(ck_uart));
++
++	clk_enable(ck_uart);
++}
++
+ /*Init NUC932 clock*/
+ 
+ void __init nuc932_init_clocks(void)
+diff --git a/arch/arm/mach-w90x900/nuc932.h b/arch/arm/mach-w90x900/nuc932.h
+index 4cf1182..e0bafe7 100644
+--- a/arch/arm/mach-w90x900/nuc932.h
++++ b/arch/arm/mach-w90x900/nuc932.h
+@@ -26,3 +26,4 @@ extern struct sys_timer nuc900_timer;
+ extern void nuc932_board_init(void);
+ extern void nuc932_init_clocks(void);
+ extern void nuc932_map_io(void);
++extern void nuc932_init_uartclk(void);
+-- 
+1.5.6.3
