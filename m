@@ -1,79 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZLBT4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZLBT6C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754397AbZLBT4g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZLBT4g
+	id S1754388AbZLBT6C (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:58:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZLBT6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:56:36 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:61543 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754258AbZLBT4f (ORCPT
+	Wed, 2 Dec 2009 14:58:00 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:64592 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753288AbZLBT57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:56:35 -0500
+	Wed, 2 Dec 2009 14:57:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mZTpdD+ZV+QdC0GD1aGzAq05XfEzm4J7vRROxIChoanrfTnAV5ovX7NP1u9r0KMDK1
-         vARLBfW4wKdbTMVFbMiOsyT5b/9QxemrH7oaJEp3IHrmGhcoOhH+/y4EYUlSm/sgf0HY
-         TVMtfyQHO80rB+EhuIeX1wIPkRdQp6n8c0niM=
-Date: Wed, 2 Dec 2009 11:56:34 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Im1J26H3Gsob7L+Tyk8yFotg9fJq4zAbIgAY39k7/9hM4FEAPN/0RpzsIiKXyc8W4H
+         m3AaNGSCFPpPNv7WpxGtU9PIYtQaSnm/mesxqTkYWVXnl7I00N+aFwdvTMA6vDqQI29p
+         0MLcE9YuOl+sxzt2sjgEbH/Cir3BMu4JQTB3g=
+MIME-Version: 1.0
+In-Reply-To: <9e4733910912021150k33446d3aybf0634fa0007ca1d@mail.gmail.com>
+References: <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com>
+	 <20091201175400.GA19259@core.coreip.homeip.net>
+	 <4B1567D8.7080007@redhat.com>
+	 <20091201201158.GA20335@core.coreip.homeip.net>
+	 <4B15852D.4050505@redhat.com>
+	 <20091202093803.GA8656@core.coreip.homeip.net>
+	 <4B16614A.3000208@redhat.com>
+	 <20091202171059.GC17839@core.coreip.homeip.net>
+	 <4B16C10E.6040907@redhat.com>
+	 <9e4733910912021150k33446d3aybf0634fa0007ca1d@mail.gmail.com>
+Date: Wed, 2 Dec 2009 14:58:04 -0500
+Message-ID: <9e4733910912021158x5a7cc995j5db16b94d7184b92@mail.gmail.com>
+Subject: Re: [RFC v2] Another approach to IR
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
        Devin Heitmueller <dheitmueller@kernellabs.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, jarod@wilsonet.com, khc@pm.waw.pl,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
        superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-Message-ID: <20091202195634.GB22689@core.coreip.homeip.net>
-References: <4B155288.1060509@redhat.com> <20091201175400.GA19259@core.coreip.homeip.net> <4B1567D8.7080007@redhat.com> <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B16BE6A.7000601@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 02:22:18PM -0500, Jarod Wilson wrote:
-> On 12/2/09 12:30 PM, Jon Smirl wrote:
+On Wed, Dec 2, 2009 at 2:50 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On Wed, Dec 2, 2009 at 2:33 PM, Mauro Carvalho Chehab
+> <mchehab@redhat.com> wrote:
+>> Dmitry Torokhov wrote:
+>>>> The raw interface applies only to the devices that doesn't have a hardware decoder
+>>>> (something between 40%-60% of the currently supported devices).
+>>>
+>>> 50% is quite a number I think. But if driver does not allow access to
+>>> the raw stream - it will refuse binding to lirc_dev interface.
+>>
+>> Ok.
+>>
+>>> We need to cater to the future cases as well. I don't want to redesign
+>>> it in 2 years. But for devices that have only hardware decoders I
+>>> suppose we can short-curcuit "interfaces" and have a library-like module
+>>> creating input devices directly.
+>>
+>> We really need only one interface for those devices. However, protocol selection
+>> is needed, as it is associated with the scantable on those devices.
+>> a sysfs entry would solve this issue.
+>>
+>> Also, we need a better schema to cleanup the keycode table. Currently, the only way
+>> I'm aware is to run a loop from 0 to 65535 associating a scancode to KEY_UNKNOWN or
+>> to KEY_RESERVED.
+>>
+>>>> In the case of the cheap devices with just raw interfaces, running in-kernel
+>>>> decoders, while it will work if you create one interface per protocol
+>>>> per IR receiver, this also seems overkill. Why to do that? It sounds that it will
+>>>> just create additional complexity at the kernelspace and at the userspace, since
+>>>> now userspace programs will need to open more than one device to receive the
+>>>> keycodes.
+>>>
+>>> _Yes_!!! You open as many event devices as there are devices you are
+>>> interested in receiving data from. Multiplexing devices are bad, bad,
+>>> bad. Witness /dev/input/mouse and all the attempts at working around the
+>>> fact that if you have a special driver for one of your devices you
+>>> receive events from the same device through 2 interfaces and all kind of
+>>> "grab", "super-grab", "smart-grab" schemes are born.
+>>
+>> The only device that the driver can actually see is the IR receiver. There's no way to
+>> know if there is only one physical IR sending signals to it or several different models,
+>> especially if we consider that programmable IR's can be able even to generate more than one
+>> protocol at the same time, and can emulate other IR types.
+>
+> IR devices transmit vendor/device/command triplets. They are easy to
+> tell apart and create an evdev device corresponding to each
+> vendor/device pair or something else along those lines.
+
+I forgot about fixed function receivers - ones that only receive codes
+from a specific vendor/device pair and decode them in hardware. Those
+devices would just create a fixed entry in the configfs which would
+then allow a keycode mapping to be loaded. Or a parallel scheme for
+setkeys IOCTL. These device can only receive from a single remote.
+
+>
+> If I tell a programmable remote to send out the same commands as my
+> Sony remote that's the same thing as owning two identical Sony
+> remotes. I'd expect them to be indistinguishable. If you want to be
+> able to tell your remotes apart, don't program them to emulate each
+> other.
+>
+> I've published code that can split these devices apart, it's not
+> impossible to do.
+>
+> 802.11 receivers have the same problem, there is one receiver and many
+> transmitters. The networking code doesn't have problems with sorting
+> this out and separating the streams.
+>
+>> You might create some artificial schema to try to deal with different IR's being received
+>> at the same IR receiver, but, IMHO, this will just add a complex abstraction layer.
+>>
+>> Also, this won't give any real gain, as either both IR's will generate the same scancodes (and you can't distinguish what IR generated that code), or the scancode is different, and you
+>> can handle it differently.
+>
+> Reusing the keycode is fine if they on different evdev devices. A key
+> feature is creating one evdev device for each remote.
+>
+>>
 >>>>> (for each remote/substream that they can recognize).
->>>> >>
->>>> >>  I'm assuming that, by remote, you're referring to a remote receiver (and not to
->>>> >>  the remote itself), right?
->>> >
->>> >  If we could separate by remote transmitter that would be the best I
->>> >  think, but I understand that it is rarely possible?
-> >
->> The code I posted using configfs did that. Instead of making apps IR
->> aware it mapped the vendor/device/command triplets into standard Linux
->> keycodes.  Each remote was its own evdev device.
+>>>> I'm assuming that, by remote, you're referring to a remote receiver (and not to
+>>>> the remote itself), right?
+>>>
+>>> If we could separate by remote transmitter that would be the best I
+>>> think, but I understand that it is rarely possible?
+>>
+>> IMHO, the better is to use a separate interface for the IR transmitters,
+>> on the devices that support this feature. There are only a few devices
+>> I'm aware of that are able to transmit IR codes.
+>>
+>> Cheers,
+>> Mauro.
+>>
+>>
 >
-> Note, of course, that you can only do that iff each remote uses distinct  
-> triplets. A good portion of mythtv users use a universal of some sort,  
-> programmed to emulate another remote, such as the mce remote bundled  
-> with mceusb transceivers, or the imon remote bundled with most imon  
-> receivers. I do just that myself.
 >
-> Personally, I've always considered the driver/interface to be the  
-> receiver, not the remote. The lirc drivers operate at the receiver  
-> level, anyway, and the distinction between different remotes is made by  
-> the lirc daemon.
+>
+> --
+> Jon Smirl
+> jonsmirl@gmail.com
+>
 
-The fact that lirc does it this way does not necessarily mean it is the
-most corerct way. Do you expect all bluetooth input devices be presented
-as a single blob just because they happen to talk to the sane receiver
-in yoru laptop? Do you expect your USB mouse and keyboard be merged
-together just because they end up being serviced by the same host
-controller? If not why remotes should be any different?
 
-Now I understand that if 2 remotes send completely identical signals we
-won't be able to separete them, but in cases when we can I think we
-should.
 
 -- 
-Dmitry
+Jon Smirl
+jonsmirl@gmail.com
