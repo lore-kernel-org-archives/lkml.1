@@ -1,97 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751791AbZLBJBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbZLBJFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751791AbZLBJBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 04:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZLBJBV
+	id S1752562AbZLBJFi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 04:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbZLBJFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 04:01:21 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51971 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750927AbZLBJBV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 04:01:21 -0500
-X-Sasl-enc: LITVqzuLMqRth3/hZTYqh59CCprhdRI9EKoVmqGTiEln 1259744487
-Message-ID: <4B162CE4.3080606@imap.cc>
-Date: Wed, 02 Dec 2009 10:01:24 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       isdn@linux-pingi.de, mac@melware.de
-Subject: Re: [PATCH] proc_fops: convert drivers/isdn/ to seq_file
-References: <20091123015625.GA32088@x200.localdomain> <20091124162541.03e7e375.akpm@linux-foundation.org> <20091125045914.GA3528@x200.malnet.ru> <4B1314F8.10500@imap.cc> <20091130201709.GA4507@x200.malnet.ru>
-In-Reply-To: <20091130201709.GA4507@x200.malnet.ru>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 2 Dec 2009 04:05:37 -0500
+Received: from mail.gmx.net ([213.165.64.20]:56206 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750894AbZLBJFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 04:05:36 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+6Y1dMEwq6b5trEnm51zerXspiob/yGPsKrDI4KQ
+	a1WHJjadzJ4X4Z
+Subject: Re: [PATCH 3/7] sched: refactor try_to_wake_up()
+From: Mike Galbraith <efault@gmx.de>
+To: Tejun Heo <tj@kernel.org>
+Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, peterz@infradead.org,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+In-Reply-To: <1259726212-30259-4-git-send-email-tj@kernel.org>
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>
+	 <1259726212-30259-4-git-send-email-tj@kernel.org>
+Content-Type: text/plain
+Date: Wed, 02 Dec 2009 10:05:33 +0100
+Message-Id: <1259744733.6028.233.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.67
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, 2009-12-02 at 12:56 +0900, Tejun Heo wrote:
+> Factor ttwu_activate() and ttwu_woken_up() out of try_to_wake_up().
 
-Am 2009-11-30 21:17 schrieb Alexey Dobriyan:
-> On Mon, Nov 30, 2009 at 01:42:32AM +0100, Tilman Schmidt wrote:
->> Am 25.11.2009 05:59 schrieb Alexey Dobriyan:
->>> --- a/drivers/isdn/gigaset/capi.c
->>> +++ b/drivers/isdn/gigaset/capi.c
->>> @@ -2106,35 +2106,22 @@ static char *gigaset_procinfo(struct capi_ctr *ctr)
->>>  	return ctr->name;	/* ToDo: more? */
->>>  }
->>>  
->>> -/**
->>> - * gigaset_ctr_read_proc() - build controller proc file entry
->>> - * @page:	buffer of PAGE_SIZE bytes for receiving the entry.
->>> - * @start:	unused.
->>> - * @off:	unused.
->>> - * @count:	unused.
->>> - * @eof:	unused.
->>> - * @ctr:	controller descriptor structure.
->>> - *
->>> - * Return value: length of generated entry
->>> - */
->>> -static int gigaset_ctr_read_proc(char *page, char **start, off_t off,
->>> -			  int count, int *eof, struct capi_ctr *ctr)
->>> +static int gigaset_proc_show(struct seq_file *m, void *v)
->> I would prefer that, instead of throwing the kerneldoc comment away,
->> you adapted it to the new function. Specifically, I would like to
->> know what the second argument "void *v" is for.
-> 
-> Sorry, no.
+Nit: ttwu_woken_up() sounds decidedly strange to my ear. Perhaps
+ttwu_post_activation()?
 
-Ok, if you don't want to do it, I'll wait whether this is merged
-and see if I can come up with something sensible as a follow-up.
-I guess that's part of the job of a driver maintainer.
+As a $.02 comment, factoring here doesn't look nice, reader scrolls
+around whereas he currently sees all the why/wherefore at a glance.
+Needing to pass three booleans for stats also looks bad.  I think it
+would _look_ better with the thing just duplicated/stripped down and
+called what it is, sched_notifier_wakeup() or such.
 
->>> +static int gigaset_proc_open(struct inode *inode, struct file *file)
->>> +{
->>> +	return single_open(file, gigaset_proc_show, PDE(inode)->data);
-[...]
->> So what is PDE(inode)->data and where does it get set to the
->> capi_ctr pointer for the device?
-> 
-> When you create proc entry, you set ->data for proc entry,
-> it's accessible as PDE(inode)->data.
+Which leaves growth in it's wake though...
 
-I see. So in the context of CAPI subsystem - CAPI driver relations,
-it's the CAPI subsystem that assures this. You should mention that
-in your patch to Documentation/isdn/INTERFACE.CAPI.
+> +/**
+>   * try_to_wake_up - wake up a thread
+>   * @p: the to-be-woken-up thread
 
-Thanks,
-Tilman
+Nit: thread to be awakened sounds better.
 
-- --
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+	-Mike
 
-iD8DBQFLFizkQ3+did9BuFsRAqOEAJ9hHkwjQoPZUEw1ivKI3J+c2/lgigCgmH0j
-Y3t7ifiCcLpr9Gqb8gnNhe4=
-=HlV+
------END PGP SIGNATURE-----
