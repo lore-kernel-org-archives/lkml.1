@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZLBNYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZLBNZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbZLBNYc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 08:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbZLBNYb
+	id S1754186AbZLBNZV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZLBNZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 08:24:31 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:48274 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753585AbZLBNYa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 08:24:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=KVl0HQ9bYYWrlp5YFq2gN9TBQ3tz6KpKjH3hy2RQKnOmSI97owgHX/KfaVrVmDJEV8
-         FUXah+6Dc3KtNAPcyoBeolvH3FE+uVk3Apj4HXKsGgJA6gMIW/c3/8QZHWo57l7+7+9G
-         0V36wewYZFzqwpVIw37W0nqiYr+OMMeDbZ6iA=
-Date: Wed, 2 Dec 2009 15:24:27 +0200
-From: Dan Carpenter <error27@gmail.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [Patch] net: fix an array index overflow
-Message-ID: <20091202132427.GE5224@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-References: <20091201082901.4678.16688.sendpatchset@localhost.localdomain>
+	Wed, 2 Dec 2009 08:25:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2616 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753975AbZLBNZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 08:25:18 -0500
+Message-ID: <4B166ABC.9040004@redhat.com>
+Date: Wed, 02 Dec 2009 15:25:16 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091201082901.4678.16688.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Nix <nix@esperi.org.uk>
+CC: kvm@vger.kernel.org,
+       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: 2.6.31.5 x86-64 KVM: 'emulation failed (pagetable) rip 7fb49335da7b
+ 66 0f 7f 07'
+References: <87skbzvdgd.fsf@spindle.srvr.nix> <4B125051.6010506@redhat.com> <87k4x9saqn.fsf@spindle.srvr.nix> <4B1283F5.5060204@redhat.com>
+In-Reply-To: <4B1283F5.5060204@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 01, 2009 at 03:26:02AM -0500, Amerigo Wang wrote:
-> 
-> Don't use the address of an out-of-boundary element.
-> 
-> Maybe this is not harmful at runtime, but it is still
-> good to improve it.
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: David S. Miller <davem@davemloft.net>
-> 
+On 11/29/2009 04:23 PM, Avi Kivity wrote:
+> On 11/29/2009 03:48 PM, Nix wrote:
+>> On 29 Nov 2009, Avi Kivity uttered the following:
+>>> 66 0f 7f 07              movdqa %xmm0,(%rdi)
+>>>
+>>> which we don't emulate.
+>> x86-64 glibc 2.10 memset(), perhaps? On SSE-capable platforms that does
+>> a whole bunch of
+>>
+>> L(SSE0QB):  movdqa %xmm0,-0xb0(%rdi)
+>> L(SSE0QA):  movdqa %xmm0,-0xa0(%rdi)
+>> L(SSE0Q9):  movdqa %xmm0,-0x90(%rdi)
+>> L(SSE0Q8):  movdqa %xmm0,-0x80(%rdi)
+>> L(SSE0Q7):  movdqa %xmm0,-0x70(%rdi)
+>> L(SSE0Q6):  movdqa %xmm0,-0x60(%rdi)
+>> L(SSE0Q5):  movdqa %xmm0,-0x50(%rdi)
+>> L(SSE0Q4):  movdqa %xmm0,-0x40(%rdi)
+>> L(SSE0Q3):  movdqa %xmm0,-0x30(%rdi)
+>> L(SSE0Q2):  movdqa %xmm0,-0x20(%rdi)
+>> L(SSE0Q1):  movdqa %xmm0,-0x10(%rdi)
+>> L(SSE0Q0):  retq
+>>
+>> (multiple blocks of this, catering for alignment, I guess)
+>>
+>> and x86-64 is always SSE-capable.
+>
+> Most likely, either this or something similar is called on a userspace 
+> device driver.  Can you check if this is triggered by starting X?
+>
+> If so, we'll have to emulate this instruction, which will be a bitch.
+>
 
-It may be coincidence but my static checker smatch also complains 
-about the code you modified.
+Not just in the emulator, also in the userspace interface.  We only 
+support up to 8 bytes mmio.
 
-It's the wrong idea to fix code to please a checker.  You end up
-doing things like adding an extra "return -ENOTREACHED" to silence
-warnings.  Then the next person who writes a checker has to figure
-out how to seperate the unreachable code which was added to suppress
-gcc warnings from bits which are unreachable because of typos.
+Our options in fixing this are:
 
-Really any code that a human can read, a static checker should also
-be able to read.  Computer programs are just state machines.  At 
-the function level they are quite small state machines.  It's all
-logic and math which computers are very good at.  So it should be 
-fairly easy to fix the checker.  ;)
+- extend mmio support to 16 (32? more?) bytes, require new kernel and 
+new userspace
+- use coalesced_mmio for this
+    - if the mmio happens for a non coalesced mmio region, we flush 
+immediately
+    - what if userspace doesn't support coalesced mmio? (unlikely these 
+days)
+    - doesn't work for reads (unlikely for 16 byte accesses?)
 
-(The above paragraph is funnier if you knew how sucky smatch is).
+-- 
+error compiling committee.c: too many arguments to function
 
-regards,
-dan carpenter
-
-> ---
-> diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
-> index 57737b8..2669361 100644
-> --- a/net/ipv4/af_inet.c
-> +++ b/net/ipv4/af_inet.c
-> @@ -1586,7 +1586,7 @@ static int __init inet_init(void)
->  #endif
->  
->  	/* Register the socket-side information for inet_create. */
-> -	for (r = &inetsw[0]; r < &inetsw[SOCK_MAX]; ++r)
-> +	for (r = &inetsw[0]; r <= &inetsw[SOCK_MAX-1]; ++r)
->  		INIT_LIST_HEAD(r);
->  
->  	for (q = inetsw_array; q < &inetsw_array[INETSW_ARRAY_LEN]; ++q)
