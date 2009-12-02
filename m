@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZLBO7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZLBPAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbZLBO7l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbZLBO7k
+	id S1754130AbZLBPAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 10:00:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZLBPAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:59:40 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:54370 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752129AbZLBO7j convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;7:1>);
-	Wed, 2 Dec 2009 09:59:39 -0500
-Message-Id: <4B168EEE02000078000230D5@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 02 Dec 2009 14:59:42 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Avi Kivity" <avi@redhat.com>
-Cc: <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       <tglx@linutronix.de>, <torvalds@linux-foundation.org>,
-       <mingo@redhat.com>, <npiggin@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-tip-commits@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [tip:core/locking] locking, x86: Slightly shorten	
-	 __ticket_spin_trylock()
-References: <4B0FF9AC0200007800022713@vpn.id2.novell.com>
- <tip-133ec7a235160dd44cbd4d82fff65a9983331df9@git.kernel.org>
- <20091202132937.GA1564@elte.hu>
- <4B168293020000780002308E@vpn.id2.novell.com>
- <4B1675CA.1020504@redhat.com>
- <4B1686F702000078000230A6@vpn.id2.novell.com>
- <4B167B77.8030502@redhat.com>
-In-Reply-To: <4B167B77.8030502@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 2 Dec 2009 10:00:48 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:19059 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbZLBPAr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 10:00:47 -0500
+X-IronPort-AV: E=Sophos;i="4.47,328,1257138000"; 
+   d="scan'208";a="9807780"
+Message-ID: <4B168107.8020708@analog.com>
+Date: Wed, 2 Dec 2009 23:00:23 +0800
+From: Jie Zhang <jie.zhang@analog.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091202 Shredder/3.0
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: Mike Frysinger <vapier@gentoo.org>, uclinux-dev@uclinux.org,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
+References: <1259128503-28276-1-git-send-email-vapier@gentoo.org> <16225.1259764594@redhat.com>
+In-Reply-To: <16225.1259764594@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Dec 2009 15:00:49.0129 (UTC) FILETIME=[3BD41590:01CA7360]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Avi Kivity <avi@redhat.com> 02.12.09 15:36 >>>
->On 12/02/2009 04:25 PM, Jan Beulich wrote:
->>>>> Avi Kivity<avi@redhat.com>  02.12.09 15:12>>>
->>>>>          
->>> Wouldn't 'u8 ret', as an additional argument be sufficient? gcc still
->>> ought to be able to use the same register for new and ret if we remove
->>> the early clobber.
->>>      
->> We can't (validly) remove the early-clobber, otherwise the compiler
->> would be permitted to use a register also used for addressing the lock
->> structure for "new".
->>    
+On 12/02/2009 10:36 PM, David Howells wrote:
+> Mike Frysinger<vapier@gentoo.org>  wrote:
 >
->I meant for 'ret'.
+>> -			len -= copy_to_user((void *) addr, buf, len);
+>> +			copy_to_user_page(vma, NULL, NULL,
+>> +					  (void *) addr, buf, len);
+>>   		else if (!write&&  vma->vm_flags&  VM_MAYREAD)
+>> -			len -= copy_from_user(buf, (void *) addr, len);
+>> +			copy_from_user_page(vma, NULL, NULL,
+>> +					    buf, (void *) addr, len);
+>
+> Hmmm...  With this, len isn't updated anymore, and so it alters the return
+> value of access_process_vm(), and means ptrace_readdata() won't now return
+> -EIO under some circumstances where it used to.  I'm not sure that matters,
+> though.
+>
+This keeps access_process_vm() in nommu.c align with the one in 
+memory.c. If this does really matter, someone or me can write another 
+patch to take care of it for both MMU and !MMU later.
 
-But unless you drop the early-clobber on new, the compiler will have
-to allocate another register, which I think is not desirable here.
 
-Jan
-
+Jie
