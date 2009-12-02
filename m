@@ -1,108 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbZLBUuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZLBUxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755397AbZLBUuQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 15:50:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZLBUuP
+	id S1755498AbZLBUxY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 15:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZLBUxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 15:50:15 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:61072 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755183AbZLBUuO (ORCPT
+	Wed, 2 Dec 2009 15:53:23 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:43991 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755165AbZLBUxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 15:50:14 -0500
-Date: Wed, 2 Dec 2009 22:49:46 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Grazvydas Ignotas <notasas@gmail.com>
-Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
- charger
-Message-ID: <20091202204946.GB25682@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
- <20091202173321.GA23738@nokia.com>
- <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
+	Wed, 2 Dec 2009 15:53:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kolGZeW3VvOeep+solVUlhc71/t6503ocXdFJPa/s7bsrZ3qoE+mBIKwwGsDWc8rZJ
+         eHy/SLTYCSI+uLlQhsU90NRBRBkgNAjbneacnkutABq3dKJDqaQYfOBee9tiAMGjyPdN
+         SZ5MIntkTSvG2UF3RZGgdw+nvPK6UrZPdAxGw=
+Date: Wed, 2 Dec 2009 12:53:23 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jarod Wilson <jarod@wilsonet.com>, Jarod Wilson <jarod@redhat.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+Message-ID: <20091202205323.GF22689@core.coreip.homeip.net>
+References: <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <20091202201404.GD22689@core.coreip.homeip.net> <4B16CCD7.20601@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 02 Dec 2009 20:50:05.0993 (UTC) FILETIME=[0717C190:01CA7391]
-X-Nokia-AV: Clean
+In-Reply-To: <4B16CCD7.20601@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Dec 02, 2009 at 06:23:51PM -0200, Mauro Carvalho Chehab wrote:
+> Dmitry Torokhov wrote:
+> > On Wed, Dec 02, 2009 at 03:04:30PM -0500, Jarod Wilson wrote:
+> >> On Dec 2, 2009, at 2:56 PM, Dmitry Torokhov wrote:
+> >>> Now I understand that if 2 remotes send completely identical signals we
+> >>> won't be able to separete them, but in cases when we can I think we
+> >>> should.
+> >> I don't have a problem with that, if its a truly desired feature. But
+> >> for the most part, I don't see the point. Generally, you go from
+> >> having multiple remotes, one per device (where "device" is your TV,
+> >> amplifier, set top box, htpc, etc), to having a single universal
+> >> remote that controls all of those devices. But for each device (IR
+> >> receiver), *one* IR command set. The desire to use multiple distinct
+> >> remotes with a single IR receiver doesn't make sense to me. Perhaps
+> >> I'm just not creative enough in my use of IR. :)
+> > 
+> > Didn't Jon posted his example whith programmable remote pretending to be
+> > several separate remotes (depending on the mode of operation) so that
+> > several devices/applications can be controlled without interfering with
+> > each other?
+> > 
+> From what I understood, he is using the same physical remote, but creating different
+> IR groups of keys on it, each group meant to be used by a different application.
+> 
+> For such usage, some software will need to filter the scancode group and send
+> them only for a certain application. This can be done easily by using lirc,
+> purely in userspace.
+> 
+> Another alternative (that will also work for multimedia keys on a keyboard) is
+> to add a filtering subsystem at evdev that will send certain events for just certain
+> PID's.
 
-On Wed, Dec 02, 2009 at 09:34:00PM +0100, ext Grazvydas Ignotas wrote:
->>> +#define BCI_DELAY              100
->>
->> 100ms ??? that's too quick for battery monitoring. Imagine that you'll have
->> 10 i2c transfers per-second forever with this one. Don't you think you're
->> waking up omap for nothing ??
->
->The work item doesn't queue itself, so this is only used once after
->every interrupt. The delay itself is needed because charge state
->machine needs some time to switch states and is not yet in expected
->state at the time VBUS/AC detect interrupt kicks.
+They are the same key events (Lets's say KEY_PLAY) but one is supposed
+to affect CD player while another DVD player application. Evdev will not
+be able to distinguish them but if we had 2 separate devices then
+applications could read from the one thet user assigned to them.
 
-ok got it... not so bad then ;-)
-
->>> +static struct twl4030_bci_device_info twl4030_bci = {
->>
->> this should be allocated on probe() time.
->
->I need to access it from twl4030charger_usb_en().. Could only leave
->delayed_work global and allocate everything else in probe() if you
->prefer that.
-
-well, you could keep only a global static pointer and after allocating 
-that in probe, make the global static pointer, point to it... Anyways, 
-I think twl4030charger_usb_en() should change its prototype to something 
-like
-
-twl4030charger_usb_en(struct twl4030_bci *bci, int enable);
-
-you could leave userland to decide whether to start charging, specially 
-in usb charging case where we still need to know if we where enumerated 
-with 100mA or 500mA configuration. How are you differing between those 
-currently ?
-
->> I don't like the way you did this. I would expect twl4030-usb to kick the
->> charger detection based on the VBUS irq. You have to consider the
->> possibility of boards which won't use BCI module and will have some bq24xxx
->> chip dealing with that like RX51. So instead of implementing this here and
->> forcing people to have this driver enabled on e.g. RX51, you should
->> implement the charger_enable_usb() logic in twl4030-usb itself. /me thinks
->
->I don't think charging is twl4030-usb's business, also notifying
->power_supply core about charge state changes that I do here.
-
-I was talking about the charger detection. The start of charge you could 
-leave to userland to handle, no ?
-
->What about just returning early from twl4030charger_usb_en() if this
->driver is not started? TWL4030-core requires twl4030_bci_platform_data
->to be present to even register this driver, so it won't start on RX51.
->RX51 can also choose not to compile this driver in, then
->twl4030charger_usb_en() call won't even be done fom twl4030-usb.
-
-still we need to detect the charger...
-
->> how about using request_threaded_irq() ?? then you avoid having that
->> workqueue.
->
->I need to do some delayed processing after VBUS/AC detect interrupts
->kick, delayed_work looked perfect for this. Also note that I can't get
->USB_PRES interrupt (taken by twl4030-usb), only a callback from
->twl4030-usb.
-
-or you let userland to handle a bit more of this logic (??)
+However even subscription is something that is desirable to have ouside
+of IRC handling topic (so that supporting applications need not be woken
+up by events they are not interested in - example mixer application is
+interested in KEY_VOLUMEUP, KEY_VOLUMEDOWN and KEY_MUTE but not any
+other key that may be emitted by a keyboard).
 
 -- 
-balbi
+Dmitry
