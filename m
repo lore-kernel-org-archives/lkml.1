@@ -1,91 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZLBOzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZLBO5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZLBOzc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbZLBOzb
+	id S1754608AbZLBO5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 09:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422AbZLBO5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:55:31 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41977 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752408AbZLBOzb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 09:55:31 -0500
-Subject: Re: [tip:perf/core] tracing: Add DEFINE_EVENT(),
- DEFINE_SINGLE_EVENT() support to docbook
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
-       jbaron@redhat.com, mhiramat@redhat.com,
-       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20091202144334.GA30359@elte.hu>
-References: <200912011718.nB1HIn7t011371@int-mx04.intmail.prod.int.phx2.redhat.com>
-	 <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
-	 <1259761934.12870.12.camel@gandalf.stny.rr.com>
-	 <20091202140128.GA2611@elte.hu>
-	 <1259764109.12870.37.camel@gandalf.stny.rr.com>
-	 <20091202144334.GA30359@elte.hu>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 02 Dec 2009 09:55:35 -0500
-Message-Id: <1259765735.12870.42.camel@gandalf.stny.rr.com>
+	Wed, 2 Dec 2009 09:57:42 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:54289 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754220AbZLBO5l convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;8:1>);
+	Wed, 2 Dec 2009 09:57:41 -0500
+Message-Id: <4B168E7702000078000230C5@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Wed, 02 Dec 2009 14:57:43 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <a.p.zijlstra@chello.nl>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       <tglx@linutronix.de>, <torvalds@linux-foundation.org>,
+       <mingo@redhat.com>, <npiggin@suse.de>, <linux-kernel@vger.kernel.org>,
+       <linux-tip-commits@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [tip:core/locking] locking, x86: Slightly shorten
+	 __ticket_spin_trylock()
+References: <4B0FF9AC0200007800022713@vpn.id2.novell.com>
+ <tip-133ec7a235160dd44cbd4d82fff65a9983331df9@git.kernel.org>
+ <20091202132937.GA1564@elte.hu>
+ <4B168293020000780002308E@vpn.id2.novell.com>
+ <20091202142108.GA5815@elte.hu>
+In-Reply-To: <20091202142108.GA5815@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-02 at 15:43 +0100, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > On Wed, 2009-12-02 at 15:01 +0100, Ingo Molnar wrote:
-> > 
-> > > >  DECLARE_CLASS_AND_DEFINE_EVENT()
-> > > 
-> > > Hm, that's a bit too long. How about 'DEFINE_CLASS_EVENT()' as a 
-> > > compromise? It's similarly short-ish to TRACE_EVENT(), and it also 
-> > > conveys the fact that we create both a class and an event there.
-> > > 
-> > > The full series would thus be:
-> > > 
-> > > 	DECLARE_EVENT_CLASS
-> > > 	DEFINE_EVENT
-> > > 	DEFINE_CLASS_EVENT
-> > > 
-> > > hm?
-> > 
-> > I thought about that too, but it actually makes it more confusing. 
-> > Because, looking at this with a fresh POV, I would think that after I 
-> > declare a class, I would use DEFINE_CLASS_EVENT with that class.
-> 
-> yeah. Hence was my second-best choice 'DEFINE_STANDALONE_EVENT' or 
-> 'DEFINE_SINGLE_EVENT' - to stress the special nature it, and to actually 
-> nudge people towards creating classes of events instead of doing 
-> separate, standalone points. (which are a waste in the majority of 
-> cases)
+>>> Ingo Molnar <mingo@elte.hu> 02.12.09 15:21 >>>
+792a99a9 <_raw_spin_lock>:
+...
+>792a99f3:	89 d8                	mov    %ebx,%eax
+>792a99f5:	ff 15 d0 6c f2 79    	call   *0x79f26cd0
+>792a99fb:	85 c0                	test   %eax,%eax
+...
+>792a9a2e:	89 f8                	mov    %edi,%eax
+>792a9a30:	ff 15 d0 6c f2 79    	call   *0x79f26cd0
+>792a9a36:	85 c0                	test   %eax,%eax
 
-But the current TRACE_EVENT is still defining a class. Thus, you could
-create a TRACE_EVENT (or whatever it is called) and then create
-DEFINE_EVENTs based on the TRACE_EVENT.
+Assuming that these are the calls to __raw_spin_trylock, it is clear that
+the generated code isn't what we want: It should be test %al, %al in
+both cases.
 
-That's why I want a name that describes this.
+This isn't a compiler bug, though: ____PVOP_CALL() doesn't properly
+deal with rettype being bool. Other than all integer types, casting
+to bool isn't just a truncation (or extension), but is an actual
+conversion. With the compiler seeing that __eax is declared as
+unsigned long, it can optimize the whole operation and avoid the
+conversion to bool (and hence test the 32-bit register directly).
 
-DEFINE_EVENT_CLASS?
+While I would think these macros should be fixed accordingly (as it
+would be quite easy for others to run into the same trap), for the
+case at hand I'm not too certain it would be worthwhile as I believe
+the goal is to eliminate at least pv-ops spinlocks anyway due to
+their overhead on native (and I have a replacement basically
+ready, just that for now it only aims at fully virtualized Xen guests).
 
-Perhaps that's the best.
+In any case, please drop the patch until either paravirt.h gets
+fixed (I'll try to find time to look into this), or pv-ops spinlocks gets
+eliminated. And I'm sorry for not noticing this before submission.
 
-DECLARE_EVENT_CLASS - only creates a class
-DEFINE_EVENT - defines an event based off of a class
-DEFINE_EVENT_CLASS - creates a class and defines an event by the same name
-
-Perhaps this is best in keeping with linux kernel naming conventions?
-
--- Steve
-
-
--- Steve
-
+Jan
 
