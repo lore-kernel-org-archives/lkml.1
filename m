@@ -1,339 +1,573 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883Ab0AADII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751883Ab0AADII (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 22:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753Ab0AADIG
+	id S1755582AbZLBUKY (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 2 Dec 2009 15:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZLBUKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 22:08:06 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:37111 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721Ab0AADID convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 22:08:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VSHy3QsDqTxC1xDKR8amSHvx+R4UWb6BF507YMKaxFSYrM1klMLk679LssYomN/m45
-         EQo4H798ubJXJgECsCChQ7JIVgqXaKrWX2rJG4Cg0gFjo0mvAxUD2XNvofvZDrzv/0y1
-         Y9AsbR3ti9Xx73QVRPYde1LC5gbinN8umAyVM=
-MIME-Version: 1.0
-In-Reply-To: <1262188157.2749.21.camel@mulgrave.site>
-References: <87k4w4wux9.fsf@purkki.valot.fi>
-	 <1262188157.2749.21.camel@mulgrave.site>
-Date: Fri, 1 Jan 2010 11:08:01 +0800
-Message-ID: <2375c9f90912311908r667966e1m919430c40cd9c571@mail.gmail.com>
-Subject: Re: regression: crash from 'ls /sys/modules/wl1251_spi/notes'
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Kalle Valo <kalle.valo@iki.fi>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-omap@vger.kernel.org,
-       Helge Deller <deller@gmx.de>, rusty@rustcorp.com.au,
-       akpm@linux-foundation.org, roland@redhat.com, dave@hiauly1.hia.nrc.ca,
-       Parisc List <linux-parisc@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 2 Dec 2009 15:10:20 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:50404 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755368AbZLBUKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 15:10:14 -0500
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 3/4] rcu: add expedited grace-period support for preemptible RCU
+Date: Wed,  2 Dec 2009 12:10:15 -0800
+Message-Id: <1259784616158-git-send-email->
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: <20091202200955.GA12950@linux.vnet.ibm.com>
+References: <20091202200955.GA12950@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 11:49 PM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Wed, 2009-12-30 at 13:41 +0200, Kalle Valo wrote:
->> Hello,
->>
->> I noticed weird crashes related to wl1251_spi notes sysfs directory
->> with current wireless-testing (2.6.33-rc2 plus some wireless patches).
->> The simplest way to reproduce the problem is to do this on a nokia n900
->> (arm/omap 3430):
->>
->> # ls /sys/module/wl1251_spi/notes/
->> [ 4776.503234] Unable to handle kernel NULL pointer dereference at
->> virtual address 00000000
->> [ 4776.511596] pgd = cce88000
->> [ 4776.514343] [00000000] *pgd=8f04a031, *pte=00000000, *ppte=00000000
->> [ 4776.520812] Internal error: Oops: 17 [#1]
->> [ 4776.524871] last sysfs file: /sys/class/net/wlan0/flags
->> [ 4776.530151] Modules linked in: wl1251_spi wl1251 mac80211 cfg80211
->> [ 4776.536468] CPU: 0    Not tainted  (2.6.33-rc2-wl-47091-g981eb84
->> #12)
->> [ 4776.542999] PC is at strlen+0xc/0x20
->> [ 4776.546630] LR is at sysfs_readdir+0x15c/0x1e0
->> [ 4776.551116] pc : [<c01476ac>]    lr : [<c00f5e6c>]    psr: a0000013
->> [ 4776.551147] sp : cce87f28  ip : 22222222  fp : be99961c
->> [ 4776.562744] r10: cce87f80  r9 : 00000000  r8 : 00000000
->> [ 4776.568023] r7 : c00b9540  r6 : cce87f80  r5 : ccec4458  r4 :
->> ce808980
->> [ 4776.574615] r3 : 00000000  r2 : 00000002  r1 : 22222222  r0 :
->> 00000000
->> [ 4776.581207] Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM
->> Segment user
->> [ 4776.588409] Control: 10c5387d  Table: 8ce88019  DAC: 00000015
->> [ 4776.594238] Process ls (pid: 1148, stack limit = 0xcce862e8)
->> [ 4776.599945] Stack: (0xcce87f28 to 0xcce88000)
->> [ 4776.604370] 7f20:                   00000001 00000000 00000e16
->> 00000000 00000004 22222222
->> [ 4776.612640] 7f40: ce808980 ce808980 cf79e34c c00b9540 00000000
->> cf79e2b8 cce86000 c00b982c
->> [ 4776.620910] 7f60: 00000001 00000000 00001000 000690d0 ce808980
->> c002bae4 00000000 c00b98c4
->> [ 4776.629180] 7f80: 00069100 000690e8 00000fd0 ffffffea 00000000
->> 00000000 00000000 00000000
->> [ 4776.637451] 7fa0: 000000d9 c002b940 00000000 00000000 00000003
->> 000690d0 00001000 00000000
->> [ 4776.645721] 7fc0: 00000000 00000000 00000000 000000d9 000690c8
->> 00000001 00000000 be99961c
->> [ 4776.654022] 7fe0: 400ef954 be999614 400efa10 400ef908 60000010
->> 00000003 80c69021 80c69421
->> [ 4776.662292] [<c01476ac>] (strlen+0xc/0x20) from [<c00f5e6c>]
->> (sysfs_readdir+0x15c/0x1e0)
->> [ 4776.670501] [<c00f5e6c>] (sysfs_readdir+0x15c/0x1e0) from
->> [<c00b982c>] (vfs_readdir+0x80/0xb4)
->> [ 4776.679229] [<c00b982c>] (vfs_readdir+0x80/0xb4) from [<c00b98c4>]
->> (sys_getdents64+0x64/0xb4)
->> [ 4776.687866] [<c00b98c4>] (sys_getdents64+0x64/0xb4) from
->> [<c002b940>] (ret_fast_syscall+0x0/0x38)
->> [ 4776.696838] Code: c027700c e1a03000 ea000000 e2833001 (e5d32000)
->> [ 4776.703063] ---[ end trace 6a3b0fdf4e9def99 ]---
->> [ 4776.707794] Kernel panic - not syncing: Fatal exception
->
->> Also removing wl1251_spi causes a crash. The reason for this is that a
->> sysfs file with a null string as name is trying to be removed from the
->> notes directory.
->
-> Yes, this is because the notes sections describe the text sections.
-> When we ignore an empty text section, we'd need to ignore its
-> corresponding notes section.
->
-> The reason we didn't see this on parisc is because our compiler doesn't
-> actually produce any notes sections.
->
->> I found out that reverting this patch solves the problem:
->>
->>   commit 35dead4235e2b67da7275b4122fed37099c2f462
->>   Author: Helge Deller <deller@gmx.de>
->>   Date:   Thu Dec 3 00:29:15 2009 +0100
->>
->>     modules: don't export section names of empty sections via sysfs
->>
->>     On the parisc architecture we face for each and every loaded
->>     kernel module this kernel "badness warning":
->>
->>       sysfs: cannot create duplicate filename
->>     '/module/ac97_bus/sections/.text'
->>       Badness at fs/sysfs/dir.c:487
->>
->>     Reason for that is, that on parisc all kernel modules do have
->>     multiple .text sections due to the usage of the
->>     -ffunction-sections compiler flag which is needed to reach all
->>     jump targets on this platform.
->>
->>     An objdump on such a kernel module gives:
->>     Sections:
->>     Idx Name          Size      VMA       LMA       File off  Algn
->>       0 .note.gnu.build-id 00000024  00000000  00000000  00000034
->>     2**2
->>                       CONTENTS, ALLOC, LOAD, READONLY, DATA
->>       1 .text         00000000  00000000  00000000  00000058  2**0
->>                       CONTENTS, ALLOC, LOAD, READONLY, CODE
->>       2 .text.ac97_bus_match 0000001c  00000000  00000000  00000058
->>     2**2
->>                       CONTENTS, ALLOC, LOAD, READONLY, CODE
->>       3 .text         00000000  00000000  00000000  000000d4  2**0
->>                       CONTENTS, ALLOC, LOAD, READONLY, CODE
->>     ...
->>     Since the .text sections are empty (size of 0 bytes) and won't be
->>     loaded by the kernel module loader anyway, I don't see a reason
->>     why such sections need to be listed under
->>     /sys/module/<module_name>/sections/<section_name> either.
->>
->>     The attached patch does solve this issue by not exporting section
->>     names which are empty.
->>
->>     This fixes bugzilla
->>     http://bugzilla.kernel.org/show_bug.cgi?id=14703
->>
->>     Signed-off-by: Helge Deller <deller@gmx.de>
->>     CC: rusty@rustcorp.com.au
->>     CC: akpm@linux-foundation.org
->>     CC: James.Bottomley@HansenPartnership.com
->>     CC: roland@redhat.com
->>     CC: dave@hiauly1.hia.nrc.ca
->>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
->>
->> I was also able to reproduce the problem with vanilla 2.6.32. I'm
->> pretty sure (but haven't tested) that 2.6.32-rc8 does not have this
->> problem.
->>
->> My original mail containing more info:
->>
->> http://www.spinics.net/lists/linux-wireless/msg44863.html
->>
->> Simple bandaid patch below fixes the problem. I know it's not a proper
->> solution, but hopefully makes it easier to understand the problem.
->> Unfortunately my knowledge about ELF is too limited to fix this
->> properly, but I can provide more information as needed. Or even try to
->> fix it myself if someone else holds my hand :)
->>
->> --- a/kernel/module.c
->> +++ b/kernel/module.c
->> @@ -1189,10 +1189,13 @@ static void add_notes_attrs(struct module
->> *mod, unsigned int nsect,
->>         if (!notes_attrs->dir)
->>                 goto out;
->>
->> -       for (i = 0; i < notes; ++i)
->> +       for (i = 0; i < notes; ++i) {
->> +               if (WARN_ON(!notes_attrs->attrs[i].attr.name))
->> +                       continue;
->>                 if (sysfs_create_bin_file(notes_attrs->dir,
->>                                           &notes_attrs->attrs[i]))
->>                         goto out;
->> +       }
->>
->>         mod->notes_attrs = notes_attrs;
->>         return;
->
-> A better, and more comprehensive patch would be to try not to count the
-> empty text sections when we're building the notes section (and actually
-> anywhere else in the file).  This patch actually relies on the fact that
-> if sh_size is zero for the text section it should be for the
-> corresponding notes section.  If that doesn't work, we'd actually have
-> to do the matching in the construction piece.
->
-> Can you try it to see if it works for you?  If it doesn't, I'll try
-> matching notes to text.  It works fine on parisc, but as we don't have a
-> notes section, that's not saying much ...
->
-> Thanks,
->
-> James
->
+From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
+Implement an synchronize_rcu_expedited() for preemptible RCU that actually
+is expedited.  This uses synchronize_sched_expedited() to force all
+threads currently running in a preemptible-RCU read-side critical section
+onto the appropriate ->blocked_tasks[] list, then takes a snapshot of
+all of these lists and waits for them to drain.
 
-This patch looks fine for me, except that I don't think it's necessary
-to introduce an inline function for that...
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ kernel/rcutorture.c     |   34 ++++++--
+ kernel/rcutree.c        |   10 ++-
+ kernel/rcutree.h        |   35 ++++++++-
+ kernel/rcutree_plugin.h |  198 ++++++++++++++++++++++++++++++++++++++++++++--
+ kernel/rcutree_trace.c  |   10 ++-
+ 5 files changed, 260 insertions(+), 27 deletions(-)
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+index 3dd0ca2..a621a67 100644
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -327,6 +327,11 @@ rcu_torture_cb(struct rcu_head *p)
+ 		cur_ops->deferred_free(rp);
+ }
+ 
++static int rcu_no_completed(void)
++{
++	return 0;
++}
++
+ static void rcu_torture_deferred_free(struct rcu_torture *p)
+ {
+ 	call_rcu(&p->rtort_rcu, rcu_torture_cb);
+@@ -388,6 +393,21 @@ static struct rcu_torture_ops rcu_sync_ops = {
+ 	.name		= "rcu_sync"
+ };
+ 
++static struct rcu_torture_ops rcu_expedited_ops = {
++	.init		= rcu_sync_torture_init,
++	.cleanup	= NULL,
++	.readlock	= rcu_torture_read_lock,
++	.read_delay	= rcu_read_delay,  /* just reuse rcu's version. */
++	.readunlock	= rcu_torture_read_unlock,
++	.completed	= rcu_no_completed,
++	.deferred_free	= rcu_sync_torture_deferred_free,
++	.sync		= synchronize_rcu_expedited,
++	.cb_barrier	= NULL,
++	.stats		= NULL,
++	.irq_capable	= 1,
++	.name		= "rcu_expedited"
++};
++
+ /*
+  * Definitions for rcu_bh torture testing.
+  */
+@@ -581,11 +601,6 @@ static void sched_torture_read_unlock(int idx)
+ 	preempt_enable();
+ }
+ 
+-static int sched_torture_completed(void)
+-{
+-	return 0;
+-}
+-
+ static void rcu_sched_torture_deferred_free(struct rcu_torture *p)
+ {
+ 	call_rcu_sched(&p->rtort_rcu, rcu_torture_cb);
+@@ -602,7 +617,7 @@ static struct rcu_torture_ops sched_ops = {
+ 	.readlock	= sched_torture_read_lock,
+ 	.read_delay	= rcu_read_delay,  /* just reuse rcu's version. */
+ 	.readunlock	= sched_torture_read_unlock,
+-	.completed	= sched_torture_completed,
++	.completed	= rcu_no_completed,
+ 	.deferred_free	= rcu_sched_torture_deferred_free,
+ 	.sync		= sched_torture_synchronize,
+ 	.cb_barrier	= rcu_barrier_sched,
+@@ -617,7 +632,7 @@ static struct rcu_torture_ops sched_sync_ops = {
+ 	.readlock	= sched_torture_read_lock,
+ 	.read_delay	= rcu_read_delay,  /* just reuse rcu's version. */
+ 	.readunlock	= sched_torture_read_unlock,
+-	.completed	= sched_torture_completed,
++	.completed	= rcu_no_completed,
+ 	.deferred_free	= rcu_sync_torture_deferred_free,
+ 	.sync		= sched_torture_synchronize,
+ 	.cb_barrier	= NULL,
+@@ -631,7 +646,7 @@ static struct rcu_torture_ops sched_expedited_ops = {
+ 	.readlock	= sched_torture_read_lock,
+ 	.read_delay	= rcu_read_delay,  /* just reuse rcu's version. */
+ 	.readunlock	= sched_torture_read_unlock,
+-	.completed	= sched_torture_completed,
++	.completed	= rcu_no_completed,
+ 	.deferred_free	= rcu_sync_torture_deferred_free,
+ 	.sync		= synchronize_sched_expedited,
+ 	.cb_barrier	= NULL,
+@@ -1116,7 +1131,8 @@ rcu_torture_init(void)
+ 	int cpu;
+ 	int firsterr = 0;
+ 	static struct rcu_torture_ops *torture_ops[] =
+-		{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
++		{ &rcu_ops, &rcu_sync_ops, &rcu_expedited_ops,
++		  &rcu_bh_ops, &rcu_bh_sync_ops,
+ 		  &srcu_ops, &srcu_expedited_ops,
+ 		  &sched_ops, &sched_sync_ops, &sched_expedited_ops, };
+ 
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index d47e03e..53ae959 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -948,7 +948,7 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ {
+ 	unsigned long flags;
+ 	unsigned long mask;
+-	int need_quiet = 0;
++	int need_report = 0;
+ 	struct rcu_data *rdp = rsp->rda[cpu];
+ 	struct rcu_node *rnp;
+ 
+@@ -967,7 +967,7 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 			break;
+ 		}
+ 		if (rnp == rdp->mynode)
+-			need_quiet = rcu_preempt_offline_tasks(rsp, rnp, rdp);
++			need_report = rcu_preempt_offline_tasks(rsp, rnp, rdp);
+ 		else
+ 			spin_unlock(&rnp->lock); /* irqs remain disabled. */
+ 		mask = rnp->grpmask;
+@@ -982,10 +982,12 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 	 */
+ 	spin_unlock(&rsp->onofflock); /* irqs remain disabled. */
+ 	rnp = rdp->mynode;
+-	if (need_quiet)
++	if (need_report & RCU_OFL_TASKS_NORM_GP)
+ 		rcu_report_unblock_qs_rnp(rnp, flags);
+ 	else
+ 		spin_unlock_irqrestore(&rnp->lock, flags);
++	if (need_report & RCU_OFL_TASKS_EXP_GP)
++		rcu_report_exp_rnp(rsp, rnp);
+ 
+ 	rcu_adopt_orphan_cbs(rsp);
+ }
+@@ -1843,6 +1845,8 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+ 			rnp->level = i;
+ 			INIT_LIST_HEAD(&rnp->blocked_tasks[0]);
+ 			INIT_LIST_HEAD(&rnp->blocked_tasks[1]);
++			INIT_LIST_HEAD(&rnp->blocked_tasks[2]);
++			INIT_LIST_HEAD(&rnp->blocked_tasks[3]);
+ 		}
+ 	}
+ }
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index df2e0b6..d2a0046 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -104,8 +104,12 @@ struct rcu_node {
+ 				/*  an rcu_data structure, otherwise, each */
+ 				/*  bit corresponds to a child rcu_node */
+ 				/*  structure. */
++	unsigned long expmask;	/* Groups that have ->blocked_tasks[] */
++				/*  elements that need to drain to allow the */
++				/*  current expedited grace period to */
++				/*  complete (only for TREE_PREEMPT_RCU). */
+ 	unsigned long qsmaskinit;
+-				/* Per-GP initialization for qsmask. */
++				/* Per-GP initial value for qsmask & expmask. */
+ 	unsigned long grpmask;	/* Mask to apply to parent qsmask. */
+ 				/*  Only one bit will be set in this mask. */
+ 	int	grplo;		/* lowest-numbered CPU or group here. */
+@@ -113,7 +117,7 @@ struct rcu_node {
+ 	u8	grpnum;		/* CPU/group number for next level up. */
+ 	u8	level;		/* root is at level 0. */
+ 	struct rcu_node *parent;
+-	struct list_head blocked_tasks[2];
++	struct list_head blocked_tasks[4];
+ 				/* Tasks blocked in RCU read-side critsect. */
+ 				/*  Grace period number (->gpnum) x blocked */
+ 				/*  by tasks on the (x & 0x1) element of the */
+@@ -128,6 +132,21 @@ struct rcu_node {
+ 	for ((rnp) = &(rsp)->node[0]; \
+ 	     (rnp) < &(rsp)->node[NUM_RCU_NODES]; (rnp)++)
+ 
++/*
++ * Do a breadth-first scan of the non-leaf rcu_node structures for the
++ * specified rcu_state structure.  Note that if there is a singleton
++ * rcu_node tree with but one rcu_node structure, this loop is a no-op.
++ */
++#define rcu_for_each_nonleaf_node_breadth_first(rsp, rnp) \
++	for ((rnp) = &(rsp)->node[0]; \
++	     (rnp) < (rsp)->level[NUM_RCU_LVLS - 1]; (rnp)++)
++
++/*
++ * Scan the leaves of the rcu_node hierarchy for the specified rcu_state
++ * structure.  Note that if there is a singleton rcu_node tree with but
++ * one rcu_node structure, this loop -will- visit the rcu_node structure.
++ * It is still a leaf node, even if it is also the root node.
++ */
+ #define rcu_for_each_leaf_node(rsp, rnp) \
+ 	for ((rnp) = (rsp)->level[NUM_RCU_LVLS - 1]; \
+ 	     (rnp) < &(rsp)->node[NUM_RCU_NODES]; (rnp)++)
+@@ -261,7 +280,7 @@ struct rcu_state {
+ 	long	gpnum;				/* Current gp number. */
+ 	long	completed;			/* # of last completed gp. */
+ 
+-	/* End  of fields guarded by root rcu_node's lock. */
++	/* End of fields guarded by root rcu_node's lock. */
+ 
+ 	spinlock_t onofflock;			/* exclude on/offline and */
+ 						/*  starting new GP.  Also */
+@@ -293,6 +312,13 @@ struct rcu_state {
+ #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+ };
+ 
++/* Return values for rcu_preempt_offline_tasks(). */
++
++#define RCU_OFL_TASKS_NORM_GP	0x1		/* Tasks blocking normal */
++						/*  GP were moved to root. */
++#define RCU_OFL_TASKS_EXP_GP	0x2		/* Tasks blocking expedited */
++						/*  GP were moved to root. */
++
+ #ifdef RCU_TREE_NONCORE
+ 
+ /*
+@@ -333,6 +359,9 @@ static void rcu_preempt_offline_cpu(int cpu);
+ static void rcu_preempt_check_callbacks(int cpu);
+ static void rcu_preempt_process_callbacks(void);
+ void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu));
++#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_TREE_PREEMPT_RCU)
++static void rcu_report_exp_rnp(struct rcu_state *rsp, struct rcu_node *rnp);
++#endif /* #if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_TREE_PREEMPT_RCU) */
+ static int rcu_preempt_pending(int cpu);
+ static int rcu_preempt_needs_cpu(int cpu);
+ static void __cpuinit rcu_preempt_init_percpu_data(int cpu);
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index c9f0c97..37fbccd 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -24,12 +24,15 @@
+  *	   Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+  */
+ 
++#include <linux/delay.h>
+ 
+ #ifdef CONFIG_TREE_PREEMPT_RCU
+ 
+ struct rcu_state rcu_preempt_state = RCU_STATE_INITIALIZER(rcu_preempt_state);
+ DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
+ 
++static int rcu_preempted_readers_exp(struct rcu_node *rnp);
++
+ /*
+  * Tell them what RCU they are running.
+  */
+@@ -157,7 +160,10 @@ EXPORT_SYMBOL_GPL(__rcu_read_lock);
+  */
+ static int rcu_preempted_readers(struct rcu_node *rnp)
+ {
+-	return !list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
++	int phase = rnp->gpnum & 0x1;
++
++	return !list_empty(&rnp->blocked_tasks[phase]) ||
++	       !list_empty(&rnp->blocked_tasks[phase + 2]);
+ }
+ 
+ /*
+@@ -204,6 +210,7 @@ static void rcu_report_unblock_qs_rnp(struct rcu_node *rnp, unsigned long flags)
+ static void rcu_read_unlock_special(struct task_struct *t)
+ {
+ 	int empty;
++	int empty_exp;
+ 	unsigned long flags;
+ 	struct rcu_node *rnp;
+ 	int special;
+@@ -247,6 +254,8 @@ static void rcu_read_unlock_special(struct task_struct *t)
+ 			spin_unlock(&rnp->lock);  /* irqs remain disabled. */
+ 		}
+ 		empty = !rcu_preempted_readers(rnp);
++		empty_exp = !rcu_preempted_readers_exp(rnp);
++		smp_mb(); /* ensure expedited fastpath sees end of RCU c-s. */
+ 		list_del_init(&t->rcu_node_entry);
+ 		t->rcu_blocked_node = NULL;
+ 
+@@ -259,6 +268,13 @@ static void rcu_read_unlock_special(struct task_struct *t)
+ 			spin_unlock_irqrestore(&rnp->lock, flags);
+ 		else
+ 			rcu_report_unblock_qs_rnp(rnp, flags);
++
++		/*
++		 * If this was the last task on the expedited lists,
++		 * then we need to report up the rcu_node hierarchy.
++		 */
++		if (!empty_exp && !rcu_preempted_readers_exp(rnp))
++			rcu_report_exp_rnp(&rcu_preempt_state, rnp);
+ 	} else {
+ 		local_irq_restore(flags);
+ 	}
+@@ -343,7 +359,7 @@ static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 	int i;
+ 	struct list_head *lp;
+ 	struct list_head *lp_root;
+-	int retval;
++	int retval = 0;
+ 	struct rcu_node *rnp_root = rcu_get_root(rsp);
+ 	struct task_struct *tp;
+ 
+@@ -353,7 +369,9 @@ static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 	}
+ 	WARN_ON_ONCE(rnp != rdp->mynode &&
+ 		     (!list_empty(&rnp->blocked_tasks[0]) ||
+-		      !list_empty(&rnp->blocked_tasks[1])));
++		      !list_empty(&rnp->blocked_tasks[1]) ||
++		      !list_empty(&rnp->blocked_tasks[2]) ||
++		      !list_empty(&rnp->blocked_tasks[3])));
+ 
+ 	/*
+ 	 * Move tasks up to root rcu_node.  Rely on the fact that the
+@@ -361,8 +379,11 @@ static int rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 	 * rcu_nodes in terms of gp_num value.  This fact allows us to
+ 	 * move the blocked_tasks[] array directly, element by element.
+ 	 */
+-	retval = rcu_preempted_readers(rnp);
+-	for (i = 0; i < 2; i++) {
++	if (rcu_preempted_readers(rnp))
++		retval |= RCU_OFL_TASKS_NORM_GP;
++	if (rcu_preempted_readers_exp(rnp))
++		retval |= RCU_OFL_TASKS_EXP_GP;
++	for (i = 0; i < 4; i++) {
+ 		lp = &rnp->blocked_tasks[i];
+ 		lp_root = &rnp_root->blocked_tasks[i];
+ 		while (!list_empty(lp)) {
+@@ -449,14 +470,159 @@ void synchronize_rcu(void)
+ }
+ EXPORT_SYMBOL_GPL(synchronize_rcu);
+ 
++static DECLARE_WAIT_QUEUE_HEAD(sync_rcu_preempt_exp_wq);
++static long sync_rcu_preempt_exp_count;
++static DEFINE_MUTEX(sync_rcu_preempt_exp_mutex);
++
++/*
++ * Return non-zero if there are any tasks in RCU read-side critical
++ * sections blocking the current preemptible-RCU expedited grace period.
++ * If there is no preemptible-RCU expedited grace period currently in
++ * progress, returns zero unconditionally.
++ */
++static int rcu_preempted_readers_exp(struct rcu_node *rnp)
++{
++	return !list_empty(&rnp->blocked_tasks[2]) ||
++	       !list_empty(&rnp->blocked_tasks[3]);
++}
++
++/*
++ * return non-zero if there is no RCU expedited grace period in progress
++ * for the specified rcu_node structure, in other words, if all CPUs and
++ * tasks covered by the specified rcu_node structure have done their bit
++ * for the current expedited grace period.  Works only for preemptible
++ * RCU -- other RCU implementation use other means.
++ *
++ * Caller must hold sync_rcu_preempt_exp_mutex.
++ */
++static int sync_rcu_preempt_exp_done(struct rcu_node *rnp)
++{
++	return !rcu_preempted_readers_exp(rnp) &&
++	       ACCESS_ONCE(rnp->expmask) == 0;
++}
++
++/*
++ * Report the exit from RCU read-side critical section for the last task
++ * that queued itself during or before the current expedited preemptible-RCU
++ * grace period.  This event is reported either to the rcu_node structure on
++ * which the task was queued or to one of that rcu_node structure's ancestors,
++ * recursively up the tree.  (Calm down, calm down, we do the recursion
++ * iteratively!)
++ *
++ * Caller must hold sync_rcu_preempt_exp_mutex.
++ */
++static void rcu_report_exp_rnp(struct rcu_state *rsp, struct rcu_node *rnp)
++{
++	unsigned long flags;
++	unsigned long mask;
++
++	spin_lock_irqsave(&rnp->lock, flags);
++	for (;;) {
++		if (!sync_rcu_preempt_exp_done(rnp))
++			break;
++		if (rnp->parent == NULL) {
++			wake_up(&sync_rcu_preempt_exp_wq);
++			break;
++		}
++		mask = rnp->grpmask;
++		spin_unlock(&rnp->lock); /* irqs remain disabled */
++		rnp = rnp->parent;
++		spin_lock(&rnp->lock); /* irqs already disabled */
++		rnp->expmask &= ~mask;
++	}
++	spin_unlock_irqrestore(&rnp->lock, flags);
++}
++
++/*
++ * Snapshot the tasks blocking the newly started preemptible-RCU expedited
++ * grace period for the specified rcu_node structure.  If there are no such
++ * tasks, report it up the rcu_node hierarchy.
++ *
++ * Caller must hold sync_rcu_preempt_exp_mutex and rsp->onofflock.
++ */
++static void
++sync_rcu_preempt_exp_init(struct rcu_state *rsp, struct rcu_node *rnp)
++{
++	int must_wait;
++
++	spin_lock(&rnp->lock); /* irqs already disabled */
++	list_splice_init(&rnp->blocked_tasks[0], &rnp->blocked_tasks[2]);
++	list_splice_init(&rnp->blocked_tasks[1], &rnp->blocked_tasks[3]);
++	must_wait = rcu_preempted_readers_exp(rnp);
++	spin_unlock(&rnp->lock); /* irqs remain disabled */
++	if (!must_wait)
++		rcu_report_exp_rnp(rsp, rnp);
++}
++
+ /*
+- * Wait for an rcu-preempt grace period.  We are supposed to expedite the
+- * grace period, but this is the crude slow compatability hack, so just
+- * invoke synchronize_rcu().
++ * Wait for an rcu-preempt grace period, but expedite it.  The basic idea
++ * is to invoke synchronize_sched_expedited() to push all the tasks to
++ * the ->blocked_tasks[] lists, move all entries from the first set of
++ * ->blocked_tasks[] lists to the second set, and finally wait for this
++ * second set to drain.
+  */
+ void synchronize_rcu_expedited(void)
+ {
+-	synchronize_rcu();
++	unsigned long flags;
++	struct rcu_node *rnp;
++	struct rcu_state *rsp = &rcu_preempt_state;
++	long snap;
++	int trycount = 0;
++
++	smp_mb(); /* Caller's modifications seen first by other CPUs. */
++	snap = ACCESS_ONCE(sync_rcu_preempt_exp_count) + 1;
++	smp_mb(); /* Above access cannot bleed into critical section. */
++
++	/*
++	 * Acquire lock, falling back to synchronize_rcu() if too many
++	 * lock-acquisition failures.  Of course, if someone does the
++	 * expedited grace period for us, just leave.
++	 */
++	while (!mutex_trylock(&sync_rcu_preempt_exp_mutex)) {
++		if (trycount++ < 10)
++			udelay(trycount * num_online_cpus());
++		else {
++			synchronize_rcu();
++			return;
++		}
++		if ((ACCESS_ONCE(sync_rcu_preempt_exp_count) - snap) > 0)
++			goto mb_ret; /* Others did our work for us. */
++	}
++	if ((ACCESS_ONCE(sync_rcu_preempt_exp_count) - snap) > 0)
++		goto unlock_mb_ret; /* Others did our work for us. */
++
++	/* force all RCU readers onto blocked_tasks[]. */
++	synchronize_sched_expedited();
++
++	spin_lock_irqsave(&rsp->onofflock, flags);
++
++	/* Initialize ->expmask for all non-leaf rcu_node structures. */
++	rcu_for_each_nonleaf_node_breadth_first(rsp, rnp) {
++		spin_lock(&rnp->lock); /* irqs already disabled. */
++		rnp->expmask = rnp->qsmaskinit;
++		spin_unlock(&rnp->lock); /* irqs remain disabled. */
++	}
++
++	/* Snapshot current state of ->blocked_tasks[] lists. */
++	rcu_for_each_leaf_node(rsp, rnp)
++		sync_rcu_preempt_exp_init(rsp, rnp);
++	if (NUM_RCU_NODES > 1)
++		sync_rcu_preempt_exp_init(rsp, rcu_get_root(rsp));
++
++	spin_unlock_irqrestore(&rsp->onofflock, flags);
++
++	/* Wait for snapshotted ->blocked_tasks[] lists to drain. */
++	rnp = rcu_get_root(rsp);
++	wait_event(sync_rcu_preempt_exp_wq,
++		   sync_rcu_preempt_exp_done(rnp));
++
++	/* Clean up and exit. */
++	smp_mb(); /* ensure expedited GP seen before counter increment. */
++	ACCESS_ONCE(sync_rcu_preempt_exp_count)++;
++unlock_mb_ret:
++	mutex_unlock(&sync_rcu_preempt_exp_mutex);
++mb_ret:
++	smp_mb(); /* ensure subsequent action seen after grace period. */
+ }
+ EXPORT_SYMBOL_GPL(synchronize_rcu_expedited);
+ 
+@@ -655,6 +821,20 @@ void synchronize_rcu_expedited(void)
+ }
+ EXPORT_SYMBOL_GPL(synchronize_rcu_expedited);
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++
++/*
++ * Because preemptable RCU does not exist, there is never any need to
++ * report on tasks preempted in RCU read-side critical sections during
++ * expedited RCU grace periods.
++ */
++static void rcu_report_exp_rnp(struct rcu_state *rsp, struct rcu_node *rnp)
++{
++	return;
++}
++
++#endif /* #ifdef CONFIG_HOTPLUG_CPU */
++
+ /*
+  * Because preemptable RCU does not exist, it never has any work to do.
+  */
+diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
+index 1984cdc..9d2c884 100644
+--- a/kernel/rcutree_trace.c
++++ b/kernel/rcutree_trace.c
+@@ -157,6 +157,7 @@ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
+ {
+ 	long gpnum;
+ 	int level = 0;
++	int phase;
+ 	struct rcu_node *rnp;
+ 
+ 	gpnum = rsp->gpnum;
+@@ -173,10 +174,13 @@ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
+ 			seq_puts(m, "\n");
+ 			level = rnp->level;
+ 		}
+-		seq_printf(m, "%lx/%lx %c>%c %d:%d ^%d    ",
++		phase = gpnum & 0x1;
++		seq_printf(m, "%lx/%lx %c%c>%c%c %d:%d ^%d    ",
+ 			   rnp->qsmask, rnp->qsmaskinit,
+-			   "T."[list_empty(&rnp->blocked_tasks[gpnum & 1])],
+-			   "T."[list_empty(&rnp->blocked_tasks[!(gpnum & 1)])],
++			   "T."[list_empty(&rnp->blocked_tasks[phase])],
++			   "E."[list_empty(&rnp->blocked_tasks[phase + 2])],
++			   "T."[list_empty(&rnp->blocked_tasks[!phase])],
++			   "E."[list_empty(&rnp->blocked_tasks[!phase + 2])],
+ 			   rnp->grplo, rnp->grphi, rnp->grpnum);
+ 	}
+ 	seq_puts(m, "\n");
+-- 
+1.5.2.5
 
-Thanks!
-
-> ---
->
-> diff --git a/kernel/module.c b/kernel/module.c
-> index e96b8ed..957f912 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -132,6 +132,11 @@ void __module_put_and_exit(struct module *mod, long code)
->  }
->  EXPORT_SYMBOL(__module_put_and_exit);
->
-> +static inline int section_allocated(Elf_Shdr hdr)
-> +{
-> +       return (hdr.sh_flags & SHF_ALLOC) && hdr.sh_size != 0;
-> +}
-> +
->  /* Find a module section: 0 means not found. */
->  static unsigned int find_sec(Elf_Ehdr *hdr,
->                             Elf_Shdr *sechdrs,
-> @@ -142,7 +147,7 @@ static unsigned int find_sec(Elf_Ehdr *hdr,
->
->        for (i = 1; i < hdr->e_shnum; i++)
->                /* Alloc bit cleared means "ignore it." */
-> -               if ((sechdrs[i].sh_flags & SHF_ALLOC)
-> +               if (section_allocated(sechdrs[i])
->                    && strcmp(secstrings+sechdrs[i].sh_name, name) == 0)
->                        return i;
->        return 0;
-> @@ -1051,8 +1056,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
->
->        /* Count loaded sections and allocate structures */
->        for (i = 0; i < nsect; i++)
-> -               if (sechdrs[i].sh_flags & SHF_ALLOC
-> -                   && sechdrs[i].sh_size)
-> +               if (section_allocated(sechdrs[i]))
->                        nloaded++;
->        size[0] = ALIGN(sizeof(*sect_attrs)
->                        + nloaded * sizeof(sect_attrs->attrs[0]),
-> @@ -1070,9 +1074,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
->        sattr = &sect_attrs->attrs[0];
->        gattr = &sect_attrs->grp.attrs[0];
->        for (i = 0; i < nsect; i++) {
-> -               if (! (sechdrs[i].sh_flags & SHF_ALLOC))
-> -                       continue;
-> -               if (!sechdrs[i].sh_size)
-> +               if (!section_allocated(sechdrs[i]))
->                        continue;
->                sattr->address = sechdrs[i].sh_addr;
->                sattr->name = kstrdup(secstrings + sechdrs[i].sh_name,
-> @@ -1156,7 +1158,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
->        /* Count notes sections and allocate structures.  */
->        notes = 0;
->        for (i = 0; i < nsect; i++)
-> -               if ((sechdrs[i].sh_flags & SHF_ALLOC) &&
-> +               if (section_allocated(sechdrs[i]) &&
->                    (sechdrs[i].sh_type == SHT_NOTE))
->                        ++notes;
->
-> @@ -1172,7 +1174,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
->        notes_attrs->notes = notes;
->        nattr = &notes_attrs->attrs[0];
->        for (loaded = i = 0; i < nsect; ++i) {
-> -               if (!(sechdrs[i].sh_flags & SHF_ALLOC))
-> +               if (!section_allocated(sechdrs[i]))
->                        continue;
->                if (sechdrs[i].sh_type == SHT_NOTE) {
->                        nattr->attr.name = mod->sect_attrs->attrs[loaded].name;
-> @@ -1720,7 +1722,7 @@ static char elf_type(const Elf_Sym *sym,
->                return '?';
->        if (sechdrs[sym->st_shndx].sh_flags & SHF_EXECINSTR)
->                return 't';
-> -       if (sechdrs[sym->st_shndx].sh_flags & SHF_ALLOC
-> +       if (section_allocated(sechdrs[sym->st_shndx])
->            && sechdrs[sym->st_shndx].sh_type != SHT_NOBITS) {
->                if (!(sechdrs[sym->st_shndx].sh_flags & SHF_WRITE))
->                        return 'r';
-> @@ -1751,7 +1753,7 @@ static bool is_core_symbol(const Elf_Sym *src, const Elf_Shdr *sechdrs,
->                return false;
->
->        sec = sechdrs + src->st_shndx;
-> -       if (!(sec->sh_flags & SHF_ALLOC)
-> +       if (!section_allocated(*sec)
->  #ifndef CONFIG_KALLSYMS_ALL
->            || !(sec->sh_flags & SHF_EXECINSTR)
->  #endif
-> @@ -1913,7 +1915,7 @@ static void kmemleak_load_module(struct module *mod, Elf_Ehdr *hdr,
->        kmemleak_scan_area(mod, sizeof(struct module), GFP_KERNEL);
->
->        for (i = 1; i < hdr->e_shnum; i++) {
-> -               if (!(sechdrs[i].sh_flags & SHF_ALLOC))
-> +               if (!section_allocated(sechdrs[i]))
->                        continue;
->                if (strncmp(secstrings + sechdrs[i].sh_name, ".data", 5) != 0
->                    && strncmp(secstrings + sechdrs[i].sh_name, ".bss", 4) != 0)
-> @@ -2139,7 +2141,7 @@ static noinline struct module *load_module(void __user *umod,
->        for (i = 0; i < hdr->e_shnum; i++) {
->                void *dest;
->
-> -               if (!(sechdrs[i].sh_flags & SHF_ALLOC))
-> +               if (!section_allocated(sechdrs[i]))
->                        continue;
->
->                if (sechdrs[i].sh_entsize & INIT_OFFSET_MASK)
-> @@ -2287,7 +2289,7 @@ static noinline struct module *load_module(void __user *umod,
->                        continue;
->
->                /* Don't bother with non-allocated sections */
-> -               if (!(sechdrs[info].sh_flags & SHF_ALLOC))
-> +               if (!section_allocated(sechdrs[info]))
->                        continue;
->
->                if (sechdrs[i].sh_type == SHT_REL)
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
