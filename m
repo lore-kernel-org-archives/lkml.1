@@ -1,95 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZLBXFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbZLBXJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbZLBXFx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 18:05:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZLBXFx
+	id S1755249AbZLBXJp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 18:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbZLBXJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 18:05:53 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48128 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754393AbZLBXFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 18:05:52 -0500
-Date: Wed, 2 Dec 2009 15:05:56 -0800
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Jon D. Mason" <jdmason@kudzu.us>, discuss@x86-64.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Corinna Schultz <coschult@us.ibm.com>,
-       Muli Ben-Yehuda <muli@il.ibm.com>
-Subject: [PATCH v2] Calgary: Find nearest matching Calgary while walking up
-	the PCI tree
-Message-ID: <20091202230556.GG10295@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <20091202014733.GD10295@tux1.beaverton.ibm.com> <20091202072149.GB2175@tyrion.haifa.ibm.com>
+	Wed, 2 Dec 2009 18:09:45 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42299 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754134AbZLBXJo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 18:09:44 -0500
+Message-ID: <4B16F389.4090801@zytor.com>
+Date: Wed, 02 Dec 2009 15:08:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091202072149.GB2175@tyrion.haifa.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
+       jbaron@redhat.com, linux-tip-commits@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: trace/events: DECLARE vs DEFINE semantic
+References: <20091202144334.GA30359@elte.hu> <1259765735.12870.42.camel@gandalf.stny.rr.com> <20091202162715.GB9710@Krystal> <1259773888.12870.61.camel@gandalf.stny.rr.com> <20091202180633.GF9710@Krystal> <1259777987.12870.70.camel@gandalf.stny.rr.com> <20091202190135.GA23316@Krystal> <1259781578.12870.78.camel@gandalf.stny.rr.com> <4B16EC06.6010706@redhat.com> <1259794005.12870.102.camel@gandalf.stny.rr.com> <20091202225736.GA14770@Krystal>
+In-Reply-To: <20091202225736.GA14770@Krystal>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On a multi-node x3950M2 system, there's a slight oddity in the PCI device tree
-for all secondary nodes:
+On 12/02/2009 02:57 PM, Mathieu Desnoyers wrote:
+>>
+>> TRACE_CLASS - Declares a class
+>> TRACE_CLASS_EVENT - defines an event for said class
+>> TRACE_EVENT - Declares a class and defines an event (as is today)
+> 
+> Yep, it looks good! It's self-descriptive and don't require to explain
+> what the thing is doing each time we refer to it. (however I feel a bit
+> sad for Fred, Wilma and Barney) ;)
+> 
 
-30:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev e1)
- \-33:00.0 PCI bridge: IBM CalIOC2 PCI-E Root Port (rev 01)
-    \-34:00.0 RAID bus controller: LSI Logic / Symbios Logic MegaRAID SAS 1078 (rev 04)
+Although you have to admit it's a bit confusing that:
 
-...as compared to the primary node:
+TRACE_EVENT = TRACE_CLASS + TRACE_CLASS_EVENT
 
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev e1)
- \-01:00.0 VGA compatible controller: ATI Technologies Inc ES1000 (rev 02)
-03:00.0 PCI bridge: IBM CalIOC2 PCI-E Root Port (rev 01)
- \-04:00.0 RAID bus controller: LSI Logic / Symbios Logic MegaRAID SAS 1078 (rev 04)
+... as opposed to ...
 
-In both nodes, the LSI RAID controller hangs off a CalIOC2 device, but on the
-secondary nodes, the BIOS hides the VGA device and substitutes the device tree
-ending with the disk controller.
+TRACE_CLASS_EVENT = TRACE_CLASS + TRACE_EVENT
 
-It would seem that Calgary devices don't necessarily appear at the top of the
-PCI tree, which means that the current code to find the Calgary IOMMU that goes
-with a particular device is buggy.  Rather than walk all the way to the top of
-the PCI device tree and try to match bus number with Calgary descriptor, the
-code needs to examine each parent of the particular device; if it encounters a
-Calgary with a matching bus number, simply use that.  Otherwise, we BUG() when
-the bus number of the Calgary doesn't match the bus number of whatever's at the
-top of the device tree.
+	-hpa
 
-Extra note: This patch appears to work correctly for the x3950 that came before
-the x3950 M2.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
----
-
- arch/x86/kernel/pci-calgary_64.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
-
-
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index 971a3be..e6ec8a2 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -318,13 +318,15 @@ static inline struct iommu_table *find_iommu_table(struct device *dev)
- 
- 	pdev = to_pci_dev(dev);
- 
-+	/* search up the device tree for an iommu */
- 	pbus = pdev->bus;
--
--	/* is the device behind a bridge? Look for the root bus */
--	while (pbus->parent)
-+	do {
-+		tbl = pci_iommu(pbus);
-+		if (tbl && tbl->it_busno == pbus->number)
-+			break;
-+		tbl = NULL;
- 		pbus = pbus->parent;
--
--	tbl = pci_iommu(pbus);
-+	} while (pbus);
- 
- 	BUG_ON(tbl && (tbl->it_busno != pbus->number));
- 
