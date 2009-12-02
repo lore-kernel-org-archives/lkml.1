@@ -1,104 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbZLBAvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbZLBAxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754948AbZLBAvA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 19:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbZLBAu7
+	id S1754975AbZLBAxO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Dec 2009 19:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZLBAxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 19:50:59 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:56065 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753329AbZLBAu6 convert rfc822-to-8bit (ORCPT
+	Tue, 1 Dec 2009 19:53:14 -0500
+Received: from mail2.racsa.co.cr ([196.40.31.26]:38969 "EHLO
+	barracuda6.racsa.co.cr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753329AbZLBAxN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 19:50:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=iyS49sSjvJv3A+Uh7WEadhl2RdRazqWQee/vWjNEj4q46Xu4+9umJ+HE04//Gvq8cI
-         I6dyZaaCFaRT7xBGBexbyl3eatzWK4eq2tUh0BS1QQ/rFQ2mq36qHxLd3WeCZWeAwq/E
-         jPxT0OineAGQ8Rj/XWBuU4SkoE+xRYXqN4B2w=
-MIME-Version: 1.0
-In-Reply-To: <1259687838-31722-1-git-send-email-daniel@caiaq.de>
-References: <1259687838-31722-1-git-send-email-daniel@caiaq.de>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 2 Dec 2009 08:50:44 +0800
-Message-ID: <f17812d70912011650h48a6c391s426ffc8b4b653fc8@mail.gmail.com>
-Subject: Re: [PATCH] mmc: pxamci: call mmc_remove_host() before freeing 
-	resources
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org, Pierre Ossman <pierre@ossman.eu>,
-       linux-mmc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       stable@kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 1 Dec 2009 19:53:13 -0500
+X-ASG-Debug-ID: 1259715202-0eeb024d0000-xx1T2L
+X-Barracuda-URL: http://172.16.1.15:8000/cgi-bin/mark.cgi
+X-Barracuda-Envelope-From: osobosque@racsa.co.cr
+Date: Tue, 01 Dec 2009 18:53:08 -0600 (CST)
+From: Joseph Parmelee <jparmele@wildbear.com>
+X-X-Sender: jparmele@bruno
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, linux-kernel@vger.kernel.org
+X-ASG-Orig-Subj: Re: futex_cmpxchg_enabled not set in futex_init on pentium3
+Subject: Re: futex_cmpxchg_enabled not set in futex_init on pentium3
+In-reply-to: <4B159EEA.6030503@zytor.com>
+Message-id: <alpine.LNX.2.00.0912011757140.855@bruno>
+References: <alpine.LNX.2.00.0911291057100.2912@bruno>
+ <4B143AE8.5090608@us.ibm.com>
+ <alpine.LFD.2.00.0911302307440.24119@localhost.localdomain>
+ <alpine.LNX.2.00.0912011428350.855@bruno>
+ <alpine.LFD.2.00.0912012236120.24119@localhost.localdomain>
+ <alpine.LNX.2.00.0912011550120.855@bruno> <4B159EEA.6030503@zytor.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Barracuda-Connect: UNKNOWN[172.16.7.14]
+X-Barracuda-Start-Time: 1259715202
+X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at racsa.co.cr
+X-Barracuda-Spam-Score: 0.00
+X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=4.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=6.0 tests=
+X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.2.16060
+	Rule breakdown below
+	 pts rule name              description
+	---- ---------------------- --------------------------------------------------
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 2, 2009 at 1:17 AM, Daniel Mack <daniel@caiaq.de> wrote:
-> mmc_remove_host() will cause the mmc core to switch off the bus power by
-> eventually calling pxamci_set_ios(). This function uses the regulator or
-> the GPIO which have been freed already.
->
-> This causes the following Oops on module unload.
->
-> [   49.519649] Unable to handle kernel paging request at virtual address 30303a70
-> [   49.526878] pgd = c7084000
-> [   49.529563] [30303a70] *pgd=00000000
-> [   49.533136] Internal error: Oops: 5 [#1]
-> [   49.537025] last sysfs file: /sys/devices/platform/pxa27x-ohci/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/scsi_level
-> [   49.547471] Modules linked in: pxamci(-) eeti_ts
-> [   49.552061] CPU: 0    Not tainted  (2.6.32-rc8 #322)
-> [   49.557001] PC is at regulator_is_enabled+0x3c/0xbc
-> [   49.561846] LR is at regulator_is_enabled+0x30/0xbc
-> [   49.566691] pc : [<c01a2448>]    lr : [<c01a243c>]    psr: 60000013
-> [   49.566702] sp : c7083e70  ip : 30303a30  fp : 00000000
-> [   49.578093] r10: c705e200  r9 : c7082000  r8 : c705e2e0
-> [   49.583280] r7 : c7061340  r6 : c7061340  r5 : c7083e70  r4 : 00000000
-> [   49.589759] r3 : c04dc434  r2 : c04dc434  r1 : c03eecea  r0 : 00000047
-> [   49.596241] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
-> [   49.603329] Control: 0000397f  Table: a7084018  DAC: 00000015
-> [   49.609031] Process rmmod (pid: 1101, stack limit = 0xc7082278)
-> [   49.614908] Stack: (0xc7083e70 to 0xc7084000)
-> [   49.619238] 3e60:                                     c7082000 c703c4f8 c705ea00 c04f4074
-> [   49.627366] 3e80: 00000000 c705e3a0 ffffffff c0247ddc c70361a0 00000000 c705e3a0 ffffffff
-> [   49.635499] 3ea0: c705e200 bf006400 c78c4f00 c705e200 c705e3a0 ffffffff c705e200 ffffffff
-> [   49.643633] 3ec0: c04d8ac8 c02476d0 ffffffff c0247c60 c705e200 c0248678 c705e200 c0249064
-> [   49.651765] 3ee0: ffffffff bf006204 c04d8ad0 c04d8ad0 c04d8ac8 bf007490 00000880 c00440c4
-> [   49.659898] 3f00: 0000b748 c01c5708 bf007490 c01c44c8 c04d8ac8 c04d8afc bf007490 c01c4570
-> [   49.668031] 3f20: bf007490 bf00750c c04f4258 c01c37a4 00000000 bf00750c c7083f44 c007b014
-> [   49.676162] 3f40: 4000d000 6d617870 08006963 00000001 00000000 c7085000 00000001 00000000
-> [   49.684287] 3f60: 4000d000 c7083f8c 00000001 bea01a54 00005401 c7ab1400 c00440c4 00082000
-> [   49.692420] 3f80: bf00750c 00000880 c7083f8c 00000000 4000cfa8 00000000 00000880 bea01cc8
-> [   49.700552] 3fa0: 00000081 c0043f40 00000000 00000880 bea01cc8 00000880 00000006 00000000
-> [   49.708677] 3fc0: 00000000 00000880 bea01cc8 00000081 00000097 0000cca4 0000b748 00000000
-> [   49.716802] 3fe0: 4001a4f0 bea01cc0 00018bf4 4001a4fc 20000010 bea01cc8 a063e021 a063e421
-> [   49.724958] [<c01a2448>] (regulator_is_enabled+0x3c/0xbc) from [<c0247ddc>] (mmc_regulator_set_ocr+0x14/0xd8)
-> [   49.734836] [<c0247ddc>] (mmc_regulator_set_ocr+0x14/0xd8) from [<bf006400>] (pxamci_set_ios+0xd8/0x17c [pxamci])
-> [   49.745044] [<bf006400>] (pxamci_set_ios+0xd8/0x17c [pxamci]) from [<c02476d0>] (mmc_power_off+0x50/0x58)
-> [   49.754555] [<c02476d0>] (mmc_power_off+0x50/0x58) from [<c0247c60>] (mmc_detach_bus+0x68/0xc4)
-> [   49.763207] [<c0247c60>] (mmc_detach_bus+0x68/0xc4) from [<c0248678>] (mmc_stop_host+0xd4/0x1bc)
-> [   49.771944] [<c0248678>] (mmc_stop_host+0xd4/0x1bc) from [<c0249064>] (mmc_remove_host+0xc/0x20)
-> [   49.780681] [<c0249064>] (mmc_remove_host+0xc/0x20) from [<bf006204>] (pxamci_remove+0xc8/0x174 [pxamci])
-> [   49.790211] [<bf006204>] (pxamci_remove+0xc8/0x174 [pxamci]) from [<c01c5708>] (platform_drv_remove+0x1c/0x24)
-> [   49.800164] [<c01c5708>] (platform_drv_remove+0x1c/0x24) from [<c01c44c8>] (__device_release_driver+0x7c/0xc4)
-> [   49.810110] [<c01c44c8>] (__device_release_driver+0x7c/0xc4) from [<c01c4570>] (driver_detach+0x60/0x8c)
-> [   49.819535] [<c01c4570>] (driver_detach+0x60/0x8c) from [<c01c37a4>] (bus_remove_driver+0x90/0xcc)
-> [   49.828452] [<c01c37a4>] (bus_remove_driver+0x90/0xcc) from [<c007b014>] (sys_delete_module+0x1d8/0x254)
-> [   49.837891] [<c007b014>] (sys_delete_module+0x1d8/0x254) from [<c0043f40>] (ret_fast_syscall+0x0/0x28)
-> [   49.847145] Code: eb06c53a e596c030 e1a0500d e59f106c (e59c0040)
-> [   49.853566] ---[ end trace b5fa66a00cea142f ]---
->
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Reported-by: Sven Neumann <s.neumann@raumfeld.com>
-> Cc: Pierre Ossman <pierre@ossman.eu>
-> Cc: Eric Miao <eric.y.miao@gmail.com>
-> Cc: linux-mmc@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: stable@kernel.org
-> ---
->  drivers/mmc/host/pxamci.c |    4 ++--
 
-Looks like a correct fix to me.
 
-Acked-by: Eric Miao <eric.y.miao@gmail.com>
+
+On Tue, 1 Dec 2009, H. Peter Anvin wrote:
+
+> Note: the best thing you could do -- although it is a bit time consuming
+> -- would be to do a "git bisect" between the last known working version
+> (2.6.28) and first broken version (2.6.31).
+>
+
+Just to clarify, the last known working version is 2.6.30.6; the first known
+bad version is 2.6.31.
+
+Joseph
+
