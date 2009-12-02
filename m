@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZLBNZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZLBN22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbZLBNZV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 08:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZLBNZU
+	id S1753764AbZLBN22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 08:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbZLBN22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 08:25:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2616 "EHLO mx1.redhat.com"
+	Wed, 2 Dec 2009 08:28:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36534 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753975AbZLBNZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 08:25:18 -0500
-Message-ID: <4B166ABC.9040004@redhat.com>
-Date: Wed, 02 Dec 2009 15:25:16 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	id S1751312AbZLBN21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 08:28:27 -0500
+Date: Wed, 2 Dec 2009 13:27:36 GMT
+From: tip-bot for Tim Blechmann <tim@klingt.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, tim@klingt.org, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, tim@klingt.org, mingo@elte.hu
+In-Reply-To: <4B16503A.8030508@klingt.org>
+References: <4B16503A.8030508@klingt.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] Revert "sched, x86: Optimize branch hint in __switch_to()"
+Message-ID: <tip-be8147e68625a1adb111acfd6b98a492be4b74d0@git.kernel.org>
+Git-Commit-ID: be8147e68625a1adb111acfd6b98a492be4b74d0
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Nix <nix@esperi.org.uk>
-CC: kvm@vger.kernel.org,
-       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: 2.6.31.5 x86-64 KVM: 'emulation failed (pagetable) rip 7fb49335da7b
- 66 0f 7f 07'
-References: <87skbzvdgd.fsf@spindle.srvr.nix> <4B125051.6010506@redhat.com> <87k4x9saqn.fsf@spindle.srvr.nix> <4B1283F5.5060204@redhat.com>
-In-Reply-To: <4B1283F5.5060204@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/29/2009 04:23 PM, Avi Kivity wrote:
-> On 11/29/2009 03:48 PM, Nix wrote:
->> On 29 Nov 2009, Avi Kivity uttered the following:
->>> 66 0f 7f 07              movdqa %xmm0,(%rdi)
->>>
->>> which we don't emulate.
->> x86-64 glibc 2.10 memset(), perhaps? On SSE-capable platforms that does
->> a whole bunch of
->>
->> L(SSE0QB):  movdqa %xmm0,-0xb0(%rdi)
->> L(SSE0QA):  movdqa %xmm0,-0xa0(%rdi)
->> L(SSE0Q9):  movdqa %xmm0,-0x90(%rdi)
->> L(SSE0Q8):  movdqa %xmm0,-0x80(%rdi)
->> L(SSE0Q7):  movdqa %xmm0,-0x70(%rdi)
->> L(SSE0Q6):  movdqa %xmm0,-0x60(%rdi)
->> L(SSE0Q5):  movdqa %xmm0,-0x50(%rdi)
->> L(SSE0Q4):  movdqa %xmm0,-0x40(%rdi)
->> L(SSE0Q3):  movdqa %xmm0,-0x30(%rdi)
->> L(SSE0Q2):  movdqa %xmm0,-0x20(%rdi)
->> L(SSE0Q1):  movdqa %xmm0,-0x10(%rdi)
->> L(SSE0Q0):  retq
->>
->> (multiple blocks of this, catering for alignment, I guess)
->>
->> and x86-64 is always SSE-capable.
->
-> Most likely, either this or something similar is called on a userspace 
-> device driver.  Can you check if this is triggered by starting X?
->
-> If so, we'll have to emulate this instruction, which will be a bitch.
->
+Commit-ID:  be8147e68625a1adb111acfd6b98a492be4b74d0
+Gitweb:     http://git.kernel.org/tip/be8147e68625a1adb111acfd6b98a492be4b74d0
+Author:     Tim Blechmann <tim@klingt.org>
+AuthorDate: Wed, 2 Dec 2009 12:32:10 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 2 Dec 2009 12:38:03 +0100
 
-Not just in the emulator, also in the userspace interface.  We only 
-support up to 8 bytes mmio.
+Revert "sched, x86: Optimize branch hint in __switch_to()"
 
-Our options in fixing this are:
+This reverts commit a3a1de0c34de6f5f8332cd6151c46af7813c0fcb.
 
-- extend mmio support to 16 (32? more?) bytes, require new kernel and 
-new userspace
-- use coalesced_mmio for this
-    - if the mmio happens for a non coalesced mmio region, we flush 
-immediately
-    - what if userspace doesn't support coalesced mmio? (unlikely these 
-days)
-    - doesn't work for reads (unlikely for 16 byte accesses?)
+Commit 8ec6993d9f7d961014af970ded57542961fe9ad9 cleared the es
+and ds selectors, so the original branch hints are correct now.
+Therefore the branch hint doesn't need to be removed.
 
--- 
-error compiling committee.c: too many arguments to function
+Signed-off-by: Tim Blechmann <tim@klingt.org>
+LKML-Reference: <4B16503A.8030508@klingt.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/process_64.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 93c501d..eb62cbc 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -406,10 +406,11 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	 * This won't pick up thread selector changes, but I guess that is ok.
+ 	 */
+ 	savesegment(es, prev->es);
+-	if (next->es | prev->es)
++	if (unlikely(next->es | prev->es))
+ 		loadsegment(es, next->es);
++
+ 	savesegment(ds, prev->ds);
+-	if (next->ds | prev->ds)
++	if (unlikely(next->ds | prev->ds))
+ 		loadsegment(ds, next->ds);
+ 
+ 
