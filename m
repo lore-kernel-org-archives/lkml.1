@@ -1,211 +1,354 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZLBSXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbZLBSX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZLBSXd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 13:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZLBSXd
+	id S1755469AbZLBSX5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 13:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZLBSX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 13:23:33 -0500
-Received: from mail-px0-f188.google.com ([209.85.216.188]:55350 "EHLO
-	mail-px0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754323AbZLBSXb (ORCPT
+	Wed, 2 Dec 2009 13:23:57 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:61128 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754954AbZLBSX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 13:23:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=JUjMcRgnl4m9dCbgxLZBxvmMrWNXHkbFiyg43iO5Xog5QNXzw1px+6nF76PMr9SvMH
-         ZufI/tFker/iW0+szUS4IcOC9XOBCTu1tbgU2iz7WbdXGjlID3Joujl7YFKSVe+eo8O1
-         qO+qBCikp6rPsLhx1/Qs5FFZOHXv5BHHSXY9c=
-Date: Wed, 2 Dec 2009 10:23:29 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
-       superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-Message-ID: <20091202182329.GA20530@core.coreip.homeip.net>
-References: <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com> <4B155288.1060509@redhat.com> <20091201175400.GA19259@core.coreip.homeip.net> <4B1567D8.7080007@redhat.com> <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com> <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com> <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 2 Dec 2009 13:23:56 -0500
+Subject: Re: [PATCH] leds: Add LED class driver for regulator driven LEDs.
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Antonio Ospite <ospite@studenti.unina.it>
+Cc: Richard Purdie <rpurdie@rpsys.net>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Daniel Ribeiro <drwyrm@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org, openezx-devel@lists.openezx.org
+In-Reply-To: <1259775625-25973-1-git-send-email-ospite@studenti.unina.it>
+References: <1259775625-25973-1-git-send-email-ospite@studenti.unina.it>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 02 Dec 2009 18:23:55 +0000
+Message-ID: <1259778235.3588.141.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 12:30:29PM -0500, Jon Smirl wrote:
-> On Wed, Dec 2, 2009 at 12:10 PM, Dmitry Torokhov
-> <dmitry.torokhov@gmail.com> wrote:
-> > On Wed, Dec 02, 2009 at 10:44:58AM -0200, Mauro Carvalho Chehab wrote:
-> >> Dmitry Torokhov wrote:
-> >> > On Tue, Dec 01, 2009 at 07:05:49PM -0200, Mauro Carvalho Chehab wrote:
-> >> >> Dmitry Torokhov wrote:
-> >> >>> On Tue, Dec 01, 2009 at 05:00:40PM -0200, Mauro Carvalho Chehab wrote:
-> >> >>>> Dmitry Torokhov wrote:
-> >> >>>>> On Tue, Dec 01, 2009 at 03:29:44PM -0200, Mauro Carvalho Chehab wrote:
-> >> >>>>>> For sure we need to add an EVIOSETPROTO ioctl to allow the driver
-> >> >>>>>> to change the protocol in runtime.
-> >> >>>>>>
-> >> >>>>> Mauro,
-> >> >>>>>
-> >> >>>>> I think this kind of confuguration belongs to lirc device space,
-> >> >>>>> not input/evdev. This is the same as protocol selection for psmouse
-> >> >>>>> module: while it is normally auto-detected we have sysfs attribute to
-> >> >>>>> force one or another and it is tied to serio device, not input
-> >> >>>>> device.
-> >> >>>> Dmitry,
-> >> >>>>
-> >> >>>> This has nothing to do with the raw interface nor with lirc. This problem
-> >> >>>> happens with the evdev interface and already affects the in-kernel drivers.
-> >> >>>>
-> >> >>>> In this case, psmouse is not a good example. With a mouse, when a movement
-> >> >>>> occurs, you'll receive some data from its port. So, a software can autodetect
-> >> >>>> the protocol. The same principle can be used also with a raw pulse/space
-> >> >>>> interface, where software can autodetect the protocol.
-> >> >>> Or, in certain cases, it can not.
-> >> >>>
-> >> >>> [... skipped rationale for adding a way to control protocol (with which
-> >> >>> I agree) ...]
-> >> >>>
-> >> >>>> To solve this, we really need to extend evdev API to do 3 things: enumberate the
-> >> >>>> supported protocols, get the current protocol(s), and select the protocol(s) that
-> >> >>>> will be used by a newer table.
-> >> >>>>
-> >> >>> And here we start disagreeing. My preference would be for adding this
-> >> >>> API on lirc device level (i.e. /syc/class/lirc/lircX/blah namespace),
-> >> >>> since it only applicable to IR, not to input devices in general.
-> >> >>>
-> >> >>> Once you selected proper protocol(s) and maybe instantiated several
-> >> >>> input devices then udev (by examining input device capabilities and
-> >> >>> optionally looking up at the parent device properties) would use
-> >> >>> input evdev API to load proper keymap. Because translation of
-> >> >>> driver-specific codes into standard key definitions is in the input
-> >> >>> realm. Reading these driver-specific codes from hardware is outside of
-> >> >>> input layer domain.
-> >> >>>
-> >> >>> Just as psmouse ability to specify protocol is not shoved into evdev;
-> >> >>> just as atkbd quirks (force release key list and other driver-specific
-> >> >>> options) are not in evdev either; we should not overload evdev interface
-> >> >>> with IR-specific items.
-> >> >> I'm not against mapping those features as sysfs atributes, but they don't belong
-> >> >> to lirc, as far as I understand. From all we've discussed, we'll create a lirc
-> >> >> interface to allow the direct usage of raw IO. However, IR protocol is a property
-> >> >> that is not related to raw IO mode but, instead, to evdev mode.
-> >> >>
-> >> >
-> >> > Why would protocol relate to evdev node? Evdev does not really care what
-> >> > how the fact that a certain button was pressed was communicated to it.
-> >> > It may be deliveretd through PS/2 port, or maybe it was Bluetooth HID,
-> >> > or USB HID or USB boot protocol or some custom protocol, or RC-5, NEC or
-> >> > some custom IR protocol. It makes no difference _whatsoever_ to evdev
-> >> > nor any users of evdev care about protocol used by underlying hardware
-> >> > device to transmit the data.
-> >> >
-> >> >> We might add a /sys/class/IR and add IR specific stuff there, but it seems
-> >> >> overkill to me and will hide the fact that those parameters are part of the evdev
-> >> >> interface.
-> >> >>
-> >> >> So, I would just add the IR sysfs parameters at the /sys/class/input, if
-> >> >> the device is an IR (or create it is /sys/class/input/IR).
-> >> >>
-> >> >> I agree that the code to implement the IR specific sysfs parameter should be kept
-> >> >> oustide input core, as they're specific to IR implementations.
-> >> >>
-> >> >> Would this work for you?
-> >> >
-> >> > I am seeing a little bit differently structured subsystem for IR at the
-> >> > moment. I think we should do something like this:
-> >> >
-> >> > - receivers create /sys/class/lirc devices. These devices provide API
-> >> >   with a ring buffer (fifo) for the raw data stream coming from (and to)
-> >> >   them.
-> >>
-> >> The raw interface applies only to the devices that doesn't have a hardware decoder
-> >> (something between 40%-60% of the currently supported devices).
-> >
-> > 50% is quite a number I think. But if driver does not allow access to
-> > the raw stream - it will refuse binding to lirc_dev interface.
-> >
-> >>
-> >> > - we allow registering several data interfaces/decoders that can be bound
-> >> >   (manually or maybe automatically) to lirc devices. lirc devices may
-> >> >   provide hints as to which interface(s) better suited for handling the
-> >> >   data coming form particular receiver. Several interfaces may be bound
-> >> >   to one device at a time.
-> >> > - one of the interfaces is interface implementing current lirc_dev
-> >> > - other interfaces may be in-kernel RC-5 decoder or other decoders.
-> >> >   decoders will create instances of input devices
-> >>
-> >> I don't see why having more than one interface, especially for devices with
-> >> hardware decoders.
-> >>
-> >> On IR remote receivers, internally, there's just one interface per hardware.
-> >>
-> >> Considering the hardware decoding case, why to artificially create other
-> >> interfaces that can't be used simultaneously? No current hardware
-> >> decoders can do that (or, at least, no current implementation allows).
-> >> We're foreseen some cases where we'll have that (like Patrick's dib0700 driver),
-> >> but for now, it is not possible to offer more than one interface to userspace.
-> >> Creating an arbitrary number of artificial interfaces just to pass a parameter
-> >> to the driver (the protocol), really seems overkill to me.
-> >
-> > We need to cater to the future cases as well. I don't want to redesign
-> > it in 2 years. But for devices that have only hardware decoders I
-> > suppose we can short-curcuit "interfaces" and have a library-like module
-> > creating input devices directly.
-> >
-> >>
-> >> In the case of the cheap devices with just raw interfaces, running in-kernel
-> >> decoders, while it will work if you create one interface per protocol
-> >> per IR receiver, this also seems overkill. Why to do that? It sounds that it will
-> >> just create additional complexity at the kernelspace and at the userspace, since
-> >> now userspace programs will need to open more than one device to receive the
-> >> keycodes.
-> >
-> > _Yes_!!! You open as many event devices as there are devices you are
-> > interested in receiving data from. Multiplexing devices are bad, bad,
-> > bad. Witness /dev/input/mouse and all the attempts at working around the
-> > fact that if you have a special driver for one of your devices you
-> > receive events from the same device through 2 interfaces and all kind of
-> > "grab", "super-grab", "smart-grab" schemes are born.
-> >
-> >>
-> >> > (for each remote/substream that they can recognize).
-> >>
-> >> I'm assuming that, by remote, you're referring to a remote receiver (and not to
-> >> the remote itself), right?
-> >
-> > If we could separate by remote transmitter that would be the best I
-> > think, but I understand that it is rarely possible?
+On Wed, 2009-12-02 at 18:40 +0100, Antonio Ospite wrote:
+> This driver provides an interface for controlling LEDs (or vibrators)
+> connected to PMICs for which there is a regulator framework driver.
 > 
-> The code I posted using configfs did that. Instead of making apps IR
-> aware it mapped the vendor/device/command triplets into standard Linux
-> keycodes.  Each remote was its own evdev device.
->
-
-That is what I liked about the patchset.
- 
-> That scheme could be made to "just work" by building in a couple of
-> mapping tables. The driver would pre-populate configfs entries for a
-> some standard IR devices. Set the remote for Motorala DVR. Default
-> Myth to look for the evdev device associated with Motorola DVR. The
-> built-in mapping table would then map from pulse timing to Linux
-> keycodes.
+> This driver can be used, for instance, to control vibrator on all Motorola EZX
+> phones using the pcap-regulator driver services.
 > 
-> If everyone hates configfs the same mapping can be done via the set
-> keys IOCTL and making changes to the user space apps like loadkeys.
+> Signed-off-by: Antonio Ospite <ospite@studenti.unina.it>
+
+Some very minor points below.
+
+> ---
+> The patch is against:
+> git://git.o-hand.com/linux-rpurdie-leds for-mm
 > 
+> A doubt I had was about leaving the 'supply' variable configurable from
+> platform data, or relying on some fixed value like "vled", but leaving it
+> configurable covers the case when we have different regulators used for
+> different LEDs or vibrators.
+> 
+> Should I add a note in Documentation/ about how to use it? Tell me if so.
+> 
+> Thanks,
+>    Antonio
+> 
+> P.S.: for those who get the mail from LKML, please Cc me on reply.
+> 
+>  drivers/leds/Kconfig           |    6 +
+>  drivers/leds/Makefile          |    1 +
+>  drivers/leds/leds-regulator.c  |  214 ++++++++++++++++++++++++++++++++++++++++
+>  include/linux/leds-regulator.h |   20 ++++
+>  4 files changed, 241 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/leds/leds-regulator.c
+>  create mode 100644 include/linux/leds-regulator.h
+> 
+> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> index f12a996..8a0e1ec 100644
+> --- a/drivers/leds/Kconfig
+> +++ b/drivers/leds/Kconfig
+> @@ -229,6 +229,12 @@ config LEDS_PWM
+>  	help
+>  	  This option enables support for pwm driven LEDs
+>  
+> +config LEDS_REGULATOR
+> +	tristate "REGULATOR driven LED support"
+> +	depends on LEDS_CLASS && REGULATOR
+> +	help
+> +	  This option enables support for regulator driven LEDs.
+> +
+>  config LEDS_BD2802
+>  	tristate "LED driver for BD2802 RGB LED"
+>  	depends on LEDS_CLASS && I2C
+> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+> index 176f0c6..9e63869 100644
+> --- a/drivers/leds/Makefile
+> +++ b/drivers/leds/Makefile
+> @@ -29,6 +29,7 @@ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
+>  obj-$(CONFIG_LEDS_WM831X_STATUS)	+= leds-wm831x-status.o
+>  obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
+>  obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
+> +obj-$(CONFIG_LEDS_REGULATOR)		+= leds-regulator.o
+>  obj-$(CONFIG_LEDS_INTEL_SS4200)		+= leds-ss4200.o
+>  obj-$(CONFIG_LEDS_LT3593)		+= leds-lt3593.o
+>  obj-$(CONFIG_LEDS_ADP5520)		+= leds-adp5520.o
+> diff --git a/drivers/leds/leds-regulator.c b/drivers/leds/leds-regulator.c
+> new file mode 100644
+> index 0000000..fca5d42
+> --- /dev/null
+> +++ b/drivers/leds/leds-regulator.c
+> @@ -0,0 +1,214 @@
+> +/*
+> + * leds-regulator.c - LED class driver for regulator driven LEDs.
+> + *
+> + * Copyright (C) 2009 Antonio Ospite <ospite@studenti.unina.it>
+> + *
+> + * Inspired by leds-wm8350 driver.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/err.h>
+> +#include <linux/workqueue.h>
+> +#include <linux/leds.h>
+> +#include <linux/leds-regulator.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regulator/consumer.h>
+> +
+> +#define to_regulator_led(led_cdev) \
+> +	container_of(led_cdev, struct regulator_led, cdev)
+> +
+> +struct regulator_led {
+> +	struct led_classdev cdev;
+> +	enum led_brightness value;
+> +	int enabled;
+> +	struct mutex mutex;
+> +	struct work_struct work;
+> +
+> +	struct regulator *vcc;
+> +};
+> +
+> +static inline int led_regulator_get_max_brightness(struct regulator *supply)
+> +{
+> +	return regulator_count_voltages(supply);
+> +}
+> +
+> +static int led_regulator_get_vdd(struct regulator *supply,
+> +		enum led_brightness brightness)
+> +{
+> +	if (brightness == 0)
+> +		return 0;
+> +
+> +	return regulator_list_voltage(supply, brightness - 1);
+> +}
+> +
+> +
+> +static void regulator_led_enable(struct regulator_led *led)
+> +{
+> +	int ret;
+> +
+> +	if (led->enabled)
+> +		return;
+> +
+> +	ret = regulator_enable(led->vcc);
+> +	if (ret != 0) {
+> +		dev_err(led->cdev.dev, "Failed to enable vcc: %d\n", ret);
+> +		return;
+> +	}
+> +
+> +	led->enabled = 1;
+> +}
+> +
+> +static void regulator_led_disable(struct regulator_led *led)
+> +{
+> +	int ret;
+> +
+> +	if (!led->enabled)
+> +		return;
+> +
+> +	ret = regulator_disable(led->vcc);
+> +	if (ret != 0) {
+> +		dev_err(led->cdev.dev, "Failed to disable vcc: %d\n", ret);
+> +		return;
+> +	}
+> +
+> +	led->enabled = 0;
+> +}
+> +
+> +static void led_work(struct work_struct *work)
+> +{
+> +	struct regulator_led *led;
+> +	int voltage;
+> +	int ret;
+> +
+> +	led = container_of(work, struct regulator_led, work);
+> +
+> +	mutex_lock(&led->mutex);
+> +
+> +	if (led->value == 0) {
 
-It is not the hate of configfs per se, but rather concern that configfs
-takes too much resources and is not normally enabled.
+LED_OFF instead of 0 here ?
 
--- 
-Dmitry
+> +		regulator_led_disable(led);
+> +		goto out;
+> +	}
+> +
+> +	voltage = led_regulator_get_vdd(led->vcc, led->value);
+> +	dev_dbg(led->cdev.dev, "brightness: %d voltage: %d",
+> +			led->value, voltage);
+> +
+> +	ret = regulator_set_voltage(led->vcc, voltage, voltage);
+> +	if (ret != 0)
+> +		dev_err(led->cdev.dev, "Failed to set voltage %d: %d\n",
+> +			voltage, ret);
+
+Some regulators may not support voltage change (via hw design or
+constraints) so set_voltage() will fail. We probably want to handle this
+regulator type so we don't call set_voltage().
+
+> +
+> +	regulator_led_enable(led);
+> +
+> +out:
+> +	mutex_unlock(&led->mutex);
+> +}
+> +
+> +static void regulator_led_brightness_set(struct led_classdev *led_cdev,
+> +			   enum led_brightness value)
+> +{
+> +	struct regulator_led *led = to_regulator_led(led_cdev);
+> +
+> +	led->value = value;
+> +	schedule_work(&led->work);
+> +}
+> +
+> +static int regulator_led_probe(struct platform_device *pdev)
+> +{
+> +	struct led_regulator_platform_data *pdata = pdev->dev.platform_data;
+> +	struct regulator_led *led;
+> +	struct regulator *vcc;
+> +	int ret;
+> +
+> +	if (pdata == NULL) {
+> +		dev_err(&pdev->dev, "no platform data\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	vcc = regulator_get(&pdev->dev, pdata->supply);
+> +	if (IS_ERR(vcc)) {
+> +		dev_err(&pdev->dev, "Cannot get vcc for %s\n", pdata->name);
+> +		return PTR_ERR(vcc);;
+
+double ;; here
+
+> +	}
+> +
+> +	led = kzalloc(sizeof(*led), GFP_KERNEL);
+> +	if (led == NULL) {
+> +		ret = -ENOMEM;
+> +		goto err_vcc;
+> +	}
+> +
+> +	ret = led_regulator_get_max_brightness(vcc);
+> +	if (ret < 0)
+> +		goto err_led;
+> +
+> +	led->cdev.max_brightness = ret;
+> +
+> +	led->cdev.brightness_set = regulator_led_brightness_set;
+> +	led->cdev.name = pdata->name;
+> +	led->cdev.flags |= LED_CORE_SUSPENDRESUME;
+> +	led->enabled = regulator_is_enabled(vcc);
+> +	led->vcc = vcc;
+> +
+> +	mutex_init(&led->mutex);
+> +	INIT_WORK(&led->work, led_work);
+> +
+> +	led->value = LED_OFF;
+> +	platform_set_drvdata(pdev, led);
+> +
+> +	ret = led_classdev_register(&pdev->dev, &led->cdev);
+> +	if (ret < 0) {
+> +		cancel_work_sync(&led->work);
+> +		goto err_led;
+> +	}
+> +
+> +	return 0;
+> +
+> +err_led:
+> +	kfree(led);
+> +err_vcc:
+> +	regulator_put(vcc);
+> +	return ret;
+> +}
+> +
+> +static int regulator_led_remove(struct platform_device *pdev)
+> +{
+> +	struct regulator_led *led = platform_get_drvdata(pdev);
+> +
+> +	led_classdev_unregister(&led->cdev);
+> +	cancel_work_sync(&led->work);
+> +	regulator_led_disable(led);
+> +	regulator_put(led->vcc);
+> +	kfree(led);
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver regulator_led_driver = {
+> +	.driver = {
+> +		   .name  = "leds-regulator",
+> +		   .owner = THIS_MODULE,
+> +		   },
+> +	.probe  = regulator_led_probe,
+> +	.remove = regulator_led_remove,
+> +};
+> +
+> +static int __devinit regulator_led_init(void)
+> +{
+> +	return platform_driver_register(&regulator_led_driver);
+> +}
+> +module_init(regulator_led_init);
+> +
+> +static void regulator_led_exit(void)
+> +{
+> +	platform_driver_unregister(&regulator_led_driver);
+> +}
+> +module_exit(regulator_led_exit);
+> +
+> +MODULE_AUTHOR("Antonio Ospite <ospite@studenti.unina.it>");
+> +MODULE_DESCRIPTION("Regulator driven LED driver");
+> +MODULE_LICENSE("GPL");
+> +MODULE_ALIAS("platform:leds-regulator");
+> diff --git a/include/linux/leds-regulator.h b/include/linux/leds-regulator.h
+> new file mode 100644
+> index 0000000..a5850fd
+> --- /dev/null
+> +++ b/include/linux/leds-regulator.h
+> @@ -0,0 +1,20 @@
+> +/*
+> + * leds-regulator.h - platform data structure for regulator driven LEDs.
+> + *
+> + * Copyright (C) 2009 Antonio Ospite <ospite@studenti.unina.it>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + */
+> +
+> +#ifndef __LINUX_LEDS_REGULATOR_H
+> +#define __LINUX_LEDS_REGULATOR_H
+> +
+> +struct led_regulator_platform_data {
+> +	char *name;	/* LED name as expected by LED class */
+> +	char *supply;
+> +};
+> +
+> +#endif /* __LINUX_LEDS_REGULATOR_H */
+
+
