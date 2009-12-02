@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZLBJl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZLBJmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbZLBJl4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 04:41:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZLBJlz
+	id S1754095AbZLBJmq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 04:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbZLBJmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 04:41:55 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:40018 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751366AbZLBJly (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 04:41:54 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
-Date: Wed, 2 Dec 2009 10:42:04 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0912011005140.2983-100000@iolanthe.rowland.org> <200912020952.09354.linux@rainbow-software.org>
-In-Reply-To: <200912020952.09354.linux@rainbow-software.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912021042.04557.oliver@neukum.org>
+	Wed, 2 Dec 2009 04:42:45 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51283 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751605AbZLBJmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 04:42:45 -0500
+Date: Wed, 2 Dec 2009 10:42:50 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Liuweni <qingshenlwy@gmail.com>, strongzgy <strongzgy@gmail.com>,
+       xgr178 <xgr178@163.com>, Liu Hui <onlyflyer@gmail.com>,
+       viro <viro@zeniv.linux.org.uk>, akpm <akpm@linux-foundation.org>,
+       jack <jack@suse.cz>, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Re: [PATCH 1/3]fs/inode: iunique() Optimize Performance
+Message-ID: <20091202094250.GB31517@wotan.suse.de>
+References: <20091201120337.GV9482@parisc-linux.org> <200912012115341872867@gmail.com> <20091201140041.GW9482@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091201140041.GW9482@parisc-linux.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 2. Dezember 2009 09:52:08 schrieb Ondrej Zary:
-> It shows "prev is NULL, qh=f6581080, ehci->async=f6581000".
+On Tue, Dec 01, 2009 at 07:00:41AM -0700, Matthew Wilcox wrote:
+> On Tue, Dec 01, 2009 at 09:21:32PM +0800, Liuweni wrote:
+> >  *	BUGS:
+> >  *	With a large number of inodes live on the file system this function
+> >  *	currently becomes quite slow.
+> > 
 > 
-> The problem is that activating usbmon causes the problem to disappear. No
->  errors in maybe 15 attempts. It appeared on 2nd attempt after unloading
->  usbmon.
+> I don't believe that comment is correct.  In any case, your optimisation
+> wouldn't make a lick of difference to the speed; it's a single comparison
+> in a loop which also calculates a hash, makes a function call, and walks
+> the length of a hash chain.
+> 
+> The old adage about debugging code, not comments applies here.  Don't take
+> somebody else's word for it that there's a performance problem here.
+> Devise a test to demonstrate the performance problem.  Otherwise, how
+> will you know if you solved it?
 
-That suggests a use after free bug, which usbmon prevents holding
-an additional reference.
-Are you using SLAB_DEBUG?
+Yeah I agree. And then we can debate the usefulness of that workload.
 
-	Regards
-		Oliver
+iunique is not used in many filesystems.  If performance really becomes a
+problem, then you most likely need another data structure. A per-sb ida or
+something would come to mind, but I expect any filesystem that cares already
+has a decent inode number allocation so iunique is just a simple hack for
+those that don't care so much.
+
