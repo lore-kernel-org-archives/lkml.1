@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbZLBMVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbZLBM1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbZLBMVy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 07:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbZLBMVx
+	id S1753135AbZLBM1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 07:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZLBM1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 07:21:53 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:39670 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821AbZLBMVx (ORCPT
+	Wed, 2 Dec 2009 07:27:22 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:36493 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751192AbZLBM1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 07:21:53 -0500
+	Wed, 2 Dec 2009 07:27:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:date:subject:mime-version:x-uid:x-length:organization
-         :to:cc:content-type:content-transfer-encoding:message-id;
-        b=cxVxW/9tp3p/BeZTv+t9J2Rm1quNTPYionKPyS+HWBYEmn2H6mByBaqArpFP8PtD3Z
-         iXKHO5/lv6tpgU2pzqBzK2+bUVfAO9d4aDRBFBEYUjshycYGj2tX7AQU2YzCn1SZeatf
-         z41KdzS5k9QZllLNkGhj6yP9cJwfoxqQ2W2Ik=
-From: Florian Fainelli <florian@openwrt.org>
-Date: Wed, 2 Dec 2009 13:21:23 +0100
-Subject: [PATCH] rc32434_wdt: fix compilation failure
-MIME-Version: 1.0
-X-Length: 1439
-Organization: OpenWrt
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       ralf@linux-mips.org
-Content-Type: text/plain;
-  charset="utf-8"
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=qIp/JiZD+Yng6ryH/hgbuwFeM6Lo1ynXtVqnH9xN9k+Rz8lT+pxpngXcHt9tOYGqH7
+         vydmvawE3H/sQskm7V6N3Koh2fuT1cEL7LBQ1quMlOk0IVKZUSjZclvwYqDmM1ED9mzB
+         w2uvNaVLdaLGRYauwPdzP6HITcoDHb+80c6TY=
+Date: Wed, 2 Dec 2009 13:27:23 +0100
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: Ferenc Wagner <wferi@niif.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] intermittent suspend problem again
+Message-ID: <20091202132723.2499e4aa@strolchi.home.s3e.de>
+In-Reply-To: <87638qw2zy.fsf@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu>
+	<200912011328.15551.rjw@sisk.pl>
+	<877ht68u4h.fsf@tac.ki.iif.hu>
+	<200912012232.50951.rjw@sisk.pl>
+	<87638qw2zy.fsf@tac.ki.iif.hu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.1; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912021321.24198.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wim,
+On Wed, 02 Dec 2009 02:58:41 +0100
+Ferenc Wagner <wferi@niif.hu> wrote:
 
-This is a pretty critical fix, please try to get it in 2.6.32. Thank you
-very much!
----
-From: Florian Fainelli <florian@openwrt.org>
-Subject: [PATCH] rc32434_wdt: fix compilation failure
+> Btw. s2disk has a strange effect of simulating enters during suspend.
+> It looks like this in a terminal:
+> 
+> $ sudo s2disk
 
-This patch fixes the compilation failure of
-rc32434 due to a bad module parameter description.
+...
 
-Signed-off-by: Florian Fainelli <florian@openwrt.org>
----
-diff --git a/drivers/watchdog/rc32434_wdt.c b/drivers/watchdog/rc32434_wdt.c
-index f6cccc9..47588de 100644
---- a/drivers/watchdog/rc32434_wdt.c
-+++ b/drivers/watchdog/rc32434_wdt.c
-@@ -62,7 +62,7 @@ extern unsigned int idt_cpu_freq;
- static int timeout = WATCHDOG_TIMEOUT;
- module_param(timeout, int, 0);
- MODULE_PARM_DESC(timeout, "Watchdog timeout value, in seconds (default="
--		WATCHDOG_TIMEOUT ")");
-+		__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
- 
- static int nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, int, 0);
+> 
+> 
+> 
+> 
+> 
+> 
+> $ 
+> $ 
+> $ 
+
+...
+
+> $ 
+> $ 
+> $ 
+> $ 
+> $ <cursor is here>
+> 
+> Can you also see this?
+
+That's an old "bug" in X (but fixed for me since quite some time) IIUC:
+you type s2disk <enter>, s2disk switches to console 1, while enter is
+still pressed.
+=> X does not know that enter got "released" and will only notice after
+resume finished. The X internal key autorepeat does the rest.
+
+Does not happen for me since at least one year, I'd guess, but I am
+always running the latest and greatest bleeding edge of everything ;)
+
+HTH,
+
+	seife
+-- 
+Stefan Seyfried
+
+"Any ideas, John?"
+"Well, surrounding them's out."
