@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZLBOeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZLBOhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbZLBOeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbZLBOeS
+	id S1754707AbZLBOhf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 09:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZLBOhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:34:18 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34669 "EHLO mx1.suse.de"
+	Wed, 2 Dec 2009 09:37:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7658 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752402AbZLBOeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 09:34:17 -0500
-Subject: Re: [PATCH][stable] b44 WOL setup: one-bit-off stack corruption
- kernel panic fix
-From: Stanislav Brabec <sbrabec@suse.cz>
-To: Gary Zambrano <zambrano@broadcom.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-In-Reply-To: <1259761547.8709.264.camel@hammer.suse.cz>
-References: <1259761547.8709.264.camel@hammer.suse.cz>
-Content-Type: text/plain; charset="ISO-8859-2"
-Organization: SuSE CR, s. r. o.
-Date: Wed, 02 Dec 2009 15:35:20 +0100
-Message-Id: <1259764520.8709.293.camel@hammer.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 8bit
+	id S1754536AbZLBOhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 09:37:32 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1259128503-28276-1-git-send-email-vapier@gentoo.org>
+References: <1259128503-28276-1-git-send-email-vapier@gentoo.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: dhowells@redhat.com, uclinux-dev@uclinux.org,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Jie Zhang <jie.zhang@analog.com>
+Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
+Date: Wed, 02 Dec 2009 14:36:34 +0000
+Message-ID: <16225.1259764594@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanislav Brabec wrote:
-> About 50% of shutdowns of b44 Ethernet adapter ends by kernel panic with
-> kernels compiled with stack-protector.
-> 
-> Checking b44_magic_pattern() return values, one call of
-> b44_magic_pattern() returns 127. It means, that set_bit(128, pmask) was
-> called on line 1509. It means that bit 0 of 17th byte of pmask was
-> overwritten. But pmask has only 16 bytes. Stack corruption happens.
->  
-> It seems that set_bit() on line 1509 always writes one bit off.
-> 
-> The fix does not only solve the stack corruption, but also makes Wake On
-> LAN working on my onboard B44 on Asus A7V-333X mainboard.
-> 
-> It seems that this problem affects all kernel versions since commit
-> 725ad800 on 2006-06-20.
+Mike Frysinger <vapier@gentoo.org> wrote:
 
-stable@kernel.org may be interested as well. Adding Cc:.
+> -			len -= copy_to_user((void *) addr, buf, len);
+> +			copy_to_user_page(vma, NULL, NULL,
+> +					  (void *) addr, buf, len);
+>  		else if (!write && vma->vm_flags & VM_MAYREAD)
+> -			len -= copy_from_user(buf, (void *) addr, len);
+> +			copy_from_user_page(vma, NULL, NULL,
+> +					    buf, (void *) addr, len);
 
-Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
-Cc: stable@kernel.org
+Hmmm...  With this, len isn't updated anymore, and so it alters the return
+value of access_process_vm(), and means ptrace_readdata() won't now return
+-EIO under some circumstances where it used to.  I'm not sure that matters,
+though.
 
-
-diff --git a/drivers/net/b44.c b/drivers/net/b44.c
-index 2a91323..4869adb 100644
---- a/drivers/net/b44.c
-+++ b/drivers/net/b44.c
-@@ -1505,8 +1505,7 @@ static int b44_magic_pattern(u8 *macaddr, u8 *ppattern, u8 *pmask, int offset)
- 		for (k = 0; k< ethaddr_bytes; k++) {
- 			ppattern[offset + magicsync +
- 				(j * ETH_ALEN) + k] = macaddr[k];
--			len++;
--			set_bit(len, (unsigned long *) pmask);
-+			set_bit(len++, (unsigned long *) pmask);
- 		}
- 	}
- 	return len - 1;
-
-
-
--- 
-Best Regards / S pozdravem,
-
-Stanislav Brabec
-software developer
----------------------------------------------------------------------
-SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
-Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
-190 00 Praha 9                                  fax: +420 284 028 951
-Czech Republic                                    http://www.suse.cz/
-
+David
