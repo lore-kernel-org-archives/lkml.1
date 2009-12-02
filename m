@@ -1,44 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZLBSgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbZLBSkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398AbZLBSgt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 13:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbZLBSgs
+	id S1755271AbZLBSkU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 13:40:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbZLBSkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 13:36:48 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:38987 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752305AbZLBSgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 13:36:47 -0500
-Message-ID: <4B16B32D.9030106@nortel.com>
-Date: Wed, 02 Dec 2009 12:34:21 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Wed, 2 Dec 2009 13:40:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61953 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754200AbZLBSkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 13:40:19 -0500
+Date: Wed, 2 Dec 2009 19:34:46 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+Subject: Re: [RFC,PATCH 14/14] utrace core
+Message-ID: <20091202183446.GA14799@redhat.com>
+References: <20091124200220.GA5828@redhat.com> <1259697242.1697.1075.camel@laptop>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: question on type conversions in show_map_vma()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Dec 2009 18:36:51.0355 (UTC) FILETIME=[69EACEB0:01CA737E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259697242.1697.1075.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/01, Peter Zijlstra wrote:
+>
+> > +static inline __must_check int utrace_control_pid(
+> > +	struct pid *pid, struct utrace_engine *engine,
+> > +	enum utrace_resume_action action)
+> > +{
+> > +	/*
+> > +	 * We don't bother with rcu_read_lock() here to protect the
+> > +	 * task_struct pointer, because utrace_control will return
+> > +	 * -ESRCH without looking at that pointer if the engine is
+> > +	 * already detached.  A task_struct pointer can't die before
+> > +	 * all the engines are detached in release_task() first.
+> > +	 */
+> > +	struct task_struct *task = pid_task(pid, PIDTYPE_PID);
+> > +	return unlikely(!task) ? -ESRCH : utrace_control(task, engine, action);
+> > +}
+>
+> Is that comment correct? Without rcu_read_lock() the pidhash can change
+> under our feet and maybe cause funny things?
 
-Another developer and I were looking at show_map_vma() and started
-wondering about the "pgoff" value:
+I already tried to answer, but I guess my email was not very clear. Let me
+try again.
 
-pgoff = ((loff_t)vma->vm_pgoff) << PAGE_SHIFT;
+pid_task() by itself is safe, but yes, it is possible that utrace_control()
+is called with target == NULL, or this task_task was already freed/reused.
 
-Here we take a variable of type "unsigned long", we cast it to "long
-long", shift it, then assign the result to a variable of type "unsigned
-long long".
+utrace_control(target) path does not use target until it verifies it is
+safe to dereference it.
 
-I realize that there isn't any danger of invalid sign extension, but it
-does seem a bit odd to be casting to a signed value when the result is
-going to be unsigned.
+get_utrace_lock() calls rcu_read_lock() and checks that engine->ops
+is not cleared (NULL or utrace_detached_ops). If we see the valid ->ops
+under rcu_read_lock() it is safe to dereference target, even if we race
+with release_task() we know that it has not passed utrace_release_task()
+yet, and thus we know call_rcu(delayed_put_task_struct) was not yet
+called _before_ we took rcu_read_lock().
 
-Is there a historical reason why pgoff is unsigned rather than just of
-type "loff_t"?
+If it is safe to dereference target, we can take utrace->lock. Once
+we take this lock (and re-check engine->ops) the task can't go away
+until we drop it, get_utrace_lock() drops rcu lock and returns with
+utrace->lock held.
 
-Chris
+utrace_control() can safely play with target under utrace->lock.
+
+> > +	/*
+> > +	 * If this flag is still set it's because there was a signal
+> > +	 * handler setup done but no report_signal following it.  Clear
+> > +	 * the flag before we get to user so it doesn't confuse us later.
+> > +	 */
+> > +	if (unlikely(utrace->signal_handler)) {
+> > +		spin_lock(&utrace->lock);
+> > +		utrace->signal_handler = 0;
+> > +		spin_unlock(&utrace->lock);
+> > +	}
+>
+> OK, so maybe you get to explain why this works..
+
+Missed this part yesterday.
+
+Well. ->signal_handler is set by handle_signal() when the signal was
+delivered to the tracee. This flag is checked by utrace_get_signal()
+to detect the stepping. But we should not return to user-mode with
+this flag set, that is why utrace_resume() clears it.
+
+However. This reminds me we were going to try to simplify this logic,
+I'll try to think about this.
+
+Oleg.
+
