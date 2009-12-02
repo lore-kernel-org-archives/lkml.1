@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbZLBWqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZLBWsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbZLBWqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbZLBWqm
+	id S1754724AbZLBWsG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZLBWsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:46:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:64251 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753850AbZLBWqk (ORCPT
+	Wed, 2 Dec 2009 17:48:05 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:61531 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753905AbZLBWsE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:46:40 -0500
-Subject: Re: trace/events: DECLARE vs DEFINE semantic
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, wcohen@redhat.com, fweisbec@gmail.com,
-       tglx@linutronix.de, jbaron@redhat.com,
-       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <4B16EC06.6010706@redhat.com>
-References: <tip-3a9089fd78367e2c6c815129030b790a0f5c2715@git.kernel.org>
-	 <1259761934.12870.12.camel@gandalf.stny.rr.com>
-	 <20091202140128.GA2611@elte.hu>
-	 <1259764109.12870.37.camel@gandalf.stny.rr.com>
-	 <20091202144334.GA30359@elte.hu>
-	 <1259765735.12870.42.camel@gandalf.stny.rr.com>
-	 <20091202162715.GB9710@Krystal>
-	 <1259773888.12870.61.camel@gandalf.stny.rr.com>
-	 <20091202180633.GF9710@Krystal>
-	 <1259777987.12870.70.camel@gandalf.stny.rr.com>
-	 <20091202190135.GA23316@Krystal>
-	 <1259781578.12870.78.camel@gandalf.stny.rr.com>
-	 <4B16EC06.6010706@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 02 Dec 2009 17:46:45 -0500
-Message-Id: <1259794005.12870.102.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 17:48:04 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Aj+oJYg+pvMz18zzMRxUWfUBCpxnuW0clJ4/r94yfWFyFTqGArK5pH8rc2vr66G87
+	rjauZwur7eXW9tIZeqKqA==
+MIME-Version: 1.0
+In-Reply-To: <20091202043046.420815285@intel.com>
+References: <20091202031231.735876003@intel.com>
+	 <20091202043046.420815285@intel.com>
+Date: Wed, 2 Dec 2009 14:48:03 -0800
+Message-ID: <6599ad830912021448h6f939623y43fbe5fde2c36b85@mail.gmail.com>
+Subject: Re: [PATCH 21/24] cgroup: define empty css_put() when !CONFIG_CGROUPS
+From: Paul Menage <menage@google.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Nick Piggin <npiggin@suse.de>,
+       linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-02 at 17:36 -0500, Masami Hiramatsu wrote:
+On Tue, Dec 1, 2009 at 7:12 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> --- linux-mm.orig/include/linux/cgroup.h        2009-11-02 10:18:41.000000000 +0800
+> +++ linux-mm/include/linux/cgroup.h     2009-11-02 10:26:22.000000000 +0800
+> @@ -581,6 +581,9 @@ static inline int cgroupstats_build(stru
+>        return -EINVAL;
+>  }
+>
+> +struct cgroup_subsys_state;
+> +static inline void css_put(struct cgroup_subsys_state *css) {}
+> +
+>  #endif /* !CONFIG_CGROUPS */
 
-> > Or do you (or anyone else) have a better name?
-> 
-> How about renaming DEFINE_EVENT to TRACE_EVENT_CLASS?
-> 
-> DECLARE_EVENT_CLASS(y, ...)	declare an event-class y
-> TRACE_EVENT_CLASS(x, y, ...)	define/declare a trace event x from event-class y
-> TRACE_EVENT(x, ...)		define/declare a trace event x
-> 
-> Thus TRACE_EVENT_* implies that this macro will be expanded
-> to both of definition and declaration.
-> I don't think separating it is good idea from the viewpoint
-> of maintaining code.
+This doesn't sound like the right thing to do - if !CONFIG_CGROUPS,
+then the code shouldn't be able to see a css structure to pass to this
+function.
 
-Hmm, what about just:
-
-TRACE_CLASS - Declares a class
-TRACE_CLASS_EVENT - defines an event for said class
-TRACE_EVENT - Declares a class and defines an event (as is today)
-
--- Steve
-
-
+Paul
