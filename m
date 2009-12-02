@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZLBE6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750962AbZLBFJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbZLBE6T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Dec 2009 23:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbZLBE6S
+	id S1750962AbZLBFJI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 00:09:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbZLBFJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Dec 2009 23:58:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48597 "EHLO mx1.redhat.com"
+	Wed, 2 Dec 2009 00:09:07 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61331 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752523AbZLBE6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Dec 2009 23:58:17 -0500
-Message-ID: <4B15F3B1.9020600@redhat.com>
-Date: Tue, 01 Dec 2009 23:57:21 -0500
+	id S1750759AbZLBFJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 00:09:07 -0500
+Message-ID: <4B15F642.1080308@redhat.com>
+Date: Wed, 02 Dec 2009 00:08:18 -0500
 From: Rik van Riel <riel@redhat.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Larry Woodman <lwoodman@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+To: Andrea Arcangeli <aarcange@redhat.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: [PATCH] Replace page_mapping_inuse() with page_mapped()
-References: <20091202115358.5C4F.A69D9226@jp.fujitsu.com> <4B15D9F8.9090800@redhat.com> <20091202121152.5C52.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091202121152.5C52.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+References: <20091201181633.5C31.A69D9226@jp.fujitsu.com> <20091201093738.GL30235@random.random> <20091201184535.5C37.A69D9226@jp.fujitsu.com> <20091201095947.GM30235@random.random>
+In-Reply-To: <20091201095947.GM30235@random.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/01/2009 10:28 PM, KOSAKI Motohiro wrote:
->> On 12/01/2009 09:55 PM, KOSAKI Motohiro wrote:
->>      
->>>> btw, current shrink_active_list() have unnecessary page_mapping_inuse() call.
->>>> it prevent to drop page reference bit from unmapped cache page. it mean
->>>> we protect unmapped cache page than mapped page. it is strange.
->>>>
->>>>          
->>> How about this?
->>>
->>> ---------------------------------
->>> SplitLRU VM replacement algorithm assume shrink_active_list() clear
->>> the page's reference bit. but unnecessary page_mapping_inuse() test
->>> prevent it.
->>>
->>> This patch remove it.
->>>
->>>        
->> Shrink_page_list ignores the referenced bit on pages
->> that are !page_mapping_inuse().
->>
->>                   if (sc->order<= PAGE_ALLOC_COSTLY_ORDER&&
->>                                           referenced&&
->> page_mapping_inuse(page)
->> &&  !(vm_flags&  VM_LOCKED))
->>                           goto activate_locked;
->>
->> The reason we leave the referenced bit on unmapped
->> pages is that we want the next reference to a deactivated
->> page cache page to move that page back to the active
->> list.  We do not want to require that such a page gets
->> accessed twice before being reactivated while on the
->> inactive list, because (1) we know it was a frequently
->> accessed page already and (2) ongoing streaming IO
->> might evict it from the inactive list before it gets accessed
->> twice.
->>
->> Arguably, we should just replace the page_mapping_inuse()
->> in both places with page_mapped() to simplify things.
->>      
-> Ah, yes. /me was slept. thanks correct me.
->
->
->  From 61340720e6e66b645db8d5410e89fd3b67eda907 Mon Sep 17 00:00:00 2001
-> From: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> Date: Wed, 2 Dec 2009 12:05:26 +0900
-> Subject: [PATCH] Replace page_mapping_inuse() with page_mapped()
->
-> page reclaim logic need to distingish mapped and unmapped pages.
-> However page_mapping_inuse() don't provide proper test way. it test
-> the address space (i.e. file) is mmpad(). Why `page' reclaim need
-> care unrelated page's mapped state? it's unrelated.
->
-> Thus, This patch replace page_mapping_inuse() with page_mapped()
->
-> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
+On 12/01/2009 04:59 AM, Andrea Arcangeli wrote:
+> On Tue, Dec 01, 2009 at 06:46:06PM +0900, KOSAKI Motohiro wrote:
 >    
-Reviewed-by: Rik van Riel <riel@redhat.com>
+>> Ah, well. please wait a bit. I'm under reviewing Larry's patch. I don't
+>> dislike your idea. last mail only pointed out implementation thing.
+>>      
+> Yep thanks for pointing it out. It's an implementation thing I don't
+> like. The VM should not ever touch ptes when there's light VM pressure
+> and plenty of unmapped clean cache available, but I'm ok if others
+> disagree and want to keep it that way.
+>    
+The VM needs to touch a few (but only a few) PTEs in
+that situation, to make sure that anonymous pages get
+moved to the inactive anon list and get to a real chance
+at being referenced before we try to evict anonymous
+pages.
+
+Without a small amount of pre-aging, we would end up
+essentially doing FIFO replacement of anonymous memory,
+which has been known to be disastrous to performance
+for over 40 years now.
+
+A two-handed clock mechanism needs to put some distance
+between the front and the back hands of the clock.
+
+Having said that - it may be beneficial to keep very heavily
+shared pages on the active list, without ever trying to scan
+the ptes associated with them.
