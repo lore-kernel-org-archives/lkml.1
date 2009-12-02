@@ -1,97 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZLBTR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbZLBTTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbZLBTR0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 14:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZLBTRZ
+	id S1755053AbZLBTTO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 14:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZLBTTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 14:17:25 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53643 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754584AbZLBTRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 14:17:22 -0500
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
-       Jeff Mahoney <jeffm@suse.com>
-Subject: [PATCH 3/3] reiserfs: Truncate blocks not used by write (v3)
-Date: Wed,  2 Dec 2009 20:16:49 +0100
-Message-Id: <1259781409-31318-3-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1259781409-31318-1-git-send-email-jack@suse.cz>
-References: <1259781409-31318-1-git-send-email-jack@suse.cz>
+	Wed, 2 Dec 2009 14:19:13 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39983 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbZLBTTN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 14:19:13 -0500
+Date: Wed, 2 Dec 2009 14:19:16 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
+       nhorman@tuxdriver.com
+Subject: [PATCH] Fix tracing infrastructure to support multiple includes
+	when defining CREATE_TRACE_POINTS
+Message-ID: <20091202191916.GA7589@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.4 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It can happen that write does not use all the blocks allocated in
-write_begin either because of some filesystem error (like ENOSPC) or
-because page with data to write has been removed from memory.  We truncate
-these blocks so that we don't have dangling blocks beyond i_size.
+Fix tracing infrastructure to allow multiple header files with TRACE_EVENTS to
+be included with CREATE_TRACE_EVENTS defined
 
-CC: Jeff Mahoney <jeffm@suse.com>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/reiserfs/inode.c |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
+I've been workingon adding a few tracepoints to the network stack, and in so
+doing it was convienient for me to add a second include file to
+net/core/net-traces.c with TRACE_EVENTS defined in them.  net-traces.c defines
+CREATE_TRACE_EVENTS, and during the build it was failing, complaining about
+duplicate definitions of __tpstrtab_<name>.  I tracked down the bug to find that
+define_trace.h redefined DECLARE_TRACE to be DEFINE_TRACE, so after the first
+run through define_trace.h (which is included from skb.h, included in
+net-trace.c first), the DECLARE_TRACE macro was left with an improper definition
+to start a new cycle with the next header.
 
-Andrew, this replaces the patch with the same name in your tree.
+The fix I came up with was to make sure that DECLARE_TRACE was undefined at the
+end of define_trace.h, and to add a conditional re-definition in tracepoint.h.
+This places us back in the proper state to define a new set of tracepoints in a
+subsequent header file.  Not sure if theres a better way to handle this, but
+this worked well for me, allowing me to include multiple headers with
+TRACE_EVENT macros in a c file with CREATE_TRACE_POINTS defined.
 
-diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
-index a14d6cd..d240c15 100644
---- a/fs/reiserfs/inode.c
-+++ b/fs/reiserfs/inode.c
-@@ -2531,6 +2531,12 @@ static int reiserfs_writepage(struct page *page, struct writeback_control *wbc)
- 	return reiserfs_write_full_page(page, wbc);
- }
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+
+
+linux/tracepoint.h   |   18 ++++++++++++++++++
+trace/define_trace.h |    1 +
+2 files changed, 19 insertions(+)
+
+diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+index 2aac8a8..562d8ba 100644
+--- a/include/linux/tracepoint.h
++++ b/include/linux/tracepoint.h
+@@ -173,6 +173,24 @@ static inline void tracepoint_synchronize_unregister(void)
+  *  trace event headers under one "CREATE_TRACE_POINTS" the first include
+  *  will override the TRACE_EVENT and break the second include.
+  */
++#ifndef DECLARE_TRACE
++#define DECLARE_TRACE(name, proto, args)                                \
++	extern struct tracepoint __tracepoint_##name;                   \
++	static inline void trace_##name(proto)                          \
++	{                                                               \
++		if (unlikely(__tracepoint_##name.state))                \
++			__DO_TRACE(&__tracepoint_##name,                \
++				TP_PROTO(proto), TP_ARGS(args));        \
++	}                                                               \
++	static inline int register_trace_##name(void (*probe)(proto))   \
++	{                                                               \
++		return tracepoint_probe_register(#name, (void *)probe); \
++	}                                                               \
++	static inline int unregister_trace_##name(void (*probe)(proto)) \
++	{                                                               \
++		return tracepoint_probe_unregister(#name, (void *)probe);\
++	}
++#endif
  
-+static void reiserfs_truncate_failed_write(struct inode *inode)
-+{
-+	truncate_inode_pages(inode->i_mapping, inode->i_size);
-+	reiserfs_truncate_file(inode, 0);
-+}
-+
- static int reiserfs_write_begin(struct file *file,
- 				struct address_space *mapping,
- 				loff_t pos, unsigned len, unsigned flags,
-@@ -2597,6 +2603,8 @@ static int reiserfs_write_begin(struct file *file,
- 	if (ret) {
- 		unlock_page(page);
- 		page_cache_release(page);
-+		/* Truncate allocated blocks */
-+		reiserfs_truncate_failed_write(inode);
- 	}
- 	return ret;
- }
-@@ -2689,8 +2697,7 @@ static int reiserfs_write_end(struct file *file, struct address_space *mapping,
- 	 ** transaction tracking stuff when the size changes.  So, we have
- 	 ** to do the i_size updates here.
- 	 */
--	pos += copied;
--	if (pos > inode->i_size) {
-+	if (pos + copied > inode->i_size) {
- 		struct reiserfs_transaction_handle myth;
- 		reiserfs_write_lock(inode->i_sb);
- 		/* If the file have grown beyond the border where it
-@@ -2708,7 +2715,7 @@ static int reiserfs_write_end(struct file *file, struct address_space *mapping,
- 			goto journal_error;
- 		}
- 		reiserfs_update_inode_transaction(inode);
--		inode->i_size = pos;
-+		inode->i_size = pos + copied;
- 		/*
- 		 * this will just nest into our transaction.  It's important
- 		 * to use mark_inode_dirty so the inode gets pushed around on the
-@@ -2735,6 +2742,10 @@ static int reiserfs_write_end(struct file *file, struct address_space *mapping,
-       out:
- 	unlock_page(page);
- 	page_cache_release(page);
-+
-+	if (pos + len > inode->i_size)
-+		reiserfs_truncate_failed_write(inode);
-+
- 	return ret == 0 ? copied : ret;
+ #ifndef TRACE_EVENT
+ /*
+diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
+index 2a4b3bf..a3e0095 100644
+--- a/include/trace/define_trace.h
++++ b/include/trace/define_trace.h
+@@ -64,6 +64,7 @@
+ #undef TRACE_EVENT
+ #undef TRACE_EVENT_FN
+ #undef TRACE_HEADER_MULTI_READ
++#undef DECLARE_TRACE
  
-       journal_error:
--- 
-1.6.4.2
-
+ /* Only undef what we defined in this file */
+ #ifdef UNDEF_TRACE_INCLUDE_FILE
