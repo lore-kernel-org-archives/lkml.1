@@ -1,48 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZLBOZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbZLBO2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbZLBOZp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 09:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbZLBOZn
+	id S1754295AbZLBO2M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 09:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZLBO2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 09:25:43 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:52722 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754056AbZLBOZl convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;7:1>);
-	Wed, 2 Dec 2009 09:25:41 -0500
-Message-Id: <4B1686F702000078000230A6@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 02 Dec 2009 14:25:43 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Avi Kivity" <avi@redhat.com>
-Cc: <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       <tglx@linutronix.de>, <torvalds@linux-foundation.org>,
-       <mingo@redhat.com>, <npiggin@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-tip-commits@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [tip:core/locking] locking, x86: Slightly shorten
-	 __ticket_spin_trylock()
-References: <4B0FF9AC0200007800022713@vpn.id2.novell.com>
- <tip-133ec7a235160dd44cbd4d82fff65a9983331df9@git.kernel.org>
- <20091202132937.GA1564@elte.hu>
- <4B168293020000780002308E@vpn.id2.novell.com>
- <4B1675CA.1020504@redhat.com>
-In-Reply-To: <4B1675CA.1020504@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 2 Dec 2009 09:28:11 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:42763 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751824AbZLBO2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 09:28:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=IlagbqTE56jm8nTGa9cC0Nj7AHxHwzDXsgO5vR+6q5OV8oFRie6HrET3t1z3JjFFPa
+         1RB9c5IEtORMeM6mw0xm7XYP5JOnXoDda5Ae8lJY3Nghsm3PZhCE+mZeh0l/2zN6ioeZ
+         kHjIeH5adi8RC5Mrzc2w4yd2zRkswUn3uQrDI=
+Message-ID: <4B16797C.3010304@tuffmail.co.uk>
+Date: Wed, 02 Dec 2009 14:28:12 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH] uswsusp: automatically free the in-memory image once s2disk
+ has finished with it
+References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie> <200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk> <20091202122019.GD1457@csn.ul.ie>
+In-Reply-To: <20091202122019.GD1457@csn.ul.ie>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Avi Kivity <avi@redhat.com> 02.12.09 15:12 >>>
->Wouldn't 'u8 ret', as an additional argument be sufficient? gcc still 
->ought to be able to use the same register for new and ret if we remove 
->the early clobber.
+The original in-kernel suspend (swsusp) frees the in-memory hibernation
+image before powering off the machine.  s2disk doesn't, so there is
+_much_ less free memory when it tries to power off.
 
-We can't (validly) remove the early-clobber, otherwise the compiler
-would be permitted to use a register also used for addressing the lock
-structure for "new".
+This is a gratuitous difference.  The userspace suspend interface
+/dev/snapshot only allows the hibernation image to be read once.
+Once the s2disk program has read the last page, we can free the entire
+image.
 
-Jan
+This avoids a hang after writing the hibernation image which was
+triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+"page-allocator: split per-cpu list into one-list-per-migrate-type":
+
+    [top of trace lost due to screen height]
+    ? shrink_zone
+    ? try_to_free_pages
+    ? isolate_pages_global
+    ? __alloc_pages_nodemask
+    ? kthread
+    ? __get_free_pages
+    ? copy_process
+    ? kthread
+    ? do_fork
+    ...
+
+    INFO: task s2disk:2036 blocked for more than 120 seconds
+    ...
+    Call Trace:
+    ...
+    ? wait_for_common
+    ? default_wake_function
+    ? kthread_create
+    ? worker_thread
+    ? create_workqueue_thread
+    ? worker_thread
+    ? __create_workqueue_key
+    ? stop_machine_create
+    ? disable_nonboot_cpus
+    ? hibernation_platform_enter
+    ? snapshot_ioctl
+    ...
+    ? sys_ioctl
+    ...
+
+Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+---
+ kernel/power/user.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index bf0014d..94d0210 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -165,6 +165,10 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
+ 			res = -EFAULT;
+ 		else
+ 			*offp = data->handle.offset;
++	} else {
++		swsusp_free();
++		memset(&data->handle, 0, sizeof(struct snapshot_handle));
++		data->ready = 0;
+ 	}
+ 
+  Unlock:
+-- 
+1.6.3.3
+
+
 
