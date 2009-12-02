@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZLBWcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZLBWe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbZLBWcY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 17:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbZLBWcX
+	id S1755873AbZLBWe0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 17:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbZLBWeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 17:32:23 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:49588 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385AbZLBWcX (ORCPT
+	Wed, 2 Dec 2009 17:34:25 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:57106 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755652AbZLBWeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 17:32:23 -0500
-Date: Thu, 3 Dec 2009 00:31:56 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Grazvydas Ignotas <notasas@gmail.com>,
-       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
- charger
-Message-ID: <20091202223156.GA14921@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
- <20091202173321.GA23738@nokia.com>
- <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
- <20091202204946.GB25682@nokia.com>
- <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
- <20091202215442.GA30658@oksana.dev.rtsoft.ru>
+	Wed, 2 Dec 2009 17:34:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=XHyaZErL/MNQbFPUNtKQ0i9GRSil7SzrPX9hNRiBex24vXr/NWL22mA1/Vum3oZr1J
+         CqFCpsKUrRZ7cDQ9JdTIjWjVR752G5H+GsR7jSWXzLtITAsC2ipQbIwp1HFkBtEKCQS4
+         wW+MW/f9hrEan4XqmXMLIqVYN8j4awHeBRZq4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <20091202215442.GA30658@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 02 Dec 2009 22:32:12.0548 (UTC) FILETIME=[4ACDDC40:01CA739F]
-X-Nokia-AV: Clean
+Date: Wed, 2 Dec 2009 14:34:30 -0800
+Message-ID: <dd18b0c30912021434t4a247646q48f32c0d0e40faae@mail.gmail.com>
+Subject: root hub lost power or was reset
+From: Justin Mattock <justinmattock@gmail.com>
+To: Linux-usb <linux-usb@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I've been getting a 45 sec
+pause when waking my machine up
+on the first cycle using s2ram.
+At first thought it was udev, but later
+am not sure it is. With further looking
+if I remove the isight_firmware module from the kernel
+suspend wakes up the first cycle as it should.(I don't have
+isight-firmware-tools installed, leading me to believe this might
+be the issue with isight-firmware.ko.)
 
-On Wed, Dec 02, 2009 at 10:54:42PM +0100, ext Anton Vorontsov wrote:
->As for the default USB VBUS current value, it could be Kconfig
->option (something alike to USB_GADGET_VBUS_DRAW) and/or module
->parameter, or hw default, or hardcoded for now. Either will
->work.
+Now looking at dmesg I see:
 
-cannot be Kconfig, it's mandated by usb battery charging spec 1.x to be 
-100mA for 100ms, then if you don't enumerate, you have to cut charging.
+[  413.551845] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+[  413.551855] uhci_hcd 0000:00:1d.0: setting latency timer to 64
+[  413.551887] usb usb2: root hub lost power or was reset
+[  413.551927] uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[  413.551937] uhci_hcd 0000:00:1d.1: setting latency timer to 64
+[  413.551967] usb usb3: root hub lost power or was reset
+[  413.552019] uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[  413.552029] uhci_hcd 0000:00:1d.2: setting latency timer to 64
+[  413.552058] usb usb4: root hub lost power or was reset
+[  413.552094] uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 16 (level, low) -> IRQ 16
+[  413.552104] uhci_hcd 0000:00:1d.3: setting latency timer to 64
+[  413.552134] usb usb5: root hub lost power or was reset
+[  413.552172] ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
+[  413.552182] ehci_hcd 0000:00:1d.7: setting latency timer to 64
+[  413.552200] pci 0000:00:1e.0: setting latency timer to 64
+[  413.552217] ata_piix 0000:00:1f.1: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+[  413.552225] ata_piix 0000:00:1f.1: setting latency timer to 64
+[  413.554437] ata_piix 0000:00:1f.2: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[  413.554446] ata_piix 0000:00:1f.2: setting latency timer to 64
+[  413.554548] pci 0000:00:1f.3: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+[  413.554559] pci 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[  413.554567] pci 0000:01:00.0: setting latency timer to 64
 
->
->-- 
->Anton Vorontsov
->email: cbouatmailru@gmail.com
->irc://irc.freenode.net/bd2
+for a bit I thought that this was also the cause of the delay
+but the system wakes up as it should even with this happening to
+usb.
+
+BTW: Is CONFIG_USB_PERSIST in the kernel anymore
+with 2.6.32*?(I can't seem to find that option);
 
 -- 
-balbi
+Justin P. Mattock
