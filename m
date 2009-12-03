@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZLCXWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZLCXZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481AbZLCXWb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 18:22:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZLCXWa
+	id S1754204AbZLCXZl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 18:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZLCXZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 18:22:30 -0500
-Received: from mail-ew0-f222.google.com ([209.85.219.222]:34162 "EHLO
-	mail-ew0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751587AbZLCXWa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 18:22:30 -0500
-X-Greylist: delayed 3726 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Dec 2009 18:22:29 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=njxm0Mk3PmREJvjPD+U0XR2jTasxTSjKPvsELr7Gef4uIM1xujLHEKA1HaZsF+98mp
-         og+2MyEvkGiUtnhHDJMFrRVRpOPz7kqMF9D9srmx++5JjjogTep4W8zGPgRv41AEIeUR
-         i0z7LXg2rJAFJ76+qDzk/0b20KcO5IkejBR+8=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] perf events: Remove unused struct perf_event::event_callback
-Date: Fri,  4 Dec 2009 00:22:37 +0100
-Message-Id: <1259882557-12024-1-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Thu, 3 Dec 2009 18:25:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28774 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751817AbZLCXZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 18:25:39 -0500
+Subject: Re: [RFC PATCH 4/6] networking: rework socket to fd mapping using
+ alloc-file
+From: Eric Paris <eparis@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, viro@zeniv.linux.org.uk, jmorris@namei.org,
+       npiggin@suse.de, zohar@us.ibm.com, jack@suse.cz, jmalicki@metacarta.com,
+       dsmith@redhat.com, serue@us.ibm.com, hch@lst.de, john@johnmccutchan.com,
+       rlove@rlove.org, ebiederm@xmission.com, heiko.carstens@de.ibm.com,
+       penguin-kernel@I-love.SAKURA.ne.jp, mszeredi@suse.cz,
+       jens.axboe@oracle.com, akpm@linux-foundation.org, matthew@wil.cx,
+       hugh.dickins@tiscali.co.uk, kamezawa.hiroyu@jp.fujitsu.com,
+       nishimura@mxp.nes.nec.co.jp, arnd@arndb.de, eric.dumazet@gmail.com
+In-Reply-To: <20091203.140045.67902314.davem@davemloft.net>
+References: <20091203195851.8925.30926.stgit@paris.rdu.redhat.com>
+	 <20091203195917.8925.84203.stgit@paris.rdu.redhat.com>
+	 <20091203.140045.67902314.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 03 Dec 2009 18:24:30 -0500
+Message-Id: <1259882670.2670.20.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This field might result from an older manual rebasing mistake.
-We don't use it.
+On Thu, 2009-12-03 at 14:00 -0800, David Miller wrote:
+> From: Eric Paris <eparis@redhat.com>
+> Date: Thu, 03 Dec 2009 14:59:17 -0500
+> 
+> > Currently the networking code does interesting things allocating its struct
+> > file and file descriptors.  This patch attempts to unify all of that and
+> > simplify the error paths.  It is also a part of my patch series trying to get
+> > rid of init-file and get-empty_filp and friends.
+> > 
+> > Signed-off-by: Eric Paris <eparis@redhat.com>
+> 
+> I'm fine with this:
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
 
-Reported-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
----
- include/linux/perf_event.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+It's actually busted, I forgot to actually pass back the new file in
+sock_alloc_fd().  But I've got a fixed version and will resend the
+series once I see other comments....
 
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index d045e6e..c7f6502 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -671,8 +671,6 @@ struct perf_event {
+inc diff below in case anyone is trying to test this series.
+
+diff --git a/net/socket.c b/net/socket.c
+index 41ac0b1..6620421 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -390,6 +390,7 @@ static int sock_alloc_fd(struct file **filep, struct
+socket *sock, int flags)
+                goto out_err;
+        }
  
- 	perf_callback_t			callback;
- 
--	perf_callback_t			event_callback;
--
- #endif /* CONFIG_PERF_EVENTS */
- };
- 
--- 
-1.6.2.3
++       *filep = file;
+        sock->file = file;
+        SOCK_INODE(sock)->i_fop = &socket_file_ops;
+        file->f_flags = O_RDWR | (flags & O_NONBLOCK);
+
+
 
