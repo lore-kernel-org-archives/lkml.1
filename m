@@ -1,91 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZLCEN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755031AbZLCEOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZLCEN7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 23:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbZLCEN6
+	id S1755031AbZLCEOY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 23:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZLCEOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 23:13:58 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:50877
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752115AbZLCEN5 convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 23:14:22 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:59371 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754367AbZLCEOU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 23:13:57 -0500
-Subject: Re: [RFC v2] Another approach to IR
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <Pine.LNX.4.58.0912021827120.4729@shell2.speakeasy.net>
-Date: Wed, 2 Dec 2009 23:13:47 -0500
-Cc: Jon Smirl <jonsmirl@gmail.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
+	Wed, 2 Dec 2009 23:14:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=HO7j2aVYmSDshzz1xnWVTlywv4WBQcCzp5d3q/HSyHGXNhvFTrsAhiZlMSwseFOI59
+         BZPgKBxCbTgMtxld30eR5lX2jnYYrAb9C1OPnjcQ6XxSHcpX5dbpCsVk8ggDD9KH86FO
+         N2HEzJy2FafXKyV6NYvEYd971UNb8JyLBeZfI=
+MIME-Version: 1.0
+In-Reply-To: <fa686aa40911300759h153b3300uc54b5d1871bfc839@mail.gmail.com>
+References: <d1f76ba30911300038w272578dfx9adb116bde493e00@mail.gmail.com> 
+	<d1f76ba30911300150g10c1382clb2958245ebf94362@mail.gmail.com> 
+	<fa686aa40911300759h153b3300uc54b5d1871bfc839@mail.gmail.com>
+From: Yogesh Chaudhari <mr.yogesh@gmail.com>
+Date: Thu, 3 Dec 2009 09:44:04 +0530
+Message-ID: <d1f76ba30912022014y1f688827qe8145a7d40de5321@mail.gmail.com>
+Subject: Re: Ethernet issues with lite5200 board from linux-2.6.31
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>,
+       John Kacur <jkacur@redhat.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Message-Id: <5FED031C-C24B-4F82-9621-EB1C8A5B928B@wilsonet.com>
-References: <4B155288.1060509@redhat.com>  <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com>  <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com>  <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>  <4B16BE6A.7000601@redhat.com>  <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <9e4733910912021620s7a2b09a8v88dd45eef38835a@mail.gmail.com> <Pine.LNX.4.58.0912021827120.4729@shell2.speakeasy.net>
-To: Trent Piepho <xyzzy@speakeasy.org>
-X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 2, 2009, at 9:48 PM, Trent Piepho wrote:
-...
->>>> Now I understand that if 2 remotes send completely identical signals we
->>>> won't be able to separate them, but in cases when we can I think we
->>>> should.
->>> 
->>> I don't have a problem with that, if its a truly desired feature.  But
->>> for the most part, I don't see the point.  Generally, you go from
->>> having multiple remotes, one per device (where "device" is your TV,
->>> amplifier, set top box, htpc, etc), to having a single universal remote
->>> that controls all of those devices.  But for each device (IR receiver),
->>> *one* IR command set.  The desire to use multiple distinct remotes with
->>> a single IR receiver doesn't make sense to me.  Perhaps I'm just not
->>> creative enough in my use of IR.  :)
-> 
-> Most universal remotes I'm familiar with emulate multiple remotes.  I.e.
-> my tv remote generates one set of scancodes for the numeric keys.  The DVD
-> remote generates a different set.  The amplifier remote in "tv mode"
-> generates the same codes as the tv remote, and in "dvd mode" the same codes
-> as the dvd remote.  From the perspective of the IR receiver there is no
-> difference between having both the DVD and TV remotes, or using the
-> aplifier remote to control both devices.
-
-Okay, in the above scenario, you've still got a single input device...
-
-> Now, my aplifier remote has a number of modes.  Some control devices I
-> have, like "vcr mode", and there is nothing I can do about that.  Some,
-> like "md mode" don't control devices I have.  That means they are free to
-> do things on the computer.  Someone else with the same remote (or any
-> number of remotes that use the same protocol and scancodes) might have
-> different devices.
-> 
-> So I want my computer to do stuff when I push "JVC MD #xx" keys, but ignore
-> "JVC VCR #yyy" yets.  Someone with an MD player and not a VCR would want to
-> opposite.  Rather than force everyone to create custom keymaps, it's much
-> easier if we can use the standard keymaps from a database of common remotes
-> and simply tell mythtv to only use remote #xxx or not to use remote #yyy.
-
-Sure, but the key is that this can't be done automagically. The IR driver has no way of knowing that user A wants JVC MD keys handled and JVC VCR keys ignored, and user B wants vice versa, while user C wants both ignored, etc. This is somewhat tangential to whether or not there's a separate input device per "remote" though. You can use multiple remotes/protocols with a single input device or lirc device already (if the hardware doesn't have to be put explicitly into a mode to listen for that proto, of course, but then its a hardware decoding device feeding a single input device anyway, so...).
-
-> It sounds like you're thinking of a receiver that came bundled with a
-> remote and that's it.  Not someone with a number of remotes that came with
-> different pieces of AV gear that they want to use with their computer.
-
-No, I just pick *one* remote and use it for everything, not schizophrenically hopping from one remote to another, expecting them all the be able to control everything. :) Its a hell of a lot easier to find buttons w/o looking at the remote if you always use the same one for everything, for one.
-
-Anyway, I think I'm talking myself in circles. Supporting multiple remotes via multiple input devices (or even via a single input device) isn't at all interesting to me for my own use, but if there really is demand for such support (and it appears there is), then fine, lets do it.
-
--- 
-Jarod Wilson
-jarod@wilsonet.com
-
-
-
+2009/11/30 Grant Likely <grant.likely@secretlab.ca>:
+> On Mon, Nov 30, 2009 at 2:50 AM, Yogesh Chaudhari <mr.yogesh@gmail.com> wrote:
+>> Hello,
+>>         I am running linux kernel with rt patch on embedded board
+>> based on lite5200 eval board. From linux-2.6.31 release, in which the
+>> mdio patch has gone inside,  the fec ethernet does not come up on this
+>> board. I get the following message at startup:
+>> mpc52xx MII bus: probed
+>> mdio_bus f0003000: error probing PHY at address 1
+>>
+>>
+>> After the bootup if I try to do a ifconfig I get the message:
+>> net eth2: of_phy_connect failed
+>>
+>>
+>> If I change the value of reg in dts file (lite5200.dts) to 0 then this
+>> ethernet comes up. However upto this kernel version, this was not
+>> required.
+>>
+>> Ethernet does not come up on board with original lite5200.dts file
+>
+> Is your board based on the Lite5200 or the Lite5200B?  The phys are at
+> different addresses on those two revisions of the board.  There is a
+> different .dts file for each board.
+>
+>> phy0: ethernet-phy@1 {
+>>                                 reg = <1>;
+>>                         };
+>>
+>> Ethernet comes up on board with this change
+>> phy0: ethernet-phy@1 {
+>>                                 reg = <0>;
+>>                         };
+>
+> Some PHYs treat address 0 as the 'broadcast' address.  You need to
+> fill in this field (and modify the ethernet-phy@<address> node name)
+> to reflect the address that your phy is actually at.
+>
+> g.
+>
+ I have tried the same with the latest kernel both with and without
+rt, but with the same end result. I have checked that the mpc52xx fec
+driver was changed from 2.6.31 version but I am not able to point
+where this error is coming up from and how changing the reg value in
+dts (which is not required till previous versions) is solving this.
