@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZLCLpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbZLCLtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753323AbZLCLpq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 06:45:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbZLCLpp
+	id S1753682AbZLCLtm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 06:49:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZLCLtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 06:45:45 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42496 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750748AbZLCLpp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 06:45:45 -0500
-Date: Thu, 3 Dec 2009 11:46:41 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 06/11] pps: serial clients support.
-Message-ID: <20091203114641.391e4014@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091203105347.GB12943@gundam.enneenne.com>
-References: <1259774329-29663-1-git-send-email-giometti@linux.it>
-	<1259774329-29663-2-git-send-email-giometti@linux.it>
-	<1259774329-29663-3-git-send-email-giometti@linux.it>
-	<1259774329-29663-4-git-send-email-giometti@linux.it>
-	<1259774329-29663-5-git-send-email-giometti@linux.it>
-	<1259774329-29663-6-git-send-email-giometti@linux.it>
-	<1259774329-29663-7-git-send-email-giometti@linux.it>
-	<20091202185903.66e6709e@lxorguk.ukuu.org.uk>
-	<20091203105347.GB12943@gundam.enneenne.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 06:49:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24573 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752044AbZLCLtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 06:49:40 -0500
+Date: Thu, 3 Dec 2009 06:49:14 -0500
+From: Stefan Assmann <sassmann@redhat.com>
+To: linux-pci@vger.kernel.org
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       rjw@sisk.pl, ddutile@redhat.com, kaneshige.kenji@jp.fujitsu.com,
+       Stefan Assmann <sassmann@redhat.com>, khc@pm.waw.pl
+Message-Id: <20091203114914.24905.67372.sendpatchset@localhost.localdomain>
+Subject: [PATCH 0/2 v2] pci: change PCI nomenclature according to PCI-SIG
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I think putting the pps ldisc (which is basically n_tty and a bit) into
-> > n_tty is probably the right choice given how small and clean it is - what
-> > do you think ?
-> 
-> I think it could be ok, but in this case where should I register
-> pps-ldisc? Into tty_ldisc_begin just after tty_ldisc_N_TTY?
+Hi,
 
-Yes.
+the following patch queue changes variants of PCI-X and PCIe to the terms
+listed in the "Trademark and Logo Usage Guidelines".
+http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
 
-> Again, should I remove the possibility to compile pps-ldisc as module?
+Due to comments from Jeff Garzik and others changes are limited to drivers/pci/
+for now and split up into comment changes and non-comment changes for easier
+reviewing.
+Patches are based on 2.6.32.
 
-It would do that yes. I hadn't considered that aspect of it - and that in
-turn would force you to compile the core PPS support in to get pps-ldisc.
+If this works out I'd like to follow up with patches for the individual
+device drivers with the concerning maintainers in Cc.
 
-How about this then (I'm trying to see a way to avoid all thsoe exports
-of functions)
-
-/**
- *	n_tty_inherit_ops		-	initialise ldisc ops
- *	@ops: ops to initialise
- *
- *	Allow a line discipline to inherit the basic operations
- *	from the n_tty line discipline. The caller must set up
- *	its own ldisc number, flags and name. It must use the
- *	inherited value of magic.
- */
-
-void n_tty_init_ops(struct tty_ldisc_ops *ops)
-{
-	*ops = tty_ldisc_N_TTY;
-	ops->owner = NULL:
-	ops->refcount = ops->flags = 0;
-}
-EXPORT_SYMBOL_GPL(n_tty_inherit_ops);
-
+  Stefan
+--
+Stefan Assmann         | Red Hat GmbH
+Software Engineer      | Otto-Hahn-Strasse 20, 85609 Dornach
+                       | HR: Amtsgericht Muenchen HRB 153243
+                       | GF: Brendan Lane, Charlie Peters,
+sassmann at redhat.com |     Michael Cunningham, Charles Cachera
