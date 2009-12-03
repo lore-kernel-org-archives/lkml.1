@@ -1,101 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZLCCfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZLCCbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbZLCCfg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 21:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZLCCff
+	id S1754816AbZLCCbR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 21:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZLCCbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 21:35:35 -0500
-Received: from mail-in-08.arcor-online.net ([151.189.21.48]:54870 "EHLO
-	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752755AbZLCCfe (ORCPT
+	Wed, 2 Dec 2009 21:31:17 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34665 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753482AbZLCCbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 21:35:34 -0500
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-17.arcor-online.net 419A53B252C
-Subject: Re: [RFC v2] Another approach to IR
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Andy Walls <awalls@radix.net>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Jarod Wilson <jarod@redhat.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, j@jannau.net, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
-       superm1@ubuntu.com, Christoph Bartelmus <lirc@bartelmus.de>
-In-Reply-To: <1259803179.3085.24.camel@palomino.walls.org>
-References: <4B1567D8.7080007@redhat.com>
-	 <20091201201158.GA20335@core.coreip.homeip.net>
-	 <4B15852D.4050505@redhat.com>
-	 <20091202093803.GA8656@core.coreip.homeip.net>
-	 <4B16614A.3000208@redhat.com>
-	 <20091202171059.GC17839@core.coreip.homeip.net>
-	 <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
-	 <4B16BE6A.7000601@redhat.com>
-	 <20091202195634.GB22689@core.coreip.homeip.net>
-	 <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
-	 <20091202201404.GD22689@core.coreip.homeip.net>
-	 <1259803179.3085.24.camel@palomino.walls.org>
-Content-Type: text/plain
-Date: Thu, 03 Dec 2009 03:27:45 +0100
-Message-Id: <1259807265.3236.13.camel@pc07.localdom.local>
+	Wed, 2 Dec 2009 21:31:16 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 3 Dec 2009 11:28:22 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Nick Piggin <npiggin@suse.de>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 22/24] HWPOISON: add memory cgroup filter
+Message-Id: <20091203112822.ecee5bf5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091203021915.GA13587@localhost>
+References: <20091202031231.735876003@intel.com>
+	<20091202043046.519053333@intel.com>
+	<20091202124446.GA18989@one.firstfloor.org>
+	<20091202125842.GA13277@localhost>
+	<20091203105229.afb0efc4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091203021915.GA13587@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 3 Dec 2009 10:19:15 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-Am Mittwoch, den 02.12.2009, 20:19 -0500 schrieb Andy Walls:
-> On Wed, 2009-12-02 at 12:14 -0800, Dmitry Torokhov wrote:
-> > On Wed, Dec 02, 2009 at 03:04:30PM -0500, Jarod Wilson wrote:
+> On Thu, Dec 03, 2009 at 09:52:29AM +0800, KAMEZAWA Hiroyuki wrote:
+> > On Wed, 2 Dec 2009 20:58:42 +0800
+> > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > 
+> > > On Wed, Dec 02, 2009 at 08:44:46PM +0800, Andi Kleen wrote:
+> > > > >  
+> > > > > +static int hwpoison_filter_task(struct page *p)
+> > > > > +{
+> > > > 
+> > > > Can we make that ifdef instead of depends on ?
+> > > 
+> > > Sure. Here is the updated patch.
+> > > 
+> > > ---
+> > > HWPOISON: add memory cgroup filter
+> > > 
+> > > The hwpoison test suite need to inject hwpoison to a collection of
+> > > selected task pages, and must not touch pages not owned by them and
+> > > thus kill important system processes such as init. (But it's OK to
+> > > mis-hwpoison free/unowned pages as well as shared clean pages.
+> > > Mis-hwpoison of shared dirty pages will kill all tasks, so the test
+> > > suite will target all or non of such tasks in the first place.)
+> > > 
+> > > The memory cgroup serves this purpose well. We can put the target
+> > > processes under the control of a memory cgroup, and tell the hwpoison
+> > > injection code to only kill pages associated with some active memory
+> > > cgroup.
+> > > 
+> > > The prerequisite for doing hwpoison stress tests with mem_cgroup is,
+> > > the mem_cgroup code tracks task pages _accurately_ (unless page is
+> > > locked).  Which we believe is/should be true.
+> > > 
+> > > The benifits are simplification of hwpoison injector code. Also the
+> > > mem_cgroup code will automatically be tested by hwpoison test cases.
+> > > 
+> > > The alternative interfaces pin-pfn/unpin-pfn can also delegate the
+> > > (process and page flags) filtering functions reliably to user space.
+> > > However prototype implementation shows that this scheme adds more
+> > > complexity than we wanted.
+> > > 
+> > > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > > CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > CC: Li Zefan <lizf@cn.fujitsu.com>
+> > > CC: Paul Menage <menage@google.com>
+> > > CC: Nick Piggin <npiggin@suse.de> 
+> > > CC: Andi Kleen <andi@firstfloor.org> 
+> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > ---
+> > >  mm/Kconfig           |    2 +-
+> > >  mm/hwpoison-inject.c |    7 +++++++
+> > >  mm/internal.h        |    1 +
+> > >  mm/memory-failure.c  |   28 ++++++++++++++++++++++++++++
+> > >  4 files changed, 37 insertions(+), 1 deletion(-)
+> > > 
+> > > --- linux-mm.orig/mm/memory-failure.c	2009-12-01 09:56:06.000000000 +0800
+> > > +++ linux-mm/mm/memory-failure.c	2009-12-02 20:56:55.000000000 +0800
+> > > @@ -96,6 +96,31 @@ static int hwpoison_filter_flags(struct 
+> > >  		return -EINVAL;
+> > >  }
+> > >  
+> > > +#ifdef	CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> > > +u32 hwpoison_filter_memcg;
+> > > +static int hwpoison_filter_task(struct page *p)
+> > > +{
+> > > +	struct mem_cgroup *mem;
+> > > +	struct cgroup_subsys_state *css;
+> > > +
+> > > +	if (!hwpoison_filter_memcg)
+> > > +		return 0;
+> > > +
+> > > +	mem = try_get_mem_cgroup_from_page(p);
+> > > +	if (!mem)
+> > > +		return -EINVAL;
+> > > +
+> > > +	css = mem_cgroup_css(mem);
+> > > +	if (!css)
+> > > +		return -EINVAL;
+> > 
+> > > +
+> > > +	css_put(css);
+> > > +	return 0;
+> > > +}
+> > 
+> > 
+> > Hmm..can you adds comment ? What does this function is for ?
 > 
+> Good idea. How about this one?
 > 
-> > Didn't Jon posted his example whith programmable remote pretending to be
-> > several separate remotes (depending on the mode of operation) so that
-> > several devices/applications can be controlled without interfering with
-> > each other?
+> /*
+>  * This allows stress tests to limit test scope to a collection of tasks
+>  * by putting them under some memcg. This prevents killing unrelated/important
+>  * processes such as /sbin/init. Note that the target task may share clean
+>  * pages with init (eg. libc text), which is harmless. If the target task
+>  * share _dirty_ pages with another task B, the test scheme must make sure B
+>  * is also included in the memcg. At last, due to race conditions this filter
+>  * can only guarantee that the page either belongs to the memcg tasks, or is
+>  * a freed page.
+>  */
 > 
-> 
-> There are a few features that can be used to distinguish remotes:
-> 
-> 1. Carrier freq
-> 2. Protocol (NEC, Sony, JVC, RC-5...)
-> 3. Protocol variant (NEC original, NEC with extended addresses,
-> 		     RC-5, RC-5 with exteneded commands,
-> 		     RC-6 Mode 0, RC-6 Mode 6B, ...)
-> 4. System # or Address sent by the remote (16 bits max, I think)
-> 5. Set of possible Commands or Information words sent from the remote.
-> 6. Pulse width deviation from standard (mean, variance)
-> 
-> 
-> 1, 5, and 6 are really a sort of "fingerprint" and likely not worth the
-> effort, even if you have hardware that can measure things with some
-> accuracy.
+Hmm. seems good but..by what means "avoiding killing /sbin/init" is done ?
+All process are under some memcg..
 
-I don't follow closely enough, but eventually we have (different)
-remotes a receiver chip can distinguish in hardware, firmware might be
-involved too.
+If you have more patches to be usable the function above,
+I recommend you to post this with some real-use patches, in step by step.
+patch 19,20 is ok for me.
 
-If I don't get it wrong, Dmitry is asking in the first place, how such
-sender receiver combinations switch to different emulated digital
-information for a bunch of different types of hardware in living rooms.
-
-Starting with RC5, IIRC, there is of course such switch over to another
-device around. We are only one more.
-
-To repeat, on such bundled cheapest remotes with some TV/DVB cards
-around, there are only some minimal implementations of RC5, likely they
-use that protocol even illegally, at least they make chips in use
-unidentifiable and this seems to be by will.
-
-So, if some try to implement now the highest level, they are far away
-from to know what hardware goes how far with them.
-
-At least fun to see they have some starting point ;)
-
-Cheers,
-Hermann
-
+Thanks,
+-Kame
 
