@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZLCRbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbZLCRbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbZLCRbI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:31:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZLCRbI
+	id S1756159AbZLCRbV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZLCRbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:31:08 -0500
-Received: from mail-pz0-f184.google.com ([209.85.222.184]:37928 "EHLO
-	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755510AbZLCRbG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:31:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xjSjWIb6yzvM6yfxxl62NvlrxI1fhuLAmY/38lugWzXfPwh6clBofSxKMHJdmdQWC2
-         +8k8V5bIHY2o9mJsbPXb5LY726ujnYNYVQ/MbtURgZJn61eYpi997XrYK22wOuoxZQmM
-         AaxNsUwujNjb9fEw3VoEg+SeQvvuCCjnzsAEQ=
-Date: Thu, 3 Dec 2009 09:31:06 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Ferenc Wagner <wferi@niif.hu>, Jarod Wilson <jarod@wilsonet.com>,
-       Jarod Wilson <jarod@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [RFC v2] Another approach to IR
-Message-ID: <20091203173105.GA776@core.coreip.homeip.net>
-References: <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <20091202201404.GD22689@core.coreip.homeip.net> <4B16CCD7.20601@redhat.com> <20091202205323.GF22689@core.coreip.homeip.net> <4B16D87F.7080701@redhat.com> <87tyw8ujsr.fsf@tac.ki.iif.hu> <4B17E874.5020003@redhat.com>
+	Thu, 3 Dec 2009 12:31:19 -0500
+Received: from khc.piap.pl ([195.187.100.11]:41278 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753892AbZLCRbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 12:31:17 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: lirc@bartelmus.de (Christoph Bartelmus)
+Cc: jonsmirl@gmail.com, awalls@radix.net, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, lirc-list@lists.sourceforge.net,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <BE3edeNXqgB@lirc>
+Date: Thu, 03 Dec 2009 18:31:20 +0100
+In-Reply-To: <BE3edeNXqgB@lirc> (Christoph Bartelmus's message of "01 Dec 2009
+	08:45:00 +0100")
+Message-ID: <m3k4x42cd3.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B17E874.5020003@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 02:33:56PM -0200, Mauro Carvalho Chehab wrote:
-> Ferenc Wagner wrote:
-> > Mauro Carvalho Chehab <mchehab@redhat.com> writes:
-> 
-> We should not forget that simple IR's don't have any key to select the address,
-> so the produced codes there will never have KEY_TV/KEY_DVD, etc.
+lirc@bartelmus.de (Christoph Bartelmus) writes:
 
-Wait, wait, KEY_TV, KEY_DVD, KEY_TAPE - they should be used to select
-media inputs in a device/application. My receiver accepts codees like
-that.
+> Currently I would tend to an approach like this:
+> - raw interface to userspace using LIRC
+> - fixed set of in-kernel decoders that can handle bundled remotes
 
+I'd modify it a bit:
+- raw interface to userspace using LIRC
+- fixed set of in-kernel decoders
+
+Longer term:
+
+Removing the key assignment tables from the kernel. Plug-and-play can be
+then achieved with udev. The only thing needed from the kernel is
+indicating the tuner/sensor type, udev can guess the bundled remote type.
+
+Porting the in-kernel drivers (such as ir-common) to LIRC interface
+(while not removing the input layer mode).
 -- 
-Dmitry
+Krzysztof Halasa
