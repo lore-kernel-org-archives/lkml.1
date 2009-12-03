@@ -1,135 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbZLCRyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbZLCRzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbZLCRyt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbZLCRys
+	id S1756430AbZLCRzf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbZLCRze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:54:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52259 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753890AbZLCRys (ORCPT
+	Thu, 3 Dec 2009 12:55:34 -0500
+Received: from mail-pz0-f184.google.com ([209.85.222.184]:50395 "EHLO
+	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755452AbZLCRzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:54:48 -0500
-Subject: Re: [PATCH v9 04/10] tracing: add dynamic function tracer support
- for MIPS
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, Nicholas Mc Guire <der.herr@hofr.at>,
-       zhangfx@lemote.com, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-In-Reply-To: <6a25a6132d64830bbd7339fe8b3841a51d02ac6d.1258719323.git.wuzhangjin@gmail.com>
-References: <adf867c5a6864fa196c667d3f09a6a694f3903c5.1258719323.git.wuzhangjin@gmail.com>
-	 <51e30436a435480f1f0dec146a82f2b250900690.1258719323.git.wuzhangjin@gmail.com>
-	 <267c0824194b659b46fc038ba43492df30369fec.1258719323.git.wuzhangjin@gmail.com>
-	 <6a25a6132d64830bbd7339fe8b3841a51d02ac6d.1258719323.git.wuzhangjin@gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 03 Dec 2009 12:54:53 -0500
-Message-Id: <1259862893.12870.141.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 12:55:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=J1rPfDalNTxLIW9O97HPSgeczKj3tXjvikJCvwj9a8QM5ZGQ2MZ3r9srrPKoxdeHgg
+         sSJb31ZY1A+Q/KIGg+8p5XuskRHheM6FbMx4Cb9YDCxGzbA7Gwq6CRY57He70nqsaePA
+         M4PLRsFfZhtAWB3ZabEa3LeVZ/h4qt/y41m80=
+Date: Thu, 3 Dec 2009 09:55:31 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Jarod Wilson <jarod@wilsonet.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jonsmirl@gmail.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+Message-ID: <20091203175531.GB776@core.coreip.homeip.net>
+References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com> <4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com> <A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com> <4B17AA6A.9060702@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B17AA6A.9060702@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 20:34 +0800, Wu Zhangjin wrote:
-> From: Wu Zhangjin <wuzhangjin@gmail.com>
-> 
+On Thu, Dec 03, 2009 at 01:09:14PM +0100, Gerd Hoffmann wrote:
+> On 12/03/09 05:29, Jarod Wilson wrote:
+>> On Dec 1, 2009, at 10:28 AM, Gerd Hoffmann wrote:
+>>
+>>>> Anyway, we shouldn't postpone lirc drivers addition due to that.
+>>>> There are still lots of work to do before we'll be able to split
+>>>> the tables from the kernel drivers.
+>>>
+>>> Indeed.  The sysfs bits are future work for both lirc and evdev
+>>> drivers.  There is no reason to make the lirc merge wait for it.
+>>
+>> At this point, my plan is to try to finish cleaning up lirc_dev and
+>> lirc_mceusb at least over the weekend while at FUDCon up in Toronto,
+>> and resubmit them next week.
+>
+> Good plan IMHO.  Having lirc_dev merged quickly allows in-kernel drivers  
+> start supporting lirc.
 
-> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> ---
->  arch/mips/Kconfig              |    2 +
->  arch/mips/include/asm/ftrace.h |    9 +++
->  arch/mips/kernel/Makefile      |    3 +-
->  arch/mips/kernel/ftrace.c      |  112 ++++++++++++++++++++++++++++++++++++++++
->  arch/mips/kernel/mcount.S      |   29 ++++++++++
+No, please, wait just a minute. I know it is tempting to just merge
+lirc_dev and start working, but can we first agree on the overall
+subsystem structure before doing so. It is still quite inclear to me.
 
+The open questions (for me at least):
 
->  scripts/recordmcount.pl        |   54 +++++++++++++++++++
+- do we create a new class infrastructure for all receivers or only for
+  ones plugged into lirc_dev? Remember that classifying objects affects
+  how udev and friemds see them and may either help or hurt writing PnP
+  rules.
 
+- do we intend to support in-kernel sotfware decoders? What is the
+  structure? Do we organize them as a module to be used by driver
+  directly or the driver "streams" the data to IR core and the core
+  applies decoders (in the same fashion input events from drivers flow
+  into input core and then distributed to all bound interfaces for
+  processing/conversion/transmission to userspace)?
 
->  6 files changed, 208 insertions(+), 1 deletions(-)
->  create mode 100644 arch/mips/kernel/ftrace.c
-> 
+- how do we control which decoder should handle particular
+  receiver/remote? Is it driver's decision, decoder's decision, user's
+  or all of the above?
 
+- do we allow to have several decorers active at once for a receiver?
 
+- who decides that we want to utilize lirc_dev? Driver's themselves, IR
+  core (looking at the driver/device "capabilities"), something else?
 
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 24604d4..9d80d0d 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -295,6 +295,60 @@ if ($arch eq "x86_64") {
->      $ld .= " -m elf64_sparc";
->      $cc .= " -m64";
->      $objcopy .= " -O elf64-sparc";
-> +
-> +} elsif ($arch eq "mips") {
-> +    # To enable module support, we need to enable the -mlong-calls option
-> +    # of gcc for module, after using this option, we can not get the real
-> +    # offset of the calling to _mcount, but the offset of the lui
-> +    # instruction or the addiu one. herein, we record the address of the
-> +    # first one, and then we can replace this instruction by a branch
-> +    # instruction to jump over the profiling function to filter the
-> +    # indicated functions, or swith back to the lui instruction to trace
-> +    # them, which means dynamic tracing.
-> +    #
-> +    #       c:	3c030000 	lui	v1,0x0
-> +    #			c: R_MIPS_HI16	_mcount
-> +    #			c: R_MIPS_NONE	*ABS*
-> +    #			c: R_MIPS_NONE	*ABS*
-> +    #      10:	64630000 	daddiu	v1,v1,0
-> +    #			10: R_MIPS_LO16	_mcount
-> +    #			10: R_MIPS_NONE	*ABS*
-> +    #			10: R_MIPS_NONE	*ABS*
-> +    #      14:	03e0082d 	move	at,ra
-> +    #      18:	0060f809 	jalr	v1
-> +    #
-> +    # for the kernel:
-> +    #
-> +    #     10:   03e0082d        move    at,ra
-> +    #	  14:   0c000000        jal     0 <loongson_halt>
-> +    #                    14: R_MIPS_26   _mcount
-> +    #                    14: R_MIPS_NONE *ABS*
-> +    #                    14: R_MIPS_NONE *ABS*
-> +    #	 18:   00020021        nop
-> +    if ($is_module eq "0") {
-> +	    $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s_mcount\$";
-> +    } else {
-> +	    $mcount_regex = "^\\s*([0-9a-fA-F]+): R_MIPS_HI16\\s+_mcount\$";
-> +    }
-> +    $objdump .= " -Melf-trad".$endian."mips ";
-> +
-> +    if ($endian eq "big") {
-> +	    $endian = " -EB ";
-> +	    $ld .= " -melf".$bits."btsmip";
-> +    } else {
-> +	    $endian = " -EL ";
-> +	    $ld .= " -melf".$bits."ltsmip";
-> +    }
-> +
-> +    $cc .= " -mno-abicalls -fno-pic -mabi=" . $bits . $endian;
-> +    $ld .= $endian;
-> +
-> +    if ($bits == 64) {
-> +	    $function_regex =
-> +		"^([0-9a-fA-F]+)\\s+<(.|[^\$]L.*?|\$[^L].*?|[^\$][^L].*?)>:";
-> +	    $type = ".dword";
-> +    }
-> +
->  } else {
->      die "Arch $arch is not supported with CONFIG_FTRACE_MCOUNT_RECORD";
->  }
+- do we recognize and create input devices "on-fly" or require user
+  intervention? Semantics for splitting into several input/event
+  devices?
 
-This only adds MIPS arch support to recordmcount.pl, and does not touch
-any other arch or generic code. Thus, I consider this arch specific
-code.
+Could anyone please draw me a picture, starting with a "receiver"
+piece of hardware. I am not concerned much with how exactly receiver is
+plugged into a particular subsystem (DVB/V4L etc) since it would be
+_their_ implementation detail, but with the flow in/out of that
+"receiver" device.
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Now as far as input core goes I see very limited number of changes that
+may be needed:
 
--- Steve
+- Allow to extend size of "scancode" in EVIOC{S,G}KEYCODE if we are
+  unable to limit ourselves to 32 bits (keeping compatibility of course)
 
+- Maybe adding new ioctl to "zap" the keymap table
 
+- Adding more key EV_KEY/KEY_* definitons, if needed
+
+Thanks.
+
+-- 
+Dmitry
