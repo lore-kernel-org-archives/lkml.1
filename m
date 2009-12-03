@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZLCUBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZLCT7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbZLCUBb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 15:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbZLCUBa
+	id S1754851AbZLCT7h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 14:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZLCT7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 15:01:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41101 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753613AbZLCUB3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 15:01:29 -0500
-Date: Thu, 3 Dec 2009 11:58:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org, dhowells@redhat.com,
-       gyang@blackfin.uclinux.org, john.johansen@canonical.com,
-       Mike Frysinger <vapier.adi@gmail.com>, stable@kernel.org
-Subject: Re: [PATCH] security: do not check mmap_min_addr on nommu systems
-Message-Id: <20091203115858.d91b64dc.akpm@linux-foundation.org>
-In-Reply-To: <20091203194300.8491.22110.stgit@paris.rdu.redhat.com>
-References: <20091203194300.8491.22110.stgit@paris.rdu.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Dec 2009 14:59:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12157 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754043AbZLCT7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 14:59:36 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [RFC PATCH 2/6] pipes: use alloc-file instead of duplicating code
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
+       eparis@redhat.com, zohar@us.ibm.com, jack@suse.cz,
+       jmalicki@metacarta.com, dsmith@redhat.com, serue@us.ibm.com, hch@lst.de,
+       john@johnmccutchan.com, rlove@rlove.org, ebiederm@xmission.com,
+       heiko.carstens@de.ibm.com, penguin-kernel@I-love.SAKURA.ne.jp,
+       mszeredi@suse.cz, jens.axboe@oracle.com, akpm@linux-foundation.org,
+       matthew@wil.cx, hugh.dickins@tiscali.co.uk,
+       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
+       davem@davemloft.net, arnd@arndb.de, eric.dumazet@gmail.com
+Date: Thu, 03 Dec 2009 14:59:02 -0500
+Message-ID: <20091203195902.8925.2985.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20091203195851.8925.30926.stgit@paris.rdu.redhat.com>
+References: <20091203195851.8925.30926.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Dec 2009 14:43:01 -0500
-Eric Paris <eparis@redhat.com> wrote:
+The pipe code duplicates the functionality of alloc-file and init-file.  Use
+the generic vfs functions instead of duplicating code.
 
-> nommu systems can do anything with memory they please and so they already
-> win.  mmap_min_addr is the least of their worries.  Currently the
-> mmap_min_addr implementation is problamatic on such systems.  This patch
-> changes the addr_only argument to be a flags which can take the arguments
-> for addr_only or not_addr.  LSMs then need to properly implement these two
-> flags.
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-This replaces David's
-nommu-ignore-the-address-parameter-in-the-file_mmap-security-check.patch,
-which missed 2.6.32.
+ fs/pipe.c |   21 +++++++++------------
+ 1 files changed, 9 insertions(+), 12 deletions(-)
 
-What are our thoughts wrt backporting this fix in some form into
-2.6.32.x and earlier?
-
+diff --git a/fs/pipe.c b/fs/pipe.c
+index ae17d02..5d6c969 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -1028,20 +1028,17 @@ void free_write_pipe(struct file *f)
+ 
+ struct file *create_read_pipe(struct file *wrf, int flags)
+ {
+-	struct file *f = get_empty_filp();
+-	if (!f)
+-		return ERR_PTR(-ENFILE);
+-
+-	/* Grab pipe from the writer */
+-	f->f_path = wrf->f_path;
+-	path_get(&wrf->f_path);
+-	f->f_mapping = wrf->f_path.dentry->d_inode->i_mapping;
++	struct file *f;
++	struct dentry *dentry = wrf->f_path.dentry;
++	struct vfsmount *mnt = wrf->f_path.mnt;
+ 
+-	f->f_pos = 0;
++	dentry = dget(dentry);
++	f = alloc_file(mnt, dentry, FMODE_READ, &read_pipefifo_fops);
++	if (!f) {
++		dput(dentry);
++		return ERR_PTR(-ENFILE);
++	}
+ 	f->f_flags = O_RDONLY | (flags & O_NONBLOCK);
+-	f->f_op = &read_pipefifo_fops;
+-	f->f_mode = FMODE_READ;
+-	f->f_version = 0;
+ 
+ 	return f;
+ }
 
