@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZLCR0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZLCR0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbZLCR0I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:26:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbZLCR0H
+	id S1756139AbZLCR0Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:26:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbZLCR0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:26:07 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:55505 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752305AbZLCR0G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:26:06 -0500
-X-Sasl-enc: g+tgu8K2wv2JZT5MgAOWUI7lRw45lH95+lmx0nIcr1IL 1259861172
-Date: Thu, 3 Dec 2009 15:26:09 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, len.brown@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] thinkpad_acpi: convert to seq_file
-Message-ID: <20091203172609.GA16463@khazad-dum.debian.net>
-References: <20091125071642.GD3459@x200.malnet.ru>
+	Thu, 3 Dec 2009 12:26:24 -0500
+Received: from fieldses.org ([174.143.236.118]:45174 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753458AbZLCR0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 12:26:23 -0500
+Date: Thu, 3 Dec 2009 12:27:28 -0500
+From: "J. Bruce Fields" <bfields@citi.umich.edu>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-parisc <linux-parisc@vger.kernel.org>,
+       sparclinux <sparclinux@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       NFS list <linux-nfs@vger.kernel.org>,
+       pNFS Mailing List <pnfs@linux-nfs.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/5] lockd: Remove unused nfsd headers #includes
+Message-ID: <20091203172728.GF1393@fieldses.org>
+References: <4B0C1EB7.50508@panasas.com> <4B0C1FE0.8040105@panasas.com> <20091125201011.GG32502@fieldses.org> <20091125202323.GJ32502@fieldses.org> <4B0E76F5.1030006@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091125071642.GD3459@x200.malnet.ru>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B0E76F5.1030006@panasas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey,  I like your patch, but it pretty much clashes with lots of stuff in
-my patch queue.
+On Thu, Nov 26, 2009 at 02:39:17PM +0200, Boaz Harrosh wrote:
+> On 11/25/2009 10:23 PM, J. Bruce Fields wrote:
+> > On Wed, Nov 25, 2009 at 03:10:11PM -0500, J. Bruce Fields wrote:
+> >> On Tue, Nov 24, 2009 at 08:03:12PM +0200, Boaz Harrosh wrote:
+> >>>
+> >>> In what history where these ever needed? Well not
+> >>> any more.
+> >>
+> >> Applied, thanks.--b.
+> > 
+> > Um, I said that before I actually tried to compile it....  OK, dropping
+> > for now (assuming I'm missing some earlier patch).
+> > 
+> > --b.
+> > 
+> 
+> OK, I didn't realize it but, yes I have these on top of the previous 6
+> so it makes sense.
+> 
+> I have posted the previous 6 rebased on your new current tree, have you seen
+> it? All the patches are the same but [5/6] which has a "version 3". Do I need
+> to re post?
 
-I think the easiest way is for me to take in your patch, place it at the end
-of the queue, and update it when I get to it.
+Apologies, yes, would you mind reposting?
 
-I won't promise I will be able to merge it for 2.6.33, but I can promise I
-will do it for 2.6.34.  Depends how fast I can get the higher priority stuff
-out of the door.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+--b.
