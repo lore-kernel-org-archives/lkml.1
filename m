@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbZLCNjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZLCNk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756069AbZLCNjg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 08:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbZLCNjf
+	id S1756083AbZLCNk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 08:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbZLCNk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 08:39:35 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:58072 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752997AbZLCNjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 08:39:35 -0500
-Date: Thu, 3 Dec 2009 14:39:39 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pat Gefre <pfg@sgi.com>
-Subject: [PATCH 2/2] IOC3/IOC4: Fix error path on driver registration
-Message-ID: <20091203143939.099aa431@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 08:40:28 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43347 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755239AbZLCNk1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 08:40:27 -0500
+Date: Thu, 3 Dec 2009 13:40:32 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>,
+       Pierre Ossman <pierre@ossman.eu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Fleming <matt@console-pimps.org>,
+       Adrian Hunter <adrian.hunter@nokia.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Robert Jarzmik <robert.jarzmik@free.fr>,
+       Cliff Brake <cbrake@bec-systems.com>,
+       Jarkko Lavinen <jarkko.lavinen@nokia.com>, linux-mmc@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] mmc: move regulator handling to core
+Message-ID: <20091203134031.GA1311@rakim.wolfsonmicro.main>
+References: <1259844390-10541-1-git-send-email-daniel@caiaq.de>
+ <20091203130627.GA31254@rakim.wolfsonmicro.main>
+ <20091203131423.GV14091@buzzloop.caiaq.de>
+ <20091203132241.GB31533@rakim.wolfsonmicro.main>
+ <20091203133200.GX14091@buzzloop.caiaq.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091203133200.GX14091@buzzloop.caiaq.de>
+X-Cookie: Haste makes waste.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two IOC3 and IOC4 drivers have broken error paths on registration.
-Fix them.
+On Thu, Dec 03, 2009 at 02:32:00PM +0100, Daniel Mack wrote:
+> On Thu, Dec 03, 2009 at 01:22:41PM +0000, Mark Brown wrote:
+> > On Thu, Dec 03, 2009 at 02:14:23PM +0100, Daniel Mack wrote:
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Pat Gefre <pfg@sgi.com>
----
-Note: I was not able to build-test these patches, please do.
+> > > I would expect the power to be killed when the last user stops using it.
+> > > Which should result in the same effect if you only have one host, one
+> > > regulator, and one user.
 
- drivers/serial/ioc4_serial.c |   16 +++++++++++++---
- drivers/sn/ioc3.c            |    2 +-
- 2 files changed, 14 insertions(+), 4 deletions(-)
+> > Yes, it's always fine in that case (modulo always_on and/or regulators
+> > without power control). 
 
---- linux-2.6.30-rc8.orig/drivers/serial/ioc4_serial.c	2009-06-04 11:41:02.000000000 +0200
-+++ linux-2.6.30-rc8/drivers/serial/ioc4_serial.c	2009-06-04 12:05:51.000000000 +0200
-@@ -2913,17 +2913,27 @@ static int __init ioc4_serial_init(void)
- 		printk(KERN_WARNING
- 			"%s: Couldn't register rs232 IOC4 serial driver\n",
- 			__func__);
--		return ret;
-+		goto out;
- 	}
- 	if ((ret = uart_register_driver(&ioc4_uart_rs422)) < 0) {
- 		printk(KERN_WARNING
- 			"%s: Couldn't register rs422 IOC4 serial driver\n",
- 			__func__);
--		return ret;
-+		goto out_uart_rs232;
- 	}
- 
- 	/* register with IOC4 main module */
--	return ioc4_register_submodule(&ioc4_serial_submodule);
-+	ret = ioc4_register_submodule(&ioc4_serial_submodule);
-+	if (ret)
-+		goto out_uart_rs422;
-+	return 0;
-+
-+out_uart_rs422:
-+	uart_unregister_driver(&ioc4_uart_rs422);
-+out_uart_rs232:
-+	uart_unregister_driver(&ioc4_uart_rs232);
-+out:
-+	return ret;
- }
- 
- static void __exit ioc4_serial_exit(void)
---- linux-2.6.30-rc8.orig/drivers/sn/ioc3.c	2009-06-04 11:41:03.000000000 +0200
-+++ linux-2.6.30-rc8/drivers/sn/ioc3.c	2009-06-04 12:03:26.000000000 +0200
-@@ -820,7 +820,7 @@ static int __init ioc3_init(void)
- {
- 	if (ia64_platform_is("sn2"))
- 		return pci_register_driver(&ioc3_driver);
--	return 0;
-+	return -ENODEV;
- }
- 
- /* Module unload */
+> Well, it didn't for me and always_on, though, due to the return values I
+> described.
 
+I mean your new code is fine.
 
--- 
-Jean Delvare
+> > This goes back to the thing about using
+> > regulator_get_exclusive(), the message given was that the MMC drivers
+> > really needed to be able to guarantee that the power would be removed
+> > when that was requested.
+
+> > Like I say, if there isn't a *strict* requirement but it's only
+> > desirable (possibly strongly desirable) then your approach is obviously
+> > preferable.
+
+> The mmci people would need to answer that. To me, the code just looked
+> like a power saving feature.
+
+> If this driver needs it, the only tweak to my patch to let that
+> particular call site use regulator_get_exclusive, and the core will
+> still do the right thing. For this case, the behaviour should be exactly
+> the same than it currently is, correct?
+
+No, you'll also need to update the way the driver bootstraps the
+reference count since with regulator_get_exclusive() the reference count
+is initialised to 1 if the regulator is enabled when it is claimed.
