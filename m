@@ -1,184 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZLCBwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbZLCBzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbZLCBwP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 20:52:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZLCBwO
+	id S1753506AbZLCBzX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 20:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZLCBzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 20:52:14 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50975 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbZLCBwN (ORCPT
+	Wed, 2 Dec 2009 20:55:22 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48583 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839AbZLCBzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 20:52:13 -0500
-Message-ID: <4B17199F.1000804@zytor.com>
-Date: Wed, 02 Dec 2009 17:51:27 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: seperate reserve_early and reserve_early_overlap_check
-References: <4B0CF1B3.1050200@kernel.org>
-In-Reply-To: <4B0CF1B3.1050200@kernel.org>
-Content-Type: multipart/mixed;
- boundary="------------060308050606080401040400"
+	Wed, 2 Dec 2009 20:55:21 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 3 Dec 2009 10:52:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Nick Piggin <npiggin@suse.de>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 22/24] HWPOISON: add memory cgroup filter
+Message-Id: <20091203105229.afb0efc4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091202125842.GA13277@localhost>
+References: <20091202031231.735876003@intel.com>
+	<20091202043046.519053333@intel.com>
+	<20091202124446.GA18989@one.firstfloor.org>
+	<20091202125842.GA13277@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060308050606080401040400
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wed, 2 Dec 2009 20:58:42 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-On 11/25/2009 12:58 AM, Yinghai Lu wrote:
+> On Wed, Dec 02, 2009 at 08:44:46PM +0800, Andi Kleen wrote:
+> > >  
+> > > +static int hwpoison_filter_task(struct page *p)
+> > > +{
+> > 
+> > Can we make that ifdef instead of depends on ?
 > 
-> when the area is from find_e820_area(), it could be overlapped with others.
+> Sure. Here is the updated patch.
 > 
-> so just add it directly. the new reserve_early()
+> ---
+> HWPOISON: add memory cgroup filter
 > 
-> and rename old reserve_early() to reserve_early_overlap_check()
+> The hwpoison test suite need to inject hwpoison to a collection of
+> selected task pages, and must not touch pages not owned by them and
+> thus kill important system processes such as init. (But it's OK to
+> mis-hwpoison free/unowned pages as well as shared clean pages.
+> Mis-hwpoison of shared dirty pages will kill all tasks, so the test
+> suite will target all or non of such tasks in the first place.)
 > 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> The memory cgroup serves this purpose well. We can put the target
+> processes under the control of a memory cgroup, and tell the hwpoison
+> injection code to only kill pages associated with some active memory
+> cgroup.
+> 
+> The prerequisite for doing hwpoison stress tests with mem_cgroup is,
+> the mem_cgroup code tracks task pages _accurately_ (unless page is
+> locked).  Which we believe is/should be true.
+> 
+> The benifits are simplification of hwpoison injector code. Also the
+> mem_cgroup code will automatically be tested by hwpoison test cases.
+> 
+> The alternative interfaces pin-pfn/unpin-pfn can also delegate the
+> (process and page flags) filtering functions reliably to user space.
+> However prototype implementation shows that this scheme adds more
+> complexity than we wanted.
+> 
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> CC: Li Zefan <lizf@cn.fujitsu.com>
+> CC: Paul Menage <menage@google.com>
+> CC: Nick Piggin <npiggin@suse.de> 
+> CC: Andi Kleen <andi@firstfloor.org> 
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  mm/Kconfig           |    2 +-
+>  mm/hwpoison-inject.c |    7 +++++++
+>  mm/internal.h        |    1 +
+>  mm/memory-failure.c  |   28 ++++++++++++++++++++++++++++
+>  4 files changed, 37 insertions(+), 1 deletion(-)
+> 
+> --- linux-mm.orig/mm/memory-failure.c	2009-12-01 09:56:06.000000000 +0800
+> +++ linux-mm/mm/memory-failure.c	2009-12-02 20:56:55.000000000 +0800
+> @@ -96,6 +96,31 @@ static int hwpoison_filter_flags(struct 
+>  		return -EINVAL;
+>  }
+>  
+> +#ifdef	CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> +u32 hwpoison_filter_memcg;
+> +static int hwpoison_filter_task(struct page *p)
+> +{
+> +	struct mem_cgroup *mem;
+> +	struct cgroup_subsys_state *css;
+> +
+> +	if (!hwpoison_filter_memcg)
+> +		return 0;
+> +
+> +	mem = try_get_mem_cgroup_from_page(p);
+> +	if (!mem)
+> +		return -EINVAL;
+> +
+> +	css = mem_cgroup_css(mem);
+> +	if (!css)
+> +		return -EINVAL;
 
-Hi Yinghai,
-
-I had this patch in my queue but it looks like I had overlooked it as it
-arrived during the U.S. holiday; I apologize profusely!
-
-I'm concerned about several things with this patch, which doesn't mean
-it isn't fulfilling a genuine need:
-
-1. Renaming reserve_early() to reserve_early_overlap_check() is most
-likely going to get overlooked, and people will use the "new"
-reserve_early() thinking that they got the old one.
-
-2. This creates overlapping ranges in the reservation array itself.
-
-What it looks to me is what we need is actually a
-reserve_early_clobber() which does what the current reserve_early() does
-except that it ignores the overlap_ok flag on existing reservations.
-
-I have attached an untested patch to do that.  Note that I don't have
-any callers for reserve_early_clobber(), since one effect of changing
-the semantics of an existing function in the way you did is that the
-patch contains the call sites that *didn't* need modification rather
-than the one that *did* need modification.  The call sites that want the
-new semantics need to be modified.  As such, it's possible that the
-comment I added is completely wrong, I really need some further
-information on this.
-
-[Note: the function __reserve_early() hasn't actually changed; I just
-moved it ahead of drop_overlaps().]
-
-Sorry again for the delay.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> +
+> +	css_put(css);
+> +	return 0;
+> +}
 
 
---------------060308050606080401040400
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="diff"
+Hmm..can you adds comment ? What does this function is for ?
 
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2luY2x1ZGUvYXNtL2U4MjAuaCBiL2FyY2gveDg2L2lu
-Y2x1ZGUvYXNtL2U4MjAuaAppbmRleCA3NjEyNDllLi5iNDViZjQxIDEwMDY0NAotLS0gYS9h
-cmNoL3g4Ni9pbmNsdWRlL2FzbS9lODIwLmgKKysrIGIvYXJjaC94ODYvaW5jbHVkZS9hc20v
-ZTgyMC5oCkBAIC0xMTMsNiArMTEzLDcgQEAgZXh0ZXJuIHU2NCBmaW5kX2U4MjBfYXJlYSh1
-NjQgc3RhcnQsIHU2NCBlbmQsIHU2NCBzaXplLCB1NjQgYWxpZ24pOwogZXh0ZXJuIHU2NCBm
-aW5kX2U4MjBfYXJlYV9zaXplKHU2NCBzdGFydCwgdTY0ICpzaXplcCwgdTY0IGFsaWduKTsK
-IGV4dGVybiB2b2lkIHJlc2VydmVfZWFybHkodTY0IHN0YXJ0LCB1NjQgZW5kLCBjaGFyICpu
-YW1lKTsKIGV4dGVybiB2b2lkIHJlc2VydmVfZWFybHlfb3ZlcmxhcF9vayh1NjQgc3RhcnQs
-IHU2NCBlbmQsIGNoYXIgKm5hbWUpOworZXh0ZXJuIHZvaWQgcmVzZXJ2ZV9lYXJseV9jbG9i
-YmVyKHU2NCBzdGFydCwgdTY0IGVuZCwgY2hhciAqbmFtZSk7CiBleHRlcm4gdm9pZCBmcmVl
-X2Vhcmx5KHU2NCBzdGFydCwgdTY0IGVuZCk7CiBleHRlcm4gdm9pZCBlYXJseV9yZXNfdG9f
-Ym9vdG1lbSh1NjQgc3RhcnQsIHU2NCBlbmQpOwogZXh0ZXJuIHU2NCBlYXJseV9yZXNlcnZl
-X2U4MjAodTY0IHN0YXJ0dCwgdTY0IHNpemV0LCB1NjQgYWxpZ24pOwpkaWZmIC0tZ2l0IGEv
-YXJjaC94ODYva2VybmVsL2U4MjAuYyBiL2FyY2gveDg2L2tlcm5lbC9lODIwLmMKaW5kZXgg
-ZDE3ZDQ4Mi4uYWZlNTAyMyAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL2U4MjAuYwor
-KysgYi9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCkBAIC03NjgsOSArNzY4LDMxIEBAIHN0YXRp
-YyB2b2lkIF9faW5pdCBkcm9wX3JhbmdlKGludCBpKQogCWVhcmx5X3Jlc1tqIC0gMV0uZW5k
-ID0gMDsKIH0KIAorc3RhdGljIHZvaWQgX19pbml0IF9fcmVzZXJ2ZV9lYXJseSh1NjQgc3Rh
-cnQsIHU2NCBlbmQsIGNoYXIgKm5hbWUsCisJCQkJICAgaW50IG92ZXJsYXBfb2spCit7CisJ
-aW50IGk7CisJc3RydWN0IGVhcmx5X3JlcyAqcjsKKworCWkgPSBmaW5kX292ZXJsYXBwZWRf
-ZWFybHkoc3RhcnQsIGVuZCk7CisJaWYgKGkgPj0gTUFYX0VBUkxZX1JFUykKKwkJcGFuaWMo
-IlRvbyBtYW55IGVhcmx5IHJlc2VydmF0aW9ucyIpOworCXIgPSAmZWFybHlfcmVzW2ldOwor
-CWlmIChyLT5lbmQpCisJCXBhbmljKCJPdmVybGFwcGluZyBlYXJseSByZXNlcnZhdGlvbnMg
-IgorCQkgICAgICAiJWxseC0lbGx4ICVzIHRvICVsbHgtJWxseCAlc1xuIiwKKwkJICAgICAg
-c3RhcnQsIGVuZCAtIDEsIG5hbWU/bmFtZToiIiwgci0+c3RhcnQsCisJCSAgICAgIHItPmVu
-ZCAtIDEsIHItPm5hbWUpOworCXItPnN0YXJ0ID0gc3RhcnQ7CisJci0+ZW5kID0gZW5kOwor
-CXItPm92ZXJsYXBfb2sgPSBvdmVybGFwX29rOworCWlmIChuYW1lKQorCQlzdHJuY3B5KHIt
-Pm5hbWUsIG5hbWUsIHNpemVvZihyLT5uYW1lKSAtIDEpOworfQorCiAvKgogICogU3BsaXQg
-YW55IGV4aXN0aW5nIHJhbmdlcyB0aGF0OgotICogIDEpIGFyZSBtYXJrZWQgJ292ZXJsYXBf
-b2snLCBhbmQKKyAqICAxKSBhcmUgbWFya2VkICdvdmVybGFwX29rJyAodW5sZXNzICdmb3Jj
-ZScgaXMgc2V0KSwgYW5kCiAgKiAgMikgb3ZlcmxhcCB3aXRoIHRoZSBzdGF0ZWQgcmFuZ2Ug
-W3N0YXJ0LCBlbmQpCiAgKiBpbnRvIHdoYXRldmVyIHBvcnRpb24gKGlmIGFueSkgb2YgdGhl
-IGV4aXN0aW5nIHJhbmdlIGlzIGVudGlyZWx5CiAgKiBiZWxvdyBvciBlbnRpcmVseSBhYm92
-ZSB0aGUgc3RhdGVkIHJhbmdlLiAgRHJvcCB0aGUgcG9ydGlvbgpAQCAtNzc4LDEzICs4MDAs
-MTQgQEAgc3RhdGljIHZvaWQgX19pbml0IGRyb3BfcmFuZ2UoaW50IGkpCiAgKiB3aGljaCB3
-aWxsIGFsbG93IHRoZSBjYWxsZXIgb2YgdGhpcyByb3V0aW5lIHRvIHRoZW4gYWRkIHRoYXQK
-ICAqIHN0YXRlZCByYW5nZSB3aXRob3V0IGNvbmZsaWN0aW5nIHdpdGggYW55IGV4aXN0aW5n
-IHJhbmdlLgogICovCi1zdGF0aWMgdm9pZCBfX2luaXQgZHJvcF9vdmVybGFwc190aGF0X2Fy
-ZV9vayh1NjQgc3RhcnQsIHU2NCBlbmQpCitzdGF0aWMgdm9pZCBfX2luaXQgZHJvcF9vdmVy
-bGFwcyh1NjQgc3RhcnQsIHU2NCBlbmQsIGludCBmb3JjZSkKIHsKIAlpbnQgaTsKIAlzdHJ1
-Y3QgZWFybHlfcmVzICpyOwogCXU2NCBsb3dlcl9zdGFydCwgbG93ZXJfZW5kOwogCXU2NCB1
-cHBlcl9zdGFydCwgdXBwZXJfZW5kOwogCWNoYXIgbmFtZVsxNl07CisJaW50IG92ZXJsYXBf
-b2s7CiAKIAlmb3IgKGkgPSAwOyBpIDwgTUFYX0VBUkxZX1JFUyAmJiBlYXJseV9yZXNbaV0u
-ZW5kOyBpKyspIHsKIAkJciA9ICZlYXJseV9yZXNbaV07CkBAIC03OTgsNyArODIxLDcgQEAg
-c3RhdGljIHZvaWQgX19pbml0IGRyb3Bfb3ZlcmxhcHNfdGhhdF9hcmVfb2sodTY0IHN0YXJ0
-LCB1NjQgZW5kKQogCQkgKiBwYW5pYyAiT3ZlcmxhcHBpbmcgZWFybHkgcmVzZXJ2YXRpb25z
-IgogCQkgKiB3aGVuIGl0IGhpdHMgdGhpcyBvdmVybGFwLgogCQkgKi8KLQkJaWYgKCFyLT5v
-dmVybGFwX29rKQorCQlpZiAoIWZvcmNlICYmICFyLT5vdmVybGFwX29rKQogCQkJcmV0dXJu
-OwogCiAJCS8qCkBAIC04MTEsNiArODM0LDcgQEAgc3RhdGljIHZvaWQgX19pbml0IGRyb3Bf
-b3ZlcmxhcHNfdGhhdF9hcmVfb2sodTY0IHN0YXJ0LCB1NjQgZW5kKQogCQkvKiAxLiBOb3Rl
-IGFueSBub24tb3ZlcmxhcHBpbmcgKGxvd2VyIG9yIHVwcGVyKSByYW5nZXMuICovCiAJCXN0
-cm5jcHkobmFtZSwgci0+bmFtZSwgc2l6ZW9mKG5hbWUpIC0gMSk7CiAKKwkJb3ZlcmxhcF9v
-ayA9IHItPm92ZXJsYXBfb2s7CiAJCWxvd2VyX3N0YXJ0ID0gbG93ZXJfZW5kID0gMDsKIAkJ
-dXBwZXJfc3RhcnQgPSB1cHBlcl9lbmQgPSAwOwogCQlpZiAoci0+c3RhcnQgPCBzdGFydCkg
-ewpAQCAtODI5LDM0ICs4NTMsMTQgQEAgc3RhdGljIHZvaWQgX19pbml0IGRyb3Bfb3Zlcmxh
-cHNfdGhhdF9hcmVfb2sodTY0IHN0YXJ0LCB1NjQgZW5kKQogCiAJCS8qIDMuIEFkZCBiYWNr
-IGluIGFueSBub24tb3ZlcmxhcHBpbmcgcmFuZ2VzLiAqLwogCQlpZiAobG93ZXJfZW5kKQot
-CQkJcmVzZXJ2ZV9lYXJseV9vdmVybGFwX29rKGxvd2VyX3N0YXJ0LCBsb3dlcl9lbmQsIG5h
-bWUpOworCQkJX19yZXNlcnZlX2Vhcmx5KGxvd2VyX3N0YXJ0LCBsb3dlcl9lbmQsCisJCQkJ
-CW5hbWUsIG92ZXJsYXBfb2spOwogCQlpZiAodXBwZXJfZW5kKQotCQkJcmVzZXJ2ZV9lYXJs
-eV9vdmVybGFwX29rKHVwcGVyX3N0YXJ0LCB1cHBlcl9lbmQsIG5hbWUpOworCQkJX19yZXNl
-cnZlX2Vhcmx5KHVwcGVyX3N0YXJ0LCB1cHBlcl9lbmQsCisJCQkJCW5hbWUsIG92ZXJsYXBf
-b2spOwogCX0KIH0KIAotc3RhdGljIHZvaWQgX19pbml0IF9fcmVzZXJ2ZV9lYXJseSh1NjQg
-c3RhcnQsIHU2NCBlbmQsIGNoYXIgKm5hbWUsCi0JCQkJCQlpbnQgb3ZlcmxhcF9vaykKLXsK
-LQlpbnQgaTsKLQlzdHJ1Y3QgZWFybHlfcmVzICpyOwotCi0JaSA9IGZpbmRfb3ZlcmxhcHBl
-ZF9lYXJseShzdGFydCwgZW5kKTsKLQlpZiAoaSA+PSBNQVhfRUFSTFlfUkVTKQotCQlwYW5p
-YygiVG9vIG1hbnkgZWFybHkgcmVzZXJ2YXRpb25zIik7Ci0JciA9ICZlYXJseV9yZXNbaV07
-Ci0JaWYgKHItPmVuZCkKLQkJcGFuaWMoIk92ZXJsYXBwaW5nIGVhcmx5IHJlc2VydmF0aW9u
-cyAiCi0JCSAgICAgICIlbGx4LSVsbHggJXMgdG8gJWxseC0lbGx4ICVzXG4iLAotCQkgICAg
-ICBzdGFydCwgZW5kIC0gMSwgbmFtZT9uYW1lOiIiLCByLT5zdGFydCwKLQkJICAgICAgci0+
-ZW5kIC0gMSwgci0+bmFtZSk7Ci0Jci0+c3RhcnQgPSBzdGFydDsKLQlyLT5lbmQgPSBlbmQ7
-Ci0Jci0+b3ZlcmxhcF9vayA9IG92ZXJsYXBfb2s7Ci0JaWYgKG5hbWUpCi0JCXN0cm5jcHko
-ci0+bmFtZSwgbmFtZSwgc2l6ZW9mKHItPm5hbWUpIC0gMSk7Ci19Ci0KIC8qCiAgKiBBIGZl
-dyBlYXJseSByZXNlcnZ0YXRpb25zIGNvbWUgaGVyZS4KICAqCkBAIC04NzksNyArODgzLDcg
-QEAgc3RhdGljIHZvaWQgX19pbml0IF9fcmVzZXJ2ZV9lYXJseSh1NjQgc3RhcnQsIHU2NCBl
-bmQsIGNoYXIgKm5hbWUsCiAgKi8KIHZvaWQgX19pbml0IHJlc2VydmVfZWFybHlfb3Zlcmxh
-cF9vayh1NjQgc3RhcnQsIHU2NCBlbmQsIGNoYXIgKm5hbWUpCiB7Ci0JZHJvcF9vdmVybGFw
-c190aGF0X2FyZV9vayhzdGFydCwgZW5kKTsKKwlkcm9wX292ZXJsYXBzKHN0YXJ0LCBlbmQs
-IDApOwogCV9fcmVzZXJ2ZV9lYXJseShzdGFydCwgZW5kLCBuYW1lLCAxKTsKIH0KIApAQCAt
-ODk2LDcgKzkwMCwyMiBAQCB2b2lkIF9faW5pdCByZXNlcnZlX2Vhcmx5KHU2NCBzdGFydCwg
-dTY0IGVuZCwgY2hhciAqbmFtZSkKIAlpZiAoc3RhcnQgPj0gZW5kKQogCQlyZXR1cm47CiAK
-LQlkcm9wX292ZXJsYXBzX3RoYXRfYXJlX29rKHN0YXJ0LCBlbmQpOworCWRyb3Bfb3Zlcmxh
-cHMoc3RhcnQsIGVuZCwgMCk7CisJX19yZXNlcnZlX2Vhcmx5KHN0YXJ0LCBlbmQsIG5hbWUs
-IDApOworfQorCisvKgorICogRWFybHkgcmVzZXJ2YXRpb25zIGR1cmluZyB0aGUgc2NhbiBv
-ZiB0aGUgZTgyMCBhcnJheSBpdHNlbGYKKyAqIGNhbiBjb21lIGluIGhlcmU7IHRoaXMgaXMg
-dXNlZCB3aGVuIHRoZSBpbmZvcm1hdGlvbiBhdmFpbGFibGUKKyAqIHRvIHVzIG1heSBiZSBp
-bnRlcm5hbGx5IGluY29uc2lzdGVudC4gIFRoaXMgZm9yY2UtZHJvcHMgYW55CisgKiBwcmV2
-aW91cyByYW5nZSB0aGF0IGNvbmZsaWN0cyB3aXRoIHRoaXMgb25lLgorICovCit2b2lkIF9f
-aW5pdCByZXNlcnZlX2Vhcmx5X2Nsb2JiZXIodTY0IHN0YXJ0LCB1NjQgZW5kLCBjaGFyICpu
-YW1lKQoreworCWlmIChzdGFydCA+PSBlbmQpCisJCXJldHVybjsKKworCWRyb3Bfb3Zlcmxh
-cHMoc3RhcnQsIGVuZCwgMSk7CiAJX19yZXNlcnZlX2Vhcmx5KHN0YXJ0LCBlbmQsIG5hbWUs
-IDApOwogfQogCg==
---------------060308050606080401040400--
+Is this more meaningful than PageLRU(page) etc..?
+
+Thanks,
+-Kame
+
