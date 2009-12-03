@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbZLCJZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbZLCJ1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753168AbZLCJZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 04:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZLCJZj
+	id S1752044AbZLCJ1T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 04:27:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZLCJ1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 04:25:39 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:58239 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbZLCJZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 04:25:38 -0500
-Date: Thu, 3 Dec 2009 10:25:42 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] DMI: allow omitting ident strings in DMI tables
-Message-ID: <20091203102542.6df59efc@hyperion.delvare>
-In-Reply-To: <20091203085629.GN9121@core.coreip.homeip.net>
-References: <20091203031240.GB9121@core.coreip.homeip.net>
-	<20091203093009.059197a6@hyperion.delvare>
-	<20091203085629.GN9121@core.coreip.homeip.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Dec 2009 04:27:18 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56722 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751053AbZLCJ1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 04:27:17 -0500
+Message-ID: <4B178440.5020701@cn.fujitsu.com>
+Date: Thu, 03 Dec 2009 17:26:24 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 3/4] rcu: add expedited grace-period support
+ for preemptible RCU
+References: <20091202200955.GA12950@linux.vnet.ibm.com> <1259784616158-git-send-email->
+In-Reply-To: <1259784616158-git-send-email->
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Dec 2009 00:56:30 -0800, Dmitry Torokhov wrote:
-> On Thu, Dec 03, 2009 at 09:30:09AM +0100, Jean Delvare wrote:
-> > On Wed, 2 Dec 2009 19:12:40 -0800, Dmitry Torokhov wrote:
-> > > diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
-> > > index 938100f..9116aa7 100644
-> > > --- a/drivers/firmware/dmi_scan.c
-> > > +++ b/drivers/firmware/dmi_scan.c
-> > > @@ -440,6 +440,15 @@ static bool dmi_matches(const struct dmi_system_id *dmi)
-> > >  }
-> > >  
-> > >  /**
-> > > + *	dmi_is_end_of_table - check for end-of-table marker
-> > > + *	@dmi: pointer to the dmi_system_id structure to check
-> > > + */
-> > > +static bool dmi_is_end_of_table(const struct dmi_system_id *dmi)
-> > > +{
-> > > +	return dmi->ident == NULL && dmi->matches[0].slot == DMI_NONE;
-> > 
-> > If you really want to allow for dmi->ident == NULL, then I guess you can
-> > _only_ check for dmi->matches[0].slot == DMI_NONE. I can't think of any
-> > legitimate use of DMI_NONE for a used slot.
+Paul E. McKenney wrote:
+> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > 
-> Current behavior is that entry with ident and empty match table matches
-> everything. If we only check on the first slot then it will not match. I
-> wanted to preserve the current behavior.
+> Implement an synchronize_rcu_expedited() for preemptible RCU that actually
+> is expedited.  This uses synchronize_sched_expedited() to force all
+> threads currently running in a preemptible-RCU read-side critical section
+> onto the appropriate ->blocked_tasks[] list, then takes a snapshot of
+> all of these lists and waits for them to drain.
+> 
 
-Is there a use case for this behavior? If not then I don't see the
-point of preserving it.
+> 3.	Add an implementation of synchronize_rcu_expedited() that
+> 	actually expedites preemptible-RCU grace periods.
 
--- 
-Jean Delvare
+It's very nice.
+
+But I don't understand all things.
+
+1) Why it can be speeded up (in theory)?
+synchronize_sched_expedited() does speed up, it is due to
+migration_threads are the most highest priority threads.
+
+But for synchronize_rcu_expedited(), some preempted tasks in ->blocked_tasks[]
+may be waiting at runqueue for long long time because some other
+higher priority threads comes.
+
+simply comparison:
+synchronize_sched_expedited()
+==> wake_up_process(rq->migration_thread) to force schedule on cpus.
+	which forces read-sides notify the end earlier,
+	or we can say "it forces read-sides run to end faster"
+
+synchronize_rcu_expedited()
+==> Nothing to force preempted read-site run to end faster.
+
+2) Why we introduce a API which no one use it.
+I remember that Net guys request a expedited synchronize_rcu().
+but currently there is still no one use it.
+
+
+Beware my thinking may be wrong!
+Thanks, Lai
