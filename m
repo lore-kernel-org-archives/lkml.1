@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbZLCPJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbZLCPJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756293AbZLCPJl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 10:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbZLCPJk
+	id S1756310AbZLCPJz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 10:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbZLCPJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 10:09:40 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:36528 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755977AbZLCPJk (ORCPT
+	Thu, 3 Dec 2009 10:09:54 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38984 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756319AbZLCPJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 10:09:40 -0500
-Message-ID: <4B17D3D3.1060502@zytor.com>
-Date: Thu, 03 Dec 2009 07:05:55 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 3 Dec 2009 10:09:53 -0500
+Date: Thu, 3 Dec 2009 15:09:55 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Daniel Mack <daniel@caiaq.de>, Matt Fleming <matt@console-pimps.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Jarkko Lavinen <jarkko.lavinen@nokia.com>, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Cliff Brake <cbrake@bec-systems.com>,
+       Pierre Ossman <pierre@ossman.eu>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       Robert Jarzmik <robert.jarzmik@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-arm-kernel@lists.infradead.org,
+       Adrian Hunter <adrian.hunter@nokia.com>
+Subject: Re: [PATCH] mmc: move regulator handling to core
+Message-ID: <20091203150955.GA10297@rakim.wolfsonmicro.main>
+References: <1259844390-10541-1-git-send-email-daniel@caiaq.de>
+ <20091203130627.GA31254@rakim.wolfsonmicro.main>
+ <20091203131423.GV14091@buzzloop.caiaq.de>
+ <20091203132241.GB31533@rakim.wolfsonmicro.main>
+ <20091203145825.GA26651@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: "Ma, Ling" <ling.ma@intel.com>
-CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Dave Jones <davej@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] [X86] Compile Option Os versus O2 on latest x86 platform
-References: <1259222752-8161-1-git-send-email-ling.ma@intel.com>	<20091126094930.GD32275@elte.hu>	<8FED46E8A9CA574792FC7AACAC38FE7714FED213BE@PDSMSX501.ccr.corp.intel.com> <20091201021459.43d2142a@infradead.org> <8FED46E8A9CA574792FC7AACAC38FE7714FF5709D9@PDSMSX501.ccr.corp.intel.com>
-In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7714FF5709D9@PDSMSX501.ccr.corp.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091203145825.GA26651@n2100.arm.linux.org.uk>
+X-Cookie: When among apes, one must play the ape.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03/2009 07:03 AM, Ma, Ling wrote:
->> a key question is.. how much more memory do you have free due to -Os?
->> (because memory is cache is performance on a system level as well)
-> The kernel code size from Os is 12M, that from O2 is 14M.
->> and how much less icache pressure is there?
-> From perf stat report, cache reference(unified cache) from O2 is almost the same with Os.
+On Thu, Dec 03, 2009 at 02:58:25PM +0000, Russell King - ARM Linux wrote:
+> On Thu, Dec 03, 2009 at 01:22:41PM +0000, Mark Brown wrote:
 
-The icache pressure was substantially higher (by ~10%) in the reports
-that I saw.
+> > without power control).  This goes back to the thing about using
+> > regulator_get_exclusive(), the message given was that the MMC drivers
+> > really needed to be able to guarantee that the power would be removed
+> > when that was requested.
 
-	-hpa
+> If you take some cards through a series of steps and they stop responding,
+> it's normally because you've caused their internal state machine to
+> transition to "invalid" mode.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> Further commands are ignored.  The only recovery is to power cycle them.
 
+I assume that this is something it's desirable to be able to do in the
+face of poor hardware rather than something that the Linux MMC stack is
+actively using in normal operation (modulo issues with the general
+quality of implementation of MMC hardware)?
