@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZLCNYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbZLCNaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbZLCNYY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 08:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbZLCNYW
+	id S1754170AbZLCNaP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 08:30:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZLCNaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 08:24:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:32935 "EHLO hera.kernel.org"
+	Thu, 3 Dec 2009 08:30:14 -0500
+Received: from flmx07.ccur.com ([12.192.68.12]:53853 "EHLO flmx07.ccur.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754298AbZLCNYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 08:24:20 -0500
-Date: Thu, 3 Dec 2009 13:23:40 GMT
-From: tip-bot for Xiaotian Feng <dfeng@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, tglx@linutronix.de, dfeng@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, tglx@linutronix.de, dfeng@redhat.com, mingo@elte.hu
-In-Reply-To: <1259838400-23833-1-git-send-email-dfeng@redhat.com>
-References: <1259838400-23833-1-git-send-email-dfeng@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/reboot] x86/reboot: Add pci_dev_put in reboot_fixup_32.c for consistency
-Message-ID: <tip-57fea8f7ab67ef42b7f84999e49e47f8717a2d5b@git.kernel.org>
-Git-Commit-ID: 57fea8f7ab67ef42b7f84999e49e47f8717a2d5b
-X-Mailer: tip-git-log-daemon
+	id S1752134AbZLCNaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 08:30:13 -0500
+Message-ID: <4B17BD6D.1070000@ccur.com>
+Date: Thu, 3 Dec 2009 07:30:21 -0600
+From: John Blackwood <john.blackwood@ccur.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Setting /proc/irq/[n]/smp_affinity failure on 8
+ cpu systems
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  57fea8f7ab67ef42b7f84999e49e47f8717a2d5b
-Gitweb:     http://git.kernel.org/tip/57fea8f7ab67ef42b7f84999e49e47f8717a2d5b
-Author:     Xiaotian Feng <dfeng@redhat.com>
-AuthorDate: Thu, 3 Dec 2009 19:06:40 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 3 Dec 2009 12:17:55 +0100
+ > On Wed, 2009-12-02 at 08:19 -0800, John Blackwood wrote:
+ > > > I would like to mention an irq set affinity issue occurs on an
+ > > > older Dell PowerEdge 6650 system:
+ > > >     - 8 cpus (4 are hyper-threaded),
+ > > >     - uses the struct apic 'apic_default' support
+ > > >     - 32 bit (x86) kernel
+ > > >
+ > > > This issue is that once you change the irq smp_affinity of an irq
+ > > > to be less than all cpus in the system, you can never change really
+ > > > the
+ > > > irq smp_affinity back to be all cpus in the system (0xff) again,
+ > > > even though no error status is returned on the "/bin/echo ff >
+ > > > /proc/irq/[n]/smp_affinity" operation.
+ > > >
+ > > > This is due to that fact that BAD_APICID has the same value as
+ > > > all cpus (0xff) on 32bit kernels, and thus the value returned from
+ > > > set_desc_affinity() via the cpu_mask_to_apicid_and() function is
+ > > > treated
+ > > > as a failure in set_ioapic_affinity_irq_desc(), and no affinity
+ > > > changes
+ > > > are made.
+ > > >
+ > > > It seems like changing the BAD_APICID value from 0xFF to 0xFFFF for
+ > > > CONFIG_X86_32 might be one possible solution, and it seems to function
+ > > > properly for this Dell PowerEdge 6650 system.
+ >
+ > John, Thanks for the root cause and analysis. As you noticed, 0xff is a
+ > valid logical apicid. Similarly 0xffff is a valid logical x2apic cluster
+ > id. So while your patch fixes your issue, it doesn't completely fix the
+ > issue. Can you please check if the appended patch works and ack if it
+ > passes your test?
+ >
 
-x86/reboot: Add pci_dev_put in reboot_fixup_32.c for consistency
+Hi Suresh,
 
-pci_get_device will increase the ref count of found device.
-Although we're going to reset soon, we should use pci_dev_put
-to decrease the ref count for consistency.
+Yes, your patch works on the Dell PowerEdge 6650 system.
 
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <1259838400-23833-1-git-send-email-dfeng@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/reboot_fixups_32.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Thanks for your help and quick reply.
 
-diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
-index 61a8377..201eab6 100644
---- a/arch/x86/kernel/reboot_fixups_32.c
-+++ b/arch/x86/kernel/reboot_fixups_32.c
-@@ -80,6 +80,7 @@ void mach_reboot_fixups(void)
- 			continue;
- 
- 		cur->reboot_fixup(dev);
-+		pci_dev_put(dev);
- 	}
- }
- 
