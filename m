@@ -1,120 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbZLCTOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbZLCTOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbZLCTOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 14:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbZLCTOL
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756729AbZLCTOL (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 3 Dec 2009 14:14:11 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:62352 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756699AbZLCTOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702AbZLCTOJ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 3 Dec 2009 14:14:09 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linux-kernel@vger.kernel.org
-Subject: What's in asm-generic.git
-Date: Thu, 3 Dec 2009 19:14:08 +0000
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-arch@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>,
-       Chen Liqin <liqin.chen@sunplusct.com>
+Received: from mail-vw0-f192.google.com ([209.85.212.192]:48406 "EHLO
+	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756697AbZLCTOI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 14:14:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=F5AA0Xju1fSfnZqsR13GMlJNXcYgLl0gdIJsaVjMPF9PgLkkFWSPHQ8Lv1C8qrILD9
+         ZtBZE0sATY/+DsttiFdQieWC76mec05y8sd1b65kO1BPj4IS1MWHZyXlTmdj19wShEqR
+         hzslWp/zvQgGLMi5MQZPfiTrvXVoQrY4IbBEA=
+Message-ID: <4B180E04.5030405@garzik.org>
+Date: Thu, 03 Dec 2009 14:14:12 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: What's in libata-dev.git?
+References: <20091203075653.GA30612@havoc.gtf.org> <200912031647.26342.bzolnier@gmail.com>
+In-Reply-To: <200912031647.26342.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912031914.08975.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX184L/vDhOfrrGtnZkXdF96hdLl0blxtxsXIEIi
- +uQHN+PX82uPOwAen82IHvbasjZGUApcT+fHZSDRJe8LQKiCt4
- VN3+8J+X/E4LcdTaWuPxg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the contents of the "next" branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic.git,
-as currently found in linux-next.
+On 12/03/2009 10:47 AM, Bartlomiej Zolnierkiewicz wrote:
+> ( Jeff, you probably would want to take ide-pci-generic fix to your tree
+>    as libata-dev tree currently breaks build for IDE tree. )
 
-Only two files are touched, most of the changes are bugfixes
-to the lib/checksum.c file that I introduced with the original
-asm-generic merge.
+I didn't know that.
 
-If anything is missing here, please tell me.
+URL or search string?
 
-Diffstat:
+	Jeff
 
- include/asm-generic/unistd.h |    4 ++--
- lib/checksum.c               |   14 ++++++++------
- 2 files changed, 10 insertions(+), 8 deletions(-)
 
-Full log:
 
-commit 34b2fb828b63aa1178313ed0478955636dcb49be
-Author: Chen Liqin <liqin.chen@sunplusct.com>
-Date:   Mon Oct 26 11:09:29 2009 +0800
-
-    asm-generic: Fix typo in asm-generic/unistd.h.
-    
-    Fixed __NR_ftruncate and __NR_ftruncate64 define in asm-generic/unistd.h.
-    
-    Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
-    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
- include/asm-generic/unistd.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-commit 0a5549ed163520787f76b7515dfe9d9aa1c7ae37
-Author: Arnd Bergmann <arnd@arndb.de>
-Date:   Tue Jun 23 22:52:51 2009 +0200
-
-    lib/checksum: fix one more thinko
-    
-    When do_csum gets unaligned data, we really need to treat
-    the first byte as an even byte, not an odd byte, because
-    we swap the two halves later.
-    
-    Found by Mike's checksum-selftest module.
-    
-    Reported-by: Mike Frysinger <vapier.adi@gmail.com>
-    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
- lib/checksum.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-commit 20c1f641bb80fb272dec959a5caabed92e5a422e
-Author: Arnd Bergmann <arnd@arndb.de>
-Date:   Tue Jun 23 21:37:26 2009 +0200
-
-    lib/checksum.c: make do_csum optional
-    
-    Mike Frysinger suggested that do_csum should be optional
-    so that an architecture can use the generic checksum code
-    but still provide an optimized fast-path for the most
-    critical function.
-    
-    This can mean an implementation using inline assembly,
-    or in case of Alpha one using 64-bit arithmetic in C.
-    
-    Cc: Mike Frysinger <vapier@gentoo.org>
-    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
- lib/checksum.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-commit c44ba9f6684946b156335da6a6d55f0b8cf7cb72
-Author: Arnd Bergmann <arnd@arndb.de>
-Date:   Tue Jun 23 21:22:58 2009 +0200
-
-    lib/checksum.c: use 32-bit arithmetic consistently
-    
-    The use of 'unsigned long' variables in the 32-bit part of do_csum()
-    is confusing at best, and potentially broken for long input on 64-bit
-    machines.
-    
-    This changes the code to use 'unsigned int' instead, which makes
-    the code behave in the same (correct) way on both 32 and 64 bit
-    machines.
-    
-    Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
-    Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
- lib/checksum.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
