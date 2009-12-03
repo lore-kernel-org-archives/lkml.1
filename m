@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZLCK6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbZLCLEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990AbZLCK6n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 05:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbZLCK6m
+	id S1756001AbZLCLEL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 06:04:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbZLCLEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 05:58:42 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:37069 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755976AbZLCK6l (ORCPT
+	Thu, 3 Dec 2009 06:04:10 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:23860 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753482AbZLCLEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 05:58:41 -0500
-To: Jeff Layton <jlayton@redhat.com>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jamie@shareable.org, pavel@ucw.cz, miklos@szeredi.hu,
-       viro@ZenIV.linux.org.uk, duaneg@dghda.com, ebiederm@xmission.com
-In-reply-to: <1259783983-26884-3-git-send-email-jlayton@redhat.com> (message
-	from Jeff Layton on Wed, 2 Dec 2009 14:59:43 -0500)
-Subject: Re: [PATCH 2/2] vfs: force reval on dentry of bind mounted files on FS_REVAL_DOT filesystems
-References: <1259783983-26884-1-git-send-email-jlayton@redhat.com> <1259783983-26884-3-git-send-email-jlayton@redhat.com>
-Message-Id: <E1NG9OV-0002g5-3D@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 03 Dec 2009 11:58:43 +0100
+	Thu, 3 Dec 2009 06:04:09 -0500
+Date: Thu, 3 Dec 2009 13:03:32 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Grazvydas Ignotas <notasas@gmail.com>
+Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       ext Anton Vorontsov <avorontsov@ru.mvista.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+ charger
+Message-ID: <20091203110332.GO1361@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
+ <20091202173321.GA23738@nokia.com>
+ <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
+ <20091202204946.GB25682@nokia.com>
+ <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
+ <20091202215442.GA30658@oksana.dev.rtsoft.ru>
+ <20091202223156.GA14921@nokia.com>
+ <20091202225922.GA15568@oksana.dev.rtsoft.ru>
+ <20091203083958.GB31110@nokia.com>
+ <6ed0b2680912030255o57d7c46qb5ae1cfcb82e9976@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <6ed0b2680912030255o57d7c46qb5ae1cfcb82e9976@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 03 Dec 2009 11:03:50.0409 (UTC) FILETIME=[4B395790:01CA7408]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  2 Dec 2009, Jeff Layton wrote:
-> In the case of a bind mounted file, the path walking code will assume
-> that the cached dentry that was bind mounted is valid. This is a problem
-> problem for NFSv4 in a way that's similar to LAST_BIND symlinks.
-> 
-> Fix this by revalidating the dentry if FS_FOLLOW_DOT is set and
-> __follow_mount returns true.
-> 
-> Note that in the non-open codepath, we cannot return an error to the
-> lookup if the revalidation fails. Doing so will leave a bind mount in
-> a state such that we can't unmount it. In that case we'll just have to
-> settle for d_invalidating it (which should mostly turn out to be a
-> d_drop in this case) and returning success.
+Hi,
 
-The only worry I have is that this adds an extra branch in a very hot
-codepath (do_lookup).  An error can't be returned, as you note, and
-for bind mounted directories d_invalidate() will not succeed: the
-directory is busy, it's referenced by the mount.  So basically the
-only thing this does is working around the NFSv4 issue.  But Trond has
-a proper solution to that, and a temporary solution could be added to
-do_filp_open() rather than burdening do_lookup() with it, no?
+On Thu, Dec 03, 2009 at 11:55:12AM +0100, ext Grazvydas Ignotas wrote:
+>TPS65950 is catalog part of TWL4030 and has documentation here:
+>http://focus.ti.com/docs/prod/folders/print/tps65950.html#technicaldocuments
+>
+>It says that it is software's responsibility to detect the device and
+>set the right charge mode/current..
 
-Thanks,
-Miklos
+yes, the BCI (or bq24xxx) will never be able to know which configuration 
+we were enumerated with...
 
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/namei.c |   11 ++++++++++-
->  1 files changed, 10 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/namei.c b/fs/namei.c
-> index 339789e..0d55b6f 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -851,7 +851,13 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
->  done:
->  	path->mnt = mnt;
->  	path->dentry = dentry;
-> -	__follow_mount(path);
-> +
-> +	/*
-> +	 * cannot return the error returned by force_reval_path as that can
-> +	 * make it impossible to unmount a bind mounted dentry if it's stale.
-> +	 */
-> +	if (__follow_mount(path))
-> +		force_reval_path(path, nd);
->  	return 0;
->  
->  need_lookup:
-> @@ -1840,6 +1846,9 @@ do_last:
->  		error = -ELOOP;
->  		if (flag & O_NOFOLLOW)
->  			goto exit_dput;
-> +		error = force_reval_path(&path, &nd);
-> +		if (error)
-> +			goto exit_dput;
->  	}
->  
->  	error = -ENOENT;
-> -- 
-> 1.5.5.6
-> 
-> 
+>> yes, that'll work. But how about start charging always with 100mA and if
+>> userland sees that we were enumerated it reconfigures charging as necessary.
+>> But this would mean that we have the EM daemon started up just after the
+>> driver itself is loaded to avoid the problem with 100ms no enumeration. How
+>> does that sound ? Do we start making some writeable power_supply sysfs ???
+>
+>There are also USB chargers that don't enumerate and have D+ and D-
+>shorted with a resistor (see "dedicated charger port" in the charging
+>spec), how do we support those?
+
+dedicated chargers are simple. You kick the charger detection according 
+to USB BC 1.x and if it returns true, you configure high current 
+charging. Host/Hub chargers are also simple, after kicking charger 
+detection, you enable Data pullups (e.g. SOFTCONN bit in musb's power 
+register) and see if the host sends a setup packet...
+
+the complicated part is passing the information of which configuration 
+you were enumerated with to the charger chip.
+
+-- 
+balbi
