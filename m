@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbZLCP4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbZLCQD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753458AbZLCP4L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 10:56:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZLCP4K
+	id S1753892AbZLCQD0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 11:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZLCQDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 10:56:10 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:61982 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751518AbZLCP4J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 10:56:09 -0500
-Subject: Re: trace/events: DECLARE vs DEFINE semantic
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, wcohen@redhat.com, fweisbec@gmail.com,
-       tglx@linutronix.de, jbaron@redhat.com,
-       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <4B17D9D1.7010402@redhat.com>
-References: <20091202144334.GA30359@elte.hu>
-	 <1259765735.12870.42.camel@gandalf.stny.rr.com>
-	 <20091202162715.GB9710@Krystal>
-	 <1259773888.12870.61.camel@gandalf.stny.rr.com>
-	 <20091202180633.GF9710@Krystal>
-	 <1259777987.12870.70.camel@gandalf.stny.rr.com>
-	 <20091202190135.GA23316@Krystal>
-	 <1259781578.12870.78.camel@gandalf.stny.rr.com>
-	 <4B16EC06.6010706@redhat.com>
-	 <1259794005.12870.102.camel@gandalf.stny.rr.com>
-	 <20091202231019.GB14770@Krystal>  <4B1737E2.6010502@redhat.com>
-	 <1259813228.12870.108.camel@gandalf.stny.rr.com>
-	 <4B17C25A.8090703@redhat.com>
-	 <1259848493.12870.114.camel@gandalf.stny.rr.com>
-	 <4B17D9D1.7010402@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 03 Dec 2009 10:56:13 -0500
-Message-Id: <1259855773.12870.137.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 11:03:25 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:54800 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751053AbZLCQDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 11:03:24 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@wilsonet.com>, Jarod Wilson <jarod@redhat.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+References: <4B15852D.4050505@redhat.com>
+	<20091202093803.GA8656@core.coreip.homeip.net>
+	<4B16614A.3000208@redhat.com>
+	<20091202171059.GC17839@core.coreip.homeip.net>
+	<9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
+	<4B16BE6A.7000601@redhat.com>
+	<20091202195634.GB22689@core.coreip.homeip.net>
+	<2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
+	<20091202201404.GD22689@core.coreip.homeip.net>
+	<4B16CCD7.20601@redhat.com>
+	<20091202205323.GF22689@core.coreip.homeip.net>
+	<4B16D87F.7080701@redhat.com>
+Date: Thu, 03 Dec 2009 17:03:16 +0100
+In-Reply-To: <4B16D87F.7080701@redhat.com> (Mauro Carvalho Chehab's message of
+	"Wed, 02 Dec 2009 19:13:35 -0200")
+Message-ID: <87tyw8ujsr.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-03 at 10:31 -0500, Masami Hiramatsu wrote:
-> Steven Rostedt wrote:
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-> >> Would you mean putting those headers in sub-system's directory?
-> >> (e.g. fs/ext4/)
-> >> In that case, a problem will happen when user want to hook those
-> >> tracepoint from their module, because it is hard to find those
-> >> local headers.
-> > 
-> > Why? Modules usually do have their own headers in their sub system.
-> 
-> Module's local headers usually uses only from itself. Other modules
-> may not touch it. However, AFAIK, event definitions must be referred
-> by event consumer which is another module. IOW, those local headers
-> will not be included in kernel-headers/kernel-devel package :-(
+> Dmitry Torokhov wrote:
+>
+>>>>> On Dec 2, 2009, at 2:56 PM, Dmitry Torokhov wrote:
+>>>>>
+>>>>>> Now I understand that if 2 remotes send completely identical
+>>>>>> signals we won't be able to separete them, but in cases when we
+>>>>>> can I think we should.
+>>
+>> They are the same key events (Lets's say KEY_PLAY) but one is
+>> supposed to affect CD player while another DVD player
+>> application. Evdev will not be able to distinguish them but if we had
+>> 2 separate devices then applications could read from the one thet
+>> user assigned to them.
+>
+> This is clear, but the point is that the two distinguish scancodes can
+> (and, in practice, will) be generated by the same IR. For example, my
+> Satellite IR produces two different sets of codes. if you press <SAT>,
+> all keys you press after that will have the "sat" address. If you
+> press <TV>, they'll get a different address.
 
-I'm a little confused. Who is the event consumer? The trace point user?
-The one that hooks into the tracepoint?
+The interesting thing is that input.h defines KEY_TV, KEY_PC, KEY_SAT,
+KEY_CD, KEY_TAPE etc., but no corresponding scan codes will ever be sent
+by any remote (ok, I'm stretching it a bit).  Instead, a multifunction
+remote (or two distinct remotes) would send different scan codes[1],
+which should be mapped to KEY_PLAYCD and KEY_PLAYDVD for example.
+Btw. the former is already defined, besides the generic KEY_PLAY.
 
--- Steve
+Even if all this worked, user space would need integration with
+hal/devicekit to open the new input devices appearing on the fly (if
+it's initiated by the arrival of a scan code belonging to some new
+protocol), and also be able to decide whether the new event source is
+for it or not.
 
+Given that commodity home appliances manage not to be confused by
+multiple or multifunction remotes, decent software should be able to do
+so as well.
 
+[1] scan codes in the broadest possible sense, containing vendor,
+address and whatever, and only treating the case which is possible to
+handle in principle.
+-- 
+Regards,
+Feri.
