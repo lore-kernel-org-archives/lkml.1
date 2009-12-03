@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbZLCPZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZLCPUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756291AbZLCPZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 10:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbZLCPZl
+	id S1756220AbZLCPUw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 10:20:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbZLCPUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 10:25:41 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:5247 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbZLCPZk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 10:25:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=jsNI1MfAzqJHNwUzZvqz3fOWmz4gcpwZgnFZLJtZuLo7GcVz7lyHQ0F6SCiNup+H/O
-         TyKFqhq55/x6/L14c6K+m6IKwEGelCquCkNt/v8f5TsdwTRJqQELhDaFnC7YkViEnTIo
-         rBs6PY9/jq3LRTLlLIf3e+2F8ffjvFO7vprs4=
-MIME-Version: 1.0
-In-Reply-To: <4B177878.2090002@redhat.com>
-References: <20091201075744.4456.48125.sendpatchset@localhost.localdomain>
-	 <20091201154412.4002a0d8@linux.intel.com>
-	 <4B177878.2090002@redhat.com>
-Date: Thu, 3 Dec 2009 08:18:11 -0700
-X-Google-Sender-Auth: 9d52d35b69c950a4
-Message-ID: <fd3b2d10912030718q30176616r1ac3b71a4399fc0b@mail.gmail.com>
-Subject: Re: [Patch] tty: move a definition out of switch block
-From: Joe Peterson <joe@skyrush.com>
-To: Cong Wang <amwang@redhat.com>
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 3 Dec 2009 10:20:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15700 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756089AbZLCPUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 10:20:50 -0500
+Date: Thu, 3 Dec 2009 10:20:21 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jamie@shareable.org, pavel@ucw.cz, miklos@szeredi.hu,
+       viro@ZenIV.linux.org.uk, duaneg@dghda.com, ebiederm@xmission.com,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: [PATCH 2/2] vfs: force reval on dentry of bind mounted files on
+ FS_REVAL_DOT filesystems
+Message-ID: <20091203102021.0b04a6eb@barsoom.rdu.redhat.com>
+In-Reply-To: <E1NG9OV-0002g5-3D@pomaz-ex.szeredi.hu>
+References: <1259783983-26884-1-git-send-email-jlayton@redhat.com>
+	<1259783983-26884-3-git-send-email-jlayton@redhat.com>
+	<E1NG9OV-0002g5-3D@pomaz-ex.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 3, 2009 at 01:36, Cong Wang <amwang@redhat.com> wrote:
-> Generally putting variables local in the local scope is fine, but
-> not for 'switch' block, to be more precisely, not for the case
-> where putting local variables between 'switch' and its _first_
-> label, IMO.
+On Thu, 03 Dec 2009 11:58:43 +0100
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-It is fine to declare variables at the start of a switch statement.
-What *is* incorrect is either initializing such declared variables
-(they won't get initialized) or declaring variables *after* a case
-label (throws a compile error).
+> On Wed,  2 Dec 2009, Jeff Layton wrote:
+> > In the case of a bind mounted file, the path walking code will assume
+> > that the cached dentry that was bind mounted is valid. This is a problem
+> > problem for NFSv4 in a way that's similar to LAST_BIND symlinks.
+> > 
+> > Fix this by revalidating the dentry if FS_FOLLOW_DOT is set and
+> > __follow_mount returns true.
+> > 
+> > Note that in the non-open codepath, we cannot return an error to the
+> > lookup if the revalidation fails. Doing so will leave a bind mount in
+> > a state such that we can't unmount it. In that case we'll just have to
+> > settle for d_invalidating it (which should mostly turn out to be a
+> > d_drop in this case) and returning success.
+> 
+> The only worry I have is that this adds an extra branch in a very hot
+> codepath (do_lookup).  An error can't be returned, as you note, and
+> for bind mounted directories d_invalidate() will not succeed: the
+> directory is busy, it's referenced by the mount.  So basically the
+> only thing this does is working around the NFSv4 issue.  But Trond has
+> a proper solution to that, and a temporary solution could be added to
+> do_filp_open() rather than burdening do_lookup() with it, no?
+> 
 
-> It can lead to misunderstanding easily, since 'switch'
-> jumps to its first label at a first glance. I know in this case
-> the code is _not_ wrong, but again, it's not good for reading.
+(re-adding Trond. I forgot to cc him on this latest set)
 
-I would think the declaration inside the start of the switch block
-would just indicate to the reader that the variable is local to the
-switch block scope.
+Self-NAK on this patch...
 
-> Also, there's no conflicts if we put it out of 'switch' block.
+That's my main worry too, and sadly it doesn't seem to be unfounded.
+This patch adds a lot of extra d_revalidate calls here. I think it's
+going to be too expensive to do this.
 
-But then the scope of these variables becomes larger than it need be.
+Unfortunately, adding the code to do_filp_open alone doesn't really
+help. The path walking code in there is just for the O_CREAT case. If
+we're not creating the file, we call into path_lookup_open which
+eventually calls do_lookup.
 
--Joe
+What we probably need to do is only make it d_revalidate when it looks
+like the final dentry is bind mounted. I'm not sure how to tell that
+though and even if I could, I'm still leery of adding this to such a
+hot codepath.
+
+The only problem I've identified that this fixes is with file bind
+mounts and I don't get the impression they're that common. Maybe the
+best thing is to just fix the LAST_BIND symlink case for now and wait
+for Trond or Al's overhaul of this code.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
