@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZLCWHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZLCWI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZLCWHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 17:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZLCWHS
+	id S1753824AbZLCWI7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 17:08:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZLCWI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 17:07:18 -0500
-Received: from trinity.fluff.org ([89.16.178.74]:58612 "EHLO trinity.fluff.org"
+	Thu, 3 Dec 2009 17:08:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55925 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751376AbZLCWHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 17:07:16 -0500
-Date: Thu, 3 Dec 2009 22:07:18 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>,
-       Russell King <linux@arm.linux.org.uk>,
-       Ryan Mallon <ryan@bluewatersys.com>,
-       linux-arm-kernel@lists.infradead.org, Ben Dooks <ben-linux@fluff.org>,
-       akpm@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
-       Ramax Lo <ramaxlo@gmail.com>
-Subject: Re: [PATCH 15/38] move s3c_adc_remove to .devexit.text
-Message-ID: <20091203220718.GS4808@trinity.fluff.org>
-References: <1259096853-18909-6-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-7-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-8-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-9-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-10-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-11-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-12-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-13-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-14-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-15-git-send-email-u.kleine-koenig@pengutronix.de>
+	id S1752404AbZLCWI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 17:08:58 -0500
+Message-ID: <4B1836A6.405@redhat.com>
+Date: Fri, 04 Dec 2009 08:07:34 +1000
+From: Peter Hutterer <peter.hutterer@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1259096853-18909-15-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+To: Peter Korsgaard <jacmet@sunsite.dk>
+CC: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
+References: <20091203050810.GA26595@barra.bne.redhat.com> <87zl60s17o.fsf@macbook.be.48ers.dk>
+In-Reply-To: <87zl60s17o.fsf@macbook.be.48ers.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 24, 2009 at 10:07:10PM +0100, Uwe Kleine-König wrote:
-> The function s3c_adc_remove is used only wrapped by __devexit_p so define
-> it using __devexit.
+On 03/12/09 22:15, Peter Korsgaard wrote:
+>>>>>> "Peter" == Peter Hutterer<peter.hutterer@redhat.com>  writes:
+>
+>   Peter>  These touchscreens are mounted onto HP TouchSmart and the Dell
+>   Peter>  Studio One 19. Without a quirk they report a wrong button set
+>   Peter>  and the x/y coordinates through ABS_Z/ABS_RX, confusing the
+>   Peter>  higher levels (most notably X.Org's evdev driver).
+>
+> What exactly does this fix? I've been using NW touchscreens for a while
+> and don't recall any issues (admittedly only used it with evtouch).
 
-Shall I put these into my tree?
- 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Acked-By: Ben Dooks <ben@simtec.co.uk>
-> Cc: Ramax Lo <ramaxlo@gmail.com>
-> Cc: Nelson Castillo <arhuaco@freaks-unidos.net>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: Ben Dooks <ben-linux@fluff.org>
-> Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> Cc: Ryan Mallon <ryan@bluewatersys.com>
-> Cc: linux-arm-kernel@lists.infradead.org
-> ---
->  arch/arm/plat-s3c24xx/adc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/arm/plat-s3c24xx/adc.c b/arch/arm/plat-s3c24xx/adc.c
-> index df47322..ce47627 100644
-> --- a/arch/arm/plat-s3c24xx/adc.c
-> +++ b/arch/arm/plat-s3c24xx/adc.c
-> @@ -365,7 +365,7 @@ static int s3c_adc_probe(struct platform_device *pdev)
->  	return ret;
->  }
->  
-> -static int s3c_adc_remove(struct platform_device *pdev)
-> +static int __devexit s3c_adc_remove(struct platform_device *pdev)
->  {
->  	struct adc_device *adc = platform_get_drvdata(pdev);
->  
-> -- 
-> 1.6.5.2
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+evtouch has the following code:
 
--- 
--- 
-Ben
+         if ( (ev->code == ABS_X) || (ev->code == ABS_Z) ) {
+                 priv->raw_x = ev->value;
+                 pos_changed = 1;
+         }
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+         if ( (ev->code == ABS_Y) || (ev->code == ABS_RX) ) {
+                 priv->raw_y = ev->value;
+                 pos_changed = 1;
+         }
 
+it's a hack in userspace that works around wrong event reporting. So 
+yes, it works if you're using evtouch but if you want to use any other 
+driver that driver needs the same hack. treating Z as X and RX as Y 
+doesn't work too well for a generic driver such as evdev, which has to 
+deal with devices where RX is a valid axis.
+
+Cheers,
+   Peter
