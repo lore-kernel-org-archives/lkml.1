@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbZLCXhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbZLCXhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755055AbZLCXhF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 18:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZLCXg6
+	id S1755123AbZLCXhL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 18:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbZLCXhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 18:36:58 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:36115 "EHLO
+	Thu, 3 Dec 2009 18:37:10 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:36101 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754446AbZLCXgU (ORCPT
+	with ESMTP id S1754450AbZLCXgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 18:36:20 -0500
+	Thu, 3 Dec 2009 18:36:21 -0500
 From: Sage Weil <sage@newdream.net>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 22/24] ceph: ioctls
-Date: Thu,  3 Dec 2009 15:41:29 -0800
-Message-Id: <1259883691-1042-23-git-send-email-sage@newdream.net>
+Subject: [PATCH 23/24] ceph: debugfs
+Date: Thu,  3 Dec 2009 15:41:30 -0800
+Message-Id: <1259883691-1042-24-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.6.5
-In-Reply-To: <1259883691-1042-22-git-send-email-sage@newdream.net>
+In-Reply-To: <1259883691-1042-23-git-send-email-sage@newdream.net>
 References: <1259883691-1042-1-git-send-email-sage@newdream.net>
  <1259883691-1042-2-git-send-email-sage@newdream.net>
  <1259883691-1042-3-git-send-email-sage@newdream.net>
@@ -40,247 +40,477 @@ References: <1259883691-1042-1-git-send-email-sage@newdream.net>
  <1259883691-1042-20-git-send-email-sage@newdream.net>
  <1259883691-1042-21-git-send-email-sage@newdream.net>
  <1259883691-1042-22-git-send-email-sage@newdream.net>
+ <1259883691-1042-23-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few Ceph ioctls for getting and setting file layout (striping)
-parameters, and learning the identity and network address of the OSD a
-given region of a file is stored on.
+Basic state information is available via /sys/kernel/debug/ceph,
+including instances of the client, current monitor, mds and osd
+maps, and outstanding service requests.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- Documentation/ioctl/ioctl-number.txt |    1 +
- fs/ceph/ioctl.c                      |  160 ++++++++++++++++++++++++++++++++++
- fs/ceph/ioctl.h                      |   40 +++++++++
- 3 files changed, 201 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/ioctl.c
- create mode 100644 fs/ceph/ioctl.h
+ fs/ceph/debugfs.c |  450 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 450 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/debugfs.c
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index 9473749..91cfdd7 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -182,6 +182,7 @@ Code	Seq#	Include File		Comments
- 					<http://www.proximity.com.au/~brian/winradio/>
- 0x90	00	drivers/cdrom/sbpcd.h
- 0x93	60-7F	linux/auto_fs.h
-+0x97    00-7F   fs/ceph/ioctl.h         Ceph file system
- 0x99	00-0F				537-Addinboard driver
- 					<mailto:buk@buks.ipn.de>
- 0xA0	all	linux/sdp/sdp.h		Industrial Device Project
-diff --git a/fs/ceph/ioctl.c b/fs/ceph/ioctl.c
+diff --git a/fs/ceph/debugfs.c b/fs/ceph/debugfs.c
 new file mode 100644
-index 0000000..8a5bcae
+index 0000000..b90fc3e
 --- /dev/null
-+++ b/fs/ceph/ioctl.c
-@@ -0,0 +1,160 @@
-+#include <linux/in.h>
-+
-+#include "ioctl.h"
-+#include "super.h"
++++ b/fs/ceph/debugfs.c
+@@ -0,0 +1,450 @@
 +#include "ceph_debug.h"
 +
++#include <linux/module.h>
++#include <linux/ctype.h>
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
++
++#include "super.h"
++#include "mds_client.h"
++#include "mon_client.h"
++#include "auth.h"
++
++#ifdef CONFIG_DEBUG_FS
 +
 +/*
-+ * ioctls
++ * Implement /sys/kernel/debug/ceph fun
++ *
++ * /sys/kernel/debug/ceph/client*  - an instance of the ceph client
++ *      .../osdmap      - current osdmap
++ *      .../mdsmap      - current mdsmap
++ *      .../monmap      - current monmap
++ *      .../osdc        - active osd requests
++ *      .../mdsc        - active mds requests
++ *      .../monc        - mon client state
++ *      .../dentry_lru  - dump contents of dentry lru
++ *      .../caps        - expose cap (reservation) stats
 + */
 +
-+/*
-+ * get and set the file layout
-+ */
-+static long ceph_ioctl_get_layout(struct file *file, void __user *arg)
++static struct dentry *ceph_debugfs_dir;
++
++static int monmap_show(struct seq_file *s, void *p)
 +{
-+	struct ceph_inode_info *ci = ceph_inode(file->f_dentry->d_inode);
-+	struct ceph_ioctl_layout l;
-+	int err;
++	int i;
++	struct ceph_client *client = s->private;
 +
-+	err = ceph_do_getattr(file->f_dentry->d_inode, CEPH_STAT_CAP_LAYOUT);
-+	if (!err) {
-+		l.stripe_unit = ceph_file_layout_su(ci->i_layout);
-+		l.stripe_count = ceph_file_layout_stripe_count(ci->i_layout);
-+		l.object_size = ceph_file_layout_object_size(ci->i_layout);
-+		l.data_pool = le32_to_cpu(ci->i_layout.fl_pg_pool);
-+		l.preferred_osd =
-+			(s32)le32_to_cpu(ci->i_layout.fl_pg_preferred);
-+		if (copy_to_user(arg, &l, sizeof(l)))
-+			return -EFAULT;
++	if (client->monc.monmap == NULL)
++		return 0;
++
++	seq_printf(s, "epoch %d\n", client->monc.monmap->epoch);
++	for (i = 0; i < client->monc.monmap->num_mon; i++) {
++		struct ceph_entity_inst *inst =
++			&client->monc.monmap->mon_inst[i];
++
++		seq_printf(s, "\t%s%lld\t%s\n",
++			   ENTITY_NAME(inst->name),
++			   pr_addr(&inst->addr.in_addr));
 +	}
-+
-+	return err;
++	return 0;
 +}
 +
-+static long ceph_ioctl_set_layout(struct file *file, void __user *arg)
++static int mdsmap_show(struct seq_file *s, void *p)
 +{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct inode *parent_inode = file->f_dentry->d_parent->d_inode;
-+	struct ceph_mds_client *mdsc = &ceph_sb_to_client(inode->i_sb)->mdsc;
-+	struct ceph_mds_request *req;
-+	struct ceph_ioctl_layout l;
-+	int err, i;
++	int i;
++	struct ceph_client *client = s->private;
 +
-+	/* copy and validate */
-+	if (copy_from_user(&l, arg, sizeof(l)))
-+		return -EFAULT;
++	if (client->mdsc.mdsmap == NULL)
++		return 0;
++	seq_printf(s, "epoch %d\n", client->mdsc.mdsmap->m_epoch);
++	seq_printf(s, "root %d\n", client->mdsc.mdsmap->m_root);
++	seq_printf(s, "session_timeout %d\n",
++		       client->mdsc.mdsmap->m_session_timeout);
++	seq_printf(s, "session_autoclose %d\n",
++		       client->mdsc.mdsmap->m_session_autoclose);
++	for (i = 0; i < client->mdsc.mdsmap->m_max_mds; i++) {
++		struct ceph_entity_addr *addr =
++			&client->mdsc.mdsmap->m_info[i].addr;
++		int state = client->mdsc.mdsmap->m_info[i].state;
 +
-+	if ((l.object_size & ~PAGE_MASK) ||
-+	    (l.stripe_unit & ~PAGE_MASK) ||
-+	    !l.stripe_unit ||
-+	    (l.object_size &&
-+	     (unsigned)l.object_size % (unsigned)l.stripe_unit))
-+		return -EINVAL;
-+
-+	/* make sure it's a valid data pool */
-+	if (l.data_pool > 0) {
-+		mutex_lock(&mdsc->mutex);
-+		err = -EINVAL;
-+		for (i = 0; i < mdsc->mdsmap->m_num_data_pg_pools; i++)
-+			if (mdsc->mdsmap->m_data_pg_pools[i] == l.data_pool) {
-+				err = 0;
-+				break;
-+			}
-+		mutex_unlock(&mdsc->mutex);
-+		if (err)
-+			return err;
++		seq_printf(s, "\tmds%d\t%s\t(%s)\n", i, pr_addr(&addr->in_addr),
++			       ceph_mds_state_name(state));
 +	}
-+
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_SETLAYOUT,
-+				       USE_AUTH_MDS);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+	req->r_inode = igrab(inode);
-+	req->r_inode_drop = CEPH_CAP_FILE_SHARED | CEPH_CAP_FILE_EXCL;
-+
-+	req->r_args.setlayout.layout.fl_stripe_unit =
-+		cpu_to_le32(l.stripe_unit);
-+	req->r_args.setlayout.layout.fl_stripe_count =
-+		cpu_to_le32(l.stripe_count);
-+	req->r_args.setlayout.layout.fl_object_size =
-+		cpu_to_le32(l.object_size);
-+	req->r_args.setlayout.layout.fl_pg_pool = cpu_to_le32(l.data_pool);
-+	req->r_args.setlayout.layout.fl_pg_preferred =
-+		cpu_to_le32(l.preferred_osd);
-+
-+	err = ceph_mdsc_do_request(mdsc, parent_inode, req);
-+	ceph_mdsc_put_request(req);
-+	return err;
++	return 0;
 +}
 +
-+/*
-+ * Return object name, size/offset information, and location (OSD
-+ * number, network address) for a given file offset.
-+ */
-+static long ceph_ioctl_get_dataloc(struct file *file, void __user *arg)
++static int osdmap_show(struct seq_file *s, void *p)
 +{
-+	struct ceph_ioctl_dataloc dl;
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct ceph_osd_client *osdc = &ceph_client(inode->i_sb)->osdc;
-+	u64 len = 1, olen;
-+	u64 tmp;
-+	struct ceph_object_layout ol;
-+	struct ceph_pg pgid;
++	int i;
++	struct ceph_client *client = s->private;
 +
-+	/* copy and validate */
-+	if (copy_from_user(&dl, arg, sizeof(dl)))
-+		return -EFAULT;
-+
-+	down_read(&osdc->map_sem);
-+	ceph_calc_file_object_mapping(&ci->i_layout, dl.file_offset, &len,
-+				      &dl.object_no, &dl.object_offset, &olen);
-+	dl.file_offset -= dl.object_offset;
-+	dl.object_size = ceph_file_layout_object_size(ci->i_layout);
-+	dl.block_size = ceph_file_layout_su(ci->i_layout);
-+
-+	/* block_offset = object_offset % block_size */
-+	tmp = dl.object_offset;
-+	dl.block_offset = do_div(tmp, dl.block_size);
-+
-+	snprintf(dl.object_name, sizeof(dl.object_name), "%llx.%08llx",
-+		 ceph_ino(inode), dl.object_no);
-+	ceph_calc_object_layout(&ol, dl.object_name, &ci->i_layout,
-+				osdc->osdmap);
-+
-+	pgid = ol.ol_pgid;
-+	dl.osd = ceph_calc_pg_primary(osdc->osdmap, pgid);
-+	if (dl.osd >= 0) {
-+		struct ceph_entity_addr *a =
-+			ceph_osd_addr(osdc->osdmap, dl.osd);
-+		if (a)
-+			memcpy(&dl.osd_addr, &a->in_addr, sizeof(dl.osd_addr));
-+	} else {
-+		memset(&dl.osd_addr, 0, sizeof(dl.osd_addr));
++	if (client->osdc.osdmap == NULL)
++		return 0;
++	seq_printf(s, "epoch %d\n", client->osdc.osdmap->epoch);
++	seq_printf(s, "flags%s%s\n",
++		   (client->osdc.osdmap->flags & CEPH_OSDMAP_NEARFULL) ?
++		   " NEARFULL" : "",
++		   (client->osdc.osdmap->flags & CEPH_OSDMAP_FULL) ?
++		   " FULL" : "");
++	for (i = 0; i < client->osdc.osdmap->num_pools; i++) {
++		struct ceph_pg_pool_info *pool =
++			&client->osdc.osdmap->pg_pool[i];
++		seq_printf(s, "pg_pool %d pg_num %d / %d, lpg_num %d / %d\n",
++			   i, pool->v.pg_num, pool->pg_num_mask,
++			   pool->v.lpg_num, pool->lpg_num_mask);
 +	}
-+	up_read(&osdc->map_sem);
++	for (i = 0; i < client->osdc.osdmap->max_osd; i++) {
++		struct ceph_entity_addr *addr =
++			&client->osdc.osdmap->osd_addr[i];
++		int state = client->osdc.osdmap->osd_state[i];
++		char sb[64];
 +
-+	/* send result back to user */
-+	if (copy_to_user(arg, &dl, sizeof(dl)))
-+		return -EFAULT;
++		seq_printf(s, "\tosd%d\t%s\t%3d%%\t(%s)\n",
++			   i, pr_addr(&addr->in_addr),
++			   ((client->osdc.osdmap->osd_weight[i]*100) >> 16),
++			   ceph_osdmap_state_str(sb, sizeof(sb), state));
++	}
++	return 0;
++}
++
++static int monc_show(struct seq_file *s, void *p)
++{
++	struct ceph_client *client = s->private;
++	struct ceph_mon_statfs_request *req;
++	u64 nexttid = 0;
++	int got;
++	struct ceph_mon_client *monc = &client->monc;
++
++	mutex_lock(&monc->mutex);
++
++	if (monc->have_mdsmap)
++		seq_printf(s, "have mdsmap %u\n", (unsigned)monc->have_mdsmap);
++	if (monc->have_osdmap)
++		seq_printf(s, "have osdmap %u\n", (unsigned)monc->have_osdmap);
++	if (monc->want_next_osdmap)
++		seq_printf(s, "want next osdmap\n");
++
++	while (nexttid < monc->last_tid) {
++		got = radix_tree_gang_lookup(&monc->statfs_request_tree,
++					     (void **)&req, nexttid, 1);
++		if (got == 0)
++			break;
++		nexttid = req->tid + 1;
++
++		seq_printf(s, "%lld statfs\n", req->tid);
++	}
++	mutex_unlock(&monc->mutex);
 +
 +	return 0;
 +}
 +
-+long ceph_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++static int mdsc_show(struct seq_file *s, void *p)
 +{
-+	dout("ioctl file %p cmd %u arg %lu\n", file, cmd, arg);
-+	switch (cmd) {
-+	case CEPH_IOC_GET_LAYOUT:
-+		return ceph_ioctl_get_layout(file, (void __user *)arg);
++	struct ceph_client *client = s->private;
++	struct ceph_mds_request *req;
++	u64 nexttid = 0;
++	int got;
++	struct ceph_mds_client *mdsc = &client->mdsc;
++	int pathlen;
++	u64 pathbase;
++	char *path;
 +
-+	case CEPH_IOC_SET_LAYOUT:
-+		return ceph_ioctl_set_layout(file, (void __user *)arg);
++	mutex_lock(&mdsc->mutex);
++	while (nexttid < mdsc->last_tid) {
++		got = radix_tree_gang_lookup(&mdsc->request_tree,
++					     (void **)&req, nexttid, 1);
++		if (got == 0)
++			break;
++		nexttid = req->r_tid + 1;
 +
-+	case CEPH_IOC_GET_DATALOC:
-+		return ceph_ioctl_get_dataloc(file, (void __user *)arg);
++		if (req->r_request)
++			seq_printf(s, "%lld\tmds%d\t", req->r_tid, req->r_mds);
++		else
++			seq_printf(s, "%lld\t(no request)\t", req->r_tid);
++
++		seq_printf(s, "%s", ceph_mds_op_name(req->r_op));
++
++		if (req->r_got_unsafe)
++			seq_printf(s, "\t(unsafe)");
++		else
++			seq_printf(s, "\t");
++
++		if (req->r_inode) {
++			seq_printf(s, " #%llx", ceph_ino(req->r_inode));
++		} else if (req->r_dentry) {
++			path = ceph_mdsc_build_path(req->r_dentry, &pathlen,
++						    &pathbase, 0);
++			spin_lock(&req->r_dentry->d_lock);
++			seq_printf(s, " #%llx/%.*s (%s)",
++				   ceph_ino(req->r_dentry->d_parent->d_inode),
++				   req->r_dentry->d_name.len,
++				   req->r_dentry->d_name.name,
++				   path ? path : "");
++			spin_unlock(&req->r_dentry->d_lock);
++			kfree(path);
++		} else if (req->r_path1) {
++			seq_printf(s, " #%llx/%s", req->r_ino1.ino,
++				   req->r_path1);
++		}
++
++		if (req->r_old_dentry) {
++			path = ceph_mdsc_build_path(req->r_old_dentry, &pathlen,
++						    &pathbase, 0);
++			spin_lock(&req->r_old_dentry->d_lock);
++			seq_printf(s, " #%llx/%.*s (%s)",
++			   ceph_ino(req->r_old_dentry->d_parent->d_inode),
++				   req->r_old_dentry->d_name.len,
++				   req->r_old_dentry->d_name.name,
++				   path ? path : "");
++			spin_unlock(&req->r_old_dentry->d_lock);
++			kfree(path);
++		} else if (req->r_path2) {
++			if (req->r_ino2.ino)
++				seq_printf(s, " #%llx/%s", req->r_ino2.ino,
++					   req->r_path2);
++			else
++				seq_printf(s, " %s", req->r_path2);
++		}
++
++		seq_printf(s, "\n");
 +	}
-+	return -ENOTTY;
++	mutex_unlock(&mdsc->mutex);
++
++	return 0;
 +}
-diff --git a/fs/ceph/ioctl.h b/fs/ceph/ioctl.h
-new file mode 100644
-index 0000000..25e4f1a
---- /dev/null
-+++ b/fs/ceph/ioctl.h
-@@ -0,0 +1,40 @@
-+#ifndef FS_CEPH_IOCTL_H
-+#define FS_CEPH_IOCTL_H
 +
-+#include <linux/ioctl.h>
-+#include <linux/types.h>
++static int osdc_show(struct seq_file *s, void *pp)
++{
++	struct ceph_client *client = s->private;
++	struct ceph_osd_client *osdc = &client->osdc;
++	struct rb_node *p;
 +
-+#define CEPH_IOCTL_MAGIC 0x97
++	mutex_lock(&osdc->request_mutex);
++	for (p = rb_first(&osdc->requests); p; p = rb_next(p)) {
++		struct ceph_osd_request *req;
++		struct ceph_osd_request_head *head;
++		struct ceph_osd_op *op;
++		int num_ops;
++		int opcode, olen;
++		int i;
 +
-+/* just use u64 to align sanely on all archs */
-+struct ceph_ioctl_layout {
-+	__u64 stripe_unit, stripe_count, object_size;
-+	__u64 data_pool;
-+	__s64 preferred_osd;
++		req = rb_entry(p, struct ceph_osd_request, r_node);
++
++		seq_printf(s, "%lld\tosd%d\t", req->r_tid,
++			   req->r_osd ? req->r_osd->o_osd : -1);
++
++		head = req->r_request->front.iov_base;
++		op = (void *)(head + 1);
++
++		num_ops = le16_to_cpu(head->num_ops);
++		olen = le32_to_cpu(head->object_len);
++		seq_printf(s, "%.*s", olen,
++			   (const char *)(head->ops + num_ops));
++
++		if (req->r_reassert_version.epoch)
++			seq_printf(s, "\t%u'%llu",
++			   (unsigned)le32_to_cpu(req->r_reassert_version.epoch),
++			   le64_to_cpu(req->r_reassert_version.version));
++		else
++			seq_printf(s, "\t");
++
++		for (i = 0; i < num_ops; i++) {
++			opcode = le16_to_cpu(op->op);
++			seq_printf(s, "\t%s", ceph_osd_op_name(opcode));
++			op++;
++		}
++
++		seq_printf(s, "\n");
++	}
++	mutex_unlock(&osdc->request_mutex);
++	return 0;
++}
++
++static int caps_show(struct seq_file *s, void *p)
++{
++	struct ceph_client *client = p;
++	int total, avail, used, reserved;
++
++	ceph_reservation_status(client, &total, &avail, &used, &reserved);
++	seq_printf(s, "total\t\t%d\n"
++		      "avail\t\t%d\n"
++		      "used\t\t%d\n"
++		      "reserved\t%d\n",
++		   total, avail, used, reserved);
++	return 0;
++}
++
++static int dentry_lru_show(struct seq_file *s, void *ptr)
++{
++	struct ceph_client *client = s->private;
++	struct ceph_mds_client *mdsc = &client->mdsc;
++	struct ceph_dentry_info *di;
++
++	spin_lock(&mdsc->dentry_lru_lock);
++	list_for_each_entry(di, &mdsc->dentry_lru, lru) {
++		struct dentry *dentry = di->dentry;
++		seq_printf(s, "%p %p\t%.*s\n",
++			   di, dentry, dentry->d_name.len, dentry->d_name.name);
++	}
++	spin_unlock(&mdsc->dentry_lru_lock);
++
++	return 0;
++}
++
++#define DEFINE_SHOW_FUNC(name) 						\
++static int name##_open(struct inode *inode, struct file *file)		\
++{									\
++	struct seq_file *sf;						\
++	int ret;							\
++									\
++	ret = single_open(file, name, NULL);				\
++	sf = file->private_data;					\
++	sf->private = inode->i_private;					\
++	return ret;							\
++}									\
++									\
++static const struct file_operations name##_fops = {			\
++	.open		= name##_open,					\
++	.read		= seq_read,					\
++	.llseek		= seq_lseek,					\
++	.release	= single_release,				\
 +};
 +
-+#define CEPH_IOC_GET_LAYOUT _IOR(CEPH_IOCTL_MAGIC, 1,		\
-+				   struct ceph_ioctl_layout)
-+#define CEPH_IOC_SET_LAYOUT _IOW(CEPH_IOCTL_MAGIC, 2,		\
-+				   struct ceph_ioctl_layout)
++DEFINE_SHOW_FUNC(monmap_show)
++DEFINE_SHOW_FUNC(mdsmap_show)
++DEFINE_SHOW_FUNC(osdmap_show)
++DEFINE_SHOW_FUNC(monc_show)
++DEFINE_SHOW_FUNC(mdsc_show)
++DEFINE_SHOW_FUNC(osdc_show)
++DEFINE_SHOW_FUNC(dentry_lru_show)
++DEFINE_SHOW_FUNC(caps_show)
 +
-+/*
-+ * Extract identity, address of the OSD and object storing a given
-+ * file offset.
-+ */
-+struct ceph_ioctl_dataloc {
-+	__u64 file_offset;           /* in+out: file offset */
-+	__u64 object_offset;         /* out: offset in object */
-+	__u64 object_no;             /* out: object # */
-+	__u64 object_size;           /* out: object size */
-+	char object_name[64];        /* out: object name */
-+	__u64 block_offset;          /* out: offset in block */
-+	__u64 block_size;            /* out: block length */
-+	__s64 osd;                   /* out: osd # */
-+	struct sockaddr_storage osd_addr; /* out: osd address */
-+};
++int __init ceph_debugfs_init(void)
++{
++	ceph_debugfs_dir = debugfs_create_dir("ceph", NULL);
++	if (!ceph_debugfs_dir)
++		return -ENOMEM;
++	return 0;
++}
 +
-+#define CEPH_IOC_GET_DATALOC _IOWR(CEPH_IOCTL_MAGIC, 3,	\
-+				   struct ceph_ioctl_dataloc)
++void ceph_debugfs_cleanup(void)
++{
++	debugfs_remove(ceph_debugfs_dir);
++}
 +
-+#endif
++int ceph_debugfs_client_init(struct ceph_client *client)
++{
++	int ret = 0;
++	char name[80];
++
++	snprintf(name, sizeof(name), FSID_FORMAT ".client%lld",
++		 PR_FSID(&client->fsid), client->monc.auth->global_id);
++
++	client->debugfs_dir = debugfs_create_dir(name, ceph_debugfs_dir);
++	if (!client->debugfs_dir)
++		goto out;
++
++	client->monc.debugfs_file = debugfs_create_file("monc",
++						      0600,
++						      client->debugfs_dir,
++						      client,
++						      &monc_show_fops);
++	if (!client->monc.debugfs_file)
++		goto out;
++
++	client->mdsc.debugfs_file = debugfs_create_file("mdsc",
++						      0600,
++						      client->debugfs_dir,
++						      client,
++						      &mdsc_show_fops);
++	if (!client->mdsc.debugfs_file)
++		goto out;
++
++	client->osdc.debugfs_file = debugfs_create_file("osdc",
++						      0600,
++						      client->debugfs_dir,
++						      client,
++						      &osdc_show_fops);
++	if (!client->osdc.debugfs_file)
++		goto out;
++
++	client->debugfs_monmap = debugfs_create_file("monmap",
++					0600,
++					client->debugfs_dir,
++					client,
++					&monmap_show_fops);
++	if (!client->debugfs_monmap)
++		goto out;
++
++	client->debugfs_mdsmap = debugfs_create_file("mdsmap",
++					0600,
++					client->debugfs_dir,
++					client,
++					&mdsmap_show_fops);
++	if (!client->debugfs_mdsmap)
++		goto out;
++
++	client->debugfs_osdmap = debugfs_create_file("osdmap",
++					0600,
++					client->debugfs_dir,
++					client,
++					&osdmap_show_fops);
++	if (!client->debugfs_osdmap)
++		goto out;
++
++	client->debugfs_dentry_lru = debugfs_create_file("dentry_lru",
++					0600,
++					client->debugfs_dir,
++					client,
++					&dentry_lru_show_fops);
++	if (!client->debugfs_dentry_lru)
++		goto out;
++
++	client->debugfs_caps = debugfs_create_file("caps",
++						   0400,
++						   client->debugfs_dir,
++						   client,
++						   &caps_show_fops);
++	if (!client->debugfs_caps)
++		goto out;
++
++	return 0;
++
++out:
++	ceph_debugfs_client_cleanup(client);
++	return ret;
++}
++
++void ceph_debugfs_client_cleanup(struct ceph_client *client)
++{
++	debugfs_remove(client->debugfs_caps);
++	debugfs_remove(client->debugfs_dentry_lru);
++	debugfs_remove(client->debugfs_osdmap);
++	debugfs_remove(client->debugfs_mdsmap);
++	debugfs_remove(client->debugfs_monmap);
++	debugfs_remove(client->osdc.debugfs_file);
++	debugfs_remove(client->mdsc.debugfs_file);
++	debugfs_remove(client->monc.debugfs_file);
++	debugfs_remove(client->debugfs_dir);
++}
++
++#else  // CONFIG_DEBUG_FS
++
++int __init ceph_debugfs_init(void)
++{
++	return 0;
++}
++
++void ceph_debugfs_cleanup(void)
++{
++}
++
++int ceph_debugfs_client_init(struct ceph_client *client)
++{
++	return 0;
++}
++
++void ceph_debugfs_client_cleanup(struct ceph_client *client)
++{
++}
++
++#endif  // CONFIG_DEBUG_FS
 -- 
 1.6.5
 
