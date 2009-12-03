@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZLCTki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZLCTlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbZLCTki (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 14:40:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbZLCTkh
+	id S1756226AbZLCTlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 14:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZLCTlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 14:40:37 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:35956 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753482AbZLCTkg (ORCPT
+	Thu, 3 Dec 2009 14:41:40 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37149 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755333AbZLCTlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 14:40:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=jq73oDfADp80t84vDTWr6KeXS/ZPXuTovhQCTOuEhXxc0GS6BaBmnvWA4o8uHtg4XW
-         tB3nheH1YzJCtLw7Nj4g/OtbVR6rez5iAookDkkFydLfwrGbBDNTVc4iOpqx+v6EE1EL
-         EZvR/4b4YaE7rgNMFC+anAA/U+OPhjjILBsBQ=
-Message-ID: <4B181436.90008@garzik.org>
-Date: Thu, 03 Dec 2009 14:40:38 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 3 Dec 2009 14:41:39 -0500
+Date: Thu, 3 Dec 2009 19:41:32 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Wan ZongShun <mcuos.com@gmail.com>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/4]ARM: NUC900: enable uart support for nuc932
+Message-ID: <20091203194132.GA27666@n2100.arm.linux.org.uk>
+References: <4B167281.1090708@gmail.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: What's in libata-dev.git?
-References: <20091203075653.GA30612@havoc.gtf.org> <200912031647.26342.bzolnier@gmail.com> <4B180E04.5030405@garzik.org> <200912032020.16608.bzolnier@gmail.com>
-In-Reply-To: <200912032020.16608.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B167281.1090708@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03/2009 02:20 PM, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 03 December 2009 08:14:12 pm Jeff Garzik wrote:
->> On 12/03/2009 10:47 AM, Bartlomiej Zolnierkiewicz wrote:
->>> ( Jeff, you probably would want to take ide-pci-generic fix to your tree
->>>     as libata-dev tree currently breaks build for IDE tree. )
->>
->> I didn't know that.
->
-> You would know if you would be either:
->
-> 	a) reading
->
-> or
->
-> 	b) building
->
-> patches that you're applying.
+On Wed, Dec 02, 2009 at 09:58:25PM +0800, Wan ZongShun wrote:
+> diff --git a/arch/arm/mach-w90x900/clock.h b/arch/arm/mach-w90x900/clock.h
+> index b9ea2e6..2a2a54a 100644
+> --- a/arch/arm/mach-w90x900/clock.h
+> +++ b/arch/arm/mach-w90x900/clock.h
+> @@ -14,8 +14,10 @@
+>  
+>  #ifndef CONFIG_CPU_NUC932
+>  #define EXTCLK	15000000
+> +#define UARTCLK	11313600
+>  #else
+>  #define EXTCLK	27000000
+> +#define UARTCLK	57139200
+>  #endif
 
-Strange that I do both.
+As far as I can see, these are the only thing which prevent a single
+kernel being built to cover both NUC900 and NUC932.
 
-But still...  <looks>  ah, I had disabled the *generic drivers in the 
-kernel build, and missed a missing comma.  Fixed and rebased #upstream.
-
-	Jeff
-
-
-
+Can we make their selection something which is done at runtime instead
+of compile time?  This comments goes for patch 5837/1 in the patch
+system as well.
