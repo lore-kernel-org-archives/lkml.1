@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbZLCCA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZLCCPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbZLCCA7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 21:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZLCCA6
+	id S1753594AbZLCCPj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 21:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZLCCPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 21:00:58 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:47017 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752866AbZLCCA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 21:00:57 -0500
-Message-Id: <20091203020102.111394000@alcatraz.americas.sgi.com>
-User-Agent: quilt/0.47-1
-Date: Wed, 02 Dec 2009 20:00:52 -0600
-From: Robin Holt <holt@sgi.com>
-To: Robin Holt <holt@sgi.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [patch 1/1] UV - XPC pass nasid instead of nid to gru_create_message_queue
-References: <20091203020051.967217000@alcatraz.americas.sgi.com>
-Content-Disposition: inline; filename=xpc_pass_nasid_to_gru_create_message_queue
+	Wed, 2 Dec 2009 21:15:38 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51695 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752869AbZLCCPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 21:15:37 -0500
+Message-ID: <4B171F35.1010908@cn.fujitsu.com>
+Date: Thu, 03 Dec 2009 10:15:17 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Paul Menage <menage@google.com>, Nick Piggin <npiggin@suse.de>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 22/24] HWPOISON: add memory cgroup filter
+References: <20091202031231.735876003@intel.com> <20091202043046.519053333@intel.com> <20091202124446.GA18989@one.firstfloor.org> <20091202125842.GA13277@localhost>
+In-Reply-To: <20091202125842.GA13277@localhost>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +#ifdef	CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> +u32 hwpoison_filter_memcg;
+> +static int hwpoison_filter_task(struct page *p)
+> +{
+> +	struct mem_cgroup *mem;
+> +	struct cgroup_subsys_state *css;
+> +
+> +	if (!hwpoison_filter_memcg)
+> +		return 0;
+> +
+> +	mem = try_get_mem_cgroup_from_page(p);
+> +	if (!mem)
+> +		return -EINVAL;
+> +
+> +	css = mem_cgroup_css(mem);
+> +	if (!css)
+> +		return -EINVAL;
+> +
 
-Currently, the UV xpc code is passing nid to the gru_create_message_queue
-instead of nasid as it expects.
+Here, if mem != NULL, then css won't be NULL.
 
-
-To: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Robin Holt <holt@sgi.com>
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org
-
----
-
- drivers/misc/sgi-xp/xpc_uv.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-
-Index: pv1000000/drivers/misc/sgi-xp/xpc_uv.c
-===================================================================
---- pv1000000.orig/drivers/misc/sgi-xp/xpc_uv.c	2009-12-02 16:51:40.000000000 -0600
-+++ pv1000000/drivers/misc/sgi-xp/xpc_uv.c	2009-12-02 16:58:31.000000000 -0600
-@@ -206,6 +206,7 @@ xpc_create_gru_mq_uv(unsigned int mq_siz
- 	enum xp_retval xp_ret;
- 	int ret;
- 	int nid;
-+	int nasid;
- 	int pg_order;
- 	struct page *page;
- 	struct xpc_gru_mq_uv *mq;
-@@ -261,9 +262,11 @@ xpc_create_gru_mq_uv(unsigned int mq_siz
- 		goto out_5;
- 	}
- 
-+	nasid = UV_PNODE_TO_NASID(uv_cpu_to_pnode(cpu));
-+
- 	mmr_value = (struct uv_IO_APIC_route_entry *)&mq->mmr_value;
- 	ret = gru_create_message_queue(mq->gru_mq_desc, mq->address, mq_size,
--				       nid, mmr_value->vector, mmr_value->dest);
-+				     nasid, mmr_value->vector, mmr_value->dest);
- 	if (ret != 0) {
- 		dev_err(xpc_part, "gru_create_message_queue() returned "
- 			"error=%d\n", ret);
-
+> +	css_put(css);
+> +	return 0;
+> +}
