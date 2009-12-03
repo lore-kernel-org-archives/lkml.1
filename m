@@ -1,54 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZLCBpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZLCBwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbZLCBpP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 20:45:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZLCBpO
+	id S1754592AbZLCBwP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 20:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZLCBwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 20:45:14 -0500
-Received: from mga14.intel.com ([143.182.124.37]:29955 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754051AbZLCBpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 20:45:13 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="218197794"
-Date: Thu, 3 Dec 2009 09:45:18 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 12/24] HWPOISON: make it possible to unpoison pages
-Message-ID: <20091203014518.GB8520@localhost>
-References: <20091202031231.735876003@intel.com> <20091202043045.150526892@intel.com> <20091202131530.GG18989@one.firstfloor.org> <20091202134645.GA19274@localhost> <20091202140305.GL18989@one.firstfloor.org>
+	Wed, 2 Dec 2009 20:52:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50975 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752755AbZLCBwN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 20:52:13 -0500
+Message-ID: <4B17199F.1000804@zytor.com>
+Date: Wed, 02 Dec 2009 17:51:27 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091202140305.GL18989@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: seperate reserve_early and reserve_early_overlap_check
+References: <4B0CF1B3.1050200@kernel.org>
+In-Reply-To: <4B0CF1B3.1050200@kernel.org>
+Content-Type: multipart/mixed;
+ boundary="------------060308050606080401040400"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 10:03:05PM +0800, Andi Kleen wrote:
-> > btw, do you feel comfortable with the interface name "renew-pfn"?
-> > (versus "unpoison-pfn")
+This is a multi-part message in MIME format.
+--------------060308050606080401040400
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+On 11/25/2009 12:58 AM, Yinghai Lu wrote:
 > 
-> I prefer unpoison, that makes it clear what it is.
+> when the area is from find_e820_area(), it could be overlapped with others.
+> 
+> so just add it directly. the new reserve_early()
+> 
+> and rename old reserve_early() to reserve_early_overlap_check()
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-OK.
+Hi Yinghai,
 
-> Maybe even call it "software_unpoison_pfn", because it won't unpoison on the 
-> hardware level (this really should be documented somewhere too)
+I had this patch in my queue but it looks like I had overlooked it as it
+arrived during the U.S. holiday; I apologize profusely!
 
-Yes we can document it in Documentation/vm/hwpoison.txt.
+I'm concerned about several things with this patch, which doesn't mean
+it isn't fulfilling a genuine need:
 
-Does that mean we may introduce a "hardware_unpoison_pfn" in future?
-(a superset of software_unpoison_pfn)
+1. Renaming reserve_early() to reserve_early_overlap_check() is most
+likely going to get overlooked, and people will use the "new"
+reserve_early() thinking that they got the old one.
 
-And "software_unpoison_pfn" may make the other "corrupt-pfn" a bit
-confusing ;)
+2. This creates overlapping ranges in the reservation array itself.
+
+What it looks to me is what we need is actually a
+reserve_early_clobber() which does what the current reserve_early() does
+except that it ignores the overlap_ok flag on existing reservations.
+
+I have attached an untested patch to do that.  Note that I don't have
+any callers for reserve_early_clobber(), since one effect of changing
+the semantics of an existing function in the way you did is that the
+patch contains the call sites that *didn't* need modification rather
+than the one that *did* need modification.  The call sites that want the
+new semantics need to be modified.  As such, it's possible that the
+comment I added is completely wrong, I really need some further
+information on this.
+
+[Note: the function __reserve_early() hasn't actually changed; I just
+moved it ahead of drop_overlaps().]
+
+Sorry again for the delay.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
 
-Thanks,
-Fengguang
+--------------060308050606080401040400
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="diff"
+
+ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2luY2x1ZGUvYXNtL2U4MjAuaCBiL2FyY2gveDg2L2lu
+Y2x1ZGUvYXNtL2U4MjAuaAppbmRleCA3NjEyNDllLi5iNDViZjQxIDEwMDY0NAotLS0gYS9h
+cmNoL3g4Ni9pbmNsdWRlL2FzbS9lODIwLmgKKysrIGIvYXJjaC94ODYvaW5jbHVkZS9hc20v
+ZTgyMC5oCkBAIC0xMTMsNiArMTEzLDcgQEAgZXh0ZXJuIHU2NCBmaW5kX2U4MjBfYXJlYSh1
+NjQgc3RhcnQsIHU2NCBlbmQsIHU2NCBzaXplLCB1NjQgYWxpZ24pOwogZXh0ZXJuIHU2NCBm
+aW5kX2U4MjBfYXJlYV9zaXplKHU2NCBzdGFydCwgdTY0ICpzaXplcCwgdTY0IGFsaWduKTsK
+IGV4dGVybiB2b2lkIHJlc2VydmVfZWFybHkodTY0IHN0YXJ0LCB1NjQgZW5kLCBjaGFyICpu
+YW1lKTsKIGV4dGVybiB2b2lkIHJlc2VydmVfZWFybHlfb3ZlcmxhcF9vayh1NjQgc3RhcnQs
+IHU2NCBlbmQsIGNoYXIgKm5hbWUpOworZXh0ZXJuIHZvaWQgcmVzZXJ2ZV9lYXJseV9jbG9i
+YmVyKHU2NCBzdGFydCwgdTY0IGVuZCwgY2hhciAqbmFtZSk7CiBleHRlcm4gdm9pZCBmcmVl
+X2Vhcmx5KHU2NCBzdGFydCwgdTY0IGVuZCk7CiBleHRlcm4gdm9pZCBlYXJseV9yZXNfdG9f
+Ym9vdG1lbSh1NjQgc3RhcnQsIHU2NCBlbmQpOwogZXh0ZXJuIHU2NCBlYXJseV9yZXNlcnZl
+X2U4MjAodTY0IHN0YXJ0dCwgdTY0IHNpemV0LCB1NjQgYWxpZ24pOwpkaWZmIC0tZ2l0IGEv
+YXJjaC94ODYva2VybmVsL2U4MjAuYyBiL2FyY2gveDg2L2tlcm5lbC9lODIwLmMKaW5kZXgg
+ZDE3ZDQ4Mi4uYWZlNTAyMyAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL2U4MjAuYwor
+KysgYi9hcmNoL3g4Ni9rZXJuZWwvZTgyMC5jCkBAIC03NjgsOSArNzY4LDMxIEBAIHN0YXRp
+YyB2b2lkIF9faW5pdCBkcm9wX3JhbmdlKGludCBpKQogCWVhcmx5X3Jlc1tqIC0gMV0uZW5k
+ID0gMDsKIH0KIAorc3RhdGljIHZvaWQgX19pbml0IF9fcmVzZXJ2ZV9lYXJseSh1NjQgc3Rh
+cnQsIHU2NCBlbmQsIGNoYXIgKm5hbWUsCisJCQkJICAgaW50IG92ZXJsYXBfb2spCit7CisJ
+aW50IGk7CisJc3RydWN0IGVhcmx5X3JlcyAqcjsKKworCWkgPSBmaW5kX292ZXJsYXBwZWRf
+ZWFybHkoc3RhcnQsIGVuZCk7CisJaWYgKGkgPj0gTUFYX0VBUkxZX1JFUykKKwkJcGFuaWMo
+IlRvbyBtYW55IGVhcmx5IHJlc2VydmF0aW9ucyIpOworCXIgPSAmZWFybHlfcmVzW2ldOwor
+CWlmIChyLT5lbmQpCisJCXBhbmljKCJPdmVybGFwcGluZyBlYXJseSByZXNlcnZhdGlvbnMg
+IgorCQkgICAgICAiJWxseC0lbGx4ICVzIHRvICVsbHgtJWxseCAlc1xuIiwKKwkJICAgICAg
+c3RhcnQsIGVuZCAtIDEsIG5hbWU/bmFtZToiIiwgci0+c3RhcnQsCisJCSAgICAgIHItPmVu
+ZCAtIDEsIHItPm5hbWUpOworCXItPnN0YXJ0ID0gc3RhcnQ7CisJci0+ZW5kID0gZW5kOwor
+CXItPm92ZXJsYXBfb2sgPSBvdmVybGFwX29rOworCWlmIChuYW1lKQorCQlzdHJuY3B5KHIt
+Pm5hbWUsIG5hbWUsIHNpemVvZihyLT5uYW1lKSAtIDEpOworfQorCiAvKgogICogU3BsaXQg
+YW55IGV4aXN0aW5nIHJhbmdlcyB0aGF0OgotICogIDEpIGFyZSBtYXJrZWQgJ292ZXJsYXBf
+b2snLCBhbmQKKyAqICAxKSBhcmUgbWFya2VkICdvdmVybGFwX29rJyAodW5sZXNzICdmb3Jj
+ZScgaXMgc2V0KSwgYW5kCiAgKiAgMikgb3ZlcmxhcCB3aXRoIHRoZSBzdGF0ZWQgcmFuZ2Ug
+W3N0YXJ0LCBlbmQpCiAgKiBpbnRvIHdoYXRldmVyIHBvcnRpb24gKGlmIGFueSkgb2YgdGhl
+IGV4aXN0aW5nIHJhbmdlIGlzIGVudGlyZWx5CiAgKiBiZWxvdyBvciBlbnRpcmVseSBhYm92
+ZSB0aGUgc3RhdGVkIHJhbmdlLiAgRHJvcCB0aGUgcG9ydGlvbgpAQCAtNzc4LDEzICs4MDAs
+MTQgQEAgc3RhdGljIHZvaWQgX19pbml0IGRyb3BfcmFuZ2UoaW50IGkpCiAgKiB3aGljaCB3
+aWxsIGFsbG93IHRoZSBjYWxsZXIgb2YgdGhpcyByb3V0aW5lIHRvIHRoZW4gYWRkIHRoYXQK
+ICAqIHN0YXRlZCByYW5nZSB3aXRob3V0IGNvbmZsaWN0aW5nIHdpdGggYW55IGV4aXN0aW5n
+IHJhbmdlLgogICovCi1zdGF0aWMgdm9pZCBfX2luaXQgZHJvcF9vdmVybGFwc190aGF0X2Fy
+ZV9vayh1NjQgc3RhcnQsIHU2NCBlbmQpCitzdGF0aWMgdm9pZCBfX2luaXQgZHJvcF9vdmVy
+bGFwcyh1NjQgc3RhcnQsIHU2NCBlbmQsIGludCBmb3JjZSkKIHsKIAlpbnQgaTsKIAlzdHJ1
+Y3QgZWFybHlfcmVzICpyOwogCXU2NCBsb3dlcl9zdGFydCwgbG93ZXJfZW5kOwogCXU2NCB1
+cHBlcl9zdGFydCwgdXBwZXJfZW5kOwogCWNoYXIgbmFtZVsxNl07CisJaW50IG92ZXJsYXBf
+b2s7CiAKIAlmb3IgKGkgPSAwOyBpIDwgTUFYX0VBUkxZX1JFUyAmJiBlYXJseV9yZXNbaV0u
+ZW5kOyBpKyspIHsKIAkJciA9ICZlYXJseV9yZXNbaV07CkBAIC03OTgsNyArODIxLDcgQEAg
+c3RhdGljIHZvaWQgX19pbml0IGRyb3Bfb3ZlcmxhcHNfdGhhdF9hcmVfb2sodTY0IHN0YXJ0
+LCB1NjQgZW5kKQogCQkgKiBwYW5pYyAiT3ZlcmxhcHBpbmcgZWFybHkgcmVzZXJ2YXRpb25z
+IgogCQkgKiB3aGVuIGl0IGhpdHMgdGhpcyBvdmVybGFwLgogCQkgKi8KLQkJaWYgKCFyLT5v
+dmVybGFwX29rKQorCQlpZiAoIWZvcmNlICYmICFyLT5vdmVybGFwX29rKQogCQkJcmV0dXJu
+OwogCiAJCS8qCkBAIC04MTEsNiArODM0LDcgQEAgc3RhdGljIHZvaWQgX19pbml0IGRyb3Bf
+b3ZlcmxhcHNfdGhhdF9hcmVfb2sodTY0IHN0YXJ0LCB1NjQgZW5kKQogCQkvKiAxLiBOb3Rl
+IGFueSBub24tb3ZlcmxhcHBpbmcgKGxvd2VyIG9yIHVwcGVyKSByYW5nZXMuICovCiAJCXN0
+cm5jcHkobmFtZSwgci0+bmFtZSwgc2l6ZW9mKG5hbWUpIC0gMSk7CiAKKwkJb3ZlcmxhcF9v
+ayA9IHItPm92ZXJsYXBfb2s7CiAJCWxvd2VyX3N0YXJ0ID0gbG93ZXJfZW5kID0gMDsKIAkJ
+dXBwZXJfc3RhcnQgPSB1cHBlcl9lbmQgPSAwOwogCQlpZiAoci0+c3RhcnQgPCBzdGFydCkg
+ewpAQCAtODI5LDM0ICs4NTMsMTQgQEAgc3RhdGljIHZvaWQgX19pbml0IGRyb3Bfb3Zlcmxh
+cHNfdGhhdF9hcmVfb2sodTY0IHN0YXJ0LCB1NjQgZW5kKQogCiAJCS8qIDMuIEFkZCBiYWNr
+IGluIGFueSBub24tb3ZlcmxhcHBpbmcgcmFuZ2VzLiAqLwogCQlpZiAobG93ZXJfZW5kKQot
+CQkJcmVzZXJ2ZV9lYXJseV9vdmVybGFwX29rKGxvd2VyX3N0YXJ0LCBsb3dlcl9lbmQsIG5h
+bWUpOworCQkJX19yZXNlcnZlX2Vhcmx5KGxvd2VyX3N0YXJ0LCBsb3dlcl9lbmQsCisJCQkJ
+CW5hbWUsIG92ZXJsYXBfb2spOwogCQlpZiAodXBwZXJfZW5kKQotCQkJcmVzZXJ2ZV9lYXJs
+eV9vdmVybGFwX29rKHVwcGVyX3N0YXJ0LCB1cHBlcl9lbmQsIG5hbWUpOworCQkJX19yZXNl
+cnZlX2Vhcmx5KHVwcGVyX3N0YXJ0LCB1cHBlcl9lbmQsCisJCQkJCW5hbWUsIG92ZXJsYXBf
+b2spOwogCX0KIH0KIAotc3RhdGljIHZvaWQgX19pbml0IF9fcmVzZXJ2ZV9lYXJseSh1NjQg
+c3RhcnQsIHU2NCBlbmQsIGNoYXIgKm5hbWUsCi0JCQkJCQlpbnQgb3ZlcmxhcF9vaykKLXsK
+LQlpbnQgaTsKLQlzdHJ1Y3QgZWFybHlfcmVzICpyOwotCi0JaSA9IGZpbmRfb3ZlcmxhcHBl
+ZF9lYXJseShzdGFydCwgZW5kKTsKLQlpZiAoaSA+PSBNQVhfRUFSTFlfUkVTKQotCQlwYW5p
+YygiVG9vIG1hbnkgZWFybHkgcmVzZXJ2YXRpb25zIik7Ci0JciA9ICZlYXJseV9yZXNbaV07
+Ci0JaWYgKHItPmVuZCkKLQkJcGFuaWMoIk92ZXJsYXBwaW5nIGVhcmx5IHJlc2VydmF0aW9u
+cyAiCi0JCSAgICAgICIlbGx4LSVsbHggJXMgdG8gJWxseC0lbGx4ICVzXG4iLAotCQkgICAg
+ICBzdGFydCwgZW5kIC0gMSwgbmFtZT9uYW1lOiIiLCByLT5zdGFydCwKLQkJICAgICAgci0+
+ZW5kIC0gMSwgci0+bmFtZSk7Ci0Jci0+c3RhcnQgPSBzdGFydDsKLQlyLT5lbmQgPSBlbmQ7
+Ci0Jci0+b3ZlcmxhcF9vayA9IG92ZXJsYXBfb2s7Ci0JaWYgKG5hbWUpCi0JCXN0cm5jcHko
+ci0+bmFtZSwgbmFtZSwgc2l6ZW9mKHItPm5hbWUpIC0gMSk7Ci19Ci0KIC8qCiAgKiBBIGZl
+dyBlYXJseSByZXNlcnZ0YXRpb25zIGNvbWUgaGVyZS4KICAqCkBAIC04NzksNyArODgzLDcg
+QEAgc3RhdGljIHZvaWQgX19pbml0IF9fcmVzZXJ2ZV9lYXJseSh1NjQgc3RhcnQsIHU2NCBl
+bmQsIGNoYXIgKm5hbWUsCiAgKi8KIHZvaWQgX19pbml0IHJlc2VydmVfZWFybHlfb3Zlcmxh
+cF9vayh1NjQgc3RhcnQsIHU2NCBlbmQsIGNoYXIgKm5hbWUpCiB7Ci0JZHJvcF9vdmVybGFw
+c190aGF0X2FyZV9vayhzdGFydCwgZW5kKTsKKwlkcm9wX292ZXJsYXBzKHN0YXJ0LCBlbmQs
+IDApOwogCV9fcmVzZXJ2ZV9lYXJseShzdGFydCwgZW5kLCBuYW1lLCAxKTsKIH0KIApAQCAt
+ODk2LDcgKzkwMCwyMiBAQCB2b2lkIF9faW5pdCByZXNlcnZlX2Vhcmx5KHU2NCBzdGFydCwg
+dTY0IGVuZCwgY2hhciAqbmFtZSkKIAlpZiAoc3RhcnQgPj0gZW5kKQogCQlyZXR1cm47CiAK
+LQlkcm9wX292ZXJsYXBzX3RoYXRfYXJlX29rKHN0YXJ0LCBlbmQpOworCWRyb3Bfb3Zlcmxh
+cHMoc3RhcnQsIGVuZCwgMCk7CisJX19yZXNlcnZlX2Vhcmx5KHN0YXJ0LCBlbmQsIG5hbWUs
+IDApOworfQorCisvKgorICogRWFybHkgcmVzZXJ2YXRpb25zIGR1cmluZyB0aGUgc2NhbiBv
+ZiB0aGUgZTgyMCBhcnJheSBpdHNlbGYKKyAqIGNhbiBjb21lIGluIGhlcmU7IHRoaXMgaXMg
+dXNlZCB3aGVuIHRoZSBpbmZvcm1hdGlvbiBhdmFpbGFibGUKKyAqIHRvIHVzIG1heSBiZSBp
+bnRlcm5hbGx5IGluY29uc2lzdGVudC4gIFRoaXMgZm9yY2UtZHJvcHMgYW55CisgKiBwcmV2
+aW91cyByYW5nZSB0aGF0IGNvbmZsaWN0cyB3aXRoIHRoaXMgb25lLgorICovCit2b2lkIF9f
+aW5pdCByZXNlcnZlX2Vhcmx5X2Nsb2JiZXIodTY0IHN0YXJ0LCB1NjQgZW5kLCBjaGFyICpu
+YW1lKQoreworCWlmIChzdGFydCA+PSBlbmQpCisJCXJldHVybjsKKworCWRyb3Bfb3Zlcmxh
+cHMoc3RhcnQsIGVuZCwgMSk7CiAJX19yZXNlcnZlX2Vhcmx5KHN0YXJ0LCBlbmQsIG5hbWUs
+IDApOwogfQogCg==
+--------------060308050606080401040400--
