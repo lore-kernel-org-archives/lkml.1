@@ -1,47 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZLCQ5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZLCRCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbZLCQ5s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 11:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbZLCQ5r
+	id S1755467AbZLCRCa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbZLCRC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 11:57:47 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53332 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754964AbZLCQ5q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 11:57:46 -0500
-Date: Thu, 3 Dec 2009 16:59:47 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/86] PATA fixes
-Message-ID: <20091203165947.13841802@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B1771CD.3090409@garzik.org>
-References: <20091125170218.5446.13513.sendpatchset@localhost>
-	<4B1771CD.3090409@garzik.org>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 Dec 2009 12:02:29 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42798 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754964AbZLCRC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 12:02:28 -0500
+Message-ID: <4B17EE9A.1060004@redhat.com>
+Date: Thu, 03 Dec 2009 18:00:10 +0100
+From: Stefan Assmann <sassmann@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Andrew Patterson <andrew.patterson@hp.com>
+CC: linux-pci@vger.kernel.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, rjw@sisk.pl, ddutile@redhat.com,
+       kaneshige.kenji@jp.fujitsu.com, khc@pm.waw.pl
+Subject: Re: [PATCH 2/2 v2] pci: change PCI nomenclature in drivers/pci/ (non-comment
+ changes)
+References: <20091203114914.24905.67372.sendpatchset@localhost.localdomain>	 <20091203114932.24905.78292.sendpatchset@localhost.localdomain> <1259857642.2684.64.camel@grinch>
+In-Reply-To: <1259857642.2684.64.camel@grinch>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The merge window is upon us, which by strict rules means that anything 
-> not already in libata-dev.git#upstream needs to wait until 2.6.34.
+On 03.12.2009 17:27, Andrew Patterson wrote:
+> On Thu, 2009-12-03 at 06:49 -0500, Stefan Assmann wrote:
+>> From: Stefan Assmann <sassmann@redhat.com>
+>>
+>> Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
+>> terms listed in the "Trademark and Logo Usage Guidelines".
+>> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
+>>
+>> Patch is limited to drivers/pci/ and changes concern non-comment parts or
+>> anything that might be visible to the user.
+>>
+>> Signed-off-by: Stefan Assmann <sassmann@redhat.com>
+>> ---
 
-Not quite yet - Linus hasn't said "go"
+[...]
 
-> However, bug fixes and the like should definitely be in 2.6.33. 
-> ->init_host is definitely 2.6.34 material.  Some of the other stuff 
-> could go either way.
+>> diff --git a/drivers/pci/pcie/aer/Kconfig.debug b/drivers/pci/pcie/aer/Kconfig.debug
+>> index b8c925c..edfe756 100644
+>> --- a/drivers/pci/pcie/aer/Kconfig.debug
+>> +++ b/drivers/pci/pcie/aer/Kconfig.debug
+>> @@ -3,14 +3,14 @@
+>>  #
+>>  
+>>  config PCIEAER_INJECT
+>> -	tristate "PCIE AER error injector support"
+>> +	tristate "PCIe AER error injector support"
+>>  	depends on PCIEAER
+>>  	default n
+>>  	help
+>>  	  This enables PCI Express Root Port Advanced Error Reporting
+>>  	  (AER) software error injector.
+>>  
+>> -	  Debuging PCIE AER code is quite difficult because it is hard
+>> +	  Debuging PCIe AER code is quite difficult because it is hard
+> 
+> Why not fix the typo while changing this line.  "Debuging" shoud be
+> "Debugging".
+> 
 
-The bits that probably should be delayed a bit more (if any) IMHO are the
-32bit enables for hardware that doesn't use 32bit by default on the
-drivers/ide stack, and tweaks for obscure old hardware that won't get
-much testing.
+Thanks Andrew, I just didn't see it. Here's the new patch. Patch #1
+has the same typo, so I'll repost that one as well.
 
-The sooner it's all upstream the better.
+  Stefan
 
-Alan
+
+From: Stefan Assmann <sassmann@redhat.com>
+
+Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
+terms listed in the "Trademark and Logo Usage Guidelines".
+http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
+
+Patch is limited to drivers/pci/ and changes concern non-comment parts or
+anything that might be visible to the user.
+
+Signed-off-by: Stefan Assmann <sassmann@redhat.com>
+---
+ drivers/pci/hotplug/pci_hotplug_core.c |   22 +++++++++++-----------
+ drivers/pci/pcie/aer/Kconfig.debug     |    4 ++--
+ drivers/pci/pcie/aer/aer_inject.c      |    2 +-
+ drivers/pci/pcie/aer/aerdrv_errprint.c |    4 ++--
+ drivers/pci/pcie/portdrv_pci.c         |    2 +-
+ 5 files changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
+index 0325d98..38183a5 100644
+--- a/drivers/pci/hotplug/pci_hotplug_core.c
++++ b/drivers/pci/hotplug/pci_hotplug_core.c
+@@ -68,26 +68,26 @@ static DEFINE_MUTEX(pci_hp_mutex);
+ static char *pci_bus_speed_strings[] = {
+ 	"33 MHz PCI",		/* 0x00 */
+ 	"66 MHz PCI",		/* 0x01 */
+-	"66 MHz PCIX", 		/* 0x02 */
+-	"100 MHz PCIX",		/* 0x03 */
+-	"133 MHz PCIX",		/* 0x04 */
++	"66 MHz PCI-X",		/* 0x02 */
++	"100 MHz PCI-X",	/* 0x03 */
++	"133 MHz PCI-X",	/* 0x04 */
+ 	NULL,			/* 0x05 */
+ 	NULL,			/* 0x06 */
+ 	NULL,			/* 0x07 */
+ 	NULL,			/* 0x08 */
+-	"66 MHz PCIX 266",	/* 0x09 */
+-	"100 MHz PCIX 266",	/* 0x0a */
+-	"133 MHz PCIX 266",	/* 0x0b */
++	"66 MHz PCI-X 266",	/* 0x09 */
++	"100 MHz PCI-X 266",	/* 0x0a */
++	"133 MHz PCI-X 266",	/* 0x0b */
+ 	NULL,			/* 0x0c */
+ 	NULL,			/* 0x0d */
+ 	NULL,			/* 0x0e */
+ 	NULL,			/* 0x0f */
+ 	NULL,			/* 0x10 */
+-	"66 MHz PCIX 533",	/* 0x11 */
+-	"100 MHz PCIX 533",	/* 0x12 */
+-	"133 MHz PCIX 533",	/* 0x13 */
+-	"2.5 GT/s PCI-E",	/* 0x14 */
+-	"5.0 GT/s PCI-E",	/* 0x15 */
++	"66 MHz PCI-X 533",	/* 0x11 */
++	"100 MHz PCI-X 533",	/* 0x12 */
++	"133 MHz PCI-X 533",	/* 0x13 */
++	"2.5 GT/s PCIe",	/* 0x14 */
++	"5.0 GT/s PCIe",	/* 0x15 */
+ };
+
+ #ifdef CONFIG_HOTPLUG_PCI_CPCI
+diff --git a/drivers/pci/pcie/aer/Kconfig.debug b/drivers/pci/pcie/aer/Kconfig.debug
+index b8c925c..edfe756 100644
+--- a/drivers/pci/pcie/aer/Kconfig.debug
++++ b/drivers/pci/pcie/aer/Kconfig.debug
+@@ -3,14 +3,14 @@
+ #
+
+ config PCIEAER_INJECT
+-	tristate "PCIE AER error injector support"
++	tristate "PCIe AER error injector support"
+ 	depends on PCIEAER
+ 	default n
+ 	help
+ 	  This enables PCI Express Root Port Advanced Error Reporting
+ 	  (AER) software error injector.
+
+-	  Debuging PCIE AER code is quite difficult because it is hard
++	  Debugging PCIe AER code is quite difficult because it is hard
+ 	  to trigger various real hardware errors. Software based
+ 	  error injection can fake almost all kinds of errors with the
+ 	  help of a user space helper tool aer-inject, which can be
+diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
+index a21dee3..8e056f2 100644
+--- a/drivers/pci/pcie/aer/aer_inject.c
++++ b/drivers/pci/pcie/aer/aer_inject.c
+@@ -462,5 +462,5 @@ static void __exit aer_inject_exit(void)
+ module_init(aer_inject_init);
+ module_exit(aer_inject_exit);
+
+-MODULE_DESCRIPTION("PCIE AER software error injector");
++MODULE_DESCRIPTION("PCIe AER software error injector");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/pci/pcie/aer/aerdrv_errprint.c b/drivers/pci/pcie/aer/aerdrv_errprint.c
+index 44acde7..9d3e4c8 100644
+--- a/drivers/pci/pcie/aer/aerdrv_errprint.c
++++ b/drivers/pci/pcie/aer/aerdrv_errprint.c
+@@ -184,7 +184,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
+
+ 	if (info->status == 0) {
+ 		AER_PR(info, dev,
+-			"PCIE Bus Error: severity=%s, type=Unaccessible, "
++			"PCIe Bus Error: severity=%s, type=Unaccessible, "
+ 			"id=%04x(Unregistered Agent ID)\n",
+ 			aer_error_severity_string[info->severity], id);
+ 	} else {
+@@ -194,7 +194,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
+ 		agent = AER_GET_AGENT(info->severity, info->status);
+
+ 		AER_PR(info, dev,
+-			"PCIE Bus Error: severity=%s, type=%s, id=%04x(%s)\n",
++			"PCIe Bus Error: severity=%s, type=%s, id=%04x(%s)\n",
+ 			aer_error_severity_string[info->severity],
+ 			aer_error_layer[layer], id, aer_agent_string[agent]);
+
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index f635e47..6788d0f 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -24,7 +24,7 @@
+  */
+ #define DRIVER_VERSION "v1.0"
+ #define DRIVER_AUTHOR "tom.l.nguyen@intel.com"
+-#define DRIVER_DESC "PCIE Port Bus Driver"
++#define DRIVER_DESC "PCIe Port Bus Driver"
+ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+-- 
+1.6.5.2
+
