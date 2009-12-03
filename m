@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbZLCOSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbZLCOVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbZLCOSA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 09:18:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbZLCOSA
+	id S1756207AbZLCOVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 09:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZLCOVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 09:18:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:59803 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752957AbZLCOR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 09:17:59 -0500
-Date: Thu, 3 Dec 2009 15:18:05 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 3
-In-Reply-To: <20091204011324.eb195558.sfr@canb.auug.org.au>
-Message-ID: <alpine.LNX.2.00.0912031517480.3755@pobox.suse.cz>
-References: <20091203180214.16e452ed.sfr@canb.auug.org.au> <alpine.LRH.2.00.0912031435380.9567@twin.jikos.cz> <20091204011324.eb195558.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Thu, 3 Dec 2009 09:21:16 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44394 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751459AbZLCOVQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 09:21:16 -0500
+Date: Thu, 3 Dec 2009 09:21:18 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
+       linux-parisc@vger.kernel.org, kyle@mcmartin.ca,
+       akpm@linux-foundation.org, James.Bottomley@hansenpartnership.com,
+       roland@redhat.com, dave@hiauly1.hia.nrc.ca,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] modules: don't export section names of empty sections
+	via sysfs
+Message-ID: <20091203142118.GQ28962@bombadil.infradead.org>
+References: <20091202232915.GA2251@p100.box> <200912031750.41240.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912031750.41240.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009, Stephen Rothwell wrote:
-
-> > > Merging trivial/for-next
-> > > CONFLICT (content): Merge conflict in Documentation/video4linux/gspca.txt
-> > 
-> > have you been sending out e-mail about this conflict? I don't seem to have 
-> > received any.
+On Thu, Dec 03, 2009 at 05:50:41PM +1030, Rusty Russell wrote:
+> On Thu, 3 Dec 2009 09:59:15 am Helge Deller wrote:
+> > [PATCH] modules: don't export section names of empty sections via sysfs
 > 
-> No, I didn't because it is very simple and was only in a documentation
-> file.  I figured it would be cleared up easily if/when it comes up in
-> being merged into Linus' tree (or maybe before if it is noticed).
+> Thanks, applied.
+> 
+> Ah, I see Linus snuck this in before the release.  Excellent.
+> Rusty.
+> 
 
-Excellent, thanks.
+Thanks Rusty, Helge!
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+cheers, Kyle
