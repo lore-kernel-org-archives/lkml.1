@@ -1,110 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbZLCRzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbZLCR67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbZLCRzf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:55:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbZLCRze
+	id S1754198AbZLCR67 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZLCR67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:55:34 -0500
-Received: from mail-pz0-f184.google.com ([209.85.222.184]:50395 "EHLO
-	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755452AbZLCRzd (ORCPT
+	Thu, 3 Dec 2009 12:58:59 -0500
+Received: from thsmsgxrt13p.thalesgroup.com ([192.54.144.136]:39193 "EHLO
+	thsmsgxrt13p.thalesgroup.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752870AbZLCR66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:55:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=J1rPfDalNTxLIW9O97HPSgeczKj3tXjvikJCvwj9a8QM5ZGQ2MZ3r9srrPKoxdeHgg
-         sSJb31ZY1A+Q/KIGg+8p5XuskRHheM6FbMx4Cb9YDCxGzbA7Gwq6CRY57He70nqsaePA
-         M4PLRsFfZhtAWB3ZabEa3LeVZ/h4qt/y41m80=
-Date: Thu, 3 Dec 2009 09:55:31 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jonsmirl@gmail.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR  system?
-Message-ID: <20091203175531.GB776@core.coreip.homeip.net>
-References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com> <4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com> <A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com> <4B17AA6A.9060702@redhat.com>
+	Thu, 3 Dec 2009 12:58:58 -0500
+Message-ID: <4B17FBE6.7040606@thalesgroup.com>
+Date: Thu, 03 Dec 2009 18:56:54 +0100
+From: =?ISO-8859-1?Q?Emmanuel_Fust=E9?= <emmanuel.fuste@thalesgroup.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B17AA6A.9060702@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: mchehab@redhat.com, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [RFC v2] Another approach to IR
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 01:09:14PM +0100, Gerd Hoffmann wrote:
-> On 12/03/09 05:29, Jarod Wilson wrote:
->> On Dec 1, 2009, at 10:28 AM, Gerd Hoffmann wrote:
->>
->>>> Anyway, we shouldn't postpone lirc drivers addition due to that.
->>>> There are still lots of work to do before we'll be able to split
->>>> the tables from the kernel drivers.
->>>
->>> Indeed.  The sysfs bits are future work for both lirc and evdev
->>> drivers.  There is no reason to make the lirc merge wait for it.
->>
->> At this point, my plan is to try to finish cleaning up lirc_dev and
->> lirc_mceusb at least over the weekend while at FUDCon up in Toronto,
->> and resubmit them next week.
 >
-> Good plan IMHO.  Having lirc_dev merged quickly allows in-kernel drivers  
-> start supporting lirc.
+> Em Thu, 3 Dec 2009 11:50:04 -0500
+> Jon Smirl <jonsmirl@gmail.com> escreveu:
+>
+> > On Thu, Dec 3, 2009 at 11:33 AM, Mauro Carvalho Chehab
+> > <mchehab@redhat.com> wrote:
+> > > Ferenc Wagner wrote:
+> > >> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+> > >>
+> > >>> Dmitry Torokhov wrote:
+> > >>>
+> > >
+> > >> The interesting thing is that input.h defines KEY_TV, KEY_PC, KEY_SAT,
+> > >> KEY_CD, KEY_TAPE etc., but no corresponding scan codes will ever be sent
+> > >> by any remote (ok, I'm stretching it a bit).
+> > >
+> > > Unfortunately, this is not true. Some IR's do send a keycode for TV/PC/SAT/CD, etc.
+> > >
+> > > On those remotes, if you press TV and then press for example Channel UP
+> > > and press Radio, then press Channel UP, the channel UP code will be the same.
+> > >
+> > > For example, on Hauppauge Grey IR, we have:
+> > >
+> > > <TV>
+> > > [13425.128525] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e1c keycode 0x179
+> > > [13425.136733] ir_input_key_event: em28xx IR (em28xx #0): key event code=377 down=1
+> > > [13425.144170] ir_input_key_event: em28xx IR (em28xx #0): key event code=377 down=0
+> > >
+> > > <CHANNEL UP>
+> > > [13428.350223] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e20 keycode 0x192
+> > > [13428.358434] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=1
+> > > [13428.365871] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=0
+> > >
+> > > <Radio>
+> > > [13430.672266] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e0c keycode 0x181
+> > > [13430.680473] ir_input_key_event: em28xx IR (em28xx #0): key event code=385 down=1
+> > > [13430.687913] ir_input_key_event: em28xx IR (em28xx #0): key event code=385 down=0
+> > >
+> > > <CHANNEL UP>
+> > > [13433.697268] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e20 keycode 0x192
+> > > [13433.705480] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=1
+> > > [13433.712916] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=0
+> > >
+> > > In this IR, the address is bogus: it is always 0x1e. This scenario is very common with the
+> > > shipped IR's.
+> > 
+> > The remote is treating everything as a single integrated device which
+> > is not inconsistent with what has been said. In this case there really
+> > is only one multi-function device not two independent ones.
+> > 
+> > If you want to control two independent devices you need to buy a
+> > different remote. Remotes are cheap so that's not a big deal.
+> > 
+> > If you really want to use this remote to control two independent
+> > devices you need user space scripting to split the single device into
+> > two devices and then inject new events into the input layer. This is a
+> > complex case and not in the goal of getting 90% of users to "just
+> > work".
+>
+> This remote is a typical example of the IR's that are provided together with media boards.
+> On all such IR's I know, it does generate one key event for TV, SAT, DVB, DVD... keys and
+> this event doesn't change the status of subsequent keys.
+>
+> 100% of the users of such boards will have the shipped IR. Some amount will be happy of
+> just using the provided IR to control different applications at their computer or embedded
+> hardware, and some amount will prefer to buy a multi-purpose IR that will allow him
+> to control not only his computer, but also, his TV, his Air conditioning, etc.
+>
+> Both usages should be supported.
+>
+> All I'm saying is that, in the case where people have only the shipped IR, if he wants to
+> see TV, the produced keycode will be KEY_TV, and then to change a channel, it will
+> receive KEY_CHANNELUP, to control his TV app. When the user decides to switch to DVB, 
+> he will press KEY_DVB and then KEY_PLAY to play his movie.
+>
+> So, an application like MythTV should be able to work with those keys.
+>   
+Eeeerrrkkk, what a ...... device .
+For such quirky device, we could imagine a special mapping support:
+We could maps scancode 0x1e1c and 0x1e0c special keycode wich inform the 
+input layer to surcharge the  vendor or device with a specific 
+value/mask for following  keypresses of such remote. The mask could be 
+choose to generate out of bound value in regards of the used protocol 
+for the vendor or the device part to not overlap with another existing 
+remote.
+Generate a complete map and so a device for each special key and you're 
+done. No special case on the application side.
+In kernel states are a bit ugly, but this particular case is not too 
+complicated and your dumb shitty remote is promoted to first class one.
 
-No, please, wait just a minute. I know it is tempting to just merge
-lirc_dev and start working, but can we first agree on the overall
-subsystem structure before doing so. It is still quite inclear to me.
 
-The open questions (for me at least):
+Regards,
+Emmanuel.
 
-- do we create a new class infrastructure for all receivers or only for
-  ones plugged into lirc_dev? Remember that classifying objects affects
-  how udev and friemds see them and may either help or hurt writing PnP
-  rules.
 
-- do we intend to support in-kernel sotfware decoders? What is the
-  structure? Do we organize them as a module to be used by driver
-  directly or the driver "streams" the data to IR core and the core
-  applies decoders (in the same fashion input events from drivers flow
-  into input core and then distributed to all bound interfaces for
-  processing/conversion/transmission to userspace)?
-
-- how do we control which decoder should handle particular
-  receiver/remote? Is it driver's decision, decoder's decision, user's
-  or all of the above?
-
-- do we allow to have several decorers active at once for a receiver?
-
-- who decides that we want to utilize lirc_dev? Driver's themselves, IR
-  core (looking at the driver/device "capabilities"), something else?
-
-- do we recognize and create input devices "on-fly" or require user
-  intervention? Semantics for splitting into several input/event
-  devices?
-
-Could anyone please draw me a picture, starting with a "receiver"
-piece of hardware. I am not concerned much with how exactly receiver is
-plugged into a particular subsystem (DVB/V4L etc) since it would be
-_their_ implementation detail, but with the flow in/out of that
-"receiver" device.
-
-Now as far as input core goes I see very limited number of changes that
-may be needed:
-
-- Allow to extend size of "scancode" in EVIOC{S,G}KEYCODE if we are
-  unable to limit ourselves to 32 bits (keeping compatibility of course)
-
-- Maybe adding new ioctl to "zap" the keymap table
-
-- Adding more key EV_KEY/KEY_* definitons, if needed
-
-Thanks.
-
--- 
-Dmitry
