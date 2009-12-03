@@ -1,33 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752554AbZLCGpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZLCHHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752554AbZLCGpY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 01:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZLCGpX
+	id S1752929AbZLCHHn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 02:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbZLCHHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 01:45:23 -0500
-Received: from web180704.mail.sp1.yahoo.com ([68.180.196.164]:28105 "HELO
-	web180704.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752211AbZLCGpW convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 01:45:22 -0500
-X-Greylist: delayed 653 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Dec 2009 01:45:22 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=cNIcl2hrU5XEPZcs8jXij2UYZy9jXQbqi6MhNYdxubDwBY5tnRgZJe+CCGyXuEqLN+uVYYLelpBajf7ZcSNcQrnqG05miPz2fe1hhEh3LArtD7RHmKz89bDObuf6+NWFlEz6HD4yULrgWQmb+YQSwZJiK/SB33Fi2LE+d+Iss3A=;
-Message-ID: <462638.86161.qm@web180704.mail.sp1.yahoo.com>
-X-YMail-OSG: d5QOKMYVM1mpDuKrW9A9ARNzwL4HzXTXFOZ4UFTQ5WKcXnwJUQiitHXsg3Go12grg4CKutBN1FGxzsdpLdlAQlgMl5lW7c9GVkzXgn3TdFGlkQzpNL7HUPQhHkrivG707QAJSWQ7sjweDRWasazU29V9HzrEbTZItKfrTishdGVCMNXq0HUH8o0ll9Kd4kAt7cIAyBvb.7rr10f2hNQqrsgwivkBS.decN4LJI.9NJGdMdW40ygIo7r7qrRGEVNZ1fvZ06APBYBehL4ptddbY7G7OupmlA_6NVxF0Cz6EDMHZ_TlCvxrNzURG1rYvuj4TrpwPJfGauI4P5Y4vfevG.CBbY.XdLh4wLdqZczg4ZZSBCvIzOWJpn15ZWV4wnC2fA.6WSlhu7aW2nob38o3UmFuZRwo51kF4w3FP_4s7S4kVGwYjBZwI39QQP11ygbCI_0oW3.0cCaKrD8yjwBakG9KzQYSD39L2gljxbchzMh2L_7K2wVtw50vbbgdhaO997NSWPSWDYCL9dwOlPcYx9y_ljyZ3xLtRTpgAESTEUlxKM8APvyUEw82v4Cv92BqLxOnys0FwLqcFpmFBdYknZfgY68rNUUzVBMwdMa7O69J6rbuBgBNoWmHnFl3hJHQBMivSIbsH8pQ.cdODDiAXYqnuvKU7VBVm61p_wM9n6UFnGxRgzm4goVWStLj4RjNpQtJbjU1svUeNCYBHRurSjEldNxqHgL9V9SL.f2Vt0hK16i8qdZ9mBZ5KdMIDf_Kmi6Ps5rdeyhAsh8sHfz7fUXvApJcpKwIjb.L4XKkEfkDMEsTWIch_Y6UZMJi_UYcq8MqHsOoratydDehdXQPIlmRl8heGQf.FkMm3K_sB1ohIKv3hKBC0LstfXqnu0ydoiANiPMyxmAg79V1aklgxoNicJOKJdJrpjNWDVXZiYMHWu2_bY6YKOH3TrM6Ix8w0aPSzvolDN0Sozv9oBib.9Pd8ttoQQQTVW1Eq7YqHI0PpQ--
-X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
-Date: Wed, 2 Dec 2009 22:34:34 -0800 (PST)
-From: Irish News Center <updatecenter@sbcglobal.net>
-Reply-To: irs1926@w.cn
-Subject: Final Notification
-To: undisclosed recipients:;
+	Thu, 3 Dec 2009 02:07:42 -0500
+Received: from eagle.jhcloos.com ([207.210.242.212]:3506 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbZLCHHm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 02:07:42 -0500
+X-Greylist: delayed 661 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Dec 2009 02:07:42 EST
+From: James Cloos <cloos@jhcloos.com>
+To: Dan Carpenter <error27@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: host a git archive on an rsync server?
+In-Reply-To: <20091130082032.GS10640@bicker> (Dan Carpenter's message of "Mon,
+	30 Nov 2009 10:20:32 +0200")
+References: <20091130082032.GS10640@bicker>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.50 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2009 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Thu, 03 Dec 2009 01:44:43 -0500
+Message-ID: <m3fx7s8sjw.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-Hashcash: 1:30:091203:error27@gmail.com::7WWQVu71O8cr8eO0:0000000000000000000000000000000000000000000HB3al
+X-Hashcash: 1:30:091203:linux-kernel@vger.kernel.org::UPCXZxQwL9wdZM1H:00000000000000000000000000000000/ZbIA
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You won  £750,000.Send:Name,Age,Country
+>>>>> "Dan" == Dan Carpenter <error27@gmail.com> writes:
+
+Dan> Could someone do a git clone and put it on an rsync server for me?
+
+You can rsync the bare repo from kernel.org at:
+
+rsync://rsync.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+
+After you get the rsync of the bare tree, do:
+
+git clone --reference linux-2.6.git git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+
+then you can delete the linux-2.6/.git/objects/info/alternates file and
+copy the linux-2.6.git/objects/ tree to linux-2.6/.git/objects/.
+
+(Making the separate clone and moving over the referenced objects is the
+best way to ensure that the resulting repo has the same settings as a
+direct clone would have.  You may want to run a git gc after all of that
+to pack any loose objects from the rsync'ed repo.
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
