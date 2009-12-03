@@ -1,300 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756420AbZLCSbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZLCSZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756420AbZLCSbS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 13:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332AbZLCSbS
+	id S1755513AbZLCSZO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 13:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZLCSZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 13:31:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42210 "EHLO mx2.mail.elte.hu"
+	Thu, 3 Dec 2009 13:25:13 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36970 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755611AbZLCSbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 13:31:17 -0500
-Date: Thu, 3 Dec 2009 19:30:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [GIT PULL] core/printk for v2.6.33
-Message-ID: <20091203183054.GA12100@elte.hu>
+	id S1753109AbZLCSZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 13:25:12 -0500
+Message-ID: <4B180462.4050904@suse.de>
+Date: Fri, 04 Dec 2009 02:33:06 +0800
+From: Coly Li <coly.li@suse.de>
+Reply-To: coly.li@suse.de
+Organization: SuSE Labs
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Steve French <sfrench@samba.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Christoph Hellwig <hch@infradead.org>,
+       KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>,
+       Bob Copeland <me@bobcopeland.com>, Anders Larsen <al@alarsen.net>
+Subject: [PATCH] remove compiling warning by adding uninitialized_var()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+This patch removes some "may be used uninitialized" compiling warnings by adding uninitialized_var(), while the
+uninitialized variables are initialized properly.
 
-Please pull the latest core-printk-for-linus git tree from:
+Signed-off-by: Coly Li <coly.li@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steve French <sfrench@samba.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
+Cc: Bob Copeland <me@bobcopeland.com>
+Cc: Anders Larsen <al@alarsen.net>
+---
+ fs/cifs/cifssmb.c         |    2 +-
+ fs/fat/namei_vfat.c       |    6 ++++--
+ fs/freevxfs/vxfs_lookup.c |    2 +-
+ fs/nilfs2/btree.c         |    3 ++-
+ fs/omfs/file.c            |    2 +-
+ fs/qnx4/namei.c           |    2 +-
+ 6 files changed, 10 insertions(+), 7 deletions(-)
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-printk-for-linus
+diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+index 941441d..87a6edc 100644
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -3043,7 +3043,7 @@ CIFSSMBGetCIFSACL(const int xid, struct cifsTconInfo *tcon, __u16 fid,
+ 		__u32 parm_len;
+ 		__u32 acl_len;
+ 		struct smb_com_ntransact_rsp *pSMBr;
+-		char *pdata;
++		char *uninitialized_var(pdata);
 
- Thanks,
+ /* validate_nttransact */
+ 		rc = validate_ntransact(iov[0].iov_base, (char **)&parm,
+diff --git a/fs/fat/namei_vfat.c b/fs/fat/namei_vfat.c
+index f565f24..9fdd7e9 100644
+--- a/fs/fat/namei_vfat.c
++++ b/fs/fat/namei_vfat.c
+@@ -587,12 +587,14 @@ static int vfat_build_slots(struct inode *dir, const unsigned char *name,
+ 	struct fat_mount_options *opts = &sbi->options;
+ 	struct msdos_dir_slot *ps;
+ 	struct msdos_dir_entry *de;
+-	unsigned char cksum, lcase;
++	unsigned char cksum;
++	unsigned char uninitialized_var(lcase);
+ 	unsigned char msdos_name[MSDOS_NAME];
+ 	wchar_t *uname;
+ 	__le16 time, date;
+ 	u8 time_cs;
+-	int err, ulen, usize, i;
++	int err, usize, i;
++	int uninitialized_var(ulen);
+ 	loff_t offset;
 
-	Ingo
-
------------------->
-Christian Borntraeger (1):
-      ratelimit: Make suppressed output messages more useful
-
-Ingo Molnar (3):
-      ratelimit: Use per ratelimit context locking
-      ratelimit: Fix/allow use in atomic contexts
-      printk: Remove ratelimit.h from kernel.h
-
-
- include/linux/kernel.h     |    5 +--
- include/linux/net.h        |    1 +
- include/linux/ratelimit.h  |   33 +++++++++++++++++++++----------
- kernel/printk.c            |    7 +++--
- kernel/sysctl.c            |    3 ++
- lib/ratelimit.c            |   45 ++++++++++++++++++++++++-------------------
- net/core/sysctl_net_core.c |    2 +
- net/core/utils.c           |    2 +
- 8 files changed, 61 insertions(+), 37 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2b5b1e0..21d0d82 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -15,7 +15,6 @@
- #include <linux/bitops.h>
- #include <linux/log2.h>
- #include <linux/typecheck.h>
--#include <linux/ratelimit.h>
- #include <linux/dynamic_debug.h>
- #include <asm/byteorder.h>
- #include <asm/bug.h>
-@@ -241,8 +240,8 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- asmlinkage int printk(const char * fmt, ...)
- 	__attribute__ ((format (printf, 1, 2))) __cold;
- 
--extern struct ratelimit_state printk_ratelimit_state;
--extern int printk_ratelimit(void);
-+extern int __printk_ratelimit(const char *func);
-+#define printk_ratelimit() __printk_ratelimit(__func__)
- extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- 				   unsigned int interval_msec);
- 
-diff --git a/include/linux/net.h b/include/linux/net.h
-index 9040a10..df20f68 100644
---- a/include/linux/net.h
-+++ b/include/linux/net.h
-@@ -358,6 +358,7 @@ static const struct proto_ops name##_ops = {			\
- 
- #ifdef CONFIG_SYSCTL
- #include <linux/sysctl.h>
-+#include <linux/ratelimit.h>
- extern struct ratelimit_state net_ratelimit_state;
- #endif
- 
-diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
-index 00044b8..668cf1b 100644
---- a/include/linux/ratelimit.h
-+++ b/include/linux/ratelimit.h
-@@ -1,20 +1,31 @@
- #ifndef _LINUX_RATELIMIT_H
- #define _LINUX_RATELIMIT_H
-+
- #include <linux/param.h>
-+#include <linux/spinlock_types.h>
- 
--#define DEFAULT_RATELIMIT_INTERVAL (5 * HZ)
--#define DEFAULT_RATELIMIT_BURST 10
-+#define DEFAULT_RATELIMIT_INTERVAL	(5 * HZ)
-+#define DEFAULT_RATELIMIT_BURST		10
- 
- struct ratelimit_state {
--	int interval;
--	int burst;
--	int printed;
--	int missed;
--	unsigned long begin;
-+	spinlock_t	lock;		/* protect the state */
-+
-+	int		interval;
-+	int		burst;
-+	int		printed;
-+	int		missed;
-+	unsigned long	begin;
- };
- 
--#define DEFINE_RATELIMIT_STATE(name, interval, burst)		\
--		struct ratelimit_state name = {interval, burst,}
-+#define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)		\
-+									\
-+	struct ratelimit_state name = {					\
-+		.lock		= __SPIN_LOCK_UNLOCKED(name.lock),	\
-+		.interval	= interval_init,			\
-+		.burst		= burst_init,				\
-+	}
-+
-+extern int ___ratelimit(struct ratelimit_state *rs, const char *func);
-+#define __ratelimit(state) ___ratelimit(state, __func__)
- 
--extern int __ratelimit(struct ratelimit_state *rs);
--#endif
-+#endif /* _LINUX_RATELIMIT_H */
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 602033a..8283dbe 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -33,6 +33,7 @@
- #include <linux/bootmem.h>
- #include <linux/syscalls.h>
- #include <linux/kexec.h>
-+#include <linux/ratelimit.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -1363,11 +1364,11 @@ late_initcall(disable_boot_consoles);
-  */
- DEFINE_RATELIMIT_STATE(printk_ratelimit_state, 5 * HZ, 10);
- 
--int printk_ratelimit(void)
-+int __printk_ratelimit(const char *func)
+ 	*nr_slots = 0;
+diff --git a/fs/freevxfs/vxfs_lookup.c b/fs/freevxfs/vxfs_lookup.c
+index aee049c..02c9718 100644
+--- a/fs/freevxfs/vxfs_lookup.c
++++ b/fs/freevxfs/vxfs_lookup.c
+@@ -174,7 +174,7 @@ static ino_t
+ vxfs_inode_by_name(struct inode *dip, struct dentry *dp)
  {
--	return __ratelimit(&printk_ratelimit_state);
-+	return ___ratelimit(&printk_ratelimit_state, func);
- }
--EXPORT_SYMBOL(printk_ratelimit);
-+EXPORT_SYMBOL(__printk_ratelimit);
- 
- /**
-  * printk_timed_ratelimit - caller-controlled printk ratelimiting
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 1a631ba..6c37048 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -37,6 +37,7 @@
- #include <linux/sysrq.h>
- #include <linux/highuid.h>
- #include <linux/writeback.h>
-+#include <linux/ratelimit.h>
- #include <linux/hugetlb.h>
- #include <linux/initrd.h>
- #include <linux/key.h>
-@@ -155,6 +156,8 @@ extern int no_unaligned_warning;
- extern int unaligned_dump_stack;
- #endif
- 
-+extern struct ratelimit_state printk_ratelimit_state;
-+
- #ifdef CONFIG_RT_MUTEXES
- extern int max_lock_depth;
- #endif
-diff --git a/lib/ratelimit.c b/lib/ratelimit.c
-index 26187ed..09f5ce1 100644
---- a/lib/ratelimit.c
-+++ b/lib/ratelimit.c
-@@ -7,15 +7,12 @@
-  * parameter. Now every user can use their own standalone ratelimit_state.
-  *
-  * This file is released under the GPLv2.
-- *
-  */
- 
--#include <linux/kernel.h>
-+#include <linux/ratelimit.h>
- #include <linux/jiffies.h>
- #include <linux/module.h>
- 
--static DEFINE_SPINLOCK(ratelimit_lock);
--
- /*
-  * __ratelimit - rate limiting
-  * @rs: ratelimit_state data
-@@ -23,35 +20,43 @@ static DEFINE_SPINLOCK(ratelimit_lock);
-  * This enforces a rate limit: not more than @rs->ratelimit_burst callbacks
-  * in every @rs->ratelimit_jiffies
-  */
--int __ratelimit(struct ratelimit_state *rs)
-+int ___ratelimit(struct ratelimit_state *rs, const char *func)
+ 	struct vxfs_direct		*de;
+-	struct page			*pp;
++	struct page			*uninitialized_var(pp);
+ 	ino_t				ino = 0;
+
+ 	de = vxfs_find_entry(dip, dp, &pp);
+diff --git a/fs/nilfs2/btree.c b/fs/nilfs2/btree.c
+index e25b507..4e6edda 100644
+--- a/fs/nilfs2/btree.c
++++ b/fs/nilfs2/btree.c
+@@ -1911,7 +1911,8 @@ static int nilfs_btree_propagate_v(struct nilfs_btree *btree,
+ 				   struct nilfs_btree_path *path,
+ 				   int level, struct buffer_head *bh)
  {
- 	unsigned long flags;
+-	int maxlevel, ret;
 +	int ret;
- 
- 	if (!rs->interval)
- 		return 1;
- 
--	spin_lock_irqsave(&ratelimit_lock, flags);
-+	/*
-+	 * If we contend on this state's lock then almost
-+	 * by definition we are too busy to print a message,
-+	 * in addition to the one that will be printed by
-+	 * the entity that is holding the lock already:
-+	 */
-+	if (!spin_trylock_irqsave(&rs->lock, flags))
-+		return 1;
-+
- 	if (!rs->begin)
- 		rs->begin = jiffies;
- 
- 	if (time_is_before_jiffies(rs->begin + rs->interval)) {
- 		if (rs->missed)
- 			printk(KERN_WARNING "%s: %d callbacks suppressed\n",
--				__func__, rs->missed);
--		rs->begin = 0;
-+				func, rs->missed);
-+		rs->begin   = 0;
- 		rs->printed = 0;
--		rs->missed = 0;
-+		rs->missed  = 0;
- 	}
--	if (rs->burst && rs->burst > rs->printed)
--		goto print;
--
--	rs->missed++;
--	spin_unlock_irqrestore(&ratelimit_lock, flags);
--	return 0;
-+	if (rs->burst && rs->burst > rs->printed) {
-+		rs->printed++;
-+		ret = 1;
-+	} else {
-+		rs->missed++;
-+		ret = 0;
-+	}
-+	spin_unlock_irqrestore(&rs->lock, flags);
- 
--print:
--	rs->printed++;
--	spin_unlock_irqrestore(&ratelimit_lock, flags);
--	return 1;
-+	return ret;
- }
--EXPORT_SYMBOL(__ratelimit);
-+EXPORT_SYMBOL(___ratelimit);
-diff --git a/net/core/sysctl_net_core.c b/net/core/sysctl_net_core.c
-index 7db1de0..887c03c 100644
---- a/net/core/sysctl_net_core.c
-+++ b/net/core/sysctl_net_core.c
-@@ -10,7 +10,9 @@
- #include <linux/module.h>
- #include <linux/socket.h>
- #include <linux/netdevice.h>
-+#include <linux/ratelimit.h>
- #include <linux/init.h>
-+
- #include <net/ip.h>
- #include <net/sock.h>
- 
-diff --git a/net/core/utils.c b/net/core/utils.c
-index 83221ae..8382502 100644
---- a/net/core/utils.c
-+++ b/net/core/utils.c
-@@ -24,6 +24,8 @@
- #include <linux/types.h>
- #include <linux/percpu.h>
- #include <linux/init.h>
-+#include <linux/ratelimit.h>
-+
- #include <net/sock.h>
- 
- #include <asm/byteorder.h>
++	int uninitialized_var(maxlevel);
+ 	struct nilfs_btree_node *parent;
+ 	struct inode *dat = nilfs_bmap_get_dat(&btree->bt_bmap);
+ 	__u64 ptr;
+diff --git a/fs/omfs/file.c b/fs/omfs/file.c
+index 399487c..f01e1e8 100644
+--- a/fs/omfs/file.c
++++ b/fs/omfs/file.c
+@@ -222,7 +222,7 @@ static int omfs_get_block(struct inode *inode, sector_t block,
+ 	struct buffer_head *bh;
+ 	sector_t next, offset;
+ 	int ret;
+-	u64 new_block;
++	u64 uninitialized_var(new_block);
+ 	u32 max_extents;
+ 	int extent_count;
+ 	struct omfs_extent *oe;
+diff --git a/fs/qnx4/namei.c b/fs/qnx4/namei.c
+index ae1e7ed..4e60c3b 100644
+--- a/fs/qnx4/namei.c
++++ b/fs/qnx4/namei.c
+@@ -101,7 +101,7 @@ static struct buffer_head *qnx4_find_entry(int len, struct inode *dir,
+
+ struct dentry * qnx4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
+ {
+-	int ino;
++	int uninitialized_var(ino);
+ 	struct qnx4_inode_entry *de;
+ 	struct qnx4_link_info *lnk;
+ 	struct buffer_head *bh;
+-- 
+Coly Li
+SuSE Labs
