@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZLCLdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZLCLTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754043AbZLCLdx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 06:33:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZLCLdx
+	id S1755977AbZLCLTx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 06:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZLCLTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 06:33:53 -0500
-Received: from mga09.intel.com ([134.134.136.24]:30712 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753688AbZLCLdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 06:33:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,334,1257148800"; 
-   d="scan'208";a="472518145"
-Date: Thu, 3 Dec 2009 11:13:29 +0000
-From: Alan Cox <alan@linux.intel.com>
-To: Cong Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, Joe Peterson <joe@skyrush.com>
-Subject: Re: [Patch] tty: move a definition out of switch block
-Message-ID: <20091203111329.3558ea39@linux.intel.com>
-In-Reply-To: <4B177878.2090002@redhat.com>
-References: <20091201075744.4456.48125.sendpatchset@localhost.localdomain>
-	<20091201154412.4002a0d8@linux.intel.com>
-	<4B177878.2090002@redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 06:19:53 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:45205 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbZLCLTw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 06:19:52 -0500
+To: ebiederm@xmission.com (Eric W. Biederman)
+CC: miklos@szeredi.hu, jlayton@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jamie@shareable.org, pavel@ucw.cz,
+       viro@ZenIV.linux.org.uk, duaneg@dghda.com
+In-reply-to: <m1tyw8nwgk.fsf@fess.ebiederm.org>
+Subject: Re: [PATCH 2/2] vfs: force reval on dentry of bind mounted files on FS_REVAL_DOT filesystems
+References: <1259783983-26884-1-git-send-email-jlayton@redhat.com>
+	<1259783983-26884-3-git-send-email-jlayton@redhat.com>
+	<E1NG9OV-0002g5-3D@pomaz-ex.szeredi.hu> <m1tyw8nwgk.fsf@fess.ebiederm.org>
+Message-Id: <E1NG9iu-0002jR-1r@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 03 Dec 2009 12:19:48 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> jumps to its first label at a first glance. I know in this case
-> the code is _not_ wrong, but again, it's not good for reading.
+On Thu, 03 Dec 2009, Eric W. Biederman wrote:
+> > The only worry I have is that this adds an extra branch in a very hot
+> > codepath (do_lookup).  An error can't be returned, as you note, and
+> > for bind mounted directories d_invalidate() will not succeed: the
+> > directory is busy, it's referenced by the mount. 
+> 
+> Not true.  d_mountpoint is false, so d_invalidate can succeed.
 
-So this is just your personal preference ? That seems like pointless
-churn, especially given that many other people consider putting the
-variables there is better than
+Have a look at the code.  d_invalidate() doesn't check for a
+mountpoint, it checks the refcount.  It needs to keep the directory
+dentry hashed if it's in any way reachable other than from the cache
+(file descriptor, cwd, mount, etc).
 
-	case foo:
-	{
-		Blah blah
-	}
-	}
-}
-
-in switches
+Thanks,
+Miklos
