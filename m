@@ -1,135 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbZLCBzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbZLCBxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbZLCBzX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 20:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZLCBzW
+	id S1753362AbZLCBxg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 20:53:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZLCBxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 20:55:22 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48583 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752839AbZLCBzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 20:55:21 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 3 Dec 2009 10:52:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+	Wed, 2 Dec 2009 20:53:36 -0500
+Received: from mga14.intel.com ([143.182.124.37]:60287 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752827AbZLCBxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 20:53:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="218200144"
+Date: Thu, 3 Dec 2009 09:53:39 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Nick Piggin <npiggin@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Nick Piggin <npiggin@suse.de>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 22/24] HWPOISON: add memory cgroup filter
-Message-Id: <20091203105229.afb0efc4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091202125842.GA13277@localhost>
-References: <20091202031231.735876003@intel.com>
-	<20091202043046.519053333@intel.com>
-	<20091202124446.GA18989@one.firstfloor.org>
-	<20091202125842.GA13277@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 21/24] cgroup: define empty css_put() when
+	!CONFIG_CGROUPS
+Message-ID: <20091203015339.GC8520@localhost>
+References: <20091202031231.735876003@intel.com> <20091202043046.420815285@intel.com> <6599ad830912021448h6f939623y43fbe5fde2c36b85@mail.gmail.com> <20091202225243.GO18989@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091202225243.GO18989@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Dec 2009 20:58:42 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
-
-> On Wed, Dec 02, 2009 at 08:44:46PM +0800, Andi Kleen wrote:
-> > >  
-> > > +static int hwpoison_filter_task(struct page *p)
-> > > +{
+On Thu, Dec 03, 2009 at 06:52:43AM +0800, Andi Kleen wrote:
+> On Wed, Dec 02, 2009 at 02:48:03PM -0800, Paul Menage wrote:
+> > On Tue, Dec 1, 2009 at 7:12 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > --- linux-mm.orig/include/linux/cgroup.h        2009-11-02 10:18:41.000000000 +0800
+> > > +++ linux-mm/include/linux/cgroup.h     2009-11-02 10:26:22.000000000 +0800
+> > > @@ -581,6 +581,9 @@ static inline int cgroupstats_build(stru
+> > >        return -EINVAL;
+> > >  }
+> > >
+> > > +struct cgroup_subsys_state;
+> > > +static inline void css_put(struct cgroup_subsys_state *css) {}
+> > > +
+> > >  #endif /* !CONFIG_CGROUPS */
 > > 
-> > Can we make that ifdef instead of depends on ?
+> > This doesn't sound like the right thing to do - if !CONFIG_CGROUPS,
+> > then the code shouldn't be able to see a css structure to pass to this
+> > function.
 > 
-> Sure. Here is the updated patch.
-> 
-> ---
-> HWPOISON: add memory cgroup filter
-> 
-> The hwpoison test suite need to inject hwpoison to a collection of
-> selected task pages, and must not touch pages not owned by them and
-> thus kill important system processes such as init. (But it's OK to
-> mis-hwpoison free/unowned pages as well as shared clean pages.
-> Mis-hwpoison of shared dirty pages will kill all tasks, so the test
-> suite will target all or non of such tasks in the first place.)
-> 
-> The memory cgroup serves this purpose well. We can put the target
-> processes under the control of a memory cgroup, and tell the hwpoison
-> injection code to only kill pages associated with some active memory
-> cgroup.
-> 
-> The prerequisite for doing hwpoison stress tests with mem_cgroup is,
-> the mem_cgroup code tracks task pages _accurately_ (unless page is
-> locked).  Which we believe is/should be true.
-> 
-> The benifits are simplification of hwpoison injector code. Also the
-> mem_cgroup code will automatically be tested by hwpoison test cases.
-> 
-> The alternative interfaces pin-pfn/unpin-pfn can also delegate the
-> (process and page flags) filtering functions reliably to user space.
-> However prototype implementation shows that this scheme adds more
-> complexity than we wanted.
-> 
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> CC: Li Zefan <lizf@cn.fujitsu.com>
-> CC: Paul Menage <menage@google.com>
-> CC: Nick Piggin <npiggin@suse.de> 
-> CC: Andi Kleen <andi@firstfloor.org> 
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/Kconfig           |    2 +-
->  mm/hwpoison-inject.c |    7 +++++++
->  mm/internal.h        |    1 +
->  mm/memory-failure.c  |   28 ++++++++++++++++++++++++++++
->  4 files changed, 37 insertions(+), 1 deletion(-)
-> 
-> --- linux-mm.orig/mm/memory-failure.c	2009-12-01 09:56:06.000000000 +0800
-> +++ linux-mm/mm/memory-failure.c	2009-12-02 20:56:55.000000000 +0800
-> @@ -96,6 +96,31 @@ static int hwpoison_filter_flags(struct 
->  		return -EINVAL;
->  }
->  
-> +#ifdef	CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> +u32 hwpoison_filter_memcg;
-> +static int hwpoison_filter_task(struct page *p)
-> +{
-> +	struct mem_cgroup *mem;
-> +	struct cgroup_subsys_state *css;
-> +
-> +	if (!hwpoison_filter_memcg)
-> +		return 0;
-> +
-> +	mem = try_get_mem_cgroup_from_page(p);
-> +	if (!mem)
-> +		return -EINVAL;
-> +
-> +	css = mem_cgroup_css(mem);
-> +	if (!css)
-> +		return -EINVAL;
+> I agree. The high level code should be ifdefed.
 
-> +
-> +	css_put(css);
-> +	return 0;
-> +}
-
-
-Hmm..can you adds comment ? What does this function is for ?
-
-Is this more meaningful than PageLRU(page) etc..?
+Right. Following your suggestion to ifdef the memcg user
+hwpoison_filter_task(), this patch can be dropped.
 
 Thanks,
--Kame
-
+Fengguang
