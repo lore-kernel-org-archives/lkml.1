@@ -1,148 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbZLCGNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbZLCGPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752169AbZLCGNI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 01:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZLCGNH
+	id S1752645AbZLCGPA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 01:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZLCGPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 01:13:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35368 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbZLCGNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 01:13:06 -0500
-Message-ID: <4B1756F2.4070504@kernel.org>
-Date: Thu, 03 Dec 2009 15:13:06 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Thu, 3 Dec 2009 01:15:00 -0500
+Received: from mail-pz0-f184.google.com ([209.85.222.184]:39737 "EHLO
+	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324AbZLCGO7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 01:14:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=j0nYoVCG/X1vMlnfLIohxQ4Uy3CPXc58GzgpL88ckntwN0WL+RQ59KwXO4EVIoneQ4
+         d3O5HNcgsn+fjFRxLJv3pSWBM+CKwY69Hd1Qqre4OO62vymhnkUTaGiACsr/9Gwf7ZQD
+         Z/ugzqi9F/C8Bjy1RtBKJusJkYwp4Xjld30aw=
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, peterz@infradead.org,
-       efault@gmx.de, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: [PATCH UPDATED 7/7] sched: implement try_to_wake_up_local()
-References: <1259726212-30259-1-git-send-email-tj@kernel.org> <1259726212-30259-8-git-send-email-tj@kernel.org>
-In-Reply-To: <1259726212-30259-8-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <0CED0757-67E3-4EAD-A2F7-AB8553559E94@kernel.crashing.org>
+References: <1259663450-28790-1-git-send-email-leoli@freescale.com>
+	 <1259665127.2076.363.camel@pasglop>
+	 <2a27d3730912010334q24bf0e06g84839aae131475ec@mail.gmail.com>
+	 <E389CC83-307F-4A7D-B90B-CD928A1D1D1D@kernel.crashing.org>
+	 <2a27d3730912012225h3deab5dao2211bc404d247192@mail.gmail.com>
+	 <0CED0757-67E3-4EAD-A2F7-AB8553559E94@kernel.crashing.org>
+Date: Thu, 3 Dec 2009 14:15:05 +0800
+X-Google-Sender-Auth: 440cb3855b93306d
+Message-ID: <2a27d3730912022215t3f575a24uc66e22fd653d8f3c@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mm: setting mmaped page cache property through 
+	device tree
+From: Li Yang <leoli@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       paulus@samba.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement try_to_wake_up_local().  try_to_wake_up_local() is similar
-to try_to_wake_up() but it assumes the caller has this_rq() locked and
-the target task is bound to this_rq().  try_to_wake_up_local() can be
-called from wakeup and sleep scheduler notifiers.
+On Thu, Dec 3, 2009 at 12:15 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+>>>> The scenario for the first case is that in a multicore system running
+>>>> ASMP which means different OS runs on different cores.  They might
+>>>> communicate through a shared memory region.  The region on every OS
+>>>> need to be mapped with the same cache perperty to avoid cache paradox.
+>>>
+>>> This isn't true.  In ASMP, you cannot usually do coherency between
+>>> the different CPUs at all.  Also, in most PowerPC implementations,
+>>
+>> Coherency can't be achieved with proper configuration and management?  Why
+>> so?
+>
+> Because different CPUs do not usually speak the same coherency protocol.
+>
+> However, it occurred to me that what you call ASMP is actually SMP where
+> you run different OSes on the various cores?
+>
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
----
-The only change is to accomodate function name change of earlier
-patch.
+Yup.  There might be some confusion on the ASMP definition.  But with
+multi-core common in the market, new ASMP system may run on SMP-like
+hardware.
 
-Updated tree available on top of current sched/core available in the
-following git trees.
+>>> it is fine if one CPU maps a memory range as coherent while another
+>>> maps it as non-coherent; sure, you have to be careful or you will
+>>
+>> But we do want the shared region to be coherent.  So mappings should
+>> have the same cacheability property.
+>
+> No, they only need WIMG=xx1x on both sides.  Of course, IM=11 might not
+> be a valid combination on your particular CPU, and it probably is better
+> for performance to have the RAM cacheable anyway.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git sched-core-for-ingo
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git sched-wq-for-ingo
+Agreed.  This patch also makes M bit configurable.
 
-Thanks.
+>
+>>> So make the memory known to the kernel, just tell the kernel not to
+>>> use it.  If it's normal system RAM, just put it in the "memory" node
+>>> and do a memreserve on it (or do something in your platform code); if
+>>> it's some other memory, do a device driver for it, map it there.
+>>
+>> Your solution is feasible.  But the memory allocation is a software
+>> configuration.  IMHO, it should be better and easier addressed by
+>> changing configurations(like mem parameter) rather than the kernel
+>> platform code which should address hardware configuration.
+>
+> Either platform code or some other boot-time code, sure.
+>
+> The point is, you put the RAM in the device tree, so the kernel can
+> know that particular range of physical address space is RAM, even
+> if it doesn't use it itself.
 
- include/linux/sched.h |    2 +
- kernel/sched.c        |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 58 insertions(+)
+If device tree always pass all the memory available, we need to
+implement memmap= kernel cmdline parameter for powerpc in case the
+memory used isn't start at address 0.  Maybe it's better that all
+these information be passed with kernel parameter rather than device
+tree for cross architecture portability.  What do you think?
 
-Index: work3/include/linux/sched.h
-===================================================================
---- work3.orig/include/linux/sched.h
-+++ work3/include/linux/sched.h
-@@ -2067,6 +2067,8 @@ extern void release_uids(struct user_nam
- 
- extern void do_timer(unsigned long ticks);
- 
-+extern bool try_to_wake_up_local(struct task_struct *p, unsigned int state,
-+				 int wake_flags);
- extern int wake_up_state(struct task_struct *tsk, unsigned int state);
- extern int wake_up_process(struct task_struct *tsk);
- extern void wake_up_new_task(struct task_struct *tsk,
-Index: work3/kernel/sched.c
-===================================================================
---- work3.orig/kernel/sched.c
-+++ work3/kernel/sched.c
-@@ -2410,6 +2410,10 @@ static inline void ttwu_post_activation(
- 		rq->idle_stamp = 0;
- 	}
- #endif
-+	/*
-+	 * Wake up is complete, fire wake up notifier.  This allows
-+	 * try_to_wake_up_local() to be called from wake up notifiers.
-+	 */
- 	if (success)
- 		fire_sched_notifiers(p, wakeup);
- }
-@@ -2511,6 +2515,53 @@ out:
- }
- 
- /**
-+ * try_to_wake_up_local - try to wake up a local task with rq lock held
-+ * @p: the thread to be awakened
-+ * @state: the mask of task states that can be woken
-+ * @wake_flags: wake modifier flags (WF_*)
-+ *
-+ * Put @p on the run-queue if it's not alredy there.  The caller must
-+ * ensure that this_rq() is locked, @p is bound to this_rq() and @p is
-+ * not the current task.  this_rq() stays locked over invocation.
-+ *
-+ * This function can be called from wakeup and sleep scheduler
-+ * notifiers.  Be careful not to create deep recursion by chaining
-+ * wakeup notifiers.
-+ *
-+ * Returns %true if @p was woken up, %false if it was already running
-+ * or @state didn't match @p's state.
-+ */
-+bool try_to_wake_up_local(struct task_struct *p, unsigned int state,
-+			  int wake_flags)
-+{
-+	struct rq *rq = task_rq(p);
-+	bool success = false;
-+
-+	BUG_ON(rq != this_rq());
-+	BUG_ON(p == current);
-+	lockdep_assert_held(&rq->lock);
-+
-+	if (!sched_feat(SYNC_WAKEUPS))
-+		wake_flags &= ~WF_SYNC;
-+
-+	if (!(p->state & state))
-+		return false;
-+
-+	if (!p->se.on_rq) {
-+		if (likely(!task_running(rq, p))) {
-+			schedstat_inc(rq, ttwu_count);
-+			schedstat_inc(rq, ttwu_local);
-+		}
-+		ttwu_activate(p, rq, wake_flags & WF_SYNC, false, true);
-+		success = true;
-+	}
-+
-+	ttwu_post_activation(p, rq, wake_flags, success);
-+
-+	return success;
-+}
-+
-+/**
-  * wake_up_process - Wake up a specific process
-  * @p: The process to be woken up.
-  *
-@@ -5437,6 +5488,11 @@ need_resched_nonpreemptible:
- 		if (unlikely(signal_pending_state(prev->state, prev))) {
- 			prev->state = TASK_RUNNING;
- 		} else {
-+			/*
-+			 * Fire sleep notifier before changing any scheduler
-+			 * state.  This allows try_to_wake_up_local() to be
-+			 * called from sleep notifiers.
-+			 */
- 			fire_sched_notifiers(prev, sleep);
- 			deactivate_task(rq, prev, 1);
- 		}
+- Leo
