@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbZLCHKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbZLCHMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752567AbZLCHKR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 02:10:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZLCHKQ
+	id S1753445AbZLCHMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 02:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZLCHMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 02:10:16 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33410 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751970AbZLCHKQ (ORCPT
+	Thu, 3 Dec 2009 02:12:42 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:52545 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbZLCHMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 02:10:16 -0500
-Date: Thu, 3 Dec 2009 07:10:00 +0000 (GMT)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-cc: linux-mips@linux-mips.org, Thomas Koeller <thomas.koeller@baslerweb.com>,
-       Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH] eXcite: Remove platform support and drivers.
-In-Reply-To: <20091202153534.GA10692@linux-mips.org>
-Message-ID: <alpine.LFD.2.00.0912030709230.10116@macbook.infradead.org>
-References: <20091202153016.GA9892@linux-mips.org> <20091202153534.GA10692@linux-mips.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 3 Dec 2009 02:12:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QaWOzRER5/qgjTM7Sdd33qef2QNbbw0i0DxQP4+ZBsZycibT7E9wHVTdMdISnZznqF
+         MIhKcCthG1loWX85KkcYQOX8sMXeUKGdDgnzF/TvjfaEsR6cgk5U+XCHkPZtsyAx/lsf
+         qgzvDFtREXnu+uNh2iboRABv+3nd8iU9YnhW8=
+Date: Wed, 2 Dec 2009 23:12:44 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: liu pf <kernelfans@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Should we use preempt_disable() in sleep_on_common()?
+Message-ID: <20091203071244.GI9121@core.coreip.homeip.net>
+References: <563a732e0912022249y1e831c6cv7f2d5d376b8a5f63@mail.gmail.com> <20091202230746.611f7fc5@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091202230746.611f7fc5@infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Dec 2009, Ralf Baechle wrote:
+On Wed, Dec 02, 2009 at 11:07:46PM -0800, Arjan van de Ven wrote:
+> On Thu, 3 Dec 2009 14:49:14 +0800
+> liu pf <kernelfans@gmail.com> wrote:
+> 
+> > Hi:
+> > 
+> > I am puzzled with the following scenario. Could anyone enlighten me?
+> 
+> 
+> sleep_on family of APIs is very racy and just cannot be used correctly;
+> I'm not surprised that there's a preempt race in it, but trust me, it's
+> not the biggest race... never ever use these APIs!!!
+> 
+> 
 
-> The platform has never been fully merged.  Remove it including MTD and
-> watchdog drivers.
->
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-> ---
-> I'd like acks from the watchdog and MTD maintainers please.
-
-Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+BTW, why do we still have them? I checked couple and they don't seem to
+be used...
 
 -- 
-dwmw2
-
+Dmitry
