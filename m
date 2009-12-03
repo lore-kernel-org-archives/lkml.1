@@ -1,113 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZLCEHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZLCEN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbZLCEHJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 23:07:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486AbZLCEHH
+	id S1755849AbZLCEN7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 23:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbZLCEN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 23:07:07 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61469 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755778AbZLCEHD (ORCPT
+	Wed, 2 Dec 2009 23:13:58 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:50877
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752115AbZLCEN5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 23:07:03 -0500
-Subject: Re: trace/events: DECLARE vs DEFINE semantic
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, wcohen@redhat.com, fweisbec@gmail.com,
-       tglx@linutronix.de, jbaron@redhat.com,
-       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <4B1737E2.6010502@redhat.com>
-References: <20091202144334.GA30359@elte.hu>
-	 <1259765735.12870.42.camel@gandalf.stny.rr.com>
-	 <20091202162715.GB9710@Krystal>
-	 <1259773888.12870.61.camel@gandalf.stny.rr.com>
-	 <20091202180633.GF9710@Krystal>
-	 <1259777987.12870.70.camel@gandalf.stny.rr.com>
-	 <20091202190135.GA23316@Krystal>
-	 <1259781578.12870.78.camel@gandalf.stny.rr.com>
-	 <4B16EC06.6010706@redhat.com>
-	 <1259794005.12870.102.camel@gandalf.stny.rr.com>
-	 <20091202231019.GB14770@Krystal>  <4B1737E2.6010502@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 02 Dec 2009 23:07:08 -0500
-Message-Id: <1259813228.12870.108.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 23:13:57 -0500
+Subject: Re: [RFC v2] Another approach to IR
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <Pine.LNX.4.58.0912021827120.4729@shell2.speakeasy.net>
+Date: Wed, 2 Dec 2009 23:13:47 -0500
+Cc: Jon Smirl <jonsmirl@gmail.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <5FED031C-C24B-4F82-9621-EB1C8A5B928B@wilsonet.com>
+References: <4B155288.1060509@redhat.com>  <20091201201158.GA20335@core.coreip.homeip.net> <4B15852D.4050505@redhat.com>  <20091202093803.GA8656@core.coreip.homeip.net> <4B16614A.3000208@redhat.com>  <20091202171059.GC17839@core.coreip.homeip.net> <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>  <4B16BE6A.7000601@redhat.com>  <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <9e4733910912021620s7a2b09a8v88dd45eef38835a@mail.gmail.com> <Pine.LNX.4.58.0912021827120.4729@shell2.speakeasy.net>
+To: Trent Piepho <xyzzy@speakeasy.org>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-02 at 23:00 -0500, Masami Hiramatsu wrote:
-> Mathieu Desnoyers wrote:
-> > In addition, I wonder if we should rename "CREATE_TRACE_POINTS" to
-> > something more suitable while we are here ? Basically, it will affect
-> > all TRACE_CLASS/TRACE_CLASS_EVENT/TRACE_EVENT from headers included
-> > after it's defined.
+On Dec 2, 2009, at 9:48 PM, Trent Piepho wrote:
+...
+>>>> Now I understand that if 2 remotes send completely identical signals we
+>>>> won't be able to separate them, but in cases when we can I think we
+>>>> should.
+>>> 
+>>> I don't have a problem with that, if its a truly desired feature.  But
+>>> for the most part, I don't see the point.  Generally, you go from
+>>> having multiple remotes, one per device (where "device" is your TV,
+>>> amplifier, set top box, htpc, etc), to having a single universal remote
+>>> that controls all of those devices.  But for each device (IR receiver),
+>>> *one* IR command set.  The desire to use multiple distinct remotes with
+>>> a single IR receiver doesn't make sense to me.  Perhaps I'm just not
+>>> creative enough in my use of IR.  :)
 > 
-> Agreed, CREATE_TRACE_POINTS is a bit irritating thing :-(
+> Most universal remotes I'm familiar with emulate multiple remotes.  I.e.
+> my tv remote generates one set of scancodes for the numeric keys.  The DVD
+> remote generates a different set.  The amplifier remote in "tv mode"
+> generates the same codes as the tv remote, and in "dvd mode" the same codes
+> as the dvd remote.  From the perspective of the IR receiver there is no
+> difference between having both the DVD and TV remotes, or using the
+> aplifier remote to control both devices.
 
-Well, I think the name could use some help, but I don't think it is the
-name that irritates you.
+Okay, in the above scenario, you've still got a single input device...
 
+> Now, my aplifier remote has a number of modes.  Some control devices I
+> have, like "vcr mode", and there is nothing I can do about that.  Some,
+> like "md mode" don't control devices I have.  That means they are free to
+> do things on the computer.  Someone else with the same remote (or any
+> number of remotes that use the same protocol and scancodes) might have
+> different devices.
 > 
-> For example, if we call tracepoints defined in same-header on
-> several different files, we need to check other people have
-> already defined CREATE_TRACE_POINTS on another file, because
-> CREATE_TRACE_POINTS must be used once for each header...
-> 
-> So, how about introducing a c file which is only for defining
-> tracepoints for kernel parts ? or defining tracepoints in
-> kernel at the beginning of kernel/tracepoint.c ? (and don't
-> touch tracepoints in modules)
+> So I want my computer to do stuff when I push "JVC MD #xx" keys, but ignore
+> "JVC VCR #yyy" yets.  Someone with an MD player and not a VCR would want to
+> opposite.  Rather than force everyone to create custom keymaps, it's much
+> easier if we can use the standard keymaps from a database of common remotes
+> and simply tell mythtv to only use remote #xxx or not to use remote #yyy.
 
-I think the proper fix is to have each tracepoint header have its own C
-file. I believe Christoph does this with xfs.
+Sure, but the key is that this can't be done automagically. The IR driver has no way of knowing that user A wants JVC MD keys handled and JVC VCR keys ignored, and user B wants vice versa, while user C wants both ignored, etc. This is somewhat tangential to whether or not there's a separate input device per "remote" though. You can use multiple remotes/protocols with a single input device or lirc device already (if the hardware doesn't have to be put explicitly into a mode to listen for that proto, of course, but then its a hardware decoding device feeding a single input device anyway, so...).
 
-Basically, we should have a:
+> It sounds like you're thinking of a receiver that came bundled with a
+> remote and that's it.  Not someone with a number of remotes that came with
+> different pieces of AV gear that they want to use with their computer.
 
-kernel/sched_trace.c that includes the include/trace/events/sched.h and
-does the define.
+No, I just pick *one* remote and use it for everything, not schizophrenically hopping from one remote to another, expecting them all the be able to control everything. :) Its a hell of a lot easier to find buttons w/o looking at the remote if you always use the same one for everything, for one.
 
-And the same goes for other trace points.
+Anyway, I think I'm talking myself in circles. Supporting multiple remotes via multiple input devices (or even via a single input device) isn't at all interesting to me for my own use, but if there really is demand for such support (and it appears there is), then fine, lets do it.
 
-> 
-> e.g.
-> 
-> @kernel/tracepoint.c
->  ...
->  #define CREATE_TRACE_POINTS
->  #include <trace/events/sched.h>
->  #include <trace/events/...>
+-- 
+Jarod Wilson
+jarod@wilsonet.com
 
-We could do this for all that is defined in the include/trace/events.
-
->  ...
-> 
-> @kernel/sched.c
->  ...
->  #include <trace/events/sched.h>	/* Just include events header */
->  ...
-> 
-> @fs/ext4/super.c (no change, since it can be module)
->  ...
->  #define CREATE_TRACE_POINTS
->  #include <trace/events/ext4.h>
-
-Perhaps we should move out anything in include/trace/events that is also
-a module into its sub system?
-
->  ...
-> 
-> Hmm?
-
-Hrmmm?
-
--- Steve
 
 
