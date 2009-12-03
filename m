@@ -1,118 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZLCNy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZLCNyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756150AbZLCNy1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 08:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbZLCNy0
+	id S1756201AbZLCNyw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 08:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbZLCNyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 08:54:26 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:45317 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756088AbZLCNyY (ORCPT
+	Thu, 3 Dec 2009 08:54:51 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33348 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756137AbZLCNyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 08:54:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=kvjrUkR0e3sFSkBJFewhIOcwgKzLUjHekt7Q2KDXXwE1L1xf5N4S2zGh6jjrpKvoKt
-         DIdJvLpn8MGkJibj8SzPR0sVKnwmkFpAMWwxbGG4Be3NIr2sAeO2aqec+0kTs4BBZEk3
-         iSGyQTCXso5KoC/kYqfdx0ndRgWHlU8YrZKto=
-Message-ID: <4B17C311.6050500@gmail.com>
-Date: Thu, 03 Dec 2009 21:54:25 +0800
-From: "David T. L. Wong" <davidtlwong@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [PATCH] max2165 32bit build patch
-References: <20091130175346.3f3345ed.sfr@canb.auug.org.au>	<4B1409D9.1050901@oracle.com> <20091202100406.e25b2322.randy.dunlap@oracle.com>
-In-Reply-To: <20091202100406.e25b2322.randy.dunlap@oracle.com>
-Content-Type: multipart/mixed;
- boundary="------------060404090507030301090501"
+	Thu, 3 Dec 2009 08:54:50 -0500
+Subject: Re: trace/events: DECLARE vs DEFINE semantic
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, wcohen@redhat.com, fweisbec@gmail.com,
+       tglx@linutronix.de, jbaron@redhat.com,
+       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+In-Reply-To: <4B17C25A.8090703@redhat.com>
+References: <20091202144334.GA30359@elte.hu>
+	 <1259765735.12870.42.camel@gandalf.stny.rr.com>
+	 <20091202162715.GB9710@Krystal>
+	 <1259773888.12870.61.camel@gandalf.stny.rr.com>
+	 <20091202180633.GF9710@Krystal>
+	 <1259777987.12870.70.camel@gandalf.stny.rr.com>
+	 <20091202190135.GA23316@Krystal>
+	 <1259781578.12870.78.camel@gandalf.stny.rr.com>
+	 <4B16EC06.6010706@redhat.com>
+	 <1259794005.12870.102.camel@gandalf.stny.rr.com>
+	 <20091202231019.GB14770@Krystal>  <4B1737E2.6010502@redhat.com>
+	 <1259813228.12870.108.camel@gandalf.stny.rr.com>
+	 <4B17C25A.8090703@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 03 Dec 2009 08:54:53 -0500
+Message-Id: <1259848493.12870.114.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060404090507030301090501
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, 2009-12-03 at 08:51 -0500, Masami Hiramatsu wrote:
 
-Randy Dunlap wrote:
-> On Mon, 30 Nov 2009 10:07:21 -0800 Randy Dunlap wrote:
+> > Basically, we should have a:
+> > 
+> > kernel/sched_trace.c that includes the include/trace/events/sched.h and
+> > does the define.
+> > 
+> > And the same goes for other trace points.
 > 
->> Stephen Rothwell wrote:
->>> Hi all,
->>>
->>> Changes since 20091127:
->>>
->>> The v4l-dvb tree lost its conflict.
->>
->> on i386 (X86_32):
->>
->> a 'double' variable is used, causing:
->>
->> ERROR: "__floatunsidf" [drivers/media/common/tuners/max2165.ko] undefined!
->> ERROR: "__adddf3" [drivers/media/common/tuners/max2165.ko] undefined!
->> ERROR: "__fixunsdfsi" [drivers/media/common/tuners/max2165.ko] undefined!
+> Hmm, I'd rather like to move it into kernel/events/ or something new
+> sub directory, since those files will have just two lines (define and
+> include).
+
+I'm fine with a kernel/events dir.
+
 > 
+> >> e.g.
+> >>
+> >> @kernel/tracepoint.c
+> >>  ...
+> >>  #define CREATE_TRACE_POINTS
+> >>  #include <trace/events/sched.h>
+> >>  #include <trace/events/...>
+> > 
+> > We could do this for all that is defined in the include/trace/events.
+> > 
+> >>  ...
+> >>
+> >> @kernel/sched.c
+> >>  ...
+> >>  #include <trace/events/sched.h>	/* Just include events header */
+> >>  ...
+> >>
+> >> @fs/ext4/super.c (no change, since it can be module)
+> >>  ...
+> >>  #define CREATE_TRACE_POINTS
+> >>  #include <trace/events/ext4.h>
+> > 
+> > Perhaps we should move out anything in include/trace/events that is also
+> > a module into its sub system?
 > 
-> linux-next-20091202:
-> 
-> still have this one (above) and similar with
-> drivers/media/dvb/frontends/atbm8830.c:
-> 
-> drivers/built-in.o: In function `atbm8830_init':
-> atbm8830.c:(.text+0x9012f9): undefined reference to `__udivdi3'
-> atbm8830.c:(.text+0x901384): undefined reference to `__floatunsidf'
-> atbm8830.c:(.text+0x901395): undefined reference to `__muldf3'
-> atbm8830.c:(.text+0x9013a5): undefined reference to `__floatunsidf'
-> atbm8830.c:(.text+0x9013b2): undefined reference to `__divdf3'
-> atbm8830.c:(.text+0x9013c3): undefined reference to `__muldf3'
-> atbm8830.c:(.text+0x9013cd): undefined reference to `__fixunsdfsi'
-> 
-> ---
-> ~Randy
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Would you mean putting those headers in sub-system's directory?
+> (e.g. fs/ext4/)
+> In that case, a problem will happen when user want to hook those
+> tracepoint from their module, because it is hard to find those
+> local headers.
 
-This patch drops usage of floating point variable for 32bit build
+Why? Modules usually do have their own headers in their sub system.
 
-Signed-off-by: David T. L. Wong <davidtlwong@gmail.com>
+OK, if a module keeps their headers global (include/linux) then sure
+they can keep their tracepoint header in include/trace/events. But I
+still think that the module CREATE_TRACE_POINTS code should be kept with
+the module code itself (but in a small separate file).
 
---------------060404090507030301090501
-Content-Type: text/x-patch;
- name="max2165_no_float.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="max2165_no_float.patch"
-
-diff --git a/linux/drivers/media/common/tuners/max2165.c b/linux/drivers/media/common/tuners/max2165.c
---- a/linux/drivers/media/common/tuners/max2165.c
-+++ b/linux/drivers/media/common/tuners/max2165.c
-@@ -193,7 +193,7 @@
- {
- 	u8 tf;
- 	u8 tf_ntch;
--	double t;
-+	u32 t;
- 	u32 quotient, fraction;
- 
- 	/* Set PLL divider according to RF frequency */
-@@ -217,9 +217,6 @@
- 	t += (priv->tf_balun_hi_ref - priv->tf_balun_low_ref)
- 		* (freq / 1000 - 470000) / (780000 - 470000);
- 
--#if 0
--	tf = t + 0.5; /* round up */
--#endif
- 	tf = t;
- 	dprintk("tf = %X\n", tf);
- 	tf |= tf_ntch << 4;
+-- Steve
 
 
---------------060404090507030301090501--
