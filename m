@@ -1,102 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbZLCTwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbZLCTw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbZLCTwt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 14:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbZLCTws
+	id S1756740AbZLCTw5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 14:52:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZLCTwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 14:52:48 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:40945 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754938AbZLCTwp (ORCPT
+	Thu, 3 Dec 2009 14:52:55 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:25744 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756160AbZLCTwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 14:52:45 -0500
+	Thu, 3 Dec 2009 14:52:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=IzDo/FWLEJlNPOKg4ymg705R1ay4Koa5kTogAHxivV0ZbwxvZrog5xfSRflysgLLCA
-         JlF0Btb5v9+hQnGjIPR+jEBxr0aDRL/ZK+sJ84C/GX7uNOk6o9/glXc+AbbKd+Za/xLt
-         uit7U16Pj0XuNDnwCMpJR1SxTDuxQE2SjurVc=
+        b=tJsUVzouJQfuaU4t0qnhFk604ZfEuSoQKBPoalXVxf/sO2/EUYC5WcjbmHsRhA5rDd
+         eeubhSYmHltQKEMnGHNJ113S4x5j/Fq7Hewkk7rPl03rKaslIZuEsFSif6pO5wP1kAwp
+         0cOmPHi8xT94/DoGN8m61unkcOgJ8RfrZMp1A=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Date: Thu, 03 Dec 2009 20:52:03 +0100
-Message-Id: <20091203195203.9093.35271.sendpatchset@localhost>
+Date: Thu, 03 Dec 2009 20:52:11 +0100
+Message-Id: <20091203195211.9093.87171.sendpatchset@localhost>
 In-Reply-To: <20091203195145.9093.88261.sendpatchset@localhost>
 References: <20091203195145.9093.88261.sendpatchset@localhost>
-Subject: [PATCH 2/6] cmd64x: remove no longer needed debugging code
+Subject: [PATCH 3/6] cy82c693: remove no longer needed debugging code
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] cmd64x: remove no longer needed debugging code
+Subject: [PATCH] cy82c693: remove no longer needed debugging code
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/cmd64x.c |   17 -----------------
- 1 file changed, 17 deletions(-)
+ drivers/ide/cy82c693.c |   27 ---------------------------
+ 1 file changed, 27 deletions(-)
 
-Index: b/drivers/ide/cmd64x.c
+Index: b/drivers/ide/cy82c693.c
 ===================================================================
---- a/drivers/ide/cmd64x.c
-+++ b/drivers/ide/cmd64x.c
-@@ -20,14 +20,6 @@
+--- a/drivers/ide/cy82c693.c
++++ b/drivers/ide/cy82c693.c
+@@ -51,11 +51,6 @@
+ #define DRV_NAME "cy82c693"
  
- #define DRV_NAME "cmd64x"
- 
--#define CMD_DEBUG 0
--
--#if CMD_DEBUG
--#define cmdprintk(x...)	printk(x)
--#else
--#define cmdprintk(x...)
--#endif
--
  /*
-  * CMD64x specific registers definition.
-  */
-@@ -76,9 +68,6 @@ static void program_cycle_times (ide_dri
- 		{15, 15, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0};
- 	static const u8 drwtim_regs[4] = {DRWTIM0, DRWTIM1, DRWTIM2, DRWTIM3};
- 
--	cmdprintk("program_cycle_times parameters: total=%d, active=%d\n",
--		  cycle_time, active_time);
+- *	The following are used to debug the driver.
+- */
+-#define CY82C693_DEBUG_INFO	0
 -
- 	cycle_count	= quantize_timing( cycle_time, clock_time);
- 	active_count	= quantize_timing(active_time, clock_time);
- 	recovery_count	= cycle_count - active_count;
-@@ -94,9 +83,6 @@ static void program_cycle_times (ide_dri
- 	if (active_count > 16)		/* shouldn't actually happen... */
- 	 	active_count = 16;
+-/*
+  *	NOTE: the value for busmaster timeout is tricky and I got it by
+  *	trial and error!  By using a to low value will cause DMA timeouts
+  *	and drop IDE performance, and by using a to high value will cause
+@@ -176,11 +171,6 @@ static void cy82c693_set_dma_mode(ide_dr
+ 	outb(index, CY82_INDEX_PORT);
+ 	outb(data, CY82_DATA_PORT);
  
--	cmdprintk("Final counts: total=%d, active=%d, recovery=%d\n",
--		  cycle_count, active_count, recovery_count);
+-#if CY82C693_DEBUG_INFO
+-	printk(KERN_INFO "%s (ch=%d, dev=%d): set DMA mode to %d (single=%d)\n",
+-		drive->name, hwif->channel, drive->dn & 1, mode & 3, single);
+-#endif /* CY82C693_DEBUG_INFO */
 -
  	/*
- 	 * Convert values to internal chipset representation
- 	 */
-@@ -106,7 +92,6 @@ static void program_cycle_times (ide_dri
- 	/* Program the active/recovery counts into the DRWTIM register */
- 	drwtim = (active_count << 4) | recovery_count;
- 	(void) pci_write_config_byte(dev, drwtim_regs[drive->dn], drwtim);
--	cmdprintk("Write 0x%02x to reg 0x%x\n", drwtim, drwtim_regs[drive->dn]);
+ 	 * note: below we set the value for Bus Master IDE TimeOut Register
+ 	 * I'm not absolutly sure what this does, but it solved my problem
+@@ -194,11 +184,6 @@ static void cy82c693_set_dma_mode(ide_dr
+ 	data = BUSMASTER_TIMEOUT;
+ 	outb(CY82_INDEX_TIMEOUT, CY82_INDEX_PORT);
+ 	outb(data, CY82_DATA_PORT);
+-
+-#if CY82C693_DEBUG_INFO
+-	printk(KERN_INFO "%s: Set IDE Bus Master TimeOut Register to 0x%X\n",
+-		drive->name, data);
+-#endif /* CY82C693_DEBUG_INFO */
  }
  
- /*
-@@ -150,7 +135,6 @@ static void cmd64x_tune_pio(ide_drive_t
- 
- 	if (setup_count > 5)		/* shouldn't actually happen... */
- 		setup_count = 5;
--	cmdprintk("Final address setup count: %d\n", setup_count);
- 
- 	/*
- 	 * Program the address setup clocks into the ARTTIM registers.
-@@ -162,7 +146,6 @@ static void cmd64x_tune_pio(ide_drive_t
- 	arttim &= ~0xc0;
- 	arttim |= setup_values[setup_count];
- 	(void) pci_write_config_byte(dev, arttim_regs[drive->dn], arttim);
--	cmdprintk("Write 0x%02x to reg 0x%x\n", arttim, arttim_regs[drive->dn]);
+ static void cy82c693_set_pio_mode(ide_drive_t *drive, const u8 pio)
+@@ -239,8 +224,6 @@ static void cy82c693_set_pio_mode(ide_dr
+ 		pci_write_config_byte(dev, CY82_IDE_MASTER_IOR, pclk.time_16r);
+ 		pci_write_config_byte(dev, CY82_IDE_MASTER_IOW, pclk.time_16w);
+ 		pci_write_config_byte(dev, CY82_IDE_MASTER_8BIT, pclk.time_8);
+-
+-		addrCtrl &= 0xF;
+ 	} else {
+ 		/*
+ 		 * set slave drive
+@@ -257,17 +240,7 @@ static void cy82c693_set_pio_mode(ide_dr
+ 		pci_write_config_byte(dev, CY82_IDE_SLAVE_IOR, pclk.time_16r);
+ 		pci_write_config_byte(dev, CY82_IDE_SLAVE_IOW, pclk.time_16w);
+ 		pci_write_config_byte(dev, CY82_IDE_SLAVE_8BIT, pclk.time_8);
+-
+-		addrCtrl >>= 4;
+-		addrCtrl &= 0xF;
+ 	}
+-
+-#if CY82C693_DEBUG_INFO
+-	printk(KERN_INFO "%s (ch=%d, dev=%d): set PIO timing to "
+-		"(addr=0x%X, ior=0x%X, iow=0x%X, 8bit=0x%X)\n",
+-		drive->name, hwif->channel, drive->dn & 1,
+-		addrCtrl, pclk.time_16r, pclk.time_16w, pclk.time_8);
+-#endif /* CY82C693_DEBUG_INFO */
  }
  
- /*
+ static void __devinit init_iops_cy82c693(ide_hwif_t *hwif)
