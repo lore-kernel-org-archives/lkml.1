@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbZLCXTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZLCXWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752749AbZLCXTK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 18:19:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZLCXTJ
+	id S1753481AbZLCXWb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 18:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZLCXWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 18:19:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36998 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750765AbZLCXTI (ORCPT
+	Thu, 3 Dec 2009 18:22:30 -0500
+Received: from mail-ew0-f222.google.com ([209.85.219.222]:34162 "EHLO
+	mail-ew0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbZLCXWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 18:19:08 -0500
-Date: Thu, 3 Dec 2009 15:19:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: steiner@sgi.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Patch 1/2] GRU - function to generate  chipset IPI values
-Message-Id: <20091203151912.c99c4173.akpm@linux-foundation.org>
-In-Reply-To: <20091203223549.730449000@sgi.com>
-References: <20091203223414.393107000@sgi.com>
-	<20091203223549.730449000@sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 18:22:30 -0500
+X-Greylist: delayed 3726 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Dec 2009 18:22:29 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=njxm0Mk3PmREJvjPD+U0XR2jTasxTSjKPvsELr7Gef4uIM1xujLHEKA1HaZsF+98mp
+         og+2MyEvkGiUtnhHDJMFrRVRpOPz7kqMF9D9srmx++5JjjogTep4W8zGPgRv41AEIeUR
+         i0z7LXg2rJAFJ76+qDzk/0b20KcO5IkejBR+8=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] perf events: Remove unused struct perf_event::event_callback
+Date: Fri,  4 Dec 2009 00:22:37 +0100
+Message-Id: <1259882557-12024-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Dec 2009 16:34:15 -0600
-steiner@sgi.com wrote:
+This field might result from an older manual rebasing mistake.
+We don't use it.
 
-> From: Jack Steiner <steiner@sgi.com>
-> 
-> Create a function to generate the value that is written to the UV hub
-> MMR to cause an IPI interrupt to be sent. The function will be
-> used in the GRU message queue error recovery code that sends IPIs to
-> nodes in remote partitions.
-> 
-> ...
->
-> +static unsigned long uv_hub_ipi_value(int apicid, int vector, int mode)
-> +{
-> +	return (1UL << UVH_IPI_INT_SEND_SHFT) |
-> +			((apicid) << UVH_IPI_INT_APIC_ID_SHFT) |
-> +			(mode << UVH_IPI_INT_DELIVERY_MODE_SHFT) |
-> +			(vector << UVH_IPI_INT_VECTOR_SHFT);
-> +}
+Reported-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
+---
+ include/linux/perf_event.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-You've taken care to avoid a shift overflow of "1", but not of
-`apicid', `vector' and `mode'.
-
-Maybe the compiler does that, I forget.
-
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index d045e6e..c7f6502 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -671,8 +671,6 @@ struct perf_event {
+ 
+ 	perf_callback_t			callback;
+ 
+-	perf_callback_t			event_callback;
+-
+ #endif /* CONFIG_PERF_EVENTS */
+ };
+ 
+-- 
+1.6.2.3
 
