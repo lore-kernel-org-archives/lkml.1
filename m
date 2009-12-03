@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZLCTVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbZLCTUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbZLCTVS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 14:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbZLCTVR
+	id S1756740AbZLCTUo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 14:20:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZLCTUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 14:21:17 -0500
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:47324 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756558AbZLCTVQ (ORCPT
+	Thu, 3 Dec 2009 14:20:44 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:58946 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756508AbZLCTUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 14:21:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=Kn0fYQdmBQtzj6JQ7fYNph61DhMcxpFb+CuzLPH+0XBvFOs90dMlae6F/0qvvL8kNn
-         48ajU6VLrEIY32bZzBHcrSrzQ3MN2H4mWdnT5jTHreRh4egRTgRzHQyxypXBhYAqhuQ8
-         rKKNQXdpep0xlhGJvqlQ+jsEQ/sxvpIklwnZg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: What's in libata-dev.git?
-Date: Thu, 3 Dec 2009 20:20:16 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-References: <20091203075653.GA30612@havoc.gtf.org> <200912031647.26342.bzolnier@gmail.com> <4B180E04.5030405@garzik.org>
-In-Reply-To: <4B180E04.5030405@garzik.org>
+	Thu, 3 Dec 2009 14:20:43 -0500
+Date: Thu, 3 Dec 2009 20:20:44 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>, Pierre Ossman <pierre@ossman.eu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Fleming <matt@console-pimps.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Robert Jarzmik <robert.jarzmik@free.fr>,
+       Cliff Brake <cbrake@bec-systems.com>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
+       "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH] mmc: move regulator handling to core
+Message-ID: <20091203192044.GJ14091@buzzloop.caiaq.de>
+References: <1259844390-10541-1-git-send-email-daniel@caiaq.de>
+ <4B17CADB.1070406@nokia.com>
 MIME-Version: 1.0
-Message-Id: <200912032020.16608.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B17CADB.1070406@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 December 2009 08:14:12 pm Jeff Garzik wrote:
-> On 12/03/2009 10:47 AM, Bartlomiej Zolnierkiewicz wrote:
-> > ( Jeff, you probably would want to take ide-pci-generic fix to your tree
-> >    as libata-dev tree currently breaks build for IDE tree. )
+On Thu, Dec 03, 2009 at 04:27:39PM +0200, Adrian Hunter wrote:
+> gDaniel Mack wrote:
+
+[...]
+
+> > drivers/mmc/core/core.c   |   36 ++++++++++++++++++++----------------
+> > drivers/mmc/core/host.c   |    3 +++
+> > drivers/mmc/host/mmci.c   |   28 ++++++++++++----------------
+> > drivers/mmc/host/mmci.h   |    1 -
+> > drivers/mmc/host/pxamci.c |   20 ++++++++------------
+> > include/linux/mmc/host.h  |   10 ++++++----
 > 
-> I didn't know that.
+> What about arch/arm/mach-omap2/mmc-twl4030.c ?
 
-You would know if you would be either:
+Argh, missed that one. And this particular case doesn't fit to my
+modifications. I don't know the code well ...  We would need to
+have a struct mmc_host * in all the functions there calling
+mmc_regulator_{set,get}_ocr. Any idea how to resolve that?
 
-	a) reading
+> >--- a/drivers/mmc/core/host.c
+> >+++ b/drivers/mmc/core/host.c
+> >@@ -18,6 +18,7 @@
+> > #include <linux/leds.h>
+> > #include <linux/mmc/host.h>
+> >+#include <linux/regulator/consumer.h>
+> > #include "core.h"
+> > #include "host.h"
+> >@@ -154,6 +155,8 @@ void mmc_remove_host(struct mmc_host *host)
+> > 	mmc_remove_host_debugfs(host);
+> > #endif
+> >+	regulator_put(host->vcc);
+> >+
+> 
+> If the core is doing a 'regulator_put()' shouldn't it also be doing
+> a 'regulator_get()'?  Why not leave it to the drivers?
 
-or
+Yes, I can change the patch to do that, no problem. The major reason why
+I didn't put the regulator_get() to the mmc core is that I need to have
+the platform_device to obtain its name.
 
-	b) building
+Daniel
 
-patches that you're applying.
-
-> URL or search string?
-
-I think that there were enough hints in my mail already.
-
-Please use your own time to fix your own tree.
-
---
-Bartlomiej Zolnierkiewicz
