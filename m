@@ -1,102 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZLCWID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZLCWHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556AbZLCWID (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 17:08:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZLCWID
+	id S1753416AbZLCWHT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 17:07:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZLCWHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 17:08:03 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:46900 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbZLCWIB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 17:08:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=NfFPjE9Hfz1q94iR5gNJ2SWK1QVp5DlXkokC7DjQJUA70AGsM1FI5l2w8UM36vq7K6
-         lJxZs3/3eh9HGxhfBRoGNOGP1oL3HnXfpmoDSACgs43R/1ewqZ9WLDGZ+vKwudyFHaYV
-         LWf6UrjqhGCN8Lup6SojrHIeRbvhwAAtK47iQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 00/86] PATA fixes
-Date: Thu, 3 Dec 2009 23:06:51 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200912032256.39790.bzolnier@gmail.com> <4B18357C.8070807@garzik.org>
-In-Reply-To: <4B18357C.8070807@garzik.org>
+	Thu, 3 Dec 2009 17:07:18 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:58612 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751376AbZLCWHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 17:07:16 -0500
+Date: Thu, 3 Dec 2009 22:07:18 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Nelson Castillo <arhuaco@freaks-unidos.net>,
+       Russell King <linux@arm.linux.org.uk>,
+       Ryan Mallon <ryan@bluewatersys.com>,
+       linux-arm-kernel@lists.infradead.org, Ben Dooks <ben-linux@fluff.org>,
+       akpm@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       Ramax Lo <ramaxlo@gmail.com>
+Subject: Re: [PATCH 15/38] move s3c_adc_remove to .devexit.text
+Message-ID: <20091203220718.GS4808@trinity.fluff.org>
+References: <1259096853-18909-6-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-7-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-8-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-9-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-10-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-11-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-12-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-13-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-14-git-send-email-u.kleine-koenig@pengutronix.de> <1259096853-18909-15-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912032306.52022.bzolnier@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1259096853-18909-15-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 December 2009 11:02:36 pm Jeff Garzik wrote:
-> On 12/03/2009 04:56 PM, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 03 December 2009 10:51:09 pm Jeff Garzik wrote:
-> >
-> >>>>>          pata_via: clear UDMA transfer mode bit for PIO and MWDMA
-> >>>>
-> >>>> applied -- even though Alan's comment was correct.  It is standard
-> >>>> kernel practice to place cosmetic changes into their own patches,
-> >>>> because it is standard kernel practice to break up logically distinct
-> >>>> changes.
-> >>>
-> >>> We are talking about:
-> >>>
-> >>>    pata_via.c |   19 +++++++++++++------
-> >>>    1 file changed, 13 insertions(+), 6 deletions(-)
-> >>>
-> >>> patch here (http://lkml.org/lkml/2009/11/25/380) and cosmetic change
-> >>> is clearly documented in the patch description.
-> >>>
-> >>>
-> >>> Do people really wonder why I find upstream to be too much hassle to
-> >>> deal with?
-> >>
-> >> The thousand other kernel developers seem to be able to split up their
-> >> patches, separating out cosmetic changes from functional ones.  It has
-> >> clear engineering benefits, and has been standard practice for a decade
-> >> or more.
-> >>
-> >> Why is it such an imposition for your patches to look like everyone
-> >> else's?  And by "everyone", I mean all other kernel developers, not just
-> >> other ATA developers.
-> >>
-> >> You seem to consider standard kernel practice a hassle.  Separating out
-> >> cosmetic changes is not only a libata practice, it is the norm for the
-> >> entire kernel.
-> >
-> > Indeed.
-> >
-> >  From 94be9a58d7e683ac3c1df1858a17f09ebade8da0 Mon Sep 17 00:00:00 2001
-> > From: Jeff Garzik<jeff@garzik.org>
-> > Date: Fri, 16 Jan 2009 10:17:09 -0500
-> > Subject: [PATCH] [libata] get-identity ioctl: Fix use of invalid memory pointer
-> >   for SAS drivers.
-> >
-> > Caught by Ke Wei (and team?) at Marvell.
-> >
-> > Also, move the ata_scsi_ioctl export to libata-scsi.c, as that seems to be the
-> > general trend.
-> >
-> > Acked-by: James Bottomley<James.Bottomley@HansenPartnership.com>
-> > Signed-off-by: Jeff Garzik<jgarzik@redhat.com>
+On Tue, Nov 24, 2009 at 10:07:10PM +0100, Uwe Kleine-König wrote:
+> The function s3c_adc_remove is used only wrapped by __devexit_p so define
+> it using __devexit.
+
+Shall I put these into my tree?
+ 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Acked-By: Ben Dooks <ben@simtec.co.uk>
+> Cc: Ramax Lo <ramaxlo@gmail.com>
+> Cc: Nelson Castillo <arhuaco@freaks-unidos.net>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: Ben Dooks <ben-linux@fluff.org>
+> Cc: Alexey Dobriyan <adobriyan@gmail.com>
+> Cc: Ryan Mallon <ryan@bluewatersys.com>
+> Cc: linux-arm-kernel@lists.infradead.org
+> ---
+>  arch/arm/plat-s3c24xx/adc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> If your point, by posting this patch, is that it includes a ton of 
-> gratuitous cosmetic changes, you misread the patch.
+> diff --git a/arch/arm/plat-s3c24xx/adc.c b/arch/arm/plat-s3c24xx/adc.c
+> index df47322..ce47627 100644
+> --- a/arch/arm/plat-s3c24xx/adc.c
+> +++ b/arch/arm/plat-s3c24xx/adc.c
+> @@ -365,7 +365,7 @@ static int s3c_adc_probe(struct platform_device *pdev)
+>  	return ret;
+>  }
+>  
+> -static int s3c_adc_remove(struct platform_device *pdev)
+> +static int __devexit s3c_adc_remove(struct platform_device *pdev)
+>  {
+>  	struct adc_device *adc = platform_get_drvdata(pdev);
+>  
+> -- 
+> 1.6.5.2
 > 
-> ata_scsi_ioctl() remains in existence; only the callers need to use the 
-> new SAS-related ioctl function were updated.  The remainder continued to 
-> use ata_scsi_ioctl().
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-Moving kernel exports around is completely unrelated to a bug fix.
+-- 
+-- 
+Ben
 
-Yes, it is convenient to do it in the same patch and OK with me.
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
---
-Bartlomiej Zolnierkiewicz
