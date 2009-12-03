@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZLCKtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZLCKwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbZLCKtQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 05:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbZLCKtP
+	id S1755939AbZLCKwV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 05:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbZLCKwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 05:49:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49866 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755516AbZLCKtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 05:49:14 -0500
-Date: Thu, 3 Dec 2009 11:49:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: slightly shorten __ticket_spin_trylock() (v2)
-Message-ID: <20091203104906.GC7628@elte.hu>
-References: <4B179A6D0200007800023542@vpn.id2.novell.com>
+	Thu, 3 Dec 2009 05:52:21 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44255 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754518AbZLCKwT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 05:52:19 -0500
+X-Sasl-enc: hQ7nxUld36+0wwfePvGbXkclL2te1eu4hzmmpiwd5cOG 1259837546
+Date: Thu, 3 Dec 2009 08:52:23 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Rafa?? Mi??ecki <zajec5@gmail.com>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: Backlight device class redesign
+Message-ID: <20091203105223.GB32571@khazad-dum.debian.net>
+References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
+ <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
+ <1259827274.27069.50.camel@rzhang1-desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B179A6D0200007800023542@vpn.id2.novell.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1259827274.27069.50.camel@rzhang1-desktop>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 03 Dec 2009, Zhang Rui wrote:
+> For example, device /sys/class/backlight/panel0 is created the first
+> time a backlight_ops for this display is registered.
+> And create the symbol link from the backlight class device to "physical
+> device" (device that invokes backlight_device_register) in the backlight
+> class device driver, if we really need it.
+> Remove and recreate a link pointing to the new physical device when the
+> backlight mode is changed.
 
-* Jan Beulich <JBeulich@novell.com> wrote:
+FWIW, I agree the above solution is simple enough and quite good enough.
 
-> Since the callers generally expect a boolean value, there's no need to
-> zero-extend the outcome of the comparison. It just requires that all
-> of x86' trylock implementations have their return type changed
-> accordingly.
-> 
-> Don't use bool for the return type though - this is being frowned on
-> and presently doesn't work with the pv-ops patching macros.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> ---
->  arch/x86/include/asm/paravirt.h       |    4 ++--
->  arch/x86/include/asm/paravirt_types.h |    2 +-
->  arch/x86/include/asm/spinlock.h       |   12 +++++-------
->  arch/x86/xen/spinlock.c               |    2 +-
->  4 files changed, 9 insertions(+), 11 deletions(-)
+I just have absolutely _NO_ idea whatsoever how a platform driver can ask
+the PCI or APCI layer "where is the video device driving the LVDS panel so
+that I can bind to it"...
 
-Looks much cleaner - and should give us pretty much the same savings as 
-the previous patch, right? (if not, do you have a size comparison?)
-
-	Ingo
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
