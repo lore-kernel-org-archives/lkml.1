@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZLCIrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbZLCIsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbZLCIrm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 03:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZLCIrl
+	id S1754488AbZLCIsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 03:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZLCIsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 03:47:41 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:1490 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751991AbZLCIrl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 03:47:41 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqEEAGoIF0vCTtAn/2dsb2JhbACBTtVEhDEEgWo
-Date: Thu, 3 Dec 2009 09:47:42 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: David Miller <davem@davemloft.net>
-Cc: jarkao2@gmail.com, grundler@parisc-linux.org, kyle@mcmartin.ca,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: tulip : kernel BUG in tulip_up/tulip_resume
-Message-ID: <20091203084742.GA23867@frolo.macqel>
-References: <20091108223305.GA21072@frolo.macqel> <20091129001710.GA4055@ami.dom.local> <20091129113659.GA2971@ami.dom.local> <20091202.222526.237239384.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091202.222526.237239384.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 3 Dec 2009 03:48:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1055 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751156AbZLCIsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 03:48:31 -0500
+Date: Thu, 3 Dec 2009 03:48:28 -0500
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Eric Paris <eparis@parisplace.org>, linux-security-module@vger.kernel.org,
+       akpm@linux-foundation.org, Amerigo Wang <amwang@redhat.com>,
+       James Morris <jmorris@namei.org>
+Message-Id: <20091203085127.4370.1737.sendpatchset@localhost.localdomain>
+Subject: [Patch] selinux: remove a useless return
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jarek and David,
-On Wed, Dec 02, 2009 at 10:25:26PM -0800, David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Sun, 29 Nov 2009 12:36:59 +0100
-> 
-> > On Sun, Nov 29, 2009 at 01:17:10AM +0100, Jarek Poplawski wrote:
-> >> Philippe De Muyter wrote, On 11/08/2009 11:33 PM:
-> >> > Does someone know what could be wrong and have a fix or should I look myself ?
-> >> 
-> >> Don't know, guess only...
-> > 
-> > ...And maybe a second guess btw. (to try together or separate).
-> 
-> Philippe please test Jarek's patches.
+The last return is unreachable, remove the 'return'
+in default, let it fall through.
 
-Busy doing that. I had some problems trying to activate apm's debug.
-Will report later.
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: Eric Paris <eparis@parisplace.org>
 
-Best regards
+---
 
-Philippe
+diff --git a/security/selinux/ss/mls.c b/security/selinux/ss/mls.c
+index b5407f1..718823d 100644
+--- a/security/selinux/ss/mls.c
++++ b/security/selinux/ss/mls.c
+@@ -542,7 +542,7 @@ int mls_compute_sid(struct context *scontext,
+ 		/* Use the process effective MLS attributes. */
+ 		return mls_context_cpy_low(newcontext, scontext);
+ 	default:
+-		return -EINVAL;
++		/* Fallthrough */
+ 	}
+ 	return -EINVAL;
+ }
