@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbZLCPha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZLCPuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756471AbZLCPha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 10:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756472AbZLCPh2
+	id S1754070AbZLCPuw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 10:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZLCPuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 10:37:28 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33105 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756463AbZLCPhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 10:37:25 -0500
-Date: Thu, 3 Dec 2009 15:36:37 GMT
-From: tip-bot for Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       joerg.roedel@amd.com, andreas.herrmann3@amd.com, mikpe@it.uu.se,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       andreas.herrmann3@amd.com, joerg.roedel@amd.com, mikpe@it.uu.se,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <19223.53436.931768.278021@pilspetsen.it.uu.se>
-References: <19223.53436.931768.278021@pilspetsen.it.uu.se>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/apic] x86, apic: Enable lapic nmi watchdog on AMD Family 11h
-Message-ID: <tip-7d1849aff6687a135a8da3a75e32a00e3137a5e2@git.kernel.org>
-Git-Commit-ID: 7d1849aff6687a135a8da3a75e32a00e3137a5e2
-X-Mailer: tip-git-log-daemon
+	Thu, 3 Dec 2009 10:50:51 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46744 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753328AbZLCPuv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 10:50:51 -0500
+Message-ID: <4B17DD4A.2010305@zytor.com>
+Date: Thu, 03 Dec 2009 07:46:18 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Ma, Ling" <ling.ma@intel.com>, Arjan van de Ven <arjan@infradead.org>,
+       Dave Jones <davej@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] [X86] Compile Option Os versus O2 on latest x86 platform
+References: <1259222752-8161-1-git-send-email-ling.ma@intel.com> <20091126094930.GD32275@elte.hu> <8FED46E8A9CA574792FC7AACAC38FE7714FED213BE@PDSMSX501.ccr.corp.intel.com> <20091201021459.43d2142a@infradead.org> <8FED46E8A9CA574792FC7AACAC38FE7714FF5709D9@PDSMSX501.ccr.corp.intel.com> <4B17D3D3.1060502@zytor.com> <20091203153113.GB27324@elte.hu>
+In-Reply-To: <20091203153113.GB27324@elte.hu>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7d1849aff6687a135a8da3a75e32a00e3137a5e2
-Gitweb:     http://git.kernel.org/tip/7d1849aff6687a135a8da3a75e32a00e3137a5e2
-Author:     Mikael Pettersson <mikpe@it.uu.se>
-AuthorDate: Thu, 3 Dec 2009 15:52:44 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 3 Dec 2009 16:25:15 +0100
+On 12/03/2009 07:31 AM, Ingo Molnar wrote:
+> 
+> * H. Peter Anvin <hpa@zytor.com> wrote:
+> 
+>> On 12/03/2009 07:03 AM, Ma, Ling wrote:
+>>>> a key question is.. how much more memory do you have free due to -Os?
+>>>> (because memory is cache is performance on a system level as well)
+>>> The kernel code size from Os is 12M, that from O2 is 14M.
+>>>> and how much less icache pressure is there?
+>>> From perf stat report, cache reference(unified cache) from O2 is almost the same with Os.
+>>
+>> The icache pressure was substantially higher (by ~10%) in the reports 
+>> that I saw.
+> 
+> hm, icache numbers are not included in perf stat runs by default. Are 
+> there some icache numbers i missed perhaps?
+> 
 
-x86, apic: Enable lapic nmi watchdog on AMD Family 11h
+Sorry, you're right; cache references and cache misses.  Furthermore,
+I'm wrong, I was looking at references *per unit time*, which just show
+that roughly the same number was squeezed into a shorter time.
 
-The x86 lapic nmi watchdog does not recognize AMD Family 11h,
-resulting in:
+Never mind me... :-/
 
-  NMI watchdog: CPU not supported
+	-hpa
 
-As far as I can see from available documentation (the BKDM),
-family 11h looks identical to family 10h as far as the PMU
-is concerned.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Extending the check to accept family 11h results in:
-
-  Testing NMI watchdog ... OK.
-
-I've been running with this change on a Turion X2 Ultra ZM-82
-laptop for a couple of weeks now without problems.
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>
-Cc: <stable@kernel.org>
-LKML-Reference: <19223.53436.931768.278021@pilspetsen.it.uu.se>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/cpu/perfctr-watchdog.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perfctr-watchdog.c b/arch/x86/kernel/cpu/perfctr-watchdog.c
-index fab786f..898df97 100644
---- a/arch/x86/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/x86/kernel/cpu/perfctr-watchdog.c
-@@ -712,7 +712,7 @@ static void probe_nmi_watchdog(void)
- 	switch (boot_cpu_data.x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		if (boot_cpu_data.x86 != 6 && boot_cpu_data.x86 != 15 &&
--		    boot_cpu_data.x86 != 16)
-+		    boot_cpu_data.x86 != 16 && boot_cpu_data.x86 != 17)
- 			return;
- 		wd_ops = &k7_wd_ops;
- 		break;
