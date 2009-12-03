@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZLCBE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZLCBDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbZLCBE7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 20:04:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZLCBE6
+	id S1753089AbZLCBDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 20:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZLCBDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 20:04:58 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:58416 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752827AbZLCBE6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 20:04:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=TpUbRJaxfzmGDPIkZ+rgR1skzPF/Ns30fxTBrj27PGS92QsD9YsDygPDs8tf3nwopU
-         l+TMKzS+ojML1Bgdz+8m1KkhU2XTkfjkqNZtnadhwMmO1gk+WhM5eDxigEn/RysntiX+
-         A9EOvVaT0KkmRwueyJQbfT+VNX10m+hRFbw7k=
-Message-ID: <4B170D46.9030701@gmail.com>
-Date: Wed, 02 Dec 2009 16:58:46 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: Linux-usb <linux-usb@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: root hub lost power or was reset
-References: <dd18b0c30912021434t4a247646q48f32c0d0e40faae@mail.gmail.com> <4B1701EC.9030504@gmail.com>
-In-Reply-To: <4B1701EC.9030504@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 2 Dec 2009 20:03:44 -0500
+Received: from mail1.radix.net ([207.192.128.31]:59391 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752753AbZLCBDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 20:03:42 -0500
+Subject: Re: [RFC v2] Another approach to IR
+From: Andy Walls <awalls@radix.net>
+To: Jarod Wilson <jarod@wilsonet.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, j@jannau.net,
+       jarod@redhat.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+In-Reply-To: <1CA77278-9B8E-4169-8F10-78764A35F64E@wilsonet.com>
+References: <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com>
+	 <4B154C54.5090906@redhat.com>
+	 <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com>
+	 <4B155288.1060509@redhat.com>
+	 <20091201175400.GA19259@core.coreip.homeip.net>
+	 <4B1567D8.7080007@redhat.com>
+	 <20091201201158.GA20335@core.coreip.homeip.net>
+	 <4B15852D.4050505@redhat.com>
+	 <20091202093803.GA8656@core.coreip.homeip.net>
+	 <4B16614A.3000208@redhat.com>
+	 <20091202171059.GC17839@core.coreip.homeip.net>
+	 <4B16C10E.6040907@redhat.com>
+	 <1CA77278-9B8E-4169-8F10-78764A35F64E@wilsonet.com>
+Content-Type: text/plain
+Date: Wed, 02 Dec 2009 20:02:49 -0500
+Message-Id: <1259802169.3085.10.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/02/09 16:10, Robert Hancock wrote:
-> On 12/02/2009 04:34 PM, Justin Mattock wrote:
->> I've been getting a 45 sec
->> pause when waking my machine up
->> on the first cycle using s2ram.
->> At first thought it was udev, but later
->> am not sure it is. With further looking
->> if I remove the isight_firmware module from the kernel
->> suspend wakes up the first cycle as it should.(I don't have
->> isight-firmware-tools installed, leading me to believe this might
->> be the issue with isight-firmware.ko.)
->>
->> Now looking at dmesg I see:
->>
->> [ 413.551845] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low)
->> -> IRQ 23
->> [ 413.551855] uhci_hcd 0000:00:1d.0: setting latency timer to 64
->> [ 413.551887] usb usb2: root hub lost power or was reset
->
-> Is that unexpected? It seems reasonable to me..
->
+On Wed, 2009-12-02 at 14:55 -0500, Jarod Wilson wrote:
+> On Dec 2, 2009, at 2:33 PM, Mauro Carvalho Chehab wrote:
+> 
+> > Dmitry Torokhov wrote:
+> >> 
+> ...
+> >>>> (for each remote/substream that they can recognize).
+> >>> I'm assuming that, by remote, you're referring to a remote receiver (and not to 
+> >>> the remote itself), right?
+> >> 
+> >> If we could separate by remote transmitter that would be the best I
+> >> think, but I understand that it is rarely possible?
+> > 
+> > IMHO, the better is to use a separate interface for the IR transmitters,
+> > on the devices that support this feature. There are only a few devices
+> > I'm aware of that are able to transmit IR codes.
+> 
+> If I'm thinking clearly, there are only three lirc kernel drivers that
+> support transmit, lirc_mceusb, lirc_zilog and lirc_serial. The mceusb
+> driver was posted, so I won't rehash what it is here. The zilog driver
+> binds to a Zilog z80 microprocessor thingy (iirc) exposed via i2c,
+> found on many Hauppauge v4l/dvb devices (PVR-150, HVR-1600, HD-PVR,
+> etc). The serial driver is fairly self-explanatory as well.
+> 
+> There are also a few userspace-driven devices that do transmit, but
+> I'm assuming they're (currently) irrelevant to this discussion.
 
-honestly I can't remember seeing this or not.
-if this is normal then I'll leave it as is.
 
-s2ram is working.. at first thought this was the cause,
-but ended up not having anything todo with the real cause
-of s2ram pausing.
+I've got the CX23888 integrated IR Rx done and Tx nearly done.  I was
+waiting to see how kfifo and lirc_dev panned out before making the
+interface to userspace.
 
-Justin P. Mattock
+The CX23885, CX23418, and CX2584x integrated IR is essentially the same.
+I hope to have CX23885 IR done by Christmas.
+
+Both of those IR devices are/will be encapsulated in a v4l2_subdevice
+object internally.  I was going to write lirc_v4l glue between the
+v4l2_device/v4l2_subdev_ir_ops and lirc_dev.
+
+As for the the I2C chips, I was going to go back and encapsulate those
+in the v4l2_subdevice object as well, so then my notional lirc_v4l could
+pick those up too.  The I2C subsystem only allows one binding to an I2C
+client address/name on a bus.  So without some new glue like a notional
+lirc_v4l, it *may* be hard to share between ir-kbd-i2c and lirc_i2c and
+lirc_zilog.
+
+Regards,
+Andy
+
