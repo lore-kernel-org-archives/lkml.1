@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZLCDx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZLCD6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbZLCDx0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 22:53:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZLCDx0
+	id S1755657AbZLCD6v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 22:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZLCD6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 22:53:26 -0500
-Received: from mga14.intel.com ([143.182.124.37]:18121 "EHLO mga14.intel.com"
+	Wed, 2 Dec 2009 22:58:50 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33579 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408AbZLCDxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 22:53:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="218237349"
-Date: Thu, 3 Dec 2009 11:53:30 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: jens.axboe@oracle.com, akpm@linux-foundation.org
-Subject: [RFC]cfq-iosched: no dispatch limit for single queue
-Message-ID: <20091203035330.GB13165@sli10-desk.sh.intel.com>
+	id S1753479AbZLCD6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 22:58:49 -0500
+Message-ID: <4B1737E2.6010502@redhat.com>
+Date: Wed, 02 Dec 2009 23:00:34 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Steven Rostedt <rostedt@goodmis.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
+       jbaron@redhat.com, linux-tip-commits@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: trace/events: DECLARE vs DEFINE semantic
+References: <20091202144334.GA30359@elte.hu> <1259765735.12870.42.camel@gandalf.stny.rr.com> <20091202162715.GB9710@Krystal> <1259773888.12870.61.camel@gandalf.stny.rr.com> <20091202180633.GF9710@Krystal> <1259777987.12870.70.camel@gandalf.stny.rr.com> <20091202190135.GA23316@Krystal> <1259781578.12870.78.camel@gandalf.stny.rr.com> <4B16EC06.6010706@redhat.com> <1259794005.12870.102.camel@gandalf.stny.rr.com> <20091202231019.GB14770@Krystal>
+In-Reply-To: <20091202231019.GB14770@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since commit 2f5cb7381b737e24c8046fd4aeab571fb71315f5, each queue can send
-up to 4 * 4 requests if only one queue exists. I wonder why we have such limit.
-Device supports tag can send more requests. For example, AHCI can send 31
-requests. Test (direct aio randread) shows the limits reduce about 4% disk
-thoughput.
-On the other hand, since we send one request one time, if other queue
-pop when current is sending more than cfq_quantum requests, current queue will
-stop send requests soon after one request, so sounds there is no big latency.
+Mathieu Desnoyers wrote:
+> In addition, I wonder if we should rename "CREATE_TRACE_POINTS" to
+> something more suitable while we are here ? Basically, it will affect
+> all TRACE_CLASS/TRACE_CLASS_EVENT/TRACE_EVENT from headers included
+> after it's defined.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Agreed, CREATE_TRACE_POINTS is a bit irritating thing :-(
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index aa1e953..e05650f 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1298,9 +1298,9 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 			return false;
- 
- 		/*
--		 * Sole queue user, allow bigger slice
-+		 * Sole queue user, no limit
- 		 */
--		max_dispatch *= 4;
-+		max_dispatch = -1;
- 	}
- 
- 	/*
+For example, if we call tracepoints defined in same-header on
+several different files, we need to check other people have
+already defined CREATE_TRACE_POINTS on another file, because
+CREATE_TRACE_POINTS must be used once for each header...
+
+So, how about introducing a c file which is only for defining
+tracepoints for kernel parts ? or defining tracepoints in
+kernel at the beginning of kernel/tracepoint.c ? (and don't
+touch tracepoints in modules)
+
+e.g.
+
+@kernel/tracepoint.c
+ ...
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/sched.h>
+ #include <trace/events/...>
+ ...
+
+@kernel/sched.c
+ ...
+ #include <trace/events/sched.h>	/* Just include events header */
+ ...
+
+@fs/ext4/super.c (no change, since it can be module)
+ ...
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/ext4.h>
+ ...
+
+Hmm?
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
