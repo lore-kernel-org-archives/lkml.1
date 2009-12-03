@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbZLCVcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZLCVco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbZLCVcM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 16:32:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZLCVcK
+	id S1755842AbZLCVco (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 16:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbZLCVco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 16:32:10 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:62288 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754077AbZLCVcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 16:32:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=XccmQ3m37RnxLESPY9IqyNhWC3G7Uapum03IDiurVES8C3wbLp35UVeYks7+UQUyn7
-         SEMr5ArnqzgbyhnEivtLAlJD3+vlNA0AUsIMZZRzVuVlEeJSTIpIyoreHT8PIPHU9Oip
-         n/lTBtOvvrEba+cXgQpyU7fFHmJCjkgvAlLC4=
-Message-ID: <4B182E5D.2020905@garzik.org>
-Date: Thu, 03 Dec 2009 16:32:13 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 3 Dec 2009 16:32:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56168 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752727AbZLCVcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 16:32:43 -0500
+Date: Thu, 3 Dec 2009 22:32:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] x86/xen for v2.6.33
+Message-ID: <20091203213234.GA5936@elte.hu>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/86] PATA fixes
-References: <4B1771CD.3090409@garzik.org>	<20091203165947.13841802@lxorguk.ukuu.org.uk>	<4B17F7E4.9040302@garzik.org> <20091203.124804.168589603.davem@davemloft.net>
-In-Reply-To: <20091203.124804.168589603.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03/2009 03:48 PM, David Miller wrote:
-> From: Jeff Garzik<jeff@garzik.org>
-> Date: Thu, 03 Dec 2009 12:39:48 -0500
->
->> On 12/03/2009 11:59 AM, Alan Cox wrote:
->>>> The merge window is upon us, which by strict rules means that anything
->>>> not already in libata-dev.git#upstream needs to wait until 2.6.34.
->>>
->>> Not quite yet - Linus hasn't said "go"
->>
->> He rarely if ever says "go."  The kernel X is released, and people
->> send pull requests to Linus for X+1.  He typically merges immediately,
->> but does not push out the first set of merges for a few days.
->
-> I don't think he even starts pulling until 1 or 2 days later.
->
-> I personally never send him a pull request until a day or two in.
+Linus,
 
-<shrug>  In the past he has commented on pulls, indicating some sort of 
-immediate action, yet not pushed for a few days.
+Please pull the latest x86-xen-for-linus git tree from:
 
-Not a big deal.  Plenty of other people send pull requests immediately, 
-even if you ignore the high-volume Ingo special case <chuckle>
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-xen-for-linus
 
-In any case, the basic point is that Linus does not say "go" for merge 
-windows.  People send, he pulls when he chooses, and pushes when he 
-chooses.  It's all very zen ;-)
+ Thanks,
 
-	Jeff
+	Ingo
+
+------------------>
+Rusty Russell (1):
+      cpumask: Use modern cpumask style in Xen
 
 
+ arch/x86/xen/smp.c        |    2 +-
+ drivers/xen/cpu_hotplug.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-
+diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+index fe03eee..738da0c 100644
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -73,7 +73,7 @@ static __cpuinit void cpu_bringup(void)
+ 
+ 	xen_setup_cpu_clockevents();
+ 
+-	cpu_set(cpu, cpu_online_map);
++	set_cpu_online(cpu, true);
+ 	percpu_write(cpu_state, CPU_ONLINE);
+ 	wmb();
+ 
+diff --git a/drivers/xen/cpu_hotplug.c b/drivers/xen/cpu_hotplug.c
+index bdfd584..0f765a9 100644
+--- a/drivers/xen/cpu_hotplug.c
++++ b/drivers/xen/cpu_hotplug.c
+@@ -86,7 +86,7 @@ static int setup_cpu_watcher(struct notifier_block *notifier,
+ 	for_each_possible_cpu(cpu) {
+ 		if (vcpu_online(cpu) == 0) {
+ 			(void)cpu_down(cpu);
+-			cpu_clear(cpu, cpu_present_map);
++			set_cpu_present(cpu, false);
+ 		}
+ 	}
+ 
