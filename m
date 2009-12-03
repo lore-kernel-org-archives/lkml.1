@@ -1,125 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZLCXAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZLCXIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbZLCXAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 18:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbZLCXAZ
+	id S1753416AbZLCXIv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 18:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbZLCXIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 18:00:25 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:52439 "EHLO mail001.aei.ca"
+	Thu, 3 Dec 2009 18:08:51 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:36434 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbZLCXAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 18:00:24 -0500
-From: Ed Tomlinson <edt@aei.ca>
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] 2.6.32 - Sddr-09 SM reader resets endlessly
-Date: Thu, 3 Dec 2009 18:00:11 -0500
-User-Agent: KMail/1.12.4 (Linux/2.6.32-crc; KDE/4.3.4; x86_64; ; )
-Cc: linux-usb@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912031800.11780.edt@aei.ca>
+	id S1751376AbZLCXIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 18:08:50 -0500
+Date: Thu, 3 Dec 2009 18:08:56 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: linux-ide@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: What's in libata-dev.git? (v2)
+Message-ID: <20091203230856.GA20980@havoc.gtf.org>
+References: <20091203075653.GA30612@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091203075653.GA30612@havoc.gtf.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Just booted in 2.6.32 and shortly after the boot finished my console was spammed with:
+This is the contents of the recently-rebased "upstream" branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
 
-[   72.221620] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   72.375589] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   72.529568] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   72.683603] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   72.837601] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   72.991700] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   73.145679] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   73.309620] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   73.463603] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   73.617604] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   73.704218] usb 7-4.1: device descriptor read/all, error -32                                                                              
-[   73.773612] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   73.927569] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   74.081627] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-[   74.244640] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5 
+This is what will get sent RSN for 2.6.33.
 
-I noticed the leds on the devince blinking and unplugged it.  The messages stopped.
+v2: added a bunch of PATA stuff from Bart, and a couple TRIM-related
+    patches from mkp.
 
-Plugging it in to another port gave:
+Alan Cox (6):
+      pata_via: Blacklist some combinations of Transcend Flash and via
+      pata_sis: Implement MWDMA for the UDMA 133 capable chips
+      pata_cmd64x: implement serialization as per notes
+      [libata] PATA: Update experimental tags
+      pata_ali: Fix regression with old devices
+      pata_piccolo: Driver for old Toshiba chipsets
 
-[  120.096590] usb 7-4.2: new full speed USB device using ehci_hcd and address 7                                                             
-[  120.188421] usb 7-4.2: New USB device found, idVendor=0781, idProduct=0200                                                                
-[  120.196857] usb 7-4.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0                                                           
-[  120.205801] usb 7-4.2: Product: USB SSFDC                                                                                                 
-[  120.205803] usb 7-4.2: Manufacturer: SanDisk                                                                                              
-[  120.206023] usb 7-4.2: configuration #1 chosen from 1 choice                                                                              
-[  120.210375] scsi10 : SCSI emulation for USB Mass Storage devices                                                                          
-[  120.210625] usb-storage: device found at 7                                                                                                
-[  120.210627] usb-storage: waiting for device to settle before scanning                                                                     
-[  125.210356] scsi 10:0:0:0: Direct-Access     Sandisk0 ImageMate SDDR-0 0208 PQ: 0 ANSI: 0                                                 
-[  125.221014] sd 10:0:0:0: Attached scsi generic sg8 type 0                                                                                 
-[  125.538583] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  125.693592] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  125.846595] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  125.999570] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  126.152625] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  126.306641] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  126.400839] sddr09: could not read card info
-[  126.412283] sddr09: could not read card info
-[  126.418737] sd 10:0:0:0: [sdh] Test WP failed, assume Write Enabled
-[  126.418760] usb-storage: device scan complete
-[  126.433764] sd 10:0:0:0: [sdh] Assuming drive cache: write through
-[  126.497612] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  126.654080] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  126.810051] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  126.965658] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  127.121623] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  127.276631] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  127.366116] sd 10:0:0:0: [sdh] Attached SCSI removable disk
-[  140.543572] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  140.699676] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  140.855450] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  141.010675] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  141.166668] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-[  141.322616] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
+Bartlomiej Zolnierkiewicz (28):
+      pata_hpt37x: add proper cable detection methods
+      pata_hpt37x: unify ->pre_reset methods
+      pata_hpt3x2n: fix cable detection
+      pata_hpt{37x,3x2n}: add debounce delay to cable detection methods
+      libata: add comment documenting PIO latency issues on UP
+      libata: add private driver field to struct ata_device
+      ata_piix: fix MWDMA handling on PIIX3
+      pata_efar: fix wrong PIO timings being programmed
+      pata_efar: fix wrong MWDMA timings being programmed
+      pata_cs5520: remove dead VDMA support
+      pata_hpt3x3: Power Management fix
+      pata_it8213: fix UDMA handling
+      pata_it8213: fix wrong PIO timings being programmed
+      pata_it8213: fix PIO2 underclocking
+      pata_it8213: fix wrong MWDMA timings being programmed
+      pata_it8213: fix it8213_pre_reset() documentation
+      pata_legacy: fix QDI6580DP support
+      pata_legacy: fix access to control register for QDI6580
+      pata_legacy: add pointers to QDI65x0 documentation
+      pata_marvell: fix marvell_pre_reset() documentation
+      pata_ns87415: Power Management fix
+      pata_radisys: fix UDMA handling
+      pata_rz1000: Power Management fix
+      pata_sis: Power Management fix
+      pata_via: clear UDMA transfer mode bit for PIO and MWDMA
+      [libata] MWDMA0 is unsupported on PIIX-like PATA controllers
+      pata_it8213: MWDMA0 is unsupported
+      pata_hpt3x2n: fix overclocked MWDMA0 timing
 
-just in case it happened to be an interaction with the hub used I tried another:
+Benjamin Herrenschmidt (1):
+      libata/sff: Use ops->bmdma_stop instead of ata_bmdma_stop()
 
-[ 1294.563062] usb 3-1: new full speed USB device using ohci_hcd and address 3
-[ 1294.718252] usb 3-1: New USB device found, idVendor=0781, idProduct=0200
-[ 1294.725162] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-[ 1294.732507] usb 3-1: Product: USB SSFDC
-[ 1294.732508] usb 3-1: Manufacturer: SanDisk
-[ 1294.733099] usb 3-1: configuration #1 chosen from 1 choice
-[ 1294.745034] scsi11 : SCSI emulation for USB Mass Storage devices
-[ 1294.747443] usb-storage: device found at 3
-[ 1294.747446] usb-storage: waiting for device to settle before scanning
-[ 1299.747426] scsi 11:0:0:0: Direct-Access     Sandisk  ImageMate SDDR-0 0208 PQ: 0 ANSI: 0
-[ 1299.756510] sd 11:0:0:0: Attached scsi generic sg8 type 0
-[ 1300.134401] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1300.412298] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1300.688049] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1300.963179] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1301.244400] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1301.524066] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1301.687139] sddr09: could not read card info
-[ 1301.703118] sddr09: could not read card info
-[ 1301.707764] usb-storage: device scan complete
-[ 1301.708402] sd 11:0:0:0: [sdh] Test WP failed, assume Write Enabled
-[ 1301.708404] sd 11:0:0:0: [sdh] Assuming drive cache: write through
-[ 1301.848059] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1302.124049] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1302.400044] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1302.677051] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1302.952305] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1303.229063] usb 3-1: reset full speed USB device using ohci_hcd and address 3
-[ 1303.378075] sd 11:0:0:0: [sdh] Attached SCSI removable disk
-[ 1314.966421] usb 3-1: reset full speed USB device using ohci_hcd and address 3
+Christoph Hellwig (1):
+      libata: add translation for SCSI WRITE SAME (aka TRIM support)
 
-with the same results.
+Jiri Slaby (1):
+      pata_via: fix double put on isa bridge
 
-Ideas? 
+Krzysztof Halasa (1):
+      pata_cs5536: use 32-bit BM DMA template instead of 16-bit.
 
-Ed
+Mark Nelson (1):
+      ahci: let users know that Promise PDC42819 support is limited to SATA devices
 
+Martin K. Petersen (2):
+      libata: Report zeroed read after TRIM and max discard size
+      libata: Clarify ata_set_lba_range_entries function
+
+Matthew Garrett (1):
+      ata: Don't require newlines for link_power_management_policy
+
+Otavio Salvador (1):
+      pata-it821x: use PCI_DEVICE_ID_RDC_D1010 define
+
+Robert Hancock (1):
+      libata: remove experimental tag on PATA drivers
+
+Sergei Shtylyov (3):
+      pata_hpt{37x|3x2n}: fix timing register masks (take 2)
+      pata_hpt366: fix timing register documentation
+      ata: use pci_dev->revision
+
+Shaohua Li (1):
+      ahci: disable SNotification capability for ich8
+
+Tejun Heo (2):
+      libata-acpi: missing _SDD is not an error
+      libata: retry failed FLUSH if device didn't fail it
+
+Thiago Farina (1):
+      sata_mv: Clean up hard coded array size calculation.
+
+Vivek Mahajan (1):
+      sata_sil24: MSI support, disabled by default
+
+ashish kalra (1):
+      sata_fsl: Add asynchronous notification support
+
+ drivers/ata/Kconfig           |   41 +++++++-----
+ drivers/ata/Makefile          |    1 
+ drivers/ata/ahci.c            |   28 +++++++-
+ drivers/ata/ata_generic.c     |    5 +
+ drivers/ata/ata_piix.c        |    6 -
+ drivers/ata/libata-acpi.c     |   15 ++--
+ drivers/ata/libata-core.c     |    7 ++
+ drivers/ata/libata-eh.c       |   94 ++++++++++++++++++++++++++++
+ drivers/ata/libata-scsi.c     |  107 +++++++++++++++++++++++++++++++-
+ drivers/ata/libata-sff.c      |    2 
+ drivers/ata/pata_ali.c        |    4 -
+ drivers/ata/pata_cmd64x.c     |  125 +++++++++++++++++++++++++++++++++----
+ drivers/ata/pata_cs5520.c     |   39 -----------
+ drivers/ata/pata_cs5536.c     |    2 
+ drivers/ata/pata_efar.c       |    9 +-
+ drivers/ata/pata_hpt366.c     |   38 ++++-------
+ drivers/ata/pata_hpt37x.c     |  137 +++++++++++++++++++++--------------------
+ drivers/ata/pata_hpt3x2n.c    |   40 +++++-------
+ drivers/ata/pata_hpt3x3.c     |   11 +++
+ drivers/ata/pata_it8213.c     |   27 +++-----
+ drivers/ata/pata_it821x.c     |    2 
+ drivers/ata/pata_legacy.c     |   14 +++-
+ drivers/ata/pata_marvell.c    |    2 
+ drivers/ata/pata_ns87415.c    |   32 ++++++++-
+ drivers/ata/pata_oldpiix.c    |    2 
+ drivers/ata/pata_piccolo.c    |  140 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/ata/pata_radisys.c    |    4 -
+ drivers/ata/pata_rdc.c        |    2 
+ drivers/ata/pata_rz1000.c     |   11 +++
+ drivers/ata/pata_sil680.c     |    6 -
+ drivers/ata/pata_sis.c        |  112 ++++++++++++++++++++++++++-------
+ drivers/ata/pata_via.c        |   56 +++++++++++++---
+ drivers/ata/sata_fsl.c        |   18 +++--
+ drivers/ata/sata_mv.c         |    2 
+ drivers/ata/sata_sil24.c      |    9 ++
+ drivers/ide/ide-pci-generic.c |    3 
+ include/linux/ata.h           |   44 ++++++++++---
+ include/linux/libata.h        |    3 
+ include/linux/pci_ids.h       |    7 +-
+ 39 files changed, 913 insertions(+), 294 deletions(-)
