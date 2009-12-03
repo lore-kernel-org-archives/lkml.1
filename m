@@ -1,56 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbZLCE3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbZLCEfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbZLCE3v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 23:29:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZLCE3u
+	id S1755038AbZLCEfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 23:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZLCEe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 23:29:50 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:38701
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbZLCE3t convert rfc822-to-8bit (ORCPT
+	Wed, 2 Dec 2009 23:34:59 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:54476 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752115AbZLCEe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 23:29:49 -0500
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <4B153617.8070608@redhat.com>
-Date: Wed, 2 Dec 2009 23:29:39 -0500
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jonsmirl@gmail.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Content-Transfer-Encoding: 8BIT
-Message-Id: <A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com>
-References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com> <4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com>
-To: Gerd Hoffmann <kraxel@redhat.com>
-X-Mailer: Apple Mail (2.1077)
+	Wed, 2 Dec 2009 23:34:58 -0500
+Date: Wed, 02 Dec 2009 23:34:40 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: Bug (minor): microcode_intel.c applies updates to hyperthreaded
+ cores
+In-reply-to: <20091202202012.0c7b6768@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <4B173FE0.7030302@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B17393B.7000304@majjas.com>
+ <20091202202012.0c7b6768@infradead.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre)
+ Gecko/20091109 Fedora/3.0-3.10.b4.fc12 Thunderbird/3.0b4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 1, 2009, at 10:28 AM, Gerd Hoffmann wrote:
+Fair point - guess it's a different bug. Looks like the mechanism sets 
+up the requests first for all cpus, then loads them. apply_microcode 
+doesn't recheck.
 
->> Anyway, we shouldn't postpone lirc drivers addition due to that. There are still lots of work
->> to do before we'll be able to split the tables from the kernel drivers.
-> 
-> Indeed.  The sysfs bits are future work for both lirc and evdev drivers.  There is no reason to make the lirc merge wait for it.
-
-At this point, my plan is to try to finish cleaning up lirc_dev and lirc_mceusb at least over the weekend while at FUDCon up in Toronto, and resubmit them next week.
-
-I'm still on the fence over what to do about lirc_imon. The driver supports essentially 3 generations of devices. First-gen is very old imon parts that don't do onboard decoding. Second-gen is the devices that all got (insanely stupidly) tagged with the exact same usb device ID (0x15c2:0xffdc), some of which have an attached VFD, some with an attached LCD, some with neither, some that are actually RF parts, but all (I think) of which do onboard decoding. Third-gen is the latest stuff, which is all pretty sane, unique device IDs for unique devices, onboard decoding, etc.
-
-So the lirc_imon I submitted supports all device types, with the onboard decode devices defaulting to operating as pure input devices, but an option to pass hex values out via the lirc interface (which is how they've historically been used -- the pure input stuff I hacked together just a few weeks ago), to prevent functional setups from being broken for those who prefer the lirc way.
-
-What I'm debating is whether this should be split into two drivers, one for the older devices that don't do onboard decoding (which would use the lirc_dev interface) called 'lirc_imon' or 'lirc_imon_legacy', and one that is a pure input driver, not unlike the ati_remote{,2} drivers, with no lirc_dev dependency at all, probably called simply 'imon'. Could still be used with lirc via its devinput userspace driver, of course. But if I split it out, there may end up being a fair amount of code duplication, and the resulting lirc_imon wouldn't be as interesting to submit, and I wouldn't have any devices that worked with it, I've only got onboard decode devices... The new imon input driver would be a separate submission that is completely irrelevant to this whole discussion.
-
-So perhaps for round three, lirc_dev, lirc_mceusb and lirc_zilog, to make it more interesting...
-
--- 
-Jarod Wilson
-jarod@wilsonet.com
+CPU is a core i7 920; ht enabled. cpuinfo shows 4 cores; 8 cpus, as 
+expected.
 
 
+
+
+ From my log:
+Dec  2 16:53:47 mail kernel: microcode: CPU0 sig=0x106a5, pf=0x2, 
+revision=0xf
+Dec  2 16:53:47 mail kernel: platform microcode: firmware: requesting 
+intel-ucode/06-1a-05
+Dec  2 16:53:47 mail kernel: microcode: CPU1 sig=0x106a5, pf=0x2, 
+revision=0xf
+Dec  2 16:53:47 mail kernel: platform microcode: firmware: requesting 
+intel-ucode/06-1a-05
+Dec  2 16:53:47 mail kernel: microcode: CPU2 sig=0x106a5, pf=0x2, 
+revision=0xf
+Dec  2 16:53:47 mail kernel: platform microcode: firmware: requesting 
+intel-ucode/06-1a-05
+Dec  2 16:53:47 mail kernel: microcode: CPU3 sig=0x106a5, pf=0x2, 
+revision=0xf
+Dec  2 16:53:47 mail kernel: platform microcode: firmware: requesting 
+intel-ucode/06-1a-05
+Dec  2 16:53:47 mail kernel: microcode: CPU4 sig=0x106a5, pf=0x2, 
+revision=0xf
+Dec  2 16:53:47 mail kernel: platform microcode: firmware: requesting 
+intel-ucode/06-1a-05
+Dec  2 16:53:47 mail kernel: microcode: CPU5 sig=0x106a5, pf=0x2, 
+revision=0xf
+Dec  2 16:53:47 mail kernel: platform microcode: firmware: requesting 
+intel-ucode/06-1a-05
+Dec  2 16:53:47 mail kernel: microcode: CPU6 sig=0x106a5, pf=0x2, 
+revision=0xf
+Dec  2 16:53:47 mail kernel: platform microcode: firmware: requesting 
+intel-ucode/06-1a-05
+Dec  2 16:53:47 mail kernel: microcode: CPU7 sig=0x106a5, pf=0x2, 
+revision=0xf
+Dec  2 16:53:47 mail kernel: platform microcode: firmware: requesting 
+intel-ucode/06-1a-05
+Dec  2 16:53:47 mail kernel: microcode: CPU0 updated to revision 0x11, 
+date = 2009-04-14
+Dec  2 16:53:47 mail kernel: microcode: CPU1 updated to revision 0x11, 
+date = 2009-04-14
+Dec  2 16:53:47 mail kernel: microcode: CPU2 updated to revision 0x11, 
+date = 2009-04-14
+Dec  2 16:53:47 mail kernel: microcode: CPU3 updated to revision 0x11, 
+date = 2009-04-14
+Dec  2 16:53:47 mail kernel: microcode: CPU4 updated to revision 0x11, 
+date = 2009-04-14
+Dec  2 16:53:47 mail kernel: microcode: CPU5 updated to revision 0x11, 
+date = 2009-04-14
+Dec  2 16:53:47 mail kernel: microcode: CPU6 updated to revision 0x11, 
+date = 2009-04-14
+Dec  2 16:53:47 mail kernel: microcode: CPU7 updated to revision 0x11, 
+date = 2009-04-14
+
+
+On 12/02/2009 11:20 PM, Arjan van de Ven wrote:
+> On Wed, 02 Dec 2009 23:06:19 -0500
+> Michael Breuer<mbreuer@majjas.com>  wrote:
+>
+>    
+>> According to spec, microcode should only be applied to actual cores.
+>> As things are currently structured, looks like the fix would be in
+>> microcode_core.c. I don't think changing the loop to look for cores
+>> vs. cpu's would affect anything adversely, but honestly am not
+>> familiar enough with this code or other cpu types to be sure.
+>>
+>>      
+> isn't this
+>
+> for each (logical) cpu
+>     check microcode version of the cpu
+>     if too old, apply microcode
+>
+> the 2nd pair of a hyperthreading pair will never see the 'too old' case
+> happen...
+>
+>
+>    
 
