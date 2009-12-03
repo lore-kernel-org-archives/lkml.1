@@ -1,82 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZLCXqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZLCXx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734AbZLCXqI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 18:46:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZLCXqH
+	id S1754954AbZLCXx5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 18:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZLCXx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 18:46:07 -0500
-Received: from claw.goop.org ([74.207.240.146]:44399 "EHLO claw.goop.org"
+	Thu, 3 Dec 2009 18:53:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26151 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752518AbZLCXqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 18:46:06 -0500
-Message-ID: <4B184DC3.5020509@goop.org>
-Date: Thu, 03 Dec 2009 15:46:11 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091125 Fedora/3.0-3.12.rc1.fc12 Lightning/1.0pre Thunderbird/3.0
+	id S1754091AbZLCXx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 18:53:56 -0500
+Date: Thu, 3 Dec 2009 18:51:53 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
+       czoccolo@gmail.com, Alan.Brunelle@hp.com
+Subject: Re: Block IO Controller V4
+Message-ID: <20091203235153.GG2735@redhat.com>
+References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <4B15C828.4080407@cn.fujitsu.com> <20091202142508.GA31715@redhat.com> <4B1779CE.1050801@cn.fujitsu.com> <20091203143641.GA3887@redhat.com> <20091203181003.GD2735@redhat.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stable Kernel <stable@kernel.org>
-Subject: [GIT PULL] Xen bugfixes
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091203181003.GD2735@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Dec 03, 2009 at 01:10:03PM -0500, Vivek Goyal wrote:
 
-Please pull this set of bugfixes, mostly to do with Xen domain 
-save/restore.  They're all stable material as well.
+[..]
+> Hi Gui,
+> 
+> Can you please try following patch and see if it helps you. If not, then
+> we need to figure out why we choose to not idle and delete the group from
+> service tree.
+> 
 
-(Note, if you pull quickly from git.kernel.org, you may pick up some 
-more changes that I rolled back pending maintainer approval; pulling 
-from master might be safer.)
+Hi Gui,
 
-Thanks,
-     J
+Please try this version of the patch instead of previous one. During more
+testing I saw some additional deletions where we should have waited and
+the reason being that we were hitting boundary condition. At the request
+completion time slice has not expired but after 4-5 ns, select_queue hits
+and jiffy has incremented by then and slice expires.
 
-The following changes since commit 82d6469916c6fcfa345636a49004c9d1753905d1:
-   Jeremy Fitzhardinge (1):
-         xen: mask extended topology info in cpuid
+ttime_mean, is not covering this condition because this workload is so
+sequential that ttime_mean=0.
 
-are available in the git repository at:
+So I am checking for new condition where if we are into last ms of slice,
+mark the queue wait_busy.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git bugfix
+Thanks
+Vivek
 
-Ian Campbell (8):
-       xen: re-register runstate area earlier on resume.
-       xen: correctly restore pfn_to_mfn_list_list after resume
-       xen: register timer interrupt with IRQF_TIMER
-       xen: register runstate on secondary CPUs
-       xen: call clock resume notifier on all CPUs
-       xen: don't leak IRQs over suspend/resume.
-       xen: improve error handling in do_suspend.
-       xen: explicitly create/destroy stop_machine workqueues outside suspend/resume region.
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/cfq-iosched.c |   30 ++++++++++++++++++++++++++----
+ 1 file changed, 26 insertions(+), 4 deletions(-)
 
-Jeremy Fitzhardinge (5):
-       xen/xenbus: make DEVICE_ATTR()s static
-       xen: restore runstate_info even if !have_vcpu_info_placement
-       xen: register runstate info for boot CPU early
-       xen: don't call dpm_resume_noirq() with interrupts disabled.
-       xen: use iret for return from 64b kernel to 32b usermode
-
-Paolo Bonzini (3):
-       xen: fix is_disconnected_device/exists_disconnected_device
-       xen: improvement to wait_for_devices()
-       xen: wait up to 5 minutes for device connetion
-
-  arch/x86/xen/enlighten.c          |   27 ++++++++++----------
-  arch/x86/xen/mmu.c                |    2 +-
-  arch/x86/xen/smp.c                |    1 +
-  arch/x86/xen/suspend.c            |   17 ++++++++++++-
-  arch/x86/xen/time.c               |    7 ++---
-  arch/x86/xen/xen-asm_64.S         |    4 +-
-  arch/x86/xen/xen-ops.h            |    2 +
-  drivers/xen/events.c              |    3 ++
-  drivers/xen/manage.c              |   37 ++++++++++++++++++----------
-  drivers/xen/xenbus/xenbus_probe.c |   48 ++++++++++++++++++++++++------------
-  10 files changed, 98 insertions(+), 50 deletions(-)
-
-
+Index: linux11/block/cfq-iosched.c
+===================================================================
+--- linux11.orig/block/cfq-iosched.c	2009-12-03 15:10:53.000000000 -0500
++++ linux11/block/cfq-iosched.c	2009-12-03 18:37:35.000000000 -0500
+@@ -3248,6 +3248,29 @@ static void cfq_update_hw_tag(struct cfq
+ 		cfqd->hw_tag = 0;
+ }
+ 
++static inline bool
++cfq_should_wait_busy(struct cfq_data *cfqd, struct cfq_queue *cfqq)
++{
++	struct cfq_io_context *cic = cfqd->active_cic;
++
++	/* If there are other queues in the group, don't wait */
++	if (cfqq->cfqg->nr_cfqq > 1)
++		return false;
++
++	if (cfq_slice_used(cfqq))
++		return true;
++
++	if (cfqq->slice_end - jiffies == 1)
++		return true;
++
++	/* if slice left is less than think time, wait busy */
++	if (cic && sample_valid(cic->ttime_samples)
++	    && (cfqq->slice_end - jiffies < cic->ttime_mean))
++		return true;
++
++	return false;
++}
++
+ static void cfq_completed_request(struct request_queue *q, struct request *rq)
+ {
+ 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
+@@ -3286,11 +3309,10 @@ static void cfq_completed_request(struct
+ 		}
+ 
+ 		/*
+-		 * If this queue consumed its slice and this is last queue
+-		 * in the group, wait for next request before we expire
+-		 * the queue
++		 * Should we wait for next request to come in before we expire
++		 * the queue.
+ 		 */
+-		if (cfq_slice_used(cfqq) && cfqq->cfqg->nr_cfqq == 1) {
++		if (cfq_should_wait_busy(cfqd, cfqq)) {
+ 			cfqq->slice_end = jiffies + cfqd->cfq_slice_idle;
+ 			cfq_mark_cfqq_wait_busy(cfqq);
+ 		}
