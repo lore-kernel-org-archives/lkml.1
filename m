@@ -1,123 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751020AbZLCFIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751329AbZLCFPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751020AbZLCFIN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 00:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbZLCFIM
+	id S1751329AbZLCFPH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 00:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZLCFPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 00:08:12 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:42821 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbZLCFIK convert rfc822-to-8bit (ORCPT
+	Thu, 3 Dec 2009 00:15:06 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56650 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbZLCFPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 00:08:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZzrDKYoKlrbuuceacWe3V0Z4tb4KCHCq66MLlJLdMZNbYRX06S8+yuEuKBViv5fTuW
-         zmhcPco6PozLGstX933DGDMlbAp14X+fp929QbS5KvmxGqee8GUNEreaSWZCJPr7tqcq
-         CkjXRgdGR3pntXlusCtZ/iTtgr3/LMbUN7I90=
+	Thu, 3 Dec 2009 00:15:05 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20091202125501.GD28697@random.random>
+References: <4B15F642.1080308@redhat.com> <20091202125501.GD28697@random.random>
+Message-Id: <20091203134610.586E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <4B1720E6.3000802@redhat.com>
-References: <4B155288.1060509@redhat.com>
-	 <20091202093803.GA8656@core.coreip.homeip.net>
-	 <4B16614A.3000208@redhat.com>
-	 <20091202171059.GC17839@core.coreip.homeip.net>
-	 <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
-	 <4B16BE6A.7000601@redhat.com>
-	 <20091202195634.GB22689@core.coreip.homeip.net>
-	 <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
-	 <9e4733910912021620s7a2b09a8v88dd45eef38835a@mail.gmail.com>
-	 <4B1720E6.3000802@redhat.com>
-Date: Thu, 3 Dec 2009 00:08:13 -0500
-Message-ID: <9e4733910912022108j71d0c27fh75dacfa79dca7c22@mail.gmail.com>
-Subject: Re: [RFC v2] Another approach to IR
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu,  3 Dec 2009 14:15:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 2, 2009 at 9:22 PM, Mauro Carvalho Chehab
-<mchehab@redhat.com> wrote:
-> Jon Smirl wrote:
->> On Wed, Dec 2, 2009 at 3:04 PM, Jarod Wilson <jarod@wilsonet.com> wrote:
->>> On Dec 2, 2009, at 2:56 PM, Dmitry Torokhov wrote:
->>>
->>>> On Wed, Dec 02, 2009 at 02:22:18PM -0500, Jarod Wilson wrote:
->>>>> On 12/2/09 12:30 PM, Jon Smirl wrote:
->>>>>>>>> (for each remote/substream that they can recognize).
->>>>>>>>>> I'm assuming that, by remote, you're referring to a remote receiver (and not to
->>>>>>>>>> the remote itself), right?
->>>>>>>> If we could separate by remote transmitter that would be the best I
->>>>>>>> think, but I understand that it is rarely possible?
->>>>>> The code I posted using configfs did that. Instead of making apps IR
->>>>>> aware it mapped the vendor/device/command triplets into standard Linux
->>>>>> keycodes.  Each remote was its own evdev device.
->>>>> Note, of course, that you can only do that iff each remote uses distinct
->>>>> triplets. A good portion of mythtv users use a universal of some sort,
->>>>> programmed to emulate another remote, such as the mce remote bundled
->>>>> with mceusb transceivers, or the imon remote bundled with most imon
->>>>> receivers. I do just that myself.
->>>>>
->>>>> Personally, I've always considered the driver/interface to be the
->>>>> receiver, not the remote. The lirc drivers operate at the receiver
->>>>> level, anyway, and the distinction between different remotes is made by
->>>>> the lirc daemon.
->>>> The fact that lirc does it this way does not necessarily mean it is the
->>>> most corerct way.
->>> No, I know that, I'm just saying that's how I've always looked at it, and that's how lirc does it right now, not that it must be that way.
->>>
->>>> Do you expect all bluetooth input devices be presented
->>>> as a single blob just because they happen to talk to the sane receiver
->>>> in yoru laptop? Do you expect your USB mouse and keyboard be merged
->>>> together just because they end up being serviced by the same host
->>>> controller? If not why remotes should be any different?
->>> A bluetooth remote has a specific device ID that the receiver has to pair with. Your usb mouse and keyboard each have specific device IDs. A usb IR *receiver* has a specific device ID, the remotes do not. So there's the major difference from your examples.
->>
->> Actually remotes do have an ID. They all transmit vendor/device pairs
->> which is exactly how USB works.
->>
->
-> Well, the description of NEC and RC5 protocol at http://www.sbprojects.com/knowledge/ir/rc5.htm
-> doesn't mention any vendor/device pair, nor I'm able to get them with the IR hardware decoders
-> I have.
+> On Wed, Dec 02, 2009 at 12:08:18AM -0500, Rik van Riel wrote:
+> > The VM needs to touch a few (but only a few) PTEs in
+> > that situation, to make sure that anonymous pages get
+> > moved to the inactive anon list and get to a real chance
+> > at being referenced before we try to evict anonymous
+> > pages.
+> > 
+> > Without a small amount of pre-aging, we would end up
+> > essentially doing FIFO replacement of anonymous memory,
+> > which has been known to be disastrous to performance
+> > for over 40 years now.
+> 
+> So far the only kernel that hangs in fork is the newer one...
+> 
+> In general I cannot care less about FIFO, I care about no CPU waste on
+> 100% of my systems were swap is not needed. All my unmapped cache is
+> 100% garbage collectable, and there is never any reason to flush any
+> tlb and walk the rmap chain. Give me a knob to disable the CPU waste
+> given I know what is going on, on my systems. I am totally ok with
+> slightly slower swap performance and fifo replacement in case I
+> eventually hit swap for a little while, then over time if memory
+> pressure stays high swap behavior will improve regardless of
+> flooding ipis to clear young bit when there are hundred gigabytes of
+> freeaeble cache unmapped and clean.
+> 
+> > Having said that - it may be beneficial to keep very heavily
+> > shared pages on the active list, without ever trying to scan
+> > the ptes associated with them.
+> 
+> Just mapped pages in general, not heavily... The other thing that is
+> beneficial likely is to stop page_referenced after 64 young bit clear,
+> that is referenced enough, you can enable this under my knob so that
+> it won't screw your algorithm. I don't have 1 terabyte of memory, so
+> you don't have to worry for me, I just want every cycle out of my cpu
+> without having to use O_DIRECT all the time.
 
-Some of the protocols were not intended to be multi-vendor  - the
-vendor is implicit in the protocol encoding. You don't have to split
-the IR codes into vendor/device/command triplets. I just do that
-because it is convenient to think of them that way. It is equally
-valid to treat them as a 64b integers and use four bits of the int to
-encode the protocol.  It should really be a quad
-protocol/vendor/device/command and some of the fields may be missing.
-Bottom line, you are looking for unique codes how the fields are split
-up doesn't really matter.
+Umm?? Personally I don't like knob. If you have problematic workload,
+please tell it us. I will try to make reproduce environment on my box.
+If current code doesn't works on KVM or something-else, I really want
+to fix it.
 
-A fixed protocol receiver is more of a challenge. You have to figure
-out how to make a universal remote transmit device codes for a device
-you don't already own that is also encoded in the protocol your
-hardware supports. There's nothing we can do about that problem in
-Linux, its a side effect of fixed protocol decode hardware. You're
-just going to have to start guessing devices in the remote until you
-find one that uses your fixed protocol and doesn't also activate the
-devices you own. We can put suggestions in the doc when working
-devices are discovered. With a universal receiver the problem is
-simpler, just pick a device you don't own - the encoding protocol
-doesn't matter. These are generic problems with IR that are the same
-no matter how things get implemented in Linux.
+I think Larry's trylock idea and your 64 young bit idea can be combinate.
+I only oppose the page move to inactive list without clear young bit. IOW,
+if VM pressure is very low and the page have lots young bit, the page should
+go back active list although trylock(ptelock) isn't contended.
+
+But unfortunatelly I don't have problem workload as you mentioned. Anyway
+we need evaluate way to your idea. We obviouslly more info.
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+
+
