@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZLCRrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbZLCRxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbZLCRrp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:47:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZLCRro
+	id S1754557AbZLCRxv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:53:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbZLCRxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:47:44 -0500
-Received: from khc.piap.pl ([195.187.100.11]:42446 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719AbZLCRrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:47:43 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net,
-       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, jonsmirl@gmail.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com>
-	<4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com>
-Date: Thu, 03 Dec 2009 18:47:46 +0100
-In-Reply-To: <4B153617.8070608@redhat.com> (Gerd Hoffmann's message of "Tue,
-	01 Dec 2009 16:28:23 +0100")
-Message-ID: <m3fx7s2blp.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 Dec 2009 12:53:50 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:53550 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753863AbZLCRxu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 12:53:50 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Patrick McHardy <kaber@trash.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S . Miller \"" <davem@davemloft.net>,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Or Gerlitz <ogerlitz@voltaire.com>,
+       "Fischer, Anna" <anna.fischer@hp.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Edge Virtual Bridging <evb@yahoogroups.com>,
+       Patrick Mullaney <pmullaney@novell.com>
+Subject: [RFC 0/2] macvtap, second try
+Date: Thu,  3 Dec 2009 18:51:58 +0100
+Message-Id: <1259862720-28432-1-git-send-email-arnd@arndb.de>
+X-Mailer: git-send-email 1.6.3.3
+X-Provags-ID: V01U2FsdGVkX19pr+4f7hAWHdAVXaevU21xf5R2a3eL+ysQOk8
+ r7scQXrjekE4ehnwPa/Dx1J6iOGtSpvYz4zXFTpBKigTQYEJEl
+ 5n0eixsZk1KaEs2bwIU1w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerd Hoffmann <kraxel@redhat.com> writes:
+I did not get this ready for the merge window, but people asked what
+the status of this is so I'm posting it now to solicit feedback.
 
-> I'd pick a more descriptive name like 'bundled_remote'.
-> Maybe an additional attribute could say which protocol the bundled
-> remote speaks (rc5, ...), so userspace could do something sensible by
-> default even if it has no data about the bundled remote.
+The first patch just adds some hooks into macvlan.c and is less
+invasive than the previous version. That part should be fine
+and I'd like this to get merged into macvlan for 2.6.33 if people
+agree that the approach is right.
 
-This is problematic since there can be more that one remote bundled.
-If we export the sensor (tuner etc) name, userspace can make some
-decision (or ask the user etc).
+The second patch adds the driver using it and is not ready for
+integration unfortunately, but maybe it could get into staging
+anyway. Please look at that patch carefully and provide feedback.
 
-The protocol alone won't help - the user will have to teach the system
-about the remote anyway. This should be made trivial at least for common
-protocols, though.
+	Arnd <><
+---
 
-> Name them by the hardware they are bundled with should work reasonable
-> well.
+Arnd Bergmann (1):
+  macvlan: add tap device backend
 
-I guess udev can look at parent PCI vendor/device and subsystem
-vendor/device for most PCI cases. Ditto with USB. For generic stuff like
-TSOP* coupled with a resistor and connected to RS232 port, we can't
-guess anyway.
+Patrick Mullaney (1):
+  macvlan: Allow plugging in additional backends
 
-> We also could also provide a list of possible remotes directly via
-> sysfs
+ drivers/net/Kconfig        |   12 +
+ drivers/net/Makefile       |    1 +
+ drivers/net/macvlan.c      |  113 ++++-----
+ drivers/net/macvtap.c      |  560 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/if_macvlan.h |   71 ++++++
+ 5 files changed, 693 insertions(+), 64 deletions(-)
+ create mode 100644 drivers/net/macvtap.c
 
-The kernel has no way to _know_ this information. The policy is better
-handled in userland.
-
->> Anyway, we shouldn't postpone lirc drivers addition due to that.
-
-Actually merging lirc is a prerequisite for a number of changes.
--- 
-Krzysztof Halasa
