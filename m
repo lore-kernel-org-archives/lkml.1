@@ -1,108 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZLCWKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZLCWMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbZLCWKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 17:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZLCWKr
+	id S1754077AbZLCWMg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 17:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZLCWMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 17:10:47 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:56765 "EHLO
+	Thu, 3 Dec 2009 17:12:35 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:36638 "EHLO
 	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750976AbZLCWKq (ORCPT
+	with ESMTP id S1752857AbZLCWMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 17:10:46 -0500
+	Thu, 3 Dec 2009 17:12:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=BLhUnQ7esKmpEzvoUkDbEAXn/hpozU96GVivv7GQ2f/pqvtn0+I2IZRjw85JY0H+Qz
-         CZqi6eNxsssLy2FTM5ZEKp1sQIqPrh1isORAJOUOa5DP3UHXYcKG6IqIYWhtHAY5eGel
-         1fsusQNTEU4wuL6PzJPdcsctIsi2D508WVFyY=
-Message-ID: <4B18376B.3080404@garzik.org>
-Date: Thu, 03 Dec 2009 17:10:51 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=h1SqQInSuQ+8cE68fWTw2tChawwz6O8oeUEk2BmmTCMWMj01jUNevHSZo1BNIZZdu/
+         gncxfn9aITB5FwG17c0o/J8lUdJt+mrRghFnVw3InEo3onV080to/mD3FzuWCPvrQkjx
+         xho8Uk9efJxXXNzHZYQ17WA4//bv+XBy6DvMA=
+Date: Thu, 3 Dec 2009 14:12:31 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Christoph Bartelmus <lirc@bartelmus.de>
+Cc: mchehab@redhat.com, awalls@radix.net, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, jonsmirl@gmail.com, khc@pm.waw.pl,
+       kraxel@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+Message-ID: <20091203221231.GE776@core.coreip.homeip.net>
+References: <4B18292C.6070303@redhat.com> <BEBfoS11qgB@lirc>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/86] PATA fixes
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200912032256.39790.bzolnier@gmail.com> <4B18357C.8070807@garzik.org> <200912032306.52022.bzolnier@gmail.com>
-In-Reply-To: <200912032306.52022.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BEBfoS11qgB@lirc>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03/2009 05:06 PM, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 03 December 2009 11:02:36 pm Jeff Garzik wrote:
->> On 12/03/2009 04:56 PM, Bartlomiej Zolnierkiewicz wrote:
->>> On Thursday 03 December 2009 10:51:09 pm Jeff Garzik wrote:
->>>
->>>>>>>           pata_via: clear UDMA transfer mode bit for PIO and MWDMA
->>>>>>
->>>>>> applied -- even though Alan's comment was correct.  It is standard
->>>>>> kernel practice to place cosmetic changes into their own patches,
->>>>>> because it is standard kernel practice to break up logically distinct
->>>>>> changes.
->>>>>
->>>>> We are talking about:
->>>>>
->>>>>     pata_via.c |   19 +++++++++++++------
->>>>>     1 file changed, 13 insertions(+), 6 deletions(-)
->>>>>
->>>>> patch here (http://lkml.org/lkml/2009/11/25/380) and cosmetic change
->>>>> is clearly documented in the patch description.
->>>>>
->>>>>
->>>>> Do people really wonder why I find upstream to be too much hassle to
->>>>> deal with?
->>>>
->>>> The thousand other kernel developers seem to be able to split up their
->>>> patches, separating out cosmetic changes from functional ones.  It has
->>>> clear engineering benefits, and has been standard practice for a decade
->>>> or more.
->>>>
->>>> Why is it such an imposition for your patches to look like everyone
->>>> else's?  And by "everyone", I mean all other kernel developers, not just
->>>> other ATA developers.
->>>>
->>>> You seem to consider standard kernel practice a hassle.  Separating out
->>>> cosmetic changes is not only a libata practice, it is the norm for the
->>>> entire kernel.
->>>
->>> Indeed.
->>>
->>>   From 94be9a58d7e683ac3c1df1858a17f09ebade8da0 Mon Sep 17 00:00:00 2001
->>> From: Jeff Garzik<jeff@garzik.org>
->>> Date: Fri, 16 Jan 2009 10:17:09 -0500
->>> Subject: [PATCH] [libata] get-identity ioctl: Fix use of invalid memory pointer
->>>    for SAS drivers.
->>>
->>> Caught by Ke Wei (and team?) at Marvell.
->>>
->>> Also, move the ata_scsi_ioctl export to libata-scsi.c, as that seems to be the
->>> general trend.
->>>
->>> Acked-by: James Bottomley<James.Bottomley@HansenPartnership.com>
->>> Signed-off-by: Jeff Garzik<jgarzik@redhat.com>
->>
->> If your point, by posting this patch, is that it includes a ton of
->> gratuitous cosmetic changes, you misread the patch.
->>
->> ata_scsi_ioctl() remains in existence; only the callers need to use the
->> new SAS-related ioctl function were updated.  The remainder continued to
->> use ata_scsi_ioctl().
->
-> Moving kernel exports around is completely unrelated to a bug fix.
+On Thu, Dec 03, 2009 at 10:51:00PM +0100, Christoph Bartelmus wrote:
+> Hi Mauro,
+> 
+> on 03 Dec 09 at 19:10, Mauro Carvalho Chehab wrote:
+> [...]
+> >>> So the lirc_imon I submitted supports all device types, with the
+> >>> onboard decode devices defaulting to operating as pure input devices,
+> >>> but an option to pass hex values out via the lirc interface (which is
+> >>> how they've historically been used -- the pure input stuff I hacked
+> >>> together just a few weeks ago), to prevent functional setups from
+> >>> being broken for those who prefer the lirc way.
+> >>
+> >> Hmm.  I'd tend to limit the lirc interface to the 'raw samples' case.
+> 
+> >> Historically it has also been used to pass decoded data (i.e. rc5) from
+> >> devices with onboard decoding, but for that in-kernel mapping + input
+> >> layer really fits better.
+> 
+> > I agree.
+> 
+> Consider passing the decoded data through lirc_dev.
+> - there's a large user base already that uses this mode through lirc and  
+> would be forced to switch to input layer if it disappears.
 
-Did the patch contain -cosmetic- changes intermingled with code changes, 
-in the same code lines?  No.
+I believe it was agreed that lirc-dev should be used mainly for decoding
+protocols that are more conveniently decoded in userspace and the
+results would be looped back into input layer through evdev which will
+be the main interface for consumer applications to use.
 
-Is it good kernel practice to intermingle cosmetic changes with 
-functional ones, in the same code lines?  Also, no.
-
-	Jeff
-
-
-
+-- 
+Dmitry
