@@ -1,82 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZLCMBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbZLCMEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753522AbZLCMBc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 07:01:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZLCMBc
+	id S1752496AbZLCMEf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 07:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZLCMEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 07:01:32 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:57424 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752658AbZLCMBa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 07:01:30 -0500
-Date: Thu, 3 Dec 2009 13:01:30 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ingo Molnar <mingo@elte.hu>, Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Message-ID: <20091203120130.GD12943@gundam.enneenne.com>
-Mail-Followup-To: "H. Peter Anvin" <hpa@zytor.com>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-	Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-	Kay Sievers <kay.sievers@vrfy.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-	Michael Kerrisk <mtk.manpages@gmail.com>,
-	Christoph Hellwig <hch@infradead.org>
-References: <1259774329-29663-2-git-send-email-giometti@linux.it> <1259774329-29663-3-git-send-email-giometti@linux.it> <1259774329-29663-4-git-send-email-giometti@linux.it> <1259774329-29663-5-git-send-email-giometti@linux.it> <1259774329-29663-6-git-send-email-giometti@linux.it> <1259774329-29663-7-git-send-email-giometti@linux.it> <1259774329-29663-8-git-send-email-giometti@linux.it> <1259774329-29663-9-git-send-email-giometti@linux.it> <1259774329-29663-10-git-send-email-giometti@linux.it> <4B170204.4080604@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B170204.4080604@zytor.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 09/11] pps: low level IRQ timestamps recording.
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Thu, 3 Dec 2009 07:04:34 -0500
+Received: from mail1.radix.net ([207.192.128.31]:36213 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751750AbZLCMEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 07:04:33 -0500
+Subject: Re: [RFC v2] Another approach to IR
+From: Andy Walls <awalls@radix.net>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jarod Wilson <jarod@wilsonet.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, j@jannau.net,
+       jarod@redhat.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+In-Reply-To: <4B178C4D.1020007@redhat.com>
+References: <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com>
+	 <4B154C54.5090906@redhat.com>
+	 <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com>
+	 <4B155288.1060509@redhat.com>
+	 <20091201175400.GA19259@core.coreip.homeip.net>
+	 <4B1567D8.7080007@redhat.com>
+	 <20091201201158.GA20335@core.coreip.homeip.net>
+	 <4B15852D.4050505@redhat.com>
+	 <20091202093803.GA8656@core.coreip.homeip.net>
+	 <4B16614A.3000208@redhat.com>
+	 <20091202171059.GC17839@core.coreip.homeip.net>
+	 <4B16C10E.6040907@redhat.com>
+	 <1CA77278-9B8E-4169-8F10-78764A35F64E@wilsonet.com>
+	 <1259802169.3085.10.camel@palomino.walls.org> <4B178C4D.1020007@redhat.com>
+Content-Type: text/plain
+Date: Thu, 03 Dec 2009 07:02:49 -0500
+Message-Id: <1259841769.3100.18.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 04:10:44PM -0800, H. Peter Anvin wrote:
-> On 12/02/2009 09:18 AM, Rodolfo Giometti wrote:
-> > Add low level IRQ timestamps recording for x86 (32 and 64 bits)
-> > platforms and enable UART clients in order to use it.
+On Thu, 2009-12-03 at 08:00 -0200, Mauro Carvalho Chehab wrote:
+> Andy Walls wrote:
+> > On Wed, 2009-12-02 at 14:55 -0500, Jarod Wilson wrote:
+> >> On Dec 2, 2009, at 2:33 PM, Mauro Carvalho Chehab wrote:
+
+ 
+> > Both of those IR devices are/will be encapsulated in a v4l2_subdevice
+> > object internally.  I was going to write lirc_v4l glue between the
+> > v4l2_device/v4l2_subdev_ir_ops and lirc_dev.
 > > 
-> > This improves PPS precision. :)
+> > As for the the I2C chips, I was going to go back and encapsulate those
+> > in the v4l2_subdevice object as well, so then my notional lirc_v4l could
+> > pick those up too.  The I2C subsystem only allows one binding to an I2C
+> > client address/name on a bus.  So without some new glue like a notional
+> > lirc_v4l, it *may* be hard to share between ir-kbd-i2c and lirc_i2c and
+> > lirc_zilog.
 > 
-> It also invokes getnstimeofday on every single interrupt, including ones
-> which have absolutely nothing to do with the PPS, and are potentially
-> high volume.  getnstimeofday can be a fairly expensive operation,
-> especially if the best available clock is away from the CPU, or it
-> requires extensive arithmetic in order to normalize the clock value...
+> Maybe you're having a bad time because you may be trying to integrate lirc
+> at the wrong place.
 
-I see, that's why I propose my patches to you: in order to have some
-feedbacks for better solutions. :)
+These were just ideas.  I haven't done *anything* yet. ;)
 
-Can I add a IRQF_TIMESTAMP in order to ask to the system to record irq
-timestamps for particular irq lines? The problem is that I cannot set
-that flag at irq_register() time but I have to do it later... it can
-be a problem?
 
-Ciao,
+> All devices at V4L tree including ir-kbd-i2c use ir-common.ko 
+> (at /drivers/media/common tree) module to communicate to IR's. 
+> I'm preparing some patches to extend this also to dvb-usb devices 
+> (that uses a close enough infrastructure). 
+> 
+> Also, most of the decoding code are there, in a form of helper routines.
+> 
+> As the idea is to provide lirc interface to all devices that can work with
+> raw pulse/space, the proper place is to write a subroutine there that, once
+> called, will make those pulse/space raw codes available to lirc and will
+> call the needed decoders to export them also to evdev.
+> 
+> The code at ir-common module was originally built to be used by V4L, but I'm
+> porting the code there to be generic enough to be a library that can be used
+> by other drivers. So, lirc_zilog and other lirc devices that will need to open
+> evdev interfaces after running a decoder can use them.
 
-Rodolfo
+I think I see what you are saying (I wish could see look at a whiteboard
+somewhere...).  Wherever we come through internally to split to 2
+different userspace interfaces is fine, if you've got a big picture plan
+you think is feasible.
 
--- 
+That seems like a bit of perturbation to lirc_zilog and lirc_i2c.  My
+thought was that lirc_v4l using the standardized v4l2_subdev_ir_ops
+interface, and maybe some new calls associted with v4l2_device, could
+subsume/unify all the functionality of lirc_i2c, lirc_zilog, ...
+lirc_whatever.
 
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
-Freelance ICT Italia - Consulente ICT Italia - www.consulenti-ict.it
+Maybe that's just a poorly thought out dream though...
+
+
+> Due to that, we shouldn't add v4l2_subdevice there. Nothing prevents to create
+> a v4l2-ir-subdev glue if you want to see the IR's as subdevices, but this should
+> be implemented as a separate module.
+
+The v4l_subdevice just abstracted the IR hardware into a nice (mental)
+box for me -- easier to keep hardware separate from software decoders
+and userspace interface logic.
+
+Also, since v4l2_subdevices may have per subdevice /dev nodes and
+the /dev/../mcN nodes providing a discovery mechanism due to the Meda
+Controller framework, wrapping things in v4l2_subdevice may be handy for
+development and debug.  Or ... as an additional operational interface to
+userspace. :D  *ducks and runs for cover*
+
+Regards,
+Andy
+
+> Cheers,
+> Mauro.
+
+
