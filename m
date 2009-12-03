@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbZLCWrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbZLCWuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753546AbZLCWrK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 17:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZLCWrJ
+	id S1752857AbZLCWuh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 17:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbZLCWug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 17:47:09 -0500
-Received: from mail-ew0-f222.google.com ([209.85.219.222]:55310 "EHLO
-	mail-ew0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751575AbZLCWrI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 17:47:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=w5zmGdERkzmmoSAR/GDvebQGFO5AVmLBTxoGYOHA1Q0n3pSn81XIKhi6IAU3kBa/vH
-         XeoTnpr6tvKcJx2frVFCc3MEUNgrHwLRcePCFwjgiQsUFgPAkdq8JmrcB4d8iJ0K0JiQ
-         GmDt/e11SLaIxJ9rHbMlPcUz/ow2IcHrhy6Vc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 00/86] PATA fixes
-Date: Thu, 3 Dec 2009 23:45:58 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200912032323.39846.bzolnier@gmail.com> <4B183C1A.3080609@garzik.org>
-In-Reply-To: <4B183C1A.3080609@garzik.org>
-MIME-Version: 1.0
-Message-Id: <200912032345.58339.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 17:50:36 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:36724 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751794AbZLCWug convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 17:50:36 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 03 Dec 2009 22:50:35 +0000
+Message-ID: <1259880635.4532.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH RESEND 1/2] DocBook/media: copy images after building HTML
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 December 2009 11:30:50 pm Jeff Garzik wrote:
-> On 12/03/2009 05:23 PM, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 03 December 2009 11:10:51 pm Jeff Garzik wrote:
-> >> Is it good kernel practice to intermingle cosmetic changes with
-> >> functional ones, in the same code lines?  Also, no.
-> >
-> > I prefer using common sense over black-and-white rules.
-> >
-> > If patch is a _really_ tiny one (<  20 LOC changed) it sometimes makes
-> > sense to save the time on handling separate patches.
-> 
-> This is open source -- you have to consider the time saved by reviewers too.
+The rule for %.html removes the output directory, so there is no point
+in copying images before building HTML.
 
-Like I said previously this is best done on per-case basis and because it is
-open source eventually people will come up with an alternative patch if they
-find the current one too bothersome to review, merge etc.
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Cc: stable@kernel.org
+---
+ Documentation/DocBook/Makefile |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-> But I doubt you have saved time on all your motivated commit searches, so...
+diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
+index ab8300f..22bbf7e 100644
+--- a/Documentation/DocBook/Makefile
++++ b/Documentation/DocBook/Makefile
+@@ -32,7 +32,7 @@ PS_METHOD	= $(prefer-db2x)
+ 
+ ###
+ # The targets that may be used.
+-PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs media
++PHONY += xmldocs sgmldocs psdocs pdfdocs htmldocs mandocs installmandocs cleandocs
+ 
+ BOOKS := $(addprefix $(obj)/,$(DOCBOOKS))
+ xmldocs: $(BOOKS)
+@@ -45,15 +45,15 @@ PDF := $(patsubst %.xml, %.pdf, $(BOOKS))
+ pdfdocs: $(PDF)
+ 
+ HTML := $(sort $(patsubst %.xml, %.html, $(BOOKS)))
+-htmldocs: media $(HTML)
++htmldocs: $(HTML)
+ 	$(call build_main_index)
++	$(call build_images)
+ 
+ MAN := $(patsubst %.xml, %.9, $(BOOKS))
+ mandocs: $(MAN)
+ 
+-media:
+-	mkdir -p $(srctree)/Documentation/DocBook/media/
+-	cp $(srctree)/Documentation/DocBook/dvb/*.png $(srctree)/Documentation/DocBook/v4l/*.gif $(srctree)/Documentation/DocBook/media/
++build_images = mkdir -p $(objtree)/Documentation/DocBook/media/ && \
++	       cp $(srctree)/Documentation/DocBook/dvb/*.png $(srctree)/Documentation/DocBook/v4l/*.gif $(objtree)/Documentation/DocBook/media/
+ 
+ installmandocs: mandocs
+ 	mkdir -p /usr/local/man/man9/
+-- 
+1.6.5.2
 
-Well, just two basic searches limited to one contributor and one directory..
 
---
-Bartlomiej Zolnierkiewicz
+
+
