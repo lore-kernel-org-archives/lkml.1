@@ -1,85 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZLCRTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZLCRUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbZLCRTn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZLCRTm
+	id S1755968AbZLCRUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:20:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbZLCRUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:19:42 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:44045 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754647AbZLCRTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:19:41 -0500
-Date: Thu, 3 Dec 2009 11:19:46 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-Message-ID: <20091203171946.GC15151@sgi.com>
-References: <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain> <1259069986.4531.1453.camel@laptop> <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain> <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org> <20091125074033.4c46c1b0@infradead.org> <20091203165004.GA14665@sgi.com> <Pine.WNT.4.64.0912030851500.13880@ppwaskie-MOBL2.amr.corp.intel.com> <20091203170149.GA15151@sgi.com> <Pine.WNT.4.64.0912030905530.16084@ppwaskie-MOBL2.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.WNT.4.64.0912030905530.16084@ppwaskie-MOBL2.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 3 Dec 2009 12:20:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58501 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754841AbZLCRUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 12:20:53 -0500
+Date: Thu, 3 Dec 2009 15:19:56 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Ferenc Wagner <wferi@niif.hu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@wilsonet.com>, Jarod Wilson <jarod@redhat.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+Message-ID: <20091203151956.70779717@pedra>
+In-Reply-To: <9e4733910912030850w188f163bxa2ca149ec81c5bb1@mail.gmail.com>
+References: <4B15852D.4050505@redhat.com>
+	<4B16BE6A.7000601@redhat.com>
+	<20091202195634.GB22689@core.coreip.homeip.net>
+	<2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
+	<20091202201404.GD22689@core.coreip.homeip.net>
+	<4B16CCD7.20601@redhat.com>
+	<20091202205323.GF22689@core.coreip.homeip.net>
+	<4B16D87F.7080701@redhat.com>
+	<87tyw8ujsr.fsf@tac.ki.iif.hu>
+	<4B17E874.5020003@redhat.com>
+	<9e4733910912030850w188f163bxa2ca149ec81c5bb1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 09:07:21AM -0800, Waskiewicz Jr, Peter P wrote:
-> On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
+Em Thu, 3 Dec 2009 11:50:04 -0500
+Jon Smirl <jonsmirl@gmail.com> escreveu:
+
+> On Thu, Dec 3, 2009 at 11:33 AM, Mauro Carvalho Chehab
+> <mchehab@redhat.com> wrote:
+> > Ferenc Wagner wrote:
+> >> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+> >>
+> >>> Dmitry Torokhov wrote:
+> >>>
+> >
+> >> The interesting thing is that input.h defines KEY_TV, KEY_PC, KEY_SAT,
+> >> KEY_CD, KEY_TAPE etc., but no corresponding scan codes will ever be sent
+> >> by any remote (ok, I'm stretching it a bit).
+> >
+> > Unfortunately, this is not true. Some IR's do send a keycode for TV/PC/SAT/CD, etc.
+> >
+> > On those remotes, if you press TV and then press for example Channel UP
+> > and press Radio, then press Channel UP, the channel UP code will be the same.
+> >
+> > For example, on Hauppauge Grey IR, we have:
+> >
+> > <TV>
+> > [13425.128525] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e1c keycode 0x179
+> > [13425.136733] ir_input_key_event: em28xx IR (em28xx #0): key event code=377 down=1
+> > [13425.144170] ir_input_key_event: em28xx IR (em28xx #0): key event code=377 down=0
+> >
+> > <CHANNEL UP>
+> > [13428.350223] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e20 keycode 0x192
+> > [13428.358434] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=1
+> > [13428.365871] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=0
+> >
+> > <Radio>
+> > [13430.672266] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e0c keycode 0x181
+> > [13430.680473] ir_input_key_event: em28xx IR (em28xx #0): key event code=385 down=1
+> > [13430.687913] ir_input_key_event: em28xx IR (em28xx #0): key event code=385 down=0
+> >
+> > <CHANNEL UP>
+> > [13433.697268] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e20 keycode 0x192
+> > [13433.705480] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=1
+> > [13433.712916] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=0
+> >
+> > In this IR, the address is bogus: it is always 0x1e. This scenario is very common with the
+> > shipped IR's.
 > 
-> > On Thu, Dec 03, 2009 at 08:53:23AM -0800, Waskiewicz Jr, Peter P wrote:
-> > > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
-> > > 
-> > > > On Wed, Nov 25, 2009 at 07:40:33AM -0800, Arjan van de Ven wrote:
-> > > > > On Tue, 24 Nov 2009 09:41:18 -0800
-> > > > > ebiederm@xmission.com (Eric W. Biederman) wrote:
-> > > > > > Oii.
-> > > > > > 
-> > > > > > I don't think it is bad to export information to applications like
-> > > > > > irqbalance.
-> > > > > > 
-> > > > > > I think it pretty horrible that one of the standard ways I have heard
-> > > > > > to improve performance on 10G nics is to kill irqbalance.
-> > > > > 
-> > > > > irqbalance does not move networking irqs; if it does there's something
-> > > > > evil going on in the system. But thanks for the bugreport ;)
-> > > > 
-> > > > It does move networking irqs.
-> > > > 
-> > > > > 
-> > > > > we had that; it didn't work.
-> > > > > what I'm asking for is for the kernel to expose the numa information;
-> > > > > right now that is the piece that is missing.
-> > > > > 
-> > > > 
-> > > > I'm wondering if we should expose that numa information in the form of a node or the set of allowed cpus, or both?
-> > > > 
-> > > > I'm guessing 'both' is the correct answer, so that apps like irqbalance can make a qualitative decision based on the node (affinity to cpus on this node is better), but an absolute decision based on allowed cpus (I cannot change affinity to anything but this set of cpus).
-> > > 
-> > > That's exactly what my patch in the thread "irq: Add node_affinity CPU 
-> > > masks for smarter irqbalance hints" is doing.  I've also done the 
-> > > irqbalance changes based on that kernel patch, and Arjan currently has 
-> > > that patch.
-> > 
-> > So if I understand correctly, you're patch takes care of the qualitative portion of it (we prefer to set affinity to these cpus, which may be on more than one node), but not the restrictive part of it (we cannot change affinity to anything but these cpus)?
+> The remote is treating everything as a single integrated device which
+> is not inconsistent with what has been said. In this case there really
+> is only one multi-function device not two independent ones.
 > 
-> That is correct.  The patch provides an interface to both the kernel 
-> (functions) and /proc for userspace to set a CPU mask.  That is the 
-> preferred mask for the interrupt to be balanced on.  Then irqbalance will 
-> make decisions on how to balance within that provided mask, if it in fact 
-> has been provided.
+> If you want to control two independent devices you need to buy a
+> different remote. Remotes are cheap so that's not a big deal.
+> 
+> If you really want to use this remote to control two independent
+> devices you need user space scripting to split the single device into
+> two devices and then inject new events into the input layer. This is a
+> complex case and not in the goal of getting 90% of users to "just
+> work".
 
-What if it's not provided?  Will irqbalance make decisions based on the numa_node of that irq (I would hope)?
+This remote is a typical example of the IR's that are provided together with media boards.
+On all such IR's I know, it does generate one key event for TV, SAT, DVB, DVD... keys and
+this event doesn't change the status of subsequent keys.
 
-Also, can we add a restricted mask as I mention above into this scheme?  If we can't send an IRQ to some node, we don't want to bother attempting to change affinity to cpus on that node (hopefully code in the kernel will eventually restrict this).
+100% of the users of such boards will have the shipped IR. Some amount will be happy of
+just using the provided IR to control different applications at their computer or embedded
+hardware, and some amount will prefer to buy a multi-purpose IR that will allow him
+to control not only his computer, but also, his TV, his Air conditioning, etc.
 
-As a matter of fact, driver's allocating rings, buffers, queues on other nodes should optimally be made aware of the restriction.
+Both usages should be supported.
 
+All I'm saying is that, in the case where people have only the shipped IR, if he wants to
+see TV, the produced keycode will be KEY_TV, and then to change a channel, it will
+receive KEY_CHANNELUP, to control his TV app. When the user decides to switch to DVB, 
+he will press KEY_DVB and then KEY_PLAY to play his movie.
+
+So, an application like MythTV should be able to work with those keys.
+
+I don't see the need to create a separate code for KEY_PLAYDVB, as this can be simply mapped
+as KEY_DVB and KEY_PLAY.
+
+
+-- 
+
+Cheers,
+Mauro
