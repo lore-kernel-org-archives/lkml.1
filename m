@@ -1,145 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZLCVOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZLCVQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbZLCVOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 16:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZLCVOw
+	id S1756393AbZLCVQH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 16:16:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZLCVQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 16:14:52 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36210 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753590AbZLCVOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 16:14:52 -0500
-Date: Thu, 3 Dec 2009 22:14:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [GIT PULL] x86/process for v2.6.33
-Message-ID: <20091203211443.GA15049@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Thu, 3 Dec 2009 16:16:06 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43462 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753307AbZLCVQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 16:16:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ltFI9pB8SC118yhaG3yGJ6ZkREuvmFCV/EAI8y/6NT+3RslGZJ00kOXkViJWaDItt0
+         RfGZoARYsZA3W4QRTIcv3cOOO+zyBVFN0NpdXD0SqzzuTVDSEfWYheB8G4KRYCfWu2AD
+         svUMZM3EKSbgiwPJ99xo+FJPN0YSxCGzKrxJc=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Prasad <prasad@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Will Deacon <will.deacon@arm.com>, Paul Mundt <lethal@linux-sh.org>
+Subject: [PATCH 1/2] hw-breakpoints: Perf interface support for breakpoint ranges
+Date: Thu,  3 Dec 2009 22:16:03 +0100
+Message-Id: <1259874964-7757-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Looking a the PowerPc cpu implementations of breakpoints, we have
+for both data and instruction breakpoints:
 
-Please pull the latest x86-process-for-linus git tree from:
+- 2 Address registers (let's rather talk about a comparison operand)
+- Control registers that define the comparison nature (equal, greater,
+  lesser than) against the above addresses.
+- Control registers that define how to handle the 2 address registers.
+  The instruction address or memory access need to either match
+   - Address 1 OR Address 2 (OR = boolean OR, not binary)
+   - Address 1 AND Address 2 ( AND = boolean AND, not binary)
+  And this match is subject to the comparison rules independantly
+  defined for these two addresses by the control registers
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-process-for-linus
+The most obvious practical uses of these facilities are either the
+definition of two independant traditional breakpoints, or the
+definition of a breakpoint that matches a range of addresses.
 
- Thanks,
+Hence we want the generic breakpoint interface to support it.
+This patch splits up the struct perf_event_attr::bp_addr field
+into bp_start and bp_end.
 
-	Ingo
+The definition of a simple breakpoint needs bp_start and bp_end to be
+equal, ie: a simple breakpoint is a range breakpoint which start and
+end addresses are identical.
 
------------------->
-H. Peter Anvin (2):
-      x86-64: make compat_start_thread() match start_thread()
-      x86-64: merge the standard and compat start_thread() functions
+To define a range breakpoint, you just need to set bp_start and bp_end
+to the limits of your address range.
 
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Prasad <prasad@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
+---
+ arch/x86/kernel/hw_breakpoint.c         |    8 ++++++--
+ arch/x86/kernel/ptrace.c                |    6 ++++--
+ include/linux/hw_breakpoint.h           |    4 ++--
+ include/linux/perf_event.h              |    3 ++-
+ kernel/perf_event.c                     |    2 +-
+ kernel/trace/trace_ksym.c               |   15 ++++++++-------
+ samples/hw_breakpoint/data_breakpoint.c |    3 ++-
+ tools/perf/util/parse-events.c          |    3 ++-
+ 8 files changed, 27 insertions(+), 17 deletions(-)
 
- arch/x86/include/asm/elf.h   |   20 ++------------------
- arch/x86/kernel/process_64.c |   32 ++++++++++++++++++++++++--------
- 2 files changed, 26 insertions(+), 26 deletions(-)
-
-diff --git a/arch/x86/include/asm/elf.h b/arch/x86/include/asm/elf.h
-index 456a304..8a024ba 100644
---- a/arch/x86/include/asm/elf.h
-+++ b/arch/x86/include/asm/elf.h
-@@ -157,19 +157,6 @@ do {						\
- 
- #define compat_elf_check_arch(x)	elf_check_arch_ia32(x)
- 
--static inline void start_ia32_thread(struct pt_regs *regs, u32 ip, u32 sp)
--{
--	loadsegment(fs, 0);
--	loadsegment(ds, __USER32_DS);
--	loadsegment(es, __USER32_DS);
--	load_gs_index(0);
--	regs->ip = ip;
--	regs->sp = sp;
--	regs->flags = X86_EFLAGS_IF;
--	regs->cs = __USER32_CS;
--	regs->ss = __USER32_DS;
--}
--
- static inline void elf_common_init(struct thread_struct *t,
- 				   struct pt_regs *regs, const u16 ds)
+diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
+index d42f65a..910ae0e 100644
+--- a/arch/x86/kernel/hw_breakpoint.c
++++ b/arch/x86/kernel/hw_breakpoint.c
+@@ -277,7 +277,11 @@ static int arch_build_bp_info(struct perf_event *bp)
  {
-@@ -191,11 +178,8 @@ do {							\
- #define	COMPAT_ELF_PLAT_INIT(regs, load_addr)		\
- 	elf_common_init(&current->thread, regs, __USER_DS)
+ 	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
  
--#define	compat_start_thread(regs, ip, sp)		\
--do {							\
--	start_ia32_thread(regs, ip, sp);		\
--	set_fs(USER_DS);				\
--} while (0)
-+void start_thread_ia32(struct pt_regs *regs, u32 new_ip, u32 new_sp);
-+#define compat_start_thread start_thread_ia32
+-	info->address = bp->attr.bp_addr;
++	/* We don't support breakpoint ranges */
++	if (bp->attr.bp_start != bp->attr.bp_end)
++		return -EINVAL;
++
++	info->address = bp->attr.bp_start;
  
- #define COMPAT_SET_PERSONALITY(ex)			\
- do {							\
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index ad535b6..eb261c5 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -344,26 +344,42 @@ out:
- 	return err;
- }
+ 	/* Len */
+ 	switch (bp->attr.bp_len) {
+@@ -406,7 +410,7 @@ void aout_dump_debugregs(struct user *dump)
+ 		bp = thread->ptrace_bps[i];
  
--void
--start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
-+static void
-+start_thread_common(struct pt_regs *regs, unsigned long new_ip,
-+		    unsigned long new_sp,
-+		    unsigned int _cs, unsigned int _ss, unsigned int _ds)
- {
- 	loadsegment(fs, 0);
--	loadsegment(es, 0);
--	loadsegment(ds, 0);
-+	loadsegment(es, _ds);
-+	loadsegment(ds, _ds);
- 	load_gs_index(0);
- 	regs->ip		= new_ip;
- 	regs->sp		= new_sp;
- 	percpu_write(old_rsp, new_sp);
--	regs->cs		= __USER_CS;
--	regs->ss		= __USER_DS;
--	regs->flags		= 0x200;
-+	regs->cs		= _cs;
-+	regs->ss		= _ss;
-+	regs->flags		= X86_EFLAGS_IF;
- 	set_fs(USER_DS);
+ 		if (bp && !bp->attr.disabled) {
+-			dump->u_debugreg[i] = bp->attr.bp_addr;
++			dump->u_debugreg[i] = bp->attr.bp_start;
+ 			info = counter_arch_bp(bp);
+ 			dr7 |= encode_dr7(i, info->len, info->type);
+ 		} else {
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 04d182a..5d60a0f 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -728,7 +728,8 @@ static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
+ 		 * Put stub len and type to register (reserve) an inactive but
+ 		 * correct bp
+ 		 */
+-		attr.bp_addr = addr;
++		attr.bp_start = addr;
++		attr.bp_end = addr;
+ 		attr.bp_len = HW_BREAKPOINT_LEN_1;
+ 		attr.bp_type = HW_BREAKPOINT_W;
+ 		attr.disabled = 1;
+@@ -739,7 +740,8 @@ static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
+ 		t->ptrace_bps[nr] = NULL;
+ 
+ 		attr = bp->attr;
+-		attr.bp_addr = addr;
++		attr.bp_start = addr;
++		attr.bp_end = addr;
+ 		bp = modify_user_hw_breakpoint(bp, &attr, bp->callback, tsk);
+ 	}
  	/*
- 	 * Free the old FP and other extended state
- 	 */
- 	free_thread_xstate(current);
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index a03daed..d711c98 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -35,9 +35,9 @@ static inline void hw_breakpoint_init(struct perf_event_attr *attr)
+ 	attr->pinned = 1;
  }
--EXPORT_SYMBOL_GPL(start_thread);
-+
-+void
-+start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
-+{
-+	start_thread_common(regs, new_ip, new_sp,
-+			    __USER_CS, __USER_DS, 0);
-+}
-+
-+#ifdef CONFIG_IA32_EMULATION
-+void start_thread_ia32(struct pt_regs *regs, u32 new_ip, u32 new_sp)
-+{
-+	start_thread_common(regs, new_ip, new_sp,
-+			    __USER32_CS, __USER32_DS, __USER32_DS);
-+}
-+#endif
  
- /*
-  *	switch_to(x,y) should switch tasks from x to y.
+-static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
++static inline unsigned long hw_breakpoint_start_addr(struct perf_event *bp)
+ {
+-	return bp->attr.bp_addr;
++	return bp->attr.bp_start;
+ }
+ 
+ static inline int hw_breakpoint_type(struct perf_event *bp)
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 43adbd7..771d04c 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -217,7 +217,8 @@ struct perf_event_attr {
+ 
+ 	union {
+ 		struct { /* Hardware breakpoint info */
+-			__u64		bp_addr;
++			__u64		bp_start;
++			__u64		bp_end;
+ 			__u32		bp_type;
+ 			__u32		bp_len;
+ 		};
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 6b7ddba..43ed326 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -4308,7 +4308,7 @@ void perf_bp_event(struct perf_event *bp, void *data)
+ 	struct perf_sample_data sample;
+ 	struct pt_regs *regs = data;
+ 
+-	sample.addr = bp->attr.bp_addr;
++	sample.addr = instruction_pointer(regs);
+ 
+ 	if (!perf_exclude_event(bp, regs))
+ 		perf_swevent_add(bp, 1, 1, &sample, regs);
+diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
+index ddfa0fd..bbdc02a 100644
+--- a/kernel/trace/trace_ksym.c
++++ b/kernel/trace/trace_ksym.c
+@@ -69,7 +69,7 @@ void ksym_collect_stats(unsigned long hbp_hit_addr)
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(entry, node, &ksym_filter_head, ksym_hlist) {
+-		if ((entry->attr.bp_addr == hbp_hit_addr) &&
++		if ((entry->attr.bp_start == hbp_hit_addr) &&
+ 		    (entry->counter <= MAX_UL_INT)) {
+ 			entry->counter++;
+ 			break;
+@@ -102,11 +102,11 @@ void ksym_hbp_handler(struct perf_event *hbp, void *data)
+ 	entry		= ring_buffer_event_data(event);
+ 	entry->ip	= instruction_pointer(regs);
+ 	entry->type	= hw_breakpoint_type(hbp);
+-	entry->addr	= hw_breakpoint_addr(hbp);
++	entry->addr	= hw_breakpoint_start_addr(hbp);
+ 	strlcpy(entry->cmd, current->comm, TASK_COMM_LEN);
+ 
+ #ifdef CONFIG_PROFILE_KSYM_TRACER
+-	ksym_collect_stats(hw_breakpoint_addr(hbp));
++	ksym_collect_stats(hw_breakpoint_start_addr(hbp));
+ #endif /* CONFIG_PROFILE_KSYM_TRACER */
+ 
+ 	trace_buffer_unlock_commit(buffer, event, 0, pc);
+@@ -193,7 +193,8 @@ int process_new_ksym_entry(char *ksymname, int op, unsigned long addr)
+ 	hw_breakpoint_init(&entry->attr);
+ 
+ 	entry->attr.bp_type = op;
+-	entry->attr.bp_addr = addr;
++	entry->attr.bp_start = addr;
++	entry->attr.bp_end = addr;
+ 	entry->attr.bp_len = HW_BREAKPOINT_LEN_4;
+ 
+ 	ret = -EAGAIN;
+@@ -235,7 +236,7 @@ static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
+ 	mutex_lock(&ksym_tracer_mutex);
+ 
+ 	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
+-		ret = trace_seq_printf(s, "%pS:", (void *)entry->attr.bp_addr);
++		ret = trace_seq_printf(s, "%pS:", (void *)entry->attr.bp_start);
+ 		if (entry->attr.bp_type == HW_BREAKPOINT_R)
+ 			ret = trace_seq_puts(s, "r--\n");
+ 		else if (entry->attr.bp_type == HW_BREAKPOINT_W)
+@@ -316,7 +317,7 @@ static ssize_t ksym_trace_filter_write(struct file *file,
+ 
+ 	ret = -EINVAL;
+ 	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
+-		if (entry->attr.bp_addr == ksym_addr) {
++		if (entry->attr.bp_start == ksym_addr) {
+ 			/* Check for malformed request: (6) */
+ 			if (entry->attr.bp_type != op)
+ 				changed = 1;
+@@ -503,7 +504,7 @@ static int ksym_tracer_stat_show(struct seq_file *m, void *v)
+ 		seq_puts(m, "  NA          ");
+ 	}
+ 
+-	if (lookup_symbol_name(entry->attr.bp_addr, fn_name) >= 0)
++	if (lookup_symbol_name(entry->attr.bp_start, fn_name) >= 0)
+ 		seq_printf(m, "  %-36s", fn_name);
+ 	else
+ 		seq_printf(m, "  %-36s", "<NA>");
+diff --git a/samples/hw_breakpoint/data_breakpoint.c b/samples/hw_breakpoint/data_breakpoint.c
+index 2952550..1bc5c4e 100644
+--- a/samples/hw_breakpoint/data_breakpoint.c
++++ b/samples/hw_breakpoint/data_breakpoint.c
+@@ -53,7 +53,8 @@ static int __init hw_break_module_init(void)
+ 	int ret;
+ 	DEFINE_BREAKPOINT_ATTR(attr);
+ 
+-	attr.bp_addr = kallsyms_lookup_name(ksym_name);
++	attr.bp_start = kallsyms_lookup_name(ksym_name);
++	attr.bp_end = attr.bp_start;
+ 	attr.bp_len = HW_BREAKPOINT_LEN_4;
+ 	attr.bp_type = HW_BREAKPOINT_W | HW_BREAKPOINT_R;
+ 
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 9e5dbd6..4fa41a0 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -594,7 +594,8 @@ parse_breakpoint_event(const char **strp, struct perf_event_attr *attr)
+ 	if (target == endaddr)
+ 		return EVT_FAILED;
+ 
+-	attr->bp_addr = addr;
++	attr->bp_start = addr;
++	attr->bp_end = addr;
+ 	*strp = endaddr;
+ 
+ 	type = strchr(target, ':');
+-- 
+1.6.2.3
+
