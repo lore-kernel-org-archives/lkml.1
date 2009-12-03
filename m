@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbZLCKYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbZLCKcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbZLCKYI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 05:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZLCKYH
+	id S1755386AbZLCKcx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 05:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbZLCKcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 05:24:07 -0500
-Received: from darkcity.gna.ch ([195.226.6.51]:49553 "EHLO mail.gna.ch"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751953AbZLCKYG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 05:24:06 -0500
-Subject: Re: [PATCH] therm_adt746x: Don't access non-existing register
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       LKML <linux-kernel@vger.kernel.org>, Colin Leroy <colin@colino.net>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20091202101055.1ae7bf35@hyperion.delvare>
-References: <20091202091951.5ec6bb83@hyperion.delvare>
-	 <1259744042.8188.397.camel@thor.local>
-	 <20091202101055.1ae7bf35@hyperion.delvare>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 03 Dec 2009 11:24:06 +0100
-Message-ID: <1259835846.5316.782.camel@thor.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 3 Dec 2009 05:32:53 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51719 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752654AbZLCKcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 05:32:52 -0500
+Date: Thu, 3 Dec 2009 11:32:46 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jan Kara <jack@suse.cz>, Mike Galbraith <gleep@gmx.de>,
+       James Y Knight <foom@fuhm.net>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: writev data loss bug in (at least) 2.6.31 and 2.6.32pre8 x86-64
+Message-ID: <20091203103245.GA5023@quack.suse.cz>
+References: <1F5364AE-321E-44E9-8B0D-B8E17597A0DA@fuhm.net>
+ <907888CC-F4B2-448F-8F48-B96A566D323B@fuhm.net>
+ <1259667765.9614.19.camel@marge.simson.net>
+ <20091201143558.GB12730@quack.suse.cz>
+ <20091202190425.GA30315@quack.suse.cz>
+ <20091203052825.GL31517@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091203052825.GL31517@wotan.suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-02 at 10:10 +0100, Jean Delvare wrote: 
-> On Wed, 02 Dec 2009 09:54:02 +0100, Michel Dänzer wrote:
-> > On Wed, 2009-12-02 at 09:19 +0100, Jean Delvare wrote: 
-> > > Michel, Darrick,
-> > > 
-> > > Apparently you are using the therm_adt746x driver, so maybe you would
-> > > be interested in testing and carrying the following patch. I've sent it
-> > > to Colin Leroy, who is listed as the maintainer for this driver, 1.5
-> > > month ago, but did not hear back.
-> > 
-> > The driver seems to load and work fine here (on a PowerBook5,8) with the
-> > patch, so feel free to add a Tested-By: line for me.
-> 
-> Will do, thanks.
-> 
-> BTW, I also have i2c-powermac patches queued for 2.6.33 if you want to
-> give them a try:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-powermac-*.patch
-> 
-> (Don't look for patch 5/6, it was broken so I discarded it.)
+On Thu 03-12-09 06:28:25, Nick Piggin wrote:
+> On Wed, Dec 02, 2009 at 08:04:26PM +0100, Jan Kara wrote:
+> > >   When using writev, the page we copy from is not paged in (while when we
+> > > use ordinary write, it is paged in). This difference might be worth
+> > > investigation on its own (as it is likely to heavily impact performance of
+> > > writev) but is irrelevant for us now - we should handle this without data
+> > > corruption anyway.
+> >   I've looked into why writev fails reliably the writes. The reason is that
+> > iov_iter_fault_in_readable() faults in only the first IO buffer. Because
+> > this is just 600 bytes big, following iov_iter_copy_from_user_atomic copies
+> > only 600 bytes and block_write_end sets number of copied bytes to 0. Thus
+> > we restart the write and do it one iov per iteration which succeeds. So
+> > everything works as designed only it gets inefficient in this particular
+> > case.
+> Yep, this would be right. We could actually do more prefaulting; I
+> think I was being a little over conservative and worried about earlier
+> pages being unmapped before we were able to consume them... but I
+> think being too worried about that case is optimizing an unusual case
+> that is probably performing badly anyway at the expense of more common
+> patterns.
+  Yeah, IMHO optimal would be to fault in enough buffers so that we can
+fill one page (although we may pose some upper bound on the number of pages
+we are willing to fault in - like 1 MB of data or so).
 
-My PowerBook5,8 boots and works fine with all of these applied and
-CONFIG_I2C_POWERMAC=y, so for all of them:
+> Anyway, what I was doing to test this code when I wrote it was to
+> inject random failures into user copy functions. I guess this could
+> be useful to merge in the error injection framework?
+  Yes, that would be definitely useful. This was exceptionally easy to
+track down because it was easily reproducible. But otherwise this path is
+almost never taken and bugs in there are hard to debug so it would get more
+testing coverage. I've spent like a month debugging a bug in reiserfs
+causing data corruption in this path - mainly because it took a few days to
+reproduce it and I didn't know what could be possibly triggering it...
 
-Tested-by: Michel Dänzer <michel@daenzer.net>
-
-
--- 
-Earthling Michel Dänzer           |                http://www.vmware.com
-Libre software enthusiast         |          Debian, X and DRI developer
-
+								Honza
