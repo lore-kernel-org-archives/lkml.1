@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbZLCDZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbZLCDWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbZLCDZP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 22:25:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZLCDZO
+	id S1754745AbZLCDWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 22:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZLCDWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 22:25:14 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39559 "EHLO mx2.suse.de"
+	Wed, 2 Dec 2009 22:22:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753089AbZLCDZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 22:25:13 -0500
-Date: Wed, 2 Dec 2009 19:20:48 -0800
-From: Greg KH <gregkh@suse.de>
-To: pancho horrillo <pancho@pancho.name>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Fix a bug on appledisplay.c regarding signedness
-Message-ID: <20091203032048.GA29127@suse.de>
-References: <20091202191942.GA7362@pancho.name>
- <20091202193104.GB7362@pancho.name>
- <4B16C233.6020808@ru.mvista.com>
- <20091202204421.GA1786@pancho.name>
+	id S1752115AbZLCDWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 22:22:16 -0500
+Message-ID: <4B172F51.1090507@redhat.com>
+Date: Wed, 02 Dec 2009 22:24:01 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091202204421.GA1786@pancho.name>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
+       jbaron@redhat.com, linux-tip-commits@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: trace/events: DECLARE vs DEFINE semantic
+References: <20091202162715.GB9710@Krystal> <1259773888.12870.61.camel@gandalf.stny.rr.com> <20091202180633.GF9710@Krystal> <1259777987.12870.70.camel@gandalf.stny.rr.com> <20091202190135.GA23316@Krystal> <1259781578.12870.78.camel@gandalf.stny.rr.com> <4B16EC06.6010706@redhat.com> <1259794005.12870.102.camel@gandalf.stny.rr.com> <20091202225736.GA14770@Krystal> <4B16F389.4090801@zytor.com> <20091202231529.GC14770@Krystal>
+In-Reply-To: <20091202231529.GC14770@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 09:44:21PM +0100, pancho horrillo wrote:
-> On Wed, Dec 02, 2009 at 10:38:27PM +0300, Sergei Shtylyov wrote:
-> > Hello.
-> > 
-> > pancho horrillo wrote:
-> > 
-> > >Please, review and push the patch, if you deem it adequate.
-> > 
-> > >Thanks a bunch!
-> > 
-> >    That 'uint8_t' is for userspace, use 'u8' instead.
-> > 
-> > WBR, Sergei
+
+
+Mathieu Desnoyers wrote:
+> * H. Peter Anvin (hpa@zytor.com) wrote:
+>> On 12/02/2009 02:57 PM, Mathieu Desnoyers wrote:
+>>>>
+>>>> TRACE_CLASS - Declares a class
+>>>> TRACE_CLASS_EVENT - defines an event for said class
+>>>> TRACE_EVENT - Declares a class and defines an event (as is today)
+>>>
+>>> Yep, it looks good! It's self-descriptive and don't require to explain
+>>> what the thing is doing each time we refer to it. (however I feel a bit
+>>> sad for Fred, Wilma and Barney) ;)
+>>>
+>>
+>> Although you have to admit it's a bit confusing that:
+>>
+>> TRACE_EVENT = TRACE_CLASS + TRACE_CLASS_EVENT
+>>
+>> ... as opposed to ...
+>>
+>> TRACE_CLASS_EVENT = TRACE_CLASS + TRACE_EVENT
+>>
+>> 	-hpa
 > 
-> Thanks for the coaching, Sergei!
+> Then I would say that TRACE_EVENT should probably not have the
+> side-effect of declaring a globally-reuseable class. Maybe under the
+> hood it could create a privately-named class, but I don't see how it can
+> be re-used by following TRACE_CLASS_EVENT without causing confusion.
 > 
-> BTW, there are about 4863 of uint8_t in the kernel sources :-)
+> I'd go for:
+> 
+> TRACE_CLASS - Declares/defines a class
+> TRACE_CLASS_EVENT - Declares/defines an event for said class
+> TRACE_EVENT - Declares/defines a private class and declares/defines an event
 
-And please don't try to add any new ones :)
+Agreed, I'd rather like this naming. :-)
 
-thanks,
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-greg k-h
+Thank you!
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
