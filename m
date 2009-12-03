@@ -1,142 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbZLCDRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZLCDUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753667AbZLCDRL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 22:17:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZLCDRK
+	id S1753601AbZLCDUR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 22:20:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbZLCDUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 22:17:10 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:49793 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752914AbZLCDRI (ORCPT
+	Wed, 2 Dec 2009 22:20:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:38449 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752947AbZLCDUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 22:17:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Kwkaq1dZlnNofUL1xAnIky6GqfttST9Kr0csH+EaAn3EHICuWJckuRit1llP4hhpC5
-         Va2p4gvNPUushVb0NbucoOw4saNeV0hRzLpbLlIRBtYjCSQU3LkJPr1xbogzQxk2riCH
-         YuA/FQBdTB24VOv8tgcpHElNH7GTvXFvLfCFM=
-Date: Wed, 2 Dec 2009 19:17:09 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
-       linux-input@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 32-rc1 aka 32-rc2: warning at manage.c:361 (set_irq_wake),
-	matrix-keypad related?
-Message-ID: <20091203031709.GE9121@core.coreip.homeip.net>
-References: <20090930200746.GA1384@ucw.cz> <20091006050649.GH27881@core.coreip.homeip.net> <20091006075816.GA1362@ucw.cz> <20091007043603.GC10204@core.coreip.homeip.net> <f17812d70910070742y5e27f9c3u38e3299b94f33613@mail.gmail.com> <20091007163327.GA12053@core.coreip.homeip.net> <20091007211225.GB17805@elf.ucw.cz>
+	Wed, 2 Dec 2009 22:20:15 -0500
+Message-ID: <4B172E38.1020208@zytor.com>
+Date: Wed, 02 Dec 2009 19:19:20 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007211225.GB17805@elf.ucw.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: seperate reserve_early and reserve_early_overlap_check
+References: <4B0CF1B3.1050200@kernel.org> <4B17199F.1000804@zytor.com> <4B1722F0.6030308@kernel.org>
+In-Reply-To: <4B1722F0.6030308@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 11:12:26PM +0200, Pavel Machek wrote:
-> 
-> > > > OK, so it looks like your box refuses to set up one of the GPIOs as a
-> > > > wakeup source... Hmm, either your box is wrong ;) or matrix_keypad
-> > > > driver needs to maintain a separate list of wakeup GPIOs.
-> > > >
-> > > 
-> > > This is due to the nature of PXA processor, where not every GPIO can
-> > > be configured as a wakeup source. Mmm.... we can either return a
-> > > pseudo value indicating setting wakeup on that GPIO is OK (which
-> > > doesn't sound like a good idea), or we can just ignore the failure of
-> > > enable_irq_wake() in matrix_keypad?
-> > 
-> > We ignore the failure right now in the mainline but that causes stack
-> > traces on resume as we trying to disable not enabled wakeup GPIOs. That
-> > was original Pavel's complaint.
-> 
-> Yep...
-> 
-> I'd say that BUG() simply should not trigger if wakeup can not be
-> enabled/disabled for particular source...?
+On 12/02/2009 06:31 PM, Yinghai Lu wrote:
+>> 1. Renaming reserve_early() to reserve_early_overlap_check() is most
+>> likely going to get overlooked, and people will use the "new"
+>> reserve_early() thinking that they got the old one.
+> kill reserve_early()
+> and use
+> reserve_early_overlap_check()
+> reserve_early_overlap_not_check()
 
-Pavel,
+I would think that we should just leave the current reserve_early() in
+place... it is what we want most of the time.
 
-Could you please try the patch below and let me know if it fixes the
-problem for you?
+I guess I'd like to know specifically when one does *not* want an
+overlap check, which is really the issue here.
 
-Thanks.
+>> 2. This creates overlapping ranges in the reservation array itself.
+> 
+> why?
+> 
+> if the range is retrieved from find_e820_area(). that range should be safe.
+> we could add the early_res directly.
+
+If there is no overlap, the current reserve_early() will work just fine.
+ If there is overlap, then your code would create overlapping
+reservations in the array, since it doesn't seem to check.
+
+Either the new interface is unnecessary, or it is bad... I don't see any
+other alternatives.  Unless the only point is to try to shave off a few
+microseconds, but if so, it seems rather pointless to seek to the end of
+the array first...
+
+> 
+> your patch seems to solve the multiple overlap ok problem.
+> 
+> these overlap check stuff is added by SGI guys to bandit their bios problem. maybe we can kill them at some point.
+> 
+
+It's probably a good idea to have them... errors happen.
+
+One thing I would like to see is to change the underlying data structure
+to instead of having (start, end, attributes) for each reservation, have
+(start, attributes) for all address space.  Such a list would by
+definition always be sorted, and overlaps would be trivial to detect.
+
+	-hpa
 
 -- 
-Dmitry
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Input: matrix-keypad - handle cases when GPIOs can't be wakeup sources
-
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/input/keyboard/matrix_keypad.c |   29 ++++++++++++++++++++++-------
- 1 files changed, 22 insertions(+), 7 deletions(-)
-
-
-diff --git a/drivers/input/keyboard/matrix_keypad.c b/drivers/input/keyboard/matrix_keypad.c
-index 91cfe51..a1152ba 100644
---- a/drivers/input/keyboard/matrix_keypad.c
-+++ b/drivers/input/keyboard/matrix_keypad.c
-@@ -29,11 +29,13 @@ struct matrix_keypad {
- 	unsigned short *keycodes;
- 	unsigned int row_shift;
- 
-+	DECLARE_BITMAP(disabled_gpios, MATRIX_MAX_ROWS);
-+
- 	uint32_t last_key_state[MATRIX_MAX_COLS];
- 	struct delayed_work work;
-+	spinlock_t lock;
- 	bool scan_pending;
- 	bool stopped;
--	spinlock_t lock;
- };
- 
- /*
-@@ -221,9 +223,16 @@ static int matrix_keypad_suspend(struct platform_device *pdev, pm_message_t stat
- 
- 	matrix_keypad_stop(keypad->input_dev);
- 
--	if (device_may_wakeup(&pdev->dev))
--		for (i = 0; i < pdata->num_row_gpios; i++)
--			enable_irq_wake(gpio_to_irq(pdata->row_gpios[i]));
-+	if (device_may_wakeup(&pdev->dev)) {
-+		for (i = 0; i < pdata->num_row_gpios; i++) {
-+			if (!test_bit(i, keypad->disabled_gpios)) {
-+				unsigned int gpio = pdata->row_gpios[i];
-+
-+				if (enable_irq_wake(gpio_to_irq(gpio)) == 0)
-+					__set_bit(i, keypad->disabled_gpios);
-+			}
-+		}
-+	}
- 
- 	return 0;
- }
-@@ -234,9 +243,15 @@ static int matrix_keypad_resume(struct platform_device *pdev)
- 	const struct matrix_keypad_platform_data *pdata = keypad->pdata;
- 	int i;
- 
--	if (device_may_wakeup(&pdev->dev))
--		for (i = 0; i < pdata->num_row_gpios; i++)
--			disable_irq_wake(gpio_to_irq(pdata->row_gpios[i]));
-+	if (device_may_wakeup(&pdev->dev)) {
-+		for (i = 0; i < pdata->num_row_gpios; i++) {
-+			if (test_and_clear_bit(i, keypad->disabled_gpios)) {
-+				unsigned int gpio = pdata->row_gpios[i];
-+
-+				disable_irq_wake(gpio_to_irq(gpio));
-+			}
-+		}
-+	}
- 
- 	matrix_keypad_start(keypad->input_dev);
- 
