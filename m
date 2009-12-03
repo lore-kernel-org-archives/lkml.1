@@ -1,98 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZLCOld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZLCOl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbZLCOld (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 09:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLCOld
+	id S1756133AbZLCOl4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 09:41:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLCOlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 09:41:33 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39014 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbZLCOlc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 09:41:32 -0500
-Subject: Re: [tip:tracing/urgent] tracing: Fix event format export
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johannes@sipsolutions.net, tglx@linutronix.de
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-811cb50baf63461ce0bdb234927046131fc7fa8b@git.kernel.org>
-References: <20091113224009.GB23942@elte.hu>
-	 <tip-811cb50baf63461ce0bdb234927046131fc7fa8b@git.kernel.org>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 03 Dec 2009 09:41:37 -0500
-Message-Id: <1259851297.12870.134.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 09:41:55 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:43516 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751465AbZLCOlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 09:41:55 -0500
+Date: Thu, 3 Dec 2009 06:41:44 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 3/4] rcu: add expedited grace-period
+	support for preemptible RCU
+Message-ID: <20091203144144.GA6822@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091202200955.GA12950@linux.vnet.ibm.com> <4B178440.5020701@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B178440.5020701@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-11-14 at 10:18 +0000, tip-bot for Johannes Berg wrote:
-> Commit-ID:  811cb50baf63461ce0bdb234927046131fc7fa8b
-> Gitweb:     http://git.kernel.org/tip/811cb50baf63461ce0bdb234927046131fc7fa8b
-> Author:     Johannes Berg <johannes@sipsolutions.net>
-> AuthorDate: Fri, 13 Nov 2009 23:40:09 +0100
-> Committer:  Steven Rostedt <rostedt@goodmis.org>
-> CommitDate: Fri, 13 Nov 2009 22:20:34 -0500
+On Thu, Dec 03, 2009 at 05:26:24PM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > 
+> > Implement an synchronize_rcu_expedited() for preemptible RCU that actually
+> > is expedited.  This uses synchronize_sched_expedited() to force all
+> > threads currently running in a preemptible-RCU read-side critical section
+> > onto the appropriate ->blocked_tasks[] list, then takes a snapshot of
+> > all of these lists and waits for them to drain.
+> > 
 > 
-> tracing: Fix event format export
+> > 3.	Add an implementation of synchronize_rcu_expedited() that
+> > 	actually expedites preemptible-RCU grace periods.
 > 
-> For some reason the export of the event print format to userspace
-> uses '#fmt' which breaks if the format string is anything but a plain
-> string, for example if it is built with macros then the macro names
-> are exported instead of their contents.
-> 
-> Use
-> 	"\"%s\"", fmt
-> instead of
-> 	"%s", #fmt
-> to export the string and not the way it is built.
-> 
-> For example, in net/mac80211/driver-trace.h for the trace event drv_start
-> there is:
-> 
->         TP_printk(
->                 LOCAL_PR_FMT, LOCAL_PR_ARG
->         )
-> 
-> Which use to produce:
-> 
->  print fmt: LOCAL_PR_FMT, REC->wiphy_name
-> 
-> Now produces:
-> 
->  print fmt: "%s", REC->wiphy_name
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> LKML-Reference: <20091113224009.GB23942@elte.hu>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> It's very nice.
 
+I am glad you like it!
 
-Ingo,
-
-Any reason that this did not make it into Mainline? 2.6.32 is out, and
-Johannes Berg was depending on this for his users.
-
--- Steve
-
-> ---
->  include/trace/ftrace.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> But I don't understand all things.
 > 
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index cc0d966..dacb8ef 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -159,7 +159,7 @@
->  #undef __get_str
->  
->  #undef TP_printk
-> -#define TP_printk(fmt, args...) "%s, %s\n", #fmt, __stringify(args)
-> +#define TP_printk(fmt, args...) "\"%s\", %s\n", fmt, __stringify(args)
->  
->  #undef TP_fast_assign
->  #define TP_fast_assign(args...) args
+> 1) Why it can be speeded up (in theory)?
+> synchronize_sched_expedited() does speed up, it is due to
+> migration_threads are the most highest priority threads.
+> 
+> But for synchronize_rcu_expedited(), some preempted tasks in ->blocked_tasks[]
+> may be waiting at runqueue for long long time because some other
+> higher priority threads comes.
+> 
+> simply comparison:
+> synchronize_sched_expedited()
+> ==> wake_up_process(rq->migration_thread) to force schedule on cpus.
+> 	which forces read-sides notify the end earlier,
+> 	or we can say "it forces read-sides run to end faster"
+> 
+> synchronize_rcu_expedited()
+> ==> Nothing to force preempted read-site run to end faster.
 
+You are quite right, and this is one reason why one of the items on my
+todo list is "RCU priority boosting".  I am currently doing some work
+to prepare for this by simplifying force_quiescent_state().  The general
+idea will be to traverse the ->blocked_tasks[] lists to raise priorities
+if the grace period goes too long.
+
+That said, the purpose of synchronize_rcu_expedited() is not to provide
+real-time response, but rather to provide short -average- grace-period
+durations.  In the common case, RCU read-side critical sections do not
+get preempted to begin with, so in the common case, this implementation
+of synchronize_sched_expedited() should provide short average grace-period
+durations.
+
+> 2) Why we introduce a API which no one use it.
+> I remember that Net guys request a expedited synchronize_rcu().
+> but currently there is still no one use it.
+
+There have been several requests for it over the years, so I feel
+justified providing it.  If it is still unused some years hence, it
+is really easy to remove it, but it is really hard to provide it on a
+moment's notice.
+
+> Beware my thinking may be wrong!
+
+That would apply to both of us!  ;-)
+
+							Thanx, Paul
