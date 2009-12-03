@@ -1,66 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZLCON0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbZLCOPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZLCON0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 09:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZLCONZ
+	id S1756203AbZLCOPY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 09:15:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbZLCOPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 09:13:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:53578 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752134AbZLCONY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 09:13:24 -0500
-Date: Fri, 4 Dec 2009 01:13:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 3
-Message-Id: <20091204011324.eb195558.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LRH.2.00.0912031435380.9567@twin.jikos.cz>
-References: <20091203180214.16e452ed.sfr@canb.auug.org.au>
-	<alpine.LRH.2.00.0912031435380.9567@twin.jikos.cz>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
+	Thu, 3 Dec 2009 09:15:23 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37770 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZLCOPW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 09:15:22 -0500
+Subject: Re: [PATCH] Fix tracing infrastructure to support multiple
+ includes when defining CREATE_TRACE_POINTS
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@redhat.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>
+In-Reply-To: <20091202191916.GA7589@hmsreliant.think-freely.org>
+References: <20091202191916.GA7589@hmsreliant.think-freely.org>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 03 Dec 2009 09:15:26 -0500
+Message-Id: <1259849726.12870.123.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__4_Dec_2009_01_13_24_+1100_El6RafRcpdjh.j8a"
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__4_Dec_2009_01_13_24_+1100_El6RafRcpdjh.j8a
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2009-12-02 at 14:19 -0500, Neil Horman wrote:
+> Fix tracing infrastructure to allow multiple header files with TRACE_EVENTS to
+> be included with CREATE_TRACE_EVENTS defined
+> 
+> I've been workingon adding a few tracepoints to the network stack, and in so
+> doing it was convienient for me to add a second include file to
+> net/core/net-traces.c with TRACE_EVENTS defined in them.  net-traces.c defines
+> CREATE_TRACE_EVENTS, and during the build it was failing, complaining about
+> duplicate definitions of __tpstrtab_<name>.  I tracked down the bug to find that
+> define_trace.h redefined DECLARE_TRACE to be DEFINE_TRACE, so after the first
+> run through define_trace.h (which is included from skb.h, included in
+> net-trace.c first), the DECLARE_TRACE macro was left with an improper definition
+> to start a new cycle with the next header.
+> 
+> The fix I came up with was to make sure that DECLARE_TRACE was undefined at the
+> end of define_trace.h, and to add a conditional re-definition in tracepoint.h.
+> This places us back in the proper state to define a new set of tracepoints in a
+> subsequent header file.  Not sure if theres a better way to handle this, but
+> this worked well for me, allowing me to include multiple headers with
+> TRACE_EVENT macros in a c file with CREATE_TRACE_POINTS defined.
+> 
 
-Hi Jiri,
+Nice, just some comments below.
 
-On Thu, 3 Dec 2009 14:37:06 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrote:
->
-> > Merging trivial/for-next
-> > CONFLICT (content): Merge conflict in Documentation/video4linux/gspca.t=
-xt
->=20
-> have you been sending out e-mail about this conflict? I don't seem to hav=
-e=20
-> received any.
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> 
+> linux/tracepoint.h   |   18 ++++++++++++++++++
+> trace/define_trace.h |    1 +
+> 2 files changed, 19 insertions(+)
+> 
+> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> index 2aac8a8..562d8ba 100644
+> --- a/include/linux/tracepoint.h
+> +++ b/include/linux/tracepoint.h
+> @@ -173,6 +173,24 @@ static inline void tracepoint_synchronize_unregister(void)
+>   *  trace event headers under one "CREATE_TRACE_POINTS" the first include
+>   *  will override the TRACE_EVENT and break the second include.
+>   */
+> +#ifndef DECLARE_TRACE
+> +#define DECLARE_TRACE(name, proto, args)                                \
+> +	extern struct tracepoint __tracepoint_##name;                   \
+> +	static inline void trace_##name(proto)                          \
+> +	{                                                               \
+> +		if (unlikely(__tracepoint_##name.state))                \
+> +			__DO_TRACE(&__tracepoint_##name,                \
+> +				TP_PROTO(proto), TP_ARGS(args));        \
+> +	}                                                               \
+> +	static inline int register_trace_##name(void (*probe)(proto))   \
+> +	{                                                               \
+> +		return tracepoint_probe_register(#name, (void *)probe); \
+> +	}                                                               \
+> +	static inline int unregister_trace_##name(void (*probe)(proto)) \
+> +	{                                                               \
+> +		return tracepoint_probe_unregister(#name, (void *)probe);\
+> +	}
+> +#endif
+>  
 
-No, I didn't because it is very simple and was only in a documentation
-file.  I figured it would be cleared up easily if/when it comes up in
-being merged into Linus' tree (or maybe before if it is noticed).
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+You duplicate the DECLARE_TRACE from above and place it into an
+unprotected area. Why not move it instead of duplicating it. This is
+just a bug waiting to happen if we ever need to modify DECLARE_TRACE.
 
---Signature=_Fri__4_Dec_2009_01_13_24_+1100_El6RafRcpdjh.j8a
-Content-Type: application/pgp-signature
+If you change it to:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+#if !defined(CONFIG_TRACEPOINTS) && !defined(DECLARE_TRACE)
 
-iEYEARECAAYFAksXx4QACgkQjjKRsyhoI8yHNACfXgksVUovZXEsKzhQPnwGbMiC
-WwYAoKbGxPHgJNLIsKK8nOFoAI8uDpb/
-=d5Q1
------END PGP SIGNATURE-----
+#define DECLARE_TRACE(...) ....
 
---Signature=_Fri__4_Dec_2009_01_13_24_+1100_El6RafRcpdjh.j8a--
+#endif
+
+Then you can remove the first definition of it. The first time
+processing the file, when it hits the #ifndef DECLARE_TRACE in the
+_LINUX_TRACEPOINT_H conditional, it still does not define DECLARE_TRACE,
+and then when it exits that conditional, it does.
+
+-- Steve
+
+
+>  #ifndef TRACE_EVENT
+>  /*
+> diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
+> index 2a4b3bf..a3e0095 100644
+> --- a/include/trace/define_trace.h
+> +++ b/include/trace/define_trace.h
+> @@ -64,6 +64,7 @@
+>  #undef TRACE_EVENT
+>  #undef TRACE_EVENT_FN
+>  #undef TRACE_HEADER_MULTI_READ
+> +#undef DECLARE_TRACE
+>  
+>  /* Only undef what we defined in this file */
+>  #ifdef UNDEF_TRACE_INCLUDE_FILE
+
