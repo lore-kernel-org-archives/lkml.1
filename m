@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbZLCLEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZLCLHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbZLCLEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 06:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbZLCLEK
+	id S1756006AbZLCLHJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 06:07:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZLCLHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 06:04:10 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:23860 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753482AbZLCLEJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 06:04:09 -0500
-Date: Thu, 3 Dec 2009 13:03:32 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Grazvydas Ignotas <notasas@gmail.com>
-Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
-       ext Anton Vorontsov <avorontsov@ru.mvista.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
- charger
-Message-ID: <20091203110332.GO1361@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
- <20091202173321.GA23738@nokia.com>
- <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
- <20091202204946.GB25682@nokia.com>
- <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
- <20091202215442.GA30658@oksana.dev.rtsoft.ru>
- <20091202223156.GA14921@nokia.com>
- <20091202225922.GA15568@oksana.dev.rtsoft.ru>
- <20091203083958.GB31110@nokia.com>
- <6ed0b2680912030255o57d7c46qb5ae1cfcb82e9976@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <6ed0b2680912030255o57d7c46qb5ae1cfcb82e9976@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 03 Dec 2009 11:03:50.0409 (UTC) FILETIME=[4B395790:01CA7408]
-X-Nokia-AV: Clean
+	Thu, 3 Dec 2009 06:07:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11526 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953AbZLCLHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 06:07:07 -0500
+From: Xiaotian Feng <dfeng@redhat.com>
+To: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH -tip] x86/trivial: add pci_dev_put in reboot_fixup_32.c for consistency
+Date: Thu,  3 Dec 2009 19:06:40 +0800
+Message-Id: <1259838400-23833-1-git-send-email-dfeng@redhat.com>
+In-Reply-To: <20091203104056.GB7628@elte.hu>
+References: <20091203104056.GB7628@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+pci_get_device will increase the ref count of found device.
+Although we're going to reset soon, we should use pci_dev_put
+to decrease the ref count for consistency.
 
-On Thu, Dec 03, 2009 at 11:55:12AM +0100, ext Grazvydas Ignotas wrote:
->TPS65950 is catalog part of TWL4030 and has documentation here:
->http://focus.ti.com/docs/prod/folders/print/tps65950.html#technicaldocuments
->
->It says that it is software's responsibility to detect the device and
->set the right charge mode/current..
+Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+---
+ arch/x86/kernel/reboot_fixups_32.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-yes, the BCI (or bq24xxx) will never be able to know which configuration 
-we were enumerated with...
-
->> yes, that'll work. But how about start charging always with 100mA and if
->> userland sees that we were enumerated it reconfigures charging as necessary.
->> But this would mean that we have the EM daemon started up just after the
->> driver itself is loaded to avoid the problem with 100ms no enumeration. How
->> does that sound ? Do we start making some writeable power_supply sysfs ???
->
->There are also USB chargers that don't enumerate and have D+ and D-
->shorted with a resistor (see "dedicated charger port" in the charging
->spec), how do we support those?
-
-dedicated chargers are simple. You kick the charger detection according 
-to USB BC 1.x and if it returns true, you configure high current 
-charging. Host/Hub chargers are also simple, after kicking charger 
-detection, you enable Data pullups (e.g. SOFTCONN bit in musb's power 
-register) and see if the host sends a setup packet...
-
-the complicated part is passing the information of which configuration 
-you were enumerated with to the charger chip.
-
+diff --git a/arch/x86/kernel/reboot_fixups_32.c b/arch/x86/kernel/reboot_fixups_32.c
+index 61a8377..201eab6 100644
+--- a/arch/x86/kernel/reboot_fixups_32.c
++++ b/arch/x86/kernel/reboot_fixups_32.c
+@@ -80,6 +80,7 @@ void mach_reboot_fixups(void)
+ 			continue;
+ 
+ 		cur->reboot_fixup(dev);
++		pci_dev_put(dev);
+ 	}
+ }
+ 
 -- 
-balbi
+1.5.5.6
+
