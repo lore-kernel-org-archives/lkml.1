@@ -1,142 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZLCSZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZLCSeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbZLCSZO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 13:25:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZLCSZN
+	id S1756458AbZLCSeU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 13:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756317AbZLCSeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 13:25:13 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36970 "EHLO mx1.suse.de"
+	Thu, 3 Dec 2009 13:34:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2976 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753109AbZLCSZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 13:25:12 -0500
-Message-ID: <4B180462.4050904@suse.de>
-Date: Fri, 04 Dec 2009 02:33:06 +0800
-From: Coly Li <coly.li@suse.de>
-Reply-To: coly.li@suse.de
-Organization: SuSE Labs
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steve French <sfrench@samba.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Christoph Hellwig <hch@infradead.org>,
-       KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>,
-       Bob Copeland <me@bobcopeland.com>, Anders Larsen <al@alarsen.net>
-Subject: [PATCH] remove compiling warning by adding uninitialized_var()
-Content-Type: text/plain; charset=UTF-8
+	id S1754354AbZLCSeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 13:34:18 -0500
+Date: Thu, 3 Dec 2009 16:33:28 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, Jarod Wilson <jarod@wilsonet.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jonsmirl@gmail.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+Message-ID: <20091203163328.613699e5@pedra>
+In-Reply-To: <20091203175531.GB776@core.coreip.homeip.net>
+References: <BDodf9W1qgB@lirc>
+	<4B14EDE3.5050201@redhat.com>
+	<4B1524DD.3080708@redhat.com>
+	<4B153617.8070608@redhat.com>
+	<A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com>
+	<4B17AA6A.9060702@redhat.com>
+	<20091203175531.GB776@core.coreip.homeip.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes some "may be used uninitialized" compiling warnings by adding uninitialized_var(), while the
-uninitialized variables are initialized properly.
+Let me draw my view:
 
-Signed-off-by: Coly Li <coly.li@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steve French <sfrench@samba.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
-Cc: Bob Copeland <me@bobcopeland.com>
-Cc: Anders Larsen <al@alarsen.net>
----
- fs/cifs/cifssmb.c         |    2 +-
- fs/fat/namei_vfat.c       |    6 ++++--
- fs/freevxfs/vxfs_lookup.c |    2 +-
- fs/nilfs2/btree.c         |    3 ++-
- fs/omfs/file.c            |    2 +-
- fs/qnx4/namei.c           |    2 +-
- 6 files changed, 10 insertions(+), 7 deletions(-)
+Em Thu, 3 Dec 2009 09:55:31 -0800
+Dmitry Torokhov <dmitry.torokhov@gmail.com> escreveu:
 
-diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
-index 941441d..87a6edc 100644
---- a/fs/cifs/cifssmb.c
-+++ b/fs/cifs/cifssmb.c
-@@ -3043,7 +3043,7 @@ CIFSSMBGetCIFSACL(const int xid, struct cifsTconInfo *tcon, __u16 fid,
- 		__u32 parm_len;
- 		__u32 acl_len;
- 		struct smb_com_ntransact_rsp *pSMBr;
--		char *pdata;
-+		char *uninitialized_var(pdata);
+> No, please, wait just a minute. I know it is tempting to just merge
+> lirc_dev and start working, but can we first agree on the overall
+> subsystem structure before doing so. It is still quite inclear to me.
+> 
+> The open questions (for me at least):
+> 
+> - do we create a new class infrastructure for all receivers or only for
+>   ones plugged into lirc_dev? Remember that classifying objects affects
+>   how udev and friemds see them and may either help or hurt writing PnP
+>   rules.
 
- /* validate_nttransact */
- 		rc = validate_ntransact(iov[0].iov_base, (char **)&parm,
-diff --git a/fs/fat/namei_vfat.c b/fs/fat/namei_vfat.c
-index f565f24..9fdd7e9 100644
---- a/fs/fat/namei_vfat.c
-+++ b/fs/fat/namei_vfat.c
-@@ -587,12 +587,14 @@ static int vfat_build_slots(struct inode *dir, const unsigned char *name,
- 	struct fat_mount_options *opts = &sbi->options;
- 	struct msdos_dir_slot *ps;
- 	struct msdos_dir_entry *de;
--	unsigned char cksum, lcase;
-+	unsigned char cksum;
-+	unsigned char uninitialized_var(lcase);
- 	unsigned char msdos_name[MSDOS_NAME];
- 	wchar_t *uname;
- 	__le16 time, date;
- 	u8 time_cs;
--	int err, ulen, usize, i;
-+	int err, usize, i;
-+	int uninitialized_var(ulen);
- 	loff_t offset;
+IMO, I would create it as /sys/class/input/IR (just like the /mice). I
+don't see why do we need to different lirc than no-lirc drivers in the
+case of sysfs class. As devices with raw input capabilities will have
+another dev to communicate, this means that we'll need a /lirc node
+there to point to lirc dev.
 
- 	*nr_slots = 0;
-diff --git a/fs/freevxfs/vxfs_lookup.c b/fs/freevxfs/vxfs_lookup.c
-index aee049c..02c9718 100644
---- a/fs/freevxfs/vxfs_lookup.c
-+++ b/fs/freevxfs/vxfs_lookup.c
-@@ -174,7 +174,7 @@ static ino_t
- vxfs_inode_by_name(struct inode *dip, struct dentry *dp)
- {
- 	struct vxfs_direct		*de;
--	struct page			*pp;
-+	struct page			*uninitialized_var(pp);
- 	ino_t				ino = 0;
+> 
+> - do we intend to support in-kernel sotfware decoders?
 
- 	de = vxfs_find_entry(dip, dp, &pp);
-diff --git a/fs/nilfs2/btree.c b/fs/nilfs2/btree.c
-index e25b507..4e6edda 100644
---- a/fs/nilfs2/btree.c
-+++ b/fs/nilfs2/btree.c
-@@ -1911,7 +1911,8 @@ static int nilfs_btree_propagate_v(struct nilfs_btree *btree,
- 				   struct nilfs_btree_path *path,
- 				   int level, struct buffer_head *bh)
- {
--	int maxlevel, ret;
-+	int ret;
-+	int uninitialized_var(maxlevel);
- 	struct nilfs_btree_node *parent;
- 	struct inode *dat = nilfs_bmap_get_dat(&btree->bt_bmap);
- 	__u64 ptr;
-diff --git a/fs/omfs/file.c b/fs/omfs/file.c
-index 399487c..f01e1e8 100644
---- a/fs/omfs/file.c
-+++ b/fs/omfs/file.c
-@@ -222,7 +222,7 @@ static int omfs_get_block(struct inode *inode, sector_t block,
- 	struct buffer_head *bh;
- 	sector_t next, offset;
- 	int ret;
--	u64 new_block;
-+	u64 uninitialized_var(new_block);
- 	u32 max_extents;
- 	int extent_count;
- 	struct omfs_extent *oe;
-diff --git a/fs/qnx4/namei.c b/fs/qnx4/namei.c
-index ae1e7ed..4e60c3b 100644
---- a/fs/qnx4/namei.c
-+++ b/fs/qnx4/namei.c
-@@ -101,7 +101,7 @@ static struct buffer_head *qnx4_find_entry(int len, struct inode *dir,
+Yes.
 
- struct dentry * qnx4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
- {
--	int ino;
-+	int uninitialized_var(ino);
- 	struct qnx4_inode_entry *de;
- 	struct qnx4_link_info *lnk;
- 	struct buffer_head *bh;
+> - What is the structure? Do we organize them as a module to be used by driver
+>   directly or the driver "streams" the data to IR core and the core
+>   applies decoders (in the same fashion input events from drivers flow
+>   into input core and then distributed to all bound interfaces for
+>   processing/conversion/transmission to userspace)?
+
+My plan is to expand ir-common.ko module and rename it to ir-core, to be 
+the IR core module for the evdev interface. I'm already working on it. 
+My idea for an architecture is that the lirc-core module will use 
+ir-common where the IR decoders will be, and the evdev interface.
+
+IMO, we should move them from /drivers/media/common to /drivers/input/ir.
+It makes sense to use kfifo to send the data to the in-kernel decoders.
+
+> - how do we control which decoder should handle particular
+>   receiver/remote? Is it driver's decision, decoder's decision, user's
+>   or all of the above?
+
+It should be all the above, since some hardware will only work with certain
+decoders (hardware limitation) or they may have already a raw mode->scancode
+legacy decoder. In the latter case, those decoders will be removed from
+the existing drivers, but this action will take some time.
+
+Some sysfs attributes are needed to specify a list of the supported protocols
+and the currently used one. I'll prepare a proposed patch for it, after we
+finish aligning the requirements.
+ 
+> - do we allow to have several decorers active at once for a receiver?
+
+Yes, as an optional requirement, since some hardware won't support it.
+
+> - who decides that we want to utilize lirc_dev? Driver's themselves, IR
+>   core (looking at the driver/device "capabilities"), something else?
+
+Drivers that support raw mode, should interface via lirc-core, that will,
+in turn use ir-core.
+
+Drivers that have in-hardware decode will directly use ir-core.
+
+> - do we recognize and create input devices "on-fly" or require user
+>   intervention? Semantics for splitting into several input/event
+>   devices?
+
+I don't have a strong opinion here. 
+
+I don't see any way for doing it, except with very few protocols that
+sends vendor IDs. I don't care if this feature can be used by the
+drivers/decoders that could support it.
+
+> Could anyone please draw me a picture, starting with a "receiver"
+> piece of hardware. I am not concerned much with how exactly receiver is
+> plugged into a particular subsystem (DVB/V4L etc) since it would be
+> _their_ implementation detail, but with the flow in/out of that
+> "receiver" device.
+
+Not sure if I got your idea. Basically, what I see is:
+
+	For device drivers that work in raw mode:
+[IR physical device] ==> [IR receiver driver]  ==> [lirc-core] ==> [decoder] ==> [ir-core] ==> [evdev]
+
+(eventually, we can merge decoder and ir-core into one module at the beginning,
+depending on the size of the decoders)
+
+	For device drivers that work only in evdev mode (those with hardware decoders):
+
+[IR physical device] ==> [IR receiver driver]  ==> [ir-core] ==> [evdev]
+
+> 
+> Now as far as input core goes I see very limited number of changes that
+> may be needed:
+> 
+> - Allow to extend size of "scancode" in EVIOC{S,G}KEYCODE if we are
+>   unable to limit ourselves to 32 bits (keeping compatibility of course)
+
+Yes, but the way EVIOC{S,G}KEYCODE currently works, it performs poorly when you have a
+table with 2^64 size. The table is very sparsed, but, as the key to get/set a code is
+the scancode, it is very hard to enumberate what are the actual entries there. The
+better is to use an index parameter for they, instead of using the scancode as such.
+
+> - Maybe adding new ioctl to "zap" the keymap table
+
+Yes, this is needed.
+
+> - Adding more key EV_KEY/KEY_* definitons, if needed
+
+Probably.
+
 -- 
-Coly Li
-SuSE Labs
+
+Cheers,
+Mauro
