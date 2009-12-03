@@ -1,134 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZLCBfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZLCBeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZLCBfX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 20:35:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbZLCBfX
+	id S1754398AbZLCBeb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 20:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZLCBea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 20:35:23 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47529 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbZLCBfW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 20:35:22 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 3 Dec 2009 10:32:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com, yanmin_zhang@linux.intel.com
-Subject: Re: [RFC][mmotm][PATCH] percpu mm struct counter cache
-Message-Id: <20091203103234.d53f5fde.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091203102851.daeb940c.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091203102851.daeb940c.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Dec 2009 20:34:30 -0500
+Received: from mga14.intel.com ([143.182.124.37]:2603 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753283AbZLCBea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 20:34:30 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="218194793"
+Date: Thu, 3 Dec 2009 09:34:33 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 02/24] migrate: page could be locked by hwpoison, dont
+	BUG()
+Message-ID: <20091203013433.GA8520@localhost>
+References: <20091202031231.735876003@intel.com> <20091202043043.840044332@intel.com> <alpine.DEB.2.00.0912020848300.31731@router.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0912020848300.31731@router.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a test program for measuring page fault cost, I used.
-This program creates threads on cpu 0,4,8,....(because I use 4code cpu)
-and cause page faults on each cpu in parallel.
-If you run too many threads, spin_lock costs will dominates all...
-I used just 2 threads in measurements, cpu 0 and 4.
+On Wed, Dec 02, 2009 at 10:50:10PM +0800, Christoph Lameter wrote:
+> On Wed, 2 Dec 2009, Wu Fengguang wrote:
+> 
+> >  mm/migrate.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > --- linux-mm.orig/mm/migrate.c	2009-11-02 10:18:45.000000000 +0800
+> > +++ linux-mm/mm/migrate.c	2009-11-02 10:26:16.000000000 +0800
+> > @@ -556,7 +556,7 @@ static int move_to_new_page(struct page
+> >  	 * holding a reference to the new page at this point.
+> >  	 */
+> >  	if (!trylock_page(newpage))
+> > -		BUG();
+> > +		return -EAGAIN;		/* got by hwpoison */
+> >
+> >  	/* Prepare mapping for the new page.*/
+> >  	newpage->index = page->index;
+> 
+> The error handling code in umap_and_move() assumes that the page is
+> locked upon return from move_to_new_page() even if it failed.
+> 
+> If you return EAGAIN then it may try to unlock a page that is not
+> locked.
 
-==
-/*
- * multi-fault.c :: causes 60secs of parallel page fault in multi-thread.
- * % gcc -O2 -o multi-fault multi-fault.c -lpthread
- * % multi-fault # of cpus.
- */
+Ah yes, thanks!  We could fix it with more changes, however it seems
+better to just drop this patch.
 
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <pthread.h>
-#include <sched.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <signal.h>
-
-#define CORE_PER_SOCK	4
-#define NR_THREADS	8
-pthread_t threads[NR_THREADS];
-/*
- * For avoiding contention in page table lock, FAULT area is
- * sparse. If FAULT_LENGTH is too large for your cpus, decrease it.
- */
-#define MMAP_LENGTH	(8 * 1024 * 1024)
-#define FAULT_LENGTH	(2 * 1024 * 1024)
-void *mmap_area[NR_THREADS];
-#define PAGE_SIZE	4096
-
-pthread_barrier_t barrier;
-int name[NR_THREADS];
-
-void segv_handler(int sig)
-{
-	sleep(100);
-}
-void *worker(void *data)
-{
-	cpu_set_t set;
-	int cpu;
-
-	cpu = *(int *)data;
-
-	CPU_ZERO(&set);
-	CPU_SET(cpu, &set);
-	sched_setaffinity(0, sizeof(set), &set);
-
-	cpu /= CORE_PER_SOCK;
-
-	while (1) {
-		char *c;
-		char *start = mmap_area[cpu];
-		char *end = mmap_area[cpu] + FAULT_LENGTH;
-		pthread_barrier_wait(&barrier);
-		//printf("fault into %p-%p\n",start, end);
-
-		for (c = start; c < end; c += PAGE_SIZE)
-			*c = 0;
-		pthread_barrier_wait(&barrier);
-
-		madvise(start, FAULT_LENGTH, MADV_DONTNEED);
-	}
-	return NULL;
-}
-
-int main(int argc, char *argv[])
-{
-	int i, ret;
-	unsigned int num;
-
-	if (argc < 2)
-		return 0;
-
-	num = atoi(argv[1]);	
-	pthread_barrier_init(&barrier, NULL, num);
-
-	mmap_area[0] = mmap(NULL, MMAP_LENGTH * num, PROT_WRITE|PROT_READ,
-				MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
-	for (i = 1; i < num; i++) {
-		mmap_area[i] = mmap_area[i - 1]+ MMAP_LENGTH;
-	}
-
-	for (i = 0; i < num; ++i) {
-		name[i] = i * CORE_PER_SOCK;
-		ret = pthread_create(&threads[i], NULL, worker, &name[i]);
-		if (ret < 0) {
-			perror("pthread create");
-			return 0;
-		}
-	}
-	sleep(60);
-	return 0;
-}
-
+Thanks,
+Fengguang
