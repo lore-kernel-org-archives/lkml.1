@@ -1,45 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZLCVmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbZLCVpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbZLCVmQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 16:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbZLCVmP
+	id S1752182AbZLCVpk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 16:45:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbZLCVpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 16:42:15 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:53849 "HELO
-	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1752733AbZLCVmP (ORCPT
+	Thu, 3 Dec 2009 16:45:39 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:55343 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbZLCVpj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 16:42:15 -0500
-Message-ID: <4B1830AE.7010107@ru.mvista.com>
-Date: Fri, 04 Dec 2009 00:42:06 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 3 Dec 2009 16:45:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=aszjXXFA7tn7oEj5YiUZWmoivr2gfVzzWQwmefY/m5o+GbwuVQw3XAQEHQ6JXxUc33
+         EjXFA0a6OAvMofbZNmF/FBlZ9oguqT59lWkN53r/cqe0eRRho/T1yr+5bKD/ip/QW0xb
+         4QXuWz1JqKxdowuSNCmaJP7GjTjWhcNjJqo7M=
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 4/6] pdc202xx_old: remove no longer needed debugging code
-References: <20091203195145.9093.88261.sendpatchset@localhost> <20091203195219.9093.45804.sendpatchset@localhost>
-In-Reply-To: <20091203195219.9093.45804.sendpatchset@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B182F79.7060103@gmail.com>
+References: <dd18b0c30912021427x4d1d952tcdd98bb9d816b67c@mail.gmail.com> 
+	<43e72e890912021516k736db118j217dc92496db8f19@mail.gmail.com> 
+	<4B182F79.7060103@gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 3 Dec 2009 13:45:25 -0800
+Message-ID: <43e72e890912031345m3f5adb9nca754e33a858c923@mail.gmail.com>
+Subject: Re: [ath9k-devel] BUG kmalloc-8192: Poison overwritten
+To: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Miles Lane <miles.lane@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ath9k-devel@venema.h4ckr.net,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Bartlomiej Zolnierkiewicz wrote:
-
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] pdc202xx_old: remove no longer needed debugging code
+On Thu, Dec 3, 2009 at 1:36 PM, Justin P. Mattock
+<justinmattock@gmail.com> wrote:
+> On 12/02/09 15:16, Luis R. Rodriguez wrote:
+>>
+>> On Wed, Dec 2, 2009 at 2:27 PM, Justin Mattock<justinmattock@gmail.com>
+>>  wrote:
+>>>
+>>> I have no idea what this is:
+>>> (first time I've seen this);
+>>>
+>>>
+>>> [   13.055592]
+>>> =============================================================================
+>>> [   13.055865] BUG kmalloc-8192: Poison overwritten
+>>> [   13.056046]
+>>> -----------------------------------------------------------------------------
+>>
+>> I believe this means we write to an area in memory after we freed an skb.
+>>
+>>> [   13.056366] INFO: 0xffff88003290a100-0xffff88003290a143. First byte
+>>> 0x50 instead of 0x6b
+>>> [   13.056366] INFO: Allocated in ath_rxbuf_alloc+0x25/0x94 [ath]
+>>> age=8898 cpu=0 pid=892
+>>> [   13.056366] INFO: Freed in skb_release_data+0xc1/0xc6 age=99 cpu=0
+>>> pid=0
+>>> [   13.056366] INFO: Slab 0xffffea0000b0f9c0 objects=3 used=0
+>>> fp=0xffff88003290c090 flags=0x4000000000004082
+>>> [   13.056366] INFO: Object 0xffff88003290a048 @offset=8264
+>>> fp=0xffff880032908000
+>>> [   13.056366]
+>>> [   13.056366] Bytes b4 0xffff88003290a038:  b9 9e fb ff 00 00 00 00
+>>> 5a 5a 5a 5a 5a 5a 5a 5a ¹.ûÿ....ZZZZZZZZ
+>>
+>> Can you reproduce this? We had a similar report from Miles Lanes I
+>> have been trying to followup on for a while now. The suggested patches
+>> to try are:
+>>
+>>
+>> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/70-mac80211-total-ampdu-tx-info.patch
+>>
+>> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/71-ath9k-remove-tx_info_priv.patch
+>>
+>>   Luis
+>>
 >
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> as anticipated I had a feeling reproducing
+> this would be a bit of a challeng.
 >
->   
+> so far I was taking into account the actions that
+> I did yesterday to trigger this, but nothing i.e.
+>
+> reboot 30 times(until fsck engages), and shutdown/start 30 times
+> with nothing of the sort.
+>
+> If you have any ideas on how to reproduce this it would
+> be greatly appreciated(don't want to throw in the patches, until
+> I have something to go by).
+>
+> on the other hand I could throw in the patches, and wait and see,
+> but would rather have more hard evidence that the patches do fix something.
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+I think waiting to be able to reproduce is best, and appreciate your
+patience on this. Maybe Miles Lanes also cannot reproduce easily and
+that may explain why he hasn't replied.
 
-MBR, Sergei
-
-
+  Luis
