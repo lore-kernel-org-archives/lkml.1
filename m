@@ -1,146 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbZLCPKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbZLCPJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365AbZLCPKI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 10:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbZLCPKH
+	id S1756293AbZLCPJl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 10:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756272AbZLCPJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 10:10:07 -0500
-Received: from mga14.intel.com ([143.182.124.37]:15437 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756351AbZLCPKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 10:10:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="218428904"
-Date: Thu, 3 Dec 2009 23:03:23 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 22/24] HWPOISON: add memory cgroup filter
-Message-ID: <20091203150323.GA15611@localhost>
-References: <20091202031231.735876003@intel.com> <20091202043046.519053333@intel.com> <20091202124446.GA18989@one.firstfloor.org> <20091202125842.GA13277@localhost> <20091203105229.afb0efc4.kamezawa.hiroyu@jp.fujitsu.com> <20091203021915.GA13587@localhost> <20091203112822.ecee5bf5.kamezawa.hiroyu@jp.fujitsu.com> <20091203024739.GB17716@localhost> <20091203115840.45f73bd3.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 3 Dec 2009 10:09:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36528 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755977AbZLCPJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 10:09:40 -0500
+Message-ID: <4B17D3D3.1060502@zytor.com>
+Date: Thu, 03 Dec 2009 07:05:55 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091203115840.45f73bd3.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Ma, Ling" <ling.ma@intel.com>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dave Jones <davej@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] [X86] Compile Option Os versus O2 on latest x86 platform
+References: <1259222752-8161-1-git-send-email-ling.ma@intel.com>	<20091126094930.GD32275@elte.hu>	<8FED46E8A9CA574792FC7AACAC38FE7714FED213BE@PDSMSX501.ccr.corp.intel.com> <20091201021459.43d2142a@infradead.org> <8FED46E8A9CA574792FC7AACAC38FE7714FF5709D9@PDSMSX501.ccr.corp.intel.com>
+In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7714FF5709D9@PDSMSX501.ccr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 10:58:40AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Thu, 3 Dec 2009 10:47:39 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > On Thu, Dec 03, 2009 at 10:28:22AM +0800, KAMEZAWA Hiroyuki wrote:
-> > Ah please forgive my memcg ignorance..  Then how about bring back the
-> > old css_id() based scheme (old patch follows)?
-> > 
-> maybe enough. but please take care of the fact that css is can be "reused"
-> once freed.
+On 12/03/2009 07:03 AM, Ma, Ling wrote:
+>> a key question is.. how much more memory do you have free due to -Os?
+>> (because memory is cache is performance on a system level as well)
+> The kernel code size from Os is 12M, that from O2 is 14M.
+>> and how much less icache pressure is there?
+> From perf stat report, cache reference(unified cache) from O2 is almost the same with Os.
 
-OK.
+The icache pressure was substantially higher (by ~10%) in the reports
+that I saw.
 
-> > > If you have more patches to be usable the function above,
-> > > I recommend you to post this with some real-use patches, in step by step.
-> > 
-> > Do you mean user space test case? Here is a simple one:
-> > 
-> >         #!/bin/sh
-> > 
-> >         TEST_PROG=usemem
-> >         TEST_PARM="-m 100 -s 100"
-> > 
-> >         test -d /cgroup/hwpoison && rmdir /cgroup/hwpoison
-> >         mkdir /cgroup/hwpoison
-> > 
-> >         $TEST_PROG $TEST_PARM &
-> >         echo `pidof $TEST_PROG` > /cgroup/hwpoison/tasks
-> > 
-> >         memcg_id=$(</cgroup/hwpoison/memory.id)
-> >         echo $memcg_id > /debug/hwpoison/corrupt-filter-memcg
-> > 
-> >         ./corrupt-all-pfn
-> > 
-> Ah, this is nice to be put into changelog or some documentation.
+	-hpa
 
-Good idea, I'll add it.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-> > > patch 19,20 is ok for me.
-> > 
-> > Thanks,
-> > Fengguang
-> > ---
-> > memcg: show memory.id in cgroupfs
-> > 
-> > The hwpoison test suite need to selectively inject hwpoison to some
-> > targeted task pages, and must not kill important system processes
-> > such as init.
-> > 
-> > The memory cgroup serves this purpose well. We can put the target
-> > processes under the control of a memory cgroup, tell the hwpoison
-> > injection code the id of that memory cgroup so that it will only
-> > poison pages associated with it.
-> > 
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> 
-> No objections from me. please use "id" check. or adds new flag to
-> struct mem_cgroup, as you like.
-
-There's a 3rd option: inode number in cgroupfs.
-
-test case:
-                memcg_ino=$(ls -id /cgroup/hwpoison | cut -f1 -d' ')
-                echo $memcg_ino > /debug/hwpoison/corrupt-filter-memcg
-
-kernel code:
-                hwpoison_filter_memcg ==
-                memcg->css->cgroup->dentry->d_inode->i_ino
-
-It's pretty long chain, but performance is not a big concern for test
-purpose :) As long as the inode number will be accessible and unique
-in long term.
-
-This avoids adding extra interfaces to memcg. What do you think?
-
-> The style I prefer is
-> ==
->  struct mem_cgroup {
->   ....
->   bool hwpoison_test_enabled;
->  };
-> 
-> +#ifdef CONFIG_HWPOISON_INJECT /* for now, only user is hwpoison testing */
-> +	{
-> +		.name = "hwpoison_test_enable",
-> +		.read_u64 = ....
-> +	},
-> +#endif
-> 
-> and.
-> 	mem = try_get_mem_cgroup_from_page(p);
-> 	if (mem_cgroup_is_under_poison_test(mem))
-> 		ret = true;
-> 	mem_cgroup_put(mem);	/* calls css_put() */
-
-It seems mem_cgroup_put() does atomic_dec_and_test(&mem->refcnt).
-Is that changed to css_put() recently?
-
-> Maybe not difficult. and this is an usual way. But it's ok if you don't want to
-> scannter HWPOISON things to other function's files. This is test operation.
-> 
-> So, "including real use case and patches" is only my request, for this time.
-
-OK, thanks for the review!
-
-Regards,
-Fengguang
