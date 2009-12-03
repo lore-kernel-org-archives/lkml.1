@@ -1,85 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZLCHxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZLCH4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbZLCHxG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 02:53:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZLCHxF
+	id S1755170AbZLCH4s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 02:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZLCH4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 02:53:05 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38362 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754862AbZLCHxE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 02:53:04 -0500
-Date: Thu, 3 Dec 2009 08:53:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH] uswsusp: automatically free the in-memory image once
- s2disk has finished with it
-Message-ID: <20091203075301.GA29440@elf.ucw.cz>
-References: <4B1575AC.6080904@tuffmail.co.uk>
- <20091201214529.GA1457@csn.ul.ie>
- <200912012253.08522.rjw@sisk.pl>
- <4B16545B.3090703@tuffmail.co.uk>
- <20091202122019.GD1457@csn.ul.ie>
- <4B16797C.3010304@tuffmail.co.uk>
- <20091202211107.GA20830@elf.ucw.cz>
- <20091202220718.GI1457@csn.ul.ie>
- <20091202221524.GB20830@elf.ucw.cz>
- <20091202222516.GD26702@csn.ul.ie>
-MIME-Version: 1.0
+	Thu, 3 Dec 2009 02:56:47 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:55518 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751991AbZLCH4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 02:56:46 -0500
+Date: Thu, 3 Dec 2009 02:56:53 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: linux-ide@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: What's in libata-dev.git?
+Message-ID: <20091203075653.GA30612@havoc.gtf.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091202222516.GD26702@csn.ul.ie>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-12-02 22:25:16, Mel Gorman wrote:
-> On Wed, Dec 02, 2009 at 11:15:24PM +0100, Pavel Machek wrote:
-> > On Wed 2009-12-02 22:07:18, Mel Gorman wrote:
-> > > On Wed, Dec 02, 2009 at 10:11:07PM +0100, Pavel Machek wrote:
-> > > > On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
-> > > > > The original in-kernel suspend (swsusp) frees the in-memory hibernation
-> > > > > image before powering off the machine.  s2disk doesn't, so there is
-> > > > > _much_ less free memory when it tries to power off.
-> > > > > 
-> > > > > This is a gratuitous difference.  The userspace suspend interface
-> > > > > /dev/snapshot only allows the hibernation image to be read once.
-> > > > > Once the s2disk program has read the last page, we can free the entire
-> > > > > image.
-> > > > > 
-> > > > > This avoids a hang after writing the hibernation image which was
-> > > > > triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
-> > > > > "page-allocator: split per-cpu list into one-list-per-migrate-type":
-> > > > 
-> > > > Yes, you work around page-allocator hang. But is it right thing to do?
-> > > > 
-> > > 
-> > > What's wrong with it? The hang is likely because the allocator has no
-> > > memory to work with. The patch in question makes small changes to the
-> > > amount of available memory but it shouldn't matter on uni-core. Some
-> > > structures are slightly larger but it's extremely borderline. I'm at a
-> > > loss to explain actually why it makes a difference untill things were
-> > > extremely borderline to begin with.
-> > 
-> > We reserve 4MB, for such purposes, and we already wrote image to disk
-> > with such constrains, so memory should not be _too_ tight.
-> > 
-> > Can you try increasing PAGES_FOR_IO to 8MB or something like that?
-> > 
-> 
-> What's wrong with just freeing the memory that is no longer required?
 
-Nothing. But 4MB was enough to power down before, it is not enough
-now, and I'd like to understand why.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This is the contents of the recently-rebased "upstream" branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+
+This is what will get sent RSN for 2.6.33.
+
+I am hoping we can also get Bart's big chunk o patches in for 2.6.33,
+too?
+
+Alan Cox (6):
+      pata_via: Blacklist some combinations of Transcend Flash and via
+      pata_sis: Implement MWDMA for the UDMA 133 capable chips
+      pata_cmd64x: implement serialization as per notes
+      [libata] PATA: Update experimental tags
+      pata_ali: Fix regression with old devices
+      pata_piccolo: Driver for old Toshiba chipsets
+
+Bartlomiej Zolnierkiewicz (5):
+      pata_hpt37x: add proper cable detection methods
+      pata_hpt37x: unify ->pre_reset methods
+      pata_hpt3x2n: fix cable detection
+      pata_hpt{37x,3x2n}: add debounce delay to cable detection methods
+      libata: add comment documenting PIO latency issues on UP
+
+Benjamin Herrenschmidt (1):
+      libata/sff: Use ops->bmdma_stop instead of ata_bmdma_stop()
+
+Christoph Hellwig (1):
+      libata: add translation for SCSI WRITE SAME (aka TRIM support)
+
+Jiri Slaby (1):
+      pata_via: fix double put on isa bridge
+
+Krzysztof Halasa (1):
+      pata_cs5536: use 32-bit BM DMA template instead of 16-bit.
+
+Mark Nelson (1):
+      ahci: let users know that Promise PDC42819 support is limited to SATA devices
+
+Matthew Garrett (1):
+      ata: Don't require newlines for link_power_management_policy
+
+Otavio Salvador (1):
+      pata-it821x: use PCI_DEVICE_ID_RDC_D1010 define
+
+Robert Hancock (1):
+      libata: remove experimental tag on PATA drivers
+
+Sergei Shtylyov (3):
+      pata_hpt{37x|3x2n}: fix timing register masks (take 2)
+      pata_hpt366: fix timing register documentation
+      ata: use pci_dev->revision
+
+Shaohua Li (1):
+      ahci: disable SNotification capability for ich8
+
+Tejun Heo (2):
+      libata-acpi: missing _SDD is not an error
+      libata: retry failed FLUSH if device didn't fail it
+
+Thiago Farina (1):
+      sata_mv: Clean up hard coded array size calculation.
+
+Vivek Mahajan (1):
+      sata_sil24: MSI support, disabled by default
+
+ashish kalra (1):
+      sata_fsl: Add asynchronous notification support
+
+ drivers/ata/Kconfig           |   41 +++++++-----
+ drivers/ata/Makefile          |    1 
+ drivers/ata/ahci.c            |   28 +++++++-
+ drivers/ata/ata_generic.c     |    5 +
+ drivers/ata/libata-acpi.c     |   15 ++--
+ drivers/ata/libata-core.c     |    7 ++
+ drivers/ata/libata-eh.c       |   94 ++++++++++++++++++++++++++++
+ drivers/ata/libata-scsi.c     |  101 +++++++++++++++++++++++++++++-
+ drivers/ata/libata-sff.c      |    2 
+ drivers/ata/pata_ali.c        |    4 -
+ drivers/ata/pata_cmd64x.c     |  125 +++++++++++++++++++++++++++++++++----
+ drivers/ata/pata_cs5536.c     |    2 
+ drivers/ata/pata_hpt366.c     |   38 ++++-------
+ drivers/ata/pata_hpt37x.c     |  137 +++++++++++++++++++++--------------------
+ drivers/ata/pata_hpt3x2n.c    |   37 +++++------
+ drivers/ata/pata_it821x.c     |    2 
+ drivers/ata/pata_piccolo.c    |  140 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/ata/pata_sil680.c     |    6 -
+ drivers/ata/pata_sis.c        |   91 ++++++++++++++++++++-------
+ drivers/ata/pata_via.c        |   37 +++++++++--
+ drivers/ata/sata_fsl.c        |   18 +++--
+ drivers/ata/sata_mv.c         |    2 
+ drivers/ata/sata_sil24.c      |    9 ++
+ drivers/ide/ide-pci-generic.c |    3 
+ include/linux/ata.h           |   13 +++
+ include/linux/libata.h        |    2 
+ include/linux/pci_ids.h       |    7 +-
+ 27 files changed, 767 insertions(+), 200 deletions(-)
