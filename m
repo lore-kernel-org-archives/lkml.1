@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZLCTzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZLCT7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZLCTzs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 14:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZLCTzr
+	id S1754107AbZLCT7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 14:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZLCT7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 14:55:47 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:39638 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbZLCTzq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 14:55:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=iyedZHkgXef+smKpKxAADUzZOeBU9QgV3W8QcAzXWdiqae9n5f82O+CdhVOsuueeAG
-         renxp3L2sfn0dw0JMakhuPTm4bVmW0xGo1yYZytB066oT/caZKCNK2/YkQgkdEpr43jK
-         B7XGrEt03Z7L24Brhz/GLXSPU3FzuS4JsvYdI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: Re: [PATCH 0/6] ide: dead/stale code removal
-Date: Thu, 3 Dec 2009 20:54:49 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-References: <20091203195145.9093.88261.sendpatchset@localhost>
-In-Reply-To: <20091203195145.9093.88261.sendpatchset@localhost>
+	Thu, 3 Dec 2009 14:59:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26694 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751689AbZLCT7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 14:59:19 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [RFC PATCH 1/6] shmem: use alloc_file instead of init_file
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
+       eparis@redhat.com, zohar@us.ibm.com, jack@suse.cz,
+       jmalicki@metacarta.com, dsmith@redhat.com, serue@us.ibm.com, hch@lst.de,
+       john@johnmccutchan.com, rlove@rlove.org, ebiederm@xmission.com,
+       heiko.carstens@de.ibm.com, penguin-kernel@I-love.SAKURA.ne.jp,
+       mszeredi@suse.cz, jens.axboe@oracle.com, akpm@linux-foundation.org,
+       matthew@wil.cx, hugh.dickins@tiscali.co.uk,
+       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
+       davem@davemloft.net, arnd@arndb.de, eric.dumazet@gmail.com
+Date: Thu, 03 Dec 2009 14:58:51 -0500
+Message-ID: <20091203195851.8925.30926.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912032054.49131.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+shmem uses get_empty_filp() and then init_file().  Their is no good reason
+not to just use alloc_file() like everything else.
 
-[ uh, this time using the correct file, sorry for the noise ]
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-Hi,
+ mm/shmem.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-Just a small cleanup removing dead/stale code from few IDE host drivers
-(it makes comparisions between old/new drivers and porting fixes in both
-directions much easier).
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 356dd99..831f8bb 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -2640,32 +2640,32 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
+ 	if (!dentry)
+ 		goto put_memory;
+ 
+-	error = -ENFILE;
+-	file = get_empty_filp();
+-	if (!file)
+-		goto put_dentry;
+-
+ 	error = -ENOSPC;
+ 	inode = shmem_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0, flags);
+ 	if (!inode)
+-		goto close_file;
++		goto put_dentry;
+ 
+ 	d_instantiate(dentry, inode);
+ 	inode->i_size = size;
+ 	inode->i_nlink = 0;	/* It is unlinked */
+-	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
+-		  &shmem_file_operations);
++
++	error = -ENFILE;
++	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
++			  &shmem_file_operations);
++	if (!file)
++		goto put_dentry;
+ 
+ #ifndef CONFIG_MMU
+ 	error = ramfs_nommu_expand_for_mapping(inode, size);
+ 	if (error)
+ 		goto close_file;
+ #endif
+-	ima_counts_get(file);
+ 	return file;
+ 
++#ifndef CONFIG_MMU
+ close_file:
+-	put_filp(file);
++	fput(file);
++#endif
+ put_dentry:
+ 	dput(dentry);
+ put_memory:
 
-
-The following changes since commit 22763c5cf3690a681551162c15d34d935308c8d7:
-  Linus Torvalds (1):
-        Linux 2.6.32
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git ide-dcr
-
-Bartlomiej Zolnierkiewicz (6):
-      alim15x3: remove obsolete and dangerous wdc_udma parameter
-      cmd64x: remove no longer needed debugging code
-      cy82c693: remove no longer needed debugging code
-      pdc202xx_old: remove no longer needed debugging code
-      sis5513: remove stale TODO
-      sl82c105: remove no longer needed debugging code
-
- drivers/ide/alim15x3.c     |   12 +-----------
- drivers/ide/cmd64x.c       |   17 -----------------
- drivers/ide/cy82c693.c     |   27 ---------------------------
- drivers/ide/pdc202xx_old.c |   15 ---------------
- drivers/ide/sis5513.c      |    9 ---------
- drivers/ide/sl82c105.c     |   24 +-----------------------
- 6 files changed, 2 insertions(+), 102 deletions(-)
