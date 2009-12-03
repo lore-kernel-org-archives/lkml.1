@@ -1,140 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZLCOOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZLCON0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbZLCOOt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 09:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZLCOOt
+	id S1756147AbZLCON0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 09:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZLCONZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 09:14:49 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:51565 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752134AbZLCOOs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 09:14:48 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAHpSF0tGGNlG/2dsb2JhbACBTtcOhDIEgWc
-Date: Thu, 3 Dec 2009 09:09:42 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       wcohen@redhat.com, fweisbec@gmail.com, tglx@linutronix.de,
-       jbaron@redhat.com, linux-tip-commits@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: trace/events: DECLARE vs DEFINE semantic
-Message-ID: <20091203140942.GB24905@Krystal>
-References: <1259777987.12870.70.camel@gandalf.stny.rr.com> <20091202190135.GA23316@Krystal> <1259781578.12870.78.camel@gandalf.stny.rr.com> <4B16EC06.6010706@redhat.com> <1259794005.12870.102.camel@gandalf.stny.rr.com> <20091202231019.GB14770@Krystal> <4B1737E2.6010502@redhat.com> <1259813228.12870.108.camel@gandalf.stny.rr.com> <4B17C25A.8090703@redhat.com> <1259848493.12870.114.camel@gandalf.stny.rr.com>
+	Thu, 3 Dec 2009 09:13:25 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:53578 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752134AbZLCONY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 09:13:24 -0500
+Date: Fri, 4 Dec 2009 01:13:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 3
+Message-Id: <20091204011324.eb195558.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LRH.2.00.0912031435380.9567@twin.jikos.cz>
+References: <20091203180214.16e452ed.sfr@canb.auug.org.au>
+	<alpine.LRH.2.00.0912031435380.9567@twin.jikos.cz>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1259848493.12870.114.camel@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 09:01:47 up 1 day,  4:52,  3 users,  load average: 0.24, 0.40,
-	0.43
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__4_Dec_2009_01_13_24_+1100_El6RafRcpdjh.j8a"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Thu, 2009-12-03 at 08:51 -0500, Masami Hiramatsu wrote:
-> 
-> > > Basically, we should have a:
-> > > 
-> > > kernel/sched_trace.c that includes the include/trace/events/sched.h and
-> > > does the define.
-> > > 
-> > > And the same goes for other trace points.
-> > 
-> > Hmm, I'd rather like to move it into kernel/events/ or something new
-> > sub directory, since those files will have just two lines (define and
-> > include).
-> 
-> I'm fine with a kernel/events dir.
+--Signature=_Fri__4_Dec_2009_01_13_24_+1100_El6RafRcpdjh.j8a
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yep, sounds fine.
+Hi Jiri,
 
-Maybe we could have separate files for:
+On Thu, 3 Dec 2009 14:37:06 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrote:
+>
+> > Merging trivial/for-next
+> > CONFLICT (content): Merge conflict in Documentation/video4linux/gspca.t=
+xt
+>=20
+> have you been sending out e-mail about this conflict? I don't seem to hav=
+e=20
+> received any.
 
-a) event definitions
-b) class definitions
+No, I didn't because it is very simple and was only in a documentation
+file.  I figured it would be cleared up easily if/when it comes up in
+being merged into Linus' tree (or maybe before if it is noticed).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-?
+--Signature=_Fri__4_Dec_2009_01_13_24_+1100_El6RafRcpdjh.j8a
+Content-Type: application/pgp-signature
 
-> 
-> > 
-> > >> e.g.
-> > >>
-> > >> @kernel/tracepoint.c
-> > >>  ...
-> > >>  #define CREATE_TRACE_POINTS
-> > >>  #include <trace/events/sched.h>
-> > >>  #include <trace/events/...>
-> > > 
-> > > We could do this for all that is defined in the include/trace/events.
-> > > 
-> > >>  ...
-> > >>
-> > >> @kernel/sched.c
-> > >>  ...
-> > >>  #include <trace/events/sched.h>	/* Just include events header */
-> > >>  ...
-> > >>
-> > >> @fs/ext4/super.c (no change, since it can be module)
-> > >>  ...
-> > >>  #define CREATE_TRACE_POINTS
-> > >>  #include <trace/events/ext4.h>
-> > > 
-> > > Perhaps we should move out anything in include/trace/events that is also
-> > > a module into its sub system?
-> > 
-> > Would you mean putting those headers in sub-system's directory?
-> > (e.g. fs/ext4/)
-> > In that case, a problem will happen when user want to hook those
-> > tracepoint from their module, because it is hard to find those
-> > local headers.
-> 
-> Why? Modules usually do have their own headers in their sub system.
-> 
-> OK, if a module keeps their headers global (include/linux) then sure
-> they can keep their tracepoint header in include/trace/events. But I
-> still think that the module CREATE_TRACE_POINTS code should be kept with
-> the module code itself (but in a small separate file).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-I agree with Steven here: modules should come with their own trace event
-definitions, and if the trace classes they use are not available in the
-standard kernel, they should come with these trace classes definitions
-too.
+iEYEARECAAYFAksXx4QACgkQjjKRsyhoI8yHNACfXgksVUovZXEsKzhQPnwGbMiC
+WwYAoKbGxPHgJNLIsKK8nOFoAI8uDpb/
+=d5Q1
+-----END PGP SIGNATURE-----
 
-A small *_trace.c file linked along with the module looks fine by me.
-
-And please, try to re-used the already existing symbol dependency
-management already present in the kernel to deal with module dependency
-on class and dependency such as:
-
-  module-a.ko
-    defines trace class
-  module-b.ko
-  module-c.ko
-
-    module-b and module-c define events which depend on the trace class.
-
-If you make the event definition depend on a symbol defined in module-a,
-everything should work flawlessly. It also works if the class is defined
-in the core kernel.
-
-Thanks,
-
-Mathieu
-
-> 
-> -- Steve
-> 
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--Signature=_Fri__4_Dec_2009_01_13_24_+1100_El6RafRcpdjh.j8a--
