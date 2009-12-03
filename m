@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZLCIaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbZLCI3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbZLCIaJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 03:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbZLCIaI
+	id S1753479AbZLCI3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 03:29:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZLCI3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 03:30:08 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:64375 "EHLO poutre.nerim.net"
+	Thu, 3 Dec 2009 03:29:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43822 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753239AbZLCIaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 03:30:07 -0500
-Date: Thu, 3 Dec 2009 09:30:09 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] DMI: allow omitting ident strings in DMI tables
-Message-ID: <20091203093009.059197a6@hyperion.delvare>
-In-Reply-To: <20091203031240.GB9121@core.coreip.homeip.net>
-References: <20091203031240.GB9121@core.coreip.homeip.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752742AbZLCI3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 03:29:49 -0500
+Message-ID: <4B17771B.7050902@kernel.org>
+Date: Thu, 03 Dec 2009 17:30:19 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: michal.simek@petalogix.com
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 3
+References: <20091203180214.16e452ed.sfr@canb.auug.org.au> <4B176B50.4050901@petalogix.com>
+In-Reply-To: <4B176B50.4050901@petalogix.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+Hello,
 
-On Wed, 2 Dec 2009 19:12:40 -0800, Dmitry Torokhov wrote:
-> The purpose of dmi->ident is twofold - it may be used by DMI callback
-> functions when composing log messages; it is also used to determine
-> end of DMI table in dmi_check_system() and dmi_first_match(). However,
-> in case when callbacks are not interested in using ident at all it just
-> wastes memory. Let's consider entries with empty ident but initialized
-> first match slot as a valid entry and not as end-of-table marker.
+On 12/03/2009 04:40 PM, Michal Simek wrote:
+> todays tree is working on MMU microblaze correctly without any visible
+> problem but noMMU microblaze kernel still have that bug as I reported
+> some days ago.
 
-You are free to use an empty string ("") as the ident. This will use
-1 byte of memory, I'm sure you can afford it. struct dmi_system_id is
-332 bytes large on 32-bit systems (344 on 64-bit systems), and we use
-such an empty structure as the list terminator. So I really doubt we
-care about the extra few bytes used by the ident strings.
+Other than triggering WARN_ON(), it doesn't cause any other problems,
+right?  It's probably because SMP_CACHE_BYTES on that configuration is
+lower than 8.  What is the value of SMP_CACHE_BYTES on the
+configuration?  Also, doesn't the Linus's tree have the same problem?
 
-> 
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> ---
-> 
-> CCed a few random people since they touched dmi code in the last few
-> months...
-> 
->  drivers/firmware/dmi_scan.c |   13 +++++++++++--
->  1 files changed, 11 insertions(+), 2 deletions(-)
-> 
-> 
-> diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
-> index 938100f..9116aa7 100644
-> --- a/drivers/firmware/dmi_scan.c
-> +++ b/drivers/firmware/dmi_scan.c
-> @@ -440,6 +440,15 @@ static bool dmi_matches(const struct dmi_system_id *dmi)
->  }
->  
->  /**
-> + *	dmi_is_end_of_table - check for end-of-table marker
-> + *	@dmi: pointer to the dmi_system_id structure to check
-> + */
-> +static bool dmi_is_end_of_table(const struct dmi_system_id *dmi)
-> +{
-> +	return dmi->ident == NULL && dmi->matches[0].slot == DMI_NONE;
+The somewhat spurious WARN_ON() in percpu allocator should probably be
+just removed or bumped to check against PAGE_SIZE as SMP code does.
+The problem is that on UP even though the function takes @align
+parameter, it just ignores it.  :-(
 
-If you really want to allow for dmi->ident == NULL, then I guess you can
-_only_ check for dmi->matches[0].slot == DMI_NONE. I can't think of any
-legitimate use of DMI_NONE for a used slot. The only thing you have to
-do then is to ensure that DMI_NONE = 0 in <linux/mod_devicetable.h>
-(I'm not sure if any C standard guarantees that enums starts at 0.)
-
-There's a possible optimization in dmi_matches(), BTW: DMI_NONE should
-break, not continue.
+Thanks.
 
 -- 
-Jean Delvare
+tejun
