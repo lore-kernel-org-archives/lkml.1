@@ -1,95 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZLCULR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbZLCUN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbZLCULR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 15:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZLCULQ
+	id S1754246AbZLCUN7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 15:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZLCUN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 15:11:16 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:52653 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285AbZLCULP (ORCPT
+	Thu, 3 Dec 2009 15:13:58 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:24668 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbZLCUN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 15:11:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=TZ6oQvZSQEX4Rr3OHC6LMnDpTX5mHtCoELK6zkLJa1Sous7oFpeJ8rODYRkEevnj2j
-         4omQ+ZCQY7O3sKw/nGIBRIJ6bYB+qmJqRkow3+DveFqdKL7Fl1SuvER7TqyS2IxzNxbp
-         B//50+5cenYodyKLFytd1wf0dY6UrHDNnBDiI=
-Message-ID: <4B181B67.5080503@garzik.org>
-Date: Thu, 03 Dec 2009 15:11:19 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Thu, 3 Dec 2009 15:13:57 -0500
+Message-ID: <4B181BB4.1020800@nokia.com>
+Date: Thu, 03 Dec 2009 22:12:36 +0200
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/86] PATA fixes
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200912031339.14440.bzolnier@gmail.com> <4B17FB37.2030501@garzik.org> <200912032045.48728.bzolnier@gmail.com>
-In-Reply-To: <200912032045.48728.bzolnier@gmail.com>
+To: Daniel Mack <daniel@caiaq.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>, Pierre Ossman <pierre@ossman.eu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Fleming <matt@console-pimps.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       Robert Jarzmik <robert.jarzmik@free.fr>,
+       Cliff Brake <cbrake@bec-systems.com>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
+       "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>,
+       "madhu.cr@ti.com >> Madhusudhan Chikkature" <madhu.cr@ti.com>
+Subject: Re: [PATCH] mmc: move regulator handling to core
+References: <1259844390-10541-1-git-send-email-daniel@caiaq.de> <4B17CADB.1070406@nokia.com> <20091203192044.GJ14091@buzzloop.caiaq.de>
+In-Reply-To: <20091203192044.GJ14091@buzzloop.caiaq.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Dec 2009 20:12:37.0740 (UTC) FILETIME=[F57152C0:01CA7454]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03/2009 02:45 PM, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 03 December 2009 06:53:59 pm Jeff Garzik wrote:
->> On 12/03/2009 07:39 AM, Bartlomiej Zolnierkiewicz wrote:
->>> On Thursday 03 December 2009 09:07:41 am Jeff Garzik wrote:
->>>> The merge window is upon us, which by strict rules means that anything
->>>> not already in libata-dev.git#upstream needs to wait until 2.6.34.
->>>>
->>>> However, bug fixes and the like should definitely be in 2.6.33.
->>>> ->init_host is definitely 2.6.34 material.  Some of the other stuff
->>>> could go either way.
->>
->>> If you would like to apply some of my patches to 2.6.33 you are more than
->>> welcome to do it.  I can even prepare separate git tree with specific changes
->>> to make it easier for you once you tell me which changes you would like to
->>> see in it.
->>
->> OK, great.
->>
->> Can you prepare a patchset containing only fixes?  Comment-only changes
->> are acceptable too.  Trivial changes too, if they are extremely trivial :)
->>
->> Include nothing that adds features, removes or unifies drivers, etc.
->
-> Since this is pretty high-level description and some changes fall into
-> many categories at once (i.e. addition of proper PCI Power Management
-> handling could be considered both as a fix and as a feature) I prepared
-> a rather conservative set of changes (which means that unfortunately
-> it misses many enhancements available in my tree):
->
->> Please do it in standard kernel submit form, which is either
->> (a) repost the patches (yes, again) being submitted for 2.6.33, or
->> (b) a standard git pull request, which includes shortlog, diffstat, and
->> all-in-one diff.
->
-> Thank you for the detailed explanation of the standard kernel submit
-> form (I wonder how would I know this otherwise :) but the thing is that
-> at the current moment I'm not submitting anything to the upstream.
+Daniel Mack wrote:
+> On Thu, Dec 03, 2009 at 04:27:39PM +0200, Adrian Hunter wrote:
+>> gDaniel Mack wrote:
+> 
+> [...]
+> 
+>>> drivers/mmc/core/core.c   |   36 ++++++++++++++++++++----------------
+>>> drivers/mmc/core/host.c   |    3 +++
+>>> drivers/mmc/host/mmci.c   |   28 ++++++++++++----------------
+>>> drivers/mmc/host/mmci.h   |    1 -
+>>> drivers/mmc/host/pxamci.c |   20 ++++++++------------
+>>> include/linux/mmc/host.h  |   10 ++++++----
+>> What about arch/arm/mach-omap2/mmc-twl4030.c ?
+> 
+> Argh, missed that one. And this particular case doesn't fit to my
+> modifications. I don't know the code well ...  We would need to
+> have a struct mmc_host * in all the functions there calling
+> mmc_regulator_{set,get}_ocr. Any idea how to resolve that?
+> 
 
-Ok, that explains my confusion, then.  I had thought you intended to get 
-this stuff upstream, and into users' hands.
+Pass it down from the omap_hsmmc driver.
 
-
-> That's it.  While this may sound strange to some people it turns out
-> that in practice it is much less hassle for me personally to keep some
-> of trees outside of the (sometimes greatly overrated) upstream.
->
-> If knowing the above you still would like to include the aforementioned
-> set of changes in your libata-dev tree they are at kernel.org now.
-
-I will go through this batch and cherry-pick.  The build fix is already 
-in my tree.  Existing kernel practice (and previous comments) indicate 
-that lists of known issues do not belong in Kconfig.  Will take a look 
-at the other stuff...
-
-Thanks,
-
-	Jeff
-
-
+>>> --- a/drivers/mmc/core/host.c
+>>> +++ b/drivers/mmc/core/host.c
+>>> @@ -18,6 +18,7 @@
+>>> #include <linux/leds.h>
+>>> #include <linux/mmc/host.h>
+>>> +#include <linux/regulator/consumer.h>
+>>> #include "core.h"
+>>> #include "host.h"
+>>> @@ -154,6 +155,8 @@ void mmc_remove_host(struct mmc_host *host)
+>>> 	mmc_remove_host_debugfs(host);
+>>> #endif
+>>> +	regulator_put(host->vcc);
+>>> +
+>> If the core is doing a 'regulator_put()' shouldn't it also be doing
+>> a 'regulator_get()'?  Why not leave it to the drivers?
+> 
+> Yes, I can change the patch to do that, no problem. The major reason why
+> I didn't put the regulator_get() to the mmc core is that I need to have
+> the platform_device to obtain its name.
+> 
+> Daniel
+> 
+> 
 
