@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZLCXrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZLCXqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbZLCXrf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 18:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbZLCXre
+	id S1754734AbZLCXqI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 18:46:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbZLCXqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 18:47:34 -0500
-Received: from mail1.radix.net ([207.192.128.31]:50970 "EHLO mail1.radix.net"
+	Thu, 3 Dec 2009 18:46:07 -0500
+Received: from claw.goop.org ([74.207.240.146]:44399 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbZLCXrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 18:47:33 -0500
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-From: Andy Walls <awalls@radix.net>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, Jarod Wilson <jarod@wilsonet.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jonsmirl@gmail.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-In-Reply-To: <4B18292C.6070303@redhat.com>
-References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com>
-	 <4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com>
-	 <A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com>
-	 <4B17AA6A.9060702@redhat.com>  <4B18292C.6070303@redhat.com>
-Content-Type: text/plain
-Date: Thu, 03 Dec 2009 18:45:26 -0500
-Message-Id: <1259883926.3095.13.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	id S1752518AbZLCXqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 18:46:06 -0500
+Message-ID: <4B184DC3.5020509@goop.org>
+Date: Thu, 03 Dec 2009 15:46:11 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091125 Fedora/3.0-3.12.rc1.fc12 Lightning/1.0pre Thunderbird/3.0
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stable Kernel <stable@kernel.org>
+Subject: [GIT PULL] Xen bugfixes
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-03 at 19:10 -0200, Mauro Carvalho Chehab wrote:
-> Gerd Hoffmann wrote:
-> 
-> > One final pass over the lirc interface would be good, taking the chance
-> > to fixup anything before the ABI is set in stone with the mainline
-> > merge.  Things to look at:
- 
-> >   (3) Someone suggested a 'commit' ioctl which would activate
-> >       the parameters set in (multiple) previous ioctls.  Makes sense?
-> 
-> A better approach is to create an ioctl that can send a group of value/attribute pairs
-> at the same time. We used this estrategy for V4L extended controls to do things like
-> setting an mpeg encoder (were we need to adjust several parameters at the same time,
-> and adding all of them on one struct would be hard, since you can't specify all
-> of them sa the same time). The same strategy is also used by DVB API to allow it
-> to use any arbitrary protocol. It was conceived to support DVB-S2.
+Hi Linus,
 
-Gerd,
+Please pull this set of bugfixes, mostly to do with Xen domain 
+save/restore.  They're all stable material as well.
 
-I mentioned it.  The reason that I mentioned it is that partial
-configuration, before all the IOCTLs are done, of the IR chips that I
-work with *may* cause:
+(Note, if you pull quickly from git.kernel.org, you may pick up some 
+more changes that I rolled back pending maintainer approval; pulling 
+from master might be safer.)
 
-1. Unnecessary, extra I2C bus operations leading to delay on
-configuration.  That's no big deal as it would really only matter for a
-genuine discrete CX2584x chip with IR implemented using the integrated
-IR controller.  I do not know of any TV capture cards wired up like
-that.
+Thanks,
+     J
 
-2. If the Low Pass Filter gets turned off, or set to very short time
-interval, bad ambient light conditions could create an "interrupt
-storm".  As soon as all the IOCTLs complete, the storm would stop.
+The following changes since commit 82d6469916c6fcfa345636a49004c9d1753905d1:
+   Jeremy Fitzhardinge (1):
+         xen: mask extended topology info in cpuid
 
+are available in the git repository at:
 
-We can probably do without the change in lirc_dev ioctl() altogether,
-since it only *really* affects one set of chips  that I work with, and
-only during configuration.  I could instead implement interrupt storm
-detection and interrupt rate limiting for those devices.
+   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git bugfix
 
+Ian Campbell (8):
+       xen: re-register runstate area earlier on resume.
+       xen: correctly restore pfn_to_mfn_list_list after resume
+       xen: register timer interrupt with IRQF_TIMER
+       xen: register runstate on secondary CPUs
+       xen: call clock resume notifier on all CPUs
+       xen: don't leak IRQs over suspend/resume.
+       xen: improve error handling in do_suspend.
+       xen: explicitly create/destroy stop_machine workqueues outside suspend/resume region.
 
-BTW IIRC, LIRC likes to resend the ioctl() to set the carrier frequency
-over again when it goes to transmit.  That's kind of annoying, but I can
-work around that too by caching a copy of the carrier freq LIRC set the
-last time.
+Jeremy Fitzhardinge (5):
+       xen/xenbus: make DEVICE_ATTR()s static
+       xen: restore runstate_info even if !have_vcpu_info_placement
+       xen: register runstate info for boot CPU early
+       xen: don't call dpm_resume_noirq() with interrupts disabled.
+       xen: use iret for return from 64b kernel to 32b usermode
 
-Regards,
-Andy
+Paolo Bonzini (3):
+       xen: fix is_disconnected_device/exists_disconnected_device
+       xen: improvement to wait_for_devices()
+       xen: wait up to 5 minutes for device connetion
+
+  arch/x86/xen/enlighten.c          |   27 ++++++++++----------
+  arch/x86/xen/mmu.c                |    2 +-
+  arch/x86/xen/smp.c                |    1 +
+  arch/x86/xen/suspend.c            |   17 ++++++++++++-
+  arch/x86/xen/time.c               |    7 ++---
+  arch/x86/xen/xen-asm_64.S         |    4 +-
+  arch/x86/xen/xen-ops.h            |    2 +
+  drivers/xen/events.c              |    3 ++
+  drivers/xen/manage.c              |   37 ++++++++++++++++++----------
+  drivers/xen/xenbus/xenbus_probe.c |   48 ++++++++++++++++++++++++------------
+  10 files changed, 98 insertions(+), 50 deletions(-)
+
 
