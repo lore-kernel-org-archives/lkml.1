@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbZLCRpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756339AbZLCRpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbZLCRpL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZLCRpL
+	id S1756339AbZLCRpb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbZLCRpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:45:11 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62567 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754314AbZLCRpK (ORCPT
+	Thu, 3 Dec 2009 12:45:30 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:49487 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756234AbZLCRp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:45:10 -0500
-Subject: Re: [PATCH v9 03/10] tracing: add an endian argument to
- scripts/recordmcount.pl
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, Nicholas Mc Guire <der.herr@hofr.at>,
-       zhangfx@lemote.com, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Wu Zhangjin <wuzj@lemote.com>
-In-Reply-To: <267c0824194b659b46fc038ba43492df30369fec.1258719323.git.wuzhangjin@gmail.com>
-References: <adf867c5a6864fa196c667d3f09a6a694f3903c5.1258719323.git.wuzhangjin@gmail.com>
-	 <51e30436a435480f1f0dec146a82f2b250900690.1258719323.git.wuzhangjin@gmail.com>
-	 <267c0824194b659b46fc038ba43492df30369fec.1258719323.git.wuzhangjin@gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 03 Dec 2009 12:45:14 -0500
-Message-Id: <1259862314.12870.138.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Thu, 3 Dec 2009 12:45:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=xR32dAad4awZSWcGh7IHoKVqgOlDXmMffKk0vr4+m3wRZ6TDepk/+Qbwk7PJO3UmIU
+         tYGLcOrLfB0hk9hP9mqI3ZMB73GEy/NQO88/oZDxjaAIBtnxNXEnzlTEKnjvUQuwA9Ya
+         a7PS3pKWxEDQ3HUjYJNbfzRtSnSTxFvJddJiI=
+Message-ID: <4B17F93D.4030207@garzik.org>
+Date: Thu, 03 Dec 2009 12:45:33 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 86/86] libata: add private driver field to struct ata_device
+References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125171248.5446.22482.sendpatchset@localhost>
+In-Reply-To: <20091125171248.5446.22482.sendpatchset@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-11-20 at 20:34 +0800, Wu Zhangjin wrote:
-> From: Wu Zhangjin <wuzhangjin@gmail.com>
-> 
-> MIPS and some other architectures need this argument to handle
-> big/little endian respectively.
-> 
-> Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
-
-I don't think I acked this version. But just to make it official:
-
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
--- Steve
-
+On 11/25/2009 12:12 PM, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> Subject: [PATCH] libata: add private driver field to struct ata_device
+>
+> This brings struct ata_device in-line with struct ata_{port,host}.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
 > ---
->  scripts/Makefile.build  |    1 +
->  scripts/recordmcount.pl |    6 +++---
->  2 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> index 341b589..0b94d2f 100644
-> --- a/scripts/Makefile.build
-> +++ b/scripts/Makefile.build
-> @@ -207,6 +207,7 @@ endif
->  
->  ifdef CONFIG_FTRACE_MCOUNT_RECORD
->  cmd_record_mcount = set -e ; perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
-> +	"$(if $(CONFIG_CPU_BIG_ENDIAN),big,little)" \
->  	"$(if $(CONFIG_64BIT),64,32)" \
->  	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" \
->  	"$(if $(part-of-module),1,0)" "$(@)";
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index f0d1445..24604d4 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -113,13 +113,13 @@ $P =~ s@.*/@@g;
->  
->  my $V = '0.1';
->  
-> -if ($#ARGV != 10) {
-> -	print "usage: $P arch bits objdump objcopy cc ld nm rm mv is_module inputfile\n";
-> +if ($#ARGV != 11) {
-> +	print "usage: $P arch endian bits objdump objcopy cc ld nm rm mv is_module inputfile\n";
->  	print "version: $V\n";
->  	exit(1);
->  }
->  
-> -my ($arch, $bits, $objdump, $objcopy, $cc,
-> +my ($arch, $endian, $bits, $objdump, $objcopy, $cc,
->      $ld, $nm, $rm, $mv, $is_module, $inputfile) = @ARGV;
->  
->  # This file refers to mcount and shouldn't be ftraced, so lets' ignore it
+>   include/linux/libata.h |    1 +
+>   1 file changed, 1 insertion(+)
+>
+> Index: b/include/linux/libata.h
+> ===================================================================
+> --- a/include/linux/libata.h
+> +++ b/include/linux/libata.h
+> @@ -585,6 +585,7 @@ struct ata_device {
+>   	unsigned int		horkage;	/* List of broken features */
+>   	unsigned long		flags;		/* ATA_DFLAG_xxx */
+>   	struct scsi_device	*sdev;		/* attached SCSI device */
+> +	void			*private_data;
+>   #ifdef CONFIG_ATA_ACPI
+>   	acpi_handle		acpi_handle;
+>   	union acpi_object	*gtf_cache;
+
+applied
+
 
