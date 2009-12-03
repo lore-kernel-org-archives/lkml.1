@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbZLCMAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZLCMBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbZLCMAQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 07:00:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZLCMAQ
+	id S1753522AbZLCMBc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 07:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZLCMBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 07:00:16 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:44745 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbZLCMAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 07:00:15 -0500
-Date: Thu, 3 Dec 2009 13:00:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH]cfq-iosched: make nonrot check logic consistent
-Message-ID: <20091203120021.GN8742@kernel.dk>
-References: <20091203035135.GA13165@sli10-desk.sh.intel.com> <20091203115707.GL8742@kernel.dk>
+	Thu, 3 Dec 2009 07:01:32 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:57424 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752658AbZLCMBa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 07:01:30 -0500
+Date: Thu, 3 Dec 2009 13:01:30 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ingo Molnar <mingo@elte.hu>, Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Message-ID: <20091203120130.GD12943@gundam.enneenne.com>
+Mail-Followup-To: "H. Peter Anvin" <hpa@zytor.com>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+	Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+	Kay Sievers <kay.sievers@vrfy.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+	Michael Kerrisk <mtk.manpages@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>
+References: <1259774329-29663-2-git-send-email-giometti@linux.it> <1259774329-29663-3-git-send-email-giometti@linux.it> <1259774329-29663-4-git-send-email-giometti@linux.it> <1259774329-29663-5-git-send-email-giometti@linux.it> <1259774329-29663-6-git-send-email-giometti@linux.it> <1259774329-29663-7-git-send-email-giometti@linux.it> <1259774329-29663-8-git-send-email-giometti@linux.it> <1259774329-29663-9-git-send-email-giometti@linux.it> <1259774329-29663-10-git-send-email-giometti@linux.it> <4B170204.4080604@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091203115707.GL8742@kernel.dk>
+In-Reply-To: <4B170204.4080604@zytor.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 09/11] pps: low level IRQ timestamps recording.
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03 2009, Jens Axboe wrote:
-> On Thu, Dec 03 2009, Shaohua Li wrote:
-> > Send again, last post seems lost.
+On Wed, Dec 02, 2009 at 04:10:44PM -0800, H. Peter Anvin wrote:
+> On 12/02/2009 09:18 AM, Rodolfo Giometti wrote:
+> > Add low level IRQ timestamps recording for x86 (32 and 64 bits)
+> > platforms and enable UART clients in order to use it.
 > > 
-> > cfq_arm_slice_timer() has logic to disable idle window for SSD device. The same
-> > thing should be done at cfq_select_queue() too, otherwise we will still see
-> > idle window. This makes the nonrot check logic consistent in cfq.
-> > Tests in a intel SSD with low_latency knob close, below patch can triple disk
-> > thoughput for muti-thread sequential read.
-> > 
-> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > ---
-> >  block/cfq-iosched.c |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux/block/cfq-iosched.c
-> > ===================================================================
-> > --- linux.orig/block/cfq-iosched.c	2009-11-11 13:44:00.000000000 +0800
-> > +++ linux/block/cfq-iosched.c	2009-11-11 13:45:33.000000000 +0800
-> > @@ -1215,7 +1215,8 @@ static struct cfq_queue *cfq_select_queu
-> >  	 * conditions to happen (or time out) before selecting a new queue.
-> >  	 */
-> >  	if (timer_pending(&cfqd->idle_slice_timer) ||
-> > -	    (cfqq->dispatched && cfq_cfqq_idle_window(cfqq))) {
-> > +	    (cfqq->dispatched && cfq_cfqq_idle_window(cfqq)
-> > +	    && !(blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag))) {
-> >  		cfqq = NULL;
-> >  		goto keep_queue;
-> >  	}
+> > This improves PPS precision. :)
 > 
-> Thanks, applied to 2.6.33 queue.
+> It also invokes getnstimeofday on every single interrupt, including ones
+> which have absolutely nothing to do with the PPS, and are potentially
+> high volume.  getnstimeofday can be a fairly expensive operation,
+> especially if the best available clock is away from the CPU, or it
+> requires extensive arithmetic in order to normalize the clock value...
 
-On second check, we now hide that logic in cfq_should_idle() and as such
-your patch no longer applies. I suggest you re-test with -next or my
-for-2.6.33 branch, it has a big number of pending CFQ updates for
-2.6.33.
+I see, that's why I propose my patches to you: in order to have some
+feedbacks for better solutions. :)
+
+Can I add a IRQF_TIMESTAMP in order to ask to the system to record irq
+timestamps for particular irq lines? The problem is that I cannot set
+that flag at irq_register() time but I have to do it later... it can
+be a problem?
+
+Ciao,
+
+Rodolfo
 
 -- 
-Jens Axboe
 
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
+Freelance ICT Italia - Consulente ICT Italia - www.consulenti-ict.it
