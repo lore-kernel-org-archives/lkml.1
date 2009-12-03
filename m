@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZLCR0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZLCRbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756139AbZLCR0Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbZLCR0Y
+	id S1756133AbZLCRbI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:31:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZLCRbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:26:24 -0500
-Received: from fieldses.org ([174.143.236.118]:45174 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753458AbZLCR0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:26:23 -0500
-Date: Thu, 3 Dec 2009 12:27:28 -0500
-From: "J. Bruce Fields" <bfields@citi.umich.edu>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       sparclinux <sparclinux@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       NFS list <linux-nfs@vger.kernel.org>,
-       pNFS Mailing List <pnfs@linux-nfs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/5] lockd: Remove unused nfsd headers #includes
-Message-ID: <20091203172728.GF1393@fieldses.org>
-References: <4B0C1EB7.50508@panasas.com> <4B0C1FE0.8040105@panasas.com> <20091125201011.GG32502@fieldses.org> <20091125202323.GJ32502@fieldses.org> <4B0E76F5.1030006@panasas.com>
+	Thu, 3 Dec 2009 12:31:08 -0500
+Received: from mail-pz0-f184.google.com ([209.85.222.184]:37928 "EHLO
+	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755510AbZLCRbG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 12:31:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xjSjWIb6yzvM6yfxxl62NvlrxI1fhuLAmY/38lugWzXfPwh6clBofSxKMHJdmdQWC2
+         +8k8V5bIHY2o9mJsbPXb5LY726ujnYNYVQ/MbtURgZJn61eYpi997XrYK22wOuoxZQmM
+         AaxNsUwujNjb9fEw3VoEg+SeQvvuCCjnzsAEQ=
+Date: Thu, 3 Dec 2009 09:31:06 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Ferenc Wagner <wferi@niif.hu>, Jarod Wilson <jarod@wilsonet.com>,
+       Jarod Wilson <jarod@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+Message-ID: <20091203173105.GA776@core.coreip.homeip.net>
+References: <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> <4B16BE6A.7000601@redhat.com> <20091202195634.GB22689@core.coreip.homeip.net> <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com> <20091202201404.GD22689@core.coreip.homeip.net> <4B16CCD7.20601@redhat.com> <20091202205323.GF22689@core.coreip.homeip.net> <4B16D87F.7080701@redhat.com> <87tyw8ujsr.fsf@tac.ki.iif.hu> <4B17E874.5020003@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B0E76F5.1030006@panasas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B17E874.5020003@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 02:39:17PM +0200, Boaz Harrosh wrote:
-> On 11/25/2009 10:23 PM, J. Bruce Fields wrote:
-> > On Wed, Nov 25, 2009 at 03:10:11PM -0500, J. Bruce Fields wrote:
-> >> On Tue, Nov 24, 2009 at 08:03:12PM +0200, Boaz Harrosh wrote:
-> >>>
-> >>> In what history where these ever needed? Well not
-> >>> any more.
-> >>
-> >> Applied, thanks.--b.
-> > 
-> > Um, I said that before I actually tried to compile it....  OK, dropping
-> > for now (assuming I'm missing some earlier patch).
-> > 
-> > --b.
-> > 
+On Thu, Dec 03, 2009 at 02:33:56PM -0200, Mauro Carvalho Chehab wrote:
+> Ferenc Wagner wrote:
+> > Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 > 
-> OK, I didn't realize it but, yes I have these on top of the previous 6
-> so it makes sense.
-> 
-> I have posted the previous 6 rebased on your new current tree, have you seen
-> it? All the patches are the same but [5/6] which has a "version 3". Do I need
-> to re post?
+> We should not forget that simple IR's don't have any key to select the address,
+> so the produced codes there will never have KEY_TV/KEY_DVD, etc.
 
-Apologies, yes, would you mind reposting?
+Wait, wait, KEY_TV, KEY_DVD, KEY_TAPE - they should be used to select
+media inputs in a device/application. My receiver accepts codees like
+that.
 
---b.
+-- 
+Dmitry
