@@ -1,114 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbZLCRmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbZLCRnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbZLCRmF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:42:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbZLCRmF
+	id S1755226AbZLCRnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbZLCRns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:42:05 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:51399 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753284AbZLCRmE (ORCPT
+	Thu, 3 Dec 2009 12:43:48 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:40674 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753406AbZLCRnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:42:04 -0500
-Subject: RE: [PATCH] DFU Driver for Atheros bluetooth chipset AR3011
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Vikram Kandukuri <Vikram.Kandukuri@Atheros.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-bluetooth@vger.kernel.org" <linux-bluetooth@vger.kernel.org>,
-       Luis Rodriguez <Luis.Rodriguez@Atheros.com>
-In-Reply-To: <44EE5C37ADC36343B0625A05DD408C485069714222@CHEXMB-01.global.atheros.com>
-References: <20091124101007.GC7551@atheros-laptop>
-	 <44EE5C37ADC36343B0625A05DD408C485069714222@CHEXMB-01.global.atheros.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 03 Dec 2009 18:42:06 +0100
-Message-Id: <1259862126.30413.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+	Thu, 3 Dec 2009 12:43:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=DSn1IKD20q22xO2hFdUkq5W7caUIl3QQsjg4cbFT2oqeerpTbBo0B/4DSjKORH+UbC
+         l8SsHLAHXehZs3Y/ZJ+K9hRygumJ/tqAFxFw81Hgx0S9mffof5oHamdoifMPHVxXK+Ai
+         qMBoxo+Vf8aimmXL925jknd7TCcNSeGCcMF+M=
+Message-ID: <4B17F8D5.50703@garzik.org>
+Date: Thu, 03 Dec 2009 12:43:49 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Stefan Assmann <sassmann@redhat.com>
+CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, rjw@sisk.pl, ddutile@redhat.com,
+       kaneshige.kenji@jp.fujitsu.com, khc@pm.waw.pl,
+       Andrew Patterson <andrew.patterson@hp.com>
+Subject: Re: [PATCH 1/2 v2] pci: change PCI nomenclature in drivers/pci/ (comment
+ changes)
+References: <20091203114914.24905.67372.sendpatchset@localhost.localdomain> <20091203114923.24905.48449.sendpatchset@localhost.localdomain> <4B17EFA7.8040504@redhat.com>
+In-Reply-To: <4B17EFA7.8040504@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vikram,
-
-> Signed-off-by: Vikram Kandukuri <Vikram.Kandukuri@atheors.com>
-
-so first of all, you should learn how to write you employers name.
-
-> Signed-off-by: Alicke Xu <sxu@atheros.com>
-> Reviewed-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-> 
+On 12/03/2009 12:04 PM, Stefan Assmann wrote:
+> repost with typo "Debuging" fixed as in patch #2.
+>
+>
+> From: Stefan Assmann<sassmann@redhat.com>
+>
+> Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
+> terms listed in the "Trademark and Logo Usage Guidelines".
+> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
+>
+> Patch is limited to drivers/pci/ and changes concern comments only.
+>
+> Signed-off-by: Stefan Assmann<sassmann@redhat.com>
 > ---
->  drivers/bluetooth/Kconfig  |   12 +++
->  drivers/bluetooth/Makefile |    1 +
->  drivers/bluetooth/ath3k.c  |  191 ++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 204 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/bluetooth/ath3k.c
-> 
-> diff --git a/drivers/bluetooth/Kconfig b/drivers/bluetooth/Kconfig
-> index 652367a..89f079e 100644
-> --- a/drivers/bluetooth/Kconfig
-> +++ b/drivers/bluetooth/Kconfig
-> @@ -195,5 +195,17 @@ config BT_MRVL_SDIO
->           Say Y here to compile support for Marvell BT-over-SDIO driver
->           into the kernel or say M to compile it as module.
-> 
-> +config BT_ATH3K
-> +       tristate "Atheros firmware download driver"
-> +       depends on BT_HCIBTUSB
-> +       select FW_LOADER
-> +       help
-> +         Bluetooth firmware download driver.
-> +         This driver loads the firmware into the Atheros bluetooth
-> +          chipset.
-> +
-> +         Say Y here to compile support for "Atheros AR30XX firmware download driver"
-> +          into the  kernel or say M to compile it as module (ath3k).
-> +
->  endmenu
-> 
-> diff --git a/drivers/bluetooth/Makefile b/drivers/bluetooth/Makefile
-> index b3f57d2..6fcdeb7 100644
-> --- a/drivers/bluetooth/Makefile
-> +++ b/drivers/bluetooth/Makefile
-> @@ -15,6 +15,7 @@ obj-$(CONFIG_BT_HCIBTUART)    += btuart_cs.o
->  obj-$(CONFIG_BT_HCIBTUSB)      += btusb.o
->  obj-$(CONFIG_BT_HCIBTSDIO)     += btsdio.o
-> 
-> +obj-$(CONFIG_BT_ATH3K)         += ath3k.o
->  obj-$(CONFIG_BT_MRVL)          += btmrvl.o
->  obj-$(CONFIG_BT_MRVL_SDIO)     += btmrvl_sdio.o
+>   drivers/pci/hotplug/shpchp.h       |    2 +-
+>   drivers/pci/intel-iommu.c          |    6 +++---
+>   drivers/pci/intr_remapping.c       |    2 +-
+>   drivers/pci/pci.c                  |    6 +++---
+>   drivers/pci/pcie/aer/aer_inject.c  |    4 ++--
+>   drivers/pci/pcie/aer/aerdrv.c      |    2 +-
+>   drivers/pci/pcie/aer/aerdrv_acpi.c |    2 +-
+>   drivers/pci/pcie/aer/aerdrv_core.c |    6 +++---
+>   drivers/pci/pcie/aspm.c            |    4 ++--
+>   drivers/pci/search.c               |    6 +++---
+>   10 files changed, 20 insertions(+), 20 deletions(-)
 
-The Makefile and Kconfig changes don't apply at all. No idea how you
-screwed that up, but you did.
+Thanks for splitting this up.  These are definitely much more 
+"digestable" patches.
 
-> +MODULE_DEVICE_TABLE(usb, ath3k_table);
-> +
-> +#define USB_REQ_DFU_DNLOAD     1
-> +#define FIRST_20BYTE            20
+I don't have any objections to these patches, except for previous 
+comments about code churn itself.  Up to Jesse...
 
-The FIRST_20BYTE is not used. So remove it.
+	Jeff
 
-> +#define BULK_SIZE               4096
-> +
-> +#define ATHBT_IN_EP(data)       (0x81)
-> +#define ATHBT_OUT_EP(data)     (0x02)
-
-This is not used either and wrong on so many levels. Remove it.
-
-> +struct ath3k_data {
-> +       struct usb_device *udev;
-> +       u8 *fw_data;
-> +       u32 fw_size;
-> +       u32 fw_sent;
-> +};
-> +
-
-And from here on. Please use tabs and not spaces. Did you actually run
-checkpatch.pl on this patch?
-
-Regards
-
-Marcel
 
 
