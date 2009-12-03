@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbZLCIDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751787AbZLCIEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbZLCIDk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 03:03:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZLCIDj
+	id S1751787AbZLCIEh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 03:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZLCIEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 03:03:39 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:39897 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567AbZLCIDj (ORCPT
+	Thu, 3 Dec 2009 03:04:36 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:52336 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbZLCIEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 03:03:39 -0500
-Date: Thu, 3 Dec 2009 09:03:41 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       kay.sievers@vrfy.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] sysfs: fix SYSFS_DEPRECATED_V2 prompt
-Message-ID: <20091203080341.GA9675@pengutronix.de>
-References: <4B0B214A.5020006@oracle.com>
+	Thu, 3 Dec 2009 03:04:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=D0jxEFTNNZMSimZP3Fkkb+5zPq4BQezx4i9J+0lIZ7LpC3+iVJR+0eTGVLBggYRcMU
+         Lht3ZxNiDiwX+uRjnIGB9NGgBnBRGS+AIy48/CbOF7sBXITMTWFg/6jVXpLu+xopuVFy
+         8Gqz+B/MgUggUBCPyyGBss6FM4LAazOKVn7PU=
+Message-ID: <4B177118.5020501@garzik.org>
+Date: Thu, 03 Dec 2009 03:04:40 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4B0B214A.5020006@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 86/86] libata: add private driver field to struct ata_device
+References: <20091125170218.5446.13513.sendpatchset@localhost> <20091125171248.5446.22482.sendpatchset@localhost>
+In-Reply-To: <20091125171248.5446.22482.sendpatchset@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 11/25/2009 12:12 PM, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> Subject: [PATCH] libata: add private driver field to struct ata_device
+>
+> This brings struct ata_device in-line with struct ata_{port,host}.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> ---
+>   include/linux/libata.h |    1 +
+>   1 file changed, 1 insertion(+)
+>
+> Index: b/include/linux/libata.h
+> ===================================================================
+> --- a/include/linux/libata.h
+> +++ b/include/linux/libata.h
+> @@ -585,6 +585,7 @@ struct ata_device {
+>   	unsigned int		horkage;	/* List of broken features */
+>   	unsigned long		flags;		/* ATA_DFLAG_xxx */
+>   	struct scsi_device	*sdev;		/* attached SCSI device */
+> +	void			*private_data;
+>   #ifdef CONFIG_ATA_ACPI
+>   	acpi_handle		acpi_handle;
+>   	union acpi_object	*gtf_cache;
 
->  config SYSFS_DEPRECATED_V2
-> -	bool "remove sysfs features which may confuse old userspace tools"
-> +	bool "enable deprecated sysfs features which may confuse old userspace tools"
-Is this better?  SYSFS_DEPRECATED_V2 enables deprecated sysfs features,
-but this is done to *not* confuse old userspace tools, isn't it?
+I'm fine with this, and would like to merge this sooner rather than later.
 
-Best regards
-Uwe
+However, BIG FAT WARNING:  you must take special care to be sure you 
+don't leak as devices appear and disappear, etc.  IOW, watch your object 
+lifetimes carefully.  Object lifetime was the reason this was not added 
+until now.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+
