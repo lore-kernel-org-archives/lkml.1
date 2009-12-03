@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbZLCKl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZLCKtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbZLCKl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 05:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbZLCKl2
+	id S1755968AbZLCKtQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 05:49:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbZLCKtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 05:41:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49124 "EHLO mx3.mail.elte.hu"
+	Thu, 3 Dec 2009 05:49:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49866 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755933AbZLCKl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 05:41:27 -0500
-Date: Thu, 3 Dec 2009 11:40:56 +0100
+	id S1755516AbZLCKtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 05:49:14 -0500
+Date: Thu, 3 Dec 2009 11:49:06 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Danny Feng <dfeng@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH -tip] x86: reboot_fixup_32.c add missing pci_dev_put
-Message-ID: <20091203104056.GB7628@elte.hu>
-References: <1259291762-17735-1-git-send-email-dfeng@redhat.com>
- <20091202100928.GE22654@elte.hu>
- <4B169B1B.8010007@zytor.com>
- <20091202171422.GB28061@elte.hu>
- <4B178DD9.7040502@redhat.com>
+To: Jan Beulich <JBeulich@novell.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: slightly shorten __ticket_spin_trylock() (v2)
+Message-ID: <20091203104906.GC7628@elte.hu>
+References: <4B179A6D0200007800023542@vpn.id2.novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B178DD9.7040502@redhat.com>
+In-Reply-To: <4B179A6D0200007800023542@vpn.id2.novell.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
+X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Danny Feng <dfeng@redhat.com> wrote:
+* Jan Beulich <JBeulich@novell.com> wrote:
 
-> I should point out this in my changelog, sorry for the unclear 
-> changelog.
+> Since the callers generally expect a boolean value, there's no need to
+> zero-extend the outcome of the comparison. It just requires that all
+> of x86' trylock implementations have their return type changed
+> accordingly.
+> 
+> Don't use bool for the return type though - this is being frowned on
+> and presently doesn't work with the pv-ops patching macros.
+> 
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 
+> ---
+>  arch/x86/include/asm/paravirt.h       |    4 ++--
+>  arch/x86/include/asm/paravirt_types.h |    2 +-
+>  arch/x86/include/asm/spinlock.h       |   12 +++++-------
+>  arch/x86/xen/spinlock.c               |    2 +-
+>  4 files changed, 9 insertions(+), 11 deletions(-)
 
-Please re-send it with a better changelog.
-
-Thanks,
+Looks much cleaner - and should give us pretty much the same savings as 
+the previous patch, right? (if not, do you have a size comparison?)
 
 	Ingo
