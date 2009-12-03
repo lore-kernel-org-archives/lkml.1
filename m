@@ -1,107 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbZLCBXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbZLCDw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbZLCBXp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 20:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbZLCBXo
+	id S1755537AbZLCDw0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 22:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbZLCDwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 20:23:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2354 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752915AbZLCBXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 20:23:44 -0500
-Date: Wed, 2 Dec 2009 20:23:22 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jamie@shareable.org, pavel@ucw.cz, miklos@szeredi.hu,
-       viro@ZenIV.linux.org.uk, duaneg@dghda.com
-Subject: Re: [PATCH 2/2] vfs: force reval on dentry of bind mounted files on
- FS_REVAL_DOT filesystems
-Message-ID: <20091202202322.58e651d1@tlielax.poochiereds.net>
-In-Reply-To: <m1ljhlq614.fsf@fess.ebiederm.org>
-References: <1259783983-26884-1-git-send-email-jlayton@redhat.com>
-	<1259783983-26884-3-git-send-email-jlayton@redhat.com>
-	<m1ljhlq614.fsf@fess.ebiederm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 Dec 2009 22:52:25 -0500
+Received: from nskntqsrv01p.mx.bigpond.com ([61.9.168.231]:29832 "EHLO
+	nskntqsrv01p.mx.bigpond.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754592AbZLCDwY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 22:52:24 -0500
+X-Greylist: delayed 8816 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Dec 2009 22:52:24 EST
+Message-ID: <4B17138D.3040003@bigpond.net.au>
+Date: Thu, 03 Dec 2009 11:25:33 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch]  f83f9ac causes tasks running at MAX_PRIO
+References: <1259501027.6268.9.camel@marge.simson.net>	 <1259754383.4003.610.camel@laptop> <1259758150.6167.8.camel@marge.simson.net>
+In-Reply-To: <1259758150.6167.8.camel@marge.simson.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at nskntotgx02p.mx.bigpond.com from [123.211.185.123] using ID pwil3058@bigpond.net.au at Thu, 3 Dec 2009 01:25:33 +0000
+X-RPD-ScanID: Class unknown; VirusThreatLevel unknown, RefID str=0001.0A150201.4B17138E.002C,ss=1,fgs=0
+X-SIH-MSG-ID: qRw0Ftb8TECznTh522DtQVUtlUy7/yU1v8pWRYIhuRsaT1jBuMDAQsKmbaJDwp6CjHtcQk/WLnEjc6zlV43UuNq0Mb5RWrnj
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 Dec 2009 16:01:59 -0800
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+On 02/12/09 22:49, Mike Galbraith wrote:
+> Hysterical reasons?  That might have been a doorstop conversion kit for
+> O(1), but boots fine with CFS, and prio 40 tasks are history.
 
-> Jeff Layton <jlayton@redhat.com> writes:
-> 
-> > In the case of a bind mounted file, the path walking code will assume
-> > that the cached dentry that was bind mounted is valid. This is a problem
-> > problem for NFSv4 in a way that's similar to LAST_BIND symlinks.
-> >
-> > Fix this by revalidating the dentry if FS_FOLLOW_DOT is set and
-> > __follow_mount returns true.
-> >
-> > Note that in the non-open codepath, we cannot return an error to the
-> > lookup if the revalidation fails. Doing so will leave a bind mount in
-> > a state such that we can't unmount it. In that case we'll just have to
-> > settle for d_invalidating it (which should mostly turn out to be a
-> > d_drop in this case) and returning success.
-> 
-> Looks reasonable to me.  I wonder a little if we care about follow_mount
-> as well as __follow_mount.
-> 
+In my (not so) humble opinion, there is still a lot of unnecessary cruft 
+in sched.c that should have been removed as the final (clean up) stage 
+of implementing CFS (i.e. stuff that was needed for O(1) but no longer 
+serves a useful purpose).  I know that the extra overhead of this code 
+is probably inconsequential (and the compiler may even optimize some of 
+it away) but it looks untidy and makes the code harder to understand.
 
-Good question.
+Recent patches that I've submitted were intended as a start to removing 
+some of this cruft and I had intended to send more patches after they 
+were accepted.  I figured that it was better to do it as a number of 
+small changes rather than one big one.  Should I continue?
 
-It does sort of seem like it. There's also follow_down too...
-
-OTOH, we have a reproducible testcases that the two patches in this
-series fix. I'm not aware of anything that's technically "broken" by
-the lack of revalidations in the other codepaths so I'm hesitant to add
-them in unless and until we do.
-
-> This seems reasonable to me.
-> 
-> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-> 
-> >
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > ---
-> >  fs/namei.c |   11 ++++++++++-
-> >  1 files changed, 10 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/fs/namei.c b/fs/namei.c
-> > index 339789e..0d55b6f 100644
-> > --- a/fs/namei.c
-> > +++ b/fs/namei.c
-> > @@ -851,7 +851,13 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
-> >  done:
-> >  	path->mnt = mnt;
-> >  	path->dentry = dentry;
-> > -	__follow_mount(path);
-> > +
-> > +	/*
-> > +	 * cannot return the error returned by force_reval_path as that can
-> > +	 * make it impossible to unmount a bind mounted dentry if it's stale.
-> > +	 */
-> > +	if (__follow_mount(path))
-> > +		force_reval_path(path, nd);
-> >  	return 0;
-> >  
-> >  need_lookup:
-> > @@ -1840,6 +1846,9 @@ do_last:
-> >  		error = -ELOOP;
-> >  		if (flag & O_NOFOLLOW)
-> >  			goto exit_dput;
-> > +		error = force_reval_path(&path, &nd);
-> > +		if (error)
-> > +			goto exit_dput;
-> >  	}
-> >  
-> >  	error = -ENOENT;
-> > -- 
-> > 1.5.5.6
-
-
--- 
-Jeff Layton <jlayton@redhat.com>
+Peter
