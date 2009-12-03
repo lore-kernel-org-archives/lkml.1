@@ -1,201 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbZLCV56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbZLCV6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753187AbZLCV56 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 16:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbZLCV56
+	id S1753444AbZLCV6e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 16:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZLCV6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 16:57:58 -0500
-Received: from mail-ew0-f222.google.com ([209.85.219.222]:42192 "EHLO
-	mail-ew0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbZLCV55 convert rfc822-to-8bit (ORCPT
+	Thu, 3 Dec 2009 16:58:33 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:48504 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751412AbZLCV6c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 16:57:57 -0500
+	Thu, 3 Dec 2009 16:58:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=i6LQc/FyYy7PJnANCGuf7apTba9+nyM4Q2jreLKC8dklvOvhM4l9qMlQnzr5JJeGjo
-         WoH5flqopReT+p3LBwogaXShM7lKpA3ld2KQLQTRqX2ETGX7WomDdQihM+0BBGST6FDc
-         GHPiENuscsEKgT3d0uXcVMuRmTDqTzHlwETlM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 00/86] PATA fixes
-Date: Thu, 3 Dec 2009 22:56:39 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200912032242.05785.bzolnier@gmail.com> <4B1832CD.5040809@garzik.org>
-In-Reply-To: <4B1832CD.5040809@garzik.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=maL3VMdiitgVoTVZL6yYBPVin8mdJWo4fY2ljwDzvwPYny6D1VBrX9Wo6e/AiG5Cn2
+         D+Dq6ywNIH9pOBH2WliZT3Q/dfo6T/Hi67R8WdWQPUwQY2n54CPGPQ8ZWL/EauhDtd0J
+         9Pjl01kUbwHIeXxUP5L0s1NICdgvuVMyFxHl4=
+Message-ID: <4B183491.6090602@gmail.com>
+Date: Thu, 03 Dec 2009 13:58:41 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <200912032256.39790.bzolnier@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: Miles Lane <miles.lane@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ath9k-devel@venema.h4ckr.net,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [ath9k-devel] BUG kmalloc-8192: Poison overwritten
+References: <dd18b0c30912021427x4d1d952tcdd98bb9d816b67c@mail.gmail.com> 	<43e72e890912021516k736db118j217dc92496db8f19@mail.gmail.com> 	<4B182F79.7060103@gmail.com> <43e72e890912031345m3f5adb9nca754e33a858c923@mail.gmail.com>
+In-Reply-To: <43e72e890912031345m3f5adb9nca754e33a858c923@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 December 2009 10:51:09 pm Jeff Garzik wrote:
+On 12/03/09 13:45, Luis R. Rodriguez wrote:
+> On Thu, Dec 3, 2009 at 1:36 PM, Justin P. Mattock
+> <justinmattock@gmail.com>  wrote:
+>> On 12/02/09 15:16, Luis R. Rodriguez wrote:
+>>>
+>>> On Wed, Dec 2, 2009 at 2:27 PM, Justin Mattock<justinmattock@gmail.com>
+>>>   wrote:
+>>>>
+>>>> I have no idea what this is:
+>>>> (first time I've seen this);
+>>>>
+>>>>
+>>>> [   13.055592]
+>>>> =============================================================================
+>>>> [   13.055865] BUG kmalloc-8192: Poison overwritten
+>>>> [   13.056046]
+>>>> -----------------------------------------------------------------------------
+>>>
+>>> I believe this means we write to an area in memory after we freed an skb.
+>>>
+>>>> [   13.056366] INFO: 0xffff88003290a100-0xffff88003290a143. First byte
+>>>> 0x50 instead of 0x6b
+>>>> [   13.056366] INFO: Allocated in ath_rxbuf_alloc+0x25/0x94 [ath]
+>>>> age=8898 cpu=0 pid=892
+>>>> [   13.056366] INFO: Freed in skb_release_data+0xc1/0xc6 age=99 cpu=0
+>>>> pid=0
+>>>> [   13.056366] INFO: Slab 0xffffea0000b0f9c0 objects=3 used=0
+>>>> fp=0xffff88003290c090 flags=0x4000000000004082
+>>>> [   13.056366] INFO: Object 0xffff88003290a048 @offset=8264
+>>>> fp=0xffff880032908000
+>>>> [   13.056366]
+>>>> [   13.056366] Bytes b4 0xffff88003290a038:  b9 9e fb ff 00 00 00 00
+>>>> 5a 5a 5a 5a 5a 5a 5a 5a ¹.ûÿ....ZZZZZZZZ
+>>>
+>>> Can you reproduce this? We had a similar report from Miles Lanes I
+>>> have been trying to followup on for a while now. The suggested patches
+>>> to try are:
+>>>
+>>>
+>>> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/70-mac80211-total-ampdu-tx-info.patch
+>>>
+>>> http://bombadil.infradead.org/~mcgrof/patches/ath9k/2009/11-19/71-ath9k-remove-tx_info_priv.patch
+>>>
+>>>    Luis
+>>>
+>>
+>> as anticipated I had a feeling reproducing
+>> this would be a bit of a challeng.
+>>
+>> so far I was taking into account the actions that
+>> I did yesterday to trigger this, but nothing i.e.
+>>
+>> reboot 30 times(until fsck engages), and shutdown/start 30 times
+>> with nothing of the sort.
+>>
+>> If you have any ideas on how to reproduce this it would
+>> be greatly appreciated(don't want to throw in the patches, until
+>> I have something to go by).
+>>
+>> on the other hand I could throw in the patches, and wait and see,
+>> but would rather have more hard evidence that the patches do fix something.
+>
+> I think waiting to be able to reproduce is best, and appreciate your
+> patience on this. Maybe Miles Lanes also cannot reproduce easily and
+> that may explain why he hasn't replied.
+>
+>    Luis
+>
 
-> >>>         pata_via: clear UDMA transfer mode bit for PIO and MWDMA
-> >>
-> >> applied -- even though Alan's comment was correct.  It is standard
-> >> kernel practice to place cosmetic changes into their own patches,
-> >> because it is standard kernel practice to break up logically distinct
-> >> changes.
-> >
-> > We are talking about:
-> >
-> >   pata_via.c |   19 +++++++++++++------
-> >   1 file changed, 13 insertions(+), 6 deletions(-)
-> >
-> > patch here (http://lkml.org/lkml/2009/11/25/380) and cosmetic change
-> > is clearly documented in the patch description.
-> >
-> >
-> > Do people really wonder why I find upstream to be too much hassle to
-> > deal with?
-> 
-> The thousand other kernel developers seem to be able to split up their 
-> patches, separating out cosmetic changes from functional ones.  It has 
-> clear engineering benefits, and has been standard practice for a decade 
-> or more.
-> 
-> Why is it such an imposition for your patches to look like everyone 
-> else's?  And by "everyone", I mean all other kernel developers, not just 
-> other ATA developers.
-> 
-> You seem to consider standard kernel practice a hassle.  Separating out 
-> cosmetic changes is not only a libata practice, it is the norm for the 
-> entire kernel.
+probably.. What I'll do is tweak with this
+the rest of the day, if nothing then I'll go
+ahead and throw in the patches, and then go from there.
 
-Indeed.
-
->From 94be9a58d7e683ac3c1df1858a17f09ebade8da0 Mon Sep 17 00:00:00 2001
-From: Jeff Garzik <jeff@garzik.org>
-Date: Fri, 16 Jan 2009 10:17:09 -0500
-Subject: [PATCH] [libata] get-identity ioctl: Fix use of invalid memory pointer
- for SAS drivers.
-
-Caught by Ke Wei (and team?) at Marvell.
-
-Also, move the ata_scsi_ioctl export to libata-scsi.c, as that seems to be the
-general trend.
-
-Acked-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
- drivers/ata/libata-core.c           |    1 -
- drivers/ata/libata-scsi.c           |   17 +++++++++++++----
- drivers/scsi/ipr.c                  |    2 +-
- drivers/scsi/libsas/sas_scsi_host.c |    2 +-
- include/linux/libata.h              |    2 ++
- 5 files changed, 17 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 71218d7..552ecae 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -6638,7 +6638,6 @@ EXPORT_SYMBOL_GPL(ata_dev_pair);
- EXPORT_SYMBOL_GPL(ata_port_disable);
- EXPORT_SYMBOL_GPL(ata_ratelimit);
- EXPORT_SYMBOL_GPL(ata_wait_register);
--EXPORT_SYMBOL_GPL(ata_scsi_ioctl);
- EXPORT_SYMBOL_GPL(ata_scsi_queuecmd);
- EXPORT_SYMBOL_GPL(ata_scsi_slave_config);
- EXPORT_SYMBOL_GPL(ata_scsi_slave_destroy);
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index 9e92107..a1a6e62 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -423,9 +423,9 @@ int ata_std_bios_param(struct scsi_device *sdev, struct block_device *bdev,
-  *	RETURNS:
-  *	Zero on success, negative errno on error.
-  */
--static int ata_get_identity(struct scsi_device *sdev, void __user *arg)
-+static int ata_get_identity(struct ata_port *ap, struct scsi_device *sdev,
-+			    void __user *arg)
- {
--	struct ata_port *ap = ata_shost_to_port(sdev->host);
- 	struct ata_device *dev = ata_scsi_find_dev(ap, sdev);
- 	u16 __user *dst = arg;
- 	char buf[40];
-@@ -645,7 +645,8 @@ int ata_task_ioctl(struct scsi_device *scsidev, void __user *arg)
- 	return rc;
- }
- 
--int ata_scsi_ioctl(struct scsi_device *scsidev, int cmd, void __user *arg)
-+int ata_sas_scsi_ioctl(struct ata_port *ap, struct scsi_device *scsidev,
-+		     int cmd, void __user *arg)
- {
- 	int val = -EINVAL, rc = -EINVAL;
- 
-@@ -663,7 +664,7 @@ int ata_scsi_ioctl(struct scsi_device *scsidev, int cmd, void __user *arg)
- 		return 0;
- 
- 	case HDIO_GET_IDENTITY:
--		return ata_get_identity(scsidev, arg);
-+		return ata_get_identity(ap, scsidev, arg);
- 
- 	case HDIO_DRIVE_CMD:
- 		if (!capable(CAP_SYS_ADMIN) || !capable(CAP_SYS_RAWIO))
-@@ -682,6 +683,14 @@ int ata_scsi_ioctl(struct scsi_device *scsidev, int cmd, void __user *arg)
- 
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(ata_sas_scsi_ioctl);
-+
-+int ata_scsi_ioctl(struct scsi_device *scsidev, int cmd, void __user *arg)
-+{
-+	return ata_sas_scsi_ioctl(ata_shost_to_port(scsidev->host),
-+				scsidev, cmd, arg);
-+}
-+EXPORT_SYMBOL_GPL(ata_scsi_ioctl);
- 
- /**
-  *	ata_scsi_qc_new - acquire new ata_queued_cmd reference
-diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
-index 841f460..0782900 100644
---- a/drivers/scsi/ipr.c
-+++ b/drivers/scsi/ipr.c
-@@ -4912,7 +4912,7 @@ static int ipr_ioctl(struct scsi_device *sdev, int cmd, void __user *arg)
- 	if (res && ipr_is_gata(res)) {
- 		if (cmd == HDIO_GET_IDENTITY)
- 			return -ENOTTY;
--		return ata_scsi_ioctl(sdev, cmd, arg);
-+		return ata_sas_scsi_ioctl(res->sata_port->ap, sdev, cmd, arg);
- 	}
- 
- 	return -EINVAL;
-diff --git a/drivers/scsi/libsas/sas_scsi_host.c b/drivers/scsi/libsas/sas_scsi_host.c
-index 7448387..1c558d3 100644
---- a/drivers/scsi/libsas/sas_scsi_host.c
-+++ b/drivers/scsi/libsas/sas_scsi_host.c
-@@ -717,7 +717,7 @@ int sas_ioctl(struct scsi_device *sdev, int cmd, void __user *arg)
- 	struct domain_device *dev = sdev_to_domain_dev(sdev);
- 
- 	if (dev_is_sata(dev))
--		return ata_scsi_ioctl(sdev, cmd, arg);
-+		return ata_sas_scsi_ioctl(dev->sata_dev.ap, sdev, cmd, arg);
- 
- 	return -EINVAL;
- }
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index b6b8a7f..73b69c7 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -927,6 +927,8 @@ extern void ata_host_init(struct ata_host *, struct device *,
- extern int ata_scsi_detect(struct scsi_host_template *sht);
- extern int ata_scsi_ioctl(struct scsi_device *dev, int cmd, void __user *arg);
- extern int ata_scsi_queuecmd(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *));
-+extern int ata_sas_scsi_ioctl(struct ata_port *ap, struct scsi_device *dev,
-+			    int cmd, void __user *arg);
- extern void ata_sas_port_destroy(struct ata_port *);
- extern struct ata_port *ata_sas_port_alloc(struct ata_host *,
- 					   struct ata_port_info *, struct Scsi_Host *);
--- 
-1.6.4.2
-
-
-
---
-Bartlomiej Zolnierkiewicz
+Justin P. Mattock
