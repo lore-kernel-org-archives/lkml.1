@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751754AbZLCGMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbZLCGNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751754AbZLCGMX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 01:12:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZLCGMW
+	id S1752169AbZLCGNI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 01:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZLCGNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 01:12:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35343 "EHLO hera.kernel.org"
+	Thu, 3 Dec 2009 01:13:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35368 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbZLCGMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 01:12:22 -0500
-Message-ID: <4B1756AF.9000203@kernel.org>
-Date: Thu, 03 Dec 2009 15:11:59 +0900
+	id S1751341AbZLCGNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 01:13:06 -0500
+Message-ID: <4B1756F2.4070504@kernel.org>
+Date: Thu, 03 Dec 2009 15:13:06 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
 To: Tejun Heo <tj@kernel.org>
 CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, peterz@infradead.org,
        efault@gmx.de, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: [PATCH UDPATED 3/7] sched: refactor try_to_wake_up()
-References: <1259726212-30259-1-git-send-email-tj@kernel.org> <1259726212-30259-4-git-send-email-tj@kernel.org>
-In-Reply-To: <1259726212-30259-4-git-send-email-tj@kernel.org>
+Subject: [PATCH UPDATED 7/7] sched: implement try_to_wake_up_local()
+References: <1259726212-30259-1-git-send-email-tj@kernel.org> <1259726212-30259-8-git-send-email-tj@kernel.org>
+In-Reply-To: <1259726212-30259-8-git-send-email-tj@kernel.org>
 X-Enigmail-Version: 0.97a
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -27,24 +27,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Factor ttwu_activate() and ttwu_woken_up() out of try_to_wake_up().
-The factoring out doesn't affect try_to_wake_up() much
-code-generation-wise.  Depending on configuration options, it ends up
-generating the same object code as before or slightly different one
-due to different register assignment.
-
-This is to help future implementation of try_to_wake_up_local().
-
-Mike Galbraith suggested rename to ttwu_post_activation() from
-ttwu_woken_up() and comment update in try_to_wake_up().
+Implement try_to_wake_up_local().  try_to_wake_up_local() is similar
+to try_to_wake_up() but it assumes the caller has this_rq() locked and
+the target task is bound to this_rq().  try_to_wake_up_local() can be
+called from wakeup and sleep scheduler notifiers.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
-Updated to reflect Mike Galbraith's comment.  The only difference is
-function rename and comment change.
+The only change is to accomodate function name change of earlier
+patch.
 
 Updated tree available on top of current sched/core available in the
 following git trees.
@@ -54,149 +48,101 @@ following git trees.
 
 Thanks.
 
- kernel/sched.c |  114 ++++++++++++++++++++++++++++++++-------------------------
- 1 file changed, 64 insertions(+), 50 deletions(-)
+ include/linux/sched.h |    2 +
+ kernel/sched.c        |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 58 insertions(+)
 
+Index: work3/include/linux/sched.h
+===================================================================
+--- work3.orig/include/linux/sched.h
++++ work3/include/linux/sched.h
+@@ -2067,6 +2067,8 @@ extern void release_uids(struct user_nam
+ 
+ extern void do_timer(unsigned long ticks);
+ 
++extern bool try_to_wake_up_local(struct task_struct *p, unsigned int state,
++				 int wake_flags);
+ extern int wake_up_state(struct task_struct *tsk, unsigned int state);
+ extern int wake_up_process(struct task_struct *tsk);
+ extern void wake_up_new_task(struct task_struct *tsk,
 Index: work3/kernel/sched.c
 ===================================================================
 --- work3.orig/kernel/sched.c
 +++ work3/kernel/sched.c
-@@ -2361,11 +2361,67 @@ void task_oncpu_function_call(struct tas
- 	preempt_enable();
+@@ -2410,6 +2410,10 @@ static inline void ttwu_post_activation(
+ 		rq->idle_stamp = 0;
+ 	}
+ #endif
++	/*
++	 * Wake up is complete, fire wake up notifier.  This allows
++	 * try_to_wake_up_local() to be called from wake up notifiers.
++	 */
+ 	if (success)
+ 		fire_sched_notifiers(p, wakeup);
+ }
+@@ -2511,6 +2515,53 @@ out:
  }
  
--/***
-+static inline void ttwu_activate(struct task_struct *p, struct rq *rq,
-+				 bool is_sync, bool is_migrate, bool is_local)
+ /**
++ * try_to_wake_up_local - try to wake up a local task with rq lock held
++ * @p: the thread to be awakened
++ * @state: the mask of task states that can be woken
++ * @wake_flags: wake modifier flags (WF_*)
++ *
++ * Put @p on the run-queue if it's not alredy there.  The caller must
++ * ensure that this_rq() is locked, @p is bound to this_rq() and @p is
++ * not the current task.  this_rq() stays locked over invocation.
++ *
++ * This function can be called from wakeup and sleep scheduler
++ * notifiers.  Be careful not to create deep recursion by chaining
++ * wakeup notifiers.
++ *
++ * Returns %true if @p was woken up, %false if it was already running
++ * or @state didn't match @p's state.
++ */
++bool try_to_wake_up_local(struct task_struct *p, unsigned int state,
++			  int wake_flags)
 +{
-+	schedstat_inc(p, se.nr_wakeups);
-+	if (is_sync)
-+		schedstat_inc(p, se.nr_wakeups_sync);
-+	if (is_migrate)
-+		schedstat_inc(p, se.nr_wakeups_migrate);
-+	if (is_local)
-+		schedstat_inc(p, se.nr_wakeups_local);
-+	else
-+		schedstat_inc(p, se.nr_wakeups_remote);
++	struct rq *rq = task_rq(p);
++	bool success = false;
 +
-+	activate_task(rq, p, 1);
++	BUG_ON(rq != this_rq());
++	BUG_ON(p == current);
++	lockdep_assert_held(&rq->lock);
 +
-+	/*
-+	 * Only attribute actual wakeups done by this task.
-+	 */
-+	if (!in_interrupt()) {
-+		struct sched_entity *se = &current->se;
-+		u64 sample = se->sum_exec_runtime;
++	if (!sched_feat(SYNC_WAKEUPS))
++		wake_flags &= ~WF_SYNC;
 +
-+		if (se->last_wakeup)
-+			sample -= se->last_wakeup;
-+		else
-+			sample -= se->start_runtime;
-+		update_avg(&se->avg_wakeup, sample);
++	if (!(p->state & state))
++		return false;
 +
-+		se->last_wakeup = se->sum_exec_runtime;
++	if (!p->se.on_rq) {
++		if (likely(!task_running(rq, p))) {
++			schedstat_inc(rq, ttwu_count);
++			schedstat_inc(rq, ttwu_local);
++		}
++		ttwu_activate(p, rq, wake_flags & WF_SYNC, false, true);
++		success = true;
 +	}
-+}
 +
-+static inline void ttwu_post_activation(struct task_struct *p, struct rq *rq,
-+					int wake_flags, bool success)
-+{
-+	trace_sched_wakeup(rq, p, success);
-+	check_preempt_curr(rq, p, wake_flags);
++	ttwu_post_activation(p, rq, wake_flags, success);
 +
-+	p->state = TASK_RUNNING;
-+#ifdef CONFIG_SMP
-+	if (p->sched_class->task_wake_up)
-+		p->sched_class->task_wake_up(rq, p);
-+
-+	if (unlikely(rq->idle_stamp)) {
-+		u64 delta = rq->clock - rq->idle_stamp;
-+		u64 max = 2*sysctl_sched_migration_cost;
-+
-+		if (delta > max)
-+			rq->avg_idle = max;
-+		else
-+			update_avg(&rq->avg_idle, delta);
-+		rq->idle_stamp = 0;
-+	}
-+#endif
++	return success;
 +}
 +
 +/**
-  * try_to_wake_up - wake up a thread
-- * @p: the to-be-woken-up thread
-+ * @p: the thread to be awakened
-  * @state: the mask of task states that can be woken
-- * @sync: do a synchronous wakeup?
-+ * @wake_flags: wake modifier flags (WF_*)
+  * wake_up_process - Wake up a specific process
+  * @p: The process to be woken up.
   *
-  * Put it on the run-queue if it's not already there. The "current"
-  * thread is always on the run-queue (except when the actual
-@@ -2373,7 +2429,8 @@ void task_oncpu_function_call(struct tas
-  * the simpler "current->state = TASK_RUNNING" to mark yourself
-  * runnable without the overhead of this.
-  *
-- * returns failure only if the task is already active.
-+ * Returns %true if @p was woken up, %false if it was already running
-+ * or @state didn't match @p's state.
-  */
- static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 			  int wake_flags)
-@@ -2444,54 +2501,11 @@ static int try_to_wake_up(struct task_st
- 
- out_activate:
- #endif /* CONFIG_SMP */
--	schedstat_inc(p, se.nr_wakeups);
--	if (wake_flags & WF_SYNC)
--		schedstat_inc(p, se.nr_wakeups_sync);
--	if (orig_cpu != cpu)
--		schedstat_inc(p, se.nr_wakeups_migrate);
--	if (cpu == this_cpu)
--		schedstat_inc(p, se.nr_wakeups_local);
--	else
--		schedstat_inc(p, se.nr_wakeups_remote);
--	activate_task(rq, p, 1);
-+	ttwu_activate(p, rq, wake_flags & WF_SYNC, orig_cpu != cpu,
-+		      cpu == this_cpu);
- 	success = 1;
--
--	/*
--	 * Only attribute actual wakeups done by this task.
--	 */
--	if (!in_interrupt()) {
--		struct sched_entity *se = &current->se;
--		u64 sample = se->sum_exec_runtime;
--
--		if (se->last_wakeup)
--			sample -= se->last_wakeup;
--		else
--			sample -= se->start_runtime;
--		update_avg(&se->avg_wakeup, sample);
--
--		se->last_wakeup = se->sum_exec_runtime;
--	}
--
- out_running:
--	trace_sched_wakeup(rq, p, success);
--	check_preempt_curr(rq, p, wake_flags);
--
--	p->state = TASK_RUNNING;
--#ifdef CONFIG_SMP
--	if (p->sched_class->task_wake_up)
--		p->sched_class->task_wake_up(rq, p);
--
--	if (unlikely(rq->idle_stamp)) {
--		u64 delta = rq->clock - rq->idle_stamp;
--		u64 max = 2*sysctl_sched_migration_cost;
--
--		if (delta > max)
--			rq->avg_idle = max;
--		else
--			update_avg(&rq->avg_idle, delta);
--		rq->idle_stamp = 0;
--	}
--#endif
-+	ttwu_post_activation(p, rq, wake_flags, success);
- out:
- 	task_rq_unlock(rq, &flags);
- 	put_cpu();
+@@ -5437,6 +5488,11 @@ need_resched_nonpreemptible:
+ 		if (unlikely(signal_pending_state(prev->state, prev))) {
+ 			prev->state = TASK_RUNNING;
+ 		} else {
++			/*
++			 * Fire sleep notifier before changing any scheduler
++			 * state.  This allows try_to_wake_up_local() to be
++			 * called from sleep notifiers.
++			 */
+ 			fire_sched_notifiers(prev, sleep);
+ 			deactivate_task(rq, prev, 1);
+ 		}
