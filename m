@@ -1,128 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbZLCR0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbZLCROI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbZLCR0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbZLCR0d
+	id S1755212AbZLCROI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZLCROH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:26:33 -0500
-Received: from thsmsgxrt13p.thalesgroup.com ([192.54.144.136]:43513 "EHLO
-	thsmsgxrt13p.thalesgroup.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756023AbZLCR0b (ORCPT
+	Thu, 3 Dec 2009 12:14:07 -0500
+Received: from vms173019pub.verizon.net ([206.46.173.19]:50307 "EHLO
+	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbZLCROG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:26:31 -0500
-X-Greylist: delayed 758 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Dec 2009 12:26:30 EST
-Message-ID: <4B17F09E.3020201@thalesgroup.com>
-Date: Thu, 03 Dec 2009 18:08:46 +0100
-From: =?ISO-8859-1?Q?Emmanuel_Fust=E9?= <emmanuel.fuste@thalesgroup.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: mchehab@redhat.com, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: Re: [RFC v2] Another approach to IR
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 12:14:06 -0500
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_G2ieXMP7gWs2l245rpSZrA)"
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32
+Date: Thu, 03 Dec 2009 12:13:52 -0500
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8; KDE/4.3.3; i686; ; )
+References: <alpine.LFD.2.00.0912022125400.2872@localhost.localdomain>
+In-reply-to: <alpine.LFD.2.00.0912022125400.2872@localhost.localdomain>
+Message-id: <200912031213.52290.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Jon Smirl wrote:
-> > On Wed, Dec 2, 2009 at 11:13 PM, Jarod Wilson <jarod@wilsonet.com> wrote:
-> >> On Dec 2, 2009, at 9:48 PM, Trent Piepho wrote:
-> >> ...
-> >>>>>> Now I understand that if 2 remotes send completely identical signals we
-> >>>>>> won't be able to separate them, but in cases when we can I think we
-> >>>>>> should.
-> >>>>> I don't have a problem with that, if its a truly desired feature.  But
-> >>>>> for the most part, I don't see the point.  Generally, you go from
-> >>>>> having multiple remotes, one per device (where "device" is your TV,
-> >>>>> amplifier, set top box, htpc, etc), to having a single universal remote
-> >>>>> that controls all of those devices.  But for each device (IR receiver),
-> >>>>> *one* IR command set.  The desire to use multiple distinct remotes with
-> >>>>> a single IR receiver doesn't make sense to me.  Perhaps I'm just not
-> >>>>> creative enough in my use of IR.  :)
-> >>> Most universal remotes I'm familiar with emulate multiple remotes.  I.e.
-> >>> my tv remote generates one set of scancodes for the numeric keys.  The DVD
-> >>> remote generates a different set.  The amplifier remote in "tv mode"
-> >>> generates the same codes as the tv remote, and in "dvd mode" the same codes
-> >>> as the dvd remote.  From the perspective of the IR receiver there is no
-> >>> difference between having both the DVD and TV remotes, or using the
-> >>> aplifier remote to control both devices.
-> >> Okay, in the above scenario, you've still got a single input device...
-> >>
-> >>> Now, my aplifier remote has a number of modes.  Some control devices I
-> >>> have, like "vcr mode", and there is nothing I can do about that.  Some,
-> >>> like "md mode" don't control devices I have.  That means they are free to
-> >>> do things on the computer.  Someone else with the same remote (or any
-> >>> number of remotes that use the same protocol and scancodes) might have
-> >>> different devices.
-> >>>
-> >>> So I want my computer to do stuff when I push "JVC MD #xx" keys, but ignore
-> >>> "JVC VCR #yyy" yets.  Someone with an MD player and not a VCR would want to
-> >>> opposite.  Rather than force everyone to create custom keymaps, it's much
-> >>> easier if we can use the standard keymaps from a database of common remotes
-> >>> and simply tell mythtv to only use remote #xxx or not to use remote #yyy.
-> >> Sure, but the key is that this can't be done automagically. The IR driver has no way of knowing that user A wants JVC MD keys handled and JVC VCR keys ignored, and user B wants vice versa, while user C wants both ignored, etc. This is somewhat tangential to whether or not there's a separate input device per "remote" though. You can use multiple remotes/protocols with a single input device or lirc device already (if the hardware doesn't have to be put explicitly into a mode to listen for that proto, of course, but then its a hardware decoding device feeding a single input device anyway, so...).
-> >>
-> >>> It sounds like you're thinking of a receiver that came bundled with a
-> >>> remote and that's it.  Not someone with a number of remotes that came with
-> >>> different pieces of AV gear that they want to use with their computer.
-> >> No, I just pick *one* remote and use it for everything, not schizophrenically hopping from one remote to another, expecting them all the be able to control everything. :) Its a hell of a lot easier to find buttons w/o looking at the remote if you always use the same one for everything, for one.
-> >>
-> >> Anyway, I think I'm talking myself in circles. Supporting multiple remotes via multiple input devices (or even via a single input device) isn't at all interesting to me for my own use, but if there really is demand for such support (and it appears there is), then fine, lets do it.
-> > 
-> > Simple use case:
-> > 
-> > You have a multifunction remote. Press the CABLE key - it sends out
-> > commands that control the cable box, press the TV key - now the
-> > commands control the TV, press CD - now the CD player, etc.
-> > 
-> > Now imagine a headless Linux box running a music server and a home
-> > automation app. Press the CD key - commands get routed to the music
-> > server, press the AUX key - commands get routed to the home automation
-> > app.
-> > 
-> > This is accomplished by recognizing the device code part of the IR
-> > signal and figuring out that there are two different device codes in
-> > use. The commands of then routed to two evdev devices corresponding to
-> > the two different device codes.
-> > 
-> > Using things like Alt-Tab to switch apps is impossible. There's no
-> > screen to look at.
->
-> This usecase makes sense to me.
->
-> With the risk of repeating myself, you don't have two physical remotes.
-> The needed feature is a way to split one source of input events (that
-> happens to be an infrared remote, but it could also be any other type of input
-> device, like a bluetooth remote) into several different evdev interfaces,
-> based on scancode groups. 
->
-In real world you generally have two physical remote. In this particular case you simply have a sort of semi-universal remote, a two or tree in one remote.
-More particularly, you have a remote which is aimed at talking to two or tree different "real" devices or in our case different applications. If the application is a multifunction one it should be seen as multiple application.
-Don't mix IR encoding informations and applications : I don't care if each button of my mono-function remote use a different IR protocol that what the mapping table is for. One simple remote is a group of button, each button is the result of an IR transmission decoded in an internal IR stack representation.
-Don't mix IR encoding informations and remote representation : that not because a protocol have a concept of vendor/device/command or sort of that we should do automatic grouping by vendor/device/command. These protocol/vendor/device/command informations should only be reported as "raw" data to simplify the life of the application responsible to create the mapping tableS.
-We should have one evdev device per mapping table. Each table has a label.
-For one simple "mono" function remote, I create one table labeled "simplexyz" or better, I told to my IR config app that I have the remote model "simplexyz" and the good mapping is fetched from the database an injected is the "simplexyz" mapping table, effectively creating the "simplexyz" device. In my cd player app, in the "remote config menu", I chose "simplexyz" device as the used remote.
-For my "tree in one" remote model yamahaxyz , my config app fetch and create tree mapping: yamahaxyz-vcr, yamahaxyz-cd, yamahaxyz-tv, creating tree device. In cdplayer application, I add yamahaxyz-cd as a remote, in mythtv, I add yamahaxyz-tv for the TV part and yamahaxyz-vcr for the recording part. Multifunction application should provide a way to use a different device for each "standard as in real world" base function.
-In this example, I could assign the same remote yamahaxyz-vcr for tv and vcr part of Mythtv (because vrc generally include a tv tuner and all the button to use it in the vcr ir group) to control the two functions of Mythtv.
-In all application, I use standard evdev keycodes, augmented with some new added because of this new kind of input device.
-Each IR aware application simply use one or more device for each different base profile function.
-(1)You could even think of an application which use one of your remote (mapping table) to re-inject standard keyboad events to control your other applications with key shortcuts. Don't forget to map alt-tab ;-)
-With this scheme, we stay in the pure evdev world for more than 90% of the time, even to load mappings/create devices. The only IR-internals aware application is the one to create/modify mappings, a remote editor.
 
-Universal remote are emulating a bunch of simple or multifunction remote and are not a natural beast, users take time to set them up. As such they could be views from your application as a collections of standard remote or one or more purely user defined ones. For this later case, I expect to have a great graphical remote mapping editor with auto learn features. 
+--Boundary_(ID_G2ieXMP7gWs2l245rpSZrA)
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
 
-This is the most flexible and simple scheme. I could not think of a case it could not handle and it achieve a clean layering between the IR events and the applications.
-For the other layers, we have the IR receiver device part, and the decoding part. The device part is an in kernel device driver problem. Even for dumb serial and pp devices for which we should have a line discipline and a parport client driver to archive good acquisition timing and low cpu/power usage (no userspace busywait loop).
-Device with hardware decoding and or no raw capability feed directly the input subsystem to be dispatched to the different evdev devices.
-lircd could still be used for his scripting part as seen in (1)
-For the raw receivers, we could have in kernel decoders and/or lircd in user space. It is just the mater of feeding a sort of lirc device instead of the in kernel decoder. But please, raw ir data in the form of pulse event has nothing to do with the input and event layer.
+On Thursday 03 December 2009, Linus Torvalds wrote:
+>This release _feels_ long overdue due to two empty weeks for me (kernel
+[...]
+What may be a minor niggle during the build using my attached script:
+======From the scripts output=========
+now making a new initrd.2.6.32.img                            
+resolveDevice: device spec expected                           
+and copying it to /boot/initrd-2.6.32.img
+===============
+The 2nd line above is new, but a "man mkinitrd" doesn't address it on this 
+F10 box.  Comment?
 
-Splitting one source of input events into several different evdev interfaces is a very simple thing at the input subsystem layer. And as explain, this splitting should never never never be based on protocol/vendor/device/command scancode groups but only based on mapping table.
+A cursory scan through the build history shows this unrelated but new 
+warning:
+--------------------
+drivers/acpi/acpica/tbfadt.c: In function ‘acpi_tb_create_local_fadt’:
+/usr/src/linux-2.6.32/arch/x86/include/asm/string_32.h:74: warning: array 
+subscript is above array bounds
+-------------------
+I haven't rebooted to it yet so I'll save this & send (or expand) when I 
+have.
+::::::::::
+That was fun. I had to reboot twice, first time with the hdwe reset button, 
+2nd time by several ctl-alt-del's.
 
-My two cents, 
+Both shutdowns, from .32-rc8 and from .32 did multiple Oopsen, naming 
+dcache.c line 670 as the culprit.  With mount.cifs mentioned also.
+
+That has been present and not a huge problem for several of the 31 and 32-rcX 
+kernels.  I could capture with a camera, but I believe I have seen msgs here 
+on the list about it already.
+
+The reason for the 2nd reboot is that udev did not enumerate, or initialize, 
+any of the devices on an FTDI extension cable that runs to the basement, 
+where an elderly color computer 3 lives.  There is an additional hub on the 
+end of that cable, with several connections to it, and I had to find that 
+cable, unplug it from the local hub and re-plug it before the stuff on the 
+other end of the cable materialized.  It is not normally powered, so the 
+enumeration usually stops at that hub in the basement (and usb power was on 
+it ok), with everything else coming alive as they are powered up.  The 2nd 
+reboot was to see if it was all there if it was powered up, and it is.
+
+I'll go back to lurking till next time.  Many thanks to all.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The NRA is offering FREE Associate memberships to anyone who wants them.
+<https://www.nrahq.org/nrabonus/accept-membership.asp>
+
+Miksch's Law:
+	If a string has one end, then it has another end.
+
+--Boundary_(ID_G2ieXMP7gWs2l245rpSZrA)
+Content-type: application/x-shellscript; name=makeit
+Content-transfer-encoding: 7bit
+Content-disposition: attachment; filename=makeit
+
+#!/bin/sh
+## this script assumes you have downloaded, unpacked and linked kernel-whatever.version
+## First, edit this to set the version string to match the Makefile setting
+# yeah, I know, I should pass it as $1.  Someday...
+VER=2.6.32
+echo now makeing kernel $VER, if not right, hit ctl+c now && \
+sleep 3 && \
+## For use with the lm_sensors kit, you'll need the following lines inserted
+## into your /etc/rc.d/rc.local script
+##------------------
+### now do some lm-sensors stuff
+## i2c adaptor drivers
+#modprobe i2c-via
+## i2c chip drivers
+#modprobe gl518sm
+## alternate chip driver
+#modprobe eeprom
+##------------------
+## And add these lines to /etc/conf.modules
+# I2C module options
+#alias char-major-89 i2c-dev
+##------------------
+## Now, the real work.  This assumes you have copied your
+## .config and .config.old
+## files from the source directory of your previous kernel install, and have
+## done 'make oldconfig' in the new source directory and answered all the
+## questions, and then do a 'make xconfig' to check/change anything you wanted
+## to
+
+## The above is NOT for major version upgrades, you must start from scratch, do NOT
+## copy over the older .config's when upping from 2.2.x to 2.4.x or 2.6.x
+
+# I've re-arranged this to be one contiguous command line, because this way if there
+# is an error, it dies right there instead of making you scroll back 300k in the
+# history to check for errors.
+# And, due to changes in the 2.6 way of doing things, the System.map
+# stuff has been moved to a point BEFORE the make modules_install
+# because make modules_install now has a self-contained depmod command. :(
+
+# Also, one should make sure the DEPMOD declaration in the Makefile
+# is NOT hard coded pathwise, so it will find the newer, 2.6 version of depmod
+
+make clean && \
+echo && \
+echo && \
+echo makeing bzImage && \
+ccache make -j3 bzImage && \
+echo && \
+echo && \
+echo Now making modules && \
+echo && \
+echo && \
+ccache make -j3 modules && \
+echo && \
+echo removeing /boot/vmlinuz-$VER-old && \
+rm -f /boot/vmlinuz-$VER-old && \
+echo touching vmlinuz-$VER && \
+touch /boot/vmlinuz-$VER && \
+echo mv-ing /boot/vmlinuz-$VER /boot/vmlinuz-$VER-old && \
+mv -f /boot/vmlinuz-$VER /boot/vmlinuz-$VER-old && \
+echo copying bzImage to /boot/vmlinuz-$VER && \
+cp -f arch/i386/boot/bzImage /boot/vmlinuz-$VER && \
+echo removeing old lib/modules/$VER.old && \
+rm -fR /lib/modules/$VER.old && \
+echo touching /lib/modules/$VER && \
+touch /lib/modules/$VER && \
+echo moving /lib/modules/$VER to /lib/modules/$VER.old && \
+mv -f /lib/modules/$VER /lib/modules/$VER.old && \
+echo cleaning up in /boot && \
+rm -f /boot/System.map && \
+echo saveing the System.map-$VER to System.map-$VER.old && \
+touch /boot/System.map-$VER && \
+mv /boot/System.map-$VER /boot/System.map-$VER.old && \
+echo copying in new System.map && \
+cp -f System.map /boot/System.map-$VER && \
+echo cd-ing to /boot && \
+cd /boot && \
+echo doing the link of System.map-$VER to System.map && \
+ln -s System.map-$VER System.map && \
+echo cd-ing back to /usr/src/linux-$VER to do the modules_install && \
+cd /usr/src/linux-$VER && \
+echo make modules_install && \
+ccache make -j3 modules_install && \
+echo now making a new initrd.$VER.img && \
+touch initrd-$VER.img && \
+rm -f initrd-$VER.img && \
+mkinitrd -f initrd-$VER.img $VER && \
+echo and copying it to /boot/initrd-$VER.img && \
+touch /boot/initrd-$VER.img.old && \
+rm -f /boot/initrd-$VER.img.old && \
+touch /boot/initrd-$VER.img && \
+mv /boot/initrd-$VER.img /boot/initrd-$VER.img.old && \
+cp initrd-$VER.img /boot/initrd-$VER.img && \
+make firmware_install && \
+cd /usr/src/linux-$VER && \
+depmod -ae -F System.map $VER && \
+# Ok, now we need to be saving the .config in /boot and dump the copy in /proc \
+touch /boot/config-$VER.gz && \
+mv /boot/config-$VER.gz /boot/config-$VER.gz.old && \
+gzip -c .config >/boot/config-$VER.gz && \
+ls -l /boot/ | grep config-$VER.gz && \
+echo All done! Edit grub.conf, reboot and chose your kernel at the grub prompt
 
 
-Cheers,
-Emmanuel.
-
+--Boundary_(ID_G2ieXMP7gWs2l245rpSZrA)--
