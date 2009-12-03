@@ -1,86 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbZLCIAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbZLCIBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbZLCIAp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 03:00:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZLCIAp
+	id S1753608AbZLCIBd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 03:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbZLCIBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 03:00:45 -0500
-Received: from mga01.intel.com ([192.55.52.88]:57306 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752144AbZLCIAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 03:00:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,331,1257148800"; 
-   d="scan'208";a="519349753"
-Subject: Re: Backlight device class redesign
-From: Zhang Rui <rui.zhang@intel.com>
-To: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Richard Purdie <rpurdie@rpsys.net>
-In-Reply-To: <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
-References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
-	 <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 03 Dec 2009 16:01:14 +0800
-Message-ID: <1259827274.27069.50.camel@rzhang1-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 3 Dec 2009 03:01:33 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:59172 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbZLCIBc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 03:01:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NqwsIa+xo+szBbr4OjqtdQyt9IrPQt+4LChGlA+rXtFAWNy+8l+tINXZDVdEL6WhHH
+         4u3CjBtkQ2ZBzzIWe6F4GBD/HkJdPnIMjKQ8zRl+dJwOnIHeKUwIl49sIYTGtxRKUpC3
+         +4hJOkfdnNjnBW/xC3kdgoI9VoDTARByZF+Hg=
+MIME-Version: 1.0
+In-Reply-To: <b647ffbd0912022357w640bea4embe42f2a83b54220d@mail.gmail.com>
+References: <563a732e0912022249y1e831c6cv7f2d5d376b8a5f63@mail.gmail.com>
+	 <b647ffbd0912022357w640bea4embe42f2a83b54220d@mail.gmail.com>
+Date: Thu, 3 Dec 2009 16:01:38 +0800
+Message-ID: <563a732e0912030001p11a9388o5efd836912e0cad9@mail.gmail.com>
+Subject: Re: Should we use preempt_disable() in sleep_on_common()?
+From: liu pf <kernelfans@gmail.com>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-11-30 at 04:09 +0800, Rafał Miłecki wrote:
-> W dniu 28 listopada 2009 01:30 użytkownik Rafał Miłecki
-> <zajec5@gmail.com> napisał:
-> > As discussed in http://marc.info/?t=124947671300008&r=1&w=2 we need to
-> > redesign our backlight device class.
-> 
-> I was trying to make it work this way:
-> 1. Everytime register request comes, look for backlight_display with given name.
-> 1. A. If needed, create new backlight_display
-> 2. Add new device to devices list of backlight_display
-> 3. Find best device on devices list of backlight_display
-> 4. Register if under /sys/class/backlight/name_of_display
-> 
-> This didn't work because of registering only the best device. Look at
-> this code in drivers/acpi/video.c:
-> 
+On Thu, Dec 3, 2009 at 3:57 PM, Dmitry Adamushko
+<dmitry.adamushko@gmail.com> wrote:
+> 2009/12/3 liu pf <kernelfans@gmail.com>:
+>> Hi:
+>>
+>> I am puzzled with the following scenario. Could anyone enlighten me?
+>>
+>> Thanks
+>> pfliu
+>>
+>>
+>> static long __sched
+>> sleep_on_common(wait_queue_head_t *q, int state, long timeout)
+>> {
+>>    unsigned long flags;
+>>    wait_queue_t wait;
+>>
+>>    init_waitqueue_entry(&wait, current);
+>>
+>>    __set_current_state(state);
+>>
+>>    ==========>suppose that after task A  set state=TASK_INTERRUPTIBLE
+>> , it is preempted by task B.
+>>
+>>    spin_lock_irqsave(&q->lock, flags);
+>> ...............................................................
+>> }
+>>
+>> asmlinkage void __sched schedule(void)
+>> {
+>> .......................................................................................................
+>>    if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+>>        if (unlikely(signal_pending_state(prev->state, prev)))
+>>            prev->state = TASK_RUNNING;
+>>        else
+>>            deactivate_task(rq, prev, 1);
+>>       =============>This will remove task A from rq, but there are no
+>> wait queue referring to A, so we lose A.
+>>        switch_count = &prev->nvcsw;
+>>    }
+>
+> In this case, (preempt_count() & PREEMPT_ACTIVE) == 1(see
+> preempt_schedule_irq() and other use-cases of PREEMPT_ACTIVE) so we
+> don't  enter this block.
+>
+> i.e. a preempted task stays on its queue (with state != TASK_RUNNING
+> but that doesn't really matter).
+>
+>
+> -- Dmitry
+>
 
-> device->backlight = backlight_device_register(name,
->     NULL, device, &acpi_backlight_ops);
-> (...)
-> result = sysfs_create_link(&device->backlight->dev.kobj,
->     &device->dev->dev.kobj, "device");
-> 
-IMO, we should create one device for one display.
-For example, device /sys/class/backlight/panel0 is created the first
-time a backlight_ops for this display is registered.
-And create the symbol link from the backlight class device to "physical
-device" (device that invokes backlight_device_register) in the backlight
-class device driver, if we really need it.
-Remove and recreate a link pointing to the new physical device when the
-backlight mode is changed.
 
-thanks,
-rui
-
-> It expects device to be registered (have dev.kobj) after calling
-> backlight_device_register.
-> 
-> So in summary we just can not do lazy registration. Every device
-> passed to backlight_device_register has to be registered in that
-> function or never.
-> 
-> So I think we have to register every device and just keep symlink
-> /sys/class/backlight/display_name pointing best device. We could
-> register devices in
-> 1) /sys/class/backlight/.devicename (hidden)
-> 2) some /sys/class/internal-usage/devicename
-> 
-> Do you agree on this?
-> 
-
-
+Thank you very much
