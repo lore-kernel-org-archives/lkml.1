@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZLCJaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZLCJbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbZLCJaY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 04:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZLCJaX
+	id S1755774AbZLCJbL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 04:31:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZLCJbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 04:30:23 -0500
-Received: from mail1-out1.atlantis.sk ([80.94.52.55]:36780 "EHLO
-	mail.atlantis.sk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750821AbZLCJaW (ORCPT
+	Thu, 3 Dec 2009 04:31:10 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:49616 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751241AbZLCJbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 04:30:22 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
-Date: Thu, 3 Dec 2009 10:30:21 +0100
-User-Agent: KMail/1.9.10
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0912011005140.2983-100000@iolanthe.rowland.org> <200912020952.09354.linux@rainbow-software.org> <200912021042.04557.oliver@neukum.org>
-In-Reply-To: <200912021042.04557.oliver@neukum.org>
+	Thu, 3 Dec 2009 04:31:08 -0500
+Message-ID: <4B17855F.601@linux.vnet.ibm.com>
+Date: Thu, 03 Dec 2009 10:31:11 +0100
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2347
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912031030.22460.linux@rainbow-software.org>
+To: Pavel Machek <pavel@ucw.cz>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Holger.Wolf@de.ibm.com, epasch@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: Missing recalculation of scheduler tunables in case of cpu hot
+ add/remove
+References: <4B0EA88E.3030205@linux.vnet.ibm.com> <1259252382.31676.207.camel@laptop> <4B0EAC06.3010407@linux.vnet.ibm.com> <1259252892.31676.220.camel@laptop> <4B0EAD7B.90601@linux.vnet.ibm.com> <1259253950.31676.249.camel@laptop> <20091203091206.GA1478@ucw.cz>
+In-Reply-To: <20091203091206.GA1478@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 December 2009, Oliver Neukum wrote:
-> Am Mittwoch, 2. Dezember 2009 09:52:08 schrieb Ondrej Zary:
-> > It shows "prev is NULL, qh=f6581080, ehci->async=f6581000".
-> >
-> > The problem is that activating usbmon causes the problem to disappear. No
-> >  errors in maybe 15 attempts. It appeared on 2nd attempt after unloading
-> >  usbmon.
+Pavel Machek wrote:
+> Hi!
 >
-> That suggests a use after free bug, which usbmon prevents holding
-> an additional reference.
-> Are you using SLAB_DEBUG?
+>   
+>>>>>> Aside from that, we probably should put an upper limit in place, as I
+>>>>>> guess large cpu count machines get silly large values
+>>>>>>       
+>>>>>>             
+>>>>> I agree to that, but in the code is already an upper limit of 
+>>>>> 200.000.000 - well we might discuss if that is too low/high.
+>>>>>     
+>>>>>           
+>>>> Yeah, I think we should cap it around the 8-16 CPUs.
+>>>>
+>>>>   
+>>>>         
+>>> ok for me, driven by that finding I think I have to measure different 
+>>> kind of scalings anyway, but as usually that takes some time :-/
+>>> At least too time much for the discussion & solution of that bug I guess.
+>>>
+>>> The question for now is what we do on cpu hot add/remove?
+>>> Would hooking somewhere in kernel/cpu.c be the right approach - I'm not 
+>>> quite sure about my own suggestion yet :-).
+>>>       
+>> Something like the below might work I suppose, just needs a cleanup and
+>> such.
+>>     
+>
+> I see a rather fundamental problem: what if user wants to override
+> those values, and wants them stay that way
+Yep a fundamental problem, but fortunately solved already ;-)
 
-Just tried 2.6.32-rc8-next-20091202 with SLAB_DEBUG enabled and got this:
+See the series "[PATCH 0/3] fix rescaling of scheduler tunables v2" 
+posted after this discussion.
+That is exactly what patch #2 is about.
+Giving users the choice to either set things constant (scaling=none) or 
+dynamic (log or linear) as it is done boot time.
 
-BUG: unable to handle kernel paging request at 6b6b6b6b
-IP: [<f7c649a3>] qh_completions+0x6c/0x400
-
-Call Trace:
-lapic_next_event
-ehci_work
-tick_dev_program_event
-tick_program_event
-hrtimer_interrupt
-ehci_watchdog+0x0/0x37
-ehci_watchdog+0x2b/0x37
-run_timer_softirq
-__do_softirq
-irq_exit
-do_IRQ
-common_interrupt
-acpi_idle_enter_bm
-cpuidle_idle_call
-cpu_idle
-start_kernel
-
-Code: 00 00 00 00 3c 03 88 44 24 1f 0f 94 c0 81 ea ec 00 00 00 0f b6 c0 89 44 
-24 14 89 14 24 8b 46 0c 31 db bd 8d ff ff ff c6 46 28 00 <8b> 08 89 4c 24 10 
-e9 ec 02 00 00 83 e8 38 85 db 89 44 24 24 8b
-
+As I considered it a bug to miss the updates, the current patch 
+initializes it with scaling=log to let runtime and boot behave the same way.
+I could do an update to better keep interfaces which would initialize it 
+with "scaling=none" to reflect by default the behavior of the current 
+code that is missing scaling completely.
+Comments welcome
 
 -- 
-Ondrej Zary
+
+Grüsse / regards, Christian Ehrhardt
+IBM Linux Technology Center, Open Virtualization 
+
