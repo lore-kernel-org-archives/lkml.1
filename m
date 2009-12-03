@@ -1,143 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZLCQuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbZLCQuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673AbZLCQuA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 11:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZLCQuA
+	id S1754958AbZLCQuG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 11:50:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZLCQuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 3 Dec 2009 11:50:03 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:45635 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753458AbZLCQuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Dec 2009 11:50:00 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:34445 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753406AbZLCQt6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 11:49:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dr/bO88w03w6G/7ISCMnTEH2ZGGY4kDPBt9qk525gto/QderNpepUXBsLMjfKzHWwi
-         vXvhoMDRqLQw5vsAk/J73HdwbccfArnuKpu5EH3bfU+y9DC24MUMh68Vcei6XCYbBI7I
-         kcpvQdh7FJLkgwqqMTF8xifAApWGltTCAKe6s=
+Date: Thu, 3 Dec 2009 10:50:04 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>,
+       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+Message-ID: <20091203165004.GA14665@sgi.com>
+References: <20091120211139.GB19106@sgi.com> <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com> <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain> <1259069986.4531.1453.camel@laptop> <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain> <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org> <20091125074033.4c46c1b0@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <4B17E874.5020003@redhat.com>
-References: <4B15852D.4050505@redhat.com> <4B16BE6A.7000601@redhat.com>
-	 <20091202195634.GB22689@core.coreip.homeip.net>
-	 <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
-	 <20091202201404.GD22689@core.coreip.homeip.net>
-	 <4B16CCD7.20601@redhat.com>
-	 <20091202205323.GF22689@core.coreip.homeip.net>
-	 <4B16D87F.7080701@redhat.com> <87tyw8ujsr.fsf@tac.ki.iif.hu>
-	 <4B17E874.5020003@redhat.com>
-Date: Thu, 3 Dec 2009 11:50:04 -0500
-Message-ID: <9e4733910912030850w188f163bxa2ca149ec81c5bb1@mail.gmail.com>
-Subject: Re: [RFC v2] Another approach to IR
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Ferenc Wagner <wferi@niif.hu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Jarod Wilson <jarod@redhat.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
-       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091125074033.4c46c1b0@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 3, 2009 at 11:33 AM, Mauro Carvalho Chehab
-<mchehab@redhat.com> wrote:
-> Ferenc Wagner wrote:
->> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
->>
->>> Dmitry Torokhov wrote:
->>>
->
->> The interesting thing is that input.h defines KEY_TV, KEY_PC, KEY_SAT,
->> KEY_CD, KEY_TAPE etc., but no corresponding scan codes will ever be sent
->> by any remote (ok, I'm stretching it a bit).
->
-> Unfortunately, this is not true. Some IR's do send a keycode for TV/PC/SAT/CD, etc.
->
-> On those remotes, if you press TV and then press for example Channel UP
-> and press Radio, then press Channel UP, the channel UP code will be the same.
->
-> For example, on Hauppauge Grey IR, we have:
->
-> <TV>
-> [13425.128525] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e1c keycode 0x179
-> [13425.136733] ir_input_key_event: em28xx IR (em28xx #0): key event code=377 down=1
-> [13425.144170] ir_input_key_event: em28xx IR (em28xx #0): key event code=377 down=0
->
-> <CHANNEL UP>
-> [13428.350223] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e20 keycode 0x192
-> [13428.358434] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=1
-> [13428.365871] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=0
->
-> <Radio>
-> [13430.672266] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e0c keycode 0x181
-> [13430.680473] ir_input_key_event: em28xx IR (em28xx #0): key event code=385 down=1
-> [13430.687913] ir_input_key_event: em28xx IR (em28xx #0): key event code=385 down=0
->
-> <CHANNEL UP>
-> [13433.697268] ir_g_keycode_from_table: em28xx IR (em28xx #0): scancode 0x1e20 keycode 0x192
-> [13433.705480] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=1
-> [13433.712916] ir_input_key_event: em28xx IR (em28xx #0): key event code=402 down=0
->
-> In this IR, the address is bogus: it is always 0x1e. This scenario is very common with the
-> shipped IR's.
+On Wed, Nov 25, 2009 at 07:40:33AM -0800, Arjan van de Ven wrote:
+> On Tue, 24 Nov 2009 09:41:18 -0800
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+> > Oii.
+> > 
+> > I don't think it is bad to export information to applications like
+> > irqbalance.
+> > 
+> > I think it pretty horrible that one of the standard ways I have heard
+> > to improve performance on 10G nics is to kill irqbalance.
+> 
+> irqbalance does not move networking irqs; if it does there's something
+> evil going on in the system. But thanks for the bugreport ;)
 
-The remote is treating everything as a single integrated device which
-is not inconsistent with what has been said. In this case there really
-is only one multi-function device not two independent ones.
+It does move networking irqs.
 
-If you want to control two independent devices you need to buy a
-different remote. Remotes are cheap so that's not a big deal.
+> 
+> we had that; it didn't work.
+> what I'm asking for is for the kernel to expose the numa information;
+> right now that is the piece that is missing.
+> 
 
-If you really want to use this remote to control two independent
-devices you need user space scripting to split the single device into
-two devices and then inject new events into the input layer. This is a
-complex case and not in the goal of getting 90% of users to "just
-work".
+I'm wondering if we should expose that numa information in the form of a node or the set of allowed cpus, or both?
 
->
->> Instead, a multifunction
->> remote (or two distinct remotes) would send different scan codes[1],
->> which should be mapped to KEY_PLAYCD and KEY_PLAYDVD for example.
->> Btw. the former is already defined, besides the generic KEY_PLAY.
->>
->> Even if all this worked, user space would need integration with
->> hal/devicekit to open the new input devices appearing on the fly (if
->> it's initiated by the arrival of a scan code belonging to some new
->> protocol), and also be able to decide whether the new event source is
->> for it or not.
->>
->> Given that commodity home appliances manage not to be confused by
->> multiple or multifunction remotes, decent software should be able to do
->> so as well.
->>
->> [1] scan codes in the broadest possible sense, containing vendor,
->> address and whatever, and only treating the case which is possible to
->> handle in principle.
->
-> I see two alternatives for it:
->        1) to map a multifunction scancode Address=TV/command=channel up as two
-> separate events: KEY_TV | KEY_CHANNELUP and let some userspace program to
-> handle it (lirc or other programs that knows IR keycodes);
->
->        2) to implement Jon's filter idea of splitting one evdev interface into
-> several evdevs interface, one for each address.
->
-> We should not forget that simple IR's don't have any key to select the address,
-> so the produced codes there will never have KEY_TV/KEY_DVD, etc.
->
-> Cheers,
-> Mauro.
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+I'm guessing 'both' is the correct answer, so that apps like irqbalance can make a qualitative decision based on the node (affinity to cpus on this node is better), but an absolute decision based on allowed cpus (I cannot change affinity to anything but this set of cpus).
