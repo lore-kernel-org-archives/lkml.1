@@ -1,66 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZLCVOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZLCVJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbZLCVOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 16:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZLCVON
+	id S1754855AbZLCVJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 16:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZLCVJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 16:14:13 -0500
-Received: from p01c11o145.mxlogic.net ([208.65.144.68]:42586 "EHLO
-	p01c11o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754325AbZLCVOM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 16:14:12 -0500
-X-Greylist: delayed 455 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Dec 2009 16:14:12 EST
-X-MXL-Hash: 4b182a2b077dcd85-c7f1ebf5e1638b2e9ff7262e62e4a4411f216dc1
-X-MXL-Hash: 4b182863120a2827-33468ed6308b35d5af14ac6496797f73ec0328cc
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 3 Dec 2009 16:09:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59894 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753481AbZLCVJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 16:09:25 -0500
+Date: Thu, 3 Dec 2009 22:09:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] x86/paravirt for v2.6.33
+Message-ID: <20091203210913.GA24351@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH 2.6.32 1/3] net: Fix ks8851 snl NULL pointer dereference Oops
-Date: Thu, 3 Dec 2009 13:06:42 -0800
-Message-ID: <14385191E87B904DBD836449AA30269D021A40@MORGANITE.micrel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.32 1/3] net: Fix ks8851 snl NULL pointer dereference Oops
-Thread-Index: Acp0Wt/33R+JFyxWRIyhBiO9ChRRhg==
-From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-To: "Ben Dooks" <ben@simtec.co.uk>
-Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 03 Dec 2009 21:06:42.0372 (UTC) FILETIME=[8364E040:01CA745C]
-X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2009113001)]
-X-MAIL-FROM: <tristram.ha@micrel.com>
-X-SOURCE-IP: [65.218.208.2]
-X-AnalysisOut: [v=1.0 c=1 a=8n3w4sfrkw4A:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
-X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=5_BfxKqGAAAA:8 a=4Oy_iV3DYWQYelAV22AA:9]
-X-AnalysisOut: [ a=OXyDB8_uO0K8Uhx2X-EA:7 a=6ITZgDGDxAxIpFPvw-UIgsrz0kwA:4]
-X-AnalysisOut: [ a=yJsD6ztlz_8A:10]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tristram Ha <Tristram.Ha@micrel.com>
+Linus,
 
-This fixes the NULL pointer dereference Oops in the ks8851 snl network driver during transmission.  All socket buffers from the queue are processed inside the loop, but new workqueues have been scheduled to run.
+Please pull the latest x86-paravirt-for-linus git tree from:
 
-Signed-off-by: Tristram Ha <Tristram.Ha@micrel.com>
----
-diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks8851.c
---- linux-2.6.32.old/drivers/net/ks8851.c	2009-11-03 11:37:49.000000000 -0800
-+++ linux-2.6.32.new/drivers/net/ks8851.c	2009-12-02 15:31:39.000000000 -0800
-@@ -1,4 +1,4 @@
--/* drivers/net/ks8651.c
-+/* drivers/net/ks8851.c
-  *
-  * Copyright 2009 Simtec Electronics
-  *	http://www.simtec.co.uk/
-@@ -714,7 +714,7 @@ static void ks8851_tx_work(struct work_s
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-paravirt-for-linus
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Jeremy Fitzhardinge (1):
+      x86: unify sys_iopl
+
+
+ arch/x86/include/asm/syscalls.h |    8 +++-----
+ arch/x86/kernel/ioport.c        |   11 ++---------
+ 2 files changed, 5 insertions(+), 14 deletions(-)
+
+diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+index 372b76e..5336ce2 100644
+--- a/arch/x86/include/asm/syscalls.h
++++ b/arch/x86/include/asm/syscalls.h
+@@ -33,11 +33,11 @@ long sys_rt_sigreturn(struct pt_regs *);
+ asmlinkage int sys_set_thread_area(struct user_desc __user *);
+ asmlinkage int sys_get_thread_area(struct user_desc __user *);
+ 
+-/* X86_32 only */
+-#ifdef CONFIG_X86_32
+ /* kernel/ioport.c */
+-long sys_iopl(struct pt_regs *);
++asmlinkage long sys_iopl(unsigned int);
+ 
++/* X86_32 only */
++#ifdef CONFIG_X86_32
+ /* kernel/process_32.c */
+ int sys_clone(struct pt_regs *);
+ int sys_execve(struct pt_regs *);
+@@ -70,8 +70,6 @@ int sys_vm86(struct pt_regs *);
+ #else /* CONFIG_X86_32 */
+ 
+ /* X86_64 only */
+-/* kernel/ioport.c */
+-asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
+ 
+ /* kernel/process_64.c */
+ asmlinkage long sys_clone(unsigned long, unsigned long,
+diff --git a/arch/x86/kernel/ioport.c b/arch/x86/kernel/ioport.c
+index 99c4d30..bad4f22 100644
+--- a/arch/x86/kernel/ioport.c
++++ b/arch/x86/kernel/ioport.c
+@@ -119,11 +119,10 @@ static int do_iopl(unsigned int level, struct pt_regs *regs)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_X86_32
+-long sys_iopl(struct pt_regs *regs)
++asmlinkage long sys_iopl(unsigned int level)
  {
- 	struct ks8851_net *ks = container_of(work, struct ks8851_net, tx_work);
- 	struct sk_buff *txb;
--	bool last = false;
-+	bool last = skb_queue_empty(&ks->txq);
+-	unsigned int level = regs->bx;
+ 	struct thread_struct *t = &current->thread;
++	struct pt_regs *regs = task_pt_regs(current);
+ 	int rc;
  
- 	mutex_lock(&ks->lock);
- 
+ 	rc = do_iopl(level, regs);
+@@ -135,9 +134,3 @@ long sys_iopl(struct pt_regs *regs)
+ out:
+ 	return rc;
+ }
+-#else
+-asmlinkage long sys_iopl(unsigned int level, struct pt_regs *regs)
+-{
+-	return do_iopl(level, regs);
+-}
+-#endif
