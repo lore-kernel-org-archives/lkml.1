@@ -1,125 +1,127 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbZLBUKa (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 2 Dec 2009 15:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZLBUK1
+	id S1752600AbZLCFxe (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 3 Dec 2009 00:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZLCFxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 15:10:27 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:59077 "EHLO e1.ny.us.ibm.com"
+	Thu, 3 Dec 2009 00:53:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12683 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754607AbZLBUKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 15:10:25 -0500
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/4] rcu: enable fourth level of TREE_RCU hierarchy
-Date: Wed,  2 Dec 2009 12:10:14 -0800
-Message-Id: <12597846161257-git-send-email->
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <20091202200955.GA12950@linux.vnet.ibm.com>
-References: <20091202200955.GA12950@linux.vnet.ibm.com>
+	id S1752169AbZLCFxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 00:53:30 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 3/5] fsnotify: Infrastructure for per-mount watches
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: viro@zeniv.linux.org.uk, hch@infradead.org, agruen@suse.de,
+        eparis@redhat.com
+Date: Thu, 03 Dec 2009 00:53:28 -0500
+Message-ID: <20091203055328.21918.26026.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20091203055315.21918.83562.stgit@paris.rdu.redhat.com>
+References: <20091203055315.21918.83562.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+From: Andreas Gruenbacher <agruen@suse.de>
 
-Enable a fourth level of rcu_node hierarchy for TREE_RCU and
-TREE_PREEMPT_RCU.  This is for stress-testing and experiemental
-purposes only, although in theory this would enable 16,777,216 CPUs
-on 64-bit systems, though only 1,048,576 CPUs on 32-bit systems.
-Normal experimental use of this fourth level will normally set
-CONFIG_RCU_FANOUT=2, requiring a 16-CPU system, though the more
-adventurous (and more fortunate) experimenters may wish to chose
-CONFIG_RCU_FANOUT=3 for 81-CPU systems or even CONFIG_RCU_FANOUT=4 for
-256-CPU systems.
+Per-mount watches allow groups to listen to fsnotify events on an entire
+mount.  This patch simply adds and initializes the fields needed in the
+vfsmount struct to make this happen.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
- kernel/rcutree.c |    6 +++++-
- kernel/rcutree.h |   15 +++++++++++++--
- 2 files changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index a9f5103..d47e03e 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -60,7 +60,8 @@ static struct lock_class_key rcu_node_class[NUM_RCU_LVLS];
- 		NUM_RCU_LVL_0,  /* root of hierarchy. */ \
- 		NUM_RCU_LVL_1, \
- 		NUM_RCU_LVL_2, \
--		NUM_RCU_LVL_3, /* == MAX_RCU_LVLS */ \
-+		NUM_RCU_LVL_3, \
-+		NUM_RCU_LVL_4, /* == MAX_RCU_LVLS */ \
- 	}, \
- 	.signaled = RCU_GP_IDLE, \
- 	.gpnum = -300, \
-@@ -1877,6 +1878,9 @@ void __init rcu_init(void)
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
- 	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
- #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-+#if NUM_RCU_LVL_4 != 0
-+	printk(KERN_INFO "Experimental four-level hierarchy is enabled.\n");
-+#endif /* #if NUM_RCU_LVL_4 != 0 */
- 	RCU_INIT_FLAVOR(&rcu_sched_state, rcu_sched_data);
- 	RCU_INIT_FLAVOR(&rcu_bh_state, rcu_bh_data);
- 	__rcu_init_preempt();
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index 8bb03cb..df2e0b6 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -34,10 +34,11 @@
-  * In practice, this has not been tested, so there is probably some
-  * bug somewhere.
-  */
--#define MAX_RCU_LVLS 3
-+#define MAX_RCU_LVLS 4
- #define RCU_FANOUT	      (CONFIG_RCU_FANOUT)
- #define RCU_FANOUT_SQ	      (RCU_FANOUT * RCU_FANOUT)
- #define RCU_FANOUT_CUBE	      (RCU_FANOUT_SQ * RCU_FANOUT)
-+#define RCU_FANOUT_FOURTH     (RCU_FANOUT_CUBE * RCU_FANOUT)
+ fs/namespace.c                   |    1 +
+ fs/notify/fsnotify.c             |    5 +++++
+ fs/notify/fsnotify.h             |    2 ++
+ include/linux/fsnotify.h         |    8 ++++++++
+ include/linux/fsnotify_backend.h |    4 ++++
+ 5 files changed, 20 insertions(+), 0 deletions(-)
+
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 2bff3b1..356d6cf 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -614,6 +614,7 @@ static inline void __mntput(struct vfsmount *mnt)
+ 	 * provides barriers, so count_mnt_writers() below is safe.  AV
+ 	 */
+ 	WARN_ON(count_mnt_writers(mnt));
++	fsnotify_vfsmount_delete(mnt);
+ 	dput(mnt->mnt_root);
+ 	free_vfsmnt(mnt);
+ 	deactivate_super(sb);
+diff --git a/fs/notify/fsnotify.c b/fs/notify/fsnotify.c
+index 8ed9fb5..990929b 100644
+--- a/fs/notify/fsnotify.c
++++ b/fs/notify/fsnotify.c
+@@ -35,6 +35,11 @@ void __fsnotify_inode_delete(struct inode *inode)
+ }
+ EXPORT_SYMBOL_GPL(__fsnotify_inode_delete);
  
- #if NR_CPUS <= RCU_FANOUT
- #  define NUM_RCU_LVLS	      1
-@@ -45,23 +46,33 @@
- #  define NUM_RCU_LVL_1	      (NR_CPUS)
- #  define NUM_RCU_LVL_2	      0
- #  define NUM_RCU_LVL_3	      0
-+#  define NUM_RCU_LVL_4	      0
- #elif NR_CPUS <= RCU_FANOUT_SQ
- #  define NUM_RCU_LVLS	      2
- #  define NUM_RCU_LVL_0	      1
- #  define NUM_RCU_LVL_1	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT)
- #  define NUM_RCU_LVL_2	      (NR_CPUS)
- #  define NUM_RCU_LVL_3	      0
-+#  define NUM_RCU_LVL_4	      0
- #elif NR_CPUS <= RCU_FANOUT_CUBE
- #  define NUM_RCU_LVLS	      3
- #  define NUM_RCU_LVL_0	      1
- #  define NUM_RCU_LVL_1	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT_SQ)
- #  define NUM_RCU_LVL_2	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT)
- #  define NUM_RCU_LVL_3	      NR_CPUS
-+#  define NUM_RCU_LVL_4	      0
-+#elif NR_CPUS <= RCU_FANOUT_FOURTH
-+#  define NUM_RCU_LVLS	      4
-+#  define NUM_RCU_LVL_0	      1
-+#  define NUM_RCU_LVL_1	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT_CUBE)
-+#  define NUM_RCU_LVL_2	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT_SQ)
-+#  define NUM_RCU_LVL_3	      DIV_ROUND_UP(NR_CPUS, RCU_FANOUT)
-+#  define NUM_RCU_LVL_4	      NR_CPUS
- #else
- # error "CONFIG_RCU_FANOUT insufficient for NR_CPUS"
- #endif /* #if (NR_CPUS) <= RCU_FANOUT */
- 
--#define RCU_SUM (NUM_RCU_LVL_0 + NUM_RCU_LVL_1 + NUM_RCU_LVL_2 + NUM_RCU_LVL_3)
-+#define RCU_SUM (NUM_RCU_LVL_0 + NUM_RCU_LVL_1 + NUM_RCU_LVL_2 + NUM_RCU_LVL_3 + NUM_RCU_LVL_4)
- #define NUM_RCU_NODES (RCU_SUM - NR_CPUS)
++void __fsnotify_vfsmount_delete(struct vfsmount *mnt)
++{
++	fsnotify_clear_marks_by_mount(mnt);
++}
++
+ /*
+  * Given an inode, first check if we care what happens to our children.  Inotify
+  * and dnotify both tell their parents about events.  If we care about any event
+diff --git a/fs/notify/fsnotify.h b/fs/notify/fsnotify.h
+index 38f3fb5..204353c 100644
+--- a/fs/notify/fsnotify.h
++++ b/fs/notify/fsnotify.h
+@@ -42,6 +42,8 @@ extern void fsnotify_destroy_vfsmount_mark(struct fsnotify_mark *mark);
+ extern void fsnotify_destroy_inode_mark(struct fsnotify_mark *mark);
+ /* run the list of all marks associated with inode and flag them to be freed */
+ extern void fsnotify_clear_marks_by_inode(struct inode *inode);
++/* run the list of all marks associated with vfsmount and flag them to be freed */
++extern void fsnotify_clear_marks_by_mount(struct vfsmount *mnt);
+ /*
+  * update the dentry->d_flags of all of inode's children to indicate if inode cares
+  * about events that happen to its children.
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index cc4dead..4d76d41 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -118,6 +118,14 @@ static inline void fsnotify_inode_delete(struct inode *inode)
+ }
  
  /*
--- 
-1.5.2.5
++ * fsnotify_vfsmount_delete - a vfsmount is being destroyed, clean up is needed
++ */
++static inline void fsnotify_vfsmount_delete(struct vfsmount *mnt)
++{
++	__fsnotify_vfsmount_delete(mnt);
++}
++
++/*
+  * fsnotify_nameremove - a filename was removed from a directory
+  */
+ static inline void fsnotify_nameremove(struct dentry *dentry, int isdir)
+diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
+index f21ff1b..1af42cb 100644
+--- a/include/linux/fsnotify_backend.h
++++ b/include/linux/fsnotify_backend.h
+@@ -282,6 +282,7 @@ extern void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is,
+ 		     const char *name, u32 cookie);
+ extern void __fsnotify_parent(struct path *path, struct dentry *dentry, __u32 mask);
+ extern void __fsnotify_inode_delete(struct inode *inode);
++extern void __fsnotify_vfsmount_delete(struct vfsmount *mnt);
+ extern u32 fsnotify_get_cookie(void);
+ 
+ static inline int fsnotify_inode_watches_children(struct inode *inode)
+@@ -402,6 +403,9 @@ static inline void __fsnotify_parent(struct path *path, struct dentry *dentry, _
+ static inline void __fsnotify_inode_delete(struct inode *inode)
+ {}
+ 
++static inline void __fsnotify_vfsmount_delete(struct vfsmount *mnt)
++{}
++
+ static inline void __fsnotify_update_dcache_flags(struct dentry *dentry)
+ {}
+ 
 
