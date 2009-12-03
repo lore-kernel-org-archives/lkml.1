@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZLCKwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZLCKxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbZLCKwV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 05:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755216AbZLCKwV
+	id S1755239AbZLCKxv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 05:53:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZLCKxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 05:52:21 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44255 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754518AbZLCKwT (ORCPT
+	Thu, 3 Dec 2009 05:53:51 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:45384 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751053AbZLCKxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 05:52:19 -0500
-X-Sasl-enc: hQ7nxUld36+0wwfePvGbXkclL2te1eu4hzmmpiwd5cOG 1259837546
-Date: Thu, 3 Dec 2009 08:52:23 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Rafa?? Mi??ecki <zajec5@gmail.com>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: Backlight device class redesign
-Message-ID: <20091203105223.GB32571@khazad-dum.debian.net>
-References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
- <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
- <1259827274.27069.50.camel@rzhang1-desktop>
+	Thu, 3 Dec 2009 05:53:50 -0500
+Date: Thu, 3 Dec 2009 11:53:47 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Message-ID: <20091203105347.GB12943@gundam.enneenne.com>
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+	Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+	Kay Sievers <kay.sievers@vrfy.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+	Michael Kerrisk <mtk.manpages@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>
+References: <1259774329-29663-1-git-send-email-giometti@linux.it> <1259774329-29663-2-git-send-email-giometti@linux.it> <1259774329-29663-3-git-send-email-giometti@linux.it> <1259774329-29663-4-git-send-email-giometti@linux.it> <1259774329-29663-5-git-send-email-giometti@linux.it> <1259774329-29663-6-git-send-email-giometti@linux.it> <1259774329-29663-7-git-send-email-giometti@linux.it> <20091202185903.66e6709e@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1259827274.27069.50.camel@rzhang1-desktop>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091202185903.66e6709e@lxorguk.ukuu.org.uk>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 06/11] pps: serial clients support.
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Dec 2009, Zhang Rui wrote:
-> For example, device /sys/class/backlight/panel0 is created the first
-> time a backlight_ops for this display is registered.
-> And create the symbol link from the backlight class device to "physical
-> device" (device that invokes backlight_device_register) in the backlight
-> class device driver, if we really need it.
-> Remove and recreate a link pointing to the new physical device when the
-> backlight mode is changed.
+On Wed, Dec 02, 2009 at 06:59:03PM +0000, Alan Cox wrote:
+> On Wed,  2 Dec 2009 18:18:44 +0100
+> Rodolfo Giometti <giometti@linux.it> wrote:
+> 
+> > Adds support, by using the PPS line discipline, for the PPS sources
+> > connected with the CD (Carrier Detect) pin of a serial port.
+> 
+> I would suggest one change here - but the pps-ldisc bits into the n_tty.c
+> file then you don't have to export everything. That or just export the
+> n_tty ops struct.
+> 
+> I think putting the pps ldisc (which is basically n_tty and a bit) into
+> n_tty is probably the right choice given how small and clean it is - what
+> do you think ?
 
-FWIW, I agree the above solution is simple enough and quite good enough.
+I think it could be ok, but in this case where should I register
+pps-ldisc? Into tty_ldisc_begin just after tty_ldisc_N_TTY?
 
-I just have absolutely _NO_ idea whatsoever how a platform driver can ask
-the PCI or APCI layer "where is the video device driving the LVDS panel so
-that I can bind to it"...
+Again, should I remove the possibility to compile pps-ldisc as module?
+
+Ciao,
+
+Rodolfo
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
+Freelance ICT Italia - Consulente ICT Italia - www.consulenti-ict.it
