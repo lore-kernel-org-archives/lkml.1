@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZLCOwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZLCOzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZLCOwr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 09:52:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLCOwq
+	id S1756220AbZLCOzS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 09:55:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbZLCOzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 09:52:46 -0500
-Received: from fanny.its.uu.se ([130.238.4.241]:58752 "EHLO fanny.its.uu.se"
+	Thu, 3 Dec 2009 09:55:16 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:53199 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755551AbZLCOwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 09:52:45 -0500
+	id S1753328AbZLCOzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 09:55:14 -0500
+Date: Thu, 3 Dec 2009 14:54:53 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: linux-mips@linux-mips.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>,
+       Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@vger.kernel.org
+Subject: Re: [PATCH v0] Loongson2: CPUFreq: add support to load module
+ automatically
+Message-ID: <20091203145452.GA28957@linux-mips.org>
+References: <8421507f5dfc1a70d1dba92ad7604a8bfaa5a447.1259805106.git.wuzhangjin@gmail.com>
+ <1259815795.4474.34.camel@falcon.domain.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19223.53436.931768.278021@pilspetsen.it.uu.se>
-Date: Thu, 3 Dec 2009 15:52:44 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: x86@kernel.org
-Subject: [PATCH 2.6.32] x86: enable lapic nmi watchdog on AMD Family 11h
-Cc: linux-kernel@vger.kernel.org
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+In-Reply-To: <1259815795.4474.34.camel@falcon.domain.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The x86 lapic nmi watchdog does not recognize AMD Family 11h,
-resulting in:
+On Thu, Dec 03, 2009 at 12:49:55PM +0800, Wu Zhangjin wrote:
 
-NMI watchdog: CPU not supported
+> > +++ b/arch/mips/loongson/common/platform.c
+> > @@ -0,0 +1,32 @@
+> > +/*
+> > + * Copyright (C) 2009 Lemote Inc.
+> > + * Author: Wu Zhangjin, wuzj@lemote.com
+> > + *
+> > + * This program is free software; you can redistribute  it and/or modify it
+> > + * under  the terms of  the GNU General  Public License as published by the
+> > + * Free Software Foundation;  either version 2 of the  License, or (at your
+> > + * option) any later version.
+> > + */
+> > +
+> > +#include <linux/err.h>
+> > +#include <linux/platform_device.h>
+> > +
+> > +#include <asm/bootinfo.h>
+> 
+> The above header file is not needed.
 
-As far as I can see from available documentation (the BKDM),
-family 11h looks identical to family 10h as far as the PMU
-is concerned.
+I folded your patch into "MIPS: Loongson 2F: Add CPU frequency scaling
+support" and removed that line.  Thanks!
 
-Extending the check to accept family 11h results in:
-
-Testing NMI watchdog ... OK.
-
-I've been running with this change on a Turion X2 Ultra ZM-82
-laptop for a couple of weeks now without problems.
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
----
-
-diff -rupN linux-2.6.32/arch/x86/kernel/cpu/perfctr-watchdog.c linux-2.6.32.x86-amd-fam11-nmi/arch/x86/kernel/cpu/perfctr-watchdog.c
---- linux-2.6.32/arch/x86/kernel/cpu/perfctr-watchdog.c	2009-12-03 12:38:32.000000000 +0100
-+++ linux-2.6.32.x86-amd-fam11-nmi/arch/x86/kernel/cpu/perfctr-watchdog.c	2009-12-03 12:47:59.000000000 +0100
-@@ -712,7 +712,7 @@ static void probe_nmi_watchdog(void)
- 	switch (boot_cpu_data.x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		if (boot_cpu_data.x86 != 6 && boot_cpu_data.x86 != 15 &&
--		    boot_cpu_data.x86 != 16)
-+		    boot_cpu_data.x86 != 16 && boot_cpu_data.x86 != 17)
- 			return;
- 		wd_ops = &k7_wd_ops;
- 		break;
+  Ralf
