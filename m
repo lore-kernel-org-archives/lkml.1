@@ -1,123 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbZLCMEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbZLCMDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752496AbZLCMEf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 07:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZLCMEe
+	id S1753357AbZLCMDX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 07:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbZLCMDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 07:04:34 -0500
-Received: from mail1.radix.net ([207.192.128.31]:36213 "EHLO mail1.radix.net"
+	Thu, 3 Dec 2009 07:03:22 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:62169 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751750AbZLCMEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 07:04:33 -0500
-Subject: Re: [RFC v2] Another approach to IR
-From: Andy Walls <awalls@radix.net>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, j@jannau.net,
-       jarod@redhat.com, khc@pm.waw.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
-       Christoph Bartelmus <lirc@bartelmus.de>
-In-Reply-To: <4B178C4D.1020007@redhat.com>
-References: <9e4733910912010816q32e829a2uce180bfda69ef86d@mail.gmail.com>
-	 <4B154C54.5090906@redhat.com>
-	 <829197380912010909m59cb1078q5bd2e00af0368aaf@mail.gmail.com>
-	 <4B155288.1060509@redhat.com>
-	 <20091201175400.GA19259@core.coreip.homeip.net>
-	 <4B1567D8.7080007@redhat.com>
-	 <20091201201158.GA20335@core.coreip.homeip.net>
-	 <4B15852D.4050505@redhat.com>
-	 <20091202093803.GA8656@core.coreip.homeip.net>
-	 <4B16614A.3000208@redhat.com>
-	 <20091202171059.GC17839@core.coreip.homeip.net>
-	 <4B16C10E.6040907@redhat.com>
-	 <1CA77278-9B8E-4169-8F10-78764A35F64E@wilsonet.com>
-	 <1259802169.3085.10.camel@palomino.walls.org> <4B178C4D.1020007@redhat.com>
-Content-Type: text/plain
-Date: Thu, 03 Dec 2009 07:02:49 -0500
-Message-Id: <1259841769.3100.18.camel@palomino.walls.org>
+	id S1752557AbZLCMDV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 07:03:21 -0500
+Date: Thu, 3 Dec 2009 13:03:25 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Michel =?UTF-8?B?RMOkbnplcg==?= <michel@daenzer.net>
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       LKML <linux-kernel@vger.kernel.org>, Colin Leroy <colin@colino.net>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] therm_adt746x: Don't access non-existing register
+Message-ID: <20091203130325.610d5c47@hyperion.delvare>
+In-Reply-To: <1259835846.5316.782.camel@thor.local>
+References: <20091202091951.5ec6bb83@hyperion.delvare>
+	<1259744042.8188.397.camel@thor.local>
+	<20091202101055.1ae7bf35@hyperion.delvare>
+	<1259835846.5316.782.camel@thor.local>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-03 at 08:00 -0200, Mauro Carvalho Chehab wrote:
-> Andy Walls wrote:
-> > On Wed, 2009-12-02 at 14:55 -0500, Jarod Wilson wrote:
-> >> On Dec 2, 2009, at 2:33 PM, Mauro Carvalho Chehab wrote:
-
- 
-> > Both of those IR devices are/will be encapsulated in a v4l2_subdevice
-> > object internally.  I was going to write lirc_v4l glue between the
-> > v4l2_device/v4l2_subdev_ir_ops and lirc_dev.
+On Thu, 03 Dec 2009 11:24:06 +0100, Michel Dänzer wrote:
+> On Wed, 2009-12-02 at 10:10 +0100, Jean Delvare wrote: 
+> > BTW, I also have i2c-powermac patches queued for 2.6.33 if you want to
+> > give them a try:
 > > 
-> > As for the the I2C chips, I was going to go back and encapsulate those
-> > in the v4l2_subdevice object as well, so then my notional lirc_v4l could
-> > pick those up too.  The I2C subsystem only allows one binding to an I2C
-> > client address/name on a bus.  So without some new glue like a notional
-> > lirc_v4l, it *may* be hard to share between ir-kbd-i2c and lirc_i2c and
-> > lirc_zilog.
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-powermac-*.patch
+> > 
+> > (Don't look for patch 5/6, it was broken so I discarded it.)
 > 
-> Maybe you're having a bad time because you may be trying to integrate lirc
-> at the wrong place.
-
-These were just ideas.  I haven't done *anything* yet. ;)
-
-
-> All devices at V4L tree including ir-kbd-i2c use ir-common.ko 
-> (at /drivers/media/common tree) module to communicate to IR's. 
-> I'm preparing some patches to extend this also to dvb-usb devices 
-> (that uses a close enough infrastructure). 
+> My PowerBook5,8 boots and works fine with all of these applied and
+> CONFIG_I2C_POWERMAC=y, so for all of them:
 > 
-> Also, most of the decoding code are there, in a form of helper routines.
-> 
-> As the idea is to provide lirc interface to all devices that can work with
-> raw pulse/space, the proper place is to write a subroutine there that, once
-> called, will make those pulse/space raw codes available to lirc and will
-> call the needed decoders to export them also to evdev.
-> 
-> The code at ir-common module was originally built to be used by V4L, but I'm
-> porting the code there to be generic enough to be a library that can be used
-> by other drivers. So, lirc_zilog and other lirc devices that will need to open
-> evdev interfaces after running a decoder can use them.
+> Tested-by: Michel Dänzer <michel@daenzer.net>
 
-I think I see what you are saying (I wish could see look at a whiteboard
-somewhere...).  Wherever we come through internally to split to 2
-different userspace interfaces is fine, if you've got a big picture plan
-you think is feasible.
+Very nice, thank you!
 
-That seems like a bit of perturbation to lirc_zilog and lirc_i2c.  My
-thought was that lirc_v4l using the standardized v4l2_subdev_ir_ops
-interface, and maybe some new calls associted with v4l2_device, could
-subsume/unify all the functionality of lirc_i2c, lirc_zilog, ...
-lirc_whatever.
-
-Maybe that's just a poorly thought out dream though...
-
-
-> Due to that, we shouldn't add v4l2_subdevice there. Nothing prevents to create
-> a v4l2-ir-subdev glue if you want to see the IR's as subdevices, but this should
-> be implemented as a separate module.
-
-The v4l_subdevice just abstracted the IR hardware into a nice (mental)
-box for me -- easier to keep hardware separate from software decoders
-and userspace interface logic.
-
-Also, since v4l2_subdevices may have per subdevice /dev nodes and
-the /dev/../mcN nodes providing a discovery mechanism due to the Meda
-Controller framework, wrapping things in v4l2_subdevice may be handy for
-development and debug.  Or ... as an additional operational interface to
-userspace. :D  *ducks and runs for cover*
-
-Regards,
-Andy
-
-> Cheers,
-> Mauro.
-
-
+-- 
+Jean Delvare
