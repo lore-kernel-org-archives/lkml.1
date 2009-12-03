@@ -1,85 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751694AbZLCF5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751754AbZLCGMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751694AbZLCF5d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 00:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbZLCF5d
+	id S1751754AbZLCGMX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 01:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZLCGMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 00:57:33 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45574
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751073AbZLCF5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 00:57:32 -0500
-Date: Wed, 02 Dec 2009 21:57:38 -0800 (PST)
-Message-Id: <20091202.215738.12118816.davem@davemloft.net>
-To: liml@rtr.ca
-Cc: hancockrwd@gmail.com, phdm@macqel.be, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH ide] : Increase WAIT_DRQ to support slow CF cards
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4AEC420A.9030502@rtr.ca>
-References: <20091026162011.GA3289@frolo.macqel>
-	<4AE64031.5060105@gmail.com>
-	<4AEC420A.9030502@rtr.ca>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 3 Dec 2009 01:12:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35343 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751142AbZLCGMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 01:12:22 -0500
+Message-ID: <4B1756AF.9000203@kernel.org>
+Date: Thu, 03 Dec 2009 15:11:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, peterz@infradead.org,
+       efault@gmx.de, rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+Subject: [PATCH UDPATED 3/7] sched: refactor try_to_wake_up()
+References: <1259726212-30259-1-git-send-email-tj@kernel.org> <1259726212-30259-4-git-send-email-tj@kernel.org>
+In-Reply-To: <1259726212-30259-4-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mark Lord <liml@rtr.ca>
-Date: Sat, 31 Oct 2009 09:56:26 -0400
+Factor ttwu_activate() and ttwu_woken_up() out of try_to_wake_up().
+The factoring out doesn't affect try_to_wake_up() much
+code-generation-wise.  Depending on configuration options, it ends up
+generating the same object code as before or slightly different one
+due to different register assignment.
 
-> Robert Hancock wrote:
-> ..
->> This has come up before:
->> http://marc.info/?l=linux-ide&m=123064513313466&w=2
->> I think this timeout should not even exist. libata has no such timeout
->> (only the overall command completion timeout), and I can't find any
->> reference in current ATA specs to the device being required to raise
->> DRQ in any particular amount of time.
-> ..
-> 
-> The reason for the original (20ms, then 50ms) timeout was this text
-> from the ATA1 specification, long since outdated:
-> 
->   -  Upon receipt of a Class 3 command, the drive sets BSY within 400 nsec,
->      sets  up the sector buffer for a write operation, sets DRQ within 20
->      msec, and clears BSY within 400 nsec of setting DRQ.
+This is to help future implementation of try_to_wake_up_local().
 
-Ok, I'd like to resolve this as follows.  We had stated "at least
-500msec for SSD drives" so I doubled it.
+Mike Galbraith suggested rename to ttwu_post_activation() from
+ttwu_woken_up() and comment update in try_to_wake_up().
 
-This should be a pretty safe change.  The only major side effect is
-that if the device really does hang before setting DRQ it will take
-a full second before we notice it.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+Updated to reflect Mike Galbraith's comment.  The only difference is
+function rename and comment change.
 
-Any major objections?
+Updated tree available on top of current sched/core available in the
+following git trees.
 
-ide: Increase WAIT_DRQ to accomodate some CF cards and SSD drives.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git sched-core-for-ingo
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git sched-wq-for-ingo
 
-Based upon a patch by Philippe De Muyter, and feedback from Mark
-Lord and Robert Hancock.
+Thanks.
 
-As noted by Mark Lord, the outdated ATA1 spec specifies a 20msec
-timeout for setting DRQ but lots of common devices overshoot this.
+ kernel/sched.c |  114 ++++++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 64 insertions(+), 50 deletions(-)
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index e4135d6..0ec6129 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -125,8 +125,8 @@ struct ide_io_ports {
-  * Timeouts for various operations:
+Index: work3/kernel/sched.c
+===================================================================
+--- work3.orig/kernel/sched.c
++++ work3/kernel/sched.c
+@@ -2361,11 +2361,67 @@ void task_oncpu_function_call(struct tas
+ 	preempt_enable();
+ }
+ 
+-/***
++static inline void ttwu_activate(struct task_struct *p, struct rq *rq,
++				 bool is_sync, bool is_migrate, bool is_local)
++{
++	schedstat_inc(p, se.nr_wakeups);
++	if (is_sync)
++		schedstat_inc(p, se.nr_wakeups_sync);
++	if (is_migrate)
++		schedstat_inc(p, se.nr_wakeups_migrate);
++	if (is_local)
++		schedstat_inc(p, se.nr_wakeups_local);
++	else
++		schedstat_inc(p, se.nr_wakeups_remote);
++
++	activate_task(rq, p, 1);
++
++	/*
++	 * Only attribute actual wakeups done by this task.
++	 */
++	if (!in_interrupt()) {
++		struct sched_entity *se = &current->se;
++		u64 sample = se->sum_exec_runtime;
++
++		if (se->last_wakeup)
++			sample -= se->last_wakeup;
++		else
++			sample -= se->start_runtime;
++		update_avg(&se->avg_wakeup, sample);
++
++		se->last_wakeup = se->sum_exec_runtime;
++	}
++}
++
++static inline void ttwu_post_activation(struct task_struct *p, struct rq *rq,
++					int wake_flags, bool success)
++{
++	trace_sched_wakeup(rq, p, success);
++	check_preempt_curr(rq, p, wake_flags);
++
++	p->state = TASK_RUNNING;
++#ifdef CONFIG_SMP
++	if (p->sched_class->task_wake_up)
++		p->sched_class->task_wake_up(rq, p);
++
++	if (unlikely(rq->idle_stamp)) {
++		u64 delta = rq->clock - rq->idle_stamp;
++		u64 max = 2*sysctl_sched_migration_cost;
++
++		if (delta > max)
++			rq->avg_idle = max;
++		else
++			update_avg(&rq->avg_idle, delta);
++		rq->idle_stamp = 0;
++	}
++#endif
++}
++
++/**
+  * try_to_wake_up - wake up a thread
+- * @p: the to-be-woken-up thread
++ * @p: the thread to be awakened
+  * @state: the mask of task states that can be woken
+- * @sync: do a synchronous wakeup?
++ * @wake_flags: wake modifier flags (WF_*)
+  *
+  * Put it on the run-queue if it's not already there. The "current"
+  * thread is always on the run-queue (except when the actual
+@@ -2373,7 +2429,8 @@ void task_oncpu_function_call(struct tas
+  * the simpler "current->state = TASK_RUNNING" to mark yourself
+  * runnable without the overhead of this.
+  *
+- * returns failure only if the task is already active.
++ * Returns %true if @p was woken up, %false if it was already running
++ * or @state didn't match @p's state.
   */
- enum {
--	/* spec allows up to 20ms */
--	WAIT_DRQ	= HZ / 10,	/* 100ms */
-+	/* spec allows up to 20ms, but CF cards and SSD drives need more */
-+	WAIT_DRQ	= 1 * HZ,	/* 1s */
- 	/* some laptops are very slow */
- 	WAIT_READY	= 5 * HZ,	/* 5s */
- 	/* should be less than 3ms (?), if all ATAPI CD is closed at boot */
+ static int try_to_wake_up(struct task_struct *p, unsigned int state,
+ 			  int wake_flags)
+@@ -2444,54 +2501,11 @@ static int try_to_wake_up(struct task_st
+ 
+ out_activate:
+ #endif /* CONFIG_SMP */
+-	schedstat_inc(p, se.nr_wakeups);
+-	if (wake_flags & WF_SYNC)
+-		schedstat_inc(p, se.nr_wakeups_sync);
+-	if (orig_cpu != cpu)
+-		schedstat_inc(p, se.nr_wakeups_migrate);
+-	if (cpu == this_cpu)
+-		schedstat_inc(p, se.nr_wakeups_local);
+-	else
+-		schedstat_inc(p, se.nr_wakeups_remote);
+-	activate_task(rq, p, 1);
++	ttwu_activate(p, rq, wake_flags & WF_SYNC, orig_cpu != cpu,
++		      cpu == this_cpu);
+ 	success = 1;
+-
+-	/*
+-	 * Only attribute actual wakeups done by this task.
+-	 */
+-	if (!in_interrupt()) {
+-		struct sched_entity *se = &current->se;
+-		u64 sample = se->sum_exec_runtime;
+-
+-		if (se->last_wakeup)
+-			sample -= se->last_wakeup;
+-		else
+-			sample -= se->start_runtime;
+-		update_avg(&se->avg_wakeup, sample);
+-
+-		se->last_wakeup = se->sum_exec_runtime;
+-	}
+-
+ out_running:
+-	trace_sched_wakeup(rq, p, success);
+-	check_preempt_curr(rq, p, wake_flags);
+-
+-	p->state = TASK_RUNNING;
+-#ifdef CONFIG_SMP
+-	if (p->sched_class->task_wake_up)
+-		p->sched_class->task_wake_up(rq, p);
+-
+-	if (unlikely(rq->idle_stamp)) {
+-		u64 delta = rq->clock - rq->idle_stamp;
+-		u64 max = 2*sysctl_sched_migration_cost;
+-
+-		if (delta > max)
+-			rq->avg_idle = max;
+-		else
+-			update_avg(&rq->avg_idle, delta);
+-		rq->idle_stamp = 0;
+-	}
+-#endif
++	ttwu_post_activation(p, rq, wake_flags, success);
+ out:
+ 	task_rq_unlock(rq, &flags);
+ 	put_cpu();
