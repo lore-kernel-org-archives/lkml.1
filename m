@@ -1,29 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbZLCP3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZLCPbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756411AbZLCP3z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 10:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbZLCP3z
+	id S1756361AbZLCPbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 10:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbZLCPbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 10:29:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56275 "EHLO mx3.mail.elte.hu"
+	Thu, 3 Dec 2009 10:31:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58219 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756279AbZLCP3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 10:29:54 -0500
-Date: Thu, 3 Dec 2009 16:29:52 +0100
+	id S1751053AbZLCPbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 10:31:21 -0500
+Date: Thu, 3 Dec 2009 16:31:13 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH 2.6.32] x86: enable lapic nmi watchdog on AMD Family 11h
-Message-ID: <20091203152952.GA27324@elte.hu>
-References: <19223.53436.931768.278021@pilspetsen.it.uu.se>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Ma, Ling" <ling.ma@intel.com>, Arjan van de Ven <arjan@infradead.org>,
+       Dave Jones <davej@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] [X86] Compile Option Os versus O2 on latest x86
+ platform
+Message-ID: <20091203153113.GB27324@elte.hu>
+References: <1259222752-8161-1-git-send-email-ling.ma@intel.com>
+ <20091126094930.GD32275@elte.hu>
+ <8FED46E8A9CA574792FC7AACAC38FE7714FED213BE@PDSMSX501.ccr.corp.intel.com>
+ <20091201021459.43d2142a@infradead.org>
+ <8FED46E8A9CA574792FC7AACAC38FE7714FF5709D9@PDSMSX501.ccr.corp.intel.com>
+ <4B17D3D3.1060502@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19223.53436.931768.278021@pilspetsen.it.uu.se>
+In-Reply-To: <4B17D3D3.1060502@zytor.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
@@ -37,32 +42,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mikael Pettersson <mikpe@it.uu.se> wrote:
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> The x86 lapic nmi watchdog does not recognize AMD Family 11h, 
-> resulting in:
+> On 12/03/2009 07:03 AM, Ma, Ling wrote:
+> >> a key question is.. how much more memory do you have free due to -Os?
+> >> (because memory is cache is performance on a system level as well)
+> > The kernel code size from Os is 12M, that from O2 is 14M.
+> >> and how much less icache pressure is there?
+> > From perf stat report, cache reference(unified cache) from O2 is almost the same with Os.
 > 
-> NMI watchdog: CPU not supported
-> 
-> As far as I can see from available documentation (the BKDM), family 
-> 11h looks identical to family 10h as far as the PMU is concerned.
-> 
-> Extending the check to accept family 11h results in:
-> 
-> Testing NMI watchdog ... OK.
-> 
-> I've been running with this change on a Turion X2 Ultra ZM-82 laptop 
-> for a couple of weeks now without problems.
+> The icache pressure was substantially higher (by ~10%) in the reports 
+> that I saw.
 
-Applied, thanks Mikael!
-
-Long term i think we want to use the PMU driver to support the NMI tick, 
-that way all new CPUs that have PMU support will get NMI watchdog 
-support too, automatically.
-
-That's a more complex change though and there's no reason not to apply 
-this simple patch of yours. Btw., do you [or anyone else] have 
-interest/time to pursue the more complex angle as well? It would be a 
-nice feature.
+hm, icache numbers are not included in perf stat runs by default. Are 
+there some icache numbers i missed perhaps?
 
 	Ingo
