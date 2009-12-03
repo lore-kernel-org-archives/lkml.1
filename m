@@ -1,89 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZLCOhC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZLCOld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbZLCOhC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 09:37:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLCOhA
+	id S1756119AbZLCOld (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 09:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLCOld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 09:37:00 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:34845 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751053AbZLCOhA (ORCPT
+	Thu, 3 Dec 2009 09:41:33 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39014 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbZLCOlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 09:37:00 -0500
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: markh@compro.net, Mai Daftedar <mai.daftedar@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <2cd4ff050912010307h5570a376xc220a95947775eae@mail.gmail.com>
-	<4B151A86.1060505@ladisch.de> <4B1533B0.1030007@compro.net>
-	<4B165D71.5010408@ladisch.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 03 Dec 2009 06:36:58 -0800
-In-Reply-To: <4B165D71.5010408@ladisch.de> (Clemens Ladisch's message of "Wed\, 02 Dec 2009 13\:28\:33 +0100")
-Message-ID: <m17ht4ktth.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: Signal from kernel space to user space
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+	Thu, 3 Dec 2009 09:41:32 -0500
+Subject: Re: [tip:tracing/urgent] tracing: Fix event format export
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johannes@sipsolutions.net, tglx@linutronix.de
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-811cb50baf63461ce0bdb234927046131fc7fa8b@git.kernel.org>
+References: <20091113224009.GB23942@elte.hu>
+	 <tip-811cb50baf63461ce0bdb234927046131fc7fa8b@git.kernel.org>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 03 Dec 2009 09:41:37 -0500
+Message-Id: <1259851297.12870.134.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clemens Ladisch <clemens@ladisch.de> writes:
+On Sat, 2009-11-14 at 10:18 +0000, tip-bot for Johannes Berg wrote:
+> Commit-ID:  811cb50baf63461ce0bdb234927046131fc7fa8b
+> Gitweb:     http://git.kernel.org/tip/811cb50baf63461ce0bdb234927046131fc7fa8b
+> Author:     Johannes Berg <johannes@sipsolutions.net>
+> AuthorDate: Fri, 13 Nov 2009 23:40:09 +0100
+> Committer:  Steven Rostedt <rostedt@goodmis.org>
+> CommitDate: Fri, 13 Nov 2009 22:20:34 -0500
+> 
+> tracing: Fix event format export
+> 
+> For some reason the export of the event print format to userspace
+> uses '#fmt' which breaks if the format string is anything but a plain
+> string, for example if it is built with macros then the macro names
+> are exported instead of their contents.
+> 
+> Use
+> 	"\"%s\"", fmt
+> instead of
+> 	"%s", #fmt
+> to export the string and not the way it is built.
+> 
+> For example, in net/mac80211/driver-trace.h for the trace event drv_start
+> there is:
+> 
+>         TP_printk(
+>                 LOCAL_PR_FMT, LOCAL_PR_ARG
+>         )
+> 
+> Which use to produce:
+> 
+>  print fmt: LOCAL_PR_FMT, REC->wiphy_name
+> 
+> Now produces:
+> 
+>  print fmt: "%s", REC->wiphy_name
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> LKML-Reference: <20091113224009.GB23942@elte.hu>
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-> Mark Hounschell wrote:
->> Clemens Ladisch wrote:
->> > kill_pid_(info) is to be preferred over send_sig_info because it ensures
->> > that the destination process has the same identity (a plain pid number
->> > might have wrappend around and be in use by another process).
->> 
->> Does that mean I can't assume my process pid will unique for the life of the process?
->
-> The pid _does_ uniquely identify your process.  However, after the
-> process has died, it could be used for some new process, and
-> send_sig_info would happily kill the new process.
 
-send_sig_info isn't that bad as it takes a task struct.
+Ingo,
 
-Plain pid_t's are just broken to use.
+Any reason that this did not make it into Mainline? 2.6.32 is out, and
+Johannes Berg was depending on this for his users.
 
-A pid_t uniquely identifies a process within a pid namespace, not within
-all of the pid namespaces present on the kernel.
+-- Steve
 
+> ---
+>  include/trace/ftrace.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index cc0d966..dacb8ef 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -159,7 +159,7 @@
+>  #undef __get_str
+>  
+>  #undef TP_printk
+> -#define TP_printk(fmt, args...) "%s, %s\n", #fmt, __stringify(args)
+> +#define TP_printk(fmt, args...) "\"%s\", %s\n", fmt, __stringify(args)
+>  
+>  #undef TP_fast_assign
+>  #define TP_fast_assign(args...) args
 
->> > However, why are you using a signal? What information are you trying to
->> > send, and why wouldn't eventfd or a plain device thaz becomes readable
->> > be a better solution?
->> 
->> If no "information" is required, which of these are the fastest, say
->> from an interrupt handler?
->
-> If there really is no information, doing nothing would be fastest.  ;-)
-
-That or simply waking up the task. 
-
-> If you want to tell userland that some event has happened, the various
-> mechanisms are not much different as far as the kernel is concerned,
-> as long as you don't have many thousands of events per seconds; the
-> biggest problems for event delivery are scheduling the userland process
-> for execution and handling of the event.
->
-> Signals handlers interrupt any other userland code and therefore are
-> not allowed to do much; therefore, I would strongly prefer to use
-> some file handle that can be waited on with poll().  Furthermore,
-> poll() allows to wait for multiple handles, and does not have the
-> complexities of signal delivery and blocking.  I would use signals only
-> if the handler must interrupt any other running code, and if the signal
-> can be handled completely without running into reentrancy problems.
-
-Plus signals have all kinds of weird latency and overhead.
-
-Outside of core kernel code, or subsystems where they are already used I
-would be surprised if signals could be done correctly and usefully.  pid
-rollover isn't the only hidden gotcha.
-
-Eric
