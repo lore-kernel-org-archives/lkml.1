@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbZLCIp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZLCIrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753849AbZLCIp4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 03:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZLCIpz
+	id S1754261AbZLCIrm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 03:47:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZLCIrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 03:45:55 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52202 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751849AbZLCIpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 03:45:54 -0500
-Message-ID: <4B1779CE.1050801@cn.fujitsu.com>
-Date: Thu, 03 Dec 2009 16:41:50 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 3 Dec 2009 03:47:41 -0500
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:1490 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751991AbZLCIrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 03:47:41 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEEAGoIF0vCTtAn/2dsb2JhbACBTtVEhDEEgWo
+Date: Thu, 3 Dec 2009 09:47:42 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: David Miller <davem@davemloft.net>
+Cc: jarkao2@gmail.com, grundler@parisc-linux.org, kyle@mcmartin.ca,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: tulip : kernel BUG in tulip_up/tulip_resume
+Message-ID: <20091203084742.GA23867@frolo.macqel>
+References: <20091108223305.GA21072@frolo.macqel> <20091129001710.GA4055@ami.dom.local> <20091129113659.GA2971@ami.dom.local> <20091202.222526.237239384.davem@davemloft.net>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       czoccolo@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: Block IO Controller V4
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <4B15C828.4080407@cn.fujitsu.com> <20091202142508.GA31715@redhat.com>
-In-Reply-To: <20091202142508.GA31715@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091202.222526.237239384.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, Dec 02, 2009 at 09:51:36AM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->>> Hi Jens,
->>>
->>> This is V4 of the Block IO controller patches on top of "for-2.6.33" branch
->>> of block tree.
->>>
->>> A consolidated patch can be found here:
->>>
->>> http://people.redhat.com/vgoyal/io-controller/blkio-controller/blkio-controller-v4.patch
->>>
->> Hi Vivek,
->>
->> It seems this version doesn't work very well for "direct(O_DIRECT) sequence read" mode.
->> For example, you can create group A and group B, then assign weight 100 to group A and
->> weight 400 to group B, and you run "direct sequence read" workload in group A and B 
->> simultaneously. Ideally, we should see 1:4 disk time differentiation for group A and B. 
->> But actually, I see almost 1:2 disk time differentiation for group A and B. I'm looking
->> into this issue.
->> BTW, V3 works well for this case.
+Hi Jarek and David,
+On Wed, Dec 02, 2009 at 10:25:26PM -0800, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Sun, 29 Nov 2009 12:36:59 +0100
 > 
-> Hi Gui,
+> > On Sun, Nov 29, 2009 at 01:17:10AM +0100, Jarek Poplawski wrote:
+> >> Philippe De Muyter wrote, On 11/08/2009 11:33 PM:
+> >> > Does someone know what could be wrong and have a fix or should I look myself ?
+> >> 
+> >> Don't know, guess only...
+> > 
+> > ...And maybe a second guess btw. (to try together or separate).
 > 
-> In my testing of 8 fio jobs in 8 cgroups, direct sequential reads seems to
-> be working fine.
-> 
-> http://lkml.org/lkml/2009/12/1/367
-> 
-> I suspect that in some case we choose not to idle on the group and it gets
-> deleted from service tree hence we loose share. Can you have a look at
-> blkio.dequeue files. If there are excessive deletions, that will signify
-> that we are loosing share because we chose not to idle.
-> 
-> If yes, please also run blktrace to see in what cases we chose not to
-> idle.
-> 
-> In V3, I had a stronger check to idle on the group if it is empty using
-> wait_busy() function. In V4 I have removed that and trying to wait busy
-> on a queue by extending its slice if it has consumed its allocated slice.
+> Philippe please test Jarek's patches.
 
-Hi Vivek,
+Busy doing that. I had some problems trying to activate apm's debug.
+Will report later.
 
-I ckecked the blktrace output, it seems that io group was deleted all the time,
-because we don't have group idle any more. I pulled the wait_busy code back to
-V4, and retest it, problem seems disappeared.
+Best regards
 
-So i suggest that we need to retain the wait_busy code.
-
-Thanks,
-Gui
-
+Philippe
