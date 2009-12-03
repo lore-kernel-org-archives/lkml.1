@@ -1,205 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZLCRCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZLCRBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbZLCRCa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 12:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbZLCRC3
+	id S1755209AbZLCRBp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 12:01:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbZLCRBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 12:02:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42798 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754964AbZLCRC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 12:02:28 -0500
-Message-ID: <4B17EE9A.1060004@redhat.com>
-Date: Thu, 03 Dec 2009 18:00:10 +0100
-From: Stefan Assmann <sassmann@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Thu, 3 Dec 2009 12:01:44 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:57514 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753406AbZLCRBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 12:01:44 -0500
+Date: Thu, 3 Dec 2009 11:01:49 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+Message-ID: <20091203170149.GA15151@sgi.com>
+References: <m1r5rrr9v5.fsf@fess.ebiederm.org> <20091122011457.GA16910@sgi.com> <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain> <1259069986.4531.1453.camel@laptop> <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain> <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org> <20091125074033.4c46c1b0@infradead.org> <20091203165004.GA14665@sgi.com> <Pine.WNT.4.64.0912030851500.13880@ppwaskie-MOBL2.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Andrew Patterson <andrew.patterson@hp.com>
-CC: linux-pci@vger.kernel.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, rjw@sisk.pl, ddutile@redhat.com,
-       kaneshige.kenji@jp.fujitsu.com, khc@pm.waw.pl
-Subject: Re: [PATCH 2/2 v2] pci: change PCI nomenclature in drivers/pci/ (non-comment
- changes)
-References: <20091203114914.24905.67372.sendpatchset@localhost.localdomain>	 <20091203114932.24905.78292.sendpatchset@localhost.localdomain> <1259857642.2684.64.camel@grinch>
-In-Reply-To: <1259857642.2684.64.camel@grinch>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.WNT.4.64.0912030851500.13880@ppwaskie-MOBL2.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03.12.2009 17:27, Andrew Patterson wrote:
-> On Thu, 2009-12-03 at 06:49 -0500, Stefan Assmann wrote:
->> From: Stefan Assmann <sassmann@redhat.com>
->>
->> Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
->> terms listed in the "Trademark and Logo Usage Guidelines".
->> http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
->>
->> Patch is limited to drivers/pci/ and changes concern non-comment parts or
->> anything that might be visible to the user.
->>
->> Signed-off-by: Stefan Assmann <sassmann@redhat.com>
->> ---
-
-[...]
-
->> diff --git a/drivers/pci/pcie/aer/Kconfig.debug b/drivers/pci/pcie/aer/Kconfig.debug
->> index b8c925c..edfe756 100644
->> --- a/drivers/pci/pcie/aer/Kconfig.debug
->> +++ b/drivers/pci/pcie/aer/Kconfig.debug
->> @@ -3,14 +3,14 @@
->>  #
->>  
->>  config PCIEAER_INJECT
->> -	tristate "PCIE AER error injector support"
->> +	tristate "PCIe AER error injector support"
->>  	depends on PCIEAER
->>  	default n
->>  	help
->>  	  This enables PCI Express Root Port Advanced Error Reporting
->>  	  (AER) software error injector.
->>  
->> -	  Debuging PCIE AER code is quite difficult because it is hard
->> +	  Debuging PCIe AER code is quite difficult because it is hard
+On Thu, Dec 03, 2009 at 08:53:23AM -0800, Waskiewicz Jr, Peter P wrote:
+> On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
 > 
-> Why not fix the typo while changing this line.  "Debuging" shoud be
-> "Debugging".
+> > On Wed, Nov 25, 2009 at 07:40:33AM -0800, Arjan van de Ven wrote:
+> > > On Tue, 24 Nov 2009 09:41:18 -0800
+> > > ebiederm@xmission.com (Eric W. Biederman) wrote:
+> > > > Oii.
+> > > > 
+> > > > I don't think it is bad to export information to applications like
+> > > > irqbalance.
+> > > > 
+> > > > I think it pretty horrible that one of the standard ways I have heard
+> > > > to improve performance on 10G nics is to kill irqbalance.
+> > > 
+> > > irqbalance does not move networking irqs; if it does there's something
+> > > evil going on in the system. But thanks for the bugreport ;)
+> > 
+> > It does move networking irqs.
+> > 
+> > > 
+> > > we had that; it didn't work.
+> > > what I'm asking for is for the kernel to expose the numa information;
+> > > right now that is the piece that is missing.
+> > > 
+> > 
+> > I'm wondering if we should expose that numa information in the form of a node or the set of allowed cpus, or both?
+> > 
+> > I'm guessing 'both' is the correct answer, so that apps like irqbalance can make a qualitative decision based on the node (affinity to cpus on this node is better), but an absolute decision based on allowed cpus (I cannot change affinity to anything but this set of cpus).
 > 
+> That's exactly what my patch in the thread "irq: Add node_affinity CPU 
+> masks for smarter irqbalance hints" is doing.  I've also done the 
+> irqbalance changes based on that kernel patch, and Arjan currently has 
+> that patch.
 
-Thanks Andrew, I just didn't see it. Here's the new patch. Patch #1
-has the same typo, so I'll repost that one as well.
-
-  Stefan
-
-
-From: Stefan Assmann <sassmann@redhat.com>
-
-Changing occurrences of variants of PCI-X and PCIe to the PCI-SIG
-terms listed in the "Trademark and Logo Usage Guidelines".
-http://www.pcisig.com/developers/procedures/logos/Trademark_and_Logo_Usage_Guidelines_updated_112206.pdf
-
-Patch is limited to drivers/pci/ and changes concern non-comment parts or
-anything that might be visible to the user.
-
-Signed-off-by: Stefan Assmann <sassmann@redhat.com>
----
- drivers/pci/hotplug/pci_hotplug_core.c |   22 +++++++++++-----------
- drivers/pci/pcie/aer/Kconfig.debug     |    4 ++--
- drivers/pci/pcie/aer/aer_inject.c      |    2 +-
- drivers/pci/pcie/aer/aerdrv_errprint.c |    4 ++--
- drivers/pci/pcie/portdrv_pci.c         |    2 +-
- 5 files changed, 17 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
-index 0325d98..38183a5 100644
---- a/drivers/pci/hotplug/pci_hotplug_core.c
-+++ b/drivers/pci/hotplug/pci_hotplug_core.c
-@@ -68,26 +68,26 @@ static DEFINE_MUTEX(pci_hp_mutex);
- static char *pci_bus_speed_strings[] = {
- 	"33 MHz PCI",		/* 0x00 */
- 	"66 MHz PCI",		/* 0x01 */
--	"66 MHz PCIX", 		/* 0x02 */
--	"100 MHz PCIX",		/* 0x03 */
--	"133 MHz PCIX",		/* 0x04 */
-+	"66 MHz PCI-X",		/* 0x02 */
-+	"100 MHz PCI-X",	/* 0x03 */
-+	"133 MHz PCI-X",	/* 0x04 */
- 	NULL,			/* 0x05 */
- 	NULL,			/* 0x06 */
- 	NULL,			/* 0x07 */
- 	NULL,			/* 0x08 */
--	"66 MHz PCIX 266",	/* 0x09 */
--	"100 MHz PCIX 266",	/* 0x0a */
--	"133 MHz PCIX 266",	/* 0x0b */
-+	"66 MHz PCI-X 266",	/* 0x09 */
-+	"100 MHz PCI-X 266",	/* 0x0a */
-+	"133 MHz PCI-X 266",	/* 0x0b */
- 	NULL,			/* 0x0c */
- 	NULL,			/* 0x0d */
- 	NULL,			/* 0x0e */
- 	NULL,			/* 0x0f */
- 	NULL,			/* 0x10 */
--	"66 MHz PCIX 533",	/* 0x11 */
--	"100 MHz PCIX 533",	/* 0x12 */
--	"133 MHz PCIX 533",	/* 0x13 */
--	"2.5 GT/s PCI-E",	/* 0x14 */
--	"5.0 GT/s PCI-E",	/* 0x15 */
-+	"66 MHz PCI-X 533",	/* 0x11 */
-+	"100 MHz PCI-X 533",	/* 0x12 */
-+	"133 MHz PCI-X 533",	/* 0x13 */
-+	"2.5 GT/s PCIe",	/* 0x14 */
-+	"5.0 GT/s PCIe",	/* 0x15 */
- };
-
- #ifdef CONFIG_HOTPLUG_PCI_CPCI
-diff --git a/drivers/pci/pcie/aer/Kconfig.debug b/drivers/pci/pcie/aer/Kconfig.debug
-index b8c925c..edfe756 100644
---- a/drivers/pci/pcie/aer/Kconfig.debug
-+++ b/drivers/pci/pcie/aer/Kconfig.debug
-@@ -3,14 +3,14 @@
- #
-
- config PCIEAER_INJECT
--	tristate "PCIE AER error injector support"
-+	tristate "PCIe AER error injector support"
- 	depends on PCIEAER
- 	default n
- 	help
- 	  This enables PCI Express Root Port Advanced Error Reporting
- 	  (AER) software error injector.
-
--	  Debuging PCIE AER code is quite difficult because it is hard
-+	  Debugging PCIe AER code is quite difficult because it is hard
- 	  to trigger various real hardware errors. Software based
- 	  error injection can fake almost all kinds of errors with the
- 	  help of a user space helper tool aer-inject, which can be
-diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
-index a21dee3..8e056f2 100644
---- a/drivers/pci/pcie/aer/aer_inject.c
-+++ b/drivers/pci/pcie/aer/aer_inject.c
-@@ -462,5 +462,5 @@ static void __exit aer_inject_exit(void)
- module_init(aer_inject_init);
- module_exit(aer_inject_exit);
-
--MODULE_DESCRIPTION("PCIE AER software error injector");
-+MODULE_DESCRIPTION("PCIe AER software error injector");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/pci/pcie/aer/aerdrv_errprint.c b/drivers/pci/pcie/aer/aerdrv_errprint.c
-index 44acde7..9d3e4c8 100644
---- a/drivers/pci/pcie/aer/aerdrv_errprint.c
-+++ b/drivers/pci/pcie/aer/aerdrv_errprint.c
-@@ -184,7 +184,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
-
- 	if (info->status == 0) {
- 		AER_PR(info, dev,
--			"PCIE Bus Error: severity=%s, type=Unaccessible, "
-+			"PCIe Bus Error: severity=%s, type=Unaccessible, "
- 			"id=%04x(Unregistered Agent ID)\n",
- 			aer_error_severity_string[info->severity], id);
- 	} else {
-@@ -194,7 +194,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
- 		agent = AER_GET_AGENT(info->severity, info->status);
-
- 		AER_PR(info, dev,
--			"PCIE Bus Error: severity=%s, type=%s, id=%04x(%s)\n",
-+			"PCIe Bus Error: severity=%s, type=%s, id=%04x(%s)\n",
- 			aer_error_severity_string[info->severity],
- 			aer_error_layer[layer], id, aer_agent_string[agent]);
-
-diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-index f635e47..6788d0f 100644
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -24,7 +24,7 @@
-  */
- #define DRIVER_VERSION "v1.0"
- #define DRIVER_AUTHOR "tom.l.nguyen@intel.com"
--#define DRIVER_DESC "PCIE Port Bus Driver"
-+#define DRIVER_DESC "PCIe Port Bus Driver"
- MODULE_AUTHOR(DRIVER_AUTHOR);
- MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_LICENSE("GPL");
--- 
-1.6.5.2
-
+So if I understand correctly, you're patch takes care of the qualitative portion of it (we prefer to set affinity to these cpus, which may be on more than one node), but not the restrictive part of it (we cannot change affinity to anything but these cpus)?
