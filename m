@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZLCDvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZLCDx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbZLCDvu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 22:51:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZLCDvt
+	id S1755342AbZLCDx0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 22:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZLCDx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 22:51:49 -0500
-Received: from mga14.intel.com ([143.182.124.37]:8029 "EHLO mga14.intel.com"
+	Wed, 2 Dec 2009 22:53:26 -0500
+Received: from mga14.intel.com ([143.182.124.37]:18121 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753206AbZLCDvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 22:51:49 -0500
+	id S1753408AbZLCDxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 22:53:25 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="218236872"
-Date: Thu, 3 Dec 2009 11:51:35 +0800
+   d="scan'208";a="218237349"
+Date: Thu, 3 Dec 2009 11:53:30 +0800
 From: Shaohua Li <shaohua.li@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: jens.axboe@oracle.com, akpm@linux-foundation.org
-Subject: [PATCH]cfq-iosched: make nonrot check logic consistent
-Message-ID: <20091203035135.GA13165@sli10-desk.sh.intel.com>
+Subject: [RFC]cfq-iosched: no dispatch limit for single queue
+Message-ID: <20091203035330.GB13165@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,30 +26,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Send again, last post seems lost.
-
-cfq_arm_slice_timer() has logic to disable idle window for SSD device. The same
-thing should be done at cfq_select_queue() too, otherwise we will still see
-idle window. This makes the nonrot check logic consistent in cfq.
-Tests in a intel SSD with low_latency knob close, below patch can triple disk
-thoughput for muti-thread sequential read.
+Since commit 2f5cb7381b737e24c8046fd4aeab571fb71315f5, each queue can send
+up to 4 * 4 requests if only one queue exists. I wonder why we have such limit.
+Device supports tag can send more requests. For example, AHCI can send 31
+requests. Test (direct aio randread) shows the limits reduce about 4% disk
+thoughput.
+On the other hand, since we send one request one time, if other queue
+pop when current is sending more than cfq_quantum requests, current queue will
+stop send requests soon after one request, so sounds there is no big latency.
 
 Signed-off-by: Shaohua Li <shaohua.li@intel.com>
----
- block/cfq-iosched.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux/block/cfq-iosched.c
-===================================================================
---- linux.orig/block/cfq-iosched.c	2009-11-11 13:44:00.000000000 +0800
-+++ linux/block/cfq-iosched.c	2009-11-11 13:45:33.000000000 +0800
-@@ -1215,7 +1215,8 @@ static struct cfq_queue *cfq_select_queu
- 	 * conditions to happen (or time out) before selecting a new queue.
- 	 */
- 	if (timer_pending(&cfqd->idle_slice_timer) ||
--	    (cfqq->dispatched && cfq_cfqq_idle_window(cfqq))) {
-+	    (cfqq->dispatched && cfq_cfqq_idle_window(cfqq)
-+	    && !(blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag))) {
- 		cfqq = NULL;
- 		goto keep_queue;
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index aa1e953..e05650f 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1298,9 +1298,9 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 			return false;
+ 
+ 		/*
+-		 * Sole queue user, allow bigger slice
++		 * Sole queue user, no limit
+ 		 */
+-		max_dispatch *= 4;
++		max_dispatch = -1;
  	}
+ 
+ 	/*
