@@ -1,222 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbZLCCri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZLCCsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbZLCCri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 21:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZLCCrh
+	id S1755687AbZLCCsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Dec 2009 21:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZLCCsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 21:47:37 -0500
-Received: from mga14.intel.com ([143.182.124.37]:15860 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755161AbZLCCrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 21:47:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="218218452"
-Date: Thu, 3 Dec 2009 10:47:39 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 22/24] HWPOISON: add memory cgroup filter
-Message-ID: <20091203024739.GB17716@localhost>
-References: <20091202031231.735876003@intel.com> <20091202043046.519053333@intel.com> <20091202124446.GA18989@one.firstfloor.org> <20091202125842.GA13277@localhost> <20091203105229.afb0efc4.kamezawa.hiroyu@jp.fujitsu.com> <20091203021915.GA13587@localhost> <20091203112822.ecee5bf5.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 2 Dec 2009 21:48:20 -0500
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:58754 "EHLO
+	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755418AbZLCCsS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Dec 2009 21:48:18 -0500
+Date: Wed, 2 Dec 2009 18:48:24 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Jon Smirl <jonsmirl@gmail.com>
+cc: Jarod Wilson <jarod@wilsonet.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+In-Reply-To: <9e4733910912021620s7a2b09a8v88dd45eef38835a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.58.0912021827120.4729@shell2.speakeasy.net>
+References: <4B155288.1060509@redhat.com>  <20091201201158.GA20335@core.coreip.homeip.net>
+  <4B15852D.4050505@redhat.com>  <20091202093803.GA8656@core.coreip.homeip.net>
+  <4B16614A.3000208@redhat.com>  <20091202171059.GC17839@core.coreip.homeip.net>
+  <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com> 
+ <4B16BE6A.7000601@redhat.com>  <20091202195634.GB22689@core.coreip.homeip.net>
+  <2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
+ <9e4733910912021620s7a2b09a8v88dd45eef38835a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091203112822.ecee5bf5.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 10:28:22AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Thu, 3 Dec 2009 10:19:15 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > On Thu, Dec 03, 2009 at 09:52:29AM +0800, KAMEZAWA Hiroyuki wrote:
-> > > On Wed, 2 Dec 2009 20:58:42 +0800
-> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > 
-> > > > On Wed, Dec 02, 2009 at 08:44:46PM +0800, Andi Kleen wrote:
-> > > > > >  
-> > > > > > +static int hwpoison_filter_task(struct page *p)
-> > > > > > +{
-> > > > > 
-> > > > > Can we make that ifdef instead of depends on ?
-> > > > 
-> > > > Sure. Here is the updated patch.
-> > > > 
-> > > > ---
-> > > > HWPOISON: add memory cgroup filter
-> > > > 
-> > > > The hwpoison test suite need to inject hwpoison to a collection of
-> > > > selected task pages, and must not touch pages not owned by them and
-> > > > thus kill important system processes such as init. (But it's OK to
-> > > > mis-hwpoison free/unowned pages as well as shared clean pages.
-> > > > Mis-hwpoison of shared dirty pages will kill all tasks, so the test
-> > > > suite will target all or non of such tasks in the first place.)
-> > > > 
-> > > > The memory cgroup serves this purpose well. We can put the target
-> > > > processes under the control of a memory cgroup, and tell the hwpoison
-> > > > injection code to only kill pages associated with some active memory
-> > > > cgroup.
-> > > > 
-> > > > The prerequisite for doing hwpoison stress tests with mem_cgroup is,
-> > > > the mem_cgroup code tracks task pages _accurately_ (unless page is
-> > > > locked).  Which we believe is/should be true.
-> > > > 
-> > > > The benifits are simplification of hwpoison injector code. Also the
-> > > > mem_cgroup code will automatically be tested by hwpoison test cases.
-> > > > 
-> > > > The alternative interfaces pin-pfn/unpin-pfn can also delegate the
-> > > > (process and page flags) filtering functions reliably to user space.
-> > > > However prototype implementation shows that this scheme adds more
-> > > > complexity than we wanted.
-> > > > 
-> > > > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> > > > CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > > > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > > > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > > CC: Li Zefan <lizf@cn.fujitsu.com>
-> > > > CC: Paul Menage <menage@google.com>
-> > > > CC: Nick Piggin <npiggin@suse.de> 
-> > > > CC: Andi Kleen <andi@firstfloor.org> 
-> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > > ---
-> > > >  mm/Kconfig           |    2 +-
-> > > >  mm/hwpoison-inject.c |    7 +++++++
-> > > >  mm/internal.h        |    1 +
-> > > >  mm/memory-failure.c  |   28 ++++++++++++++++++++++++++++
-> > > >  4 files changed, 37 insertions(+), 1 deletion(-)
-> > > > 
-> > > > --- linux-mm.orig/mm/memory-failure.c	2009-12-01 09:56:06.000000000 +0800
-> > > > +++ linux-mm/mm/memory-failure.c	2009-12-02 20:56:55.000000000 +0800
-> > > > @@ -96,6 +96,31 @@ static int hwpoison_filter_flags(struct 
-> > > >  		return -EINVAL;
-> > > >  }
-> > > >  
-> > > > +#ifdef	CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> > > > +u32 hwpoison_filter_memcg;
-> > > > +static int hwpoison_filter_task(struct page *p)
-> > > > +{
-> > > > +	struct mem_cgroup *mem;
-> > > > +	struct cgroup_subsys_state *css;
-> > > > +
-> > > > +	if (!hwpoison_filter_memcg)
-> > > > +		return 0;
-> > > > +
-> > > > +	mem = try_get_mem_cgroup_from_page(p);
-> > > > +	if (!mem)
-> > > > +		return -EINVAL;
-> > > > +
-> > > > +	css = mem_cgroup_css(mem);
-> > > > +	if (!css)
-> > > > +		return -EINVAL;
-> > > 
-> > > > +
-> > > > +	css_put(css);
-> > > > +	return 0;
-> > > > +}
-> > > 
-> > > 
-> > > Hmm..can you adds comment ? What does this function is for ?
-> > 
-> > Good idea. How about this one?
-> > 
-> > /*
-> >  * This allows stress tests to limit test scope to a collection of tasks
-> >  * by putting them under some memcg. This prevents killing unrelated/important
-> >  * processes such as /sbin/init. Note that the target task may share clean
-> >  * pages with init (eg. libc text), which is harmless. If the target task
-> >  * share _dirty_ pages with another task B, the test scheme must make sure B
-> >  * is also included in the memcg. At last, due to race conditions this filter
-> >  * can only guarantee that the page either belongs to the memcg tasks, or is
-> >  * a freed page.
-> >  */
-> > 
-> Hmm. seems good but..by what means "avoiding killing /sbin/init" is done ?
-> All process are under some memcg..
+On Wed, 2 Dec 2009, Jon Smirl wrote:
+> > A bluetooth remote has a specific device ID that the receiver has to pair with. Your usb mouse and keyboard each have specific device IDs. A usb IR *receiver* has a specific device ID, the remotes do not. So there's the major difference from your examples.
+>
+> Actually remotes do have an ID. They all transmit vendor/device pairs
+> which is exactly how USB works.
 
-Ah please forgive my memcg ignorance..  Then how about bring back the
-old css_id() based scheme (old patch follows)?
+*All* remotes?  That's a bold statement.  I'm sure there are some that
+only transmit 8 bits of so of scancode.  I think remotes are more like
+hosts on a network than usb or bluetooth devices.  Remotes do not join or
+leave a receiver, while things like usb devices do explictly join and leave
+the hub.
 
-> If you have more patches to be usable the function above,
-> I recommend you to post this with some real-use patches, in step by step.
+> >> Now I understand that if 2 remotes send completely identical signals we
+> >> won't be able to separate them, but in cases when we can I think we
+> >> should.
+> >
+> > I don't have a problem with that, if its a truly desired feature.  But
+> > for the most part, I don't see the point.  Generally, you go from
+> > having multiple remotes, one per device (where "device" is your TV,
+> > amplifier, set top box, htpc, etc), to having a single universal remote
+> > that controls all of those devices.  But for each device (IR receiver),
+> > *one* IR command set.  The desire to use multiple distinct remotes with
+> > a single IR receiver doesn't make sense to me.  Perhaps I'm just not
+> > creative enough in my use of IR.  :)
 
-Do you mean user space test case? Here is a simple one:
+Most universal remotes I'm familiar with emulate multiple remotes.  I.e.
+my tv remote generates one set of scancodes for the numeric keys.  The DVD
+remote generates a different set.  The amplifier remote in "tv mode"
+generates the same codes as the tv remote, and in "dvd mode" the same codes
+as the dvd remote.  From the perspective of the IR receiver there is no
+difference between having both the DVD and TV remotes, or using the
+aplifier remote to control both devices.
 
-        #!/bin/sh
+Now, my aplifier remote has a number of modes.  Some control devices I
+have, like "vcr mode", and there is nothing I can do about that.  Some,
+like "md mode" don't control devices I have.  That means they are free to
+do things on the computer.  Someone else with the same remote (or any
+number of remotes that use the same protocol and scancodes) might have
+different devices.
 
-        TEST_PROG=usemem
-        TEST_PARM="-m 100 -s 100"
+So I want my computer to do stuff when I push "JVC MD #xx" keys, but ignore
+"JVC VCR #yyy" yets.  Someone with an MD player and not a VCR would want to
+opposite.  Rather than force everyone to create custom keymaps, it's much
+easier if we can use the standard keymaps from a database of common remotes
+and simply tell mythtv to only use remote #xxx or not to use remote #yyy.
 
-        test -d /cgroup/hwpoison && rmdir /cgroup/hwpoison
-        mkdir /cgroup/hwpoison
-
-        $TEST_PROG $TEST_PARM &
-        echo `pidof $TEST_PROG` > /cgroup/hwpoison/tasks
-
-        memcg_id=$(</cgroup/hwpoison/memory.id)
-        echo $memcg_id > /debug/hwpoison/corrupt-filter-memcg
-
-        ./corrupt-all-pfn
-
-> patch 19,20 is ok for me.
-
-Thanks,
-Fengguang
----
-memcg: show memory.id in cgroupfs
-
-The hwpoison test suite need to selectively inject hwpoison to some
-targeted task pages, and must not kill important system processes
-such as init.
-
-The memory cgroup serves this purpose well. We can put the target
-processes under the control of a memory cgroup, tell the hwpoison
-injection code the id of that memory cgroup so that it will only
-poison pages associated with it.
-
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/memcontrol.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
---- linux-mm.orig/mm/memcontrol.c	2009-09-07 16:01:02.000000000 +0800
-+++ linux-mm/mm/memcontrol.c	2009-09-11 18:20:55.000000000 +0800
-@@ -2510,6 +2510,13 @@ mem_cgroup_get_recursive_idx_stat(struct
- 	*val = d.val;
- }
- 
-+#ifdef CONFIG_HWPOISON_INJECT
-+static u64 mem_cgroup_id_read(struct cgroup *cont, struct cftype *cft)
-+{
-+	return css_id(cgroup_subsys_state(cont, mem_cgroup_subsys_id));
-+}
-+#endif
-+
- static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
- {
- 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-@@ -2841,6 +2848,12 @@ static int mem_cgroup_swappiness_write(s
- 
- 
- static struct cftype mem_cgroup_files[] = {
-+#ifdef CONFIG_HWPOISON_INJECT /* for now, only user is hwpoison testing */
-+	{
-+		.name = "id",
-+		.read_u64 = mem_cgroup_id_read,
-+	},
-+#endif
- 	{
- 		.name = "usage_in_bytes",
- 		.private = MEMFILE_PRIVATE(_MEM, RES_USAGE),
+It sounds like you're thinking of a receiver that came bundled with a
+remote and that's it.  Not someone with a number of remotes that came with
+different pieces of AV gear that they want to use with their computer.
