@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbZLCWCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbZLCWGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753613AbZLCWCu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 17:02:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbZLCWCt
+	id S1752987AbZLCWGw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 17:06:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZLCWGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 17:02:49 -0500
-Received: from gateway-1237.mvista.com ([206.112.117.35]:35073 "HELO
+	Thu, 3 Dec 2009 17:06:51 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:28086 "HELO
 	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751794AbZLCWCs (ORCPT
+	with SMTP id S1751605AbZLCWGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 17:02:48 -0500
-Message-ID: <4B18357E.9050900@ru.mvista.com>
-Date: Fri, 04 Dec 2009 01:02:38 +0300
+	Thu, 3 Dec 2009 17:06:50 -0500
+Message-ID: <4B183671.80004@ru.mvista.com>
+Date: Fri, 04 Dec 2009 01:06:41 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
 To: Jeff Garzik <jeff@garzik.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/86] PATA fixes
-References: <20091125170218.5446.13513.sendpatchset@localhost> <200912031339.14440.bzolnier@gmail.com> <4B17FB37.2030501@garzik.org> <200912032045.48728.bzolnier@gmail.com> <4B182A9F.5090708@garzik.org>
-In-Reply-To: <4B182A9F.5090708@garzik.org>
+Subject: Re: [PATCH] pata_it8213: MWDMA0 is unsupported
+References: <200911261728.36433.bzolnier@gmail.com> <200911261800.55025.bzolnier@gmail.com> <4B0EB986.2010801@ru.mvista.com> <4B1827EA.4050608@garzik.org>
+In-Reply-To: <4B1827EA.4050608@garzik.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,49 +31,38 @@ Hello.
 
 Jeff Garzik wrote:
 
->>        pata_efar: MWDMA0 is unsupported
+>>>> MWDMA0 timings cannot be met with the PIIX based controller
+>>>> programming interface.
+>>
+>>>> This change should be safe as this is how we have been doing
+>>>> things in IDE it8213 host driver for years.
+>>
+>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>>> ---
+>>>> Verified with the documentation (similar case as with pata_efar).
+>>
+>>> Uhhh, no...
+>>
+>>> Too many damn drivers.
+>>
+>>> Too much damn duplication.
+>>
+>>> Too much damn subtle differences here and there.
+>>
+>>> The hardware is probably fine for MWMDA0 when it comes to
+>>> pata_{efar,it8213},
+>>> it just not documented properly in the data sheet.
+>>
+>> How so with pata_efar? The active/recovery bitfields are still 2-bit
+>> wide, no?
 >
-> skipped, pending discussion (just sent email)
+> So....  pata_it8213 is fine for MWDMA0, then?
 
-   There's basically nothing to discuss -- the PIIX like chips don't 
-support MWDMA0 (with an acceptable cycle length, if at all, anyway). The 
-way the driver is written, MWDMA0 is simply programmed overclocked.
+   No, TTBOMK. I just have no datasheet. However, it's programmed 
+overclocked and even in theory the cycle time cannot exceeed 600 ns vs 
+480 ns spec'ed.
 
->
->>        pata_hpt3x2n: fix overclocked MWDMA0 timing
->
-> skipped, pending discussion (just sent email)
-
-
-   Nothing to discuss either, this looks like a single digit typo to me...
-
->
->>        pata_hpt3x3: Power Management fix
->
-> applied, on a hope and a prayer (did not see this posted to mailing 
-> list?).
-
-   http://marc.info/?l=linux-ide&m=125916980522990
-
->
->>        pata_it8213: MWDMA0 is unsupported
->
-> skipped, pending discussion (just sent email)
-
-   Nothing to discuss...
-
->        pata_oldpiix: MWDMA0 is unsupported
->
-> skipped -- Alan, Sergey, comments?
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
->
->>        pata_rdc: MWDMA0 is unsupported
->
-> skipped -- Alan, Sergey, comments?
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>     Jeff
 
 MBR, Sergei
 
