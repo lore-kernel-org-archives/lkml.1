@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZLCWI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZLCWIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbZLCWI7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 17:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZLCWI7
+	id S1753764AbZLCWIY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 17:08:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbZLCWIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 17:08:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55925 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752404AbZLCWI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 17:08:58 -0500
-Message-ID: <4B1836A6.405@redhat.com>
-Date: Fri, 04 Dec 2009 08:07:34 +1000
-From: Peter Hutterer <peter.hutterer@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Thu, 3 Dec 2009 17:08:23 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:37176 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753581AbZLCWIW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 17:08:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Hx0CVlJhsmJcB74dknSk3GgvF9p10IKw5BVCHpChyBGR4o8Zlwa6f+TsIGAfqiBuQw
+         WVFUD5Tm0ta1Jofm0IvHv61eYyorWFNbeg0YlP32g4BS2mgQolRLJJfB/+USwpl0bY88
+         YliJ/acJxJXQnGTiEW+m3cYrMGfWNTT7s9HtA=
+Message-ID: <4B1836D5.9010502@garzik.org>
+Date: Thu, 03 Dec 2009 17:08:21 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Peter Korsgaard <jacmet@sunsite.dk>
-CC: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
-References: <20091203050810.GA26595@barra.bne.redhat.com> <87zl60s17o.fsf@macbook.be.48ers.dk>
-In-Reply-To: <87zl60s17o.fsf@macbook.be.48ers.dk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/86] PATA fixes
+References: <20091125170218.5446.13513.sendpatchset@localhost> <200912031339.14440.bzolnier@gmail.com> <4B17FB37.2030501@garzik.org> <200912032045.48728.bzolnier@gmail.com> <4B182A9F.5090708@garzik.org> <4B18357E.9050900@ru.mvista.com>
+In-Reply-To: <4B18357E.9050900@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/12/09 22:15, Peter Korsgaard wrote:
->>>>>> "Peter" == Peter Hutterer<peter.hutterer@redhat.com>  writes:
+On 12/03/2009 05:02 PM, Sergei Shtylyov wrote:
+> Hello.
 >
->   Peter>  These touchscreens are mounted onto HP TouchSmart and the Dell
->   Peter>  Studio One 19. Without a quirk they report a wrong button set
->   Peter>  and the x/y coordinates through ABS_Z/ABS_RX, confusing the
->   Peter>  higher levels (most notably X.Org's evdev driver).
+> Jeff Garzik wrote:
 >
-> What exactly does this fix? I've been using NW touchscreens for a while
-> and don't recall any issues (admittedly only used it with evtouch).
+>>> pata_efar: MWDMA0 is unsupported
+>>
+>> skipped, pending discussion (just sent email)
+>
+> There's basically nothing to discuss -- the PIIX like chips don't
+> support MWDMA0 (with an acceptable cycle length, if at all, anyway). The
+> way the driver is written, MWDMA0 is simply programmed overclocked.
+>
+>>
+>>> pata_hpt3x2n: fix overclocked MWDMA0 timing
+>>
+>> skipped, pending discussion (just sent email)
+>
+>
+> Nothing to discuss either, this looks like a single digit typo to me...
+>
+>>
+>>> pata_hpt3x3: Power Management fix
+>>
+>> applied, on a hope and a prayer (did not see this posted to mailing
+>> list?).
+>
+> http://marc.info/?l=linux-ide&m=125916980522990
 
-evtouch has the following code:
+Yeah, missed that.  Bart provided a link, too.
 
-         if ( (ev->code == ABS_X) || (ev->code == ABS_Z) ) {
-                 priv->raw_x = ev->value;
-                 pos_changed = 1;
-         }
 
-         if ( (ev->code == ABS_Y) || (ev->code == ABS_RX) ) {
-                 priv->raw_y = ev->value;
-                 pos_changed = 1;
-         }
+>>> pata_it8213: MWDMA0 is unsupported
+>>
+>> skipped, pending discussion (just sent email)
+>
+> Nothing to discuss...
 
-it's a hack in userspace that works around wrong event reporting. So 
-yes, it works if you're using evtouch but if you want to use any other 
-driver that driver needs the same hack. treating Z as X and RX as Y 
-doesn't work too well for a generic driver such as evdev, which has to 
-deal with devices where RX is a valid axis.
+Perhaps discuss was the wrong word.  After reviewing each thread, in 
+each case, it remained unclear whether the original patch was correct or 
+not, especially since the docs seemed to list MWDMA0 as supported on 
+PIIX-like chips.
 
-Cheers,
-   Peter
+Thanks for going over these, that should clear up my confusion.
+
+	Jeff
+
+
+
