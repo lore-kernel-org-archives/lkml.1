@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZLCEuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751443AbZLCFUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbZLCEuO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Dec 2009 23:50:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZLCEuN
+	id S1751443AbZLCFUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 00:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZLCFUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Dec 2009 23:50:13 -0500
-Received: from mail-pz0-f184.google.com ([209.85.222.184]:35413 "EHLO
-	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbZLCEuL (ORCPT
+	Thu, 3 Dec 2009 00:20:39 -0500
+Received: from leo.clearchain.com ([199.73.29.74]:18996 "EHLO
+	mail.clearchain.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931AbZLCFUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Dec 2009 23:50:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=KLHT6fJfgFYNYg+h9RVE95EzDl4KDx5FZgkSxtsts9qOt787XsABg732aP2UX3QJii
-         PZ6+KQoQMXVMZRGkBJet0x+bkPMsL85YOx2SKCOiIf/FCv4EfmjmgnY8Tr6qvgVvPAi0
-         XouB/UNTjm0P+xOKHoV/dufQJnwHEWVCat2VA=
-Subject: Re: [PATCH v0] Loongson2: CPUFreq: add support to load module
- automatically
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>,
-       Dominik Brodowski <linux@dominikbrodowski.net>, cpufreq@vger.kernel.org
-In-Reply-To: <8421507f5dfc1a70d1dba92ad7604a8bfaa5a447.1259805106.git.wuzhangjin@gmail.com>
-References: <8421507f5dfc1a70d1dba92ad7604a8bfaa5a447.1259805106.git.wuzhangjin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Thu, 03 Dec 2009 12:49:55 +0800
-Message-ID: <1259815795.4474.34.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 00:20:38 -0500
+X-Greylist: delayed 680 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Dec 2009 00:20:37 EST
+Date: Thu, 3 Dec 2009 15:08:10 +1000
+From: Peter Hutterer <peter.hutterer@redhat.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
+Message-ID: <20091203050810.GA26595@barra.bne.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-4.0.1 (mail.clearchain.com [127.0.0.1]); Thu, 03 Dec 2009 15:39:20 +1030 (CST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[...]
-> diff --git a/arch/mips/loongson/common/platform.c b/arch/mips/loongson/common/platform.c
-> new file mode 100644
-> index 0000000..fdb24fd
-> --- /dev/null
-> +++ b/arch/mips/loongson/common/platform.c
-> @@ -0,0 +1,32 @@
-> +/*
-> + * Copyright (C) 2009 Lemote Inc.
-> + * Author: Wu Zhangjin, wuzj@lemote.com
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +#include <linux/err.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include <asm/bootinfo.h>
+These touchscreens are mounted onto HP TouchSmart and the Dell Studio One
+19. Without a quirk they report a wrong button set and the x/y coordinates
+through ABS_Z/ABS_RX, confusing the higher levels (most notably X.Org's
+evdev driver).
 
-The above header file is not needed.
+Device id 0x003 covers models 1900, 2150, and 2700 [1] though testing could
+only be performed on a model 1900.
 
-Regards,
-	Wu Zhangjin
+[1] http://www.nextwindow.com/nextwindow_support/latest_tech_info.html
+
+Signed-off-by: Peter Hutterer <peter.hutterer@redhat.com>
+---
+ drivers/hid/hid-ids.h           |    3 +++
+ drivers/hid/usbhid/hid-quirks.c |    1 +
+ 2 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index adbef5d..f5144b8 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -346,6 +346,9 @@
+ #define USB_VENDOR_ID_NEC		0x073e
+ #define USB_DEVICE_ID_NEC_USB_GAME_PAD	0x0301
+ 
++#define USB_VENDOR_ID_NEXTWINDOW	0x1926
++#define USB_DEVICE_ID_NEXTWINDOW_TOUCHSCREEN	0x0003
++
+ #define USB_VENDOR_ID_NTRIG                0x1b96
+ #define USB_DEVICE_ID_NTRIG_TOUCH_SCREEN   0x0001
+ 
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index 0d9045a..e987562 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -37,6 +37,7 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_HAPP, USB_DEVICE_ID_UGCI_FIGHTING, HID_QUIRK_BADPAD | HID_QUIRK_MULTI_INPUT },
+ 	{ USB_VENDOR_ID_NATSU, USB_DEVICE_ID_NATSU_GAMEPAD, HID_QUIRK_BADPAD },
+ 	{ USB_VENDOR_ID_NEC, USB_DEVICE_ID_NEC_USB_GAME_PAD, HID_QUIRK_BADPAD },
++	{ USB_VENDOR_ID_NEXTWINDOW, USB_DEVICE_ID_NEXTWINDOW_TOUCHSCREEN, HID_QUIRK_MULTI_INPUT},
+ 	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
+ 	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
+ 
+-- 
+1.6.5.2
 
