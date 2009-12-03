@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbZLCHPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZLCHUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbZLCHPI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 02:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZLCHPH
+	id S1753532AbZLCHUx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 02:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZLCHUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 02:15:07 -0500
-Received: from mail-pz0-f184.google.com ([209.85.222.184]:47207 "EHLO
-	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbZLCHPG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 02:15:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nzx6YmwseBSy1p1rshLtqekw0kaOqX6CCMgnqssHTNdRHapKRZhxXyHvumi1d0aDy1
-         Vd7sWGGUV0Lm3EYhZ4IwRuEc2sIiF47neKbw9Kvg3/DFDJPn8LzDZemzXNbZrfy8963e
-         L9wZDt8qjmhEEULjBtDg3Y0svCd5yFEGcDNgo=
-Date: Wed, 2 Dec 2009 23:15:07 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: liu pf <kernelfans@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Should we use preempt_disable() in sleep_on_common()?
-Message-ID: <20091203071507.GJ9121@core.coreip.homeip.net>
-References: <563a732e0912022249y1e831c6cv7f2d5d376b8a5f63@mail.gmail.com> <20091202230746.611f7fc5@infradead.org> <20091203071244.GI9121@core.coreip.homeip.net>
+	Thu, 3 Dec 2009 02:20:52 -0500
+Received: from ozlabs.org ([203.10.76.45]:40637 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752075AbZLCHUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 02:20:51 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] modules: don't export section names of empty sections via sysfs
+Date: Thu, 3 Dec 2009 17:50:41 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
+       kyle@mcmartin.ca, akpm@linux-foundation.org,
+       James.Bottomley@hansenpartnership.com, roland@redhat.com,
+       dave@hiauly1.hia.nrc.ca, torvalds@linux-foundation.org
+References: <20091202232915.GA2251@p100.box>
+In-Reply-To: <20091202232915.GA2251@p100.box>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091203071244.GI9121@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912031750.41240.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 11:12:44PM -0800, Dmitry Torokhov wrote:
-> On Wed, Dec 02, 2009 at 11:07:46PM -0800, Arjan van de Ven wrote:
-> > On Thu, 3 Dec 2009 14:49:14 +0800
-> > liu pf <kernelfans@gmail.com> wrote:
-> > 
-> > > Hi:
-> > > 
-> > > I am puzzled with the following scenario. Could anyone enlighten me?
-> > 
-> > 
-> > sleep_on family of APIs is very racy and just cannot be used correctly;
-> > I'm not surprised that there's a preempt race in it, but trust me, it's
-> > not the biggest race... never ever use these APIs!!!
-> > 
-> > 
-> 
-> BTW, why do we still have them? I checked couple and they don't seem to
-> be used...
-> 
+On Thu, 3 Dec 2009 09:59:15 am Helge Deller wrote:
+> [PATCH] modules: don't export section names of empty sections via sysfs
 
-Ah, my bad, I now see interruptible_sleep_on used all over drivers/char...
+Thanks, applied.
 
--- 
-Dmitry
+Ah, I see Linus snuck this in before the release.  Excellent.
+Rusty.
