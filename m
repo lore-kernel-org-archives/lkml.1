@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZLCGZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbZLCGdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbZLCGZW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 01:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZLCGZV
+	id S1752818AbZLCGdG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 01:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZLCGdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 01:25:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48330
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751167AbZLCGZU (ORCPT
+	Thu, 3 Dec 2009 01:33:05 -0500
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:52685 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751156AbZLCGdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 01:25:20 -0500
-Date: Wed, 02 Dec 2009 22:25:26 -0800 (PST)
-Message-Id: <20091202.222526.237239384.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: phdm@macqel.be, grundler@parisc-linux.org, kyle@mcmartin.ca,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: tulip : kernel BUG in tulip_up/tulip_resume
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091129113659.GA2971@ami.dom.local>
-References: <20091108223305.GA21072@frolo.macqel>
-	<20091129001710.GA4055@ami.dom.local>
-	<20091129113659.GA2971@ami.dom.local>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 01:33:03 -0500
+Date: Thu, 3 Dec 2009 12:03:05 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v10 PATCH 9/9]: POWER: Enable default_idle when power_save=off
+Message-ID: <20091203063305.GA30923@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091202095427.GA27251@linux.vnet.ibm.com>
+ <20091202100346.GJ27251@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091202100346.GJ27251@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Sun, 29 Nov 2009 12:36:59 +0100
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-12-02 15:33:46]:
 
-> On Sun, Nov 29, 2009 at 01:17:10AM +0100, Jarek Poplawski wrote:
->> Philippe De Muyter wrote, On 11/08/2009 11:33 PM:
->> > Does someone know what could be wrong and have a fix or should I look myself ?
->> 
->> Don't know, guess only...
-> 
-> ...And maybe a second guess btw. (to try together or separate).
+Thanks for running checkpatch on the patch Daniel. Will fix this.
 
-Philippe please test Jarek's patches.
-
-Thank you.
+arun
