@@ -1,113 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059AbZLCNtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZLCNvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756059AbZLCNtj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 08:49:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZLCNti
+	id S1756113AbZLCNvl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 08:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbZLCNvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 08:49:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5774 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752290AbZLCNth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 08:49:37 -0500
-Message-ID: <4B17C25A.8090703@redhat.com>
-Date: Thu, 03 Dec 2009 08:51:22 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Thu, 3 Dec 2009 08:51:40 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:34148 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756024AbZLCNvj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 08:51:39 -0500
+Date: Thu, 3 Dec 2009 14:51:40 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Stanislav Brabec <sbrabec@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de,
+       Pavel Machek <pavel@ucw.cz>, saxena@laptop.org,
+       Eric Miao <eric.y.miao@gmail.com>, s.hauer@pengutronix.de,
+       Haojian Zhuang <haojian.zhuang@gmail.com>
+Subject: Re: [PATCH]serial-core: resume serial hardware with
+ no_console_suspend (resend)
+Message-ID: <20091203135140.GC14091@buzzloop.caiaq.de>
+References: <1259767256.8709.323.camel@hammer.suse.cz>
 MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, wcohen@redhat.com, fweisbec@gmail.com,
-       tglx@linutronix.de, jbaron@redhat.com,
-       linux-tip-commits@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-Subject: Re: trace/events: DECLARE vs DEFINE semantic
-References: <20091202144334.GA30359@elte.hu>	 <1259765735.12870.42.camel@gandalf.stny.rr.com>	 <20091202162715.GB9710@Krystal>	 <1259773888.12870.61.camel@gandalf.stny.rr.com>	 <20091202180633.GF9710@Krystal>	 <1259777987.12870.70.camel@gandalf.stny.rr.com>	 <20091202190135.GA23316@Krystal>	 <1259781578.12870.78.camel@gandalf.stny.rr.com>	 <4B16EC06.6010706@redhat.com>	 <1259794005.12870.102.camel@gandalf.stny.rr.com>	 <20091202231019.GB14770@Krystal>  <4B1737E2.6010502@redhat.com> <1259813228.12870.108.camel@gandalf.stny.rr.com>
-In-Reply-To: <1259813228.12870.108.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1259767256.8709.323.camel@hammer.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 2009-12-02 at 23:00 -0500, Masami Hiramatsu wrote:
->> Mathieu Desnoyers wrote:
->>> In addition, I wonder if we should rename "CREATE_TRACE_POINTS" to
->>> something more suitable while we are here ? Basically, it will affect
->>> all TRACE_CLASS/TRACE_CLASS_EVENT/TRACE_EVENT from headers included
->>> after it's defined.
->>
->> Agreed, CREATE_TRACE_POINTS is a bit irritating thing :-(
+On Wed, Dec 02, 2009 at 04:20:56PM +0100, Stanislav Brabec wrote:
+> Perform a tricky suspend/resume even with no_console_suspend.
 > 
-> Well, I think the name could use some help, but I don't think it is the
-> name that irritates you.
-
-Yes :-)
-
->> For example, if we call tracepoints defined in same-header on
->> several different files, we need to check other people have
->> already defined CREATE_TRACE_POINTS on another file, because
->> CREATE_TRACE_POINTS must be used once for each header...
->>
->> So, how about introducing a c file which is only for defining
->> tracepoints for kernel parts ? or defining tracepoints in
->> kernel at the beginning of kernel/tracepoint.c ? (and don't
->> touch tracepoints in modules)
+> With no_console_suspend, kernel skips serial port suspend/resume and the
+> serial hardware may remain in undefined state after resume. It actually
+> happens on devices that don't have BIOS that handle serial
+> initialization. It makes impossible to use serial console after resume. 
 > 
-> I think the proper fix is to have each tracepoint header have its own C
-> file. I believe Christoph does this with xfs.
+> Devices affected by this problem include:
+> Sharp Zaurus devices
+> Several PXA based ARM embedded boards
+
+True, I had occasions where the serial console did not get back to life
+after suspend on a PXA300 based device. It didn't always happen though.
+
+> The patch does:
+> - Save the hardware state
+> - Perform buffer flush in time of its suspend call
+> - Tell the driver that port is suspended
+> - But still accept new data
+> - And keep console hardware in state that allows to send them
 > 
-> Basically, we should have a:
+> It allows to capture late console messages without breaking console
+> after resume.
 > 
-> kernel/sched_trace.c that includes the include/trace/events/sched.h and
-> does the define.
+> This is just a resend of a patch discussed in these threads, as the
+> patch was not yet applied.
 > 
-> And the same goes for other trace points.
-
-Hmm, I'd rather like to move it into kernel/events/ or something new
-sub directory, since those files will have just two lines (define and
-include).
-
->> e.g.
->>
->> @kernel/tracepoint.c
->>  ...
->>  #define CREATE_TRACE_POINTS
->>  #include <trace/events/sched.h>
->>  #include <trace/events/...>
+> "Possible suspend/resume regression in .32-rc?" (Nov 1-5, 2009, ARM
+> list, later LKML)
 > 
-> We could do this for all that is defined in the include/trace/events.
+> "serial-core: resume serial hardware with no_console_suspend" (Sep
+> 15-Oct 18, 2009, LKML & ARM lists)
 > 
->>  ...
->>
->> @kernel/sched.c
->>  ...
->>  #include <trace/events/sched.h>	/* Just include events header */
->>  ...
->>
->> @fs/ext4/super.c (no change, since it can be module)
->>  ...
->>  #define CREATE_TRACE_POINTS
->>  #include <trace/events/ext4.h>
+> Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
+> Tested-by: Haojian Zhuang <haojian.zhuang@gmail.com>
+
+And I didn't see that problem anymore since your patch is applied,
+great!
+
+Tested-by: Daniel Mack <daniel@caiaq.de>
+
+Thanks,
+Daniel
+
+
+
+> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+> index dcc7244..f1e1ab2 100644
+> --- a/drivers/serial/serial_core.c
+> +++ b/drivers/serial/serial_core.c
+> @@ -2008,12 +2008,6 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
+>  
+>  	mutex_lock(&port->mutex);
+>  
+> -	if (!console_suspend_enabled && uart_console(uport)) {
+> -		/* we're going to avoid suspending serial console */
+> -		mutex_unlock(&port->mutex);
+> -		return 0;
+> -	}
+> -
+>  	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
+>  	if (device_may_wakeup(tty_dev)) {
+>  		enable_irq_wake(uport->irq);
+> @@ -2021,20 +2015,23 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
+>  		mutex_unlock(&port->mutex);
+>  		return 0;
+>  	}
+> -	uport->suspended = 1;
+> +	if (console_suspend_enabled || !uart_console(uport))
+> +		uport->suspended = 1;
+>  
+>  	if (port->flags & ASYNC_INITIALIZED) {
+>  		const struct uart_ops *ops = uport->ops;
+>  		int tries;
+>  
+> -		set_bit(ASYNCB_SUSPENDED, &port->flags);
+> -		clear_bit(ASYNCB_INITIALIZED, &port->flags);
+> +		if (console_suspend_enabled || !uart_console(uport)) {
+> +			set_bit(ASYNCB_SUSPENDED, &port->flags);
+> +			clear_bit(ASYNCB_INITIALIZED, &port->flags);
+>  
+> -		spin_lock_irq(&uport->lock);
+> -		ops->stop_tx(uport);
+> -		ops->set_mctrl(uport, 0);
+> -		ops->stop_rx(uport);
+> -		spin_unlock_irq(&uport->lock);
+> +			spin_lock_irq(&uport->lock);
+> +			ops->stop_tx(uport);
+> +			ops->set_mctrl(uport, 0);
+> +			ops->stop_rx(uport);
+> +			spin_unlock_irq(&uport->lock);
+> +		}
+>  
+>  		/*
+>  		 * Wait for the transmitter to empty.
+> @@ -2049,16 +2046,18 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
+>  			       drv->dev_name,
+>  			       drv->tty_driver->name_base + uport->line);
+>  
+> -		ops->shutdown(uport);
+> +		if (console_suspend_enabled || !uart_console(uport))
+> +			ops->shutdown(uport);
+>  	}
+>  
+>  	/*
+>  	 * Disable the console device before suspending.
+>  	 */
+> -	if (uart_console(uport))
+> +	if (console_suspend_enabled && uart_console(uport))
+>  		console_stop(uport->cons);
+>  
+> -	uart_change_pm(state, 3);
+> +	if (console_suspend_enabled || !uart_console(uport))
+> +		uart_change_pm(state, 3);
+>  
+>  	mutex_unlock(&port->mutex);
+>  
+> @@ -2075,29 +2074,6 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
+>  
+>  	mutex_lock(&port->mutex);
+>  
+> -	if (!console_suspend_enabled && uart_console(uport)) {
+> -		/* no need to resume serial console, it wasn't suspended */
+> -		/*
+> -		 * First try to use the console cflag setting.
+> -		 */
+> -		memset(&termios, 0, sizeof(struct ktermios));
+> -		termios.c_cflag = uport->cons->cflag;
+> -		/*
+> -		 * If that's unset, use the tty termios setting.
+> -		 */
+> -		if (termios.c_cflag == 0)
+> -			termios = *state->port.tty->termios;
+> -		else {
+> -			termios.c_ispeed = termios.c_ospeed =
+> -				tty_termios_input_baud_rate(&termios);
+> -			termios.c_ispeed = termios.c_ospeed =
+> -				tty_termios_baud_rate(&termios);
+> -		}
+> -		uport->ops->set_termios(uport, &termios, NULL);
+> -		mutex_unlock(&port->mutex);
+> -		return 0;
+> -	}
+> -
+>  	tty_dev = device_find_child(uport->dev, &match, serial_match_port);
+>  	if (!uport->suspended && device_may_wakeup(tty_dev)) {
+>  		disable_irq_wake(uport->irq);
+> @@ -2123,21 +2099,23 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
+>  		spin_lock_irq(&uport->lock);
+>  		ops->set_mctrl(uport, 0);
+>  		spin_unlock_irq(&uport->lock);
+> -		ret = ops->startup(uport);
+> -		if (ret == 0) {
+> -			uart_change_speed(state, NULL);
+> -			spin_lock_irq(&uport->lock);
+> -			ops->set_mctrl(uport, uport->mctrl);
+> -			ops->start_tx(uport);
+> -			spin_unlock_irq(&uport->lock);
+> -			set_bit(ASYNCB_INITIALIZED, &port->flags);
+> -		} else {
+> -			/*
+> -			 * Failed to resume - maybe hardware went away?
+> -			 * Clear the "initialized" flag so we won't try
+> -			 * to call the low level drivers shutdown method.
+> -			 */
+> -			uart_shutdown(state);
+> +		if (console_suspend_enabled || !uart_console(uport)) {
+> +			ret = ops->startup(uport);
+> +			if (ret == 0) {
+> +				uart_change_speed(state, NULL);
+> +				spin_lock_irq(&uport->lock);
+> +				ops->set_mctrl(uport, uport->mctrl);
+> +				ops->start_tx(uport);
+> +				spin_unlock_irq(&uport->lock);
+> +				set_bit(ASYNCB_INITIALIZED, &port->flags);
+> +			} else {
+> +				/*
+> +				 * Failed to resume - maybe hardware went away?
+> +				 * Clear the "initialized" flag so we won't try
+> +				 * to call the low level drivers shutdown method.
+> +				 */
+> +				uart_shutdown(state);
+> +			}
+>  		}
+>  
+>  		clear_bit(ASYNCB_SUSPENDED, &port->flags);
 > 
-> Perhaps we should move out anything in include/trace/events that is also
-> a module into its sub system?
-
-Would you mean putting those headers in sub-system's directory?
-(e.g. fs/ext4/)
-In that case, a problem will happen when user want to hook those
-tracepoint from their module, because it is hard to find those
-local headers.
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+> 
+> -- 
+> Best Regards / S pozdravem,
+> 
+> Stanislav Brabec
+> software developer
+> ---------------------------------------------------------------------
+> SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
+> Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
+> 190 00 Praha 9                                  fax: +420 284 028 951
+> Czech Republic                                    http://www.suse.cz/
+> 
+> 
+> 
+> 
