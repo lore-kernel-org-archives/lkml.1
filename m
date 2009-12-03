@@ -1,75 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbZLCSuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbZLCSul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbZLCSuL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 13:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbZLCSuK
+	id S1756618AbZLCSul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 13:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbZLCSul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 13:50:10 -0500
-Received: from claw.goop.org ([74.207.240.146]:53862 "EHLO claw.goop.org"
+	Thu, 3 Dec 2009 13:50:41 -0500
+Received: from mga09.intel.com ([134.134.136.24]:44428 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756339AbZLCSuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 13:50:09 -0500
-Message-ID: <4B180867.3050706@goop.org>
-Date: Thu, 03 Dec 2009 10:50:15 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	id S1756580AbZLCSuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 13:50:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,336,1257148800"; 
+   d="scan'208";a="575412063"
+Date: Thu, 3 Dec 2009 10:50:47 -0800 (Pacific Standard Time)
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: Dimitri Sivanich <sivanich@sgi.com>
+cc: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+In-Reply-To: <20091203171946.GC15151@sgi.com>
+Message-ID: <Pine.WNT.4.64.0912031048590.8104@ppwaskie-MOBL2.amr.corp.intel.com>
+References: <alpine.LFD.2.00.0911241246470.24119@localhost.localdomain>
+ <1259069986.4531.1453.camel@laptop> <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
+ <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org>
+ <20091125074033.4c46c1b0@infradead.org> <20091203165004.GA14665@sgi.com>
+ <Pine.WNT.4.64.0912030851500.13880@ppwaskie-MOBL2.amr.corp.intel.com>
+ <20091203170149.GA15151@sgi.com> <Pine.WNT.4.64.0912030905530.16084@ppwaskie-MOBL2.amr.corp.intel.com>
+ <20091203171946.GC15151@sgi.com>
+ReplyTo: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+X-X-Sender: amrppwaskie@imapmail.glb.intel.com
 MIME-Version: 1.0
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-CC: jayakumar.lkml@gmail.com, damm@opensource.se, linux-kernel@vger.kernel.org,
-       armbru@redhat.com
-Subject: Re: [PATCH 1/3] fb-defio: If FBINFO_VIRTFB is defined, do not set
- VM_IO flag.
-References: <1259854318-16907-1-git-send-email-konrad.wilk@oracle.com> <1259854318-16907-2-git-send-email-konrad.wilk@oracle.com>
-In-Reply-To: <1259854318-16907-2-git-send-email-konrad.wilk@oracle.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03/09 07:31, Konrad Rzeszutek Wilk wrote:
-> Most users (except sh_mobile_lcdcfb.c) get their framebuffer from
-> vmalloc. Setting VM_IO is not necessary as the memory obtained
-> from vmalloc is System RAM type and is not susceptible to PCI memory
-> constraints.
->   
+On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
 
-Looks good, but you forgot signoffs on these.  Do you want me to add them?
+> On Thu, Dec 03, 2009 at 09:07:21AM -0800, Waskiewicz Jr, Peter P wrote:
+> > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
+> > 
+> > > On Thu, Dec 03, 2009 at 08:53:23AM -0800, Waskiewicz Jr, Peter P wrote:
+> > > > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
+> > > > 
+> > > > > On Wed, Nov 25, 2009 at 07:40:33AM -0800, Arjan van de Ven wrote:
+> > > > > > On Tue, 24 Nov 2009 09:41:18 -0800
+> > > > > > ebiederm@xmission.com (Eric W. Biederman) wrote:
+> > > > > > > Oii.
+> > > > > > > 
+> > > > > > > I don't think it is bad to export information to applications like
+> > > > > > > irqbalance.
+> > > > > > > 
+> > > > > > > I think it pretty horrible that one of the standard ways I have heard
+> > > > > > > to improve performance on 10G nics is to kill irqbalance.
+> > > > > > 
+> > > > > > irqbalance does not move networking irqs; if it does there's something
+> > > > > > evil going on in the system. But thanks for the bugreport ;)
+> > > > > 
+> > > > > It does move networking irqs.
+> > > > > 
+> > > > > > 
+> > > > > > we had that; it didn't work.
+> > > > > > what I'm asking for is for the kernel to expose the numa information;
+> > > > > > right now that is the piece that is missing.
+> > > > > > 
+> > > > > 
+> > > > > I'm wondering if we should expose that numa information in the form of a node or the set of allowed cpus, or both?
+> > > > > 
+> > > > > I'm guessing 'both' is the correct answer, so that apps like irqbalance can make a qualitative decision based on the node (affinity to cpus on this node is better), but an absolute decision based on allowed cpus (I cannot change affinity to anything but this set of cpus).
+> > > > 
+> > > > That's exactly what my patch in the thread "irq: Add node_affinity CPU 
+> > > > masks for smarter irqbalance hints" is doing.  I've also done the 
+> > > > irqbalance changes based on that kernel patch, and Arjan currently has 
+> > > > that patch.
+> > > 
+> > > So if I understand correctly, you're patch takes care of the qualitative portion of it (we prefer to set affinity to these cpus, which may be on more than one node), but not the restrictive part of it (we cannot change affinity to anything but these cpus)?
+> > 
+> > That is correct.  The patch provides an interface to both the kernel 
+> > (functions) and /proc for userspace to set a CPU mask.  That is the 
+> > preferred mask for the interrupt to be balanced on.  Then irqbalance will 
+> > make decisions on how to balance within that provided mask, if it in fact 
+> > has been provided.
+> 
+> What if it's not provided?  Will irqbalance make decisions based on the numa_node of that irq (I would hope)?
 
-Thanks,
-    J
-> ---
->  drivers/video/fb_defio.c |    4 +++-
->  include/linux/fb.h       |    1 +
->  2 files changed, 4 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
-> index c27ab1e..94414fc 100644
-> --- a/drivers/video/fb_defio.c
-> +++ b/drivers/video/fb_defio.c
-> @@ -144,7 +144,9 @@ static const struct address_space_operations fb_deferred_io_aops = {
->  static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
->  {
->  	vma->vm_ops = &fb_deferred_io_vm_ops;
-> -	vma->vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
-> +	vma->vm_flags |= ( VM_RESERVED | VM_DONTEXPAND );
-> +	if (!(info->flags & FBINFO_VIRTFB))
-> +		vma->vm_flags |= VM_IO;
->  	vma->vm_private_data = info;
->  	return 0;
->  }
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index de9c722..369767b 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -763,6 +763,7 @@ struct fb_tile_ops {
->  	 *  takes over; acceleration engine should be in a quiescent state */
->  
->  /* hints */
-> +#define FBINFO_VIRTFB		0x0004 /* FB is System RAM, not device. */
->  #define FBINFO_PARTIAL_PAN_OK	0x0040 /* otw use pan only for double-buffering */
->  #define FBINFO_READS_FAST	0x0080 /* soft-copy faster than rendering */
->  
->   
+If it's not provided, then irqbalance will continue to do what it does 
+today.  No changes.
 
+> 
+> Also, can we add a restricted mask as I mention above into this scheme?  If we can't send an IRQ to some node, we don't want to bother attempting to change affinity to cpus on that node (hopefully code in the kernel will eventually restrict this).
+> 
+
+The interface allows you to put in any CPU mask.  The way it's written 
+now, whatever mask you put in, irqbalance *only* balances within that 
+mask.  It won't ever try and go outside that mask.
+
+> As a matter of fact, driver's allocating rings, buffers, queues on other nodes should optimally be made aware of the restriction.
+
+The idea is that the driver will do its memory allocations for everything 
+across nodes.  When it does that, it will use the kernel interface 
+(function call) to set the corresponding mask it wants for those queue 
+resources.  That is my end-goal for this code.
+
+Cheers,
+-PJ
