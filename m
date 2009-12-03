@@ -1,91 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZLCT7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZLCUBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbZLCT7V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 14:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZLCT7U
+	id S1754707AbZLCUBb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 15:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbZLCUBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 14:59:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:26694 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689AbZLCT7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 14:59:19 -0500
-From: Eric Paris <eparis@redhat.com>
-Subject: [RFC PATCH 1/6] shmem: use alloc_file instead of init_file
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
-       eparis@redhat.com, zohar@us.ibm.com, jack@suse.cz,
-       jmalicki@metacarta.com, dsmith@redhat.com, serue@us.ibm.com, hch@lst.de,
-       john@johnmccutchan.com, rlove@rlove.org, ebiederm@xmission.com,
-       heiko.carstens@de.ibm.com, penguin-kernel@I-love.SAKURA.ne.jp,
-       mszeredi@suse.cz, jens.axboe@oracle.com, akpm@linux-foundation.org,
-       matthew@wil.cx, hugh.dickins@tiscali.co.uk,
-       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
-       davem@davemloft.net, arnd@arndb.de, eric.dumazet@gmail.com
-Date: Thu, 03 Dec 2009 14:58:51 -0500
-Message-ID: <20091203195851.8925.30926.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 3 Dec 2009 15:01:30 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41101 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753613AbZLCUB3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 15:01:29 -0500
+Date: Thu, 3 Dec 2009 11:58:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org, dhowells@redhat.com,
+       gyang@blackfin.uclinux.org, john.johansen@canonical.com,
+       Mike Frysinger <vapier.adi@gmail.com>, stable@kernel.org
+Subject: Re: [PATCH] security: do not check mmap_min_addr on nommu systems
+Message-Id: <20091203115858.d91b64dc.akpm@linux-foundation.org>
+In-Reply-To: <20091203194300.8491.22110.stgit@paris.rdu.redhat.com>
+References: <20091203194300.8491.22110.stgit@paris.rdu.redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-shmem uses get_empty_filp() and then init_file().  Their is no good reason
-not to just use alloc_file() like everything else.
+On Thu, 03 Dec 2009 14:43:01 -0500
+Eric Paris <eparis@redhat.com> wrote:
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+> nommu systems can do anything with memory they please and so they already
+> win.  mmap_min_addr is the least of their worries.  Currently the
+> mmap_min_addr implementation is problamatic on such systems.  This patch
+> changes the addr_only argument to be a flags which can take the arguments
+> for addr_only or not_addr.  LSMs then need to properly implement these two
+> flags.
 
- mm/shmem.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+This replaces David's
+nommu-ignore-the-address-parameter-in-the-file_mmap-security-check.patch,
+which missed 2.6.32.
 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 356dd99..831f8bb 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -2640,32 +2640,32 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
- 	if (!dentry)
- 		goto put_memory;
- 
--	error = -ENFILE;
--	file = get_empty_filp();
--	if (!file)
--		goto put_dentry;
--
- 	error = -ENOSPC;
- 	inode = shmem_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0, flags);
- 	if (!inode)
--		goto close_file;
-+		goto put_dentry;
- 
- 	d_instantiate(dentry, inode);
- 	inode->i_size = size;
- 	inode->i_nlink = 0;	/* It is unlinked */
--	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
--		  &shmem_file_operations);
-+
-+	error = -ENFILE;
-+	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
-+			  &shmem_file_operations);
-+	if (!file)
-+		goto put_dentry;
- 
- #ifndef CONFIG_MMU
- 	error = ramfs_nommu_expand_for_mapping(inode, size);
- 	if (error)
- 		goto close_file;
- #endif
--	ima_counts_get(file);
- 	return file;
- 
-+#ifndef CONFIG_MMU
- close_file:
--	put_filp(file);
-+	fput(file);
-+#endif
- put_dentry:
- 	dput(dentry);
- put_memory:
+What are our thoughts wrt backporting this fix in some form into
+2.6.32.x and earlier?
+
 
