@@ -1,105 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZLCVbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbZLCVcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbZLCVbi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 16:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZLCVbh
+	id S1755402AbZLCVcM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 16:32:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZLCVcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 16:31:37 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57216 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753363AbZLCVbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 16:31:36 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: What's in suspend-2.6.git
-Date: Thu, 3 Dec 2009 22:31:56 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+	Thu, 3 Dec 2009 16:32:10 -0500
+Received: from mail-yw0-f182.google.com ([209.85.211.182]:62288 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754077AbZLCVcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 16:32:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=XccmQ3m37RnxLESPY9IqyNhWC3G7Uapum03IDiurVES8C3wbLp35UVeYks7+UQUyn7
+         SEMr5ArnqzgbyhnEivtLAlJD3+vlNA0AUsIMZZRzVuVlEeJSTIpIyoreHT8PIPHU9Oip
+         n/lTBtOvvrEba+cXgQpyU7fFHmJCjkgvAlLC4=
+Message-ID: <4B182E5D.2020905@garzik.org>
+Date: Thu, 03 Dec 2009 16:32:13 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: David Miller <davem@davemloft.net>
+CC: alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/86] PATA fixes
+References: <4B1771CD.3090409@garzik.org>	<20091203165947.13841802@lxorguk.ukuu.org.uk>	<4B17F7E4.9040302@garzik.org> <20091203.124804.168589603.davem@davemloft.net>
+In-Reply-To: <20091203.124804.168589603.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912032231.57072.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 12/03/2009 03:48 PM, David Miller wrote:
+> From: Jeff Garzik<jeff@garzik.org>
+> Date: Thu, 03 Dec 2009 12:39:48 -0500
+>
+>> On 12/03/2009 11:59 AM, Alan Cox wrote:
+>>>> The merge window is upon us, which by strict rules means that anything
+>>>> not already in libata-dev.git#upstream needs to wait until 2.6.34.
+>>>
+>>> Not quite yet - Linus hasn't said "go"
+>>
+>> He rarely if ever says "go."  The kernel X is released, and people
+>> send pull requests to Linus for X+1.  He typically merges immediately,
+>> but does not push out the first set of merges for a few days.
+>
+> I don't think he even starts pulling until 1 or 2 days later.
+>
+> I personally never send him a pull request until a day or two in.
 
-This is a summary of the changes queued on the #linux-next branch
-of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git
+<shrug>  In the past he has commented on pulls, indicating some sort of 
+immediate action, yet not pushed for a few days.
 
-They are going to be pushed to Linus in the next couple of days.
+Not a big deal.  Plenty of other people send pull requests immediately, 
+even if you ignore the high-volume Ingo special case <chuckle>
 
-PM developers, please speak up if there's anything obviously wrong or missing.
+In any case, the basic point is that Linus does not say "go" for merge 
+windows.  People send, he pulls when he chooses, and pushes when he 
+chooses.  It's all very zen ;-)
+
+	Jeff
 
 
-Alan Stern (2):
-      PM / Runtime: Export the PM runtime workqueue
-      PM / Runtime: Use deferred_resume flag in pm_request_resume
 
-Jaswinder Singh Rajput (1):
-      PM: Fix kernel-doc notation
 
-Jiri Slaby (1):
-      PM / Hibernate: Swap, use KERN_CONT
-
-Nigel Cunningham (2):
-      PM / Hibernate: Move swap functions to kernel/power/swap.c.
-      PM / Hibernate: Shift remaining code from swsusp.c to hibernate.c
-
-Rafael J. Wysocki (15):
-      PM: Introduce PM links framework
-      PM: Asynchronous resume of devices
-      PM: Asynchronous suspend of devices
-      PM: Allow PCI devices to suspend/resume asynchronously
-      PM: Allow ACPI devices to suspend/resume asynchronously
-      PM: Add a switch for disabling/enabling asynchronous suspend/resume
-      PM: Measure device suspend and resume times
-      PM: Add facility for advanced testing of async suspend/resume
-      PM: Measure suspend and resume times for individual devices
-      PM: Allow serio input devices to suspend/resume asynchronously
-      PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
-      PM / Runtime: Ensure timer_expires is nonzero in pm_schedule_suspend()
-      PM / Runtime: Make documentation of runtime_idle() agree with the code
-      PM / Runtime: Remove unnecessary braces in __pm_runtime_set_status()
-      PM: Add flag for devices capable of generating run-time wake-up events
-
-Stephen Rothwell (1):
-      PM / Suspend: Using TASK_ macros requires sched.h
-
-Tejun Heo (1):
-      PM / freezer: Don't get over-anxious while waiting
-
----------------
-
- Documentation/power/runtime_pm.txt |   12 +-
- drivers/acpi/glue.c                |    3 +
- drivers/acpi/scan.c                |    1 +
- drivers/base/core.c                |    4 +
- drivers/base/power/Makefile        |    2 +-
- drivers/base/power/common.c        |  283 +++++++++++++++
- drivers/base/power/main.c          |  677 +++++++++++++++++++++++++++++++++---
- drivers/base/power/power.h         |   42 ++-
- drivers/base/power/runtime.c       |   27 +-
- drivers/base/power/sysfs.c         |   47 +++
- drivers/input/serio/serio.c        |    1 +
- drivers/pci/pci.c                  |    1 +
- drivers/pci/pcie/portdrv_core.c    |    1 +
- include/linux/device.h             |   11 +
- include/linux/pm.h                 |   21 +-
- include/linux/pm_link.h            |   30 ++
- include/linux/pm_runtime.h         |   12 +
- include/linux/resume-trace.h       |    7 +
- kernel/power/Kconfig               |   14 +
- kernel/power/Makefile              |    2 +-
- kernel/power/hibernate.c           |   26 ++
- kernel/power/main.c                |   32 ++-
- kernel/power/process.c             |   14 +-
- kernel/power/swap.c                |  107 ++++++-
- kernel/power/swsusp.c              |  188 ----------
- 25 files changed, 1281 insertions(+), 284 deletions(-)
-
-Thanks,
-Rafael
