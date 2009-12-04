@@ -1,78 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbZLDKVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755763AbZLDKbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbZLDKVc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 05:21:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbZLDKVc
+	id S1755763AbZLDKbA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 05:31:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbZLDKbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 05:21:32 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:48842 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754423AbZLDKVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 05:21:31 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [uClinux-dev] Re: [PATCH] FDPIC: respect PT_GNU_STACK exec markings when creating NOMMU stack
-Date: Fri, 4 Dec 2009 05:26:46 -0500
-User-Agent: KMail/1.12.4 (Linux/2.6.31.4; KDE/4.3.4; x86_64; ; )
-Cc: uclinux-dev@uclinux.org, linux-kernel@vger.kernel.org,
-       Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       David McCullough <davidm@snapgear.com>
-References: <200912040207.09801.vapier@gentoo.org> <16680.1259863084@redhat.com> <31066.1259919632@redhat.com>
-In-Reply-To: <31066.1259919632@redhat.com>
+	Fri, 4 Dec 2009 05:31:00 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:63205 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755383AbZLDKa7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 05:30:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:x-url:user-agent;
+        b=AffDxJo50nB23WTFnHlnIu3v3+4E/DQKj64blqqbAS5V648WSjmWkLoN9PuSGZNVvr
+         KOMwLUdh/OycolOXICEG3lepJUlq3L7RzTLNnUvL2LmSK9oLop6VXntZObbe1yHkpQxr
+         wNbqY1A0NlWjpL/ul3mWRVVS0gCp0+24jeTD8=
+Date: Fri, 4 Dec 2009 12:31:02 +0200
+From: Amit Kucheria <amit.kucheria@canonical.com>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Herring Robert-RA7055 <ra7055@freescale.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.infradead.org, valentin.longchamp@epfl.ch,
+       daniel@caiaq.de, grant.likely@secretlab.ca,
+       Nguyen Dinh-R00091 <R00091@freescale.com>
+Subject: Re: [RFC][PATCH 03/10] arm: mxc: changes to common plat-mxc code
+ to add support for i.MX5
+Message-ID: <20091204103102.GC3747@matterhorn.verdurent.com>
+References: <cover.1259893118.git.amit.kucheria@canonical.com>
+ <58eb7d14c6cf56cbc874657dff5789c47116b49e.1259893118.git.amit.kucheria@canonical.com>
+ <DE2504B3A515524BBE6934369EFDC0DA08C2A56C@az33exm20.fsl.freescale.net>
+ <20091204083451.GG15126@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1551683.CkTYhXZ7tR";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912040526.47709.vapier@gentoo.org>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20091204083451.GG15126@pengutronix.de>
+X-URL: http://www.verdurent.com/
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1551683.CkTYhXZ7tR
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Some comments below:
 
-On Friday 04 December 2009 04:40:32 David Howells wrote:
-> Mike Frysinger <vapier@gentoo.org> wrote:
-> > > 	+	flush_icache_range(mm->brk, brk);
-> > > 		return mm->brk =3D brk;
-> > > 	 }
-> >
-> > probably want mm->brk + brk for the second argument
->=20
-> Ummm...  Why?  mm->brk and brk are both addresses - note the return
->  statement where brk just gets assigned to mm->brk.
+On 09 Dec 04, Sascha Hauer wrote:
+> On Thu, Dec 03, 2009 at 08:12:58PM -0700, Herring Robert-RA7055 wrote:
+> > Amit,
+> > 
+> > I would suggest you refactor the timer code into version 1 and version 2
+> > either as 2 separate files or with a timer_is_v2() function rather than
+> > the mess of cpu_is_X macros it currently has. Essentially there are 2
+> > versions of the timer hardware. Version 1 is found on MX1/MXL and MX21.
+> > Version 2 is found on MX25, MX27, MX31, MX35, MX37, MX51, and future
+> > parts. I will send you what we have done in our tree.
+> Like this:
+> 
+> 
+> commit ed6bbc59e3f6b33b48a0d5ac053220cd318ceee7
+> Author: Sascha Hauer <s.hauer@pengutronix.de>
+> Date:   Tue Nov 17 16:31:13 2009 +0100
+> 
+>     mxc timer: Add mx51 support
+>     
+>     Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> 
+> diff --git a/arch/arm/plat-mxc/time.c b/arch/arm/plat-mxc/time.c
+> index 844567e..0c45509 100644
+> --- a/arch/arm/plat-mxc/time.c
+> +++ b/arch/arm/plat-mxc/time.c
+> @@ -57,6 +57,9 @@
+>  #define MX3_TCN			0x24
+>  #define MX3_TCMP		0x10
+>  
+> +#define timer_is_v1()	(cpu_is_mx1() || cpu_is_mx27())
+                                                        ^^^^
+                                      Shouldn't this be mx21 according to
+				      Rob's comment?
 
-yeah, sorry.  i was thinking sbrk where the argument is an increment, not a=
-=20
-new address.
-=2Dmike
+> +#define timer_is_v2()	(cpu_is_mx3() || cpu_is_mx25() || cpu_is_mx51())
 
---nextPart1551683.CkTYhXZ7tR
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+And add a cpu_is_mx27() here?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
+>  static struct clock_event_device clockevent_mxc;
+>  static enum clock_event_mode clockevent_mode = CLOCK_EVT_MODE_UNUSED;
+>  
+> @@ -66,7 +69,7 @@ static inline void gpt_irq_disable(void)
+>  {
+>  	unsigned int tmp;
+>  
+> -	if (cpu_is_mx3() || cpu_is_mx25())
+> +	if (timer_is_v2())
+>  		__raw_writel(0, timer_base + MX3_IR);
+>  	else {
+>  		tmp = __raw_readl(timer_base + MXC_TCTL);
+> @@ -76,7 +79,7 @@ static inline void gpt_irq_disable(void)
+>  
+>  static inline void gpt_irq_enable(void)
+>  {
+> -	if (cpu_is_mx3() || cpu_is_mx25())
+> +	if (timer_is_v2())
+>  		__raw_writel(1<<0, timer_base + MX3_IR);
+>  	else {
+>  		__raw_writel(__raw_readl(timer_base + MXC_TCTL) | MX1_2_TCTL_IRQEN,
+> @@ -90,7 +93,7 @@ static void gpt_irq_acknowledge(void)
+>  		__raw_writel(0, timer_base + MX1_2_TSTAT);
+>  	if (cpu_is_mx2())
+>  		__raw_writel(MX2_TSTAT_CAPT | MX2_TSTAT_COMP, timer_base + MX1_2_TSTAT);
+> -	if (cpu_is_mx3() || cpu_is_mx25())
+> +	if (timer_is_v2())
+>  		__raw_writel(MX3_TSTAT_OF1, timer_base + MX3_TSTAT);
+>  }
+>  
+> @@ -117,7 +120,7 @@ static int __init mxc_clocksource_init(struct clk *timer_clk)
+>  {
+>  	unsigned int c = clk_get_rate(timer_clk);
+>  
+> -	if (cpu_is_mx3() || cpu_is_mx25())
+> +	if (timer_is_v2())
+>  		clocksource_mxc.read = mx3_get_cycles;
+>  
+>  	clocksource_mxc.mult = clocksource_hz2mult(c,
+> @@ -180,7 +183,7 @@ static void mxc_set_mode(enum clock_event_mode mode,
+>  
+>  	if (mode != clockevent_mode) {
+>  		/* Set event time into far-far future */
+> -		if (cpu_is_mx3() || cpu_is_mx25())
+> +		if (timer_is_v2())
+>  			__raw_writel(__raw_readl(timer_base + MX3_TCN) - 3,
+>  					timer_base + MX3_TCMP);
+>  		else
+> @@ -233,7 +236,7 @@ static irqreturn_t mxc_timer_interrupt(int irq, void *dev_id)
+>  	struct clock_event_device *evt = &clockevent_mxc;
+>  	uint32_t tstat;
+>  
+> -	if (cpu_is_mx3() || cpu_is_mx25())
+> +	if (timer_is_v2())
+>  		tstat = __raw_readl(timer_base + MX3_TSTAT);
+>  	else
+>  		tstat = __raw_readl(timer_base + MX1_2_TSTAT);
+> @@ -264,7 +267,7 @@ static int __init mxc_clockevent_init(struct clk *timer_clk)
+>  {
+>  	unsigned int c = clk_get_rate(timer_clk);
+>  
+> -	if (cpu_is_mx3() || cpu_is_mx25())
+> +	if (timer_is_v2())
+>  		clockevent_mxc.set_next_event = mx3_set_next_event;
+>  
+>  	clockevent_mxc.mult = div_sc(c, NSEC_PER_SEC,
+> @@ -296,7 +299,7 @@ void __init mxc_timer_init(struct clk *timer_clk, void __iomem *base, int irq)
+>  	__raw_writel(0, timer_base + MXC_TCTL);
+>  	__raw_writel(0, timer_base + MXC_TPRER); /* see datasheet note */
+>  
+> -	if (cpu_is_mx3() || cpu_is_mx25())
+> +	if (timer_is_v2())
+>  		tctl_val = MX3_TCTL_CLK_IPG | MX3_TCTL_FRR | MX3_TCTL_WAITEN | MXC_TCTL_TEN;
+>  	else
+>  		tctl_val = MX1_2_TCTL_FRR | MX1_2_TCTL_CLK_PCLK1 | MXC_TCTL_TEN;
+> 
 
-iQIcBAABAgAGBQJLGOPnAAoJEEFjO5/oN/WBGp0P/RXp0w+v+udLSmas4dAzuuzx
-nsXAKoeOTwDplXsiOOP2VHBROJEtYdCsiQLNcRvXfeETc479dDXAecfCz/IAC78P
-e/fUGPe5WTN0XitxkY6x3yAG/Wbma5VmZv89e/etdhIYNoOLYMulefnuZLWROPAa
-tcj77fH6fAtaCga5vQDtJnJyIXoGb5BX/EwS27A4HJLAQdl4l2myhokBzN/Wf1vu
-aYKW1hkaT6cJLfY+6SxIvanJIFH+Ng0VOxzhXbIv0Om+2VJt1uBFqRuVbxwnZ29V
-zKZ+KP+2NeG6MKaRz7BMqq+nPZn0/jzdJJtHfM1NeZlBqRyxzW5Y8U1YBVEhpD4B
-Np9gVOKP+w/JosXd8+JF8tuB/MZKvDCKBHQQUE6GzcEdDVrkVTo/vUETP1D4N/Hq
-0eZww9ER523JPftGePG+DZAr18aS8wGynhzn/qpSDyxT0glJ1X6H4xVYKDC7vdBX
-kMKljHkQmpOdxaXCkx2aW/Yoi3rBN8qphTRRlys8wWFzjehEYO7Wg2qubghCGkMH
-sW29FiIScCHNSvU8k3TAHTePzDxzdmts9s8P8Sy8vgcQouonc3BvpiO7j+6q7407
-+fqIFlrEskIrPwfLnE0fe3ujQ/DU5qjmKuK4TL1P6V9FgndACfD11USdO0oyrVse
-7yWA1dImW7SJvZv7srcI
-=Fp9l
------END PGP SIGNATURE-----
+Otherwise these changes look good and make the code more readable.
 
---nextPart1551683.CkTYhXZ7tR--
+/Amit
+-- 
+------------------------------------------------------------
+Amit Kucheria, Finland
+------------------------------------------------------------
