@@ -1,114 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZLDKmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbZLDKne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbZLDKmV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 05:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZLDKmU
+	id S1753733AbZLDKne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 05:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZLDKnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 05:42:20 -0500
-Received: from mailgw3.ericsson.se ([193.180.251.60]:50846 "EHLO
-	mailgw3.ericsson.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754139AbZLDKmT convert rfc822-to-8bit (ORCPT
+	Fri, 4 Dec 2009 05:43:32 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60074 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753462AbZLDKnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 05:42:19 -0500
-X-AuditID: c1b4fb3c-b7b08ae000000935-3a-4b18e7900087
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [POWER] battery calibration parameters from sysfs
-Date: Fri, 4 Dec 2009 11:42:22 +0100
-Message-ID: <A6D19A13FE030A409EC4362C172E091F0E0495F6@eseldmw101.eemea.ericsson.se>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [POWER] battery calibration parameters from sysfs
-Thread-Index: Acp0znXnOmxIv2oXSTmM0iIHa/QHMA==
-From: "Linus Walleij" <linus.walleij@stericsson.com>
-To: <cbou@mai.ru>, <dwmw2@infradead.org>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, <linux-embedded@vger.kernel.org>
-X-OriginalArrivalTime: 04 Dec 2009 10:42:24.0218 (UTC) FILETIME=[7701EBA0:01CA74CE]
-X-Brightmail-Tracker: AAAAAA==
+	Fri, 4 Dec 2009 05:43:31 -0500
+Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+In-Reply-To: <1259923259.3977.1928.camel@laptop>
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>
+	 <1259726212-30259-5-git-send-email-tj@kernel.org>
+	 <1259923259.3977.1928.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 04 Dec 2009 11:43:01 +0100
+Message-ID: <1259923381.3977.1934.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2009-12-04 at 11:40 +0100, Peter Zijlstra wrote:
+> On Wed, 2009-12-02 at 12:56 +0900, Tejun Heo wrote:
+> > set_cpus_allowed_ptr() modifies the allowed cpu mask of a task.  The
+> > function performs the following checks before applying new mask.
+> > 
+> > * Check whether PF_THREAD_BOUND is set.  This is set for bound
+> >   kthreads so that they can't be moved around.
+> > 
+> > * Check whether the target cpu is still marked active - cpu_active().
+> >   Active state is cleared early while downing a cpu.
+> > 
+> > This patch adds force_cpus_allowed() which bypasses the above two
+> > checks.  The caller is responsible for guaranteeing that the
+> > destination cpu doesn't go down until force_cpus_allowed() finishes.
+> > 
+> > The first check is bypassed by factoring out actual migration part
+> > into __set_cpus_allowed() from set_cpus_allowed_ptr() and calling the
+> > inner function from force_cpus_allowed().
+> > 
+> > The second check is buried deep down in __migrate_task() which is
+> > executed by migration threads.  @force parameter is added to
+> > __migrate_task().  As the only way to pass parameters from
+> > __set_cpus_allowed() is through migration_req, migration_req->force is
+> > added and the @force parameter is passed down to __migrate_task().
+> > 
+> > Please note the naming discrepancy between set_cpus_allowed_ptr() and
+> > the new functions.  The _ptr suffix is from the days when cpumask api
+> > wasn't mature and future changes should drop it from
+> > set_cpus_allowed_ptr() too.
+> > 
+> > force_cpus_allowed() will be used for concurrency-managed workqueue.
+> 
+> Would still like to know why all this is needed.
 
-we're working on battery charging support for ST-Ericsson MFD ASICs
-like AB3100 and later series. I have this issue about battery
-calibration
-parameters that I need advice on, and more specifically on how to use
-sysfs to get that data in.
+That is, what problem do these new-fangled workqueues have and why is
+this a good solution.
 
-Most devices of this kind does not need the stuff we're doing so we're
-the odd bird here. Other batteries are "smart" (contain factory
-calibration inside of them) or get calibration from some BIOS or such.
-
-In our code we have a number of (x,y) pair tables like this:
-
-/* Vbat mV to Battery capacity % */
-struct voltage_vs_capacity {
-	int voltage;
-	int capacity;
-};
-
-/*
- * Default calibration table for voltage vs battery capacity.
- * Voltage in millivolts, capacity given in permil.
- */
-struct voltage_vs_capacity voltage_to_battery_capacity_init[] = {
-	{ 4177, 1000 },
-	{ 4070,  900 },
-	{ 3988,  800 },
-	{ 3834,  570 },
-	{ 3797,  470 },
-	{ 3768,  320 },
-	{ 3721,  190 },
-	{ 3633,   60 },
-	{ 3523,   30 },
-	{ 3200,    0 },
-};
-
-We then interpolate between two subsequent (xn,yn),(xn+1,yn+1)
-pairs to get a calibrated capacity value from the voltage
-level measured.
-
-This is all good as long as you compile the calibration into the kernel
-like this.
-
-However we want to override the default table with one fed in
-though e.g. sysfs, so calibration data for the battery can reside
-in the file system. NOTE: this table is NOT of fixed length, i.e.
-we don't know how many (x,y) pairs will be passed in.
-
-Whereas the rule for sysfs is one value per file, creating an arbitrary
-large hirarchy like this:
-
-/sys/.../v_vs_cap/x0
-/sys/.../v_vs_cap/y0
-/sys/.../v_vs_cap/x1
-/sys/.../v_vs_cap/y2
-...
-/sys/.../v_vs_cap/xN
-/sys/.../v_vs_cap/yN
-
-Is probably not very elegant. (Or is it?) Would it be permissible to
-pass in a table like:
-
-cat >/sys/.../v_vs_cap <<EOF
-x0,y0
-x1,y1
-x2,y2
-EOF
-
-And have the kernel parse x,y pairs up to EOF?
-
-Or would it be preferable to do this thing by creating some
-misc device node like /dev/battery0 and a custom ioctl()?
-
-Or is there some other way I haven't thought of?
-
-Yours,
-Linus Walleij
-ST-Ericsson
