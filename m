@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbZLDIuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZLDIyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbZLDIuG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 03:50:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZLDIuF
+	id S1755390AbZLDIyK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 03:54:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbZLDIyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 03:50:05 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:41685 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754311AbZLDIuD (ORCPT
+	Fri, 4 Dec 2009 03:54:10 -0500
+Received: from RELAY-01.ANDREW.CMU.EDU ([128.2.10.212]:41424 "EHLO
+	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754855AbZLDIyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 03:50:03 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
-       <netdev@vger.kernel.org>
-References: <20091204193613.8986a3c6.sfr@canb.auug.org.au>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 04 Dec 2009 00:50:04 -0800
-In-Reply-To: <20091204193613.8986a3c6.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Fri\, 4 Dec 2009 19\:36\:13 +1100")
-Message-ID: <m1ocmfdsxv.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 4 Dec 2009 03:54:09 -0500
+Date: Fri, 4 Dec 2009 03:53:50 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       lizf@cn.fujitsu.com, akpm@linux-foundation.org, menage@google.com,
+       bblum@andrew.cmu.edu
+Subject: [RFC] [PATCH 0/5] cgroups: support for module-loadable subsystems
+Message-ID: <20091204085349.GA18867@andrew.cmu.edu>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	containers@lists.linux-foundation.org, lizf@cn.fujitsu.com,
+	akpm@linux-foundation.org, menage@google.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: linux-next: manual merge of the sysctl tree with the net tree
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+[This is a revision of http://lkml.org/lkml/2009/11/2/442 ]
 
-> Hi Eric,
->
-> Today's linux-next merge of the sysctl tree got a conflict in
-> kernel/sysctl_check.c between commit
-> 8153a10c08f1312af563bb92532002e46d3f504a ("ipv4: add sysctl to accept
-> packets with local source addresses") from the net tree and commit
-> 83ac201b4f06eb8aeb7ac93cf162651ba30e0b28 ("sysctl: Remove dead code from
-> sysctl_check") from the sysctl tree.
->
-> The latter removes the need for the former to change this file.  I just
-> used the latter.
+This patch series implements support for building, loading, and
+unloading subsystems as modules, both within and outside the kernel
+source tree. It provides an interface cgroup_load_subsys() and
+cgroup_unload_subsys() which modular subsystems can use to register and
+depart during runtime. The net_cls classifier subsystem serves as the
+example for a subsystem which can be converted into a module using these
+changes. Additionally, support for subsystem dependencies is implemented
+with the new modular subsystem scenario in mind.
 
-Rats.  I feel blind.  I totally missed the fact that sysctl_check was
-changed in that one.
+Patch #1 sets up the subsys[] array so its contents can be dynamic as
+modules appear and (eventually) disappear. I introduce an rwsem called
+subsys_mutex to protect against concurrent loads/unloads/reads, and
+modify iterations over the array to handle when subsystems are absent.
 
-Eric
+Patch #2 implements an interface for modules to load subsystems, called
+cgroup_load_subsys, similar to cgroup_init_subsys, and adds a module
+pointer in struct cgroup_subsys.
+
+Patch #3 modifies the net_cls subsystem, which already had some module
+declarations, to be configurable as a module, which also serves as a
+simple proof-of-concept.
+
+Patch #4 adds a mechanism for unloading modular subsystems, which
+includes a more advanced rework of the rudimentary reference counting
+introduced in patch 2. It also modifies the exitcall of net_cls to use
+this interface.
+
+Patch #5 implements support for subsystems to specify dependencies on
+other subsystems. It requires the subsystem to give a list of its
+dependencies in the form of a NULL-terminated array of strings, each
+being the name of a depended-upon subsystem, for reasons explained in
+the patch itself.
+
+Part of implementing patches 2 and 4 involved updating css pointers in
+each css_set when the module appears or leaves. In doing this, it was
+discovered that css_sets always remain linked to the dummy cgroup,
+regardless of whether or not any subsystems are actually bound to it
+(i.e., not mounted on an actual hierarchy). The subsystem loading and
+unloading code therefore should keep in mind the special cases where the
+added subsystem is the only one in the dummy cgroup (and therefore all
+css_sets need to be linked back into it) and where the removed subsys
+was the only one in the dummy cgroup (and therefore all css_sets should
+be unlinked from it) - however, as all css_sets always stay attached to
+the dummy cgroup anyway, these cases are ignored. Any fix that addresses
+this issue should also make sure these cases are addressed in the
+subsystem loading and unloading code.
+
+-- bblum
