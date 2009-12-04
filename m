@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZLDKlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbZLDKmC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbZLDKlc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 05:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZLDKla
+	id S1754696AbZLDKmC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 05:42:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbZLDKmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 05:41:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38900 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754301AbZLDKl3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 05:41:29 -0500
-Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-In-Reply-To: <1259726212-30259-5-git-send-email-tj@kernel.org>
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>
-	 <1259726212-30259-5-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 11:40:59 +0100
-Message-ID: <1259923259.3977.1928.camel@laptop>
+	Fri, 4 Dec 2009 05:42:00 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:54846 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752409AbZLDKl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 05:41:59 -0500
+Date: Fri, 4 Dec 2009 11:42:03 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Colin Leroy <colin@colino.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Michel =?UTF-8?B?RMOkbnplcg==?= <michel@daenzer.net>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] therm_adt746x: Don't access non-existing register
+Message-ID: <20091204114203.4f5e4188@hyperion.delvare>
+In-Reply-To: <20091204112000.0cf0b0e7@paperstreet.colino.net>
+References: <20091202091951.5ec6bb83@hyperion.delvare>
+	<1259894454.2076.1246.camel@pasglop>
+	<20091204103434.0a754925@hyperion.delvare>
+	<20091204112000.0cf0b0e7@paperstreet.colino.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-02 at 12:56 +0900, Tejun Heo wrote:
-> set_cpus_allowed_ptr() modifies the allowed cpu mask of a task.  The
-> function performs the following checks before applying new mask.
-> 
-> * Check whether PF_THREAD_BOUND is set.  This is set for bound
->   kthreads so that they can't be moved around.
-> 
-> * Check whether the target cpu is still marked active - cpu_active().
->   Active state is cleared early while downing a cpu.
-> 
-> This patch adds force_cpus_allowed() which bypasses the above two
-> checks.  The caller is responsible for guaranteeing that the
-> destination cpu doesn't go down until force_cpus_allowed() finishes.
-> 
-> The first check is bypassed by factoring out actual migration part
-> into __set_cpus_allowed() from set_cpus_allowed_ptr() and calling the
-> inner function from force_cpus_allowed().
-> 
-> The second check is buried deep down in __migrate_task() which is
-> executed by migration threads.  @force parameter is added to
-> __migrate_task().  As the only way to pass parameters from
-> __set_cpus_allowed() is through migration_req, migration_req->force is
-> added and the @force parameter is passed down to __migrate_task().
-> 
-> Please note the naming discrepancy between set_cpus_allowed_ptr() and
-> the new functions.  The _ptr suffix is from the days when cpumask api
-> wasn't mature and future changes should drop it from
-> set_cpus_allowed_ptr() too.
-> 
-> force_cpus_allowed() will be used for concurrency-managed workqueue.
+Hi Colin,
 
-Would still like to know why all this is needed.
+On Fri, 4 Dec 2009 11:20:00 +0100, Colin Leroy wrote:
+> On Fri, 4 Dec 2009 10:34:34 +0100, Jean Delvare wrote:
+> > $ scripts/get_maintainer.pl --file drivers/macintosh/therm_adt746x.c 
+> > Colin Leroy <colin@colino.net>
+> > Grant Likely <grant.likely@secretlab.ca>
+> > linux-kernel@vger.kernel.org
+> > devicetree-discuss@lists.ozlabs.org
+> > 
+> > This lists Colin Leroy, who apparently doesn't exactly care about the
+> > driver, but not linuxppc-dev@*ozlabs.org where you say patches should
+> > be sent.
+> 
+> I'm sorry, I thought I wasn't listed as a maintainer anymore for
+> this... I don't have the hardware anymore.
 
+Care to submit a patch removing the "ADT746X FAN DRIVER" entry from
+MAINTAINERS then? Unless someone volunteers quickly to take over.
+
+-- 
+Jean Delvare
