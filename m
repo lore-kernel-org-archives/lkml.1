@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbZLDWUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbZLDWUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbZLDWUZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZLDWUX
+	id S1756021AbZLDWUr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:20:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbZLDWUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:20:23 -0500
-Received: from verein.lst.de ([213.95.11.210]:34733 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751993AbZLDWUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:20:22 -0500
-From: Torsten Duwe <duwe@lst.de>
-Organization: LST e.V.
-To: arun@linux.vnet.ibm.com
-Subject: Re: [v10 PATCH 2/9]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
-Date: Fri, 4 Dec 2009 23:20:00 +0100
-User-Agent: KMail/1.9.10
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20091202095427.GA27251@linux.vnet.ibm.com> <20091202095705.GC27251@linux.vnet.ibm.com>
-In-Reply-To: <20091202095705.GC27251@linux.vnet.ibm.com>
+	Fri, 4 Dec 2009 17:20:46 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59721 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754204AbZLDWUp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 17:20:45 -0500
+Date: Fri, 4 Dec 2009 23:20:45 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Cihula, Joseph" <joseph.cihula@intel.com>
+Cc: "Wang, Shane" <shane.wang@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Brown, Len" <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] intel_txt: add s3 userspace memory integrity
+ verification
+Message-ID: <20091204222045.GE32314@elf.ucw.cz>
+References: <4B18D26B.4040500@intel.com>
+ <20091204082927.GF1540@ucw.cz>
+ <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4DC@orsmsx506.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200912042320.01320.duwe@lst.de>
-X-Spam-Score: 0 () 
+In-Reply-To: <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4DC@orsmsx506.amr.corp.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 December 2009, Arun R Bharadwaj wrote:
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-12-02 15:24:27]:
->
-> This patch cleans up drivers/cpuidle/cpuidle.c
-> Earlier cpuidle assumed pm_idle as the default idle loop. Break that
-> assumption and make it more generic.
+> > > +
+> > > +   ret = tboot_pre_stack_switch();
+> > > +   if (!ret) {
+> > > +           tboot_switch_stack_call(tboot_do_suspend_lowlevel_call,
+> > > +                                   (u64)new_stack_ptr);
+> >
+> > ...and here you add requirements to suspend_lowlevel that were not
+> > there before. ("May not act on unchecksummed memory"), without
+> > documenting them.
+> 
+> Really the only requirement is (as discussed in the previous thread) that it only use code and data within [_text, _end - _text]--do you think that this really needs to be called out?  do_suspend_lowlevel() is a very simple function that has just the one (resume path) call to another simple function--it doesn't seem likely that it would violate this.
+> 
 
-Is there a problem with the old pm_idle? Couldn't it be integrated more 
-transparently, instead of replacing it this intrusively?
+Resume code is already pretty tricky, and you add yet another layer of
+trickery. Yes, it needs to be properly documented.
 
-> --- linux.trees.git.orig/include/linux/cpuidle.h
-> +++ linux.trees.git/include/linux/cpuidle.h
-> @@ -41,7 +41,7 @@ struct cpuidle_state {
->  	unsigned long long	usage;
->  	unsigned long long	time; /* in US */
->
-> -	int (*enter)	(struct cpuidle_device *dev,
-> +	void (*enter)	(struct cpuidle_device *dev,
->  			 struct cpuidle_state *state);
->  };
-
-While it may be a good idea to move the residency calculation to one central 
-place, at least in theory a cpuidle_state->enter() function could have a 
-better method to determine its value.
-
-Either way you're implicitly introducing an API change here, and you're at 
-least missing two functions on ARM and SuperH, respectively. Could you 
-separate this API change out, and not take it for granted in the other 
-patches?
-
-	Torsten
+And... how does it interact with restore_processor_state? I don't
+think do_suspend_lowlevel is as simple as you think...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
