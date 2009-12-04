@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757161AbZLDTAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZLDTCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757161AbZLDTAN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 14:00:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbZLDTAL
+	id S1757173AbZLDTCr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 14:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbZLDTCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 14:00:11 -0500
-Received: from swm.pp.se ([212.247.200.143]:54882 "EHLO uplift.swm.pp.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753563AbZLDTAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 14:00:09 -0500
-Date: Fri, 4 Dec 2009 20:00:15 +0100 (CET)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: =?ISO-8859-15?Q?Kristleifur_Da=F0ason?= <kristleifur@gmail.com>
-cc: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
-In-Reply-To: <73e903670912031336n749c0bb4l5f2e46d5347e5875@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0912041952370.23464@uplift.swm.pp.se>
-References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca>  <4AA7F965.6020408@garzik.org> <4AF0CFE1.8050407@tomt.net>  <alpine.DEB.1.10.0912032214040.23464@uplift.swm.pp.se>
- <73e903670912031336n749c0bb4l5f2e46d5347e5875@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-137064504-1125956565-1259953215=:23464"
+	Fri, 4 Dec 2009 14:02:45 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:61989 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755616AbZLDTCo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 14:02:44 -0500
+Date: Fri, 4 Dec 2009 11:02:28 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "matteo_cortese@fastwebnet.it" <matteo_cortese@fastwebnet.it>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make gconfig: fix the "(NEW)" string
+Message-Id: <20091204110228.2ce3345c.randy.dunlap@oracle.com>
+In-Reply-To: <23753252.369201259951904278.JavaMail.defaultUser@defaultHost>
+References: <23753252.369201259951904278.JavaMail.defaultUser@defaultHost>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B195CC7.00D3:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 4 Dec 2009 19:38:24 +0100 (CET) matteo_cortese@fastwebnet.it wrote:
 
----137064504-1125956565-1259953215=:23464
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+> The string "(NEW)" is added to those options that are not present in the
+>  current config file, thus looking as new features. Alas, the logic seem
+> s to be inverted.
 
-On Thu, 3 Dec 2009, Kristleifur Daðason wrote:
+Did you just notice that thru source code inspection or via testing of
+gconfig?
 
-> On Thu, Dec 3, 2009 at 9:17 PM, Mikael Abrahamsson <swmike@swm.pp.se> wrote:
->>
->> On Wed, 4 Nov 2009, Andre Tomt wrote:
->>
->>> Identical issues with the AOC-SASLP-MV8 card with 8 Seagate Barracuda
->>> 7200.11 1.5TB drives using the mvsas driver. Creating a md raid array seems
->>> to trigger it nearly instantly, however other loads do not trigger it
->>> as fast (if at all, only tested briefly with paralell dd).
->>
->> Would just like to chime in with a "me too" on this. I've tried both ubuntu
->> 9.10 kernel (2.6.31) and their 10.04 pre-alpha (guess it's 2.6.32-rc8) and
->> mvsas + AOC-SASLP-MV8 is pretty much unusable. If I start md creation it
->> stalls immediately and gets nowhere, last time I tried it md claimed it had
->> written 160 blocks then it stalled (all drive LEDs on the controller is
->> constantly lit).
->>
->> If I boot without drives and then hot-plug the drives, it immediately
->> oops:es.
->>
->> Any code/fixes I can try, this is a lab machine so I can easily do whatever
->> needed with it...
->>
->
-> Hi,
->
-> I had a bit of trouble finding some patches that were released by Andy Yan at
-> Marvell on November 9th, so here is a link:
->
-> 1/7: http://kerneltrap.org/mailarchive/linux-scsi/2009/11/9/6558753
 
-They applied cleanly to the ubuntu 10.04 2.6.32 kernel source package but 
-when compiling I received an error about "sas_change_queue_depth" having 
-wrong amount of arguments:
+> Signed-off-by: Matteo Cortese <matteo_cortese@fastwebnet.it>
+> ------
+> 
+> diff -u linux-source-2.6.26-old/scripts/kconfig/gconf.c linux-source-2.6
+> .26/scripts/kconfig/gconf.c
+> --- linux-source-2.6.26-old/scripts/kconfig/gconf.c	2008-07-13 21:51:29.
+> 000000000 +0000
+> +++ linux-source-2.6.26/scripts/kconfig/gconf.c	2009-01-03 00:52:57.0000
+> 00000 +0000
+> @@ -1174,7 +1174,7 @@
+>  
+>  	row[COL_OPTION] =
+>  	    g_strdup_printf("%s %s", _(menu_get_prompt(menu)),
+> -			    sym && sym_has_value(sym) ? "(NEW)" : "");
+> +			    sym && !sym_has_value(sym) ? "(NEW)" : "");
+>  
+>  	if (show_all && !menu_is_visible(menu))
+>  		row[COL_COLOR] = g_strdup("DarkGray");
+> 
+> --
 
--		sas_change_queue_depth(sdev, MVS_QUEUE_SIZE);
-+		sas_change_queue_depth(sdev, MVS_QUEUE_SIZE, SCSI_QDEPTH_DEFAULT);
+Well, for me, with just some random config file that has
+CONFIG_MODULES=y
+CONFIG_BLOCK=y
 
-So I removed that change and then things compiled, booted properly, but 
-just froze when I plugged in the disks (including some garbled graphics on 
-my X screen). That patch set doesn't seem to be ok.
+gconfig with this patch says:
 
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
----137064504-1125956565-1259953215=:23464--
+  Enable loadable module support
+  Enable the block layer (NEW)
+
+and gconfig without this patch says:
+
+  Enable loadable module support (NEW)
+  Enable the block layer
+
+
+I'm confuzed.  Go figure.
+
+---
+~Randy
