@@ -1,77 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZLDJiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbZLDJmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755113AbZLDJiU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 04:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZLDJiT
+	id S1755406AbZLDJmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 04:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZLDJmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 04:38:19 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:38336 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbZLDJiS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 04:38:18 -0500
-Date: Fri, 4 Dec 2009 10:38:24 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Amit Kucheria <amit.kucheria@canonical.com>
-Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
-       Dinh.Nguyen@freescale.com, s.hauer@pengutronix.de,
-       grant.likely@secretlab.ca, r.herring@freescale.com,
-       linux-arm-kernel@lists.infradead.org, daniel@caiaq.de,
-       valentin.longchamp@epfl.ch
-Subject: Re: [RFC][PATCH 04/10] arm: mxc: Fix Drive Strength Field in the
-	IOMUX controller
-Message-ID: <20091204093824.GB10910@pengutronix.de>
-References: <cover.1259893118.git.amit.kucheria@canonical.com> <a079a0627e77f2df590840e4798fc067f4436160.1259893118.git.amit.kucheria@canonical.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a079a0627e77f2df590840e4798fc067f4436160.1259893118.git.amit.kucheria@canonical.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Fri, 4 Dec 2009 04:42:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30609 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751404AbZLDJmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 04:42:50 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200912040207.09801.vapier@gentoo.org>
+References: <200912040207.09801.vapier@gentoo.org> <8bd0f97a0912021329y7be05434wc9c39d383bfb7ce4@mail.gmail.com> <7946.1259761452@redhat.com> <16680.1259863084@redhat.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: dhowells@redhat.com, uclinux-dev@uclinux.org, linux-kernel@vger.kernel.org,
+       Greg Ungerer <gerg@uclinux.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       David McCullough <davidm@snapgear.com>
+Subject: Re: [uClinux-dev] Re: [PATCH] FDPIC: respect PT_GNU_STACK exec markings when creating NOMMU stack
+Date: Fri, 04 Dec 2009 09:40:32 +0000
+Message-ID: <31066.1259919632@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Mike Frysinger <vapier@gentoo.org> wrote:
 
-On Fri, Dec 04, 2009 at 04:47:04AM +0200, Amit Kucheria wrote:
-> i.MX51 defines 4 values:
+> > 	+	flush_icache_range(mm->brk, brk);
+> > 		return mm->brk = brk;
+> > 	 }
 > 
-> 00: Low Drive Strength
-> 01: Medium Drive Strength
-> 10: High Drive Strength
-> 11: Max Drive Strength
-> 
-> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
-> ---
->  arch/arm/plat-mxc/include/mach/iomux-v3.h |    8 +++++---
->  1 files changed, 5 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/arm/plat-mxc/include/mach/iomux-v3.h b/arch/arm/plat-mxc/include/mach/iomux-v3.h
-> index a0fa402..8c351d6 100644
-> --- a/arch/arm/plat-mxc/include/mach/iomux-v3.h
-> +++ b/arch/arm/plat-mxc/include/mach/iomux-v3.h
-> @@ -81,11 +81,13 @@ struct pad_desc {
->  
->  #define PAD_CTL_ODE			(1 << 3)
->  
-> -#define PAD_CTL_DSE_STANDARD		(0 << 1)
-> -#define PAD_CTL_DSE_HIGH		(1 << 1)
-> -#define PAD_CTL_DSE_MAX			(2 << 1)
-> +#define PAD_CTL_DSE_LOW			(0 << 1)
-> +#define PAD_CTL_DSE_MED			(1 << 1)
-> +#define PAD_CTL_DSE_HIGH		(2 << 1)
-> +#define PAD_CTL_DSE_MAX			(3 << 1)
-Does the new values work on other SOCs having iomux-v3, too?
+> probably want mm->brk + brk for the second argument
 
-Best regards
-Uwe
+Ummm...  Why?  mm->brk and brk are both addresses - note the return statement
+where brk just gets assigned to mm->brk.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+David
