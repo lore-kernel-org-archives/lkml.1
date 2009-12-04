@@ -1,69 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZLDXA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbZLDXGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbZLDXA7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 18:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbZLDXA6
+	id S1757557AbZLDXGI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 18:06:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbZLDXGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 18:00:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52559 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753481AbZLDXA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 18:00:57 -0500
-Message-ID: <4B199518.7090300@gmail.com>
-Date: Sat, 05 Dec 2009 00:02:48 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
-MIME-Version: 1.0
-To: davem@davemloft.net, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 22/31] Constify struct neigh_ops for 2.6.32 v1
-References: <4B198670.2000406@gmail.com> <4B198FA1.7090807@gmail.com>
-In-Reply-To: <4B198FA1.7090807@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Fri, 4 Dec 2009 18:06:08 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:17225 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757374AbZLDXGH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 18:06:07 -0500
+Date: Fri, 4 Dec 2009 15:05:42 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Grozdan <neutrino8@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Can't compile 2.6.32
+Message-Id: <20091204150542.e361a12a.randy.dunlap@oracle.com>
+In-Reply-To: <c5bd819b0912041430s78c86710y18097d7dd77bac0e@mail.gmail.com>
+References: <c5bd819b0912040532x13b7e564ve7f37badb0aaa521@mail.gmail.com>
+	<20091204142522.6de2c52e.randy.dunlap@oracle.com>
+	<c5bd819b0912041430s78c86710y18097d7dd77bac0e@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4B1995E2.0035:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added netdev@vger.kernel.org to CC.
-> From: Emese Revfy <re.emese@gmail.com>
-> 
-> Constify struct neigh_ops.
-> 
-> Signed-off-by: Emese Revfy <re.emese@gmail.com>
-> ---
->  include/net/neighbour.h |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/net/neighbour.h b/include/net/neighbour.h
-> index 3817fda..2c61d38 100644
-> --- a/include/net/neighbour.h
-> +++ b/include/net/neighbour.h
-> @@ -125,12 +125,12 @@ struct neighbour
->  struct neigh_ops
->  {
->  	int			family;
-> -	void			(*solicit)(struct neighbour *, struct sk_buff*);
-> -	void			(*error_report)(struct neighbour *, struct sk_buff*);
-> -	int			(*output)(struct sk_buff*);
-> -	int			(*connected_output)(struct sk_buff*);
-> -	int			(*hh_output)(struct sk_buff*);
-> -	int			(*queue_xmit)(struct sk_buff*);
-> +	void			(* const solicit)(struct neighbour *, struct sk_buff*);
-> +	void			(* const error_report)(struct neighbour *, struct sk_buff*);
-> +	int			(* const output)(struct sk_buff*);
-> +	int			(* const connected_output)(struct sk_buff*);
-> +	int			(* const hh_output)(struct sk_buff*);
-> +	int			(* const queue_xmit)(struct sk_buff*);
->  };
->  
->  struct pneigh_entry
-> 
-> 
+On Fri, 4 Dec 2009 23:30:09 +0100 Grozdan wrote:
 
+> On Fri, Dec 4, 2009 at 11:25 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > On Fri, 4 Dec 2009 14:32:08 +0100 Grozdan wrote:
+> >
+> >> Hello,
+> >>
+> >> I'm having trouble trying to compile the 2.6.32 kernel on my openSUSE
+> >> 11.1 system. While doing so, I see a lot of warnings which seem to
+> >> come from include/acpi/acpiosxf.h and then when the compile process
+> >> enters the drivers/acpi directory, it errors out with the following:
+> >>
+> >>   CC      drivers/acpi/tables.o
+> >> In file included from include/acpi/acpi.h:63,
+> >>                  from include/linux/acpi.h:39,
+> >>                  from drivers/acpi/tables.c:33:
+> >> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
+> >> include/acpi/acpiosxf.h:98: warning: no return statement in function
+> >> returning non-void
+> >>   CC      drivers/acpi/blacklist.o
+> >> In file included from include/acpi/acpi.h:63,
+> >>                  from include/linux/acpi.h:39,
+> >>                  from drivers/acpi/blacklist.c:33:
+> >> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
+> >> include/acpi/acpiosxf.h:98: warning: no return statement in function
+> >> returning non-void
+> >>   CC      drivers/acpi/osl.o
+> >> In file included from include/acpi/acpi.h:63,
+> >>                  from include/linux/acpi.h:39,
+> >>                  from drivers/acpi/osl.c:40:
+> >> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
+> >> include/acpi/acpiosxf.h:98: warning: no return statement in function
+> >> returning non-void
+> >> drivers/acpi/osl.c: At top level:
+> >> drivers/acpi/osl.c:514: error: redefinition of ‘acpi_load_override_tables’
+> >> include/acpi/acpiosxf.h:98: error: previous definition of
+> >> ‘acpi_load_override_tables’ was here
+> >> make[2]: *** [drivers/acpi/osl.o] Error 1
+> >> make[1]: *** [drivers/acpi] Error 2
+> >> make: *** [drivers] Error 2
+> >>
+> >> Thoughts, solutions, etc?
+> >
+> > Please send your failing kernel .config file.  Thanks.
+> 
+> Hi Randy
+> 
+> Attached is my config of 2.6.32
+
+That builds fine for me, after I run make oldconfig and eliminate all of the
+opensuse config additions.
+
+It could be acpi-header-related though.  Let's cc: linux-acpi to see if they
+know anything about this.
+
+> >> PS: please CC me as I'm not subscribed to the list.
+> >> --
+
+
+---
+~Randy
