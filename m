@@ -1,236 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbZLDVQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbZLDVRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757339AbZLDVQz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 16:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbZLDVQy
+	id S1757354AbZLDVRz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 16:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbZLDVRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 16:16:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33726 "EHLO ogre.sisk.pl"
+	Fri, 4 Dec 2009 16:17:53 -0500
+Received: from mga01.intel.com ([192.55.52.88]:12668 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757140AbZLDVQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 16:16:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [RFC][PATCH 5/12] PCI PM: Make it possible to force using INTx for PCIe PME signaling (updated)
-Date: Fri, 4 Dec 2009 22:17:44 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
+	id S1757140AbZLDVRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 16:17:52 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,344,1257148800"; 
+   d="scan'208";a="519896015"
+Subject: Re: [PATCH v6] x86/apic: limit irq affinity
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
-References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl> <200911291637.41461.rjw@sisk.pl>
-In-Reply-To: <200911291637.41461.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20091204164227.GA28378@sgi.com>
+References: <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
+	 <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org>
+	 <20091125074033.4c46c1b0@infradead.org> <20091203165004.GA14665@sgi.com>
+	 <Pine.WNT.4.64.0912030851500.13880@ppwaskie-MOBL2.amr.corp.intel.com>
+	 <20091203170149.GA15151@sgi.com>
+	 <Pine.WNT.4.64.0912030905530.16084@ppwaskie-MOBL2.amr.corp.intel.com>
+	 <20091203171946.GC15151@sgi.com>
+	 <Pine.WNT.4.64.0912031048590.8104@ppwaskie-MOBL2.amr.corp.intel.com>
+	 <20091204164227.GA28378@sgi.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 04 Dec 2009 13:17:57 -0800
+Message-Id: <1259961477.23199.39.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912042217.44739.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 November 2009, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Fri, 2009-12-04 at 09:42 -0700, Dimitri Sivanich wrote:
+> On Thu, Dec 03, 2009 at 10:50:47AM -0800, Waskiewicz Jr, Peter P wrote:
+> > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
+> > 
+> > > On Thu, Dec 03, 2009 at 09:07:21AM -0800, Waskiewicz Jr, Peter P wrote:
+> > > > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
+> > > > 
+> > > > > On Thu, Dec 03, 2009 at 08:53:23AM -0800, Waskiewicz Jr, Peter P wrote:
+> > > > > > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
+> > > > > > 
+> > > > > > > On Wed, Nov 25, 2009 at 07:40:33AM -0800, Arjan van de Ven wrote:
+> > > > > > > > On Tue, 24 Nov 2009 09:41:18 -0800
+> > > > > > > > ebiederm@xmission.com (Eric W. Biederman) wrote:
+> > > > > > > > > Oii.
+> > > > > > > > > 
+> > > > > > > > > I don't think it is bad to export information to applications like
+> > > > > > > > > irqbalance.
+> > > > > > > > > 
+> > > > > > > > > I think it pretty horrible that one of the standard ways I have heard
+> > > > > > > > > to improve performance on 10G nics is to kill irqbalance.
+> > > > > > > > 
+> > > > > > > > irqbalance does not move networking irqs; if it does there's something
+> > > > > > > > evil going on in the system. But thanks for the bugreport ;)
+> > > > > > > 
+> > > > > > > It does move networking irqs.
+> > > > > > > 
+> > > > > > > > 
+> > > > > > > > we had that; it didn't work.
+> > > > > > > > what I'm asking for is for the kernel to expose the numa information;
+> > > > > > > > right now that is the piece that is missing.
+> > > > > > > > 
+> > > > > > > 
+> > > > > > > I'm wondering if we should expose that numa information in the form of a node or the set of allowed cpus, or both?
+> > > > > > > 
+> > > > > > > I'm guessing 'both' is the correct answer, so that apps like irqbalance can make a qualitative decision based on the node (affinity to cpus on this node is better), but an absolute decision based on allowed cpus (I cannot change affinity to anything but this set of cpus).
+> > > > > > 
+> > > > > > That's exactly what my patch in the thread "irq: Add node_affinity CPU 
+> > > > > > masks for smarter irqbalance hints" is doing.  I've also done the 
+> > > > > > irqbalance changes based on that kernel patch, and Arjan currently has 
+> > > > > > that patch.
+> > > > > 
+> > > > > So if I understand correctly, you're patch takes care of the qualitative portion of it (we prefer to set affinity to these cpus, which may be on more than one node), but not the restrictive part of it (we cannot change affinity to anything but these cpus)?
+> > > > 
+> > > > That is correct.  The patch provides an interface to both the kernel 
+> > > > (functions) and /proc for userspace to set a CPU mask.  That is the 
+> > > > preferred mask for the interrupt to be balanced on.  Then irqbalance will 
+> > > > make decisions on how to balance within that provided mask, if it in fact 
+> > > > has been provided.
+> > > 
+> > > What if it's not provided?  Will irqbalance make decisions based on the numa_node of that irq (I would hope)?
+> > 
+> > If it's not provided, then irqbalance will continue to do what it does 
+> > today.  No changes.
 > 
-> Apparently, some machines may have problems with PCI run-time power
-> management if MSIs are used for the hative PCIe PME signaling.  In
-> particular, on the MSI Wind U-100 PCIe PME interrupts are not
-> generated by a PCIe root port after a resume from suspend to RAM, if
-> the system wake-up was triggered by a PME from the device attached to
-> this port.  [It doesn't help to free the interrupt on suspend and
-> request it back on resume, even if that is done along with disabling
-> the MSI and re-enabling it, respectively.]  However, if INTx
-> interrupts are used for this purpose on the same machine, everything
-> works just fine.
+> So no numa awareness for ethernet irqs.
 > 
-> For this reason, add a kernel command line switch allowing one to
-> request that MSIs be not used for the native PCIe PME signaling,
-> introduce a DMI table allowing us to blacklist machines that need
-> this switch to be set by default and put the MSI Wind U-100 into this
-> table.
 
-The DMI table has to be terminated appropriately.  Fixed version is appended.
+Nothing that makes sense, no.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI PM: Make it possible to force using INTx for PCIe PME signaling
+> I'm wondering what needs to be exposed in proc/irq at this point.
+> 
+> Do we expose separate cpu masks for everything?  There are really 3 possible pieces of affinity information:  your node_affinity (optionally selected by the driver according to allocations), my restricted_affinity (set by the specific arch), and numa_node affinity (the 'home' node of the device).  Do we show cpumasks for all of these, or maybe show numa_node in place of a cpumask for the 'home' node of the device?
+> 
+> With all of that information apps like irqbalance should be able to make some good decisions, but things can get confusing if there are too many masks.
+> 
+> Also, if I manually change affinity, irqbalance can change that affinity from under me, correct?  That's fine as long as it's stated that that's how things will work (turn off irqbalance or run oneshot mode for manual setting).
+> 
 
-Apparently, some machines may have problems with PCI run-time power
-management if MSIs are used for the hative PCIe PME signaling.  In
-particular, on the MSI Wind U-100 PCIe PME interrupts are not
-generated by a PCIe root port after a resume from suspend to RAM, if
-the system wake-up was triggered by a PME from the device attached to
-this port.  [It doesn't help to free the interrupt on suspend and
-request it back on resume, even if that is done along with disabling
-the MSI and re-enabling it, respectively.]  However, if INTx
-interrupts are used for this purpose on the same machine, everything
-works just fine.
+If you change /proc/irq/<num>/smp_affinity, yes, irqbalance can change
+that after the fact.
 
-For this reason, add a kernel command line switch allowing one to
-request that MSIs be not used for the native PCIe PME signaling,
-introduce a DMI table allowing us to blacklist machines that need
-this switch to be set by default and put the MSI Wind U-100 into this
-table.
+> > 
+> > > 
+> > > Also, can we add a restricted mask as I mention above into this scheme?  If we can't send an IRQ to some node, we don't want to bother attempting to change affinity to cpus on that node (hopefully code in the kernel will eventually restrict this).
+> > > 
+> > 
+> > The interface allows you to put in any CPU mask.  The way it's written 
+> > now, whatever mask you put in, irqbalance *only* balances within that 
+> > mask.  It won't ever try and go outside that mask.
+> 
+> OK.  Given that, it might be nice to combine the restricted cpus that I'm describing with your node_affinity mask, but we could expose them as separate masks (node_affinity and restricted_affinity, as I describe above).
+> 
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/kernel-parameters.txt |    2 ++
- drivers/pci/pcie/pme/pcie_pme.c     |   14 +++++++++++++-
- drivers/pci/pcie/portdrv.h          |   17 +++++++++++++++++
- drivers/pci/pcie/portdrv_core.c     |    5 +++++
- drivers/pci/pcie/portdrv_pci.c      |   27 +++++++++++++++++++++++++++
- 5 files changed, 64 insertions(+), 1 deletion(-)
+I think this might be getting too complicated.  The only thing
+irqbalance is lacking today, in my mind, is the feedback mechanism,
+telling it what subset of CPU masks to balance within.  There is a
+allowed_mask, but that is used for a different purpose.  Hence why I
+added another.  But I think your needs can be met 100% with what I have
+already, and we can come up with a different name that's more generic.
+The flows would be something like this:
 
-Index: linux-2.6/drivers/pci/pcie/pme/pcie_pme.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/pme/pcie_pme.c
-+++ linux-2.6/drivers/pci/pcie/pme/pcie_pme.c
-@@ -53,12 +53,22 @@ static bool pcie_pme_disabled;
-  */
- static bool pcie_pme_force_enable;
- 
-+/*
-+ * If this switch is set, MSI will not be used for PCIe PME signaling.  This
-+ * causes the PCIe port driver to use INTx interrupts only, but it turns out
-+ * that using MSI for PCIe PME signaling doesn't play well with PCIe PME-based
-+ * wake-up from system sleep states.
-+ */
-+bool pcie_pme_msi_disabled;
-+
- static int __init pcie_pme_setup(char *str)
- {
- 	if (!strcmp(str, "off"))
- 		pcie_pme_disabled = true;
- 	else if (!strcmp(str, "force"))
- 		pcie_pme_force_enable = true;
-+	else if (!strcmp(str, "nomsi"))
-+		pcie_pme_msi_disabled = true;
- 	return 1;
- }
- __setup("pcie_pme=", pcie_pme_setup);
-@@ -73,7 +83,9 @@ __setup("pcie_pme=", pcie_pme_setup);
-  */
- static bool pcie_pme_platform_setup(struct pcie_device *srv)
- {
--	return !pcie_pme_platform_notify(srv) || pcie_pme_force_enable;
-+	if (!pcie_pme_platform_notify(srv))
-+		return true;
-+	return pcie_pme_force_enable;
- }
- 
- struct pcie_pme_service_data {
-Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_core.c
-@@ -190,6 +190,10 @@ static int assign_interrupt_mode(struct 
- 	int irq, interrupt_mode = PCIE_PORT_NO_IRQ;
- 	int i;
- 
-+	/* We have to use INTx if MSI cannot be used for PCIe PME. */
-+	if ((mask & PCIE_PORT_SERVICE_PME) && pcie_pme_no_msi())
-+		goto no_msi;
-+
- 	/* Try to use MSI-X if supported */
- 	if (!pcie_port_enable_msix(dev, vectors, mask))
- 		return PCIE_PORT_MSIX_MODE;
-@@ -198,6 +202,7 @@ static int assign_interrupt_mode(struct 
- 	if (!pci_enable_msi(dev))
- 		interrupt_mode = PCIE_PORT_MSI_MODE;
- 
-+ no_msi:
- 	if (interrupt_mode == PCIE_PORT_NO_IRQ && dev->pin)
- 		interrupt_mode = PCIE_PORT_INTx_MODE;
- 
-Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
-@@ -15,6 +15,7 @@
- #include <linux/slab.h>
- #include <linux/pcieport_if.h>
- #include <linux/aer.h>
-+#include <linux/dmi.h>
- 
- #include "portdrv.h"
- #include "aer/aerdrv.h"
-@@ -272,10 +273,36 @@ static struct pci_driver pcie_portdriver
- 	.driver.pm 	= PCIE_PORTDRV_PM_OPS,
- };
- 
-+static int __init dmi_pcie_pme_disable_msi(const struct dmi_system_id *d)
-+{
-+	pr_notice("%s detected: will not use MSI for PCIe PME signaling\n",
-+			d->ident);
-+	pcie_pme_disable_msi();
-+	return 0;
-+}
-+
-+static struct dmi_system_id __initdata pcie_portdrv_dmi_table[] = {
-+	/*
-+	 * Boxes that should not use MSI for PCIe PME signaling.
-+	 */
-+	{
-+	 .callback = dmi_pcie_pme_disable_msi,
-+	 .ident = "MSI Wind U-100",
-+	 .matches = {
-+		     DMI_MATCH(DMI_SYS_VENDOR,
-+		     		"MICRO-STAR INTERNATIONAL CO., LTD"),
-+		     DMI_MATCH(DMI_PRODUCT_NAME, "U-100"),
-+		     },
-+	 },
-+	 {}
-+};
-+
- static int __init pcie_portdrv_init(void)
- {
- 	int retval;
- 
-+	dmi_check_system(pcie_portdrv_dmi_table);
-+
- 	retval = pcie_port_bus_register();
- 	if (retval) {
- 		printk(KERN_WARNING "PCIE: bus_register error: %d\n", retval);
-Index: linux-2.6/drivers/pci/pcie/portdrv.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv.h
-+++ linux-2.6/drivers/pci/pcie/portdrv.h
-@@ -45,4 +45,21 @@ extern void pcie_port_device_remove(stru
- extern int __must_check pcie_port_bus_register(void);
- extern void pcie_port_bus_unregister(void);
- 
-+#ifdef CONFIG_PCIE_PME
-+extern bool pcie_pme_msi_disabled;
-+
-+static inline void pcie_pme_disable_msi(void)
-+{
-+	pcie_pme_msi_disabled = true;
-+}
-+
-+static inline bool pcie_pme_no_msi(void)
-+{
-+	return pcie_pme_msi_disabled;
-+}
-+#else /* !CONFIG_PCIE_PME */
-+static inline void pcie_pme_disable_msi(void) {}
-+static inline bool pcie_pme_no_msi(void) { return false; }
-+#endif /* !CONFIG_PCIE_PME */
-+
- #endif /* _PORTDRV_H_ */
-Index: linux-2.6/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -1971,6 +1971,8 @@ and is between 256 and 4096 characters. 
- 		force	Use native PCIe PME signaling even if the BIOS refuses
- 			to allow the kernel to control the relevant PCIe config
- 			registers.
-+		nomsi	Do not use MSI for native PCIe PME signaling (this makes
-+			all PCIe root ports use INTx for everything).
- 
- 	pcmv=		[HW,PCMCIA] BadgePAD 4
- 
+Driver:
+- Driver comes online, allocates memory in a sensible NUMA fashion
+- Driver requests kernel for interrupts, ties them into handlers
+- Driver now sets a NUMA-friendly affinity for each interrupt, to match
+with its initial memory allocation
+- irqbalance balances interrupts within their new "hinted" affinities.
+
+Other:
+- System comes online
+- In your case, interrupts must be kept away from certain CPUs.
+- Some mechanism in your architecture init can set the "hinted" affinity
+mask for each interrupt.
+- irqbalance will not move interrupts to the CPUs you left out of the
+"hinted" affinity.
+
+Does this make more sense?
+
+> > 
+> > > As a matter of fact, driver's allocating rings, buffers, queues on other nodes should optimally be made aware of the restriction.
+> > 
+> > The idea is that the driver will do its memory allocations for everything 
+> > across nodes.  When it does that, it will use the kernel interface 
+> > (function call) to set the corresponding mask it wants for those queue 
+> > resources.  That is my end-goal for this code.
+> > 
+> 
+> OK, but we will eventually have to reject any irqbalance attempts to send irqs to restricted nodes.
+
+See above.
+
+Cheers,
+-PJ
+
+
