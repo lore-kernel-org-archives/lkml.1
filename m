@@ -1,258 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZLDCsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZLDCrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbZLDCsO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 21:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbZLDCsN
+	id S1755827AbZLDCrJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 21:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbZLDCrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 21:48:13 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37831 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755736AbZLDCrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 21:47:23 -0500
-Subject: Re: [v10 PATCH 6/9]: pSeries/cpuidle: refactor pseries idle loops
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: arun@linux.vnet.ibm.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <20091202100108.GG27251@linux.vnet.ibm.com>
-References: <20091202095427.GA27251@linux.vnet.ibm.com>
-	 <20091202100108.GG27251@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 13:45:05 +1100
-Message-ID: <1259894705.2076.1249.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 21:47:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:52133 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755563AbZLDCrI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 21:47:08 -0500
+From: Amit Kucheria <amit.kucheria@canonical.com>
+To: List Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, s.hauer@pengutronix.de,
+       valentin.longchamp@epfl.ch, daniel@caiaq.de, grant.likely@secretlab.ca,
+       Dinh.Nguyen@freescale.com, r.herring@freescale.com
+Subject: [RFC][PATCH 00/10] Base support for Freescale i.MX51 SoC platform
+Date: Fri,  4 Dec 2009 04:47:00 +0200
+Message-Id: <cover.1259893118.git.amit.kucheria@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-02 at 15:31 +0530, Arun R Bharadwaj wrote:
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-12-02 15:24:27]:
-> 
-> This patch removes the routines, pseries_shared_idle_sleep and
-> pseries_dedicated_idle_sleep, since this is implemented as a part
-> of arch/powerpc/platform/pseries/processor_idle.c
-> 
-> Also, similar to x86, call cpuidle_idle_call from cpu_idle() idle
-> loop instead of ppc_md.power_save.
+This series of patches adds basic support for i.MX5 family to the kernel. The
+target device is the i.MX51-based Babbage board (v2.5+) since that is the
+hardware I have access to.
 
-Tentative NAK... you remove the code before you put a replacement in, or
-did I miss something ?
+This is a result of dropping a lot of functionality from the existing
+Freescale codebase that is shipping as part of the Ubuntu ARM enablement. A
+lot of the code was refactored to use facilities that were already available
+upstream in arch/arm/plat-mxc/. The hope is to get this base port into
+mainline and then start working on mainlining the drivers.
 
-IE. That patch breaks Idle on all powerpc platform it would think..
+With regards to the splitting of the patches, I felt that the following
+patchset made it easy to review code. But if this is not acceptable and some
+of these patches need to be merged into a single patch, I can do that too.
 
-Cheers,
-Ben.
+Regards,
+Amit
 
-> 
-> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/idle.c             |   58 ++++++++++-----------
->  arch/powerpc/platforms/pseries/setup.c |   89 ---------------------------------
->  2 files changed, 30 insertions(+), 117 deletions(-)
-> 
-> Index: linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-> ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/platforms/pseries/setup.c
-> +++ linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-> @@ -75,9 +75,6 @@ EXPORT_SYMBOL(CMO_PageSize);
->  
->  int fwnmi_active;  /* TRUE if an FWNMI handler is present */
->  
-> -static void pseries_shared_idle_sleep(void);
-> -static void pseries_dedicated_idle_sleep(void);
-> -
->  static struct device_node *pSeries_mpic_node;
->  
->  static void pSeries_show_cpuinfo(struct seq_file *m)
-> @@ -297,18 +294,8 @@ static void __init pSeries_setup_arch(vo
->  	pSeries_nvram_init();
->  
->  	/* Choose an idle loop */
-> -	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-> +	if (firmware_has_feature(FW_FEATURE_SPLPAR))
->  		vpa_init(boot_cpuid);
-> -		if (get_lppaca()->shared_proc) {
-> -			printk(KERN_DEBUG "Using shared processor idle loop\n");
-> -			ppc_md.power_save = pseries_shared_idle_sleep;
-> -		} else {
-> -			printk(KERN_DEBUG "Using dedicated idle loop\n");
-> -			ppc_md.power_save = pseries_dedicated_idle_sleep;
-> -		}
-> -	} else {
-> -		printk(KERN_DEBUG "Using default idle loop\n");
-> -	}
->  
->  	if (firmware_has_feature(FW_FEATURE_LPAR))
->  		ppc_md.enable_pmcs = pseries_lpar_enable_pmcs;
-> @@ -496,80 +483,6 @@ static int __init pSeries_probe(void)
->  	return 1;
->  }
->  
-> -
-> -DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
-> -
-> -static void pseries_dedicated_idle_sleep(void)
-> -{ 
-> -	unsigned int cpu = smp_processor_id();
-> -	unsigned long start_snooze;
-> -	unsigned long in_purr, out_purr;
-> -
-> -	/*
-> -	 * Indicate to the HV that we are idle. Now would be
-> -	 * a good time to find other work to dispatch.
-> -	 */
-> -	get_lppaca()->idle = 1;
-> -	get_lppaca()->donate_dedicated_cpu = 1;
-> -	in_purr = mfspr(SPRN_PURR);
-> -
-> -	/*
-> -	 * We come in with interrupts disabled, and need_resched()
-> -	 * has been checked recently.  If we should poll for a little
-> -	 * while, do so.
-> -	 */
-> -	if (__get_cpu_var(smt_snooze_delay)) {
-> -		start_snooze = get_tb() +
-> -			__get_cpu_var(smt_snooze_delay) * tb_ticks_per_usec;
-> -		local_irq_enable();
-> -		set_thread_flag(TIF_POLLING_NRFLAG);
-> -
-> -		while (get_tb() < start_snooze) {
-> -			if (need_resched() || cpu_is_offline(cpu))
-> -				goto out;
-> -			ppc64_runlatch_off();
-> -			HMT_low();
-> -			HMT_very_low();
-> -		}
-> -
-> -		HMT_medium();
-> -		clear_thread_flag(TIF_POLLING_NRFLAG);
-> -		smp_mb();
-> -		local_irq_disable();
-> -		if (need_resched() || cpu_is_offline(cpu))
-> -			goto out;
-> -	}
-> -
-> -	cede_processor();
-> -
-> -out:
-> -	HMT_medium();
-> -	out_purr = mfspr(SPRN_PURR);
-> -	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-> -	get_lppaca()->donate_dedicated_cpu = 0;
-> -	get_lppaca()->idle = 0;
-> -}
-> -
-> -static void pseries_shared_idle_sleep(void)
-> -{
-> -	/*
-> -	 * Indicate to the HV that we are idle. Now would be
-> -	 * a good time to find other work to dispatch.
-> -	 */
-> -	get_lppaca()->idle = 1;
-> -
-> -	/*
-> -	 * Yield the processor to the hypervisor.  We return if
-> -	 * an external interrupt occurs (which are driven prior
-> -	 * to returning here) or if a prod occurs from another
-> -	 * processor. When returning here, external interrupts
-> -	 * are enabled.
-> -	 */
-> -	cede_processor();
-> -
-> -	get_lppaca()->idle = 0;
-> -}
-> -
->  static int pSeries_pci_probe_mode(struct pci_bus *bus)
->  {
->  	if (firmware_has_feature(FW_FEATURE_LPAR))
-> Index: linux.trees.git/arch/powerpc/kernel/idle.c
-> ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/kernel/idle.c
-> +++ linux.trees.git/arch/powerpc/kernel/idle.c
-> @@ -25,6 +25,7 @@
->  #include <linux/cpu.h>
->  #include <linux/sysctl.h>
->  #include <linux/tick.h>
-> +#include <linux/cpuidle.h>
->  
->  #include <asm/system.h>
->  #include <asm/processor.h>
-> @@ -46,6 +47,14 @@ static int __init powersave_off(char *ar
->  }
->  __setup("powersave=off", powersave_off);
->  
-> +#ifndef CONFIG_CPU_IDLE
-> +void cpuidle_idle_call(void)
-> +{
-> +	local_irq_enable();
-> +	cpu_relax();
-> +}
-> +#endif
-> +
->  /*
->   * The body of the idle task.
->   */
-> @@ -60,35 +69,26 @@ void cpu_idle(void)
->  		while (!need_resched() && !cpu_should_die()) {
->  			ppc64_runlatch_off();
->  
-> -			if (ppc_md.power_save) {
-> -				clear_thread_flag(TIF_POLLING_NRFLAG);
-> -				/*
-> -				 * smp_mb is so clearing of TIF_POLLING_NRFLAG
-> -				 * is ordered w.r.t. need_resched() test.
-> -				 */
-> -				smp_mb();
-> -				local_irq_disable();
-> -
-> -				/* Don't trace irqs off for idle */
-> -				stop_critical_timings();
-> -
-> -				/* check again after disabling irqs */
-> -				if (!need_resched() && !cpu_should_die())
-> -					ppc_md.power_save();
-> -
-> -				start_critical_timings();
-> -
-> -				local_irq_enable();
-> -				set_thread_flag(TIF_POLLING_NRFLAG);
-> -
-> -			} else {
-> -				/*
-> -				 * Go into low thread priority and possibly
-> -				 * low power mode.
-> -				 */
-> -				HMT_low();
-> -				HMT_very_low();
-> -			}
-> +			clear_thread_flag(TIF_POLLING_NRFLAG);
-> +			/*
-> +			 * smp_mb is so clearing of TIF_POLLING_NRFLAG
-> +			 * is ordered w.r.t. need_resched() test.
-> +			 */
-> +			smp_mb();
-> +			local_irq_disable();
-> +
-> +			/* Don't trace irqs off for idle */
-> +			stop_critical_timings();
-> +
-> +			/* check again after disabling irqs */
-> +			if (!need_resched() && !cpu_should_die())
-> +				cpuidle_idle_call();
-> +
-> +			start_critical_timings();
-> +
-> +			local_irq_enable();
-> +			set_thread_flag(TIF_POLLING_NRFLAG);
-> +
->  		}
->  
->  		HMT_medium();
+Amit Kucheria (8):
+  arm: mxc: New interrupt controller (TZIC) for i.MX5 family
+  arm: mxc: base support for Freescale i.MX51 processor
+  arm: mxc: changes to common plat-mxc code to add support for i.MX5
+  arm: mxc: Fix Drive Strength Field in the IOMUX controller
+  mxc: Add board support for the i.MX51 babbage board
+  fec: Add LAN8700 phy support
+  fec: Add ARCH_MX5 as a dependency
+  arm: mxc: Add imx51_defconfig
 
+Dinh Nguyen (1):
+  arm: mxc: Add IO multiplexing support for FEC
+
+Rob Herring (1):
+  fec: fix uninitialized rx buffer usage
+
+ arch/arm/Makefile                            |    1 +
+ arch/arm/configs/imx51_defconfig             | 1383 ++++++++++++++++++++++++++
+ arch/arm/mach-mx5/Kconfig                    |   17 +
+ arch/arm/mach-mx5/Makefile                   |    9 +
+ arch/arm/mach-mx5/Makefile.boot              |    3 +
+ arch/arm/mach-mx5/board-mx51_babbage.c       |  184 ++++
+ arch/arm/mach-mx5/clock.c                    |  817 +++++++++++++++
+ arch/arm/mach-mx5/cpu.c                      |   46 +
+ arch/arm/mach-mx5/crm_regs.h                 |  685 +++++++++++++
+ arch/arm/mach-mx5/devices.c                  |   90 ++
+ arch/arm/mach-mx5/devices.h                  |    4 +
+ arch/arm/mach-mx5/mm.c                       |   86 ++
+ arch/arm/plat-mxc/Kconfig                    |   12 +
+ arch/arm/plat-mxc/Makefile                   |    9 +-
+ arch/arm/plat-mxc/include/mach/common.h      |    3 +
+ arch/arm/plat-mxc/include/mach/debug-macro.S |    9 +
+ arch/arm/plat-mxc/include/mach/entry-macro.S |   34 +-
+ arch/arm/plat-mxc/include/mach/hardware.h    |    4 +
+ arch/arm/plat-mxc/include/mach/iomux-mx51.h  |  309 ++++++
+ arch/arm/plat-mxc/include/mach/iomux-v3.h    |   16 +-
+ arch/arm/plat-mxc/include/mach/irqs.h        |    9 +-
+ arch/arm/plat-mxc/include/mach/memory.h      |    3 +
+ arch/arm/plat-mxc/include/mach/mx51.h        |  481 +++++++++
+ arch/arm/plat-mxc/include/mach/mxc.h         |   13 +
+ arch/arm/plat-mxc/include/mach/timex.h       |    2 +
+ arch/arm/plat-mxc/time.c                     |   52 +-
+ arch/arm/plat-mxc/tzic.c                     |  180 ++++
+ drivers/net/Kconfig                          |    3 +-
+ drivers/net/fec.c                            |   78 +-
+ 29 files changed, 4506 insertions(+), 36 deletions(-)
+ create mode 100644 arch/arm/configs/imx51_defconfig
+ create mode 100644 arch/arm/mach-mx5/Kconfig
+ create mode 100644 arch/arm/mach-mx5/Makefile
+ create mode 100644 arch/arm/mach-mx5/Makefile.boot
+ create mode 100644 arch/arm/mach-mx5/board-mx51_babbage.c
+ create mode 100644 arch/arm/mach-mx5/clock.c
+ create mode 100644 arch/arm/mach-mx5/cpu.c
+ create mode 100644 arch/arm/mach-mx5/crm_regs.h
+ create mode 100644 arch/arm/mach-mx5/devices.c
+ create mode 100644 arch/arm/mach-mx5/devices.h
+ create mode 100644 arch/arm/mach-mx5/mm.c
+ create mode 100644 arch/arm/plat-mxc/include/mach/iomux-mx51.h
+ create mode 100644 arch/arm/plat-mxc/include/mach/mx51.h
+ create mode 100644 arch/arm/plat-mxc/tzic.c
 
