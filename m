@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbZLDS62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZLDSvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbZLDS62 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 13:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbZLDS62
+	id S1755978AbZLDSvi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 13:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbZLDSvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 13:58:28 -0500
-Received: from mf1.cn1.myschools.net ([113.29.215.8]:26448 "EHLO
-	mf1.cn1.myschools.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753068AbZLDS60 (ORCPT
+	Fri, 4 Dec 2009 13:51:36 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:31464 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755564AbZLDSvg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 13:58:26 -0500
-X-Greylist: delayed 641 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Dec 2009 13:58:25 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmBQAJvlGEtxHdcl/2dsb2JhbACFcQOJXbhZHwGOd4I+AYF0BCqCHooz
-X-IronPort-AV: E=Sophos;i="4.47,343,1257080400"; 
-   d="scan'208";a="25261640"
-Message-ID: <4776.94.75.222.181.1259952412.squirrel@mce.nsw.edu.au>
-Date: Sat, 5 Dec 2009 05:46:52 +1100 (EST)
-Subject: Dear Email user
-From: "Colleen Bianchi" <careers@maristeastwood.catholic.edu.au>
-To: info@notice.com
-User-Agent: SquirrelMail/1.4.6
+	Fri, 4 Dec 2009 13:51:36 -0500
+Date: Fri, 4 Dec 2009 11:51:42 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, sam@ravnborg.org,
+       mmarek@suse.cz
+Subject: Re: kbuild - hostprogs not seeing CONFIG_FOO?
+Message-ID: <20091204185142.GB28311@ldl.fc.hp.com>
+References: <20091204180749.GA28311@ldl.fc.hp.com> <20091204102826.3648025a.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Sina-Mail-Agent: sinadeliver-7.00-1.98
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091204102826.3648025a.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Email user
+* Randy Dunlap <randy.dunlap@oracle.com>:
+> On Fri, 4 Dec 2009 11:07:49 -0700 Alex Chiang wrote:
+> 
+> > <stdin>:1519:2: warning: #warning syscall perf_event_open not implemented
+> > <stdin>:1523:2: warning: #warning syscall recvmmsg not implemented
+> > <stdin>:1527:2: warning: #warning syscall fanotify_init not implemented
+> > <stdin>:1531:2: warning: #warning syscall fanotify_mark not implemented
+> > make -f scripts/Makefile.build obj=scripts
+> > make -f scripts/Makefile.build obj=scripts/genksyms
+> > make -f scripts/Makefile.build obj=scripts/mod
+> > mkdir -p .tmp_versions 
+> > make KBUILD_MODULES=1 \
+> > 	-f scripts/Makefile.build obj=Documentation/vm
+> > (cat /dev/null; ) > Documentation/vm/modules.order
+> >   gcc -Wp,-MD,Documentation/vm/.page-types.d -Wall
+> >   -Wmissing-prototypes -Wstrict-prototypes -O2
+> >   -fomit-frame-pointer     -o Documentation/vm/page-types
+> >   Documentation/vm/page-types.c  
+> 
+> Try adding in Documentation/vm/Makefile something like:
+> 
+> HOSTCFLAGS_page-types.o += -I$(objtree)/usr/include
+> 
+> or
+> 
+> HOSTCFLAGS_page-types.o += $(LINUXINCLUDE)
 
-Your mailbox has exceeded the storage limit set by your administrator. You
-may not be able to send or receive new mail until your mailbox size is
-increased by our helpdesk administrator. To increase your storage
-limit.Click Here:
+Thanks Randy, that got it.
 
-http://www.surveymonkey.com/s/6GSHHQM
-
-You will continue to receive this warning message periodically if your
-inbox size continues to exceed its size limit.
-
-This email is intended only for the use of the individual or entity to
-which it is addressed and contains information that is privileged and
-confidential.
-
-Thank you for your cooperation.
-Webmail Help Desk.
-System Administrator.
-
+/ac
 
