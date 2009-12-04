@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbZLDWW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932502AbZLDW3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbZLDWW2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZLDWW0
+	id S932502AbZLDW3W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbZLDW3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:22:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43107 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753354AbZLDWWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:22:25 -0500
-Message-ID: <4B198BA7.5000200@gmail.com>
-Date: Fri, 04 Dec 2009 23:22:31 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Fri, 4 Dec 2009 17:29:20 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:61978 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932426AbZLDW3R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 17:29:17 -0500
+X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Dec 2009 17:29:17 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=hUBZiS3kp6xNX0NlwOCMngPCsL5Xcq1rPJSvROXRzA8DsDbcChnTShKgCLfIH1AQIQ
+         VoD7vD2HDj2H26BDsM3oy86scgIgiEKq5IisHrLP8eSaKAU4+NN2MxapabFlQ6+rnoRU
+         9GsJID4dDgIt2GuAlvQaBiLxW5Hq5GdAKh2Ms=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
+Date: Fri, 4 Dec 2009 14:23:10 -0800
+User-Agent: KMail/1.12.3 (Linux/2.6.32; KDE/4.3.3; x86_64; ; )
+Cc: Oliver Neukum <oliver@neukum.org>, Greg KH <gregkh@suse.de>,
+       stable@kernel.org, Rickard Bellini <rickard.bellini@ericsson.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       Torgny Johansson <torgny.johansson@ericsson.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0912041702510.2616-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912041702510.2616-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: matthew@wil.cx, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 10/31] Constify struct file_lock_operations for 2.6.32 v1
-References: <4B198670.2000406@gmail.com>
-In-Reply-To: <4B198670.2000406@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Message-Id: <200912041423.10632.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Emese Revfy <re.emese@gmail.com>
+On Friday 04 December 2009 02:07:11 pm Alan Stern wrote:
+> On Fri, 4 Dec 2009, Oliver Neukum wrote:
+> > OK, yes. It's a bad example. However this is tricky.
+> >
+> > This is a bug then:
+> >
+> > mutex_lock(...);
+> >
+> > if (instance->error) {
+> > 	rv = instance->error;
+> > 	instance->error  = 0;
+> > 	dev_dbg(instance->dev,...);
+> 
+> Unless you can guarantee at this point that instance->dev isn't stale,
+> it is indeed a bug.
+> 
+> > 	goto err_out;
+> > }
+> >
+> > rv = -ENODEV;
+> > if (instance->disconnected)
+> > 	goto err_out;
+> >
+> > > One approach is to set instance->dev to NULL in disconnect().  That
+> > > wouldn't do much good for your dev_dbg(), though.  A better solution is
+> > > to refcount the instance->dev pointer: Take a reference to the device
+> > > when setting instance->dev and drop it when clearing instance->dev (or
+> > > when instance is freed).
+> >
+> > That would mean that I am forced to adopt refcounting just to print
+> > something. This seems very inelegant.
+> 
+> What can I say?  When the something you want to print can be
+> deallocated at any time, there isn't much choice.
+> 
+> Maybe reference counting is inelegant; it depends on your point of
+> view.  Can you think of a more elegant way to make sure that a pointer
+> isn't stale?
 
-Constify struct file_lock_operations.
+Yes, just say "no" to device_create() and friends. Embed device structure in
+yours, be mindful of lifetime rules and only use "your" device (i.e device
+bound to your driver). This way, as long as your refcount your instance you
+can rest assured the device structure is there as well.
 
-Signed-off-by: Emese Revfy <re.emese@gmail.com>
----
- include/linux/fs.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 2620a8c..5c621a0 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1027,8 +1027,8 @@ static inline int file_check_writeable(struct file *filp)
- typedef struct files_struct *fl_owner_t;
- 
- struct file_lock_operations {
--	void (*fl_copy_lock)(struct file_lock *, struct file_lock *);
--	void (*fl_release_private)(struct file_lock *);
-+	void (* const fl_copy_lock)(struct file_lock *, struct file_lock *);
-+	void (* const fl_release_private)(struct file_lock *);
- };
- 
- struct lock_manager_operations {
-
+-- 
+Dmitry
