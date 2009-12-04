@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbZLDReT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbZLDRaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932329AbZLDReT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 12:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932235AbZLDReR
+	id S932309AbZLDRaw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 12:30:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbZLDRav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 12:34:17 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:49916 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932217AbZLDReR (ORCPT
+	Fri, 4 Dec 2009 12:30:51 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:36643 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932206AbZLDRau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 12:34:17 -0500
-Message-ID: <4B194722.9020705@zytor.com>
-Date: Fri, 04 Dec 2009 09:30:10 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Fri, 4 Dec 2009 12:30:50 -0500
+Message-Id: <1259947857.14965.1348483153@webmail.messagingengine.com>
+X-Sasl-Enc: vghcyFVCki5Hc+7gJ3ka12vQo0IH1e+0Kz9FMgnH62f/ 1259947857
+From: myuboot@fastmail.fm
+To: "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>
+Cc: linux-kernel@vger.kernel.org, "linux-mips" <linux-mips@linux-mips.org>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: "Ahmed S. Darwish" <darwish.07@gmail.com>, x86@kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: x86: Is 'volatile' necessary for readb/writeb and friends?
-References: <20091204092119.GA9707@laptop> <8B1FEF0C-5D71-4D64-ADC3-1EE60F50779F@kernel.crashing.org>
-In-Reply-To: <8B1FEF0C-5D71-4D64-ADC3-1EE60F50779F@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+X-Mailer: MessagingEngine.com Webmail Interface
+In-Reply-To: <20091204160333.GA8842@alpha.franken.de>
+References: <20091028103551.0b4052d8@pixies.home.jungo.com>
+ <1259891550.19943.1348372917@webmail.messagingengine.com>
+ <20091204160333.GA8842@alpha.franken.de>
+Subject: Re: PIR OFFSET for AR7
+Date: Fri, 04 Dec 2009 11:30:57 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/04/2009 06:39 AM, Segher Boessenkool wrote:
->> x86 memory-mapped IO register accessors cast the memory mapped address
->> parameter to a one with the 'volatile' type qualifier. For example, here
->> is readb() after cpp processing
->>
->> --> arch/x86/include/asm/io.h:
->>
->> static inline unsigned char readb(const volatile void __iomem *addr) {
+Thomas,
+
+Sorry, you are right. I mistook PM_OFFSET for PIR_OFFSET.
+
+Thanks, Andrew
+On Fri, 04 Dec 2009 17:03 +0100, "Thomas Bogendoerfer"
+<tsbogend@alpha.franken.de> wrote:
+> On Thu, Dec 03, 2009 at 07:52:30PM -0600, myuboot@fastmail.fm wrote:
+> > Hi, What is the use of PIR register for AR7 board in file
+> > arch/mips/ar7/irq.c?
 > 
-> This "volatile" is meaningless.
-
-Wrong.  "volatile" here is an assertion that it is safe to pass pointer
-to a volatile object to this function.
-
->>     unsigned char ret;
->>     asm volatile("movb %1, %0"
+> it gives back the channel and line of the pending interrupt with the
+> highest priority.
 > 
-> This "volatile" is required; without it, if "ret" isn't used (or can
-> be optimised away), the asm() could be optimised away.
+> > If I understand it right, PIR is used to define the
+> > polarity of the interrupts. It seems to me that it needs to initialized?
 > 
->>              :"=q" (ret)
->>              :"m" (*(volatile unsigned char __force *)addr)
+> no, it's a read only register. Why do you think it has something to do
+> with interrupt polarity ?
 > 
-> This "volatile" has no effect, since the asm has a "memory" clobber.
-> Without that clobber, this "volatile" would prevent moving the asm
-> over other memory accesses.
+> Thomas.
 > 
-> If you want to get all language-lawyery, if the object pointed to by
-> "addr" is volatile, the volatile here _is_ needed: accessing volatile
-> objects via a not volatile-qualified lvalue is undefined.  But since
-> this is GCC-specific code anyway, do you care?  :-)
-
-Again, this comes from the prototype being volatile.
-
-Either way, it works, it is guaranteed to be safe, and removing it can
-only introduce bugs, not remove them.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+> -- 
+> Crap can work. Given enough thrust pigs will fly, but it's not necessary
+> a
+> good idea.                                                [ RFC1925, 2.3
+> ]
