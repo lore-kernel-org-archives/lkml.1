@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZLDPqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZLDPrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbZLDPqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 10:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbZLDPqS
+	id S1756824AbZLDPrc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 10:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbZLDPrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 10:46:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35513 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752028AbZLDPqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 10:46:17 -0500
-Subject: Re: [PATCH 1/5] fsnotify/vfsmount: add fsnotify fields to struct
- vfsmount
-From: Eric Paris <eparis@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, agruen@suse.de
-In-Reply-To: <20091204153925.GA17062@infradead.org>
-References: <20091203055315.21918.83562.stgit@paris.rdu.redhat.com>
-	 <20091204153925.GA17062@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 10:46:14 -0500
-Message-Id: <1259941574.2722.12.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Dec 2009 10:47:31 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:43415 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752160AbZLDPra (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 10:47:30 -0500
+Date: Fri, 4 Dec 2009 10:47:37 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ondrej Zary <linux@rainbow-software.org>
+cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
+Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
+In-Reply-To: <200912041323.00799.linux@rainbow-software.org>
+Message-ID: <Pine.LNX.4.44L0.0912041041370.3070-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-04 at 10:39 -0500, Christoph Hellwig wrote:
-> On Thu, Dec 03, 2009 at 12:53:15AM -0500, Eric Paris wrote:
-> > From: Andreas Gruenbacher <agruen@suse.de>
-> > 
-> > This patch adds the list and mask fields needed to support vfsmount marks.
-> > These are the same fields fsnotify needs on an inode.  They are not used,
-> > just declared and we note where the cleanup hook should be (the function is
-> > not yet defined)
+On Fri, 4 Dec 2009, Ondrej Zary wrote:
+
+> > Furthermore, the patch shows that the second-to-last argument to
+> > usb_fill_bulk_urb() -- the completion function -- is NULL.  That is
+> > strictly illegal and it should have caused an oops as soon as the URB
+> > was used.
 > 
-> What's the rationale for adding them?
+> Thanks for catching this. usbmon showed no ACK packets so it didn't work
+> at all. The device did not care. It started to work after adding a
+> complete function.
 
-As opposed to 'global' listeners I've discussed before, Andreas ask me
-to write per mount listeners.  It's somewhere in between global and per
-inode.  With this series One can now register to listen on a struct
-vfsmount instead.  I'll update this patch description to better explain
-the point.
+What started to work?  If you don't send any ACK packets, it doesn't 
+make any difference whether the completion function is set or not.
 
--Eric
 
+> Seems that -EPIPE is returned only after the device is disconnected. Adding a 
+> check for -EPIPE to usbtouch_irq() and not submitting the urb again seems to 
+> fix the problem!
+
+Fix which problem?  The unending resubmissions or the oops in ehci-hcd?
+
+BTW, does the touchscreen run at high speed or at full speed?
+
+Alan Stern
 
