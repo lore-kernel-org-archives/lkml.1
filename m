@@ -1,70 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbZLDNcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbZLDNdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756539AbZLDNcG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 08:32:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbZLDNcE
+	id S932113AbZLDNdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 08:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbZLDNdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 08:32:04 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:55450 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756492AbZLDNcD convert rfc822-to-8bit (ORCPT
+	Fri, 4 Dec 2009 08:33:16 -0500
+Received: from mail-px0-f188.google.com ([209.85.216.188]:58268 "EHLO
+	mail-px0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756034AbZLDNdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 08:32:03 -0500
+	Fri, 4 Dec 2009 08:33:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=G+g4LqLFnnRcKkA+n6D5K6/ddNivTJbe8M2wKbWY2MuEzicYU0nWJaL8SZecrrDKXQ
-         iUinrx+X96KkQBGPE2a2xV9rdXS+UWFNIwgpME/Ercian4yORFDKiy2Tj314jRbqKLTp
-         OgHeJGqFxO1iwmRVKV/UC3p6RAEd38GmESFO0=
-MIME-Version: 1.0
-Date: Fri, 4 Dec 2009 14:32:08 +0100
-Message-ID: <c5bd819b0912040532x13b7e564ve7f37badb0aaa521@mail.gmail.com>
-Subject: Can't compile 2.6.32
-From: Grozdan <neutrino8@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=RAOz+yINSpK1YnMRnw8tvWn9QFpM5lN0yq+zDso3BMhN32UUa2jkLUy/FSV/UTXc26
+         r2YwDQYvDEenzpmGehoQ9zUg1ZffbcnocQaq0gusgjo03JH0AKiQzmcmPgIrdztmy/ki
+         uRGg5/dqYmjFNL/l6tFiWCrt0P4ZmLRp/UriA=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       Richard Purdie <rpurdie@rpsys.net>, Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: [PATCH v7 3/8] Loongson: YeeLoong: add backlight driver
+Date: Fri,  4 Dec 2009 21:32:40 +0800
+Message-Id: <c2b33b22356136a0cc528c877762a7ae00b4ac08.1259932036.git.wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <cover.1259932036.git.wuzhangjin@gmail.com>
+References: <cover.1259932036.git.wuzhangjin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Wu Zhangjin <wuzhangjin@gmail.com>
 
-I'm having trouble trying to compile the 2.6.32 kernel on my openSUSE
-11.1 system. While doing so, I see a lot of warnings which seem to
-come from include/acpi/acpiosxf.h and then when the compile process
-enters the drivers/acpi directory, it errors out with the following:
+This patch adds YeeLoong Backlight Driver, it provides standard
+interface(/sys/class/backlight/) for user-space applications(e.g.
+kpowersave, gnome-power-manager) to control the brightness of the
+backlight.
 
-  CC      drivers/acpi/tables.o
-In file included from include/acpi/acpi.h:63,
-                 from include/linux/acpi.h:39,
-                 from drivers/acpi/tables.c:33:
-include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-include/acpi/acpiosxf.h:98: warning: no return statement in function
-returning non-void
-  CC      drivers/acpi/blacklist.o
-In file included from include/acpi/acpi.h:63,
-                 from include/linux/acpi.h:39,
-                 from drivers/acpi/blacklist.c:33:
-include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-include/acpi/acpiosxf.h:98: warning: no return statement in function
-returning non-void
-  CC      drivers/acpi/osl.o
-In file included from include/acpi/acpi.h:63,
-                 from include/linux/acpi.h:39,
-                 from drivers/acpi/osl.c:40:
-include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-include/acpi/acpiosxf.h:98: warning: no return statement in function
-returning non-void
-drivers/acpi/osl.c: At top level:
-drivers/acpi/osl.c:514: error: redefinition of ‘acpi_load_override_tables’
-include/acpi/acpiosxf.h:98: error: previous definition of
-‘acpi_load_override_tables’ was here
-make[2]: *** [drivers/acpi/osl.o] Error 1
-make[1]: *** [drivers/acpi] Error 2
-make: *** [drivers] Error 2
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+---
+ drivers/platform/mips/Kconfig           |    1 +
+ drivers/platform/mips/yeeloong_laptop.c |   79 +++++++++++++++++++++++++++++++
+ 2 files changed, 80 insertions(+), 0 deletions(-)
 
-Thoughts, solutions, etc?
+diff --git a/drivers/platform/mips/Kconfig b/drivers/platform/mips/Kconfig
+index 76f0250..f7a3705 100644
+--- a/drivers/platform/mips/Kconfig
++++ b/drivers/platform/mips/Kconfig
+@@ -17,6 +17,7 @@ if MIPS_PLATFORM_DEVICES
+ config LEMOTE_YEELOONG2F
+ 	tristate "Lemote YeeLoong Laptop"
+ 	depends on LEMOTE_MACH2F
++	select BACKLIGHT_CLASS_DEVICE
+ 	default m
+ 	help
+ 	  YeeLoong netbook is a mini laptop made by Lemote, which is basically
+diff --git a/drivers/platform/mips/yeeloong_laptop.c b/drivers/platform/mips/yeeloong_laptop.c
+index 85fc7ed..fbc4ebb 100644
+--- a/drivers/platform/mips/yeeloong_laptop.c
++++ b/drivers/platform/mips/yeeloong_laptop.c
+@@ -11,6 +11,77 @@
+ 
+ #include <linux/err.h>
+ #include <linux/platform_device.h>
++#include <linux/backlight.h>	/* for backlight subdriver */
++#include <linux/fb.h>
++
++#include <ec_kb3310b.h>
++
++/* backlight subdriver */
++#define MAX_BRIGHTNESS	8
++
++static int yeeloong_set_brightness(struct backlight_device *bd)
++{
++	unsigned int level, current_level;
++	static unsigned int old_level;
++
++	level = (bd->props.fb_blank == FB_BLANK_UNBLANK &&
++		 bd->props.power == FB_BLANK_UNBLANK) ?
++	    bd->props.brightness : 0;
++
++	if (level > MAX_BRIGHTNESS)
++		level = MAX_BRIGHTNESS;
++	else if (level < 0)
++		level = 0;
++
++	/* Avoid to modify the brightness when EC is tuning it */
++	current_level = ec_read(REG_DISPLAY_BRIGHTNESS);
++	if ((old_level == current_level) && (old_level != level))
++		ec_write(REG_DISPLAY_BRIGHTNESS, level);
++	old_level = level;
++
++	return 0;
++}
++
++static int yeeloong_get_brightness(struct backlight_device *bd)
++{
++	return (int)ec_read(REG_DISPLAY_BRIGHTNESS);
++}
++
++static struct backlight_ops backlight_ops = {
++	.get_brightness = yeeloong_get_brightness,
++	.update_status = yeeloong_set_brightness,
++};
++
++static struct backlight_device *yeeloong_backlight_dev;
++
++static int yeeloong_backlight_init(void)
++{
++	int ret;
++
++	yeeloong_backlight_dev = backlight_device_register("backlight0", NULL,
++			NULL, &backlight_ops);
++
++	if (IS_ERR(yeeloong_backlight_dev)) {
++		ret = PTR_ERR(yeeloong_backlight_dev);
++		yeeloong_backlight_dev = NULL;
++		return ret;
++	}
++
++	yeeloong_backlight_dev->props.max_brightness = MAX_BRIGHTNESS;
++	yeeloong_backlight_dev->props.brightness =
++		yeeloong_get_brightness(yeeloong_backlight_dev);
++	backlight_update_status(yeeloong_backlight_dev);
++
++	return 0;
++}
++
++static void yeeloong_backlight_exit(void)
++{
++	if (yeeloong_backlight_dev) {
++		backlight_device_unregister(yeeloong_backlight_dev);
++		yeeloong_backlight_dev = NULL;
++	}
++}
+ 
+ static struct platform_device_id platform_device_ids[] = {
+ 	{
+@@ -42,11 +113,19 @@ static int __init yeeloong_init(void)
+ 		return ret;
+ 	}
+ 
++	ret = yeeloong_backlight_init();
++	if (ret) {
++		pr_err("Fail to register yeeloong backlight driver.\n");
++		yeeloong_backlight_exit();
++		return ret;
++	}
++
+ 	return 0;
+ }
+ 
+ static void __exit yeeloong_exit(void)
+ {
++	yeeloong_backlight_exit();
+ 	platform_driver_unregister(&platform_driver);
+ 
+ 	pr_info("Unload YeeLoong Platform Specific Driver.\n");
+-- 
+1.6.2.1
 
-PS: please CC me as I'm not subscribed to the list.
