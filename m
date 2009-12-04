@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752172AbZLDWHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751640AbZLDWHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752172AbZLDWHR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:07:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZLDWHP
+	id S1751640AbZLDWHJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:07:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZLDWHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:07:15 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:61789 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbZLDWHK (ORCPT
+	Fri, 4 Dec 2009 17:07:07 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:50149 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750802AbZLDWHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:07:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Va55ns5s0o8GLoxZjTSaHu82DHkdRCNzUZXqdm2mh4ads22EzByQp829sX84a33jGA
-         q4QGHNIf5LKzj7W/4NdBhve8XOFAYQHxTp6IKXhtzMuSb3bh9EYidb5iXEmRTDrZGV1g
-         s6xYb3my8PsAHHZHbGYggejE7ojvqwdyyXcas=
-Date: Fri, 4 Dec 2009 14:07:08 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Christoph Bartelmus <lirc@bartelmus.de>
-Cc: mchehab@redhat.com, awalls@radix.net, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, jonsmirl@gmail.com, khc@pm.waw.pl,
-       kraxel@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR  system?
-Message-ID: <20091204220708.GD25669@core.coreip.homeip.net>
-References: <4B191DD4.8030903@redhat.com> <BEFgL6sXqgB@lirc>
+	Fri, 4 Dec 2009 17:07:06 -0500
+Date: Fri, 4 Dec 2009 17:07:11 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Greg KH <gregkh@suse.de>, <stable@kernel.org>,
+       Rickard Bellini <rickard.bellini@ericsson.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       Torgny Johansson <torgny.johansson@ericsson.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
+In-Reply-To: <200912042258.48323.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0912041702510.2616-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BEFgL6sXqgB@lirc>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 10:46:00PM +0100, Christoph Bartelmus wrote:
-> Hi Mauro,
-> 
-> on 04 Dec 09 at 12:33, Mauro Carvalho Chehab wrote:
-> > Christoph Bartelmus wrote:
-> >>>> Consider passing the decoded data through lirc_dev.
-> [...]
-> >> Consider cases like this:
-> >> http://lirc.sourceforge.net/remotes/lg/6711A20015N
-> >>
-> >> This is an air-conditioner remote.
-> >> The entries that you see in this config file are not really separate
-> >> buttons. Instead the remote just sends the current settings for e.g.
-> >> temperature encoded in the protocol when you press some up/down key. You
-> >> really don't want to map all possible temperature settings to KEY_*
-> >> events. For such cases it would be nice to have access at the raw scan
-> >> codes from user space to do interpretation of the data.
-> >> The default would still be to pass the data to the input layer, but it
-> >> won't hurt to have the possibility to access the raw data somehow.
-> 
-> > Interesting. IMHO, the better would be to add an evdev ioctl to return the
-> > scancode for such cases, instead of returning the keycode.
-> 
-> That means you would have to set up a pseudo keymap, so that you can get  
-> the key event which you could than react on with a ioctl. Or are you  
-> generating KEY_UNKNOWN for every scancode that is not mapped?
-> What if different scan codes are mapped to the same key event? How do you  
-> retrieve the scan code for the key event?
-> I don't think it can work this way.
-> 
+On Fri, 4 Dec 2009, Oliver Neukum wrote:
 
-EV_MSC/MSC_SCAN.
+> OK, yes. It's a bad example. However this is tricky.
+> 
+> This is a bug then:
+> 
+> mutex_lock(...);
+> 
+> if (instance->error) {
+> 	rv = instance->error;
+> 	instance->error  = 0;
+> 	dev_dbg(instance->dev,...);
 
--- 
-Dmitry
+Unless you can guarantee at this point that instance->dev isn't stale, 
+it is indeed a bug.
+
+> 	goto err_out;
+> }
+> 
+> rv = -ENODEV;
+> if (instance->disconnected)
+> 	goto err_out;
+> 
+> > One approach is to set instance->dev to NULL in disconnect().  That
+> > wouldn't do much good for your dev_dbg(), though.  A better solution is
+> > to refcount the instance->dev pointer: Take a reference to the device
+> > when setting instance->dev and drop it when clearing instance->dev (or
+> > when instance is freed).
+> 
+> That would mean that I am forced to adopt refcounting just to print
+> something. This seems very inelegant.
+
+What can I say?  When the something you want to print can be
+deallocated at any time, there isn't much choice.
+
+Maybe reference counting is inelegant; it depends on your point of
+view.  Can you think of a more elegant way to make sure that a pointer
+isn't stale?
+
+Alan Stern
+
