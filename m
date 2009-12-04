@@ -1,129 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbZLDUtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbZLDU5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbZLDUtp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 15:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbZLDUtk
+	id S932470AbZLDU5q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 15:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932441AbZLDU5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 15:49:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10655 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757479AbZLDUta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 15:49:30 -0500
-From: Eric Paris <eparis@redhat.com>
-Subject: [RFC PATCH 15/15] ima: limit imbalance msg
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
-       eparis@redhat.com, zohar@us.ibm.com, jack@suse.cz,
-       jmalicki@metacarta.com, dsmith@redhat.com, serue@us.ibm.com, hch@lst.de,
-       john@johnmccutchan.com, rlove@rlove.org, ebiederm@xmission.com,
-       heiko.carstens@de.ibm.com, penguin-kernel@I-love.SAKURA.ne.jp,
-       mszeredi@suse.cz, jens.axboe@oracle.com, akpm@linux-foundation.org,
-       matthew@wil.cx, hugh.dickins@tiscali.co.uk,
-       kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
-       davem@davemloft.net, arnd@arndb.de, eric.dumazet@gmail.com
-Date: Fri, 04 Dec 2009 15:48:40 -0500
-Message-ID: <20091204204840.18286.81154.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
-References: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
+	Fri, 4 Dec 2009 15:57:45 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:41642 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932440AbZLDU5o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 15:57:44 -0500
+Date: Fri, 4 Dec 2009 15:57:50 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Greg KH <gregkh@suse.de>, <stable@kernel.org>,
+       Rickard Bellini <rickard.bellini@ericsson.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       Torgny Johansson <torgny.johansson@ericsson.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
+In-Reply-To: <200912042055.55565.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0912041555430.3070-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mimi Zohar <zohar@us.ibm.com>
+On Fri, 4 Dec 2009, Oliver Neukum wrote:
 
-Limit the number of imbalance messages to once per filesystem type instead of
-once per system boot.  (it's actually slightly racy and could give you a
-couple per fs, but this isn't a real issue)
+> > > 1. am I supposed to get a reference just so that I can use dev_err?
+> > 
+> > No, you should already have a reference on the device when doing the
+> > call, right?
+> 
+> No, why? Consider this:
+> 
+> int write(...)
+> {
+> 	...
+> 	mutex_lock(&instance->lock);
+> 	if (instance->disconnected) {
+> 		dev_dbg(instance->dev,"writing to disconnected device"); 
+> 		rv = -ENODEV;
+> 	} else {
+> 		res = usb_submit_urb(...);
+> 		rv = res < 0 ? -EIO : count;
+> 	}
+> 	mutex_unlock(&instance->lock);
+> 	return rv;
+> }
+> 
+> void disconnect(...)
+> {
+> 	...
+> 	mutex_lock(&instance->lock);
+> 	instance->disconnected = 1;
+> 	usb_kill_urb(...);
+> 	usb_kill_urb(...);
+> 	mutex_unlock(&instance->lock);
+> }
+> 
+> This would be perfectly valid code without any references taken save
+> for the pesky dev_dbg()
 
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
----
+Whoever calls write() must possess a valid reference.  Otherwise 
+instance might already be deallocated when write() starts, causing an 
+oops well before the call to dev_dbg().
 
- security/integrity/ima/ima_main.c |   62 ++++++++++++++++++++++++++++++++-----
- 1 files changed, 53 insertions(+), 9 deletions(-)
+Typically the driver would take a reference during open() and drop it 
+during close().
 
-diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-index c721ddc..14d109b 100644
---- a/security/integrity/ima/ima_main.c
-+++ b/security/integrity/ima/ima_main.c
-@@ -35,6 +35,55 @@ static int __init hash_setup(char *str)
- }
- __setup("ima_hash=", hash_setup);
- 
-+struct ima_imbalance {
-+	struct hlist_node node;
-+	unsigned long fsmagic;
-+};
-+
-+/*
-+ * ima_limit_imbalance - emit one imbalance message per filesystem type
-+ *
-+ * Maintain list of filesystem types that do not measure files properly.
-+ * Return false if unknown, true if known.
-+ */
-+static bool ima_limit_imbalance(struct file *file)
-+{
-+	static DEFINE_SPINLOCK(ima_imbalance_lock);
-+	static HLIST_HEAD(ima_imbalance_list);
-+
-+	struct super_block *sb = file->f_dentry->d_sb;
-+	struct ima_imbalance *entry;
-+	struct hlist_node *node;
-+	bool found = false;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(entry, node, &ima_imbalance_list, node) {
-+		if (entry->fsmagic == sb->s_magic) {
-+			found = true;
-+			break;
-+		}
-+	}
-+	rcu_read_unlock();
-+	if (found)
-+		goto out;
-+
-+	entry = kmalloc(sizeof(*entry), GFP_NOFS);
-+	if (!entry)
-+		goto out;
-+	entry->fsmagic = sb->s_magic;
-+	spin_lock(&ima_imbalance_lock);
-+	/*
-+	 * we could have raced and something else might have added this fs
-+	 * to the list, but we don't really care
-+	 */
-+	hlist_add_head_rcu(&entry->node, &ima_imbalance_list);
-+	spin_unlock(&ima_imbalance_lock);
-+	printk(KERN_INFO "IMA: unmeasured files on fsmagic: %lX\n",
-+	       entry->fsmagic);
-+out:
-+	return found;
-+}
-+
- /*
-  * Update the counts given a file
-  */
-@@ -72,15 +121,10 @@ static void ima_dec_counts(struct ima_iint_cache *iint, struct file *file)
- 		}
- 	}
- 
--	if ((iint->opencount < 0) ||
--	    (iint->readcount < 0) ||
--	    (iint->writecount < 0)) {
--		static int dumped;
--
--		if (dumped)
--			return;
--		dumped = 1;
--
-+	if (((iint->opencount < 0) ||
-+	     (iint->readcount < 0) ||
-+	     (iint->writecount < 0)) &&
-+	    !ima_limit_imbalance(file)) {
- 		printk(KERN_INFO "%s: open/free imbalance (r:%ld w:%ld o:%ld)\n",
- 		       __FUNCTION__, iint->readcount, iint->writecount,
- 		       iint->opencount);
+Alan Stern
 
