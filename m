@@ -1,48 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbZLDQQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbZLDQTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756952AbZLDQQJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 11:16:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbZLDQQI
+	id S932162AbZLDQTi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 11:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbZLDQTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 11:16:08 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:50707 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755344AbZLDQQH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 11:16:07 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
-Date: Fri, 4 Dec 2009 17:16:19 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Greg KH <gregkh@suse.de>, stable@kernel.org,
-       Rickard Bellini <rickard.bellini@ericsson.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       Torgny Johansson <torgny.johansson@ericsson.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0912041102590.3070-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912041102590.3070-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Fri, 4 Dec 2009 11:19:38 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:63580 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932104AbZLDQTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 11:19:37 -0500
+Date: Fri, 4 Dec 2009 17:19:41 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] DMI: allow omitting ident strings in DMI tables
+Message-ID: <20091204171941.4554fa41@hyperion.delvare>
+In-Reply-To: <20091204073421.GA17012@core.coreip.homeip.net>
+References: <20091203031240.GB9121@core.coreip.homeip.net>
+	<20091203093009.059197a6@hyperion.delvare>
+	<20091203085629.GN9121@core.coreip.homeip.net>
+	<20091203102542.6df59efc@hyperion.delvare>
+	<20091204073421.GA17012@core.coreip.homeip.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912041716.19329.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 4. Dezember 2009 17:06:57 schrieb Alan Stern:
-> Oliver:
+> DMI: allow omitting ident strings in DMI tables
 > 
-> We don't have to worry about the device structure being deallocated 
-> while the routine is running.  If that happens it's a bug in the 
-> caller: improper refcounting.
+> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> 
+> The purpose of dmi->ident is twofold - it may be used by DMI callback
+> functions when composing log messages; it is also used to determine
+> end of DMI table in dmi_check_system() and dmi_first_match(). However,
+> in case when callbacks are not interested in using ident at all it just
+> wastes memory. Let's make enties with empty first match slot serve as
+> end-of-table markers instead.
+> 
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 
-That raises two points
+Looks good to me.
 
-1. am I supposed to get a reference just so that I can use dev_err?
-2. what happens if this is a soft disconnect and the device is reconnected?
-It seems to me that you'd print the wrong driver's name.
+Acked-by: Jean Delvare <khali@linux-fr.org>
 
-	Regards
-		Oliver
+> ---
+> 
+>  drivers/firmware/dmi_scan.c |   15 ++++++++++++---
+>  1 files changed, 12 insertions(+), 3 deletions(-)
+> 
+> 
+> diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
+> index 938100f..3a2ccb0 100644
+> --- a/drivers/firmware/dmi_scan.c
+> +++ b/drivers/firmware/dmi_scan.c
+> @@ -429,7 +429,7 @@ static bool dmi_matches(const struct dmi_system_id *dmi)
+>  	for (i = 0; i < ARRAY_SIZE(dmi->matches); i++) {
+>  		int s = dmi->matches[i].slot;
+>  		if (s == DMI_NONE)
+> -			continue;
+> +			break;
+>  		if (dmi_ident[s]
+>  		    && strstr(dmi_ident[s], dmi->matches[i].substr))
+>  			continue;
+> @@ -440,6 +440,15 @@ static bool dmi_matches(const struct dmi_system_id *dmi)
+>  }
+>  
+>  /**
+> + *	dmi_is_end_of_table - check for end-of-table marker
+> + *	@dmi: pointer to the dmi_system_id structure to check
+> + */
+> +static bool dmi_is_end_of_table(const struct dmi_system_id *dmi)
+> +{
+> +	return dmi->matches[0].slot == DMI_NONE;
+> +}
+> +
+> +/**
+>   *	dmi_check_system - check system DMI data
+>   *	@list: array of dmi_system_id structures to match against
+>   *		All non-null elements of the list must match
+> @@ -457,7 +466,7 @@ int dmi_check_system(const struct dmi_system_id *list)
+>  	int count = 0;
+>  	const struct dmi_system_id *d;
+>  
+> -	for (d = list; d->ident; d++)
+> +	for (d = list; !dmi_is_end_of_table(d); d++)
+>  		if (dmi_matches(d)) {
+>  			count++;
+>  			if (d->callback && d->callback(d))
+> @@ -484,7 +493,7 @@ const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list)
+>  {
+>  	const struct dmi_system_id *d;
+>  
+> -	for (d = list; d->ident; d++)
+> +	for (d = list; !dmi_is_end_of_table(d); d++)
+>  		if (dmi_matches(d))
+>  			return d;
+>  
+
+
+-- 
+Jean Delvare
