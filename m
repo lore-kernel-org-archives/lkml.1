@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751276AbZLDFRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751469AbZLDFZC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751276AbZLDFRe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 00:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZLDFRc
+	id S1751469AbZLDFZC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 00:25:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZLDFZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 00:17:32 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60126 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbZLDFRb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 00:17:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PJV0hEga3hA0j9ynWNTYksNlUrQE+wppAFLb2Hs8/72KWbu2mF6hSLwSINV5eOb7zp
-         BEduniOxhHYLA75VKzBHbDM95u+nQbhLLDj5gc3CawH5N1tIxiEe1rr2c24iV/6rlJH/
-         WmF+f0tsFhq2Z3A4dnbV5yvKRYfChxoEMBbqo=
-Date: Fri, 4 Dec 2009 08:17:29 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       chris.mason@oracle.com, konishi.ryusuke@lab.ntt.co.jp,
-       swhiteho@redhat.com, tytso@mit.edu
-Subject: Re: + task_struct-make-journal_info-conditional.patch added to -mm
- tree
-Message-ID: <20091204051729.GA3927@x200>
-References: <200912032240.nB3Mevae027408@imap1.linux-foundation.org>
- <20091204021444.GA8392@x200>
- <4B1888CE.8000406@ct.jp.nec.com>
+	Fri, 4 Dec 2009 00:25:00 -0500
+Received: from cantor.suse.de ([195.135.220.2]:57595 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751081AbZLDFY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 00:24:59 -0500
+Date: Thu, 3 Dec 2009 21:20:56 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Amit Kucheria <amit.kucheria@verdurent.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>, rui.zhang@intel.com,
+       alan@linux.intel.com, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 2/2] als: add unique device-ids to the als device class
+Message-ID: <20091204052056.GA16660@suse.de>
+References: <1259237081-4403-1-git-send-email-amit.kucheria@verdurent.com> <1259237186-5459-1-git-send-email-amit.kucheria@verdurent.com> <20091126160713.5e19eb04@hyperion.delvare> <4B0EB891.4010309@cam.ac.uk> <20091126180646.GA9059@suse.de> <4B0ECB84.9010503@cam.ac.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B1888CE.8000406@ct.jp.nec.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B0ECB84.9010503@cam.ac.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 12:58:06PM +0900, Hiroshi Shimamoto wrote:
-> Alexey Dobriyan wrote:
-> > On Thu, Dec 03, 2009 at 02:40:57PM -0800, akpm@linux-foundation.org wrote:
-> >> --- a/include/linux/sched.h~task_struct-make-journal_info-conditional
-> >> +++ a/include/linux/sched.h
-> >> @@ -1452,8 +1452,10 @@ struct task_struct {
-> >>  	gfp_t lockdep_reclaim_gfp;
-> >>  #endif
-> >>  
-> >> +#ifdef CONFIG_FS_JOURNAL_INFO
-> >>  /* journalling filesystem info */
-> >>  	void *journal_info;
-> >> +#endif
+On Thu, Nov 26, 2009 at 06:40:04PM +0000, Jonathan Cameron wrote:
+> Greg KH wrote:
+> > On Thu, Nov 26, 2009 at 05:19:13PM +0000, Jonathan Cameron wrote:
+> >>> That being said... If we want user-space to know what device is there,
+> >>> we may want to still let drivers pass a name string to
+> >>> als_device_register() and let the ALS core create a "name" sysfs
+> >>> attribute returning the string in question. This would be much lighter
+> >>> (for individual drivers) than the previous situation, as the string in
+> >>> question would be a constant (e.g. "TSL2550".) Opinions?
+> >>>
+> >> Makes sense given we want all drivers to support some form of identification.
+> >> We could do it by stating they will all have that attribute, but given it's constant
+> >> will save repetition to put it in the driver. Conversely it might complicate the handling
+> >> of subsequent attribute_groups so I'd probably favour adding relevant documentation lines
+> >> and leaving it up to the drivers to implement this attribute.
+> >>
+> >> Thus we'd require (within reason) all drivers to have illuminance0 and name.
 > > 
-> > This will prevent using e.g. ext3 on CONFIG_EXT3_FS=n kernels.
-> 
-> I'm sorry, I'm not sure what you're mentioning.
+> > Why have a name attribute when you can just use the name of the device
+> > itself instead?  Isn't that what it is there for?
+> Could do, though I'm not entirely sure all bus types are implementing a name
+> attribute (I may be wrong, but I don't think spi does for example though it might
+> have gone in with the recent device table stuff).  We could just specify that it
+> should be present for the device.
 
-With this patch admin must decide in advance if he will ever use ext3.
-EXT3_FS=n kernels won't be able to get ext3 support without reboot
-even as module, because task_struct will be different.
+ah, sorry, I was thinking of the name of the actual device, which is the
+bus id here.
 
-Which is a regression compared to current state.
+Nevermind, I'll go back to feeling stupid...
 
-The biggest example of such behaviour is ipv6 module, but it should not
-be spread more.
+greg k-h
