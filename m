@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZLDPVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZLDPZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752260AbZLDPVA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 10:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbZLDPU7
+	id S1753077AbZLDPZB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 10:25:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZLDPZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 10:20:59 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:54822 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751099AbZLDPU6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 10:20:58 -0500
-Date: Fri, 4 Dec 2009 10:21:05 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ed Tomlinson <edt@aei.ca>
-cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
-Subject: Re: [BUG] 2.6.32 - Sddr-09 SM reader resets endlessly
-In-Reply-To: <200912031800.11780.edt@aei.ca>
-Message-ID: <Pine.LNX.4.44L0.0912041019410.3070-100000@iolanthe.rowland.org>
+	Fri, 4 Dec 2009 10:25:00 -0500
+Received: from lucidpixels.com ([75.144.35.66]:39372 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751681AbZLDPZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 10:25:00 -0500
+Date: Fri, 4 Dec 2009 10:25:06 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Jiri Kosina <jkosina@suse.cz>
+cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: What is the performance when using frame pointers in the
+ kernel?
+In-Reply-To: <alpine.LRH.2.00.0912041422360.9567@twin.jikos.cz>
+Message-ID: <alpine.DEB.2.00.0912041024500.16957@p34.internal.lan>
+References: <alpine.DEB.2.00.0912031235230.6768@p34.internal.lan> <1259868529.3977.1300.camel@laptop> <alpine.LRH.2.00.0912041422360.9567@twin.jikos.cz>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Dec 2009, Ed Tomlinson wrote:
 
-> Hi,
-> 
-> Just booted in 2.6.32 and shortly after the boot finished my console was spammed with:
-> 
-> [   72.221620] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-> [   72.375589] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-> [   72.529568] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
-...
 
-> I noticed the leds on the devince blinking and unplugged it.  The messages stopped.
-> 
-> Plugging it in to another port gave:
-> 
-> [  120.096590] usb 7-4.2: new full speed USB device using ehci_hcd and address 7                                                             
-> [  120.188421] usb 7-4.2: New USB device found, idVendor=0781, idProduct=0200                                                                
-> [  120.196857] usb 7-4.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0                                                           
-> [  120.205801] usb 7-4.2: Product: USB SSFDC                                                                                                 
-> [  120.205803] usb 7-4.2: Manufacturer: SanDisk                                                                                              
-> [  120.206023] usb 7-4.2: configuration #1 chosen from 1 choice                                                                              
-> [  120.210375] scsi10 : SCSI emulation for USB Mass Storage devices                                                                          
-> [  120.210625] usb-storage: device found at 7                                                                                                
-> [  120.210627] usb-storage: waiting for device to settle before scanning                                                                     
-> [  125.210356] scsi 10:0:0:0: Direct-Access     Sandisk0 ImageMate SDDR-0 0208 PQ: 0 ANSI: 0                                                 
-> [  125.221014] sd 10:0:0:0: Attached scsi generic sg8 type 0                                                                                 
-> [  125.538583] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-> [  125.693592] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-> [  125.846595] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
-...
+On Fri, 4 Dec 2009, Jiri Kosina wrote:
 
-> just in case it happened to be an interaction with the hub used I tried another:
-...
+> On Thu, 3 Dec 2009, Peter Zijlstra wrote:
+>
+>>> What is the performance hit when the kernel is compiled with frame
+>>> pointers?
+>>
+>> build both kernels and run your favourite workload to find out.
+>
+> But generally speaking, frame pointers impose quite some performance
+> penalty indeed. lmbench syscall microbenchmark can give you some hint. I
+> expect you'll see approx. 10% performance increase for various syscalls if
+> you disable them, as that's what we have measured lately.
+>
+> -- 
+> Jiri Kosina
+> SUSE Labs, Novell Inc.
+>
 
-> with the same results.
-> 
-> Ideas? 
+Thanks for the response.. Good to know.
 
-More information is needed.  Collect a usbmon trace showing what 
-happens when the device is plugged in.  Instructions are in the kernel 
-source file Documentation/usb/usbmon.txt.
-
-Alan Stern
-
+Justin.
