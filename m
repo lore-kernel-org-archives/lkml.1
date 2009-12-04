@@ -1,96 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZLDJtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbZLDJyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZLDJtz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 04:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZLDJty
+	id S1753301AbZLDJyO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 04:54:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZLDJyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 04:49:54 -0500
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:46563 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754732AbZLDJtx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 04:49:53 -0500
-Date: Fri, 4 Dec 2009 15:19:32 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Yin, Kangkai" <kangkai.yin@intel.com>
-Cc: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] jbd: jbd-debug and jbd2-debug should be writable.
-Message-ID: <20091204094932.GC4272@skywalker.linux.vnet.ibm.com>
-References: <20091204031735.GN19635@kai-debian>
+	Fri, 4 Dec 2009 04:54:13 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41157 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751936AbZLDJyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 04:54:12 -0500
+Date: Fri, 4 Dec 2009 10:54:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Suresh Jayaraman <sjayaraman@suse.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] sched: fix GENTLE_FAIR_SLEEPERS dependency
+Message-ID: <20091204095408.GA26118@elte.hu>
+References: <4B18D66E.8020905@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091204031735.GN19635@kai-debian>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B18D66E.8020905@suse.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 11:17:35AM +0800, Yin, Kangkai wrote:
-> Hi,
-> 
-> Re-send since seems my mail was dropped by vger, because of my wrong
-> envelope_from..
-> 
-> ----
-> I was trying to enable the jbd debug option, and found that jbd-debug
-> in debugfs is read-only, shouldn't that be writable?
-> 
-> Found in both .31 stable kernel and .32 one.
-> 
-> Thanks,
-> Kangkai
-> 
-> From 492ec0453ca3458c68deaa6e308ca01acc0eca1f Mon Sep 17 00:00:00 2001
-> From: Yin Kangkai <kangkai.yin@intel.com>
-> Date: Thu, 3 Dec 2009 18:01:38 +0800
-> Subject: [PATCH] jbd: jbd-debug and jbd2-debug should be writable.
-> 
-> jbd-debug and jbd2-debug is currently read-only (S_IRUGO), which is not
-> correct. Make it writable so that we can start debuging.
-> 
-> Signed-off-by: Yin Kangkai <kangkai.yin@intel.com>
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+* Suresh Jayaraman <sjayaraman@suse.de> wrote:
 
+> The newly introduced GENTLE_FAIR_SLEEPERS does not seem to have any
+> effect without FAIR_SLEEPERS. Fix sysctl.sched_features to reflect
+> this. Without this change, a user who sets GENTLE_FAIR_SLEEPERS
+> without FAIR_SLEEPERS would assume gentle sleeper fairness which
+> is not guaranteed.
+> 
+> Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
 > ---
->  fs/jbd/journal.c  |    2 +-
->  fs/jbd2/journal.c |    3 ++-
->  2 files changed, 3 insertions(+), 2 deletions(-)
 > 
-> diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-> index 4160afa..bd224ee 100644
-> --- a/fs/jbd/journal.c
-> +++ b/fs/jbd/journal.c
-> @@ -1913,7 +1913,7 @@ static void __init jbd_create_debugfs_entry(void)
->  {
->  	jbd_debugfs_dir = debugfs_create_dir("jbd", NULL);
->  	if (jbd_debugfs_dir)
-> -		jbd_debug = debugfs_create_u8("jbd-debug", S_IRUGO,
-> +		jbd_debug = debugfs_create_u8("jbd-debug", S_IRUGO | S_IWUSR,
->  					       jbd_debugfs_dir,
->  					       &journal_enable_debug);
->  }
-> diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-> index fed8538..3c41c5a 100644
-> --- a/fs/jbd2/journal.c
-> +++ b/fs/jbd2/journal.c
-> @@ -2103,7 +2103,8 @@ static void __init jbd2_create_debugfs_entry(void)
->  {
->  	jbd2_debugfs_dir = debugfs_create_dir("jbd2", NULL);
->  	if (jbd2_debugfs_dir)
-> -		jbd2_debug = debugfs_create_u8(JBD2_DEBUG_NAME, S_IRUGO,
-> +		jbd2_debug = debugfs_create_u8(JBD2_DEBUG_NAME,
-> +					       S_IRUGO | S_IWUSR,
->  					       jbd2_debugfs_dir,
->  					       &jbd2_journal_enable_debug);
->  }
-> -- 
-> 1.6.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c
+> +++ linux-2.6/kernel/sched.c
+> @@ -761,10 +761,22 @@ sched_feat_write(struct file *filp, cons
+>  		int len = strlen(sched_feat_names[i]);
+>  
+>  		if (strncmp(cmp, sched_feat_names[i], len) == 0) {
+> -			if (neg)
+> +			if (neg) {
+>  				sysctl_sched_features &= ~(1UL << i);
+> -			else
+> +				/*
+> +				 * GENTLE_FAIR_SLEEPERS have no effect without
+> +				 * FAIR_SLEEPERS.
+> +				 */
+> +				if (strncmp(cmp, "FAIR_SLEEPERS",
+> +					    strlen("FAIR_SLEEPERS")) == 0)
+> +					sysctl_sched_features &= ~(1UL << i+1);
+> +			} else {
+>  				sysctl_sched_features |= (1UL << i);
+> +				if (strncmp(cmp, "GENTLE_FAIR_SLEEPERS",
+> +					    strlen("GENTLE_FAIR_SLEEPERS"))
+> +						== 0)
+> +					sysctl_sched_features |= (1UL << i-1);
+> +			}
+>  			break;
+>  		}
+>  	}
+
+There's a lot of other dependencies between scheduler features so it's 
+possible to change it without it having an effect on the scheduler. 
+
+sched_features is really a development/debugging facility, you have to 
+know what you are doing.
+
+Might be worth adding a comment to the feature definition place itself 
+in the source - explain what it does and how it makes sense (and how it 
+doesnt).
+
+	Ingo
