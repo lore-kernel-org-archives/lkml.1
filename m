@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbZLDBNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbZLDBU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbZLDBNm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 20:13:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZLDBNg
+	id S1755499AbZLDBU0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 20:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZLDBUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 20:13:36 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:36224 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbZLDBNg convert rfc822-to-8bit (ORCPT
+	Thu, 3 Dec 2009 20:20:23 -0500
+Received: from p01c11o145.mxlogic.net ([208.65.144.68]:49468 "EHLO
+	p01c11o145.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbZLDBUW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 20:13:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TGIqbR9M1NDQEXkiPe7W7wdGuW/c6mq/lCwPwbfrx5p7HPh3SnE9M0O1IPC8ErizTZ
-         RaSVk4fsiZUJXuca0TWwV66uQLWGlkthEUqoZ3S15mv9q7BLwOOOFdlttDBYWLqRj5Xr
-         g/Aw4m/mt/TIGnyNOG1766n3On1He1uf56nW8=
+	Thu, 3 Dec 2009 20:20:22 -0500
+X-MXL-Hash: 4b1863dd524f4ebb-854619c402b976ff3843cd8a1970f1a51d70d509
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <4B185D32.1090207@goop.org>
-References: <1259854318-16907-1-git-send-email-konrad.wilk@oracle.com>
-	 <1259854318-16907-2-git-send-email-konrad.wilk@oracle.com>
-	 <1259854318-16907-3-git-send-email-konrad.wilk@oracle.com>
-	 <1259854318-16907-4-git-send-email-konrad.wilk@oracle.com>
-	 <45a44e480912031635t331f7433v3003dd36cfd9940@mail.gmail.com>
-	 <4B185D32.1090207@goop.org>
-Date: Fri, 4 Dec 2009 09:13:42 +0800
-Message-ID: <45a44e480912031713s3b81dc13h3b6c545e09adb558@mail.gmail.com>
-Subject: Re: [PATCH 3/3] fb-defio: Inhibit VM_IO flag to be set on vmalloc-ed 
-	framebuffers.
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, damm@opensource.se,
-       linux-kernel@vger.kernel.org, armbru@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2.6.32 3/3] net: Make ks8851 snl work under Beagle Zippy combo board
+Date: Thu, 3 Dec 2009 17:17:09 -0800
+Message-ID: <14385191E87B904DBD836449AA30269D4F2135@MORGANITE.micrel.com>
+In-Reply-To: <20091203.160511.211490797.davem@davemloft.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.32 3/3] net: Make ks8851 snl work under Beagle Zippy combo board
+Thread-Index: Acp0dXNlLZArAeE4TvSZpH/UxTb2MQAB1Lkg
+References: <14385191E87B904DBD836449AA30269D021A42@MORGANITE.micrel.com> <20091203.160511.211490797.davem@davemloft.net>
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+To: "David Miller" <davem@davemloft.net>
+Cc: <ben@simtec.co.uk>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 04 Dec 2009 01:20:27.0858 (UTC) FILETIME=[F67DAB20:01CA747F]
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2009113001)]
+X-MAIL-FROM: <tristram.ha@micrel.com>
+X-SOURCE-IP: [65.218.208.2]
+X-AnalysisOut: [v=1.0 c=1 a=7GNLPhxcCykA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
+X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=rIV8yS8U-Ialy3RWZCsA:9 a=I1EBxjxhta6g_p]
+X-AnalysisOut: [SnijzobCTOpgwA:4 a=yJsD6ztlz_8A:10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 4, 2009 at 8:52 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
-> Thanks.  Are you OK with me sending to Linus, or do you have a tree you'd
-> prefer it to go by?
->
+David Miller wrote:
+> From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+> Date: Thu, 3 Dec 2009 13:30:03 -0800
+> 
+>> From: Tristram Ha <Tristram.Ha@micrel.com>
+>> 
+>> The Micrel KSZ8851 SNL Ethernet chip is used in the OMAP Beagle Zippy
+combo board.  Requesting
+>> interrupt using level triggering flag hangs the system because the
+interrupt handling routine
+>> is called continually.  Using edge triggering avoids this problem.
+As a result, disabling
+>> interrupt may not be necessary.   
+>> 
+>> Signed-off-by: Tristram Ha <Tristram.Ha@micrel.com>
+> 
+> You say "may not be necessary", do you actually know for sure?
+> 
+> This seems questionable, if the interrupt disabling was there for a
+reason what has changed to
+> make it such that it is no longer necessary? 
 
-Thanks Jeremy, yes, please feel free to send.
+I have tested the KSZ8851 SNL driver using the OMAP Beagle Zippy combo
+board, developed by Tin Can Tools.  Ben Dooks, who implemented the
+original driver, has his own KSZ8851 SNL evaluation board, but he
+probably did not run any performance test on the driver.  I did sent him
+the changes before so that he can verify on his board, but I have not
+received any response.
+
+So I really do not know if interrupt disabling is necessary or not.  But
+from my understanding of the SPI network driver model, it is almost
+required the interrupt be edge triggered, as the hardware interrupt
+cannot be disabled inside the actual interrupt handling routine.  So if
+the interrupt is level triggered, the interrupt routine will be called
+continually, and there is no chance for the workqueue to disable the
+interrupt.  As the interrupt is edge triggered, I do not think the
+interrupt needs to be disabled.
