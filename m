@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZLDLmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbZLDLrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbZLDLmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 06:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZLDLmT
+	id S1755678AbZLDLrM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 06:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZLDLrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 06:42:19 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42347 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753701AbZLDLmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 06:42:19 -0500
-Message-ID: <4B18F59B.6@suse.de>
-Date: Fri, 04 Dec 2009 17:12:19 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] sched: fix GENTLE_FAIR_SLEEPERS dependency
-References: <4B18D66E.8020905@suse.de> <20091204095408.GA26118@elte.hu>	 <4B18E257.2080009@suse.de> <1259924920.17907.8.camel@laptop>
-In-Reply-To: <1259924920.17907.8.camel@laptop>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 4 Dec 2009 06:47:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35504 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673AbZLDLrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 06:47:10 -0500
+Subject: Re: [PATCH 16/19] workqueue: reimplement workqueue flushing using
+ color coded works
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net
+In-Reply-To: <1258692407-8985-17-git-send-email-tj@kernel.org>
+References: <1258692407-8985-1-git-send-email-tj@kernel.org>
+	 <1258692407-8985-17-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 04 Dec 2009 12:46:21 +0100
+Message-ID: <1259927181.17907.98.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/04/2009 04:38 PM, Peter Zijlstra wrote:
-> On Fri, 2009-12-04 at 15:50 +0530, Suresh Jayaraman wrote:
->>
->> I think originally introduced as a development/debugging facility,
->> sched_features is slowly transforming into a viable tool for System
->> Administrators, by looking at the impact of turning on/off some of these
->> features on some workloads (especially non-desktop workloads). And I
->> think these benefits should be passed on to the end users perhaps in the
->> form of documentation. 
+On Fri, 2009-11-20 at 13:46 +0900, Tejun Heo wrote:
+> Reimplement workqueue flushing using color coded works.  wq has the
+> current work color which is painted on the works being issued via
+> cwqs.  Flushing a workqueue is achieved by advancing the current work
+> colors of cwqs and waiting for all the works which have any of the
+> previous colors to drain.
 > 
-> This is really not meant to be used in that context. Its purely a debug
-> feature, with knobs coming and going as we see fit.
+> Currently there are 16 colors allowing 15 concurrent flushes.  When
+> color space gets full, flush attempts are batched up and processed
+> together when color frees up, so even with many concurrent flushers,
+> the new implementation won't build up huge queue of flushers which has
+> to be processed one after another.
 > 
+> This new implementation leaves only cleanup_workqueue_thread() as the
+> user of flush_cpu_workqueue().  Just make its users use
+> flush_workqueue() and kthread_stop() directly and kill
+> cleanup_workqueue_thread().  As workqueue flushing doesn't use barrier
+> request anymore, the comment describing the complex synchronization
+> around it in cleanup_workqueue_thread() is removed together with the
+> function.
+> 
+> This new implementation is to allow having and sharing multiple
+> workers per cpu.
 
-Does this also mean these features should not impact any specific
-workload much?
+Hmm, a long while back I did a PI aware workqueue implementation, that
+used nested work-lists to implement barriers and flushing.
 
-http://osdir.com/ml/linux-kernel/2009-09/msg03406.html
-In the thread above Ingo mentions about a few features and my
-understanding is that some of these might favour one type of workload
-than other. Is this not true anymore?
+This colour thing seems very prone to starvation when you want to extend
+worklets with priority.
 
-
-Thanks,
-
--- 
-Suresh Jayaraman
