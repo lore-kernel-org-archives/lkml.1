@@ -1,175 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932529AbZLDWha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbZLDWjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932529AbZLDWha (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbZLDWh1
+	id S1757419AbZLDWjR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:39:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZLDWjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:37:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55742 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923AbZLDWh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:37:26 -0500
-Message-ID: <4B198F61.7010304@gmail.com>
-Date: Fri, 04 Dec 2009 23:38:25 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Fri, 4 Dec 2009 17:39:15 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42880 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191AbZLDWjO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 17:39:14 -0500
+Date: Fri, 4 Dec 2009 23:39:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "Wang, Shane" <shane.wang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>
+Subject: Re: [PATCH] intel_txt: add s3 userspace memory integrity
+ verification
+Message-ID: <20091204223913.GG32314@elf.ucw.cz>
+References: <4A9CE0B2.5060608@intel.com>
+ <4ABF2B50.6070106@intel.com>
+ <20091004185801.GC1378@ucw.cz>
+ <037F493892196B458CD3E193E8EBAD4F01F03277DF@pdsmsx502.ccr.corp.intel.com>
+ <20091204081933.GE1540@ucw.cz>
+ <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4C5@orsmsx506.amr.corp.intel.com>
+ <20091204221553.GD32314@elf.ucw.cz>
+ <4B198C18.7040500@zytor.com>
 MIME-Version: 1.0
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 21/31] Constify struct mtrr_ops for 2.6.32 v1
-References: <4B198670.2000406@gmail.com>
-In-Reply-To: <4B198670.2000406@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B198C18.7040500@zytor.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Emese Revfy <re.emese@gmail.com>
+On Fri 2009-12-04 14:24:24, H. Peter Anvin wrote:
+> On 12/04/2009 02:15 PM, Pavel Machek wrote:
+> >>>
+> >>> Are  you sure x86-64 kernel & modules is always below 4GB? I don't
+> >>> think so.
+> 
+> The x86-64 kernel is run where it is loaded by the boot loader.  For
+> most boot loaders, that will mean < 4 GB.  This is not the case for
+> modules, and they cannot and should not rely on modules inside
+> restricted zone.
+> 
+> This effectively becomes a constraint on whatever boot loader is used to
+> load the kernel for it to be compatible with tboot.
 
-Constify struct mtrr_ops.
+Having "security" technology that silently fails with funny bootloader
+is pretty bad, I'd say.
 
-Signed-off-by: Emese Revfy <re.emese@gmail.com>
----
- arch/x86/kernel/cpu/mtrr/amd.c     |    2 +-
- arch/x86/kernel/cpu/mtrr/centaur.c |    2 +-
- arch/x86/kernel/cpu/mtrr/cyrix.c   |    2 +-
- arch/x86/kernel/cpu/mtrr/generic.c |    2 +-
- arch/x86/kernel/cpu/mtrr/main.c    |    6 +++---
- arch/x86/kernel/cpu/mtrr/mtrr.h    |   22 +++++++++++-----------
- 6 files changed, 18 insertions(+), 18 deletions(-)
+Instead of doing this properly (in tboot), Joseph hopes to save some
+work by basically splitting kernel into two parts, "trusted" and
+"untrusted". But doing that properly would be too much work, so he
+just handwaves and hopes for the best.
 
-diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
-index 33af141..92ba9cd 100644
---- a/arch/x86/kernel/cpu/mtrr/amd.c
-+++ b/arch/x86/kernel/cpu/mtrr/amd.c
-@@ -108,7 +108,7 @@ amd_validate_add_page(unsigned long base, unsigned long size, unsigned int type)
- 	return 0;
- }
- 
--static struct mtrr_ops amd_mtrr_ops = {
-+static const struct mtrr_ops amd_mtrr_ops = {
- 	.vendor            = X86_VENDOR_AMD,
- 	.set               = amd_set_mtrr,
- 	.get               = amd_get_mtrr,
-diff --git a/arch/x86/kernel/cpu/mtrr/centaur.c b/arch/x86/kernel/cpu/mtrr/centaur.c
-index de89f14..316fe3e 100644
---- a/arch/x86/kernel/cpu/mtrr/centaur.c
-+++ b/arch/x86/kernel/cpu/mtrr/centaur.c
-@@ -110,7 +110,7 @@ centaur_validate_add_page(unsigned long base, unsigned long size, unsigned int t
- 	return 0;
- }
- 
--static struct mtrr_ops centaur_mtrr_ops = {
-+static const struct mtrr_ops centaur_mtrr_ops = {
- 	.vendor            = X86_VENDOR_CENTAUR,
- 	.set               = centaur_set_mcr,
- 	.get               = centaur_get_mcr,
-diff --git a/arch/x86/kernel/cpu/mtrr/cyrix.c b/arch/x86/kernel/cpu/mtrr/cyrix.c
-index 228d982..68a3343 100644
---- a/arch/x86/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/x86/kernel/cpu/mtrr/cyrix.c
-@@ -265,7 +265,7 @@ static void cyrix_set_all(void)
- 	post_set();
- }
- 
--static struct mtrr_ops cyrix_mtrr_ops = {
-+static const struct mtrr_ops cyrix_mtrr_ops = {
- 	.vendor            = X86_VENDOR_CYRIX,
- 	.set_all	   = cyrix_set_all,
- 	.set               = cyrix_set_arr,
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index 55da0c5..4d75584 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -752,7 +752,7 @@ int positive_have_wrcomb(void)
- /*
-  * Generic structure...
-  */
--struct mtrr_ops generic_mtrr_ops = {
-+const struct mtrr_ops generic_mtrr_ops = {
- 	.use_intel_if		= 1,
- 	.set_all		= generic_set_all,
- 	.get			= generic_get_mtrr,
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index 84e83de..fe4622e 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -60,14 +60,14 @@ static DEFINE_MUTEX(mtrr_mutex);
- u64 size_or_mask, size_and_mask;
- static bool mtrr_aps_delayed_init;
- 
--static struct mtrr_ops *mtrr_ops[X86_VENDOR_NUM];
-+static const struct mtrr_ops *mtrr_ops[X86_VENDOR_NUM];
- 
--struct mtrr_ops *mtrr_if;
-+const struct mtrr_ops *mtrr_if;
- 
- static void set_mtrr(unsigned int reg, unsigned long base,
- 		     unsigned long size, mtrr_type type);
- 
--void set_mtrr_ops(struct mtrr_ops *ops)
-+void set_mtrr_ops(const struct mtrr_ops *ops)
- {
- 	if (ops->vendor && ops->vendor < X86_VENDOR_NUM)
- 		mtrr_ops[ops->vendor] = ops;
-diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
-index a501dee..d94607c 100644
---- a/arch/x86/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
-@@ -12,19 +12,19 @@
- extern unsigned int mtrr_usage_table[MTRR_MAX_VAR_RANGES];
- 
- struct mtrr_ops {
--	u32	vendor;
--	u32	use_intel_if;
--	void	(*set)(unsigned int reg, unsigned long base,
-+	const u32	vendor;
-+	const u32	use_intel_if;
-+	void	(* const set)(unsigned int reg, unsigned long base,
- 		       unsigned long size, mtrr_type type);
--	void	(*set_all)(void);
-+	void	(* const set_all)(void);
- 
--	void	(*get)(unsigned int reg, unsigned long *base,
-+	void	(* const get)(unsigned int reg, unsigned long *base,
- 		       unsigned long *size, mtrr_type *type);
--	int	(*get_free_region)(unsigned long base, unsigned long size,
-+	int	(* const get_free_region)(unsigned long base, unsigned long size,
- 				   int replace_reg);
--	int	(*validate_add_page)(unsigned long base, unsigned long size,
-+	int	(* const validate_add_page)(unsigned long base, unsigned long size,
- 				     unsigned int type);
--	int	(*have_wrcomb)(void);
-+	int	(* const have_wrcomb)(void);
- };
- 
- extern int generic_get_free_region(unsigned long base, unsigned long size,
-@@ -32,7 +32,7 @@ extern int generic_get_free_region(unsigned long base, unsigned long size,
- extern int generic_validate_add_page(unsigned long base, unsigned long size,
- 				     unsigned int type);
- 
--extern struct mtrr_ops generic_mtrr_ops;
-+extern const struct mtrr_ops generic_mtrr_ops;
- 
- extern int positive_have_wrcomb(void);
- 
-@@ -53,10 +53,10 @@ void fill_mtrr_var_range(unsigned int index,
- 		u32 base_lo, u32 base_hi, u32 mask_lo, u32 mask_hi);
- void get_mtrr_state(void);
- 
--extern void set_mtrr_ops(struct mtrr_ops *ops);
-+extern void set_mtrr_ops(const struct mtrr_ops *ops);
- 
- extern u64 size_or_mask, size_and_mask;
--extern struct mtrr_ops *mtrr_if;
-+extern const struct mtrr_ops *mtrr_if;
- 
- #define is_cpu(vnd)	(mtrr_if && mtrr_if->vendor == X86_VENDOR_##vnd)
- #define use_intel()	(mtrr_if && mtrr_if->use_intel_if == 1)
+Unfortunately that
+
+a) does not work (panic, printks)
+
+b) places funny constraints all over the code (documenting them would
+be too much work, so we get more handwaving)
+
+c) reduces future flexibility (trusted code can not be over 4GB, it is
+silent security hole when it is) 
+
+I'd prefer to see this done properly; tboot should simply verify all
+the memory for us. It is separate piece of code, trusted, and can
+probably fit itself under 4GB.
+
+If that seems like too much work, then please go all over the code,
+and mark all the code that is "trusted" (has to be under 4GB) and
+properly document it, so that future modifications will not break that
+assumption. Putting all that code into one section should be enough.
+
+(Going into infinite loop is probably enough when memory corruption is
+detected; there's no chance you can put printk/panic/neccessary
+drivers all into the "trusted" section.)
+
+Aha, and look. Your tboot_gen_mem_integrity is ran on resume, so it is
+"trusted". Unfortunately, it calls crypto_alloc_hash, so you need to
+audit that, and probably kmalloc it boils down into. I bet kmalloc
+touches memory >4GB. And I bet crypto modules can be
+... well... modules. That means over 4GB.
+
+This is broken by design, right?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
