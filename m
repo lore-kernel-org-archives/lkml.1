@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbZLDW0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZLDWZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbZLDW0j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:26:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZLDW0i
+	id S1757482AbZLDWZc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbZLDWZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:26:38 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:20273 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755416AbZLDW0h (ORCPT
+	Fri, 4 Dec 2009 17:25:28 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39945 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754446AbZLDWZZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:26:37 -0500
-Date: Fri, 4 Dec 2009 14:25:22 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Grozdan <neutrino8@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Can't compile 2.6.32
-Message-Id: <20091204142522.6de2c52e.randy.dunlap@oracle.com>
-In-Reply-To: <c5bd819b0912040532x13b7e564ve7f37badb0aaa521@mail.gmail.com>
-References: <c5bd819b0912040532x13b7e564ve7f37badb0aaa521@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B198CA0.0033:SCFMA4539814,ss=1,fgs=0
+	Fri, 4 Dec 2009 17:25:25 -0500
+Date: Fri, 4 Dec 2009 23:25:24 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "Wang, Shane" <shane.wang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>
+Subject: Re: [PATCH] intel_txt: add s3 userspace memory integrity
+ verification
+Message-ID: <20091204222524.GF32314@elf.ucw.cz>
+References: <4A9CE0B2.5060608@intel.com>
+ <4ABF2B50.6070106@intel.com>
+ <20091004185801.GC1378@ucw.cz>
+ <037F493892196B458CD3E193E8EBAD4F01F03277DF@pdsmsx502.ccr.corp.intel.com>
+ <20091204081933.GE1540@ucw.cz>
+ <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4C5@orsmsx506.amr.corp.intel.com>
+ <20091204171333.GS18989@one.firstfloor.org>
+ <4B194CA1.3070106@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B194CA1.3070106@zytor.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009 14:32:08 +0100 Grozdan wrote:
-
-> Hello,
+On Fri 2009-12-04 09:53:37, H. Peter Anvin wrote:
+> On 12/04/2009 09:13 AM, Andi Kleen wrote:
+> >>>
+> >>> So no, you did not audit do_suspend_lowlevel to make sure it does not
+> >>> follow function pointers. Bad.
+> >>
+> >> We aren't aware of any code or data used by the resume path that is outside of the tboot-MAC'ed regions above--if you can point out any then we will gladly address them.
+> > 
+> > Code coverage is not enough, you need data coverage too.  If someone 
+> > modifies kernel data it's typically easy to subvert code as a next step.
+> > 
 > 
-> I'm having trouble trying to compile the 2.6.32 kernel on my openSUSE
-> 11.1 system. While doing so, I see a lot of warnings which seem to
-> come from include/acpi/acpiosxf.h and then when the compile process
-> enters the drivers/acpi directory, it errors out with the following:
-> 
->   CC      drivers/acpi/tables.o
-> In file included from include/acpi/acpi.h:63,
->                  from include/linux/acpi.h:39,
->                  from drivers/acpi/tables.c:33:
-> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> returning non-void
->   CC      drivers/acpi/blacklist.o
-> In file included from include/acpi/acpi.h:63,
->                  from include/linux/acpi.h:39,
->                  from drivers/acpi/blacklist.c:33:
-> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> returning non-void
->   CC      drivers/acpi/osl.o
-> In file included from include/acpi/acpi.h:63,
->                  from include/linux/acpi.h:39,
->                  from drivers/acpi/osl.c:40:
-> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> returning non-void
-> drivers/acpi/osl.c: At top level:
-> drivers/acpi/osl.c:514: error: redefinition of ‘acpi_load_override_tables’
-> include/acpi/acpiosxf.h:98: error: previous definition of
-> ‘acpi_load_override_tables’ was here
-> make[2]: *** [drivers/acpi/osl.o] Error 1
-> make[1]: *** [drivers/acpi] Error 2
-> make: *** [drivers] Error 2
-> 
-> Thoughts, solutions, etc?
+> The only function pointers that are invoked on the do_suspend_lowlevel
+> path are some paravirt_crap pointers, but those are located inside
+> kernel static data.
 
-Please send your failing kernel .config file.  Thanks.
+What guarantees kernel static data are below 4GB? What prevents me
+from booting with funny memmap where first 1MB is mapped, and then
+memory above 4GB? What prevents Chinese company to ship machine with
+such funny memmap?
+									Pavel
 
-
-> PS: please CC me as I'm not subscribed to the list.
-> --
-
----
-~Randy
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
