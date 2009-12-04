@@ -1,33 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbZLDOoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbZLDOps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755586AbZLDOoe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 09:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZLDOod
+	id S1755920AbZLDOps (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 09:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZLDOps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 09:44:33 -0500
-Received: from lucidpixels.com ([75.144.35.66]:36580 "EHLO lucidpixels.com"
+	Fri, 4 Dec 2009 09:45:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14153 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751648AbZLDOod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 09:44:33 -0500
-Date: Fri, 4 Dec 2009 09:44:39 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.32: scsi_wait_scan bug
-Message-ID: <alpine.DEB.2.00.0912040943420.3540@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1755082AbZLDOpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 09:45:47 -0500
+Date: Fri, 4 Dec 2009 15:45:40 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+Message-ID: <20091204144540.GI28697@random.random>
+References: <20091202125501.GD28697@random.random>
+ <20091203134610.586E.A69D9226@jp.fujitsu.com>
+ <20091204135938.5886.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091204135938.5886.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Dec 04, 2009 at 02:06:07PM +0900, KOSAKI Motohiro wrote:
+> Windows kernel have zero page thread and it clear the pages in free list
+> periodically. because many windows subsystem prerefer zero filled page.
+> hen, if we use windows guest, zero filled page have plenty mapcount rather
+> than other typical sharing pages, I guess.
+> 
+> So, can we mark as unevictable to zero filled ksm page? 
 
-Checking the /lib/modules directory for 2.6.32, I noticed this bug still 
-persists:
-https://lists.linux-foundation.org/pipermail/bugme-new/2007-August/016634.html
+I don't like magics for zero ksm page, or magic number after which we
+consider unevictable.
 
-Was wondering if it should be able to be enabled or disabled in the 
-menuconfig (as you cannot currently see that option)?
+Just breaking the loop after 64 young are cleared and putting it back
+to the head of the active list is enough. Clearly it requires a bit
+more changes to fit into current code that uses page_referenced to
+clear all young bits ignoring if they were set during the clear loop.
 
-Justin.
+I think it's fishy to ignore the page_referenced retval and I don't
+like the wipe_page_referenced concept. page_referenced should only be
+called when we're in presence of VM pressure that requires
+unmapping. And we should always re-add the page to active list head,
+if it was found referenced as retval of page_referenced. I cannot care
+less about first swapout burst to be FIFO because it'll be close to
+FIFO anyway. The wipe_page_referenced thing was called 1 year ago
+shortly after the page was allocated, then app touches the page after
+it's in inactive anon, and then the app never touches the page again
+for one year. And yet we consider it active after 1 year we cleared
+its referenced bit. It's all very fishy... Plus that VM_EXEC is still
+there. The only magic allowed that I advocate is to have a
+page_mapcount() check to differentiate between pure cache pollution
+(i.e. to avoid being forced to O_DIRECT without actually activating
+unnecessary VM activity on mapped pages that aren't pure cache
+pollution by somebody running a backup with tar).
