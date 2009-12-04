@@ -1,84 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbZLDLQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZLDL2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756094AbZLDLQb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 06:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbZLDLQa
+	id S1756128AbZLDL2I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 06:28:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbZLDL2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 06:16:30 -0500
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:54208 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754873AbZLDLQ3 (ORCPT
+	Fri, 4 Dec 2009 06:28:07 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:39372 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755489AbZLDL2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 06:16:29 -0500
-Date: Fri, 4 Dec 2009 12:16:35 +0100
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Greg KH <gregkh@suse.de>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Doc/stable rules: add new cherry-pick logic
-Message-ID: <20091204111635.GA28059@Chamillionaire.breakpoint.cc>
-References: <1259736523-13091-1-git-send-email-Artem.Bityutskiy@nokia.com>
- <20091202154223.GA5895@suse.de>
- <1259823705.10805.49.camel@localhost>
- <20091204015827.GB2589@suse.de>
+	Fri, 4 Dec 2009 06:28:05 -0500
+Date: Fri, 4 Dec 2009 12:28:11 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Uwe =?iso-8859-15?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: Amit Kucheria <amit.kucheria@canonical.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>,
+       Dinh.Nguyen@freescale.com, grant.likely@secretlab.ca,
+       r.herring@freescale.com, linux-arm-kernel@lists.infradead.org,
+       daniel@caiaq.de, valentin.longchamp@epfl.ch
+Subject: Re: [RFC][PATCH 04/10] arm: mxc: Fix Drive Strength Field in the
+	IOMUX controller
+Message-ID: <20091204112811.GN15126@pengutronix.de>
+References: <cover.1259893118.git.amit.kucheria@canonical.com> <a079a0627e77f2df590840e4798fc067f4436160.1259893118.git.amit.kucheria@canonical.com> <20091204093824.GB10910@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20091204015827.GB2589@suse.de>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091204093824.GB10910@pengutronix.de>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 12:24:16 up 53 days, 13 min, 61 users,  load average: 5.87, 2.37,
+	1.90
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- it is possible to submit patches for the stable queue without sending
-  them directly stable@kernel.org. If the tag (Cc: stable@kernel.org) is
-  available in the sign-off area then hpa's script will filter them into
-  the stable mailbox once it hits Linus' tree.
-- Patches which require others to be applied first can be also specified.
-  This was discussued in http://lkml.org/lkml/2009/11/9/474
+On Fri, Dec 04, 2009 at 10:38:24AM +0100, Uwe Kleine-König wrote:
+> Hello,
+> 
+> On Fri, Dec 04, 2009 at 04:47:04AM +0200, Amit Kucheria wrote:
+> > i.MX51 defines 4 values:
+> > 
+> > 00: Low Drive Strength
+> > 01: Medium Drive Strength
+> > 10: High Drive Strength
+> > 11: Max Drive Strength
+> > 
+> > Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+> > ---
+> >  arch/arm/plat-mxc/include/mach/iomux-v3.h |    8 +++++---
+> >  1 files changed, 5 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/arch/arm/plat-mxc/include/mach/iomux-v3.h b/arch/arm/plat-mxc/include/mach/iomux-v3.h
+> > index a0fa402..8c351d6 100644
+> > --- a/arch/arm/plat-mxc/include/mach/iomux-v3.h
+> > +++ b/arch/arm/plat-mxc/include/mach/iomux-v3.h
+> > @@ -81,11 +81,13 @@ struct pad_desc {
+> >  
+> >  #define PAD_CTL_ODE			(1 << 3)
+> >  
+> > -#define PAD_CTL_DSE_STANDARD		(0 << 1)
+> > -#define PAD_CTL_DSE_HIGH		(1 << 1)
+> > -#define PAD_CTL_DSE_MAX			(2 << 1)
+> > +#define PAD_CTL_DSE_LOW			(0 << 1)
+> > +#define PAD_CTL_DSE_MED			(1 << 1)
+> > +#define PAD_CTL_DSE_HIGH		(2 << 1)
+> > +#define PAD_CTL_DSE_MAX			(3 << 1)
+> Does the new values work on other SOCs having iomux-v3, too?
 
-Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
----
-Greg, the cherry pick format got acked by stable team didn't it?
+They should work. on i.MX35 (2 << 1) and (3 << 1) are both max driving
+strength. It's only that the names change, but these macros are unused
+currently, so this shouldn't hurt.
 
- Documentation/stable_kernel_rules.txt |   22 +++++++++++++++++++++-
- 1 files changed, 21 insertions(+), 1 deletions(-)
+Sascha
 
-diff --git a/Documentation/stable_kernel_rules.txt b/Documentation/stable_kernel_rules.txt
-index a452227..8c0aaad 100644
---- a/Documentation/stable_kernel_rules.txt
-+++ b/Documentation/stable_kernel_rules.txt
-@@ -25,7 +25,27 @@ Rules on what kind of patches are accepted, and which ones are not, into the
- Procedure for submitting patches to the -stable tree:
- 
-  - Send the patch, after verifying that it follows the above rules, to
--   stable@kernel.org.
-+   stable@kernel.org. An alternative is to have the tag
-+    Cc: stable@kernel.org
-+   in the sign-off area. Once the patch is merged it will be filtered
-+   into the stable tree even without sending directly to
-+   stable@kernel.org
-+ - If the patch requires other patches as prerequisites which can be
-+   cherry-picked then this can be specified in the following format in
-+   the sign-off area:
-+
-+    Cc: <stable@kernel.org> # .32.x: a1f84a3: sched: Check for an idle shared cache
-+    Cc: <stable@kernel.org> # .32.x: 1b9508f: sched: Rate-limit newidle
-+    Cc: <stable@kernel.org> # .32.x: fd21073: sched: Fix affinity logic
-+    Cc: <stable@kernel.org> # .32.x
-+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-+
-+   The tag sequence has the meaning of:
-+    git cherry-pick a1f84a3
-+    git cherry-pick 1b9508f
-+    git cherry-pick fd21073
-+    git cherry-pick <this commit>
-+
-  - The sender will receive an ACK when the patch has been accepted into the
-    queue, or a NAK if the patch is rejected.  This response might take a few
-    days, according to the developer's schedules.
 -- 
-1.6.5.2
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
