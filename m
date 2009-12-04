@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932201AbZLDQYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932212AbZLDQZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932201AbZLDQYH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 11:24:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932171AbZLDQYH
+	id S932212AbZLDQZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 11:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932180AbZLDQZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 11:24:07 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:47352 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932158AbZLDQYG (ORCPT
+	Fri, 4 Dec 2009 11:25:57 -0500
+Received: from mail-px0-f188.google.com ([209.85.216.188]:63384 "EHLO
+	mail-px0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932171AbZLDQZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 11:24:06 -0500
+	Fri, 4 Dec 2009 11:25:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=EB3gwpgyEn2buOx80TbBN5Mfpr8oaDhKhV/9nXyJ9dkXcDXV64c781eeFSnsqHelhC
-         p20XAIIXISnxTj03gyiS7Ap09bzDy7Wo0ydCFL84b+tHL49ZUpUylN3Y2VXsuhCRE+TB
-         rtZglVU4WpnxpRm1U/XeNQJyPgbTzYMMeCcyQ=
+        b=aQzGWQ4ovhjGTargYmCdCplBo5GVlRjJ2sJcDqrkffrgimD1JgjDWG52CbI5vup++A
+         3E93ioMCBytsfIJvbNyVXDW2NTLYj05IC4jbPmnD0sZ39rkKIVhDutLFPVEWfjiDMZIQ
+         cYMUiEOBFM09htqECiL0j86xDO0/4GPze9zh4=
 MIME-Version: 1.0
-Date: Fri, 4 Dec 2009 22:24:11 +0600
-Message-ID: <b9df5fa10912040824r4c496b54x6165523935293001@mail.gmail.com>
-Subject: [PATCH] x86: Put trampoline_data into readonly section.
+Date: Fri, 4 Dec 2009 22:26:02 +0600
+Message-ID: <b9df5fa10912040826s52e82f2cpd53604835be50c27@mail.gmail.com>
+Subject: [PATCH] x86: Call __va() to get trampoline_base.
 From: Rakib Mullick <rakib.mullick@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        LKML <linux-kernel@vger.kernel.org>, x86@kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- x86, trampoline_32: Put trampoline_data into readonly section.
+ x86, tboot: Call __va() to get trampoline_base.
 
- Put trampoline_data into readonly section when cpu
-hotplug is supported. We cannot free up trampoline_data
-because its been referenced from tboot_setup_sleep() which
-is in non-cpuinit section.
+ Do not pass trampoline_base as parameter of virt_to_phys.
+Because trampoline_base is in .cpuinit.data section, but its
+called from non-cpuinit function. So use __va(TRAMPOLINE_BASE)
+instead of trampoline_base, which helps to fix section mismatch.
 
- We were warned by the following warning:
+We were warned by the following warning:
 
-WARNING: arch/x86/kernel/built-in.o(.text+0x13c77): Section mismatch
+  LD      arch/x86/kernel/built-in.o
+WARNING: arch/x86/kernel/built-in.o(.text+0x13c5f): Section mismatch
 in reference from the function tboot_setup_sleep() to the variable
-.cpuinit.rodata:trampoline_end
+.cpuinit.data:trampoline_base
 The function tboot_setup_sleep() references
-the variable __cpuinitconst trampoline_end.
-This is often because tboot_setup_sleep lacks a __cpuinitconst
-annotation or the annotation of trampoline_end is wrong.
-
-WARNING: arch/x86/kernel/built-in.o(.text+0x13c84): Section mismatch
-in reference from the function tboot_setup_sleep() to the variable
-.cpuinit.rodata:trampoline_data
-The function tboot_setup_sleep() references
-the variable __cpuinitconst trampoline_data.
-This is often because tboot_setup_sleep lacks a __cpuinitconst
-annotation or the annotation of trampoline_data is wrong.
+the variable __cpuinitdata trampoline_base.
+This is often because tboot_setup_sleep lacks a __cpuinitdata
+annotation or the annotation of trampoline_base is wrong.
 
 Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 ---
 
---- linus/arch/x86/kernel/trampoline_32.S	2009-12-04 17:17:51.000000000 +0600
-+++ rakib/arch/x86/kernel/trampoline_32.S	2009-12-04 17:24:44.000000000 +0600
-@@ -32,8 +32,13 @@
- #include <asm/segment.h>
- #include <asm/page_types.h>
+--- linus/arch/x86/kernel/tboot.c	2009-12-04 17:22:57.000000000 +0600
++++ rakib/arch/x86/kernel/tboot.c	2009-12-04 17:19:09.000000000 +0600
+@@ -191,7 +191,7 @@ static int tboot_setup_sleep(void)
 
-+#ifdef CONFIG_ACPI_SLEEP
-+.section .rodata, "a", @progbits
-+#else
- /* We can free up trampoline after bootup if cpu hotplug is not supported. */
- __CPUINITRODATA
-+#endif
-+
- .code16
+ #ifdef CONFIG_X86_TRAMPOLINE
+ 	/* AP trampoline code */
+-	add_mac_region(virt_to_phys(trampoline_base), TRAMPOLINE_SIZE);
++	add_mac_region(virt_to_phys(__va(TRAMPOLINE_BASE)), TRAMPOLINE_SIZE);
+ #endif
 
- ENTRY(trampoline_data)
+ 	/* kernel code + data + bss */
