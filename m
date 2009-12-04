@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZLDBtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbZLDBuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbZLDBtO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 20:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZLDBtM
+	id S1755557AbZLDBuP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 20:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZLDBuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 20:49:12 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:33121 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754846AbZLDBtL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 20:49:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=q24Ukjk/ZzCgzpbDWPptRGv3nSTbWCBwKkwvdDxteEPQIhX7tT+vuiOy89dIjgmFsE
-         ChdPf/6GNlTjwFGRipJ3bkamNmG8OU44uv3ulVbSRSF7Xlisuphf60EYX6weno8DhkG6
-         r8coGCBnYvEylmH4wQAqsMRPCE64hmImCSmcw=
-MIME-Version: 1.0
-In-Reply-To: <20091127224206.GA3350@ami.dom.local>
-References: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com>
-	 <20091124111946.GA7883@ff.dom.local>
-	 <81bfc67a0911250606k1ec76354n217da9ca20b3517c@mail.gmail.com>
-	 <20091125191105.GA3167@ami.dom.local>
-	 <81bfc67a0911271007o1fb8f8c2vdd36e8585280e4da@mail.gmail.com>
-	 <20091127213640.GA2611@ami.dom.local>
-	 <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
-	 <20091127224206.GA3350@ami.dom.local>
-Date: Thu, 3 Dec 2009 20:49:17 -0500
-Message-ID: <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
-Subject: Re: large packet loss take2 2.6.31.x
-From: Caleb Cushing <xenoterracide@gmail.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
+	Thu, 3 Dec 2009 20:50:14 -0500
+Received: from mga03.intel.com ([143.182.124.21]:23118 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753564AbZLDBuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 20:50:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="218669041"
+Subject: Re: Backlight device class redesign
+From: Zhang Rui <rui.zhang@intel.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Rafa?? Mi??ecki <zajec5@gmail.com>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+In-Reply-To: <20091203105223.GB32571@khazad-dum.debian.net>
+References: <b170af450911271630k63fb857auf8314cecd6219eba@mail.gmail.com>
+	 <b170af450911291209o33ebfc36n850826e54096f3b4@mail.gmail.com>
+	 <1259827274.27069.50.camel@rzhang1-desktop>
+	 <20091203105223.GB32571@khazad-dum.debian.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 04 Dec 2009 09:50:48 +0800
+Message-ID: <1259891448.27069.83.camel@rzhang1-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> modprobe -r e1000e
-> modprobe e1000e IntMode=0
->
-> Jarek P.
->
-tested on kernel behaving properly no change. what do these modes do?
+On Thu, 2009-12-03 at 18:52 +0800, Henrique de Moraes Holschuh wrote:
+> On Thu, 03 Dec 2009, Zhang Rui wrote:
+> > For example, device /sys/class/backlight/panel0 is created the first
+> > time a backlight_ops for this display is registered.
+> > And create the symbol link from the backlight class device to "physical
+> > device" (device that invokes backlight_device_register) in the backlight
+> > class device driver, if we really need it.
+> > Remove and recreate a link pointing to the new physical device when the
+> > backlight mode is changed.
+> 
+> FWIW, I agree the above solution is simple enough and quite good enough.
+> 
+> I just have absolutely _NO_ idea whatsoever how a platform driver can ask
+> the PCI or APCI layer "where is the video device driving the LVDS panel so
+> that I can bind to it"...
+> 
+well. this is the question I want to ask. :)
 
-I've installed a 10/100 linksys nic into my system. it appears to be
-working fine on a bad kernel (2.6.32-final tested and for sure
-verified). I've only tested it once though. my laptop died so direct
-connection between that won't work. can I test between these 2 nics?
-(suppose no real reason why not) but what should I proceed with at
-this point?
+IMO, if we want to create one device for one display, we must have a
+unique ID for each display and the ID must be generic enough so that
+both ACPI & platform & graphics driver can understand it.
 
+ACPI&platform drivers have no idea about the display info it's bind to.
+But they're always used to control the integrated panel, no?
+we can use something like DEFAULT_ACPI_DISPLAY/DEFAULT_PLATFORM_DISPLAY
+which stands for the integrated LVDS panel, which can also be understood
+by the graphics driver.
 
--- 
-Caleb Cushing
+ACPI video driver -->ACPI_DISPLAY-->|
+                                    |
+platform driver->PLATFORM_DISPLAY-->|--->/sys/class/backlight/panel0
+                                    |
+          |-->integrated panel----->|
+          |
+graphics  |-->TV------------------->|--->/sys/class/backlight/tv0
+          |
+          |-->external LCD--------->|--->...
 
-http://xenoterracide.blogspot.com
+I'm not a graphics guy so I don't if there are any other ways to control
+the TV/external LCD device, if yes, they can use something else as the
+unique ID, say EDID, right?
+
+thanks,
+rui
+
