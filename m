@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbZLDXoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbZLDXsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932564AbZLDXoz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 18:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757413AbZLDXox
+	id S932583AbZLDXsE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 18:48:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbZLDXsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 18:44:53 -0500
-Received: from straum.hexapodia.org ([64.81.70.185]:32819 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751699AbZLDXox (ORCPT
+	Fri, 4 Dec 2009 18:48:04 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:36295 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932380AbZLDXsC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 18:44:53 -0500
-Date: Fri, 4 Dec 2009 15:44:59 -0800
-From: Andy Isaacson <adi@hexapodia.org>
-To: Lior Dotan <liodot@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.32-rc8 - T500 fails to suspend to RAM
-Message-ID: <20091204234459.GC25713@hexapodia.org>
-References: <4B151FE2.3090807@gmail.com> <20091203182336.GA21309@hexapodia.org> <20091204202433.GB21309@hexapodia.org> <a5bf86a80912041339g3d35cbfcrd56669f746d095ff@mail.gmail.com>
-Mime-Version: 1.0
+	Fri, 4 Dec 2009 18:48:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=L5nt+yf58SkH+eFVx6l0DkjdAockBvamzt/kki1TmXkIYvUFtAC0NtpcpytaFSEOun
+         boelveRVscFz2XFi5jp9iHvDSoDHtMuek1kYvox9w4pv2JY7vDPRAVl0gtwbPMeTSFWN
+         CIC1CdABS/E80ppAO5JstWjGiAaCqFB1cvueY=
+Date: Sat, 5 Dec 2009 00:47:57 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Caleb Cushing <xenoterracide@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       e1000-devel@lists.sourceforge.net
+Subject: Re: large packet loss take2 2.6.31.x
+Message-ID: <20091204234756.GA3517@ami.dom.local>
+References: <20091125191105.GA3167@ami.dom.local>
+ <81bfc67a0911271007o1fb8f8c2vdd36e8585280e4da@mail.gmail.com>
+ <20091127213640.GA2611@ami.dom.local>
+ <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
+ <20091127224206.GA3350@ami.dom.local>
+ <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
+ <20091204090524.GB6478@ff.dom.local>
+ <81bfc67a0912041028w16668d0cx4da04bee989eef4a@mail.gmail.com>
+ <20091204204443.GA2736@ami.dom.local>
+ <81bfc67a0912041507k6ef497f9w7b9294c90012e1a1@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a5bf86a80912041339g3d35cbfcrd56669f746d095ff@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+In-Reply-To: <81bfc67a0912041507k6ef497f9w7b9294c90012e1a1@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Re-adding LKML.
-
-On Fri, Dec 04, 2009 at 11:39:25PM +0200, Lior Dotan wrote:
-> On Fri, Dec 4, 2009 at 10:24 PM, Andy Isaacson <adi@hexapodia.org> wrote:
-> > For what it's worth, I'm testing suspend-to-ram on Ubuntu 9.10 x86_64
-> > with 2.6.32 final on a T500 and it's been pretty reliable -- I've
-> > suspended by closing the lid at least a dozen times and it hasn't locked
-> > up yet.
+On Fri, Dec 04, 2009 at 06:07:42PM -0500, Caleb Cushing wrote:
+> > So, again, if you're willing to debug this, the new bugzilla report
+> > seems reasonable to me, plus maybe some notice to this #11998 too.
 > 
-> I'm using either KDE menu to suspend or hibernate-ram from hibernate-script.
-> I will try to use the lid and see if it makes any difference.
-> The strange thing is that I tried using rc6 & rc7 and they don't work now
-> even though they used to, so I now I need to see what broke it.
+> I will later today. I'm thinking since I now have 2 active nics...
+> would hooking the 1 card directly to the other and then running the
+> tests be helpful? (I wish this mobo had a 3rd pci slot because I'd
+> have put a 3rd card in so I can connect to the net at the same time.
 
-I mentioned the lid because of BZ #14484 which is only on Intel GMA plus
-using the lid switch to trigger suspend.  Since neither is relevant to
-you it's just a red herring. :)
+I guess, you should better wait with new tests for some assistance
+from e1000e maintainers - it seems they might be interested in some
+specific dumps and registers - like in this #11998 case.
 
-> > 1. are you using DMAR (VT-d)?  I'm not, and I had problems on another
-> >   machine (also Core 2 Duo with GM45 graphics) when I tried suspending
-> >   with CONFIG_DMAR=y.
->
->  I disabled DMAR but still no luck.
-
-It's getting better but DMAR has still been a little problematic for me
-the last few months.  Updating to the very latest BIOS does help
-sometimes.
-
-> > 2. are you running into http://bugzilla.kernel.org/show_bug.cgi?id=14484
-> >   or a similar problem?
-> > 3. (if you have GMA graphics) Are you up to date on the xorg-video-intel
-> >   driver?  I'm using KMS and xorg-video-intel 2.9.0.  2.8.x is missing
-> >   some relevant bugfixes.  (Of course if you have ATI graphics then
-> >   this isn't relevant.)
-> >
-> I'm using the Radeon GPU so no KMS for me yet.
-
-Sounds like your Radeon or fglrx driver got updated and broke
-suspend/resume.
-
--andy
+Jarek P.
