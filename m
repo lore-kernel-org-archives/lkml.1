@@ -1,51 +1,347 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZLDMpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZLDMrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbZLDMpE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 07:45:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZLDMpD
+	id S1756160AbZLDMrB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 07:47:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZLDMq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 07:45:03 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:50545 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755724AbZLDMpC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 07:45:02 -0500
-Date: Fri, 4 Dec 2009 12:45:05 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Antonio Ospite <ospite@studenti.unina.it>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Daniel Ribeiro <drwyrm@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, openezx-devel@lists.openezx.org
-Subject: Re: [PATCH] leds: Add LED class driver for regulator driven LEDs.
-Message-ID: <20091204124505.GA3320@sirena.org.uk>
-References: <1259775625-25973-1-git-send-email-ospite@studenti.unina.it> <20091202180658.GA12292@rakim.wolfsonmicro.main> <20091204133943.ddf0e53d.ospite@studenti.unina.it>
+	Fri, 4 Dec 2009 07:46:59 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:42714 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753301AbZLDMq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 07:46:57 -0500
+Date: Fri, 4 Dec 2009 13:47:03 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: What's in linux-2.6-block.git for 2.6.33
+Message-ID: <20091204124702.GU8742@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091204133943.ddf0e53d.ospite@studenti.unina.it>
-X-Cookie: Happy feast of the pig!
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 01:39:43PM +0100, Antonio Ospite wrote:
-> Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+Hi,
 
-> > You almost certainly want regulator_get_exclusive() here; this driver
-> > can't function properly if something else is using the regulator and
-> > holding the LED on or off without it.  You'll also want to check the
-> > status of the LED on startup and update your internal status to match
-> > that.
+Since 2.6.32 is released, here's a summary of what I have queued up for
+2.6.33.
 
-> When you refer to "the status of the LED on startup" do you mean a
-> initial brightness value passed via leds-regulator platform data, or the
-> initial status or the regulator itself?
+As a short executive summary service, these are the main items included
+in the tree:
 
-The hardware state at startup; I would imagine that you'd want to make
-setting the initial state via platform data optional in order to enable
-a smooth handover from bootloader to Linux where the state may depend on
-the runtime state (eg, charging indication).
+- Inclusion of the cgroup based blk-io controller. This is something
+  that has been pending for a long time.
+
+- Inclusion of drbd.
+
+- A cciss driver update from HP.
+
+- A big round of CFQ updates, even outside of the blk io controller.
+
+- libaio request batching, which should speed up O_DIRECT with libaio.
+
+- A few writeback tweaks from Wu.
+
+
+Alberto Bertogli (1):
+      Do not __always_inline bvec_kmap_irq() and bvec_kunmap_irq()
+
+Alex Chiang (2):
+      cciss: Make device attributes static
+      cciss: change Cmd_sg_list.sg_chain_dma type to dma_addr_t
+
+Changli Gao (1):
+      sendfile(): check f_op.splice_write() rather than f_op.sendpage()
+
+Christoph Hellwig (3):
+      block: use normal I/O path for discard requests
+      block: allow large discard requests
+      blkdev: flush disk cache on ->fsync
+
+Corrado Zoccolo (12):
+      cfq-iosched: adapt slice to number of processes doing I/O
+      cfq-iosched: preparation to handle multiple service trees
+      cfq-iosched: reimplement priorities using different service trees
+      cfq-iosched: enable idling for last queue on priority class
+      cfq-iosched: fairness for sync no-idle queues
+      cfq-iosched: simplify prio-unboost code
+      cfq-iosched: fix next_rq computation
+      cfq-iosched: cleanup unreachable code
+      cfq-iosched: fix ncq detection code
+      cfq-iosched: fix no-idle preemption logic
+      cfq-iosched: idling on deep seeky sync queues
+      cfq-iosched: fix corner cases in idling logic
+
+Don Brace (1):
+      cciss: Add enhanced scatter-gather support.
+
+Gui Jianfeng (1):
+      cfq: Make use of service count to estimate the rb_key offset
+
+H Hartley Sweeten (1):
+      block/scsi_ioctl.c: quiet sparse noise
+
+Hideyuki Sasaki (1):
+      block/ps3: fix slow VRAM IO
+
+Ilya Loginov (1):
+      block: add helpers to run flush_dcache_page() against a bio and a request's pages
+
+Jeff Moyer (6):
+      cfq: calculate the seek_mean per cfq_queue not per cfq_io_context
+      cfq: merge cooperating cfq_queues
+      cfq: change the meaning of the cfqq_coop flag
+      cfq: break apart merged cfqqs if they stop cooperating
+      block: get rid of the WRITE_ODIRECT flag
+      aio: implement request batching
+
+Jens Axboe (20):
+      drbd: remove tracing bits
+      block: remove the anticipatory IO scheduler
+      block: CFQ is more than a desktop scheduler
+      Merge branch 'master' into for-2.6.33
+      drbd: fixup for reverted dual in_flight patch
+      Merge branch 'for-linus' into for-2.6.33
+      cfq-iosched: fix style issue in cfq_get_avg_queues()
+      drbd: fix in_flight rw indexing
+      block: move bdi/address_space unplug functions to backing-dev.h
+      Merge branch 'cfq-2.6.33' into for-2.6.33
+      Merge branch 'for-linus' into for-2.6.33
+      cfq-iosched: fix merge error
+      cfq-iosched: get rid of the coop_preempt flag
+      Merge branch 'for-jens' of git://git.drbd.org/linux-2.6-drbd into for-2.6.33
+      Merge branch 'for-jens' of git://git.drbd.org/linux-2.6-drbd into for-2.6.33
+      Revert "cfq: Make use of service count to estimate the rb_key offset"
+      Merge branch 'master' into for-2.6.33
+      cfq-iosched: fix compile problem with !CONFIG_CGROUP
+      cfq-iosched: move IO controller declerations to a header file
+      io controller: quick fix for blk-cgroup and modular CFQ
+
+Jun'ichi Nomura (1):
+      Add a tracepoint for block request remapping
+
+Karel Zak (2):
+      partitions: use sector size for EFI GPT
+      partitions: read whole sector with EFI GPT header
+
+Lars Ellenberg (7):
+      dropping unneeded include autoconf.h
+      change default: by default, use socket buffer auto tuning
+      fix grammar in printk
+      drbd: fix check for too large lower level device
+      drbd: performance - don't lose unplug events
+      fix in-kernel configuration serialization
+      add missing state change on corrupt packet header in drbd_recv_header
+
+Martin K. Petersen (2):
+      block: Expose discard granularity
+      block: Allow devices to indicate whether discarded blocks are zeroed
+
+OGAWA Hirofumi (1):
+      flusher: Fix PF_FROZEN race
+
+Philipp Reisner (10):
+      The DRBD driver
+      drbd: Work on permission enforcement
+      Merge branch 'for-2.6.33' of git://git.kernel.dk/linux-2.6-block into for-2.6.33
+      drbdsetup X resume-io should be usable to resume IO [Bugz 256]
+      Do not deadlock in drbd_disconnect() [bugz 258]
+      Now it is equal to DRBD release 8.3.5 without compat crap
+      Fixed a regression in resync decission code drbd_uuid_compare() [Bugz 260]
+      DRBD: Now the code is 8.3.6 + 3 fixes (without compat crap)
+      drbd: moved CN_IDX_DRBD and CN_VAL_DRBD to the right file
+      drbd_req.c: use part_[inc|dec]_in_flight()
+
+Randy Dunlap (2):
+      drbd: needs __ratelimit()
+      block: jiffies fixes
+
+Shaohua Li (3):
+      cfq-iosched: improve hw_tag detection
+      cfq-iosched: no dispatch limit for single queue
+      cfq-iosched: make nonrot check logic consistent
+
+Stephen M. Cameron (10):
+      cciss: Fix problem with remove_from_scan_list on driver unload
+      cciss: Retry driver initiated cmds with unit attention condition
+      cciss: Remove the "withirq" parameter from various functions where possible
+      cciss: clean up code in cciss_shutdown
+      cciss: remove sendcmd() as it is no longer used.
+      cciss: fix typo that causes scsi status to be lost.
+      cciss: Remove unnecessary check in scan_thread
+      cciss: Do not automatically rescan on UNIT ATTENTION/LUN DATA CHANGED
+      cciss: Fix weird usage of ENXIO in cciss_scsi.c
+      cciss: fix scatter gather cleanup problems
+
+Vivek Goyal (22):
+      Fix regression in direct writes performance due to WRITE_ODIRECT flag removal
+      blkio: Set must_dispatch only if we decided to not dispatch the request
+      blkio: Introduce the notion of cfq groups
+      blkio: Implement macro to traverse each service tree in group
+      blkio: Keep queue on service tree until we expire it
+      blkio: Introduce the root service tree for cfq groups
+      blkio: Introduce blkio controller cgroup interface
+      blkio: Introduce per cfq group weights and vdisktime calculations
+      blkio: Implement per cfq group latency target and busy queue avg
+      blkio: Group time used accounting and workload context save restore
+      blkio: Dynamic cfq group creation based on cgroup tasks belongs to
+      blkio: Take care of cgroup deletion and cfq group reference counting
+      blkio: Some debugging aids for CFQ
+      blkio: Export disk time and sectors used by a group to user space
+      blkio: Provide some isolation between groups
+      blkio: Drop the reference to queue once the task changes cgroup
+      blkio: Propagate cgroup weight updation to cfq groups
+      blkio: Wait for cfq queue to get backlogged if group is empty
+      blkio: Determine async workload length based on total number of queues
+      blkio: Implement group_isolation tunable
+      blkio: Wait on sync-noidle queue even if rq_noidle = 1
+      blkio: Documentation
+
+Wu Fengguang (3):
+      writeback: remove the always false bdi_cap_writeback_dirty() test
+      writeback: introduce wbc.for_background
+      writeback: remove unused nonblocking and congestion checks
+
+ .../blockdev/drbd/DRBD-8.3-data-packets.svg        |  588 +++
+ Documentation/blockdev/drbd/DRBD-data-packets.svg  |  459 ++
+ Documentation/blockdev/drbd/README.txt             |   16 +
+ Documentation/blockdev/drbd/conn-states-8.dot      |   18 +
+ Documentation/blockdev/drbd/disk-states-8.dot      |   16 +
+ .../drbd/drbd-connection-state-overview.dot        |   85 +
+ Documentation/blockdev/drbd/node-states-8.dot      |   14 +
+ Documentation/cgroups/blkio-controller.txt         |  135 +
+ MAINTAINERS                                        |   13 +
+ arch/alpha/include/asm/cacheflush.h                |    1 +
+ arch/arm/include/asm/cacheflush.h                  |    1 +
+ arch/avr32/include/asm/cacheflush.h                |    1 +
+ arch/blackfin/include/asm/cacheflush.h             |    2 +
+ arch/cris/include/asm/cacheflush.h                 |    1 +
+ arch/frv/include/asm/cacheflush.h                  |    1 +
+ arch/h8300/include/asm/cacheflush.h                |    1 +
+ arch/ia64/include/asm/cacheflush.h                 |    1 +
+ arch/m32r/include/asm/cacheflush.h                 |    3 +
+ arch/m68k/include/asm/cacheflush_mm.h              |    1 +
+ arch/m68k/include/asm/cacheflush_no.h              |    1 +
+ arch/microblaze/include/asm/cacheflush.h           |    1 +
+ arch/mips/include/asm/cacheflush.h                 |    1 +
+ arch/mn10300/include/asm/cacheflush.h              |    1 +
+ arch/parisc/include/asm/cacheflush.h               |    1 +
+ arch/powerpc/include/asm/cacheflush.h              |    1 +
+ arch/s390/include/asm/cacheflush.h                 |    1 +
+ arch/score/include/asm/cacheflush.h                |    1 +
+ arch/sh/include/asm/cacheflush.h                   |    1 +
+ arch/sparc/include/asm/cacheflush_32.h             |    1 +
+ arch/sparc/include/asm/cacheflush_64.h             |    1 +
+ arch/x86/include/asm/cacheflush.h                  |    1 +
+ arch/xtensa/include/asm/cacheflush.h               |    1 +
+ block/Kconfig                                      |   22 +
+ block/Kconfig.iosched                              |   43 +-
+ block/Makefile                                     |    2 +-
+ block/as-iosched.c                                 | 1520 -------
+ block/blk-cgroup.c                                 |  310 ++
+ block/blk-cgroup.h                                 |  100 +
+ block/blk-core.c                                   |   19 +
+ block/blk-settings.c                               |   51 +-
+ block/blk-sysfs.c                                  |   33 +
+ block/bsg.c                                        |    3 +-
+ block/cfq-iosched.c                                | 1472 ++++++-
+ block/cfq-iosched.h                                |    7 +
+ block/compat_ioctl.c                               |    2 +
+ block/elevator.c                                   |   10 +-
+ block/genhd.c                                      |   12 +
+ block/ioctl.c                                      |    2 +
+ block/scsi_ioctl.c                                 |    6 +-
+ drivers/block/Kconfig                              |    2 +
+ drivers/block/Makefile                             |    1 +
+ drivers/block/cciss.c                              |  544 ++--
+ drivers/block/cciss.h                              |   18 +-
+ drivers/block/cciss_cmd.h                          |    7 +-
+ drivers/block/cciss_scsi.c                         |    4 +-
+ drivers/block/drbd/Kconfig                         |   71 +
+ drivers/block/drbd/Makefile                        |    5 +
+ drivers/block/drbd/drbd_actlog.c                   | 1424 +++++++
+ drivers/block/drbd/drbd_bitmap.c                   | 1327 ++++++
+ drivers/block/drbd/drbd_int.h                      | 2252 ++++++++++
+ drivers/block/drbd/drbd_main.c                     | 3699 ++++++++++++++++
+ drivers/block/drbd/drbd_nl.c                       | 2364 +++++++++++
+ drivers/block/drbd/drbd_proc.c                     |  265 ++
+ drivers/block/drbd/drbd_receiver.c                 | 4426 ++++++++++++++++++++
+ drivers/block/drbd/drbd_req.c                      | 1125 +++++
+ drivers/block/drbd/drbd_req.h                      |  326 ++
+ drivers/block/drbd/drbd_strings.c                  |  113 +
+ drivers/block/drbd/drbd_vli.h                      |  351 ++
+ drivers/block/drbd/drbd_worker.c                   | 1512 +++++++
+ drivers/block/drbd/drbd_wrappers.h                 |   91 +
+ drivers/block/ps3vram.c                            |   10 +-
+ drivers/mtd/mtd_blkdevs.c                          |    2 +
+ drivers/staging/pohmelfs/inode.c                   |   10 -
+ fs/aio.c                                           |   62 +-
+ fs/bio.c                                           |   12 +
+ fs/block_dev.c                                     |   12 +-
+ fs/direct-io.c                                     |   10 +-
+ fs/fs-writeback.c                                  |   28 +-
+ fs/nfs/write.c                                     |    2 +-
+ fs/partitions/check.c                              |   12 +
+ fs/partitions/efi.c                                |   30 +-
+ fs/partitions/efi.h                                |    8 +-
+ fs/read_write.c                                    |    2 -
+ fs/splice.c                                        |   24 +-
+ fs/xfs/linux-2.6/xfs_aops.c                        |    9 +-
+ include/asm-generic/cacheflush.h                   |    1 +
+ include/linux/backing-dev.h                        |   13 +
+ include/linux/bio.h                                |   20 +-
+ include/linux/blkdev.h                             |   56 +-
+ include/linux/cgroup_subsys.h                      |    6 +
+ include/linux/connector.h                          |    2 +
+ include/linux/drbd.h                               |  343 ++
+ include/linux/drbd_limits.h                        |  137 +
+ include/linux/drbd_nl.h                            |  137 +
+ include/linux/drbd_tag_magic.h                     |   83 +
+ include/linux/fs.h                                 |    5 +-
+ include/linux/genhd.h                              |    1 +
+ include/linux/iocontext.h                          |    9 +-
+ include/linux/lru_cache.h                          |  294 ++
+ include/linux/writeback.h                          |    1 +
+ lib/Kconfig                                        |    3 +
+ lib/Makefile                                       |    2 +
+ lib/lru_cache.c                                    |  560 +++
+ mm/backing-dev.c                                   |    2 +-
+ mm/page-writeback.c                                |   12 -
+ 105 files changed, 24710 insertions(+), 2121 deletions(-)
+ create mode 100644 Documentation/blockdev/drbd/DRBD-8.3-data-packets.svg
+ create mode 100644 Documentation/blockdev/drbd/DRBD-data-packets.svg
+ create mode 100644 Documentation/blockdev/drbd/README.txt
+ create mode 100644 Documentation/blockdev/drbd/conn-states-8.dot
+ create mode 100644 Documentation/blockdev/drbd/disk-states-8.dot
+ create mode 100644 Documentation/blockdev/drbd/drbd-connection-state-overview.dot
+ create mode 100644 Documentation/blockdev/drbd/node-states-8.dot
+ create mode 100644 Documentation/cgroups/blkio-controller.txt
+ delete mode 100644 block/as-iosched.c
+ create mode 100644 block/blk-cgroup.c
+ create mode 100644 block/blk-cgroup.h
+ create mode 100644 block/cfq-iosched.h
+ create mode 100644 drivers/block/drbd/Kconfig
+ create mode 100644 drivers/block/drbd/Makefile
+ create mode 100644 drivers/block/drbd/drbd_actlog.c
+ create mode 100644 drivers/block/drbd/drbd_bitmap.c
+ create mode 100644 drivers/block/drbd/drbd_int.h
+ create mode 100644 drivers/block/drbd/drbd_main.c
+ create mode 100644 drivers/block/drbd/drbd_nl.c
+ create mode 100644 drivers/block/drbd/drbd_proc.c
+ create mode 100644 drivers/block/drbd/drbd_receiver.c
+ create mode 100644 drivers/block/drbd/drbd_req.c
+ create mode 100644 drivers/block/drbd/drbd_req.h
+ create mode 100644 drivers/block/drbd/drbd_strings.c
+ create mode 100644 drivers/block/drbd/drbd_vli.h
+ create mode 100644 drivers/block/drbd/drbd_worker.c
+ create mode 100644 drivers/block/drbd/drbd_wrappers.h
+ create mode 100644 include/linux/drbd.h
+ create mode 100644 include/linux/drbd_limits.h
+ create mode 100644 include/linux/drbd_nl.h
+ create mode 100644 include/linux/drbd_tag_magic.h
+ create mode 100644 include/linux/lru_cache.h
+ create mode 100644 lib/lru_cache.c
+
+-- 
+Jens Axboe
+
