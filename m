@@ -1,141 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932464AbZLDSNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbZLDSWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932464AbZLDSNE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 13:13:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932353AbZLDSND
+	id S1752280AbZLDSWX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 13:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZLDSWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 13:13:03 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:41461 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932212AbZLDSNB (ORCPT
+	Fri, 4 Dec 2009 13:22:20 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:47049 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbZLDSWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 13:13:01 -0500
-Date: Fri, 4 Dec 2009 10:13:00 -0800
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: lenb@kernel.org, Crane Cai <crane.cai@amd.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
-Subject: [RESEND PATCH v2 2/2] i2c-scmi: support IBM SMBus CMI devices
-Message-ID: <20091204181300.GO10295@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <20091021173733.GN26149@tux1.beaverton.ibm.com> <20091027183619.16b0b952@hyperion.delvare> <20091204170621.GA10356@tux1.beaverton.ibm.com> <200912041036.36686.bjorn.helgaas@hp.com>
+	Fri, 4 Dec 2009 13:22:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=NHveqT8iU6SY/TksFBNvYKb/KExwICvnh6IXtz+jcoGuEhsgZ8pAr2hwKG8buF5VDe
+         lePVP/Ks6F5qHZUuU+dpymMbMcy+XRjbTGufSWZKZpymY3WymPEqklsqnsLykzVYnui/
+         qtvkUGZkTjlejWvuHns4kOrDuejH1DeGBhUZg=
+Message-ID: <4B195361.5030301@gmail.com>
+Date: Fri, 04 Dec 2009 10:22:25 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912041036.36686.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Oliver Neukum <oliver@neukum.org>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Linux-usb <linux-usb@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: root hub lost power or was reset
+References: <Pine.LNX.4.44L0.0912031014190.4795-100000@iolanthe.rowland.org> <200912031745.26389.oliver@neukum.org>
+In-Reply-To: <200912031745.26389.oliver@neukum.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Crane Cai <crane.cai@amd.com>
+On 12/03/09 08:45, Oliver Neukum wrote:
+> Am Donnerstag, 3. Dezember 2009 16:16:58 schrieb Alan Stern:
+>> And it seems to be very widespread.  I haven't seen more than a handful
+>> of systems which _don't_ cut power or reset their UHCI controllers
+>> during S3 sleep.
+>
+> Yes, nevertheless it is most annoying. I wonder whether we could
+> get BIOS writers to export this feature via ACPI.
+>
+> 	Regards
+> 		Oliver
+>
 
-*) add a new HID for IBM SMBus CMI devices
-*) add methods for IBM SMBus CMI devices
-*) hook different HID with different control methods set
-*) minor tweaks as suggested by Jean Delvare
+after thinking abit on this
+when using suspend on osx(apple)
+you can wake the machine by pressing
+the space bar.. my guess is this is why
+the usb is probably doing what it's doing
+(but could be wrong).
 
-Slightly modified to use #define'd HID from Darrick's ACPI scan quirk patch.
+when I get time, I'll see if acpid
+is capable of doing such thing.
 
-Signed-off-by: Crane Cai <crane.cai@amd.com>
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
-
- drivers/i2c/busses/i2c-scmi.c |   31 +++++++++++++++++++++++--------
- 1 files changed, 23 insertions(+), 8 deletions(-)
-
-
-diff --git a/drivers/i2c/busses/i2c-scmi.c b/drivers/i2c/busses/i2c-scmi.c
-index b4a55d4..7860cbb 100644
---- a/drivers/i2c/busses/i2c-scmi.c
-+++ b/drivers/i2c/busses/i2c-scmi.c
-@@ -33,6 +33,7 @@ struct acpi_smbus_cmi {
- 	u8 cap_info:1;
- 	u8 cap_read:1;
- 	u8 cap_write:1;
-+	struct smbus_methods_t *methods;
- };
- 
- static const struct smbus_methods_t smbus_methods = {
-@@ -41,8 +42,16 @@ static const struct smbus_methods_t smbus_methods = {
- 	.mt_sbw  = "_SBW",
- };
- 
-+/* Some IBM BIOSes omit the leading underscore */
-+static const struct smbus_methods_t ibm_smbus_methods = {
-+	.mt_info = "SBI_",
-+	.mt_sbr  = "SBR_",
-+	.mt_sbw  = "SBW_",
-+};
-+
- static const struct acpi_device_id acpi_smbus_cmi_ids[] = {
--	{"SMBUS01", 0},
-+	{"SMBUS01", (kernel_ulong_t)&smbus_methods},
-+	{ACPI_SMBUS_IBM_HID, (kernel_ulong_t)&ibm_smbus_methods},
- 	{"", 0}
- };
- 
-@@ -150,11 +159,11 @@ acpi_smbus_cmi_access(struct i2c_adapter *adap, u16 addr, unsigned short flags,
- 
- 	if (read_write == I2C_SMBUS_READ) {
- 		protocol |= ACPI_SMBUS_PRTCL_READ;
--		method = smbus_methods.mt_sbr;
-+		method = smbus_cmi->methods->mt_sbr;
- 		input.count = 3;
- 	} else {
- 		protocol |= ACPI_SMBUS_PRTCL_WRITE;
--		method = smbus_methods.mt_sbw;
-+		method = smbus_cmi->methods->mt_sbw;
- 		input.count = 5;
- 	}
- 
-@@ -290,13 +299,13 @@ static int acpi_smbus_cmi_add_cap(struct acpi_smbus_cmi *smbus_cmi,
- 	union acpi_object *obj;
- 	acpi_status status;
- 
--	if (!strcmp(name, smbus_methods.mt_info)) {
-+	if (!strcmp(name, smbus_cmi->methods->mt_info)) {
- 		status = acpi_evaluate_object(smbus_cmi->handle,
--					smbus_methods.mt_info,
-+					smbus_cmi->methods->mt_info,
- 					NULL, &buffer);
- 		if (ACPI_FAILURE(status)) {
- 			ACPI_ERROR((AE_INFO, "Evaluating %s: %i",
--				   smbus_methods.mt_info, status));
-+				   smbus_cmi->methods->mt_info, status));
- 			return -EIO;
- 		}
- 
-@@ -319,9 +328,9 @@ static int acpi_smbus_cmi_add_cap(struct acpi_smbus_cmi *smbus_cmi,
- 
- 		kfree(buffer.pointer);
- 		smbus_cmi->cap_info = 1;
--	} else if (!strcmp(name, smbus_methods.mt_sbr))
-+	} else if (!strcmp(name, smbus_cmi->methods->mt_sbr))
- 		smbus_cmi->cap_read = 1;
--	else if (!strcmp(name, smbus_methods.mt_sbw))
-+	else if (!strcmp(name, smbus_cmi->methods->mt_sbw))
- 		smbus_cmi->cap_write = 1;
- 	else
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Unsupported CMI method: %s\n",
-@@ -349,6 +358,7 @@ static acpi_status acpi_smbus_cmi_query_methods(acpi_handle handle, u32 level,
- static int acpi_smbus_cmi_add(struct acpi_device *device)
- {
- 	struct acpi_smbus_cmi *smbus_cmi;
-+	const struct acpi_device_id *id;
- 
- 	smbus_cmi = kzalloc(sizeof(struct acpi_smbus_cmi), GFP_KERNEL);
- 	if (!smbus_cmi)
-@@ -362,6 +372,11 @@ static int acpi_smbus_cmi_add(struct acpi_device *device)
- 	smbus_cmi->cap_read = 0;
- 	smbus_cmi->cap_write = 0;
- 
-+	for (id = acpi_smbus_cmi_ids; id->id[0]; id++)
-+		if (!strcmp(id->id, acpi_device_hid(device)))
-+			smbus_cmi->methods =
-+				(struct smbus_methods_t *) id->driver_data;
-+
- 	acpi_walk_namespace(ACPI_TYPE_METHOD, smbus_cmi->handle, 1,
- 			    acpi_smbus_cmi_query_methods, smbus_cmi, NULL);
- 
+Justin P. Mattock
