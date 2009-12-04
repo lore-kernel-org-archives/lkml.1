@@ -1,170 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbZLDVRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbZLDVSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757354AbZLDVRz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 16:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbZLDVRx
+	id S1757375AbZLDVSF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 16:18:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbZLDVSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 16:17:53 -0500
-Received: from mga01.intel.com ([192.55.52.88]:12668 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757140AbZLDVRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 16:17:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,344,1257148800"; 
-   d="scan'208";a="519896015"
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20091204164227.GA28378@sgi.com>
-References: <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain>
-	 <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org>
-	 <20091125074033.4c46c1b0@infradead.org> <20091203165004.GA14665@sgi.com>
-	 <Pine.WNT.4.64.0912030851500.13880@ppwaskie-MOBL2.amr.corp.intel.com>
-	 <20091203170149.GA15151@sgi.com>
-	 <Pine.WNT.4.64.0912030905530.16084@ppwaskie-MOBL2.amr.corp.intel.com>
-	 <20091203171946.GC15151@sgi.com>
-	 <Pine.WNT.4.64.0912031048590.8104@ppwaskie-MOBL2.amr.corp.intel.com>
-	 <20091204164227.GA28378@sgi.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 13:17:57 -0800
-Message-Id: <1259961477.23199.39.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+	Fri, 4 Dec 2009 16:18:04 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:56078 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757277AbZLDVR7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 16:17:59 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
+Date: Fri, 4 Dec 2009 22:18:11 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Greg KH <gregkh@suse.de>, stable@kernel.org,
+       Rickard Bellini <rickard.bellini@ericsson.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       Torgny Johansson <torgny.johansson@ericsson.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0912041555430.3070-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912041555430.3070-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912042218.11410.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-04 at 09:42 -0700, Dimitri Sivanich wrote:
-> On Thu, Dec 03, 2009 at 10:50:47AM -0800, Waskiewicz Jr, Peter P wrote:
-> > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
-> > 
-> > > On Thu, Dec 03, 2009 at 09:07:21AM -0800, Waskiewicz Jr, Peter P wrote:
-> > > > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
-> > > > 
-> > > > > On Thu, Dec 03, 2009 at 08:53:23AM -0800, Waskiewicz Jr, Peter P wrote:
-> > > > > > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
-> > > > > > 
-> > > > > > > On Wed, Nov 25, 2009 at 07:40:33AM -0800, Arjan van de Ven wrote:
-> > > > > > > > On Tue, 24 Nov 2009 09:41:18 -0800
-> > > > > > > > ebiederm@xmission.com (Eric W. Biederman) wrote:
-> > > > > > > > > Oii.
-> > > > > > > > > 
-> > > > > > > > > I don't think it is bad to export information to applications like
-> > > > > > > > > irqbalance.
-> > > > > > > > > 
-> > > > > > > > > I think it pretty horrible that one of the standard ways I have heard
-> > > > > > > > > to improve performance on 10G nics is to kill irqbalance.
-> > > > > > > > 
-> > > > > > > > irqbalance does not move networking irqs; if it does there's something
-> > > > > > > > evil going on in the system. But thanks for the bugreport ;)
-> > > > > > > 
-> > > > > > > It does move networking irqs.
-> > > > > > > 
-> > > > > > > > 
-> > > > > > > > we had that; it didn't work.
-> > > > > > > > what I'm asking for is for the kernel to expose the numa information;
-> > > > > > > > right now that is the piece that is missing.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > > I'm wondering if we should expose that numa information in the form of a node or the set of allowed cpus, or both?
-> > > > > > > 
-> > > > > > > I'm guessing 'both' is the correct answer, so that apps like irqbalance can make a qualitative decision based on the node (affinity to cpus on this node is better), but an absolute decision based on allowed cpus (I cannot change affinity to anything but this set of cpus).
-> > > > > > 
-> > > > > > That's exactly what my patch in the thread "irq: Add node_affinity CPU 
-> > > > > > masks for smarter irqbalance hints" is doing.  I've also done the 
-> > > > > > irqbalance changes based on that kernel patch, and Arjan currently has 
-> > > > > > that patch.
-> > > > > 
-> > > > > So if I understand correctly, you're patch takes care of the qualitative portion of it (we prefer to set affinity to these cpus, which may be on more than one node), but not the restrictive part of it (we cannot change affinity to anything but these cpus)?
-> > > > 
-> > > > That is correct.  The patch provides an interface to both the kernel 
-> > > > (functions) and /proc for userspace to set a CPU mask.  That is the 
-> > > > preferred mask for the interrupt to be balanced on.  Then irqbalance will 
-> > > > make decisions on how to balance within that provided mask, if it in fact 
-> > > > has been provided.
-> > > 
-> > > What if it's not provided?  Will irqbalance make decisions based on the numa_node of that irq (I would hope)?
-> > 
-> > If it's not provided, then irqbalance will continue to do what it does 
-> > today.  No changes.
+Am Freitag, 4. Dezember 2009 21:57:50 schrieb Alan Stern:
+> On Fri, 4 Dec 2009, Oliver Neukum wrote:
+> > > > 1. am I supposed to get a reference just so that I can use dev_err?
+> > >
+> > > No, you should already have a reference on the device when doing the
+> > > call, right?
+> >
+> > No, why? Consider this:
+> >
+> > int write(...)
+> > {
+> > 	...
+> > 	mutex_lock(&instance->lock);
+> > 	if (instance->disconnected) {
+> > 		dev_dbg(instance->dev,"writing to disconnected device");
+> > 		rv = -ENODEV;
+> > 	} else {
+> > 		res = usb_submit_urb(...);
+> > 		rv = res < 0 ? -EIO : count;
+> > 	}
+> > 	mutex_unlock(&instance->lock);
+> > 	return rv;
+> > }
+> >
+> > void disconnect(...)
+> > {
+> > 	...
+> > 	mutex_lock(&instance->lock);
+> > 	instance->disconnected = 1;
+> > 	usb_kill_urb(...);
+> > 	usb_kill_urb(...);
+> > 	mutex_unlock(&instance->lock);
+> > }
+> >
+> > This would be perfectly valid code without any references taken save
+> > for the pesky dev_dbg()
 > 
-> So no numa awareness for ethernet irqs.
-> 
+> Whoever calls write() must possess a valid reference.  Otherwise
+> instance might already be deallocated when write() starts, causing an
+> oops well before the call to dev_dbg().
 
-Nothing that makes sense, no.
+He needs a valid reference to "instance", not to the device. In fact
+he may do IO to the device only if he knows it hasn't been disconnected.
+ 
+> Typically the driver would take a reference during open() and drop it
+> during close().
 
-> I'm wondering what needs to be exposed in proc/irq at this point.
-> 
-> Do we expose separate cpu masks for everything?  There are really 3 possible pieces of affinity information:  your node_affinity (optionally selected by the driver according to allocations), my restricted_affinity (set by the specific arch), and numa_node affinity (the 'home' node of the device).  Do we show cpumasks for all of these, or maybe show numa_node in place of a cpumask for the 'home' node of the device?
-> 
-> With all of that information apps like irqbalance should be able to make some good decisions, but things can get confusing if there are too many masks.
-> 
-> Also, if I manually change affinity, irqbalance can change that affinity from under me, correct?  That's fine as long as it's stated that that's how things will work (turn off irqbalance or run oneshot mode for manual setting).
-> 
+You can do that but then you must not do IO prior to open() or after
+close(). That is you must actually wait for IO to finish in close() and
+cannot prefill your buffers before open().
 
-If you change /proc/irq/<num>/smp_affinity, yes, irqbalance can change
-that after the fact.
-
-> > 
-> > > 
-> > > Also, can we add a restricted mask as I mention above into this scheme?  If we can't send an IRQ to some node, we don't want to bother attempting to change affinity to cpus on that node (hopefully code in the kernel will eventually restrict this).
-> > > 
-> > 
-> > The interface allows you to put in any CPU mask.  The way it's written 
-> > now, whatever mask you put in, irqbalance *only* balances within that 
-> > mask.  It won't ever try and go outside that mask.
-> 
-> OK.  Given that, it might be nice to combine the restricted cpus that I'm describing with your node_affinity mask, but we could expose them as separate masks (node_affinity and restricted_affinity, as I describe above).
-> 
-
-I think this might be getting too complicated.  The only thing
-irqbalance is lacking today, in my mind, is the feedback mechanism,
-telling it what subset of CPU masks to balance within.  There is a
-allowed_mask, but that is used for a different purpose.  Hence why I
-added another.  But I think your needs can be met 100% with what I have
-already, and we can come up with a different name that's more generic.
-The flows would be something like this:
-
-Driver:
-- Driver comes online, allocates memory in a sensible NUMA fashion
-- Driver requests kernel for interrupts, ties them into handlers
-- Driver now sets a NUMA-friendly affinity for each interrupt, to match
-with its initial memory allocation
-- irqbalance balances interrupts within their new "hinted" affinities.
-
-Other:
-- System comes online
-- In your case, interrupts must be kept away from certain CPUs.
-- Some mechanism in your architecture init can set the "hinted" affinity
-mask for each interrupt.
-- irqbalance will not move interrupts to the CPUs you left out of the
-"hinted" affinity.
-
-Does this make more sense?
-
-> > 
-> > > As a matter of fact, driver's allocating rings, buffers, queues on other nodes should optimally be made aware of the restriction.
-> > 
-> > The idea is that the driver will do its memory allocations for everything 
-> > across nodes.  When it does that, it will use the kernel interface 
-> > (function call) to set the corresponding mask it wants for those queue 
-> > resources.  That is my end-goal for this code.
-> > 
-> 
-> OK, but we will eventually have to reject any irqbalance attempts to send irqs to restricted nodes.
-
-See above.
-
-Cheers,
--PJ
-
+	Regards
+		Oliver
 
