@@ -1,139 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbZLDWP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZLDWO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbZLDWP6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZLDWP5
+	id S1753481AbZLDWO2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbZLDWO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:15:57 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52349 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754036AbZLDWP4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:15:56 -0500
-Date: Fri, 4 Dec 2009 23:15:54 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-Cc: "Wang, Shane" <shane.wang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>
-Subject: Re: [PATCH] intel_txt: add s3 userspace memory integrity
- verification
-Message-ID: <20091204221553.GD32314@elf.ucw.cz>
-References: <4A9CE0B2.5060608@intel.com>
- <4ABF2B50.6070106@intel.com>
- <20091004185801.GC1378@ucw.cz>
- <037F493892196B458CD3E193E8EBAD4F01F03277DF@pdsmsx502.ccr.corp.intel.com>
- <20091204081933.GE1540@ucw.cz>
- <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4C5@orsmsx506.amr.corp.intel.com>
+	Fri, 4 Dec 2009 17:14:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34775 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751483AbZLDWO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 17:14:26 -0500
+Message-ID: <4B198A33.7080705@gmail.com>
+Date: Fri, 04 Dec 2009 23:16:19 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4C5@orsmsx506.amr.corp.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
+       bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
+       john.ronciak@intel.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 06/31] Constify struct e1000_mac_operations for 2.6.32 v1
+References: <4B198670.2000406@gmail.com>
+In-Reply-To: <4B198670.2000406@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-12-04 08:46:04, Cihula, Joseph wrote:
-> > From: Pavel Machek [mailto:pavel@ucw.cz]
-> > Sent: Friday, December 04, 2009 12:20 AM
-> >
-> > Hi!
-> >
-> > Please wrap mails at column 72 (or so).
-> >
-> > > > AFAICT, it verifies userspace _and_ kernel memory, that's why it does
-> > > > magic stack switching. Why not verify everything in tboot?
-> > > Because tboot only can access <4G mem without paging. And the memory is sparse. We
-> > can't/needn't set unlimited sparse mem ranges to the MAC array with limited elements in the
-> > shared page, in order to pass the parameters.
-> > > On the other hand, it is reasonable for tboot to verify kernel, and kernel to verify
-> > userspace memory.
-> > >
-> >
-> > Are  you sure x86-64 kernel & modules is always below 4GB? I don't
-> > think so.
-> 
-> The only part of the kernel that really needs to be below 4GB is what is used by the code on resume to do the MAC verification of the remainder of the memory.  This is all static code and variables.  The regions we pass to tboot for MAC'ing are:
-> S3 real mode resume code:  acpi_wakeup_address, WAKEUP_SIZE
-> AP trampoline code:  virt_to_phys(trampoline_base), TRAMPOLINE_SIZE
-> kernel static code and data:  virt_to_phys(_text), _end - _text
-> the stack we use (either new one or existing depending--see code):
->         virt_to_phys(new_stack), IRQ_STACK_SIZE
->         virt_to_phys(current_thread_info()), THREAD_SIZE
-> 
+From: Emese Revfy <re.emese@gmail.com>
 
-Yes, so... what guarantees these actually are under 4GB? Perhaps you
-should put them to spearate section and use linker magic?
+Constify struct e1000_mac_operations with some exceptions.
 
-You certainly should annotate them somehow so people modifying the
-code know about this new requirement. 
+Signed-off-by: Emese Revfy <re.emese@gmail.com>
+---
+ drivers/net/e1000e/82571.c    |    3 ++-
+ drivers/net/e1000e/e1000.h    |    2 +-
+ drivers/net/e1000e/es2lan.c   |    3 ++-
+ drivers/net/e1000e/ich8lan.c  |    2 +-
+ drivers/net/igb/e1000_82575.c |    2 +-
+ drivers/net/igb/e1000_hw.h    |    2 +-
+ 6 files changed, 8 insertions(+), 6 deletions(-)
 
-> Can you post a .config and platform configuration for which the tboot, MAC, or do_suspend_lowlevel() are not within the regions above?  We'll be happy to address the issue once we understand the conditions.
-> 
+diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
+index d1e0563..16ffb11 100644
+--- a/drivers/net/e1000e/82571.c
++++ b/drivers/net/e1000e/82571.c
+@@ -212,6 +212,7 @@ static s32 e1000_init_mac_params_82571(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	struct e1000_mac_info *mac = &hw->mac;
++	/* cannot be const */
+ 	struct e1000_mac_operations *func = &mac->ops;
+ 	u32 swsm = 0;
+ 	u32 swsm2 = 0;
+@@ -1656,7 +1657,7 @@ static void e1000_clear_hw_cntrs_82571(struct e1000_hw *hw)
+ 	temp = er32(ICRXDMTC);
+ }
+ 
+-static struct e1000_mac_operations e82571_mac_ops = {
++static const struct e1000_mac_operations e82571_mac_ops = {
+ 	/* .check_mng_mode: mac type dependent */
+ 	/* .check_for_link: media type dependent */
+ 	.id_led_init		= e1000e_id_led_init,
+diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
+index 3e187b0..933f5da 100644
+--- a/drivers/net/e1000e/e1000.h
++++ b/drivers/net/e1000e/e1000.h
+@@ -375,7 +375,7 @@ struct e1000_info {
+ 	u32			pba;
+ 	u32			max_hw_frame_size;
+ 	s32			(*get_variants)(struct e1000_adapter *);
+-	struct e1000_mac_operations *mac_ops;
++	const struct e1000_mac_operations *mac_ops;
+ 	struct e1000_phy_operations *phy_ops;
+ 	struct e1000_nvm_operations *nvm_ops;
+ };
+diff --git a/drivers/net/e1000e/es2lan.c b/drivers/net/e1000e/es2lan.c
+index ae5d736..06d47e0 100644
+--- a/drivers/net/e1000e/es2lan.c
++++ b/drivers/net/e1000e/es2lan.c
+@@ -207,6 +207,7 @@ static s32 e1000_init_mac_params_80003es2lan(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	struct e1000_mac_info *mac = &hw->mac;
++	/* cannot be const */
+ 	struct e1000_mac_operations *func = &mac->ops;
+ 
+ 	/* Set media type */
+@@ -1365,7 +1366,7 @@ static void e1000_clear_hw_cntrs_80003es2lan(struct e1000_hw *hw)
+ 	temp = er32(ICRXDMTC);
+ }
+ 
+-static struct e1000_mac_operations es2_mac_ops = {
++static const struct e1000_mac_operations es2_mac_ops = {
+ 	.id_led_init		= e1000e_id_led_init,
+ 	.check_mng_mode		= e1000e_check_mng_mode_generic,
+ 	/* check_for_link dependent on media type */
+diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+index eff3f47..3e0065b 100644
+--- a/drivers/net/e1000e/ich8lan.c
++++ b/drivers/net/e1000e/ich8lan.c
+@@ -3451,7 +3451,7 @@ static void e1000_clear_hw_cntrs_ich8lan(struct e1000_hw *hw)
+ 	}
+ }
+ 
+-static struct e1000_mac_operations ich8_mac_ops = {
++static const struct e1000_mac_operations ich8_mac_ops = {
+ 	.id_led_init		= e1000e_id_led_init,
+ 	.check_mng_mode		= e1000_check_mng_mode_ich8lan,
+ 	.check_for_link		= e1000_check_for_copper_link_ich8lan,
+diff --git a/drivers/net/igb/e1000_82575.c b/drivers/net/igb/e1000_82575.c
+index f8f5772..3d5794f 100644
+--- a/drivers/net/igb/e1000_82575.c
++++ b/drivers/net/igb/e1000_82575.c
+@@ -1400,7 +1400,7 @@ void igb_vmdq_set_replication_pf(struct e1000_hw *hw, bool enable)
+ 	wr32(E1000_VT_CTL, vt_ctl);
+ }
+ 
+-static struct e1000_mac_operations e1000_mac_ops_82575 = {
++static const struct e1000_mac_operations e1000_mac_ops_82575 = {
+ 	.reset_hw             = igb_reset_hw_82575,
+ 	.init_hw              = igb_init_hw_82575,
+ 	.check_for_link       = igb_check_for_link_82575,
+diff --git a/drivers/net/igb/e1000_hw.h b/drivers/net/igb/e1000_hw.h
+index 119869b..d58b7e5 100644
+--- a/drivers/net/igb/e1000_hw.h
++++ b/drivers/net/igb/e1000_hw.h
+@@ -310,7 +310,7 @@ struct e1000_nvm_operations {
+ 
+ struct e1000_info {
+ 	s32 (*get_invariants)(struct e1000_hw *);
+-	struct e1000_mac_operations *mac_ops;
++	const struct e1000_mac_operations *mac_ops;
+ 	struct e1000_phy_operations *phy_ops;
+ 	struct e1000_nvm_operations *nvm_ops;
+ };
 
-Can you prove that for all .config s on all machines they are under
-4GB? On all future kernels, too? I thought so.
-
-> > > >> +static vmac_t mem_mac;
-> > > >> +static struct crypto_hash *tfm;
-> > > >
-> > > > Could these be automatic?
-> > > Maybe, but I don't wish other files can access the variables and take tfm as an example, I'd
-> > like to allocate memory to it once and then initialize it once in order to avoid impact of
-> > memory change to MACing.
-> > >
-> >
-> > You use stack, anyway.
-> 
-> Do you mean as static local variables?  If so, I'm not sure if that would be any better.
-> 
-
-Those two variables (mem_mac and tfm) are static. I do not think they
-need to be, and code would be much nicer if they were not.
-
-> > > > So I corrupt memory, but also corrupt tboot_enabled() to return 0....
-> > > >
-> > > > And... does panic kill the machine quickly enough that no 'bad stuff'
-> > > > happens? (Whats bad stuff in this context, anyway?).
-> >
-> > I'd really like you to answer that.
-> 
-> "bad stuff" would be the execution of any code (or use of any data that affects execution) that was not verified by tboot.  As long as panic() is within the code ranges MAC'ed by tboot (see above), it would be covered.  Do you know of some panic() code paths that are outside of this?
-> 
-
-(Please wrap at column 72).
-
-Yes, I know that panic() has problems.
-
-> > > > Did you audit all code before sx_resume()? If it trusts  data not
-> > > > checksummed by tboot, attacker may be able to hijack code execution
-> > > > and bypass your protection, no?
-> > > Yes, kernel code is audited by tboot before resume.
-> >
-> > So no, you did not audit do_suspend_lowlevel to make sure it does not
-> > follow function pointers. Bad.
-> 
-> We aren't aware of any code or data used by the resume path that is outside of the tboot-MAC'ed regions above--if you can point out any then we will gladly address them.
->
-
-I'm asking you to do the code audit, and you tell me to do it
-myself. I'm not interested in doing your work. Yes, they are some
-obvious places (like panic), that you missed. There are probably more.
-
-Design your code properly so that it does not depend on details like
-that. That means checksumming in tboot.
-
-[Or do the auditing work. But don't try playing "we fixed all bugs
-you told us about, so it must be perfect" game with me.]
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
