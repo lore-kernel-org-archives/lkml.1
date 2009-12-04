@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbZLDBxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbZLDCAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755697AbZLDBxM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 20:53:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbZLDBxL
+	id S1754105AbZLDCAa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 21:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZLDCA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 20:53:11 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:57005 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754800AbZLDBxK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 20:53:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=T7hm+o9RwoWvA5LxdbElEFMRnhaEzrMLiiPMjAexUVXsSLN9hKsvGfwmRualdX1YwP
-         SpiRBKeUJeZvXCsO2o1qBHhpFhv2YDnhNuAk3wJpY3dmh3p9YMGi9eimhYLB+H/C7jJh
-         5gPeWbnCzRSsySuQ2FXirXnkIIX6QYOozNF/o=
-Date: Thu, 3 Dec 2009 20:53:11 -0500
-From: Michael Gilbert <michael.s.gilbert@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: CVE-2004-2135 and CVE-2004-2136
-Message-Id: <20091203205311.9a9478e4.michael.s.gilbert@gmail.com>
-In-Reply-To: <20091203165321.GB6416@tatooine.rebelbase.local>
-References: <20091202094539.c1184899.michael.s.gilbert@gmail.com>
-	<20091203165321.GB6416@tatooine.rebelbase.local>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Dec 2009 21:00:29 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57111 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751906AbZLDCA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 21:00:28 -0500
+Date: Thu, 3 Dec 2009 17:58:27 -0800
+From: Greg KH <gregkh@suse.de>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] UBI: flush wl before clearing update marker
+Message-ID: <20091204015827.GB2589@suse.de>
+References: <1259736523-13091-1-git-send-email-Artem.Bityutskiy@nokia.com> <20091202154223.GA5895@suse.de> <1259823705.10805.49.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259823705.10805.49.camel@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Dec 2009 17:53:21 +0100 markus reichelt wrote:
-> * Michael Gilbert wrote:
+On Thu, Dec 03, 2009 at 09:01:45AM +0200, Artem Bityutskiy wrote:
+> On Wed, 2009-12-02 at 16:42 +0100, ext Greg KH wrote:
+> > On Wed, Dec 02, 2009 at 08:48:43AM +0200, Artem Bityutskiy wrote:
+> > > From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+> > > 
+> > > ubiupdatevol -t does the following:
+> > > - ubi_start_update()
+> > >   - set_update_marker()
+> > >   - for all LEBs ubi_eba_unmap_leb()
+> > >   - clear_update_marker()
+> > >   - ubi_wl_flush()
+> > > 
+> > > ubi_wl_flush() physically erases all PEB, once it returns all PEBs are
+> > > empty. clear_update_marker() has the update marker written after return.
+> > > If there is a power cut between the last two functions then the UBI
+> > > volume has no longer the "update" marker set and may have some valid
+> > > LEBs while some of them may be gone.
+> > > If that volume in question happens to be a UBIFS volume, then mount
+> > > will fail with
+> > > 
+> > > |UBIFS error (pid 1361): ubifs_read_node: bad node type (255 but expected 6)
+> > > |UBIFS error (pid 1361): ubifs_read_node: bad node at LEB 0:0
+> > > |Not a node, first 24 bytes:
+> > > |00000000: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+> > > 
+> > > if there is at least one valid LEB and the wear-leveling worker managed
+> > > to clear LEB 0.
+> > > 
+> > > The patch waits for the wl worker to finish prior clearing the "update"
+> > > marker on flash. The two new LEB which are scheduled for erasing after
+> > > clear_update_marker() should not matter because they are only visible to
+> > > UBI.
+> > > 
+> > > Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+> > > Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> > > Cc: stable@kernel.org
+> > > Cc: linux-kernel@vger.kernel.org
+> > > ---
+> > >  drivers/mtd/ubi/upd.c |   20 +++++++++++---------
+> > 
+> > 
+> > I'm not the mtd or ubi maintainer, so why did you send this to me?
 > 
-> > CVE-2004-2135 [0] and CVE-2004-2136 [1] were disclosed over five
-> > years ago; however, i have been unable to verify whether they have
-> > been fixed or not in the latest kernels.
-> 
-> They are not, and both CVE-entries are still marked as 'candidate'.
-> Add the fact that (crypto)loop code has had a poor relation with the
-> vanilla kernel in favour of dm-crypt, and is also unmaintained,
-> nobody really cares.
-> 
-> Did you receive any other replies to your mail? Just curious.
+> Sorry, I thought the protocol to get to -stable is to send to you and CC
+> stable. I maintain UBI and just wanted to send this patch to -stable. I
+> googled a bit and could not find the right way.
 
-None so far.  Would it make sense to remove cryptoloop at this point
-since it obviously has some major design/implementation weaknesses?
-Apropos, there are two other full-disk encryption options (dm-crypt and
-loop-aes) that, importantly, are not affected by these issues. Is it
-really a good idea to have three different implementations of
-essentially the same functionality?
+Look in the Documentation/stable_kernel_rules.txt that shows all you
+need is the Cc: stable@kernel.org section in the Signed-off-by area like
+you did.
 
-Best wishes,
-Mike
+So when this goes into Linus's tree, I'll automatically get it in the
+right inbox and know to apply it to the -stable tree.
+
+thanks,
+
+greg k-h
