@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZLDSzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757161AbZLDTAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbZLDSzg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 13:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZLDSze
+	id S1757161AbZLDTAN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 14:00:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbZLDTAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 13:55:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49198 "EHLO mx1.redhat.com"
+	Fri, 4 Dec 2009 14:00:11 -0500
+Received: from swm.pp.se ([212.247.200.143]:54882 "EHLO uplift.swm.pp.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752442AbZLDSzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 13:55:33 -0500
-Subject: Re: [RFC PATCH 2/6] pipes: use alloc-file instead of duplicating
- code
-From: Eric Paris <eparis@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, jmorris@namei.org,
-       npiggin@suse.de, zohar@us.ibm.com, jack@suse.cz, jmalicki@metacarta.com,
-       dsmith@redhat.com, serue@us.ibm.com, hch@lst.de, john@johnmccutchan.com,
-       rlove@rlove.org, ebiederm@xmission.com, heiko.carstens@de.ibm.com,
-       penguin-kernel@I-love.SAKURA.ne.jp, mszeredi@suse.cz,
-       jens.axboe@oracle.com, akpm@linux-foundation.org, matthew@wil.cx,
-       hugh.dickins@tiscali.co.uk, kamezawa.hiroyu@jp.fujitsu.com,
-       nishimura@mxp.nes.nec.co.jp, davem@davemloft.net, arnd@arndb.de,
-       eric.dumazet@gmail.com
-In-Reply-To: <E1NGRLH-0004fr-Gb@pomaz-ex.szeredi.hu>
-References: <20091203195851.8925.30926.stgit@paris.rdu.redhat.com>
-	 <20091203195902.8925.2985.stgit@paris.rdu.redhat.com>
-	 <E1NGRLH-0004fr-Gb@pomaz-ex.szeredi.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 13:54:43 -0500
-Message-Id: <1259952883.2722.26.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1753563AbZLDTAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 14:00:09 -0500
+Date: Fri, 4 Dec 2009 20:00:15 +0100 (CET)
+From: Mikael Abrahamsson <swmike@swm.pp.se>
+To: =?ISO-8859-15?Q?Kristleifur_Da=F0ason?= <kristleifur@gmail.com>
+cc: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
+In-Reply-To: <73e903670912031336n749c0bb4l5f2e46d5347e5875@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0912041952370.23464@uplift.swm.pp.se>
+References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca>  <4AA7F965.6020408@garzik.org> <4AF0CFE1.8050407@tomt.net>  <alpine.DEB.1.10.0912032214040.23464@uplift.swm.pp.se>
+ <73e903670912031336n749c0bb4l5f2e46d5347e5875@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Organization: People's Front Against WWW
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-137064504-1125956565-1259953215=:23464"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-04 at 07:08 +0100, Miklos Szeredi wrote:
-> On Thu, 03 Dec 2009, Eric Paris wrote:
-> > The pipe code duplicates the functionality of alloc-file and init-file.  Use
-> > the generic vfs functions instead of duplicating code.
-> > 
-> > Signed-off-by: Eric Paris <eparis@redhat.com>
-> 
-> Acked-by: Miklos Szeredi <miklos@szeredi.hu>
-> 
-> As a side note: I wonder why we aren't passing a "struct path" to
-> alloc_file() and why are the refcount rules wrt. dentries/vfsmounts so
-> weird?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-It's probably because of the slightly weird refcnt rules that it asks
-for the dentry and vfsmount separately rather than as a struct path.
-The rules make perfect sense if you consider
+---137064504-1125956565-1259953215=:23464
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-d_alloc()  <-- reference on dentry
-d_instantiate()
-alloc_file() <-- reference on vfsmount
-  so here file->f_path() is all good.
+On Thu, 3 Dec 2009, Kristleifur Daðason wrote:
 
-Which a number of callers user.  They make less sense when you consider
-something that is not allocating the dentry right there (like this path)
+> On Thu, Dec 3, 2009 at 9:17 PM, Mikael Abrahamsson <swmike@swm.pp.se> wrote:
+>>
+>> On Wed, 4 Nov 2009, Andre Tomt wrote:
+>>
+>>> Identical issues with the AOC-SASLP-MV8 card with 8 Seagate Barracuda
+>>> 7200.11 1.5TB drives using the mvsas driver. Creating a md raid array seems
+>>> to trigger it nearly instantly, however other loads do not trigger it
+>>> as fast (if at all, only tested briefly with paralell dd).
+>>
+>> Would just like to chime in with a "me too" on this. I've tried both ubuntu
+>> 9.10 kernel (2.6.31) and their 10.04 pre-alpha (guess it's 2.6.32-rc8) and
+>> mvsas + AOC-SASLP-MV8 is pretty much unusable. If I start md creation it
+>> stalls immediately and gets nowhere, last time I tried it md claimed it had
+>> written 160 blocks then it stalled (all drive LEDs on the controller is
+>> constantly lit).
+>>
+>> If I boot without drives and then hot-plug the drives, it immediately
+>> oops:es.
+>>
+>> Any code/fixes I can try, this is a lab machine so I can easily do whatever
+>> needed with it...
+>>
+>
+> Hi,
+>
+> I had a bit of trouble finding some patches that were released by Andy Yan at
+> Marvell on November 9th, so here is a link:
+>
+> 1/7: http://kerneltrap.org/mailarchive/linux-scsi/2009/11/9/6558753
 
-dget(dentry);  <-- reference here
-alloc_file() <-- reference on vfsmount;
-  so here file->f_path is all good.
+They applied cleanly to the ubuntu 10.04 2.6.32 kernel source package but 
+when compiling I received an error about "sas_change_queue_depth" having 
+wrong amount of arguments:
 
-It would be a reasonable interface if it took a struct path and then
-took a reference on the struct path.  The second case would look more
-clean, but the first case would turn into
+-		sas_change_queue_depth(sdev, MVS_QUEUE_SIZE);
++		sas_change_queue_depth(sdev, MVS_QUEUE_SIZE, SCSI_QDEPTH_DEFAULT);
 
-d_alloc()
-d_instantiate()
-alloc_file()
-d_put() /* matches d_alloc() */
+So I removed that change and then things compiled, booted properly, but 
+just froze when I plugged in the disks (including some garbled graphics on 
+my X screen). That patch set doesn't seem to be ok.
 
-and
-
-alloc_file()
-
-Is this better?  I'll gladly do it if other think so it makes more
-sense....
-
--Eric
-
+-- 
+Mikael Abrahamsson    email: swmike@swm.pp.se
+---137064504-1125956565-1259953215=:23464--
