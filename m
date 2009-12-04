@@ -1,147 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZLDImT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZLDImt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbZLDImT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 03:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZLDImS
+	id S1755256AbZLDImt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 03:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbZLDIms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 03:42:18 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50680 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754630AbZLDImR convert rfc822-to-8bit (ORCPT
+	Fri, 4 Dec 2009 03:42:48 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58918 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754764AbZLDImr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 03:42:17 -0500
+	Fri, 4 Dec 2009 03:42:47 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/7] Introduce __page_check_address
+Subject: [PATCH 3/7] VM_LOCKED check don't need pte lock
 Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
        Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
        Larry Woodman <lwoodman@redhat.com>
 In-Reply-To: <20091204173233.5891.A69D9226@jp.fujitsu.com>
 References: <20091204173233.5891.A69D9226@jp.fujitsu.com>
-Message-Id: <20091204174139.5897.A69D9226@jp.fujitsu.com>
+Message-Id: <20091204174217.589A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 8BIT
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri,  4 Dec 2009 17:42:15 +0900 (JST)
+Date: Fri,  4 Dec 2009 17:42:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 381108e1ff6309f45f45a67acf2a1dd66e41df4f Mon Sep 17 00:00:00 2001
+>From 24f910b1ac966c21ea5aab825d1f26815b760304 Mon Sep 17 00:00:00 2001
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Thu, 3 Dec 2009 15:01:42 +0900
-Subject: [PATCH 2/7] Introduce __page_check_address
+Date: Thu, 3 Dec 2009 16:06:47 +0900
+Subject: [PATCH 3/7] VM_LOCKED check don't need pte lock
 
-page_check_address() need to take ptelock. but it might be contended.
-Then we need trylock version and this patch introduce new helper function.
+Currently, page_referenced_one() check VM_LOCKED after taking ptelock.
+But it's unnecessary. We can check VM_LOCKED before to take lock.
 
-it will be used latter patch.
+This patch does it.
 
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- mm/rmap.c |   62 ++++++++++++++++++++++++++++++++++++++++++++++++------------
- 1 files changed, 49 insertions(+), 13 deletions(-)
+ mm/rmap.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/mm/rmap.c b/mm/rmap.c
-index 278cd27..1b50425 100644
+index 1b50425..fb0983a 100644
 --- a/mm/rmap.c
 +++ b/mm/rmap.c
-@@ -268,44 +268,80 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
-  * the page table lock when the pte is not present (helpful when reclaiming
-  * highly shared pages).
-  *
-- * On success returns with pte mapped and locked.
-+ * if @noblock is true, page_check_address may return -EAGAIN if lock is
-+ * contended.
-+ *
-+ * Returns valid pte pointer if success.
-+ * Returns -EFAULT if address seems invalid.
-+ * Returns -EAGAIN if trylock failed.
-  */
--pte_t *page_check_address(struct page *page, struct mm_struct *mm,
--			  unsigned long address, spinlock_t **ptlp, int sync)
-+static pte_t *__page_check_address(struct page *page, struct mm_struct *mm,
-+				   unsigned long address, spinlock_t **ptlp,
-+				   int sync, int noblock)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
+@@ -383,21 +383,21 @@ int page_referenced_one(struct page *page, struct vm_area_struct *vma,
  	spinlock_t *ptl;
-+	int err = -EFAULT;
+ 	int referenced = 0;
  
- 	pgd = pgd_offset(mm, address);
- 	if (!pgd_present(*pgd))
--		return NULL;
+-	pte = page_check_address(page, mm, address, &ptl, 0);
+-	if (!pte)
+-		goto out;
+-
+ 	/*
+ 	 * Don't want to elevate referenced for mlocked page that gets this far,
+ 	 * in order that it progresses to try_to_unmap and is moved to the
+ 	 * unevictable list.
+ 	 */
+ 	if (vma->vm_flags & VM_LOCKED) {
+-		*mapcount = 1;	/* break early from loop */
++		*mapcount = 0;	/* break early from loop */
+ 		*vm_flags |= VM_LOCKED;
+-		goto out_unmap;
 +		goto out;
- 
- 	pud = pud_offset(pgd, address);
- 	if (!pud_present(*pud))
--		return NULL;
-+		goto out;
- 
- 	pmd = pmd_offset(pud, address);
- 	if (!pmd_present(*pmd))
--		return NULL;
-+		goto out;
- 
- 	pte = pte_offset_map(pmd, address);
- 	/* Make a quick check before getting the lock */
--	if (!sync && !pte_present(*pte)) {
--		pte_unmap(pte);
--		return NULL;
--	}
-+	if (!sync && !pte_present(*pte))
-+		goto out_unmap;
- 
- 	ptl = pte_lockptr(mm, pmd);
--	spin_lock(ptl);
-+	if (noblock) {
-+		if (!spin_trylock(ptl)) {
-+			err = -EAGAIN;
-+			goto out_unmap;
-+		}
-+	} else
-+		spin_lock(ptl);
-+
- 	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
- 		*ptlp = ptl;
- 		return pte;
  	}
--	pte_unmap_unlock(pte, ptl);
--	return NULL;
-+
-+	spin_unlock(ptl);
-+ out_unmap:
-+	pte_unmap(pte);
-+ out:
-+	return ERR_PTR(err);
-+}
-+
-+/*
-+ * Check that @page is mapped at @address into @mm.
-+ *
-+ * If @sync is false, page_check_address may perform a racy check to avoid
-+ * the page table lock when the pte is not present (helpful when reclaiming
-+ * highly shared pages).
-+ *
-+ * On success returns with pte mapped and locked.
-+ */
-+pte_t *page_check_address(struct page *page, struct mm_struct *mm,
-+			  unsigned long address, spinlock_t **ptlp, int sync)
-+{
-+	pte_t *pte;
-+
-+	pte = __page_check_address(page, mm, address, ptlp, sync, 0);
-+	if (IS_ERR(pte))
-+		return NULL;
-+	return pte;
- }
  
- /**
++	pte = page_check_address(page, mm, address, &ptl, 0);
++	if (!pte)
++		goto out;
++
+ 	if (ptep_clear_flush_young_notify(vma, address, pte)) {
+ 		/*
+ 		 * Don't treat a reference through a sequentially read
+@@ -416,7 +416,6 @@ int page_referenced_one(struct page *page, struct vm_area_struct *vma,
+ 			rwsem_is_locked(&mm->mmap_sem))
+ 		referenced++;
+ 
+-out_unmap:
+ 	(*mapcount)--;
+ 	pte_unmap_unlock(pte, ptl);
+ 
 -- 
 1.6.5.2
 
