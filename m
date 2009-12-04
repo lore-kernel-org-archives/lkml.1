@@ -1,75 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZLDJFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZLDJKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZLDJFe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 04:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbZLDJFb
+	id S1755482AbZLDJKi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 04:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZLDJKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 04:05:31 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:55959 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754721AbZLDJFZ (ORCPT
+	Fri, 4 Dec 2009 04:10:37 -0500
+Received: from mga11.intel.com ([192.55.52.93]:60005 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755152AbZLDJKe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 04:05:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OH7NsQrZpWQAmiOjSRMDvfccdsSa5pkeV/HZidFfSrYnJPiOydNKv837nKmTp/Dwu/
-         582K25fHxLDI+NV9IcTMrF/aoqXl6qM0cjQ5SoRNbmiWGwInLCnpUhfpHNKw0B2utokC
-         w6zkUsLb6cuEVfaG96J1btZ7QSvQ0YnV3SHWQ=
-Date: Fri, 4 Dec 2009 09:05:25 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Caleb Cushing <xenoterracide@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: large packet loss take2 2.6.31.x
-Message-ID: <20091204090524.GB6478@ff.dom.local>
-References: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com> <20091124111946.GA7883@ff.dom.local> <81bfc67a0911250606k1ec76354n217da9ca20b3517c@mail.gmail.com> <20091125191105.GA3167@ami.dom.local> <81bfc67a0911271007o1fb8f8c2vdd36e8585280e4da@mail.gmail.com> <20091127213640.GA2611@ami.dom.local> <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com> <20091127224206.GA3350@ami.dom.local> <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
+	Fri, 4 Dec 2009 04:10:34 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,340,1257148800"; 
+   d="scan'208";a="519727661"
+From: "Wang, Shane" <shane.wang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>
+Date: Fri, 4 Dec 2009 17:07:51 +0800
+Subject: RE: [PATCH] intel_txt: add s3 userspace memory integrity
+	verification
+Thread-Topic: [PATCH] intel_txt: add s3 userspace memory integrity
+	verification
+Thread-Index: AcpFJKulI4VaMumtT6yJkLui35CqzARsdbpw
+Message-ID: <037F493892196B458CD3E193E8EBAD4F01F03277DF@pdsmsx502.ccr.corp.intel.com>
+References: <4A9CE0B2.5060608@intel.com> <4ABF2B50.6070106@intel.com>
+ <20091004185801.GC1378@ucw.cz>
+In-Reply-To: <20091004185801.GC1378@ucw.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 08:49:17PM -0500, Caleb Cushing wrote:
-> >
-> > modprobe -r e1000e
-> > modprobe e1000e IntMode=0
-> >
-> > Jarek P.
-> >
-> tested on kernel behaving properly no change. what do these modes do?
+(Sorry for so late response)
 
-e1000e by default uses MSI-X interrupts if possible, which are most
-modern. If there are some problems IntMode lets us try older types,
-so I rather meant it for the misbehaving kernel.
+Thanks.
+Shane
+
+Pavel Machek wrote:
+> On Sun 2009-09-27 17:07:28, Shane Wang wrote:
+>> This patch added verification for userspace memory integrity after
+>> s3 resume. Integrity verification for other memory (say kernel
+>> itself) has been done by tboot. 
+>> 
+> 
+> AFAICT, it verifies userspace _and_ kernel memory, that's why it does
+> magic stack switching. Why not verify everything in tboot?
+Because tboot only can access <4G mem without paging. And the memory is sparse. We can't/needn't set unlimited sparse mem ranges to the MAC array with limited elements in the shared page, in order to pass the parameters.
+On the other hand, it is reasonable for tboot to verify kernel, and kernel to verify userspace memory.
+
+>> @@ -168,6 +174,80 @@ static void tboot_create_trampoline(void  		   
+>>  map_base, map_size); }
+>> 
+>> +static vmac_t mem_mac;
+>> +static struct crypto_hash *tfm;
+> 
+> Could these be automatic?
+Maybe, but I don't wish other files can access the variables and take tfm as an example, I'd like to allocate memory to it once and then initialize it once in order to avoid impact of memory change to MACing.
 
 > 
-> I've installed a 10/100 linksys nic into my system. it appears to be
-> working fine on a bad kernel (2.6.32-final tested and for sure
-> verified). I've only tested it once though. my laptop died so direct
-> connection between that won't work. can I test between these 2 nics?
-> (suppose no real reason why not) but what should I proceed with at
-> this point?
+>> +	for_each_online_pgdat(pgdat) {
+>> +		for (i = 0, pfn = pgdat->node_start_pfn;
+>> +			i < pgdat->node_spanned_pages;
+>> +			i++, pfn = pgdat->node_start_pfn + i) {
+>> +
+>> +			if (!pfn_valid(pfn) || !page_is_ram(pfn))
+>> +				continue;
+>> +
+>> +			page = pfn_to_page(pfn);
+>> +			paddr = page_to_phys(page);
+>> +
+>> +			/* If pg will be MACed by tboot, no need to MAC here */
+>> +			for (j = 0; j < tboot->num_mac_regions; j++) {
+>> +				rstart = tboot->mac_regions[j].start;
+>> +				rend = rstart +	tboot->mac_regions[j].size;
+>> +				if (((paddr + PAGE_SIZE) <= rstart)
+>> +					|| (rend <= paddr))
+>> +					continue;
+>> +				break;
+>> +			}
+>> +
+>> +			if (j == tboot->num_mac_regions) {
+>> +				sg_set_page(sg, page, PAGE_SIZE, 0);
+>> +				ret = crypto_hash_update(&desc, sg, PAGE_SIZE); +				if (ret)
+>> +					return ret;
+>> +			}
+>> +		}
+>> +	}
+> 
+> This looks over all memory, afaict. Does it correctly handle highmem?
+It looks over all online memory, and should handle highmem since highmem has been added into the online nodes.
+refer to show_mem() in lib/show_mem.c.
 
-If you have it fixed easily with another nic you should first
-reconsider if this debugging is worth of your time. Of course it's
-could be very useful for the kernel (unless it's a hardware fault),
-but on the other hand this is a popular nic, tested by many people.
+> 
+>> @@ -197,6 +277,16 @@ static int tboot_setup_sleep(void)
+>>  	/* kernel code + data + bss */
+>>  	add_mac_region(virt_to_phys(_text), _end - _text);
+>> 
+>> +	/* stack */
+>> +	add_mac_region(virt_to_phys(current_thread_info()), THREAD_SIZE); +
+>> +	/* MAC userspace memory not handled by tboot */
+>> +	get_random_bytes(tboot->s3_key, sizeof(tboot->s3_key));
+>> +	if (tboot_gen_mem_integrity(tboot->s3_key, &mem_mac)) {
+>> +		panic("tboot: vmac generation failed\n");
+>> +		return -1;
+>> +	}
+>> +
+>>  	tboot->acpi_sinfo.kernel_s3_resume_vector = acpi_wakeup_address;
+>> 
+>>  	return 0;
+>> @@ -212,6 +302,68 @@ static int tboot_setup_sleep(void)  }
+>> 
+>>  #endif
+>> +
+>> +static struct thread_info *low_ti, *current_ti;
+>> +
+>> +static void tboot_do_stack_switch(struct thread_info *new_ti,
+>> +				struct thread_info *old_ti)
+>> +{
+>> +	memcpy(new_ti, old_ti, THREAD_SIZE);
+> 
+> Memcpy does some rather odd stuff with fpu in some
+> configs. Like... you may get copy of thread info with fpu marked
+> enabled, while it really is disabled when memcpy exits.
+We gave up thread_info but stack, like interrupt stack and call.
 
-Then, if you find time for such testing, I'd suggest to try mainly
-2.6.32 - I'm not sure if you tried it with e1000e. So if after longer
-testing both linksys and e1000e you find only the latter has problems
-I think you should open the new report in bugzilla for e1000e and
-submit things like: dmesg, .config, lspci -v from 2.6.32, and if
-possible the same things from the last kernel which didn't have these
-problems. Add some references to previous attempts in bugzilla and
-this thread. (Btw, any reproducible tests should be fine.)
+> 
+>> +#ifdef CONFIG_X86_32
+>> +	asm volatile (
+>> +		" and %0, %%esp;        "
+>> +		" add %1, %%esp;        "
+>> +		: : "i" (THREAD_SIZE - 1), "r" (new_ti));
+>> +#else
+>> +	asm volatile (
+>> +		" and %0, %%rsp;        "
+>> +		" add %1, %%rsp;        "
+>> +		: : "i" (THREAD_SIZE - 1), "r" (new_ti));
+>> +	percpu_write(kernel_stack, (unsigned long)new_ti -
+>> +				KERNEL_STACK_OFFSET + THREAD_SIZE);
+>> +#endif
+>> +	current->stack = new_ti;
+>> +}
+> 
+> This is pretty subtle&fragile -- see memcpy above. Why is it needed?
+Gave it up.
 
-Jarek P.
+> 
+>> +	current_ti = current_thread_info();
+>> +
+>> +	/* If thread info is above 4G, then switch stack */
+>> +	if (!((PFN_PHYS(PFN_DOWN(virt_to_phys(current_ti)))
+>> +		+ (PFN_UP(THREAD_SIZE) << PAGE_SHIFT))
+>> +		& 0xffffffff00000000ULL))
+>> +		return;
+> 
+> How can thread info be above 4G on 32-bit?
+OK, I fixed it.
+
+> 
+> Why does 4G limit matter on 64-bit?
+tboot can't access >4G, see above.
+
+> 
+>> +void tboot_sx_resume(void)
+>> +{
+>> +	vmac_t mac;
+>> +
+>> +	if (!tboot_enabled())
+>> +		return;
+>> +
+>> +	if (tboot_gen_mem_integrity(tboot->s3_key, &mac))
+>> +		panic("tboot: vmac generation failed\n");
+>> +	else if (mac != mem_mac)
+>> +		panic("tboot: memory integrity was lost on resume\n"); +	else
+>> +		pr_info("memory integrity OK\n");
+> 
+> So I corrupt memory, but also corrupt tboot_enabled() to return 0....
+> 
+> And... does panic kill the machine quickly enough that no 'bad stuff'
+> happens? (Whats bad stuff in this context, anyway?).
+> 
+>> @@ -244,7 +245,10 @@ static int acpi_suspend_enter(suspend_st 
+>> break; 
+>> 
+>>  	case ACPI_STATE_S3:
+>> +		tboot_switch_stack();
+>>  		do_suspend_lowlevel();
+>> +		tboot_sx_resume();
+>> +		tboot_restore_stack();
+>>  		break;
+>>  	}
+>> 
+> 
+> Did you audit all code before sx_resume()? If it trusts  data not
+> checksummed by tboot, attacker may be able to hijack code execution
+> and bypass your protection, no?
+Yes, kernel code is audited by tboot before resume.
+
+> 
+> What about S1?
+> 
+> And what about hibernation, btw
+No need memory MACing for S1/S4, it is another way in the tboot code.
+> 									Pavel
+
