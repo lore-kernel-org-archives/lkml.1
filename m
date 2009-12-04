@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZLDSgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZLDSne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbZLDSgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 13:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZLDSgR
+	id S1755437AbZLDSne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 13:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZLDSne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 13:36:17 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:44493 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753245AbZLDSgR convert rfc822-to-8bit (ORCPT
+	Fri, 4 Dec 2009 13:43:34 -0500
+Received: from aa012msr.fastwebnet.it ([85.18.95.72]:48268 "EHLO
+	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbZLDSnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 13:36:17 -0500
+	Fri, 4 Dec 2009 13:43:33 -0500
+X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Dec 2009 13:43:33 EST
+Message-ID: <23753252.369201259951904278.JavaMail.defaultUser@defaultHost>
+Date: Fri, 4 Dec 2009 19:38:24 +0100 (CET)
+From: "matteo_cortese@fastwebnet.it" <matteo_cortese@fastwebnet.it>
+Reply-To: "matteo_cortese@fastwebnet.it" <matteo_cortese@fastwebnet.it>
+To: linux-kbuild@vger.kernel.org
+Subject: [PATCH] make gconfig: fix the "(NEW)" string
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <20091204173902.GK2937@zod.rchland.ibm.com>
-References: <20091202091951.5ec6bb83@hyperion.delvare> <1259894454.2076.1246.camel@pasglop> 
-	<20091204103434.0a754925@hyperion.delvare> <1259920775.2076.1273.camel@pasglop> 
-	<1259947019.22783.116.camel@Joe-Laptop.home> <20091204173902.GK2937@zod.rchland.ibm.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 4 Dec 2009 11:36:03 -0700
-X-Google-Sender-Auth: 3c3369e99e653b34
-Message-ID: <fa686aa40912041036q64c70368oc75e702b819378cd@mail.gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: Add PowerPC patterns
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Joe Perches <joe@perches.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>, Colin Leroy <colin@colino.net>,
-       Paul Mackerras <paulus@samba.org>, Jean Delvare <khali@linux-fr.org>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 20.142.116.34
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 4, 2009 at 10:39 AM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> On Fri, Dec 04, 2009 at 09:16:59AM -0800, Joe Perches wrote:
->> LINUX FOR POWERPC EMBEDDED PPC4XX
->> M:    Josh Boyer <jwboyer@linux.vnet.ibm.com>
->>@@ -3221,6 +3228,8 @@ W:       http://www.penguinppc.org/
->> L:    linuxppc-dev@ozlabs.org
->> T:    git git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
->> S:    Maintained
->>+F:    arch/powerpc/platforms/40x/
->>+F:    arch/powerpc/platforms/44x/
->
-> This is mostly complete.  There are a few files under arch/powerpc/sysdev/, and
-> arch/powerpc/boot/ as well, but I don't think they're entirely necessary.
->
-> For the 4xx parts:
->
-> Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+The string "(NEW)" is added to those options that are not present in the
+ current config file, thus looking as new features. Alas, the logic seem
+s to be inverted.
+ 
+
+Signed-off-by: Matteo Cortese <matteo_cortese@fastwebnet.it>
+------
+
+diff -u linux-source-2.6.26-old/scripts/kconfig/gconf.c linux-source-2.6
+.26/scripts/kconfig/gconf.c
+--- linux-source-2.6.26-old/scripts/kconfig/gconf.c	2008-07-13 21:51:29.
+000000000 +0000
++++ linux-source-2.6.26/scripts/kconfig/gconf.c	2009-01-03 00:52:57.0000
+00000 +0000
+@@ -1174,7 +1174,7 @@
+ 
+ 	row[COL_OPTION] =
+ 	    g_strdup_printf("%s %s", _(menu_get_prompt(menu)),
+-			    sym && sym_has_value(sym) ? "(NEW)" : "");
++			    sym && !sym_has_value(sym) ? "(NEW)" : "");
+ 
+ 	if (show_all && !menu_is_visible(menu))
+ 		row[COL_COLOR] = g_strdup("DarkGray");
+
