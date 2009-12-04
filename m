@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751469AbZLDFZC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbZLDFWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751469AbZLDFZC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 00:25:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZLDFZA
+	id S1751448AbZLDFWV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 00:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZLDFWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 00:25:00 -0500
-Received: from cantor.suse.de ([195.135.220.2]:57595 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751081AbZLDFY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 00:24:59 -0500
-Date: Thu, 3 Dec 2009 21:20:56 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Amit Kucheria <amit.kucheria@verdurent.com>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>, rui.zhang@intel.com,
-       alan@linux.intel.com, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 2/2] als: add unique device-ids to the als device class
-Message-ID: <20091204052056.GA16660@suse.de>
-References: <1259237081-4403-1-git-send-email-amit.kucheria@verdurent.com> <1259237186-5459-1-git-send-email-amit.kucheria@verdurent.com> <20091126160713.5e19eb04@hyperion.delvare> <4B0EB891.4010309@cam.ac.uk> <20091126180646.GA9059@suse.de> <4B0ECB84.9010503@cam.ac.uk>
+	Fri, 4 Dec 2009 00:22:20 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:51301 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZLDFWT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 00:22:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=OAqkp7/JHXLC2NfHC+HoIXpaEvaFuqVUMgzSuAKoE4yVnUDyBSLzvCwlMwD7AB4nt+
+         P5GtuWlHVr33VidcQQol4qSh+lCSj7hV5ivS3y3849EqKXDddSicxOObKZLZ/F5oZoki
+         Q16IFOvq8jf1m5NI/KpXmfjtO+os7dpcwEyF4=
+Message-ID: <4B189C94.4080404@gmail.com>
+Date: Thu, 03 Dec 2009 21:22:28 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B0ECB84.9010503@cam.ac.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: Miles Lane <miles.lane@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ath9k-devel@venema.h4ckr.net,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [ath9k-devel] BUG kmalloc-8192: Poison overwritten
+References: <dd18b0c30912021427x4d1d952tcdd98bb9d816b67c@mail.gmail.com> 	<43e72e890912021516k736db118j217dc92496db8f19@mail.gmail.com> 	<4B182F79.7060103@gmail.com> <43e72e890912031345m3f5adb9nca754e33a858c923@mail.gmail.com>
+In-Reply-To: <43e72e890912031345m3f5adb9nca754e33a858c923@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 26, 2009 at 06:40:04PM +0000, Jonathan Cameron wrote:
-> Greg KH wrote:
-> > On Thu, Nov 26, 2009 at 05:19:13PM +0000, Jonathan Cameron wrote:
-> >>> That being said... If we want user-space to know what device is there,
-> >>> we may want to still let drivers pass a name string to
-> >>> als_device_register() and let the ALS core create a "name" sysfs
-> >>> attribute returning the string in question. This would be much lighter
-> >>> (for individual drivers) than the previous situation, as the string in
-> >>> question would be a constant (e.g. "TSL2550".) Opinions?
-> >>>
-> >> Makes sense given we want all drivers to support some form of identification.
-> >> We could do it by stating they will all have that attribute, but given it's constant
-> >> will save repetition to put it in the driver. Conversely it might complicate the handling
-> >> of subsequent attribute_groups so I'd probably favour adding relevant documentation lines
-> >> and leaving it up to the drivers to implement this attribute.
-> >>
-> >> Thus we'd require (within reason) all drivers to have illuminance0 and name.
-> > 
-> > Why have a name attribute when you can just use the name of the device
-> > itself instead?  Isn't that what it is there for?
-> Could do, though I'm not entirely sure all bus types are implementing a name
-> attribute (I may be wrong, but I don't think spi does for example though it might
-> have gone in with the recent device table stuff).  We could just specify that it
-> should be present for the device.
+On 12/03/09 13:45, Luis R. Rodriguez wrote:
 
-ah, sorry, I was thinking of the name of the actual device, which is the
-bus id here.
 
-Nevermind, I'll go back to feeling stupid...
+> I think waiting to be able to reproduce is best, and appreciate your
+> patience on this. Maybe Miles Lanes also cannot reproduce easily and
+> that may explain why he hasn't replied.
+>
+>    Luis
+>
 
-greg k-h
+o.k., did some more experimenting
+but came up with something other than
+what I was hoping for(something with s2ram),
+Anyways the two patches applied clean,
+I'll just run  the system with these in,
+and if somebody comes along with more expertise
+on this I can try their advice(or if I somehow find
+a way to reproduce this).
+
+Justin P. Mattock
