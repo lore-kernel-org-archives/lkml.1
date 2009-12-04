@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbZLDRgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932350AbZLDRjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932353AbZLDRgh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 12:36:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932337AbZLDRgc
+	id S932350AbZLDRjJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 12:39:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932258AbZLDRjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 12:36:32 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:1736 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932336AbZLDRgb (ORCPT
+	Fri, 4 Dec 2009 12:39:08 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:55068 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932254AbZLDRjH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 12:36:31 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: djwong@us.ibm.com
-Subject: Re: [PATCH v2 1/2] acpi: support IBM SMBus CMI devices
-Date: Fri, 4 Dec 2009 10:36:35 -0700
-User-Agent: KMail/1.9.10
-Cc: lenb@kernel.org, Crane Cai <crane.cai@amd.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>
-References: <20091021173733.GN26149@tux1.beaverton.ibm.com> <20091027183619.16b0b952@hyperion.delvare> <20091204170621.GA10356@tux1.beaverton.ibm.com>
-In-Reply-To: <20091204170621.GA10356@tux1.beaverton.ibm.com>
+	Fri, 4 Dec 2009 12:39:07 -0500
+Date: Fri, 4 Dec 2009 12:39:02 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>, Colin Leroy <colin@colino.net>,
+       Paul Mackerras <paulus@samba.org>, Jean Delvare <khali@linux-fr.org>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH] MAINTAINERS: Add PowerPC patterns
+Message-ID: <20091204173902.GK2937@zod.rchland.ibm.com>
+References: <20091202091951.5ec6bb83@hyperion.delvare> <1259894454.2076.1246.camel@pasglop> <20091204103434.0a754925@hyperion.delvare> <1259920775.2076.1273.camel@pasglop> <1259947019.22783.116.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200912041036.36686.bjorn.helgaas@hp.com>
+In-Reply-To: <1259947019.22783.116.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 December 2009 10:06:21 am Darrick J. Wong wrote:
-> On Tue, Oct 27, 2009 at 06:36:19PM +0100, Jean Delvare wrote:
-> > On Tue, 27 Oct 2009 10:30:01 -0700, Darrick J. Wong wrote:
-> > > On Tue, Oct 27, 2009 at 06:03:32PM +0100, Jean Delvare wrote:
-> > > 
-> > > > I'm only half please with this. You change the function named, but it
-> > > > doesn't follow the calling convention of acpi_dock_match(), which is a
-> > > > little confusing.
-> > > > 
-> > > > Anyway, I will need an ack from the ACPI people before I can pick this
-> > > > patch. Or maybe they should even push it upstream themselves.
-> 
-> Len/Bjorn: Any opinion on this ACPI quirk patch to make i2c-scmi work on IBM
-> systems?  I think the i2c-scmi part is in Jean's tree, but I still need this
-> second patch to the ACPI code itself.  Did you pick it up, or should I resend?
+On Fri, Dec 04, 2009 at 09:16:59AM -0800, Joe Perches wrote:
+> LINUX FOR POWERPC EMBEDDED PPC4XX
+> M:	Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>@@ -3221,6 +3228,8 @@ W:	http://www.penguinppc.org/
+> L:	linuxppc-dev@ozlabs.org
+> T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
+> S:	Maintained
+>+F:	arch/powerpc/platforms/40x/
+>+F:	arch/powerpc/platforms/44x/
 
-I'm a little confused as to where we left things.  Can you repost
-the current series in a new thread?  It looks like there might be
-places that use "SMBUSIBM" when they should use ACPI_SMBUS_IBM_HID.
+This is mostly complete.  There are a few files under arch/powerpc/sysdev/, and
+arch/powerpc/boot/ as well, but I don't think they're entirely necessary.
 
-Bjorn
+For the 4xx parts:
+
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+
+josh
