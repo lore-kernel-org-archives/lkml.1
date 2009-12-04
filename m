@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932110AbZLDQKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbZLDQLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932110AbZLDQKn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 11:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbZLDQKn
+	id S1757079AbZLDQLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 11:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbZLDQLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 11:10:43 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54256 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752438AbZLDQKl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 11:10:41 -0500
-Subject: Re: [RFC v4 PATCH 6/7] sched: Rebalance cfs runtimes
-From: Peter Zijlstra <peterz@infradead.org>
-To: bharata@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-In-Reply-To: <20091117143718.GQ17335@in.ibm.com>
-References: <20091117143306.GK17335@in.ibm.com>
-	 <20091117143718.GQ17335@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 17:09:58 +0100
-Message-ID: <1259942998.17907.897.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Dec 2009 11:11:19 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:53075 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932156AbZLDQLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 11:11:15 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@wilsonet.com>, Jarod Wilson <jarod@redhat.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, awalls@radix.net,
+       j@jannau.net, khc@pm.waw.pl, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       lirc-list@lists.sourceforge.net, superm1@ubuntu.com,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [RFC v2] Another approach to IR
+References: <9e4733910912020930t3c9fe973k16fd353e916531a4@mail.gmail.com>
+	<4B16BE6A.7000601@redhat.com>
+	<20091202195634.GB22689@core.coreip.homeip.net>
+	<2D11378A-041C-4B56-91FF-3E62F5F19753@wilsonet.com>
+	<20091202201404.GD22689@core.coreip.homeip.net>
+	<4B16CCD7.20601@redhat.com>
+	<20091202205323.GF22689@core.coreip.homeip.net>
+	<4B16D87F.7080701@redhat.com> <87tyw8ujsr.fsf@tac.ki.iif.hu>
+	<4B17E874.5020003@redhat.com>
+	<20091203173105.GA776@core.coreip.homeip.net>
+Date: Fri, 04 Dec 2009 17:11:04 +0100
+In-Reply-To: <20091203173105.GA776@core.coreip.homeip.net> (Dmitry Torokhov's
+	message of "Thu, 3 Dec 2009 09:31:06 -0800")
+Message-ID: <87pr6uafdz.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-11-17 at 20:07 +0530, Bharata B Rao wrote:
-> sched: CFS runtime borrowing
-> 
-> From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> 
-> Before throttling a group, try to borrow runtime from groups that have excess.
-> 
-> To start with, a group will get equal runtime on every cpu. If the group doesn't
-> have tasks on all cpus, it might get throttled on some cpus while it still has
-> runtime left on other cpus where it doesn't have any tasks to consume that
-> runtime. Hence there is a chance to borrow runtimes from such cpus/cfs_rqs to
-> cpus/cfs_rqs where it is required.
-> 
-> CHECK: RT seems to be handling runtime initialization/reclaim during hotplug
-> from multiple places (migration_call, update_runtime). Need to check if CFS
-> also needs to do the same.
-> 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> ---
->  kernel/sched.c      |   26 ++++++++
->  kernel/sched_fair.c |  172 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  kernel/sched_rt.c   |   26 +-------
->  3 files changed, 202 insertions(+), 22 deletions(-)
+Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
 
-I think that if we unify the se/rq bandwidth structures a lot of copy
-and paste can be avoided, resulting in an over-all much easier to
-maintain code-base.
+> On Thu, Dec 03, 2009 at 02:33:56PM -0200, Mauro Carvalho Chehab wrote:
+>> Ferenc Wagner wrote:
+>>> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+>> 
+>> We should not forget that simple IR's don't have any key to select the address,
+>> so the produced codes there will never have KEY_TV/KEY_DVD, etc.
+>
+> Wait, wait, KEY_TV, KEY_DVD, KEY_TAPE - they should be used to select
+> media inputs in a device/application. My receiver accepts codes like
+> that.
 
+Sorry, my point wasn't the event names, I picked them for their
+superficial correspondence to the TV, DVD, SAT etc. buttons found on
+multifunction remotes.  Obviously I picked wrong.
+
+I was also wrong to assume that remotes with such buttons are always
+multifunction remotes in the sense that they are meant to control
+separate devices.  As Mauro pointed out, (some) bundled remotes with
+such buttons aren't; thus I wouldn't consider them multifunction at all.
+They simply have some extra buttons labelled TV, DVD etc, which probably
+shouldn't be mapped to KEY_TV, KEY_DVD etc. (since those events carry
+different semantics) but should be mapped to something else.  Or not, if
+these buttons change some internal decoder state instead, modifying the
+mapping or destination input device of the other keys.
+
+It's just a different scenario, where the kernel could reasonably give
+rather different representations to simple applications aiming at
+plug&play: letting through the function change events untouched, or
+masking and using them internally.
+
+True multifunction devices don't send such events, the TV, DVD etc
+buttons on them change their internal state and the scan codes sent by
+the other keys, if I understand this correctly.
+
+I'd prefer if these two behaviours could be abstacted from, and the
+input layer interface would provide destination selection events +
+generic events, or (to be defined) device specific events only in either
+case.  Is that possible or even reasonable?
+-- 
+Thanks,
+Feri.
+
+Ps: I'm writing this in the hope to clean up the landscape and possibly
+help in choosing the best design.  I'm not at all familiar with IR, and
+the above distinction was pretty surprising for me.  Also, I'm just
+lurking here, so don't take me too seriously. :)
