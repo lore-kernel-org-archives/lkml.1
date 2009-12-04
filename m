@@ -1,103 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbZLDO4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbZLDIVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757051AbZLDO4I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 09:56:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbZLDO4H
+	id S1754460AbZLDIVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 03:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZLDIVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 09:56:07 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39273 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756610AbZLDO4F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 09:56:05 -0500
-Date: Fri, 4 Dec 2009 09:19:33 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Wang, Shane" <shane.wang@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>
-Subject: Re: [PATCH] intel_txt: add s3 userspace memory integrity
-	verification
-Message-ID: <20091204081933.GE1540@ucw.cz>
-References: <4A9CE0B2.5060608@intel.com> <4ABF2B50.6070106@intel.com> <20091004185801.GC1378@ucw.cz> <037F493892196B458CD3E193E8EBAD4F01F03277DF@pdsmsx502.ccr.corp.intel.com>
+	Fri, 4 Dec 2009 03:21:16 -0500
+Received: from mga11.intel.com ([192.55.52.93]:6177 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752073AbZLDIVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 03:21:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,339,1257148800"; 
+   d="scan'208";a="752765985"
+Date: Fri, 4 Dec 2009 16:21:20 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH]cfq-iosched: make nonrot check logic consistent
+Message-ID: <20091204082120.GA20557@sli10-desk.sh.intel.com>
+References: <20091203035135.GA13165@sli10-desk.sh.intel.com>
+ <20091203115707.GL8742@kernel.dk>
+ <20091203120021.GN8742@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <037F493892196B458CD3E193E8EBAD4F01F03277DF@pdsmsx502.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091203120021.GN8742@kernel.dk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, Dec 03, 2009 at 08:00:21PM +0800, Jens Axboe wrote:
+> On Thu, Dec 03 2009, Jens Axboe wrote:
+> > On Thu, Dec 03 2009, Shaohua Li wrote:
+> > > Send again, last post seems lost.
+> > > 
+> > > cfq_arm_slice_timer() has logic to disable idle window for SSD device. The same
+> > > thing should be done at cfq_select_queue() too, otherwise we will still see
+> > > idle window. This makes the nonrot check logic consistent in cfq.
+> > > Tests in a intel SSD with low_latency knob close, below patch can triple disk
+> > > thoughput for muti-thread sequential read.
+> > > 
+> > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > > ---
+> > >  block/cfq-iosched.c |    3 ++-
+> > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > 
+> > > Index: linux/block/cfq-iosched.c
+> > > ===================================================================
+> > > --- linux.orig/block/cfq-iosched.c	2009-11-11 13:44:00.000000000 +0800
+> > > +++ linux/block/cfq-iosched.c	2009-11-11 13:45:33.000000000 +0800
+> > > @@ -1215,7 +1215,8 @@ static struct cfq_queue *cfq_select_queu
+> > >  	 * conditions to happen (or time out) before selecting a new queue.
+> > >  	 */
+> > >  	if (timer_pending(&cfqd->idle_slice_timer) ||
+> > > -	    (cfqq->dispatched && cfq_cfqq_idle_window(cfqq))) {
+> > > +	    (cfqq->dispatched && cfq_cfqq_idle_window(cfqq)
+> > > +	    && !(blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag))) {
+> > >  		cfqq = NULL;
+> > >  		goto keep_queue;
+> > >  	}
+> > 
+> > Thanks, applied to 2.6.33 queue.
+> 
+> On second check, we now hide that logic in cfq_should_idle() and as such
+> your patch no longer applies. I suggest you re-test with -next or my
+> for-2.6.33 branch, it has a big number of pending CFQ updates for
+> 2.6.33.
+-next has the same issue too. Below is updated patch.
 
-Please wrap mails at column 72 (or so).
+cfq_arm_slice_timer() has logic to disable idle window for SSD device. The same
+thing should be done at cfq_select_queue() too, otherwise we will still see
+idle window. This makes the nonrot check logic consistent in cfq.
+Tests in a intel SSD with low_latency knob close, below patch can triple disk
+thoughput for muti-thread sequential read.
 
-> > AFAICT, it verifies userspace _and_ kernel memory, that's why it does
-> > magic stack switching. Why not verify everything in tboot?
-> Because tboot only can access <4G mem without paging. And the memory is sparse. We can't/needn't set unlimited sparse mem ranges to the MAC array with limited elements in the shared page, in order to pass the parameters.
-> On the other hand, it is reasonable for tboot to verify kernel, and kernel to verify userspace memory.
->
-
-Are  you sure x86-64 kernel & modules is always below 4GB? I don't
-think so.
-
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 08b057b..abc5206 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1795,7 +1795,8 @@ static bool cfq_should_idle(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 		return false;
  
-> >> +static vmac_t mem_mac;
-> >> +static struct crypto_hash *tfm;
-> > 
-> > Could these be automatic?
-> Maybe, but I don't wish other files can access the variables and take tfm as an example, I'd like to allocate memory to it once and then initialize it once in order to avoid impact of memory change to MACing.
->
-
-You use stack, anyway.
-
-> > Why does 4G limit matter on 64-bit?
-> tboot can't access >4G, see above.
-
-Too bad, then its broken by design.
-
-> >> +	if (tboot_gen_mem_integrity(tboot->s3_key, &mac))
-> >> +		panic("tboot: vmac generation failed\n");
-> >> +	else if (mac != mem_mac)
-> >> +		panic("tboot: memory integrity was lost on resume\n"); +	else
-> >> +		pr_info("memory integrity OK\n");
-> > 
-> > So I corrupt memory, but also corrupt tboot_enabled() to return 0....
-> > 
-> > And... does panic kill the machine quickly enough that no 'bad stuff'
-> > happens? (Whats bad stuff in this context, anyway?).
-
-I'd really like you to answer that.
-
-
-> >> @@ -244,7 +245,10 @@ static int acpi_suspend_enter(suspend_st 
-> >> break; 
-> >> 
-> >>  	case ACPI_STATE_S3:
-> >> +		tboot_switch_stack();
-> >>  		do_suspend_lowlevel();
-> >> +		tboot_sx_resume();
-> >> +		tboot_restore_stack();
-> >>  		break;
-> >>  	}
-> >> 
-> > 
-> > Did you audit all code before sx_resume()? If it trusts  data not
-> > checksummed by tboot, attacker may be able to hijack code execution
-> > and bypass your protection, no?
-> Yes, kernel code is audited by tboot before resume.
-
-So no, you did not audit do_suspend_lowlevel to make sure it does not
-follow function pointers. Bad.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ 	/* We do for queues that were marked with idle window flag. */
+-	if (cfq_cfqq_idle_window(cfqq))
++	if (cfq_cfqq_idle_window(cfqq) &&
++	   !(blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag))
+ 		return true;
+ 
+ 	/*
