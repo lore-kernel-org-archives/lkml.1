@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbZLDBBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZLDBDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418AbZLDBBQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 20:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZLDBBL
+	id S1754855AbZLDBDX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 20:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbZLDBDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 20:01:11 -0500
-Received: from p01c11o144.mxlogic.net ([208.65.144.67]:35971 "EHLO
-	p01c11o144.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754392AbZLDBBK convert rfc822-to-8bit (ORCPT
+	Thu, 3 Dec 2009 20:03:17 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50804 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753570AbZLDBDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 20:01:10 -0500
-X-MXL-Hash: 4b185f5d4e2a34d5-9516f1f29af8385ab0b18212c205f091842c45c2
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.32 2/3] net: Fix ks8851 snl transmit problem
-Date: Thu, 3 Dec 2009 16:57:27 -0800
-Message-ID: <14385191E87B904DBD836449AA30269D4F212C@MORGANITE.micrel.com>
-In-Reply-To: <20091203.160318.62214993.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.32 2/3] net: Fix ks8851 snl transmit problem
-Thread-Index: Acp0dTAwr5L/iaTRShm4JwsAvQR2xgAAvSUg
-References: <14385191E87B904DBD836449AA30269D021A41@MORGANITE.micrel.com> <20091203.160318.62214993.davem@davemloft.net>
-From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <ben@simtec.co.uk>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 04 Dec 2009 01:00:45.0954 (UTC) FILETIME=[36056E20:01CA747D]
-X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2009113001)]
-X-MAIL-FROM: <tristram.ha@micrel.com>
-X-SOURCE-IP: [65.218.208.2]
-X-AnalysisOut: [v=1.0 c=1 a=C-fA7QiSRfkA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
-X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=T5n3cqGJA3pXnv6UCjIA:9 a=CsWV39Ujf9x7rz]
-X-AnalysisOut: [9FD5QCJFjmCdcA:4 a=yJsD6ztlz_8A:10]
+	Thu, 3 Dec 2009 20:03:16 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 4 Dec 2009 10:00:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       yanmin_zhang@linux.intel.com
+Subject: Re: [RFC][mmotm][PATCH] percpu mm struct counter cache
+Message-Id: <20091204100029.b703eaa0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <28c262360912031649o42c9af52r35369fa820ec14f9@mail.gmail.com>
+References: <20091203102851.daeb940c.kamezawa.hiroyu@jp.fujitsu.com>
+	<4B17D506.7030701@gmail.com>
+	<20091204091821.340ddcd5.kamezawa.hiroyu@jp.fujitsu.com>
+	<28c262360912031649o42c9af52r35369fa820ec14f9@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-> Date: Thu, 3 Dec 2009 13:17:48 -0800
-> 
->> This fixes a transmit problem of the ks8851 snl network driver.
-Under heavy TCP traffic the
->> device will stop transmitting.  Turning off the transmit interrupt
-avoids this issue.  A new
->> workqueue was implemented to replace the functionality of the
-transmit interrupt processing.  
->> 
->> Signed-off-by: Tristram Ha <Tristram.Ha@micrel.com>
-> 
-> Please describe why the TX interrupt facility cannot be used.
-> You probably have a race condition or similar, have you tried to see
-if there is some issue like
-> that? 
-> 
-> This workqueue is going to make performance terrible, at best.
+On Fri, 4 Dec 2009 09:49:17 +0900
+Minchan Kim <minchan.kim@gmail.com> wrote:
 
-I am a software engineer at Micrel, Inc., which developed the KSZ8851
-SNL chips.  This transmit problem is a hardware issue as the same
-problem is encountered in different drivers like WinCE.  We have not
-pinpointed the hardware bug.  I do not think there is something wrong in
-the driver.  Turning off the transmit interrupt is just a workaround.
+> On Fri, Dec 4, 2009 at 9:18 AM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > Making read-side of this counter slower means making ps or top slower.
+> > IMO, ps or top is too slow now and making them more slow is very bad.
+> 
+> Also, we don't want to make regression in no-split-ptl lock system.
+> Now, tick update cost is zero in no-split-ptl-lock system.
+yes.
+> but task switching is a little increased since compare instruction.
+Ah, 
 
-I know the new workqueue implementation is polling.  But in my
-experience, interrupting the system for each packet sent likely degrades
-the system performance more.  The workqueue is only called when the
-transmit buffer is empty, which happens after 3 or 4 packets are sent
-quickly in succession.  The workqueue schedules itself again if the
-transmit buffer is still not available, but in practice this case never
-happens.
++#ifdef USE_SPLIT_PTLOCKS
++extern void prepare_mm_switch(struct task_struct *prev,
++				 struct task_struct *next);
++#else
++static inline prepare_mm_switch(struct task_struct *prev,
++				struct task_struct *next)
++{
++}
++#endif
 
-The KSZ8851 chips do not need special transmit interrupt handling
-routine to cleanup the registers or socket buffers.  It is better to
-turn it off for better performance.  Because the KSZ8851 SNL uses SPI,
-its driver has restrictions of when to call SPI host to access
-registers.  That is why the original driver implementation uses a
-workqueue to check the transmit buffer during transmit interrupt
-handling.
+makes costs zero.
+
+> As you know, task-switching is rather costly function.
+yes.
+
+> I mind additional overhead in so-split-ptl lock system.
+yes. here. 
+> I think we can remove the overhead completely.
+> 
+
+I have another version of this patch, which switches curr_mmc.mm
+lazilu in a page fault. But it requires some complicated rules.
+I'll try it again rather than adding hooks in context-switch.
+
+BTW, I'm wondering to export "curr_mmc" to other files. Maybe
+there will be some more information nice to be cached per cpu+mm.
+
+Thanks,
+-Kame
+
