@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbZLDXee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbZLDXfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932525AbZLDXee (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 18:34:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbZLDXed
+	id S932580AbZLDXfI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 18:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932441AbZLDXfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 18:34:33 -0500
-Received: from outbound-mail-15.bluehost.com ([69.89.18.115]:60664 "HELO
-	outbound-mail-15.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757410AbZLDXec convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 18:34:32 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=mCX+2f24end3tAFs7sLdbOE+lQhDMAU6KBGrdMkNXodwSJCC94m/GNOz9feXZHGmUHO/seVaSv6sOeInpnN2JPpdU0XDGzmNMrZsZGMN4AWxE0GTZxh4+MJ8hJB8543f;
-Date: Fri, 4 Dec 2009 15:33:51 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Stephane GONAUER" <stephane.gonauer@sofrelog.com>
-Cc: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <achiang@hp.com>, <kaneshige.kenji@jp.fujitsu.com>,
-       <David.Woodhouse@intel.com>
-Subject: Re: PCIexpress Slot_Power_Limit and Power budgetting.
-Message-ID: <20091204153351.3752feea@jbarnes-piketon>
-In-Reply-To: <001401ca6901$f9c03ed0$ed40bc70$@gonauer@sofrelog.com>
-References: <001401ca6901$f9c03ed0$ed40bc70$@gonauer@sofrelog.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Fri, 4 Dec 2009 18:35:06 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:44276 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932442AbZLDXfF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 18:35:05 -0500
+Date: Fri, 4 Dec 2009 15:34:39 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: mmotm 2009-12-03-22-57 uploaded (isdn: proc_fops)
+Message-Id: <20091204153439.2c1da767.randy.dunlap@oracle.com>
+In-Reply-To: <200912040703.nB47324P028370@imap1.linux-foundation.org>
+References: <200912040703.nB47324P028370@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B199CA3.00D1:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Nov 2009 11:20:50 +0100
-"Stephane GONAUER" <stephane.gonauer@sofrelog.com> wrote:
-> I am a embedded system designer and currently working on the
-> preliminary design of a PCIepress expansion board to be used on x86
-> motherboard.
+On Thu, 03 Dec 2009 23:03:02 -0800 akpm@linux-foundation.org wrote:
+
+> The mm-of-the-moment snapshot 2009-12-03-22-57 has been uploaded to
 > 
-> My board is to be an x1 PCie board. Thus according to the PCIe
-> electromechanical specifications,  the board may consume 10Watts by
-> default, and 25Watts after correct dialog is established with upper
-> bridges and the root complex. (which after acknowledging the request
-> should send a Slot_Power_Limit message to the board to allow for
-> higher power consumption).
+>    http://userweb.kernel.org/~akpm/mmotm/
 > 
-> The board is based on a PEX8311 PCIe to local bus chip from PLX tech.
-> This component is able to present its request for more power using
-> the power budgeting capability as defined by the PCIe standard.
+> and will soon be available at
 > 
-> However this doesn’t seems to have effect on the system (running
-> latest ubuntu with 2.6.31 kernel) and from my understanding of the
-> kernel sources this is not supported. Is that correct ?
+>    git://zen-kernel.org/kernel/mmotm.git
 > 
-> Are there ways that I’m not aware to request for more power in the
-> existing source base ?
+> It contains the following patches against 2.6.32:
 
-Not in PCIe that I'm aware of, aside from the existing ASPM support,
-but that's a bit different.
+> proc_fops-convert-drivers-isdn-to-seq_file.patch
+> proc_fops-convert-drivers-isdn-to-seq_file-fix.patch
 
-> I’ve been reading the PCIE-port driver source to try to find a way to
-> achieve my goal. My understanding is that this driver is very generic
-> and as such shouldn’t be able to support power budgeting. I believe
-> adding Power budgeting to it would require to match more closely the
-> motherboard hardware. Am I correct ?
 
-Yeah, we'd need to get power budget info from the firmware or platform
-somehow, which means we'd have to add a platform specific portion to
-the PCIe port driver, or at the very least some basic power
-initialization routines that could be called from platform specific
-code.
+when CONFIG_PROC_FS=n:
 
-> Perhaps you have better ideas on the subject than me.
-> 
-> I’d be very glad if I could get some comments on this issue. I hope I
-> haven’t been writing to the wrong people.
+drivers/isdn/gigaset/capi.c:2206: error: implicit declaration of function 'PDE'
+drivers/isdn/gigaset/capi.c:2206: error: invalid type argument of '->'
 
-Given how long it's taken me to reply, maybe you have an implementation
-already. :)
 
-We'd definitely be interested in adding such a feature if your platform
-supports it and has need of it.
+when CONFIG_PROC_FS=y:
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+drivers/isdn/hysdn/hycapi.c:469: error: implicit declaration of function 'PDE'
+drivers/isdn/hysdn/hycapi.c:469: error: invalid type argument of '->'
+drivers/isdn/hysdn/hycapi.c:472: error: variable 'hycapi_proc_fops' has initializer but incomplete type
+drivers/isdn/hysdn/hycapi.c:473: error: unknown field 'owner' specified in initializer
+drivers/isdn/hysdn/hycapi.c:473: warning: excess elements in struct initializer
+drivers/isdn/hysdn/hycapi.c:473: warning: (near initialization for 'hycapi_proc_fops')
+drivers/isdn/hysdn/hycapi.c:474: error: unknown field 'open' specified in initializer
+drivers/isdn/hysdn/hycapi.c:474: warning: excess elements in struct initializer
+drivers/isdn/hysdn/hycapi.c:474: warning: (near initialization for 'hycapi_proc_fops')
+drivers/isdn/hysdn/hycapi.c:475: error: unknown field 'read' specified in initializer
+drivers/isdn/hysdn/hycapi.c:475: warning: excess elements in struct initializer
+drivers/isdn/hysdn/hycapi.c:475: warning: (near initialization for 'hycapi_proc_fops')
+drivers/isdn/hysdn/hycapi.c:476: error: unknown field 'llseek' specified in initializer
+drivers/isdn/hysdn/hycapi.c:476: warning: excess elements in struct initializer
+drivers/isdn/hysdn/hycapi.c:476: warning: (near initialization for 'hycapi_proc_fops')
+drivers/isdn/hysdn/hycapi.c:477: error: unknown field 'release' specified in initializer
+drivers/isdn/hysdn/hycapi.c:477: warning: excess elements in struct initializer
+drivers/isdn/hysdn/hycapi.c:477: warning: (near initialization for 'hycapi_proc_fops')
+
+Needs to #include <linux/proc_fs.h>
+
+
+---
+~Randy
