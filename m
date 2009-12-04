@@ -1,62 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbZLDWtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbZLDWsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757616AbZLDWtg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZLDWtf
+	id S1757623AbZLDWsj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbZLDWsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:49:35 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:50853 "EHLO smtps.tip.net.au"
+	Fri, 4 Dec 2009 17:48:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60346 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751444AbZLDWte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:49:34 -0500
-Date: Sat, 5 Dec 2009 09:49:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: linux-next: block tree build failure
-Message-Id: <20091205094934.eefdddf4.sfr@canb.auug.org.au>
-In-Reply-To: <20091204135422.GZ8742@kernel.dk>
-References: <20091204143612.f30db275.sfr@canb.auug.org.au>
-	<20091204074341.GH8742@kernel.dk>
-	<20091204135422.GZ8742@kernel.dk>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__5_Dec_2009_09_49_34_+1100_0qiK8Z_vqwZ+og0X"
+	id S1751444AbZLDWsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 17:48:33 -0500
+Message-ID: <4B199238.3020805@gmail.com>
+Date: Fri, 04 Dec 2009 23:50:32 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+MIME-Version: 1.0
+To: gregkh@suse.de, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 30/31] Constify struct usb_mon_operations for 2.6.32 v1
+References: <4B198670.2000406@gmail.com>
+In-Reply-To: <4B198670.2000406@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__5_Dec_2009_09_49_34_+1100_0qiK8Z_vqwZ+og0X
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Emese Revfy <re.emese@gmail.com>
 
-Hi Jens,
+Constify struct usb_mon_operations.
 
-On Fri, 4 Dec 2009 14:54:22 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> I pushed out the quick fix, just disallowing cfq=3Dm and blk cgroup in
-> Kconfig. So it should work now.
+Signed-off-by: Emese Revfy <re.emese@gmail.com>
+---
+ drivers/usb/core/hcd.c     |    4 ++--
+ drivers/usb/core/hcd.h     |   10 +++++-----
+ drivers/usb/mon/mon_main.c |    2 +-
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-Great, thanks.
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+index 34de475..cfcb4fb 100644
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -2216,7 +2216,7 @@ EXPORT_SYMBOL_GPL(usb_hcd_platform_shutdown);
+ 
+ #if defined(CONFIG_USB_MON) || defined(CONFIG_USB_MON_MODULE)
+ 
+-struct usb_mon_operations *mon_ops;
++const struct usb_mon_operations *mon_ops;
+ 
+ /*
+  * The registration is unlocked.
+@@ -2226,7 +2226,7 @@ struct usb_mon_operations *mon_ops;
+  * symbols from usbcore, usbcore gets referenced and cannot be unloaded first.
+  */
+  
+-int usb_mon_register (struct usb_mon_operations *ops)
++int usb_mon_register (const struct usb_mon_operations *ops)
+ {
+ 
+ 	if (mon_ops)
+diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
+index 79782a1..04bf5ea 100644
+--- a/drivers/usb/core/hcd.h
++++ b/drivers/usb/core/hcd.h
+@@ -486,13 +486,13 @@ static inline void usbfs_cleanup(void) { }
+ #if defined(CONFIG_USB_MON) || defined(CONFIG_USB_MON_MODULE)
+ 
+ struct usb_mon_operations {
+-	void (*urb_submit)(struct usb_bus *bus, struct urb *urb);
+-	void (*urb_submit_error)(struct usb_bus *bus, struct urb *urb, int err);
+-	void (*urb_complete)(struct usb_bus *bus, struct urb *urb, int status);
++	void (* const urb_submit)(struct usb_bus *bus, struct urb *urb);
++	void (* const urb_submit_error)(struct usb_bus *bus, struct urb *urb, int err);
++	void (* const urb_complete)(struct usb_bus *bus, struct urb *urb, int status);
+ 	/* void (*urb_unlink)(struct usb_bus *bus, struct urb *urb); */
+ };
+ 
+-extern struct usb_mon_operations *mon_ops;
++extern const struct usb_mon_operations *mon_ops;
+ 
+ static inline void usbmon_urb_submit(struct usb_bus *bus, struct urb *urb)
+ {
+@@ -514,7 +514,7 @@ static inline void usbmon_urb_complete(struct usb_bus *bus, struct urb *urb,
+ 		(*mon_ops->urb_complete)(bus, urb, status);
+ }
+ 
+-int usb_mon_register(struct usb_mon_operations *ops);
++int usb_mon_register(const struct usb_mon_operations *ops);
+ void usb_mon_deregister(void);
+ 
+ #else
+diff --git a/drivers/usb/mon/mon_main.c b/drivers/usb/mon/mon_main.c
+index e0c2db3..bd8cb66 100644
+--- a/drivers/usb/mon/mon_main.c
++++ b/drivers/usb/mon/mon_main.c
+@@ -238,7 +238,7 @@ static struct notifier_block mon_nb = {
+ /*
+  * Ops
+  */
+-static struct usb_mon_operations mon_ops_0 = {
++static const struct usb_mon_operations mon_ops_0 = {
+ 	.urb_submit =	mon_submit,
+ 	.urb_submit_error = mon_submit_error,
+ 	.urb_complete =	mon_complete,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__5_Dec_2009_09_49_34_+1100_0qiK8Z_vqwZ+og0X
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksZkf4ACgkQjjKRsyhoI8xlcQCgkdn51TtvHLKUv019VIlGrUIH
-RbEAnjV/zNdaKfxcFEN8zp3cTnt+oj/O
-=3V3F
------END PGP SIGNATURE-----
-
---Signature=_Sat__5_Dec_2009_09_49_34_+1100_0qiK8Z_vqwZ+og0X--
