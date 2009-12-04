@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZLDSyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbZLDS62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbZLDSyA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 13:54:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZLDSx7
+	id S1757122AbZLDS62 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 13:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbZLDS62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 13:53:59 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:51513 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752377AbZLDSx6 (ORCPT
+	Fri, 4 Dec 2009 13:58:28 -0500
+Received: from mf1.cn1.myschools.net ([113.29.215.8]:26448 "EHLO
+	mf1.cn1.myschools.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbZLDS60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 13:53:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=CANXJ78PSD5gRE7RLx8gnxNaq3W3aUbuOhB+OGazqWkl35wIxrqdS7UhcFl9D830cO
-         I5B8RdLiSL5TOmTAM2SkpCfEQ3urMd3d5Sa6T1uYs6WgRFJuG5CZFwYhiJMV5IQE93Ok
-         nS6qfvLqay/NyvVCXF8xlA/eojCPe+Q1Sx9ik=
+	Fri, 4 Dec 2009 13:58:26 -0500
+X-Greylist: delayed 641 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Dec 2009 13:58:25 EST
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmBQAJvlGEtxHdcl/2dsb2JhbACFcQOJXbhZHwGOd4I+AYF0BCqCHooz
+X-IronPort-AV: E=Sophos;i="4.47,343,1257080400"; 
+   d="scan'208";a="25261640"
+Message-ID: <4776.94.75.222.181.1259952412.squirrel@mce.nsw.edu.au>
+Date: Sat, 5 Dec 2009 05:46:52 +1100 (EST)
+Subject: Dear Email user
+From: "Colleen Bianchi" <careers@maristeastwood.catholic.edu.au>
+To: info@notice.com
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Date: Fri, 4 Dec 2009 13:45:58 -0500
-Message-ID: <81bfc67a0912041045vbcfa16cja48f1ede3259c9c4@mail.gmail.com>
-Subject: 2.6.29.6 supported? intel graphics bug
-From: Caleb Cushing <xenoterracide@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Sina-Mail-Agent: sinadeliver-7.00-1.98
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-while testing my e1000e bug found a problem that I suspect correlates
-to newer x11 drivers / older kernel. sorry if this is being sent to
-the wrong place in that event (although without confirmation I suspect
-the same developers work on both). kde wouldn't finish logging in for
-me and I was no longer able to switch to VT's I suspect because of
-kwin's compositing turning on.
+Dear Email user
 
-quick info for hardware. I'll be honest when I say this isn't a
-problem for me as the only reason I went back to that kernel was for
-network testing.
+Your mailbox has exceeded the storage limit set by your administrator. You
+may not be able to send or receive new mail until your mailbox size is
+increased by our helpdesk administrator. To increase your storage
+limit.Click Here:
 
-agpgart-intel 0000:00:00.0: Intel G33 Chipset
-agpgart-intel 0000:00:00.0: detected 7164K stolen memory
-agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xd0000000
-fb0: inteldrmfb frame buffer device
+http://www.surveymonkey.com/s/6GSHHQM
 
-Total of 4 processors activated (19159.42 BogoMIPS).
-i915 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-i915 0000:00:02.0: setting latency timer to 64
-i915 0000:00:02.0: irq 25 for MSI/MSI-X
-[drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
+You will continue to receive this warning message periodically if your
+inbox size continues to exceed its size limit.
 
---
-Caleb Cushing
+This email is intended only for the use of the individual or entity to
+which it is addressed and contains information that is privileged and
+confidential.
 
-http://xenoterracide.blogspot.com
+Thank you for your cooperation.
+Webmail Help Desk.
+System Administrator.
+
+
