@@ -1,107 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbZLDQTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbZLDQVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932162AbZLDQTi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 11:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbZLDQTi
+	id S932174AbZLDQVf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 11:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932127AbZLDQVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 11:19:38 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:63580 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932104AbZLDQTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 11:19:37 -0500
-Date: Fri, 4 Dec 2009 17:19:41 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] DMI: allow omitting ident strings in DMI tables
-Message-ID: <20091204171941.4554fa41@hyperion.delvare>
-In-Reply-To: <20091204073421.GA17012@core.coreip.homeip.net>
-References: <20091203031240.GB9121@core.coreip.homeip.net>
-	<20091203093009.059197a6@hyperion.delvare>
-	<20091203085629.GN9121@core.coreip.homeip.net>
-	<20091203102542.6df59efc@hyperion.delvare>
-	<20091204073421.GA17012@core.coreip.homeip.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Dec 2009 11:21:34 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:58166 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932119AbZLDQVd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 11:21:33 -0500
+Date: Fri, 4 Dec 2009 16:21:07 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFC][PATCH 10/12] PCI / ACPI PM: Platform support for PCI PME
+	wake-up (rev. 4)
+Message-ID: <20091204162107.GA13371@srcf.ucam.org>
+References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl> <200911291642.20172.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911291642.20172.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> DMI: allow omitting ident strings in DMI tables
-> 
-> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> 
-> The purpose of dmi->ident is twofold - it may be used by DMI callback
-> functions when composing log messages; it is also used to determine
-> end of DMI table in dmi_check_system() and dmi_first_match(). However,
-> in case when callbacks are not interested in using ident at all it just
-> wastes memory. Let's make enties with empty first match slot serve as
-> end-of-table markers instead.
-> 
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+On Sun, Nov 29, 2009 at 04:42:20PM +0100, Rafael J. Wysocki wrote:
 
-Looks good to me.
+> +	if (event == ACPI_NOTIFY_DEVICE_WAKE) {
+> +		if (nb->dev->wakeup.run_wake_count > 0) {
+> +			if (nb->pci_bus)
+> +				pci_pme_wakeup_bus(nb->pci_bus);
+> +			if (nb->pci_dev)
+> +				pci_pme_wakeup(nb->pci_dev);
 
-Acked-by: Jean Delvare <khali@linux-fr.org>
+We may receive wakeup events on devices that aren't PME capable, which 
+is the case for uhci on my test box. In that case we probably want to 
+wake them up unconditionally.
 
-> ---
-> 
->  drivers/firmware/dmi_scan.c |   15 ++++++++++++---
->  1 files changed, 12 insertions(+), 3 deletions(-)
-> 
-> 
-> diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
-> index 938100f..3a2ccb0 100644
-> --- a/drivers/firmware/dmi_scan.c
-> +++ b/drivers/firmware/dmi_scan.c
-> @@ -429,7 +429,7 @@ static bool dmi_matches(const struct dmi_system_id *dmi)
->  	for (i = 0; i < ARRAY_SIZE(dmi->matches); i++) {
->  		int s = dmi->matches[i].slot;
->  		if (s == DMI_NONE)
-> -			continue;
-> +			break;
->  		if (dmi_ident[s]
->  		    && strstr(dmi_ident[s], dmi->matches[i].substr))
->  			continue;
-> @@ -440,6 +440,15 @@ static bool dmi_matches(const struct dmi_system_id *dmi)
->  }
->  
->  /**
-> + *	dmi_is_end_of_table - check for end-of-table marker
-> + *	@dmi: pointer to the dmi_system_id structure to check
-> + */
-> +static bool dmi_is_end_of_table(const struct dmi_system_id *dmi)
-> +{
-> +	return dmi->matches[0].slot == DMI_NONE;
-> +}
-> +
-> +/**
->   *	dmi_check_system - check system DMI data
->   *	@list: array of dmi_system_id structures to match against
->   *		All non-null elements of the list must match
-> @@ -457,7 +466,7 @@ int dmi_check_system(const struct dmi_system_id *list)
->  	int count = 0;
->  	const struct dmi_system_id *d;
->  
-> -	for (d = list; d->ident; d++)
-> +	for (d = list; !dmi_is_end_of_table(d); d++)
->  		if (dmi_matches(d)) {
->  			count++;
->  			if (d->callback && d->callback(d))
-> @@ -484,7 +493,7 @@ const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list)
->  {
->  	const struct dmi_system_id *d;
->  
-> -	for (d = list; d->ident; d++)
-> +	for (d = list; !dmi_is_end_of_table(d); d++)
->  		if (dmi_matches(d))
->  			return d;
->  
++                       if (nb->pci_dev) {
++                               if (nb->pci_dev->pm_cap)
++                                       pci_pme_wakeup(nb->pci_dev);
++                               else
++                                       pm_request_resume(&nb->pci_dev->dev);
 
+seems to work, though possibly we should assume that the firmware knows 
+best and always schedule a wake in respose to a resume request?
 
 -- 
-Jean Delvare
+Matthew Garrett | mjg59@srcf.ucam.org
