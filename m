@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbZLDCtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbZLDDNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbZLDCtF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 21:49:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbZLDCtC
+	id S1753739AbZLDDNP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 22:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZLDDNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 21:49:02 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37854 "EHLO gate.crashing.org"
+	Thu, 3 Dec 2009 22:13:12 -0500
+Received: from gate.crashing.org ([63.228.1.57]:48255 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756076AbZLDCsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 21:48:10 -0500
-Subject: Re: [v10 PATCH 8/9]: pSeries: implement pSeries processor idle
- module
+	id S1753429AbZLDDNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 22:13:05 -0500
+Subject: Re: [PATCH 1/2] hw-breakpoints: Perf interface support for
+ breakpoint ranges
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: arun@linux.vnet.ibm.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <20091202100255.GI27251@linux.vnet.ibm.com>
-References: <20091202095427.GA27251@linux.vnet.ibm.com>
-	 <20091202100255.GI27251@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Prasad <prasad@linux.vnet.ibm.com>,
+       Will Deacon <will.deacon@arm.com>, Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <1259874964-7757-1-git-send-regression-fweisbec@gmail.com>
+References: <1259874964-7757-1-git-send-regression-fweisbec@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 13:47:38 +1100
-Message-ID: <1259894858.2076.1251.camel@pasglop>
+Date: Fri, 04 Dec 2009 14:08:53 +1100
+Message-ID: <1259896133.2076.1254.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -32,303 +30,251 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-02 at 15:32 +0530, Arun R Bharadwaj wrote:
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-12-02 15:24:27]:
+On Thu, 2009-12-03 at 22:16 +0100, Frederic Weisbecker wrote:
+> Looking a the PowerPc cpu implementations of breakpoints, we have
+> for both data and instruction breakpoints:
 > 
-> This patch creates arch/powerpc/platforms/pseries/processor_idle.c,
-> which implements the cpuidle infrastructure for pseries.
-> It implements a pseries_cpuidle_loop() which would be the main idle loop
-> called from cpu_idle(). It makes decision of entering either
-> dedicated_snooze_loop or dedicated_cede_loop for dedicated lpar and
-> shared_cede_loop for shared lpar processor based on the
-> decision taken by the cpuidle governor.
+> - 2 Address registers (let's rather talk about a comparison operand)
+> - Control registers that define the comparison nature (equal, greater,
+>   lesser than) against the above addresses.
+> - Control registers that define how to handle the 2 address registers.
+>   The instruction address or memory access need to either match
+>    - Address 1 OR Address 2 (OR = boolean OR, not binary)
+>    - Address 1 AND Address 2 ( AND = boolean AND, not binary)
+>   And this match is subject to the comparison rules independantly
+>   defined for these two addresses by the control registers
 
-So unless I'm mistaken, you removed our powerpc "generic" idle loop that
-calls into ppc_md.power_save(), and replaced it by some pseries specific
-idle loops... Now what about all the other powerpc platforms ? native
-970 (aka G5) ? 6xx ? Cell ? Or are you still calling ppc_md.power_save
-somewhere that I missed ?
+Well.. the debug facility is different between different PowerPC CPU
+families... There's range breakpoints on some but not all, there's data
+value compare or even instruction value compare on some, etc...
+
+> The most obvious practical uses of these facilities are either the
+> definition of two independant traditional breakpoints, or the
+> definition of a breakpoint that matches a range of addresses.
+> 
+> Hence we want the generic breakpoint interface to support it.
+> This patch splits up the struct perf_event_attr::bp_addr field
+> into bp_start and bp_end.
+
+Ok, that sounds like a good idea.
+
+> The definition of a simple breakpoint needs bp_start and bp_end to be
+> equal, ie: a simple breakpoint is a range breakpoint which start and
+> end addresses are identical.
+
+Ok. So a 0 sized point. Makes sense.
+
+> To define a range breakpoint, you just need to set bp_start and bp_end
+> to the limits of your address range.
+
+Inclusive ?
 
 Cheers,
 Ben.
 
-
-> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Prasad <prasad@linux.vnet.ibm.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Paul Mundt <lethal@linux-sh.org>
 > ---
->  arch/powerpc/include/asm/system.h               |    6 
->  arch/powerpc/kernel/sysfs.c                     |    2 
->  arch/powerpc/platforms/pseries/Makefile         |    1 
->  arch/powerpc/platforms/pseries/processor_idle.c |  196 ++++++++++++++++++++++++
->  arch/powerpc/platforms/pseries/pseries.h        |    6 
->  5 files changed, 211 insertions(+)
+>  arch/x86/kernel/hw_breakpoint.c         |    8 ++++++--
+>  arch/x86/kernel/ptrace.c                |    6 ++++--
+>  include/linux/hw_breakpoint.h           |    4 ++--
+>  include/linux/perf_event.h              |    3 ++-
+>  kernel/perf_event.c                     |    2 +-
+>  kernel/trace/trace_ksym.c               |   15 ++++++++-------
+>  samples/hw_breakpoint/data_breakpoint.c |    3 ++-
+>  tools/perf/util/parse-events.c          |    3 ++-
+>  8 files changed, 27 insertions(+), 17 deletions(-)
 > 
-> Index: linux.trees.git/arch/powerpc/platforms/pseries/Makefile
-> ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/platforms/pseries/Makefile
-> +++ linux.trees.git/arch/powerpc/platforms/pseries/Makefile
-> @@ -26,3 +26,4 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
->  obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
->  obj-$(CONFIG_CMM)		+= cmm.o
->  obj-$(CONFIG_DTL)		+= dtl.o
-> +obj-$(CONFIG_CPU_IDLE)		+= processor_idle.o
-> Index: linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
-> ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/platforms/pseries/pseries.h
-> +++ linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
-> @@ -10,6 +10,8 @@
->  #ifndef _PSERIES_PSERIES_H
->  #define _PSERIES_PSERIES_H
+> diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
+> index d42f65a..910ae0e 100644
+> --- a/arch/x86/kernel/hw_breakpoint.c
+> +++ b/arch/x86/kernel/hw_breakpoint.c
+> @@ -277,7 +277,11 @@ static int arch_build_bp_info(struct perf_event *bp)
+>  {
+>  	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
 >  
-> +#include <linux/cpuidle.h>
+> -	info->address = bp->attr.bp_addr;
+> +	/* We don't support breakpoint ranges */
+> +	if (bp->attr.bp_start != bp->attr.bp_end)
+> +		return -EINVAL;
 > +
->  extern void __init fw_feature_init(const char *hypertas, unsigned long len);
+> +	info->address = bp->attr.bp_start;
 >  
->  struct pt_regs;
-> @@ -40,4 +42,8 @@ extern unsigned long rtas_poweron_auto;
+>  	/* Len */
+>  	switch (bp->attr.bp_len) {
+> @@ -406,7 +410,7 @@ void aout_dump_debugregs(struct user *dump)
+>  		bp = thread->ptrace_bps[i];
 >  
->  extern void find_udbg_vterm(void);
+>  		if (bp && !bp->attr.disabled) {
+> -			dump->u_debugreg[i] = bp->attr.bp_addr;
+> +			dump->u_debugreg[i] = bp->attr.bp_start;
+>  			info = counter_arch_bp(bp);
+>  			dr7 |= encode_dr7(i, info->len, info->type);
+>  		} else {
+> diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+> index 04d182a..5d60a0f 100644
+> --- a/arch/x86/kernel/ptrace.c
+> +++ b/arch/x86/kernel/ptrace.c
+> @@ -728,7 +728,8 @@ static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
+>  		 * Put stub len and type to register (reserve) an inactive but
+>  		 * correct bp
+>  		 */
+> -		attr.bp_addr = addr;
+> +		attr.bp_start = addr;
+> +		attr.bp_end = addr;
+>  		attr.bp_len = HW_BREAKPOINT_LEN_1;
+>  		attr.bp_type = HW_BREAKPOINT_W;
+>  		attr.disabled = 1;
+> @@ -739,7 +740,8 @@ static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
+>  		t->ptrace_bps[nr] = NULL;
 >  
-> +DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
-> +
-> +extern struct cpuidle_driver pseries_idle_driver;
-> +
->  #endif /* _PSERIES_PSERIES_H */
-> Index: linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
-> ===================================================================
-> --- /dev/null
-> +++ linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
-> @@ -0,0 +1,196 @@
-> +/*
-> + *  processor_idle - idle state cpuidle driver.
-> + *  Adapted from drivers/acpi/processor_idle.c
-> + *
-> + *  Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> + *
-> + *  Copyright (C) 2009 IBM Corporation.
-> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License as published by
-> + *  the Free Software Foundation; either version 2 of the License, or (at
-> + *  your option) any later version.
-> + *
-> + *  This program is distributed in the hope that it will be useful, but
-> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + *  General Public License for more details.
-> + *
-> + *  You should have received a copy of the GNU General Public License along
-> + *  with this program; if not, write to the Free Software Foundation, Inc.,
-> + *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-> + *
-> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/moduleparam.h>
-> +#include <linux/cpuidle.h>
-> +
-> +#include <asm/paca.h>
-> +#include <asm/reg.h>
-> +#include <asm/system.h>
-> +#include <asm/machdep.h>
-> +#include <asm/firmware.h>
-> +
-> +#include "plpar_wrappers.h"
-> +#include "pseries.h"
-> +
-> +MODULE_AUTHOR("Arun R Bharadwaj");
-> +MODULE_DESCRIPTION("pSeries Idle State Driver");
-> +MODULE_LICENSE("GPL");
-> +
-> +struct cpuidle_driver pseries_idle_driver = {
-> +	.name =		"pseries_idle",
-> +	.owner =	THIS_MODULE,
-> +};
-> +
-> +DEFINE_PER_CPU(struct cpuidle_device, pseries_dev);
-> +
-> +#define IDLE_STATE_COUNT	2
-> +
-> +/* pSeries Idle state Flags */
-> +#define	PSERIES_DEDICATED_SNOOZE	(0x01)
-> +#define	PSERIES_DEDICATED_CEDE		(0x02)
-> +#define	PSERIES_SHARED_CEDE		(0x03)
-> +
-> +static int pseries_idle_init(struct cpuidle_device *dev)
-> +{
-> +	return cpuidle_register_device(dev);
-> +}
-> +
-> +static void shared_cede_loop(void)
-> +{
-> +	get_lppaca()->idle = 1;
-> +	cede_processor();
-> +	get_lppaca()->idle = 0;
-> +}
-> +
-> +static void dedicated_snooze_loop(void)
-> +{
-> +	local_irq_enable();
-> +	set_thread_flag(TIF_POLLING_NRFLAG);
-> +	while (!need_resched()) {
-> +		ppc64_runlatch_off();
-> +		HMT_low();
-> +		HMT_very_low();
-> +	}
-> +	HMT_medium();
-> +	clear_thread_flag(TIF_POLLING_NRFLAG);
-> +	smp_mb();
-> +	local_irq_disable();
-> +}
-> +
-> +static void dedicated_cede_loop(void)
-> +{
-> +	ppc64_runlatch_off();
-> +	HMT_medium();
-> +	cede_processor();
-> +}
-> +
-> +static void pseries_cpuidle_loop(struct cpuidle_device *dev,
-> +				struct cpuidle_state *st)
-> +{
-> +	unsigned long in_purr, out_purr;
-> +
-> +	get_lppaca()->idle = 1;
-> +	get_lppaca()->donate_dedicated_cpu = 1;
-> +	in_purr = mfspr(SPRN_PURR);
-> +
-> +	if (st->flags & PSERIES_SHARED_CEDE)
-> +		shared_cede_loop();
-> +	else if (st->flags & PSERIES_DEDICATED_SNOOZE)
-> +		dedicated_snooze_loop();
-> +	else
-> +		dedicated_cede_loop();
-> +
-> +	out_purr = mfspr(SPRN_PURR);
-> +	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-> +	get_lppaca()->donate_dedicated_cpu = 0;
-> +	get_lppaca()->idle = 0;
-> +}
-> +
-> +static int pseries_setup_cpuidle(struct cpuidle_device *dev, int cpu)
-> +{
-> +	int i;
-> +	struct cpuidle_state *state;
-> +
-> +	dev->cpu = cpu;
-> +
-> +	if (get_lppaca()->shared_proc) {
-> +		state = &dev->states[0];
-> +		snprintf(state->name, CPUIDLE_NAME_LEN, "IDLE");
-> +		state->enter = pseries_cpuidle_loop;
-> +		strncpy(state->desc, "shared_cede", CPUIDLE_DESC_LEN);
-> +		state->flags = PSERIES_SHARED_CEDE;
-> +		state->exit_latency = 0;
-> +		state->target_residency = 0;
-> +		return 0;
-> +	}
-> +
-> +	for (i = 0; i < IDLE_STATE_COUNT; i++) {
-> +		state = &dev->states[i];
-> +
-> +		snprintf(state->name, CPUIDLE_NAME_LEN, "CEDE%d", i);
-> +		state->enter = pseries_cpuidle_loop;
-> +
-> +		switch (i) {
-> +		case 0:
-> +			strncpy(state->desc, "snooze", CPUIDLE_DESC_LEN);
-> +			state->flags = PSERIES_DEDICATED_SNOOZE;
-> +			state->exit_latency = 0;
-> +			state->target_residency = 0;
-> +			break;
-> +
-> +		case 1:
-> +			strncpy(state->desc, "cede", CPUIDLE_DESC_LEN);
-> +			state->flags = PSERIES_DEDICATED_CEDE;
-> +			state->exit_latency = 1;
-> +			state->target_residency =
-> +					__get_cpu_var(smt_snooze_delay);
-> +			break;
-> +		}
-> +	}
-> +	dev->state_count = IDLE_STATE_COUNT;
-> +
-> +	return 0;
-> +}
-> +
-> +void update_smt_snooze_delay(int snooze)
-> +{
-> +	int cpu;
-> +	for_each_online_cpu(cpu)
-> +		per_cpu(pseries_dev, cpu).states[0].target_residency = snooze;
-> +}
-> +
-> +static int __init pseries_processor_idle_init(void)
-> +{
-> +	int cpu;
-> +	int result;
-> +
-> +	result = cpuidle_register_driver(&pseries_idle_driver);
-> +
-> +	if (result < 0)
-> +		return result;
-> +
-> +	printk(KERN_DEBUG "pSeries idle driver registered\n");
-> +
-> +	if (!firmware_has_feature(FW_FEATURE_SPLPAR)) {
-> +		printk(KERN_DEBUG "Using default idle\n");
-> +		return 0;
-> +	}
-> +
-> +	for_each_online_cpu(cpu) {
-> +		pseries_setup_cpuidle(&per_cpu(pseries_dev, cpu), cpu);
-> +		pseries_idle_init(&per_cpu(pseries_dev, cpu));
-> +	}
-> +
-> +	printk(KERN_DEBUG "Using cpuidle idle loop\n");
-> +
-> +	return 0;
-> +}
-> +
-> +device_initcall(pseries_processor_idle_init);
-> Index: linux.trees.git/arch/powerpc/include/asm/system.h
-> ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/include/asm/system.h
-> +++ linux.trees.git/arch/powerpc/include/asm/system.h
-> @@ -549,5 +549,11 @@ extern struct dentry *powerpc_debugfs_ro
->  
->  void cpu_idle_wait(void);
->  
-> +#ifdef CONFIG_CPU_IDLE
-> +extern void update_smt_snooze_delay(int snooze);
-> +#else
-> +static inline void update_smt_snooze_delay(int snooze) {}
-> +#endif
-> +
->  #endif /* __KERNEL__ */
->  #endif /* _ASM_POWERPC_SYSTEM_H */
-> Index: linux.trees.git/arch/powerpc/kernel/sysfs.c
-> ===================================================================
-> --- linux.trees.git.orig/arch/powerpc/kernel/sysfs.c
-> +++ linux.trees.git/arch/powerpc/kernel/sysfs.c
-> @@ -18,6 +18,7 @@
->  #include <asm/machdep.h>
->  #include <asm/smp.h>
->  #include <asm/pmc.h>
-> +#include <asm/system.h>
->  
->  #include "cacheinfo.h"
->  
-> @@ -51,6 +52,7 @@ static ssize_t store_smt_snooze_delay(st
->  		return -EINVAL;
->  
->  	per_cpu(smt_snooze_delay, cpu->sysdev.id) = snooze;
-> +	update_smt_snooze_delay(snooze);
->  
->  	return count;
+>  		attr = bp->attr;
+> -		attr.bp_addr = addr;
+> +		attr.bp_start = addr;
+> +		attr.bp_end = addr;
+>  		bp = modify_user_hw_breakpoint(bp, &attr, bp->callback, tsk);
+>  	}
+>  	/*
+> diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+> index a03daed..d711c98 100644
+> --- a/include/linux/hw_breakpoint.h
+> +++ b/include/linux/hw_breakpoint.h
+> @@ -35,9 +35,9 @@ static inline void hw_breakpoint_init(struct perf_event_attr *attr)
+>  	attr->pinned = 1;
 >  }
+>  
+> -static inline unsigned long hw_breakpoint_addr(struct perf_event *bp)
+> +static inline unsigned long hw_breakpoint_start_addr(struct perf_event *bp)
+>  {
+> -	return bp->attr.bp_addr;
+> +	return bp->attr.bp_start;
+>  }
+>  
+>  static inline int hw_breakpoint_type(struct perf_event *bp)
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index 43adbd7..771d04c 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -217,7 +217,8 @@ struct perf_event_attr {
+>  
+>  	union {
+>  		struct { /* Hardware breakpoint info */
+> -			__u64		bp_addr;
+> +			__u64		bp_start;
+> +			__u64		bp_end;
+>  			__u32		bp_type;
+>  			__u32		bp_len;
+>  		};
+> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+> index 6b7ddba..43ed326 100644
+> --- a/kernel/perf_event.c
+> +++ b/kernel/perf_event.c
+> @@ -4308,7 +4308,7 @@ void perf_bp_event(struct perf_event *bp, void *data)
+>  	struct perf_sample_data sample;
+>  	struct pt_regs *regs = data;
+>  
+> -	sample.addr = bp->attr.bp_addr;
+> +	sample.addr = instruction_pointer(regs);
+>  
+>  	if (!perf_exclude_event(bp, regs))
+>  		perf_swevent_add(bp, 1, 1, &sample, regs);
+> diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
+> index ddfa0fd..bbdc02a 100644
+> --- a/kernel/trace/trace_ksym.c
+> +++ b/kernel/trace/trace_ksym.c
+> @@ -69,7 +69,7 @@ void ksym_collect_stats(unsigned long hbp_hit_addr)
+>  
+>  	rcu_read_lock();
+>  	hlist_for_each_entry_rcu(entry, node, &ksym_filter_head, ksym_hlist) {
+> -		if ((entry->attr.bp_addr == hbp_hit_addr) &&
+> +		if ((entry->attr.bp_start == hbp_hit_addr) &&
+>  		    (entry->counter <= MAX_UL_INT)) {
+>  			entry->counter++;
+>  			break;
+> @@ -102,11 +102,11 @@ void ksym_hbp_handler(struct perf_event *hbp, void *data)
+>  	entry		= ring_buffer_event_data(event);
+>  	entry->ip	= instruction_pointer(regs);
+>  	entry->type	= hw_breakpoint_type(hbp);
+> -	entry->addr	= hw_breakpoint_addr(hbp);
+> +	entry->addr	= hw_breakpoint_start_addr(hbp);
+>  	strlcpy(entry->cmd, current->comm, TASK_COMM_LEN);
+>  
+>  #ifdef CONFIG_PROFILE_KSYM_TRACER
+> -	ksym_collect_stats(hw_breakpoint_addr(hbp));
+> +	ksym_collect_stats(hw_breakpoint_start_addr(hbp));
+>  #endif /* CONFIG_PROFILE_KSYM_TRACER */
+>  
+>  	trace_buffer_unlock_commit(buffer, event, 0, pc);
+> @@ -193,7 +193,8 @@ int process_new_ksym_entry(char *ksymname, int op, unsigned long addr)
+>  	hw_breakpoint_init(&entry->attr);
+>  
+>  	entry->attr.bp_type = op;
+> -	entry->attr.bp_addr = addr;
+> +	entry->attr.bp_start = addr;
+> +	entry->attr.bp_end = addr;
+>  	entry->attr.bp_len = HW_BREAKPOINT_LEN_4;
+>  
+>  	ret = -EAGAIN;
+> @@ -235,7 +236,7 @@ static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
+>  	mutex_lock(&ksym_tracer_mutex);
+>  
+>  	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
+> -		ret = trace_seq_printf(s, "%pS:", (void *)entry->attr.bp_addr);
+> +		ret = trace_seq_printf(s, "%pS:", (void *)entry->attr.bp_start);
+>  		if (entry->attr.bp_type == HW_BREAKPOINT_R)
+>  			ret = trace_seq_puts(s, "r--\n");
+>  		else if (entry->attr.bp_type == HW_BREAKPOINT_W)
+> @@ -316,7 +317,7 @@ static ssize_t ksym_trace_filter_write(struct file *file,
+>  
+>  	ret = -EINVAL;
+>  	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
+> -		if (entry->attr.bp_addr == ksym_addr) {
+> +		if (entry->attr.bp_start == ksym_addr) {
+>  			/* Check for malformed request: (6) */
+>  			if (entry->attr.bp_type != op)
+>  				changed = 1;
+> @@ -503,7 +504,7 @@ static int ksym_tracer_stat_show(struct seq_file *m, void *v)
+>  		seq_puts(m, "  NA          ");
+>  	}
+>  
+> -	if (lookup_symbol_name(entry->attr.bp_addr, fn_name) >= 0)
+> +	if (lookup_symbol_name(entry->attr.bp_start, fn_name) >= 0)
+>  		seq_printf(m, "  %-36s", fn_name);
+>  	else
+>  		seq_printf(m, "  %-36s", "<NA>");
+> diff --git a/samples/hw_breakpoint/data_breakpoint.c b/samples/hw_breakpoint/data_breakpoint.c
+> index 2952550..1bc5c4e 100644
+> --- a/samples/hw_breakpoint/data_breakpoint.c
+> +++ b/samples/hw_breakpoint/data_breakpoint.c
+> @@ -53,7 +53,8 @@ static int __init hw_break_module_init(void)
+>  	int ret;
+>  	DEFINE_BREAKPOINT_ATTR(attr);
+>  
+> -	attr.bp_addr = kallsyms_lookup_name(ksym_name);
+> +	attr.bp_start = kallsyms_lookup_name(ksym_name);
+> +	attr.bp_end = attr.bp_start;
+>  	attr.bp_len = HW_BREAKPOINT_LEN_4;
+>  	attr.bp_type = HW_BREAKPOINT_W | HW_BREAKPOINT_R;
+>  
+> diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+> index 9e5dbd6..4fa41a0 100644
+> --- a/tools/perf/util/parse-events.c
+> +++ b/tools/perf/util/parse-events.c
+> @@ -594,7 +594,8 @@ parse_breakpoint_event(const char **strp, struct perf_event_attr *attr)
+>  	if (target == endaddr)
+>  		return EVT_FAILED;
+>  
+> -	attr->bp_addr = addr;
+> +	attr->bp_start = addr;
+> +	attr->bp_end = addr;
+>  	*strp = endaddr;
+>  
+>  	type = strchr(target, ':');
 
 
