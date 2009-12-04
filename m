@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZLDUsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbZLDUrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbZLDUsO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 15:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZLDUsK
+	id S1757336AbZLDUrz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 15:47:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbZLDUry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 15:48:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:10352 "EHLO mx1.redhat.com"
+	Fri, 4 Dec 2009 15:47:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33052 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757329AbZLDUsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 15:48:04 -0500
+	id S1757311AbZLDUrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 15:47:52 -0500
 From: Eric Paris <eparis@redhat.com>
-Subject: [RFC PATCH 03/15] pipes: use alloc-file instead of duplicating code
+Subject: [RFC PATCH 04/15] inotify: use alloc_file instead of doing it
+	internally
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
 Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
@@ -22,8 +23,8 @@ Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
        matthew@wil.cx, hugh.dickins@tiscali.co.uk,
        kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
        davem@davemloft.net, arnd@arndb.de, eric.dumazet@gmail.com
-Date: Fri, 04 Dec 2009 15:47:04 -0500
-Message-ID: <20091204204704.18286.49884.stgit@paris.rdu.redhat.com>
+Date: Fri, 04 Dec 2009 15:47:12 -0500
+Message-ID: <20091204204712.18286.25223.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
 References: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -34,48 +35,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The pipe code duplicates the functionality of alloc-file and init-file.  Use
-the generic vfs functions instead of duplicating code.
+inotify basically duplicates everything from alloc-file and init-file.  Use
+the generic vfs functions instead.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 Acked-by: Miklos Szeredi <miklos@szeredi.hu>
 ---
 
- fs/pipe.c |   21 +++++++++------------
- 1 files changed, 9 insertions(+), 12 deletions(-)
+ fs/notify/inotify/inotify_user.c |   23 +++++++++--------------
+ 1 files changed, 9 insertions(+), 14 deletions(-)
 
-diff --git a/fs/pipe.c b/fs/pipe.c
-index ae17d02..5d6c969 100644
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -1028,20 +1028,17 @@ void free_write_pipe(struct file *f)
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index c40894a..3e03803 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -725,6 +725,7 @@ SYSCALL_DEFINE1(inotify_init1, int, flags)
+ 	struct fsnotify_group *group;
+ 	struct user_struct *user;
+ 	struct file *filp;
++	struct dentry *dentry;
+ 	int fd, ret;
  
- struct file *create_read_pipe(struct file *wrf, int flags)
- {
--	struct file *f = get_empty_filp();
--	if (!f)
--		return ERR_PTR(-ENFILE);
+ 	/* Check the IN_* constants for consistency.  */
+@@ -738,12 +739,6 @@ SYSCALL_DEFINE1(inotify_init1, int, flags)
+ 	if (fd < 0)
+ 		return fd;
+ 
+-	filp = get_empty_filp();
+-	if (!filp) {
+-		ret = -ENFILE;
+-		goto out_put_fd;
+-	}
 -
--	/* Grab pipe from the writer */
--	f->f_path = wrf->f_path;
--	path_get(&wrf->f_path);
--	f->f_mapping = wrf->f_path.dentry->d_inode->i_mapping;
-+	struct file *f;
-+	struct dentry *dentry = wrf->f_path.dentry;
-+	struct vfsmount *mnt = wrf->f_path.mnt;
+ 	user = get_current_user();
+ 	if (unlikely(atomic_read(&user->inotify_devs) >=
+ 			inotify_max_user_instances)) {
+@@ -758,11 +753,12 @@ SYSCALL_DEFINE1(inotify_init1, int, flags)
+ 		goto out_free_uid;
+ 	}
  
--	f->f_pos = 0;
-+	dentry = dget(dentry);
-+	f = alloc_file(mnt, dentry, FMODE_READ, &read_pipefifo_fops);
-+	if (!f) {
-+		dput(dentry);
-+		return ERR_PTR(-ENFILE);
+-	filp->f_op = &inotify_fops;
+-	filp->f_path.mnt = mntget(inotify_mnt);
+-	filp->f_path.dentry = dget(inotify_mnt->mnt_root);
+-	filp->f_mapping = filp->f_path.dentry->d_inode->i_mapping;
+-	filp->f_mode = FMODE_READ;
++	dentry = dget(inotify_mnt->mnt_root);
++	filp = alloc_file(inotify_mnt, dentry, FMODE_READ, &inotify_fops);
++	if (!filp) {
++		ret = -ENFILE;
++		goto out_dput;
 +	}
- 	f->f_flags = O_RDONLY | (flags & O_NONBLOCK);
--	f->f_op = &read_pipefifo_fops;
--	f->f_mode = FMODE_READ;
--	f->f_version = 0;
+ 	filp->f_flags = O_RDONLY | (flags & O_NONBLOCK);
+ 	filp->private_data = group;
  
- 	return f;
+@@ -771,11 +767,10 @@ SYSCALL_DEFINE1(inotify_init1, int, flags)
+ 	fd_install(fd, filp);
+ 
+ 	return fd;
+-
++out_dput:
++	dput(dentry);
+ out_free_uid:
+ 	free_uid(user);
+-	put_filp(filp);
+-out_put_fd:
+ 	put_unused_fd(fd);
+ 	return ret;
  }
 
