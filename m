@@ -1,148 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbZLDM6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbZLDM7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbZLDM6s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 07:58:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbZLDM6r
+	id S1756363AbZLDM7O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 07:59:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbZLDM7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 07:58:47 -0500
-Received: from smtp-out13.alice.it ([85.33.2.18]:3812 "EHLO
-	smtp-out13.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932092AbZLDM6q (ORCPT
+	Fri, 4 Dec 2009 07:59:11 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:62794 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755984AbZLDM7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 07:58:46 -0500
-Date: Fri, 4 Dec 2009 13:57:57 +0100
-From: Antonio Ospite <ospite@studenti.unina.it>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Richard Purdie <rpurdie@rpsys.net>,
-       Daniel Ribeiro <drwyrm@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, openezx-devel@lists.openezx.org
-Subject: Re: [PATCH] leds: Add LED class driver for regulator driven LEDs.
-Message-Id: <20091204135757.d7533e20.ospite@studenti.unina.it>
-In-Reply-To: <20091202204121.GB18311@rakim.wolfsonmicro.main>
-References: <1259775625-25973-1-git-send-email-ospite@studenti.unina.it>
-	<1259778235.3588.141.camel@odin>
-	<20091202213131.1393a956.ospite@studenti.unina.it>
-	<20091202204121.GB18311@rakim.wolfsonmicro.main>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i686-pc-linux-gnu)
-X-Face: z*RaLf`X<@C75u6Ig9}{oW$H;1_\2t5)({*|jhM<pyWR#k60!#=#>/Vb;]yA5<GWI5`6u&+
- ;6b'@y|8w"wB;4/e!7wYYrcqdJFY,~%Gk_4]cq$Ei/7<j&N3ah(m`ku?pX.&+~:_/wC~dwn^)MizBG !pE^+iDQQ1yC6^,)YDKkxDd!T>\I~93>J<_`<4)A{':UrE
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__4_Dec_2009_13_57_57_+0100_OlMHRmQ_/qdaLBG2"
-X-OriginalArrivalTime: 04 Dec 2009 12:58:05.0198 (UTC) FILETIME=[6B68E2E0:01CA74E1]
+	Fri, 4 Dec 2009 07:59:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=K2DOMTIzzvsuuhoCodgRjbl9VSIhs9/nKIB/LqVC6ma9/I7rHjdFkc/FsB0f1U8FHC
+         2lcPlULS+gkx+FTpRnh7xZxcpDndI5QIBxCxjgRNs3bvyURlCxm9Gx7bQJvbxETqsBtS
+         z0APQqlw5vYTCTuS16X2eO00Kov7QY9y///xs=
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Peter Hutterer <peter.hutterer@redhat.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
+References: <20091203050810.GA26595@barra.bne.redhat.com>
+	<87zl60s17o.fsf@macbook.be.48ers.dk> <4B1836A6.405@redhat.com>
+Date: Fri, 04 Dec 2009 13:59:09 +0100
+In-Reply-To: <4B1836A6.405@redhat.com> (Peter Hutterer's message of "Fri, 04
+	Dec 2009 08:07:34 +1000")
+Message-ID: <871vjasxnm.fsf@macbook.be.48ers.dk>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__4_Dec_2009_13_57_57_+0100_OlMHRmQ_/qdaLBG2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>>>>> "Peter" == Peter Hutterer <peter.hutterer@redhat.com> writes:
 
-On Wed, 2 Dec 2009 20:41:22 +0000
-Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+Hi,
 
-> On Wed, Dec 02, 2009 at 09:31:31PM +0100, Antonio Ospite wrote:
-> > Liam Girdwood <lrg@slimlogic.co.uk> wrote:
->=20
-> > > Some regulators may not support voltage change (via hw design or
-> > > constraints) so set_voltage() will fail. We probably want to handle t=
-his
-> > > regulator type so we don't call set_voltage().
->=20
-> > Ok, I'll read more about the regulator framework to find out how to
-> > check regulator capabilities.
->=20
-> Checking for errors when counting and listing the voltages ought to
-> cover this.
+ Peter> it's a hack in userspace that works around wrong event
+ Peter> reporting. So yes, it works if you're using evtouch but if you
+ Peter> want to use any other driver that driver needs the same
+ Peter> hack. treating Z as X and RX as Y doesn't work too well for a
+ Peter> generic driver such as evdev, which has to deal with devices
+ Peter> where RX is a valid axis.
 
-This is the incremental change I have in mind; if it's ok, then
-a v2 is on its way.
+Hmm, I don't see it sending Z / RX:
 
-diff --git a/drivers/leds/leds-regulator.c b/drivers/leds/leds-regulator.c
-index f4c508b..8146d12 100644
---- a/drivers/leds/leds-regulator.c
-+++ b/drivers/leds/leds-regulator.c
-@@ -34,14 +34,23 @@ struct regulator_led {
+sudo evtest /dev/input/event12
+Input driver version is 1.0.0
+Input device ID: bus 0x3 vendor 0x1926 product 0x1 version 0x100
+Input device name: "Nextwindow Touchscreen"
+Supported events:
+  Event type 0 (Sync)
+  Event type 1 (Key)
+    Event code 272 (LeftBtn)
+    Event code 273 (RightBtn)
+    Event code 274 (MiddleBtn)
+  Event type 3 (Absolute)
+    Event code 0 (X)
+      Value      0
+      Min        0
+      Max    32767
+    Event code 1 (Y)
+      Value      0
+      Min        0
+      Max    32767
+  Event type 4 (Misc)
+    Event code 4 (ScanCode)
+Testing ... (interrupt to exit)
 
- static inline int led_regulator_get_max_brightness(struct regulator *suppl=
-y)
- {
--       return regulator_count_voltages(supply);
-+       int ret =3D regulator_count_voltages(supply);
-+
-+       /* even if regulator can't change voltages,
-+        * we still assume it can change status
-+        * and the LED can be turned on and off.
-+        */
-+       if (ret =3D=3D -EINVAL)
-+               return 1;
-+
-+       return ret;
- }
+sudo nwtool -u -i
+Version:                2.91
+Serial:                 233025
+Model:                  1900
+HW capabilities:        0x40
+Rightclick delay:       1000 ms
+Doubleclick time:       200 ms
+Report mode:            1
+Drag threshold:         500
+Buzzer time:            40 ms
+Buzzer tone:            40
+Calibration key:        4
+Calibration presses:    3
 
- static int led_regulator_get_vdd(struct regulator *supply,
-                enum led_brightness brightness)
- {
-        if (brightness =3D=3D 0)
--               return 0;
-+               return -EINVAL;
-
-        return regulator_list_voltage(supply, brightness - 1);
- }
-@@ -95,13 +104,15 @@ static void led_work(struct work_struct *work)
-        }
-
-        voltage =3D led_regulator_get_vdd(led->vcc, led->value);
--       dev_dbg(led->cdev.dev, "brightness: %d voltage: %d",
--                       led->value, voltage);
--
--       ret =3D regulator_set_voltage(led->vcc, voltage, voltage);
--       if (ret !=3D 0)
--               dev_err(led->cdev.dev, "Failed to set voltage %d: %d\n",
--                       voltage, ret);
-+       if (voltage) {
-+               dev_dbg(led->cdev.dev, "brightness: %d voltage: %d",
-+                               led->value, voltage);
-+
-+               ret =3D regulator_set_voltage(led->vcc, voltage, voltage);
-+               if (ret !=3D 0)
-+                       dev_err(led->cdev.dev, "Failed to set voltage %d: %=
-d\n",
-+                               voltage, ret);
-+       }
-
-        regulator_led_enable(led);
-
-
-In the last hunk I could have checked (max_brightness > 1) in place
-of (voltage) given the first hunk, any opinion?
-
-Thanks,
-   Antonio
-
---=20
-Antonio Ospite
-http://ao2.it
-
-PGP public key ID: 0x4553B001
-
-A: Because it messes up the order in which people normally read text.
-   See http://en.wikipedia.org/wiki/Posting_style
-Q: Why is top-posting such a bad thing?
-A: Top-posting.
-Q: What is the most annoying thing in e-mail?
-
---Signature=_Fri__4_Dec_2009_13_57_57_+0100_OlMHRmQ_/qdaLBG2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksZB1UACgkQ5xr2akVTsAGC4QCgpUmeTBpelYRR8kGJoLtvBiml
-23AAoJn6qqnqgnSXPzIGa2DaBa0VuN5F
-=lmPP
------END PGP SIGNATURE-----
-
---Signature=_Fri__4_Dec_2009_13_57_57_+0100_OlMHRmQ_/qdaLBG2--
+-- 
+Bye, Peter Korsgaard
