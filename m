@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932168AbZLDQuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbZLDQwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932168AbZLDQuw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 11:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbZLDQuv
+	id S1756987AbZLDQwJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 11:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbZLDQwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 11:50:51 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:32821 "EHLO mx2.suse.de"
+	Fri, 4 Dec 2009 11:52:08 -0500
+Received: from mga11.intel.com ([192.55.52.93]:47121 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756546AbZLDQuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 11:50:50 -0500
-Date: Fri, 4 Dec 2009 08:50:40 -0800
-From: Greg KH <gregkh@suse.de>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, stable@kernel.org,
-       Rickard Bellini <rickard.bellini@ericsson.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       Torgny Johansson <torgny.johansson@ericsson.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
-Message-ID: <20091204165040.GB2180@suse.de>
-References: <Pine.LNX.4.44L0.0912041102590.3070-100000@iolanthe.rowland.org>
- <200912041716.19329.oliver@neukum.org>
+	id S1756731AbZLDQwH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 11:52:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,340,1257148800"; 
+   d="scan'208";a="752875841"
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: Pavel Machek <pavel@ucw.cz>, "Wang, Shane" <shane.wang@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Brown, Len" <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>
+Date: Fri, 4 Dec 2009 08:52:12 -0800
+Subject: RE: [PATCH] intel_txt: add s3 userspace memory integrity
+	verification
+Thread-Topic: [PATCH] intel_txt: add s3 userspace memory integrity
+	verification
+Thread-Index: Acp0802Py4j62yRQRvmWXc+LBo4VGQADjtQQ
+Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4DC@orsmsx506.amr.corp.intel.com>
+References: <4B18D26B.4040500@intel.com> <20091204082927.GF1540@ucw.cz>
+In-Reply-To: <20091204082927.GF1540@ucw.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912041716.19329.oliver@neukum.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 05:16:19PM +0100, Oliver Neukum wrote:
-> Am Freitag, 4. Dezember 2009 17:06:57 schrieb Alan Stern:
-> > Oliver:
-> > 
-> > We don't have to worry about the device structure being deallocated 
-> > while the routine is running.  If that happens it's a bug in the 
-> > caller: improper refcounting.
-> 
-> That raises two points
-> 
-> 1. am I supposed to get a reference just so that I can use dev_err?
+> From: Pavel Machek [mailto:pavel@ucw.cz]
+> Sent: Friday, December 04, 2009 12:29 AM
+>
+> > This patch added verification for userspace memory integrity after
+> >  S3 resume.
+>
+> It does not work.
+>
+> > Integrity verification for other memory (say kernel itself) has been done by tboot.
+> >
+>
+> Not true. Kernel  uses memory above 4G on x86-64. Including... say
+> console writing functions.
 
-No, you should already have a reference on the device when doing the
-call, right?
+I've responded to that in your previous email thread, so let's keep the technical discussion of what is MAC'ed to just that one thread.
 
-> 2. what happens if this is a soft disconnect and the device is reconnected?
-> It seems to me that you'd print the wrong driver's name.
+> You can patch holes, but without description 'what does this protect
+> against' it is almost impossible to evaluate.
+>
+>
+> > +void tboot_do_suspend_lowlevel(void)
+> > +{
+> > +   int ret = -1;
+> > +
+> > +   if (!tboot_enabled()) {
+> > +           do_suspend_lowlevel();
+> > +           return;
+> > +   }
+> > +
+> > +   ret = tboot_pre_stack_switch();
+> > +   if (!ret) {
+> > +           tboot_switch_stack_call(tboot_do_suspend_lowlevel_call,
+> > +                                   (u64)new_stack_ptr);
+>
+> ...and here you add requirements to suspend_lowlevel that were not
+> there before. ("May not act on unchecksummed memory"), without
+> documenting them.
 
-Then we can live with that, it's not that big of a deal.
+Really the only requirement is (as discussed in the previous thread) that it only use code and data within [_text, _end - _text]--do you think that this really needs to be called out?  do_suspend_lowlevel() is a very simple function that has just the one (resume path) call to another simple function--it doesn't seem likely that it would violate this.
 
-thanks,
-
-greg k-h
+>
+> NAK.
+>                                                                       Pavel
+>
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
