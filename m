@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZLDPrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZLDQAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbZLDPrc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 10:47:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbZLDPrb
+	id S1756922AbZLDQAp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 11:00:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbZLDQAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 10:47:31 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43415 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752160AbZLDPra (ORCPT
+	Fri, 4 Dec 2009 11:00:43 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:53671 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756818AbZLDQAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 10:47:30 -0500
-Date: Fri, 4 Dec 2009 10:47:37 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ondrej Zary <linux@rainbow-software.org>
-cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
-Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
-In-Reply-To: <200912041323.00799.linux@rainbow-software.org>
-Message-ID: <Pine.LNX.4.44L0.0912041041370.3070-100000@iolanthe.rowland.org>
+	Fri, 4 Dec 2009 11:00:43 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: x86: Is 'volatile' necessary for readb/writeb and friends?
+Date: Fri, 4 Dec 2009 17:00:39 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>, x86@kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+References: <20091204092119.GA9707@laptop> <8B1FEF0C-5D71-4D64-ADC3-1EE60F50779F@kernel.crashing.org>
+In-Reply-To: <8B1FEF0C-5D71-4D64-ADC3-1EE60F50779F@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912041700.39564.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19F/w5KYdSnt3gurcR5ITV0uJPyx1/OvVrqFer
+ u7yY1lDB8C/vyosXrMxKIqhwjujfWkrjlfhTItxb+E4Ri/NyHM
+ 9pf+Xr6jSBM1dEmVnDaxA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009, Ondrej Zary wrote:
+On Friday 04 December 2009, Segher Boessenkool wrote:
+> If you want to get all language-lawyery, if the object pointed to by
+> "addr" is volatile, the volatile here is needed: accessing volatile
+> objects via a not volatile-qualified lvalue is undefined.  But since
+> this is GCC-specific code anyway, do you care?  :-)
 
-> > Furthermore, the patch shows that the second-to-last argument to
-> > usb_fill_bulk_urb() -- the completion function -- is NULL.  That is
-> > strictly illegal and it should have caused an oops as soon as the URB
-> > was used.
-> 
-> Thanks for catching this. usbmon showed no ACK packets so it didn't work
-> at all. The device did not care. It started to work after adding a
-> complete function.
+I think the real reason for having it is to avoid a warning when
+device drivers pass volatile objects. Not sure if that's a good
+thing or if we should better actually warn about it.
 
-What started to work?  If you don't send any ACK packets, it doesn't 
-make any difference whether the completion function is set or not.
-
-
-> Seems that -EPIPE is returned only after the device is disconnected. Adding a 
-> check for -EPIPE to usbtouch_irq() and not submitting the urb again seems to 
-> fix the problem!
-
-Fix which problem?  The unending resubmissions or the oops in ehci-hcd?
-
-BTW, does the touchscreen run at high speed or at full speed?
-
-Alan Stern
-
+	Arnd <><
