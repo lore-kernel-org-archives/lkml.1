@@ -1,118 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbZLDQma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbZLDQqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932224AbZLDQma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 11:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbZLDQm1
+	id S1756837AbZLDQqD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 11:46:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbZLDQqC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 11:42:27 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:43403 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756308AbZLDQm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 11:42:26 -0500
-Date: Fri, 4 Dec 2009 10:42:27 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-Message-ID: <20091204164227.GA28378@sgi.com>
-References: <alpine.LFD.2.00.0911241443110.24119@localhost.localdomain> <20091124065022.6933be1a@infradead.org> <m1ws1f6csh.fsf@fess.ebiederm.org> <20091125074033.4c46c1b0@infradead.org> <20091203165004.GA14665@sgi.com> <Pine.WNT.4.64.0912030851500.13880@ppwaskie-MOBL2.amr.corp.intel.com> <20091203170149.GA15151@sgi.com> <Pine.WNT.4.64.0912030905530.16084@ppwaskie-MOBL2.amr.corp.intel.com> <20091203171946.GC15151@sgi.com> <Pine.WNT.4.64.0912031048590.8104@ppwaskie-MOBL2.amr.corp.intel.com>
+	Fri, 4 Dec 2009 11:46:02 -0500
+Received: from mga14.intel.com ([143.182.124.37]:48650 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753558AbZLDQqB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 11:46:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="218900692"
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: Pavel Machek <pavel@ucw.cz>, "Wang, Shane" <shane.wang@intel.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>
+Date: Fri, 4 Dec 2009 08:46:04 -0800
+Subject: RE: [PATCH] intel_txt: add s3 userspace memory integrity
+	verification
+Thread-Topic: [PATCH] intel_txt: add s3 userspace memory integrity
+	verification
+Thread-Index: Acp08fBXVuvABo7ISteOA0YGBETK+AAC2o9A
+Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4C5@orsmsx506.amr.corp.intel.com>
+References: <4A9CE0B2.5060608@intel.com> <4ABF2B50.6070106@intel.com>
+ <20091004185801.GC1378@ucw.cz>
+ <037F493892196B458CD3E193E8EBAD4F01F03277DF@pdsmsx502.ccr.corp.intel.com>
+ <20091204081933.GE1540@ucw.cz>
+In-Reply-To: <20091204081933.GE1540@ucw.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.WNT.4.64.0912031048590.8104@ppwaskie-MOBL2.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 03, 2009 at 10:50:47AM -0800, Waskiewicz Jr, Peter P wrote:
-> On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
-> 
-> > On Thu, Dec 03, 2009 at 09:07:21AM -0800, Waskiewicz Jr, Peter P wrote:
-> > > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
-> > > 
-> > > > On Thu, Dec 03, 2009 at 08:53:23AM -0800, Waskiewicz Jr, Peter P wrote:
-> > > > > On Thu, 3 Dec 2009, Dimitri Sivanich wrote:
-> > > > > 
-> > > > > > On Wed, Nov 25, 2009 at 07:40:33AM -0800, Arjan van de Ven wrote:
-> > > > > > > On Tue, 24 Nov 2009 09:41:18 -0800
-> > > > > > > ebiederm@xmission.com (Eric W. Biederman) wrote:
-> > > > > > > > Oii.
-> > > > > > > > 
-> > > > > > > > I don't think it is bad to export information to applications like
-> > > > > > > > irqbalance.
-> > > > > > > > 
-> > > > > > > > I think it pretty horrible that one of the standard ways I have heard
-> > > > > > > > to improve performance on 10G nics is to kill irqbalance.
-> > > > > > > 
-> > > > > > > irqbalance does not move networking irqs; if it does there's something
-> > > > > > > evil going on in the system. But thanks for the bugreport ;)
-> > > > > > 
-> > > > > > It does move networking irqs.
-> > > > > > 
-> > > > > > > 
-> > > > > > > we had that; it didn't work.
-> > > > > > > what I'm asking for is for the kernel to expose the numa information;
-> > > > > > > right now that is the piece that is missing.
-> > > > > > > 
-> > > > > > 
-> > > > > > I'm wondering if we should expose that numa information in the form of a node or the set of allowed cpus, or both?
-> > > > > > 
-> > > > > > I'm guessing 'both' is the correct answer, so that apps like irqbalance can make a qualitative decision based on the node (affinity to cpus on this node is better), but an absolute decision based on allowed cpus (I cannot change affinity to anything but this set of cpus).
-> > > > > 
-> > > > > That's exactly what my patch in the thread "irq: Add node_affinity CPU 
-> > > > > masks for smarter irqbalance hints" is doing.  I've also done the 
-> > > > > irqbalance changes based on that kernel patch, and Arjan currently has 
-> > > > > that patch.
-> > > > 
-> > > > So if I understand correctly, you're patch takes care of the qualitative portion of it (we prefer to set affinity to these cpus, which may be on more than one node), but not the restrictive part of it (we cannot change affinity to anything but these cpus)?
-> > > 
-> > > That is correct.  The patch provides an interface to both the kernel 
-> > > (functions) and /proc for userspace to set a CPU mask.  That is the 
-> > > preferred mask for the interrupt to be balanced on.  Then irqbalance will 
-> > > make decisions on how to balance within that provided mask, if it in fact 
-> > > has been provided.
-> > 
-> > What if it's not provided?  Will irqbalance make decisions based on the numa_node of that irq (I would hope)?
-> 
-> If it's not provided, then irqbalance will continue to do what it does 
-> today.  No changes.
+> From: Pavel Machek [mailto:pavel@ucw.cz]
+> Sent: Friday, December 04, 2009 12:20 AM
+>
+> Hi!
+>
+> Please wrap mails at column 72 (or so).
+>
+> > > AFAICT, it verifies userspace _and_ kernel memory, that's why it does
+> > > magic stack switching. Why not verify everything in tboot?
+> > Because tboot only can access <4G mem without paging. And the memory is sparse. We
+> can't/needn't set unlimited sparse mem ranges to the MAC array with limited elements in the
+> shared page, in order to pass the parameters.
+> > On the other hand, it is reasonable for tboot to verify kernel, and kernel to verify
+> userspace memory.
+> >
+>
+> Are  you sure x86-64 kernel & modules is always below 4GB? I don't
+> think so.
 
-So no numa awareness for ethernet irqs.
+The only part of the kernel that really needs to be below 4GB is what is used by the code on resume to do the MAC verification of the remainder of the memory.  This is all static code and variables.  The regions we pass to tboot for MAC'ing are:
+S3 real mode resume code:  acpi_wakeup_address, WAKEUP_SIZE
+AP trampoline code:  virt_to_phys(trampoline_base), TRAMPOLINE_SIZE
+kernel static code and data:  virt_to_phys(_text), _end - _text
+the stack we use (either new one or existing depending--see code):
+        virt_to_phys(new_stack), IRQ_STACK_SIZE
+        virt_to_phys(current_thread_info()), THREAD_SIZE
 
-I'm wondering what needs to be exposed in proc/irq at this point.
 
-Do we expose separate cpu masks for everything?  There are really 3 possible pieces of affinity information:  your node_affinity (optionally selected by the driver according to allocations), my restricted_affinity (set by the specific arch), and numa_node affinity (the 'home' node of the device).  Do we show cpumasks for all of these, or maybe show numa_node in place of a cpumask for the 'home' node of the device?
+Can you post a .config and platform configuration for which the tboot, MAC, or do_suspend_lowlevel() are not within the regions above?  We'll be happy to address the issue once we understand the conditions.
 
-With all of that information apps like irqbalance should be able to make some good decisions, but things can get confusing if there are too many masks.
+> > >> +static vmac_t mem_mac;
+> > >> +static struct crypto_hash *tfm;
+> > >
+> > > Could these be automatic?
+> > Maybe, but I don't wish other files can access the variables and take tfm as an example, I'd
+> like to allocate memory to it once and then initialize it once in order to avoid impact of
+> memory change to MACing.
+> >
+>
+> You use stack, anyway.
 
-Also, if I manually change affinity, irqbalance can change that affinity from under me, correct?  That's fine as long as it's stated that that's how things will work (turn off irqbalance or run oneshot mode for manual setting).
+Do you mean as static local variables?  If so, I'm not sure if that would be any better.
 
-> 
-> > 
-> > Also, can we add a restricted mask as I mention above into this scheme?  If we can't send an IRQ to some node, we don't want to bother attempting to change affinity to cpus on that node (hopefully code in the kernel will eventually restrict this).
-> > 
-> 
-> The interface allows you to put in any CPU mask.  The way it's written 
-> now, whatever mask you put in, irqbalance *only* balances within that 
-> mask.  It won't ever try and go outside that mask.
+> > > Why does 4G limit matter on 64-bit?
+> > tboot can't access >4G, see above.
+>
+> Too bad, then its broken by design.
 
-OK.  Given that, it might be nice to combine the restricted cpus that I'm describing with your node_affinity mask, but we could expose them as separate masks (node_affinity and restricted_affinity, as I describe above).
+See above.
 
-> 
-> > As a matter of fact, driver's allocating rings, buffers, queues on other nodes should optimally be made aware of the restriction.
-> 
-> The idea is that the driver will do its memory allocations for everything 
-> across nodes.  When it does that, it will use the kernel interface 
-> (function call) to set the corresponding mask it wants for those queue 
-> resources.  That is my end-goal for this code.
-> 
+> > >> +        if (tboot_gen_mem_integrity(tboot->s3_key, &mac))
+> > >> +                panic("tboot: vmac generation failed\n");
+> > >> +        else if (mac != mem_mac)
+> > >> +                panic("tboot: memory integrity was lost on resume\n"); +        else
+> > >> +                pr_info("memory integrity OK\n");
+> > >
+> > > So I corrupt memory, but also corrupt tboot_enabled() to return 0....
+> > >
+> > > And... does panic kill the machine quickly enough that no 'bad stuff'
+> > > happens? (Whats bad stuff in this context, anyway?).
+>
+> I'd really like you to answer that.
 
-OK, but we will eventually have to reject any irqbalance attempts to send irqs to restricted nodes.
+"bad stuff" would be the execution of any code (or use of any data that affects execution) that was not verified by tboot.  As long as panic() is within the code ranges MAC'ed by tboot (see above), it would be covered.  Do you know of some panic() code paths that are outside of this?
+
+> > >> @@ -244,7 +245,10 @@ static int acpi_suspend_enter(suspend_st
+> > >> break;
+> > >>
+> > >>          case ACPI_STATE_S3:
+> > >> +                tboot_switch_stack();
+> > >>                  do_suspend_lowlevel();
+> > >> +                tboot_sx_resume();
+> > >> +                tboot_restore_stack();
+> > >>                  break;
+> > >>          }
+> > >>
+> > >
+> > > Did you audit all code before sx_resume()? If it trusts  data not
+> > > checksummed by tboot, attacker may be able to hijack code execution
+> > > and bypass your protection, no?
+> > Yes, kernel code is audited by tboot before resume.
+>
+> So no, you did not audit do_suspend_lowlevel to make sure it does not
+> follow function pointers. Bad.
+
+We aren't aware of any code or data used by the resume path that is outside of the tboot-MAC'ed regions above--if you can point out any then we will gladly address them.
+
+>                                                                       Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
