@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZLDDxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbZLDEAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbZLDDxn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 22:53:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbZLDDxn
+	id S1755838AbZLDEAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 23:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZLDEAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 22:53:43 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:60450 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753846AbZLDDxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 22:53:42 -0500
-Date: Fri, 4 Dec 2009 14:53:40 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Joe Perches <joe@perches.com>, "David S. Miller" <davem@davemloft.net>,
-       <netdev@vger.kernel.org>
-Subject: linux-next: manual merge of the pcmcia tree with the net tree
-Message-Id: <20091204145340.a5b73373.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__4_Dec_2009_14_53_40_+1100_S.63__7UqXVCg8bS"
+	Thu, 3 Dec 2009 23:00:12 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:60161 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755290AbZLDEAL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 23:00:11 -0500
+Message-ID: <4B1888CE.8000406@ct.jp.nec.com>
+Date: Fri, 04 Dec 2009 12:58:06 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       chris.mason@oracle.com, konishi.ryusuke@lab.ntt.co.jp,
+       swhiteho@redhat.com, tytso@mit.edu
+Subject: Re: + task_struct-make-journal_info-conditional.patch added to -mm
+ tree
+References: <200912032240.nB3Mevae027408@imap1.linux-foundation.org> <20091204021444.GA8392@x200>
+In-Reply-To: <20091204021444.GA8392@x200>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__4_Dec_2009_14_53_40_+1100_S.63__7UqXVCg8bS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Alexey Dobriyan wrote:
+> On Thu, Dec 03, 2009 at 02:40:57PM -0800, akpm@linux-foundation.org wrote:
+>> --- a/include/linux/sched.h~task_struct-make-journal_info-conditional
+>> +++ a/include/linux/sched.h
+>> @@ -1452,8 +1452,10 @@ struct task_struct {
+>>  	gfp_t lockdep_reclaim_gfp;
+>>  #endif
+>>  
+>> +#ifdef CONFIG_FS_JOURNAL_INFO
+>>  /* journalling filesystem info */
+>>  	void *journal_info;
+>> +#endif
+> 
+> This will prevent using e.g. ext3 on CONFIG_EXT3_FS=n kernels.
 
-Hi Dominik,
+I'm sorry, I'm not sure what you're mentioning.
 
-Today's linux-next merge of the pcmcia tree got a conflict in
-drivers/net/pcmcia/xirc2ps_cs.c between commit
-8e95a2026f3b43f7c3d676adaccd2de9532e8dcc ("drivers/net: Move && and || to
-end of previous line") from the net tree and commit
-dddfbd824b96a25da0b2f1cf35c0be33ef2422fe ("pcmcia: convert net pcmcia
-drivers to use new CIS helpers") from the pcmcia tree.
-
-I fixed it up (by using the pcmcia tree version - since that removed the
-conflicting code that was modified in the net tree commit) and can carry
-the fix as necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__4_Dec_2009_14_53_40_+1100_S.63__7UqXVCg8bS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksYh8QACgkQjjKRsyhoI8wxKgCfeEcwHclW2NDisuPUf4PIDQ8M
-GwUAn3YwHni1kQ62ZQeLdfFdw7g8TJ3y
-=UPb/
------END PGP SIGNATURE-----
-
---Signature=_Fri__4_Dec_2009_14_53_40_+1100_S.63__7UqXVCg8bS--
+Thanks,
+Hiroshi
