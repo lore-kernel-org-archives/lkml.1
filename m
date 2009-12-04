@@ -1,145 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZLDWO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbZLDWSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481AbZLDWO2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:14:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbZLDWO1
+	id S1755156AbZLDWSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZLDWSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:14:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34775 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbZLDWO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:14:26 -0500
-Message-ID: <4B198A33.7080705@gmail.com>
-Date: Fri, 04 Dec 2009 23:16:19 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
-MIME-Version: 1.0
-To: jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
-       bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
-       john.ronciak@intel.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 06/31] Constify struct e1000_mac_operations for 2.6.32 v1
-References: <4B198670.2000406@gmail.com>
-In-Reply-To: <4B198670.2000406@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
+	Fri, 4 Dec 2009 17:18:47 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:35297 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbZLDWSq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 17:18:46 -0500
+Date: Fri, 4 Dec 2009 14:17:33 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: akpm@linux-foundation.org, Haicheng Li <haicheng.li@intel.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andi Kleen <andi@firstfloor.org>, fengguang.wu@intel.com
+Subject: Re: [PATCH] page-types: kernel pageflags mode
+Message-Id: <20091204141733.b756039c.randy.dunlap@oracle.com>
+In-Reply-To: <20091204212606.29258.98531.stgit@bob.kio>
+References: <20091204212606.29258.98531.stgit@bob.kio>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B198AAD.0185:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Emese Revfy <re.emese@gmail.com>
+On Fri, 04 Dec 2009 14:29:48 -0700 Alex Chiang wrote:
 
-Constify struct e1000_mac_operations with some exceptions.
+> An earlier commit taught page-types the -d|--describe argument, which
+> allows the user to describe page flags passed on the command line:
+> 
+>   # ./Documentation/vm/page-types -d 0x4000
+>   0x0000000000004000  ______________b___________________  swapbacked
+> 
+> In -d mode, page-types expects the page flag bits in the order generated
+> by the kernel function get_uflags().
+> 
+> However, those bits are rearranged compared to what is actually stored
+> in struct page->flags. A kernel developer dumping a page's flags
+> using printk, e.g., may get misleading results in -d mode.
+> 
+> Teach page-types the -k mode, which parses and describes the bits in
+> the internal kernel order:
+> 
+>   # ./Documentation/vm/page-types -k 0x4000
+>   0x0000000000004000  ______________H_________  compound_head
+> 
+> Note that the recommended way to build page-types is from the top-level
+> kernel source directory. This ensures that it will get the same CONFIG_*
+> defines used to build the kernel source.
+> 
+>   # make Documentation/vm/
+> 
+> The implication is that attempting to use page-types -k on a kernel
+> with different CONFIG_* settings may lead to surprising and misleading
+> results. To retain sanity, always use the page-types built out of the
+> kernel tree you are actually testing.
+> 
+> Cc: fengguang.wu@intel.com
+> Cc: Haicheng Li <haicheng.li@intel.com>
+> Cc: Andi Kleen <andi@firstfloor.org>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> 
+> Applies on top of mmotm.
+> 
+>  Documentation/vm/Makefile     |    2 +
+>  Documentation/vm/page-types.c |  117 +++++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 113 insertions(+), 6 deletions(-)
+> 
+> diff --git a/Documentation/vm/Makefile b/Documentation/vm/Makefile
+> index 5bd269b..1bebc43 100644
+> --- a/Documentation/vm/Makefile
+> +++ b/Documentation/vm/Makefile
+> @@ -1,6 +1,8 @@
+>  # kbuild trick to avoid linker error. Can be omitted if a module is built.
+>  obj- := dummy.o
+>  
+> +HOSTCFLAGS_page-types.o += $(LINUXINCLUDE)
+> +
+>  # List of programs to build
+>  hostprogs-y := slabinfo page-types
 
-Signed-off-by: Emese Revfy <re.emese@gmail.com>
+I can ack the Makefile part.  Thanks for the patch.
+
+Not that I expect this patch to change for this, but I think that we
+need to move tools (like this one) from Documentation/ to tools/ and
+possibly move examples from Documentation/ to samples/ or tools/.
+
+
+
 ---
- drivers/net/e1000e/82571.c    |    3 ++-
- drivers/net/e1000e/e1000.h    |    2 +-
- drivers/net/e1000e/es2lan.c   |    3 ++-
- drivers/net/e1000e/ich8lan.c  |    2 +-
- drivers/net/igb/e1000_82575.c |    2 +-
- drivers/net/igb/e1000_hw.h    |    2 +-
- 6 files changed, 8 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
-index d1e0563..16ffb11 100644
---- a/drivers/net/e1000e/82571.c
-+++ b/drivers/net/e1000e/82571.c
-@@ -212,6 +212,7 @@ static s32 e1000_init_mac_params_82571(struct e1000_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct e1000_mac_info *mac = &hw->mac;
-+	/* cannot be const */
- 	struct e1000_mac_operations *func = &mac->ops;
- 	u32 swsm = 0;
- 	u32 swsm2 = 0;
-@@ -1656,7 +1657,7 @@ static void e1000_clear_hw_cntrs_82571(struct e1000_hw *hw)
- 	temp = er32(ICRXDMTC);
- }
- 
--static struct e1000_mac_operations e82571_mac_ops = {
-+static const struct e1000_mac_operations e82571_mac_ops = {
- 	/* .check_mng_mode: mac type dependent */
- 	/* .check_for_link: media type dependent */
- 	.id_led_init		= e1000e_id_led_init,
-diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
-index 3e187b0..933f5da 100644
---- a/drivers/net/e1000e/e1000.h
-+++ b/drivers/net/e1000e/e1000.h
-@@ -375,7 +375,7 @@ struct e1000_info {
- 	u32			pba;
- 	u32			max_hw_frame_size;
- 	s32			(*get_variants)(struct e1000_adapter *);
--	struct e1000_mac_operations *mac_ops;
-+	const struct e1000_mac_operations *mac_ops;
- 	struct e1000_phy_operations *phy_ops;
- 	struct e1000_nvm_operations *nvm_ops;
- };
-diff --git a/drivers/net/e1000e/es2lan.c b/drivers/net/e1000e/es2lan.c
-index ae5d736..06d47e0 100644
---- a/drivers/net/e1000e/es2lan.c
-+++ b/drivers/net/e1000e/es2lan.c
-@@ -207,6 +207,7 @@ static s32 e1000_init_mac_params_80003es2lan(struct e1000_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct e1000_mac_info *mac = &hw->mac;
-+	/* cannot be const */
- 	struct e1000_mac_operations *func = &mac->ops;
- 
- 	/* Set media type */
-@@ -1365,7 +1366,7 @@ static void e1000_clear_hw_cntrs_80003es2lan(struct e1000_hw *hw)
- 	temp = er32(ICRXDMTC);
- }
- 
--static struct e1000_mac_operations es2_mac_ops = {
-+static const struct e1000_mac_operations es2_mac_ops = {
- 	.id_led_init		= e1000e_id_led_init,
- 	.check_mng_mode		= e1000e_check_mng_mode_generic,
- 	/* check_for_link dependent on media type */
-diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
-index eff3f47..3e0065b 100644
---- a/drivers/net/e1000e/ich8lan.c
-+++ b/drivers/net/e1000e/ich8lan.c
-@@ -3451,7 +3451,7 @@ static void e1000_clear_hw_cntrs_ich8lan(struct e1000_hw *hw)
- 	}
- }
- 
--static struct e1000_mac_operations ich8_mac_ops = {
-+static const struct e1000_mac_operations ich8_mac_ops = {
- 	.id_led_init		= e1000e_id_led_init,
- 	.check_mng_mode		= e1000_check_mng_mode_ich8lan,
- 	.check_for_link		= e1000_check_for_copper_link_ich8lan,
-diff --git a/drivers/net/igb/e1000_82575.c b/drivers/net/igb/e1000_82575.c
-index f8f5772..3d5794f 100644
---- a/drivers/net/igb/e1000_82575.c
-+++ b/drivers/net/igb/e1000_82575.c
-@@ -1400,7 +1400,7 @@ void igb_vmdq_set_replication_pf(struct e1000_hw *hw, bool enable)
- 	wr32(E1000_VT_CTL, vt_ctl);
- }
- 
--static struct e1000_mac_operations e1000_mac_ops_82575 = {
-+static const struct e1000_mac_operations e1000_mac_ops_82575 = {
- 	.reset_hw             = igb_reset_hw_82575,
- 	.init_hw              = igb_init_hw_82575,
- 	.check_for_link       = igb_check_for_link_82575,
-diff --git a/drivers/net/igb/e1000_hw.h b/drivers/net/igb/e1000_hw.h
-index 119869b..d58b7e5 100644
---- a/drivers/net/igb/e1000_hw.h
-+++ b/drivers/net/igb/e1000_hw.h
-@@ -310,7 +310,7 @@ struct e1000_nvm_operations {
- 
- struct e1000_info {
- 	s32 (*get_invariants)(struct e1000_hw *);
--	struct e1000_mac_operations *mac_ops;
-+	const struct e1000_mac_operations *mac_ops;
- 	struct e1000_phy_operations *phy_ops;
- 	struct e1000_nvm_operations *nvm_ops;
- };
-
+~Randy
