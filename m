@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbZLDDRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbZLDDgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753716AbZLDDRe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 22:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZLDDRd
+	id S1755526AbZLDDgX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 22:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbZLDDgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 22:17:33 -0500
-Received: from mga14.intel.com ([143.182.124.37]:28625 "EHLO mga14.intel.com"
+	Thu, 3 Dec 2009 22:36:21 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33764 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753290AbZLDDRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 22:17:32 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="218691799"
-Date: Fri, 4 Dec 2009 11:17:35 +0800
-From: "Yin, Kangkai" <kangkai.yin@intel.com>
-To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Kara <jack@suse.cz>, "Yin, Kangkai" <kangkai.yin@intel.com>
-Subject: [PATCH] jbd: jbd-debug and jbd2-debug should be writable.
-Message-ID: <20091204031735.GN19635@kai-debian>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755229AbZLDDgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Dec 2009 22:36:20 -0500
+Date: Fri, 4 Dec 2009 14:36:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: linux-next: block tree build failure
+Message-Id: <20091204143612.f30db275.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__4_Dec_2009_14_36_12_+1100_+sBem.5IiBFb45Xs"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Fri__4_Dec_2009_14_36_12_+1100_+sBem.5IiBFb45Xs
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Re-send since seems my mail was dropped by vger, because of my wrong
-envelope_from..
+Hi Jens,
 
-----
-I was trying to enable the jbd debug option, and found that jbd-debug
-in debugfs is read-only, shouldn't that be writable?
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-Found in both .31 stable kernel and .32 one.
+block/built-in.o: In function `blkiocg_destroy':
+blk-cgroup.c:(.text+0x1bd48): undefined reference to `cfq_unlink_blkio_grou=
+p'
+block/built-in.o: In function `blkiocg_weight_write':
+blk-cgroup.c:(.text+0x1c0d2): undefined reference to `cfq_update_blkio_grou=
+p_weight'
 
-Thanks,
-Kangkai
+Caused by commits b1c3576961847da26c91b1e97f226bb66be5fa3f ("blkio: Take
+care of cgroup deletion and cfq group reference counting") and
+f8d461d692c341add957fb973fb5ee1f62039dc7 ("blkio: Propagate cgroup weight
+updation to cfq groups").
 
->From 492ec0453ca3458c68deaa6e308ca01acc0eca1f Mon Sep 17 00:00:00 2001
-From: Yin Kangkai <kangkai.yin@intel.com>
-Date: Thu, 3 Dec 2009 18:01:38 +0800
-Subject: [PATCH] jbd: jbd-debug and jbd2-debug should be writable.
+When adding code that is CONFIG dependent, please build test it with and
+without the relevant CONFIG setting (in this case
+CONFIG_CFQ_GROUP_IOSCHED).  Also put the extern declarations of global
+functions into a header file.
 
-jbd-debug and jbd2-debug is currently read-only (S_IRUGO), which is not
-correct. Make it writable so that we can start debuging.
+I have used the version of the block tree from next-20091203 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Signed-off-by: Yin Kangkai <kangkai.yin@intel.com>
----
- fs/jbd/journal.c  |    2 +-
- fs/jbd2/journal.c |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+--Signature=_Fri__4_Dec_2009_14_36_12_+1100_+sBem.5IiBFb45Xs
+Content-Type: application/pgp-signature
 
-diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-index 4160afa..bd224ee 100644
---- a/fs/jbd/journal.c
-+++ b/fs/jbd/journal.c
-@@ -1913,7 +1913,7 @@ static void __init jbd_create_debugfs_entry(void)
- {
- 	jbd_debugfs_dir = debugfs_create_dir("jbd", NULL);
- 	if (jbd_debugfs_dir)
--		jbd_debug = debugfs_create_u8("jbd-debug", S_IRUGO,
-+		jbd_debug = debugfs_create_u8("jbd-debug", S_IRUGO | S_IWUSR,
- 					       jbd_debugfs_dir,
- 					       &journal_enable_debug);
- }
-diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-index fed8538..3c41c5a 100644
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -2103,7 +2103,8 @@ static void __init jbd2_create_debugfs_entry(void)
- {
- 	jbd2_debugfs_dir = debugfs_create_dir("jbd2", NULL);
- 	if (jbd2_debugfs_dir)
--		jbd2_debug = debugfs_create_u8(JBD2_DEBUG_NAME, S_IRUGO,
-+		jbd2_debug = debugfs_create_u8(JBD2_DEBUG_NAME,
-+					       S_IRUGO | S_IWUSR,
- 					       jbd2_debugfs_dir,
- 					       &jbd2_journal_enable_debug);
- }
--- 
-1.6.5
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAksYg6wACgkQjjKRsyhoI8wVlgCfeYqfr7NoIDfq5A2kqu9Cg509
+9PMAoI6RGgV1v5LWwgiexKqtIT6R3FiR
+=FYZi
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__4_Dec_2009_14_36_12_+1100_+sBem.5IiBFb45Xs--
