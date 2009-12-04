@@ -1,51 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZLDKGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZLDKGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbZLDKGZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 05:06:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZLDKGY
+	id S1755435AbZLDKGr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 05:06:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZLDKGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 05:06:24 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57566 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752200AbZLDKGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 05:06:23 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18MTMB2U1wM+IzWsKlDmG+ws87wAGG3U93xor1IiK
-	mlRWXReX3Viv4x
-Subject: Re: [RFC][PATCH] sched: fix GENTLE_FAIR_SLEEPERS dependency
-From: Mike Galbraith <efault@gmx.de>
-To: Suresh Jayaraman <sjayaraman@suse.de>
-Cc: mingo@elte.hu, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B18D66E.8020905@suse.de>
-References: <4B18D66E.8020905@suse.de>
-Content-Type: text/plain
-Date: Fri, 04 Dec 2009 11:06:27 +0100
-Message-Id: <1259921187.15613.21.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.59
+	Fri, 4 Dec 2009 05:06:45 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:45415 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753900AbZLDKGn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 05:06:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Jf4i3D4vsEYE1INQhGfLUAtAn+BDD97xA1/YkZ1t23LsqAXXghQvUPsztwATldNoVr
+         YzZvXjlV+u6xe6nTWbGKzv41FTm6BQhJlCLiXUPjUqvcXDDnAFoEI5cHBOnOB95RTWGn
+         reKvCTCSzCyS7lO3C/GJfHvD+J0q6IMNSTDe0=
+Date: Fri, 4 Dec 2009 02:06:42 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, Jarod Wilson <jarod@wilsonet.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jonsmirl@gmail.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+Message-ID: <20091204100642.GD22570@core.coreip.homeip.net>
+References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com> <4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com> <A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com> <4B17AA6A.9060702@redhat.com> <20091203175531.GB776@core.coreip.homeip.net> <20091203163328.613699e5@pedra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091203163328.613699e5@pedra>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-04 at 14:59 +0530, Suresh Jayaraman wrote:
-> The newly introduced GENTLE_FAIR_SLEEPERS does not seem to have any
-> effect without FAIR_SLEEPERS. Fix sysctl.sched_features to reflect
-> this. Without this change, a user who sets GENTLE_FAIR_SLEEPERS
-> without FAIR_SLEEPERS would assume gentle sleeper fairness which
-> is not guaranteed.
+On Thu, Dec 03, 2009 at 04:33:28PM -0200, Mauro Carvalho Chehab wrote:
+> Let me draw my view:
+> 
+> Em Thu, 3 Dec 2009 09:55:31 -0800
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> escreveu:
+> 
+> > No, please, wait just a minute. I know it is tempting to just merge
+> > lirc_dev and start working, but can we first agree on the overall
+> > subsystem structure before doing so. It is still quite inclear to me.
+> > 
+> > The open questions (for me at least):
+> > 
+> > - do we create a new class infrastructure for all receivers or only for
+> >   ones plugged into lirc_dev? Remember that classifying objects affects
+> >   how udev and friemds see them and may either help or hurt writing PnP
+> >   rules.
+> 
+> IMO, I would create it as /sys/class/input/IR (just like the /mice). I
 
-IMHO, these dependencies belong in documentation, not enforcement code.
+That will not work. Driver core does not support notion of subclasses,
+Greg and Kay insist on flat class namespace. Mice do not belong to a
+separate [sub]class, they all members of input class, with peculiar
+directory structure.
 
-Same applies for LAST_BUDDY, meaningless without WAKEUP_PREEMPT.
-SYNC_MORE, SYNC_LESS + AFFINE_WAKEUPS etc.
+IRs however, I believe, deserve a full-fledged class (since they are in
+my view are parents to the input devices representing remotes). I would
+argus for the following sysfs hierarchy for the main device tree:
 
-Bottom line for all button poking and knob turning is you'd better make
-sure you know what button/knob does, and what other things may depend on
-it before messing with it, lest you get a nasty surprise.
+/sys/devices/pcipci0000:00/../pci.../../irrcv0/input14/event16
+/sys/devices/pcipci0000:00/../usb.../../irrcv1/input15/event17
+					      /input16/event18
 
-	-Mike
+And corresponding class:
 
+/sys/class/irrcv/irrcv0
+                 irrcv1
+
+and so on.
+
+>
+> don't see why do we need to different lirc than no-lirc drivers in the
+> case of sysfs class.
+
+I do agree that _all_ infrared receivers should belong to this class,
+and not only ones utilizing lirc_dev.
+
+> As devices with raw input capabilities will have
+> another dev to communicate, this means that we'll need a /lirc node
+> there to point to lirc dev.
+> 
+> > 
+> > - do we intend to support in-kernel sotfware decoders?
+> 
+> Yes.
+> 
+
+Good.
+
+> > - What is the structure? Do we organize them as a module to be used by driver
+> >   directly or the driver "streams" the data to IR core and the core
+> >   applies decoders (in the same fashion input events from drivers flow
+> >   into input core and then distributed to all bound interfaces for
+> >   processing/conversion/transmission to userspace)?
+> 
+> My plan is to expand ir-common.ko module and rename it to ir-core, to be 
+> the IR core module for the evdev interface. I'm already working on it. 
+> My idea for an architecture is that the lirc-core module will use 
+> ir-common where the IR decoders will be, and the evdev interface.
+>
+
+How related lirc-core to the current lirc code? If it is not the same
+maybe we should not call it lirc to avoid confusion.
+
+ 
+> IMO, we should move them from /drivers/media/common to /drivers/input/ir.
+> It makes sense to use kfifo to send the data to the in-kernel decoders.
+> 
+
+OK.
+
+> > - how do we control which decoder should handle particular
+> >   receiver/remote? Is it driver's decision, decoder's decision, user's
+> >   or all of the above?
+> 
+> It should be all the above, since some hardware will only work with certain
+> decoders (hardware limitation) or they may have already a raw mode->scancode
+> legacy decoder. In the latter case, those decoders will be removed from
+> the existing drivers, but this action will take some time.
+> 
+> Some sysfs attributes are needed to specify a list of the supported protocols
+> and the currently used one. I'll prepare a proposed patch for it, after we
+> finish aligning the requirements.
+>  
+> > - do we allow to have several decorers active at once for a receiver?
+> 
+> Yes, as an optional requirement, since some hardware won't support it.
+> 
+> > - who decides that we want to utilize lirc_dev? Driver's themselves, IR
+> >   core (looking at the driver/device "capabilities"), something else?
+> 
+> Drivers that support raw mode, should interface via lirc-core, that will,
+> in turn use ir-core.
+> 
+> Drivers that have in-hardware decode will directly use ir-core.
+> 
+> > - do we recognize and create input devices "on-fly" or require user
+> >   intervention? Semantics for splitting into several input/event
+> >   devices?
+> 
+> I don't have a strong opinion here. 
+> 
+> I don't see any way for doing it, except with very few protocols that
+> sends vendor IDs. I don't care if this feature can be used by the
+> drivers/decoders that could support it.
+> 
+> > Could anyone please draw me a picture, starting with a "receiver"
+> > piece of hardware. I am not concerned much with how exactly receiver is
+> > plugged into a particular subsystem (DVB/V4L etc) since it would be
+> > _their_ implementation detail, but with the flow in/out of that
+> > "receiver" device.
+> 
+> Not sure if I got your idea. Basically, what I see is:
+> 
+> 	For device drivers that work in raw mode:
+> [IR physical device] ==> [IR receiver driver]  ==> [lirc-core] ==> [decoder] ==> [ir-core] ==> [evdev]
+> 
+> (eventually, we can merge decoder and ir-core into one module at the beginning,
+> depending on the size of the decoders)
+> 
+> 	For device drivers that work only in evdev mode (those with hardware decoders):
+> 
+> [IR physical device] ==> [IR receiver driver]  ==> [ir-core] ==> [evdev]
+>
+
+Maybe we are talking about the same things and it is just names that are
+confusing. I'd imagine something like this:
+
+
+In-kernel decoding:
+
+[IR physical device] => [IR receiver driver] => [IR core] => [decoder] => [input core] => [evdev]
+							  => [decoder] => [input core] => [evdev]
+
+Hardware decoder:
+[IR physical device] => [IR receiver driver] => [IR core]
+					     => [input core] => [evdev]
+
+I.e we still register with IR core but driver communicates directly with input device.
+
+Userspace decoging:
+[IR physical device] => [IR receiver driver] => [IR core] => [lirc_dev] => [lircd] => [uinput] => [input core] => [evdev]
+
+Essentially lirc_dev becomes a special case of decoder that, instead of
+connecting inptu core and creating input devices passes the data to
+userspace.
+
+I did not show the block that you call ir-core since I expect it to be more
+like a library rather than an object in overall structure.
+
+ 
+> > 
+> > Now as far as input core goes I see very limited number of changes that
+> > may be needed:
+> > 
+> > - Allow to extend size of "scancode" in EVIOC{S,G}KEYCODE if we are
+> >   unable to limit ourselves to 32 bits (keeping compatibility of course)
+> 
+> Yes, but the way EVIOC{S,G}KEYCODE currently works, it performs poorly when you have a
+> table with 2^64 size. The table is very sparsed, but, as the key to get/set a code is
+> the scancode, it is very hard to enumberate what are the actual entries there. The
+> better is to use an index parameter for they, instead of using the scancode as such.
+> 
+
+evdev does not really care what you use as scancode. So nobody stops
+your driver to report index as a scancode and accept index from the
+ioctl. The true "scancode" will thus be competely hidden from userspace.
+In fact a few drivers do just that.
+
+-- 
+Dmitry
