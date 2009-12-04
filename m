@@ -1,95 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbZLDXGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbZLDXEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757557AbZLDXGI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 18:06:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbZLDXGI
+	id S932433AbZLDXEE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 18:04:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbZLDXED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 18:06:08 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:17225 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757374AbZLDXGH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 18:06:07 -0500
-Date: Fri, 4 Dec 2009 15:05:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Grozdan <neutrino8@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: Can't compile 2.6.32
-Message-Id: <20091204150542.e361a12a.randy.dunlap@oracle.com>
-In-Reply-To: <c5bd819b0912041430s78c86710y18097d7dd77bac0e@mail.gmail.com>
-References: <c5bd819b0912040532x13b7e564ve7f37badb0aaa521@mail.gmail.com>
-	<20091204142522.6de2c52e.randy.dunlap@oracle.com>
-	<c5bd819b0912041430s78c86710y18097d7dd77bac0e@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4B1995E2.0035:SCFMA4539814,ss=1,fgs=0
+	Fri, 4 Dec 2009 18:04:03 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44905 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752537AbZLDXEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 18:04:01 -0500
+Message-ID: <4B1995CB.1050700@gmail.com>
+Date: Sat, 05 Dec 2009 00:05:47 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+MIME-Version: 1.0
+To: yi.zhu@intel.com, reinette.chatre@intel.com, ilw@linux.intel.com,
+       linville@tuxdriver.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH 15/31] Constify struct iwl_ops for 2.6.32 v1
+References: <4B198670.2000406@gmail.com> <4B198DA7.1080809@gmail.com>
+In-Reply-To: <4B198DA7.1080809@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009 23:30:09 +0100 Grozdan wrote:
-
-> On Fri, Dec 4, 2009 at 11:25 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > On Fri, 4 Dec 2009 14:32:08 +0100 Grozdan wrote:
-> >
-> >> Hello,
-> >>
-> >> I'm having trouble trying to compile the 2.6.32 kernel on my openSUSE
-> >> 11.1 system. While doing so, I see a lot of warnings which seem to
-> >> come from include/acpi/acpiosxf.h and then when the compile process
-> >> enters the drivers/acpi directory, it errors out with the following:
-> >>
-> >>   CC      drivers/acpi/tables.o
-> >> In file included from include/acpi/acpi.h:63,
-> >>                  from include/linux/acpi.h:39,
-> >>                  from drivers/acpi/tables.c:33:
-> >> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> >> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> >> returning non-void
-> >>   CC      drivers/acpi/blacklist.o
-> >> In file included from include/acpi/acpi.h:63,
-> >>                  from include/linux/acpi.h:39,
-> >>                  from drivers/acpi/blacklist.c:33:
-> >> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> >> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> >> returning non-void
-> >>   CC      drivers/acpi/osl.o
-> >> In file included from include/acpi/acpi.h:63,
-> >>                  from include/linux/acpi.h:39,
-> >>                  from drivers/acpi/osl.c:40:
-> >> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> >> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> >> returning non-void
-> >> drivers/acpi/osl.c: At top level:
-> >> drivers/acpi/osl.c:514: error: redefinition of ‘acpi_load_override_tables’
-> >> include/acpi/acpiosxf.h:98: error: previous definition of
-> >> ‘acpi_load_override_tables’ was here
-> >> make[2]: *** [drivers/acpi/osl.o] Error 1
-> >> make[1]: *** [drivers/acpi] Error 2
-> >> make: *** [drivers] Error 2
-> >>
-> >> Thoughts, solutions, etc?
-> >
-> > Please send your failing kernel .config file.  Thanks.
+Added netdev@vger.kernel.org and davem@davemloft.net to CC.
+> From: Emese Revfy <re.emese@gmail.com>
 > 
-> Hi Randy
+> Constify struct iwl_ops.
 > 
-> Attached is my config of 2.6.32
+> Signed-off-by: Emese Revfy <re.emese@gmail.com>
+> ---
+>  drivers/net/wireless/iwlwifi/iwl-1000.c |    2 +-
+>  drivers/net/wireless/iwlwifi/iwl-3945.c |    2 +-
+>  drivers/net/wireless/iwlwifi/iwl-4965.c |    2 +-
+>  drivers/net/wireless/iwlwifi/iwl-5000.c |    4 ++--
+>  drivers/net/wireless/iwlwifi/iwl-6000.c |    2 +-
+>  drivers/net/wireless/iwlwifi/iwl-dev.h  |    2 +-
+>  6 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-1000.c b/drivers/net/wireless/iwlwifi/iwl-1000.c
+> index 950267a..80d5fd2 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-1000.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-1000.c
+> @@ -137,7 +137,7 @@ static struct iwl_lib_ops iwl1000_lib = {
+>  	 },
+>  };
+>  
+> -static struct iwl_ops iwl1000_ops = {
+> +static const struct iwl_ops iwl1000_ops = {
+>  	.ucode = &iwl5000_ucode,
+>  	.lib = &iwl1000_lib,
+>  	.hcmd = &iwl5000_hcmd,
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-3945.c b/drivers/net/wireless/iwlwifi/iwl-3945.c
+> index f059b49..fe90e0a 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-3945.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-3945.c
+> @@ -2876,7 +2876,7 @@ static struct iwl_hcmd_utils_ops iwl3945_hcmd_utils = {
+>  	.build_addsta_hcmd = iwl3945_build_addsta_hcmd,
+>  };
+>  
+> -static struct iwl_ops iwl3945_ops = {
+> +static const struct iwl_ops iwl3945_ops = {
+>  	.ucode = &iwl3945_ucode,
+>  	.lib = &iwl3945_lib,
+>  	.hcmd = &iwl3945_hcmd,
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
+> index 6f703a0..b7c4e48 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-4965.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
+> @@ -2335,7 +2335,7 @@ static struct iwl_lib_ops iwl4965_lib = {
+>  	},
+>  };
+>  
+> -static struct iwl_ops iwl4965_ops = {
+> +static const struct iwl_ops iwl4965_ops = {
+>  	.ucode = &iwl4965_ucode,
+>  	.lib = &iwl4965_lib,
+>  	.hcmd = &iwl4965_hcmd,
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-5000.c b/drivers/net/wireless/iwlwifi/iwl-5000.c
+> index 6e6f516..0ec1f24 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-5000.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-5000.c
+> @@ -1627,14 +1627,14 @@ static struct iwl_lib_ops iwl5150_lib = {
+>  	 },
+>  };
+>  
+> -struct iwl_ops iwl5000_ops = {
+> +const struct iwl_ops iwl5000_ops = {
+>  	.ucode = &iwl5000_ucode,
+>  	.lib = &iwl5000_lib,
+>  	.hcmd = &iwl5000_hcmd,
+>  	.utils = &iwl5000_hcmd_utils,
+>  };
+>  
+> -static struct iwl_ops iwl5150_ops = {
+> +static const struct iwl_ops iwl5150_ops = {
+>  	.ucode = &iwl5000_ucode,
+>  	.lib = &iwl5150_lib,
+>  	.hcmd = &iwl5000_hcmd,
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-6000.c b/drivers/net/wireless/iwlwifi/iwl-6000.c
+> index 1473452..f07d5e1 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-6000.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-6000.c
+> @@ -146,7 +146,7 @@ static struct iwl_hcmd_utils_ops iwl6000_hcmd_utils = {
+>  	.calc_rssi = iwl5000_calc_rssi,
+>  };
+>  
+> -static struct iwl_ops iwl6000_ops = {
+> +static const struct iwl_ops iwl6000_ops = {
+>  	.ucode = &iwl5000_ucode,
+>  	.lib = &iwl6000_lib,
+>  	.hcmd = &iwl5000_hcmd,
+> diff --git a/drivers/net/wireless/iwlwifi/iwl-dev.h b/drivers/net/wireless/iwlwifi/iwl-dev.h
+> index 028d505..0c927e5 100644
+> --- a/drivers/net/wireless/iwlwifi/iwl-dev.h
+> +++ b/drivers/net/wireless/iwlwifi/iwl-dev.h
+> @@ -67,7 +67,7 @@ struct iwl_tx_queue;
+>  
+>  /* shared structures from iwl-5000.c */
+>  extern struct iwl_mod_params iwl50_mod_params;
+> -extern struct iwl_ops iwl5000_ops;
+> +extern const struct iwl_ops iwl5000_ops;
+>  extern struct iwl_ucode_ops iwl5000_ucode;
+>  extern struct iwl_lib_ops iwl5000_lib;
+>  extern struct iwl_hcmd_ops iwl5000_hcmd;
+> 
+> 
 
-That builds fine for me, after I run make oldconfig and eliminate all of the
-opensuse config additions.
-
-It could be acpi-header-related though.  Let's cc: linux-acpi to see if they
-know anything about this.
-
-> >> PS: please CC me as I'm not subscribed to the list.
-> >> --
-
-
----
-~Randy
