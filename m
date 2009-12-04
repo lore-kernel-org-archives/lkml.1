@@ -1,151 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZLDS3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbZLDSjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbZLDS3G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 13:29:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZLDS3G
+	id S1754096AbZLDSjf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 13:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbZLDSje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 13:29:06 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:58745 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbZLDS3F (ORCPT
+	Fri, 4 Dec 2009 13:39:34 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:60741 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbZLDSjd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 13:29:05 -0500
-Date: Fri, 4 Dec 2009 10:28:26 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, sam@ravnborg.org,
-       mmarek@suse.cz
-Subject: Re: kbuild - hostprogs not seeing CONFIG_FOO?
-Message-Id: <20091204102826.3648025a.randy.dunlap@oracle.com>
-In-Reply-To: <20091204180749.GA28311@ldl.fc.hp.com>
-References: <20091204180749.GA28311@ldl.fc.hp.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B1954E6.0051:SCFMA4539814,ss=1,fgs=0
+	Fri, 4 Dec 2009 13:39:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dd1202Jm/ouVQer4L6Qm7Retpd1bghbe/MMbnuhIdxiCYKv/peOTjIb+dnK2izXCNj
+         /m4aaEe/ClG3b9vzF2uo0PUwqn0cJRGTADoGyKANG6utr7d3R706arUNzT6oYLiXCtAv
+         K52yaH+60wZO12Ef7tOtH4EgmJ5M2Vk/XePCQ=
+MIME-Version: 1.0
+In-Reply-To: <20091203115740.GM8742@kernel.dk>
+References: <20091203035330.GB13165@sli10-desk.sh.intel.com>
+	 <20091203115740.GM8742@kernel.dk>
+Date: Fri, 4 Dec 2009 19:34:31 +0100
+Message-ID: <4e5e476b0912041034h2a2c53fdh16ddb6523c4917cd@mail.gmail.com>
+Subject: Re: [RFC]cfq-iosched: no dispatch limit for single queue
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Shaohua Li <shaohua.li@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009 11:07:49 -0700 Alex Chiang wrote:
+Hi Shaohua, Jens,
+On Thu, Dec 3, 2009 at 12:57 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thu, Dec 03 2009, Shaohua Li wrote:
+>> Since commit 2f5cb7381b737e24c8046fd4aeab571fb71315f5, each queue can send
+>> up to 4 * 4 requests if only one queue exists. I wonder why we have such limit.
+>> Device supports tag can send more requests. For example, AHCI can send 31
+>> requests. Test (direct aio randread) shows the limits reduce about 4% disk
+>> thoughput.
+>> On the other hand, since we send one request one time, if other queue
+>> pop when current is sending more than cfq_quantum requests, current queue will
+>> stop send requests soon after one request, so sounds there is no big latency.
+>>
+>> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+>>
+>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> index aa1e953..e05650f 100644
+>> --- a/block/cfq-iosched.c
+>> +++ b/block/cfq-iosched.c
+>> @@ -1298,9 +1298,9 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>>                       return false;
+>>
+>>               /*
+>> -              * Sole queue user, allow bigger slice
+>> +              * Sole queue user, no limit
+>>                */
+>> -             max_dispatch *= 4;
+>> +             max_dispatch = -1;
+>>       }
+>>
+>>       /*
+>
+> As you mention, we do dispatches in bites of 1. In reality, there's
+> going to be little difference when we get this far in the depth process,
+> so I think the patch looks good. I have applied it, thanks.
 
-> I'm hoping someone can help me understand this because I don't
-> have the Makefile-fu to figure out what's going on.
-> 
-> I'm trying to patch a helper program: Documentation/vm/page-types.c
-> 
-> The interesting part of the patch is this:
+I think the limit should be removed only for sync queues.
+For async queues, if cfq_latency is not set, removing the limit here can
+cause very high latencies to sync queues (almost 100% increase),
+without a noticeable throughput gain.
 
-(yep)
-
-> +enum pageflags {
-> +	PG_locked,              /* Page is locked. Don't touch. */
-> +	PG_error,
-> +	PG_referenced,
-> +	PG_uptodate,
-> +	PG_dirty,
-> +	PG_lru,
-> +	PG_active,
-> +	PG_slab,
-> +	PG_owner_priv_1,        /* Owner use. If pagecache, fs may use*/
-> +	PG_arch_1,
-> +	PG_reserved,
-> +	PG_private,             /* If pagecache, has fs-private data */
-> +	PG_private_2,           /* If pagecache, has fs aux data */
-> +	PG_writeback,           /* Page is under writeback */
-> +#ifdef CONFIG_PAGEFLAGS_EXTENDED
-> +	PG_head,                /* A head page */
-> +	PG_tail,                /* A tail page */
-> +#else
-> +	PG_compound,            /* A compound page */
-> +#endif
-> +	PG_swapcache,           /* Swap page: swp_entry_t in private */
-> +	PG_mappedtodisk,        /* Has blocks allocated on-disk */
-> +	PG_reclaim,             /* To be reclaimed asap */
-> +	PG_buddy,               /* Page is free, on buddy lists */
-> +	PG_swapbacked,          /* Page is backed by RAM/swap */
-> +	PG_unevictable,         /* Page is "unevictable"  */
-> +#ifdef CONFIG_MMU
-> +	PG_mlocked,             /* Page is vma mlocked */
-> +#endif
-> +#ifdef CONFIG_ARCH_USES_PG_UNCACHED
-> +	PG_uncached,            /* Page has been mapped as uncached */
-> +#endif
-> +#ifdef CONFIG_MEMORY_FAILURE
-> +	PG_hwpoison,            /* hardware poisoned page. Don't touch */
-> +#endif
-> +	__NR_PAGEFLAGS,
-> +};
-> 
-> The #ifdefs are what I care about. I want to build this helper
-> program with the same config that I build the kernel so it can
-> accurately describe page flags.
-> 
-> 	src/ia64 # grep CONFIG_PAGEFLAGS_EXTENDED .config
-> 	CONFIG_PAGEFLAGS_EXTENDED=y
-> 
-> 	src/ia64 # grep CONFIG_PAGEFLAGS_EXTENDED include/generated/autoconf.h 
-> 	#define CONFIG_PAGEFLAGS_EXTENDED 1
-> 
-> 	src/ia64 # grep CONFIG_PAGEFLAGS_EXTENDED include/config/auto.conf
-> 	CONFIG_PAGEFLAGS_EXTENDED=y
-> 
-> But when I build, it doesn't seem to be getting those config
-> values. I determined this with a test case using the binary.
-> 
-> As far as I can tell, hostprogs *should* be getting all the same
-> stuff as the rest of the tree when building, but in my case, it's
-> clearly not.
-> 
-> Operator error? Something else?
-> 
-> Thanks,
-> /ac
-> 
-> 
-> coffee0:/usr/local/src/ia64 # make V=1 Documentation/vm/
-> make -f scripts/Makefile.build obj=arch/ia64/kernel include/generated/nr-irqs.h
-> make[1]: `include/generated/nr-irqs.h' is up to date.
-> rm -f include/config/kernel.release
-> echo 2.6.32-rc7-mm1 > include/config/kernel.release
-> set -e; : '  CHK     include/linux/version.h'; mkdir -p include/linux/; 	(echo \#define LINUX_VERSION_CODE 132640; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))';) < /usr/local/src/ia64/Makefile > include/linux/version.h.tmp; if [ -r include/linux/version.h ] && cmp -s include/linux/version.h include/linux/version.h.tmp; then rm -f include/linux/version.h.tmp; else : '  UPD     include/linux/version.h'; mv -f include/linux/version.h.tmp include/linux/version.h; fi
-> set -e; : '  CHK     include/generated/utsrelease.h'; mkdir -p include/generated/; 	if [ `echo -n "2.6.32-rc7-mm1" | wc -c ` -gt 64 ]; then echo '"2.6.32-rc7-mm1" exceeds 64 characters' >&2; exit 1; fi; (echo \#define UTS_RELEASE \"2.6.32-rc7-mm1\";) < include/config/kernel.release > include/generated/utsrelease.h.tmp; if [ -r include/generated/utsrelease.h ] && cmp -s include/generated/utsrelease.h include/generated/utsrelease.h.tmp; then rm -f include/generated/utsrelease.h.tmp; else : '  UPD     include/generated/utsrelease.h'; mv -f include/generated/utsrelease.h.tmp include/generated/utsrelease.h; fi
-> mkdir -p .tmp_versions 
-> make -f scripts/Makefile.build obj=scripts/basic
-> make -f scripts/Makefile.build obj=.
-> mkdir -p kernel/
-> mkdir -p arch/ia64/kernel/
-> make -f scripts/Makefile.build obj=. missing-syscalls
->   /bin/sh scripts/checksyscalls.sh gcc -Wp,-MD,./.missing-syscalls.d  -nostdinc -isystem /usr/lib/gcc/ia64-suse-linux/4.3/include -I/usr/local/src/ia64/arch/ia64/include -Iinclude  -include include/generated/autoconf.h -D__KERNEL__ -DHAVE_WORKING_TEXT_ALIGN -DHAVE_MODEL_SMALL_ATTRIBUTE -DHAVE_SERIALIZE_DIRECTIVE -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks -Os -pipe -ffixed-r13 -mfixed-range=f12-f15,f32-f127 -falign-functions=32 -frename-registers -fno-optimize-sibling-calls -fno-stack-protector -fomit-frame-pointer -g -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow  -mconstant-gp -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(missing_syscalls)"  -D"KBUILD_MODNAME=KBUILD_STR(missing_syscalls)" -D"DEBUG_HASH=8" -D"DEBUG_HASH2=54"
-
-Above includes include/generated/autoconf.h but page-types does not.
-
-> <stdin>:1519:2: warning: #warning syscall perf_event_open not implemented
-> <stdin>:1523:2: warning: #warning syscall recvmmsg not implemented
-> <stdin>:1527:2: warning: #warning syscall fanotify_init not implemented
-> <stdin>:1531:2: warning: #warning syscall fanotify_mark not implemented
-> make -f scripts/Makefile.build obj=scripts
-> make -f scripts/Makefile.build obj=scripts/genksyms
-> make -f scripts/Makefile.build obj=scripts/mod
-> mkdir -p .tmp_versions 
-> make KBUILD_MODULES=1 \
-> 	-f scripts/Makefile.build obj=Documentation/vm
-> (cat /dev/null; ) > Documentation/vm/modules.order
->   gcc -Wp,-MD,Documentation/vm/.page-types.d -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer     -o Documentation/vm/page-types Documentation/vm/page-types.c  
-> 
-> --
-
-Try adding in Documentation/vm/Makefile something like:
-
-HOSTCFLAGS_page-types.o += -I$(objtree)/usr/include
-
-or
-
-HOSTCFLAGS_page-types.o += $(LINUXINCLUDE)
-
----
-~Randy
+Thanks,
+Corrado
