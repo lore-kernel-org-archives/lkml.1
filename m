@@ -1,107 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbZLDVgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbZLDVmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbZLDVgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 16:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbZLDVgR
+	id S1757391AbZLDVmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 16:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757310AbZLDVmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 16:36:17 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:48836 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757266AbZLDVgQ (ORCPT
+	Fri, 4 Dec 2009 16:42:52 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:60335 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757298AbZLDVmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 16:36:16 -0500
-Date: Fri, 4 Dec 2009 16:36:22 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: Greg KH <gregkh@suse.de>, <stable@kernel.org>,
-       Rickard Bellini <rickard.bellini@ericsson.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       Torgny Johansson <torgny.johansson@ericsson.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
-In-Reply-To: <200912042218.11410.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0912041625360.3070-100000@iolanthe.rowland.org>
+	Fri, 4 Dec 2009 16:42:51 -0500
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org
+References: <20091204194301.ca77fe40.sfr@canb.auug.org.au>
+	<4B18FDA3.5060601@gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 04 Dec 2009 13:42:49 -0800
+In-Reply-To: <4B18FDA3.5060601@gmail.com> (William Allen Simpson's message of "Fri\, 04 Dec 2009 07\:16\:35 -0500")
+Message-ID: <m1vdgmbeli.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: linux-next: manual merge of the sysctl tree with the net tree
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009, Oliver Neukum wrote:
+William Allen Simpson <william.allen.simpson@gmail.com> writes:
 
-> Am Freitag, 4. Dezember 2009 21:57:50 schrieb Alan Stern:
-> > On Fri, 4 Dec 2009, Oliver Neukum wrote:
-> > > > > 1. am I supposed to get a reference just so that I can use dev_err?
-> > > >
-> > > > No, you should already have a reference on the device when doing the
-> > > > call, right?
-> > >
-> > > No, why? Consider this:
-> > >
-> > > int write(...)
-> > > {
-> > > 	...
-> > > 	mutex_lock(&instance->lock);
-> > > 	if (instance->disconnected) {
-> > > 		dev_dbg(instance->dev,"writing to disconnected device");
-> > > 		rv = -ENODEV;
-> > > 	} else {
-> > > 		res = usb_submit_urb(...);
-> > > 		rv = res < 0 ? -EIO : count;
-> > > 	}
-> > > 	mutex_unlock(&instance->lock);
-> > > 	return rv;
-> > > }
-> > >
-> > > void disconnect(...)
-> > > {
-> > > 	...
-> > > 	mutex_lock(&instance->lock);
-> > > 	instance->disconnected = 1;
-> > > 	usb_kill_urb(...);
-> > > 	usb_kill_urb(...);
-> > > 	mutex_unlock(&instance->lock);
-> > > }
-> > >
-> > > This would be perfectly valid code without any references taken save
-> > > for the pesky dev_dbg()
-> > 
-> > Whoever calls write() must possess a valid reference.  Otherwise
-> > instance might already be deallocated when write() starts, causing an
-> > oops well before the call to dev_dbg().
-> 
-> He needs a valid reference to "instance", not to the device. In fact
-> he may do IO to the device only if he knows it hasn't been disconnected.
+> Stephen Rothwell wrote:
+>> Hi Eric,
+>>
+>> Today's linux-next merge of the sysctl tree got a conflict in
+>> net/ipv4/sysctl_net_ipv4.c between commit
+>> 519855c508b9a17878c0977a3cdefc09b59b30df ("TCPCT part 1c:
+>> sysctl_tcp_cookie_size, socket option TCP_COOKIE_TRANSACTIONS") from the
+>> net tree and commit f8572d8f2a2ba75408b97dc24ef47c83671795d7 ("sysctl
+>> net: Remove unused binary sysctl code") from the sysctl tree.
+>>
+>> I fixed it up (see below) and can carry the fix as necessary.
+>
+> Hi, I'm not Eric, but it's my TCPCT patch -- is there something more
+> that I need to do?
+>
+> Adding a sysctl was my very first query to Linux lists.  I thought
+> everything was covered in that and subsequent threads.
 
-Okay, yes.  In fact, that is what your write() routine does -- it
-checks the disconnected flag.
+My apologies for not giving you a heads up earlier.
 
-> > Typically the driver would take a reference during open() and drop it
-> > during close().
-> 
-> You can do that but then you must not do IO prior to open() or after
-> close(). That is you must actually wait for IO to finish in close() and
-> cannot prefill your buffers before open().
+You initially ran into the problem in sysctl_check where you added a
+new binary sysctl and you had errors.  That works to keep people from
+adding new binary sysctl but as you experienced it is not the most
+obvious way of communicating.
 
-If open() or close() is called before disconnect() then you don't have 
-to worry.
+In my sysctl tree I have written a compatibility layer for all of the
+existing binary sysctl handlers, and have removed the .ctl_name and
+.strategy fields, that used to be used for implementing binary
+sysctls.
 
-If close() is called after disconnect() there's nothing to wait for, 
-because disconnect() should call usb_kill_urb() on all outstanding 
-transfers (actually usbcore will do that for you).  Likewise with 
-open().
+In the best case scenario you could have seen that coming and not
+included the .ctl_name line in your patch.  Then there would have been
+a trivial conflict that would have required no changes to fixup.
+However since I removed .ctl_name from before and after your new entry
+a minor merge conflict was inevitable.
 
-The problem in this example stems from the fact that you are using
-instance->dev at a time when you don't know that it is valid -- in
-fact, you have good reason to believe it _isn't_ valid because
-instance->disconnected is set.
+The price it seems for multiple independent development trees are the
+occasionally conflicts in trees hosting kernel wide cleanups and fixes.
 
-One approach is to set instance->dev to NULL in disconnect().  That
-wouldn't do much good for your dev_dbg(), though.  A better solution is
-to refcount the instance->dev pointer: Take a reference to the device
-when setting instance->dev and drop it when clearing instance->dev (or
-when instance is freed).
-
-Alan Stern
-
+Eric
