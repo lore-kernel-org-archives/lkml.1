@@ -1,96 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbZLDTgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbZLDTer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757181AbZLDTgK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 14:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbZLDTgI
+	id S1757127AbZLDTer (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 14:34:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbZLDTeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 14:36:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60323 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754096AbZLDTgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 14:36:07 -0500
-Message-ID: <4B196455.6060308@gmail.com>
-Date: Fri, 04 Dec 2009 20:34:45 +0100
-From: Edward Shishkin <edward.shishkin@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Fri, 4 Dec 2009 14:34:46 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:42663 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755093AbZLDTep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 14:34:45 -0500
+Date: Fri, 4 Dec 2009 14:34:46 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ondrej Zary <linux@rainbow-software.org>
+cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
+Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
+In-Reply-To: <200912042017.36459.linux@rainbow-software.org>
+Message-ID: <Pine.LNX.4.44L0.0912041427550.3070-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Johannes Buchner <buchner.johannes@gmx.at>
-CC: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: reiser4: newbie help needed?
-References: <20091202192143.48ece851.buchner.johannes@gmx.at>	<4B16318E.7010504@gmail.com> <20091204092527.a5117191.buchner.johannes@gmx.at>
-In-Reply-To: <20091204092527.a5117191.buchner.johannes@gmx.at>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Buchner wrote:
-> On Wed, 02 Dec 2009 10:21:18 +0100
-> Edward Shishkin <edward.shishkin@gmail.com> wrote:
->
->   
->> Johannes Buchner wrote:
->>     
+On Fri, 4 Dec 2009, Ondrej Zary wrote:
 
-Hello.
+> Just found why it was sometimes hard to reproduce a problem. Sometimes the
+> devices are controlled by uhci_hcd and sometimes by ehci_hcd. It seems to
+> be random and can change on every reboot.
 
->>>  I took a look at the TODO lists, are there any simple tasks to
->>> do for newbies?
->>>       
->> If you mean the "todo for inclusion", then no.
->>
->> Reiser4 has only one technical issue. It can
->> be resolved only by very experienced people.
->>     
->
-> Thanks for replying. I did not have to the inclusion of
-> reiser4 in mind specifically.
->
->   
->>> I also believe that on 'sync', reiser4 currently does absolutely
->>> nothing.
->>>       
->> this is not good: a file system should respond on sync (1).
->>
->>     
->>>  The comment in reiser4_sync_inodes says reiser4 does its own
->>> flush elsewhere. Should this be different?
->>>   
->>>       
->> you might want to ask such question _before_ sending patches to akpm. 
->>     
->
-> I was under the believe that I did not change the behaviour. I see my
-> mistake now, I was looking at the wrong if-branch. 
->   
+It shouldn't change.  The hub you plug into (the D-Link hub) should
+always be controlled by ehci-hcd.  Can you post a dmesg log showing
+what happens on bootup for a case where the hub ends up under uhci-hcd?
 
-Nop. You've lost the whole point of using of ->sync_inodes(), which is
-responsible for reiser4 background (and non-background) writeback,
-and now it is not involved by any path.
+> With uhci_hcd, rmmod works fine. With ehci_hcd, rmmod hangs the bus - all
+> urbs fail with -ENOENT:
+> f67265e8 1428021080 S Bi:1:009:2 -115 128 <
+> f67265e8 1431508327 C Bi:1:009:2 -108 0
+> f6726718 1458252464 S Co:1:007:0 s 40 09 0001 0000 0000 0
+> f6726718 1463261404 C Co:1:007:0 -2 0
+> f6726978 1463261428 S Co:1:002:0 s 23 08 0070 0001 0000 0
+> f6726718 1463261509 S Co:1:007:0 s 40 00 0000 0000 0000 0
+> f6726978 1464273397 C Co:1:002:0 -2 0
+> f6726718 1468273397 C Co:1:007:0 -2 0
 
-Here is a good explanation why we need this additional super operation:
-http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc3/2.6.21-rc3-mm1/broken-out/reiser4-sb_sync_inodes.patch
+This may be a bug in ehci-hcd, a bug in your EHCI hardware, or a bug in
+the hub.  Can you try using a different high-speed hub to see if it
+makes any difference?
 
-> I tried now to come up with a correct version for some hours, but I keep
-> having NULL problems. Maybe a writeback_control object has to be
-> created, possibly even in fs/fs-writeback.c:sync_inodes_sb, as
-> write_inode_now does below. I tried that too, but it gave me a
-> recursion.
-
-It may happens because of missed checks that a process is of pdflush-style.
-Perhaps, we need to rename the current_is_pdflush() and get it back.
-
-Thanks,
-Edward.
-
->  I'm not sure what the rationale was for introducing a call
-> with NULL here. Sorry I can't correct this.
->
-> Looking forward to your review.
->
-> Best wishes,
-> Johannes
->
->   
+Alan Stern
 
