@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZLDWkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbZLDWl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbZLDWkI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZLDWkG
+	id S1757550AbZLDWl1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbZLDWl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:40:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34877 "EHLO mx3.mail.elte.hu"
+	Fri, 4 Dec 2009 17:41:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35069 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923AbZLDWkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:40:04 -0500
-Message-ID: <4B199025.5040208@gmail.com>
-Date: Fri, 04 Dec 2009 23:41:41 +0100
+	id S1754723AbZLDWlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 17:41:25 -0500
+Message-ID: <4B199060.1060604@gmail.com>
+Date: Fri, 04 Dec 2009 23:42:40 +0100
 From: Emese Revfy <re.emese@gmail.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+To: lenb@kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com,
        torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 24/31] Constify struct pci_raw_ops for 2.6.32 v1
+Subject: [PATCH 25/31] Constify struct platform_hibernation_ops for 2.6.32
+ v1
 References: <4B198670.2000406@gmail.com>
 In-Reply-To: <4B198670.2000406@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-2
@@ -34,164 +35,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Emese Revfy <re.emese@gmail.com>
 
-Constify struct pci_raw_ops.
+Constify struct platform_hibernation_ops.
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- arch/x86/include/asm/pci_x86.h |   10 +++++-----
- arch/x86/pci/common.c          |    4 ++--
- arch/x86/pci/direct.c          |    6 +++---
- arch/x86/pci/mmconfig_32.c     |    2 +-
- arch/x86/pci/mmconfig_64.c     |    2 +-
- arch/x86/pci/numaq_32.c        |    2 +-
- arch/x86/pci/olpc.c            |    2 +-
- arch/x86/pci/pcbios.c          |    4 ++--
- 8 files changed, 16 insertions(+), 16 deletions(-)
+ drivers/acpi/sleep.c     |    4 ++--
+ include/linux/suspend.h  |   24 ++++++++++++------------
+ kernel/power/hibernate.c |    4 ++--
+ 3 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
-index b399988..3f47c38 100644
---- a/arch/x86/include/asm/pci_x86.h
-+++ b/arch/x86/include/asm/pci_x86.h
-@@ -89,16 +89,16 @@ extern int (*pcibios_enable_irq)(struct pci_dev *dev);
- extern void (*pcibios_disable_irq)(struct pci_dev *dev);
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 5f2c379..3f5957a 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -552,7 +552,7 @@ static void acpi_pm_enable_gpes(void)
+ 	acpi_enable_all_runtime_gpes();
+ }
  
- struct pci_raw_ops {
--	int (*read)(unsigned int domain, unsigned int bus, unsigned int devfn,
-+	int (* const read)(unsigned int domain, unsigned int bus, unsigned int devfn,
- 						int reg, int len, u32 *val);
--	int (*write)(unsigned int domain, unsigned int bus, unsigned int devfn,
-+	int (* const write)(unsigned int domain, unsigned int bus, unsigned int devfn,
- 						int reg, int len, u32 val);
- };
- 
--extern struct pci_raw_ops *raw_pci_ops;
--extern struct pci_raw_ops *raw_pci_ext_ops;
-+extern const struct pci_raw_ops *raw_pci_ops;
-+extern const struct pci_raw_ops *raw_pci_ext_ops;
- 
--extern struct pci_raw_ops pci_direct_conf1;
-+extern const struct pci_raw_ops pci_direct_conf1;
- extern bool port_cf9_safe;
- 
- /* arch_initcall level */
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index 1331fcf..03901b2 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -31,8 +31,8 @@ int noioapicreroute = 1;
- int pcibios_last_bus = -1;
- unsigned long pirq_table_addr;
- struct pci_bus *pci_root_bus;
--struct pci_raw_ops *raw_pci_ops;
--struct pci_raw_ops *raw_pci_ext_ops;
-+const struct pci_raw_ops *raw_pci_ops;
-+const struct pci_raw_ops *raw_pci_ext_ops;
- 
- int raw_pci_read(unsigned int domain, unsigned int bus, unsigned int devfn,
- 						int reg, int len, u32 *val)
-diff --git a/arch/x86/pci/direct.c b/arch/x86/pci/direct.c
-index 347d882..4baf6b6 100644
---- a/arch/x86/pci/direct.c
-+++ b/arch/x86/pci/direct.c
-@@ -79,7 +79,7 @@ static int pci_conf1_write(unsigned int seg, unsigned int bus,
- 
- #undef PCI_CONF1_ADDRESS
- 
--struct pci_raw_ops pci_direct_conf1 = {
-+const struct pci_raw_ops pci_direct_conf1 = {
- 	.read =		pci_conf1_read,
- 	.write =	pci_conf1_write,
- };
-@@ -173,7 +173,7 @@ static int pci_conf2_write(unsigned int seg, unsigned int bus,
- 
- #undef PCI_CONF2_ADDRESS
- 
--struct pci_raw_ops pci_direct_conf2 = {
-+const struct pci_raw_ops pci_direct_conf2 = {
- 	.read =		pci_conf2_read,
- 	.write =	pci_conf2_write,
- };
-@@ -189,7 +189,7 @@ struct pci_raw_ops pci_direct_conf2 = {
-  * This should be close to trivial, but it isn't, because there are buggy
-  * chipsets (yes, you guessed it, by Intel and Compaq) that have no class ID.
+-static struct platform_hibernation_ops acpi_hibernation_ops = {
++static const struct platform_hibernation_ops acpi_hibernation_ops = {
+ 	.begin = acpi_hibernation_begin,
+ 	.end = acpi_pm_end,
+ 	.pre_snapshot = acpi_hibernation_pre_snapshot,
+@@ -605,7 +605,7 @@ static int acpi_hibernation_pre_snapshot_old(void)
+  * The following callbacks are used if the pre-ACPI 2.0 suspend ordering has
+  * been requested.
   */
--static int __init pci_sanity_check(struct pci_raw_ops *o)
-+static int __init pci_sanity_check(const struct pci_raw_ops *o)
+-static struct platform_hibernation_ops acpi_hibernation_ops_old = {
++static const struct platform_hibernation_ops acpi_hibernation_ops_old = {
+ 	.begin = acpi_hibernation_begin_old,
+ 	.end = acpi_pm_end,
+ 	.pre_snapshot = acpi_hibernation_pre_snapshot_old,
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 5e781d8..cb4cc7d 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -215,16 +215,16 @@ extern void mark_free_pages(struct zone *zone);
+  *	platforms which require special recovery actions in that situation.
+  */
+ struct platform_hibernation_ops {
+-	int (*begin)(void);
+-	void (*end)(void);
+-	int (*pre_snapshot)(void);
+-	void (*finish)(void);
+-	int (*prepare)(void);
+-	int (*enter)(void);
+-	void (*leave)(void);
+-	int (*pre_restore)(void);
+-	void (*restore_cleanup)(void);
+-	void (*recover)(void);
++	int (* const begin)(void);
++	void (* const end)(void);
++	int (* const pre_snapshot)(void);
++	void (* const finish)(void);
++	int (* const prepare)(void);
++	int (* const enter)(void);
++	void (* const leave)(void);
++	int (* const pre_restore)(void);
++	void (* const restore_cleanup)(void);
++	void (* const recover)(void);
+ };
+ 
+ #ifdef CONFIG_HIBERNATION
+@@ -243,7 +243,7 @@ extern void swsusp_set_page_free(struct page *);
+ extern void swsusp_unset_page_free(struct page *);
+ extern unsigned long get_safe_page(gfp_t gfp_mask);
+ 
+-extern void hibernation_set_ops(struct platform_hibernation_ops *ops);
++extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+ extern int hibernate(void);
+ extern bool system_entering_hibernation(void);
+ #else /* CONFIG_HIBERNATION */
+@@ -251,7 +251,7 @@ static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
+ static inline void swsusp_set_page_free(struct page *p) {}
+ static inline void swsusp_unset_page_free(struct page *p) {}
+ 
+-static inline void hibernation_set_ops(struct platform_hibernation_ops *ops) {}
++static inline void hibernation_set_ops(const struct platform_hibernation_ops *ops) {}
+ static inline int hibernate(void) { return -ENOSYS; }
+ static inline bool system_entering_hibernation(void) { return false; }
+ #endif /* CONFIG_HIBERNATION */
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 04a9e90..bc355aa 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -48,14 +48,14 @@ enum {
+ 
+ static int hibernation_mode = HIBERNATION_SHUTDOWN;
+ 
+-static struct platform_hibernation_ops *hibernation_ops;
++static const struct platform_hibernation_ops *hibernation_ops;
+ 
+ /**
+  * hibernation_set_ops - set the global hibernate operations
+  * @ops: the hibernation operations to use in subsequent hibernation transitions
+  */
+ 
+-void hibernation_set_ops(struct platform_hibernation_ops *ops)
++void hibernation_set_ops(const struct platform_hibernation_ops *ops)
  {
- 	u32 x = 0;
- 	int year, devfn;
-diff --git a/arch/x86/pci/mmconfig_32.c b/arch/x86/pci/mmconfig_32.c
-index f10a7e9..0425342 100644
---- a/arch/x86/pci/mmconfig_32.c
-+++ b/arch/x86/pci/mmconfig_32.c
-@@ -125,7 +125,7 @@ static int pci_mmcfg_write(unsigned int seg, unsigned int bus,
- 	return 0;
- }
- 
--static struct pci_raw_ops pci_mmcfg = {
-+static const struct pci_raw_ops pci_mmcfg = {
- 	.read =		pci_mmcfg_read,
- 	.write =	pci_mmcfg_write,
- };
-diff --git a/arch/x86/pci/mmconfig_64.c b/arch/x86/pci/mmconfig_64.c
-index 94349f8..41600a7 100644
---- a/arch/x86/pci/mmconfig_64.c
-+++ b/arch/x86/pci/mmconfig_64.c
-@@ -104,7 +104,7 @@ static int pci_mmcfg_write(unsigned int seg, unsigned int bus,
- 	return 0;
- }
- 
--static struct pci_raw_ops pci_mmcfg = {
-+static const struct pci_raw_ops pci_mmcfg = {
- 	.read =		pci_mmcfg_read,
- 	.write =	pci_mmcfg_write,
- };
-diff --git a/arch/x86/pci/numaq_32.c b/arch/x86/pci/numaq_32.c
-index 8eb295e..86bd657 100644
---- a/arch/x86/pci/numaq_32.c
-+++ b/arch/x86/pci/numaq_32.c
-@@ -112,7 +112,7 @@ static int pci_conf1_mq_write(unsigned int seg, unsigned int bus,
- 
- #undef PCI_CONF1_MQ_ADDRESS
- 
--static struct pci_raw_ops pci_direct_conf1_mq = {
-+static const struct pci_raw_ops pci_direct_conf1_mq = {
- 	.read	= pci_conf1_mq_read,
- 	.write	= pci_conf1_mq_write
- };
-diff --git a/arch/x86/pci/olpc.c b/arch/x86/pci/olpc.c
-index b889d82..5a58a0a 100644
---- a/arch/x86/pci/olpc.c
-+++ b/arch/x86/pci/olpc.c
-@@ -297,7 +297,7 @@ static int pci_olpc_write(unsigned int seg, unsigned int bus,
- 	return 0;
- }
- 
--static struct pci_raw_ops pci_olpc_conf = {
-+static const struct pci_raw_ops pci_olpc_conf = {
- 	.read =	pci_olpc_read,
- 	.write = pci_olpc_write,
- };
-diff --git a/arch/x86/pci/pcbios.c b/arch/x86/pci/pcbios.c
-index 1c975cc..5fa1cff 100644
---- a/arch/x86/pci/pcbios.c
-+++ b/arch/x86/pci/pcbios.c
-@@ -278,7 +278,7 @@ static int pci_bios_write(unsigned int seg, unsigned int bus,
-  * Function table for BIOS32 access
-  */
- 
--static struct pci_raw_ops pci_bios_access = {
-+static const struct pci_raw_ops pci_bios_access = {
- 	.read =		pci_bios_read,
- 	.write =	pci_bios_write
- };
-@@ -287,7 +287,7 @@ static struct pci_raw_ops pci_bios_access = {
-  * Try to find PCI BIOS.
-  */
- 
--static struct pci_raw_ops * __devinit pci_find_bios(void)
-+static const struct pci_raw_ops * __devinit pci_find_bios(void)
- {
- 	union bios32 *check;
- 	unsigned char sum;
+ 	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
+ 	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
 
