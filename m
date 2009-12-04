@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZLDUsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZLDUsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbZLDUsD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 15:48:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZLDUr6
+	id S1757378AbZLDUsO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 15:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZLDUsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 15:47:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22053 "EHLO mx1.redhat.com"
+	Fri, 4 Dec 2009 15:48:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10352 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757329AbZLDUrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 15:47:55 -0500
+	id S1757329AbZLDUsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 15:48:04 -0500
 From: Eric Paris <eparis@redhat.com>
-Subject: [RFC PATCH 02/15] shmem: use alloc_file instead of init_file
+Subject: [RFC PATCH 03/15] pipes: use alloc-file instead of duplicating code
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
 Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
@@ -22,8 +22,8 @@ Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
        matthew@wil.cx, hugh.dickins@tiscali.co.uk,
        kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
        davem@davemloft.net, arnd@arndb.de, eric.dumazet@gmail.com
-Date: Fri, 04 Dec 2009 15:46:56 -0500
-Message-ID: <20091204204656.18286.15131.stgit@paris.rdu.redhat.com>
+Date: Fri, 04 Dec 2009 15:47:04 -0500
+Message-ID: <20091204204704.18286.49884.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
 References: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -34,56 +34,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-shmem uses get_empty_filp() and then init_file().  Their is no good reason
-not to just use alloc_file() like everything else.
+The pipe code duplicates the functionality of alloc-file and init-file.  Use
+the generic vfs functions instead of duplicating code.
 
-Acked-by: Miklos Szeredi <miklos@szeredi.hu>
 Signed-off-by: Eric Paris <eparis@redhat.com>
+Acked-by: Miklos Szeredi <miklos@szeredi.hu>
 ---
 
- mm/shmem.c |   17 +++++++----------
- 1 files changed, 7 insertions(+), 10 deletions(-)
+ fs/pipe.c |   21 +++++++++------------
+ 1 files changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index e7f8968..b212184 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -2640,21 +2640,20 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
- 	if (!dentry)
- 		goto put_memory;
+diff --git a/fs/pipe.c b/fs/pipe.c
+index ae17d02..5d6c969 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -1028,20 +1028,17 @@ void free_write_pipe(struct file *f)
  
--	error = -ENFILE;
--	file = get_empty_filp();
--	if (!file)
--		goto put_dentry;
+ struct file *create_read_pipe(struct file *wrf, int flags)
+ {
+-	struct file *f = get_empty_filp();
+-	if (!f)
+-		return ERR_PTR(-ENFILE);
 -
- 	error = -ENOSPC;
- 	inode = shmem_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0, flags);
- 	if (!inode)
--		goto close_file;
-+		goto put_dentry;
+-	/* Grab pipe from the writer */
+-	f->f_path = wrf->f_path;
+-	path_get(&wrf->f_path);
+-	f->f_mapping = wrf->f_path.dentry->d_inode->i_mapping;
++	struct file *f;
++	struct dentry *dentry = wrf->f_path.dentry;
++	struct vfsmount *mnt = wrf->f_path.mnt;
  
- 	d_instantiate(dentry, inode);
- 	inode->i_size = size;
- 	inode->i_nlink = 0;	/* It is unlinked */
--	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
--		  &shmem_file_operations);
-+
-+	error = -ENFILE;
-+	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
-+			  &shmem_file_operations);
-+	if (!file)
-+		goto put_dentry;
+-	f->f_pos = 0;
++	dentry = dget(dentry);
++	f = alloc_file(mnt, dentry, FMODE_READ, &read_pipefifo_fops);
++	if (!f) {
++		dput(dentry);
++		return ERR_PTR(-ENFILE);
++	}
+ 	f->f_flags = O_RDONLY | (flags & O_NONBLOCK);
+-	f->f_op = &read_pipefifo_fops;
+-	f->f_mode = FMODE_READ;
+-	f->f_version = 0;
  
- 	ima_counts_get(file);
- 
-@@ -2667,8 +2666,6 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
- #endif
- 	return file;
- 
--close_file:
--	put_filp(file);
- put_dentry:
- 	dput(dentry);
- put_memory:
+ 	return f;
+ }
 
