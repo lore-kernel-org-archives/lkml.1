@@ -1,55 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZLDLOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbZLDLPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZLDLOl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 06:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZLDLOk
+	id S1756016AbZLDLPz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 06:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbZLDLPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 06:14:40 -0500
-Received: from paperstreet.colino.net ([213.41.244.236]:52925 "EHLO
-	paperstreet.colino.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbZLDLOj (ORCPT
+	Fri, 4 Dec 2009 06:15:54 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35986 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753560AbZLDLPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 06:14:39 -0500
-Date: Fri, 4 Dec 2009 12:14:41 +0100
-From: Colin Leroy <colin@colino.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] therm_adt746x is unmaintained
-Message-ID: <20091204121441.08cccb35@paperstreet.colino.net>
-X-Mailer: Claws Mail 3.7.3cvs10 (GTK+ 2.16.1; x86_64-unknown-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEUAAwASFBYfISMyMTRGRUdaWFdxb2yJhoKrqaPOzMT19Ow5JzfkAAACW0lEQVQ4y6WTP1PbMBjGo6T/RkmmLWxIotCxtkRpmYqVMLAFY2i7AU0DbEDACVOvd6aED9DYnntg61NWCo0tt2N1vpyjn5/30ftIajT+Z4BVLLw3/0w7a+MsVXln8a/5x+E47fXT5FLW55ubP0ZFViTj6KImcXb7l5Pr4XD4JQo3bNDSVdIbLgLhd3ZssLwXHyUXwheACWnXivrx13bHRU3ECHMt6yjsDA8XIWygJsZeBZ5E/mrHBwAgpB9W1XodSw+Dh3cEvA8lODrQVR5i0Q8pTUB0Dq3I3LKTR/3cQyXC5KzM6b1Kugj9+YfI91LxWaUHej1gqsL0vAzkSiUHZqXGFToWuFUTSRHExEiarAsrcO1ThPDUpuVszAC4KgbcI7plQ5q4Cus2Dzh30e72w3ekbCnpSSERXpJGAdhs4Y35ImZiLVNn0y7RyqxzcKvUwDtRKne5JnhuFmJLKXXnZ/p3X0tAZQ4MONUy1UWgAXG1H/rj/HRLA1fbQuCUYN1Ueakp0UkCwMqgW1mhTvFxca67hxDxEoCtvNhHDtd5IQAc65Qs5PcSMbHjasD96iyA+TymlEujcIoza5tfFGlAKOceQm9VYG2/KFRAGeeUoOXUPtRsMupxJrkutTSuXYPonT4MbaNYOq6BlVHAPWEA34O1i5YGQmoPXWsP1a7aeEI5oxRj9LEOtu449SgmBB6FtVpPB9rBDChuagDs8Okg4FVG7Ft7eRKLtmnEWc66Fvg0Wc/boeQu7u6Ovln2PwcL6ZdO2yOrz3ujX6BySA6fpXEovbntcHNwb9x/A34/oQVbOAIKAAAAAElFTkSuQmCC
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Fri, 4 Dec 2009 06:15:53 -0500
+Date: Fri, 4 Dec 2009 12:15:59 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Amit Kucheria <amit.kucheria@canonical.com>
+Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org, valentin.longchamp@epfl.ch,
+       daniel@caiaq.de, grant.likely@secretlab.ca, Dinh.Nguyen@freescale.com,
+       r.herring@freescale.com
+Subject: Re: [RFC][PATCH 07/10] fec: Add LAN8700 phy support
+Message-ID: <20091204111559.GM15126@pengutronix.de>
+References: <cover.1259893118.git.amit.kucheria@canonical.com> <a34d2aac8d5282bfbdf09dddc2da57c4ad7da355.1259893118.git.amit.kucheria@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a34d2aac8d5282bfbdf09dddc2da57c4ad7da355.1259893118.git.amit.kucheria@canonical.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 12:14:22 up 53 days, 3 min, 61 users,  load average: 0.04, 1.00,
+	1.95
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Dec 04, 2009 at 04:47:07AM +0200, Amit Kucheria wrote:
+> The i.MX51 babbage board has a FEC ethernet controller with this phy.
 
-I don't have the hardware to maintain the ADT746X fan driver anymore.
-Here's a patch to update the status of the driver.
+I already saw patches for proper phylib support for the fec driver.
+Maybe we should reactivate them rather than adding another phy to this
+driver.
 
-Signed-off-by: Colin Leroy <colin@colino.net>
+Sascha
 
---- a/MAINTAINERS	2009-12-04 12:09:59.000000000 +0100
-+++ b/MAINTAINERS	2009-12-04 12:10:00.000000000 +0100
-@@ -322,11 +322,6 @@ T:	git git://git.kernel.org/pub/scm/linu
- S:	Maintained
- F:	drivers/net/wireless/adm8211.*
- 
--ADT746X FAN DRIVER
--M:	Colin Leroy <colin@colino.net>
--S:	Maintained
--F:	drivers/macintosh/therm_adt746x.c
--
- ADVANSYS SCSI DRIVER
- M:	Matthew Wilcox <matthew@wil.cx>
- L:	linux-scsi@vger.kernel.org
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: netdev@vger.kernel.org
+> ---
+>  drivers/net/fec.c |   21 +++++++++++++++++++++
+>  1 files changed, 21 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/fec.c b/drivers/net/fec.c
+> index 9a8743d..5d0d332 100644
+> --- a/drivers/net/fec.c
+> +++ b/drivers/net/fec.c
+> @@ -1128,6 +1128,26 @@ static phy_info_t phy_info_dp83848= {
+>  	},
+>  };
+>  
+> +static phy_info_t phy_info_lan8700 = {
+> +	0x0007C0C,
+> +	"LAN8700",
+> +	(const phy_cmd_t []) { /* config */
+> +		{ mk_mii_read(MII_REG_CR), mii_parse_cr },
+> +		{ mk_mii_read(MII_REG_ANAR), mii_parse_anar },
+> +		{ mk_mii_end, }
+> +	},
+> +	(const phy_cmd_t []) { /* startup */
+> +		{ mk_mii_write(MII_REG_CR, 0x1200), NULL }, /* autonegotiate */
+> +		{ mk_mii_read(MII_REG_SR), mii_parse_sr },
+> +		{ mk_mii_end, }
+> +	},
+> +	(const phy_cmd_t []) { /* act_int */
+> +		{ mk_mii_end, }
+> +	},
+> +	(const phy_cmd_t []) { /* shutdown */
+> +		{ mk_mii_end, }
+> +	},
+> +};
+>  /* ------------------------------------------------------------------------- */
+>  
+>  static phy_info_t const * const phy_info[] = {
+> @@ -1137,6 +1157,7 @@ static phy_info_t const * const phy_info[] = {
+>  	&phy_info_am79c874,
+>  	&phy_info_ks8721bl,
+>  	&phy_info_dp83848,
+> +	&phy_info_lan8700,
+>  	NULL
+>  };
+>  
+> -- 
+> 1.6.3.3
+> 
+> 
 
 -- 
-Colin
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
