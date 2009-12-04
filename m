@@ -1,83 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbZLDS2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZLDS3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563AbZLDS2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 13:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZLDS2U
+	id S1754256AbZLDS3G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 13:29:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZLDS3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 13:28:20 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:64785 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbZLDS2T (ORCPT
+	Fri, 4 Dec 2009 13:29:06 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:58745 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbZLDS3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 13:28:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=kpiTrnpw4Isf5r5YGBoDgK0iNlr9V5DwjtZJAeyB71Vo53guH1MsjrOmsNoeQee2i1
-         LXheSUPdFp83ItywY304HSVvTCJI03cMmOpiSrlhzJmabt4UnWN7Q0dX09cM5hqzF6gI
-         Al6UbvY0ZyX66kGlcUm1auAF0SVrX9nbxYwHw=
-MIME-Version: 1.0
-In-Reply-To: <20091204090524.GB6478@ff.dom.local>
-References: <81bfc67a0911232217n41b9ac02w3b7770b789e5d209@mail.gmail.com>
-	 <20091124111946.GA7883@ff.dom.local>
-	 <81bfc67a0911250606k1ec76354n217da9ca20b3517c@mail.gmail.com>
-	 <20091125191105.GA3167@ami.dom.local>
-	 <81bfc67a0911271007o1fb8f8c2vdd36e8585280e4da@mail.gmail.com>
-	 <20091127213640.GA2611@ami.dom.local>
-	 <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
-	 <20091127224206.GA3350@ami.dom.local>
-	 <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
-	 <20091204090524.GB6478@ff.dom.local>
-Date: Fri, 4 Dec 2009 13:28:26 -0500
-Message-ID: <81bfc67a0912041028w16668d0cx4da04bee989eef4a@mail.gmail.com>
-Subject: Re: large packet loss take2 2.6.31.x
-From: Caleb Cushing <xenoterracide@gmail.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
+	Fri, 4 Dec 2009 13:29:05 -0500
+Date: Fri, 4 Dec 2009 10:28:26 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, sam@ravnborg.org,
+       mmarek@suse.cz
+Subject: Re: kbuild - hostprogs not seeing CONFIG_FOO?
+Message-Id: <20091204102826.3648025a.randy.dunlap@oracle.com>
+In-Reply-To: <20091204180749.GA28311@ldl.fc.hp.com>
+References: <20091204180749.GA28311@ldl.fc.hp.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B1954E6.0051:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 4, 2009 at 4:05 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> On Thu, Dec 03, 2009 at 08:49:17PM -0500, Caleb Cushing wrote:
->> >
->> > modprobe -r e1000e
->> > modprobe e1000e IntMode=0
->> >
->> > Jarek P.
->> >
->> tested on kernel behaving properly no change. what do these modes do?
->
-> e1000e by default uses MSI-X interrupts if possible, which are most
-> modern. If there are some problems IntMode lets us try older types,
-> so I rather meant it for the misbehaving kernel.
->
->>
->> I've installed a 10/100 linksys nic into my system. it appears to be
->> working fine on a bad kernel (2.6.32-final tested and for sure
->> verified). I've only tested it once though. my laptop died so direct
->> connection between that won't work. can I test between these 2 nics?
->> (suppose no real reason why not) but what should I proceed with at
->> this point?
->
-> If you have it fixed easily with another nic you should first
-> reconsider if this debugging is worth of your time. Of course it's
-> could be very useful for the kernel (unless it's a hardware fault),
-> but on the other hand this is a popular nic, tested by many people.
+On Fri, 4 Dec 2009 11:07:49 -0700 Alex Chiang wrote:
 
-trying to figure out if it's hardware, I wish I'd figured that out a
-month ago because dell would have been shipping me a new mobo at that
-point... oh well... I'm starting to think it is but given the age of
-the computer... (just over 1 year now) I'm not happy about that. my
-nic is a 10/100 card the e1000e is obviously gigabit though I don't
-think I've a need (or network) for the gigabit atm
--- 
-Caleb Cushing
+> I'm hoping someone can help me understand this because I don't
+> have the Makefile-fu to figure out what's going on.
+> 
+> I'm trying to patch a helper program: Documentation/vm/page-types.c
+> 
+> The interesting part of the patch is this:
 
-http://xenoterracide.blogspot.com
+(yep)
+
+> +enum pageflags {
+> +	PG_locked,              /* Page is locked. Don't touch. */
+> +	PG_error,
+> +	PG_referenced,
+> +	PG_uptodate,
+> +	PG_dirty,
+> +	PG_lru,
+> +	PG_active,
+> +	PG_slab,
+> +	PG_owner_priv_1,        /* Owner use. If pagecache, fs may use*/
+> +	PG_arch_1,
+> +	PG_reserved,
+> +	PG_private,             /* If pagecache, has fs-private data */
+> +	PG_private_2,           /* If pagecache, has fs aux data */
+> +	PG_writeback,           /* Page is under writeback */
+> +#ifdef CONFIG_PAGEFLAGS_EXTENDED
+> +	PG_head,                /* A head page */
+> +	PG_tail,                /* A tail page */
+> +#else
+> +	PG_compound,            /* A compound page */
+> +#endif
+> +	PG_swapcache,           /* Swap page: swp_entry_t in private */
+> +	PG_mappedtodisk,        /* Has blocks allocated on-disk */
+> +	PG_reclaim,             /* To be reclaimed asap */
+> +	PG_buddy,               /* Page is free, on buddy lists */
+> +	PG_swapbacked,          /* Page is backed by RAM/swap */
+> +	PG_unevictable,         /* Page is "unevictable"  */
+> +#ifdef CONFIG_MMU
+> +	PG_mlocked,             /* Page is vma mlocked */
+> +#endif
+> +#ifdef CONFIG_ARCH_USES_PG_UNCACHED
+> +	PG_uncached,            /* Page has been mapped as uncached */
+> +#endif
+> +#ifdef CONFIG_MEMORY_FAILURE
+> +	PG_hwpoison,            /* hardware poisoned page. Don't touch */
+> +#endif
+> +	__NR_PAGEFLAGS,
+> +};
+> 
+> The #ifdefs are what I care about. I want to build this helper
+> program with the same config that I build the kernel so it can
+> accurately describe page flags.
+> 
+> 	src/ia64 # grep CONFIG_PAGEFLAGS_EXTENDED .config
+> 	CONFIG_PAGEFLAGS_EXTENDED=y
+> 
+> 	src/ia64 # grep CONFIG_PAGEFLAGS_EXTENDED include/generated/autoconf.h 
+> 	#define CONFIG_PAGEFLAGS_EXTENDED 1
+> 
+> 	src/ia64 # grep CONFIG_PAGEFLAGS_EXTENDED include/config/auto.conf
+> 	CONFIG_PAGEFLAGS_EXTENDED=y
+> 
+> But when I build, it doesn't seem to be getting those config
+> values. I determined this with a test case using the binary.
+> 
+> As far as I can tell, hostprogs *should* be getting all the same
+> stuff as the rest of the tree when building, but in my case, it's
+> clearly not.
+> 
+> Operator error? Something else?
+> 
+> Thanks,
+> /ac
+> 
+> 
+> coffee0:/usr/local/src/ia64 # make V=1 Documentation/vm/
+> make -f scripts/Makefile.build obj=arch/ia64/kernel include/generated/nr-irqs.h
+> make[1]: `include/generated/nr-irqs.h' is up to date.
+> rm -f include/config/kernel.release
+> echo 2.6.32-rc7-mm1 > include/config/kernel.release
+> set -e; : '  CHK     include/linux/version.h'; mkdir -p include/linux/; 	(echo \#define LINUX_VERSION_CODE 132640; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))';) < /usr/local/src/ia64/Makefile > include/linux/version.h.tmp; if [ -r include/linux/version.h ] && cmp -s include/linux/version.h include/linux/version.h.tmp; then rm -f include/linux/version.h.tmp; else : '  UPD     include/linux/version.h'; mv -f include/linux/version.h.tmp include/linux/version.h; fi
+> set -e; : '  CHK     include/generated/utsrelease.h'; mkdir -p include/generated/; 	if [ `echo -n "2.6.32-rc7-mm1" | wc -c ` -gt 64 ]; then echo '"2.6.32-rc7-mm1" exceeds 64 characters' >&2; exit 1; fi; (echo \#define UTS_RELEASE \"2.6.32-rc7-mm1\";) < include/config/kernel.release > include/generated/utsrelease.h.tmp; if [ -r include/generated/utsrelease.h ] && cmp -s include/generated/utsrelease.h include/generated/utsrelease.h.tmp; then rm -f include/generated/utsrelease.h.tmp; else : '  UPD     include/generated/utsrelease.h'; mv -f include/generated/utsrelease.h.tmp include/generated/utsrelease.h; fi
+> mkdir -p .tmp_versions 
+> make -f scripts/Makefile.build obj=scripts/basic
+> make -f scripts/Makefile.build obj=.
+> mkdir -p kernel/
+> mkdir -p arch/ia64/kernel/
+> make -f scripts/Makefile.build obj=. missing-syscalls
+>   /bin/sh scripts/checksyscalls.sh gcc -Wp,-MD,./.missing-syscalls.d  -nostdinc -isystem /usr/lib/gcc/ia64-suse-linux/4.3/include -I/usr/local/src/ia64/arch/ia64/include -Iinclude  -include include/generated/autoconf.h -D__KERNEL__ -DHAVE_WORKING_TEXT_ALIGN -DHAVE_MODEL_SMALL_ATTRIBUTE -DHAVE_SERIALIZE_DIRECTIVE -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks -Os -pipe -ffixed-r13 -mfixed-range=f12-f15,f32-f127 -falign-functions=32 -frename-registers -fno-optimize-sibling-calls -fno-stack-protector -fomit-frame-pointer -g -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow  -mconstant-gp -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(missing_syscalls)"  -D"KBUILD_MODNAME=KBUILD_STR(missing_syscalls)" -D"DEBUG_HASH=8" -D"DEBUG_HASH2=54"
+
+Above includes include/generated/autoconf.h but page-types does not.
+
+> <stdin>:1519:2: warning: #warning syscall perf_event_open not implemented
+> <stdin>:1523:2: warning: #warning syscall recvmmsg not implemented
+> <stdin>:1527:2: warning: #warning syscall fanotify_init not implemented
+> <stdin>:1531:2: warning: #warning syscall fanotify_mark not implemented
+> make -f scripts/Makefile.build obj=scripts
+> make -f scripts/Makefile.build obj=scripts/genksyms
+> make -f scripts/Makefile.build obj=scripts/mod
+> mkdir -p .tmp_versions 
+> make KBUILD_MODULES=1 \
+> 	-f scripts/Makefile.build obj=Documentation/vm
+> (cat /dev/null; ) > Documentation/vm/modules.order
+>   gcc -Wp,-MD,Documentation/vm/.page-types.d -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer     -o Documentation/vm/page-types Documentation/vm/page-types.c  
+> 
+> --
+
+Try adding in Documentation/vm/Makefile something like:
+
+HOSTCFLAGS_page-types.o += -I$(objtree)/usr/include
+
+or
+
+HOSTCFLAGS_page-types.o += $(LINUXINCLUDE)
+
+---
+~Randy
