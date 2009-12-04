@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbZLDVSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbZLDVYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757375AbZLDVSF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 16:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbZLDVSE
+	id S1757374AbZLDVYX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 16:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbZLDVYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 16:18:04 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:56078 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757277AbZLDVR7 (ORCPT
+	Fri, 4 Dec 2009 16:24:21 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:43782 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757289AbZLDVYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 16:17:59 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
-Date: Fri, 4 Dec 2009 22:18:11 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Greg KH <gregkh@suse.de>, stable@kernel.org,
-       Rickard Bellini <rickard.bellini@ericsson.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       Torgny Johansson <torgny.johansson@ericsson.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0912041555430.3070-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912041555430.3070-100000@iolanthe.rowland.org>
+	Fri, 4 Dec 2009 16:24:19 -0500
+Date: Fri, 4 Dec 2009 16:24:25 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ondrej Zary <linux@rainbow-software.org>
+cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
+Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
+In-Reply-To: <200912042055.32747.linux@rainbow-software.org>
+Message-ID: <Pine.LNX.4.44L0.0912041614170.3070-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912042218.11410.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 4. Dezember 2009 21:57:50 schrieb Alan Stern:
-> On Fri, 4 Dec 2009, Oliver Neukum wrote:
-> > > > 1. am I supposed to get a reference just so that I can use dev_err?
-> > >
-> > > No, you should already have a reference on the device when doing the
-> > > call, right?
-> >
-> > No, why? Consider this:
-> >
-> > int write(...)
-> > {
-> > 	...
-> > 	mutex_lock(&instance->lock);
-> > 	if (instance->disconnected) {
-> > 		dev_dbg(instance->dev,"writing to disconnected device");
-> > 		rv = -ENODEV;
-> > 	} else {
-> > 		res = usb_submit_urb(...);
-> > 		rv = res < 0 ? -EIO : count;
-> > 	}
-> > 	mutex_unlock(&instance->lock);
-> > 	return rv;
-> > }
-> >
-> > void disconnect(...)
-> > {
-> > 	...
-> > 	mutex_lock(&instance->lock);
-> > 	instance->disconnected = 1;
-> > 	usb_kill_urb(...);
-> > 	usb_kill_urb(...);
-> > 	mutex_unlock(&instance->lock);
-> > }
-> >
-> > This would be perfectly valid code without any references taken save
-> > for the pesky dev_dbg()
+On Fri, 4 Dec 2009, Ondrej Zary wrote:
+
+> [    3.712039] usb 2-1: new full speed USB device using uhci_hcd and address 2
+> [    3.726791] kjournald starting.  Commit interval 5 seconds
+> [    3.726817] EXT3-fs (sda2): mounted filesystem with ordered data mode
+> [    3.851384] usb 2-1: not running at top speed; connect to a high speed hub
+> [    3.859379] usb 2-1: New USB device found, idVendor=2001, idProduct=f103
+> [    3.859387] usb 2-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
+> [    3.862635] hub 2-1:1.0: USB hub found
+> [    3.864385] hub 2-1:1.0: 7 ports detected
+
+That's the problem.  Notice the "not running at top speed" message?  
+Something went wrong when the hub was detected.  It could be a problem 
+in your EHCI controller or a problem in the hub.
+
+You can get more information about this by unplugging the hub, running
+usbmon (on the 0u file), and then plugging the hub back in.
+
+
+> diff between ehci and uhci logs:
+> There seems to be some problem with timing.
+> Also order of ehci_usb vs uhci_usb loading changes.
+
+That order doesn't matter much.  But this...
+
+> --- dmesg-ehci.txt-	2009-12-04 20:01:39.000000000 +0100
+> +++ dmesg-uhci.txt-	2009-12-04 20:01:31.000000000 +0100
+> @@ -144,10 +144,9 @@
+>   Console: colour VGA+ 80x25
+>   console [tty0] enabled
+>   hpet clockevent registered
+> - Fast TSC calibration failed
+> - TSC: PIT calibration matches HPET. 1 loops
+> - Detected 1608.000 MHz processor.
+> - Calibrating delay loop (skipped), value calculated using timer frequency.. 3216.00 BogoMIPS (lpj=6432000)
+> + Fast TSC calibration using PIT
+> + Detected 1608.123 MHz processor.
+> + Calibrating delay loop (skipped), value calculated using timer frequency.. 3216.24 BogoMIPS (lpj=6432492)
+>   Security Framework initialized
+>   SELinux:  Disabled at boot.
+>   Mount-cache hash table entries: 512
+> @@ -180,7 +179,7 @@
+>   CPU1: Thermal monitoring enabled (TM2)
+>   CPU1: Intel(R) Atom(TM) CPU N270   @ 1.60GHz stepping 02
+>   Brought up 2 CPUs
+> - Total of 2 processors activated (9326.27 BogoMIPS).
+> + Total of 2 processors activated (6432.20 BogoMIPS).
+
+Those two differences seem strange to me.  You might want to report it
+in a new email thread on LKML.  You might also want to see if the same 
+thing happens with a 2.6.32 kernel.
+
+> > This may be a bug in ehci-hcd, a bug in your EHCI hardware, or a bug in
+> > the hub.  Can you try using a different high-speed hub to see if it
+> > makes any difference?
 > 
-> Whoever calls write() must possess a valid reference.  Otherwise
-> instance might already be deallocated when write() starts, causing an
-> oops well before the call to dev_dbg().
+> Yes, I'll try it next week (I have only remote access now).
+> I have different 7-port hub available to test (should be with Philips chipset).
 
-He needs a valid reference to "instance", not to the device. In fact
-he may do IO to the device only if he knows it hasn't been disconnected.
- 
-> Typically the driver would take a reference during open() and drop it
-> during close().
+It's worth a try.  Still, the original problem you saw (the oops in
+ehci-hcd) is in software, not in hardware, so the hub can't be entirely
+responsible.
 
-You can do that but then you must not do IO prior to open() or after
-close(). That is you must actually wait for IO to finish in close() and
-cannot prefill your buffers before open().
-
-	Regards
-		Oliver
+Alan Stern
 
