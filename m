@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZLDPT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZLDPVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbZLDPT6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 10:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZLDPT5
+	id S1752260AbZLDPVA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 10:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbZLDPU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 10:19:57 -0500
-Received: from lucidpixels.com ([75.144.35.66]:37750 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753520AbZLDPT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 10:19:57 -0500
-Date: Fri, 4 Dec 2009 10:20:02 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: =?ISO-8859-15?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.32: scsi_wait_scan bug
-In-Reply-To: <4B192803.1080008@tremplin-utc.net>
-Message-ID: <alpine.DEB.2.00.0912041019310.16957@p34.internal.lan>
-References: <alpine.DEB.2.00.0912040943420.3540@p34.internal.lan> <4B192803.1080008@tremplin-utc.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 4 Dec 2009 10:20:59 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:54822 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751099AbZLDPU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 10:20:58 -0500
+Date: Fri, 4 Dec 2009 10:21:05 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ed Tomlinson <edt@aei.ca>
+cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>
+Subject: Re: [BUG] 2.6.32 - Sddr-09 SM reader resets endlessly
+In-Reply-To: <200912031800.11780.edt@aei.ca>
+Message-ID: <Pine.LNX.4.44L0.0912041019410.3070-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1130160681-1259940002=:16957"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 3 Dec 2009, Ed Tomlinson wrote:
 
----1463747160-1130160681-1259940002=:16957
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-
-
-
-On Fri, 4 Dec 2009, =C9ric Piel wrote:
-
-> Op 04-12-09 15:44, Justin Piszcz schreef:
->> Hello,
->>
->> Checking the /lib/modules directory for 2.6.32, I noticed this bug still
->> persists:
->> https://lists.linux-foundation.org/pipermail/bugme-new/2007-August/01663=
-4.html
->>
->>
->> Was wondering if it should be able to be enabled or disabled in the
->> menuconfig (as you cannot currently see that option)?
 > Hi,
->
-> Your link eventually leads to this patch:
-> http://lkml.indiana.edu/hypermail/linux/kernel/0906.2/00861.html
->
-> Isn't this answering your question?
->
-> Eric
->
+> 
+> Just booted in 2.6.32 and shortly after the boot finished my console was spammed with:
+> 
+> [   72.221620] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
+> [   72.375589] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
+> [   72.529568] usb 7-4.1: reset full speed USB device using ehci_hcd and address 5                                                           
+...
 
-Eric,
+> I noticed the leds on the devince blinking and unplugged it.  The messages stopped.
+> 
+> Plugging it in to another port gave:
+> 
+> [  120.096590] usb 7-4.2: new full speed USB device using ehci_hcd and address 7                                                             
+> [  120.188421] usb 7-4.2: New USB device found, idVendor=0781, idProduct=0200                                                                
+> [  120.196857] usb 7-4.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0                                                           
+> [  120.205801] usb 7-4.2: Product: USB SSFDC                                                                                                 
+> [  120.205803] usb 7-4.2: Manufacturer: SanDisk                                                                                              
+> [  120.206023] usb 7-4.2: configuration #1 chosen from 1 choice                                                                              
+> [  120.210375] scsi10 : SCSI emulation for USB Mass Storage devices                                                                          
+> [  120.210625] usb-storage: device found at 7                                                                                                
+> [  120.210627] usb-storage: waiting for device to settle before scanning                                                                     
+> [  125.210356] scsi 10:0:0:0: Direct-Access     Sandisk0 ImageMate SDDR-0 0208 PQ: 0 ANSI: 0                                                 
+> [  125.221014] sd 10:0:0:0: Attached scsi generic sg8 type 0                                                                                 
+> [  125.538583] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
+> [  125.693592] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
+> [  125.846595] usb 7-4.2: reset full speed USB device using ehci_hcd and address 7
+...
 
-Thanks, the last 3 lines of the patch explain it:
+> just in case it happened to be an interaction with the hub used I tried another:
+...
 
-+ Still, this option is not exposed as a prompt because little is
-+ to be gained by disabling it, whereas people who accidentally
-+ switch it off may wonder why their mkinitrd gets into trouble.
+> with the same results.
+> 
+> Ideas? 
 
-Justin.
----1463747160-1130160681-1259940002=:16957--
+More information is needed.  Collect a usbmon trace showing what 
+happens when the device is plugged in.  Instructions are in the kernel 
+source file Documentation/usb/usbmon.txt.
+
+Alan Stern
+
