@@ -1,101 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZLDAKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbZLDAVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365AbZLDAKT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 19:10:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZLDAKS
+	id S1755433AbZLDAVN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 19:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbZLDAVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 19:10:18 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:50042 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbZLDAKR convert rfc822-to-8bit (ORCPT
+	Thu, 3 Dec 2009 19:21:12 -0500
+Received: from 220-245-30-18.static.tpgi.com.au ([220.245.30.18]:33445 "EHLO
+	smtp.sws.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755223AbZLDAVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 19:10:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SmMmIWWcXP501ZLbRNMKe9b/8ey0oDzksqy/moxgJjKjwW5wTHlo5I+V66YYih/nRE
-         HtdIQWMnLocAFmUNMZoQtEcyNhGEE5zGdS6h9m2NyyVBiKidW5Aj4tMmvOlKbupazFAN
-         xBlNQP/FXCz8Bxq2HAPTM4RvR/oGgxZknVKZQ=
+	Thu, 3 Dec 2009 19:21:11 -0500
+X-Greylist: delayed 493 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Dec 2009 19:21:11 EST
+From: Russell Coker <russell@coker.com.au>
+Reply-To: russell@coker.com.au
+To: Joshua Brindle <method@manicmethod.com>
+Subject: Re: [PATCH] Dynamic port labeling V2
+Date: Fri, 4 Dec 2009 11:12:41 +1100
+User-Agent: KMail/1.9.9
+Cc: Paul Nuzzi <pjnuzzi@tycho.ncsc.mil>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, jmorris@namei.org,
+       selinux@tycho.nsa.gov, "George S. Coker, II" <gscoker@alpha.ncsc.mil>,
+       Eamon Walsh <ewalsh@tycho.nsa.gov>, Stephen Smalley <sds@tycho.nsa.gov>
+References: <1259616460.2444.9.camel@moss-stripedbass.epoch.ncsc.mil> <4B181228.6080600@manicmethod.com>
+In-Reply-To: <4B181228.6080600@manicmethod.com>
 MIME-Version: 1.0
-In-Reply-To: <1258723764-4399-3-git-send-email-jglisse@redhat.com>
-References: <1258723764-4399-1-git-send-email-jglisse@redhat.com>
-	 <1258723764-4399-2-git-send-email-jglisse@redhat.com>
-	 <1258723764-4399-3-git-send-email-jglisse@redhat.com>
-Date: Fri, 4 Dec 2009 10:10:23 +1000
-Message-ID: <21d7e9970912031610s26055089o30a4c2824f50dbf3@mail.gmail.com>
-Subject: Re: [PATCH 2/3] drm/radeon/kms: Rework radeon object handling
-From: Dave Airlie <airlied@gmail.com>
-To: Jerome Glisse <jglisse@redhat.com>
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200912041112.56570.russell@coker.com.au>
+X-Truedomain-SPF: Pass
+X-Truedomain-DKIM: Pass
+X-Truedomain-Domain: coker.com.au
+X-Truedomain: True
+X-Truedomain-Logo: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAA2wAAANsAF9ZVn6AAAAB3RJTUUH1wMaDCcChjphMQAAAmRJREFUKM9tkrtPVFEQxuecc+/dR3aB5SW7iLqJPIyKsIiaKFBgIkIjFjY2uonhkVCpiBgSWwz4N4jE2FlYaUIgBJqNuNiKD1RwEV11dV/ce87csbgsUPhliim+30zxfUBEdkGcG5wLzjXONcNw67qLc/32rRF7jzgRQUE+nyd8KMw593o9ra0tNftrGNDC4uKuA4AXFgKA6LXo5OS4rmsjwzcHB/sH+q8DsETiG/wPYACQ/PP72dOpqz2VAff3gb6h0vJ9AGCZyPYAGgABMGLISLjMxJXW100nLel+efChkTYXgdmp1A8iYNsQcec2IwEAIR5rqpd6kTfgp/qg6c8/9+oupZDtvmDcspRlStOyACC+WfdqpXh9RS29+LmxGTHL7zGX3n3xfDR6w9ySliktSzFEAiAgNjZ2H9nWhTON6cSCUVR1uPnSgXBD7+XemZlZzrRYLHbs+FEAAERCRXOzC7W1RzKZzNrXj/H4UjKZVLZC21pejgshhNDb2zotExEJUNmfVtcqK0ITExNoK0SlpGXbyraljTKfy4VCISE0wV39fUNK2qCU3dHeaeiu6enHmczfXC6TSv1SykxnUtBF0EV3hu/6fEWG4RHCPfXoCayvbZQUl7W1ncvns0pJRIloOeMAH96/ratrCAZDQmiNjS3wYHwyECidn59DlIhSShNROta9U11dU1ZWIYQLTp86G4lEHB+izGbTzu34m7zXI7weEV/OQxcJoZeUlHKu8c9fVnt6ulkhG6WUE6WwU9l3uJMpESEqAND8fk8wGNoBiMjp74nRKgCCDmgeBQDgfLug/wCLtk8dVedTHQAAAABJRU5ErkJggg==
+X-Truedomain-Sender: PGEgaHJlZj0iaHR0cDovL3RydWVkb21haW4ubmV0LyI+VHJ1ZWRvbWFpbjwvYT4gdmVyaWZpZWQgdGhpcyBlbWFpbCB3YXMgc2VudCBmcm9tIFJ1c3NlbGwgQ29rZXI=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 20, 2009 at 11:29 PM, Jerome Glisse <jglisse@redhat.com> wrote:
-> The locking & protection of radeon object was somewhat messy.
-> This patch completely rework it to now use ttm reserve as a
-> protection for the radeon object structure member. It also
-> shrink down the various radeon object structure by removing
-> field which were redondant with the ttm information. Last it
-> converts few simple functions to inline which should with
-> performances.
->
-> Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+On Fri, 4 Dec 2009, Joshua Brindle <method@manicmethod.com> wrote:
+> Aside from the conversation Dave and Casey are having I still think this
+> isn't quite right. First, while you can atomically change a single port
+> label with the add command above you can't atomically change multiple
+> entries, which I think is completely necessary (you don't want to have
+> strange labeling states when changing a set of ports to a new label.
 
+Why is it necessary to change multiple ports at the same time?
 
+We support atomic changes of multiple booleans at the same time due to 
+possible interactions between them.  But I don't think that we have any such 
+issues with port contexts.
 
->
->  int radeon_gem_busy_ioctl(struct drm_device *dev, void *data,
-> @@ -264,7 +261,7 @@ int radeon_gem_busy_ioctl(struct drm_device *dev, void *data,
->  {
->        struct drm_radeon_gem_busy *args = data;
->        struct drm_gem_object *gobj;
-> -       struct radeon_object *robj;
-> +       struct radeon_bo *robj;
->        int r;
->        uint32_t cur_placement;
->
-> @@ -273,7 +270,7 @@ int radeon_gem_busy_ioctl(struct drm_device *dev, void *data,
->                return -EINVAL;
->        }
->        robj = gobj->driver_private;
-> -       r = radeon_object_busy_domain(robj, &cur_placement);
-> +       r = radeon_bo_wait(robj, &cur_placement, true);
+> Also, while having a text parser in the kernel makes it easier to use
+> with echo I think it is alot of code in the kernel for no good reason.
+> There is no reason not to make a userspace tool that converts the
+> textual representation into a serialized struct and feed it to the
+> kernel. We typically tell users not to mess around in /selinux anyway,
+> since we have a libselinux interface to do that.
 
-Here we pass an uninitialised cur_placement to busy ioctl.
+It does seem likely that significant code complexity can be avoided by not 
+having a plain text interface in this case.
 
-> +static inline int radeon_bo_wait(struct radeon_bo *bo, u32 *mem_type,
-> +                                       bool no_wait)
-> +{
-> +       int r;
-> +
-> +retry:
-> +       r = ttm_bo_reserve(&bo->tbo, true, no_wait, false, 0);
-> +       if (unlikely(r != 0)) {
-> +               if (r == -ERESTART)
-> +                       goto retry;
-> +               dev_err(bo->rdev->dev, "%p reserve failed for wait\n", bo);
-> +               return r;
-> +       }
-> +       spin_lock(&bo->tbo.lock);
-> +       if (mem_type)
-> +               *mem_type = bo->tbo.mem.mem_type;
-> +       if (bo->tbo.sync_obj)
-> +               r = ttm_bo_wait(&bo->tbo, true, true, no_wait);
-> +       spin_unlock(&bo->tbo.lock);
-> +       ttm_bo_unreserve(&bo->tbo);
-> +       if (unlikely(r == -ERESTART))
-> +               goto retry;
-> +       return r;
-> +}
-
-If this return early mem_type never gets set to anything useful.
-
-The compiler warns on this here.
-
-Can you send a fix up patch as I've merged this to drm-radeon-next already.
-
-Dave.
+-- 
+russell@coker.com.au
+http://etbe.coker.com.au/          My Main Blog
+http://doc.coker.com.au/           My Documents Blog
