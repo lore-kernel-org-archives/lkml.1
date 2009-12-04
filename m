@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbZLDWsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932508AbZLDWt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbZLDWsj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 17:48:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbZLDWsh
+	id S932508AbZLDWt7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 17:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbZLDWt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 17:48:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60346 "EHLO mx3.mail.elte.hu"
+	Fri, 4 Dec 2009 17:49:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60523 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751444AbZLDWsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 17:48:33 -0500
-Message-ID: <4B199238.3020805@gmail.com>
-Date: Fri, 04 Dec 2009 23:50:32 +0100
+	id S1755603AbZLDWt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 17:49:57 -0500
+Message-ID: <4B199287.7020307@gmail.com>
+Date: Fri, 04 Dec 2009 23:51:51 +0100
 From: Emese Revfy <re.emese@gmail.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-To: gregkh@suse.de, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 30/31] Constify struct usb_mon_operations for 2.6.32 v1
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 31/31] Constify struct wd_ops for 2.6.32 v1
 References: <4B198670.2000406@gmail.com>
 In-Reply-To: <4B198670.2000406@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-2
@@ -34,79 +34,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Emese Revfy <re.emese@gmail.com>
 
-Constify struct usb_mon_operations.
+Constify struct wd_ops with some exceptions.
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/usb/core/hcd.c     |    4 ++--
- drivers/usb/core/hcd.h     |   10 +++++-----
- drivers/usb/mon/mon_main.c |    2 +-
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ arch/x86/kernel/cpu/perfctr-watchdog.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 34de475..cfcb4fb 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -2216,7 +2216,7 @@ EXPORT_SYMBOL_GPL(usb_hcd_platform_shutdown);
+diff --git a/arch/x86/kernel/cpu/perfctr-watchdog.c b/arch/x86/kernel/cpu/perfctr-watchdog.c
+index fab786f..2324cbc 100644
+--- a/arch/x86/kernel/cpu/perfctr-watchdog.c
++++ b/arch/x86/kernel/cpu/perfctr-watchdog.c
+@@ -30,11 +30,11 @@ struct nmi_watchdog_ctlblk {
  
- #if defined(CONFIG_USB_MON) || defined(CONFIG_USB_MON_MODULE)
+ /* Interface defining a CPU specific perfctr watchdog */
+ struct wd_ops {
+-	int (*reserve)(void);
+-	void (*unreserve)(void);
+-	int (*setup)(unsigned nmi_hz);
+-	void (*rearm)(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz);
+-	void (*stop)(void);
++	int (* const reserve)(void);
++	void (* const unreserve)(void);
++	int (* const setup)(unsigned nmi_hz);
++	void (* const rearm)(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz);
++	void (* const stop)(void);
+ 	unsigned perfctr;
+ 	unsigned evntsel;
+ 	u64 checkbit;
+@@ -645,6 +645,7 @@ static const struct wd_ops p4_wd_ops = {
+ #define ARCH_PERFMON_NMI_EVENT_SEL	ARCH_PERFMON_UNHALTED_CORE_CYCLES_SEL
+ #define ARCH_PERFMON_NMI_EVENT_UMASK	ARCH_PERFMON_UNHALTED_CORE_CYCLES_UMASK
  
--struct usb_mon_operations *mon_ops;
-+const struct usb_mon_operations *mon_ops;
++/* cannot be const */
+ static struct wd_ops intel_arch_wd_ops;
  
- /*
-  * The registration is unlocked.
-@@ -2226,7 +2226,7 @@ struct usb_mon_operations *mon_ops;
-  * symbols from usbcore, usbcore gets referenced and cannot be unloaded first.
-  */
-  
--int usb_mon_register (struct usb_mon_operations *ops)
-+int usb_mon_register (const struct usb_mon_operations *ops)
- {
- 
- 	if (mon_ops)
-diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
-index 79782a1..04bf5ea 100644
---- a/drivers/usb/core/hcd.h
-+++ b/drivers/usb/core/hcd.h
-@@ -486,13 +486,13 @@ static inline void usbfs_cleanup(void) { }
- #if defined(CONFIG_USB_MON) || defined(CONFIG_USB_MON_MODULE)
- 
- struct usb_mon_operations {
--	void (*urb_submit)(struct usb_bus *bus, struct urb *urb);
--	void (*urb_submit_error)(struct usb_bus *bus, struct urb *urb, int err);
--	void (*urb_complete)(struct usb_bus *bus, struct urb *urb, int status);
-+	void (* const urb_submit)(struct usb_bus *bus, struct urb *urb);
-+	void (* const urb_submit_error)(struct usb_bus *bus, struct urb *urb, int err);
-+	void (* const urb_complete)(struct usb_bus *bus, struct urb *urb, int status);
- 	/* void (*urb_unlink)(struct usb_bus *bus, struct urb *urb); */
- };
- 
--extern struct usb_mon_operations *mon_ops;
-+extern const struct usb_mon_operations *mon_ops;
- 
- static inline void usbmon_urb_submit(struct usb_bus *bus, struct urb *urb)
- {
-@@ -514,7 +514,7 @@ static inline void usbmon_urb_complete(struct usb_bus *bus, struct urb *urb,
- 		(*mon_ops->urb_complete)(bus, urb, status);
+ static int setup_intel_arch_watchdog(unsigned nmi_hz)
+@@ -697,6 +698,7 @@ static int setup_intel_arch_watchdog(unsigned nmi_hz)
+ 	return 1;
  }
  
--int usb_mon_register(struct usb_mon_operations *ops);
-+int usb_mon_register(const struct usb_mon_operations *ops);
- void usb_mon_deregister(void);
- 
- #else
-diff --git a/drivers/usb/mon/mon_main.c b/drivers/usb/mon/mon_main.c
-index e0c2db3..bd8cb66 100644
---- a/drivers/usb/mon/mon_main.c
-+++ b/drivers/usb/mon/mon_main.c
-@@ -238,7 +238,7 @@ static struct notifier_block mon_nb = {
- /*
-  * Ops
-  */
--static struct usb_mon_operations mon_ops_0 = {
-+static const struct usb_mon_operations mon_ops_0 = {
- 	.urb_submit =	mon_submit,
- 	.urb_submit_error = mon_submit_error,
- 	.urb_complete =	mon_complete,
++/* cannot be const */
+ static struct wd_ops intel_arch_wd_ops __read_mostly = {
+ 	.reserve	= single_msr_reserve,
+ 	.unreserve	= single_msr_unreserve,
 
