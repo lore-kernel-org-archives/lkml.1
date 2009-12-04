@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbZLDJyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbZLDKBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753301AbZLDJyO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 04:54:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZLDJyN
+	id S1754301AbZLDKBL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 05:01:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZLDKBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 04:54:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41157 "EHLO mx2.mail.elte.hu"
+	Fri, 4 Dec 2009 05:01:09 -0500
+Received: from gate.crashing.org ([63.228.1.57]:60981 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbZLDJyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 04:54:12 -0500
-Date: Fri, 4 Dec 2009 10:54:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Jayaraman <sjayaraman@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] sched: fix GENTLE_FAIR_SLEEPERS dependency
-Message-ID: <20091204095408.GA26118@elte.hu>
-References: <4B18D66E.8020905@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B18D66E.8020905@suse.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1752226AbZLDKBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 05:01:08 -0500
+Subject: Re: [PATCH] therm_adt746x: Don't access non-existing register
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Colin Leroy <colin@colino.net>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20091204103434.0a754925@hyperion.delvare>
+References: <20091202091951.5ec6bb83@hyperion.delvare>
+	 <1259894454.2076.1246.camel@pasglop>
+	 <20091204103434.0a754925@hyperion.delvare>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 04 Dec 2009 20:59:35 +1100
+Message-ID: <1259920775.2076.1273.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Suresh Jayaraman <sjayaraman@suse.de> wrote:
-
-> The newly introduced GENTLE_FAIR_SLEEPERS does not seem to have any
-> effect without FAIR_SLEEPERS. Fix sysctl.sched_features to reflect
-> this. Without this change, a user who sets GENTLE_FAIR_SLEEPERS
-> without FAIR_SLEEPERS would assume gentle sleeper fairness which
-> is not guaranteed.
+On Fri, 2009-12-04 at 10:34 +0100, Jean Delvare wrote:
 > 
-> Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
-> ---
-> 
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -761,10 +761,22 @@ sched_feat_write(struct file *filp, cons
->  		int len = strlen(sched_feat_names[i]);
->  
->  		if (strncmp(cmp, sched_feat_names[i], len) == 0) {
-> -			if (neg)
-> +			if (neg) {
->  				sysctl_sched_features &= ~(1UL << i);
-> -			else
-> +				/*
-> +				 * GENTLE_FAIR_SLEEPERS have no effect without
-> +				 * FAIR_SLEEPERS.
-> +				 */
-> +				if (strncmp(cmp, "FAIR_SLEEPERS",
-> +					    strlen("FAIR_SLEEPERS")) == 0)
-> +					sysctl_sched_features &= ~(1UL << i+1);
-> +			} else {
->  				sysctl_sched_features |= (1UL << i);
-> +				if (strncmp(cmp, "GENTLE_FAIR_SLEEPERS",
-> +					    strlen("GENTLE_FAIR_SLEEPERS"))
-> +						== 0)
-> +					sysctl_sched_features |= (1UL << i-1);
-> +			}
->  			break;
->  		}
->  	}
+> I've sent it to linuxppc-dev@ozlabs.org on October 14th. This is the
+> address which is listed 22 times in MAINTAINERS. If it isn't correct,
+> then please update MAINTAINERS.
 
-There's a lot of other dependencies between scheduler features so it's 
-possible to change it without it having an effect on the scheduler. 
+No it's fine both shoul work. Your patches are there, just waiting for
+me to pick them up, I was just firing a reminder to the rest of the CC
+list :-) (and I do remember fwd'ing a couple of your patches to the
+list, for some reason they didn't make it to patchwork back then, that
+was a few month ago).
 
-sched_features is really a development/debugging facility, you have to 
-know what you are doing.
+Anyways, I've been stretched thin with all sort of stuff lately, so bear
+with me if I'm a bit slow at taking or testing stuff, I'm doing my best.
 
-Might be worth adding a comment to the feature definition place itself 
-in the source - explain what it does and how it makes sense (and how it 
-doesnt).
+Cheers,
+Ben.
 
-	Ingo
