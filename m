@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZLDUrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZLDUsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbZLDUrp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 15:47:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757247AbZLDUrn
+	id S1757349AbZLDUsD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 15:48:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZLDUr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 15:47:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22723 "EHLO mx1.redhat.com"
+	Fri, 4 Dec 2009 15:47:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22053 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757228AbZLDUrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 15:47:42 -0500
+	id S1757329AbZLDUrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 15:47:55 -0500
 From: Eric Paris <eparis@redhat.com>
-Subject: [RFC PATCH 01/15] shmem: do not call fput_filp on an initialized filp
+Subject: [RFC PATCH 02/15] shmem: use alloc_file instead of init_file
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
 Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
@@ -22,8 +22,10 @@ Cc: viro@zeniv.linux.org.uk, jmorris@namei.org, npiggin@suse.de,
        matthew@wil.cx, hugh.dickins@tiscali.co.uk,
        kamezawa.hiroyu@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
        davem@davemloft.net, arnd@arndb.de, eric.dumazet@gmail.com
-Date: Fri, 04 Dec 2009 15:46:46 -0500
-Message-ID: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
+Date: Fri, 04 Dec 2009 15:46:56 -0500
+Message-ID: <20091204204656.18286.15131.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
+References: <20091204204646.18286.24853.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -32,40 +34,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fput_filp is supposed to be used when the filp was not used.  But in the
-ifndef CONFIG_MMU case shmem_setup_file could call this one an initialized
-filp.  It should be using fput() instead.  Since the fput() will dec the ima
-counts we also need to move the ima hook to make sure that is set up before
-the fput().
+shmem uses get_empty_filp() and then init_file().  Their is no good reason
+not to just use alloc_file() like everything else.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
 Acked-by: Miklos Szeredi <miklos@szeredi.hu>
+Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- mm/shmem.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+ mm/shmem.c |   17 +++++++----------
+ 1 files changed, 7 insertions(+), 10 deletions(-)
 
 diff --git a/mm/shmem.c b/mm/shmem.c
-index 356dd99..e7f8968 100644
+index e7f8968..b212184 100644
 --- a/mm/shmem.c
 +++ b/mm/shmem.c
-@@ -2656,12 +2656,15 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
- 	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
- 		  &shmem_file_operations);
+@@ -2640,21 +2640,20 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
+ 	if (!dentry)
+ 		goto put_memory;
  
-+	ima_counts_get(file);
-+
- #ifndef CONFIG_MMU
- 	error = ramfs_nommu_expand_for_mapping(inode, size);
--	if (error)
+-	error = -ENFILE;
+-	file = get_empty_filp();
+-	if (!file)
+-		goto put_dentry;
+-
+ 	error = -ENOSPC;
+ 	inode = shmem_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0, flags);
+ 	if (!inode)
 -		goto close_file;
-+	if (error) {
-+		fput(file);
-+		return error;
-+	}
++		goto put_dentry;
+ 
+ 	d_instantiate(dentry, inode);
+ 	inode->i_size = size;
+ 	inode->i_nlink = 0;	/* It is unlinked */
+-	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
+-		  &shmem_file_operations);
++
++	error = -ENFILE;
++	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
++			  &shmem_file_operations);
++	if (!file)
++		goto put_dentry;
+ 
+ 	ima_counts_get(file);
+ 
+@@ -2667,8 +2666,6 @@ struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags
  #endif
--	ima_counts_get(file);
  	return file;
  
- close_file:
+-close_file:
+-	put_filp(file);
+ put_dentry:
+ 	dput(dentry);
+ put_memory:
 
