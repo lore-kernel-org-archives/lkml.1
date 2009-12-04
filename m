@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbZLDQ5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbZLDQ7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932240AbZLDQ5x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 11:57:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932206AbZLDQ5v
+	id S932258AbZLDQ7L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 11:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932234AbZLDQ7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 11:57:51 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43449 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932150AbZLDQ5u (ORCPT
+	Fri, 4 Dec 2009 11:59:10 -0500
+Received: from mailout02.t-online.de ([194.25.134.17]:51383 "EHLO
+	mailout02.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932194AbZLDQ7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 11:57:50 -0500
-Date: Fri, 4 Dec 2009 11:57:57 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: Greg KH <gregkh@suse.de>, <stable@kernel.org>,
-       Rickard Bellini <rickard.bellini@ericsson.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       Torgny Johansson <torgny.johansson@ericsson.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
-In-Reply-To: <200912041716.19329.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0912041148150.3070-100000@iolanthe.rowland.org>
+	Fri, 4 Dec 2009 11:59:09 -0500
+Message-ID: <4B193FDF.3060404@t-online.de>
+Date: Fri, 04 Dec 2009 17:59:11 +0100
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091202 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.32, hda_codec: kernel gets stuck for 3 minutes at boot time
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ID: EYWo26ZDQh-s8MISjC1gTp2DqUyldELbeDVbjAGJI5lD2daBfefp6p3KxtIPgjrwXc
+X-TOI-MSGID: d9173385-094a-4054-a8fa-8d77eedbf043
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009, Oliver Neukum wrote:
+Hi folks,
 
-> Am Freitag, 4. Dezember 2009 17:06:57 schrieb Alan Stern:
-> > Oliver:
-> > 
-> > We don't have to worry about the device structure being deallocated 
-> > while the routine is running.  If that happens it's a bug in the 
-> > caller: improper refcounting.
-> 
-> That raises two points
-> 
-> 1. am I supposed to get a reference just so that I can use dev_err?
+2.6.32(amd64) gets stuck for about 3 minutes at boot time. dmesg says:
 
-You're supposed to hold a reference before using dev at all.  If the 
-only use you make of dev is to call dev_err(), then yes.
+:
+[   15.026892] HDA Intel 0000:00:08.0: power state changed by ACPI to D0
+[   15.041001] ACPI: PCI Interrupt Link [LAZA] enabled at IRQ 20
+[   15.054443] HDA Intel 0000:00:08.0: PCI INT A -> Link[LAZA] -> GSI 20 (level, low) -> IRQ 20
+[   15.067718] HDA Intel 0000:00:08.0: setting latency timer to 64
+[   15.424080] hda_codec: ALC662 rev1: BIOS auto-probing.
+[  190.728138] Adding 1959920k swap on /dev/sda2.  Priority:-1 extents:1 across:1959920k
+[  191.268572] device-mapper: ioctl: 4.15.0-ioctl (2009-04-01) initialised: dm-devel@redhat.com
+:
 
-That's how refcounting is meant to work.
 
-> 2. what happens if this is a soft disconnect and the device is reconnected?
-> It seems to me that you'd print the wrong driver's name.
+I get the same for 2.6.31.6. I cannot remember having seen this for
+kernel 2.6.29.x.
 
-You mean the device is unbound from driver A and then bound to driver 
-B, after which a thread running in driver A calls dev_err()?  Then yes, 
-the "wrong" name will be printed.
+Hardware is an Acer Aspire Revo R3600. A bios update to the most recent
+version did not help.
 
-This is part of the idea behind dev_err() and friends.  They print the 
-name of the currently bound driver, not the name of the calling source 
-file.  That's why, for example, the name "usb-storage" shows up in a 
-message printed from within usbcore rather than "hub.c".
 
-Alan Stern
+Any helpful comment or hint would be highly appreciated.
 
+
+Regards
+
+Harri
