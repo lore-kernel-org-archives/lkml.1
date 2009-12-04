@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbZLDCJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbZLDCOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545AbZLDCJQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Dec 2009 21:09:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZLDCJN
+	id S1755649AbZLDCOo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Dec 2009 21:14:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZLDCOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Dec 2009 21:09:13 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:35999 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752604AbZLDCJM (ORCPT
+	Thu, 3 Dec 2009 21:14:42 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:64714 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753532AbZLDCOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Dec 2009 21:09:12 -0500
+	Thu, 3 Dec 2009 21:14:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=gymzUfIFsmn5HfRmF66RH+ZG2ZTQMpp+DVBEV5K5alGcxL5KqMyG52LL0MxoGQB1kY
-         qu8AH+0l46TBlYC3BhGK0gYQ0bhuUaMStrZqoe5DVlJVBqBN6GvhGGx6l3Z2qHiito6I
-         BHqU80bW7GxNpieil2RaELd3CziFBXop+/BsI=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=B5dPjOMoQamvKkqJHRyO41ym+j5ANhVt2s4h+Lfu8IjU48fFTYZ34YWabxLtGPx86o
+         uvbxgTmp6ElkhuAALxTaU3pnwtAPBHT6TMotZ+7lax+jnyvVik8Vh9nARe03DXsq2jj9
+         zqYHKwDK/5ubTIL0Zw8xAk4pkE8qG17br89sY=
+Date: Fri, 4 Dec 2009 05:14:44 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: mm-commits@vger.kernel.org, h-shimamoto@ct.jp.nec.com,
+       chris.mason@oracle.com, konishi.ryusuke@lab.ntt.co.jp,
+       swhiteho@redhat.com, tytso@mit.edu
+Subject: Re: + task_struct-make-journal_info-conditional.patch added to -mm
+ tree
+Message-ID: <20091204021444.GA8392@x200>
+References: <200912032240.nB3Mevae027408@imap1.linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <20091125140422.cdee4a0d.akpm@linux-foundation.org>
-References: <1259162390-378-1-git-send-email-cliffcai.sh@gmail.com> 
-	<20091125140422.cdee4a0d.akpm@linux-foundation.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 3 Dec 2009 21:08:58 -0500
-Message-ID: <8bd0f97a0912031808p5032f8c8i804d72dfad5b51b2@mail.gmail.com>
-Subject: Re: [PATCH v4][mmc/host]:Blackfin SD Host Controller Driver
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cliffcai.sh@gmail.com, linux-mmc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, cliff.cai@analog.com,
-       Bryan Wu <cooloney@kernel.org>, Mike Frysinger <vapier@gentoo.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912032240.nB3Mevae027408@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nB429Q16015519
 
-On Wed, Nov 25, 2009 at 17:04, Andrew Morton wrote:> --- a/drivers/mmc/host/bfin_sdh.c~blackfin-sd-host-controller-driver-fix> +++ a/drivers/mmc/host/bfin_sdh.c> @@ -149,15 +149,17 @@ static int sdh_setup_data(struct sdh_hos>        sdh_enable_stat_irq(host, (DAT_CRC_FAIL | DAT_TIME_OUT | DAT_END));>        host->dma_len = dma_map_sg(mmc_dev(host->mmc), data->sg, data->sg_len, host->dma_dir);>  #if defined(CONFIG_BF54x)> -       int i;>        dma_cfg |= DMAFLOW_ARRAY | NDSIZE_5 | RESTART | WDSIZE_32 | DMAEN;> -       for_each_sg(data->sg, sg, host->dma_len, i) {> -               host->sg_cpu[i].start_addr = sg_dma_address(sg);> -               host->sg_cpu[i].cfg = dma_cfg;> -               host->sg_cpu[i].x_count = sg_dma_len(sg) / 4;> -               host->sg_cpu[i].x_modify = 4;> -               dev_dbg(mmc_dev(host->mmc), "%d: start_addr:0x%lx, cfg:0x%x, x_count:0x%x,\> -                               x_modify:0x%x\n", i, host->sg_cpu[i].start_addr,> +       {> +               int i;> +               for_each_sg(data->sg, sg, host->dma_len, i) {> +                       host->sg_cpu[i].start_addr = sg_dma_address(sg);> +                       host->sg_cpu[i].cfg = dma_cfg;> +                       host->sg_cpu[i].x_count = sg_dma_len(sg) / 4;> +                       host->sg_cpu[i].x_modify = 4;> +                       dev_dbg(mmc_dev(host->mmc), "%d: start_addr:0x%lx, "> +                               "cfg:0x%x, x_count:0x%x, x_modify:0x%x\n",> +                               i, host->sg_cpu[i].start_addr,>                                host->sg_cpu[i].cfg, host->sg_cpu[i].x_count,>                                host->sg_cpu[i].x_modify);>        }
-this change also has an error in it ... the new opening brace bracestole the closing brace from the for_each_sg()-mike���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+On Thu, Dec 03, 2009 at 02:40:57PM -0800, akpm@linux-foundation.org wrote:
+> --- a/include/linux/sched.h~task_struct-make-journal_info-conditional
+> +++ a/include/linux/sched.h
+> @@ -1452,8 +1452,10 @@ struct task_struct {
+>  	gfp_t lockdep_reclaim_gfp;
+>  #endif
+>  
+> +#ifdef CONFIG_FS_JOURNAL_INFO
+>  /* journalling filesystem info */
+>  	void *journal_info;
+> +#endif
+
+This will prevent using e.g. ext3 on CONFIG_EXT3_FS=n kernels.
