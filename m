@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZLDTCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbZLDTDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbZLDTCr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 14:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbZLDTCp
+	id S1757195AbZLDTDp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 14:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbZLDTDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 14:02:45 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:61989 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755616AbZLDTCo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 14:02:44 -0500
-Date: Fri, 4 Dec 2009 11:02:28 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "matteo_cortese@fastwebnet.it" <matteo_cortese@fastwebnet.it>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make gconfig: fix the "(NEW)" string
-Message-Id: <20091204110228.2ce3345c.randy.dunlap@oracle.com>
-In-Reply-To: <23753252.369201259951904278.JavaMail.defaultUser@defaultHost>
-References: <23753252.369201259951904278.JavaMail.defaultUser@defaultHost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B195CC7.00D3:SCFMA4539814,ss=1,fgs=0
+	Fri, 4 Dec 2009 14:03:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37917 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753563AbZLDTDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 14:03:43 -0500
+Date: Fri, 4 Dec 2009 11:03:10 -0800
+From: Chris Wright <chrisw@redhat.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Chris Wright <chrisw@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2/9] ksm: let shared pages be swappable
+Message-ID: <20091204190310.GI19624@x200.localdomain>
+References: <20091202125501.GD28697@random.random>
+ <20091203134610.586E.A69D9226@jp.fujitsu.com>
+ <20091204135938.5886.A69D9226@jp.fujitsu.com>
+ <20091204141617.f4c491e7.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091204171640.GE19624@x200.localdomain>
+ <20091204185303.GL28697@random.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091204185303.GL28697@random.random>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009 19:38:24 +0100 (CET) matteo_cortese@fastwebnet.it wrote:
-
-> The string "(NEW)" is added to those options that are not present in the
->  current config file, thus looking as new features. Alas, the logic seem
-> s to be inverted.
-
-Did you just notice that thru source code inspection or via testing of
-gconfig?
-
-
-> Signed-off-by: Matteo Cortese <matteo_cortese@fastwebnet.it>
-> ------
+* Andrea Arcangeli (aarcange@redhat.com) wrote:
+> On Fri, Dec 04, 2009 at 09:16:40AM -0800, Chris Wright wrote:
+> > That's why I mentioned the page of zeroes as the prime example of
+> > something with a high mapcount that shouldn't really ever be evicted.
 > 
-> diff -u linux-source-2.6.26-old/scripts/kconfig/gconf.c linux-source-2.6
-> .26/scripts/kconfig/gconf.c
-> --- linux-source-2.6.26-old/scripts/kconfig/gconf.c	2008-07-13 21:51:29.
-> 000000000 +0000
-> +++ linux-source-2.6.26/scripts/kconfig/gconf.c	2009-01-03 00:52:57.0000
-> 00000 +0000
-> @@ -1174,7 +1174,7 @@
->  
->  	row[COL_OPTION] =
->  	    g_strdup_printf("%s %s", _(menu_get_prompt(menu)),
-> -			    sym && sym_has_value(sym) ? "(NEW)" : "");
-> +			    sym && !sym_has_value(sym) ? "(NEW)" : "");
->  
->  	if (show_all && !menu_is_visible(menu))
->  		row[COL_COLOR] = g_strdup("DarkGray");
-> 
-> --
+> Just a nitpick, "never" is too much, it should remain evictable if
+> somebody halts all VM from monitor and starts a workloads that fills
+> RAM and runs for a very prolonged time pushing all VM into swap. This
+> is especially true if we stick to the below approach and it isn't
+> just 1 page in high-sharing.
 
-Well, for me, with just some random config file that has
-CONFIG_MODULES=y
-CONFIG_BLOCK=y
+Yup, I completely agree, that's what I was trying to convey by
+"shouldn't really ever" ;-)
 
-gconfig with this patch says:
-
-  Enable loadable module support
-  Enable the block layer (NEW)
-
-and gconfig without this patch says:
-
-  Enable loadable module support (NEW)
-  Enable the block layer
-
-
-I'm confuzed.  Go figure.
-
----
-~Randy
+thanks,
+-chris
