@@ -1,116 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZLDNws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZLDNyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbZLDNws (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 08:52:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZLDNwo
+	id S1756639AbZLDNyR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 08:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbZLDNyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 08:52:44 -0500
-Received: from bohort.kerlabs.com ([62.160.40.57]:43856 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756160AbZLDNwl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 08:52:41 -0500
-From: Louis Rilling <louis.rilling@kerlabs.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Louis Rilling <louis.rilling@kerlabs.com>
-Subject: [PATCH 2/2] block: Fix io_context leak after failure of clone with CLONE_IO
-Date: Fri,  4 Dec 2009 14:52:42 +0100
-Message-Id: <1259934762-16920-3-git-send-email-louis.rilling@kerlabs.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1259934762-16920-1-git-send-email-louis.rilling@kerlabs.com>
-References: <1259934762-16920-1-git-send-email-louis.rilling@kerlabs.com>
+	Fri, 4 Dec 2009 08:54:17 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:36120 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751823AbZLDNyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 08:54:16 -0500
+Date: Fri, 4 Dec 2009 14:54:22 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: linux-next: block tree build failure
+Message-ID: <20091204135422.GZ8742@kernel.dk>
+References: <20091204143612.f30db275.sfr@canb.auug.org.au> <20091204074341.GH8742@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091204074341.GH8742@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With CLONE_IO, parent's io_context->nr_tasks is incremented, but never
-decremented whenever copy_process() fails afterwards, which prevents
-exit_io_context() from calling IO schedulers exit functions.
+On Fri, Dec 04 2009, Jens Axboe wrote:
+> On Fri, Dec 04 2009, Stephen Rothwell wrote:
+> > Hi Jens,
+> > 
+> > Today's linux-next build (x86_64 allmodconfig) failed like this:
+> > 
+> > block/built-in.o: In function `blkiocg_destroy':
+> > blk-cgroup.c:(.text+0x1bd48): undefined reference to `cfq_unlink_blkio_group'
+> > block/built-in.o: In function `blkiocg_weight_write':
+> > blk-cgroup.c:(.text+0x1c0d2): undefined reference to `cfq_update_blkio_group_weight'
+> > 
+> > Caused by commits b1c3576961847da26c91b1e97f226bb66be5fa3f ("blkio: Take
+> > care of cgroup deletion and cfq group reference counting") and
+> > f8d461d692c341add957fb973fb5ee1f62039dc7 ("blkio: Propagate cgroup weight
+> > updation to cfq groups").
+> > 
+> > When adding code that is CONFIG dependent, please build test it with and
+> > without the relevant CONFIG setting (in this case
+> > CONFIG_CFQ_GROUP_IOSCHED).  Also put the extern declarations of global
+> > functions into a header file.
+> 
+> The problem looks like a circular dependency betwen BLK_CGROUP and CFQ.
+> The Kconfig dependencies doesn't express that blk-cgroup also calls into
+> cfq, so you can't have cfq=m (cfq doesn't even export those functions).
+> It looks pretty messy, to be honest. I'll see if I can fix it up.
 
-Give a task_struct to exit_io_context(), and call exit_io_context() instead of
-put_io_context() in copy_process() cleanup path.
+I pushed out the quick fix, just disallowing cfq=m and blk cgroup in
+Kconfig. So it should work now.
 
-Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
----
- block/blk-ioc.c           |   10 +++++-----
- include/linux/iocontext.h |    5 +++--
- kernel/exit.c             |    2 +-
- kernel/fork.c             |    3 ++-
- 4 files changed, 11 insertions(+), 9 deletions(-)
-
-diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-index dcd0412..cbdabb0 100644
---- a/block/blk-ioc.c
-+++ b/block/blk-ioc.c
-@@ -66,14 +66,14 @@ static void cfq_exit(struct io_context *ioc)
- }
- 
- /* Called by the exitting task */
--void exit_io_context(void)
-+void exit_io_context(struct task_struct *task)
- {
- 	struct io_context *ioc;
- 
--	task_lock(current);
--	ioc = current->io_context;
--	current->io_context = NULL;
--	task_unlock(current);
-+	task_lock(task);
-+	ioc = task->io_context;
-+	task->io_context = NULL;
-+	task_unlock(task);
- 
- 	if (atomic_dec_and_test(&ioc->nr_tasks)) {
- 		if (ioc->aic && ioc->aic->exit)
-diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-index 4da4a75..80a4b53 100644
---- a/include/linux/iocontext.h
-+++ b/include/linux/iocontext.h
-@@ -99,14 +99,15 @@ static inline struct io_context *ioc_task_link(struct io_context *ioc)
- 	return NULL;
- }
- 
-+struct task_struct;
- #ifdef CONFIG_BLOCK
- int put_io_context(struct io_context *ioc);
--void exit_io_context(void);
-+void exit_io_context(struct task_struct *task);
- struct io_context *get_io_context(gfp_t gfp_flags, int node);
- struct io_context *alloc_io_context(gfp_t gfp_flags, int node);
- void copy_io_context(struct io_context **pdst, struct io_context **psrc);
- #else
--static inline void exit_io_context(void)
-+static inline void exit_io_context(struct task_struct *task)
- {
- }
- 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index f7864ac..2544000 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1004,7 +1004,7 @@ NORET_TYPE void do_exit(long code)
- 	tsk->flags |= PF_EXITPIDONE;
- 
- 	if (tsk->io_context)
--		exit_io_context();
-+		exit_io_context(tsk);
- 
- 	if (tsk->splice_pipe)
- 		__free_pipe_info(tsk->splice_pipe);
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 166b8c4..6073534 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1310,7 +1310,8 @@ bad_fork_free_pid:
- 	if (pid != &init_struct_pid)
- 		free_pid(pid);
- bad_fork_cleanup_io:
--	put_io_context(p->io_context);
-+	if (p->io_context)
-+		exit_io_context(p);
- bad_fork_cleanup_namespaces:
- 	exit_task_namespaces(p);
- bad_fork_cleanup_mm:
 -- 
-1.5.6.5
+Jens Axboe
 
