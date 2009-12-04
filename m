@@ -1,284 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZLDVam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbZLDVgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbZLDVam (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 16:30:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757367AbZLDVal
+	id S1757405AbZLDVgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 16:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbZLDVgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 16:30:41 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:11931 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757350AbZLDVak (ORCPT
+	Fri, 4 Dec 2009 16:36:17 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:48836 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757266AbZLDVgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 16:30:40 -0500
-Subject: [PATCH] page-types: kernel pageflags mode
-To: akpm@linux-foundation.org
-From: Alex Chiang <achiang@hp.com>
-Cc: Haicheng Li <haicheng.li@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andi Kleen <andi@firstfloor.org>,
-       fengguang.wu@intel.com
-Date: Fri, 04 Dec 2009 14:29:48 -0700
-Message-ID: <20091204212606.29258.98531.stgit@bob.kio>
-User-Agent: StGit/0.15
+	Fri, 4 Dec 2009 16:36:16 -0500
+Date: Fri, 4 Dec 2009 16:36:22 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Greg KH <gregkh@suse.de>, <stable@kernel.org>,
+       Rickard Bellini <rickard.bellini@ericsson.com>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       Torgny Johansson <torgny.johansson@ericsson.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
+In-Reply-To: <200912042218.11410.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0912041625360.3070-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An earlier commit taught page-types the -d|--describe argument, which
-allows the user to describe page flags passed on the command line:
+On Fri, 4 Dec 2009, Oliver Neukum wrote:
 
-  # ./Documentation/vm/page-types -d 0x4000
-  0x0000000000004000  ______________b___________________  swapbacked
+> Am Freitag, 4. Dezember 2009 21:57:50 schrieb Alan Stern:
+> > On Fri, 4 Dec 2009, Oliver Neukum wrote:
+> > > > > 1. am I supposed to get a reference just so that I can use dev_err?
+> > > >
+> > > > No, you should already have a reference on the device when doing the
+> > > > call, right?
+> > >
+> > > No, why? Consider this:
+> > >
+> > > int write(...)
+> > > {
+> > > 	...
+> > > 	mutex_lock(&instance->lock);
+> > > 	if (instance->disconnected) {
+> > > 		dev_dbg(instance->dev,"writing to disconnected device");
+> > > 		rv = -ENODEV;
+> > > 	} else {
+> > > 		res = usb_submit_urb(...);
+> > > 		rv = res < 0 ? -EIO : count;
+> > > 	}
+> > > 	mutex_unlock(&instance->lock);
+> > > 	return rv;
+> > > }
+> > >
+> > > void disconnect(...)
+> > > {
+> > > 	...
+> > > 	mutex_lock(&instance->lock);
+> > > 	instance->disconnected = 1;
+> > > 	usb_kill_urb(...);
+> > > 	usb_kill_urb(...);
+> > > 	mutex_unlock(&instance->lock);
+> > > }
+> > >
+> > > This would be perfectly valid code without any references taken save
+> > > for the pesky dev_dbg()
+> > 
+> > Whoever calls write() must possess a valid reference.  Otherwise
+> > instance might already be deallocated when write() starts, causing an
+> > oops well before the call to dev_dbg().
+> 
+> He needs a valid reference to "instance", not to the device. In fact
+> he may do IO to the device only if he knows it hasn't been disconnected.
 
-In -d mode, page-types expects the page flag bits in the order generated
-by the kernel function get_uflags().
+Okay, yes.  In fact, that is what your write() routine does -- it
+checks the disconnected flag.
 
-However, those bits are rearranged compared to what is actually stored
-in struct page->flags. A kernel developer dumping a page's flags
-using printk, e.g., may get misleading results in -d mode.
+> > Typically the driver would take a reference during open() and drop it
+> > during close().
+> 
+> You can do that but then you must not do IO prior to open() or after
+> close(). That is you must actually wait for IO to finish in close() and
+> cannot prefill your buffers before open().
 
-Teach page-types the -k mode, which parses and describes the bits in
-the internal kernel order:
+If open() or close() is called before disconnect() then you don't have 
+to worry.
 
-  # ./Documentation/vm/page-types -k 0x4000
-  0x0000000000004000  ______________H_________  compound_head
+If close() is called after disconnect() there's nothing to wait for, 
+because disconnect() should call usb_kill_urb() on all outstanding 
+transfers (actually usbcore will do that for you).  Likewise with 
+open().
 
-Note that the recommended way to build page-types is from the top-level
-kernel source directory. This ensures that it will get the same CONFIG_*
-defines used to build the kernel source.
+The problem in this example stems from the fact that you are using
+instance->dev at a time when you don't know that it is valid -- in
+fact, you have good reason to believe it _isn't_ valid because
+instance->disconnected is set.
 
-  # make Documentation/vm/
+One approach is to set instance->dev to NULL in disconnect().  That
+wouldn't do much good for your dev_dbg(), though.  A better solution is
+to refcount the instance->dev pointer: Take a reference to the device
+when setting instance->dev and drop it when clearing instance->dev (or
+when instance is freed).
 
-The implication is that attempting to use page-types -k on a kernel
-with different CONFIG_* settings may lead to surprising and misleading
-results. To retain sanity, always use the page-types built out of the
-kernel tree you are actually testing.
-
-Cc: fengguang.wu@intel.com
-Cc: Haicheng Li <haicheng.li@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-
-Applies on top of mmotm.
-
- Documentation/vm/Makefile     |    2 +
- Documentation/vm/page-types.c |  117 +++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 113 insertions(+), 6 deletions(-)
-
-diff --git a/Documentation/vm/Makefile b/Documentation/vm/Makefile
-index 5bd269b..1bebc43 100644
---- a/Documentation/vm/Makefile
-+++ b/Documentation/vm/Makefile
-@@ -1,6 +1,8 @@
- # kbuild trick to avoid linker error. Can be omitted if a module is built.
- obj- := dummy.o
- 
-+HOSTCFLAGS_page-types.o += $(LINUXINCLUDE)
-+
- # List of programs to build
- hostprogs-y := slabinfo page-types
- 
-diff --git a/Documentation/vm/page-types.c b/Documentation/vm/page-types.c
-index 7a7d9ba..b0f129c 100644
---- a/Documentation/vm/page-types.c
-+++ b/Documentation/vm/page-types.c
-@@ -100,7 +100,7 @@
- #define BIT(name)		(1ULL << KPF_##name)
- #define BITS_COMPOUND		(BIT(COMPOUND_HEAD) | BIT(COMPOUND_TAIL))
- 
--static const char *page_flag_names[] = {
-+static const char *page_flag_names_proc[] = {
- 	[KPF_LOCKED]		= "L:locked",
- 	[KPF_ERROR]		= "E:error",
- 	[KPF_REFERENCED]	= "R:referenced",
-@@ -140,6 +140,103 @@ static const char *page_flag_names[] = {
- 	[KPF_SLUB_DEBUG]	= "E:slub_debug",
- };
- 
-+enum pageflags {
-+	PG_locked,              /* Page is locked. Don't touch. */
-+	PG_error,
-+	PG_referenced,
-+	PG_uptodate,
-+	PG_dirty,
-+	PG_lru,
-+	PG_active,
-+	PG_slab,
-+	PG_owner_priv_1,        /* Owner use. If pagecache, fs may use*/
-+	PG_arch_1,
-+	PG_reserved,
-+	PG_private,             /* If pagecache, has fs-private data */
-+	PG_private_2,           /* If pagecache, has fs aux data */
-+	PG_writeback,           /* Page is under writeback */
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+	PG_head,                /* A head page */
-+	PG_tail,                /* A tail page */
-+#else
-+	PG_compound,            /* A compound page */
-+#endif
-+	PG_swapcache,           /* Swap page: swp_entry_t in private */
-+	PG_mappedtodisk,        /* Has blocks allocated on-disk */
-+	PG_reclaim,             /* To be reclaimed asap */
-+	PG_buddy,               /* Page is free, on buddy lists */
-+	PG_swapbacked,          /* Page is backed by RAM/swap */
-+	PG_unevictable,         /* Page is "unevictable"  */
-+#ifdef CONFIG_MMU
-+	PG_mlocked,             /* Page is vma mlocked */
-+#endif
-+#ifdef CONFIG_ARCH_USES_PG_UNCACHED
-+	PG_uncached,            /* Page has been mapped as uncached */
-+#endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	PG_hwpoison,            /* hardware poisoned page. Don't touch */
-+#endif
-+	__NR_PAGEFLAGS,
-+
-+	/* Filesystems */
-+	PG_checked = PG_owner_priv_1,
-+
-+	/* Two page bits are conscripted by FS-Cache to maintain local caching
-+	 * state.  These bits are set on pages belonging to the netfs's inodes
-+	 * when those inodes are being locally cached.
-+	 */
-+	PG_fscache = PG_private_2,      /* page backed by cache */
-+
-+	/* XEN */
-+	PG_pinned = PG_owner_priv_1,
-+	PG_savepinned = PG_dirty,
-+
-+	/* SLOB */
-+	PG_slob_free = PG_private,
-+
-+	/* SLUB */
-+	PG_slub_frozen = PG_active,
-+	PG_slub_debug = PG_error,
-+};
-+
-+static const char *page_flag_names_kernel[] = {
-+	[PG_locked]		= "L:locked",
-+	[PG_error]		= "E:error",
-+	[PG_referenced]		= "R:referenced",
-+	[PG_uptodate]		= "U:uptodate",
-+	[PG_dirty]		= "D:dirty",
-+	[PG_lru]		= "l:lru",
-+	[PG_active]		= "A:active",
-+	[PG_slab]		= "S:slab",
-+	[PG_owner_priv_1]	= "O:owner_private",
-+	[PG_arch_1]		= "h:arch",
-+	[PG_reserved]		= "r:reserved",
-+	[PG_private]		= "P:private",
-+	[PG_private_2]		= "p:private_2",
-+	[PG_writeback]		= "W:writeback",
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+	[PG_head]		= "H:compound_head",
-+	[PG_tail]		= "T:compound_tail",
-+#else
-+	[PG_compound]		= "C:compound",
-+#endif
-+	[PG_swapcache]		= "s:swapcache",
-+	[PG_mappedtodisk]	= "d:mappedtodisk",
-+	[PG_reclaim]		= "I:reclaim",
-+	[PG_buddy]		= "B:buddy",
-+	[PG_swapbacked]		= "b:swapbacked",
-+	[PG_unevictable]	= "u:unevictable",
-+#ifdef CONFIG_MMU
-+	[PG_mlocked]		= "m:mlocked",
-+#endif
-+#ifdef CONFIG_ARCH_USES_PG_UNCACHED
-+	[PG_uncached]		= "c:uncached",
-+#endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	[PG_hwpoison]		= "X:hwpoison",
-+#endif
-+};
-+
- 
- /*
-  * data structures
-@@ -186,6 +283,8 @@ static unsigned long	total_pages;
- static unsigned long	nr_pages[HASH_SIZE];
- static uint64_t 	page_flags[HASH_SIZE];
- 
-+static char **page_flag_names = (char **)page_flag_names_proc;
-+static int page_flag_nr = KPF_SLUB_DEBUG + 1;
- 
- /*
-  * helper functions
-@@ -297,7 +396,7 @@ static char *page_flag_name(uint64_t flags)
- 	int present;
- 	int i, j;
- 
--	for (i = 0, j = 0; i < ARRAY_SIZE(page_flag_names); i++) {
-+	for (i = 0, j = 0; i < page_flag_nr; i++) {
- 		present = (flags >> i) & 1;
- 		if (!page_flag_names[i]) {
- 			if (present)
-@@ -315,7 +414,7 @@ static char *page_flag_longname(uint64_t flags)
- 	static char buf[1024];
- 	int i, n;
- 
--	for (i = 0, n = 0; i < ARRAY_SIZE(page_flag_names); i++) {
-+	for (i = 0, n = 0; i < page_flag_nr; i++) {
- 		if (!page_flag_names[i])
- 			continue;
- 		if ((flags >> i) & 1)
-@@ -675,6 +774,7 @@ static void usage(void)
- "page-types [options]\n"
- "            -r|--raw                   Raw mode, for kernel developers\n"
- "            -d|--describe flags        Describe flags\n"
-+"            -k|--kernel describe flags Describe flags, kernel internal order\n"
- "            -a|--addr    addr-spec     Walk a range of pages\n"
- "            -b|--bits    bits-spec     Walk pages with specified bits\n"
- "            -p|--pid     pid           Walk process address space\n"
-@@ -705,7 +805,7 @@ static void usage(void)
- "bit-names:\n"
- 	);
- 
--	for (i = 0, j = 0; i < ARRAY_SIZE(page_flag_names); i++) {
-+	for (i = 0, j = 0; i < page_flag_nr; i++) {
- 		if (!page_flag_names[i])
- 			continue;
- 		printf("%16s%s", page_flag_names[i] + 2,
-@@ -836,7 +936,7 @@ static uint64_t parse_flag_name(const char *str, int len)
- 	if (len <= 8 && !strncmp(str, "compound", len))
- 		return BITS_COMPOUND;
- 
--	for (i = 0; i < ARRAY_SIZE(page_flag_names); i++) {
-+	for (i = 0; i < page_flag_nr; i++) {
- 		if (!page_flag_names[i])
- 			continue;
- 		if (!strncmp(str, page_flag_names[i] + 2, len))
-@@ -906,6 +1006,7 @@ static const struct option opts[] = {
- 	{ "addr"      , 1, NULL, 'a' },
- 	{ "bits"      , 1, NULL, 'b' },
- 	{ "describe"  , 1, NULL, 'd' },
-+	{ "kernel"    , 1, NULL, 'k' },
- 	{ "list"      , 0, NULL, 'l' },
- 	{ "list-each" , 0, NULL, 'L' },
- 	{ "no-summary", 0, NULL, 'N' },
-@@ -922,7 +1023,7 @@ int main(int argc, char *argv[])
- 	page_size = getpagesize();
- 
- 	while ((c = getopt_long(argc, argv,
--				"rp:f:a:b:d:lLNXxh", opts, NULL)) != -1) {
-+				"rp:f:a:b:d:k:lLNXxh", opts, NULL)) != -1) {
- 		switch (c) {
- 		case 'r':
- 			opt_raw = 1;
-@@ -939,6 +1040,10 @@ int main(int argc, char *argv[])
- 		case 'b':
- 			parse_bits_mask(optarg);
- 			break;
-+		case 'k':
-+			/* Fall-through to case 'd' */
-+			page_flag_names = (char **)page_flag_names_kernel;
-+			page_flag_nr = __NR_PAGEFLAGS;
- 		case 'd':
- 			describe_flags(optarg);
- 			exit(0);
+Alan Stern
 
