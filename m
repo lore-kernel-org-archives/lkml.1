@@ -1,124 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932947AbZLEUST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbZLEUSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932947AbZLEUST (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 15:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbZLEURA
+	id S1757262AbZLEUSm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 15:18:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758013AbZLEUSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 15:17:00 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41333 "EHLO
+	Sat, 5 Dec 2009 15:18:36 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41336 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757262AbZLEUQu (ORCPT
+	with ESMTP id S1757903AbZLEUQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 15:16:50 -0500
+	Sat, 5 Dec 2009 15:16:58 -0500
 Date: Sat, 05 Dec 2009 19:08:50 +0000
 To: linux-arch@vger.kernel.org
-Subject: [RFC][PATCH 7/18] kill useless checks in sparc mremap variants
+Subject: [RFC][PATCHSET] mremap/mmap mess
 Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <E1NGzzu-0008RV-Tx@ZenIV.linux.org.uk>
+Message-Id: <E1NGzzu-0008RH-T2@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/sparc/kernel/sys_sparc32.c  |    7 +------
- arch/sparc/kernel/sys_sparc_32.c |   21 ---------------------
- arch/sparc/kernel/sys_sparc_64.c |    6 ------
- arch/sparc/kernel/systbls_32.S   |    2 +-
- 4 files changed, 2 insertions(+), 34 deletions(-)
+[NOTE: the patch series below is not for merge until ACKed by arch maintainers]
 
-diff --git a/arch/sparc/kernel/sys_sparc32.c b/arch/sparc/kernel/sys_sparc32.c
-index 04e28b2..e3af1a4 100644
---- a/arch/sparc/kernel/sys_sparc32.c
-+++ b/arch/sparc/kernel/sys_sparc32.c
-@@ -577,17 +577,12 @@ asmlinkage unsigned long sys32_mremap(unsigned long addr,
- 	unsigned long old_len, unsigned long new_len,
- 	unsigned long flags, u32 __new_addr)
- {
--	unsigned long ret = -EINVAL;
-+	unsigned long ret;
- 	unsigned long new_addr = __new_addr;
- 
--	if (unlikely(sparc_mmap_check(addr, old_len)))
--		goto out;
--	if (unlikely(sparc_mmap_check(new_addr, new_len)))
--		goto out;
- 	down_write(&current->mm->mmap_sem);
- 	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
- 	up_write(&current->mm->mmap_sem);
--out:
- 	return ret;       
- }
- 
-diff --git a/arch/sparc/kernel/sys_sparc_32.c b/arch/sparc/kernel/sys_sparc_32.c
-index 03035c8..10c43be 100644
---- a/arch/sparc/kernel/sys_sparc_32.c
-+++ b/arch/sparc/kernel/sys_sparc_32.c
-@@ -287,27 +287,6 @@ long sparc_remap_file_pages(unsigned long start, unsigned long size,
- 				    (pgoff >> (PAGE_SHIFT - 12)), flags);
- }
- 
--extern unsigned long do_mremap(unsigned long addr,
--	unsigned long old_len, unsigned long new_len,
--	unsigned long flags, unsigned long new_addr);
--                
--asmlinkage unsigned long sparc_mremap(unsigned long addr,
--	unsigned long old_len, unsigned long new_len,
--	unsigned long flags, unsigned long new_addr)
--{
--	unsigned long ret = -EINVAL;
--
--	if (unlikely(sparc_mmap_check(addr, old_len)))
--		goto out;
--	if (unlikely(sparc_mmap_check(new_addr, new_len)))
--		goto out;
--	down_write(&current->mm->mmap_sem);
--	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
--	up_write(&current->mm->mmap_sem);
--out:
--	return ret;       
--}
--
- /* we come to here via sys_nis_syscall so it can setup the regs argument */
- asmlinkage unsigned long
- c_sys_nis_syscall (struct pt_regs *regs)
-diff --git a/arch/sparc/kernel/sys_sparc_64.c b/arch/sparc/kernel/sys_sparc_64.c
-index e2d1024..ddda12f 100644
---- a/arch/sparc/kernel/sys_sparc_64.c
-+++ b/arch/sparc/kernel/sys_sparc_64.c
-@@ -614,12 +614,6 @@ SYSCALL_DEFINE5(64_mremap, unsigned long, addr,	unsigned long, old_len,
- 
- 	if (test_thread_flag(TIF_32BIT))
- 		goto out;
--	if (unlikely(new_len >= VA_EXCLUDE_START))
--		goto out;
--	if (unlikely(sparc_mmap_check(addr, old_len)))
--		goto out;
--	if (unlikely(sparc_mmap_check(new_addr, new_len)))
--		goto out;
- 
- 	down_write(&current->mm->mmap_sem);
- 	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
-diff --git a/arch/sparc/kernel/systbls_32.S b/arch/sparc/kernel/systbls_32.S
-index 0f1658d..81822a8 100644
---- a/arch/sparc/kernel/systbls_32.S
-+++ b/arch/sparc/kernel/systbls_32.S
-@@ -67,7 +67,7 @@ sys_call_table:
- /*235*/	.long sys_fstatfs64, sys_llseek, sys_mlock, sys_munlock, sys_mlockall
- /*240*/	.long sys_munlockall, sys_sched_setparam, sys_sched_getparam, sys_sched_setscheduler, sys_sched_getscheduler
- /*245*/	.long sys_sched_yield, sys_sched_get_priority_max, sys_sched_get_priority_min, sys_sched_rr_get_interval, sys_nanosleep
--/*250*/	.long sparc_mremap, sys_sysctl, sys_getsid, sys_fdatasync, sys_nfsservctl
-+/*250*/	.long sys_mremap, sys_sysctl, sys_getsid, sys_fdatasync, sys_nfsservctl
- /*255*/	.long sys_sync_file_range, sys_clock_settime, sys_clock_gettime, sys_clock_getres, sys_clock_nanosleep
- /*260*/	.long sys_sched_getaffinity, sys_sched_setaffinity, sys_timer_settime, sys_timer_gettime, sys_timer_getoverrun
- /*265*/	.long sys_timer_delete, sys_timer_create, sys_nis_syscall, sys_io_setup, sys_io_destroy
--- 
-1.5.6.5
+	We have a bunch of interesting problems with mmap/mremap.
 
+1) MREMAP_FIXED allows remap to any location, regardless of what
+the architecture has to say about it.  The only check is TASK_SIZE.
+That's not enough - e.g. there are architectures where some ranges
+are simply absent (itanic, sparc), there are some that have cache
+coherency requirements on alignments of shared mapping (a lot -
+anything with VIPT cache, itanic where it's not a coherency but
+a performance issue).  There are architectures where specific ranges
+are reserved for hugetlb and they either simply do not allow normal
+mappings in there or need to do something to make them possible (as
+ppc64 does).  sparc tried to deal with that problem, but it hadn't
+been complete (alignment issues) and it had been actually wrong for
+non-MREMAP_FIXED calls of mremap().
 
+2) without MREMAP_FIXED we happily allowed extension into a hole in
+address space - the only check for being able to extend without
+move had been for TASK_SIZE (and for non-overlap with other vmas).
+Victims: sparc, itanic due to extending into holes, powerpc due to
+extending into hugetlb range.
+
+3) in case of relocation without MREMAP_FIXED we ended up doing
+get_unmapped_area() with wrong pgoff if the starting address had
+been in the middle of a mapping.  New vma gets the right pgoff,
+the checks are done for the wrong one.  Cache coherency issues
+on all VIPT architectures.
+
+4) mmap() with MAP_HUGETLB leaks struct file if it bails out anywhere
+past the allocation of struct file (by do_mmap_pgoff())
+
+5) brk() into a hugetlb range failed without trying to do anything;
+known thing, ppc folks had been unhappy about that.
+
+Series below should deal with those, mostly by switching to consistent
+use of get_unmapped_area() and sanitizing mmap/mremap code in general.
+
+There is one case where we still have a serious PITA and I'm not sure
+how to deal with that; it's expand_stack().  We can trigger that by
+creating a VM_GROWS{UP,DOWN} mapping and either hitting a pagefault
+on address {below,above} it or doing PTRACE_POKEDATA on such address.
+As it is, we only check that range we are expanding into is not a
+hugetlb-only one.  The thing is, we *can't* just do the normal checks
+as-is there.
+
+For cases when we do expand_stack() for our own mm that would work just
+fine and do the right thing.  Unfortunately, we have places that hit
+it from get_user_pages() for another process.  And checks (starting with
+"what's the maximal address we allow") are process-dependent on biarch
+architectures.  Worse yet, execve() does that when we have no other
+process - it creates new mm, puts an anonymous mapping as high as
+possible in it and copies argv/envp in there.  And that's done with
+get_user_pages() on new mm.  If we have a 32bit task on e.g. amd64,
+we'll have that mapping at addresses far above the TASK_SIZE of caller.
+Later, when  ->load_binary() figures out what personality we'll get,
+it turns that mapping into a valid vma for stack, possibly relocating
+the entire thing to address suitable for resulting process.
+
+Breaking execve() from 32bit processes on biarch architectures would
+be a bad thing, so we can't just add the normal set of checks to
+expand_stack() (acct_stack_growth(), actually).  The problem is quite
+real, though, since e.g. on itanic PTRACE_POKEDATA can be used to get
+a vma hanging down into a gap in address space quite easily.  Results
+are not pretty...
+
+One way to deal with that would be to put enough information into mm_struct
+so that all these checks wouldn't have to look at the caller's personality.
+I'm not sure how much PITA would that be, though; I've been digging through
+the arch/* VM code for several weeks by now, but I certainly don't pretend
+to be able to spot e.g. performance implications of such change.
+
+Comments (both on that issue and on following patch series) would be very
+welcome.
