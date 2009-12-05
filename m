@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932754AbZLEB0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbZLEBbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932754AbZLEB0S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 20:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932713AbZLEB0O
+	id S932760AbZLEBbm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 20:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932727AbZLEBbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 20:26:14 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45755 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932703AbZLEB0N (ORCPT
+	Fri, 4 Dec 2009 20:31:41 -0500
+Received: from smtprelay01.ispgateway.de ([80.67.31.35]:34905 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932713AbZLEBbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 20:26:13 -0500
-Message-ID: <4B19B680.9050700@zytor.com>
-Date: Fri, 04 Dec 2009 17:25:20 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Fri, 4 Dec 2009 20:31:40 -0500
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Sage Weil <sage@newdream.net>
+Subject: Re: [PATCH 05/24] ceph: ref counted buffer
+Date: Sat, 5 Dec 2009 02:31:23 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-15-generic; KDE/4.3.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <1259883691-1042-1-git-send-email-sage@newdream.net> <1259883691-1042-5-git-send-email-sage@newdream.net> <1259883691-1042-6-git-send-email-sage@newdream.net>
+In-Reply-To: <1259883691-1042-6-git-send-email-sage@newdream.net>
 MIME-Version: 1.0
-To: Rakib Mullick <rakib.mullick@gmail.com>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>,
-       Shane Wang <shane.wang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org
-Subject: Re: [PATCH] x86: Call __va() to get trampoline_base.
-References: <b9df5fa10912040826s52e82f2cpd53604835be50c27@mail.gmail.com>
-In-Reply-To: <b9df5fa10912040826s52e82f2cpd53604835be50c27@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912050231.23530.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/04/2009 08:26 AM, Rakib Mullick wrote:
->  x86, tboot: Call __va() to get trampoline_base.
+On Friday 04 December 2009, Sage Weil wrote:
+> struct ceph_buffer is a simple ref-counted buffer.  We transparently
+> choose between kmalloc for small buffers and vmalloc for large ones.
 > 
->  Do not pass trampoline_base as parameter of virt_to_phys.
-> Because trampoline_base is in .cpuinit.data section, but its
-> called from non-cpuinit function. So use __va(TRAMPOLINE_BASE)
-> instead of trampoline_base, which helps to fix section mismatch.
-> 
-> We were warned by the following warning:
-> 
->   LD      arch/x86/kernel/built-in.o
-> WARNING: arch/x86/kernel/built-in.o(.text+0x13c5f): Section mismatch
-> in reference from the function tboot_setup_sleep() to the variable
-> .cpuinit.data:trampoline_base
-> The function tboot_setup_sleep() references
-> the variable __cpuinitdata trampoline_base.
-> This is often because tboot_setup_sleep lacks a __cpuinitdata
-> annotation or the annotation of trampoline_base is wrong.
-> 
-> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+> This is currently used only for allocating memory for xattr data.
 
-This is a bug, but this isn't the right fix.
+Could you wrap parts of this refcounting logic around kref?
+see #include <linux/kref.h> and lib/kref.c
 
-trampoline.c has:
+It avoids a bug with memory areas for free and if anybody
+optimizes or changes refcounting stuff, you get all changes for free :-)
 
-#if defined(CONFIG_X86_64) && defined(CONFIG_ACPI_SLEEP)
-#define __trampinit
-#define __trampinitdata
-#else
-#define __trampinit __cpuinit
-#define __trampinitdata __cpuinitdata
-#endif
+Best Regards
 
-... because on i386 we don't use the trampoline for ACPI return.
-
-This means one of these is true:
-
-- Either we need the AP trampoline for tboot on i386, and the above
-definition in trampoline.c needs to be fixed; or
-- The CONFIG_X86_TRAMPOLINE in tboot.c is too generous, and in fact it
-needs to be set to defined(CONFIG_X86_64) && defined(CONFIG_ACPI_SLEEP)
-just like the above code.
-
-Sending to Joseph and Shane to figure out...
-
-	-hpa
+Ingo Oeser
