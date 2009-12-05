@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbZLEMvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZLENCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbZLEMvR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 07:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZLEMvO
+	id S1754860AbZLENCQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 08:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZLENCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 07:51:14 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:61667 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754527AbZLEMvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 07:51:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=djXc64Mm/jzCYGhsSk27kurfBM/2Y9erSodOTwldDmGzlSPJ4Ykeb+HCBUoEh/rx2r
-         ro3PHbgm+lUOy+2rqlHlV1bTkMwBWp9I5ADy/VHrE0uXaf38PaKX97dGYSQKjMjLmuib
-         gOsIqvjLaVpKFt+WJIvjOODvHzkIf5J76wAk0=
-Message-ID: <4B1A557D.4080707@gmail.com>
-Date: Sat, 05 Dec 2009 07:43:41 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Sat, 5 Dec 2009 08:02:15 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:45612 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754576AbZLENCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 08:02:14 -0500
+Date: Sat, 5 Dec 2009 18:32:02 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v4 PATCH 3/7] sched: Enforce hard limits by throttling
+Message-ID: <20091205130202.GA6204@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20091117143306.GK17335@in.ibm.com> <20091117143519.GN17335@in.ibm.com> <1259942995.17907.895.camel@laptop>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Brice Goglin <brice@myri.com>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH net-next-2.6] drivers/net: Move && and || to end of previous
- line
-References: <1259001504.16503.79.camel@Joe-Laptop.home>	 <20091123.104130.117837098.davem@davemloft.net>	 <1259528449.29779.194.camel@Joe-Laptop.home>	 <20091129.165557.84377714.davem@davemloft.net>	 <1259863101.22783.63.camel@Joe-Laptop.home>  <4B190A29.5080905@myri.com> <1259947271.22783.120.camel@Joe-Laptop.home>
-In-Reply-To: <1259947271.22783.120.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259942995.17907.895.camel@laptop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Fri, 2009-12-04 at 14:10 +0100, Brice Goglin wrote:
->> Joe Perches wrote:
->>> Only files where David Miller is the primary git-signer.
->>> wireless, wimax, ixgbe, etc are not modified.
->> What's the point? Having them at the beginning of the next line is
->> easier to read from my point of view.
+On Fri, Dec 04, 2009 at 05:09:55PM +0100, Peter Zijlstra wrote:
+> On Tue, 2009-11-17 at 20:05 +0530, Bharata B Rao wrote:
+> > sched: Enforce hard limits by throttling.
+> > 
+> > From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > 
+> > Throttle the task-groups which exceed the runtime allocated to them.
+> > Throttled group entities are removed from the run queue.
 > 
-> It's just a stupid consistency thing.
+> This patch is just vile, all those _locked variants should really go.
 > 
-Brice, I've made my objection known on the LKML.  Joe *agrees* that
-having them on the beginning of the line is preferred.  Thousands of
-contributors throughout the tree agree.
+> Nor it is entirely clear why they're there.
+> 
 
-This is entirely a Miller thing.
+update_curr() is the place where I check if the group has exceeded its
+runtime and it needs to take cfs_rq->cfs_runtime_lock. However there are
+2 places from where update_curr() gets called with cfs_rq->cfs_runtime_lock
+already held. Hence _locked() version of update_curr() exists.
 
-My main objection to these sweeping patches is that it makes it much
-more difficult to maintain and apply patches across different versions of
-the tree.  We have already seen conflicts with other git maintained trees.
+These two call paths are both enqueue paths (enqueue_task_fair and
+enqueue during unthrottling when period timer fires). Hence _locked()
+versions of entity_enqueue() exists.
 
-These patches should not be accepted to the main Linus tree.
+I see that you don't have this sort of requirement (of holding
+rt_rq->rt_runtime_lock) in rt. I will recheck on this one to see why you are
+able to do this in rt and I can't in cfs. If convinced, I shall get rid
+_locked versions.
+
+Thanks Peter for taking time to review the hard limit patches.
+
+Regards,
+Bharata.
