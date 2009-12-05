@@ -1,87 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZLEChm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbZLECtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbZLEChm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 21:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbZLEChm
+	id S1756427AbZLECtc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 21:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZLECta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 21:37:42 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:48065 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753756AbZLEChl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 21:37:41 -0500
-Date: Fri, 4 Dec 2009 21:37:46 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <gregkh@suse.de>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Oliver Neukum <oliver@neukum.org>, <stable@kernel.org>,
-       Rickard Bellini <rickard.bellini@ericsson.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       Torgny Johansson <torgny.johansson@ericsson.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Driver core: fix race in dev_driver_string
-In-Reply-To: <20091205003533.GD8792@suse.de>
-Message-ID: <Pine.LNX.4.44L0.0912042113440.7227-100000@netrider.rowland.org>
+	Fri, 4 Dec 2009 21:49:30 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34981 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754262AbZLECta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 21:49:30 -0500
+Message-ID: <4B19CA6F.4090700@gmail.com>
+Date: Sat, 05 Dec 2009 03:50:23 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <gregkh@suse.de>
+CC: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
+       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
+       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
+       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
+References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com> <20091205000942.GA8224@suse.de>
+In-Reply-To: <20091205000942.GA8224@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Dec 2009, Greg KH wrote:
-
-> On Fri, Dec 04, 2009 at 06:50:35PM -0500, Alan Stern wrote:
-> > On Fri, 4 Dec 2009, Dmitry Torokhov wrote:
-> > 
-> > > > Maybe reference counting is inelegant; it depends on your point of
-> > > > view.  Can you think of a more elegant way to make sure that a pointer
-> > > > isn't stale?
-> > > 
-> > > Yes, just say "no" to device_create() and friends.
-> > 
-> > device_create() wasn't used in the case Oliver is discussing.
+Greg KH wrote:
+> On Sat, Dec 05, 2009 at 01:02:59AM +0100, Emese Revfy wrote:
+>> From: Emese Revfy <re.emese@gmail.com>
+>>
+>> Constify struct file_operations with some exceptions.
+>> Per Dave Miller's suggestion, resend with proper CC list and patch format.
+>>
+>> Signed-off-by: Emese Revfy <re.emese@gmail.com>
+>> ---
+>>  drivers/acpi/battery.c                           |    2 +-
+>>  drivers/char/pty.c                               |   16 +++++++++---
+>>  drivers/char/tty_io.c                            |   28 ++++-----------------
+>>  drivers/media/dvb/dvb-core/dvbdev.c              |    1 +
+>>  drivers/net/wireless/b43/debugfs.c               |    2 +-
+>>  drivers/net/wireless/b43legacy/debugfs.c         |    2 +-
+>>  drivers/net/wireless/libertas/debugfs.c          |    2 +-
+>>  drivers/staging/b3dfg/b3dfg.c                    |    2 +-
+>>  drivers/staging/dream/qdsp5/adsp_driver.c        |    2 +-
+>>  drivers/staging/dream/qdsp5/audio_aac.c          |    2 +-
+>>  drivers/staging/dream/qdsp5/audio_amrnb.c        |    2 +-
+>>  drivers/staging/dream/qdsp5/audio_evrc.c         |    2 +-
+>>  drivers/staging/dream/qdsp5/audio_in.c           |    4 +-
+>>  drivers/staging/dream/qdsp5/audio_mp3.c          |    2 +-
+>>  drivers/staging/dream/qdsp5/audio_out.c          |    4 +-
+>>  drivers/staging/dream/qdsp5/audio_qcelp.c        |    2 +-
+>>  drivers/staging/dream/qdsp5/snd.c                |    2 +-
+>>  drivers/staging/dream/smd/smd_qmi.c              |    2 +-
+>>  drivers/staging/dream/smd/smd_rpcrouter_device.c |    4 +-
+>>  drivers/staging/panel/panel.c                    |    4 +-
+>>  drivers/staging/poch/poch.c                      |    2 +-
+>>  drivers/staging/sep/sep_driver.c                 |    2 +-
+>>  drivers/staging/vme/devices/vme_user.c           |    2 +-
+>>  fs/fuse/cuse.c                                   |   20 +++++++++------
+>>  fs/fuse/dev.c                                    |    8 +++---
+>>  fs/fuse/fuse_i.h                                 |   10 ++++++++
+>>  include/linux/tty.h                              |   14 ++++++++++-
+>>  include/net/tcp.h                                |    1 +
+>>  include/net/udp.h                                |    1 +
+>>  kernel/trace/trace_events.c                      |    2 +
+>>  virt/kvm/kvm_main.c                              |    3 ++
+>>  31 files changed, 89 insertions(+), 63 deletions(-)
+>>
+>> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+>> index 3f4602b..2e41d36 100644
+>> --- a/drivers/acpi/battery.c
+>> +++ b/drivers/acpi/battery.c
+>> @@ -763,7 +763,7 @@ DECLARE_FILE_FUNCTIONS(alarm);
+>>  	}
+>>  
+>>  static struct battery_file {
+>> -	struct file_operations ops;
+>> +	const struct file_operations ops;
+>>  	mode_t mode;
+>>  	const char *name;
+>>  } acpi_battery_file[] = {
+>> diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+>> index 62f282e..d39c67b 100644
+>> --- a/drivers/char/pty.c
+>> +++ b/drivers/char/pty.c
+>> @@ -682,7 +682,18 @@ static int ptmx_open(struct inode *inode, struct file *filp)
+>>  	return ret;
+>>  }
+>>  
+>> -static struct file_operations ptmx_fops;
+>> +static const struct file_operations ptmx_fops = {
+>> +	.llseek		= no_llseek,
+>> +	.read		= tty_read,
+>> +	.write		= tty_write,
+>> +	.poll		= tty_poll,
+>> +	.unlocked_ioctl	= tty_ioctl,
+>> +	.compat_ioctl	= tty_compat_ioctl,
+>> +	.open		= ptmx_open,
+>> +	.release	= tty_release,
+>> +	.fasync		= tty_fasync,
+>> +};
 > 
-> It was implied, as you had a pointer to the device, not the device
-> itself.
-
-Not necessarily.  For example, the serial drivers have pointers to 
-struct tty, not the tty structures themselves.  That doesn't imply the 
-tty structures were constructed using device_create().
-
-> > >  Embed device structure in
-> > > yours,
-> > 
-> > You can't do that when the device structure wasn't created by your 
-> > driver.
+> You just made these functions all global, for no real good reason.  Why
+> did you do this?
 > 
-> But for USB devices, it is part of the device you are handed.  Same goes
-> for PCI devices, and most other types of drivers, right?
-
-Yes.  Dmitry's word "yours" is ambiguous here.  It's true that struct
-pci_device contains an embedded struct device.  But for example, struct
-ehci_hcd doesn't -- even when the EHCI controller is a PCI device.  So
-if you are the ehci-hcd driver, which structure is "yours": the struct
-pci_device or the struct ehci_hcd?
-
-> > >  be mindful of lifetime rules and only use "your" device (i.e device
-> > > bound to your driver).
-> > 
-> > What do you mean by "use"?  In Oliver's case he wasn't using the
-> > device, he was using the device structure.  (Maybe that's what you
-> > meant.)
+> confused,
 > 
-> I think that is what is meant here.
-> 
-> > And he wanted to use it at a time when it wasn't bound to his
-> > driver, because userspace still had an open file reference to it.  
-> > There isn't really any way around this.
-> 
-> But you still have a valid device, just not maybe a driver bound to it.
+> greg k-h
 
-If a driver isn't bound to it then you don't know whether the device
-structure is valid or not.  It could have been deallocated.  Unless
-you have taken a reference to it -- then you know.
-
-Alan Stern
-
+I think this is the only way to make ptmx_fops const, provided we want to. 
+--
+Emese
