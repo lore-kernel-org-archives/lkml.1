@@ -1,114 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932654AbZLEAK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932706AbZLEAQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932654AbZLEAK7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 19:10:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932589AbZLEAK6
+	id S932706AbZLEAQL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 19:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932672AbZLEAQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 19:10:58 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43237 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932581AbZLEAK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 19:10:57 -0500
-Date: Fri, 4 Dec 2009 16:09:42 -0800
-From: Greg KH <gregkh@suse.de>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
-       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
-       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
-       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
-Message-ID: <20091205000942.GA8224@suse.de>
-References: <4B198670.2000406@gmail.com>
- <4B198C43.50205@gmail.com>
- <4B19A333.5080103@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B19A333.5080103@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 4 Dec 2009 19:16:10 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:47769 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932613AbZLEAQD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 19:16:03 -0500
+Subject: [PATCH] x86: ASUS P4S800 reboot quirk
+From: Leann Ogasawara <leann.ogasawara@canonical.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       kernel-team <kernel-team@lists.ubuntu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 04 Dec 2009 16:15:07 -0800
+Message-ID: <1259972107.4629.275.camel@emiko>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 05, 2009 at 01:02:59AM +0100, Emese Revfy wrote:
-> From: Emese Revfy <re.emese@gmail.com>
-> 
-> Constify struct file_operations with some exceptions.
-> Per Dave Miller's suggestion, resend with proper CC list and patch format.
-> 
-> Signed-off-by: Emese Revfy <re.emese@gmail.com>
-> ---
->  drivers/acpi/battery.c                           |    2 +-
->  drivers/char/pty.c                               |   16 +++++++++---
->  drivers/char/tty_io.c                            |   28 ++++-----------------
->  drivers/media/dvb/dvb-core/dvbdev.c              |    1 +
->  drivers/net/wireless/b43/debugfs.c               |    2 +-
->  drivers/net/wireless/b43legacy/debugfs.c         |    2 +-
->  drivers/net/wireless/libertas/debugfs.c          |    2 +-
->  drivers/staging/b3dfg/b3dfg.c                    |    2 +-
->  drivers/staging/dream/qdsp5/adsp_driver.c        |    2 +-
->  drivers/staging/dream/qdsp5/audio_aac.c          |    2 +-
->  drivers/staging/dream/qdsp5/audio_amrnb.c        |    2 +-
->  drivers/staging/dream/qdsp5/audio_evrc.c         |    2 +-
->  drivers/staging/dream/qdsp5/audio_in.c           |    4 +-
->  drivers/staging/dream/qdsp5/audio_mp3.c          |    2 +-
->  drivers/staging/dream/qdsp5/audio_out.c          |    4 +-
->  drivers/staging/dream/qdsp5/audio_qcelp.c        |    2 +-
->  drivers/staging/dream/qdsp5/snd.c                |    2 +-
->  drivers/staging/dream/smd/smd_qmi.c              |    2 +-
->  drivers/staging/dream/smd/smd_rpcrouter_device.c |    4 +-
->  drivers/staging/panel/panel.c                    |    4 +-
->  drivers/staging/poch/poch.c                      |    2 +-
->  drivers/staging/sep/sep_driver.c                 |    2 +-
->  drivers/staging/vme/devices/vme_user.c           |    2 +-
->  fs/fuse/cuse.c                                   |   20 +++++++++------
->  fs/fuse/dev.c                                    |    8 +++---
->  fs/fuse/fuse_i.h                                 |   10 ++++++++
->  include/linux/tty.h                              |   14 ++++++++++-
->  include/net/tcp.h                                |    1 +
->  include/net/udp.h                                |    1 +
->  kernel/trace/trace_events.c                      |    2 +
->  virt/kvm/kvm_main.c                              |    3 ++
->  31 files changed, 89 insertions(+), 63 deletions(-)
-> 
-> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-> index 3f4602b..2e41d36 100644
-> --- a/drivers/acpi/battery.c
-> +++ b/drivers/acpi/battery.c
-> @@ -763,7 +763,7 @@ DECLARE_FILE_FUNCTIONS(alarm);
->  	}
->  
->  static struct battery_file {
-> -	struct file_operations ops;
-> +	const struct file_operations ops;
->  	mode_t mode;
->  	const char *name;
->  } acpi_battery_file[] = {
-> diff --git a/drivers/char/pty.c b/drivers/char/pty.c
-> index 62f282e..d39c67b 100644
-> --- a/drivers/char/pty.c
-> +++ b/drivers/char/pty.c
-> @@ -682,7 +682,18 @@ static int ptmx_open(struct inode *inode, struct file *filp)
->  	return ret;
->  }
->  
-> -static struct file_operations ptmx_fops;
-> +static const struct file_operations ptmx_fops = {
-> +	.llseek		= no_llseek,
-> +	.read		= tty_read,
-> +	.write		= tty_write,
-> +	.poll		= tty_poll,
-> +	.unlocked_ioctl	= tty_ioctl,
-> +	.compat_ioctl	= tty_compat_ioctl,
-> +	.open		= ptmx_open,
-> +	.release	= tty_release,
-> +	.fasync		= tty_fasync,
-> +};
+Hi,
 
-You just made these functions all global, for no real good reason.  Why
-did you do this?
+Bug reporter noted their system with an ASUS P4S800 motherboard would
+hang when rebooting unless reboot=b was specified.  Their dmidecode
+didn't contain descriptive System Information for Manufacturer or
+Product Name, so I used their Base Board Information to create a reboot
+quirk patch.  The bug reporter confirmed this patch resolves the reboot
+hang.  Please consider applying.
 
-confused,
+Thanks,
+Leann Ogasawara 
 
-greg k-h
+Handle 0x0001, DMI type 1, 25 bytes
+System Information
+	Manufacturer: System Manufacturer
+	Product Name: System Name
+	Version: System Version
+	Serial Number: SYS-1234567890
+	UUID: E0BFCD8B-7948-D911-A953-E486B4EEB67F
+	Wake-up Type: Power Switch
+
+Handle 0x0002, DMI type 2, 8 bytes
+Base Board Information
+	Manufacturer: ASUSTeK Computer INC.
+	Product Name: P4S800
+	Version: REV 1.xx
+	Serial Number: xxxxxxxxxxx
+
+>From 303bffef31e1a03f1d87606b15153e176c12b686 Mon Sep 17 00:00:00 2001
+From: Leann Ogasawara <leann.ogasawara@canonical.com>
+Date: Fri, 4 Dec 2009 15:42:22 -0800
+Subject: [PATCH] x86: ASUS P4S800 reboot quirk
+
+BugLink: http://bugs.launchpad.net/bugs/366682
+
+ASUS P4S800 will hang when rebooting unless reboot=b is specified.
+Add a quirk to reboot through the bios.
+
+Signed-off-by: Leann Ogasawara <leann.ogasawara@canonical.com>
+---
+ arch/x86/kernel/reboot.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 2b97fc5..1545bc0 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -259,6 +259,14 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "SBC-FITPC2"),
+ 		},
+ 	},
++	{       /* Handle problems with rebooting on ASUS P4S800 */
++		.callback = set_bios_reboot,
++		.ident = "ASUS P4S800",
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ASUSTeK Computer INC."),
++			DMI_MATCH(DMI_BOARD_NAME, "P4S800"),
++		},
++	},
+ 	{ }
+ };
+ 
+-- 
+1.5.6.3
+
+
+
