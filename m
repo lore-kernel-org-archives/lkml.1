@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbZLEH3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZLEHgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbZLEH3R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 02:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbZLEH3P
+	id S1753359AbZLEHgu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 02:36:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbZLEHgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 02:29:15 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:51948 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752526AbZLEH3O (ORCPT
+	Sat, 5 Dec 2009 02:36:47 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:48144 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752526AbZLEHgq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 02:29:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=lGx1yQpDiXfM77jkoFojNi5bn/0hmx+cRM4qcYSGgNZRULDAj9PZjiAZR0RAVpRf+Y
-         zAsdsyC5ufjjxVoa0uPKCqwWRWCEE1t1R9Mm92xtSK/k87IY8LiWKwfjFRVMMZBa61m5
-         +ZWcf7SsDh0y2Gu4rDkiXF5/sjxZdunA9VKU8=
+	Sat, 5 Dec 2009 02:36:46 -0500
+Date: Sat, 5 Dec 2009 08:36:52 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ondrej Zary <linux@rainbow-software.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
+Message-ID: <20091205073652.GA30203@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-In-Reply-To: <81bfc67a0912042306v573d79acw7f0ef3d051a41724@mail.gmail.com>
-References: <20091125191105.GA3167@ami.dom.local>
-	 <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
-	 <20091127224206.GA3350@ami.dom.local>
-	 <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
-	 <20091204090524.GB6478@ff.dom.local>
-	 <81bfc67a0912041028w16668d0cx4da04bee989eef4a@mail.gmail.com>
-	 <20091204204443.GA2736@ami.dom.local>
-	 <81bfc67a0912041507k6ef497f9w7b9294c90012e1a1@mail.gmail.com>
-	 <20091204234756.GA3517@ami.dom.local>
-	 <81bfc67a0912042306v573d79acw7f0ef3d051a41724@mail.gmail.com>
-Date: Sat, 5 Dec 2009 02:29:20 -0500
-Message-ID: <81bfc67a0912042329o51ebbff0gca55f9fce479aa8c@mail.gmail.com>
-Subject: Re: large packet loss take2 2.6.31.x
-From: Caleb Cushing <xenoterracide@gmail.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0912031710130.4795-100000@iolanthe.rowland.org>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I sadly wonder if this is why Dell pulled their 530n product line for
-ubuntu and I didn't see the last time I checked if it was replaced.
--- 
-Caleb Cushing
+Hi,
 
-http://xenoterracide.blogspot.com
+> Furthermore, the patch shows that the second-to-last argument to 
+> usb_fill_bulk_urb() -- the completion function -- is NULL.  That is 
+> strictly illegal and it should have caused an oops as soon as the URB 
+> was used.
+
+Then there's definitely a WARN_ON or so missing in
+static inline void usb_fill_bulk_urb()
+
+And highly likely more checks in those areas that are causing my (and
+other people's) ftdi_sio tests and USB audio (MIPS mmap) to fail.
+Followup soon.
+
+Andreas Mohr
