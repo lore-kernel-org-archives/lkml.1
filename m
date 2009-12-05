@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932917AbZLETkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbZLEUeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932917AbZLETkt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 14:40:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932773AbZLETko
+	id S1757931AbZLEUeM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 15:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbZLEUeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 14:40:44 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:38220 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757974AbZLETko (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 14:40:44 -0500
-To: Andy Lutomirski <luto@mit.edu>
-CC: miklos@szeredi.hu, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <4B1A7159.3070101@mit.edu> (message from Andy Lutomirski on Sat,
-	05 Dec 2009 09:42:33 -0500)
-Subject: Re: [PATCH v3] vfs: new O_NODE open flag
-References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu> <20091202204828.4fa0c108@lxorguk.ukuu.org.uk> <E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu> <4B1A7159.3070101@mit.edu>
-Message-Id: <E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 05 Dec 2009 20:40:33 +0100
+	Sat, 5 Dec 2009 15:34:09 -0500
+Received: from kroah.org ([198.145.64.141]:33904 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754826AbZLEUeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 15:34:08 -0500
+Date: Sat, 5 Dec 2009 11:58:52 -0800
+From: Greg KH <greg@kroah.com>
+To: Thomas Backlund <tmb@mandriva.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: [stable] x86: Remove STACKPROTECTOR_ALL
+Message-ID: <20091205195852.GC21172@kroah.com>
+References: <200911021859.nA2Ix4cB023712@hera.kernel.org>
+ <4AF9E7D4.9080309@mandriva.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AF9E7D4.9080309@mandriva.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 05 Dec 2009, Andy Lutomirski wrote:
-> I don't know what that means.  Do you mean that if:
+On Wed, Nov 11, 2009 at 12:23:16AM +0200, Thomas Backlund wrote:
+> I think this one should go to 2.6.31.x too ...
 > 
-> root creates /dev/foo with 0666 perms
-> eviluser opens /dev/foo with O_NODE
+> > Gitweb:     http://git.kernel.org/linus/14a3f40aafacde1dfd6912327ae14df4baf10304
+> > Commit:     14a3f40aafacde1dfd6912327ae14df4baf10304
+> > Parent:     02dd0a0613e0d84c7dd8315e3fe6204d005b7c79
+> > Author:     Arjan van de Ven <arjan@infradead.org>
+> > AuthorDate: Fri Oct 23 07:31:01 2009 -0700
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Fri Oct 23 16:35:23 2009 +0200
+> > 
+> >     x86: Remove STACKPROTECTOR_ALL
+> >     
+> >     STACKPROTECTOR_ALL has a really high overhead (runtime and stack
+> >     footprint) and is not really worth it protection wise (the
+> >     normal STACKPROTECTOR is in effect for all functions with
+> >     buffers already), so lets just remove the option entirely.
+> >     
+> >     Reported-by: Dave Jones <davej@redhat.com>
+> >     Reported-by: Chuck Ebbert <cebbert@redhat.com>
+> >     Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> >     Cc: Eric Sandeen <sandeen@redhat.com>
+> >     LKML-Reference: <20091023073101.3dce4ebb@infradead.org>
+> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-More precisely, O_NODE | O_NOACCESS
+It doesn't really "fix" anything, so I'd prefer not too.
 
-> root chmods /dev/foo to 0000
-> root unlinks /dev/foo
-> 
-> then eviluser can't open /proc/self/fd/whatever for O_RDRW
+thanks,
 
-Yes.
-
-Maybe alan was worried about the O_NODE | O_RDWR, etc. case?  That
-simply doesn't make any sense for special files.
-
-Current patch only allows O_NOACCESS for any file type, but other
-access modes may make sense for regular files, directories, and maybe
-even symlinks.
-
-Thanks,
-Miklos
+greg k-h
