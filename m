@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbZLEOVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZLEO10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbZLEOVZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 09:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbZLEOVY
+	id S1755484AbZLEO10 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 09:27:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbZLEO1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 09:21:24 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:55674 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755275AbZLEOVX (ORCPT
+	Sat, 5 Dec 2009 09:27:24 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:48993 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755275AbZLEO1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 09:21:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=CQlayZpz+TP7eWOQPKlwkAuBtREcIiEX66538QLYn9tKZUKdvR8lZN1oVXxCoCGgSs
-         rkjX8SGXNWi1clh84aw6CqB8Vn5AXW5+2fY8oneL3gVeDh/lOQjSwzhN3/cxp4lC7a4t
-         8IDmKrxTrsFt+pbCK1ozWEQY1Ua8/KX3qSoEg=
-Message-ID: <4B1A6C64.4050408@gmail.com>
-Date: Sat, 05 Dec 2009 15:21:24 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-4.1 Thunderbird/3.0
+	Sat, 5 Dec 2009 09:27:24 -0500
+Date: Sat, 5 Dec 2009 07:27:29 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Emese Revfy <re.emese@gmail.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/31] Constify struct address_space_operations for
+	2.6.32 v1
+Message-ID: <20091205142729.GC9482@parisc-linux.org>
+References: <4B198670.2000406@gmail.com> <4B198849.1060909@gmail.com> <20091205000845.GB9482@parisc-linux.org> <4B19AB28.6060805@gmail.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Jiri Slaby <jirislaby@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: linux-next: manual merge of the limits tree with the net and
- fsnotify trees
-References: <20091204183011.e92d36cd.sfr@canb.auug.org.au>	<4B18C15A.8060901@gmail.com> <20091205150053.48384393.sfr@canb.auug.org.au>
-In-Reply-To: <20091205150053.48384393.sfr@canb.auug.org.au>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B19AB28.6060805@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/05/2009 05:00 AM, Stephen Rothwell wrote:
-> On Fri, 04 Dec 2009 08:59:22 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
->>
->> On 12/04/2009 08:30 AM, Stephen Rothwell wrote:
->>> diff --cc arch/x86/ia32/ia32entry.S
->>> index da89ae1,c61ced2..0000000
->>> --- a/arch/x86/ia32/ia32entry.S
->>> +++ b/arch/x86/ia32/ia32entry.S
->>> @@@ -841,7 -841,6 +841,9 @@@ ia32_sys_call_table
->>>   	.quad compat_sys_pwritev
->>>   	.quad compat_sys_rt_tgsigqueueinfo	/* 335 */
->>>   	.quad sys_perf_event_open
->>>  +	.quad compat_sys_recvmmsg
->>>  +	.quad sys_fanotify_init
->>>  +	.quad sys32_fanotify_mark
->>> + 	.quad compat_sys_getprlimit
->>
->> Thanks, but please go on with the by-five numbering in comments.
+On Sat, Dec 05, 2009 at 01:36:56AM +0100, Emese Revfy wrote:
+> Matthew Wilcox wrote:
+> > On Fri, Dec 04, 2009 at 11:08:09PM +0100, Emese Revfy wrote:
+> >> -	int (*writepage)(struct page *page, struct writeback_control *wbc);
+> >> +	int (* const writepage)(struct page *page, struct writeback_control *wbc);
+> > 
+> > Umm.  What effect does this have?
+> > What changes as a result of this patch?
 > 
-> I am sure that will be done by whoever does the final conflict
-> resolution.
+> My idea was that since all variables of this type are const, we might
+> as well have the compiler enforce it for the future if you think that
+> these fields should not be writable at all.
 
-Ah, sorry, I apparently don't know how this works. Thanks for explanation.
+The compiler does already enforce it.  We do it like this:
+
+struct address_space {
+        const struct address_space_operations *a_ops;   /* methods */
+}
 
 -- 
-js
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
