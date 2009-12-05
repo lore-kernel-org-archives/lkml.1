@@ -1,95 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbZLEA6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932714AbZLEA7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932693AbZLEA6J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 19:58:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757603AbZLEA6J
+	id S932714AbZLEA7j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 19:59:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757584AbZLEA7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 19:58:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58579 "EHLO hera.kernel.org"
+	Fri, 4 Dec 2009 19:59:38 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60216 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757550AbZLEA6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 19:58:08 -0500
-Date: Sat, 5 Dec 2009 00:57:51 GMT
-From: tip-bot for Leann Ogasawara <leann.ogasawara@canonical.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       leann.ogasawara@canonical.com, stable@kernel.org, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       leann.ogasawara@canonical.com, stable@kernel.org, tglx@linutronix.de
-In-Reply-To: <1259972107.4629.275.camel@emiko>
-References: <1259972107.4629.275.camel@emiko>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: ASUS P4S800 reboot=bios quirk
-Message-ID: <tip-4832ddda2ec4df96ea1eed334ae2dbd65fc1f541@git.kernel.org>
-Git-Commit-ID: 4832ddda2ec4df96ea1eed334ae2dbd65fc1f541
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	id S1757576AbZLEA7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 19:59:38 -0500
+Date: Sat, 5 Dec 2009 11:59:36 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Emese Revfy <re.emese@gmail.com>
+Cc: tony.luck@intel.com, geoffrey.levand@am.sony.com, davem@davemloft.net,
+       tglx@linutronix.de, joerg.roedel@amd.com, muli@il.ibm.com,
+       jdmason@kudzu.us, jbarnes@virtuousgeek.org, dwmw2@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/31] Constify struct dma_map_ops for 2.6.32 v1
+Message-Id: <20091205115936.d3a7a6ec.sfr@canb.auug.org.au>
+In-Reply-To: <4B1989B0.102@gmail.com>
+References: <4B198670.2000406@gmail.com>
+	<4B1989B0.102@gmail.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__5_Dec_2009_11_59_36_+1100_V81nt.fJGEq6siLP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4832ddda2ec4df96ea1eed334ae2dbd65fc1f541
-Gitweb:     http://git.kernel.org/tip/4832ddda2ec4df96ea1eed334ae2dbd65fc1f541
-Author:     Leann Ogasawara <leann.ogasawara@canonical.com>
-AuthorDate: Fri, 4 Dec 2009 15:42:22 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 4 Dec 2009 16:38:59 -0800
+--Signature=_Sat__5_Dec_2009_11_59_36_+1100_V81nt.fJGEq6siLP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-x86: ASUS P4S800 reboot=bios quirk
+Hi Emese,
 
-Bug reporter noted their system with an ASUS P4S800 motherboard would
-hang when rebooting unless reboot=b was specified.  Their dmidecode
-didn't contain descriptive System Information for Manufacturer or
-Product Name, so I used their Base Board Information to create a
-reboot quirk patch.  The bug reporter confirmed this patch resolves
-the reboot hang.
+On Fri, 04 Dec 2009 23:14:08 +0100 Emese Revfy <re.emese@gmail.com> wrote:
+>
+> --- a/arch/powerpc/kernel/vio.c
+> +++ b/arch/powerpc/kernel/vio.c
+> @@ -601,6 +601,7 @@ static void vio_dma_iommu_unmap_sg(struct device *dev,
+>  	vio_cmo_dealloc(viodev, alloc_size);
+>  }
+> =20
+> +/* cannot be const */
+>  struct dma_map_ops vio_dma_mapping_ops =3D {
 
-Handle 0x0001, DMI type 1, 25 bytes
-System Information
-       Manufacturer: System Manufacturer
-       Product Name: System Name
-       Version: System Version
-       Serial Number: SYS-1234567890
-       UUID: E0BFCD8B-7948-D911-A953-E486B4EEB67F
-       Wake-up Type: Power Switch
+The problem with leaving this not const is that a pointer to it is later
+assigned to an archdata::dma_ops which you have made into a const pointer
+earlier in this patch.  This will generate a warning which is fatal in
+arch/powerpc as we compile that directory with -Werror.
 
-Handle 0x0002, DMI type 2, 8 bytes
-Base Board Information
-     Manufacturer: ASUSTeK Computer INC.
-     Product Name: P4S800
-     Version: REV 1.xx
-     Serial Number: xxxxxxxxxxx
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-BugLink: http://bugs.launchpad.net/bugs/366682
+--Signature=_Sat__5_Dec_2009_11_59_36_+1100_V81nt.fJGEq6siLP
+Content-Type: application/pgp-signature
 
-ASUS P4S800 will hang when rebooting unless reboot=b is specified.
-Add a quirk to reboot through the bios.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Signed-off-by: Leann Ogasawara <leann.ogasawara@canonical.com>
-LKML-Reference: <1259972107.4629.275.camel@emiko>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: <stable@kernel.org>
----
- arch/x86/kernel/reboot.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+iEYEARECAAYFAksZsHgACgkQjjKRsyhoI8x5vgCeMjEvcvaya+z2X2KnBSNylwrD
+QSMAnRh9RfeaCfA9rnL6zlG5tvc6oy9o
+=h/Xj
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index f930787..6caf260 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -259,6 +259,14 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "SBC-FITPC2"),
- 		},
- 	},
-+	{       /* Handle problems with rebooting on ASUS P4S800 */
-+		.callback = set_bios_reboot,
-+		.ident = "ASUS P4S800",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "ASUSTeK Computer INC."),
-+			DMI_MATCH(DMI_BOARD_NAME, "P4S800"),
-+		},
-+	},
- 	{ }
- };
- 
+--Signature=_Sat__5_Dec_2009_11_59_36_+1100_V81nt.fJGEq6siLP--
