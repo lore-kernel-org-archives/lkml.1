@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbZLEK4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZLELHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754191AbZLEK4P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 05:56:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZLEK4N
+	id S1754330AbZLELHT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 06:07:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZLELHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 05:56:13 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:43907 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753826AbZLEK4M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 05:56:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lQZ/D8bJTC2sfluMtALqNYjz9L+Ry3HnxA7qL41ar5HWUWjVSwV6D9iX4pbVYZaBQG
-         LfqUYmj9tNp6T4NG62lIK8k+pIzvoWak1fjZP6En/Is+CWm/illga4LziyO3RV4ir0Kk
-         KHfZ23hPuDHIWPqGZi7nX2d80oS7i9KbR7yOE=
-Message-ID: <4B1A3C13.4060204@gmail.com>
-Date: Sat, 05 Dec 2009 12:55:15 +0200
-From: Lior Dotan <liodot@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091201)
+	Sat, 5 Dec 2009 06:07:18 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:47268 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753871AbZLELHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 06:07:17 -0500
+Date: Sat, 5 Dec 2009 12:07:21 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Dmitry Artamonow <mad_soft@inbox.ru>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: manual merge of the pcmcia tree with the arm tree
+Message-ID: <20091205110721.GB23213@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Dmitry Artamonow <mad_soft@inbox.ru>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20091201140310.46dbdc59.sfr@canb.auug.org.au> <20091202115649.GA2150@rainbow> <20091203092525.17d939b3.sfr@canb.auug.org.au> <20091205103038.GA11140@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Andy Isaacson <adi@hexapodia.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.32-rc8 - T500 fails to suspend to RAM
-References: <4B151FE2.3090807@gmail.com> <20091203182336.GA21309@hexapodia.org> <20091204202433.GB21309@hexapodia.org> <a5bf86a80912041339g3d35cbfcrd56669f746d095ff@mail.gmail.com> <20091204234459.GC25713@hexapodia.org>
-In-Reply-To: <20091204234459.GC25713@hexapodia.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091205103038.GA11140@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Isaacson wrote:
-> Re-adding LKML.
->
-> On Fri, Dec 04, 2009 at 11:39:25PM +0200, Lior Dotan wrote:
->   
->> On Fri, Dec 4, 2009 at 10:24 PM, Andy Isaacson <adi@hexapodia.org> wrote:
->>     
->>> For what it's worth, I'm testing suspend-to-ram on Ubuntu 9.10 x86_64
->>> with 2.6.32 final on a T500 and it's been pretty reliable -- I've
->>> suspended by closing the lid at least a dozen times and it hasn't locked
->>> up yet.
->>>       
->> I'm using either KDE menu to suspend or hibernate-ram from hibernate-script.
->> I will try to use the lid and see if it makes any difference.
->> The strange thing is that I tried using rc6 & rc7 and they don't work now
->> even though they used to, so I now I need to see what broke it.
->>     
->
-> I mentioned the lid because of BZ #14484 which is only on Intel GMA plus
-> using the lid switch to trigger suspend.  Since neither is relevant to
-> you it's just a red herring. :)
->
->   
->>> 1. are you using DMAR (VT-d)?  I'm not, and I had problems on another
->>>   machine (also Core 2 Duo with GM45 graphics) when I tried suspending
->>>   with CONFIG_DMAR=y.
->>>       
->>  I disabled DMAR but still no luck.
->>     
->
-> It's getting better but DMAR has still been a little problematic for me
-> the last few months.  Updating to the very latest BIOS does help
-> sometimes.
->
->   
->>> 2. are you running into http://bugzilla.kernel.org/show_bug.cgi?id=14484
->>>   or a similar problem?
->>> 3. (if you have GMA graphics) Are you up to date on the xorg-video-intel
->>>   driver?  I'm using KMS and xorg-video-intel 2.9.0.  2.8.x is missing
->>>   some relevant bugfixes.  (Of course if you have ATI graphics then
->>>   this isn't relevant.)
->>>
->>>       
->> I'm using the Radeon GPU so no KMS for me yet.
->>     
->
-> Sounds like your Radeon or fglrx driver got updated and broke
-> suspend/resume.
->   
-I got some progess, when using the Intel GMA, the suspend works fine. 
-The problem are only when using the radeon driver.
-I am trying to use KMS for radeon but it fails to load the firmware and 
-the system boots without KMS. I will disable KMS and revert the 
-xf86-video-ati driver to the latest released version (I am now using the 
-git version).
+On Sat, Dec 05, 2009 at 10:30:38AM +0000, Russell King wrote:
+> On Thu, Dec 03, 2009 at 09:25:25AM +1100, Stephen Rothwell wrote:
+> > Hi Dmitry,
+> > 
+> > On Wed, 2 Dec 2009 14:56:49 +0300 Dmitry Artamonow <mad_soft@inbox.ru> wrote:
+> > >
+> > > Fix looks good to me, and testing next-20091201 on real device (h3600)
+> > > shows no problems with pcmcia.
+> > 
+> > Thanks for the confirmation.
+> 
+> Since Dominik has been ignoring this issue, and has already asked Linus to
+> pull his tree with my (unfortunately just discovered buggy) changes in, I'm
+> going to drop the H3600 PCMCIA changes until something can be sorted out.
 
-> -andy
->   
-Thanks for your help,
-Lior.
+Well, I hope that Linus merges the first bunch of PCMCIA changes soon, so
+that we have a clean base to work from and to sort the dependecies in
+ARM-related patches out.
+
+Best,
+	Dominik
