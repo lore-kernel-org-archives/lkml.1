@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932976AbZLEUTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932940AbZLEUTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932976AbZLEUTi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 15:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932925AbZLEUTe
+	id S932940AbZLEUTK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 15:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757735AbZLEUTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 15:19:34 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41329 "EHLO
+	Sat, 5 Dec 2009 15:19:03 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41330 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756365AbZLEUQo (ORCPT
+	with ESMTP id S1756743AbZLEUQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 15:16:44 -0500
+	Sat, 5 Dec 2009 15:16:46 -0500
 Date: Sat, 05 Dec 2009 19:08:50 +0000
 To: linux-arch@vger.kernel.org
-Subject: [RFC][PATCH 3/18] do_mremap() untangling, part 3
+Subject: [RFC][PATCH 8/18] file ->get_unmapped_area() shouldn't duplicate
+ work of get_unmapped_area()
 Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <E1NGzzu-0008RN-Su@ZenIV.linux.org.uk>
+Message-Id: <E1NGzzu-0008RX-VJ@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Take the check for being able to expand vma in place into a separate
-helper.
+... we should call mm ->get_unmapped_area() instead and let our caller
+do the final checks.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- mm/mremap.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+ arch/sparc/kernel/sys_sparc_64.c |   10 +++++++---
+ ipc/shm.c                        |    2 +-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/mm/mremap.c b/mm/mremap.c
-index 5f34617..90e422c 100644
---- a/mm/mremap.c
-+++ b/mm/mremap.c
-@@ -366,6 +366,17 @@ out:
- 	return ret;
+diff --git a/arch/sparc/kernel/sys_sparc_64.c b/arch/sparc/kernel/sys_sparc_64.c
+index ddda12f..d498b32 100644
+--- a/arch/sparc/kernel/sys_sparc_64.c
++++ b/arch/sparc/kernel/sys_sparc_64.c
+@@ -317,10 +317,14 @@ bottomup:
+ unsigned long get_fb_unmapped_area(struct file *filp, unsigned long orig_addr, unsigned long len, unsigned long pgoff, unsigned long flags)
+ {
+ 	unsigned long align_goal, addr = -ENOMEM;
++	unsigned long (*get_area)(struct file *, unsigned long,
++				  unsigned long, unsigned long, unsigned long);
++
++	get_area = current->mm->get_unmapped_area;
+ 
+ 	if (flags & MAP_FIXED) {
+ 		/* Ok, don't mess with it. */
+-		return get_unmapped_area(NULL, orig_addr, len, pgoff, flags);
++		return get_area(NULL, orig_addr, len, pgoff, flags);
+ 	}
+ 	flags &= ~MAP_SHARED;
+ 
+@@ -333,7 +337,7 @@ unsigned long get_fb_unmapped_area(struct file *filp, unsigned long orig_addr, u
+ 		align_goal = (64UL * 1024);
+ 
+ 	do {
+-		addr = get_unmapped_area(NULL, orig_addr, len + (align_goal - PAGE_SIZE), pgoff, flags);
++		addr = get_area(NULL, orig_addr, len + (align_goal - PAGE_SIZE), pgoff, flags);
+ 		if (!(addr & ~PAGE_MASK)) {
+ 			addr = (addr + (align_goal - 1UL)) & ~(align_goal - 1UL);
+ 			break;
+@@ -351,7 +355,7 @@ unsigned long get_fb_unmapped_area(struct file *filp, unsigned long orig_addr, u
+ 	 * be obtained.
+ 	 */
+ 	if (addr & ~PAGE_MASK)
+-		addr = get_unmapped_area(NULL, orig_addr, len, pgoff, flags);
++		addr = get_area(NULL, orig_addr, len, pgoff, flags);
+ 
+ 	return addr;
+ }
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 464694e..7e50727 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -290,7 +290,7 @@ static unsigned long shm_get_unmapped_area(struct file *file,
+ 	unsigned long flags)
+ {
+ 	struct shm_file_data *sfd = shm_file_data(file);
+-	return get_unmapped_area(sfd->file, addr, len, pgoff, flags);
++	return current->mm->get_unmapped_area(sfd->file, addr, len, pgoff, flags);
  }
  
-+static int vma_expandable(struct vm_area_struct *vma, unsigned long delta)
-+{
-+	unsigned long max_addr = TASK_SIZE;
-+	if (vma->vm_next)
-+		max_addr = vma->vm_next->vm_start;
-+	if (max_addr - vma->vm_end < delta)
-+		return 0;
-+	/* we need to do arch-specific checks here */
-+	return 1;
-+}
-+
- /*
-  * Expand (or shrink) an existing mapping, potentially moving it at the
-  * same time (controlled by the MREMAP_MAYMOVE flag and available VM space)
-@@ -430,11 +441,8 @@ unsigned long do_mremap(unsigned long addr,
- 	/* old_len exactly to the end of the area..
- 	 */
- 	if (old_len == vma->vm_end - addr) {
--		unsigned long max_addr = TASK_SIZE;
--		if (vma->vm_next)
--			max_addr = vma->vm_next->vm_start;
- 		/* can we just expand the current mapping? */
--		if (max_addr - addr >= new_len) {
-+		if (vma_expandable(vma, new_len - old_len)) {
- 			int pages = (new_len - old_len) >> PAGE_SHIFT;
- 
- 			vma_adjust(vma, vma->vm_start,
+ int is_file_shm_hugepages(struct file *file)
 -- 
 1.5.6.5
 
