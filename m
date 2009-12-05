@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbZLEDTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbZLEDVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757645AbZLEDTR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 22:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbZLEDTO
+	id S1757643AbZLEDVn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 22:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbZLEDVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 22:19:14 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:46161 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755389AbZLEDTN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 22:19:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=vo8O/9Zt3HLjZwnmMirlU9IGby7jtzIUCQgm/mAmPcK031f8hfxyd2SpMpP+VIN4mB
-         ixS32SR57jcOmVqbnVL3nIobgdy/Nmxfqpc/0E5BerAIlgmXp3BaeXGfxUUqV26wXFRF
-         geO/7jAEO2Thknys6CVZq/rx5UltqqV6igXBE=
-MIME-Version: 1.0
-In-Reply-To: <4BDB13256095B24D9644F65379E604265C12@orsmsx505.amr.corp.intel.com>
-References: <3877989d0908272018va6ee8f7n7ab2838fdf1b26e6@mail.gmail.com>
-	 <20090828062212.GB11552@elte.hu>
-	 <3877989d0912032329u7c05a761wfdd5c7000b43218d@mail.gmail.com>
-	 <4BDB13256095B24D9644F65379E604265C12@orsmsx505.amr.corp.intel.com>
-Date: Sat, 5 Dec 2009 11:19:18 +0800
-Message-ID: <3877989d0912041919i458300d7ydce73cf77979dad3@mail.gmail.com>
-Subject: Re: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then 
-	enable ftrace for ia64
-From: Luming Yu <luming.yu@gmail.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>, Felix Blyakher <felixb@sgi.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Bob Picco <bob.picco@hp.com>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 4 Dec 2009 22:21:41 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39814 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754389AbZLEDVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 22:21:40 -0500
+Date: Sat, 5 Dec 2009 14:21:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Emese Revfy <re.emese@gmail.com>
+Cc: tony.luck@intel.com, geoffrey.levand@am.sony.com, davem@davemloft.net,
+       tglx@linutronix.de, joerg.roedel@amd.com, muli@il.ibm.com,
+       jdmason@kudzu.us, jbarnes@virtuousgeek.org, dwmw2@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/31] Constify struct dma_map_ops for 2.6.32 v1
+Message-Id: <20091205142140.d8954929.sfr@canb.auug.org.au>
+In-Reply-To: <4B19CAF1.8010705@gmail.com>
+References: <4B198670.2000406@gmail.com>
+	<4B1989B0.102@gmail.com>
+	<20091205115936.d3a7a6ec.sfr@canb.auug.org.au>
+	<20091205122015.c898e234.sfr@canb.auug.org.au>
+	<4B19BEB9.3000600@gmail.com>
+	<20091205131011.e90d7f1c.sfr@canb.auug.org.au>
+	<4B19C493.4030506@gmail.com>
+	<20091205132724.154a07b6.sfr@canb.auug.org.au>
+	<4B19CAF1.8010705@gmail.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__5_Dec_2009_14_21_40_+1100_Qol7Jq=BVkxsts5w"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 5, 2009 at 3:16 AM, Luck, Tony <tony.luck@intel.com> wrote:
-> Luming,
->
-> Can you send the config file that you used to test this.
+--Signature=_Sat__5_Dec_2009_14_21_40_+1100_Qol7Jq=BVkxsts5w
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-yes, will send my config later when back to office.
+Hi Emese,
 
+On Sat, 05 Dec 2009 03:52:33 +0100 Emese Revfy <re.emese@gmail.com> wrote:
 >
-> I turned on a bunch of LOCKDEP related things, but I may have
-> stumbled into areas that aren't working yet because my kernel
-> didn't boot (or say anything on the console, even with early
-> serial uart console enabled).
+> @@ -1232,7 +1231,7 @@ struct vio_dev *vio_register_device_node(struct dev=
+ice_node *of_node)
+>  	viodev->dev.archdata.of_node =3D of_node_get(of_node);
+> =20
+>  	if (firmware_has_feature(FW_FEATURE_CMO))
+> -		vio_cmo_set_dma_ops(viodev);
+> +		viodev->dev.archdata.dma_ops =3D &vio_dma_mapping_ops;
+>  	else
+>  		viodev->dev.archdata.dma_ops =3D &dma_iommu_ops;
+>  	set_iommu_table_base(&viodev->dev, vio_build_iommu_table(viodev));
 
-Please also send your config to me, let me check
-what could make that happen.
+You forgot to remove this hunk.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
->
-> I'd like to take this patch so we can fix it up with incremental
-> patches ... but I'd like a better idea of what works now and
-> what doesn't.
->
-> Thanks
->
-> -Tony
+--Signature=_Sat__5_Dec_2009_14_21_40_+1100_Qol7Jq=BVkxsts5w
+Content-Type: application/pgp-signature
 
-Thanks.
-Luming
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksZ0cQACgkQjjKRsyhoI8yHbQCgskWLmQ7pJpLnxtfdKedEUGji
+thoAnjvKjsV/ODIMRsoC4aXkKlyqSahx
+=J/xX
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__5_Dec_2009_14_21_40_+1100_Qol7Jq=BVkxsts5w--
