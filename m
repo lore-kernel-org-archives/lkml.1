@@ -1,80 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZLEOj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbZLEOmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZLEOj4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 09:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbZLEOjz
+	id S1755661AbZLEOmB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 09:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbZLEOmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 09:39:55 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57238 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753175AbZLEOjy (ORCPT
+	Sat, 5 Dec 2009 09:42:00 -0500
+Received: from mail-px0-f173.google.com ([209.85.216.173]:49772 "EHLO
+	mail-px0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753577AbZLEOl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 09:39:54 -0500
-X-Sasl-enc: pvdVvqByWY3CCllIx6v6p6mwCeEHdj5GkRPx7AZQV+QC 1260024000
-Date: Sat, 5 Dec 2009 12:39:57 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, len.brown@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] thinkpad_acpi: convert to seq_file
-Message-ID: <20091205143957.GA4901@khazad-dum.debian.net>
-References: <20091125071642.GD3459@x200.malnet.ru>
- <20091203172609.GA16463@khazad-dum.debian.net>
- <20091203150001.b017c2f1.akpm@linux-foundation.org>
+	Sat, 5 Dec 2009 09:41:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=IKvRtJZJnLrRtHmiDl98QJdIftb3LMtMa4OANBHY9zHPw1j4aDBbKFreMTtHGmEH7k
+         L2uohqHP/Cb5JBy37c+uHcgTTdsHtQNJfMM4tMD37+cgXfiU2RkpSmQJeqQ+N1DUSaN7
+         Hq8UO1vXOzXkQ7bIoQHgk5Ynd0S1dAxj82Kik=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091203150001.b017c2f1.akpm@linux-foundation.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B1A6F78.8010408@myrealbox.com>
+References: <c1f41c620912042148n7d3f6f29h713a2d44369a5810@mail.gmail.com>
+	 <4B1A6F78.8010408@myrealbox.com>
+Date: Sat, 5 Dec 2009 21:42:06 +0700
+Message-ID: <c1f41c620912050642v72078ac1w839809fcdcbe5bf3@mail.gmail.com>
+Subject: Re: 2.6.31 -> 2.6.32 Sound and video regressions
+From: Emmanuel Benisty <benisty.e@gmail.com>
+To: Andy Lutomirski <luto@myrealbox.com>
+Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, jbarnes@virtuousgeek.org,
+       intel-gfx@lists.freedesktop.org
+Content-Type: multipart/mixed; boundary=001636417d1373ed010479fc3a22
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Dec 2009, Andrew Morton wrote:
-> On Thu, 3 Dec 2009 15:26:09 -0200
-> Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
-> > Alexey,  I like your patch, but it pretty much clashes with lots of stuff in
-> > my patch queue.
-> > 
-> > I think the easiest way is for me to take in your patch, place it at the end
-> > of the queue, and update it when I get to it.
-> > 
-> > I won't promise I will be able to merge it for 2.6.33, but I can promise I
-> > will do it for 2.6.34.  Depends how fast I can get the higher priority stuff
-> > out of the door.
-> 
-> Your patch queue isn't in linux-next :(
+--001636417d1373ed010479fc3a22
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-It gets there through acpi-test, usually.  I have not been able to submit my
-stack of patch well before the merge window lately, though :-(
+On Sat, Dec 5, 2009 at 9:34 PM, Andy Lutomirski <luto@myrealbox.com> wrote:
+> Emmanuel Benisty wrote:
+>> I just wanted to report 2 regressions I am having now with 2.6.32.
+>>
+>> Video
+>> Screen is flickering/glitching like crazy in X. It happens whether
+>> randomly or when conky is refreshed, when the mouse cursor moves and
+>> like hell when a page is loading in the browser. Not so easy to
+>> describe this issue.
+>> Xorg.0.log is attached.
+>> (I've uploaded an utterly crappy mobile phone video if needed but I
+>> doubt this could be of any help, anyway, it's here
+>> http://omploader.org/vMngzcA/Xorg.tar.bz2 )
+>
+> That sounds like FIFO underruns, which (I think) were introduced when
+> self-refresh was enabled but should have been fixed. =C2=A0I personally h=
+ave no
+> clue how to fix them, but if you told the Intel people what kind of chip =
+you
+> have (lspci output), they can probably fix it. =C2=A0(cc added)
 
-> Can we fix that?
+Thanks for your reply Andy. lspci output is attached.
 
-Well, getting my queue directly in linux-next would be possible, and I would
-feel less bad about publishing more often as I'd not have to waste anyone's
-time asking them to drop patches if I find out I need to fix something on a
-patch that is not in mainline yet (because linux-next regenerates from
-scratch automatically).
+--001636417d1373ed010479fc3a22
+Content-Type: text/plain; charset=US-ASCII; name="lspci.txt"
+Content-Disposition: attachment; filename="lspci.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g2uhqgk20
 
-Note: there _is_ some shuffle in my queue, plus fixing of earlier patches,
-so if I sent stuff to Len more often, I'd also end up pestering him often as
-well.  I do all I can to preserve perfect bissectability, allowing at most
-for some "defined but not used" warnings. I want as few bugs in the driver
-as possible at every point in time.  This does mean I go back and fix
-patches if I find out they're subtly incorrect before they are in mainline.
-
-Anyway, if I feed my tree directly to linux-next, it could cause problems
-for Len since acpi-test is also in linux-next, and thinkpad-acpi is merged
-through the acpi trees.  For that to work out without causing problems for
-Len, we'd have to arrange for the stuff I submit to him to not make it to
-linux-next.
-
-Len, what do you think?
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+MDA6MDAuMCBIb3N0IGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gTW9iaWxlIFBNOTY1L0dNOTY1
+L0dMOTYwIE1lbW9yeSBDb250cm9sbGVyIEh1YiAocmV2IDAzKQowMDowMi4wIFZHQSBjb21wYXRp
+YmxlIGNvbnRyb2xsZXI6IEludGVsIENvcnBvcmF0aW9uIE1vYmlsZSBHTTk2NS9HTDk2MCBJbnRl
+Z3JhdGVkIEdyYXBoaWNzIENvbnRyb2xsZXIgKHJldiAwMykKMDA6MDIuMSBEaXNwbGF5IGNvbnRy
+b2xsZXI6IEludGVsIENvcnBvcmF0aW9uIE1vYmlsZSBHTTk2NS9HTDk2MCBJbnRlZ3JhdGVkIEdy
+YXBoaWNzIENvbnRyb2xsZXIgKHJldiAwMykKMDA6MWEuMCBVU0IgQ29udHJvbGxlcjogSW50ZWwg
+Q29ycG9yYXRpb24gODI4MDFIIChJQ0g4IEZhbWlseSkgVVNCIFVIQ0kgQ29udHJvbGxlciAjNCAo
+cmV2IDAzKQowMDoxYS4xIFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUgg
+KElDSDggRmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICM1IChyZXYgMDMpCjAwOjFhLjcgVVNC
+IENvbnRyb2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxSCAoSUNIOCBGYW1pbHkpIFVTQjIg
+RUhDSSBDb250cm9sbGVyICMyIChyZXYgMDMpCjAwOjFiLjAgQXVkaW8gZGV2aWNlOiBJbnRlbCBD
+b3Jwb3JhdGlvbiA4MjgwMUggKElDSDggRmFtaWx5KSBIRCBBdWRpbyBDb250cm9sbGVyIChyZXYg
+MDMpCjAwOjFjLjAgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJQ0g4IEZh
+bWlseSkgUENJIEV4cHJlc3MgUG9ydCAxIChyZXYgMDMpCjAwOjFjLjEgUENJIGJyaWRnZTogSW50
+ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJQ0g4IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCAyIChy
+ZXYgMDMpCjAwOjFjLjIgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJQ0g4
+IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCAzIChyZXYgMDMpCjAwOjFjLjMgUENJIGJyaWRnZTog
+SW50ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJQ0g4IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCA0
+IChyZXYgMDMpCjAwOjFjLjQgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJ
+Q0g4IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCA1IChyZXYgMDMpCjAwOjFkLjAgVVNCIENvbnRy
+b2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxSCAoSUNIOCBGYW1pbHkpIFVTQiBVSENJIENv
+bnRyb2xsZXIgIzEgKHJldiAwMykKMDA6MWQuMSBVU0IgQ29udHJvbGxlcjogSW50ZWwgQ29ycG9y
+YXRpb24gODI4MDFIIChJQ0g4IEZhbWlseSkgVVNCIFVIQ0kgQ29udHJvbGxlciAjMiAocmV2IDAz
+KQowMDoxZC4yIFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUggKElDSDgg
+RmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICMzIChyZXYgMDMpCjAwOjFkLjcgVVNCIENvbnRy
+b2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxSCAoSUNIOCBGYW1pbHkpIFVTQjIgRUhDSSBD
+b250cm9sbGVyICMxIChyZXYgMDMpCjAwOjFlLjAgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRp
+b24gODI4MDEgTW9iaWxlIFBDSSBCcmlkZ2UgKHJldiBmMykKMDA6MWYuMCBJU0EgYnJpZGdlOiBJ
+bnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUhFTSAoSUNIOE0pIExQQyBJbnRlcmZhY2UgQ29udHJvbGxl
+ciAocmV2IDAzKQowMDoxZi4xIElERSBpbnRlcmZhY2U6IEludGVsIENvcnBvcmF0aW9uIDgyODAx
+SEJNL0hFTSAoSUNIOE0vSUNIOE0tRSkgSURFIENvbnRyb2xsZXIgKHJldiAwMykKMDA6MWYuMiBT
+QVRBIGNvbnRyb2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxSEJNL0hFTSAoSUNIOE0vSUNI
+OE0tRSkgU0FUQSBBSENJIENvbnRyb2xsZXIgKHJldiAwMykKMDI6MDAuMCBOZXR3b3JrIGNvbnRy
+b2xsZXI6IEludGVsIENvcnBvcmF0aW9uIFBSTy9XaXJlbGVzcyAzOTQ1QUJHIFtHb2xhbl0gTmV0
+d29yayBDb25uZWN0aW9uIChyZXYgMDIpCjAzOjAwLjAgRXRoZXJuZXQgY29udHJvbGxlcjogUmVh
+bHRlayBTZW1pY29uZHVjdG9yIENvLiwgTHRkLiBSVEw4MTExLzgxNjhCIFBDSSBFeHByZXNzIEdp
+Z2FiaXQgRXRoZXJuZXQgY29udHJvbGxlciAocmV2IDAxKQowNzowMy4wIEZpcmVXaXJlIChJRUVF
+IDEzOTQpOiBSaWNvaCBDbyBMdGQgUjVDODMyIElFRUUgMTM5NCBDb250cm9sbGVyIChyZXYgMDUp
+CjA3OjAzLjEgU0QgSG9zdCBjb250cm9sbGVyOiBSaWNvaCBDbyBMdGQgUjVDODIyIFNEL1NESU8v
+TU1DL01TL01TUHJvIEhvc3QgQWRhcHRlciAocmV2IDIyKQowNzowMy4yIFN5c3RlbSBwZXJpcGhl
+cmFsOiBSaWNvaCBDbyBMdGQgUjVDNTkyIE1lbW9yeSBTdGljayBCdXMgSG9zdCBBZGFwdGVyIChy
+ZXYgMTIpCjA3OjAzLjMgU3lzdGVtIHBlcmlwaGVyYWw6IFJpY29oIENvIEx0ZCB4RC1QaWN0dXJl
+IENhcmQgQ29udHJvbGxlciAocmV2IDEyKQo=
+--001636417d1373ed010479fc3a22--
