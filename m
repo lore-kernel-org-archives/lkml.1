@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbZLEC50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbZLEDTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757603AbZLEC50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 21:57:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbZLEC5X
+	id S1757645AbZLEDTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 22:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755591AbZLEDTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 21:57:23 -0500
-Received: from lixom.net ([66.141.50.11]:37155 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754897AbZLEC5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 21:57:23 -0500
-Date: Fri, 4 Dec 2009 20:59:49 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Joe Perches <joe@perches.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>, Colin Leroy <colin@colino.net>,
-       Paul Mackerras <paulus@samba.org>, Jean Delvare <khali@linux-fr.org>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH] MAINTAINERS: Add PowerPC patterns
-Message-ID: <20091205025949.GA29554@lixom.net>
-References: <20091202091951.5ec6bb83@hyperion.delvare> <1259894454.2076.1246.camel@pasglop> <20091204103434.0a754925@hyperion.delvare> <1259920775.2076.1273.camel@pasglop> <1259947019.22783.116.camel@Joe-Laptop.home>
+	Fri, 4 Dec 2009 22:19:14 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:46161 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755389AbZLEDTN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 22:19:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=vo8O/9Zt3HLjZwnmMirlU9IGby7jtzIUCQgm/mAmPcK031f8hfxyd2SpMpP+VIN4mB
+         ixS32SR57jcOmVqbnVL3nIobgdy/Nmxfqpc/0E5BerAIlgmXp3BaeXGfxUUqV26wXFRF
+         geO/7jAEO2Thknys6CVZq/rx5UltqqV6igXBE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259947019.22783.116.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4BDB13256095B24D9644F65379E604265C12@orsmsx505.amr.corp.intel.com>
+References: <3877989d0908272018va6ee8f7n7ab2838fdf1b26e6@mail.gmail.com>
+	 <20090828062212.GB11552@elte.hu>
+	 <3877989d0912032329u7c05a761wfdd5c7000b43218d@mail.gmail.com>
+	 <4BDB13256095B24D9644F65379E604265C12@orsmsx505.amr.corp.intel.com>
+Date: Sat, 5 Dec 2009 11:19:18 +0800
+Message-ID: <3877989d0912041919i458300d7ydce73cf77979dad3@mail.gmail.com>
+Subject: Re: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then 
+	enable ftrace for ia64
+From: Luming Yu <luming.yu@gmail.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>, Felix Blyakher <felixb@sgi.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Bob Picco <bob.picco@hp.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 09:16:59AM -0800, Joe Perches wrote:
-> On Fri, 2009-12-04 at 20:59 +1100, Benjamin Herrenschmidt wrote:
-> > On Fri, 2009-12-04 at 10:34 +0100, Jean Delvare wrote:
-> > > I've sent it to linuxppc-dev@ozlabs.org on October 14th. This is the
-> > > address which is listed 22 times in MAINTAINERS. If it isn't correct,
-> > > then please update MAINTAINERS.
-> > No it's fine both shoul work. Your patches are there, just waiting for
-> > me to pick them up, I was just firing a reminder to the rest of the CC
-> > list :-) (and I do remember fwd'ing a couple of your patches to the
-> > list, for some reason they didn't make it to patchwork back then, that
-> > was a few month ago).
-> > Anyways, I've been stretched thin with all sort of stuff lately, so bear
-> > with me if I'm a bit slow at taking or testing stuff, I'm doing my best.
-> 
-> Adding patterns to the PowerPC sections of MAINTAINERS is useful.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+On Sat, Dec 5, 2009 at 3:16 AM, Luck, Tony <tony.luck@intel.com> wrote:
+> Luming,
+>
+> Can you send the config file that you used to test this.
 
-Acked-by: Olof Johansson <olof@lixom.net>
+yes, will send my config later when back to office.
 
-There are a few other files under arch/powerpc that's not under platforms
-that belongs to the pasemi code but it's not a big deal to not include
-them. This goes most of the way.
+>
+> I turned on a bunch of LOCKDEP related things, but I may have
+> stumbled into areas that aren't working yet because my kernel
+> didn't boot (or say anything on the console, even with early
+> serial uart console enabled).
 
+Please also send your config to me, let me check
+what could make that happen.
 
--Olof
+>
+> I'd like to take this patch so we can fix it up with incremental
+> patches ... but I'd like a better idea of what works now and
+> what doesn't.
+>
+> Thanks
+>
+> -Tony
+
+Thanks.
+Luming
