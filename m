@@ -1,112 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbZLEOmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZLEOul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755661AbZLEOmB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 09:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbZLEOmA
+	id S1755811AbZLEOul (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 09:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbZLEOuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 09:42:00 -0500
-Received: from mail-px0-f173.google.com ([209.85.216.173]:49772 "EHLO
-	mail-px0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753577AbZLEOl7 (ORCPT
+	Sat, 5 Dec 2009 09:50:39 -0500
+Received: from 207-172-69-77.c3-0.smr-ubr3.sbo-smr.ma.static.cable.rcn.com ([207.172.69.77]:44205
+	"EHLO thaum.luto.us" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755346AbZLEOui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 09:41:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=IKvRtJZJnLrRtHmiDl98QJdIftb3LMtMa4OANBHY9zHPw1j4aDBbKFreMTtHGmEH7k
-         L2uohqHP/Cb5JBy37c+uHcgTTdsHtQNJfMM4tMD37+cgXfiU2RkpSmQJeqQ+N1DUSaN7
-         Hq8UO1vXOzXkQ7bIoQHgk5Ynd0S1dAxj82Kik=
+	Sat, 5 Dec 2009 09:50:38 -0500
+X-Greylist: delayed 492 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Dec 2009 09:50:38 EST
+Message-ID: <4B1A7159.3070101@mit.edu>
+Date: Sat, 05 Dec 2009 09:42:33 -0500
+From: Andy Lutomirski <luto@mit.edu>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <4B1A6F78.8010408@myrealbox.com>
-References: <c1f41c620912042148n7d3f6f29h713a2d44369a5810@mail.gmail.com>
-	 <4B1A6F78.8010408@myrealbox.com>
-Date: Sat, 5 Dec 2009 21:42:06 +0700
-Message-ID: <c1f41c620912050642v72078ac1w839809fcdcbe5bf3@mail.gmail.com>
-Subject: Re: 2.6.31 -> 2.6.32 Sound and video regressions
-From: Emmanuel Benisty <benisty.e@gmail.com>
-To: Andy Lutomirski <luto@myrealbox.com>
-Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, jbarnes@virtuousgeek.org,
-       intel-gfx@lists.freedesktop.org
-Content-Type: multipart/mixed; boundary=001636417d1373ed010479fc3a22
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] vfs: new O_NODE open flag
+References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu> <20091202204828.4fa0c108@lxorguk.ukuu.org.uk> <E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636417d1373ed010479fc3a22
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On Sat, Dec 5, 2009 at 9:34 PM, Andy Lutomirski <luto@myrealbox.com> wrote:
-> Emmanuel Benisty wrote:
->> I just wanted to report 2 regressions I am having now with 2.6.32.
+Miklos Szeredi wrote:
+> On Wed, 2 Dec 2009, Alan Cox wrote:
+>>> You're still missing the point.  O_NODE is like a hard link, except
+>>> the reference doesn't come from the filesystem but from a file
+>>> descriptor.  From udev's perspective there's no difference.
+>> I don't think I am missing the point here. You have a reference to an
+>> object in the fs but you don't have a reference to the driver underneath
+>> s the driver can change on you *while* you have the O_NODE open and fd
+>> live. That cannot happen with a hard link and open.
 >>
->> Video
->> Screen is flickering/glitching like crazy in X. It happens whether
->> randomly or when conky is refreshed, when the mouse cursor moves and
->> like hell when a page is loading in the browser. Not so easy to
->> describe this issue.
->> Xorg.0.log is attached.
->> (I've uploaded an utterly crappy mobile phone video if needed but I
->> doubt this could be of any help, anyway, it's here
->> http://omploader.org/vMngzcA/Xorg.tar.bz2 )
->
-> That sounds like FIFO underruns, which (I think) were introduced when
-> self-refresh was enabled but should have been fixed. =C2=A0I personally h=
-ave no
-> clue how to fix them, but if you told the Intel people what kind of chip =
-you
-> have (lspci output), they can probably fix it. =C2=A0(cc added)
+>> It isn't the same thing as far as I can see. You don't have the barrier
+>> between the operations that occurs in the real open/close case because
+>> they lock the driver.
+> 
+> The file descriptor opened with O_NODE allows exaclactly the same
+> operations that a hard link to the device would, nothing more.  It's
+> just a link to the *node*, except it doesn't increment the link count,
+> the driver is irrelevant.
+> 
 
-Thanks for your reply Andy. lspci output is attached.
+I don't know what that means.  Do you mean that if:
 
---001636417d1373ed010479fc3a22
-Content-Type: text/plain; charset=US-ASCII; name="lspci.txt"
-Content-Disposition: attachment; filename="lspci.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g2uhqgk20
+root creates /dev/foo with 0666 perms
+eviluser opens /dev/foo with O_NODE
+root chmods /dev/foo to 0000
+root unlinks /dev/foo
 
-MDA6MDAuMCBIb3N0IGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gTW9iaWxlIFBNOTY1L0dNOTY1
-L0dMOTYwIE1lbW9yeSBDb250cm9sbGVyIEh1YiAocmV2IDAzKQowMDowMi4wIFZHQSBjb21wYXRp
-YmxlIGNvbnRyb2xsZXI6IEludGVsIENvcnBvcmF0aW9uIE1vYmlsZSBHTTk2NS9HTDk2MCBJbnRl
-Z3JhdGVkIEdyYXBoaWNzIENvbnRyb2xsZXIgKHJldiAwMykKMDA6MDIuMSBEaXNwbGF5IGNvbnRy
-b2xsZXI6IEludGVsIENvcnBvcmF0aW9uIE1vYmlsZSBHTTk2NS9HTDk2MCBJbnRlZ3JhdGVkIEdy
-YXBoaWNzIENvbnRyb2xsZXIgKHJldiAwMykKMDA6MWEuMCBVU0IgQ29udHJvbGxlcjogSW50ZWwg
-Q29ycG9yYXRpb24gODI4MDFIIChJQ0g4IEZhbWlseSkgVVNCIFVIQ0kgQ29udHJvbGxlciAjNCAo
-cmV2IDAzKQowMDoxYS4xIFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUgg
-KElDSDggRmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICM1IChyZXYgMDMpCjAwOjFhLjcgVVNC
-IENvbnRyb2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxSCAoSUNIOCBGYW1pbHkpIFVTQjIg
-RUhDSSBDb250cm9sbGVyICMyIChyZXYgMDMpCjAwOjFiLjAgQXVkaW8gZGV2aWNlOiBJbnRlbCBD
-b3Jwb3JhdGlvbiA4MjgwMUggKElDSDggRmFtaWx5KSBIRCBBdWRpbyBDb250cm9sbGVyIChyZXYg
-MDMpCjAwOjFjLjAgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJQ0g4IEZh
-bWlseSkgUENJIEV4cHJlc3MgUG9ydCAxIChyZXYgMDMpCjAwOjFjLjEgUENJIGJyaWRnZTogSW50
-ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJQ0g4IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCAyIChy
-ZXYgMDMpCjAwOjFjLjIgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJQ0g4
-IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCAzIChyZXYgMDMpCjAwOjFjLjMgUENJIGJyaWRnZTog
-SW50ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJQ0g4IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCA0
-IChyZXYgMDMpCjAwOjFjLjQgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFIIChJ
-Q0g4IEZhbWlseSkgUENJIEV4cHJlc3MgUG9ydCA1IChyZXYgMDMpCjAwOjFkLjAgVVNCIENvbnRy
-b2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxSCAoSUNIOCBGYW1pbHkpIFVTQiBVSENJIENv
-bnRyb2xsZXIgIzEgKHJldiAwMykKMDA6MWQuMSBVU0IgQ29udHJvbGxlcjogSW50ZWwgQ29ycG9y
-YXRpb24gODI4MDFIIChJQ0g4IEZhbWlseSkgVVNCIFVIQ0kgQ29udHJvbGxlciAjMiAocmV2IDAz
-KQowMDoxZC4yIFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUggKElDSDgg
-RmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICMzIChyZXYgMDMpCjAwOjFkLjcgVVNCIENvbnRy
-b2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxSCAoSUNIOCBGYW1pbHkpIFVTQjIgRUhDSSBD
-b250cm9sbGVyICMxIChyZXYgMDMpCjAwOjFlLjAgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRp
-b24gODI4MDEgTW9iaWxlIFBDSSBCcmlkZ2UgKHJldiBmMykKMDA6MWYuMCBJU0EgYnJpZGdlOiBJ
-bnRlbCBDb3Jwb3JhdGlvbiA4MjgwMUhFTSAoSUNIOE0pIExQQyBJbnRlcmZhY2UgQ29udHJvbGxl
-ciAocmV2IDAzKQowMDoxZi4xIElERSBpbnRlcmZhY2U6IEludGVsIENvcnBvcmF0aW9uIDgyODAx
-SEJNL0hFTSAoSUNIOE0vSUNIOE0tRSkgSURFIENvbnRyb2xsZXIgKHJldiAwMykKMDA6MWYuMiBT
-QVRBIGNvbnRyb2xsZXI6IEludGVsIENvcnBvcmF0aW9uIDgyODAxSEJNL0hFTSAoSUNIOE0vSUNI
-OE0tRSkgU0FUQSBBSENJIENvbnRyb2xsZXIgKHJldiAwMykKMDI6MDAuMCBOZXR3b3JrIGNvbnRy
-b2xsZXI6IEludGVsIENvcnBvcmF0aW9uIFBSTy9XaXJlbGVzcyAzOTQ1QUJHIFtHb2xhbl0gTmV0
-d29yayBDb25uZWN0aW9uIChyZXYgMDIpCjAzOjAwLjAgRXRoZXJuZXQgY29udHJvbGxlcjogUmVh
-bHRlayBTZW1pY29uZHVjdG9yIENvLiwgTHRkLiBSVEw4MTExLzgxNjhCIFBDSSBFeHByZXNzIEdp
-Z2FiaXQgRXRoZXJuZXQgY29udHJvbGxlciAocmV2IDAxKQowNzowMy4wIEZpcmVXaXJlIChJRUVF
-IDEzOTQpOiBSaWNvaCBDbyBMdGQgUjVDODMyIElFRUUgMTM5NCBDb250cm9sbGVyIChyZXYgMDUp
-CjA3OjAzLjEgU0QgSG9zdCBjb250cm9sbGVyOiBSaWNvaCBDbyBMdGQgUjVDODIyIFNEL1NESU8v
-TU1DL01TL01TUHJvIEhvc3QgQWRhcHRlciAocmV2IDIyKQowNzowMy4yIFN5c3RlbSBwZXJpcGhl
-cmFsOiBSaWNvaCBDbyBMdGQgUjVDNTkyIE1lbW9yeSBTdGljayBCdXMgSG9zdCBBZGFwdGVyIChy
-ZXYgMTIpCjA3OjAzLjMgU3lzdGVtIHBlcmlwaGVyYWw6IFJpY29oIENvIEx0ZCB4RC1QaWN0dXJl
-IENhcmQgQ29udHJvbGxlciAocmV2IDEyKQo=
---001636417d1373ed010479fc3a22--
+then eviluser can't open /proc/self/fd/whatever for O_RDRW
+
+Because if eviluser could still open /proc/self/fd/whatever for O_RDRW 
+(or anything else for that matter if O_NODE isn't set) then you have a 
+security problem.
+
+--Andy
