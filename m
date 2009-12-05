@@ -1,95 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbZLEUTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932914AbZLETJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758015AbZLEUTA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 15:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbZLEUQt
+	id S932914AbZLETJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 14:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932888AbZLETJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 15:16:49 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41320 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754934AbZLEUQY (ORCPT
+	Sat, 5 Dec 2009 14:09:16 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39516 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932886AbZLETJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 15:16:24 -0500
-Date: Sat, 05 Dec 2009 19:08:51 +0000
-To: linux-arch@vger.kernel.org
-Subject: [RFC][PATCH 14/18] fix a struct file leak in do_mmap_pgoff()
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-User-Agent: Heirloom mailx 12.4 7/29/08
+	Sat, 5 Dec 2009 14:09:15 -0500
+Date: Sat, 5 Dec 2009 20:09:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Alex Dubov <oakad@yahoo.com>, J?rn Engel <joern@logfs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, arnd@arndb.de,
+       tglx@linutonix.de
+Subject: Re: XD/smartmedia - how to implement it right?
+Message-ID: <20091205190913.GA1309@ucw.cz>
+References: <109361.10237.qm@web37604.mail.mud.yahoo.com> <1259589517.13049.31.camel@maxim-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <E1NGzzv-0008Rp-4T@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <1259589517.13049.31.camel@maxim-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- mm/mmap.c |   18 ------------------
- mm/util.c |   15 +++++++++++++++
- 2 files changed, 15 insertions(+), 18 deletions(-)
+> > > First of all, thank you very much for your contributions.
+> > > Could you explain, why we need an asynchronous mtd driver?
+> > 
+> > Because it's the future. ;-)
+> Although I like the xD format, it has no future,
+> Everyone migrated to SD now.
+> 
+> Reasons are very simple:
+> 
+> 1 - xD hardcodes device sizes, thus if somebody makes say 8GB card, many
+> readers couldn't use it.
+> I know that windows driver I was dealing with supports sizes up to 2GB
+> 
+> 
+> 2 - xD is a nand card, but with 8-bit bus.
+> Newer nand chips seem to favor 16 bit bus or more.
+> Obviously, if they were to implement that it would be physically
+> incompatible.
+> 
+> 3 - embedded cpus are cheap dirt now, and allow to use their, always
+> 'better' FTL strategy, and also hide inner working of the chip.
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 73f5e4b..fd49f40 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -949,24 +949,6 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 	if (mm->map_count > sysctl_max_map_count)
- 		return -ENOMEM;
- 
--	if (flags & MAP_HUGETLB) {
--		struct user_struct *user = NULL;
--		if (file)
--			return -EINVAL;
--
--		/*
--		 * VM_NORESERVE is used because the reservations will be
--		 * taken when vm_ops->mmap() is called
--		 * A dummy user value is used because we are not locking
--		 * memory so no accounting is necessary
--		 */
--		len = ALIGN(len, huge_page_size(&default_hstate));
--		file = hugetlb_file_setup(HUGETLB_ANON_FILE, len, VM_NORESERVE,
--						&user, HUGETLB_ANONHUGE_INODE);
--		if (IS_ERR(file))
--			return PTR_ERR(file);
--	}
--
- 	/* Obtain the address to map to. we verify (or select) it and ensure
- 	 * that it represents a valid section of the address space.
- 	 */
-diff --git a/mm/util.c b/mm/util.c
-index 3bf81b2..b377ce4 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -280,9 +280,24 @@ SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
- 	unsigned long retval = -EBADF;
- 
- 	if (!(flags & MAP_ANONYMOUS)) {
-+		if (unlikely(flags & MAP_HUGETLB))
-+			return -EINVAL;
- 		file = fget(fd);
- 		if (!file)
- 			goto out;
-+	} else if (flags & MAP_HUGETLB) {
-+		struct user_struct *user = NULL;
-+		/*
-+		 * VM_NORESERVE is used because the reservations will be
-+		 * taken when vm_ops->mmap() is called
-+		 * A dummy user value is used because we are not locking
-+		 * memory so no accounting is necessary
-+		 */
-+		len = ALIGN(len, huge_page_size(&default_hstate));
-+		file = hugetlb_file_setup(HUGETLB_ANON_FILE, len, VM_NORESERVE,
-+						&user, HUGETLB_ANONHUGE_INODE);
-+		if (IS_ERR(file))
-+			return PTR_ERR(file);
- 	}
- 
- 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+XDs are still used by at least olympus digital cameras. Ouch.
+
+If you have onboard embedded cpu, you can bet it will not work
+correctly over powerfail. If you do FTL on host, you have at least
+chance to get it right.
+
+								Pavel
 -- 
-1.5.6.5
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
