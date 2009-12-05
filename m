@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbZLENzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZLEN6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755376AbZLENzl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 08:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZLENzk
+	id S1755407AbZLEN6I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 08:58:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZLEN6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 08:55:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:52394 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754113AbZLENzk (ORCPT
+	Sat, 5 Dec 2009 08:58:06 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:40649 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754905AbZLEN6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 08:55:40 -0500
+	Sat, 5 Dec 2009 08:58:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=jJRck17Cj9pZjonZqvAwcLQSiore0OxuJ84GlhSJMq0/NB+1Xp0Pfz8DWs0n28pDkI
-         h8lHzq+5wtey4B4Z/acNzUb/F4ZpEpqVocrcC6rKWDJJsBQeqqDocW/gCA3F2uIFYr35
-         Dne9Ft8IW1GvyXrCX3l08BgHFm4ONwFmrYf1A=
-Message-ID: <4B1A665E.9040606@suse.cz>
-Date: Sat, 05 Dec 2009 14:55:42 +0100
-From: Jiri Slaby <jslaby@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-4.1 Thunderbird/3.0
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=O4TgLBB/d6hFpEjpVwyO4FXfiemJIorghwN4NIItq+R9QAB6f3MoJjo6/Akx+34aW5
+         aZhuXmuGMSJTl4O3Vl/MQEFtRsg37de+zlOEaKbwuGJllKt4gA4Fgftf1ipelfRFt1Oe
+         vlf4BrxX/JDnSyiP1Qmt/d8Y8Dqz4MEy7mlRI=
+Date: Sat, 5 Dec 2009 14:57:35 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Caleb Cushing <xenoterracide@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       e1000-devel@lists.sourceforge.net
+Subject: Re: large packet loss take2 2.6.31.x
+Message-ID: <20091205135735.GA2619@ami.dom.local>
+References: <20091127213640.GA2611@ami.dom.local>
+ <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
+ <20091127224206.GA3350@ami.dom.local>
+ <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
+ <20091204090524.GB6478@ff.dom.local>
+ <81bfc67a0912041028w16668d0cx4da04bee989eef4a@mail.gmail.com>
+ <20091204204443.GA2736@ami.dom.local>
+ <81bfc67a0912041507k6ef497f9w7b9294c90012e1a1@mail.gmail.com>
+ <20091204234756.GA3517@ami.dom.local>
+ <81bfc67a0912042306v573d79acw7f0ef3d051a41724@mail.gmail.com>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: linux-kernel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [PATCH 1/2] EDAC: add __init to i7core_xeon_pci_fixup
-References: <1259612382-32722-1-git-send-email-jslaby@suse.cz> <20091204155428.307e612d@jbarnes-piketon>
-In-Reply-To: <20091204155428.307e612d@jbarnes-piketon>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <81bfc67a0912042306v573d79acw7f0ef3d051a41724@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/05/2009 12:54 AM, Jesse Barnes wrote:
-> On Mon, 30 Nov 2009 21:19:41 +0100
-> Jiri Slaby <jslaby@suse.cz> wrote:
+On Sat, Dec 05, 2009 at 02:06:09AM -0500, Caleb Cushing wrote:
+> > I guess, you should better wait with new tests for some assistance
+> > from e1000e maintainers - it seems they might be interested in some
+> > specific dumps and registers - like in this #11998 case.
 > 
->> It's called only from an __init function and is the only user
->> of pcibios_scan_specific_bus which will be marked as __devinit in
->> the next patch.
->>
->> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
->> Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
->> ---
->>  drivers/edac/i7core_edac.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/edac/i7core_edac.c b/drivers/edac/i7core_edac.c
->> index 4de5a18..c7fc0d5 100644
->> --- a/drivers/edac/i7core_edac.c
->> +++ b/drivers/edac/i7core_edac.c
->> @@ -1141,7 +1141,7 @@ static void i7core_put_all_devices(void)
->>  		i7core_put_devices(i7core_dev);
->>  }
->>  
->> -static void i7core_xeon_pci_fixup(int dev_id)
->> +static void __init i7core_xeon_pci_fixup(int dev_id)
->>  {
->>  	struct pci_dev *pdev = NULL;
->>  	int i;
+> I reported here.
 > 
-> I don't know who handles EDAC patches, but I'm pretty sure it's not
-> me. :) 
+> http://bugzilla.kernel.org/show_bug.cgi?id=14737
 
-Yeah, sorry, it was just I wanted you to know about the function user.
-The EDAC masters were in CC, I hope.
+Please, remember to add at least standard things like dmesg, .config,
+'lspci -vvv', /proc/interrupts etc. (linux-2.6/REPORTING_BUGS), and
+maybe 'netstat -s' both for non-working and working case/boot.
 
-> It doesn't apply to my tree anyway, so it probably needs a
-> refresh.
+And some summary (incl. the router type), so people don't have to
+browse all this thread.
 
-I'll resend both patches after rebasing them.
-
-thanks,
--- 
-js
-suse labs
+Jarek P.
