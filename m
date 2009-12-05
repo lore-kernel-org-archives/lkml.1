@@ -1,70 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbZLEKyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbZLEK4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbZLEKyR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 05:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZLEKyQ
+	id S1754191AbZLEK4P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 05:56:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZLEK4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 05:54:16 -0500
-Received: from swm.pp.se ([212.247.200.143]:53564 "EHLO uplift.swm.pp.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753541AbZLEKyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 05:54:15 -0500
-Date: Sat, 5 Dec 2009 11:54:21 +0100 (CET)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: =?ISO-8859-15?Q?Kristleifur_Da=F0ason?= <kristleifur@gmail.com>
-cc: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
-In-Reply-To: <73e903670912041108o32c28af3q5a61e5a2e33edd0a@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0912051116400.23464@uplift.swm.pp.se>
-References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca>  <4AA7F965.6020408@garzik.org> <4AF0CFE1.8050407@tomt.net>  <alpine.DEB.1.10.0912032214040.23464@uplift.swm.pp.se> <73e903670912031336n749c0bb4l5f2e46d5347e5875@mail.gmail.com>
-  <alpine.DEB.1.10.0912041952370.23464@uplift.swm.pp.se> <73e903670912041108o32c28af3q5a61e5a2e33edd0a@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
+	Sat, 5 Dec 2009 05:56:13 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:43907 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753826AbZLEK4M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 05:56:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lQZ/D8bJTC2sfluMtALqNYjz9L+Ry3HnxA7qL41ar5HWUWjVSwV6D9iX4pbVYZaBQG
+         LfqUYmj9tNp6T4NG62lIK8k+pIzvoWak1fjZP6En/Is+CWm/illga4LziyO3RV4ir0Kk
+         KHfZ23hPuDHIWPqGZi7nX2d80oS7i9KbR7yOE=
+Message-ID: <4B1A3C13.4060204@gmail.com>
+Date: Sat, 05 Dec 2009 12:55:15 +0200
+From: Lior Dotan <liodot@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091201)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-137064504-360227408-1260008334=:23464"
+To: Andy Isaacson <adi@hexapodia.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.32-rc8 - T500 fails to suspend to RAM
+References: <4B151FE2.3090807@gmail.com> <20091203182336.GA21309@hexapodia.org> <20091204202433.GB21309@hexapodia.org> <a5bf86a80912041339g3d35cbfcrd56669f746d095ff@mail.gmail.com> <20091204234459.GC25713@hexapodia.org>
+In-Reply-To: <20091204234459.GC25713@hexapodia.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Andy Isaacson wrote:
+> Re-adding LKML.
+>
+> On Fri, Dec 04, 2009 at 11:39:25PM +0200, Lior Dotan wrote:
+>   
+>> On Fri, Dec 4, 2009 at 10:24 PM, Andy Isaacson <adi@hexapodia.org> wrote:
+>>     
+>>> For what it's worth, I'm testing suspend-to-ram on Ubuntu 9.10 x86_64
+>>> with 2.6.32 final on a T500 and it's been pretty reliable -- I've
+>>> suspended by closing the lid at least a dozen times and it hasn't locked
+>>> up yet.
+>>>       
+>> I'm using either KDE menu to suspend or hibernate-ram from hibernate-script.
+>> I will try to use the lid and see if it makes any difference.
+>> The strange thing is that I tried using rc6 & rc7 and they don't work now
+>> even though they used to, so I now I need to see what broke it.
+>>     
+>
+> I mentioned the lid because of BZ #14484 which is only on Intel GMA plus
+> using the lid switch to trigger suspend.  Since neither is relevant to
+> you it's just a red herring. :)
+>
+>   
+>>> 1. are you using DMAR (VT-d)?  I'm not, and I had problems on another
+>>>   machine (also Core 2 Duo with GM45 graphics) when I tried suspending
+>>>   with CONFIG_DMAR=y.
+>>>       
+>>  I disabled DMAR but still no luck.
+>>     
+>
+> It's getting better but DMAR has still been a little problematic for me
+> the last few months.  Updating to the very latest BIOS does help
+> sometimes.
+>
+>   
+>>> 2. are you running into http://bugzilla.kernel.org/show_bug.cgi?id=14484
+>>>   or a similar problem?
+>>> 3. (if you have GMA graphics) Are you up to date on the xorg-video-intel
+>>>   driver?  I'm using KMS and xorg-video-intel 2.9.0.  2.8.x is missing
+>>>   some relevant bugfixes.  (Of course if you have ATI graphics then
+>>>   this isn't relevant.)
+>>>
+>>>       
+>> I'm using the Radeon GPU so no KMS for me yet.
+>>     
+>
+> Sounds like your Radeon or fglrx driver got updated and broke
+> suspend/resume.
+>   
+I got some progess, when using the Intel GMA, the suspend works fine. 
+The problem are only when using the radeon driver.
+I am trying to use KMS for radeon but it fails to load the firmware and 
+the system boots without KMS. I will disable KMS and revert the 
+xf86-video-ati driver to the latest released version (I am now using the 
+git version).
 
----137064504-360227408-1260008334=:23464
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15; FORMAT=flowed
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 4 Dec 2009, Kristleifur Daðason wrote:
-
-> Cheers for trying them out! For the record, I think they were made
-> against 2.6.31, perhaps the original 2.6.31 rather than later 2.6.31.x
-> releases.
-
-It doesn't apply cleanly against vanilla 2.6.31, it does however apply 
-cleanly against vanilla 2.6.32, but with the following compile error:
-
-drivers/scsi/mvsas/mv_sas.c: In function âmvs_slave_configureâ:
-drivers/scsi/mvsas/mv_sas.c:417: error: âSCSI_QDEPTH_DEFAULTâ undeclared 
-(first use in this function)
-drivers/scsi/mvsas/mv_sas.c:417: error: (Each undeclared identifier is 
-reported only once
-drivers/scsi/mvsas/mv_sas.c:417: error: for each function it appears in.)
-drivers/scsi/mvsas/mv_sas.c:417: error: too many arguments to function 
-âsas_change_queue_depthâ
-make[4]: *** [drivers/scsi/mvsas/mv_sas.o] Error 1
-
-When removing this extra option, it compiles with vanilla 2.6.32 just 
-fine. I crashes the same way as the ubuntu kernel when hot-plugging a disk 
-as well (this time I did it without gdm/x running and it oopses, but 
-unfortunately the highest part of the oops scrolled off). It's 100% 
-reproducible anyway, so basically the controller is a no-go in 2.6.31.6 
-and 2.6.32 both vanilla and ubuntu versions, both without and including 
-the nov09 mvsas patch (at least the original version of the patch as 
-posted). Different failure scenarios though... With the stock kernel the 
-controller seems to get stuck in writing and nothing more happens but at 
-least the machine doesn't crash and burn like it does with the 
-mvsas-patch.
-
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
----137064504-360227408-1260008334=:23464--
+> -andy
+>   
+Thanks for your help,
+Lior.
