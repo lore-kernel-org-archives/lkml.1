@@ -1,119 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbZLEApM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932688AbZLEAqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbZLEApM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 19:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932518AbZLEApJ
+	id S932688AbZLEAqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 19:46:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932525AbZLEAqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 19:45:09 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:50028 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757492AbZLEApI (ORCPT
+	Fri, 4 Dec 2009 19:46:47 -0500
+Received: from mail2.racsa.co.cr ([196.40.31.26]:37982 "EHLO
+	barracuda5.racsa.co.cr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932518AbZLEAqq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 19:45:08 -0500
-Date: Fri, 4 Dec 2009 16:43:56 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: Grozdan <neutrino8@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: Can't compile 2.6.32
-Message-Id: <20091204164356.eb1df688.randy.dunlap@oracle.com>
-In-Reply-To: <4B19A96C.8090701@gmail.com>
-References: <c5bd819b0912040532x13b7e564ve7f37badb0aaa521@mail.gmail.com>
-	<20091204142522.6de2c52e.randy.dunlap@oracle.com>
-	<c5bd819b0912041430s78c86710y18097d7dd77bac0e@mail.gmail.com>
-	<20091204150542.e361a12a.randy.dunlap@oracle.com>
-	<4B19A96C.8090701@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B19AD16.0083:SCFMA4539814,ss=1,fgs=0
+	Fri, 4 Dec 2009 19:46:46 -0500
+X-ASG-Debug-ID: 1259974018-042802950000-xx1T2L
+X-Barracuda-URL: http://172.16.1.14:8000/cgi-bin/mark.cgi
+X-Barracuda-Envelope-From: osobosque@racsa.co.cr
+Date: Fri, 04 Dec 2009 18:46:42 -0600 (CST)
+From: Joseph Parmelee <jparmele@wildbear.com>
+X-X-Sender: jparmele@bruno
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Darren Hart <dvhltc@us.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>, linux-kernel@vger.kernel.org
+X-ASG-Orig-Subj: Re: futex_cmpxchg_enabled not set in futex_init on pentium3
+Subject: Re: futex_cmpxchg_enabled not set in futex_init on pentium3
+In-reply-to: <alpine.LFD.2.00.0911302307440.24119@localhost.localdomain>
+Message-id: <alpine.LNX.2.00.0912040841010.743@bruno>
+References: <alpine.LNX.2.00.0911291057100.2912@bruno>
+ <4B143AE8.5090608@us.ibm.com>
+ <alpine.LFD.2.00.0911302307440.24119@localhost.localdomain>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Barracuda-Connect: UNKNOWN[172.16.7.12]
+X-Barracuda-Start-Time: 1259974018
+X-Barracuda-Virus-Scanned: by Barracuda Spam & Virus Firewall at racsa.co.cr
+X-Barracuda-Spam-Score: 0.00
+X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=4.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=6.0 tests=
+X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.2.16295
+	Rule breakdown below
+	 pts rule name              description
+	---- ---------------------- --------------------------------------------------
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 Dec 2009 16:29:32 -0800 Justin P. Mattock wrote:
+Hello:
 
-> On 12/04/09 15:05, Randy Dunlap wrote:
-> > On Fri, 4 Dec 2009 23:30:09 +0100 Grozdan wrote:
-> >
-> >> On Fri, Dec 4, 2009 at 11:25 PM, Randy Dunlap<randy.dunlap@oracle.com>  wrote:
-> >>> On Fri, 4 Dec 2009 14:32:08 +0100 Grozdan wrote:
-> >>>
-> >>>> Hello,
-> >>>>
-> >>>> I'm having trouble trying to compile the 2.6.32 kernel on my openSUSE
-> >>>> 11.1 system. While doing so, I see a lot of warnings which seem to
-> >>>> come from include/acpi/acpiosxf.h and then when the compile process
-> >>>> enters the drivers/acpi directory, it errors out with the following:
-> >>>>
-> >>>>    CC      drivers/acpi/tables.o
-> >>>> In file included from include/acpi/acpi.h:63,
-> >>>>                   from include/linux/acpi.h:39,
-> >>>>                   from drivers/acpi/tables.c:33:
-> >>>> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> >>>> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> >>>> returning non-void
-> >>>>    CC      drivers/acpi/blacklist.o
-> >>>> In file included from include/acpi/acpi.h:63,
-> >>>>                   from include/linux/acpi.h:39,
-> >>>>                   from drivers/acpi/blacklist.c:33:
-> >>>> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> >>>> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> >>>> returning non-void
-> >>>>    CC      drivers/acpi/osl.o
-> >>>> In file included from include/acpi/acpi.h:63,
-> >>>>                   from include/linux/acpi.h:39,
-> >>>>                   from drivers/acpi/osl.c:40:
-> >>>> include/acpi/acpiosxf.h: In function ‘acpi_load_override_tables’:
-> >>>> include/acpi/acpiosxf.h:98: warning: no return statement in function
-> >>>> returning non-void
-> >>>> drivers/acpi/osl.c: At top level:
-> >>>> drivers/acpi/osl.c:514: error: redefinition of ‘acpi_load_override_tables’
-> >>>> include/acpi/acpiosxf.h:98: error: previous definition of
-> >>>> ‘acpi_load_override_tables’ was here
+Just installed 2.6.32 and the problem is still there.  The value returned
+for curval in futex_init is still the same 0xf0006aa0, and thus as before
+futex_cmpxchg_enabled is not set, thus causing many kernel futex syscalls to
+return -ENOSYS incorrectly, the proximate cause of the glibc test failures.
 
-Grozdan,
+Regards,
 
-My copy of 2.6.32 does not have a function 'acpi_load_override_tables'
-in drivers/acpi/osl.c nor in include/acpi/acpiosxf.h.
+Joseph
 
-Where/how did you get your 2.6.32 kernel source tree?
-Mayb you should do it again...
-
-
-> >>>> make[2]: *** [drivers/acpi/osl.o] Error 1
-> >>>> make[1]: *** [drivers/acpi] Error 2
-> >>>> make: *** [drivers] Error 2
-> >>>>
-> >>>> Thoughts, solutions, etc?
-> >>>
-> >>> Please send your failing kernel .config file.  Thanks.
-> >>
-> >> Hi Randy
-> >>
-> >> Attached is my config of 2.6.32
-> >
-> > That builds fine for me, after I run make oldconfig and eliminate all of the
-> > opensuse config additions.
-> >
-> > It could be acpi-header-related though.  Let's cc: linux-acpi to see if they
-> > know anything about this.
-> >
-> >>>> PS: please CC me as I'm not subscribed to the list.
-> >>>> --
-> >
-> >
-> > ---
-> 
-> maybe make headers_install
-> is whats missing!
-> 
-> Justin P. Mattock
-
-
----
-~Randy
