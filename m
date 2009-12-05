@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbZLEQpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZLEREF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757299AbZLEQpi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 11:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757174AbZLEQpg
+	id S1757636AbZLEREF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 12:04:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757243AbZLEREE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 11:45:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9133 "EHLO mx1.redhat.com"
+	Sat, 5 Dec 2009 12:04:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46601 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757166AbZLEQpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 11:45:36 -0500
-Date: Sat, 5 Dec 2009 17:39:41 +0100
+	id S1756339AbZLERED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 12:04:03 -0500
+Date: Sat, 5 Dec 2009 17:58:04 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Veaceslav Falico <vfalico@redhat.com>
 Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
@@ -24,14 +24,13 @@ Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
        Louis Rilling <louis.rilling@kerlabs.com>,
        David Howells <dhowells@redhat.com>,
        Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: Re: [PATCH v2 3/4] copy_signal cleanup: clean
-	thread_group_cputime_init()
-Message-ID: <20091205163941.GC23152@redhat.com>
-References: <20091201221036.GA10052@darkmag.usersys.redhat.com> <20091202135759.GA791@redhat.com> <20091204142951.GJ10052@darkmag.usersys.redhat.com>
+Subject: Re: [PATCH v2 4/4] copy_signal cleanup: clean tty_audit_fork()
+Message-ID: <20091205165804.GD23152@redhat.com>
+References: <20091201221036.GA10052@darkmag.usersys.redhat.com> <20091202135759.GA791@redhat.com> <20091204143037.GK10052@darkmag.usersys.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091204142951.GJ10052@darkmag.usersys.redhat.com>
+In-Reply-To: <20091204143037.GK10052@darkmag.usersys.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,49 +38,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 12/04, Veaceslav Falico wrote:
 >
-> Remove unneeded initializations in thread_group_cputime_init() and
-> in posix_cpu_timers_init_group(). They are useless after
-> kmem_cache_zalloc() was used in copy_signal().
+> Remove unneeded initialization in tty_audit_fork().
+> It is called only via copy_signal() and is useless after
+> the kmem_cache_zalloc() was used.
 >
 > Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
 > ---
 >
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 75e6e60..4778ef7 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -825,17 +825,6 @@ static void posix_cpu_timers_init_group(struct
-> signal_struct *sig)
->     /* Thread group counters. */
->     thread_group_cputime_init(sig);
->
-> -   /* Expiration times and increments. */
-> -   sig->it[CPUCLOCK_PROF].expires = cputime_zero;
-> -   sig->it[CPUCLOCK_PROF].incr = cputime_zero;
-> -   sig->it[CPUCLOCK_VIRT].expires = cputime_zero;
-> -   sig->it[CPUCLOCK_VIRT].incr = cputime_zero;
-> -
-> -   /* Cached expiration times. */
-> -   sig->cputime_expires.prof_exp = cputime_zero;
-> -   sig->cputime_expires.virt_exp = cputime_zero;
-> -   sig->cputime_expires.sched_exp = 0;
-> -
->     if (sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY) {
->         sig->cputime_expires.prof_exp =
->             secs_to_cputime(sig->rlim[RLIMIT_CPU].rlim_cur);
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -2419,9 +2419,7 @@ void thread_group_cputimer(struct task_struct *tsk, struct task_cputime *times);
->
->  static inline void thread_group_cputime_init(struct signal_struct *sig)
->  {
-> -	sig->cputimer.cputime = INIT_CPUTIME;
->  	spin_lock_init(&sig->cputimer.lock);
-> -	sig->cputimer.running = 0;
+> diff --git a/drivers/char/tty_audit.c b/drivers/char/tty_audit.c
+> index ac16fbe..283a15b 100644
+> --- a/drivers/char/tty_audit.c
+> +++ b/drivers/char/tty_audit.c
+> @@ -148,7 +148,6 @@ void tty_audit_fork(struct signal_struct *sig)
+>  	spin_lock_irq(&current->sighand->siglock);
+>  	sig->audit_tty = current->signal->audit_tty;
+>  	spin_unlock_irq(&current->sighand->siglock);
+> -	sig->tty_audit_buf = NULL;
 >  }
 
-Perhaps it makes sense to move thread_group_cputimer() into kernel/fork.c,
-or even fold it into its single caller, posix_cpu_timers_init_group().
+Can't comment the changes in audit code, but the patch looks obviously
+correct.
 
-Acked-by: Oleg Nesterov <oleg@redhat.com>
+
+
+Off-topic question to this who understands this code.
+
+But afaics we can also remove ->siglock from this helper and make
+it really trivial for being inline. ->siglock buys nothing, we just
+read a boolean. In fact, after the quick grep I do not understand
+how ->siglock is connected to ->audit_tty. OK, it protects tty_audit_buf,
+but why we always take ->siglock to access ->audit_tty ?
+
+Oleg.
 
