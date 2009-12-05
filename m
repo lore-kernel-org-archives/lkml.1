@@ -1,1003 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZLENbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbZLENyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbZLENbN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 08:31:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZLENbM
+	id S1755132AbZLENyY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 08:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbZLENyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 08:31:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38726 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752567AbZLENbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 08:31:09 -0500
-Message-ID: <4B1A60F6.7020201@gmail.com>
-Date: Sat, 05 Dec 2009 14:32:38 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Sat, 5 Dec 2009 08:54:22 -0500
+Received: from web52907.mail.re2.yahoo.com ([206.190.49.17]:43849 "HELO
+	web52907.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752936AbZLENyU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 08:54:20 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=mLpzFdrlWPZb+l7WWh9oPNfHWWvFFVjtSPTSLOZWxZuNicJLWbyfgUzE1qCBA2uS6n9W+11fRe+KQOSs7ZQRJHXh05hPb64FO+cpcQoVHDXOUtnBRiGgXquOXso3fnND/mmBoLqVURVPfd0UaiAdgeTsHBJuCGf0ugy+N262aec=;
+Message-ID: <773065.95780.qm@web52907.mail.re2.yahoo.com>
+X-YMail-OSG: PX6MiSYVM1l528bAQsfoTmMyz2LzBMwGM_cbn7Y.Y5piAb2ybHwNxT90zaAOb4Q16uDvFs88F2EZVRkBf4zaA2WNmECiOvNJ36qdgWrP998_UZjXBKiNu3Wo_hEZv3XDwyw5h1B81mNt8CsUIuf924SAhSFhjU0iSePdoYQwYLaer3NsVz_kaEMKjItyxomdAqHkSvzyjWTLFAWIk9G4fV8agEj8ICTkRy2H4NDJtsJHKM0bIjYcBFJ3nifJGfSCBSitTlh_nx8Jm4EUasLCjT9xh9YRdKULJv_nW.UelBc-
+X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
+Date: Sat, 5 Dec 2009 05:54:26 -0800 (PST)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: [OOPS] Radeon KMS with 2.6.31.6
+To: linux-kernel@vger.kernel.org
+Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: tony.luck@intel.com, geoffrey.levand@am.sony.com, davem@davemloft.net,
-       tglx@linutronix.de, joerg.roedel@amd.com, muli@il.ibm.com,
-       jdmason@kudzu.us, jbarnes@virtuousgeek.org, dwmw2@infradead.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/31] Constify struct dma_map_ops for 2.6.32 v1
-References: <4B198670.2000406@gmail.com>	<4B1989B0.102@gmail.com>	<20091205115936.d3a7a6ec.sfr@canb.auug.org.au>	<20091205122015.c898e234.sfr@canb.auug.org.au>	<4B19BEB9.3000600@gmail.com>	<20091205131011.e90d7f1c.sfr@canb.auug.org.au>	<4B19C493.4030506@gmail.com>	<20091205132724.154a07b6.sfr@canb.auug.org.au>	<4B19CAF1.8010705@gmail.com> <20091205142140.d8954929.sfr@canb.auug.org.au>
-In-Reply-To: <20091205142140.d8954929.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi Emese,
-> 
-> On Sat, 05 Dec 2009 03:52:33 +0100 Emese Revfy <re.emese@gmail.com> wrote:
->> @@ -1232,7 +1231,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
->>  	viodev->dev.archdata.of_node = of_node_get(of_node);
->>  
->>  	if (firmware_has_feature(FW_FEATURE_CMO))
->> -		vio_cmo_set_dma_ops(viodev);
->> +		viodev->dev.archdata.dma_ops = &vio_dma_mapping_ops;
->>  	else
->>  		viodev->dev.archdata.dma_ops = &dma_iommu_ops;
->>  	set_iommu_table_base(&viodev->dev, vio_build_iommu_table(viodev));
-> 
-> You forgot to remove this hunk.
+Hi,
 
-Sorry, it's fixed now.
+I tripped over this KMS(?) bug this morning. I have a Radeon 9550, and the userspace environment is Fedora 12. The kernel is vanilla 2.6.31.6.
 
-From: Emese Revfy <re.emese@gmail.com>
+Cheers,
+Chris
 
-Constify struct dma_map_ops.
+BUG: unable to handle kernel NULL pointer dereference at 00000028
+IP: [<f808f166>] ttm_bo_wait+0x45/0x145 [ttm]
+*pde = 00000000 
+Oops: 0000 [#1] PREEMPT SMP 
+last sysfs file: /sys/devices/virtual/net/tun0/statistics/collisions
+[drm:radeon_object_list_reserve] *ERROR* radeon: failed to reserve object.
+Modules linked in: tun fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib pwc ppdev parport_pc snd_rawmidi snd_timer snd_seq_device uvcvideo firewire_ohci firewire_core psmouse parport serio_raw snd_page_alloc snd_util_mem snd_hwdep videodev sg i2c_i801 pcspkr snd v4l1_compat soundcore floppy crc_itu_t dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix ehci_hcd libata scsi_mod usbcore e1000 button thermal radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect [last unloaded: processor]
 
-Signed-off-by: Emese Revfy <re.emese@gmail.com>
----
- arch/ia64/hp/common/hwsw_iommu.c         |    4 +-
- arch/ia64/hp/common/sba_iommu.c          |    4 +-
- arch/ia64/include/asm/dma-mapping.h      |   10 ++++----
- arch/ia64/include/asm/machvec.h          |    4 +-
- arch/ia64/kernel/dma-mapping.c           |    4 +-
- arch/ia64/kernel/pci-dma.c               |    2 +-
- arch/ia64/kernel/pci-swiotlb.c           |    2 +-
- arch/ia64/sn/pci/pci_dma.c               |    2 +-
- arch/powerpc/include/asm/device.h        |    2 +-
- arch/powerpc/include/asm/dma-mapping.h   |   18 ++++++++--------
- arch/powerpc/include/asm/iommu.h         |    3 ++
- arch/powerpc/include/asm/pci.h           |    4 +-
- arch/powerpc/include/asm/swiotlb.h       |    2 +-
- arch/powerpc/kernel/dma-iommu.c          |    4 +-
- arch/powerpc/kernel/dma-swiotlb.c        |    2 +-
- arch/powerpc/kernel/dma.c                |    2 +-
- arch/powerpc/kernel/ibmebus.c            |    2 +-
- arch/powerpc/kernel/pci-common.c         |    6 ++--
- arch/powerpc/kernel/vio.c                |    5 +--
- arch/powerpc/platforms/cell/iommu.c      |    2 +-
- arch/powerpc/platforms/ps3/system-bus.c  |    4 +-
- arch/sparc/include/asm/dma-mapping.h     |    8 +++---
- arch/sparc/kernel/iommu.c                |    4 +-
- arch/sparc/kernel/ioport.c               |    6 ++--
- arch/sparc/kernel/pci_sun4v.c            |    2 +-
- arch/x86/include/asm/device.h            |    2 +-
- arch/x86/include/asm/dma-mapping.h       |   10 ++++----
- arch/x86/include/asm/iommu.h             |    2 +-
- arch/x86/kernel/amd_iommu.c              |    2 +-
- arch/x86/kernel/pci-calgary_64.c         |    2 +-
- arch/x86/kernel/pci-dma.c                |    4 +-
- arch/x86/kernel/pci-gart_64.c            |    2 +-
- arch/x86/kernel/pci-nommu.c              |    2 +-
- arch/x86/kernel/pci-swiotlb.c            |    2 +-
- drivers/pci/intel-iommu.c                |    2 +-
- include/asm-generic/dma-mapping-common.h |   24 +++++++++++-----------
- include/linux/dma-mapping.h              |   32 +++++++++++++++---------------
- 37 files changed, 98 insertions(+), 96 deletions(-)
+Pid: 18, comm: events/2 Tainted: G        W  (2.6.31.6 #1) Precision WorkStation 650    
+EIP: 0060:[<f808f166>] EFLAGS: 00010282 CPU: 2
+EIP is at ttm_bo_wait+0x45/0x145 [ttm]
+EAX: d9f0f0e0 EBX: f5c15a00 ECX: 00000000 EDX: 00000000
+ESI: 00000000 EDI: f5c15a34 EBP: f5c15a90 ESP: f7052f08
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process events/2 (pid: 18, ti=f7052000 task=f7068f80 task.ti=f7052000)
+Stack:
+ f7068f80 c2363e80 011c781b 00000000 00000000 c12eee80 f4dc2000 f5c15a00
+<0> f717a284 00000001 f5c15a34 f808fe0e 00000001 f717a284 f717a284 c12eee80
+<0> f7069128 00000000 f5c1586c f717a544 f717a284 f5c15800 f809000c f5c15a24
+Call Trace:
+ [<f808fe0e>] ? ttm_bo_cleanup_refs+0x33/0x1ba [ttm]
+ [<f809000c>] ? ttm_bo_delayed_delete+0x77/0xf1 [ttm]
+ [<c11c76c2>] ? _spin_lock_irqsave+0x11/0x2a
+ [<f8090096>] ? ttm_bo_delayed_workqueue+0x10/0x23 [ttm]
+ [<c1030146>] ? worker_thread+0x107/0x193
+ [<f8090086>] ? ttm_bo_delayed_workqueue+0x0/0x23 [ttm]
+ [<c1032ee4>] ? autoremove_wake_function+0x0/0x29
+ [<c103003f>] ? worker_thread+0x0/0x193
+ [<c1032c9b>] ? kthread+0x6b/0x70
+ [<c1032c30>] ? kthread+0x0/0x70
+ [<c10033cf>] ? kernel_thread_helper+0x7/0x10
+Code: 00 00 00 0f 84 16 01 00 00 8d ab 90 00 00 00 8d 7b 34 0f b6 d2 89 54 24 0c 0f b6 c9 89 4c 24 10 e9 ec 00 00 00 8b 93 88 00 00 00 <ff> 56 28 84 c0 74 25 8b 83 8c 00 00 00 89 44 24 14 c7 83 8c 00 
+EIP: [<f808f166>] ttm_bo_wait+0x45/0x145 [ttm] SS:ESP 0068:f7052f08
+CR2: 0000000000000028
+------------[ cut here ]------------
+---[ end trace c7e252cba6618d6d ]---
+note: events/2[18] exited with preempt_count 1
+kernel BUG at /home/chris/LINUX/linux-2.6.31/drivers/gpu/drm/ttm/ttm_bo.c:102!
+invalid opcode: 0000 [#2] PREEMPT SMP 
+last sysfs file: /sys/devices/virtual/net/tun0/statistics/collisions
+Modules linked in: tun fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib pwc ppdev parport_pc snd_rawmidi snd_timer snd_seq_device uvcvideo firewire_ohci firewire_core psmouse parport serio_raw snd_page_alloc snd_util_mem snd_hwdep videodev sg i2c_i801 pcspkr snd v4l1_compat soundcore floppy crc_itu_t dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix ehci_hcd libata scsi_mod usbcore e1000 button thermal radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect [last unloaded: processor]
 
-diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
-index e4a80d8..11a7ea1 100644
---- a/arch/ia64/hp/common/hwsw_iommu.c
-+++ b/arch/ia64/hp/common/hwsw_iommu.c
-@@ -17,7 +17,7 @@
- #include <linux/swiotlb.h>
- #include <asm/machvec.h>
- 
--extern struct dma_map_ops sba_dma_ops, swiotlb_dma_ops;
-+extern const struct dma_map_ops sba_dma_ops, swiotlb_dma_ops;
- 
- /* swiotlb declarations & definitions: */
- extern int swiotlb_late_init_with_default_size (size_t size);
-@@ -33,7 +33,7 @@ static inline int use_swiotlb(struct device *dev)
- 		!sba_dma_ops.dma_supported(dev, *dev->dma_mask);
- }
- 
--struct dma_map_ops *hwsw_dma_get_ops(struct device *dev)
-+const struct dma_map_ops *hwsw_dma_get_ops(struct device *dev)
- {
- 	if (use_swiotlb(dev))
- 		return &swiotlb_dma_ops;
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 674a837..a4465c6 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -2077,7 +2077,7 @@ static struct acpi_driver acpi_sba_ioc_driver = {
- 	},
- };
- 
--extern struct dma_map_ops swiotlb_dma_ops;
-+extern const struct dma_map_ops swiotlb_dma_ops;
- 
- static int __init
- sba_init(void)
-@@ -2191,7 +2191,7 @@ sba_page_override(char *str)
- 
- __setup("sbapagesize=",sba_page_override);
- 
--struct dma_map_ops sba_dma_ops = {
-+const struct dma_map_ops sba_dma_ops = {
- 	.alloc_coherent		= sba_alloc_coherent,
- 	.free_coherent		= sba_free_coherent,
- 	.map_page		= sba_map_page,
-diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
-index 8d3c79c..71b3af6 100644
---- a/arch/ia64/include/asm/dma-mapping.h
-+++ b/arch/ia64/include/asm/dma-mapping.h
-@@ -12,7 +12,7 @@
- 
- #define ARCH_HAS_DMA_GET_REQUIRED_MASK
- 
--extern struct dma_map_ops *dma_ops;
-+extern const struct dma_map_ops *dma_ops;
- extern struct ia64_machine_vector ia64_mv;
- extern void set_iommu_machvec(void);
- 
-@@ -24,7 +24,7 @@ extern void machvec_dma_sync_sg(struct device *, struct scatterlist *, int,
- static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- 				       dma_addr_t *daddr, gfp_t gfp)
- {
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
-+	const struct dma_map_ops *ops = platform_dma_get_ops(dev);
- 	void *caddr;
- 
- 	caddr = ops->alloc_coherent(dev, size, daddr, gfp);
-@@ -35,7 +35,7 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- static inline void dma_free_coherent(struct device *dev, size_t size,
- 				     void *caddr, dma_addr_t daddr)
- {
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
-+	const struct dma_map_ops *ops = platform_dma_get_ops(dev);
- 	debug_dma_free_coherent(dev, size, caddr, daddr);
- 	ops->free_coherent(dev, size, caddr, daddr);
- }
-@@ -49,13 +49,13 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
- 
- static inline int dma_mapping_error(struct device *dev, dma_addr_t daddr)
- {
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
-+	const struct dma_map_ops *ops = platform_dma_get_ops(dev);
- 	return ops->mapping_error(dev, daddr);
- }
- 
- static inline int dma_supported(struct device *dev, u64 mask)
- {
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
-+	const struct dma_map_ops *ops = platform_dma_get_ops(dev);
- 	return ops->dma_supported(dev, mask);
- }
- 
-diff --git a/arch/ia64/include/asm/machvec.h b/arch/ia64/include/asm/machvec.h
-index 367d299..9ad4279 100644
---- a/arch/ia64/include/asm/machvec.h
-+++ b/arch/ia64/include/asm/machvec.h
-@@ -45,7 +45,7 @@ typedef void ia64_mv_kernel_launch_event_t(void);
- /* DMA-mapping interface: */
- typedef void ia64_mv_dma_init (void);
- typedef u64 ia64_mv_dma_get_required_mask (struct device *);
--typedef struct dma_map_ops *ia64_mv_dma_get_ops(struct device *);
-+typedef const struct dma_map_ops *ia64_mv_dma_get_ops(struct device *);
- 
- /*
-  * WARNING: The legacy I/O space is _architected_.  Platforms are
-@@ -251,7 +251,7 @@ extern void machvec_init_from_cmdline(const char *cmdline);
- # endif /* CONFIG_IA64_GENERIC */
- 
- extern void swiotlb_dma_init(void);
--extern struct dma_map_ops *dma_get_ops(struct device *);
-+extern const struct dma_map_ops *dma_get_ops(struct device *);
- 
- /*
-  * Define default versions so we can extend machvec for new platforms without having
-diff --git a/arch/ia64/kernel/dma-mapping.c b/arch/ia64/kernel/dma-mapping.c
-index f2c1600..969398a 100644
---- a/arch/ia64/kernel/dma-mapping.c
-+++ b/arch/ia64/kernel/dma-mapping.c
-@@ -3,7 +3,7 @@
- /* Set this to 1 if there is a HW IOMMU in the system */
- int iommu_detected __read_mostly;
- 
--struct dma_map_ops *dma_ops;
-+const struct dma_map_ops *dma_ops;
- EXPORT_SYMBOL(dma_ops);
- 
- #define PREALLOC_DMA_DEBUG_ENTRIES (1 << 16)
-@@ -16,7 +16,7 @@ static int __init dma_init(void)
- }
- fs_initcall(dma_init);
- 
--struct dma_map_ops *dma_get_ops(struct device *dev)
-+const struct dma_map_ops *dma_get_ops(struct device *dev)
- {
- 	return dma_ops;
- }
-diff --git a/arch/ia64/kernel/pci-dma.c b/arch/ia64/kernel/pci-dma.c
-index f6b1ff0..ccacc2f 100644
---- a/arch/ia64/kernel/pci-dma.c
-+++ b/arch/ia64/kernel/pci-dma.c
-@@ -43,7 +43,7 @@ struct device fallback_dev = {
- 	.dma_mask = &fallback_dev.coherent_dma_mask,
- };
- 
--extern struct dma_map_ops intel_dma_ops;
-+extern const struct dma_map_ops intel_dma_ops;
- 
- static int __init pci_iommu_init(void)
- {
-diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-index 285aae8..61dbab6 100644
---- a/arch/ia64/kernel/pci-swiotlb.c
-+++ b/arch/ia64/kernel/pci-swiotlb.c
-@@ -21,7 +21,7 @@ static void *ia64_swiotlb_alloc_coherent(struct device *dev, size_t size,
- 	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
- }
- 
--struct dma_map_ops swiotlb_dma_ops = {
-+const struct dma_map_ops swiotlb_dma_ops = {
- 	.alloc_coherent = ia64_swiotlb_alloc_coherent,
- 	.free_coherent = swiotlb_free_coherent,
- 	.map_page = swiotlb_map_page,
-diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
-index 98b6849..8046766 100644
---- a/arch/ia64/sn/pci/pci_dma.c
-+++ b/arch/ia64/sn/pci/pci_dma.c
-@@ -464,7 +464,7 @@ int sn_pci_legacy_write(struct pci_bus *bus, u16 port, u32 val, u8 size)
- 	return ret;
- }
- 
--static struct dma_map_ops sn_dma_ops = {
-+static const struct dma_map_ops sn_dma_ops = {
- 	.alloc_coherent		= sn_dma_alloc_coherent,
- 	.free_coherent		= sn_dma_free_coherent,
- 	.map_page		= sn_dma_map_page,
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 6d94d27..50d4cad 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -14,7 +14,7 @@ struct dev_archdata {
- 	struct device_node	*of_node;
- 
- 	/* DMA operations on that device */
--	struct dma_map_ops	*dma_ops;
-+	const struct dma_map_ops	*dma_ops;
- 
- 	/*
- 	 * When an iommu is in use, dma_data is used as a ptr to the base of the
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index e281dae..f025ef0 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -67,11 +67,11 @@ static inline unsigned long device_to_mask(struct device *dev)
-  * Available generic sets of operations
-  */
- #ifdef CONFIG_PPC64
--extern struct dma_map_ops dma_iommu_ops;
-+extern const struct dma_map_ops dma_iommu_ops;
- #endif
--extern struct dma_map_ops dma_direct_ops;
-+extern const struct dma_map_ops dma_direct_ops;
- 
--static inline struct dma_map_ops *get_dma_ops(struct device *dev)
-+static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
- {
- 	/* We don't handle the NULL dev case for ISA for now. We could
- 	 * do it via an out of line call but it is not needed for now. The
-@@ -84,7 +84,7 @@ static inline struct dma_map_ops *get_dma_ops(struct device *dev)
- 	return dev->archdata.dma_ops;
- }
- 
--static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
-+static inline void set_dma_ops(struct device *dev, const struct dma_map_ops *ops)
- {
- 	dev->archdata.dma_ops = ops;
- }
-@@ -118,7 +118,7 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
- 
- static inline int dma_supported(struct device *dev, u64 mask)
- {
--	struct dma_map_ops *dma_ops = get_dma_ops(dev);
-+	const struct dma_map_ops *dma_ops = get_dma_ops(dev);
- 
- 	if (unlikely(dma_ops == NULL))
- 		return 0;
-@@ -132,7 +132,7 @@ static inline int dma_supported(struct device *dev, u64 mask)
- 
- static inline int dma_set_mask(struct device *dev, u64 dma_mask)
- {
--	struct dma_map_ops *dma_ops = get_dma_ops(dev);
-+	const struct dma_map_ops *dma_ops = get_dma_ops(dev);
- 
- 	if (unlikely(dma_ops == NULL))
- 		return -EIO;
-@@ -147,7 +147,7 @@ static inline int dma_set_mask(struct device *dev, u64 dma_mask)
- static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- 				       dma_addr_t *dma_handle, gfp_t flag)
- {
--	struct dma_map_ops *dma_ops = get_dma_ops(dev);
-+	const struct dma_map_ops *dma_ops = get_dma_ops(dev);
- 	void *cpu_addr;
- 
- 	BUG_ON(!dma_ops);
-@@ -162,7 +162,7 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- static inline void dma_free_coherent(struct device *dev, size_t size,
- 				     void *cpu_addr, dma_addr_t dma_handle)
- {
--	struct dma_map_ops *dma_ops = get_dma_ops(dev);
-+	const struct dma_map_ops *dma_ops = get_dma_ops(dev);
- 
- 	BUG_ON(!dma_ops);
- 
-@@ -173,7 +173,7 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
- 
- static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- {
--	struct dma_map_ops *dma_ops = get_dma_ops(dev);
-+	const struct dma_map_ops *dma_ops = get_dma_ops(dev);
- 
- 	if (dma_ops->mapping_error)
- 		return dma_ops->mapping_error(dev, dma_addr);
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index edfc980..1766f59 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -116,6 +116,9 @@ extern void iommu_init_early_iSeries(void);
- extern void iommu_init_early_dart(void);
- extern void iommu_init_early_pasemi(void);
- 
-+/* dma-iommu.c */
-+extern int dma_iommu_dma_supported(struct device *dev, u64 mask);
-+
- #ifdef CONFIG_PCI
- extern void pci_iommu_init(void);
- extern void pci_direct_iommu_init(void);
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index b5ea626..4030822 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -65,8 +65,8 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- }
- 
- #ifdef CONFIG_PCI
--extern void set_pci_dma_ops(struct dma_map_ops *dma_ops);
--extern struct dma_map_ops *get_pci_dma_ops(void);
-+extern void set_pci_dma_ops(const struct dma_map_ops *dma_ops);
-+extern const struct dma_map_ops *get_pci_dma_ops(void);
- #else	/* CONFIG_PCI */
- #define set_pci_dma_ops(d)
- #define get_pci_dma_ops()	NULL
-diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
-index 8979d4c..d2fd0d3 100644
---- a/arch/powerpc/include/asm/swiotlb.h
-+++ b/arch/powerpc/include/asm/swiotlb.h
-@@ -13,7 +13,7 @@
- 
- #include <linux/swiotlb.h>
- 
--extern struct dma_map_ops swiotlb_dma_ops;
-+extern const struct dma_map_ops swiotlb_dma_ops;
- 
- static inline void dma_mark_clean(void *addr, size_t size) {}
- 
-diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-index 37771a5..70f69e7 100644
---- a/arch/powerpc/kernel/dma-iommu.c
-+++ b/arch/powerpc/kernel/dma-iommu.c
-@@ -70,7 +70,7 @@ static void dma_iommu_unmap_sg(struct device *dev, struct scatterlist *sglist,
- }
- 
- /* We support DMA to/from any memory page via the iommu */
--static int dma_iommu_dma_supported(struct device *dev, u64 mask)
-+int dma_iommu_dma_supported(struct device *dev, u64 mask)
- {
- 	struct iommu_table *tbl = get_iommu_table_base(dev);
- 
-@@ -89,7 +89,7 @@ static int dma_iommu_dma_supported(struct device *dev, u64 mask)
- 		return 1;
- }
- 
--struct dma_map_ops dma_iommu_ops = {
-+const struct dma_map_ops dma_iommu_ops = {
- 	.alloc_coherent	= dma_iommu_alloc_coherent,
- 	.free_coherent	= dma_iommu_free_coherent,
- 	.map_sg		= dma_iommu_map_sg,
-diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-index e96cbbd..bdd6d41 100644
---- a/arch/powerpc/kernel/dma-swiotlb.c
-+++ b/arch/powerpc/kernel/dma-swiotlb.c
-@@ -31,7 +31,7 @@ unsigned int ppc_swiotlb_enable;
-  * map_page, and unmap_page on highmem, use normal dma_ops
-  * for everything else.
-  */
--struct dma_map_ops swiotlb_dma_ops = {
-+const struct dma_map_ops swiotlb_dma_ops = {
- 	.alloc_coherent = dma_direct_alloc_coherent,
- 	.free_coherent = dma_direct_free_coherent,
- 	.map_sg = swiotlb_map_sg_attrs,
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index 6215062..ebea59c 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -134,7 +134,7 @@ static inline void dma_direct_sync_single_range(struct device *dev,
- }
- #endif
- 
--struct dma_map_ops dma_direct_ops = {
-+const struct dma_map_ops dma_direct_ops = {
- 	.alloc_coherent	= dma_direct_alloc_coherent,
- 	.free_coherent	= dma_direct_free_coherent,
- 	.map_sg		= dma_direct_map_sg,
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index a4c8b38..1b09ad9 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -127,7 +127,7 @@ static int ibmebus_dma_supported(struct device *dev, u64 mask)
- 	return 1;
- }
- 
--static struct dma_map_ops ibmebus_dma_ops = {
-+static const struct dma_map_ops ibmebus_dma_ops = {
- 	.alloc_coherent = ibmebus_alloc_coherent,
- 	.free_coherent  = ibmebus_free_coherent,
- 	.map_sg         = ibmebus_map_sg,
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index e8dfdbd..8583013 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -50,14 +50,14 @@ resource_size_t isa_mem_base;
- unsigned int ppc_pci_flags = 0;
- 
- 
--static struct dma_map_ops *pci_dma_ops = &dma_direct_ops;
-+static const struct dma_map_ops *pci_dma_ops = &dma_direct_ops;
- 
--void set_pci_dma_ops(struct dma_map_ops *dma_ops)
-+void set_pci_dma_ops(const struct dma_map_ops *dma_ops)
- {
- 	pci_dma_ops = dma_ops;
- }
- 
--struct dma_map_ops *get_pci_dma_ops(void)
-+const struct dma_map_ops *get_pci_dma_ops(void)
- {
- 	return pci_dma_ops;
- }
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 77f6421..2f68442 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -601,14 +601,14 @@ static void vio_dma_iommu_unmap_sg(struct device *dev,
- 	vio_cmo_dealloc(viodev, alloc_size);
- }
- 
--struct dma_map_ops vio_dma_mapping_ops = {
-+static const struct dma_map_ops vio_dma_mapping_ops = {
- 	.alloc_coherent = vio_dma_iommu_alloc_coherent,
- 	.free_coherent  = vio_dma_iommu_free_coherent,
- 	.map_sg         = vio_dma_iommu_map_sg,
- 	.unmap_sg       = vio_dma_iommu_unmap_sg,
-+	.dma_supported  = dma_iommu_dma_supported,
- 	.map_page       = vio_dma_iommu_map_page,
- 	.unmap_page     = vio_dma_iommu_unmap_page,
--
- };
- 
- /**
-@@ -857,7 +857,6 @@ static void vio_cmo_bus_remove(struct vio_dev *viodev)
- 
- static void vio_cmo_set_dma_ops(struct vio_dev *viodev)
- {
--	vio_dma_mapping_ops.dma_supported = dma_iommu_ops.dma_supported;
- 	viodev->dev.archdata.dma_ops = &vio_dma_mapping_ops;
- }
- 
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index ca5bfdf..1602e09 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -642,7 +642,7 @@ static int dma_fixed_dma_supported(struct device *dev, u64 mask)
- 
- static int dma_set_mask_and_switch(struct device *dev, u64 dma_mask);
- 
--struct dma_map_ops dma_iommu_fixed_ops = {
-+const struct dma_map_ops dma_iommu_fixed_ops = {
- 	.alloc_coherent = dma_fixed_alloc_coherent,
- 	.free_coherent  = dma_fixed_free_coherent,
- 	.map_sg         = dma_fixed_map_sg,
-diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-index e34b305..20e48ec 100644
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -694,7 +694,7 @@ static int ps3_dma_supported(struct device *_dev, u64 mask)
- 	return mask >= DMA_BIT_MASK(32);
- }
- 
--static struct dma_map_ops ps3_sb_dma_ops = {
-+static const struct dma_map_ops ps3_sb_dma_ops = {
- 	.alloc_coherent = ps3_alloc_coherent,
- 	.free_coherent = ps3_free_coherent,
- 	.map_sg = ps3_sb_map_sg,
-@@ -704,7 +704,7 @@ static struct dma_map_ops ps3_sb_dma_ops = {
- 	.unmap_page = ps3_unmap_page,
- };
- 
--static struct dma_map_ops ps3_ioc0_dma_ops = {
-+static const struct dma_map_ops ps3_ioc0_dma_ops = {
- 	.alloc_coherent = ps3_alloc_coherent,
- 	.free_coherent = ps3_free_coherent,
- 	.map_sg = ps3_ioc0_map_sg,
-diff --git a/arch/sparc/include/asm/dma-mapping.h b/arch/sparc/include/asm/dma-mapping.h
-index 5a8c308..fb7c253 100644
---- a/arch/sparc/include/asm/dma-mapping.h
-+++ b/arch/sparc/include/asm/dma-mapping.h
-@@ -14,10 +14,10 @@ extern int dma_set_mask(struct device *dev, u64 dma_mask);
- #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
- #define dma_is_consistent(d, h)	(1)
- 
--extern struct dma_map_ops *dma_ops, pci32_dma_ops;
-+extern struct const dma_map_ops *dma_ops, pci32_dma_ops;
- extern struct bus_type pci_bus_type;
- 
--static inline struct dma_map_ops *get_dma_ops(struct device *dev)
-+static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
- {
- #if defined(CONFIG_SPARC32) && defined(CONFIG_PCI)
- 	if (dev->bus == &pci_bus_type)
-@@ -31,7 +31,7 @@ static inline struct dma_map_ops *get_dma_ops(struct device *dev)
- static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- 				       dma_addr_t *dma_handle, gfp_t flag)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 	void *cpu_addr;
- 
- 	cpu_addr = ops->alloc_coherent(dev, size, dma_handle, flag);
-@@ -42,7 +42,7 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- static inline void dma_free_coherent(struct device *dev, size_t size,
- 				     void *cpu_addr, dma_addr_t dma_handle)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	debug_dma_free_coherent(dev, size, cpu_addr, dma_handle);
- 	ops->free_coherent(dev, size, cpu_addr, dma_handle);
-diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
-index 7690cc2..ece64c9 100644
---- a/arch/sparc/kernel/iommu.c
-+++ b/arch/sparc/kernel/iommu.c
-@@ -826,7 +826,7 @@ static void dma_4u_sync_sg_for_cpu(struct device *dev,
- 	spin_unlock_irqrestore(&iommu->lock, flags);
- }
- 
--static struct dma_map_ops sun4u_dma_ops = {
-+static const struct dma_map_ops sun4u_dma_ops = {
- 	.alloc_coherent		= dma_4u_alloc_coherent,
- 	.free_coherent		= dma_4u_free_coherent,
- 	.map_page		= dma_4u_map_page,
-@@ -837,7 +837,7 @@ static struct dma_map_ops sun4u_dma_ops = {
- 	.sync_sg_for_cpu	= dma_4u_sync_sg_for_cpu,
- };
- 
--struct dma_map_ops *dma_ops = &sun4u_dma_ops;
-+const struct dma_map_ops *dma_ops = &sun4u_dma_ops;
- EXPORT_SYMBOL(dma_ops);
- 
- extern int pci64_dma_supported(struct pci_dev *pdev, u64 device_mask);
-diff --git a/arch/sparc/kernel/ioport.c b/arch/sparc/kernel/ioport.c
-index 9f61fd8..bd048db 100644
---- a/arch/sparc/kernel/ioport.c
-+++ b/arch/sparc/kernel/ioport.c
-@@ -392,7 +392,7 @@ static void sbus_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
- 	BUG();
- }
- 
--struct dma_map_ops sbus_dma_ops = {
-+const struct dma_map_ops sbus_dma_ops = {
- 	.alloc_coherent		= sbus_alloc_coherent,
- 	.free_coherent		= sbus_free_coherent,
- 	.map_page		= sbus_map_page,
-@@ -403,7 +403,7 @@ struct dma_map_ops sbus_dma_ops = {
- 	.sync_sg_for_device	= sbus_sync_sg_for_device,
- };
- 
--struct dma_map_ops *dma_ops = &sbus_dma_ops;
-+const struct dma_map_ops *dma_ops = &sbus_dma_ops;
- EXPORT_SYMBOL(dma_ops);
- 
- static int __init sparc_register_ioport(void)
-@@ -640,7 +640,7 @@ static void pci32_sync_sg_for_device(struct device *device, struct scatterlist *
- 	}
- }
- 
--struct dma_map_ops pci32_dma_ops = {
-+const struct dma_map_ops pci32_dma_ops = {
- 	.alloc_coherent		= pci32_alloc_coherent,
- 	.free_coherent		= pci32_free_coherent,
- 	.map_page		= pci32_map_page,
-diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
-index 23c33ff..d137fbd 100644
---- a/arch/sparc/kernel/pci_sun4v.c
-+++ b/arch/sparc/kernel/pci_sun4v.c
-@@ -525,7 +525,7 @@ static void dma_4v_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 	spin_unlock_irqrestore(&iommu->lock, flags);
- }
- 
--static struct dma_map_ops sun4v_dma_ops = {
-+static const struct dma_map_ops sun4v_dma_ops = {
- 	.alloc_coherent			= dma_4v_alloc_coherent,
- 	.free_coherent			= dma_4v_free_coherent,
- 	.map_page			= dma_4v_map_page,
-diff --git a/arch/x86/include/asm/device.h b/arch/x86/include/asm/device.h
-index cee34e9..a7c3fa2 100644
---- a/arch/x86/include/asm/device.h
-+++ b/arch/x86/include/asm/device.h
-@@ -6,7 +6,7 @@ struct dev_archdata {
- 	void	*acpi_handle;
- #endif
- #ifdef CONFIG_X86_64
--struct dma_map_ops *dma_ops;
-+	const struct dma_map_ops *dma_ops;
- #endif
- #ifdef CONFIG_DMAR
- 	void *iommu; /* hook for IOMMU specific extension */
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 6a25d5d..786b202 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -25,9 +25,9 @@ extern int iommu_merge;
- extern struct device x86_dma_fallback_dev;
- extern int panic_on_overflow;
- 
--extern struct dma_map_ops *dma_ops;
-+extern const struct dma_map_ops *dma_ops;
- 
--static inline struct dma_map_ops *get_dma_ops(struct device *dev)
-+static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
- {
- #ifdef CONFIG_X86_32
- 	return dma_ops;
-@@ -44,7 +44,7 @@ static inline struct dma_map_ops *get_dma_ops(struct device *dev)
- /* Make sure we keep the same behaviour */
- static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 	if (ops->mapping_error)
- 		return ops->mapping_error(dev, dma_addr);
- 
-@@ -122,7 +122,7 @@ static inline void *
- dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 		gfp_t gfp)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 	void *memory;
- 
- 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
-@@ -149,7 +149,7 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- static inline void dma_free_coherent(struct device *dev, size_t size,
- 				     void *vaddr, dma_addr_t bus)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	WARN_ON(irqs_disabled());       /* for portability */
- 
-diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
-index fd6d21b..8b13915 100644
---- a/arch/x86/include/asm/iommu.h
-+++ b/arch/x86/include/asm/iommu.h
-@@ -3,7 +3,7 @@
- 
- extern void pci_iommu_shutdown(void);
- extern void no_iommu_init(void);
--extern struct dma_map_ops nommu_dma_ops;
-+extern const struct dma_map_ops nommu_dma_ops;
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
- extern int iommu_pass_through;
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 0285521..c3dc83a 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -2069,7 +2069,7 @@ static void prealloc_protection_domains(void)
- 	}
- }
- 
--static struct dma_map_ops amd_iommu_dma_ops = {
-+static const struct dma_map_ops amd_iommu_dma_ops = {
- 	.alloc_coherent = alloc_coherent,
- 	.free_coherent = free_coherent,
- 	.map_page = map_page,
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index 971a3be..071558a 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -470,7 +470,7 @@ static void calgary_free_coherent(struct device *dev, size_t size,
- 	free_pages((unsigned long)vaddr, get_order(size));
- }
- 
--static struct dma_map_ops calgary_dma_ops = {
-+static const struct dma_map_ops calgary_dma_ops = {
- 	.alloc_coherent = calgary_alloc_coherent,
- 	.free_coherent = calgary_free_coherent,
- 	.map_sg = calgary_map_sg,
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index a6e804d..e318f5a 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -14,7 +14,7 @@
- 
- static int forbid_dac __read_mostly;
- 
--struct dma_map_ops *dma_ops;
-+const struct dma_map_ops *dma_ops;
- EXPORT_SYMBOL(dma_ops);
- 
- static int iommu_sac_force __read_mostly;
-@@ -243,7 +243,7 @@ early_param("iommu", iommu_setup);
- 
- int dma_supported(struct device *dev, u64 mask)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- #ifdef CONFIG_PCI
- 	if (mask > 0xffffffff && forbid_dac > 0) {
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index a7f1b64..24505d3 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -679,7 +679,7 @@ static __init int init_k8_gatt(struct agp_kern_info *info)
- 	return -1;
- }
- 
--static struct dma_map_ops gart_dma_ops = {
-+static const struct dma_map_ops gart_dma_ops = {
- 	.map_sg				= gart_map_sg,
- 	.unmap_sg			= gart_unmap_sg,
- 	.map_page			= gart_map_page,
-diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
-index a3933d4..c898869 100644
---- a/arch/x86/kernel/pci-nommu.c
-+++ b/arch/x86/kernel/pci-nommu.c
-@@ -94,7 +94,7 @@ static void nommu_sync_sg_for_device(struct device *dev,
- 	flush_write_buffers();
- }
- 
--struct dma_map_ops nommu_dma_ops = {
-+const struct dma_map_ops nommu_dma_ops = {
- 	.alloc_coherent		= dma_generic_alloc_coherent,
- 	.free_coherent		= nommu_free_coherent,
- 	.map_sg			= nommu_map_sg,
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index aaa6b78..4de1881 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -25,7 +25,7 @@ static void *x86_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 	return swiotlb_alloc_coherent(hwdev, size, dma_handle, flags);
- }
- 
--static struct dma_map_ops swiotlb_dma_ops = {
-+static const struct dma_map_ops swiotlb_dma_ops = {
- 	.mapping_error = swiotlb_dma_mapping_error,
- 	.alloc_coherent = x86_swiotlb_alloc_coherent,
- 	.free_coherent = swiotlb_free_coherent,
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 1840a05..b4ece9f 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -2937,7 +2937,7 @@ static int intel_mapping_error(struct device *dev, dma_addr_t dma_addr)
- 	return !dma_addr;
- }
- 
--struct dma_map_ops intel_dma_ops = {
-+const struct dma_map_ops intel_dma_ops = {
- 	.alloc_coherent = intel_alloc_coherent,
- 	.free_coherent = intel_free_coherent,
- 	.map_sg = intel_map_sg,
-diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
-index e694263..9ffa925 100644
---- a/include/asm-generic/dma-mapping-common.h
-+++ b/include/asm-generic/dma-mapping-common.h
-@@ -11,7 +11,7 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
- 					      enum dma_data_direction dir,
- 					      struct dma_attrs *attrs)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 	dma_addr_t addr;
- 
- 	kmemcheck_mark_initialized(ptr, size);
-@@ -30,7 +30,7 @@ static inline void dma_unmap_single_attrs(struct device *dev, dma_addr_t addr,
- 					  enum dma_data_direction dir,
- 					  struct dma_attrs *attrs)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->unmap_page)
-@@ -42,7 +42,7 @@ static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
- 				   int nents, enum dma_data_direction dir,
- 				   struct dma_attrs *attrs)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 	int i, ents;
- 	struct scatterlist *s;
- 
-@@ -59,7 +59,7 @@ static inline void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg
- 				      int nents, enum dma_data_direction dir,
- 				      struct dma_attrs *attrs)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	debug_dma_unmap_sg(dev, sg, nents, dir);
-@@ -71,7 +71,7 @@ static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
- 				      size_t offset, size_t size,
- 				      enum dma_data_direction dir)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 	dma_addr_t addr;
- 
- 	kmemcheck_mark_initialized(page_address(page) + offset, size);
-@@ -85,7 +85,7 @@ static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
- static inline void dma_unmap_page(struct device *dev, dma_addr_t addr,
- 				  size_t size, enum dma_data_direction dir)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->unmap_page)
-@@ -97,7 +97,7 @@ static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr,
- 					   size_t size,
- 					   enum dma_data_direction dir)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_single_for_cpu)
-@@ -109,7 +109,7 @@ static inline void dma_sync_single_for_device(struct device *dev,
- 					      dma_addr_t addr, size_t size,
- 					      enum dma_data_direction dir)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_single_for_device)
-@@ -123,7 +123,7 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
- 						 size_t size,
- 						 enum dma_data_direction dir)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_single_range_for_cpu) {
-@@ -140,7 +140,7 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
- 						    size_t size,
- 						    enum dma_data_direction dir)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_single_range_for_device) {
-@@ -155,7 +155,7 @@ static inline void
- dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
- 		    int nelems, enum dma_data_direction dir)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_sg_for_cpu)
-@@ -167,7 +167,7 @@ static inline void
- dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
- 		       int nelems, enum dma_data_direction dir)
- {
--	struct dma_map_ops *ops = get_dma_ops(dev);
-+	const struct dma_map_ops *ops = get_dma_ops(dev);
- 
- 	BUG_ON(!valid_dma_direction(dir));
- 	if (ops->sync_sg_for_device)
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 91b7618..fc9996f 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -16,50 +16,50 @@ enum dma_data_direction {
- };
- 
- struct dma_map_ops {
--	void* (*alloc_coherent)(struct device *dev, size_t size,
-+	void* (* const alloc_coherent)(struct device *dev, size_t size,
- 				dma_addr_t *dma_handle, gfp_t gfp);
--	void (*free_coherent)(struct device *dev, size_t size,
-+	void (* const free_coherent)(struct device *dev, size_t size,
- 			      void *vaddr, dma_addr_t dma_handle);
--	dma_addr_t (*map_page)(struct device *dev, struct page *page,
-+	dma_addr_t (* const map_page)(struct device *dev, struct page *page,
- 			       unsigned long offset, size_t size,
- 			       enum dma_data_direction dir,
- 			       struct dma_attrs *attrs);
--	void (*unmap_page)(struct device *dev, dma_addr_t dma_handle,
-+	void (* const unmap_page)(struct device *dev, dma_addr_t dma_handle,
- 			   size_t size, enum dma_data_direction dir,
- 			   struct dma_attrs *attrs);
--	int (*map_sg)(struct device *dev, struct scatterlist *sg,
-+	int (* const map_sg)(struct device *dev, struct scatterlist *sg,
- 		      int nents, enum dma_data_direction dir,
- 		      struct dma_attrs *attrs);
--	void (*unmap_sg)(struct device *dev,
-+	void (* const unmap_sg)(struct device *dev,
- 			 struct scatterlist *sg, int nents,
- 			 enum dma_data_direction dir,
- 			 struct dma_attrs *attrs);
--	void (*sync_single_for_cpu)(struct device *dev,
-+	void (* const sync_single_for_cpu)(struct device *dev,
- 				    dma_addr_t dma_handle, size_t size,
- 				    enum dma_data_direction dir);
--	void (*sync_single_for_device)(struct device *dev,
-+	void (* const sync_single_for_device)(struct device *dev,
- 				       dma_addr_t dma_handle, size_t size,
- 				       enum dma_data_direction dir);
--	void (*sync_single_range_for_cpu)(struct device *dev,
-+	void (* const sync_single_range_for_cpu)(struct device *dev,
- 					  dma_addr_t dma_handle,
- 					  unsigned long offset,
- 					  size_t size,
- 					  enum dma_data_direction dir);
--	void (*sync_single_range_for_device)(struct device *dev,
-+	void (* const sync_single_range_for_device)(struct device *dev,
- 					     dma_addr_t dma_handle,
- 					     unsigned long offset,
- 					     size_t size,
- 					     enum dma_data_direction dir);
--	void (*sync_sg_for_cpu)(struct device *dev,
-+	void (* const sync_sg_for_cpu)(struct device *dev,
- 				struct scatterlist *sg, int nents,
- 				enum dma_data_direction dir);
--	void (*sync_sg_for_device)(struct device *dev,
-+	void (* const sync_sg_for_device)(struct device *dev,
- 				   struct scatterlist *sg, int nents,
- 				   enum dma_data_direction dir);
--	int (*mapping_error)(struct device *dev, dma_addr_t dma_addr);
--	int (*dma_supported)(struct device *dev, u64 mask);
--	int (*set_dma_mask)(struct device *dev, u64 mask);
--	int is_phys;
-+	int (* const mapping_error)(struct device *dev, dma_addr_t dma_addr);
-+	int (* const dma_supported)(struct device *dev, u64 mask);
-+	int (* const set_dma_mask)(struct device *dev, u64 mask);
-+	const int is_phys;
- };
- 
- #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
+Pid: 2737, comm: Xorg Tainted: G      D W  (2.6.31.6 #1) Precision WorkStation 650    
+EIP: 0060:[<f808f2d6>] EFLAGS: 00013206 CPU: 0
+EIP is at ttm_bo_unreserve+0x35/0xaf [ttm]
+EAX: f4422064 EBX: f717a544 ECX: 00000000 EDX: d9f88a64
+ESI: d9f88a00 EDI: f717a284 EBP: d9f0f640 ESP: f5c0fde0
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process Xorg (pid: 2737, ti=f5c0f000 task=f6bc62e0 task.ti=f5c0f000)
+Stack:
+ f66a94f8 f5c0fe58 f5c0fe58 d9f0f640 f816a136 ffffffab 00000000 f816a21d
+<0> f8173f47 00000007 0000001c f5c0fe58 f6942c00 00000000 f717a000 00000000
+<0> f5c0fe70 f5c0fe34 f8174062 f5c0fe8c f717a880 f717a000 f5117840 00000002
+Call Trace:
+ [<f816a136>] ? radeon_object_list_unreserve+0x19/0x28 [radeon]
+ [<f816a21d>] ? radeon_object_list_validate+0x25/0x20e [radeon]
+ [<f8173f47>] ? radeon_cs_parser_relocs+0x13d/0x1a8 [radeon]
+ [<f8174062>] ? radeon_cs_ioctl+0xb0/0x156 [radeon]
+ [<f8064269>] ? drm_ioctl+0x1b2/0x22b [drm]
+ [<f8173fb2>] ? radeon_cs_ioctl+0x0/0x156 [radeon]
+ [<c107e793>] ? do_sync_read+0xbe/0xf6
+ [<c1088aef>] ? vfs_ioctl+0x58/0x72
+ [<c1089005>] ? do_vfs_ioctl+0x457/0x497
+ [<c11c781b>] ? _spin_unlock_irq+0xd/0x20
+ [<c1026b56>] ? do_setitimer+0x142/0x296
+ [<c1026cf0>] ? sys_setitimer+0x46/0x71
+ [<c1089072>] ? sys_ioctl+0x2d/0x44
+ [<c1002870>] ? sysenter_do_call+0x12/0x22
+Code: c0 02 00 00 89 d8 e8 c1 82 13 c9 8b 3e 8b 86 84 00 00 00 85 c0 75 04 0f 0b eb fe f6 46 52 20 75 5d 8b 46 64 8d 56 64 39 d0 74 04 <0f> 0b eb fe 8b 56 4c 42 6b d2 50 8d 14 17 8b 4a 18 89 42 18 83 
+EIP: [<f808f2d6>] ttm_bo_unreserve+0x35/0xaf [ttm] SS:ESP 0068:f5c0fde0
+---[ end trace c7e252cba6618d6e ]---
+note: Xorg[2737] exited with preempt_count 2
+BUG: scheduling while atomic: Xorg/2737/0x10000002
+Modules linked in: tun fuse nfsd lockd auth_rpcgss exportfs sunrpc autofs4 af_packet ipt_LOG nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_LOG nf_conntrack_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables x_tables ipv6 p4_clockmod speedstep_lib binfmt_misc dm_mirror dm_region_hash dm_log dm_mod uinput snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_event snd_seq_midi_emul snd_emu10k1 snd_ac97_codec snd_usb_audio ac97_bus snd_seq snd_pcm snd_usb_lib pwc ppdev parport_pc snd_rawmidi snd_timer snd_seq_device uvcvideo firewire_ohci firewire_core psmouse parport serio_raw snd_page_alloc snd_util_mem snd_hwdep videodev sg i2c_i801 pcspkr snd v4l1_compat soundcore floppy crc_itu_t dcdbas ext3 jbd mbcache sr_mod cdrom sd_mod pata_acpi sata_sil uhci_hcd ata_piix ehci_hcd libata scsi_mod usbcore e1000 button thermal radeon intel_agp ttm drm agpgart i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect [last unloaded: processor]
+Pid: 2737, comm: Xorg Tainted: G      D W  2.6.31.6 #1
+Call Trace:
+ [<c11c5665>] ? schedule+0x87/0x764
+ [<c1062354>] ? lru_add_drain+0x67/0x82
+ [<c10213bf>] ? __cond_resched+0xf/0x27
+ [<c11c5db8>] ? _cond_resched+0x18/0x21
+ [<c106af4b>] ? unmap_vmas+0x46a/0x53d
+ [<c106e0df>] ? exit_mmap+0x99/0x130
+ [<c1021e77>] ? mmput+0x1c/0x7e
+ [<c10250d7>] ? exit_mm+0xd9/0xe0
+ [<c10505fd>] ? audit_free+0x165/0x188
+ [<c11c769b>] ? _spin_lock_irq+0xe/0x24
+ [<c102652b>] ? do_exit+0x15e/0x55d
+ [<c10036a4>] ? do_invalid_op+0x0/0x70
+ [<c11c5390>] ? printk+0xe/0x16
+ [<c10036a4>] ? do_invalid_op+0x0/0x70
+ [<c10059a4>] ? oops_end+0x72/0x75
+ [<c100370b>] ? do_invalid_op+0x67/0x70
+ [<f808f2d6>] ? ttm_bo_unreserve+0x35/0xaf [ttm]
+ [<c11c76c2>] ? _spin_lock_irqsave+0x11/0x2a
+ [<c11c783c>] ? _spin_unlock_irqrestore+0xe/0x21
+ [<c103629b>] ? down_trylock+0x1b/0x23
+ [<c11c789f>] ? _spin_unlock+0xc/0x1f
+ [<c10244dd>] ? vprintk+0x2da/0x30e
+ [<c11c783c>] ? _spin_unlock_irqrestore+0xe/0x21
+ [<f808f6d4>] ? ttm_bo_wait_unreserved+0x8b/0xfe [ttm]
+ [<c11c7b5e>] ? error_code+0x66/0x6c
+ [<c10036a4>] ? do_invalid_op+0x0/0x70
+ [<f808f2d6>] ? ttm_bo_unreserve+0x35/0xaf [ttm]
+ [<f816a136>] ? radeon_object_list_unreserve+0x19/0x28 [radeon]
+ [<f816a21d>] ? radeon_object_list_validate+0x25/0x20e [radeon]
+ [<f8173f47>] ? radeon_cs_parser_relocs+0x13d/0x1a8 [radeon]
+ [<f8174062>] ? radeon_cs_ioctl+0xb0/0x156 [radeon]
+ [<f8064269>] ? drm_ioctl+0x1b2/0x22b [drm]
+ [<f8173fb2>] ? radeon_cs_ioctl+0x0/0x156 [radeon]
+ [<c107e793>] ? do_sync_read+0xbe/0xf6
+ [<c1088aef>] ? vfs_ioctl+0x58/0x72
+ [<c1089005>] ? do_vfs_ioctl+0x457/0x497
+ [<c11c781b>] ? _spin_unlock_irq+0xd/0x20
+ [<c1026b56>] ? do_setitimer+0x142/0x296
+ [<c1026cf0>] ? sys_setitimer+0x46/0x71
+ [<c1089072>] ? sys_ioctl+0x2d/0x44
+ [<c1002870>] ? sysenter_do_call+0x12/0x22
+SysRq : Emergency Sync
+SysRq : Emergency Remount R/O
+SysRq : Resetting
 
+
+
+      
