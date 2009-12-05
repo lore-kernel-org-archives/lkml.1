@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZLEHGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZLEHRC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbZLEHGG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 02:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZLEHGF
+	id S1752663AbZLEHRC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 02:17:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbZLEHRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 02:06:05 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:60019 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbZLEHGF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 02:06:05 -0500
-X-Greylist: delayed 44413 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Dec 2009 02:06:05 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=gGfBXETaEkaRtxANydm9orHj7zTAQ9JajxtKjkufBHsAPiU9zQUwtaybgukZ7P0FWR
-         oRdb2roh0lNCAnyUM4XVnQDE2gv56fv3cn396T9yMT+TG1vSrv8HL8tEnWZe7SwpkhXg
-         Y5XzTNrBsCTPY9wtZDSW1dsDfpNkMVJr+Wp+E=
+	Sat, 5 Dec 2009 02:17:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51283 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752351AbZLEHRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 02:17:00 -0500
+Date: Sat, 5 Dec 2009 08:16:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Jason Baron <jbaron@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH v2] [RFC] tracepoint: Add signal coredump tracepoint
+Message-ID: <20091205071635.GB25383@elte.hu>
+References: <4B128ECF.9020906@redhat.com>
+ <20091202204637.25408.41195.stgit@dhcp-100-2-132.bos.redhat.com>
+ <20091203103935.GA7628@elte.hu>
+ <4B17A1CD.8060706@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20091204234756.GA3517@ami.dom.local>
-References: <20091125191105.GA3167@ami.dom.local>
-	 <20091127213640.GA2611@ami.dom.local>
-	 <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
-	 <20091127224206.GA3350@ami.dom.local>
-	 <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
-	 <20091204090524.GB6478@ff.dom.local>
-	 <81bfc67a0912041028w16668d0cx4da04bee989eef4a@mail.gmail.com>
-	 <20091204204443.GA2736@ami.dom.local>
-	 <81bfc67a0912041507k6ef497f9w7b9294c90012e1a1@mail.gmail.com>
-	 <20091204234756.GA3517@ami.dom.local>
-Date: Sat, 5 Dec 2009 02:06:09 -0500
-Message-ID: <81bfc67a0912042306v573d79acw7f0ef3d051a41724@mail.gmail.com>
-Subject: Re: large packet loss take2 2.6.31.x
-From: Caleb Cushing <xenoterracide@gmail.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B17A1CD.8060706@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I guess, you should better wait with new tests for some assistance
-> from e1000e maintainers - it seems they might be interested in some
-> specific dumps and registers - like in this #11998 case.
 
-I reported here.
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=14737
--- 
-Caleb Cushing
+> Ingo Molnar wrote:
+> > 
+> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> > 
+> >> Add signal coredump tracepoint which shows signal number, mm->flags, 
+> >> limits, pointer to file structure and core file name.
+> > 
+> > Why is the kernel pointer to the file structure logged? User-space has 
+> > no use for it and the analysis value is low.
+> 
+> Ah, if open() or opening pipe fails, it becomes 0 or -ERRNO, so we can 
+> check if there is an error.
 
-http://xenoterracide.blogspot.com
+ok, that wasnt obvious from the patch - worth adding it to the 
+changelog.
+
+> Perhaps, we can do below in trace_printk for trace users.
+> "open %s", (!file || IS_ERR((void *)file)) ? "failed" : "succeeded"
+
+i'd rather suggest to pass an error code (and keep it 0 if none), 
+instead of some ad-hoc string message.
+
+But ... the whole issue of VFS event logging and new tracepoints should 
+be approached from a more generic direction i think. Do we want to log 
+inode_nr:dev pairs as well? Shouldnt there be a generic event-class 
+definition via DECLARE_EVENT_CLASS for file related events, with 'core 
+dumped' just being a sub-event-code?
+
+I sense reluctance from the direction of Andrew and disinterest from the 
+VFS folks - not a good backdrop in general.
+
+	Ingo
