@@ -1,104 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbZLEUPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932924AbZLEUYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302AbZLEUPy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 15:15:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZLEUPt
+	id S932924AbZLEUYS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 15:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZLEUYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 15:15:49 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41308 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753640AbZLEUPs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 15:15:48 -0500
-X-Greylist: delayed 4023 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Dec 2009 15:15:48 EST
-Date: Sat, 05 Dec 2009 20:15:50 +0000
-To: linux-arch@vger.kernel.org
-Subject: [PATCH] fix broken aliasing checks for MAP_FIXED on sparc32,
- mips, arm and sh
-Cc: lethal@linux-sh.org, ralf@linux-mips.org, rmk@arm.linux.org.uk,
+	Sat, 5 Dec 2009 15:24:13 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:42404 "EHLO h5.dl5rb.org.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752679AbZLEUYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 15:24:12 -0500
+Date: Sat, 5 Dec 2009 20:22:51 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: linux-arch@vger.kernel.org, lethal@linux-sh.org, rmk@arm.linux.org.uk,
        davem@davemloft.net, torvalds@linux-foundation.org,
        linux-kernel@vger.kernel.org
-User-Agent: Heirloom mailx 12.4 7/29/08
+Subject: Re: [PATCH] fix broken aliasing checks for MAP_FIXED on sparc32,
+ mips, arm and sh
+Message-ID: <20091205202251.GA475@linux-mips.org>
+References: <E1NH12k-0001gw-NA@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <E1NH12k-0001gw-NA@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <E1NH12k-0001gw-NA@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 05, 2009 at 08:15:50PM +0000, Al Viro wrote:
 
-We want addr - (pgoff << PAGE_SHIFT) consistently coloured...
-BTW, sparc64 is correct, sparc32 isn't.
+After our IRC chat I've already applied an commit that is identical to the
+MIPS segment of your patch.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-[On top of the mmap/mremap series, but should apply to mainline modulo line
-numbers shift]
+Thanks!
 
- arch/arm/mm/mmap.c               |    3 ++-
- arch/mips/kernel/syscall.c       |    3 ++-
- arch/sh/mm/mmap.c                |    3 ++-
- arch/sparc/kernel/sys_sparc_32.c |    3 ++-
- 4 files changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/arch/arm/mm/mmap.c b/arch/arm/mm/mmap.c
-index 2b79964..f5abc51 100644
---- a/arch/arm/mm/mmap.c
-+++ b/arch/arm/mm/mmap.c
-@@ -54,7 +54,8 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 	 * We enforce the MAP_FIXED case.
- 	 */
- 	if (flags & MAP_FIXED) {
--		if (aliasing && flags & MAP_SHARED && addr & (SHMLBA - 1))
-+		if (aliasing && flags & MAP_SHARED &&
-+		    (addr - (pgoff << PAGE_SHIFT)) & (SHMLBA - 1))
- 			return -EINVAL;
- 		return addr;
- 	}
-diff --git a/arch/mips/kernel/syscall.c b/arch/mips/kernel/syscall.c
-index c25b2e7..3f7f466 100644
---- a/arch/mips/kernel/syscall.c
-+++ b/arch/mips/kernel/syscall.c
-@@ -93,7 +93,8 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 		 * We do not accept a shared mapping if it would violate
- 		 * cache aliasing constraints.
- 		 */
--		if ((flags & MAP_SHARED) && (addr & shm_align_mask))
-+		if ((flags & MAP_SHARED) &&
-+		    ((addr - (pgoff << PAGE_SHIFT)) & shm_align_mask))
- 			return -EINVAL;
- 		return addr;
- 	}
-diff --git a/arch/sh/mm/mmap.c b/arch/sh/mm/mmap.c
-index d2984fa..afeb710 100644
---- a/arch/sh/mm/mmap.c
-+++ b/arch/sh/mm/mmap.c
-@@ -54,7 +54,8 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 		/* We do not accept a shared mapping if it would violate
- 		 * cache aliasing constraints.
- 		 */
--		if ((flags & MAP_SHARED) && (addr & shm_align_mask))
-+		if ((flags & MAP_SHARED) &&
-+		    ((addr - (pgoff << PAGE_SHIFT)) & shm_align_mask))
- 			return -EINVAL;
- 		return addr;
- 	}
-diff --git a/arch/sparc/kernel/sys_sparc_32.c b/arch/sparc/kernel/sys_sparc_32.c
-index 997bdd0..3a82e65 100644
---- a/arch/sparc/kernel/sys_sparc_32.c
-+++ b/arch/sparc/kernel/sys_sparc_32.c
-@@ -45,7 +45,8 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsi
- 		/* We do not accept a shared mapping if it would violate
- 		 * cache aliasing constraints.
- 		 */
--		if ((flags & MAP_SHARED) && (addr & (SHMLBA - 1)))
-+		if ((flags & MAP_SHARED) &&
-+		    ((addr - (pgoff << PAGE_SHIFT)) & (SHMLBA - 1)))
- 			return -EINVAL;
- 		return addr;
- 	}
--- 
-1.5.6.5
-
+  Ralf
