@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591AbZLEUFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932898AbZLEUGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591AbZLEUFx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 15:05:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZLEUFs
+	id S932898AbZLEUGN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 15:06:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932887AbZLEUGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 15:05:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:59162 "EHLO mx1.redhat.com"
+	Sat, 5 Dec 2009 15:06:07 -0500
+Received: from hera.cwi.nl ([192.16.191.8]:37816 "EHLO hera.cwi.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751888AbZLEUFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 15:05:48 -0500
-Date: Sat, 5 Dec 2009 15:04:22 -0500 (EST)
-From: Miloslav Trmac <mitr@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
-       Alan Cox <alan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
-       Louis Rilling <louis.rilling@kerlabs.com>,
-       David Howells <dhowells@redhat.com>,
-       Stanislaw Gruszka <sgruszka@redhat.com>,
-       Veaceslav Falico <vfalico@redhat.com>
-Message-ID: <1166728910.1204311260043462476.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <20091205165804.GD23152@redhat.com>
-Subject: Re: [PATCH v2 4/4] copy_signal cleanup: clean tty_audit_fork()
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.5.5.72]
+	id S932869AbZLEUGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 15:06:05 -0500
+Date: Sat, 5 Dec 2009 21:06:06 +0100
+From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ed Tomlinson <edt@aei.ca>, Andries Brouwer <Andries.Brouwer@cwi.nl>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [BUG] 2.6.32 - Sddr-09 SM reader resets endlessly
+Message-ID: <20091205200606.GA23243@mette>
+References: <200912042344.21996.edt@aei.ca> <Pine.LNX.4.44L0.0912051246580.15558-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0912051246580.15558-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 05, 2009 at 12:55:40PM -0500, Alan Stern wrote:
 
------ "Oleg Nesterov" <oleg@redhat.com> wrote:
-> On 12/04, Veaceslav Falico wrote:
-> > diff --git a/drivers/char/tty_audit.c b/drivers/char/tty_audit.c
-> > index ac16fbe..283a15b 100644
-> > --- a/drivers/char/tty_audit.c
-> > +++ b/drivers/char/tty_audit.c
-> > @@ -148,7 +148,6 @@ void tty_audit_fork(struct signal_struct *sig)
-> >  	spin_lock_irq(&current->sighand->siglock);
-> >  	sig->audit_tty = current->signal->audit_tty;
-> >  	spin_unlock_irq(&current->sighand->siglock);
-> > -	sig->tty_audit_buf = NULL;
-> >  }
+> > [ 1259.709281] usb 3-1: new full speed USB device using ohci_hcd and address 4
+> > [ 1259.867687] usb 3-1: New USB device found, idVendor=0781, idProduct=0200
 > 
-> Off-topic question to this who understands this code.
+> Not shown explicitly, the bcdDevice value is 0208.
 > 
-> But afaics we can also remove ->siglock from this helper and make
-> it really trivial for being inline. ->siglock buys nothing, we just
-> read a boolean. In fact, after the quick grep I do not understand
-> how ->siglock is connected to ->audit_tty. OK, it protects
-> tty_audit_buf,
-> but why we always take ->siglock to access ->audit_tty ?
-AFAIK there is no explicit documentation of the atomicity semantics expected by the Linux kernel (both from the hardware and from the compiler), so every access to the boolean is protected by a lock, to be on the safe side.
-    Mirek
+> > [ 1259.874603] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+> > [ 1259.881956] usb 3-1: Product: USB SSFDC
+> > [ 1259.881958] usb 3-1: Manufacturer: SanDisk
+
+> > [ 1266.830235] sddr09: could not read card info
+> > [ 1266.847287] sddr09: could not read card info
+
+> Skipping to the important part, where the sddr09 driver implements TEST 
+> UNIT READY:
+> 
+> > ffff8801571e5240 2548283209 S Co:3:004:0 s 41 00 0000 0000 000c 12 = 00200000 00000000 00000000
+> > ffff8801571e5240 2548536793 C Co:3:004:0 -32 12 >
+> 
+> That failure is responsible for the resets.
+> 
+> Andries, do you have any idea what's going on?  Evidently this device 
+> doesn't accept the protocol used by the sddr09 driver.
+
+Hi Alan,
+
+Sorry, no - I have no memory and worked on these USB drivers
+years ago. Forgot all details. Also my last sddr09 device broke
+some time ago.
+
+Looking at my old files I do not see the Vendor Id 0781, so maybe
+this is a device I never encountered.
+These old files also discuss some trickery with multi-lun devices
+where the driver needed depends on the lun. This is not a reader
+of multiple types of card?
+
+Many of my SM readers worked with either sddr09 or sddr55.
+Does the unusual devices section today say that such a device
+needs sddr09?
+
+Found a 2.6.31 source tree. Yes,
+
+UNUSUAL_DEV(  0x0781, 0x0200, 0x0000, 0x9999,
+                "Sandisk",
+                "ImageMate SDDR-09",
+                US_SC_SCSI, US_PR_EUSB_SDDR09, usb_stor_sddr09_init,
+                0),
+
+Is it known who added this? Is 0208 in the interval of known devices
+for which sddr09 works?
+
+Andries
+
