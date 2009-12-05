@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZLEMla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbZLEMvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbZLEMla (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 07:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZLEMl3
+	id S1754826AbZLEMvR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 07:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZLEMvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 07:41:29 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:39166 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754484AbZLEMl2 (ORCPT
+	Sat, 5 Dec 2009 07:51:14 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:61667 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754527AbZLEMvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 07:41:28 -0500
-X-Trace: 297894485/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.111.197
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvoAAOfjGUtQKW/F/2dsb2JhbAAI1Q+EMwQ
-X-IronPort-AV: E=Sophos;i="4.47,346,1257120000"; 
-   d="scan'208";a="297894485"
-Date: Sat, 5 Dec 2009 12:41:26 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hugetlb: Acquire the i_mmap_lock before walking the
- prio_tree to unmap a page V2
-In-Reply-To: <20091202222049.GC26702@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0912051237060.31181@sister.anvils>
-References: <20091202222049.GC26702@csn.ul.ie>
+	Sat, 5 Dec 2009 07:51:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=djXc64Mm/jzCYGhsSk27kurfBM/2Y9erSodOTwldDmGzlSPJ4Ykeb+HCBUoEh/rx2r
+         ro3PHbgm+lUOy+2rqlHlV1bTkMwBWp9I5ADy/VHrE0uXaf38PaKX97dGYSQKjMjLmuib
+         gOsIqvjLaVpKFt+WJIvjOODvHzkIf5J76wAk0=
+Message-ID: <4B1A557D.4080707@gmail.com>
+Date: Sat, 05 Dec 2009 07:43:41 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Joe Perches <joe@perches.com>
+CC: Brice Goglin <brice@myri.com>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH net-next-2.6] drivers/net: Move && and || to end of previous
+ line
+References: <1259001504.16503.79.camel@Joe-Laptop.home>	 <20091123.104130.117837098.davem@davemloft.net>	 <1259528449.29779.194.camel@Joe-Laptop.home>	 <20091129.165557.84377714.davem@davemloft.net>	 <1259863101.22783.63.camel@Joe-Laptop.home>  <4B190A29.5080905@myri.com> <1259947271.22783.120.camel@Joe-Laptop.home>
+In-Reply-To: <1259947271.22783.120.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Dec 2009, Mel Gorman wrote:
-
-> Changelog since V1
-> o Delete stupid comment from the description
+Joe Perches wrote:
+> On Fri, 2009-12-04 at 14:10 +0100, Brice Goglin wrote:
+>> Joe Perches wrote:
+>>> Only files where David Miller is the primary git-signer.
+>>> wireless, wimax, ixgbe, etc are not modified.
+>> What's the point? Having them at the beginning of the next line is
+>> easier to read from my point of view.
 > 
-> When the owner of a mapping fails  COW because a child process is holding
-> a reference, the children VMAs are walked and the page is unmapped. The
-> i_mmap_lock is taken for the unmapping of the page but not the walking of
-> the prio_tree. In theory, that tree could be changing if the lock is not
-> held. This patch takes the i_mmap_lock properly for the duration of the
-> prio_tree walk.
+> It's just a stupid consistency thing.
 > 
-> [hugh.dickins@tiscali.co.uk: Spotted the problem in the first place]
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Brice, I've made my objection known on the LKML.  Joe *agrees* that
+having them on the beginning of the line is preferred.  Thousands of
+contributors throughout the tree agree.
 
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+This is entirely a Miller thing.
 
-(and Andrew has already put this version into mmotm, thanks)
+My main objection to these sweeping patches is that it makes it much
+more difficult to maintain and apply patches across different versions of
+the tree.  We have already seen conflicts with other git maintained trees.
 
-> ---
->  mm/hugetlb.c |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index a952cb8..5adc284 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -1906,6 +1906,12 @@ static int unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
->  		+ (vma->vm_pgoff >> PAGE_SHIFT);
->  	mapping = (struct address_space *)page_private(page);
->  
-> +	/*
-> +	 * Take the mapping lock for the duration of the table walk. As
-> +	 * this mapping should be shared between all the VMAs,
-> +	 * __unmap_hugepage_range() is called as the lock is already held
-> +	 */
-> +	spin_lock(&mapping->i_mmap_lock);
->  	vma_prio_tree_foreach(iter_vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
->  		/* Do not unmap the current VMA */
->  		if (iter_vma == vma)
-> @@ -1919,10 +1925,11 @@ static int unmap_ref_private(struct mm_struct *mm, struct vm_area_struct *vma,
->  		 * from the time of fork. This would look like data corruption
->  		 */
->  		if (!is_vma_resv_set(iter_vma, HPAGE_RESV_OWNER))
-> -			unmap_hugepage_range(iter_vma,
-> +			__unmap_hugepage_range(iter_vma,
->  				address, address + huge_page_size(h),
->  				page);
->  	}
-> +	spin_unlock(&mapping->i_mmap_lock);
->  
->  	return 1;
->  }
+These patches should not be accepted to the main Linus tree.
