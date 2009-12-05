@@ -1,106 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZLELWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZLEMf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754296AbZLELWh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 06:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbZLELWg
+	id S1754657AbZLEMf5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 07:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbZLEMfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 06:22:36 -0500
-Received: from smtprelay02.ispgateway.de ([80.67.18.14]:39409 "EHLO
-	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753824AbZLELWf (ORCPT
+	Sat, 5 Dec 2009 07:35:55 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:2979 "EHLO
+	mx3.tudelft.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754364AbZLEMfy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 06:22:35 -0500
-Date: Sat, 5 Dec 2009 12:19:05 +0100
-From: Peter Feuerer <peter@piie.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>,
-       lenb@kernel.org, Andreas Mohr <andi@lisas.de>,
-       Peter Feuerer <peter@piie.net>
-Subject: [PATCH -mm] acerhdf: Added new BIOS versions
-Message-Id: <20091205121905.a71a6c56.peter@piie.net>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 650477
+	Sat, 5 Dec 2009 07:35:54 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -12.589
+Message-ID: <4B1A53AE.9020707@tremplin-utc.net>
+Date: Sat, 05 Dec 2009 13:35:58 +0100
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.6.666
+MIME-Version: 1.0
+To: Zeno Davatz <zdavatz@gmail.com>
+CC: linux-kernel@vger.kernel.org, Zac Medico <zmedico@gentoo.org>
+Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
+References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com> <4B055609.9030306@tremplin-utc.net>
+In-Reply-To: <4B055609.9030306@tremplin-utc.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Op 19-11-09 15:28, Éric Piel schreef:
+> Op 19-11-09 09:52, Zeno Davatz schreef:
+>> Hi
+>>
+>> I am looking for the Asus Eeepc Poulsbo (psb) driver in Kernel
+>> 2.6.32-rc7. When is this driver expected to make it into the kernel?
+:
+> Hi,
+> I'd also be interested by a patch to get the psb kernel module to
+> compile with 2.6.32. If anyone has this already available, please post it!
+> Or maybe someone knows what should be done to fix this type of errors?
+Hello,
 
-please apply to your -mm tree.
+I've just noticed that Zac Medico has written the fixes (as sed scripts)
+for the psb driver in gentoo. Below is the patch version of his fixes.
+It works for me :-)
 
-thank you very much,
---peter
+Thanks Zac!
+See you,
+Eric
 
---
-Added new BIOS versions for following netbooks: Aspire 1810xx, Packard
-  Bell DOTMU
+8<--------------------------------------------------
+psb: Fix compilation with kernel 2.6.32
 
-Signed-off-by: Peter Feuerer <peter@piie.net>
-Cc: Borislav Petkov <petkovbb@gmail.com>
-Cc: Andreas Mohr <andi@lisas.de>
-Cc: Len Brown <lenb@kernel.org>
+This patch made from the Gentoo ebuild written by Zac Medico <zmedico@gentoo.org>,
+to fix compilation of the psb module with kernel 2.6.32
+
+It should be safe to be used with older version of the kernel. It fixes two changes:
+ * In commit 6a12235c7d2d75c7d94b9afcaaecd422ff845ce0 phys_to_gart was removed
+   since it is a 1:1 mapping on all platforms.
+ * The acpi PREFIX constant is gone.
+
 ---
- drivers/platform/x86/acerhdf.c |   17 +++++++++++++++--
- 1 files changed, 15 insertions(+), 2 deletions(-)
+diff -urP psb-4.41.1-4mdv2010.0.orig/drm_agpsupport.c psb-4.41.1-4mdv2010.0.fix2632/drm_agpsupport.c
+--- psb-4.41.1-4mdv2010.0.orig/drm_agpsupport.c	2009-10-08 12:09:11.000000000 +0200
++++ psb-4.41.1-4mdv2010.0.fix2632/drm_agpsupport.c	2009-12-05 02:46:28.000421027 +0100
+@@ -524,7 +524,7 @@
+ 	DRM_DEBUG("Current page count is %ld\n", (long) mem->page_count);
+ 	mem->page_count = 0;
+ 	for (cur_page = pages; cur_page < last_page; ++cur_page)
+-		mem->pages[mem->page_count++] = phys_to_gart(page_to_phys(*cur_page));
++		mem->pages[mem->page_count++] = page_to_phys(*cur_page);
+ 	agp_be->mem = mem;
+ 	return 0;
+ }
+diff -urP psb-4.41.1-4mdv2010.0.orig/drm_edid.c psb-4.41.1-4mdv2010.0.fix2632/drm_edid.c
+--- psb-4.41.1-4mdv2010.0.orig/drm_edid.c	2009-10-08 12:09:11.000000000 +0200
++++ psb-4.41.1-4mdv2010.0.fix2632/drm_edid.c	2009-12-05 02:46:38.155168734 +0100
+@@ -39,7 +39,7 @@
+ 	if (obj && obj->type == ACPI_TYPE_BUFFER)
+ 		memcpy(edid, obj->buffer.pointer, obj->buffer.length);
+ 	else {
+-		printk(KERN_ERR PREFIX "Invalid _DDC data\n");
++		printk(KERN_ERR "ACPI: " "Invalid _DDC data\n");
+ 		status = -EFAULT;
+ 		kfree(obj);
+ 	}
 
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 007bc55..a97fc4a 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -52,7 +52,7 @@
-  */
- #undef START_IN_KERNEL_MODE
- 
--#define DRV_VER "0.5.20"
-+#define DRV_VER "0.5.21"
- 
- /*
-  * According to the Atom N270 datasheet,
-@@ -156,7 +156,13 @@ static const struct bios_settings_t bios_tbl[] = {
- 	{"Acer", "AOA150", "v0.3310", 0x55, 0x58, {0x20, 0x20, 0x00} },
- 	/* Acer 1410 */
- 	{"Acer", "Aspire 1410", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
--	/* special BIOS / other */
-+	{"Acer", "Aspire 1410", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	/* Acer 1810xx */
-+	{"Acer", "Aspire 1810TZ", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810T", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810T", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Acer", "Aspire 1810TZ", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	/* Gateway */
- 	{"Gateway", "AOA110", "v0.3103", 0x55, 0x58, {0x21, 0x21, 0x00} },
- 	{"Gateway", "AOA150", "v0.3103", 0x55, 0x58, {0x20, 0x20, 0x00} },
- 	{"Gateway         ", "LT31            ", "v1.3103 ", 0x55, 0x58,
-@@ -165,10 +171,13 @@ static const struct bios_settings_t bios_tbl[] = {
- 		{0x10, 0x0f, 0x00} },
- 	{"Gateway         ", "LT31            ", "v1.3302 ", 0x55, 0x58,
- 		{0x10, 0x0f, 0x00} },
-+	/* Packard Bell */
- 	{"Packard Bell", "DOA150", "v0.3104", 0x55, 0x58, {0x21, 0x21, 0x00} },
- 	{"Packard Bell", "DOA150", "v0.3105", 0x55, 0x58, {0x20, 0x20, 0x00} },
- 	{"Packard Bell", "AOA110", "v0.3105", 0x55, 0x58, {0x21, 0x21, 0x00} },
- 	{"Packard Bell", "AOA150", "v0.3105", 0x55, 0x58, {0x20, 0x20, 0x00} },
-+	{"Packard Bell", "DOTMU", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
-+	{"Packard Bell", "DOTMU", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
- 	/* pewpew-terminator */
- 	{"", "", "", 0, 0, {0, 0, 0} }
- };
-@@ -641,9 +650,13 @@ MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Peter Feuerer");
- MODULE_DESCRIPTION("Aspire One temperature and fan driver");
- MODULE_ALIAS("dmi:*:*Acer*:pnAOA*:");
-+MODULE_ALIAS("dmi:*:*Acer*:pnAspire 1410*:");
-+MODULE_ALIAS("dmi:*:*Acer*:pnAspire 1810*:");
- MODULE_ALIAS("dmi:*:*Gateway*:pnAOA*:");
-+MODULE_ALIAS("dmi:*:*Gateway*:pnLT31*:");
- MODULE_ALIAS("dmi:*:*Packard Bell*:pnAOA*:");
- MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOA*:");
-+MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOTMU*:");
- 
- module_init(acerhdf_init);
- module_exit(acerhdf_exit);
--- 
-1.6.5.4
