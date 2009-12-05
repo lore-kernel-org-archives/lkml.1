@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbZLEHS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZLEHSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752679AbZLEHS3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 02:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZLEHS2
+	id S1752912AbZLEHSh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 02:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZLEHSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 02:18:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33667 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752308AbZLEHS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 02:18:28 -0500
-Date: Sat, 5 Dec 2009 08:18:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Shaun Patterson <shaunpatterson@gmail.com>, pq@iki.fi,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH] Spelling in in /arch/x86/mm
-Message-ID: <20091205071822.GC25383@elte.hu>
-References: <a8cdcc00912031711y3f5f182cy79a1067afb6a8d6a@mail.gmail.com>
- <20091204070008.GA9761@elte.hu>
- <alpine.LNX.2.00.0912041340380.3755@pobox.suse.cz>
+	Sat, 5 Dec 2009 02:18:35 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:49137 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752806AbZLEHSc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 02:18:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=gDSEErZZXElRpwhExSyOAsIlSWDLSAlA7NGJKQ9anJ6pxMM8jMA9BjobJxxEs97gbB
+         l0s4u02bTCQ9RLoNlaDmZ4o4QrPj5bpVo7rg5PieVJlIhCCHJSx/cfwkN8NZ2UOhBJii
+         iWXCQNcuJNv6LNm7BcdZsItST74cuScIt128E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0912041340380.3755@pobox.suse.cz>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20091202204637.25408.41195.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <4B128ECF.9020906@redhat.com>
+	 <20091202204637.25408.41195.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Sat, 5 Dec 2009 16:18:38 +0900
+X-Google-Sender-Auth: c62a516443972017
+Message-ID: <2f11576a0912042318u4c9c90cetb4ce136e977c2596@mail.gmail.com>
+Subject: Re: [PATCH v2] [RFC] tracepoint: Add signal coredump tracepoint
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Jason Baron <jbaron@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/12/3 Masami Hiramatsu <mhiramat@redhat.com>:
+> Add signal coredump tracepoint which shows signal number,
+> mm->flags, limits, pointer to file structure and core
+> file name.
+>
+> This tracepoint requirement comes mainly from the viewpoint of
+> administrators. Since now we have introduced many coredump
+> configurations (e.g. dumpable, coredump_filter, core_pattern,
+> etc) and some of them can be modified by users, it will be hard
+> to know what was actually dumped (or not dumped) after some
+> problem happened on the system. For example, a process didn't
+> generated core, coredump doesn't have some sections, etc.
+> In those cases, the coredump tracepoint can help us to know
+> why the core file is so big or small, or not generated, by
+> recording all configurations for all processes on the system.
+> That will reduce system-administration cost.
 
-* Jiri Kosina <jkosina@suse.cz> wrote:
+AFAIK, not-dumped case is important than dump successful case.
+IOW, admin need to know why the crashed process was not dumped.
 
-> On Fri, 4 Dec 2009, Ingo Molnar wrote:
-> 
-> > > Spelling fix
-> > > Signed-off-by: Shaun Patterson shaunpatterson@gmail.com
-> > > ---
-> > > ?arch/x86/mm/kmmio.c |??? 2 +-
-> > > ?1 files changed, 1 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
-> > > index 16ccbd7..72f1572 100644
-> > > --- a/arch/x86/mm/kmmio.c
-> > > +++ b/arch/x86/mm/kmmio.c
-> > > @@ -490,7 +490,7 @@ static void remove_kmmio_fault_pages(struct rcu_head *head)
-> > > ? * 2. remove_kmmio_fault_pages()
-> > > ? *??? Remove the pages from kmmio_page_table.
-> > > ? * 3. rcu_free_kmmio_fault_pages()
-> > > - *??? Actally free the kmmio_fault_page structs as with RCU.
-> > > + *??? Actually free the kmmio_fault_page structs as with RCU.
-> > > ? */
-> > > ?void unregister_kmmio_probe(struct kmmio_probe *p)
-> > > ?{
-> > 
-> > The fix looks good - but the patch is mangled. Please see 
-> > Documentation/email-clients.txt for details.
-> 
-> Plus the Signed-off-by: line doesn't really have correct format (the valid 
-> e-mail address format is expected here).
+This tracepoint doesn't cover all failure case. especially
+binfmt->core_dump() et.al.
+IOW, this tracepoint seems too specialized piped-coredump feature.
 
-I can fix that - not the garbled-beyond-recognition patch though.
-
-	Ingo
+What do you think this tracepoint's use case?
