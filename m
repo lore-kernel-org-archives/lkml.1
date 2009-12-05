@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZLEPHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZLEPQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbZLEPHM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 10:07:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbZLEPHL
+	id S1756175AbZLEPQr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 10:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbZLEPQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 10:07:11 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:60851 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755902AbZLEPHK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 10:07:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=CpMzGw1QnCGjoQkMhpsh/jWjFkFu4qrr9lkb0ecBa3Vldw2AUA/pybQJa+8wcX/+su
-         Fzsvxu1F0ZY+AmPQh86V+T9OBIiQlqRRVAOYyLpWEZe0bKQD3rq+Ob9XStidV7HvyKTf
-         J2iGWUSBOAuQ4GdtwmfKEfNvxWlfliviDLHKc=
-MIME-Version: 1.0
-In-Reply-To: <s5haaxxh3pf.wl%tiwai@suse.de>
-References: <c1f41c620912042148n7d3f6f29h713a2d44369a5810@mail.gmail.com>
-	 <s5haaxxh3pf.wl%tiwai@suse.de>
-Date: Sat, 5 Dec 2009 22:07:16 +0700
-Message-ID: <c1f41c620912050707u4f701385h1a6a299cc4d85c8@mail.gmail.com>
-Subject: Re: 2.6.31 -> 2.6.32 Sound and video regressions
-From: Emmanuel Benisty <benisty.e@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sat, 5 Dec 2009 10:16:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27179 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755877AbZLEPQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 10:16:45 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <4B19A92A.5030804@analog.com>
+References: <4B19A92A.5030804@analog.com> <1244854869-2563-1-git-send-email-vapier@gentoo.org> <14959.1259948697@redhat.com>
+To: Jie Zhang <jie.zhang@analog.com>
+Cc: dhowells@redhat.com, uClinux development list <uclinux-dev@uclinux.org>,
+       linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       David McCullough <davidm@snapgear.com>
+Subject: Re: [uClinux-dev] [PATCH/RFC] FDPIC: add hook for arches to customize program header parsing
+Date: Sat, 05 Dec 2009 15:14:34 +0000
+Message-ID: <643.1260026074@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 5, 2009 at 9:53 PM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Sat, 5 Dec 2009 12:48:57 +0700,
-> Emmanuel Benisty wrote:
->>
->> Sound
->> The "Front" mixer channel has disappeared. I'm left with no sound and
->> no way to enable it.
->> alsa-info.sh output is attached.
->
-> Try to unmute "Speaker" mixer switch.
+Jie Zhang <jie.zhang@analog.com> wrote:
 
-Thanks Takashi, actually it seems to be a kernel config problem: I
-just tried the stock .32 kernel of the distribution I'm using and all
-channels are there again. I just have to figure out what has changed
-that requires my config to be modified.
+> > There needs to be a mapping covering the SRAM region for the purposes of the
+> 
+> Our GDB is still lack of the feature to debug applications using SRAM. So this
+> part of code was not got exercised. So if we remove this line, can this patch
+> got merged?
+
+No.  Firstly, the piece of storage that gets munmapped isn't used, so unmapping
+it isn't wrong.  What you need to do is to put a mapping over the bit of the
+SRAM you wish to use and then fill it and use it.  Ideally, you'd do this
+inside of do_mmap_pgoff() - that way those bits of the SRAM can be shared, but
+I'm not sure how best to do that.
+
+But you need to stick a VMA over it so that various checks don't spit
+EFAULT/EIO at you.
+
+David
