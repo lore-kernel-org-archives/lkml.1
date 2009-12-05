@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757709AbZLEETV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbZLEEgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757709AbZLEETV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 23:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757671AbZLEETT
+	id S1757735AbZLEEgc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 23:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbZLEEga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 23:19:19 -0500
-Received: from cantor.suse.de ([195.135.220.2]:47951 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757668AbZLEETT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 23:19:19 -0500
-Date: Fri, 4 Dec 2009 20:15:07 -0800
-From: Greg KH <gregkh@suse.de>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
-       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
-       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
-       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
-Message-ID: <20091205041507.GA24885@suse.de>
-References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com> <20091205000942.GA8224@suse.de> <4B19CA6F.4090700@gmail.com>
+	Fri, 4 Dec 2009 23:36:30 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:20839 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757686AbZLEEg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 23:36:29 -0500
+Date: Fri, 4 Dec 2009 21:36:35 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] pci: Make pci_dev struct point to NULL.
+Message-ID: <20091205043635.GA10777@ldl.fc.hp.com>
+References: <b9df5fa10912040835k3e23702o8700d2d8ad2349a4@mail.gmail.com> <20091204202709.GA32347@ldl.fc.hp.com> <b9df5fa10912041753n27e60020x2dd41eb50f4608ff@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B19CA6F.4090700@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <b9df5fa10912041753n27e60020x2dd41eb50f4608ff@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 05, 2009 at 03:50:23AM +0100, Emese Revfy wrote:
-> Greg KH wrote:
-> > On Sat, Dec 05, 2009 at 01:02:59AM +0100, Emese Revfy wrote:
-> >> -static struct file_operations ptmx_fops;
-> >> +static const struct file_operations ptmx_fops = {
-> >> +	.llseek		= no_llseek,
-> >> +	.read		= tty_read,
-> >> +	.write		= tty_write,
-> >> +	.poll		= tty_poll,
-> >> +	.unlocked_ioctl	= tty_ioctl,
-> >> +	.compat_ioctl	= tty_compat_ioctl,
-> >> +	.open		= ptmx_open,
-> >> +	.release	= tty_release,
-> >> +	.fasync		= tty_fasync,
-> >> +};
-> > 
-> > You just made these functions all global, for no real good reason.  Why
-> > did you do this?
+* Rakib Mullick <rakib.mullick@gmail.com>:
+> On 12/5/09, Alex Chiang <achiang@hp.com> wrote:
+> > * Rakib Mullick <rakib.mullick@gmail.com>:
+> >
+> > This is from Linus's latest tree:
+> >
+> >   974
+> >   975         if (slot->flags & SLOT_ENABLED)
+> >   976                 goto err_exit;
 > 
-> I think this is the only way to make ptmx_fops const, provided we want to. 
+> I'm talking about this line. From here we can hit 'goto err_exit' without
+> using pci_get_slot.
 
-Why do we want to?
+Right, so what's the problem? If the slot is not enabled, we goto
+err_exit and return, never touching dev.
 
-thanks,
+> >   977
+> >   978         /* sanity check: dev should be NULL when hot-plugged in */
+> >   979         dev = pci_get_slot(bus, PCI_DEVFN(slot->device, 0));
+> >   980         if (dev) {
+> >
+> >  I assume your line 975 is my line 980.
+> 
+> Nope, my line 975 is also yours.
+> >
+> >  pci_get_slot() returns NULL if it doesn't find the devfn, so as
+> >  far as I can tell, there's no need to initialize dev to NULL.
+> >
+> >  Were you fixing a real bug with this patch? Did you actually get
+> >  the "pci_dev structure already exists.\n" error message?
+> >
+> No - i'm trying to make sure that we're not referencing into a trash.
 
-greg k-h
+I must be slow, because I don't understand how we might reference
+trash.
+
+Care to explain it to me?
+
+Thanks,
+/ac
+
