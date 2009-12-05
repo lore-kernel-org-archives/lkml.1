@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZLEN6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbZLEOQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbZLEN6I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 08:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZLEN6G
+	id S1755438AbZLEOQJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 09:16:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZLEOQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 08:58:06 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:40649 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754905AbZLEN6F (ORCPT
+	Sat, 5 Dec 2009 09:16:08 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:61254 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755096AbZLEOQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 08:58:05 -0500
+	Sat, 5 Dec 2009 09:16:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=O4TgLBB/d6hFpEjpVwyO4FXfiemJIorghwN4NIItq+R9QAB6f3MoJjo6/Akx+34aW5
-         aZhuXmuGMSJTl4O3Vl/MQEFtRsg37de+zlOEaKbwuGJllKt4gA4Fgftf1ipelfRFt1Oe
-         vlf4BrxX/JDnSyiP1Qmt/d8Y8Dqz4MEy7mlRI=
-Date: Sat, 5 Dec 2009 14:57:35 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Caleb Cushing <xenoterracide@gmail.com>
-Cc: Frans Pop <elendil@planet.nl>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: large packet loss take2 2.6.31.x
-Message-ID: <20091205135735.GA2619@ami.dom.local>
-References: <20091127213640.GA2611@ami.dom.local>
- <81bfc67a0911271435g4106652bpe8c9ea07893d0ebd@mail.gmail.com>
- <20091127224206.GA3350@ami.dom.local>
- <81bfc67a0912031749y15faed66s9c8a924684c97a19@mail.gmail.com>
- <20091204090524.GB6478@ff.dom.local>
- <81bfc67a0912041028w16668d0cx4da04bee989eef4a@mail.gmail.com>
- <20091204204443.GA2736@ami.dom.local>
- <81bfc67a0912041507k6ef497f9w7b9294c90012e1a1@mail.gmail.com>
- <20091204234756.GA3517@ami.dom.local>
- <81bfc67a0912042306v573d79acw7f0ef3d051a41724@mail.gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=p8juazeMd5CtK6Yy+NO2BWnW4BjALeA0syw7iHYxuPWk721dkpMLbbZoYDWGmNDUZd
+         sasi5l1BGtcjoYLlRDZj+LLwkrvVk5cj9PGM8YMSM1ZL/N337fGQoXM1siI5ns3mNDCW
+         Fu0Ug+iijOcQchXkw/F0GFKjjH9vOITING8j0=
+Message-ID: <4B1A6B28.2020501@gmail.com>
+Date: Sat, 05 Dec 2009 15:16:08 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-4.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <81bfc67a0912042306v573d79acw7f0ef3d051a41724@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Emese Revfy <re.emese@gmail.com>
+CC: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
+References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com>
+In-Reply-To: <4B19A333.5080103@gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 05, 2009 at 02:06:09AM -0500, Caleb Cushing wrote:
-> > I guess, you should better wait with new tests for some assistance
-> > from e1000e maintainers - it seems they might be interested in some
-> > specific dumps and registers - like in this #11998 case.
-> 
-> I reported here.
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=14737
+On 12/05/2009 01:02 AM, Emese Revfy wrote:
+> diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+> index 62f282e..d39c67b 100644
+> --- a/drivers/char/pty.c
+> +++ b/drivers/char/pty.c
+> @@ -682,7 +682,18 @@ static int ptmx_open(struct inode *inode, struct file *filp)
+>  	return ret;
+>  }
+>  
+> -static struct file_operations ptmx_fops;
+> +static const struct file_operations ptmx_fops = {
+> +	.llseek		= no_llseek,
+> +	.read		= tty_read,
+> +	.write		= tty_write,
+> +	.poll		= tty_poll,
+> +	.unlocked_ioctl	= tty_ioctl,
+> +	.compat_ioctl	= tty_compat_ioctl,
+> +	.open		= ptmx_open,
+> +	.release	= tty_release,
+> +	.fasync		= tty_fasync,
+> +};
+> +
+>  
+>  static void __init unix98_pty_init(void)
+>  {
+> @@ -736,9 +747,6 @@ static void __init unix98_pty_init(void)
+>  	register_sysctl_table(pty_root_table);
+>  
+>  	/* Now create the /dev/ptmx special device */
+> -	tty_default_fops(&ptmx_fops);
+> -	ptmx_fops.open = ptmx_open;
+> -
 
-Please, remember to add at least standard things like dmesg, .config,
-'lspci -vvv', /proc/interrupts etc. (linux-2.6/REPORTING_BUGS), and
-maybe 'netstat -s' both for non-working and working case/boot.
+Apart you CCed hundreds of people and mixed thousand things together
+into one patch, this makes no sense.
 
-And some summary (incl. the router type), so people don't have to
-browse all this thread.
+I think the purpose was to not have the fops on multiple places. When
+one changes tty_fops, he has to change even ptmx_fops from now on. Not
+that I would say the current approach is clean, but this makes it worse IMO.
 
-Jarek P.
+And as Greg pointed out, you made many functions global for no real income.
