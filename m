@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932914AbZLETJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbZLEUTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932914AbZLETJU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 14:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932888AbZLETJQ
+	id S932978AbZLEUTq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 15:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932970AbZLEUTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 14:09:16 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39516 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932886AbZLETJP (ORCPT
+	Sat, 5 Dec 2009 15:19:39 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41328 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756175AbZLEUQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 14:09:15 -0500
-Date: Sat, 5 Dec 2009 20:09:13 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Alex Dubov <oakad@yahoo.com>, J?rn Engel <joern@logfs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, arnd@arndb.de,
-       tglx@linutonix.de
-Subject: Re: XD/smartmedia - how to implement it right?
-Message-ID: <20091205190913.GA1309@ucw.cz>
-References: <109361.10237.qm@web37604.mail.mud.yahoo.com> <1259589517.13049.31.camel@maxim-laptop>
+	Sat, 5 Dec 2009 15:16:42 -0500
+Date: Sat, 05 Dec 2009 19:13:46 +0000
+To: linux-arch@vger.kernel.org
+Subject: [RFC][PATCH 6/18] fix pgoff in "have to relocate" case of
+ mremap()
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1259589517.13049.31.camel@maxim-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-Id: <E1NH04g-0000RD-W6@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> > > First of all, thank you very much for your contributions.
-> > > Could you explain, why we need an asynchronous mtd driver?
-> > 
-> > Because it's the future. ;-)
-> Although I like the xD format, it has no future,
-> Everyone migrated to SD now.
-> 
-> Reasons are very simple:
-> 
-> 1 - xD hardcodes device sizes, thus if somebody makes say 8GB card, many
-> readers couldn't use it.
-> I know that windows driver I was dealing with supports sizes up to 2GB
-> 
-> 
-> 2 - xD is a nand card, but with 8-bit bus.
-> Newer nand chips seem to favor 16 bit bus or more.
-> Obviously, if they were to implement that it would be physically
-> incompatible.
-> 
-> 3 - embedded cpus are cheap dirt now, and allow to use their, always
-> 'better' FTL strategy, and also hide inner working of the chip.
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ mm/mremap.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-XDs are still used by at least olympus digital cameras. Ouch.
-
-If you have onboard embedded cpu, you can bet it will not work
-correctly over powerfail. If you do FTL on host, you have at least
-chance to get it right.
-
-								Pavel
+diff --git a/mm/mremap.c b/mm/mremap.c
+index 84efffb..bbbbbf5 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -495,7 +495,9 @@ unsigned long do_mremap(unsigned long addr,
+ 			map_flags |= MAP_SHARED;
+ 
+ 		new_addr = get_unmapped_area(vma->vm_file, 0, new_len,
+-					vma->vm_pgoff, map_flags);
++					vma->vm_pgoff +
++					((addr - vma->vm_start) >> PAGE_SHIFT),
++					map_flags);
+ 		if (new_addr & ~PAGE_MASK) {
+ 			ret = new_addr;
+ 			goto out;
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.6.5
+
+
