@@ -1,123 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757679AbZLEDpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZLEEAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757679AbZLEDpw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 22:45:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbZLEDpv
+	id S1757687AbZLEEAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 23:00:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbZLEEAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 22:45:51 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:43842 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757651AbZLEDpu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 22:45:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fzlF5VLB8MUoQVrtLIMV+gEHuDUH/82C4Eg2QV+idmxEsKhKqLERb0okNth+BRa7ov
-         yJFeWdF9qFb+SyMtNr2YvRPlTxYJKd7S7ivZ+decw/TCENeNwLwSgD0pnSGwvQ45L5ci
-         9vBs3ZuOfrDfJiFURtN305yHcRuzLyzYlORrU=
-MIME-Version: 1.0
-In-Reply-To: <1259977687.27969.18.camel@localhost>
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
-	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	 <1259977687.27969.18.camel@localhost>
-Date: Fri, 4 Dec 2009 22:45:55 -0500
-Message-ID: <9e4733910912041945g14732dcfgbb2ef6437ef62bb6@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Andy Walls <awalls@radix.net>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       kraxel@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 4 Dec 2009 23:00:53 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41084 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757655AbZLEEAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 23:00:53 -0500
+Date: Sat, 5 Dec 2009 15:00:53 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>
+Subject: Re: linux-next: manual merge of the limits tree with the net and
+ fsnotify trees
+Message-Id: <20091205150053.48384393.sfr@canb.auug.org.au>
+In-Reply-To: <4B18C15A.8060901@gmail.com>
+References: <20091204183011.e92d36cd.sfr@canb.auug.org.au>
+	<4B18C15A.8060901@gmail.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__5_Dec_2009_15_00_53_+1100_rI1moyQ8.mT_Eiyt"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 4, 2009 at 8:48 PM, Andy Walls <awalls@radix.net> wrote:
-> On Fri, 2009-12-04 at 19:28 -0500, Jon Smirl wrote:
->> On Fri, Dec 4, 2009 at 6:01 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
->> > BTW, I just came across a XMP remote that seems to generate 3x64 bit scan
->> > codes. Anyone here has docs on the XMP protocol?
->>
->> Assuming a general purpose receiver (not one with fixed hardware
->> decoding), is it important for Linux to receive IR signals from all
->> possible remotes no matter how old or obscure?
->
-> Importance of any particular requirement is relative/subjective.  As is
-> usefulness of any existing functionality.
->
-> Personally, I just think it's cool to pick up a random remote and use
-> Linux to figure out its protocol and its codes and get it working.
+--Signature=_Sat__5_Dec_2009_15_00_53_+1100_rI1moyQ8.mT_Eiyt
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You are a technical user.
+Hi Jiri,
 
+On Fri, 04 Dec 2009 08:59:22 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
 >
->
->
->>  Or is it acceptable to
->> tell the user to throw away their dedicated remote and buy a universal
->> multi-function one?
->
-> Nope.  That other OS provider forces device obsolescence or arbitrary
-> constraints on users quite often and I don't like it myself.  That's why
-> I use Linux.
->
->
->>   Universal multi-function remotes are $12 in my
->> grocery store - I don't even have to go to an electronics store.
->
-> The old remote in my possession costs $0, and I don't even have to leave
-> the house.
->
->
->> I've been working off the premise of getting rid of obscure remotes
->> and replacing them with a universal one. The universal one can be set
->> to send a common protocol like JVC or Sony. That implies that we only
->> need one or two protocol decoders in-kernel which greatly reduces the
->> surface area of the problem.
->
-> The design should serve the users, the users should not serve the
-> design.  If the reduction of requirements scope starts forcing users to
-> buy new hardware, are we really serving the users or just asking them to
-> pay to compensate for our shortcomings?
+> On 12/04/2009 08:30 AM, Stephen Rothwell wrote:
+> > diff --cc arch/x86/ia32/ia32entry.S
+> > index da89ae1,c61ced2..0000000
+> > --- a/arch/x86/ia32/ia32entry.S
+> > +++ b/arch/x86/ia32/ia32entry.S
+> > @@@ -841,7 -841,6 +841,9 @@@ ia32_sys_call_table
+> >   	.quad compat_sys_pwritev
+> >   	.quad compat_sys_rt_tgsigqueueinfo	/* 335 */
+> >   	.quad sys_perf_event_open
+> >  +	.quad compat_sys_recvmmsg
+> >  +	.quad sys_fanotify_init
+> >  +	.quad sys32_fanotify_mark
+> > + 	.quad compat_sys_getprlimit
+>=20
+> Thanks, but please go on with the by-five numbering in comments.
 
-Use of arbitrary remotes is a complex process. It almost certainly can
-not be done in a transparent "just works" manner.
+I am sure that will be done by whoever does the final conflict
+resolution.  Thanks for noticing.
 
-Let me rephrase, is it ok to tell people to buy a new remote if they
-want to avoid a complex, technical configuration process that isn't
-even guaranteed to work (they might have a 56K remote and a 38K
-receiver or a Sony remote and a fixed RC-5 receiver).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'm not proposing that we prevent arbitrary remotes from working,
-you're just going to need to expend more effort to make them work.
-For example, you have to have a fair amount of IR knowledge to figure
-out why those two cases above don't work. You might have to install
-LIRC and futz with irrecord and build your own config files and
-mapping tables, etc...
+--Signature=_Sat__5_Dec_2009_15_00_53_+1100_rI1moyQ8.mT_Eiyt
+Content-Type: application/pgp-signature
 
-It doesn't have to only be a universal remote, we can pre-install
-mapping tables for the remotes commonly shipped with the v4l hardware.
-When the v4l drivers load they could even poke the default map for
-their bundled remotes directly into the input system if they wanted
-to. Doing that might save a lot of config issues.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-How this for new goals?
-  Specific IR drivers autoload maps for their bundled remotes by
-poking them into the input subsystem during module load
-  IR always has default map for a universal remote - it provides five
-devices and uses a common protocol like JVC (may not work for fixed
-hardware, you have to set these five common devices into the universal
-remote)
-  All of these maps can be overriden with user space commands (which
-lets you configure funky remotes)
+iEYEARECAAYFAksZ2vUACgkQjjKRsyhoI8yi7QCeMKBHQDL69sdz8UaFNqoxf0ti
+L0QAoK5cI+beDUwybAIAfr3VwHuzybjj
+=Ir60
+-----END PGP SIGNATURE-----
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+--Signature=_Sat__5_Dec_2009_15_00_53_+1100_rI1moyQ8.mT_Eiyt--
