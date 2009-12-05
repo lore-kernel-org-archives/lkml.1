@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932758AbZLEBst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932773AbZLEBxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932758AbZLEBst (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 20:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbZLEBsr
+	id S932773AbZLEBxB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 20:53:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbZLEBxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 20:48:47 -0500
-Received: from mail1.radix.net ([207.192.128.31]:45418 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757492AbZLEBsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 20:48:46 -0500
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-From: Andy Walls <awalls@radix.net>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
-       kraxel@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-In-Reply-To: <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-References: <20091204220708.GD25669@core.coreip.homeip.net>
-	 <BEJgSGGXqgB@lirc>
-	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 04 Dec 2009 20:48:07 -0500
-Message-Id: <1259977687.27969.18.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Dec 2009 20:53:00 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:48635 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757550AbZLEBw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 20:52:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=jdXwQwmWdCS7vKJUFQ9LZkX11E9CumOp6voLhzDyif7EmTISoy9yaW6BoRDYpCsPka
+         TP37llnd5706t1/FtMZCc4X4WLpGHZeQb0pXkWjY8g7YBZBjbXmb51ytnqp2p541DQzH
+         fOk23J+xRPH3OCORSAPbLS8Ywma2NOs/Fy6f0=
+MIME-Version: 1.0
+In-Reply-To: <20091204202709.GA32347@ldl.fc.hp.com>
+References: <b9df5fa10912040835k3e23702o8700d2d8ad2349a4@mail.gmail.com>
+	 <20091204202709.GA32347@ldl.fc.hp.com>
+Date: Sat, 5 Dec 2009 07:53:05 +0600
+Message-ID: <b9df5fa10912041753n27e60020x2dd41eb50f4608ff@mail.gmail.com>
+Subject: Re: [PATCH] pci: Make pci_dev struct point to NULL.
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-12-04 at 19:28 -0500, Jon Smirl wrote:
-> On Fri, Dec 4, 2009 at 6:01 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
-> > BTW, I just came across a XMP remote that seems to generate 3x64 bit scan
-> > codes. Anyone here has docs on the XMP protocol?
-> 
-> Assuming a general purpose receiver (not one with fixed hardware
-> decoding), is it important for Linux to receive IR signals from all
-> possible remotes no matter how old or obscure?
+On 12/5/09, Alex Chiang <achiang@hp.com> wrote:
+> * Rakib Mullick <rakib.mullick@gmail.com>:
+>
+> This is from Linus's latest tree:
+>
+>   974
+>   975         if (slot->flags & SLOT_ENABLED)
+>   976                 goto err_exit;
 
-Importance of any particular requirement is relative/subjective.  As is
-usefulness of any existing functionality.
+I'm talking about this line. From here we can hit 'goto err_exit' without
+using pci_get_slot.
 
-Personally, I just think it's cool to pick up a random remote and use
-Linux to figure out its protocol and its codes and get it working.
+>   977
+>   978         /* sanity check: dev should be NULL when hot-plugged in */
+>   979         dev = pci_get_slot(bus, PCI_DEVFN(slot->device, 0));
+>   980         if (dev) {
+>
+>  I assume your line 975 is my line 980.
 
+Nope, my line 975 is also yours.
+>
+>  pci_get_slot() returns NULL if it doesn't find the devfn, so as
+>  far as I can tell, there's no need to initialize dev to NULL.
+>
+>  Were you fixing a real bug with this patch? Did you actually get
+>  the "pci_dev structure already exists.\n" error message?
+>
+No - i'm trying to make sure that we're not referencing into a trash.
 
-
->  Or is it acceptable to
-> tell the user to throw away their dedicated remote and buy a universal
-> multi-function one?
-
-Nope.  That other OS provider forces device obsolescence or arbitrary
-constraints on users quite often and I don't like it myself.  That's why
-I use Linux.
-
-
->   Universal multi-function remotes are $12 in my
-> grocery store - I don't even have to go to an electronics store.
-
-The old remote in my possession costs $0, and I don't even have to leave
-the house.
-
-
-> I've been working off the premise of getting rid of obscure remotes
-> and replacing them with a universal one. The universal one can be set
-> to send a common protocol like JVC or Sony. That implies that we only
-> need one or two protocol decoders in-kernel which greatly reduces the
-> surface area of the problem.
-
-The design should serve the users, the users should not serve the
-design.  If the reduction of requirements scope starts forcing users to
-buy new hardware, are we really serving the users or just asking them to
-pay to compensate for our shortcomings?
-
-
-Regards,
-Andy
-
+>  Thanks,
+>
+> /ac
+>
