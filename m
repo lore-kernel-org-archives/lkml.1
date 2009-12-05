@@ -1,46 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932631AbZLEAIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932654AbZLEAK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932631AbZLEAIl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 19:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932581AbZLEAIk
+	id S932654AbZLEAK7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 19:10:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932589AbZLEAK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 19:08:40 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:37665 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932576AbZLEAIj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 19:08:39 -0500
-Date: Fri, 4 Dec 2009 17:08:45 -0700
-From: Matthew Wilcox <matthew@wil.cx>
+	Fri, 4 Dec 2009 19:10:58 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43237 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932581AbZLEAK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 19:10:57 -0500
+Date: Fri, 4 Dec 2009 16:09:42 -0800
+From: Greg KH <gregkh@suse.de>
 To: Emese Revfy <re.emese@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/31] Constify struct address_space_operations for
-	2.6.32 v1
-Message-ID: <20091205000845.GB9482@parisc-linux.org>
-References: <4B198670.2000406@gmail.com> <4B198849.1060909@gmail.com>
+Cc: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
+       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
+       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
+       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
+Message-ID: <20091205000942.GA8224@suse.de>
+References: <4B198670.2000406@gmail.com>
+ <4B198C43.50205@gmail.com>
+ <4B19A333.5080103@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B198849.1060909@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B19A333.5080103@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 11:08:09PM +0100, Emese Revfy wrote:
->  struct address_space_operations {
-> -	int (*writepage)(struct page *page, struct writeback_control *wbc);
-> -	int (*readpage)(struct file *, struct page *);
-> -	void (*sync_page)(struct page *);
-> +	int (* const writepage)(struct page *page, struct writeback_control *wbc);
-> +	int (* const readpage)(struct file *, struct page *);
-> +	void (* const sync_page)(struct page *);
+On Sat, Dec 05, 2009 at 01:02:59AM +0100, Emese Revfy wrote:
+> From: Emese Revfy <re.emese@gmail.com>
+> 
+> Constify struct file_operations with some exceptions.
+> Per Dave Miller's suggestion, resend with proper CC list and patch format.
+> 
+> Signed-off-by: Emese Revfy <re.emese@gmail.com>
+> ---
+>  drivers/acpi/battery.c                           |    2 +-
+>  drivers/char/pty.c                               |   16 +++++++++---
+>  drivers/char/tty_io.c                            |   28 ++++-----------------
+>  drivers/media/dvb/dvb-core/dvbdev.c              |    1 +
+>  drivers/net/wireless/b43/debugfs.c               |    2 +-
+>  drivers/net/wireless/b43legacy/debugfs.c         |    2 +-
+>  drivers/net/wireless/libertas/debugfs.c          |    2 +-
+>  drivers/staging/b3dfg/b3dfg.c                    |    2 +-
+>  drivers/staging/dream/qdsp5/adsp_driver.c        |    2 +-
+>  drivers/staging/dream/qdsp5/audio_aac.c          |    2 +-
+>  drivers/staging/dream/qdsp5/audio_amrnb.c        |    2 +-
+>  drivers/staging/dream/qdsp5/audio_evrc.c         |    2 +-
+>  drivers/staging/dream/qdsp5/audio_in.c           |    4 +-
+>  drivers/staging/dream/qdsp5/audio_mp3.c          |    2 +-
+>  drivers/staging/dream/qdsp5/audio_out.c          |    4 +-
+>  drivers/staging/dream/qdsp5/audio_qcelp.c        |    2 +-
+>  drivers/staging/dream/qdsp5/snd.c                |    2 +-
+>  drivers/staging/dream/smd/smd_qmi.c              |    2 +-
+>  drivers/staging/dream/smd/smd_rpcrouter_device.c |    4 +-
+>  drivers/staging/panel/panel.c                    |    4 +-
+>  drivers/staging/poch/poch.c                      |    2 +-
+>  drivers/staging/sep/sep_driver.c                 |    2 +-
+>  drivers/staging/vme/devices/vme_user.c           |    2 +-
+>  fs/fuse/cuse.c                                   |   20 +++++++++------
+>  fs/fuse/dev.c                                    |    8 +++---
+>  fs/fuse/fuse_i.h                                 |   10 ++++++++
+>  include/linux/tty.h                              |   14 ++++++++++-
+>  include/net/tcp.h                                |    1 +
+>  include/net/udp.h                                |    1 +
+>  kernel/trace/trace_events.c                      |    2 +
+>  virt/kvm/kvm_main.c                              |    3 ++
+>  31 files changed, 89 insertions(+), 63 deletions(-)
+> 
+> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+> index 3f4602b..2e41d36 100644
+> --- a/drivers/acpi/battery.c
+> +++ b/drivers/acpi/battery.c
+> @@ -763,7 +763,7 @@ DECLARE_FILE_FUNCTIONS(alarm);
+>  	}
+>  
+>  static struct battery_file {
+> -	struct file_operations ops;
+> +	const struct file_operations ops;
+>  	mode_t mode;
+>  	const char *name;
+>  } acpi_battery_file[] = {
+> diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+> index 62f282e..d39c67b 100644
+> --- a/drivers/char/pty.c
+> +++ b/drivers/char/pty.c
+> @@ -682,7 +682,18 @@ static int ptmx_open(struct inode *inode, struct file *filp)
+>  	return ret;
+>  }
+>  
+> -static struct file_operations ptmx_fops;
+> +static const struct file_operations ptmx_fops = {
+> +	.llseek		= no_llseek,
+> +	.read		= tty_read,
+> +	.write		= tty_write,
+> +	.poll		= tty_poll,
+> +	.unlocked_ioctl	= tty_ioctl,
+> +	.compat_ioctl	= tty_compat_ioctl,
+> +	.open		= ptmx_open,
+> +	.release	= tty_release,
+> +	.fasync		= tty_fasync,
+> +};
 
-Umm.  What effect does this have?  Aren't functions implicitly constant?
-What changes as a result of this patch?
+You just made these functions all global, for no real good reason.  Why
+did you do this?
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+confused,
+
+greg k-h
