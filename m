@@ -1,98 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZLELNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZLELWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbZLELNc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 06:13:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbZLELNc
+	id S1754296AbZLELWh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 06:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbZLELWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 06:13:32 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:44902 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753864AbZLELNb convert rfc822-to-8bit (ORCPT
+	Sat, 5 Dec 2009 06:22:36 -0500
+Received: from smtprelay02.ispgateway.de ([80.67.18.14]:39409 "EHLO
+	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753824AbZLELWf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 06:13:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=W602+2UU5H3OGMkiAyDecyblArspN2z3+eoKPCIz6OBGzDFcKU8sTTBptVsYhBGaYE
-         tQgFQwpA5y8V5RIX2rvd1jUwg/NJw5/Csc3AlY0wL95p7iy3NDCtvqa+kRqHLTd4fl5U
-         prMuVhDjwMDD3xuJ3FTc8dmr8tnjgJXDyHaw0=
-MIME-Version: 1.0
-In-Reply-To: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
-References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
-Date: Sat, 5 Dec 2009 12:13:37 +0100
-Message-ID: <4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Vivek Goyal <vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 5 Dec 2009 06:22:35 -0500
+Date: Sat, 5 Dec 2009 12:19:05 +0100
+From: Peter Feuerer <peter@piie.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>,
+       lenb@kernel.org, Andreas Mohr <andi@lisas.de>,
+       Peter Feuerer <peter@piie.net>
+Subject: [PATCH -mm] acerhdf: Added new BIOS versions
+Message-Id: <20091205121905.a71a6c56.peter@piie.net>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Df-Sender: 650477
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 4, 2009 at 1:35 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> The introduction of ramp-up formula for async queue depths has
-> slowed down dirty page reclaim, by reducing async write performance.
-> This patch makes sure the formula kicks in only when sync request
-> was recently delayed.
->
-> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
-> ---
->  block/cfq-iosched.c |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index b00ca4c..a594388 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -284,7 +284,7 @@ struct cfq_data {
->         */
->        struct cfq_queue oom_cfqq;
->
-> -       unsigned long last_end_sync_rq;
-> +       unsigned long last_delayed_sync;
->
->        /* List of cfq groups being managed on this device*/
->        struct hlist_head cfqg_list;
-> @@ -2264,7 +2264,7 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd,
-> struct cfq_queue *cfqq)
->         * based on the last sync IO we serviced
->         */
->        if (!cfq_cfqq_sync(cfqq) && cfqd->cfq_latency) {
-> -               unsigned long last_sync = jiffies - cfqd->last_end_sync_rq;
-> +               unsigned long last_sync = jiffies - cfqd->last_delayed_sync;
->                unsigned int depth;
->
->                depth = last_sync / cfqd->cfq_slice[1];
-> @@ -3272,7 +3272,8 @@ static void cfq_completed_request(struct request_queue
-> *q, struct request *rq)
->
->        if (sync) {
->                RQ_CIC(rq)->last_end_request = now;
-> -               cfqd->last_end_sync_rq = now;
-> +               if (time_after(rq->start_time + cfqd->cfq_fifo_expire[1], now))
-> +                       cfqd->last_delayed_sync = now;
+Hi Andrew,
 
-Sorry, the check be reversed (!time_after).
+please apply to your -mm tree.
 
->        }
->
->        /*
-> @@ -3706,7 +3707,7 @@ static void *cfq_init_queue(struct request_queue *q)
->        cfqd->cfq_latency = 1;
->        cfqd->cfq_group_isolation = 0;
->        cfqd->hw_tag = -1;
-> -       cfqd->last_end_sync_rq = jiffies;
-> +       cfqd->last_delayed_sync = jiffies - HZ;
->        return cfqd;
->  }
->
-> --
-> 1.6.2.5
->
->
->
->
+thank you very much,
+--peter
+
+--
+Added new BIOS versions for following netbooks: Aspire 1810xx, Packard
+  Bell DOTMU
+
+Signed-off-by: Peter Feuerer <peter@piie.net>
+Cc: Borislav Petkov <petkovbb@gmail.com>
+Cc: Andreas Mohr <andi@lisas.de>
+Cc: Len Brown <lenb@kernel.org>
+---
+ drivers/platform/x86/acerhdf.c |   17 +++++++++++++++--
+ 1 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 007bc55..a97fc4a 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -52,7 +52,7 @@
+  */
+ #undef START_IN_KERNEL_MODE
+ 
+-#define DRV_VER "0.5.20"
++#define DRV_VER "0.5.21"
+ 
+ /*
+  * According to the Atom N270 datasheet,
+@@ -156,7 +156,13 @@ static const struct bios_settings_t bios_tbl[] = {
+ 	{"Acer", "AOA150", "v0.3310", 0x55, 0x58, {0x20, 0x20, 0x00} },
+ 	/* Acer 1410 */
+ 	{"Acer", "Aspire 1410", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+-	/* special BIOS / other */
++	{"Acer", "Aspire 1410", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	/* Acer 1810xx */
++	{"Acer", "Aspire 1810TZ", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810T", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810T", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Acer", "Aspire 1810TZ", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	/* Gateway */
+ 	{"Gateway", "AOA110", "v0.3103", 0x55, 0x58, {0x21, 0x21, 0x00} },
+ 	{"Gateway", "AOA150", "v0.3103", 0x55, 0x58, {0x20, 0x20, 0x00} },
+ 	{"Gateway         ", "LT31            ", "v1.3103 ", 0x55, 0x58,
+@@ -165,10 +171,13 @@ static const struct bios_settings_t bios_tbl[] = {
+ 		{0x10, 0x0f, 0x00} },
+ 	{"Gateway         ", "LT31            ", "v1.3302 ", 0x55, 0x58,
+ 		{0x10, 0x0f, 0x00} },
++	/* Packard Bell */
+ 	{"Packard Bell", "DOA150", "v0.3104", 0x55, 0x58, {0x21, 0x21, 0x00} },
+ 	{"Packard Bell", "DOA150", "v0.3105", 0x55, 0x58, {0x20, 0x20, 0x00} },
+ 	{"Packard Bell", "AOA110", "v0.3105", 0x55, 0x58, {0x21, 0x21, 0x00} },
+ 	{"Packard Bell", "AOA150", "v0.3105", 0x55, 0x58, {0x20, 0x20, 0x00} },
++	{"Packard Bell", "DOTMU", "v1.3303", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
++	{"Packard Bell", "DOTMU", "v0.3120", 0x55, 0x58, {0x9e, 0x9e, 0x00} },
+ 	/* pewpew-terminator */
+ 	{"", "", "", 0, 0, {0, 0, 0} }
+ };
+@@ -641,9 +650,13 @@ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Peter Feuerer");
+ MODULE_DESCRIPTION("Aspire One temperature and fan driver");
+ MODULE_ALIAS("dmi:*:*Acer*:pnAOA*:");
++MODULE_ALIAS("dmi:*:*Acer*:pnAspire 1410*:");
++MODULE_ALIAS("dmi:*:*Acer*:pnAspire 1810*:");
+ MODULE_ALIAS("dmi:*:*Gateway*:pnAOA*:");
++MODULE_ALIAS("dmi:*:*Gateway*:pnLT31*:");
+ MODULE_ALIAS("dmi:*:*Packard Bell*:pnAOA*:");
+ MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOA*:");
++MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOTMU*:");
+ 
+ module_init(acerhdf_init);
+ module_exit(acerhdf_exit);
+-- 
+1.6.5.4
