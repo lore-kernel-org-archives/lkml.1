@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbZLECMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZLECYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbZLECMx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Dec 2009 21:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbZLECMu
+	id S1754868AbZLECYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Dec 2009 21:24:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbZLECX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Dec 2009 21:12:50 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:44029 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753093AbZLECMt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Dec 2009 21:12:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=u5Sk+QgA5ZK+Zc9EUOVTDUD/vU8WgcDuYqZ2X1ltOXa+aiz+DsIbTW+wkGhssI3cv8
-         FEu54A/gkoSpiSGlcOunQmOIEiPuYIk2KSjkMID4azmpkAd47CsPJ9nqeyFKMJi3t8NR
-         6T39lKxR2EZXBCvKFLhzB91a10lkX7S0rfrdk=
+	Fri, 4 Dec 2009 21:23:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39344 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753093AbZLECX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Dec 2009 21:23:57 -0500
+Message-ID: <4B19C493.4030506@gmail.com>
+Date: Sat, 05 Dec 2009 03:25:23 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-In-Reply-To: <173abc14-0cbc-4340-b21f-3e8bc15f02dd@default>
-References: <173abc14-0cbc-4340-b21f-3e8bc15f02dd@default>
-Date: Sat, 5 Dec 2009 03:12:54 +0100
-Message-ID: <c5bd819b0912041812g394aa26eia1b839e1f0c3c98d@mail.gmail.com>
-Subject: Re: Can't compile 2.6.32
-From: Grozdan <neutrino8@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: tony.luck@intel.com, geoffrey.levand@am.sony.com, davem@davemloft.net,
+       tglx@linutronix.de, joerg.roedel@amd.com, muli@il.ibm.com,
+       jdmason@kudzu.us, jbarnes@virtuousgeek.org, dwmw2@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/31] Constify struct dma_map_ops for 2.6.32 v1
+References: <4B198670.2000406@gmail.com>	<4B1989B0.102@gmail.com>	<20091205115936.d3a7a6ec.sfr@canb.auug.org.au>	<20091205122015.c898e234.sfr@canb.auug.org.au>	<4B19BEB9.3000600@gmail.com> <20091205131011.e90d7f1c.sfr@canb.auug.org.au>
+In-Reply-To: <20091205131011.e90d7f1c.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 5, 2009 at 3:03 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->
-> A bit more info on this. It seems there's a
-> CONFIG_ACPI_CUSTOM_OVERRIDE_INITRAMFS in the "normal" SUSE source RPM
-> package (which in my config is not enabled, but there is an option for
-> that) and looking at the drivers/acpi/osl.c and the
-> include/acpi/acpiosxf.h file, there's a define for this in the header
-> which has acpi_load_override_tables(void); and also this is present in
-> the osl.c file.... see both attachments. I could not find the same
-> thing in the kernel-default-vanilla source RPM package also present in
-> the repo.
->
-> ~~~~~~~~~~~~~~~~~~  reply: ~~~~~~~~~~~~~~~~~~~~~~~~
->
-> You should take this up with the OpenSUSE people, not lkml.
+Stephen Rothwell wrote:
+> Hi Emese,
+> 
+> On Sat, 05 Dec 2009 03:00:25 +0100 Emese Revfy <re.emese@gmail.com> wrote:
+>> Ok, I made the changes, I also removed the vio_cmo_set_dma_ops function
+>> because I think it is now unnecessary.
+> 
+> It is necessary because vio_dma_mapping_ops is only defined when
+> CONFIG_PPC_SMLPAR is set, but that function was called from unconditional
+> code (and there was a trivial version for when CONFIG_PPC_SMLPAR was not
+> set) i.e. we only want the dma_ops set if we were built with
+> CONFIG_PPC_SMLPAR.
 
-Yeah I know, and what I've been planning to. But, I enabled this
-option some minutes ago and tried to compile again. It passed
-compilation of osl.c so I think it's all good now. There have been
-quite a lot of complains about how SUSE configures and splits its
-kernel packages; for the new 11.2 release, I've read a lot of them on
-the SUSE forum where people couldn't even boot if the kernel-desktop
-was selected and installed but had no problems with the
-kernel-default. I don't know who configures these kernels (I don't use
-SUSE configured/compiled kernels, only grab them from the build
-service & configure/compile them myself) but it seems it's getting
-progressively worse, not to mention in how many different packages
-they've split the kernel and people are getting confused about this :(
+I already took care of these, look at these hunks:
 
-Anyways, thanks so far ;)
+@@ -1033,7 +1026,6 @@ int vio_cmo_entitlement_update(size_t new_entitlement) { return 0; }
+ void vio_cmo_set_dev_desired(struct vio_dev *viodev, size_t desired) {}
+ static int vio_cmo_bus_probe(struct vio_dev *viodev) { return 0; }
+ static void vio_cmo_bus_remove(struct vio_dev *viodev) {}
+-static void vio_cmo_set_dma_ops(struct vio_dev *viodev) {}
+ static void vio_cmo_bus_init(void) {}
+ static void vio_cmo_sysfs_init(void) { }
+ #endif /* CONFIG_PPC_SMLPAR */
+@@ -1233,7 +1225,7 @@ struct vio_dev *vio_register_device_node(struct device_node *of_node)
+ 	viodev->dev.archdata.of_node = of_node_get(of_node);
+ 
+ 	if (firmware_has_feature(FW_FEATURE_CMO))
+-		vio_cmo_set_dma_ops(viodev);
++		viodev->dev.archdata.dma_ops = &vio_dma_mapping_ops;
+ 	else
+ 		viodev->dev.archdata.dma_ops = &dma_iommu_ops;
+ 	set_iommu_table_base(&viodev->dev, vio_build_iommu_table(viodev));
 
->
-> Thanks,
-> ~Randy
->
+
+If you think it's not enough please let me know.
+--
+Emese
