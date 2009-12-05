@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZLEO10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbZLEOkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbZLEO10 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 09:27:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbZLEO1Y
+	id S1753781AbZLEOkk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 09:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZLEOki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 09:27:24 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:48993 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755275AbZLEO1Y (ORCPT
+	Sat, 5 Dec 2009 09:40:38 -0500
+Received: from 207-172-69-77.c3-0.smr-ubr3.sbo-smr.ma.static.cable.rcn.com ([207.172.69.77]:45510
+	"EHLO thaum.luto.us" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753494AbZLEOki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 09:27:24 -0500
-Date: Sat, 5 Dec 2009 07:27:29 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/31] Constify struct address_space_operations for
-	2.6.32 v1
-Message-ID: <20091205142729.GC9482@parisc-linux.org>
-References: <4B198670.2000406@gmail.com> <4B198849.1060909@gmail.com> <20091205000845.GB9482@parisc-linux.org> <4B19AB28.6060805@gmail.com>
+	Sat, 5 Dec 2009 09:40:38 -0500
+X-Greylist: delayed 371 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Dec 2009 09:40:38 EST
+Message-ID: <4B1A6F78.8010408@myrealbox.com>
+Date: Sat, 05 Dec 2009 09:34:32 -0500
+From: Andy Lutomirski <luto@myrealbox.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B19AB28.6060805@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Emmanuel Benisty <benisty.e@gmail.com>
+CC: linux-kernel@vger.kernel.org, tiwai@suse.de, jbarnes@virtuousgeek.org,
+       intel-gfx@lists.freedesktop.org
+Subject: Re: 2.6.31 -> 2.6.32 Sound and video regressions
+References: <c1f41c620912042148n7d3f6f29h713a2d44369a5810@mail.gmail.com>
+In-Reply-To: <c1f41c620912042148n7d3f6f29h713a2d44369a5810@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 05, 2009 at 01:36:56AM +0100, Emese Revfy wrote:
-> Matthew Wilcox wrote:
-> > On Fri, Dec 04, 2009 at 11:08:09PM +0100, Emese Revfy wrote:
-> >> -	int (*writepage)(struct page *page, struct writeback_control *wbc);
-> >> +	int (* const writepage)(struct page *page, struct writeback_control *wbc);
-> > 
-> > Umm.  What effect does this have?
-> > What changes as a result of this patch?
+Emmanuel Benisty wrote:
+> Hi,
 > 
-> My idea was that since all variables of this type are const, we might
-> as well have the compiler enforce it for the future if you think that
-> these fields should not be writable at all.
+> I hope I didn't miss something but given the traffic of LKML, that
+> could have happened.
+> 
+> I just wanted to report 2 regressions I am having now with 2.6.32.
+> 
+> Video
+> Screen is flickering/glitching like crazy in X. It happens whether
+> randomly or when conky is refreshed, when the mouse cursor moves and
+> like hell when a page is loading in the browser. Not so easy to
+> describe this issue.
+> Xorg.0.log is attached.
+> (I've uploaded an utterly crappy mobile phone video if needed but I
+> doubt this could be of any help, anyway, it's here
+> http://omploader.org/vMngzcA/Xorg.tar.bz2 )
 
-The compiler does already enforce it.  We do it like this:
+That sounds like FIFO underruns, which (I think) were introduced when 
+self-refresh was enabled but should have been fixed.  I personally have 
+no clue how to fix them, but if you told the Intel people what kind of 
+chip you have (lspci output), they can probably fix it.  (cc added)
 
-struct address_space {
-        const struct address_space_operations *a_ops;   /* methods */
-}
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--Andy
