@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZLELHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZLELNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbZLELHT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 06:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZLELHS
+	id S1754384AbZLELNc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 06:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbZLELNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 06:07:18 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:47268 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753871AbZLELHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 06:07:17 -0500
-Date: Sat, 5 Dec 2009 12:07:21 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Dmitry Artamonow <mad_soft@inbox.ru>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: manual merge of the pcmcia tree with the arm tree
-Message-ID: <20091205110721.GB23213@isilmar.linta.de>
-Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Dmitry Artamonow <mad_soft@inbox.ru>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20091201140310.46dbdc59.sfr@canb.auug.org.au> <20091202115649.GA2150@rainbow> <20091203092525.17d939b3.sfr@canb.auug.org.au> <20091205103038.GA11140@flint.arm.linux.org.uk>
+	Sat, 5 Dec 2009 06:13:32 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:44902 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753864AbZLELNb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 06:13:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=W602+2UU5H3OGMkiAyDecyblArspN2z3+eoKPCIz6OBGzDFcKU8sTTBptVsYhBGaYE
+         tQgFQwpA5y8V5RIX2rvd1jUwg/NJw5/Csc3AlY0wL95p7iy3NDCtvqa+kRqHLTd4fl5U
+         prMuVhDjwMDD3xuJ3FTc8dmr8tnjgJXDyHaw0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091205103038.GA11140@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
+References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
+Date: Sat, 5 Dec 2009 12:13:37 +0100
+Message-ID: <4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Vivek Goyal <vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 05, 2009 at 10:30:38AM +0000, Russell King wrote:
-> On Thu, Dec 03, 2009 at 09:25:25AM +1100, Stephen Rothwell wrote:
-> > Hi Dmitry,
-> > 
-> > On Wed, 2 Dec 2009 14:56:49 +0300 Dmitry Artamonow <mad_soft@inbox.ru> wrote:
-> > >
-> > > Fix looks good to me, and testing next-20091201 on real device (h3600)
-> > > shows no problems with pcmcia.
-> > 
-> > Thanks for the confirmation.
-> 
-> Since Dominik has been ignoring this issue, and has already asked Linus to
-> pull his tree with my (unfortunately just discovered buggy) changes in, I'm
-> going to drop the H3600 PCMCIA changes until something can be sorted out.
+On Fri, Dec 4, 2009 at 1:35 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> The introduction of ramp-up formula for async queue depths has
+> slowed down dirty page reclaim, by reducing async write performance.
+> This patch makes sure the formula kicks in only when sync request
+> was recently delayed.
+>
+> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+> ---
+>  block/cfq-iosched.c |    9 +++++----
+>  1 files changed, 5 insertions(+), 4 deletions(-)
+>
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index b00ca4c..a594388 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -284,7 +284,7 @@ struct cfq_data {
+>         */
+>        struct cfq_queue oom_cfqq;
+>
+> -       unsigned long last_end_sync_rq;
+> +       unsigned long last_delayed_sync;
+>
+>        /* List of cfq groups being managed on this device*/
+>        struct hlist_head cfqg_list;
+> @@ -2264,7 +2264,7 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd,
+> struct cfq_queue *cfqq)
+>         * based on the last sync IO we serviced
+>         */
+>        if (!cfq_cfqq_sync(cfqq) && cfqd->cfq_latency) {
+> -               unsigned long last_sync = jiffies - cfqd->last_end_sync_rq;
+> +               unsigned long last_sync = jiffies - cfqd->last_delayed_sync;
+>                unsigned int depth;
+>
+>                depth = last_sync / cfqd->cfq_slice[1];
+> @@ -3272,7 +3272,8 @@ static void cfq_completed_request(struct request_queue
+> *q, struct request *rq)
+>
+>        if (sync) {
+>                RQ_CIC(rq)->last_end_request = now;
+> -               cfqd->last_end_sync_rq = now;
+> +               if (time_after(rq->start_time + cfqd->cfq_fifo_expire[1], now))
+> +                       cfqd->last_delayed_sync = now;
 
-Well, I hope that Linus merges the first bunch of PCMCIA changes soon, so
-that we have a clean base to work from and to sort the dependecies in
-ARM-related patches out.
+Sorry, the check be reversed (!time_after).
 
-Best,
-	Dominik
+>        }
+>
+>        /*
+> @@ -3706,7 +3707,7 @@ static void *cfq_init_queue(struct request_queue *q)
+>        cfqd->cfq_latency = 1;
+>        cfqd->cfq_group_isolation = 0;
+>        cfqd->hw_tag = -1;
+> -       cfqd->last_end_sync_rq = jiffies;
+> +       cfqd->last_delayed_sync = jiffies - HZ;
+>        return cfqd;
+>  }
+>
+> --
+> 1.6.2.5
+>
+>
+>
+>
