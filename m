@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZLEPQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZLEP1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZLEPQr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 10:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbZLEPQq
+	id S1756246AbZLEP1b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 10:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbZLEP1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 10:16:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27179 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755877AbZLEPQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 10:16:45 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <4B19A92A.5030804@analog.com>
-References: <4B19A92A.5030804@analog.com> <1244854869-2563-1-git-send-email-vapier@gentoo.org> <14959.1259948697@redhat.com>
-To: Jie Zhang <jie.zhang@analog.com>
-Cc: dhowells@redhat.com, uClinux development list <uclinux-dev@uclinux.org>,
-       linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       David McCullough <davidm@snapgear.com>
-Subject: Re: [uClinux-dev] [PATCH/RFC] FDPIC: add hook for arches to customize program header parsing
-Date: Sat, 05 Dec 2009 15:14:34 +0000
-Message-ID: <643.1260026074@redhat.com>
+	Sat, 5 Dec 2009 10:27:30 -0500
+Received: from mailout03.t-online.de ([194.25.134.81]:57173 "EHLO
+	mailout03.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755579AbZLEP1a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 10:27:30 -0500
+Message-ID: <4B1A7BE1.7080100@t-online.de>
+Date: Sat, 05 Dec 2009 16:27:29 +0100
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091202 Thunderbird/3.0
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.32, hda_codec: kernel gets stuck for 3 minutes at boot time
+References: <4B193FDF.3060404@t-online.de> <s5hbpidwzdo.wl%tiwai@suse.de>
+In-Reply-To: <s5hbpidwzdo.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ID: Z6x8DwZA8hkaU-yi-6j+JrvdeYPeqZTBtyMXC5qf2e0um3rUjfnttBNJ2V2Gb3PQEQ
+X-TOI-MSGID: 6cf7324c-61e9-438b-b037-82425cab7889
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jie Zhang <jie.zhang@analog.com> wrote:
+On 12/05/09 10:20, Takashi Iwai wrote:
+>
+> 3 minutes is definitely too long.
+> Could you double-check whether it's a hd-audio stuff, e.g. by simply
+> removing snd-hda-intel module?
+>
 
-> > There needs to be a mapping covering the SRAM region for the purposes of the
-> 
-> Our GDB is still lack of the feature to debug applications using SRAM. So this
-> part of code was not got exercised. So if we remove this line, can this patch
-> got merged?
+Seems that this was a problem with udev (http://bugs.debian.org/559264).
+As you suspected the line about hda_codec was just the last message
+before the problem came up. With the new udev package the problem is
+gone.
 
-No.  Firstly, the piece of storage that gets munmapped isn't used, so unmapping
-it isn't wrong.  What you need to do is to put a mapping over the bit of the
-SRAM you wish to use and then fill it and use it.  Ideally, you'd do this
-inside of do_mmap_pgoff() - that way those bits of the SRAM can be shared, but
-I'm not sure how best to do that.
 
-But you need to stick a VMA over it so that various checks don't spit
-EFAULT/EIO at you.
+Many thanx anyway
 
-David
+Harri
