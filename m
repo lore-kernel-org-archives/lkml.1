@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZLFTlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbZLFTtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbZLFTlz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 14:41:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZLFTlx
+	id S1757359AbZLFTtW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 14:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbZLFTtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 14:41:53 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3358 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753094AbZLFTlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 14:41:53 -0500
-Message-ID: <4B1C0902.1050209@redhat.com>
-Date: Sun, 06 Dec 2009 14:41:54 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	Sun, 6 Dec 2009 14:49:20 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:65413 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756841AbZLFTtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 14:49:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:content-type;
+        b=KH3T+E4psWpkFS9W3xHCdx8Rx6gUxYcsoDZkJIjLefQL/mKf/tf9Kb8AIeE2XBqCGF
+         NefBrhjAMDKCSoL3RqVZKzQG7taDnMl0UxUXzcvyY7HbrRlY9CBONU5Fcya7JtUAMouj
+         pYhaU2tlrEPZp120ZuIazGjbza7GX5fluYJfQ=
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Larry Woodman <lwoodman@redhat.com>
-Subject: Re: [PATCH 3/7] VM_LOCKED check don't need pte lock
-References: <20091204173233.5891.A69D9226@jp.fujitsu.com> <20091204174217.589A.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091204174217.589A.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Sun, 6 Dec 2009 20:49:25 +0100
+X-Google-Sender-Auth: 6b0b8fd4eeba6931
+Message-ID: <10f740e80912061149w277105e2l31e9fef13221fee1@mail.gmail.com>
+Subject: headers_check: asm-*/hw_breakpoint.h is not exported
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/04/2009 03:42 AM, KOSAKI Motohiro wrote:
->  From 24f910b1ac966c21ea5aab825d1f26815b760304 Mon Sep 17 00:00:00 2001
-> From: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> Date: Thu, 3 Dec 2009 16:06:47 +0900
-> Subject: [PATCH 3/7] VM_LOCKED check don't need pte lock
->
-> Currently, page_referenced_one() check VM_LOCKED after taking ptelock.
-> But it's unnecessary. We can check VM_LOCKED before to take lock.
->
-> This patch does it.
+`make headers_check' now complains:
 
-Nice optimization.
+usr/include/linux/perf_event.h:22: included file
+'asm-m68k/hw_breakpoint.h' is not exported
 
-> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
+although CONFIG_HAVE_HW_BREAKPOINT is not set.
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+As <asm/hw_breakpoint.h> exists for x86 only, I guess every one else
+is suffering from this.
 
--- 
-All rights reversed.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
