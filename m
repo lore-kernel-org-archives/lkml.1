@@ -1,50 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbZLFFeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbZLFFlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751572AbZLFFeB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 00:34:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZLFFd6
+	id S1751669AbZLFFlV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 00:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZLFFlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 00:33:58 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:36201 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbZLFFd5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 00:33:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=JBDCcCunMIeLGtBgvThZH0Vn56lc6Bck9DY5F+l98Wi9LhgRnDmmhy+PpbyVOvCwJz
-         v2Pf/f21X1gMGHott3xUGWOwAKuOzkSB+BFeIR+s1svAx7KrM82++63UDt6IncDgTA8l
-         rRHOFd3TysfOKzvW6SEAvDsdJrOVKHMPidCNc=
+	Sun, 6 Dec 2009 00:41:15 -0500
+Received: from mga14.intel.com ([143.182.124.37]:37341 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751284AbZLFFlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 00:41:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="219297270"
+Date: Sun, 6 Dec 2009 13:41:13 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: [PATCH] vmscan: aligned scan batching
+Message-ID: <20091206054113.GA23912@localhost>
+References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-From: "Ian E. Morgan" <penguin.wrangler@gmail.com>
-Date: Sun, 6 Dec 2009 00:33:42 -0500
-Message-ID: <2a6e8c0d0912052133v3e112bdbx2c95b17437bdd182@mail.gmail.com>
-Subject: acerhdf: BIOS product mismatch due to whitespace
-To: Peter Feuerer <peter@piie.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091127091357.A7CC.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter,
+>  - pass nr_to_scan into isolate_pages() directly instead
+>    using SWAP_CLUSTER_MAX
 
-Having just upgraded my AOA150 to 2.6.32, acerhdf was complaining:
+This patch will make sure nr_to_scan==SWAP_CLUSTER_MAX :)
 
-acerhdf: Acer Aspire One Fan driver, v.0.5.18
-acerhdf: unknown (unsupported) BIOS version Acer/AOA150
-/v0.3310, please report, aborting!
+Thanks,
+Fengguang
+---
+vmscan: aligned scan batching
 
-DMI reports the product as "AOA150         " (i.e. 9 spaces after the
-6-character model name). This causes the product match to fail, so I
-had to use force_product="AOA150".
+Make sure ->isolate_pages() always scans in unit of SWAP_CLUSTER_MAX.
 
-acerhdf: Acer Aspire One Fan driver, v.0.5.18
-acerhdf: forcing BIOS product: AOA150
+CC: Rik van Riel <riel@redhat.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/vmscan.c |   20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
 
-Then all was happy again. Any chance you could strip leading/trailing
-whitespace in the product match to avoid this issue?
-
--- 
-Ian Morgan
+--- linux-mm.orig/mm/vmscan.c	2009-12-06 13:13:28.000000000 +0800
++++ linux-mm/mm/vmscan.c	2009-12-06 13:31:21.000000000 +0800
+@@ -1572,15 +1572,11 @@ static void get_scan_ratio(struct zone *
+ static unsigned long nr_scan_try_batch(unsigned long nr_to_scan,
+ 				       unsigned long *nr_saved_scan)
+ {
+-	unsigned long nr;
++	unsigned long nr = *nr_saved_scan + nr_to_scan;
++	unsigned long rem = nr & (SWAP_CLUSTER_MAX - 1);
+ 
+-	*nr_saved_scan += nr_to_scan;
+-	nr = *nr_saved_scan;
+-
+-	if (nr >= SWAP_CLUSTER_MAX)
+-		*nr_saved_scan = 0;
+-	else
+-		nr = 0;
++	*nr_saved_scan = rem;
++	nr -= rem;
+ 
+ 	return nr;
+ }
+@@ -1592,7 +1588,6 @@ static void shrink_zone(int priority, st
+ 				struct scan_control *sc)
+ {
+ 	unsigned long nr[NR_LRU_LISTS];
+-	unsigned long nr_to_scan;
+ 	unsigned long percent[2];	/* anon @ 0; file @ 1 */
+ 	enum lru_list l;
+ 	unsigned long nr_reclaimed = sc->nr_reclaimed;
+@@ -1625,11 +1620,8 @@ static void shrink_zone(int priority, st
+ 					nr[LRU_INACTIVE_FILE]) {
+ 		for_each_evictable_lru(l) {
+ 			if (nr[l]) {
+-				nr_to_scan = min_t(unsigned long,
+-						   nr[l], SWAP_CLUSTER_MAX);
+-				nr[l] -= nr_to_scan;
+-
+-				nr_reclaimed += shrink_list(l, nr_to_scan,
++				nr[l] -= SWAP_CLUSTER_MAX;
++				nr_reclaimed += shrink_list(l, SWAP_CLUSTER_MAX,
+ 							    zone, sc, priority);
+ 			}
+ 		}
