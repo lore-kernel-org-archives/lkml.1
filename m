@@ -1,178 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934038AbZLFRmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934045AbZLFRm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934038AbZLFRmQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 12:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934006AbZLFRmO
+	id S934045AbZLFRm6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 12:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934021AbZLFRm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 12:42:14 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:33423 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933999AbZLFRmO (ORCPT
+	Sun, 6 Dec 2009 12:42:57 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:60330 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933998AbZLFRm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 12:42:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=GKj8je6cQqgMvzj7D37cpHEwJ8f64p7xFKG8KAxKr+6aQa0C1G+EgjeST3UUrFf85d
-         2X6yPYVubqj1TN21zpbKasDFuk2nuemQBnT276pmWjSy9LCJaDuW7LztMZb23S9TexZT
-         7ED2uQSV8Bgdz8PXbUcIyug0oR+lJtwIV8Kec=
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [PATCH] kmemcheck: make bitfield annotations truly no-ops when disabled
-Date: Sun,  6 Dec 2009 18:42:13 +0100
-Message-Id: <1260121333-19642-1-git-send-email-vegard.nossum@gmail.com>
-X-Mailer: git-send-email 1.6.3.3.334.g916e1
+	Sun, 6 Dec 2009 12:42:56 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: trivial@kernel.org
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Borislav Petkov <petkovbb@gmail.com>, Jens Axboe <axboe@kernel.dk>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: [PATCH] doc: remove compilation options section from ide-cd documentation
+Date: Sun,  6 Dec 2009 15:42:49 -0200
+Message-Id: <1260121370-648-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It turns out that even zero-sized struct members (int foo[0];) will affect
-the struct layout, causing us in particular to lose 4 bytes in struct sock.
+This section pointed out to compilation options which no longer exist.
 
-This patch fixes the regression in CONFIG_KMEMCHECK=n case.
+VERBOSE_IDE_CD_ERRORS has been replace by config option
+CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS.
 
-Reported-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+STANDARD_ATAPI is no longer needed, since the non-standard drivers, which
+required bcd2bin are now detected, and there's a flag for them.
+
+NO_DOOR_LOCKING is now a sysctl parameter for cdrom drivers.
+
+CDROM_NBLOCKS_BUFFER is not used anymore. The READAUDIO is now in cdrom.c and it
+allocates as much as user space has requested to read, backing off if it fails.
+
+TEST is not there anymore or in cdrom either. ide allows to send ATA commands
+through ioctl, although it may be helpful to send MMC packets through the cdrom
+layer directly.
+
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 ---
- include/linux/kmemcheck.h |  110 ++++++++++++++++++++++++---------------------
- 1 files changed, 58 insertions(+), 52 deletions(-)
+ Documentation/cdrom/ide-cd |   39 ++-------------------------------------
+ 1 files changed, 2 insertions(+), 37 deletions(-)
 
-Andrew: Compile tested on x86_32 and x86_64, but because of my bad track
-record when it comes to brown paper bugs, can you please keep this in -mm
-for a little while? Thanks.
-
-diff --git a/include/linux/kmemcheck.h b/include/linux/kmemcheck.h
-index e880d4c..08d7dc4 100644
---- a/include/linux/kmemcheck.h
-+++ b/include/linux/kmemcheck.h
-@@ -36,6 +36,56 @@ int kmemcheck_hide_addr(unsigned long address);
+diff --git a/Documentation/cdrom/ide-cd b/Documentation/cdrom/ide-cd
+index 2c558cd..f4dc9de 100644
+--- a/Documentation/cdrom/ide-cd
++++ b/Documentation/cdrom/ide-cd
+@@ -159,42 +159,7 @@ two arguments:  the CDROM device, and the slot number to which you wish
+ to change.  If the slot number is -1, the drive is unloaded.
  
- bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size);
  
-+/*
-+ * Bitfield annotations
-+ *
-+ * How to use: If you have a struct using bitfields, for example
-+ *
-+ *     struct a {
-+ *             int x:8, y:8;
-+ *     };
-+ *
-+ * then this should be rewritten as
-+ *
-+ *     struct a {
-+ *             kmemcheck_bitfield_begin(flags);
-+ *             int x:8, y:8;
-+ *             kmemcheck_bitfield_end(flags);
-+ *     };
-+ *
-+ * Now the "flags_begin" and "flags_end" members may be used to refer to the
-+ * beginning and end, respectively, of the bitfield (and things like
-+ * &x.flags_begin is allowed). As soon as the struct is allocated, the bit-
-+ * fields should be annotated:
-+ *
-+ *     struct a *a = kmalloc(sizeof(struct a), GFP_KERNEL);
-+ *     kmemcheck_annotate_bitfield(a, flags);
-+ */
-+#define kmemcheck_bitfield_begin(name)	\
-+	int name##_begin[0];
-+
-+#define kmemcheck_bitfield_end(name)	\
-+	int name##_end[0];
-+
-+#define kmemcheck_annotate_bitfield(ptr, name)				\
-+	do {								\
-+		int _n;							\
-+									\
-+		if (!ptr)						\
-+			break;						\
-+									\
-+		_n = (long) &((ptr)->name##_end)			\
-+			- (long) &((ptr)->name##_begin);		\
-+		MAYBE_BUILD_BUG_ON(_n < 0);				\
-+									\
-+		kmemcheck_mark_initialized(&((ptr)->name##_begin), _n);	\
-+	} while (0)
-+
-+#define kmemcheck_annotate_variable(var)				\
-+	do {								\
-+		kmemcheck_mark_initialized(&(var), sizeof(var));	\
-+	} while (0)							\
-+
- #else
- #define kmemcheck_enabled 0
- 
-@@ -106,60 +156,16 @@ static inline bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
- 	return true;
- }
- 
--#endif /* CONFIG_KMEMCHECK */
+-4. Compilation options
+-----------------------
 -
--/*
-- * Bitfield annotations
-- *
-- * How to use: If you have a struct using bitfields, for example
-- *
-- *     struct a {
-- *             int x:8, y:8;
-- *     };
-- *
-- * then this should be rewritten as
-- *
-- *     struct a {
-- *             kmemcheck_bitfield_begin(flags);
-- *             int x:8, y:8;
-- *             kmemcheck_bitfield_end(flags);
-- *     };
-- *
-- * Now the "flags_begin" and "flags_end" members may be used to refer to the
-- * beginning and end, respectively, of the bitfield (and things like
-- * &x.flags_begin is allowed). As soon as the struct is allocated, the bit-
-- * fields should be annotated:
-- *
-- *     struct a *a = kmalloc(sizeof(struct a), GFP_KERNEL);
-- *     kmemcheck_annotate_bitfield(a, flags);
-- *
-- * Note: We provide the same definitions for both kmemcheck and non-
-- * kmemcheck kernels. This makes it harder to introduce accidental errors. It
-- * is also allowed to pass NULL pointers to kmemcheck_annotate_bitfield().
-- */
--#define kmemcheck_bitfield_begin(name)	\
--	int name##_begin[0];
+-There are a few additional options which can be set when compiling the
+-driver.  Most people should not need to mess with any of these; they
+-are listed here simply for completeness.  A compilation option can be
+-enabled by adding a line of the form `#define <option> 1' to the top
+-of ide-cd.c.  All these options are disabled by default.
 -
--#define kmemcheck_bitfield_end(name)	\
--	int name##_end[0];
-+#define kmemcheck_bitfield_begin(name)
-+#define kmemcheck_bitfield_end(name)
-+#define kmemcheck_annotate_bitfield(ptr, name)	\
-+	do {					\
-+	} while (0)
+-VERBOSE_IDE_CD_ERRORS
+-  If this is set, ATAPI error codes will be translated into textual
+-  descriptions.  In addition, a dump is made of the command which
+-  provoked the error.  This is off by default to save the memory used
+-  by the (somewhat long) table of error descriptions.  
+-
+-STANDARD_ATAPI
+-  If this is set, the code needed to deal with certain drives which do
+-  not properly implement the ATAPI spec will be disabled.  If you know
+-  your drive implements ATAPI properly, you can turn this on to get a
+-  slightly smaller kernel.
+-
+-NO_DOOR_LOCKING
+-  If this is set, the driver will never attempt to lock the door of
+-  the drive.
+-
+-CDROM_NBLOCKS_BUFFER
+-  This sets the size of the buffer to be used for a CDROMREADAUDIO
+-  ioctl.  The default is 8.
+-
+-TEST
+-  This currently enables an additional ioctl which enables a user-mode
+-  program to execute an arbitrary packet command.  See the source for
+-  details.  This should be left off unless you know what you're doing.
+-
+-
+-5. Common problems
++4. Common problems
+ ------------------
  
--#define kmemcheck_annotate_bitfield(ptr, name)				\
--	do {								\
--		int _n;							\
--									\
--		if (!ptr)						\
--			break;						\
--									\
--		_n = (long) &((ptr)->name##_end)			\
--			- (long) &((ptr)->name##_begin);		\
--		MAYBE_BUILD_BUG_ON(_n < 0);				\
--									\
--		kmemcheck_mark_initialized(&((ptr)->name##_begin), _n);	\
-+#define kmemcheck_annotate_variable(var)	\
-+	do {					\
- 	} while (0)
+ This section discusses some common problems encountered when trying to
+@@ -371,7 +336,7 @@ f. Data corruption.
+     expense of low system performance.
  
--#define kmemcheck_annotate_variable(var)				\
--	do {								\
--		kmemcheck_mark_initialized(&(var), sizeof(var));	\
--	} while (0)							\
-+#endif /* CONFIG_KMEMCHECK */
  
- #endif /* LINUX_KMEMCHECK_H */
+-6. cdchange.c
++5. cdchange.c
+ -------------
+ 
+ /*
 -- 
-1.6.0.6
+1.6.3.3
 
