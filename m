@@ -1,212 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbZLFDq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZLFEtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbZLFDq4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 22:46:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbZLFDqx
+	id S1758127AbZLFEtR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 23:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbZLFEtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 22:46:53 -0500
-Received: from mga14.intel.com ([143.182.124.37]:34345 "EHLO mga14.intel.com"
+	Sat, 5 Dec 2009 23:49:11 -0500
+Received: from mga14.intel.com ([143.182.124.37]:20481 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758047AbZLFDqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 22:46:53 -0500
+	id S1758113AbZLFEtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 23:49:10 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="219284004"
-Date: Sun, 6 Dec 2009 11:46:36 +0800
+   d="scan'208";a="219290964"
+Date: Sun, 6 Dec 2009 12:19:07 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Li, Haicheng" <haicheng.li@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [RFC] print symbolic page flag names in bad_page()
-Message-ID: <20091206034636.GA7109@localhost>
-References: <20091204212606.29258.98531.stgit@bob.kio>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] vmscan: more simplify shrink_inactive_list()
+Message-ID: <20091206041907.GB21709@localhost>
+References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091204212606.29258.98531.stgit@bob.kio>
+In-Reply-To: <20091127091357.A7CC.A69D9226@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
+Hi KOSAKI,
 
-On Sat, Dec 05, 2009 at 05:29:48AM +0800, Alex Chiang wrote:
-[...]
-> Teach page-types the -k mode, which parses and describes the bits in
-> the internal kernel order:
+It would be easier to review if you can split the changes and the big
+"unshift" :)
+
+Otherwise it looks good to me. (actually I've advocated it before ;)
+
+Thanks,
+Fengguang
+
+On Fri, Nov 27, 2009 at 09:17:48AM +0900, KOSAKI Motohiro wrote:
+> This patch depend on "vmscan : simplify code" patch (written by Huang Shijie)
 > 
->   # ./Documentation/vm/page-types -k 0x4000
->   0x0000000000004000  ______________H_________  compound_head
-[...]
-> The implication is that attempting to use page-types -k on a kernel
-> with different CONFIG_* settings may lead to surprising and misleading
-> results. To retain sanity, always use the page-types built out of the
-> kernel tree you are actually testing.
-
-This is useful feature, however not as convenient if the kernel can
-print its page flag names directly :)
-(especially when the dmesg comes from some end user)
-
-So how about this patch?
----
-
-mm: introduce dump_page()
-
-- introduce dump_page() to print the page info for debugging some error condition.
-- print an extra field: the symbolic names of page->flags
-- convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
-
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/internal.h       |    2 +
- mm/memory.c         |    8 +---
- mm/memory_hotplug.c |    6 +--
- mm/page_alloc.c     |   75 +++++++++++++++++++++++++++++++++++++++---
- 4 files changed, 78 insertions(+), 13 deletions(-)
-
---- linux-mm.orig/mm/page_alloc.c	2009-12-06 10:11:08.000000000 +0800
-+++ linux-mm/mm/page_alloc.c	2009-12-06 11:22:58.000000000 +0800
-@@ -48,6 +48,7 @@
- #include <linux/page_cgroup.h>
- #include <linux/debugobjects.h>
- #include <linux/kmemleak.h>
-+#include <linux/kernel-page-flags.h>
- #include <trace/events/kmem.h>
- 
- #include <asm/tlbflush.h>
-@@ -262,10 +263,7 @@ static void bad_page(struct page *page)
- 
- 	printk(KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
- 		current->comm, page_to_pfn(page));
--	printk(KERN_ALERT
--		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
--		page, (void *)page->flags, page_count(page),
--		page_mapcount(page), page->mapping, page->index);
-+	dump_page(page);
- 
- 	dump_stack();
- out:
-@@ -5106,3 +5104,72 @@ bool is_free_buddy_page(struct page *pag
- 	return order < MAX_ORDER;
- }
- #endif
-+
-+static char *page_flag_names[] = {
-+	[KPF_LOCKED]		= "L:locked",
-+	[KPF_ERROR]		= "E:error",
-+	[KPF_REFERENCED]	= "R:referenced",
-+	[KPF_UPTODATE]		= "U:uptodate",
-+	[KPF_DIRTY]		= "D:dirty",
-+	[KPF_LRU]		= "l:lru",
-+	[KPF_ACTIVE]		= "A:active",
-+	[KPF_SLAB]		= "S:slab",
-+	[KPF_WRITEBACK]		= "W:writeback",
-+	[KPF_RECLAIM]		= "I:reclaim",
-+	[KPF_BUDDY]		= "B:buddy",
-+
-+	[KPF_MMAP]		= "M:mmap",
-+	[KPF_ANON]		= "a:anonymous",
-+	[KPF_SWAPCACHE]		= "s:swapcache",
-+	[KPF_SWAPBACKED]	= "b:swapbacked",
-+	[KPF_COMPOUND_HEAD]	= "H:compound_head",
-+	[KPF_COMPOUND_TAIL]	= "T:compound_tail",
-+	[KPF_HUGE]		= "G:huge",
-+	[KPF_UNEVICTABLE]	= "u:unevictable",
-+	[KPF_HWPOISON]		= "X:hwpoison",
-+	[KPF_NOPAGE]		= "n:nopage",
-+	[KPF_KSM]		= "V:shared",
-+
-+	[KPF_RESERVED]		= "r:reserved",
-+	[KPF_MLOCKED]		= "m:mlocked",
-+	[KPF_MAPPEDTODISK]	= "d:mappedtodisk",
-+	[KPF_PRIVATE]		= "P:private",
-+	[KPF_PRIVATE_2]		= "p:private_2",
-+	[KPF_OWNER_PRIVATE]	= "O:owner_private",
-+	[KPF_ARCH]		= "h:arch",
-+	[KPF_UNCACHED]		= "c:uncached",
-+};
-+
-+static char *page_flags_longname(struct page *page, char *buf, int buflen)
-+{
-+	int i, n;
-+	u64 flags;
-+
-+	flags = stable_page_flags(page);
-+
-+	for (i = 0, n = 0; i < ARRAY_SIZE(page_flag_names); i++) {
-+		if (!page_flag_names[i])
-+			continue;
-+		if ((flags >> i) & 1)
-+			n += snprintf(buf + n, buflen - n, "%s,",
-+					page_flag_names[i] + 2);
-+	}
-+	if (n)
-+		n--;
-+	buf[n] = '\0';
-+
-+	return buf;
-+}
-+
-+void dump_page(struct page *page)
-+{
-+	char buf[1024];
-+
-+	printk(KERN_ALERT
-+	"page:%p flags:%p(%s) count:%d mapcount:%d mapping:%p index:%lx\n",
-+		page, (void *)page->flags,
-+		page_flags_longname(page, buf, sizeof(buf)),
-+		page_count(page), page_mapcount(page),
-+		page->mapping, page->index);
-+}
-+EXPORT_SYMBOL(dump_page);
---- linux-mm.orig/mm/memory.c	2009-12-06 10:37:47.000000000 +0800
-+++ linux-mm/mm/memory.c	2009-12-06 10:57:25.000000000 +0800
-@@ -430,12 +430,8 @@ static void print_bad_pte(struct vm_area
- 		"BUG: Bad page map in process %s  pte:%08llx pmd:%08llx\n",
- 		current->comm,
- 		(long long)pte_val(pte), (long long)pmd_val(*pmd));
--	if (page) {
--		printk(KERN_ALERT
--		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
--		page, (void *)page->flags, page_count(page),
--		page_mapcount(page), page->mapping, page->index);
--	}
-+	if (page)
-+		dump_page(page);
- 	printk(KERN_ALERT
- 		"addr:%p vm_flags:%08lx anon_vma:%p mapping:%p index:%lx\n",
- 		(void *)addr, vma->vm_flags, vma->anon_vma, mapping, index);
---- linux-mm.orig/mm/internal.h	2009-12-06 10:47:37.000000000 +0800
-+++ linux-mm/mm/internal.h	2009-12-06 11:03:53.000000000 +0800
-@@ -264,6 +264,8 @@ int __get_user_pages(struct task_struct 
- #define ZONE_RECLAIM_SUCCESS	1
- #endif
- 
-+void dump_page(struct page *page);
-+
- extern int hwpoison_filter(struct page *p);
- 
- extern u32 hwpoison_filter_dev_major;
---- linux-mm.orig/mm/memory_hotplug.c	2009-12-06 11:01:20.000000000 +0800
-+++ linux-mm/mm/memory_hotplug.c	2009-12-06 11:01:23.000000000 +0800
-@@ -678,9 +678,9 @@ do_migrate_range(unsigned long start_pfn
- 			if (page_count(page))
- 				not_managed++;
- #ifdef CONFIG_DEBUG_VM
--			printk(KERN_INFO "removing from LRU failed"
--					 " %lx/%d/%lx\n",
--				pfn, page_count(page), page->flags);
-+			printk(KERN_INFO "removing pfn %lx from LRU failed\n",
-+				pfn);
-+			dump_page(page);
- #endif
- 		}
- 	}
+> =========================================
+> Now, max_scan of shrink_inactive_list() is always passed less than
+> SWAP_CLUSTER_MAX. then, we can remove scanning pages loop in it.
+> 
+> detail
+>  - remove "while (nr_scanned < max_scan)" loop
+>  - remove nr_freed variable (now, we use nr_reclaimed directly)
+>  - remove nr_scan variable (now, we use nr_scanned directly)
+>  - rename max_scan to nr_to_scan
+>  - pass nr_to_scan into isolate_pages() directly instead
+>    using SWAP_CLUSTER_MAX
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/vmscan.c |  194 ++++++++++++++++++++++++++++-------------------------------
+>  1 files changed, 91 insertions(+), 103 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 7536991..a58ff15 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1085,16 +1085,22 @@ static int too_many_isolated(struct zone *zone, int file,
+>   * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+>   * of reclaimed pages
+>   */
+> -static unsigned long shrink_inactive_list(unsigned long max_scan,
+> -			struct zone *zone, struct scan_control *sc,
+> -			int priority, int file)
+> +static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+> +					  struct zone *zone, struct scan_control *sc,
+> +					  int priority, int file)
+>  {
+>  	LIST_HEAD(page_list);
+>  	struct pagevec pvec;
+> -	unsigned long nr_scanned = 0;
+> +	unsigned long nr_scanned;
+>  	unsigned long nr_reclaimed = 0;
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  	int lumpy_reclaim = 0;
+> +	struct page *page;
+> +	unsigned long nr_taken;
+> +	unsigned long nr_active;
+> +	unsigned int count[NR_LRU_LISTS] = { 0, };
+> +	unsigned long nr_anon;
+> +	unsigned long nr_file;
+>  
+>  	while (unlikely(too_many_isolated(zone, file, sc))) {
+>  		congestion_wait(BLK_RW_ASYNC, HZ/10);
+> @@ -1120,119 +1126,101 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
+>  
+>  	lru_add_drain();
+>  	spin_lock_irq(&zone->lru_lock);
+> -	do {
+> -		struct page *page;
+> -		unsigned long nr_taken;
+> -		unsigned long nr_scan;
+> -		unsigned long nr_freed;
+> -		unsigned long nr_active;
+> -		unsigned int count[NR_LRU_LISTS] = { 0, };
+> -		int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
+> -		unsigned long nr_anon;
+> -		unsigned long nr_file;
+> -
+> -		nr_taken = sc->isolate_pages(SWAP_CLUSTER_MAX,
+> -			     &page_list, &nr_scan, sc->order, mode,
+> -				zone, sc->mem_cgroup, 0, file);
+> +	nr_taken = sc->isolate_pages(nr_to_scan,
+> +				     &page_list, &nr_scanned, sc->order,
+> +				     lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE,
+> +				     zone, sc->mem_cgroup, 0, file);
+>  
+> -		if (scanning_global_lru(sc)) {
+> -			zone->pages_scanned += nr_scan;
+> -			if (current_is_kswapd())
+> -				__count_zone_vm_events(PGSCAN_KSWAPD, zone,
+> -						       nr_scan);
+> -			else
+> -				__count_zone_vm_events(PGSCAN_DIRECT, zone,
+> -						       nr_scan);
+> -		}
+> +	if (scanning_global_lru(sc)) {
+> +		zone->pages_scanned += nr_scanned;
+> +		if (current_is_kswapd())
+> +			__count_zone_vm_events(PGSCAN_KSWAPD, zone, nr_scanned);
+> +		else
+> +			__count_zone_vm_events(PGSCAN_DIRECT, zone, nr_scanned);
+> +	}
+>  
+> -		if (nr_taken == 0)
+> -			goto done;
+> +	if (nr_taken == 0)
+> +		goto done;
+>  
+> -		nr_active = clear_active_flags(&page_list, count);
+> -		__count_vm_events(PGDEACTIVATE, nr_active);
+> +	nr_active = clear_active_flags(&page_list, count);
+> +	__count_vm_events(PGDEACTIVATE, nr_active);
+>  
+> -		__mod_zone_page_state(zone, NR_ACTIVE_FILE,
+> -						-count[LRU_ACTIVE_FILE]);
+> -		__mod_zone_page_state(zone, NR_INACTIVE_FILE,
+> -						-count[LRU_INACTIVE_FILE]);
+> -		__mod_zone_page_state(zone, NR_ACTIVE_ANON,
+> -						-count[LRU_ACTIVE_ANON]);
+> -		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
+> -						-count[LRU_INACTIVE_ANON]);
+> +	__mod_zone_page_state(zone, NR_ACTIVE_FILE,
+> +			      -count[LRU_ACTIVE_FILE]);
+> +	__mod_zone_page_state(zone, NR_INACTIVE_FILE,
+> +			      -count[LRU_INACTIVE_FILE]);
+> +	__mod_zone_page_state(zone, NR_ACTIVE_ANON,
+> +			      -count[LRU_ACTIVE_ANON]);
+> +	__mod_zone_page_state(zone, NR_INACTIVE_ANON,
+> +			      -count[LRU_INACTIVE_ANON]);
+>  
+> -		nr_anon = count[LRU_ACTIVE_ANON] + count[LRU_INACTIVE_ANON];
+> -		nr_file = count[LRU_ACTIVE_FILE] + count[LRU_INACTIVE_FILE];
+> -		__mod_zone_page_state(zone, NR_ISOLATED_ANON, nr_anon);
+> -		__mod_zone_page_state(zone, NR_ISOLATED_FILE, nr_file);
+> +	nr_anon = count[LRU_ACTIVE_ANON] + count[LRU_INACTIVE_ANON];
+> +	nr_file = count[LRU_ACTIVE_FILE] + count[LRU_INACTIVE_FILE];
+> +	__mod_zone_page_state(zone, NR_ISOLATED_ANON, nr_anon);
+> +	__mod_zone_page_state(zone, NR_ISOLATED_FILE, nr_file);
+>  
+> -		reclaim_stat->recent_scanned[0] += nr_anon;
+> -		reclaim_stat->recent_scanned[1] += nr_file;
+> +	reclaim_stat->recent_scanned[0] += nr_anon;
+> +	reclaim_stat->recent_scanned[1] += nr_file;
+>  
+> -		spin_unlock_irq(&zone->lru_lock);
+> +	spin_unlock_irq(&zone->lru_lock);
+>  
+> -		nr_scanned += nr_scan;
+> -		nr_freed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
+> +	nr_reclaimed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
+> +
+> +	/*
+> +	 * If we are direct reclaiming for contiguous pages and we do
+> +	 * not reclaim everything in the list, try again and wait
+> +	 * for IO to complete. This will stall high-order allocations
+> +	 * but that should be acceptable to the caller
+> +	 */
+> +	if (nr_reclaimed < nr_taken && !current_is_kswapd() && lumpy_reclaim) {
+> +		congestion_wait(BLK_RW_ASYNC, HZ/10);
+>  
+>  		/*
+> -		 * If we are direct reclaiming for contiguous pages and we do
+> -		 * not reclaim everything in the list, try again and wait
+> -		 * for IO to complete. This will stall high-order allocations
+> -		 * but that should be acceptable to the caller
+> +		 * The attempt at page out may have made some
+> +		 * of the pages active, mark them inactive again.
+>  		 */
+> -		if (nr_freed < nr_taken && !current_is_kswapd() &&
+> -		    lumpy_reclaim) {
+> -			congestion_wait(BLK_RW_ASYNC, HZ/10);
+> -
+> -			/*
+> -			 * The attempt at page out may have made some
+> -			 * of the pages active, mark them inactive again.
+> -			 */
+> -			nr_active = clear_active_flags(&page_list, count);
+> -			count_vm_events(PGDEACTIVATE, nr_active);
+> -
+> -			nr_freed += shrink_page_list(&page_list, sc,
+> -							PAGEOUT_IO_SYNC);
+> -		}
+> +		nr_active = clear_active_flags(&page_list, count);
+> +		count_vm_events(PGDEACTIVATE, nr_active);
+>  
+> -		nr_reclaimed += nr_freed;
+> +		nr_reclaimed += shrink_page_list(&page_list, sc,
+> +						 PAGEOUT_IO_SYNC);
+> +	}
+>  
+> -		local_irq_disable();
+> -		if (current_is_kswapd())
+> -			__count_vm_events(KSWAPD_STEAL, nr_freed);
+> -		__count_zone_vm_events(PGSTEAL, zone, nr_freed);
+> +	local_irq_disable();
+> +	if (current_is_kswapd())
+> +		__count_vm_events(KSWAPD_STEAL, nr_reclaimed);
+> +	__count_zone_vm_events(PGSTEAL, zone, nr_reclaimed);
+>  
+> -		spin_lock(&zone->lru_lock);
+> -		/*
+> -		 * Put back any unfreeable pages.
+> -		 */
+> -		while (!list_empty(&page_list)) {
+> -			int lru;
+> -			page = lru_to_page(&page_list);
+> -			VM_BUG_ON(PageLRU(page));
+> -			list_del(&page->lru);
+> -			if (unlikely(!page_evictable(page, NULL))) {
+> -				spin_unlock_irq(&zone->lru_lock);
+> -				putback_lru_page(page);
+> -				spin_lock_irq(&zone->lru_lock);
+> -				continue;
+> -			}
+> -			SetPageLRU(page);
+> -			lru = page_lru(page);
+> -			add_page_to_lru_list(zone, page, lru);
+> -			if (is_active_lru(lru)) {
+> -				int file = is_file_lru(lru);
+> -				reclaim_stat->recent_rotated[file]++;
+> -			}
+> -			if (!pagevec_add(&pvec, page)) {
+> -				spin_unlock_irq(&zone->lru_lock);
+> -				__pagevec_release(&pvec);
+> -				spin_lock_irq(&zone->lru_lock);
+> -			}
+> +	spin_lock(&zone->lru_lock);
+> +	/*
+> +	 * Put back any unfreeable pages.
+> +	 */
+> +	while (!list_empty(&page_list)) {
+> +		int lru;
+> +		page = lru_to_page(&page_list);
+> +		VM_BUG_ON(PageLRU(page));
+> +		list_del(&page->lru);
+> +		if (unlikely(!page_evictable(page, NULL))) {
+> +			spin_unlock_irq(&zone->lru_lock);
+> +			putback_lru_page(page);
+> +			spin_lock_irq(&zone->lru_lock);
+> +			continue;
+>  		}
+> -		__mod_zone_page_state(zone, NR_ISOLATED_ANON, -nr_anon);
+> -		__mod_zone_page_state(zone, NR_ISOLATED_FILE, -nr_file);
+> -
+> -  	} while (nr_scanned < max_scan);
+> +		SetPageLRU(page);
+> +		lru = page_lru(page);
+> +		add_page_to_lru_list(zone, page, lru);
+> +		if (is_active_lru(lru)) {
+> +			int file = is_file_lru(lru);
+> +			reclaim_stat->recent_rotated[file]++;
+> +		}
+> +		if (!pagevec_add(&pvec, page)) {
+> +			spin_unlock_irq(&zone->lru_lock);
+> +			__pagevec_release(&pvec);
+> +			spin_lock_irq(&zone->lru_lock);
+> +		}
+> +	}
+> +	__mod_zone_page_state(zone, NR_ISOLATED_ANON, -nr_anon);
+> +	__mod_zone_page_state(zone, NR_ISOLATED_FILE, -nr_file);
+>  
+>  done:
+>  	spin_unlock_irq(&zone->lru_lock);
+> -- 
+> 1.6.5.2
+> 
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
