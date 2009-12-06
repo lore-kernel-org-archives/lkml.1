@@ -1,32 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933714AbZLFLYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbZLFLcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933714AbZLFLYc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 06:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933673AbZLFLYa
+	id S933718AbZLFLcr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 06:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933690AbZLFLcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 06:24:30 -0500
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:46186 "EHLO
+	Sun, 6 Dec 2009 06:32:46 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:34874 "EHLO
 	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933671AbZLFLY3 (ORCPT
+	by vger.kernel.org with ESMTP id S933688AbZLFLcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 06:24:29 -0500
-Date: Sun, 6 Dec 2009 12:24:31 +0100
+	Sun, 6 Dec 2009 06:32:45 -0500
+Date: Sun, 6 Dec 2009 12:32:47 +0100
 From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Greg KH <gregkh@suse.de>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] Doc/stable rules: add new cherry-pick logic
-Message-ID: <20091206112431.GA9937@Chamillionaire.breakpoint.cc>
-References: <1259736523-13091-1-git-send-email-Artem.Bityutskiy@nokia.com>
- <20091202154223.GA5895@suse.de>
- <1259823705.10805.49.camel@localhost>
- <20091204015827.GB2589@suse.de>
- <20091204111635.GA28059@Chamillionaire.breakpoint.cc>
- <20091204164126.GB1981@suse.de>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       linuxppc-dev@ozlabs.org, Alemao <xcarandiru@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: [RFC] doc/powerpc: try to explain why the interrupt numbers are
+ off by 16
+Message-ID: <20091206113247.GB9937@Chamillionaire.breakpoint.cc>
+References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+ <d970ff420909041228h3638e840r34c0c0e79f178e55@mail.gmail.com>
+ <d970ff420909041229hb3aa96dya329e06ea56dd1ac@mail.gmail.com>
+ <20090906110641.GA11350@Chamillionaire.breakpoint.cc>
+ <20090909182857.GB8215@b07421-ec1.am.freescale.net>
+ <20090910131544.GB23433@Chamillionaire.breakpoint.cc>
+ <20090910222400.GB26587@Chamillionaire.breakpoint.cc>
+ <4AA97D50.40209@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20091204164126.GB1981@suse.de>
+In-Reply-To: <4AA97D50.40209@freescale.com>
 X-Key-Id: FE3F4706
 X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
 User-Agent: Mutt/1.5.20 (2009-06-14)
@@ -34,58 +38,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- it is possible to submit patches for the stable queue without sending
-  them directly stable@kernel.org. If the tag (Cc: stable@kernel.org) is
-  available in the sign-off area than hpa's script will filter them into
-  the stable mailbox once it hits Linus' tree.
-- Patches which require others to be applied first can be also specified.
-  This was discussued in http://lkml.org/lkml/2009/11/9/474
-
 Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
 ---
- Documentation/stable_kernel_rules.txt |   24 +++++++++++++++++++++---
- 1 files changed, 21 insertions(+), 3 deletions(-)
+ Documentation/powerpc/dts-bindings/fsl/mpic.txt |   42 +++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpic.txt
 
-diff --git a/Documentation/stable_kernel_rules.txt b/Documentation/stable_kernel_rules.txt
-index a452227..bc52bbb 100644
---- a/Documentation/stable_kernel_rules.txt
-+++ b/Documentation/stable_kernel_rules.txt
-@@ -25,14 +25,32 @@ Rules on what kind of patches are accepted, and which ones are not, into the
- Procedure for submitting patches to the -stable tree:
- 
-  - Send the patch, after verifying that it follows the above rules, to
--   stable@kernel.org.
-+   stable@kernel.org. An alternative is to have the tag
-+    Cc: stable@kernel.org
-+   in the sign-off area. Once the patch is merged it will be filtered
-+   into the stable tree even without sending directly to
-+   stable@kernel.org
-+ - If the patch requires other patches as prerequisites which can be
-+   cherry-picked than this can be specified in the following format in
-+   the sign-off area:
+diff --git a/Documentation/powerpc/dts-bindings/fsl/mpic.txt b/Documentation/powerpc/dts-bindings/fsl/mpic.txt
+new file mode 100644
+index 0000000..71e39cf
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/fsl/mpic.txt
+@@ -0,0 +1,42 @@
++* OpenPIC and its interrupt numbers on Freescale's e500/e600 cores
 +
-+    Cc: <stable@kernel.org> # .32.x: a1f84a3: sched: Check for an idle shared cache
-+    Cc: <stable@kernel.org> # .32.x: 1b9508f: sched: Rate-limit newidle
-+    Cc: <stable@kernel.org> # .32.x: fd21073: sched: Fix affinity logic
-+    Cc: <stable@kernel.org> # .32.x
-+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
++The OpenPIC specification does not specify which interrupt source has to
++become which interrupt number. This is up to the software implementation
++of the interrupt controller. The only requirement is that every
++interrupt source has to have an unique interrupt number / vector number.
++To accomplish this the current implementation assigns the number zero to
++the first source, the number one to the second source and so on until
++all interrupt sources have their unique number.
++Usually the assigned vector number equals the interrupt number mentioned
++in the documentation for a given core / CPU. This is however not true
++for the e500 cores (MPC85XX CPUs) where the documentation distinguishes
++between internal and external interrupt sources and starts counting at
++zero for both of them.
 +
-+   The tag sequence has the meaning of:
-+    git cherry-pick a1f84a3
-+    git cherry-pick 1b9508f
-+    git cherry-pick fd21073
-+    git cherry-pick <this commit>
++So what to write for external interrupt source X or internal interrupt
++source Y into the device tree? Here is an example:
 +
-  - The sender will receive an ACK when the patch has been accepted into the
-    queue, or a NAK if the patch is rejected.  This response might take a few
-    days, according to the developer's schedules.
-  - If accepted, the patch will be added to the -stable queue, for review by
-    other developers and by the relevant subsystem maintainer.
-- - If the stable@kernel.org address is added to a patch, when it goes into
--   Linus's tree it will automatically be emailed to the stable team.
-  - Security patches should not be sent to this alias, but instead to the
-    documented security@kernel.org address.
- 
++The memory map for the interrupt controller in the MPC8544[0] shows,
++that the first interrupt source starts at 0x5_0000 (PIC Register Address
++Map-Interrupt Source Configuration Registers). This source becomes the
++number zero therefore:
++ External interrupt 0 = interrupt number 0
++ External interrupt 1 = interrupt number 1
++ External interrupt 2 = interrupt number 2
++ ...
++Every interrupt number allocates 0x20 bytes register space. So to get
++its number it is sufficient to shift the lower 16bits to right by five.
++So for the external interrupt 10 we have:
++  0x0140 >> 5 = 10
++
++After the external sources, the internal sources follow. The in core I2C
++controller on the MPC8544 for instance has the internal source number
++27. Oo obtain its interrupt number we take the lower 16bits of its memory
++address (0x5_0560) and shift it right:
++ 0x0560 >> 5 = 43
++
++Therefore the I2C device node for the MPC8544 CPU has to have the
++interrupt number 43 specified in the device tree.
++
++[0] MPC8544E PowerQUICCTM III, Integrated Host Processor Family Reference Manual
++    MPC8544ERM Rev. 1 10/2007
 -- 
-1.6.5.2
+1.6.5.3
 
