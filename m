@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933740AbZLFONJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933792AbZLFONd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933740AbZLFONJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 09:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933673AbZLFONI
+	id S933792AbZLFONd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 09:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933674AbZLFONJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 09:13:08 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59042 "EHLO
+	Sun, 6 Dec 2009 09:13:09 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:59041 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932535AbZLFONG (ORCPT
+	with ESMTP id S933637AbZLFONG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 6 Dec 2009 09:13:06 -0500
 From: Andi Kleen <andi@firstfloor.org>
-Message-Id: <20091206313.812075626@firstfloor.org>
-To: ying.huang@intel.com, x86@kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/3] x86: Improve CONFIG_KEXEC_JUMP description
-Date: Sun,  6 Dec 2009 15:13:09 +0100 (CET)
+References: <20091206313.812075626@firstfloor.org>
+In-Reply-To: <20091206313.812075626@firstfloor.org>
+To: x86@kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [2/3] x86: Remove CONFIG_GBPAGES option
+Message-Id: <20091206141310.CB4C9B151F@basil.firstfloor.org>
+Date: Sun,  6 Dec 2009 15:13:10 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I've been puzzling what CONFIG_KEXEC_JUMP was good for.
+Support for GB pages mapped direct memory has been around for quite
+some time and has not caused any problems as far as I know.
 
-The Kconfig help was not very helpful in explaining why one
-want to set this option. This patch improves 
-it a bit, based on the original commit log. It's still
-not fully clear, but then I couldn't find a concrete application
-anywhere.
+So it's time to remove the CONFIG_GBPAGES option and always enable
+it by default. The option only controlled the default anyways, no
+code. gbpages can be still disabled at runtime.
 
-Cc: ying.huang@intel.com
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/Kconfig |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/x86/Kconfig   |    9 ---------
+ arch/x86/mm/init.c |    6 +-----
+ 2 files changed, 1 insertion(+), 14 deletions(-)
 
 Index: linux-2.6.32-ak/arch/x86/Kconfig
 ===================================================================
 --- linux-2.6.32-ak.orig/arch/x86/Kconfig
 +++ linux-2.6.32-ak/arch/x86/Kconfig
-@@ -1496,8 +1496,10 @@ config KEXEC_JUMP
- 	depends on EXPERIMENTAL
- 	depends on KEXEC && HIBERNATION
- 	---help---
--	  Jump between original kernel and kexeced kernel and invoke
--	  code in physical address mode via KEXEC
-+	  Allow to call code through kexec with paging turned off and then
-+	  return to the normal kernel. This can be used to call BIOS
-+	  code for example, and to implement kexec based hibernation.
-+	  Requires uptodate kexec tools.
+@@ -1110,15 +1110,6 @@ config X86_PAE
+ config ARCH_PHYS_ADDR_T_64BIT
+ 	def_bool X86_64 || X86_PAE
  
- config PHYSICAL_START
- 	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
+-config DIRECT_GBPAGES
+-	bool "Enable 1GB pages for kernel pagetables" if EMBEDDED
+-	default y
+-	depends on X86_64
+-	---help---
+-	  Allow the kernel linear mapping to use 1GB pages on CPUs that
+-	  support it. This can improve the kernel's performance a tiny bit by
+-	  reducing TLB pressure. If in doubt, say "Y".
+-
+ # Common NUMA Features
+ config NUMA
+ 	bool "Numa Memory Allocation and Scheduler Support"
+Index: linux-2.6.32-ak/arch/x86/mm/init.c
+===================================================================
+--- linux-2.6.32-ak.orig/arch/x86/mm/init.c
++++ linux-2.6.32-ak/arch/x86/mm/init.c
+@@ -22,11 +22,7 @@ unsigned long __meminitdata e820_table_t
+ 
+ int after_bootmem;
+ 
+-int direct_gbpages
+-#ifdef CONFIG_DIRECT_GBPAGES
+-				= 1
+-#endif
+-;
++int direct_gbpages = 1;
+ 
+ static void __init find_early_table_space(unsigned long end, int use_pse,
+ 					  int use_gbpages)
