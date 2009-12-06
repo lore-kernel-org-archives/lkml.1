@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933191AbZLFJRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZLFJXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933191AbZLFJRA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 04:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932393AbZLFJQ5
+	id S1756108AbZLFJXr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 04:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbZLFJXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 04:16:57 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:47589 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933052AbZLFJQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 04:16:47 -0500
-Date: Sun, 6 Dec 2009 10:16:51 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/5] security/selinux/ss: correct size computation
-Message-ID: <Pine.LNX.4.64.0912061016310.20858@ask.diku.dk>
+	Sun, 6 Dec 2009 04:23:41 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:43378 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755814AbZLFJXh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 04:23:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=B0coc8oi4vTytG33Nggghs41eA1ZsnH5GEN8X7jQHLtYpOwMwR+ee7V4YTSxPmgG9Z
+         SLA5gheMXQeHoB+mSXe2G+w0o8ROH5oZXAcXcF41SbrXoZH2ZHegw0e6NhwroYDNMydl
+         WHfIzXyCHycZmpMiqkAF+suZs4gyq8yX9kAO8=
+Message-ID: <4B1B781C.3060307@gmail.com>
+Date: Sun, 06 Dec 2009 10:23:40 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-4.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Emese Revfy <re.emese@gmail.com>
+CC: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
+References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com> <4B1A6B28.2020501@gmail.com> <4B1B193B.7080609@gmail.com>
+In-Reply-To: <4B1B193B.7080609@gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On 12/06/2009 03:38 AM, Emese Revfy wrote:
+> Jiri Slaby wrote:
+>> Apart you CCed hundreds of people
+> 
+> I looked up the maintainers of the patched files from the kernel sources
+> because I didn't know a better way to let everyone affected know.
 
-The size argument to kcalloc should be the size of desired structure,
-not the pointer to it.
+Well, if you had per subsystem patches, you would Cc only relevant
+people per patch.
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+>> and mixed thousand things together into one patch,
+> 
+> I thought that the best way is to have one patch contain changes for
+> a single structure type only.
 
-// <smpl>
-@expression@
-expression *x;
-@@
+The problem is that probably nobody will pick them up. Or you would need
+to collect Acks from all participants and run with these to Andrew
+Morton. Then it's up to him if he wants to merge them. If you split
+them, you can ask concrete maintainers for a merge.
 
-x =
- <+...
--sizeof(x)
-+sizeof(*x)
-...+>// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- security/selinux/ss/services.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -u -p a/security/selinux/ss/services.c b/security/selinux/ss/services.c
---- a/security/selinux/ss/services.c
-+++ b/security/selinux/ss/services.c
-@@ -2555,7 +2555,7 @@ int security_get_classes(char ***classes
- 	read_lock(&policy_rwlock);
- 
- 	*nclasses = policydb.p_classes.nprim;
--	*classes = kcalloc(*nclasses, sizeof(*classes), GFP_ATOMIC);
-+	*classes = kcalloc(*nclasses, sizeof(**classes), GFP_ATOMIC);
- 	if (!*classes)
- 		goto out;
- 
-@@ -2602,7 +2602,7 @@ int security_get_permissions(char *class
- 	}
- 
- 	*nperms = match->permissions.nprim;
--	*perms = kcalloc(*nperms, sizeof(*perms), GFP_ATOMIC);
-+	*perms = kcalloc(*nperms, sizeof(**perms), GFP_ATOMIC);
- 	if (!*perms)
- 		goto out;
- 
+-- 
+js
