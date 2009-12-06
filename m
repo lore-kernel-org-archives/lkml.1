@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934370AbZLFWzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934378AbZLFXAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934370AbZLFWzB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 17:55:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934342AbZLFWy7
+	id S934378AbZLFXAJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 18:00:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934342AbZLFXAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 17:54:59 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:58706 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934338AbZLFWy6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 17:54:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=hmBXuh+vvGXQPO8ObNtU5LProrpNk/xi8Q9Sqs1XGtRCuLvA1JczTr/CZFmd4kHrro
-         eIkmhFoNx43Iwl/4DirdB/m7ccknqzlqHvsRs2nPp+gbtnBeL3bik90GR19GLi6hgEWe
-         mYfhMUCkhI3tXiI88Wga314Y9T52ig38psiEE=
-References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl> <alpine.LFD.2.00.0912051635330.3560@localhost.localdomain> <200912060254.10081.rjw@sisk.pl> <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain> <20091206113555.5a646713@infradead.org> <alpine.LFD.2.00.0912061144100.3560@localhost.localdomain> <20091206121803.70385c33@infradead.org>
-Message-Id: <7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20091206121803.70385c33@infradead.org>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (7C144)
-Mime-Version: 1.0 (iPhone Mail 7C144)
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 14:54:48 -0800
+	Sun, 6 Dec 2009 18:00:08 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58751 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934341AbZLFXAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 18:00:06 -0500
+Date: Mon, 7 Dec 2009 10:00:06 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
+       =?UTF-8?B?RnLDqWTDqXJp?= =?UTF-8?B?Yw==?= Weisbecker 
+	<fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT pull] bkl core patches for 2.6.33
+Message-Id: <20091207100006.8700390c.sfr@canb.auug.org.au>
+In-Reply-To: <20091206185221.GA16319@elte.hu>
+References: <alpine.LFD.2.00.0912061857340.3089@localhost.localdomain>
+	<alpine.LFD.2.00.0912061044530.3560@localhost.localdomain>
+	<20091206185221.GA16319@elte.hu>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__7_Dec_2009_10_00_06_+1100_g2BwkG+s_u3/EO.X"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 6, 2009, at 12:18 PM, Arjan van de Ven <arjan@infradead.org>  
-wrote:
+--Signature=_Mon__7_Dec_2009_10_00_06_+1100_g2BwkG+s_u3/EO.X
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sun, 6 Dec 2009 11:58:44 -0800 (PST)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Hi all,
+
+On Sun, 6 Dec 2009 19:52:21 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 >
->>
->>
->> On Sun, 6 Dec 2009, Arjan van de Ven wrote:
->>>
->>> in suspend, there's a PCI device (:1b) that does take some time,
->>> which is the audio controller. The bulk of the time is in the serio
->>> driver though..
->>
->> That serio thing is disgusting. We had serious problems with the
->> serial driver timeouts for boot-time optimizations too, didn't we?
->
-> isn't serio the PS/2 stuff?
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>=20
+> > Hmm. Seeing this, I wonder: has anybody kept track of the reiserfs bkl=
+=20
+> > removal?
+>=20
+> I've Cc:-ed Frederic - he's been hacking away on it diligently, for=20
+> months meanwhile. Frederic, mind posting the URI to your tree?
 
-Yes, that's your PS/2 mouse (rather touchpad) and the delay comes from  
-device reset (needed by some keyboard controllers - I remember HP -or  
-it and keyboard will be dead at resume).
+The tree in linus-next is:
 
--- 
-Dmitry
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git#r=
+eiserfs/kill-bkl
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__7_Dec_2009_10_00_06_+1100_g2BwkG+s_u3/EO.X
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkscN3YACgkQjjKRsyhoI8xQXQCcCLwRyf5KfpJLyh1gka+Cu33U
+TfwAn3331Bz01V1gZzsYoF8Q1oXBKoMe
+=gz5v
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__7_Dec_2009_10_00_06_+1100_g2BwkG+s_u3/EO.X--
