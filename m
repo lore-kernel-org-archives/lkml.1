@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbZLFXis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbZLFXlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152AbZLFXis (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 18:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbZLFXiq
+	id S1758164AbZLFXlh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 18:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbZLFXin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 18:38:46 -0500
-Received: from kroah.org ([198.145.64.141]:33783 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 18:38:43 -0500
+Received: from kroah.org ([198.145.64.141]:33789 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758022AbZLFXil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757816AbZLFXil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 6 Dec 2009 18:38:41 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 15:32:09 2009
-Message-Id: <20091206233208.909016800@mini.kroah.org>
+Message-Id: <20091206233209.140733272@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 15:30:38 -0800
+Date: Sun, 06 Dec 2009 15:30:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Martin Samek <martin@marsark.sytes.net>,
-       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Henk Vergonet <Henk.Vergonet@gmail.com>,
+       Michael Krufky <mkrufky@kernellabs.com>,
        Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [06/20] V4L/DVB (13079): dib0700: fixed xc2028 firmware loading kernel oops
+Subject: [07/20] V4L/DVB (13107): tda18271: fix overflow in FM radio frequency calculation
 References: <20091206233032.387950574@mini.kroah.org>
-Content-Disposition: inline; filename=v4l-dvb-13079-dib0700-fixed-xc2028-firmware-loading-kernel-oops.patch
+Content-Disposition: inline; filename=v4l-dvb-13107-tda18271-fix-overflow-in-fm-radio-frequency-calculation.patch
 In-Reply-To: <20091206233711.GA11609@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,40 +31,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Martin Samek <martin@marsark.sytes.net>
+From: Michael Krufky <mkrufky@kernellabs.com>
 
-commit 7646b9de26c54cf4bc9c446d7ada9f91ece31e0a upstream.
+commit 4d8317876d5f53ef792e90f89d8f162d7bca5c81 upstream.
 
-Fixing kernel oops when driver attemps to load xc2028 firmware.
+Multiplication by 62500 causes an overflow in the 32 bit freq variable,
+which is later divided by 1000 when using FM radio.
 
-Note by djh: the patch contribute by Martin is a port of a fix I made during
-the PCTV 340e development.  It's a temporary workaround that fixes a regression
-(an OOPS condition) and the real fix should be in the code that manages the
-i2c master on the dib7000p.  But this fix does address the immmediate
-regression and should be merged upstream until we do a cleaner fix.
+This patch prevents the overflow by scaling the frequency value correctly
+upfront.  Thanks to Henk Vergonet for spotting the problem and providing
+a preliminary patch, which this changeset was based upon.
 
-Signed-off-by: Martin Samek <martin@marsark.sytes.net>
-Signed-off-by: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Henk Vergonet <Henk.Vergonet@gmail.com>
+Signed-off-by: Michael Krufky <mkrufky@kernellabs.com>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/dvb/frontends/dib7000p.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/media/common/tuners/tda18271-fe.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/media/dvb/frontends/dib7000p.c
-+++ b/drivers/media/dvb/frontends/dib7000p.c
-@@ -1343,6 +1343,11 @@ struct dvb_frontend * dib7000p_attach(st
- 	if (dib7000p_identify(st) != 0)
- 		goto error;
+--- a/drivers/media/common/tuners/tda18271-fe.c
++++ b/drivers/media/common/tuners/tda18271-fe.c
+@@ -927,12 +927,12 @@ static int tda18271_set_analog_params(st
+ 	struct tda18271_std_map_item *map;
+ 	char *mode;
+ 	int ret;
+-	u32 freq = params->frequency * 62500;
++	u32 freq = params->frequency * 125 *
++		((params->mode == V4L2_TUNER_RADIO) ? 1 : 1000) / 2;
  
-+	/* FIXME: make sure the dev.parent field is initialized, or else
-+	request_firmware() will hit an OOPS (this should be moved somewhere
-+	more common) */
-+	st->i2c_master.gated_tuner_i2c_adap.dev.parent = i2c_adap->dev.parent;
-+
- 	dibx000_init_i2c_master(&st->i2c_master, DIB7000P, st->i2c_adap, st->i2c_addr);
+ 	priv->mode = TDA18271_ANALOG;
  
- 	dib7000p_demod_reset(st);
+ 	if (params->mode == V4L2_TUNER_RADIO) {
+-		freq = freq / 1000;
+ 		map = &std_map->fm_radio;
+ 		mode = "fm";
+ 	} else if (params->std & V4L2_STD_MN) {
 
 
