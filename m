@@ -1,175 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbZLFIGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZLFIdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932432AbZLFIGp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 03:06:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932326AbZLFIGj
+	id S1754825AbZLFIdI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 03:33:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbZLFIdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 03:06:39 -0500
-Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:63699 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932172AbZLFIGh convert rfc822-to-8bit (ORCPT
+	Sun, 6 Dec 2009 03:33:04 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40927 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753634AbZLFIdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 03:06:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
-	:date:message-id:mime-version:content-type
-	:content-transfer-encoding; q=dns; s=sasl; b=l7KTuIK2KjrrYCHyL7I
-	TAOMZxvzw940n+rOlgXgQcU31PD3qc3Pg1xXUdZGj2v+nNtkdyJxBQUTppevsUEj
-	M9Vrv13Mb+DAsr2ka9YyE3Z6dRlNcWOxigMcPGpuOckUQgTG4fHtir9wdmJYonCI
-	T2aqocxN6PddVa64gblkimKo=
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] Git 1.6.5.5
-From: Junio C Hamano <gitster@pobox.com>
-Date: Sun, 06 Dec 2009 00:06:32 -0800
-Message-ID: <7vtyw4il13.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 6 Dec 2009 03:33:03 -0500
+Message-ID: <4B1B6C3C.7060503@cs.helsinki.fi>
+Date: Sun, 06 Dec 2009 10:33:00 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-X-Pobox-Relay-ID: 4849BB8E-E23E-11DE-8064-EF34BBB5EC2E-77302942!a-pb-sasl-sd.pobox.com
-Content-Transfer-Encoding: 8BIT
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: "J. R. Okajima" <hooanon05@yahoo.co.jp>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] slab, kmemleak, minor, stop calling kmemleak_erase()
+ unconditionally
+References: <1259740550-10394-1-git-send-email-hooanon05@yahoo.co.jp>	<1259740550-10394-2-git-send-email-hooanon05@yahoo.co.jp> <tnxr5rd4s6m.fsf@pc1117.cambridge.arm.com>
+In-Reply-To: <tnxr5rd4s6m.fsf@pc1117.cambridge.arm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release Git 1.6.5.5 is available at the
-usual places:
+Catalin Marinas wrote:
+> "J. R. Okajima" <hooanon05@yahoo.co.jp> wrote:
+>> When the gotten object is NULL (probably due to ENOMEM),
+>> kmemleak_erase() is unnecessary here, It just sets NULL to where already
+>> is NULL.
+>> Add a condition.
+>>
+>> Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+>> ---
+>>  mm/slab.c |    3 ++-
+>>  1 files changed, 2 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/mm/slab.c b/mm/slab.c
+>> index 7dfa481..4e61449 100644
+>> --- a/mm/slab.c
+>> +++ b/mm/slab.c
+>> @@ -3109,7 +3109,8 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+>>  	 * per-CPU caches is leaked, we need to make sure kmemleak doesn't
+>>  	 * treat the array pointers as a reference to the object.
+>>  	 */
+>> -	kmemleak_erase(&ac->entry[ac->avail]);
+>> +	if (objp)
+>> +		kmemleak_erase(&ac->entry[ac->avail]);
+>>  	return objp;
+>>  }
+> 
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 
-  http://www.kernel.org/pub/software/scm/git/
-
-  git-1.6.5.5.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.5.5.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.5.5.tar.{gz,bz2}		(preformatted docs)
-
-The RPM binary packages for a few architectures are found in:
-
-  RPMS/$arch/git-*-1.6.5.5-1.fc11.$arch.rpm	(RPM)
-
-This is primarily to help other distros with older xmlto to partially
-revert the change in 1.6.5.4 to help distros with newer docbook
-stylesheets, but I also merged some fixes that have already been cooking
-and graduated to 'master' as well.
-
-
-Git v1.6.5.5 Release Notes
-==========================
-
-Fixes since v1.6.5.4
---------------------
-
- * Manual pages can be formatted with older xmlto again.
-
- * GREP_OPTIONS exported from user's environment could have broken
-   our scripted commands.
-
- * In configuration files, a few variables that name paths can begin with
-   ~/ and ~username/ and they are expanded as expected.  This is not a
-   bugfix but 1.6.6 will have this and without backporting users cannot
-   easily use the same ~/.gitconfig across versions.
-
- * "git diff -B -M" did the same computation to hash lines of contents
-   twice, and held onto memory after it has used the data in it
-   unnecessarily before it freed.
-
- * "git diff -B" and "git diff --dirstat" was not counting newly added
-   contents correctly.
-
- * "git format-patch revisions... -- path" issued an incorrect error
-   message that suggested to use "--" on the command line when path
-   does not exist in the current work tree (it is a separate matter if
-   it makes sense to limit format-patch with pathspecs like that
-   without using the --full-diff option).
-
- * "git grep -F -i StRiNg" did not work as expected.
-
- * Enumeration of available merge strategies iterated over the list of
-   commands in a wrong way, sometimes producing an incorrect result.
-
- * "git shortlog" did not honor the "encoding" header embedded in the
-   commit object like "git log" did.
-
- * Reading progress messages that come from the remote side while running
-   "git pull" is given precedence over reading the actual pack data to
-   prevent garbled progress message on the user's terminal.
-
- * "git rebase" got confused when the log message began with certain
-   strings that looked like Subject:, Date: or From: header.
-
- * "git reset" accidentally run in .git/ directory checked out the
-   work tree contents in there.
-
-Other minor documentation updates are included.
-
-----------------------------------------------------------------
-
-Changes since v1.6.5.4 are as follows:
-
-Avery Pennarun (1):
-      builtin-merge.c: call exclude_cmds() correctly.
-
-Brandon Casey (1):
-      t4201: use ISO8859-1 rather than ISO-8859-1
-
-Brian Collins (1):
-      grep: Allow case insensitive search of fixed-strings
-
-Felipe Contreras (2):
-      format-patch: fix parsing of "--" on the command line
-      format-patch: add test for parsing of "--"
-
-Jeff King (4):
-      diffcore-break: free filespec data as we go
-      diffcore-break: save cnt_data for other phases
-      rerere: don't segfault on failure to open rr-cache
-      reset: improve worktree safety valves
-
-Junio C Hamano (7):
-      diffcore-rename: reduce memory footprint by freeing blob data early
-      Documentation: avoid xmlto input error
-      Protect scripted Porcelains from GREP_OPTIONS insanity
-      Remove dead code from "git am"
-      Documentation: xmlto 0.0.18 does not know --stringparam
-      Prepare for 1.6.5.5
-      Git 1.6.5.5
-
-Linus Torvalds (1):
-      Fix diff -B/--dirstat miscounting of newly added contents
-
-Lukas Sandström (1):
-      git am/mailinfo: Don't look at in-body headers when rebasing
-
-Matthew Ogilvie (1):
-      core.autocrlf documentation: mention the crlf attribute
-
-Matthieu Moy (4):
-      Expand ~ and ~user in core.excludesfile, commit.template
-      expand_user_path: expand ~ to $HOME, not to the actual homedir.
-      merge-recursive: point the user to commit when file would be overwritten.
-      user-manual: Document that "git merge" doesn't like uncommited changes.
-
-Nicolas Pitre (1):
-      give priority to progress messages
-
-Philippe Bruhat (1):
-      Make sure $PERL_PATH is defined when the test suite is run.
-
-Raman Gupta (1):
-      Add branch management for releases to gitworkflows
-
-Ramsay Allan Jones (3):
-      Makefile: merge two Cygwin configuration sections into one
-      t9700-perl-git.sh: Fix a test failure on Cygwin
-      git-count-objects: Fix a disk-space under-estimate on Cygwin
-
-René Scharfe (2):
-      mergetool--lib: simplify guess_merge_tool()
-      archive: clarify description of path parameter
-
-Tim Henigan (2):
-      Update 'git remote update' usage string to match man page.
-      git remote: Separate usage strings for subcommands
-
-Todd Zullinger (1):
-      Documentation: Avoid use of xmlto --stringparam
-
-Uwe Kleine-König (1):
-      shortlog: respect commit encoding
-
+Applied, thanks!
