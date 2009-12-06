@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933882AbZLFQwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbZLFR2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933882AbZLFQwF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 11:52:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933884AbZLFQwE
+	id S934001AbZLFR2b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 12:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933986AbZLFR2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 11:52:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48854 "EHLO mx1.redhat.com"
+	Sun, 6 Dec 2009 12:28:30 -0500
+Received: from tex.lwn.net ([70.33.254.29]:37532 "EHLO tex.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932881AbZLFQwC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 11:52:02 -0500
-Message-ID: <4B1BE136.4090005@redhat.com>
-Date: Sun, 06 Dec 2009 18:52:06 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: bifferos <bifferos@yahoo.co.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Kexec failure on RDC (and possibly other early x86) platforms
-References: <371220.64690.qm@web27006.mail.ukl.yahoo.com>
-In-Reply-To: <371220.64690.qm@web27006.mail.ukl.yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S933981AbZLFR2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 12:28:30 -0500
+X-Greylist: delayed 1674 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Dec 2009 12:28:30 EST
+Date: Sun, 6 Dec 2009 10:01:03 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+Cc: David Miller <davem@davemloft.net>, joe@perches.com, brice@myri.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH net-next-2.6] drivers/net: Move && and || to end of
+ previous line
+Message-ID: <20091206100103.427f0049@tpl.lwn.net>
+In-Reply-To: <4B1B1E59.1030307@gmail.com>
+References: <4B190A29.5080905@myri.com>
+	<1259947271.22783.120.camel@Joe-Laptop.home>
+	<4B1A557D.4080707@gmail.com>
+	<20091205.142126.23618243.davem@davemloft.net>
+	<4B1B1E59.1030307@gmail.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i686-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/06/2009 01:33 PM, bifferos wrote:
-> I've updated the patch to allow Kexec to work on RDC platforms
-> here:
-> http://bifferboard.svn.sourceforge.net/viewvc/bifferboard/slack/kernel/2.6.32/0003-kexec-fix.patch
->
-> I'm curious as to how one can detect the presence of the CR4
-> register in assembler, as I'm sure it's possible, but I've just
-> #ifndefed out the offending instruction in this patch and it
-> seems to work with this change.
->    
+On Sat, 05 Dec 2009 22:00:41 -0500
+William Allen Simpson <william.allen.simpson@gmail.com> wrote:
 
-One way is to execute the instruction and trap the #UD exception if it 
-is not supported.  Not sure whether you have an IDT set up or whether 
-your cpu traps on mov cr4.
+> > You come out of nowhere as a new contributor.  You have to constantly
+> > ask about policy and other formalities wrt. kernel development.
+> >   
+> Because they are not documented.  Oh, and a reminder -- you've not
+> answered my most recent questions....
 
-If your cpu supports cpuid you can test for features that indicate bits 
-in cr4 are available, for example VME, DE, PSE, PVI, and PAE.  If none 
-are available you likely don't have cr4 (and even if you do, it's 
-pointless to reset it).
+Might I suggest a look at Documentation/HOWTO and
+Documentation/development-process/?  You might find that more of this
+stuff is better documented than you think.  If there are gaps, please
+let us know where they are, and we'll endeavor to fill them in.
 
--- 
-error compiling committee.c: too many arguments to function
-
+jon
