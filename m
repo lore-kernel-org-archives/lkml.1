@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbZLFULc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbZLFUPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757580AbZLFULc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 15:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbZLFULa
+	id S1757593AbZLFUPx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 15:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbZLFUPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 15:11:30 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36697 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757225AbZLFULa (ORCPT
+	Sun, 6 Dec 2009 15:15:51 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54475 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757437AbZLFUPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 15:11:30 -0500
-Date: Sun, 6 Dec 2009 21:11:36 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>, stable@kernel.org
-Subject: Re: aim7 scalability issue on 4 socket machine
-Message-ID: <20091206201136.GZ18989@one.firstfloor.org>
-References: <1253179879.2606.37.camel@ymzhang> <1253180411.8497.1.camel@twins> <Pine.LNX.4.64.0909171122180.25864@sister.anvils> <1253239339.2606.40.camel@ymzhang> <20090917195909.3a00ef83.akpm@linux-foundation.org> <Pine.LNX.4.64.0909180742500.14561@sister.anvils> <20090918000542.268934e1.akpm@linux-foundation.org> <20091206200833.GA2357@elf.ucw.cz>
+	Sun, 6 Dec 2009 15:15:50 -0500
+Date: Sun, 6 Dec 2009 12:18:03 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Message-ID: <20091206121803.70385c33@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
+References: <200912052216.19540.rjw@sisk.pl>
+	<200912060055.36130.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
+	<200912060254.10081.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+	<20091206113555.5a646713@infradead.org>
+	<alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091206200833.GA2357@elf.ucw.cz>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  - It must be obviously correct and tested.
->  - It cannot be bigger than 100 lines, with context.
->  - It must fix only one thing.
->  - It must fix a real bug that bothers people (not a, "This could be a
->    problem..." type thing).
+On Sun, 6 Dec 2009 11:58:44 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-A significant slow down in a common situation is a "significant
-bug that bothers people"
+> 
+> 
+> On Sun, 6 Dec 2009, Arjan van de Ven wrote:
+> > 
+> > in suspend, there's a PCI device (:1b) that does take some time,
+> > which is the audio controller. The bulk of the time is in the serio
+> > driver though..
+> 
+> That serio thing is disgusting. We had serious problems with the
+> serial driver timeouts for boot-time optimizations too, didn't we?
 
--Andi
+isn't serio the PS/2 stuff?
+
+
+(serio was an issue during boot as well due to some interesting rcu
+delays btw)
+
+
+> and none of them look like they should take anywhere close to half a 
+> second. So I'm obviously missing something, and your chart didn't
+> include the sleep/wakeup pairs.
+
+what do you mean by this? what would you like to see ?
+(I have a separate graph for resume.. but the graphing program does not
+show those things that take so short to resume that the font to print
+the name would be less than a pixel; can fix that)
+
+
+
+[fwiw I care more about resume speed than suspend speed, but obviously
+am happy if both get fixed... just resume tends to be much more user
+interesting, just like getting out of the idle loop matters more than
+getting into it]
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
