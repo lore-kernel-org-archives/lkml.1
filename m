@@ -1,96 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbZLFIkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbZLFIkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624AbZLFIkK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 03:40:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbZLFIkD
+	id S1755722AbZLFIkC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 03:40:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZLFIjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 03:40:03 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43701 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755681AbZLFIkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 03:40:00 -0500
-Date: Sun, 6 Dec 2009 09:39:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Message-ID: <20091206083941.GA2881@elte.hu>
-References: <200912052216.19540.rjw@sisk.pl>
- <200912060055.36130.rjw@sisk.pl>
- <20091205164541.5e0f209a@infradead.org>
- <200912060226.06217.rjw@sisk.pl>
- <20091205175852.2500cdad@infradead.org>
+	Sun, 6 Dec 2009 03:39:55 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59075 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755252AbZLFIjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 03:39:54 -0500
+Date: Sun, 6 Dec 2009 08:39:58 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "J. R. Okajima" <hooanon05@yahoo.co.jp>
+Cc: linux-kernel@vger.kernel.org, stewb@linux-foundation.org
+Subject: Re: [RFC 0/5] pathconf(3) with _PC_LINK_MAX
+Message-ID: <20091206083958.GC14381@ZenIV.linux.org.uk>
+References: <1260086343-8406-1-git-send-email-hooanon05@yahoo.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091205175852.2500cdad@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <1260086343-8406-1-git-send-email-hooanon05@yahoo.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Sun, 6 Dec 2009 02:26:06 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sun, Dec 06, 2009 at 04:58:58PM +0900, J. R. Okajima wrote:
+> The pathconf(_PC_LINK_MAX) cannot get the correct value, since linux
+> kernel doesn't provide such interface. And the current implementation in
+> GLibc issues statfs(2) first and then returns the predefined value
+> (EXT2_LINK_MAX, etc) based upoin the filesystem type. But GLibc doesn't
+> support all filesystem types. ie. when the target filesystem is unknown
+> to pathconf(3), it will return LINUX_LINK_MAX (127).
+> For GLibc, there is no way except implementing this poor method.
 > 
-> > On Sunday 06 December 2009, Arjan van de Ven wrote:
-> > > On Sun, 6 Dec 2009 00:55:36 +0100
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > 
-> > > > Disk spinup/spindown takes time, but also some ACPI devices resume
-> > > > slowly, serio devices do that too and there are surprisingly many
-> > > > drivers that wait (using msleep() during suspend and resume).
-> > > > Apart from this, every PCI device going from D0 to D3 during
-> > > > suspend and from D3 to D0 during resume requires us to sleep for
-> > > > 10 ms (the sleeping is done by the PCI core, so the drivers don't
-> > > > even realize its there).
-> > > 
-> > > maybe a good step is to make a scripts/bootgraph.pl equivalent for
-> > > suspend/resume (or make a debug mode that outputs in a compatible
-> > > format so that the script can be used as is.. I don't mind either
-> > > way, and consider this my offer to help with such a script as long
-> > > as there's sufficient logging in dmesg ;-)
-> > 
-> > OK, so what kind of logging is needed?
-> 
-> basically the equivalent of the two initcall_debug paths in
-> 
-> init/main.c:do_one_initcall()
-> 
-> which prints a start time and an end time (and a pid) for each init 
-> function; if we have the same for suspend calls (and resume)... we can 
-> make the tool graph it.
->
-> Would be nice to get markers for start and end of the whole suspend 
-> sequence as well as for the resume sequence; those make it easier to 
-> know when the end is (so that the axis can be drawn etc)
-> 
-> shouldn't be too hard to implement...
+> This patch makes statfs(2) return the correct value via struct
+> statfs.f_spare[0].
 
-I think an even better option would be to extend 'perf timechart' to be 
-suspend/resume aware: add a few tracepoint events and teach 'perf 
-timechart' to draw them. (We should be able to do perf timechart record 
-across suspend/resume cycles just fine.)
+Um...  Why do we need that, again?  Note that there is no way whatsoever
+for predicting whether link(2) will fail due to having too many existing
+links before you attempt the call - links can be created or removed between
+stat(2) and link(2).  So any uses of that value are heuristical.
 
-( Doing that would also improve the tracing facilities within 
-  suspend/resume quite significantly. It wouldnt just be a 
-  single-purpose thing for graphing, but perf trace and perf stat would 
-  work equally well. )
-
-Thanks,
-
-	Ingo
+Can you actually show any use cases of that thing?  Preferably - in existing
+code, but even a theoretical one would be interesting.
