@@ -1,118 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934014AbZLFRfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934026AbZLFRiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934014AbZLFRfk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 12:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933978AbZLFRfj
+	id S934026AbZLFRiU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 12:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933999AbZLFRiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 12:35:39 -0500
-Received: from mout2.freenet.de ([195.4.92.92]:33476 "EHLO mout2.freenet.de"
+	Sun, 6 Dec 2009 12:38:19 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50669 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933970AbZLFRfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 12:35:38 -0500
-Message-ID: <4B1BEAC7.3080901@freenet.de>
-Date: Sun, 06 Dec 2009 18:32:55 +0100
-From: Patrick Ringl <patrick_@freenet.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH]: drivers/platform/x86/Kconfig - fix inconsistency
-References: <4B1B1336.5020309@freenet.de> <4B1BF119.2020600@oracle.com>
-In-Reply-To: <4B1BF119.2020600@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S933989AbZLFRiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 12:38:18 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <E1NGzzv-0008Rh-1X@ZenIV.linux.org.uk>
+References: <E1NGzzv-0008Rh-1X@ZenIV.linux.org.uk>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: dhowells@redhat.com, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 11/18] arch_mmap_check() on mn10300
+Date: Sun, 06 Dec 2009 17:38:12 +0000
+Message-ID: <21624.1260121092@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Al Viro <viro@ftp.linux.org.uk> wrote:
 
-Randy Dunlap wrote:
-> Patrick Ringl wrote:
->   
->> Hi,
->>
->> I just discovered an inconsistency in a Kconfig file. DELL_WMI as well
->> as HP_WMI should not depend on ACPI_WMI but select it, as all the other
->> WMI-related,  platform-specific device drivers like TC1100_WMI or
->> ACER_WMI do.
->>
->> This -as of right now- prevents the selection of the two initially
->> mentioned drivers unless one, by chance, enables ACPI_WMI and then goes
->> back.
->>     
->
-> Then you'll also need to add
-> 	depends on ACPI
-> to both of those drivers.  Without this addition,
-> these drivers could enable ACPI_WMI even when ACPI
-> is not enabled.
->
->   
-Oh yea, I've missed that.
+> +#define arch_mmap_chech(addr, len, flags) \
+> +	(((flags) & MAP_FIXED && (addr) < MIN_MAP_ADDR) ? -EINVAL : 0)
 
-Signed-off-by: Patrick Ringl <patrick_@freenet.de>
+I believe that should be arch_mmap_check().
 
---- linux-2.6.32-o/drivers/platform/x86/Kconfig	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6.32/drivers/platform/x86/Kconfig	2009-12-06 18:08:09.000000000 +0100
-@@ -86,8 +86,9 @@
- 
- config DELL_WMI
- 	tristate "Dell WMI extras"
--	depends on ACPI_WMI
- 	depends on INPUT
-+	depends on ACPI
-+	select ACPI_WMI
- 	---help---
- 	  Say Y here if you want to support WMI-based hotkeys on Dell laptops.
- 
-@@ -133,9 +134,10 @@
- 
- config HP_WMI
- 	tristate "HP WMI extras"
--	depends on ACPI_WMI
-+	depends on ACPI
- 	depends on INPUT
- 	depends on RFKILL || RFKILL = n
-+	select ACPI_WMI
- 	help
- 	 Say Y here if you want to support WMI-based hotkeys on HP laptops and
- 	 to read data from WMI such as docking or ambient light sensor state.
-
----
->   
->> Signed-off-by: Patrick Ringl <patrick_@freenet.de>
->>
->> --- linux-2.6.32-o/drivers/platform/x86/Kconfig    2009-12-03
->> 04:51:21.000000000 +0100
->> +++ linux-2.6.32/drivers/platform/x86/Kconfig    2009-12-06
->> 02:32:47.000000000 +0100
->> @@ -86,8 +86,8 @@
->>
->> config DELL_WMI
->>     tristate "Dell WMI extras"
->> -    depends on ACPI_WMI
->>     depends on INPUT
->> +    select ACPI_WMI
->>     ---help---
->>       Say Y here if you want to support WMI-based hotkeys on Dell laptops.
->>
->> @@ -133,9 +133,9 @@
->>
->> config HP_WMI
->>     tristate "HP WMI extras"
->> -    depends on ACPI_WMI
->>     depends on INPUT
->>     depends on RFKILL || RFKILL = n
->> +    select ACPI_WMI
->>     help
->>      Say Y here if you want to support WMI-based hotkeys on HP laptops and
->>      to read data from WMI such as docking or ambient light sensor state.
->> ---
->>     
->
->
->
->   
-regards,
-Patrick
+David
