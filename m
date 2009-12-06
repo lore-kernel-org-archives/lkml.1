@@ -1,77 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934262AbZLFVOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934279AbZLFVXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934262AbZLFVOv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 16:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934213AbZLFVOu
+	id S934279AbZLFVXs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 16:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934236AbZLFVXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 16:14:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50120 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934195AbZLFVOt (ORCPT
+	Sun, 6 Dec 2009 16:23:47 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:64412 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934223AbZLFVXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 16:14:49 -0500
-Date: Sun, 6 Dec 2009 13:17:02 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Message-ID: <20091206131702.7d6cdc57@infradead.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912061534120.7903-100000@netrider.rowland.org>
-References: <20091206113555.5a646713@infradead.org>
-	<Pine.LNX.4.44L0.0912061534120.7903-100000@netrider.rowland.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 6 Dec 2009 16:23:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=HzoD0FRCGEPTrZ8+lyvCwDiGBhwYoraSqH691uHckg7ZkruvECBA7uH4XiOiCeUM01
+         JtA6TJD65eNOPTE4cUgZEegfw+Iwn7im+2VmpohbBEyTNz4PtSt9RazLHt/hSbdDqd8w
+         O9oTGTBqJrdxoHlpPpagAiw5DCj+1dMiaMBAU=
+MIME-Version: 1.0
+In-Reply-To: <m3skbn6dv1.fsf@intrepid.localdomain>
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
+	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	 <1260070593.3236.6.camel@pc07.localdom.local>
+	 <20091206065512.GA14651@core.coreip.homeip.net>
+	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
+	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	 <m3skbn6dv1.fsf@intrepid.localdomain>
+Date: Sun, 6 Dec 2009 16:23:51 -0500
+Message-ID: <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Dec 2009 15:36:40 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Sun, Dec 6, 2009 at 3:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> Jon Smirl <jonsmirl@gmail.com> writes:
+>
+>>> Once again: how about agreement about the LIRC interface
+>>> (kernel-userspace) and merging the actual LIRC code first? In-kernel
+>>> decoding can wait a bit, it doesn't change any kernel-user interface.
+>>
+>> I'd like to see a semi-complete design for an in-kernel IR system
+>> before anything is merged from any source.
+>
+> This is a way to nowhere, there is no logical dependency between LIRC
+> and input layer IR.
+>
+> There is only one thing which needs attention before/when merging LIRC:
+> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
+> actually, making a correct IR core design without the LIRC merged can be
+> only harder.
 
-> On Sun, 6 Dec 2009, Arjan van de Ven wrote:
-> 
-> > btw I instrumented both the suspend and resume, and made graphs out
-> > of it for my laptop (modern laptop with Intel cpu/wifi/graphics of
-> > course).
-> > 
-> > http://www.fenrus.org/graphs/suspend.svg
-> > http://www.fenrus.org/graphs/resume.svg
-> > 
-> > (also attached for convenience)
-> > 
-> > the resume clearly shows that all this talking about PCI stuff is
-> > completely without practical merit.. it's the USB stuff where the
-> > time is spent.
-> 
-> Arjan, can you try testing the USB timings again with the patch below 
-> (for vanilla 2.6.32)?
-> 
-> Fair warning: I just composed this and haven't tried it out myself.
+Here's a few design review questions on the LIRC drivers that were posted....
 
-unfortunately it does not make a difference that I can notice in the
-graphs.
+How is the pulse data going to be communicated to user space?
+Can the pulse data be reported via an existing interface without
+creating a new one?
+Where is the documentation for the protocol?
+Is it a device interface or something else?
+Does it work with poll, epoll, etc?
+What is the time standard for the data, where does it come from?
+How do you define the start and stop of sequences?
+What about capabilities of the receiver, what frequencies?
+If a receiver has multiple frequencies, how do you report what
+frequency the data came in on?
+What about multiple apps simultaneously using the pulse data?
+Is receiving synchronous or queued?
+How big is the receive queue?
+How does access work, root only or any user?
+What about transmit, how do you get pulse data into the device?
+Transmitter frequencies?
+Multiple transmitters?
+Is transmitting synchronous or queued?
+How big is the transmit queue?
+How are capabilities exposed, sysfs, etc?
+What is the interface for attaching an in-kernel decoder?
+If there is an in-kernel decoder should the pulse data stop being
+reported, partially stopped, something else?
+What is the mechanism to make sure both system don't process the same pulses?
 
-http://www.fenrus.org/graphs/resume2.svg
-
-the resume problem seems to be that we resume all the hubs sequentially,
-much like we used to discover them sequentially during boot....
-
-I do not know how much I'm asking for, but would it be sensible to do a
-similar thing for hub resume as we did for boot? eg start resuming them
-all at the same time, so that the mandatory delays of these hubs will
-overlap ?
+> --
+> Krzysztof Halasa
+>
 
 
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jon Smirl
+jonsmirl@gmail.com
