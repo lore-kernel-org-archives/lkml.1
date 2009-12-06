@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933750AbZLFLq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933754AbZLFLw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933750AbZLFLq7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 06:46:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933723AbZLFLq5
+	id S933754AbZLFLw0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 06:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933723AbZLFLwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 06:46:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46010 "EHLO mx1.redhat.com"
+	Sun, 6 Dec 2009 06:52:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53294 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933721AbZLFLq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 06:46:56 -0500
-Message-ID: <4B1B99A5.2080903@redhat.com>
-Date: Sun, 06 Dec 2009 09:46:45 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S933722AbZLFLwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 06:52:24 -0500
+Date: Sun, 6 Dec 2009 12:50:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf/sched: fix for getting task's execute time
+Message-ID: <20091206115040.GB871@elte.hu>
+References: <4B1B8E0E.3040007@cn.fujitsu.com>
+ <1260097512.7818.341.camel@laptop>
+ <1260097609.7818.349.camel@laptop>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: hermann pitton <hermann-pitton@arcor.de>, Jon Smirl <jonsmirl@gmail.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net>
-In-Reply-To: <20091206065512.GA14651@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260097609.7818.349.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> Hi,
-> 
-> On Sun, Dec 06, 2009 at 04:36:33AM +0100, hermann pitton wrote:
->> Hi,
->>
->> Am Freitag, den 04.12.2009, 19:28 -0500 schrieb Jon Smirl:
->>> On Fri, Dec 4, 2009 at 6:01 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
->>>> BTW, I just came across a XMP remote that seems to generate 3x64 bit scan
->>>> codes. Anyone here has docs on the XMP protocol?
->>> Assuming a general purpose receiver (not one with fixed hardware
->>> decoding), is it important for Linux to receive IR signals from all
->>> possible remotes no matter how old or obscure? Or is it acceptable to
->>> tell the user to throw away their dedicated remote and buy a universal
->>> multi-function one?  Universal multi-function remotes are $12 in my
->>> grocery store - I don't even have to go to an electronics store.
->> finally we have some point here, IMHO, that is not acceptable and I told
->> you previously not to bet on such. Start some poll and win it, and I'll
->> shut up :)
->>
-> 
-> Who would participate in the poll though?
-> 
->> To be frank, you are quite mad at this point, or deliver working other
->> remotes to __all__ for free.
->>
-> 
-> I do not believe you are being realistic. Sometimes we just need to say
-> that the device is a POS and is just not worth it. Remember, there is
-> still "lirc hole" for the hard core people still using solder to produce
-> something out of the spare electronic components that may be made to
-> work (never mind that it causes the CPU constantly poll the device, not
-> letting it sleep and wasting electricity as a result - just hypotetical
-> example here).
-> 
-> We still need to do cost-benefit analysis and decide whether supporting
-> the exotic setups _in kernel_ makes sense if it encumbers implementation
-> and causes issues to the other 95% people.
 
-Fully agreed. The costs (our time) to add and keep supporting an in-kernel
-driver for an IR that just one person is still using is higher than 
-asking the user to get a new IR. This time would be better spent adding a new
-driver for other devices.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-Cheers,
-Mauro.
+> On Sun, 2009-12-06 at 12:05 +0100, Peter Zijlstra wrote:
+> > On Sun, 2009-12-06 at 18:57 +0800, Xiao Guangrong wrote:
+> > > In current code, we get task's execute time by reading
+> > > "/proc/<pid>/sched" file, it's wrong if the task is created
+> > > by pthread_create(), because every thread task has same pid.
+> > > So, the correct way is reading "/proc/<ppid>/task/<tid>/sched"
+> > > file.
+> > > 
+> > > This patch also remove redundant include files since <sys/types.h>
+> > > is included in "perf.h"
+> > 
+> > We really should not be using these proc files but instead make sure
+> > this information gets transferred through a tracepoint or similar.
+> > 
+> > Reading these proc files is too prone to races.
 
+yeah. Ideally we'd want all valuable information that is available via 
+/proc to be available via perf events as well. In the future it should 
+be possible to run perf even without /proc mounted for example.
 
+Furthermore it's good for consistency and simplicity as well, plus it's 
+faster too to get the information from the perf syscall and mmap-ed 
+ringbuffer than to read things via /proc. No need for ASCII conversion, 
+fixed record formats, fast streaming and buffering, no read() overhead, 
+etc.
+
+> We can probably get the runtime by grouping a task-clock swcounter 
+> with an appropriate other event.
+
+Would be lovely.
+
+	Ingo
