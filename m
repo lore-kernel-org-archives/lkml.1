@@ -1,131 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933976AbZLFRTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933983AbZLFRW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933976AbZLFRTk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 12:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933929AbZLFRTi
+	id S933983AbZLFRW7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 12:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933962AbZLFRW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 12:19:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47495 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933928AbZLFRTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 12:19:32 -0500
-Date: Sun, 6 Dec 2009 17:19:09 GMT
-From: tip-bot for OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       fweisbec@gmail.com, hirofumi@mail.parknet.co.jp, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, hirofumi@mail.parknet.co.jp, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <87d42s8iiu.fsf_-_@devron.myhome.or.jp>
-References: <87d42s8iiu.fsf_-_@devron.myhome.or.jp>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf tools: Misc small fixes
-Message-ID: <tip-7691b1ec2e4a8d4bd88dcf88b29792399ebe1c91@git.kernel.org>
-Git-Commit-ID: 7691b1ec2e4a8d4bd88dcf88b29792399ebe1c91
-X-Mailer: tip-git-log-daemon
+	Sun, 6 Dec 2009 12:22:57 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:22721 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933959AbZLFRW4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 12:22:56 -0500
+X-Trace: 299068010/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.111.197
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: As0AAAd3G0tQKW/F/2dsb2JhbAAI1Q2EMwQ
+X-IronPort-AV: E=Sophos;i="4.47,350,1257120000"; 
+   d="scan'208";a="299068010"
+Date: Sun, 6 Dec 2009 17:22:54 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCHSET] mremap/mmap mess
+In-Reply-To: <E1NGzzu-0008RH-T2@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0912061715280.3721@sister.anvils>
+References: <E1NGzzu-0008RH-T2@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7691b1ec2e4a8d4bd88dcf88b29792399ebe1c91
-Gitweb:     http://git.kernel.org/tip/7691b1ec2e4a8d4bd88dcf88b29792399ebe1c91
-Author:     OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-AuthorDate: Sun, 6 Dec 2009 20:10:49 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 6 Dec 2009 18:15:02 +0100
+On Sat, 5 Dec 2009, Al Viro wrote:
+> 
+> Series below should deal with those, mostly by switching to consistent
+> use of get_unmapped_area() and sanitizing mmap/mremap code in general.
 
-perf tools: Misc small fixes
+Sorry, I've not got through them all yet.
 
-- util/header.c
-	"len" is aligned to 64. So, it tries to write the out of
-	long_name buffer.
+> 
+> There is one case where we still have a serious PITA and I'm not sure
+> how to deal with that; it's expand_stack().  We can trigger that by
+> creating a VM_GROWS{UP,DOWN} mapping and either hitting a pagefault
+> on address {below,above} it or doing PTRACE_POKEDATA on such address.
+> As it is, we only check that range we are expanding into is not a
+> hugetlb-only one.  The thing is, we *can't* just do the normal checks
+> as-is there.
 
-	So, this use "zero_buf" to write aligned area.
+It's been noticed in the past that the wrong rlimits are checked too.
+I toyed with this patch nearly five years ago: does anyone know why
+we need access_process_vm() to be able to expand another's stack?
 
-- util/trace-event-read.c
-	"size" is not including nul byte. So, this allocates it, and set '\0'.
 
-- util/trace-event-parse.c
-	It needs parens to calc correct size.
+[PATCH] mm: forbid expand_stack on another mm
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <87d42s8iiu.fsf_-_@devron.myhome.or.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+In a very few cases, get_user_pages() is used on another process's address
+space: by access_process_vm() (ptrace, /proc/<pid>/mem and a few others),
+perhaps arch/arm/mach-bcmring/dma.c, perhaps drivers/gpu/drm/ttm/ttm_tt.c.
+
+But expand_stack() can get into trouble when used on another process:
+the wrong rlimits are applied, and the stack could be expanded into an
+area forbidden to that kind of process - mm doesn't contain all the info.
+
+I've never found out why we need access_process_vm() to expand a stack:
+shall we see what breaks if we just forbid expand_stack() on another mm?
+
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 ---
- tools/perf/util/header.c            |    9 +++++++--
- tools/perf/util/trace-event-parse.c |    2 +-
- tools/perf/util/trace-event-read.c  |    3 ++-
- 3 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 4805e6d..08b6759 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -187,7 +187,9 @@ static int do_write(int fd, const void *buf, size_t size)
- 
- static int __dsos__write_buildid_table(struct list_head *head, int fd)
- {
-+#define NAME_ALIGN	64
- 	struct dso *pos;
-+	static const char zero_buf[NAME_ALIGN];
- 
- 	list_for_each_entry(pos, head, node) {
- 		int err;
-@@ -197,14 +199,17 @@ static int __dsos__write_buildid_table(struct list_head *head, int fd)
- 		if (!pos->has_build_id)
- 			continue;
- 		len = pos->long_name_len + 1;
--		len = ALIGN(len, 64);
-+		len = ALIGN(len, NAME_ALIGN);
- 		memset(&b, 0, sizeof(b));
- 		memcpy(&b.build_id, pos->build_id, sizeof(pos->build_id));
- 		b.header.size = sizeof(b) + len;
- 		err = do_write(fd, &b, sizeof(b));
- 		if (err < 0)
- 			return err;
--		err = do_write(fd, pos->long_name, len);
-+		err = do_write(fd, pos->long_name, pos->long_name_len + 1);
-+		if (err < 0)
-+			return err;
-+		err = do_write(fd, zero_buf, len - pos->long_name_len + 1);
- 		if (err < 0)
- 			return err;
- 	}
-diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index 0302405..6ffe9d6 100644
---- a/tools/perf/util/trace-event-parse.c
-+++ b/tools/perf/util/trace-event-parse.c
-@@ -177,7 +177,7 @@ void parse_proc_kallsyms(char *file, unsigned int size __unused)
- 		func_count++;
- 	}
- 
--	func_list = malloc_or_die(sizeof(*func_list) * func_count + 1);
-+	func_list = malloc_or_die(sizeof(*func_list) * (func_count + 1));
- 
- 	i = 0;
- 	while (list) {
-diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
-index 342dfdd..1744422 100644
---- a/tools/perf/util/trace-event-read.c
-+++ b/tools/perf/util/trace-event-read.c
-@@ -145,8 +145,9 @@ static void read_proc_kallsyms(void)
- 	if (!size)
- 		return;
- 
--	buf = malloc_or_die(size);
-+	buf = malloc_or_die(size + 1);
- 	read_or_die(buf, size);
-+	buf[size] = '\0';
- 
- 	parse_proc_kallsyms(buf, size);
- 
+ mm/mmap.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- 2.6.32/mm/mmap.c	2009-12-03 03:51:21.000000000 +0000
++++ linux/mm/mmap.c	2009-12-06 16:49:01.000000000 +0000
+@@ -1717,7 +1717,7 @@ find_extend_vma(struct mm_struct *mm, un
+ 	vma = find_vma_prev(mm, addr, &prev);
+ 	if (vma && (vma->vm_start <= addr))
+ 		return vma;
+-	if (!prev || expand_stack(prev, addr))
++	if (!prev || mm != current->mm || expand_stack(prev, addr))
+ 		return NULL;
+ 	if (prev->vm_flags & VM_LOCKED) {
+ 		if (mlock_vma_pages_range(prev, addr, prev->vm_end) < 0)
+@@ -1745,6 +1745,8 @@ find_extend_vma(struct mm_struct * mm, u
+ 		return vma;
+ 	if (!(vma->vm_flags & VM_GROWSDOWN))
+ 		return NULL;
++	if (mm != current->mm)
++		return NULL;
+ 	start = vma->vm_start;
+ 	if (expand_stack(vma, addr))
+ 		return NULL;
