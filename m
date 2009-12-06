@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934011AbZLFRcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbZLFR0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934011AbZLFRcX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 12:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933989AbZLFRcV
+	id S1756835AbZLFR0j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 12:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933945AbZLFR0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 12:32:21 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58317 "EHLO mx2.suse.de"
+	Sun, 6 Dec 2009 12:26:38 -0500
+Received: from khc.piap.pl ([195.187.100.11]:53474 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933941AbZLFRcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 12:32:21 -0500
-Date: Sun, 6 Dec 2009 09:25:26 -0800
-From: Greg KH <gregkh@suse.de>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
-       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
-       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
-       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
-Message-ID: <20091206172526.GA17480@suse.de>
-References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com> <20091205000942.GA8224@suse.de> <4B19CA6F.4090700@gmail.com> <20091205041507.GA24885@suse.de> <4B1B0D40.3040209@gmail.com>
+	id S1756650AbZLFR0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 12:26:37 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Andy Walls <awalls@radix.net>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Christoph Bartelmus <lirc@bartelmus.de>,
+       dmitry.torokhov@gmail.com, j@jannau.net, jarod@redhat.com,
+       jarod@wilsonet.com, kraxel@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
+	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	<1259977687.27969.18.camel@localhost>
+	<9e4733910912041945g14732dcfgbb2ef6437ef62bb6@mail.gmail.com>
+	<1260066624.3105.33.camel@palomino.walls.org>
+Date: Sun, 06 Dec 2009 18:26:40 +0100
+In-Reply-To: <1260066624.3105.33.camel@palomino.walls.org> (Andy Walls's
+	message of "Sat, 05 Dec 2009 21:30:24 -0500")
+Message-ID: <m3aaxw6mjz.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1B0D40.3040209@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 06, 2009 at 02:47:44AM +0100, Emese Revfy wrote:
-> Greg KH wrote:
-> > On Sat, Dec 05, 2009 at 03:50:23AM +0100, Emese Revfy wrote:
-> >> Greg KH wrote:
-> >>> On Sat, Dec 05, 2009 at 01:02:59AM +0100, Emese Revfy wrote:
-> >>>> -static struct file_operations ptmx_fops;
-> >>>> +static const struct file_operations ptmx_fops = {
-> >>>> +	.llseek		= no_llseek,
-> >>>> +	.read		= tty_read,
-> >>>> +	.write		= tty_write,
-> >>>> +	.poll		= tty_poll,
-> >>>> +	.unlocked_ioctl	= tty_ioctl,
-> >>>> +	.compat_ioctl	= tty_compat_ioctl,
-> >>>> +	.open		= ptmx_open,
-> >>>> +	.release	= tty_release,
-> >>>> +	.fasync		= tty_fasync,
-> >>>> +};
-> >>> You just made these functions all global, for no real good reason.  Why
-> >>> did you do this?
-> >> I think this is the only way to make ptmx_fops const, provided we want to. 
-> > 
-> > Why do we want to?
-> 
-> Because I saw that checkpatch.pl itself tries to ensure the same I went
-> through the whole tree looking for non-const file_operations structures
-> and tried to make them const as best as I could. If you think making
-> ptmx_fops const is not worth the effort I will remove it from the patch.
+Andy Walls <awalls@radix.net> writes:
 
-Based on the patch, I would think it is not worth it.
+> Yes, I agree.  I do not know what percentage of current Linux users are
+> technical vs non-technical, so I cannot gauge the current improtance.
+>
+> I can see the trend line though: as time goes by, the percentage of all
+> linux users that have a technical bent will only get smaller.
 
-thanks,
+This IMHO shouldn't matter. If users can configure their keymaps for
+e.g. games with a graphical utility (and  they easily can), they can do
+the same with their remotes, at least with these using common sane
+protocols. The only thing needed is a good GUI utility. Ergo - it's not
+a kernel issue.
 
-greg k-h
+The "default bundled", or PnP, won't work well in comparison to a GUI
+utility, I wouldn't worry about it too much (though adding it to udev
+and co is trivial and we should do it - even if not PnP but asking first
+about the actual remote used).
+-- 
+Krzysztof Halasa
