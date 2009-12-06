@@ -1,125 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbZLFUIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbZLFUKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbZLFUIl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 15:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757225AbZLFUIj
+	id S1757554AbZLFUKq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 15:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbZLFUKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 15:08:39 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44735 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757224AbZLFUIi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 15:08:38 -0500
-Date: Sun, 6 Dec 2009 21:08:33 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       "lee.schermerhorn@hp.com" <lee.schermerhorn@hp.com>, stable@kernel.org
-Subject: Re: aim7 scalability issue on 4 socket machine
-Message-ID: <20091206200833.GA2357@elf.ucw.cz>
-References: <1253179879.2606.37.camel@ymzhang>
- <1253180411.8497.1.camel@twins>
- <Pine.LNX.4.64.0909171122180.25864@sister.anvils>
- <1253239339.2606.40.camel@ymzhang>
- <20090917195909.3a00ef83.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0909180742500.14561@sister.anvils>
- <20090918000542.268934e1.akpm@linux-foundation.org>
+	Sun, 6 Dec 2009 15:10:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40033 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757086AbZLFUKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 15:10:43 -0500
+Date: Sun, 6 Dec 2009 20:09:48 GMT
+From: tip-bot for Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       geert@linux-m68k.org, torvalds@linux-foundation.org,
+       rusty@rustcorp.com.au, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       geert@linux-m68k.org, rusty@rustcorp.com.au,
+       torvalds@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <alpine.DEB.2.00.0912062038070.5693@ayla.of.borg>
+References: <alpine.DEB.2.00.0912062038070.5693@ayla.of.borg>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] cpumask: Fix generate_sched_domains() for UP
+Message-ID: <tip-e1b8090bdf125f8b2e192149547fead7f302a89c@git.kernel.org>
+Git-Commit-ID: e1b8090bdf125f8b2e192149547fead7f302a89c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090918000542.268934e1.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-09-18 00:05:42, Andrew Morton wrote:
-> On Fri, 18 Sep 2009 07:53:58 +0100 (BST) Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> 
-> > On Thu, 17 Sep 2009, Andrew Morton wrote:
-> > > On Fri, 18 Sep 2009 10:02:19 +0800 "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
-> > > > > 
-> > > > > So, Yanmin, please retest with http://lkml.org/lkml/2009/9/13/25
-> > > > > and let us know if that works as well for you - thanks.
-> > > > I tested Lee's patch and it does fix the issue.
-> > 
-> > Thanks for checking and reporting back, Yanmin.
-> > 
-> > > 
-> > > Do we think we should cook up something for -stable?
-> > 
-> > Gosh, I laughed at Lee (sorry!) for suggesting it for -stable:
-> > is stable really for getting a better number out of a benchmark?
-> > 
-> > I'd have thought the next release is the right place for that; but
-> > I've no problem if you guys and the stable guys agree it's appropriate.
-> > 
-> > > 
-> > > Either this is a regression or the workload is particularly obscure. 
-> > 
-> > I've not cross-checked descriptions, but assume Lee was actually
-> > testing on exactly the same kind of upcoming Nehalem as Yanmin, and
-> > that machine happens to have characteristics which show up badly here.
-> > 
-> > > 
-> > > aim7 is sufficiently non-obscure to make me wonder what's happened here?
-> > 
-> > Not a regression, just the onward march of new hardware, I think.
-> > Could easily be other such things in other places with other tests.
-> > 
-> 
-> Well, it comes down to the question "what is -stable for".
-> 
-> If you take it as "bugfixed version of the 2.6.x kernel" then no,
-> speedups aren't appropriate.
-> 
-> If you consider -stable to be "something distros, etc will use" then
-> yes, perhaps we serve those consumers better by including fairly major
-> efficiency improvements.
+Commit-ID:  e1b8090bdf125f8b2e192149547fead7f302a89c
+Gitweb:     http://git.kernel.org/tip/e1b8090bdf125f8b2e192149547fead7f302a89c
+Author:     Geert Uytterhoeven <geert@linux-m68k.org>
+AuthorDate: Sun, 6 Dec 2009 20:41:16 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 6 Dec 2009 21:08:41 +0100
 
-Well, if speedups are ok, then someone should update stable_rules
-file...?
+cpumask: Fix generate_sched_domains() for UP
 
-...because I do not think it should be accepted based on that.
+Commit acc3f5d7cabbfd6cec71f0c1f9900621fa2d6ae7 ("cpumask:
+Partition_sched_domains takes array of cpumask_var_t") changed
+the function signature of generate_sched_domains() for the
+CONFIG_SMP=y case, but forgot to update the corresponding
+function for the CONFIG_SMP=n case, causing:
 
-								Pavel
-It currently says:
--------------------
+  kernel/cpuset.c:2073: warning: passing argument 1 of 'generate_sched_domains' from incompatible pointer type
 
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <alpine.DEB.2.00.0912062038070.5693@ayla.of.borg>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/cpuset.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Rules on what kind of patches are accepted, and which ones are not,
-into the
-"-stable" tree:
-
- - It must be obviously correct and tested.
- - It cannot be bigger than 100 lines, with context.
- - It must fix only one thing.
- - It must fix a real bug that bothers people (not a, "This could be a
-   problem..." type thing).
- - It must fix a problem that causes a build error (but not for things
-   marked CONFIG_BROKEN), an oops, a hang, data corruption, a real
-   security issue, or some "oh, that's not good" issue.  In short,
-something
-   critical.
- - New device IDs and quirks are also accepted.
- - No "theoretical race condition" issues, unless an explanation of
-how the
-   race can be exploited is also provided.
- - It cannot contain any "trivial" fixes in it (spelling changes,
-   whitespace cleanups, etc).
- - It must follow the Documentation/SubmittingPatches rules.
- - It or an equivalent fix must already exist in Linus' tree.  Quote
-the
-   respective commit ID in Linus' tree in your patch submission to
--stable.
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 3cf2183..43fb7e8 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -737,7 +737,7 @@ static void do_rebuild_sched_domains(struct work_struct *unused)
+ {
+ }
+ 
+-static int generate_sched_domains(struct cpumask **domains,
++static int generate_sched_domains(cpumask_var_t **domains,
+ 			struct sched_domain_attr **attributes)
+ {
+ 	*domains = NULL;
