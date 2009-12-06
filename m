@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbZLFUeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbZLFUec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757954AbZLFUeZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 15:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757839AbZLFUeY
+	id S1757990AbZLFUec (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 15:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbZLFUea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 15:34:24 -0500
-Received: from khc.piap.pl ([195.187.100.11]:34232 "EHLO khc.piap.pl"
+	Sun, 6 Dec 2009 15:34:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14962 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757824AbZLFUeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 15:34:23 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
-	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	<1260070593.3236.6.camel@pc07.localdom.local>
-	<20091206065512.GA14651@core.coreip.homeip.net>
-	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-Date: Sun, 06 Dec 2009 21:34:26 +0100
-In-Reply-To: <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	(Jon Smirl's message of "Sun, 6 Dec 2009 12:52:11 -0500")
-Message-ID: <m3skbn6dv1.fsf@intrepid.localdomain>
+	id S1757958AbZLFUe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 15:34:26 -0500
+Message-ID: <4B1C1554.5060007@redhat.com>
+Date: Sun, 06 Dec 2009 15:34:28 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Larry Woodman <lwoodman@redhat.com>
+Subject: Re: [PATCH 5/7] Don't deactivate the page if trylock_page() is failed.
+References: <20091204173233.5891.A69D9226@jp.fujitsu.com> <20091204174347.58A0.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091204174347.58A0.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl <jonsmirl@gmail.com> writes:
-
->> Once again: how about agreement about the LIRC interface
->> (kernel-userspace) and merging the actual LIRC code first? In-kernel
->> decoding can wait a bit, it doesn't change any kernel-user interface.
+On 12/04/2009 03:44 AM, KOSAKI Motohiro wrote:
+>  From 7635eaa033cfcce7f351b5023952f23f0daffefe Mon Sep 17 00:00:00 2001
+> From: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
+> Date: Fri, 4 Dec 2009 12:03:07 +0900
+> Subject: [PATCH 5/7] Don't deactivate the page if trylock_page() is failed.
 >
-> I'd like to see a semi-complete design for an in-kernel IR system
-> before anything is merged from any source.
+> Currently, wipe_page_reference() increment refctx->referenced variable
+> if trylock_page() is failed. but it is meaningless at all.
+> shrink_active_list() deactivate the page although the page was
+> referenced. The page shouldn't be deactivated with young bit. it
+> break reclaim basic theory and decrease reclaim throughput.
+>
+> This patch introduce new SWAP_AGAIN return value to
+> wipe_page_reference().
+>
+> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
 
-This is a way to nowhere, there is no logical dependency between LIRC
-and input layer IR.
+Reviewed-by: Rik van Riel <riel@redhat.com>
 
-There is only one thing which needs attention before/when merging LIRC:
-the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
-actually, making a correct IR core design without the LIRC merged can be
-only harder.
 -- 
-Krzysztof Halasa
+All rights reversed.
