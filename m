@@ -1,127 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbZLFQak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZLFQfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932899AbZLFQak (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 11:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbZLFQai
+	id S1756911AbZLFQfJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 11:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbZLFQfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 11:30:38 -0500
-Received: from mail02a.mail.t-online.hu ([84.2.40.7]:63363 "EHLO
-	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754250AbZLFQai (ORCPT
+	Sun, 6 Dec 2009 11:35:08 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43887 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755725AbZLFQfH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 11:30:38 -0500
-Message-ID: <4B1BDC30.6020800@freemail.hu>
-Date: Sun, 06 Dec 2009 17:30:40 +0100
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sun, 6 Dec 2009 11:35:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MlVju7bDqQH04nIY6u3Kud8CU/fLMDDEtaBtLJHrmRTuoO88vBQyNkaYZZlF1FokHz
+         kc5jLZ0SMm8Idj4yP5CG73AvPCJSDh3hS0IADMuf4Ca8UexDdPKB1b7Q4lk07LA+Dpvf
+         5o4Vevm9U+0NMqonHoYHGxTqVGLAdC/MW/GCA=
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: __devinitdata, __devinitconst and const?
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail02a.mail.t-online.hu 32711; Body=1 Fuz1=1
-	Fuz2=1
+In-Reply-To: <4B1BDAA3.10601@gentoo.org>
+References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>
+	 <4B055609.9030306@tremplin-utc.net>
+	 <4B1A53AE.9020707@tremplin-utc.net>
+	 <40a4ed590912060741n4042ab1bg8188cd4eff28ca78@mail.gmail.com>
+	 <4B1BDAA3.10601@gentoo.org>
+Date: Sun, 6 Dec 2009 17:35:11 +0100
+Message-ID: <40a4ed590912060835s61aea6aqfe6780395bfd2993@mail.gmail.com>
+Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
+From: Zeno Davatz <zdavatz@gmail.com>
+To: Zac Medico <zmedico@gentoo.org>
+Cc: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Dec 6, 2009 at 5:24 PM, Zac Medico <zmedico@gentoo.org> wrote:
+> Zeno Davatz wrote:
+>> Ok, it does compile but when I insert the module I get:
+>>
+>> psb: Unknown symbol i2c_bit_add_bus
+>
+> This might solve it:
+>
+>  modprobe i2c_algo_bit
+>
+> That module comes from CONFIG_I2C_ALGOBIT=m in your kernel config.
 
-I would like to understand how __devinitdata and __devinitconst works. I
-also would like to see what happens if I make a mistake: is it recognised
-by any of the static analyze tools (i.e. by gcc or by modpost).
+Yes, thanks. That helped another step. I am getting the correct screen
+resolution after enabling that in the kernel as well. The boot [ok]
+messages of Gentoo are in a higher resolution now though. That is a
+good start.
 
-So I created a little test module and I tried to compile it with gcc 4.3.2.
-My expectation would be that the variables a, d, e, h, a_str, d_str, e_str
-and h_str are OK. I also expect that the variables b, c, f, g, b_str, c_str,
-f_str and g_str are wrong because of section mismatch.
+But after my X starts I get a black screen with a
 
-The current result, however, is a bit confusing to me. Here it is:
+-
 
-$ make
-make -C /lib/modules/2.6.32-rc8/build M=/home/nmarci/c/hello2 modules
-make[1]: Entering directory `/usr/src/linux-2.6.32-rc8'
-  CC [M]  /home/nmarci/c/hello2/test.o
-/home/nmarci/c/hello2/test.c:5: error: b causes a section type conflict
-/home/nmarci/c/hello2/test.c:7: error: d causes a section type conflict
-/home/nmarci/c/hello2/test.c:15: error: b_str causes a section type conflict
-/home/nmarci/c/hello2/test.c:17: error: d_str causes a section type conflict
-/home/nmarci/c/hello2/test.c:20: error: f_str causes a section type conflict
-/home/nmarci/c/hello2/test.c:22: error: h_str causes a section type conflict
-make[2]: *** [/home/nmarci/c/hello2/test.o] Error 1
-make[1]: *** [_module_/home/nmarci/c/hello2] Error 2
-make[1]: Leaving directory `/usr/src/linux-2.6.32-rc8'
-make: *** [default] Error 2
+in the top left corner. They keyboard also does not work. May be an
+X.org config problem.
 
-Here is the source code of my test.c:
+Also this is in my /var/log/messages
 
------->8------- cut here ----->8-------
-#include <linux/init.h>
-#include <linux/module.h>
+[    6.348077] [drm:psb_do_init] *ERROR* Debug is 0x00000000
 
-int a __devinitdata = 0x11223344;
-const int b __devinitdata = 0x55667788; // error: b causes a section type conflict
-int c __devinitconst = 0x99AABBCC;
-const int d __devinitconst = 0xDDEEFF00; // error: d causes a section type conflict
-
-static int e __devinitdata = 0x12233445;
-static const int f __devinitdata = 0x56677889;
-static int g __devinitconst = 0x900AABBC;
-static const int h __devinitconst = 0xCDDEEFF0;
-
-char a_str[] __devinitdata = "first";
-const char b_str[] __devinitdata = "second"; // error: b_str causes a section type conflict
-char c_str[] __devinitconst = "third";
-const char d_str[] __devinitconst = "fourth"; // error: d_str causes a section type conflict
-
-static char e_str[] __devinitdata = "fifth";
-static const char f_str[] __devinitdata = "sixth"; // error: f_str causes a section type conflict
-static char g_str[] __devinitconst = "seventh";
-static const char h_str[] __devinitconst = "eighth"; // error: h_str causes a section type conflict
-
-static void __devinit probe(void)
-{
-	printk(KERN_ALERT "a=0x%X\n", a);
-	printk(KERN_ALERT "b=0x%X\n", b);
-	printk(KERN_ALERT "c=0x%X\n", c);
-	printk(KERN_ALERT "d=0x%X\n", d);
-
-	printk(KERN_ALERT "e=0x%X\n", e);
-	printk(KERN_ALERT "f=0x%X\n", f);
-	printk(KERN_ALERT "g=0x%X\n", g);
-	printk(KERN_ALERT "h=0x%X\n", h);
-
-	printk(KERN_ALERT "a_str=%s\n", a_str);
-	printk(KERN_ALERT "b_str=%s\n", b_str);
-	printk(KERN_ALERT "c_str=%s\n", c_str);
-	printk(KERN_ALERT "d_str=%s\n", d_str);
-
-	printk(KERN_ALERT "e_str=%s\n", e_str);
-	printk(KERN_ALERT "f_str=%s\n", f_str);
-	printk(KERN_ALERT "g_str=%s\n", g_str);
-	printk(KERN_ALERT "h_str=%s\n", h_str);
-}
-
-static int __init test_init(void)
-{
-	printk(KERN_ALERT "Test loaded\n");
-	probe();
-
-	return 0;
-}
-
-static void __exit test_exit(void)
-{
-	printk(KERN_ALERT "Test unloaded\n");
-}
-
-module_init(test_init);
-module_exit(test_exit);
------->8------- cut here ----->8-------
-
-Anybody can tell me what went wrong?
-
-Regards,
-
-	Márton Németh
-
+Best
+Zeno
