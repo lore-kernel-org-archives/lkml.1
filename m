@@ -1,111 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933634AbZLFDfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZLFDgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933634AbZLFDfx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 22:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758071AbZLFDf1
+	id S1758085AbZLFDgc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 22:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbZLFDg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 22:35:27 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57101
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758046AbZLFDfG (ORCPT
+	Sat, 5 Dec 2009 22:36:27 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:38829 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758034AbZLFDg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 22:35:06 -0500
-Date: Sat, 05 Dec 2009 19:35:11 -0800 (PST)
-Message-Id: <20091205.193511.226786837.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 5 Dec 2009 22:36:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ezllcLgnOuOMX9mnvKN/kNqs5nO5a3FJvZ/rzzYgmBIOBhhfII3wtvMDBgf63O3jvx
+         cUEJwps5MQZl/5YXezJEeCEGLrBT3kpgkwzg4wZpjm2bzzD2RBTwOcs45F8uh9jFHwPw
+         Hwp2RIxatVm+980Arrw49ZctsWXqPPtc2kQvQ=
+Message-ID: <4B1B26B6.2060506@gmail.com>
+Date: Sat, 05 Dec 2009 22:36:22 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+CC: Brice Goglin <brice@myri.com>, David Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH net-next-2.6] drivers/net: Move && and || to end of previous
+ line
+References: <1259001504.16503.79.camel@Joe-Laptop.home>	 <20091123.104130.117837098.davem@davemloft.net>	 <1259528449.29779.194.camel@Joe-Laptop.home>	 <20091129.165557.84377714.davem@davemloft.net>	 <1259863101.22783.63.camel@Joe-Laptop.home>  <4B190A29.5080905@myri.com>	 <1259947271.22783.120.camel@Joe-Laptop.home>  <4B1A557D.4080707@gmail.com> <1260035440.11126.50.camel@Joe-Laptop.home>
+In-Reply-To: <1260035440.11126.50.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Joe Perches wrote:
+> On Sat, 2009-12-05 at 07:43 -0500, William Allen Simpson wrote:
+>> My main objection to these sweeping patches is that it makes it much
+>> more difficult to maintain and apply patches across different versions of
+>> the tree.
+> 
+> I think you underestimate the value of
+> standardization and overestimate the
+> quantity of work to sort it out for
+> the -stable versions.
+> 
+As I mentioned to somebody in private email (having kept rough track), it
+took around 9 hours this week for my 8 patch series, spread over 3 days
+because of the tedium.  Fix rejects, visually check patch against previous
+version, compile, test -- at least 1/2 to 1 hour for each numbered patch.
+Plus time to resubmit the patch series to the list again.
 
-More progress on 32-bit LEON cpu support.
+Of course, that was only for the initial patches already posted to the
+list.  I've many more -- awaiting approval for the previous set....
 
-BKL removals from Thomas Gleixner.
+Eventually, I have to do the same for each supported -stable version.
 
-A nicer early-boot OpenFirmware based framebuffer for sparc64
-based upon PowerPC's bootx.
+Multiply by thousands of contributors.
 
-Please pull, thanks a lot!
+Hopefully, you did the same, carefully checking your regexp generated
+patches visually line by line, and compiling, and testing every driver
+in this large patch individually.
 
-The following changes since commit 6ec22f9b037fc0c2e00ddb7023fad279c365324d:
-  Linus Torvalds (1):
-        Merge branch 'x86-debug-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-next-2.6.git master
-
-Boaz Harrosh (1):
-      sparc: remove unused nfsd #includes
-
-David S. Miller (6):
-      apbuart: Fix build warning.
-      apbuart: Kill dependency on deprecated Sparc-only PROM interfaces.
-      apbuart: Fix build and missing driver unregister.
-      Revert "sparc: Make atomic locks raw"
-      sparc64: Faster early-boot framebuffer console.
-      sparc: Set UTS_MACHINE correctly.
-
-Konrad Eisele (1):
-      sparc,leon: Sparc-Leon SMP support
-
-Kristoffer Glembo (7):
-      sparc: Support for GRLIB APBUART serial port
-      apbuart: Use of_find_node_by_path to find root node.
-      No auxio on LEON
-      Added sparc_leon3_snooping_enabled() and converted extern inline to static inline
-      sparc, leon: Added Aeroflex Gaisler entry in manufacturer_info structure
-      sparc32: Remove early interrupt enable.
-      sparc,leon: init_leon srmmu cleanup
-
-Thomas Gleixner (5):
-      sparc: Remove BKL from apc
-      watchdog: Remove BKL from rio watchdog driver
-      sparc: Make atomic locks raw
-      sparc: Replace old style lock initializer
-      sparc: Fixup last users of irq_chip->typename
-
- arch/sparc/Kconfig                |    7 +
- arch/sparc/Makefile               |    2 +
- arch/sparc/include/asm/btext.h    |    6 +
- arch/sparc/include/asm/leon.h     |   45 ++-
- arch/sparc/include/asm/rwsem.h    |    4 +-
- arch/sparc/include/asm/smp_32.h   |    9 +
- arch/sparc/kernel/Makefile        |    3 +-
- arch/sparc/kernel/apc.c           |   37 +--
- arch/sparc/kernel/auxio_32.c      |    1 +
- arch/sparc/kernel/btext.c         |  673 +++++++++++++++++++++++++++++++++++
- arch/sparc/kernel/cpu.c           |   11 +
- arch/sparc/kernel/entry.S         |   33 ++
- arch/sparc/kernel/head_32.S       |   22 ++
- arch/sparc/kernel/ioport.c        |    5 +
- arch/sparc/kernel/irq_64.c        |    8 +-
- arch/sparc/kernel/leon_kernel.c   |   84 +++++
- arch/sparc/kernel/leon_smp.c      |  468 ++++++++++++++++++++++++
- arch/sparc/kernel/pci_msi.c       |    2 +-
- arch/sparc/kernel/setup_64.c      |    6 +-
- arch/sparc/kernel/smp_32.c        |   10 +
- arch/sparc/kernel/sys_sparc32.c   |    5 -
- arch/sparc/kernel/time_32.c       |    3 -
- arch/sparc/kernel/trampoline_32.S |   69 ++++-
- arch/sparc/mm/srmmu.c             |    9 +-
- drivers/serial/Kconfig            |   13 +
- drivers/serial/Makefile           |    1 +
- drivers/serial/apbuart.c          |  710 +++++++++++++++++++++++++++++++++++++
- drivers/serial/apbuart.h          |   64 ++++
- drivers/watchdog/riowd.c          |    6 +-
- include/linux/serial_core.h       |    3 +
- 30 files changed, 2262 insertions(+), 57 deletions(-)
- create mode 100644 arch/sparc/include/asm/btext.h
- create mode 100644 arch/sparc/kernel/btext.c
- create mode 100644 arch/sparc/kernel/leon_smp.c
- create mode 100644 drivers/serial/apbuart.c
- create mode 100644 drivers/serial/apbuart.h
+I'm not a big believer in making trivial formatting changes and assuming
+they work.  Or that I didn't fumble fingers somehow.  I've made many such
+stupid mistakes over the years.
