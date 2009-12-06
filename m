@@ -1,102 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbZLFQ1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbZLFQak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932908AbZLFQ1q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 11:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZLFQ1p
+	id S932899AbZLFQak (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 11:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbZLFQai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 11:27:45 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:65338 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756246AbZLFQ1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 11:27:44 -0500
-Date: Sun, 6 Dec 2009 17:27:47 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux I2C <linux-i2c@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] i2c updates for 2.6.33, round 1
-Message-ID: <20091206172747.6ad304d4@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 6 Dec 2009 11:30:38 -0500
+Received: from mail02a.mail.t-online.hu ([84.2.40.7]:63363 "EHLO
+	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbZLFQai (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 11:30:38 -0500
+Message-ID: <4B1BDC30.6020800@freemail.hu>
+Date: Sun, 06 Dec 2009 17:30:40 +0100
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: __devinitdata, __devinitconst and const?
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail02a.mail.t-online.hu 32711; Body=1 Fuz1=1
+	Fuz2=1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hi,
 
-Please pull a first round of i2c subsystem updates for Linux 2.6.33
-from:
+I would like to understand how __devinitdata and __devinitconst works. I
+also would like to see what happens if I make a mistake: is it recognised
+by any of the static analyze tools (i.e. by gcc or by modpost).
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git i2c-for-linus
+So I created a little test module and I tried to compile it with gcc 4.3.2.
+My expectation would be that the variables a, d, e, h, a_str, d_str, e_str
+and h_str are OK. I also expect that the variables b, c, f, g, b_str, c_str,
+f_str and g_str are wrong because of section mismatch.
 
-There are many improvements to the i2c-powermac and i2c-stub bus
-drivers, the removal of the deprecated i2c-voodoo3 driver, and the
-first part of the I2C_CLIENT_INSMOD* macros removal.
+The current result, however, is a bit confusing to me. Here it is:
 
- Documentation/feature-removal-schedule.txt |    9 -
- Documentation/i2c/busses/i2c-voodoo3       |   62 -------
- Documentation/i2c/i2c-stub                 |   16 ++-
- Documentation/i2c/old-module-parameters    |   44 +++++
- arch/powerpc/include/asm/pmac_low_i2c.h    |    6 +-
- arch/powerpc/platforms/powermac/low_i2c.c  |   25 +---
- drivers/i2c/Kconfig                        |    1 +
- drivers/i2c/busses/Kconfig                 |   16 --
- drivers/i2c/busses/Makefile                |    3 -
- drivers/i2c/busses/i2c-ali1535.c           |    2 +-
- drivers/i2c/busses/i2c-ali15x3.c           |    2 +-
- drivers/i2c/busses/i2c-i801.c              |    3 +
- drivers/i2c/busses/i2c-iop3xx.c            |    6 -
- drivers/i2c/busses/i2c-mv64xxx.c           |    3 -
- drivers/i2c/busses/i2c-powermac.c          |  139 ++++++++-------
- drivers/i2c/busses/i2c-sis5595.c           |    2 +-
- drivers/i2c/busses/i2c-sis630.c            |    2 +-
- drivers/i2c/busses/i2c-stub.c              |   34 ++++-
- drivers/i2c/busses/i2c-voodoo3.c           |  248 ----------------------------
- drivers/i2c/chips/Kconfig                  |   10 -
- drivers/i2c/chips/Makefile                 |    1 -
- drivers/i2c/i2c-core.c                     |  169 +++++---------------
- drivers/i2c/i2c-dev.c                      |   22 +--
- drivers/misc/Kconfig                       |   10 +
- drivers/misc/Makefile                      |    1 +
- drivers/{i2c/chips => misc}/ds1682.c       |    0
- drivers/misc/ics932s401.c                  |   37 ++---
- include/linux/i2c.h                        |   98 +-----------
- 28 files changed, 248 insertions(+), 723 deletions(-)
- delete mode 100644 Documentation/i2c/busses/i2c-voodoo3
- create mode 100644 Documentation/i2c/old-module-parameters
- delete mode 100644 drivers/i2c/busses/i2c-voodoo3.c
- rename drivers/{i2c/chips => misc}/ds1682.c (100%)
+$ make
+make -C /lib/modules/2.6.32-rc8/build M=/home/nmarci/c/hello2 modules
+make[1]: Entering directory `/usr/src/linux-2.6.32-rc8'
+  CC [M]  /home/nmarci/c/hello2/test.o
+/home/nmarci/c/hello2/test.c:5: error: b causes a section type conflict
+/home/nmarci/c/hello2/test.c:7: error: d causes a section type conflict
+/home/nmarci/c/hello2/test.c:15: error: b_str causes a section type conflict
+/home/nmarci/c/hello2/test.c:17: error: d_str causes a section type conflict
+/home/nmarci/c/hello2/test.c:20: error: f_str causes a section type conflict
+/home/nmarci/c/hello2/test.c:22: error: h_str causes a section type conflict
+make[2]: *** [/home/nmarci/c/hello2/test.o] Error 1
+make[1]: *** [_module_/home/nmarci/c/hello2] Error 2
+make[1]: Leaving directory `/usr/src/linux-2.6.32-rc8'
+make: *** [default] Error 2
 
----------------
+Here is the source code of my test.c:
 
-Jean Delvare (16):
-      i2c-powermac: Reject unsupported I2C transactions
-      i2c-powermac: Refactor i2c_powermac_smbus_xfer
-      i2c-powermac: Log errors
-      i2c-powermac: Include the i2c_adapter in struct pmac_i2c_bus
-      i2c-powermac: Drop temporary name buffer
-      i2c-voodoo3: Delete
-      i2c: Bus drivers don't have to support I2C_M_REV_DIR_ADDR
-      i2c: Add missing __devinit markers to old i2c adapter drivers
-      i2c: Drop probe, ignore and force module parameters
-      i2c: Simplify i2c_detect_address
-      ics932s401: Clean up detect function
-      i2c-i801: Retry on lost arbitration
-      i2c: Refactor for_each callbacks
-      i2c-stub: Implement I2C block support
-      i2c-stub: Allow user to disable some commands
-      i2c-stub: Documentation update
+------>8------- cut here ----->8-------
+#include <linux/init.h>
+#include <linux/module.h>
 
-Mika Kuoppala (1):
-      i2c: Prevent priority inversion on top of bus lock
+int a __devinitdata = 0x11223344;
+const int b __devinitdata = 0x55667788; // error: b causes a section type conflict
+int c __devinitconst = 0x99AABBCC;
+const int d __devinitconst = 0xDDEEFF00; // error: d causes a section type conflict
 
-Vincent Sanders (1):
-      i2c: Remove big kernel lock from i2cdev_open
+static int e __devinitdata = 0x12233445;
+static const int f __devinitdata = 0x56677889;
+static int g __devinitconst = 0x900AABBC;
+static const int h __devinitconst = 0xCDDEEFF0;
 
-Wolfram Sang (1):
-      i2c/chips: Move ds1682 to drivers/misc
+char a_str[] __devinitdata = "first";
+const char b_str[] __devinitdata = "second"; // error: b_str causes a section type conflict
+char c_str[] __devinitconst = "third";
+const char d_str[] __devinitconst = "fourth"; // error: d_str causes a section type conflict
 
-Thanks,
--- 
-Jean Delvare
+static char e_str[] __devinitdata = "fifth";
+static const char f_str[] __devinitdata = "sixth"; // error: f_str causes a section type conflict
+static char g_str[] __devinitconst = "seventh";
+static const char h_str[] __devinitconst = "eighth"; // error: h_str causes a section type conflict
+
+static void __devinit probe(void)
+{
+	printk(KERN_ALERT "a=0x%X\n", a);
+	printk(KERN_ALERT "b=0x%X\n", b);
+	printk(KERN_ALERT "c=0x%X\n", c);
+	printk(KERN_ALERT "d=0x%X\n", d);
+
+	printk(KERN_ALERT "e=0x%X\n", e);
+	printk(KERN_ALERT "f=0x%X\n", f);
+	printk(KERN_ALERT "g=0x%X\n", g);
+	printk(KERN_ALERT "h=0x%X\n", h);
+
+	printk(KERN_ALERT "a_str=%s\n", a_str);
+	printk(KERN_ALERT "b_str=%s\n", b_str);
+	printk(KERN_ALERT "c_str=%s\n", c_str);
+	printk(KERN_ALERT "d_str=%s\n", d_str);
+
+	printk(KERN_ALERT "e_str=%s\n", e_str);
+	printk(KERN_ALERT "f_str=%s\n", f_str);
+	printk(KERN_ALERT "g_str=%s\n", g_str);
+	printk(KERN_ALERT "h_str=%s\n", h_str);
+}
+
+static int __init test_init(void)
+{
+	printk(KERN_ALERT "Test loaded\n");
+	probe();
+
+	return 0;
+}
+
+static void __exit test_exit(void)
+{
+	printk(KERN_ALERT "Test unloaded\n");
+}
+
+module_init(test_init);
+module_exit(test_exit);
+------>8------- cut here ----->8-------
+
+Anybody can tell me what went wrong?
+
+Regards,
+
+	Márton Németh
+
