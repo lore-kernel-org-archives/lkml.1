@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZLFDgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933637AbZLFDiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbZLFDgc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 22:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbZLFDg1
+	id S933637AbZLFDiz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 22:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbZLFDit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 22:36:27 -0500
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:38829 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758034AbZLFDg0 (ORCPT
+	Sat, 5 Dec 2009 22:38:49 -0500
+Received: from mail-in-17.arcor-online.net ([151.189.21.57]:38504 "EHLO
+	mail-in-17.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758027AbZLFDis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 22:36:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ezllcLgnOuOMX9mnvKN/kNqs5nO5a3FJvZ/rzzYgmBIOBhhfII3wtvMDBgf63O3jvx
-         cUEJwps5MQZl/5YXezJEeCEGLrBT3kpgkwzg4wZpjm2bzzD2RBTwOcs45F8uh9jFHwPw
-         Hwp2RIxatVm+980Arrw49ZctsWXqPPtc2kQvQ=
-Message-ID: <4B1B26B6.2060506@gmail.com>
-Date: Sat, 05 Dec 2009 22:36:22 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Brice Goglin <brice@myri.com>, David Miller <davem@davemloft.net>,
-       netdev@vger.kernel.org,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH net-next-2.6] drivers/net: Move && and || to end of previous
- line
-References: <1259001504.16503.79.camel@Joe-Laptop.home>	 <20091123.104130.117837098.davem@davemloft.net>	 <1259528449.29779.194.camel@Joe-Laptop.home>	 <20091129.165557.84377714.davem@davemloft.net>	 <1259863101.22783.63.camel@Joe-Laptop.home>  <4B190A29.5080905@myri.com>	 <1259947271.22783.120.camel@Joe-Laptop.home>  <4B1A557D.4080707@gmail.com> <1260035440.11126.50.camel@Joe-Laptop.home>
-In-Reply-To: <1260035440.11126.50.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 5 Dec 2009 22:38:48 -0500
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-11.arcor-online.net D1520E3912
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       awalls@radix.net, j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       khc@pm.waw.pl, kraxel@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+In-Reply-To: <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+References: <20091204220708.GD25669@core.coreip.homeip.net>
+	 <BEJgSGGXqgB@lirc>
+	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 06 Dec 2009 04:36:33 +0100
+Message-Id: <1260070593.3236.6.camel@pc07.localdom.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Sat, 2009-12-05 at 07:43 -0500, William Allen Simpson wrote:
->> My main objection to these sweeping patches is that it makes it much
->> more difficult to maintain and apply patches across different versions of
->> the tree.
+Hi,
+
+Am Freitag, den 04.12.2009, 19:28 -0500 schrieb Jon Smirl:
+> On Fri, Dec 4, 2009 at 6:01 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
+> > BTW, I just came across a XMP remote that seems to generate 3x64 bit scan
+> > codes. Anyone here has docs on the XMP protocol?
 > 
-> I think you underestimate the value of
-> standardization and overestimate the
-> quantity of work to sort it out for
-> the -stable versions.
-> 
-As I mentioned to somebody in private email (having kept rough track), it
-took around 9 hours this week for my 8 patch series, spread over 3 days
-because of the tedium.  Fix rejects, visually check patch against previous
-version, compile, test -- at least 1/2 to 1 hour for each numbered patch.
-Plus time to resubmit the patch series to the list again.
+> Assuming a general purpose receiver (not one with fixed hardware
+> decoding), is it important for Linux to receive IR signals from all
+> possible remotes no matter how old or obscure? Or is it acceptable to
+> tell the user to throw away their dedicated remote and buy a universal
+> multi-function one?  Universal multi-function remotes are $12 in my
+> grocery store - I don't even have to go to an electronics store.
 
-Of course, that was only for the initial patches already posted to the
-list.  I've many more -- awaiting approval for the previous set....
+finally we have some point here, IMHO, that is not acceptable and I told
+you previously not to bet on such. Start some poll and win it, and I'll
+shut up :)
 
-Eventually, I have to do the same for each supported -stable version.
+To be frank, you are quite mad at this point, or deliver working other
+remotes to __all__ for free.
 
-Multiply by thousands of contributors.
+Cheers,
+Hermann
 
-Hopefully, you did the same, carefully checking your regexp generated
-patches visually line by line, and compiling, and testing every driver
-in this large patch individually.
 
-I'm not a big believer in making trivial formatting changes and assuming
-they work.  Or that I didn't fumble fingers somehow.  I've made many such
-stupid mistakes over the years.
+
+
