@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934391AbZLFXAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbZLFXFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934391AbZLFXAQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 18:00:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934384AbZLFXAO
+	id S1758005AbZLFXFZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 18:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbZLFXFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 18:00:14 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:57396 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934383AbZLFXAL (ORCPT
+	Sun, 6 Dec 2009 18:05:22 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:5437 "EHLO
+	mx3.tudelft.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757766AbZLFXFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 18:00:11 -0500
-Date: Mon, 7 Dec 2009 00:00:16 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Alex Chiang <achiang@hp.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Li, Haicheng" <haicheng.li@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC] print symbolic page flag names in bad_page()
-Message-ID: <20091206230016.GA18989@one.firstfloor.org>
-References: <20091204212606.29258.98531.stgit@bob.kio> <20091206034636.GA7109@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091206034636.GA7109@localhost>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 6 Dec 2009 18:05:22 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -12.589
+Message-ID: <4B1C38B5.2060204@tremplin-utc.net>
+Date: Mon, 07 Dec 2009 00:05:25 +0100
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.6.666
+MIME-Version: 1.0
+To: Zeno Davatz <zdavatz@gmail.com>
+CC: Zac Medico <zmedico@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
+References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>	 <4B055609.9030306@tremplin-utc.net>	 <4B1A53AE.9020707@tremplin-utc.net>	 <40a4ed590912060741n4042ab1bg8188cd4eff28ca78@mail.gmail.com>	 <4B1BDAA3.10601@gentoo.org> <40a4ed590912060835s61aea6aqfe6780395bfd2993@mail.gmail.com>
+In-Reply-To: <40a4ed590912060835s61aea6aqfe6780395bfd2993@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So how about this patch?
+Op 06-12-09 17:35, Zeno Davatz schreef:
+:
+> Yes, thanks. That helped another step. I am getting the correct screen
+> resolution after enabling that in the kernel as well. The boot [ok]
+> messages of Gentoo are in a higher resolution now though. That is a
+> good start.
+>
+> But after my X starts I get a black screen with a
+>
+> -
+>
+> in the top left corner. They keyboard also does not work. May be an
+> X.org config problem.
+>
+I've got similar behaviour here if psb is loaded before the X server 
+starts (aka there is a framebuffer). If the console is just ascii (no 
+vga=... argument on the kernel boot line, and no "modprobe psb"), then X 
+starts fine.
 
-I like it. Decoding the flags by hand is always a very unpleasant experience.
-Bonus: dump_page can be called from kgdb too.
-
--Andi
-
-
+Eric
