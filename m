@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbZLFXmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbZLFXis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbZLFXmS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 18:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758067AbZLFXmQ
+	id S1758152AbZLFXis (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 18:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbZLFXiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 18:42:16 -0500
-Received: from kroah.org ([198.145.64.141]:33778 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 18:38:46 -0500
+Received: from kroah.org ([198.145.64.141]:33783 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757976AbZLFXik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 18:38:40 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 15:32:08 2009
-Message-Id: <20091206233208.744542128@mini.kroah.org>
+	id S1758022AbZLFXil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 18:38:41 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 15:32:09 2009
+Message-Id: <20091206233208.909016800@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 15:30:37 -0800
+Date: Sun, 06 Dec 2009 15:30:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [05/20] jffs2: Fix memory corruption in jffs2_read_inode_range()
+       Martin Samek <martin@marsark.sytes.net>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [06/20] V4L/DVB (13079): dib0700: fixed xc2028 firmware loading kernel oops
 References: <20091206233032.387950574@mini.kroah.org>
-Content-Disposition: inline; filename=jffs2-fix-memory-corruption-in-jffs2_read_inode_range.patch
+Content-Disposition: inline; filename=v4l-dvb-13079-dib0700-fixed-xc2028-firmware-loading-kernel-oops.patch
 In-Reply-To: <20091206233711.GA11609@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,84 +31,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: David Woodhouse <dwmw2@infradead.org>
+From: Martin Samek <martin@marsark.sytes.net>
 
-commit 199bc9ff5ca5e4b3bcaff8927b2983c65f34c263 upstream.
+commit 7646b9de26c54cf4bc9c446d7ada9f91ece31e0a upstream.
 
-In 2.6.23 kernel, commit a32ea1e1f925399e0d81ca3f7394a44a6dafa12c
-("Fix read/truncate race") fixed a race in the generic code, and as a
-side effect, now do_generic_file_read() can ask us to readpage() past
-the i_size. This seems to be correctly handled by the block routines
-(e.g. block_read_full_page() fills the page with zeroes in case if
-somebody is trying to read past the last inode's block).
+Fixing kernel oops when driver attemps to load xc2028 firmware.
 
-JFFS2 doesn't handle this; it assumes that it won't be asked to read
-pages which don't exist -- and thus that there will be at least _one_
-valid 'frag' on the page it's being asked to read. It will fill any
-holes with the following memset:
+Note by djh: the patch contribute by Martin is a port of a fix I made during
+the PCTV 340e development.  It's a temporary workaround that fixes a regression
+(an OOPS condition) and the real fix should be in the code that manages the
+i2c master on the dib7000p.  But this fix does address the immmediate
+regression and should be merged upstream until we do a cleaner fix.
 
-  memset(buf, 0, min(end, frag->ofs + frag->size) - offset);
-
-When the 'closest smaller match' returned by jffs2_lookup_node_frag() is
-actually on a previous page and ends before 'offset', that results in:
-
-  memset(buf, 0, <huge unsigned negative>);
-
-Hopefully, in most cases the corruption is fatal, and quickly causing
-random oopses, like this:
-
-  root@10.0.0.4:~/ltp-fs-20090531# ./testcases/kernel/fs/ftest/ftest01
-  Unable to handle kernel paging request for data at address 0x00000008
-  Faulting instruction address: 0xc01cd980
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  [...]
-  NIP [c01cd980] rb_insert_color+0x38/0x184
-  LR [c0043978] enqueue_hrtimer+0x88/0xc4
-  Call Trace:
-  [c6c63b60] [c004f9a8] tick_sched_timer+0xa0/0xe4 (unreliable)
-  [c6c63b80] [c0043978] enqueue_hrtimer+0x88/0xc4
-  [c6c63b90] [c0043a48] __run_hrtimer+0x94/0xbc
-  [c6c63bb0] [c0044628] hrtimer_interrupt+0x140/0x2b8
-  [c6c63c10] [c000f8e8] timer_interrupt+0x13c/0x254
-  [c6c63c30] [c001352c] ret_from_except+0x0/0x14
-  --- Exception: 901 at memset+0x38/0x5c
-      LR = jffs2_read_inode_range+0x144/0x17c
-  [c6c63cf0] [00000000] (null) (unreliable)
-
-This patch fixes the issue, plus fixes all LTP tests on NAND/UBI with
-JFFS2 filesystem that were failing since 2.6.23 (seems like the bug
-above also broke the truncation).
-
-Reported-By: Anton Vorontsov <avorontsov@ru.mvista.com>
-Tested-By: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Martin Samek <martin@marsark.sytes.net>
+Signed-off-by: Devin Heitmueller <dheitmueller@kernellabs.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jffs2/read.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/media/dvb/frontends/dib7000p.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/fs/jffs2/read.c
-+++ b/fs/jffs2/read.c
-@@ -164,12 +164,15 @@ int jffs2_read_inode_range(struct jffs2_
+--- a/drivers/media/dvb/frontends/dib7000p.c
++++ b/drivers/media/dvb/frontends/dib7000p.c
+@@ -1343,6 +1343,11 @@ struct dvb_frontend * dib7000p_attach(st
+ 	if (dib7000p_identify(st) != 0)
+ 		goto error;
  
- 	/* XXX FIXME: Where a single physical node actually shows up in two
- 	   frags, we read it twice. Don't do that. */
--	/* Now we're pointing at the first frag which overlaps our page */
-+	/* Now we're pointing at the first frag which overlaps our page
-+	 * (or perhaps is before it, if we've been asked to read off the
-+	 * end of the file). */
- 	while(offset < end) {
- 		D2(printk(KERN_DEBUG "jffs2_read_inode_range: offset %d, end %d\n", offset, end));
--		if (unlikely(!frag || frag->ofs > offset)) {
-+		if (unlikely(!frag || frag->ofs > offset ||
-+			     frag->ofs + frag->size <= offset)) {
- 			uint32_t holesize = end - offset;
--			if (frag) {
-+			if (frag && frag->ofs > offset) {
- 				D1(printk(KERN_NOTICE "Eep. Hole in ino #%u fraglist. frag->ofs = 0x%08x, offset = 0x%08x\n", f->inocache->ino, frag->ofs, offset));
- 				holesize = min(holesize, frag->ofs - offset);
- 			}
++	/* FIXME: make sure the dev.parent field is initialized, or else
++	request_firmware() will hit an OOPS (this should be moved somewhere
++	more common) */
++	st->i2c_master.gated_tuner_i2c_adap.dev.parent = i2c_adap->dev.parent;
++
+ 	dibx000_init_i2c_master(&st->i2c_master, DIB7000P, st->i2c_adap, st->i2c_addr);
+ 
+ 	dib7000p_demod_reset(st);
 
 
