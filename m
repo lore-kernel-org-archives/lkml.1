@@ -1,77 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZLFPrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932199AbZLFPsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755203AbZLFPrN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 10:47:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZLFPrL
+	id S932199AbZLFPsm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 10:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZLFPsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 10:47:11 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37718 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752912AbZLFPrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 10:47:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] PM updates for 2.6.33 (updated)
-Date: Sun, 6 Dec 2009 16:47:38 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
+	Sun, 6 Dec 2009 10:48:38 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:50125 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbZLFPsh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 10:48:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=NmGi8Sd2cFqKXxxfrYK0KXPZzHRTM9WctSMV1Ahq17iuyfTvhs5gDJnF/Fu4+iteeh
+         iiH/UdSDVWFhsw3ViF7kQtPKaiiSRASfKVr9RyyNaDhhBI5NjAWmj0nwIbtq6vxHck2r
+         RdoMjsY6gcBS/+rg5EMLOGT/WDMY+5m2pjWZw=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912061647.38169.rjw@sisk.pl>
+In-Reply-To: <4B1A53AE.9020707@tremplin-utc.net>
+References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>
+	 <4B055609.9030306@tremplin-utc.net>
+	 <4B1A53AE.9020707@tremplin-utc.net>
+Date: Sun, 6 Dec 2009 16:48:43 +0100
+Message-ID: <40a4ed590912060748u40b9cf3au4258a66d257d27c0@mail.gmail.com>
+Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
+From: Zeno Davatz <zdavatz@gmail.com>
+To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
+Cc: linux-kernel@vger.kernel.org, Zac Medico <zmedico@gentoo.org>
+Content-Type: multipart/mixed; boundary=0015174c0f188bb604047a1146dc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+--0015174c0f188bb604047a1146dc
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Please pull power management updates for 2.6.33 from:
+On Sat, Dec 5, 2009 at 1:35 PM, =C9ric Piel <Eric.Piel@tremplin-utc.net> wr=
+ote:
+> Op 19-11-09 15:28, =C9ric Piel schreef:
+>> Op 19-11-09 09:52, Zeno Davatz schreef:
+>>> Hi
+>>>
+>>> I am looking for the Asus Eeepc Poulsbo (psb) driver in Kernel
+>>> 2.6.32-rc7. When is this driver expected to make it into the kernel?
+> :
+>> Hi,
+>> I'd also be interested by a patch to get the psb kernel module to
+>> compile with 2.6.32. If anyone has this already available, please post i=
+t!
+>> Or maybe someone knows what should be done to fix this type of errors?
+> Hello,
+>
+> I've just noticed that Zac Medico has written the fixes (as sed scripts)
+> for the psb driver in gentoo. Below is the patch version of his fixes.
+> It works for me :-)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+compiles fine. But I still get:
 
-They include:
+psb: Unknown symbol i2c_bit_add_bus
 
-* Fixes for the runtime PM framework from Alan Stern and me.
+when inserting the module.
 
-* Hibernate cleanups from Nigel and Jiri Slaby.
+And this is my Xorg.0.log- see attachment.
 
-* Freezer optimisation from Tejun.
+Best
+Zeno
 
+--0015174c0f188bb604047a1146dc
+Content-Type: text/plain; charset=US-ASCII; name="Xorg.0.log"
+Content-Disposition: attachment; filename="Xorg.0.log"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g2vzkves0
 
- Documentation/power/runtime_pm.txt |   12 ++-
- drivers/base/power/runtime.c       |   23 ++++---
- include/linux/pm.h                 |    8 ++-
- include/linux/pm_runtime.h         |   12 +++
- kernel/power/Makefile              |    2 +-
- kernel/power/hibernate.c           |   30 ++++++++
- kernel/power/main.c                |    1 +
- kernel/power/process.c             |   14 +++-
- kernel/power/swap.c                |  107 ++++++++++++++++++++++++++++-
- kernel/power/swsusp.c              |  130 ------------------------------------
- 10 files changed, 184 insertions(+), 155 deletions(-)
-
----------------
-
-Alan Stern (2):
-      PM / Runtime: Export the PM runtime workqueue
-      PM / Runtime: Use deferred_resume flag in pm_request_resume
-
-Jiri Slaby (1):
-      PM / Hibernate: Swap, use KERN_CONT
-
-Nigel Cunningham (2):
-      PM / Hibernate: Move swap functions to kernel/power/swap.c.
-      PM / Hibernate: Shift remaining code from swsusp.c to hibernate.c
-
-Rafael J. Wysocki (5):
-      PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
-      PM / Runtime: Ensure timer_expires is nonzero in pm_schedule_suspend()
-      PM / Runtime: Make documentation of runtime_idle() agree with the code
-      PM / Runtime: Remove unnecessary braces in __pm_runtime_set_status()
-      PM: Add flag for devices capable of generating run-time wake-up events
-
-Tejun Heo (1):
-      PM / freezer: Don't get over-anxious while waiting
-
+ClguT3JnIFggU2VydmVyIDEuNy4xClJlbGVhc2UgRGF0ZTogMjAwOS0xMC0yMwpYIFByb3RvY29s
+IFZlcnNpb24gMTEsIFJldmlzaW9uIDAKQnVpbGQgT3BlcmF0aW5nIFN5c3RlbTogTGludXggMi42
+LjMyLXJjNyBpNjg2IApDdXJyZW50IE9wZXJhdGluZyBTeXN0ZW06IExpbnV4IHpkYXZhdHotZWVl
+cGMgMi42LjMyICMxMiBTTVAgRnJpIERlYyA0IDIwOjMyOjA0IENFVCAyMDA5IGk2ODYKS2VybmVs
+IGNvbW1hbmQgbGluZTogQk9PVF9JTUFHRT0yLjYuMzIgcm8gcm9vdD04MDMgZWxldmF0b3I9bm9v
+cApCdWlsZCBEYXRlOiAxNyBOb3ZlbWJlciAyMDA5ICAwMjowMjoxMVBNCiAKQ3VycmVudCB2ZXJz
+aW9uIG9mIHBpeG1hbjogMC4xNi4yCglCZWZvcmUgcmVwb3J0aW5nIHByb2JsZW1zLCBjaGVjayBo
+dHRwOi8vd2lraS54Lm9yZwoJdG8gbWFrZSBzdXJlIHRoYXQgeW91IGhhdmUgdGhlIGxhdGVzdCB2
+ZXJzaW9uLgpNYXJrZXJzOiAoLS0pIHByb2JlZCwgKCoqKSBmcm9tIGNvbmZpZyBmaWxlLCAoPT0p
+IGRlZmF1bHQgc2V0dGluZywKCSgrKykgZnJvbSBjb21tYW5kIGxpbmUsICghISkgbm90aWNlLCAo
+SUkpIGluZm9ybWF0aW9uYWwsCgkoV1cpIHdhcm5pbmcsIChFRSkgZXJyb3IsIChOSSkgbm90IGlt
+cGxlbWVudGVkLCAoPz8pIHVua25vd24uCig9PSkgTG9nIGZpbGU6ICIvdmFyL2xvZy9Yb3JnLjAu
+bG9nIiwgVGltZTogU3VuIERlYyAgNiAxNjo0MjozNSAyMDA5Cig9PSkgVXNpbmcgY29uZmlnIGZp
+bGU6ICIvZXRjL1gxMS94b3JnLmNvbmYiCig9PSkgU2VydmVyTGF5b3V0ICJYLm9yZyBDb25maWd1
+cmVkIgooKiopIHwtLT5TY3JlZW4gIlNjcmVlbjAiICgwKQooKiopIHwgICB8LS0+TW9uaXRvciAi
+TW9uaXRvcjAiCigqKikgfCAgIHwtLT5EZXZpY2UgIkNhcmQwIgooKiopIHwtLT5JbnB1dCBEZXZp
+Y2UgIktleWJvYXJkIgooKiopIHwtLT5JbnB1dCBEZXZpY2UgIlN5bmFwdGljcyBUb3VjaHBhZCIK
+KCoqKSB8LS0+SW5wdXQgRGV2aWNlICJDb25maWd1cmVkIE1vdXNlIgooKiopIE9wdGlvbiAiQWxs
+b3dNb3VzZU9wZW5GYWlsIiAidHJ1ZSIKKCoqKSBPcHRpb24gIkF1dG9BZGREZXZpY2VzIiAibm8i
+CigqKikgTm90IGF1dG9tYXRpY2FsbHkgYWRkaW5nIGRldmljZXMKKD09KSBBdXRvbWF0aWNhbGx5
+IGVuYWJsaW5nIGRldmljZXMKKCoqKSBGb250UGF0aCBzZXQgdG86CgkvdXNyL3NoYXJlL2ZvbnRz
+L21pc2MvLAoJL3Vzci9zaGFyZS9mb250cy9UVEYvLAoJL3Vzci9zaGFyZS9mb250cy9PVEYsCgkv
+dXNyL3NoYXJlL2ZvbnRzL1R5cGUxLywKCS91c3Ivc2hhcmUvZm9udHMvMTAwZHBpLywKCS91c3Iv
+c2hhcmUvZm9udHMvNzVkcGkvLAoJL3Vzci9zaGFyZS9mb250cy9taXNjLywKCS91c3Ivc2hhcmUv
+Zm9udHMvVFRGLywKCS91c3Ivc2hhcmUvZm9udHMvT1RGLAoJL3Vzci9zaGFyZS9mb250cy9UeXBl
+MS8sCgkvdXNyL3NoYXJlL2ZvbnRzLzEwMGRwaS8sCgkvdXNyL3NoYXJlL2ZvbnRzLzc1ZHBpLwoo
+KiopIE1vZHVsZVBhdGggc2V0IHRvICIvdXNyL2xpYi94b3JnL21vZHVsZXMiCihXVykgRHVwbGlj
+YXRlIGNvcmUgcG9pbnRlciBkZXZpY2VzLiAgUmVtb3ZpbmcgY29yZSBwb2ludGVyIGF0dHJpYnV0
+ZSBmcm9tICJDb25maWd1cmVkIE1vdXNlIgooSUkpIExvYWRlciBtYWdpYzogMHg4MWU3ZTYwCihJ
+SSkgTW9kdWxlIEFCSSB2ZXJzaW9uczoKCVguT3JnIEFOU0kgQyBFbXVsYXRpb246IDAuNAoJWC5P
+cmcgVmlkZW8gRHJpdmVyOiA2LjAKCVguT3JnIFhJbnB1dCBkcml2ZXIgOiA3LjAKCVguT3JnIFNl
+cnZlciBFeHRlbnNpb24gOiAyLjAKKCsrKSB1c2luZyBWVCBudW1iZXIgNwoKKC0tKSBQQ0k6Kigw
+OjA6MjowKSA4MDg2OjgxMDg6MTA0Mzo4M2NlIEludGVsIENvcnBvcmF0aW9uIFN5c3RlbSBDb250
+cm9sbGVyIEh1YiAoU0NIIFBvdWxzYm8pIEdyYXBoaWNzIENvbnRyb2xsZXIgcmV2IDcsIE1lbSBA
+IDB4ZjNmODAwMDAvNTI0Mjg4LCAweGQwMDAwMDAwLzI2ODQzNTQ1NiwgMHhmM2Y0MDAwMC8yNjIx
+NDQsIEkvTyBAIDB4MDAwMGM4ODAvOAooSUkpIE9wZW4gQUNQSSBzdWNjZXNzZnVsICgvdmFyL3J1
+bi9hY3BpZC5zb2NrZXQpCihJSSkgImV4dG1vZCIgd2lsbCBiZSBsb2FkZWQuIFRoaXMgd2FzIGVu
+YWJsZWQgYnkgZGVmYXVsdCBhbmQgYWxzbyBzcGVjaWZpZWQgaW4gdGhlIGNvbmZpZyBmaWxlLgoo
+SUkpICJkYmUiIHdpbGwgYmUgbG9hZGVkLiBUaGlzIHdhcyBlbmFibGVkIGJ5IGRlZmF1bHQgYW5k
+IGFsc28gc3BlY2lmaWVkIGluIHRoZSBjb25maWcgZmlsZS4KKElJKSAiZ2x4IiB3aWxsIGJlIGxv
+YWRlZC4gVGhpcyB3YXMgZW5hYmxlZCBieSBkZWZhdWx0IGFuZCBhbHNvIHNwZWNpZmllZCBpbiB0
+aGUgY29uZmlnIGZpbGUuCihJSSkgInJlY29yZCIgd2lsbCBiZSBsb2FkZWQuIFRoaXMgd2FzIGVu
+YWJsZWQgYnkgZGVmYXVsdCBhbmQgYWxzbyBzcGVjaWZpZWQgaW4gdGhlIGNvbmZpZyBmaWxlLgoo
+SUkpICJkcmkiIHdpbGwgYmUgbG9hZGVkLiBUaGlzIHdhcyBlbmFibGVkIGJ5IGRlZmF1bHQgYW5k
+IGFsc28gc3BlY2lmaWVkIGluIHRoZSBjb25maWcgZmlsZS4KKElJKSAiZHJpMiIgd2lsbCBiZSBs
+b2FkZWQuIFRoaXMgd2FzIGVuYWJsZWQgYnkgZGVmYXVsdCBhbmQgYWxzbyBzcGVjaWZpZWQgaW4g
+dGhlIGNvbmZpZyBmaWxlLgooSUkpIExvYWRNb2R1bGU6ICJkYmUiCihJSSkgTG9hZGluZyAvdXNy
+L2xpYi94b3JnL21vZHVsZXMvZXh0ZW5zaW9ucy9saWJkYmUuc28KKElJKSBNb2R1bGUgZGJlOiB2
+ZW5kb3I9IlguT3JnIEZvdW5kYXRpb24iCgljb21waWxlZCBmb3IgMS43LjEsIG1vZHVsZSB2ZXJz
+aW9uID0gMS4wLjAKCU1vZHVsZSBjbGFzczogWC5PcmcgU2VydmVyIEV4dGVuc2lvbgoJQUJJIGNs
+YXNzOiBYLk9yZyBTZXJ2ZXIgRXh0ZW5zaW9uLCB2ZXJzaW9uIDIuMAooSUkpIExvYWRpbmcgZXh0
+ZW5zaW9uIERPVUJMRS1CVUZGRVIKKElJKSBMb2FkTW9kdWxlOiAiZHJpIgooSUkpIExvYWRpbmcg
+L3Vzci9saWIveG9yZy9tb2R1bGVzL2V4dGVuc2lvbnMvbGliZHJpLnNvCihJSSkgTW9kdWxlIGRy
+aTogdmVuZG9yPSJYLk9yZyBGb3VuZGF0aW9uIgoJY29tcGlsZWQgZm9yIDEuNy4xLCBtb2R1bGUg
+dmVyc2lvbiA9IDEuMC4wCglBQkkgY2xhc3M6IFguT3JnIFNlcnZlciBFeHRlbnNpb24sIHZlcnNp
+b24gMi4wCihJSSkgTG9hZGluZyBleHRlbnNpb24gWEZyZWU4Ni1EUkkKKElJKSBMb2FkTW9kdWxl
+OiAiZHJpMiIKKElJKSBMb2FkaW5nIC91c3IvbGliL3hvcmcvbW9kdWxlcy9leHRlbnNpb25zL2xp
+YmRyaTIuc28KKElJKSBNb2R1bGUgZHJpMjogdmVuZG9yPSJYLk9yZyBGb3VuZGF0aW9uIgoJY29t
+cGlsZWQgZm9yIDEuNy4xLCBtb2R1bGUgdmVyc2lvbiA9IDEuMS4wCglBQkkgY2xhc3M6IFguT3Jn
+IFNlcnZlciBFeHRlbnNpb24sIHZlcnNpb24gMi4wCihJSSkgTG9hZGluZyBleHRlbnNpb24gRFJJ
+MgooSUkpIExvYWRNb2R1bGU6ICJleHRtb2QiCihJSSkgTG9hZGluZyAvdXNyL2xpYi94b3JnL21v
+ZHVsZXMvZXh0ZW5zaW9ucy9saWJleHRtb2Quc28KKElJKSBNb2R1bGUgZXh0bW9kOiB2ZW5kb3I9
+IlguT3JnIEZvdW5kYXRpb24iCgljb21waWxlZCBmb3IgMS43LjEsIG1vZHVsZSB2ZXJzaW9uID0g
+MS4wLjAKCU1vZHVsZSBjbGFzczogWC5PcmcgU2VydmVyIEV4dGVuc2lvbgoJQUJJIGNsYXNzOiBY
+Lk9yZyBTZXJ2ZXIgRXh0ZW5zaW9uLCB2ZXJzaW9uIDIuMAooSUkpIExvYWRpbmcgZXh0ZW5zaW9u
+IE1JVC1TQ1JFRU4tU0FWRVIKKElJKSBMb2FkaW5nIGV4dGVuc2lvbiBYRnJlZTg2LVZpZE1vZGVF
+eHRlbnNpb24KKElJKSBMb2FkaW5nIGV4dGVuc2lvbiBYRnJlZTg2LURHQQooSUkpIExvYWRpbmcg
+ZXh0ZW5zaW9uIERQTVMKKElJKSBMb2FkaW5nIGV4dGVuc2lvbiBYVmlkZW8KKElJKSBMb2FkaW5n
+IGV4dGVuc2lvbiBYVmlkZW8tTW90aW9uQ29tcGVuc2F0aW9uCihJSSkgTG9hZGluZyBleHRlbnNp
+b24gWC1SZXNvdXJjZQooSUkpIExvYWRNb2R1bGU6ICJnbHgiCihJSSkgTG9hZGluZyAvdXNyL2xp
+Yi94b3JnL21vZHVsZXMvZXh0ZW5zaW9ucy9saWJnbHguc28KKElJKSBNb2R1bGUgZ2x4OiB2ZW5k
+b3I9IlguT3JnIEZvdW5kYXRpb24iCgljb21waWxlZCBmb3IgMS43LjEsIG1vZHVsZSB2ZXJzaW9u
+ID0gMS4wLjAKCUFCSSBjbGFzczogWC5PcmcgU2VydmVyIEV4dGVuc2lvbiwgdmVyc2lvbiAyLjAK
+KD09KSBBSUdMWCBlbmFibGVkCihJSSkgTG9hZGluZyBleHRlbnNpb24gR0xYCihJSSkgTG9hZE1v
+ZHVsZTogInJlY29yZCIKKElJKSBMb2FkaW5nIC91c3IvbGliL3hvcmcvbW9kdWxlcy9leHRlbnNp
+b25zL2xpYnJlY29yZC5zbwooSUkpIE1vZHVsZSByZWNvcmQ6IHZlbmRvcj0iWC5PcmcgRm91bmRh
+dGlvbiIKCWNvbXBpbGVkIGZvciAxLjcuMSwgbW9kdWxlIHZlcnNpb24gPSAxLjEzLjAKCU1vZHVs
+ZSBjbGFzczogWC5PcmcgU2VydmVyIEV4dGVuc2lvbgoJQUJJIGNsYXNzOiBYLk9yZyBTZXJ2ZXIg
+RXh0ZW5zaW9uLCB2ZXJzaW9uIDIuMAooSUkpIExvYWRpbmcgZXh0ZW5zaW9uIFJFQ09SRAooSUkp
+IExvYWRNb2R1bGU6ICJwc2IiCihJSSkgTG9hZGluZyAvdXNyL2xpYi94b3JnL21vZHVsZXMvZHJp
+dmVycy9wc2JfZHJ2LnNvCihJSSkgTW9kdWxlIHBzYjogdmVuZG9yPSJYLk9yZyBGb3VuZGF0aW9u
+IgoJY29tcGlsZWQgZm9yIDEuNy4xLCBtb2R1bGUgdmVyc2lvbiA9IDAuMjkuMAoJTW9kdWxlIGNs
+YXNzOiBYLk9yZyBWaWRlbyBEcml2ZXIKCUFCSSBjbGFzczogWC5PcmcgVmlkZW8gRHJpdmVyLCB2
+ZXJzaW9uIDYuMAooSUkpIERlYnVnOiBwc2JTZXR1cAo=
+--0015174c0f188bb604047a1146dc--
