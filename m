@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbZLFU0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZLFI6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757783AbZLFU0i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 15:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757710AbZLFU0g
+	id S1755881AbZLFI6w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 03:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZLFI6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 15:26:36 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45596 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757598AbZLFU0g (ORCPT
+	Sun, 6 Dec 2009 03:58:48 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36089 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754532AbZLFI6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 15:26:36 -0500
-Date: Sun, 6 Dec 2009 09:47:17 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
-       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v8 5/8] Loongson: YeeLoong: add hardware monitoring
-	driver
-Message-ID: <20091206084717.GD2766@ucw.cz>
-References: <cover.1260082252.git.wuzhangjin@gmail.com> <d8789fa7e97d8a170c4e2516d7ef2d2fbbe42cc6.1260082252.git.wuzhangjin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d8789fa7e97d8a170c4e2516d7ef2d2fbbe42cc6.1260082252.git.wuzhangjin@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 6 Dec 2009 03:58:47 -0500
+Subject: Re: [PATCH 29/31] Constify struct sysfs_ops for 2.6.32 v1
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Emese Revfy <re.emese@gmail.com>, tony.luck@intel.com,
+       fenghua.yu@intel.com, benh@kernel.crashing.org, lethal@linux-sh.org,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, gregkh@suse.de,
+       petero2@telia.com, davej@redhat.com, maciej.sosnowski@intel.com,
+       dougthompson@xmission.com, airlied@linux.ie, rolandd@cisco.com,
+       sean.hefty@intel.com, hal.rosenstock@gmail.com, neilb@suse.de,
+       rdunlap@xenotime.net, kyle@mcmartin.ca, deller@gmx.de,
+       jejb@parisc-linux.org, jbarnes@virtuousgeek.org, hjk@linutronix.de,
+       david.vrabel@csr.com, jeremy@xensource.com, chris.mason@oracle.com,
+       ccaulfie@redhat.com, teigland@redhat.com, tytso@mit.edu,
+       adilger@sun.com, swhiteho@redhat.com, mfasheh@suse.com,
+       joel.becker@oracle.com, rusty@rustcorp.com.au,
+       shemminger@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20091205211527.GH8742@kernel.dk>
+References: <4B198670.2000406@gmail.com> <4B1991E2.5010903@gmail.com>
+	 <4B19A33B.9050907@gmail.com>  <20091205211527.GH8742@kernel.dk>
+Date: Sun, 06 Dec 2009 10:58:51 +0200
+Message-Id: <1260089931.16254.5.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, 2009-12-05 at 22:15 +0100, Jens Axboe wrote:
+> On Sat, Dec 05 2009, Emese Revfy wrote:
+> > From: Emese Revfy <re.emese@gmail.com>
+> > 
+> > Constify struct sysfs_ops.
+> > Per Dave Miller's suggestion, resend with proper CC list and patch format.
+> 
+> For the block parts:
+> 
+> Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
-> +static int get_battery_current(void)
-> +{
-> +	s16 value;
-> +
-> +	value = (ec_read(REG_BAT_CURRENT_HIGH) << 8) |
-> +		(ec_read(REG_BAT_CURRENT_LOW));
-> +
-> +	if (value < 0)
-> +		value = ~value + 1;
-> +
-> +	return value;
-> +}
+For the SLUB parts:
 
-What is going on here? I thought the value is already in two's
-complement... Is the above equivalent of
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-	      if (value < 0)
-	      	 value = -value; 
-
-? If so, why? If not, can you add a comment?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
