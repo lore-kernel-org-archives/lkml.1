@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbZLFUqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbZLFUqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbZLFUqn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 15:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757888AbZLFUqf
+	id S934031AbZLFUqr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 15:46:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757968AbZLFUqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 15:46:35 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:60542 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757621AbZLFUq0 (ORCPT
+	Sun, 6 Dec 2009 15:46:45 -0500
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:60040 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757722AbZLFUq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 15:46:26 -0500
+	Sun, 6 Dec 2009 15:46:27 -0500
 From: Thomas Hellstrom <thellstrom@vmware.com>
 To: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 Cc: airlied@redhat.com, Thomas Hellstrom <thellstrom@vmware.com>
-Subject: [PATCH 1/5] drm/ttm: Add user-space objects.
-Date: Sun,  6 Dec 2009 21:46:24 +0100
-Message-Id: <1260132388-28414-2-git-send-email-thellstrom@vmware.com>
+Subject: [PATCH 2/5] drm/ttm: Add ttm lock functionality.
+Date: Sun,  6 Dec 2009 21:46:25 +0100
+Message-Id: <1260132388-28414-3-git-send-email-thellstrom@vmware.com>
 X-Mailer: git-send-email 1.5.3.2
-In-Reply-To: <1260132388-28414-1-git-send-email-thellstrom@vmware.com>
+In-Reply-To: <1260132388-28414-2-git-send-email-thellstrom@vmware.com>
 References: <1260132388-28414-1-git-send-email-thellstrom@vmware.com>
+ <1260132388-28414-2-git-send-email-thellstrom@vmware.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add objects needed for user-space to maintain reference counts on ttm objects.
-This is used by the vmwgfx driver which allows user-space to maintain
-map-counts on dma buffers, lock-counts on the ttm lock and ref-counts on
-gpu surfaces, gpu contexts and dma buffer.
+This is intended to be used by ttm-aware drivers to
+1) Block clients to inactive masters when
+they try to validate buffers for GPU use.
+2) Optionally block clients to the current master when
+there is thrashing due to GPU memory shortage.
+
+Used by the vmwgfx driver.
 
 Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
 ---
- drivers/gpu/drm/ttm/Makefile     |    3 +-
- drivers/gpu/drm/ttm/ttm_object.c |  452 ++++++++++++++++++++++++++++++++++++++
- include/drm/ttm/ttm_object.h     |  267 ++++++++++++++++++++++
- 3 files changed, 721 insertions(+), 1 deletions(-)
- create mode 100644 drivers/gpu/drm/ttm/ttm_object.c
- create mode 100644 include/drm/ttm/ttm_object.h
+ drivers/gpu/drm/ttm/Makefile   |    2 +-
+ drivers/gpu/drm/ttm/ttm_lock.c |  311 ++++++++++++++++++++++++++++++++++++++++
+ include/drm/ttm/ttm_lock.h     |  247 +++++++++++++++++++++++++++++++
+ 3 files changed, 559 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/gpu/drm/ttm/ttm_lock.c
+ create mode 100644 include/drm/ttm/ttm_lock.h
 
 diff --git a/drivers/gpu/drm/ttm/Makefile b/drivers/gpu/drm/ttm/Makefile
-index b0a9de7..a9cc9f8 100644
+index a9cc9f8..4473549 100644
 --- a/drivers/gpu/drm/ttm/Makefile
 +++ b/drivers/gpu/drm/ttm/Makefile
-@@ -3,6 +3,7 @@
- 
+@@ -4,6 +4,6 @@
  ccflags-y := -Iinclude/drm
  ttm-y := ttm_agp_backend.o ttm_memory.o ttm_tt.o ttm_bo.o \
--	ttm_bo_util.o ttm_bo_vm.o ttm_module.o ttm_global.o
-+	ttm_bo_util.o ttm_bo_vm.o ttm_module.o ttm_global.o \
-+	ttm_object.o
+ 	ttm_bo_util.o ttm_bo_vm.o ttm_module.o ttm_global.o \
+-	ttm_object.o
++	ttm_object.o ttm_lock.o
  
  obj-$(CONFIG_DRM_TTM) += ttm.o
-diff --git a/drivers/gpu/drm/ttm/ttm_object.c b/drivers/gpu/drm/ttm/ttm_object.c
+diff --git a/drivers/gpu/drm/ttm/ttm_lock.c b/drivers/gpu/drm/ttm/ttm_lock.c
 new file mode 100644
-index 0000000..1099aba
+index 0000000..f619ebc
 --- /dev/null
-+++ b/drivers/gpu/drm/ttm/ttm_object.c
-@@ -0,0 +1,452 @@
++++ b/drivers/gpu/drm/ttm/ttm_lock.c
+@@ -0,0 +1,311 @@
 +/**************************************************************************
 + *
-+ * Copyright (c) 2009 VMware, Inc., Palo Alto, CA., USA
++ * Copyright (c) 2007-2009 VMware, Inc., Palo Alto, CA., USA
 + * All Rights Reserved.
 + *
 + * Permission is hereby granted, free of charge, to any person obtaining a
@@ -85,438 +88,297 @@ index 0000000..1099aba
 +/*
 + * Authors: Thomas Hellstrom <thellstrom-at-vmware-dot-com>
 + */
-+/** @file ttm_ref_object.c
-+ *
-+ * Base- and reference object implementation for the various
-+ * ttm objects. Implements reference counting, minimal security checks
-+ * and release on file close.
-+ */
 +
-+/**
-+ * struct ttm_object_file
-+ *
-+ * @tdev: Pointer to the ttm_object_device.
-+ *
-+ * @lock: Lock that protects the ref_list list and the
-+ * ref_hash hash tables.
-+ *
-+ * @ref_list: List of ttm_ref_objects to be destroyed at
-+ * file release.
-+ *
-+ * @ref_hash: Hash tables of ref objects, one per ttm_ref_type,
-+ * for fast lookup of ref objects given a base object.
-+ */
-+
-+#include "ttm/ttm_object.h"
++#include "ttm/ttm_lock.h"
 +#include "ttm/ttm_module.h"
-+#include <linux/list.h>
-+#include <linux/spinlock.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
 +#include <asm/atomic.h>
++#include <linux/errno.h>
++#include <linux/wait.h>
++#include <linux/sched.h>
++#include <linux/module.h>
 +
-+struct ttm_object_file {
-+	struct ttm_object_device *tdev;
-+	rwlock_t lock;
-+	struct list_head ref_list;
-+	struct drm_open_hash ref_hash[TTM_REF_NUM];
-+	struct kref refcount;
-+};
++#define TTM_WRITE_LOCK_PENDING    (1 << 0)
++#define TTM_VT_LOCK_PENDING       (1 << 1)
++#define TTM_SUSPEND_LOCK_PENDING  (1 << 2)
++#define TTM_VT_LOCK               (1 << 3)
++#define TTM_SUSPEND_LOCK          (1 << 4)
 +
-+/**
-+ * struct ttm_object_device
-+ *
-+ * @object_lock: lock that protects the object_hash hash table.
-+ *
-+ * @object_hash: hash table for fast lookup of object global names.
-+ *
-+ * @object_count: Per device object count.
-+ *
-+ * This is the per-device data structure needed for ttm object management.
-+ */
-+
-+struct ttm_object_device {
-+	rwlock_t object_lock;
-+	struct drm_open_hash object_hash;
-+	atomic_t object_count;
-+	struct ttm_mem_global *mem_glob;
-+};
-+
-+/**
-+ * struct ttm_ref_object
-+ *
-+ * @hash: Hash entry for the per-file object reference hash.
-+ *
-+ * @head: List entry for the per-file list of ref-objects.
-+ *
-+ * @kref: Ref count.
-+ *
-+ * @obj: Base object this ref object is referencing.
-+ *
-+ * @ref_type: Type of ref object.
-+ *
-+ * This is similar to an idr object, but it also has a hash table entry
-+ * that allows lookup with a pointer to the referenced object as a key. In
-+ * that way, one can easily detect whether a base object is referenced by
-+ * a particular ttm_object_file. It also carries a ref count to avoid creating
-+ * multiple ref objects if a ttm_object_file references the same base
-+ * object more than once.
-+ */
-+
-+struct ttm_ref_object {
-+	struct drm_hash_item hash;
-+	struct list_head head;
-+	struct kref kref;
-+	struct ttm_base_object *obj;
-+	enum ttm_ref_type ref_type;
-+	struct ttm_object_file *tfile;
-+};
-+
-+static inline struct ttm_object_file *
-+ttm_object_file_ref(struct ttm_object_file *tfile)
++void ttm_lock_init(struct ttm_lock *lock)
 +{
-+	kref_get(&tfile->refcount);
-+	return tfile;
++	spin_lock_init(&lock->lock);
++	init_waitqueue_head(&lock->queue);
++	lock->rw = 0;
++	lock->flags = 0;
++	lock->kill_takers = false;
++	lock->signal = SIGKILL;
++}
++EXPORT_SYMBOL(ttm_lock_init);
++
++void ttm_read_unlock(struct ttm_lock *lock)
++{
++	spin_lock(&lock->lock);
++	if (--lock->rw == 0)
++		wake_up_all(&lock->queue);
++	spin_unlock(&lock->lock);
++}
++EXPORT_SYMBOL(ttm_read_unlock);
++
++static bool __ttm_read_lock(struct ttm_lock *lock)
++{
++	bool locked = false;
++
++	spin_lock(&lock->lock);
++	if (unlikely(lock->kill_takers)) {
++		send_sig(lock->signal, current, 0);
++		spin_unlock(&lock->lock);
++		return false;
++	}
++	if (lock->rw >= 0 && lock->flags == 0) {
++		++lock->rw;
++		locked = true;
++	}
++	spin_unlock(&lock->lock);
++	return locked;
 +}
 +
-+static void ttm_object_file_destroy(struct kref *kref)
++int ttm_read_lock(struct ttm_lock *lock, bool interruptible)
 +{
-+	struct ttm_object_file *tfile =
-+		container_of(kref, struct ttm_object_file, refcount);
++	int ret = 0;
 +
-+	kfree(tfile);
-+}
-+
-+
-+static inline void ttm_object_file_unref(struct ttm_object_file **p_tfile)
-+{
-+	struct ttm_object_file *tfile = *p_tfile;
-+
-+	*p_tfile = NULL;
-+	kref_put(&tfile->refcount, ttm_object_file_destroy);
-+}
-+
-+
-+int ttm_base_object_init(struct ttm_object_file *tfile,
-+			 struct ttm_base_object *base,
-+			 bool shareable,
-+			 enum ttm_object_type object_type,
-+			 void (*refcount_release) (struct ttm_base_object **),
-+			 void (*ref_obj_release) (struct ttm_base_object *,
-+						  enum ttm_ref_type ref_type))
-+{
-+	struct ttm_object_device *tdev = tfile->tdev;
-+	int ret;
-+
-+	base->shareable = shareable;
-+	base->tfile = ttm_object_file_ref(tfile);
-+	base->refcount_release = refcount_release;
-+	base->ref_obj_release = ref_obj_release;
-+	base->object_type = object_type;
-+	write_lock(&tdev->object_lock);
-+	kref_init(&base->refcount);
-+	ret = drm_ht_just_insert_please(&tdev->object_hash,
-+					&base->hash,
-+					(unsigned long)base, 31, 0, 0);
-+	write_unlock(&tdev->object_lock);
-+	if (unlikely(ret != 0))
-+		goto out_err0;
-+
-+	ret = ttm_ref_object_add(tfile, base, TTM_REF_USAGE, NULL);
-+	if (unlikely(ret != 0))
-+		goto out_err1;
-+
-+	ttm_base_object_unref(&base);
-+
-+	return 0;
-+out_err1:
-+	(void)drm_ht_remove_item(&tdev->object_hash, &base->hash);
-+out_err0:
++	if (interruptible)
++		ret = wait_event_interruptible(lock->queue,
++					       __ttm_read_lock(lock));
++	else
++		wait_event(lock->queue, __ttm_read_lock(lock));
 +	return ret;
 +}
-+EXPORT_SYMBOL(ttm_base_object_init);
++EXPORT_SYMBOL(ttm_read_lock);
 +
-+static void ttm_release_base(struct kref *kref)
++static bool __ttm_read_trylock(struct ttm_lock *lock, bool *locked)
 +{
-+	struct ttm_base_object *base =
-+	    container_of(kref, struct ttm_base_object, refcount);
-+	struct ttm_object_device *tdev = base->tfile->tdev;
++	bool block = true;
 +
-+	(void)drm_ht_remove_item(&tdev->object_hash, &base->hash);
-+	write_unlock(&tdev->object_lock);
-+	if (base->refcount_release) {
-+		ttm_object_file_unref(&base->tfile);
-+		base->refcount_release(&base);
++	*locked = false;
++
++	spin_lock(&lock->lock);
++	if (unlikely(lock->kill_takers)) {
++		send_sig(lock->signal, current, 0);
++		spin_unlock(&lock->lock);
++		return false;
 +	}
-+	write_lock(&tdev->object_lock);
++	if (lock->rw >= 0 && lock->flags == 0) {
++		++lock->rw;
++		block = false;
++		*locked = true;
++	} else if (lock->flags == 0) {
++		block = false;
++	}
++	spin_unlock(&lock->lock);
++
++	return !block;
 +}
 +
-+void ttm_base_object_unref(struct ttm_base_object **p_base)
++int ttm_read_trylock(struct ttm_lock *lock, bool interruptible)
++{
++	int ret = 0;
++	bool locked;
++
++	if (interruptible)
++		ret = wait_event_interruptible
++			(lock->queue, __ttm_read_trylock(lock, &locked));
++	else
++		wait_event(lock->queue, __ttm_read_trylock(lock, &locked));
++
++	if (unlikely(ret != 0)) {
++		BUG_ON(locked);
++		return ret;
++	}
++
++	return (locked) ? 0 : -EBUSY;
++}
++
++void ttm_write_unlock(struct ttm_lock *lock)
++{
++	spin_lock(&lock->lock);
++	lock->rw = 0;
++	wake_up_all(&lock->queue);
++	spin_unlock(&lock->lock);
++}
++EXPORT_SYMBOL(ttm_write_unlock);
++
++static bool __ttm_write_lock(struct ttm_lock *lock)
++{
++	bool locked = false;
++
++	spin_lock(&lock->lock);
++	if (unlikely(lock->kill_takers)) {
++		send_sig(lock->signal, current, 0);
++		spin_unlock(&lock->lock);
++		return false;
++	}
++	if (lock->rw == 0 && ((lock->flags & ~TTM_WRITE_LOCK_PENDING) == 0)) {
++		lock->rw = -1;
++		lock->flags &= ~TTM_WRITE_LOCK_PENDING;
++		locked = true;
++	} else {
++		lock->flags |= TTM_WRITE_LOCK_PENDING;
++	}
++	spin_unlock(&lock->lock);
++	return locked;
++}
++
++int ttm_write_lock(struct ttm_lock *lock, bool interruptible)
++{
++	int ret = 0;
++
++	if (interruptible) {
++		ret = wait_event_interruptible(lock->queue,
++					       __ttm_write_lock(lock));
++		if (unlikely(ret != 0)) {
++			spin_lock(&lock->lock);
++			lock->flags &= ~TTM_WRITE_LOCK_PENDING;
++			wake_up_all(&lock->queue);
++			spin_unlock(&lock->lock);
++		}
++	} else
++		wait_event(lock->queue, __ttm_read_lock(lock));
++
++	return ret;
++}
++EXPORT_SYMBOL(ttm_write_lock);
++
++void ttm_write_lock_downgrade(struct ttm_lock *lock)
++{
++	spin_lock(&lock->lock);
++	lock->rw = 1;
++	wake_up_all(&lock->queue);
++	spin_unlock(&lock->lock);
++}
++
++static int __ttm_vt_unlock(struct ttm_lock *lock)
++{
++	int ret = 0;
++
++	spin_lock(&lock->lock);
++	if (unlikely(!(lock->flags & TTM_VT_LOCK)))
++		ret = -EINVAL;
++	lock->flags &= ~TTM_VT_LOCK;
++	wake_up_all(&lock->queue);
++	spin_unlock(&lock->lock);
++	printk(KERN_INFO TTM_PFX "vt unlock.\n");
++
++	return ret;
++}
++
++static void ttm_vt_lock_remove(struct ttm_base_object **p_base)
 +{
 +	struct ttm_base_object *base = *p_base;
-+	struct ttm_object_device *tdev = base->tfile->tdev;
-+
-+	*p_base = NULL;
-+
-+	/*
-+	 * Need to take the lock here to avoid racing with
-+	 * users trying to look up the object.
-+	 */
-+
-+	write_lock(&tdev->object_lock);
-+	(void)kref_put(&base->refcount, &ttm_release_base);
-+	write_unlock(&tdev->object_lock);
-+}
-+EXPORT_SYMBOL(ttm_base_object_unref);
-+
-+struct ttm_base_object *ttm_base_object_lookup(struct ttm_object_file *tfile,
-+					       uint32_t key)
-+{
-+	struct ttm_object_device *tdev = tfile->tdev;
-+	struct ttm_base_object *base;
-+	struct drm_hash_item *hash;
++	struct ttm_lock *lock = container_of(base, struct ttm_lock, base);
 +	int ret;
 +
-+	read_lock(&tdev->object_lock);
-+	ret = drm_ht_find_item(&tdev->object_hash, key, &hash);
-+
-+	if (likely(ret == 0)) {
-+		base = drm_hash_entry(hash, struct ttm_base_object, hash);
-+		kref_get(&base->refcount);
-+	}
-+	read_unlock(&tdev->object_lock);
-+
-+	if (unlikely(ret != 0))
-+		return NULL;
-+
-+	if (tfile != base->tfile && !base->shareable) {
-+		printk(KERN_ERR TTM_PFX
-+		       "Attempted access of non-shareable object.\n");
-+		ttm_base_object_unref(&base);
-+		return NULL;
-+	}
-+
-+	return base;
++	*p_base = NULL;
++	ret = __ttm_vt_unlock(lock);
++	BUG_ON(ret != 0);
 +}
-+EXPORT_SYMBOL(ttm_base_object_lookup);
 +
-+int ttm_ref_object_add(struct ttm_object_file *tfile,
-+		       struct ttm_base_object *base,
-+		       enum ttm_ref_type ref_type, bool *existed)
++static bool __ttm_vt_lock(struct ttm_lock *lock)
 +{
-+	struct drm_open_hash *ht = &tfile->ref_hash[ref_type];
-+	struct ttm_ref_object *ref;
-+	struct drm_hash_item *hash;
-+	struct ttm_mem_global *mem_glob = tfile->tdev->mem_glob;
-+	int ret = -EINVAL;
++	bool locked = false;
 +
-+	if (existed != NULL)
-+		*existed = true;
++	spin_lock(&lock->lock);
++	if (lock->rw == 0) {
++		lock->flags &= ~TTM_VT_LOCK_PENDING;
++		lock->flags |= TTM_VT_LOCK;
++		locked = true;
++	} else {
++		lock->flags |= TTM_VT_LOCK_PENDING;
++	}
++	spin_unlock(&lock->lock);
++	return locked;
++}
 +
-+	while (ret == -EINVAL) {
-+		read_lock(&tfile->lock);
-+		ret = drm_ht_find_item(ht, base->hash.key, &hash);
++int ttm_vt_lock(struct ttm_lock *lock,
++		bool interruptible,
++		struct ttm_object_file *tfile)
++{
++	int ret = 0;
 +
-+		if (ret == 0) {
-+			ref = drm_hash_entry(hash, struct ttm_ref_object, hash);
-+			kref_get(&ref->kref);
-+			read_unlock(&tfile->lock);
-+			break;
-+		}
-+
-+		read_unlock(&tfile->lock);
-+		ret = ttm_mem_global_alloc(mem_glob, sizeof(*ref),
-+					   false, false);
-+		if (unlikely(ret != 0))
++	if (interruptible) {
++		ret = wait_event_interruptible(lock->queue,
++					       __ttm_vt_lock(lock));
++		if (unlikely(ret != 0)) {
++			spin_lock(&lock->lock);
++			lock->flags &= ~TTM_VT_LOCK_PENDING;
++			wake_up_all(&lock->queue);
++			spin_unlock(&lock->lock);
 +			return ret;
-+		ref = kmalloc(sizeof(*ref), GFP_KERNEL);
-+		if (unlikely(ref == NULL)) {
-+			ttm_mem_global_free(mem_glob, sizeof(*ref));
-+			return -ENOMEM;
 +		}
++	} else
++		wait_event(lock->queue, __ttm_vt_lock(lock));
 +
-+		ref->hash.key = base->hash.key;
-+		ref->obj = base;
-+		ref->tfile = tfile;
-+		ref->ref_type = ref_type;
-+		kref_init(&ref->kref);
++	/*
++	 * Add a base-object, the destructor of which will
++	 * make sure the lock is released if the client dies
++	 * while holding it.
++	 */
 +
-+		write_lock(&tfile->lock);
-+		ret = drm_ht_insert_item(ht, &ref->hash);
-+
-+		if (likely(ret == 0)) {
-+			list_add_tail(&ref->head, &tfile->ref_list);
-+			kref_get(&base->refcount);
-+			write_unlock(&tfile->lock);
-+			if (existed != NULL)
-+				*existed = false;
-+			break;
-+		}
-+
-+		write_unlock(&tfile->lock);
-+		BUG_ON(ret != -EINVAL);
-+
-+		ttm_mem_global_free(mem_glob, sizeof(*ref));
-+		kfree(ref);
++	ret = ttm_base_object_init(tfile, &lock->base, false,
++				   ttm_lock_type, &ttm_vt_lock_remove, NULL);
++	if (ret)
++		(void)__ttm_vt_unlock(lock);
++	else {
++		lock->vt_holder = tfile;
++		printk(KERN_INFO TTM_PFX "vt lock.\n");
 +	}
 +
 +	return ret;
 +}
-+EXPORT_SYMBOL(ttm_ref_object_add);
++EXPORT_SYMBOL(ttm_vt_lock);
 +
-+static void ttm_ref_object_release(struct kref *kref)
++int ttm_vt_unlock(struct ttm_lock *lock)
 +{
-+	struct ttm_ref_object *ref =
-+	    container_of(kref, struct ttm_ref_object, kref);
-+	struct ttm_base_object *base = ref->obj;
-+	struct ttm_object_file *tfile = ref->tfile;
-+	struct drm_open_hash *ht;
-+	struct ttm_mem_global *mem_glob = tfile->tdev->mem_glob;
++	return ttm_ref_object_base_unref(lock->vt_holder,
++					 lock->base.hash.key, TTM_REF_USAGE);
++}
++EXPORT_SYMBOL(ttm_vt_unlock);
 +
-+	ht = &tfile->ref_hash[ref->ref_type];
-+	(void)drm_ht_remove_item(ht, &ref->hash);
-+	list_del(&ref->head);
-+	write_unlock(&tfile->lock);
-+
-+	if (ref->ref_type != TTM_REF_USAGE && base->ref_obj_release)
-+		base->ref_obj_release(base, ref->ref_type);
-+
-+	ttm_base_object_unref(&ref->obj);
-+	ttm_mem_global_free(mem_glob, sizeof(*ref));
-+	kfree(ref);
-+	write_lock(&tfile->lock);
++void ttm_suspend_unlock(struct ttm_lock *lock)
++{
++	spin_lock(&lock->lock);
++	lock->flags &= ~TTM_SUSPEND_LOCK;
++	wake_up_all(&lock->queue);
++	spin_unlock(&lock->lock);
 +}
 +
-+int ttm_ref_object_base_unref(struct ttm_object_file *tfile,
-+			      unsigned long key, enum ttm_ref_type ref_type)
++static bool __ttm_suspend_lock(struct ttm_lock *lock)
 +{
-+	struct drm_open_hash *ht = &tfile->ref_hash[ref_type];
-+	struct ttm_ref_object *ref;
-+	struct drm_hash_item *hash;
-+	int ret;
++	bool locked = false;
 +
-+	write_lock(&tfile->lock);
-+	ret = drm_ht_find_item(ht, key, &hash);
-+	if (unlikely(ret != 0)) {
-+		write_unlock(&tfile->lock);
-+		return -EINVAL;
++	spin_lock(&lock->lock);
++	if (lock->rw == 0) {
++		lock->flags &= ~TTM_SUSPEND_LOCK_PENDING;
++		lock->flags |= TTM_SUSPEND_LOCK;
++		locked = true;
++	} else {
++		lock->flags |= TTM_SUSPEND_LOCK_PENDING;
 +	}
-+	ref = drm_hash_entry(hash, struct ttm_ref_object, hash);
-+	kref_put(&ref->kref, ttm_ref_object_release);
-+	write_unlock(&tfile->lock);
-+	return 0;
++	spin_unlock(&lock->lock);
++	return locked;
 +}
-+EXPORT_SYMBOL(ttm_ref_object_base_unref);
 +
-+void ttm_object_file_release(struct ttm_object_file **p_tfile)
++void ttm_suspend_lock(struct ttm_lock *lock)
 +{
-+	struct ttm_ref_object *ref;
-+	struct list_head *list;
-+	unsigned int i;
-+	struct ttm_object_file *tfile = *p_tfile;
-+
-+	*p_tfile = NULL;
-+	write_lock(&tfile->lock);
-+
-+	/*
-+	 * Since we release the lock within the loop, we have to
-+	 * restart it from the beginning each time.
-+	 */
-+
-+	while (!list_empty(&tfile->ref_list)) {
-+		list = tfile->ref_list.next;
-+		ref = list_entry(list, struct ttm_ref_object, head);
-+		ttm_ref_object_release(&ref->kref);
-+	}
-+
-+	for (i = 0; i < TTM_REF_NUM; ++i)
-+		drm_ht_remove(&tfile->ref_hash[i]);
-+
-+	write_unlock(&tfile->lock);
-+	ttm_object_file_unref(&tfile);
++	wait_event(lock->queue, __ttm_suspend_lock(lock));
 +}
-+EXPORT_SYMBOL(ttm_object_file_release);
-+
-+struct ttm_object_file *ttm_object_file_init(struct ttm_object_device *tdev,
-+					     unsigned int hash_order)
-+{
-+	struct ttm_object_file *tfile = kmalloc(sizeof(*tfile), GFP_KERNEL);
-+	unsigned int i;
-+	unsigned int j = 0;
-+	int ret;
-+
-+	if (unlikely(tfile == NULL))
-+		return NULL;
-+
-+	rwlock_init(&tfile->lock);
-+	tfile->tdev = tdev;
-+	kref_init(&tfile->refcount);
-+	INIT_LIST_HEAD(&tfile->ref_list);
-+
-+	for (i = 0; i < TTM_REF_NUM; ++i) {
-+		ret = drm_ht_create(&tfile->ref_hash[i], hash_order);
-+		if (ret) {
-+			j = i;
-+			goto out_err;
-+		}
-+	}
-+
-+	return tfile;
-+out_err:
-+	for (i = 0; i < j; ++i)
-+		drm_ht_remove(&tfile->ref_hash[i]);
-+
-+	kfree(tfile);
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL(ttm_object_file_init);
-+
-+struct ttm_object_device *ttm_object_device_init(struct ttm_mem_global
-+						 *mem_glob,
-+						 unsigned int hash_order)
-+{
-+	struct ttm_object_device *tdev = kmalloc(sizeof(*tdev), GFP_KERNEL);
-+	int ret;
-+
-+	if (unlikely(tdev == NULL))
-+		return NULL;
-+
-+	tdev->mem_glob = mem_glob;
-+	rwlock_init(&tdev->object_lock);
-+	atomic_set(&tdev->object_count, 0);
-+	ret = drm_ht_create(&tdev->object_hash, hash_order);
-+
-+	if (likely(ret == 0))
-+		return tdev;
-+
-+	kfree(tdev);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(ttm_object_device_init);
-+
-+void ttm_object_device_release(struct ttm_object_device **p_tdev)
-+{
-+	struct ttm_object_device *tdev = *p_tdev;
-+
-+	*p_tdev = NULL;
-+
-+	write_lock(&tdev->object_lock);
-+	drm_ht_remove(&tdev->object_hash);
-+	write_unlock(&tdev->object_lock);
-+
-+	kfree(tdev);
-+}
-+EXPORT_SYMBOL(ttm_object_device_release);
-diff --git a/include/drm/ttm/ttm_object.h b/include/drm/ttm/ttm_object.h
+diff --git a/include/drm/ttm/ttm_lock.h b/include/drm/ttm/ttm_lock.h
 new file mode 100644
-index 0000000..703ca4d
+index 0000000..81ba0b0
 --- /dev/null
-+++ b/include/drm/ttm/ttm_object.h
-@@ -0,0 +1,267 @@
++++ b/include/drm/ttm/ttm_lock.h
+@@ -0,0 +1,247 @@
 +/**************************************************************************
 + *
-+ * Copyright (c) 2006-2009 VMware, Inc., Palo Alto, CA., USA
++ * Copyright (c) 2007-2009 VMware, Inc., Palo Alto, CA., USA
 + * All Rights Reserved.
 + *
 + * Permission is hereby granted, free of charge, to any person obtaining a
@@ -543,242 +405,222 @@ index 0000000..703ca4d
 +/*
 + * Authors: Thomas Hellstrom <thellstrom-at-vmware-dot-com>
 + */
-+/** @file ttm_object.h
++
++/** @file ttm_lock.h
++ * This file implements a simple replacement for the buffer manager use
++ * of the DRM heavyweight hardware lock.
++ * The lock is a read-write lock. Taking it in read mode and write mode
++ * is relatively fast, and intended for in-kernel use only.
 + *
-+ * Base- and reference object implementation for the various
-+ * ttm objects. Implements reference counting, minimal security checks
-+ * and release on file close.
++ * The vt mode is used only when there is a need to block all
++ * user-space processes from validating buffers.
++ * It's allowed to leave kernel space with the vt lock held.
++ * If a user-space process dies while having the vt-lock,
++ * it will be released during the file descriptor release. The vt lock
++ * excludes write lock and read lock.
++ *
++ * The suspend mode is used to lock out all TTM users when preparing for
++ * and executing suspend operations.
++ *
 + */
 +
-+#ifndef _TTM_OBJECT_H_
-+#define _TTM_OBJECT_H_
++#ifndef _TTM_LOCK_H_
++#define _TTM_LOCK_H_
 +
-+#include <linux/list.h>
-+#include "drm_hashtab.h"
-+#include <linux/kref.h>
-+#include <ttm/ttm_memory.h>
++#include "ttm/ttm_object.h"
++#include <linux/wait.h>
++#include <asm/atomic.h>
 +
 +/**
-+ * enum ttm_ref_type
++ * struct ttm_lock
 + *
-+ * Describes what type of reference a ref object holds.
-+ *
-+ * TTM_REF_USAGE is a simple refcount on a base object.
-+ *
-+ * TTM_REF_SYNCCPU_READ is a SYNCCPU_READ reference on a
-+ * buffer object.
-+ *
-+ * TTM_REF_SYNCCPU_WRITE is a SYNCCPU_WRITE reference on a
-+ * buffer object.
-+ *
++ * @base: ttm base object used solely to release the lock if the client
++ * holding the lock dies.
++ * @queue: Queue for processes waiting for lock change-of-status.
++ * @lock: Spinlock protecting some lock members.
++ * @rw: Read-write lock counter. Protected by @lock.
++ * @flags: Lock state. Protected by @lock.
++ * @kill_takers: Boolean whether to kill takers of the lock.
++ * @signal: Signal to send when kill_takers is true.
 + */
 +
-+enum ttm_ref_type {
-+	TTM_REF_USAGE,
-+	TTM_REF_SYNCCPU_READ,
-+	TTM_REF_SYNCCPU_WRITE,
-+	TTM_REF_NUM
++struct ttm_lock {
++	struct ttm_base_object base;
++	wait_queue_head_t queue;
++	spinlock_t lock;
++	int32_t rw;
++	uint32_t flags;
++	bool kill_takers;
++	int signal;
++	struct ttm_object_file *vt_holder;
 +};
 +
-+/**
-+ * enum ttm_object_type
-+ *
-+ * One entry per ttm object type.
-+ * Device-specific types should use the
-+ * ttm_driver_typex types.
-+ */
-+
-+enum ttm_object_type {
-+	ttm_fence_type,
-+	ttm_buffer_type,
-+	ttm_lock_type,
-+	ttm_driver_type0 = 256,
-+	ttm_driver_type1
-+};
-+
-+struct ttm_object_file;
-+struct ttm_object_device;
 +
 +/**
-+ * struct ttm_base_object
++ * ttm_lock_init
 + *
-+ * @hash: hash entry for the per-device object hash.
-+ * @type: derived type this object is base class for.
-+ * @shareable: Other ttm_object_files can access this object.
-+ *
-+ * @tfile: Pointer to ttm_object_file of the creator.
-+ * NULL if the object was not created by a user request.
-+ * (kernel object).
-+ *
-+ * @refcount: Number of references to this object, not
-+ * including the hash entry. A reference to a base object can
-+ * only be held by a ref object.
-+ *
-+ * @refcount_release: A function to be called when there are
-+ * no more references to this object. This function should
-+ * destroy the object (or make sure destruction eventually happens),
-+ * and when it is called, the object has
-+ * already been taken out of the per-device hash. The parameter
-+ * "base" should be set to NULL by the function.
-+ *
-+ * @ref_obj_release: A function to be called when a reference object
-+ * with another ttm_ref_type than TTM_REF_USAGE is deleted.
-+ * this function may, for example, release a lock held by a user-space
-+ * process.
-+ *
-+ * This struct is intended to be used as a base struct for objects that
-+ * are visible to user-space. It provides a global name, race-safe
-+ * access and refcounting, minimal access contol and hooks for unref actions.
++ * @lock: Pointer to a struct ttm_lock
++ * Initializes the lock.
 + */
-+
-+struct ttm_base_object {
-+	struct drm_hash_item hash;
-+	enum ttm_object_type object_type;
-+	bool shareable;
-+	struct ttm_object_file *tfile;
-+	struct kref refcount;
-+	void (*refcount_release) (struct ttm_base_object **base);
-+	void (*ref_obj_release) (struct ttm_base_object *base,
-+				 enum ttm_ref_type ref_type);
-+};
++extern void ttm_lock_init(struct ttm_lock *lock);
 +
 +/**
-+ * ttm_base_object_init
++ * ttm_read_unlock
 + *
-+ * @tfile: Pointer to a struct ttm_object_file.
-+ * @base: The struct ttm_base_object to initialize.
-+ * @shareable: This object is shareable with other applcations.
-+ * (different @tfile pointers.)
-+ * @type: The object type.
-+ * @refcount_release: See the struct ttm_base_object description.
-+ * @ref_obj_release: See the struct ttm_base_object description.
++ * @lock: Pointer to a struct ttm_lock
 + *
-+ * Initializes a struct ttm_base_object.
++ * Releases a read lock.
 + */
-+
-+extern int ttm_base_object_init(struct ttm_object_file *tfile,
-+				struct ttm_base_object *base,
-+				bool shareable,
-+				enum ttm_object_type type,
-+				void (*refcount_release) (struct ttm_base_object
-+							  **),
-+				void (*ref_obj_release) (struct ttm_base_object
-+							 *,
-+							 enum ttm_ref_type
-+							 ref_type));
++extern void ttm_read_unlock(struct ttm_lock *lock);
 +
 +/**
-+ * ttm_base_object_lookup
++ * ttm_read_lock
 + *
-+ * @tfile: Pointer to a struct ttm_object_file.
-+ * @key: Hash key
++ * @lock: Pointer to a struct ttm_lock
++ * @interruptible: Interruptible sleeping while waiting for a lock.
 + *
-+ * Looks up a struct ttm_base_object with the key @key.
-+ * Also verifies that the object is visible to the application, by
-+ * comparing the @tfile argument and checking the object shareable flag.
++ * Takes the lock in read mode.
++ * Returns:
++ * -ERESTARTSYS If interrupted by a signal and interruptible is true.
 + */
-+
-+extern struct ttm_base_object *ttm_base_object_lookup(struct ttm_object_file
-+						      *tfile, uint32_t key);
++extern int ttm_read_lock(struct ttm_lock *lock, bool interruptible);
 +
 +/**
-+ * ttm_base_object_unref
++ * ttm_read_trylock
 + *
-+ * @p_base: Pointer to a pointer referncing a struct ttm_base_object.
++ * @lock: Pointer to a struct ttm_lock
++ * @interruptible: Interruptible sleeping while waiting for a lock.
 + *
-+ * Decrements the base object refcount and clears the pointer pointed to by
-+ * p_base.
++ * Tries to take the lock in read mode. If the lock is already held
++ * in write mode, the function will return -EBUSY. If the lock is held
++ * in vt or suspend mode, the function will sleep until these modes
++ * are unlocked.
++ *
++ * Returns:
++ * -EBUSY The lock was already held in write mode.
++ * -ERESTARTSYS If interrupted by a signal and interruptible is true.
 + */
-+
-+extern void ttm_base_object_unref(struct ttm_base_object **p_base);
++extern int ttm_read_trylock(struct ttm_lock *lock, bool interruptible);
 +
 +/**
-+ * ttm_ref_object_add.
++ * ttm_write_unlock
 + *
-+ * @tfile: A struct ttm_object_file representing the application owning the
-+ * ref_object.
-+ * @base: The base object to reference.
-+ * @ref_type: The type of reference.
-+ * @existed: Upon completion, indicates that an identical reference object
-+ * already existed, and the refcount was upped on that object instead.
++ * @lock: Pointer to a struct ttm_lock
 + *
-+ * Adding a ref object to a base object is basically like referencing the
-+ * base object, but a user-space application holds the reference. When the
-+ * file corresponding to @tfile is closed, all its reference objects are
-+ * deleted. A reference object can have different types depending on what
-+ * it's intended for. It can be refcounting to prevent object destruction,
-+ * When user-space takes a lock, it can add a ref object to that lock to
-+ * make sure the lock is released if the application dies. A ref object
-+ * will hold a single reference on a base object.
++ * Releases a write lock.
 + */
-+extern int ttm_ref_object_add(struct ttm_object_file *tfile,
-+			      struct ttm_base_object *base,
-+			      enum ttm_ref_type ref_type, bool *existed);
-+/**
-+ * ttm_ref_object_base_unref
-+ *
-+ * @key: Key representing the base object.
-+ * @ref_type: Ref type of the ref object to be dereferenced.
-+ *
-+ * Unreference a ref object with type @ref_type
-+ * on the base object identified by @key. If there are no duplicate
-+ * references, the ref object will be destroyed and the base object
-+ * will be unreferenced.
-+ */
-+extern int ttm_ref_object_base_unref(struct ttm_object_file *tfile,
-+				     unsigned long key,
-+				     enum ttm_ref_type ref_type);
++extern void ttm_write_unlock(struct ttm_lock *lock);
 +
 +/**
-+ * ttm_object_file_init - initialize a struct ttm_object file
++ * ttm_write_lock
 + *
-+ * @tdev: A struct ttm_object device this file is initialized on.
-+ * @hash_order: Order of the hash table used to hold the reference objects.
++ * @lock: Pointer to a struct ttm_lock
++ * @interruptible: Interruptible sleeping while waiting for a lock.
 + *
-+ * This is typically called by the file_ops::open function.
++ * Takes the lock in write mode.
++ * Returns:
++ * -ERESTARTSYS If interrupted by a signal and interruptible is true.
 + */
-+
-+extern struct ttm_object_file *ttm_object_file_init(struct ttm_object_device
-+						    *tdev,
-+						    unsigned int hash_order);
++extern int ttm_write_lock(struct ttm_lock *lock, bool interruptible);
 +
 +/**
-+ * ttm_object_file_release - release data held by a ttm_object_file
++ * ttm_lock_downgrade
 + *
-+ * @p_tfile: Pointer to pointer to the ttm_object_file object to release.
-+ * *p_tfile will be set to NULL by this function.
++ * @lock: Pointer to a struct ttm_lock
 + *
-+ * Releases all data associated by a ttm_object_file.
-+ * Typically called from file_ops::release. The caller must
-+ * ensure that there are no concurrent users of tfile.
++ * Downgrades a write lock to a read lock.
 + */
-+
-+extern void ttm_object_file_release(struct ttm_object_file **p_tfile);
++extern void ttm_lock_downgrade(struct ttm_lock *lock);
 +
 +/**
-+ * ttm_object device init - initialize a struct ttm_object_device
++ * ttm_suspend_lock
 + *
-+ * @hash_order: Order of hash table used to hash the base objects.
++ * @lock: Pointer to a struct ttm_lock
 + *
-+ * This function is typically called on device initialization to prepare
-+ * data structures needed for ttm base and ref objects.
++ * Takes the lock in suspend mode. Excludes read and write mode.
 + */
-+
-+extern struct ttm_object_device *ttm_object_device_init
-+    (struct ttm_mem_global *mem_glob, unsigned int hash_order);
++extern void ttm_suspend_lock(struct ttm_lock *lock);
 +
 +/**
-+ * ttm_object_device_release - release data held by a ttm_object_device
++ * ttm_suspend_unlock
 + *
-+ * @p_tdev: Pointer to pointer to the ttm_object_device object to release.
-+ * *p_tdev will be set to NULL by this function.
++ * @lock: Pointer to a struct ttm_lock
 + *
-+ * Releases all data associated by a ttm_object_device.
-+ * Typically called from driver::unload before the destruction of the
-+ * device private data structure.
++ * Releases a suspend lock
 + */
++extern void ttm_suspend_unlock(struct ttm_lock *lock);
 +
-+extern void ttm_object_device_release(struct ttm_object_device **p_tdev);
++/**
++ * ttm_vt_lock
++ *
++ * @lock: Pointer to a struct ttm_lock
++ * @interruptible: Interruptible sleeping while waiting for a lock.
++ * @tfile: Pointer to a struct ttm_object_file to register the lock with.
++ *
++ * Takes the lock in vt mode.
++ * Returns:
++ * -ERESTARTSYS If interrupted by a signal and interruptible is true.
++ * -ENOMEM: Out of memory when locking.
++ */
++extern int ttm_vt_lock(struct ttm_lock *lock, bool interruptible,
++		       struct ttm_object_file *tfile);
++
++/**
++ * ttm_vt_unlock
++ *
++ * @lock: Pointer to a struct ttm_lock
++ *
++ * Releases a vt lock.
++ * Returns:
++ * -EINVAL If the lock was not held.
++ */
++extern int ttm_vt_unlock(struct ttm_lock *lock);
++
++/**
++ * ttm_write_unlock
++ *
++ * @lock: Pointer to a struct ttm_lock
++ *
++ * Releases a write lock.
++ */
++extern void ttm_write_unlock(struct ttm_lock *lock);
++
++/**
++ * ttm_write_lock
++ *
++ * @lock: Pointer to a struct ttm_lock
++ * @interruptible: Interruptible sleeping while waiting for a lock.
++ *
++ * Takes the lock in write mode.
++ * Returns:
++ * -ERESTARTSYS If interrupted by a signal and interruptible is true.
++ */
++extern int ttm_write_lock(struct ttm_lock *lock, bool interruptible);
++
++/**
++ * ttm_lock_set_kill
++ *
++ * @lock: Pointer to a struct ttm_lock
++ * @val: Boolean whether to kill processes taking the lock.
++ * @signal: Signal to send to the process taking the lock.
++ *
++ * The kill-when-taking-lock functionality is used to kill processes that keep
++ * on using the TTM functionality when its resources has been taken down, for
++ * example when the X server exits. A typical sequence would look like this:
++ * - X server takes lock in write mode.
++ * - ttm_lock_set_kill() is called with @val set to true.
++ * - As part of X server exit, TTM resources are taken down.
++ * - X server releases the lock on file release.
++ * - Another dri client wants to render, takes the lock and is killed.
++ *
++ */
++static inline void ttm_lock_set_kill(struct ttm_lock *lock, bool val,
++				     int signal)
++{
++	lock->kill_takers = val;
++	if (val)
++		lock->signal = signal;
++}
 +
 +#endif
 -- 
