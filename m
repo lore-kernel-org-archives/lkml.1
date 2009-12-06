@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbZLFX1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbZLFXij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757821AbZLFX1j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 18:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757720AbZLFX1i
+	id S1757901AbZLFXij (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 18:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757842AbZLFXig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 18:27:38 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:31544 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757592AbZLFX1i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 18:27:38 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=cR+WrPGTh84YiC3zpLMZtluYMC1A+t6a5u3uY5hyNSpY8NProtV9/sype7l0Bq1nV
-	ANbsziRbjDA4odhQ6AlxA==
-MIME-Version: 1.0
-In-Reply-To: <20091206205041.GA12555@elf.ucw.cz>
-References: <20091206205041.GA12555@elf.ucw.cz>
-Date: Sun, 6 Dec 2009 15:27:38 -0800
-Message-ID: <a55d774e0912061527t5b09b510g1fc458b53a423c04@mail.gmail.com>
-Subject: Re: HTC Dream: dream is better name for this machine
-From: Brian Swetland <swetland@google.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Arve Hj?nnev?g" <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>
-Content-Type: text/plain; charset=UTF-8
-X-System-Of-Record: true
+	Sun, 6 Dec 2009 18:38:36 -0500
+Received: from kroah.org ([198.145.64.141]:33753 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757807AbZLFXig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 18:38:36 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 15:32:08 2009
+Message-Id: <20091206233208.133827759@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Sun, 06 Dec 2009 15:30:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [01/20] ALSA: AACI: fix AC97 multiple-open bug
+References: <20091206233032.387950574@mini.kroah.org>
+Content-Disposition: inline; filename=alsa-aaci-fix-ac97-multiple-open-bug.patch
+In-Reply-To: <20091206233711.GA11609@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 6, 2009 at 12:50 PM, Pavel Machek <pavel@ucw.cz> wrote:
->
-> While few people may know HTC Dream by its codename, it is better to
-> use name of released hardware in the sources.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-I still think that it'd be less pain for everyone to leave it as
-trout.  If you go by sales volume, the most known released hardware
-name is "Tmobile G1", some people know it as ADP1, and I believe it
-has sold under a few other names in other markets, but the software
-has, since day one, been trout and changing that just makes it harder
-to merge other existing changes where we'd have to deal with renames
-as well.  The bootloader identifies it as "trout", and the userspace
-software stack's hardware-specific bits refer to trout.
+------------------
+From: Russell King <rmk+kernel@arm.linux.org.uk>
 
-If it really drives everyone crazy, we could do a big rename once it's
-all in and working, but right now I just don't see the benefit.
+commit 4acd57c3de62374fe5bb52e5cd24538190f4eab2 upstream.
 
-Brian
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ sound/arm/aaci.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/sound/arm/aaci.c
++++ b/sound/arm/aaci.c
+@@ -504,6 +504,10 @@ static int aaci_pcm_hw_params(struct snd
+ 	int err;
+ 
+ 	aaci_pcm_hw_free(substream);
++	if (aacirun->pcm_open) {
++		snd_ac97_pcm_close(aacirun->pcm);
++		aacirun->pcm_open = 0;
++	}
+ 
+ 	err = devdma_hw_alloc(NULL, substream,
+ 			      params_buffer_bytes(params));
+
+
