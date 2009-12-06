@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZLFQfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933899AbZLFQiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbZLFQfJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 11:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbZLFQfI
+	id S933899AbZLFQiv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 11:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933888AbZLFQiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 11:35:08 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:43887 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755725AbZLFQfH convert rfc822-to-8bit (ORCPT
+	Sun, 6 Dec 2009 11:38:50 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:2812 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932753AbZLFQit convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 11:35:07 -0500
+	Sun, 6 Dec 2009 11:38:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=MlVju7bDqQH04nIY6u3Kud8CU/fLMDDEtaBtLJHrmRTuoO88vBQyNkaYZZlF1FokHz
-         kc5jLZ0SMm8Idj4yP5CG73AvPCJSDh3hS0IADMuf4Ca8UexDdPKB1b7Q4lk07LA+Dpvf
-         5o4Vevm9U+0NMqonHoYHGxTqVGLAdC/MW/GCA=
+        b=YJ3M/k3a3J1iAek5XAgH6ojMsCvw12g4Zju8zkM+SulEW/AcJbGj+XeXzQ+6ea4LTZ
+         DhmjYBqVd/0esl7A2M18GMMkkcblC285d+6LRanFRA9M7iyP7HiDOZoWaoJyEEZVQCq3
+         sa1K8C0VE6TB+dDM22LApCcejzGEV77als/wY=
 MIME-Version: 1.0
-In-Reply-To: <4B1BDAA3.10601@gentoo.org>
-References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>
-	 <4B055609.9030306@tremplin-utc.net>
-	 <4B1A53AE.9020707@tremplin-utc.net>
-	 <40a4ed590912060741n4042ab1bg8188cd4eff28ca78@mail.gmail.com>
-	 <4B1BDAA3.10601@gentoo.org>
-Date: Sun, 6 Dec 2009 17:35:11 +0100
-Message-ID: <40a4ed590912060835s61aea6aqfe6780395bfd2993@mail.gmail.com>
-Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
-From: Zeno Davatz <zdavatz@gmail.com>
-To: Zac Medico <zmedico@gentoo.org>
-Cc: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>,
-       linux-kernel@vger.kernel.org
+In-Reply-To: <BENh5lRHqgB@lirc>
+References: <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	 <BENh5lRHqgB@lirc>
+Date: Sun, 6 Dec 2009 11:38:55 -0500
+Message-ID: <9e4733910912060838j29f107cpd827e2d7b8a20c1c@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Christoph Bartelmus <lirc@bartelmus.de>
+Cc: awalls@radix.net, dmitry.torokhov@gmail.com, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, mchehab@redhat.com, superm1@ubuntu.com
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 6, 2009 at 5:24 PM, Zac Medico <zmedico@gentoo.org> wrote:
-> Zeno Davatz wrote:
->> Ok, it does compile but when I insert the module I get:
+On Sun, Dec 6, 2009 at 7:12 AM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
+> Hi Jon,
+>
+> on 04 Dec 09 at 19:28, Jon Smirl wrote:
+>>> BTW, I just came across a XMP remote that seems to generate 3x64 bit
+>>> scan codes. Anyone here has docs on the XMP protocol?
 >>
->> psb: Unknown symbol i2c_bit_add_bus
+>> Assuming a general purpose receiver (not one with fixed hardware
+>> decoding), is it important for Linux to receive IR signals from all
+>> possible remotes no matter how old or obscure? Or is it acceptable to
+> [...]
+>> Of course transmitting is a completely different problem, but we
+>> haven't been talking about transmitting. I can see how we would need
+>> to record any IR protocol in order to retransmit it. But that's in the
+>> 5% of users world, not the 90% that want MythTV to "just work".  Use
+>> something like LIRC if you want to transmit.
 >
-> This might solve it:
->
->  modprobe i2c_algo_bit
->
-> That module comes from CONFIG_I2C_ALGOBIT=m in your kernel config.
+> I don't think anyone here is in the position to be able to tell what is
+> 90% or 5%. Personally I use LIRC exclusively for transmit to my settop box
+> using an old and obscure RECS80 protocol.
+> No, I won't replace my setup just because it's old and obscure.
 
-Yes, thanks. That helped another step. I am getting the correct screen
-resolution after enabling that in the kernel as well. The boot [ok]
-messages of Gentoo are in a higher resolution now though. That is a
-good start.
+There are two groups, technically oriented people who can handle
+messing around with IR protocols and everyone else.  I'm not proposing
+to remove any capabilities from the first group. Instead I'd like to
+see the creation of a "just works" option for the other group. We
+don't know the size of the everyone else group yet because that option
+doesn't exist. In general non-technical people way out number the
+technical ones in broad user bases. For example I had to use LIRC to
+get my remotes working, but I would have rather been in the everyone
+else group and not had to learn about IR.
 
-But after my X starts I get a black screen with a
+> Cable companies tend to provide XMP based boxes to subscribers more often
+> these days. Simply not supporting these setups is a no-go for me.
 
--
+I suspect what we categorize as "just works" will expand over time.
+The in-kernel support can start small and add protocols and maps over
+time. Support for XMP can start in LIRC and migrate into the kernel
+after we fully understand the protocol and know that enough people are
+using it to justify the effort of maintaining it in-kernel.  Adding
+in-kernel support for a protocol is not going to make LIRC disappear.
 
-in the top left corner. They keyboard also does not work. May be an
-X.org config problem.
+The critical part is getting the initial design of the in-kernel IR
+system right. That design is very hard to change after it gets into
+everyone's systems and apps start depending on it. Writing up use
+cases, modular protocols, figuring out how many bits are needed in
+fields, how are maps written, can they be autoloaded, transmitting,
+etc, etc. These are the important things to be discussing. LIRC users
+obviously have a lot of knowledge in this area to contribute.
 
-Also this is in my /var/log/messages
+PS - another area we need to be thinking about is radio remotes like
+the new RF4CE devices. The button presses from these remotes will come
+in on the 802.15.4 networking stack and need to get routed into the
+input subsystem somehow.
 
-[    6.348077] [drm:psb_do_init] *ERROR* Debug is 0x00000000
-
-Best
-Zeno
+-- 
+Jon Smirl
+jonsmirl@gmail.com
