@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933696AbZLFLO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933706AbZLFLXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933696AbZLFLO2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 06:14:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933664AbZLFLO0
+	id S933706AbZLFLXM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 06:23:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933673AbZLFLXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 06:14:26 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:58465 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933659AbZLFLO0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 06:14:26 -0500
-X-Greylist: delayed 416 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Dec 2009 06:14:25 EST
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: compile insn.c and inat.c only for KPROBES
-Date: Sun, 06 Dec 2009 20:14:29 +0900
-Message-ID: <878wdg8icq.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Sun, 6 Dec 2009 06:23:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21157 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933672AbZLFLXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 06:23:10 -0500
+Message-ID: <4B1B9416.809@redhat.com>
+Date: Sun, 06 Dec 2009 09:23:02 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Gerd Hoffmann <kraxel@redhat.com>, Jarod Wilson <jarod@wilsonet.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jonsmirl@gmail.com, khc@pm.waw.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com> <4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com> <A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com> <4B17AA6A.9060702@redhat.com> <20091203175531.GB776@core.coreip.homeip.net> <20091203163328.613699e5@pedra> <20091204100642.GD22570@core.coreip.homeip.net> <20091204121234.5144836b@pedra> <20091206071450.GC14651@core.coreip.homeip.net>
+In-Reply-To: <20091206071450.GC14651@core.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dmitry Torokhov wrote:
+> On Fri, Dec 04, 2009 at 12:12:34PM -0200, Mauro Carvalho Chehab wrote:
+>>> How related lirc-core to the current lirc code? If it is not the same
+>>> maybe we should not call it lirc to avoid confusion.
+>> Just for better illustrate what I'm seeing, I broke the IR generic
+>> code into two components:
+>>
+>> 	lirc core - the module that receives raw pulse/space and creates
+>> 		    a device to receive raw API pulse/space events;
+>>
+>> 	IR core - the module that receives scancodes, convert them into
+>> 		  keycodes and send via evdev interface.
+>>
+>> We may change latter the nomenclature, but I'm seeing the core as two different
+>> modules, since there are cases where lirc core won't be used (those
+>> devices were there's no way to get pulse/space events).
+>>
+> 
+> OK, I think we are close but not exactly close. I believe that what you
+> call lirc core will be used always - it is the code that create3s class
+> devices, connectes decorers with the data streams, etc. I believe it
+> will be utilized even in case of devices using hardware decoders. That
+> is why we should probably stop calling it "lirc core" just tso we don't
+> confuse it with original lirc.
+> 
+> Then we have decoders and lirc_dev - which implements original lirc
+> interface (or maybe its modified version) and allows lircd to continue
+> working.
+> 
+> Lastly we have what you call IR core which is IR-to-input bridge of
+> sorts.
 
-At least, insn.c and inat.c is needed for kprobe for now. So, this
-compile those only if KPROBES is enabled.
+It seems to be just nomenclacure ;)
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
+what I called "IR core" you called "lirc core"
+what I called "lirc core" you called "lirc_dev"
 
- arch/x86/Kconfig.debug |    4 ++--
- arch/x86/lib/Makefile  |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+What I called IR core is the one that will be used by every IR driver, handling
+sysfs, evdev's, calling decoders, etc.
 
-diff -L arch/x86/lib/Kconfig -puN /dev/null /dev/null
-diff -puN arch/x86/lib/Makefile~kconfig-decoder-only-for-kprobe arch/x86/lib/Makefile
---- linux-2.6/arch/x86/lib/Makefile~kconfig-decoder-only-for-kprobe	2009-12-06 19:49:06.000000000 +0900
-+++ linux-2.6-hirofumi/arch/x86/lib/Makefile	2009-12-06 19:49:06.000000000 +0900
-@@ -20,7 +20,7 @@ lib-y := delay.o
- lib-y += thunk_$(BITS).o
- lib-y += usercopy_$(BITS).o getuser.o putuser.o
- lib-y += memcpy_$(BITS).o
--lib-y += insn.o inat.o
-+lib-$(CONFIG_KPROBES) += insn.o inat.o
- 
- obj-y += msr-reg.o msr-reg-export.o
- 
-diff -puN arch/x86/Kconfig.debug~kconfig-decoder-only-for-kprobe arch/x86/Kconfig.debug
---- linux-2.6/arch/x86/Kconfig.debug~kconfig-decoder-only-for-kprobe	2009-12-06 19:49:06.000000000 +0900
-+++ linux-2.6-hirofumi/arch/x86/Kconfig.debug	2009-12-06 19:49:06.000000000 +0900
-@@ -187,8 +187,8 @@ config HAVE_MMIOTRACE_SUPPORT
- 	def_bool y
- 
- config X86_DECODER_SELFTEST
--     bool "x86 instruction decoder selftest"
--     depends on DEBUG_KERNEL
-+	bool "x86 instruction decoder selftest"
-+	depends on DEBUG_KERNEL && KPROBES
- 	---help---
- 	 Perform x86 instruction decoder selftests at build time.
- 	 This option is useful for checking the sanity of x86 instruction
-_
+I opted to use the nomenclature Lirc to the part of the IR subsystem that
+will create the Lirc interface.
 
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Currently, I almost finished the evdev part of the "IR core", using the current
+API to control the dynamic keycode allocation. It is already working fine with
+V4L drivers.
+
+Cheers,
+Mauro.
