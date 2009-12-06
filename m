@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbZLFUPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZLFUTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbZLFUPx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 15:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbZLFUPv
+	id S1757631AbZLFUTF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 15:19:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757566AbZLFUTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 15:15:51 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54475 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757437AbZLFUPu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 15:15:50 -0500
-Date: Sun, 6 Dec 2009 12:18:03 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Message-ID: <20091206121803.70385c33@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
-References: <200912052216.19540.rjw@sisk.pl>
-	<200912060055.36130.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
-	<200912060254.10081.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
-	<20091206113555.5a646713@infradead.org>
-	<alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 6 Dec 2009 15:19:04 -0500
+Received: from khc.piap.pl ([195.187.100.11]:33551 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757547AbZLFUTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 15:19:03 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Gerd Hoffmann <kraxel@redhat.com>, Jarod Wilson <jarod@wilsonet.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jonsmirl@gmail.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com>
+	<4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com>
+	<A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com>
+	<4B17AA6A.9060702@redhat.com>
+	<20091203175531.GB776@core.coreip.homeip.net>
+	<20091203163328.613699e5@pedra>
+	<20091204100642.GD22570@core.coreip.homeip.net>
+	<20091204121234.5144836b@pedra>
+	<20091206070929.GB14651@core.coreip.homeip.net>
+	<4B1B8F83.5080009@redhat.com>
+Date: Sun, 06 Dec 2009 21:19:06 +0100
+In-Reply-To: <4B1B8F83.5080009@redhat.com> (Mauro Carvalho Chehab's message of
+	"Sun, 06 Dec 2009 09:03:31 -0200")
+Message-ID: <m31vj77t51.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Dec 2009 11:58:44 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-> 
-> 
-> On Sun, 6 Dec 2009, Arjan van de Ven wrote:
-> > 
-> > in suspend, there's a PCI device (:1b) that does take some time,
-> > which is the audio controller. The bulk of the time is in the serio
-> > driver though..
-> 
-> That serio thing is disgusting. We had serious problems with the
-> serial driver timeouts for boot-time optimizations too, didn't we?
+> All the IR's I found with V4L/DVB use up to 16 bits code (or 24 bits, for NEC extended protocol).
+> However, currently, the drivers were getting only 7 bits, due to the old way to implement
+> EVIO[S|G]KEYCODE. 
+>
+> I know, however, one i2c chip that returns a 5 byte scancode when you press a key. 
+> We're currently just discarding the remaining bits, so I'm not really sure what's there.
 
-isn't serio the PS/2 stuff?
+Right. This will have to be investigated by owners of the exact hardware
+in question. What we can do is to try to make it easy for them.
+There is no hurry, though - it can and will continue to work the current
+way.
 
+> In general, the scancode contains 8 or 16 bits for address, and 8 bits for command.
 
-(serio was an issue during boot as well due to some interesting rcu
-delays btw)
+Right. I think the kernel shouldn't differentiate between address and
+command too much.
 
+> at include/linux/input.h, we'll add a code like:
+>
+> struct input_keytable_entry {
+>  	u16	index;
+>  	u64	scancode;
+>  	u32	keycode;
+> } __attribute__ ((packed));
+>
+> (the attribute packed avoids needing a compat for 64 bits)
 
-> and none of them look like they should take anywhere close to half a 
-> second. So I'm obviously missing something, and your chart didn't
-> include the sleep/wakeup pairs.
+Maybe { u64 scancode; u32 keycode; u16 index; u16 reserved } would be a
+bit better, no alignment problems and we could eventually change
+"reserved" into something useful.
 
-what do you mean by this? what would you like to see ?
-(I have a separate graph for resume.. but the graphing program does not
-show those things that take so short to resume that the font to print
-the name would be less than a pixel; can fix that)
-
-
-
-[fwiw I care more about resume speed than suspend speed, but obviously
-am happy if both get fixed... just resume tends to be much more user
-interesting, just like getting out of the idle loop matters more than
-getting into it]
-
+But I think, if we are going to redesign it, we better use scancodes of
+arbitrary length (e.g. protocol-dependent length). It should be opaque
+except for the protocol handler.
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Krzysztof Halasa
