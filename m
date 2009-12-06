@@ -1,91 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933279AbZLFKn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933636AbZLFKpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933279AbZLFKn1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 05:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933259AbZLFKnY
+	id S933636AbZLFKpR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 05:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933271AbZLFKpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 05:43:24 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58006 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S933257AbZLFKnX convert rfc822-to-8bit (ORCPT
+	Sun, 6 Dec 2009 05:45:13 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:63181 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933262AbZLFKpL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 05:43:23 -0500
-Message-ID: <4B1B8A66.6040302@cn.fujitsu.com>
-Date: Sun, 06 Dec 2009 18:41:42 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 6 Dec 2009 05:45:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=dbLRjRlyQxlsFp61WtvArEgwpSHbtIAsg+ZLWcW/ipq0BqJz7ZMJKqtIep9lJxgpDN
+         2pw0BXdGKdnFhPEi2dKmYVs1XxdKghrQ4j7Pwj+74K8h3BbbWiQ0aBqCopx9Y0LO19Ny
+         vZFlp/Ko3QTwhWHwKajFsaHo057FLfN57H8QE=
 MIME-Version: 1.0
-To: =?UTF-8?B?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Unable to use tools/perf sched and timechart correctly
-References: <4B18E2AD.3070507@gmail.com>
-In-Reply-To: <4B18E2AD.3070507@gmail.com>
+In-Reply-To: <4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
+References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
+	 <4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
+Date: Sun, 6 Dec 2009 11:45:16 +0100
+Message-ID: <4e5e476b0912060245x4d64300hb9689243bd712f2c@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Vivek Goyal <vgoyal@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Török Edwin wrote:
-> Hi,
-> 
-> I installed 2.6.32 and tried its tools/perf.
-> I noticed two problems so far, please tell me if I am doing anything
-> wrong here:
-> 
-> 1. 'perf sched replay' segfaults on any recorded workload
-> I tested like this:
-> $ sudo ./perf sched record
-> ^C[ perf record: Woken up 1 times to write data ]                  
-> [ perf record: Captured and wrote 0.295 MB perf.data (~12869 samples) ]
-> $ sudo perf sched replay
-> run measurement overhead: 1258 nsecs                             
-> sleep measurement overhead: 55232 nsecs                          
-> the run test took 999778 nsecs                                   
-> the sleep test took 1055791 nsecs                                
-> nr_run_events:        182                                        
-> nr_sleep_events:      209                                        
-> nr_wakeup_events:     103                                        
-> target-less wakeups:  12
-> [...]
-> task     25 (         icedove-bin:      8757), nr_events: 3
-> task     26 (            events/0:        15), nr_events: 3
-> ------------------------------------------------------------
-> Segmentation fault
-
-You should enable "CONFIG_SCHED_DEBUG", because we use
-"/proc/<pid>/sched" file to get the task's cpu usage.
-
-Ingo, I think we do better show the reason about this error,
-just like:
-
----
- tools/perf/builtin-sched.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 26b782f..f823631 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -427,7 +427,11 @@ static u64 get_cpu_usage_nsec_self(void)
- 
- 	sprintf(filename, "/proc/%d/sched", getpid());
- 	file = fopen(filename, "r");
--	BUG_ON(!file);
-+	if (!file)
-+	{
-+		printf("You should compile your kernel with CONFIG_SCHED_DEBUG option\n");
-+		BUG_ON(1);
-+	}
- 
- 	while ((chars = getline(&line, &len, file)) != -1) {
- 		ret = sscanf(line, "se.sum_exec_runtime : %ld.%06ld\n",
--- 
-1.6.1.2
+Hi Jeff,
+I remember you saw large performance drop on your SAN for sequential
+writes with low_latency=1.
+Can you test if Shaohua's and this patch fix allow to recover some bandwidth?
+I think that enabling the queue depth ramp up only if a sync request
+was delayed should disable it
+for fast hardware like yours, so you should not be seeing the slowdown any more.
 
 Thanks,
-Xiao
+Corrado
+
+On Sat, Dec 5, 2009 at 12:13 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> On Fri, Dec 4, 2009 at 1:35 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+>> The introduction of ramp-up formula for async queue depths has
+>> slowed down dirty page reclaim, by reducing async write performance.
+>> This patch makes sure the formula kicks in only when sync request
+>> was recently delayed.
+>>
+>> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+>> ---
+>>  block/cfq-iosched.c |    9 +++++----
+>>  1 files changed, 5 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> index b00ca4c..a594388 100644
+>> --- a/block/cfq-iosched.c
+>> +++ b/block/cfq-iosched.c
+>> @@ -284,7 +284,7 @@ struct cfq_data {
+>>         */
+>>        struct cfq_queue oom_cfqq;
+>>
+>> -       unsigned long last_end_sync_rq;
+>> +       unsigned long last_delayed_sync;
+>>
+>>        /* List of cfq groups being managed on this device*/
+>>        struct hlist_head cfqg_list;
+>> @@ -2264,7 +2264,7 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd,
+>> struct cfq_queue *cfqq)
+>>         * based on the last sync IO we serviced
+>>         */
+>>        if (!cfq_cfqq_sync(cfqq) && cfqd->cfq_latency) {
+>> -               unsigned long last_sync = jiffies - cfqd->last_end_sync_rq;
+>> +               unsigned long last_sync = jiffies - cfqd->last_delayed_sync;
+>>                unsigned int depth;
+>>
+>>                depth = last_sync / cfqd->cfq_slice[1];
+>> @@ -3272,7 +3272,8 @@ static void cfq_completed_request(struct request_queue
+>> *q, struct request *rq)
+>>
+>>        if (sync) {
+>>                RQ_CIC(rq)->last_end_request = now;
+>> -               cfqd->last_end_sync_rq = now;
+>> +               if (time_after(rq->start_time + cfqd->cfq_fifo_expire[1], now))
+>> +                       cfqd->last_delayed_sync = now;
+>
+> Sorry, the check be reversed (!time_after).
+>
+>>        }
+>>
+>>        /*
+>> @@ -3706,7 +3707,7 @@ static void *cfq_init_queue(struct request_queue *q)
+>>        cfqd->cfq_latency = 1;
+>>        cfqd->cfq_group_isolation = 0;
+>>        cfqd->hw_tag = -1;
+>> -       cfqd->last_end_sync_rq = jiffies;
+>> +       cfqd->last_delayed_sync = jiffies - HZ;
+>>        return cfqd;
+>>  }
+>>
+>> --
+>> 1.6.2.5
+>>
+>>
+>>
+>>
+>
+
+
+
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
