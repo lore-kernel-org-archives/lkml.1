@@ -1,60 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZLFMC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbZLFMLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612AbZLFMC3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 07:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbZLFMC1
+	id S1756172AbZLFMLL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 07:11:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbZLFMLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 07:02:27 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:56041 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbZLFMC0 (ORCPT
+	Sun, 6 Dec 2009 07:11:11 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:52645 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752814AbZLFMLK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 07:02:26 -0500
-Date: 06 Dec 2009 12:59:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: dmitry.torokhov@gmail.com
-Cc: awalls@radix.net
-Cc: hermann-pitton@arcor.de
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: jarod@wilsonet.com
-Cc: jonsmirl@gmail.com
-Cc: khc@pm.waw.pl
-Cc: kraxel@redhat.com
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: mchehab@redhat.com
-Cc: superm1@ubuntu.com
-Message-ID: <BENgzeZHqgB@lirc>
-In-Reply-To: <20091206065512.GA14651@core.coreip.homeip.net>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+	Sun, 6 Dec 2009 07:11:10 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] perf: Fix timechart header handling
+References: <87ljhg8ioe.fsf@devron.myhome.or.jp>
+	<20091206115458.GA21964@elte.hu>
+Date: Sun, 06 Dec 2009 21:11:11 +0900
+In-Reply-To: <20091206115458.GA21964@elte.hu> (Ingo Molnar's message of "Sun,
+	6 Dec 2009 12:54:58 +0100")
+Message-ID: <874oo48fq8.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+bp7cNPcC2xiz9nmDpGNm97U09x/OtwLSCA69
- JHKYsHB9TisyymKfqaegNmorOwRWFnMopFTbpv3bUWhRqVuqJo
- WDOR2hMBEku3iCF86AX+nOO4t/dIZwv
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+Ingo Molnar <mingo@elte.hu> writes:
 
-on 05 Dec 09 at 22:55, Dmitry Torokhov wrote:
-[...]
-> I do not believe you are being realistic. Sometimes we just need to say
-> that the device is a POS and is just not worth it. Remember, there is
-> still "lirc hole" for the hard core people still using solder to produce
-> something out of the spare electronic components that may be made to
-> work (never mind that it causes the CPU constantly poll the device, not
-> letting it sleep and wasting electricity as a result - just hypotetical
-> example here).
+> * OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+>
+>> Hi,
+>> 
+>> Update "struct trace_entry" to match with current one. And remove
+>> "size" field from it.
+>> 
+>> If it has "size", it become cause of alignment mismatch of structure
+>> with kernel.
+>> 
+>> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+>> ---
+>> 
+>>  tools/perf/builtin-timechart.c |   12 ++++++++----
+>>  1 file changed, 8 insertions(+), 4 deletions(-)
+>
+> Just curious, have you tested timechart functionality after having done 
+> this change - does it still work fine for you?
 
-The still seems to be is a persistent misconception that the home-brewn  
-receivers need polling or cause heavy CPU load. No they don't. All of them  
-are IRQ based.
-It's the commercial solutions like gpio based IR that need polling.
-For transmitters it's a different story, but you don't transmit 24h/7.
+Yes. Rather, it doesn't work without this. (Without patch, it provide
+svg output, but it doesn't provide correct sched state. And this issue
+is only 64bit arch.)
 
-Christoph
+E.g. The following has difference (perf timechart doesn't has hole).
+
+In kernel,
+
+struct ftrace_raw_sched_switch {
+	struct trace_entry         ent;                  /*     0    12 */
+	char                       prev_comm[16];        /*    12    16 */
+	pid_t                      prev_pid;             /*    28     4 */
+	int                        prev_prio;            /*    32     4 */
+
+	/* XXX 4 bytes hole, try to pack */
+
+	long int                   prev_state;           /*    40     8 */
+	char                       next_comm[16];        /*    48    16 */
+	/* --- cacheline 1 boundary (64 bytes) --- */
+	pid_t                      next_pid;             /*    64     4 */
+	int                        next_prio;            /*    68     4 */
+	char                       __data[0];            /*    72     0 */
+
+	/* size: 72, cachelines: 2, members: 9 */
+	/* sum members: 68, holes: 1, sum holes: 4 */
+	/* last cacheline: 8 bytes */
+};
+
+In perl timechart, [Note, struct trace_entry is including "u32 size"]
+
+struct sched_switch {
+	struct trace_entry         te;                   /*     0    16 */
+	char                       prev_comm[16];        /*    16    16 */
+	int                        prev_pid;             /*    32     4 */
+	int                        prev_prio;            /*    36     4 */
+	long int                   prev_state;           /*    40     8 */
+	char                       next_comm[16];        /*    48    16 */
+	/* --- cacheline 1 boundary (64 bytes) --- */
+	int                        next_pid;             /*    64     4 */
+	int                        next_prio;            /*    68     4 */
+
+	/* size: 72, cachelines: 2, members: 8 */
+	/* last cacheline: 8 bytes */
+};
+
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
