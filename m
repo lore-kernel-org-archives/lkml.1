@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933706AbZLFLXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933714AbZLFLYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933706AbZLFLXM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 06:23:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933673AbZLFLXL
+	id S933714AbZLFLYc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 06:24:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933673AbZLFLYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 06:23:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21157 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933672AbZLFLXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 06:23:10 -0500
-Message-ID: <4B1B9416.809@redhat.com>
-Date: Sun, 06 Dec 2009 09:23:02 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Sun, 6 Dec 2009 06:24:30 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:46186 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933671AbZLFLY3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 06:24:29 -0500
+Date: Sun, 6 Dec 2009 12:24:31 +0100
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Greg KH <gregkh@suse.de>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] Doc/stable rules: add new cherry-pick logic
+Message-ID: <20091206112431.GA9937@Chamillionaire.breakpoint.cc>
+References: <1259736523-13091-1-git-send-email-Artem.Bityutskiy@nokia.com>
+ <20091202154223.GA5895@suse.de>
+ <1259823705.10805.49.camel@localhost>
+ <20091204015827.GB2589@suse.de>
+ <20091204111635.GA28059@Chamillionaire.breakpoint.cc>
+ <20091204164126.GB1981@suse.de>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Gerd Hoffmann <kraxel@redhat.com>, Jarod Wilson <jarod@wilsonet.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jonsmirl@gmail.com, khc@pm.waw.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com> <4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com> <A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com> <4B17AA6A.9060702@redhat.com> <20091203175531.GB776@core.coreip.homeip.net> <20091203163328.613699e5@pedra> <20091204100642.GD22570@core.coreip.homeip.net> <20091204121234.5144836b@pedra> <20091206071450.GC14651@core.coreip.homeip.net>
-In-Reply-To: <20091206071450.GC14651@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091204164126.GB1981@suse.de>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Fri, Dec 04, 2009 at 12:12:34PM -0200, Mauro Carvalho Chehab wrote:
->>> How related lirc-core to the current lirc code? If it is not the same
->>> maybe we should not call it lirc to avoid confusion.
->> Just for better illustrate what I'm seeing, I broke the IR generic
->> code into two components:
->>
->> 	lirc core - the module that receives raw pulse/space and creates
->> 		    a device to receive raw API pulse/space events;
->>
->> 	IR core - the module that receives scancodes, convert them into
->> 		  keycodes and send via evdev interface.
->>
->> We may change latter the nomenclature, but I'm seeing the core as two different
->> modules, since there are cases where lirc core won't be used (those
->> devices were there's no way to get pulse/space events).
->>
-> 
-> OK, I think we are close but not exactly close. I believe that what you
-> call lirc core will be used always - it is the code that create3s class
-> devices, connectes decorers with the data streams, etc. I believe it
-> will be utilized even in case of devices using hardware decoders. That
-> is why we should probably stop calling it "lirc core" just tso we don't
-> confuse it with original lirc.
-> 
-> Then we have decoders and lirc_dev - which implements original lirc
-> interface (or maybe its modified version) and allows lircd to continue
-> working.
-> 
-> Lastly we have what you call IR core which is IR-to-input bridge of
-> sorts.
+- it is possible to submit patches for the stable queue without sending
+  them directly stable@kernel.org. If the tag (Cc: stable@kernel.org) is
+  available in the sign-off area than hpa's script will filter them into
+  the stable mailbox once it hits Linus' tree.
+- Patches which require others to be applied first can be also specified.
+  This was discussued in http://lkml.org/lkml/2009/11/9/474
 
-It seems to be just nomenclacure ;)
+Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+---
+ Documentation/stable_kernel_rules.txt |   24 +++++++++++++++++++++---
+ 1 files changed, 21 insertions(+), 3 deletions(-)
 
-what I called "IR core" you called "lirc core"
-what I called "lirc core" you called "lirc_dev"
+diff --git a/Documentation/stable_kernel_rules.txt b/Documentation/stable_kernel_rules.txt
+index a452227..bc52bbb 100644
+--- a/Documentation/stable_kernel_rules.txt
++++ b/Documentation/stable_kernel_rules.txt
+@@ -25,14 +25,32 @@ Rules on what kind of patches are accepted, and which ones are not, into the
+ Procedure for submitting patches to the -stable tree:
+ 
+  - Send the patch, after verifying that it follows the above rules, to
+-   stable@kernel.org.
++   stable@kernel.org. An alternative is to have the tag
++    Cc: stable@kernel.org
++   in the sign-off area. Once the patch is merged it will be filtered
++   into the stable tree even without sending directly to
++   stable@kernel.org
++ - If the patch requires other patches as prerequisites which can be
++   cherry-picked than this can be specified in the following format in
++   the sign-off area:
++
++    Cc: <stable@kernel.org> # .32.x: a1f84a3: sched: Check for an idle shared cache
++    Cc: <stable@kernel.org> # .32.x: 1b9508f: sched: Rate-limit newidle
++    Cc: <stable@kernel.org> # .32.x: fd21073: sched: Fix affinity logic
++    Cc: <stable@kernel.org> # .32.x
++    Signed-off-by: Ingo Molnar <mingo@elte.hu>
++
++   The tag sequence has the meaning of:
++    git cherry-pick a1f84a3
++    git cherry-pick 1b9508f
++    git cherry-pick fd21073
++    git cherry-pick <this commit>
++
+  - The sender will receive an ACK when the patch has been accepted into the
+    queue, or a NAK if the patch is rejected.  This response might take a few
+    days, according to the developer's schedules.
+  - If accepted, the patch will be added to the -stable queue, for review by
+    other developers and by the relevant subsystem maintainer.
+- - If the stable@kernel.org address is added to a patch, when it goes into
+-   Linus's tree it will automatically be emailed to the stable team.
+  - Security patches should not be sent to this alias, but instead to the
+    documented security@kernel.org address.
+ 
+-- 
+1.6.5.2
 
-What I called IR core is the one that will be used by every IR driver, handling
-sysfs, evdev's, calling decoders, etc.
-
-I opted to use the nomenclature Lirc to the part of the IR subsystem that
-will create the Lirc interface.
-
-Currently, I almost finished the evdev part of the "IR core", using the current
-API to control the dynamic keycode allocation. It is already working fine with
-V4L drivers.
-
-Cheers,
-Mauro.
