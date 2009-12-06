@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933640AbZLFAhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933642AbZLFAgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933640AbZLFAhS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 19:37:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933620AbZLFAhP
+	id S933642AbZLFAgW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 19:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933636AbZLFAgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 19:37:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56363 "EHLO mx3.mail.elte.hu"
+	Sat, 5 Dec 2009 19:36:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56179 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933615AbZLFAhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 19:37:13 -0500
-Message-ID: <4B1AFCE8.3090208@gmail.com>
-Date: Sun, 06 Dec 2009 01:38:00 +0100
+	id S933634AbZLFAgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 19:36:06 -0500
+Message-ID: <4B1AFCEB.5050103@gmail.com>
+Date: Sun, 06 Dec 2009 01:38:03 +0100
 From: Emese Revfy <re.emese@gmail.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
@@ -18,10 +18,10 @@ To: jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
        bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
        john.ronciak@intel.com, torvalds@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/31] Constify struct e1000_nvm_operations for net-next-2.6
+Subject: Re: [PATCH 08/31] Constify struct e1000_phy_operations for net-next-2.6
  v1
-References: <4B198670.2000406@gmail.com> <4B198A7E.4080407@gmail.com>
-In-Reply-To: <4B198A7E.4080407@gmail.com>
+References: <4B198670.2000406@gmail.com> <4B198AE3.2040003@gmail.com>
+In-Reply-To: <4B198AE3.2040003@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 X-ELTE-SpamScore: 0.0
@@ -36,137 +36,133 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Emese Revfy <re.emese@gmail.com>
 
-Constify struct e1000_nvm_operations with some exceptions.
+Constify struct e1000_phy_operations with some exceptions.
 
 Signed-off-by: Emese Revfy <re.emese@gmail.com>
 ---
- drivers/net/e1000e/82571.c    |    2 +-
+ drivers/net/e1000e/82571.c    |    6 +++---
  drivers/net/e1000e/e1000.h    |    2 +-
  drivers/net/e1000e/es2lan.c   |    2 +-
- drivers/net/e1000e/hw.h       |   16 ++++++++--------
+ drivers/net/e1000e/hw.h       |    1 +
  drivers/net/e1000e/ich8lan.c  |    2 +-
  drivers/net/igb/e1000_82575.c |    2 +-
  drivers/net/igb/e1000_hw.h    |    3 ++-
- 7 files changed, 15 insertions(+), 14 deletions(-)
+ 7 files changed, 10 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
-index c1a42cf..efc2983 100644
+index c1a42cf..d51b8ca 100644
 --- a/drivers/net/e1000e/82571.c
 +++ b/drivers/net/e1000e/82571.c
-@@ -1766,7 +1766,7 @@ static struct e1000_phy_operations e82_phy_ops_bm = {
+@@ -1712,7 +1712,7 @@ static struct e1000_mac_operations e82571_mac_ops = {
+ 	.setup_led		= e1000e_setup_led_generic,
+ };
+ 
+-static struct e1000_phy_operations e82_phy_ops_igp = {
++static const struct e1000_phy_operations e82_phy_ops_igp = {
+ 	.acquire		= e1000_get_hw_semaphore_82571,
+ 	.check_polarity		= e1000_check_polarity_igp,
+ 	.check_reset_block	= e1000e_check_reset_block_generic,
+@@ -1730,7 +1730,7 @@ static struct e1000_phy_operations e82_phy_ops_igp = {
  	.cfg_on_link_up      	= NULL,
  };
  
--static struct e1000_nvm_operations e82571_nvm_ops = {
-+static const struct e1000_nvm_operations e82571_nvm_ops = {
- 	.acquire		= e1000_acquire_nvm_82571,
- 	.read			= e1000e_read_nvm_eerd,
- 	.release		= e1000_release_nvm_82571,
+-static struct e1000_phy_operations e82_phy_ops_m88 = {
++static const struct e1000_phy_operations e82_phy_ops_m88 = {
+ 	.acquire		= e1000_get_hw_semaphore_82571,
+ 	.check_polarity		= e1000_check_polarity_m88,
+ 	.check_reset_block	= e1000e_check_reset_block_generic,
+@@ -1748,7 +1748,7 @@ static struct e1000_phy_operations e82_phy_ops_m88 = {
+ 	.cfg_on_link_up      	= NULL,
+ };
+ 
+-static struct e1000_phy_operations e82_phy_ops_bm = {
++static const struct e1000_phy_operations e82_phy_ops_bm = {
+ 	.acquire		= e1000_get_hw_semaphore_82571,
+ 	.check_polarity		= e1000_check_polarity_m88,
+ 	.check_reset_block	= e1000e_check_reset_block_generic,
 diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
-index cebbd90..668112d 100644
+index cebbd90..e6dada1 100644
 --- a/drivers/net/e1000e/e1000.h
 +++ b/drivers/net/e1000e/e1000.h
-@@ -381,7 +381,7 @@ struct e1000_info {
+@@ -380,7 +380,7 @@ struct e1000_info {
+ 	u32			max_hw_frame_size;
  	s32			(*get_variants)(struct e1000_adapter *);
  	struct e1000_mac_operations *mac_ops;
- 	struct e1000_phy_operations *phy_ops;
--	struct e1000_nvm_operations *nvm_ops;
-+	const struct e1000_nvm_operations *nvm_ops;
+-	struct e1000_phy_operations *phy_ops;
++	const struct e1000_phy_operations *phy_ops;
+ 	struct e1000_nvm_operations *nvm_ops;
  };
  
- /* hardware capability, feature, and workaround flags */
 diff --git a/drivers/net/e1000e/es2lan.c b/drivers/net/e1000e/es2lan.c
-index d2a1047..b46291d 100644
+index d2a1047..ce3049d 100644
 --- a/drivers/net/e1000e/es2lan.c
 +++ b/drivers/net/e1000e/es2lan.c
-@@ -1407,7 +1407,7 @@ static struct e1000_phy_operations es2_phy_ops = {
- 	.cfg_on_link_up      	= e1000_cfg_on_link_up_80003es2lan,
+@@ -1389,7 +1389,7 @@ static struct e1000_mac_operations es2_mac_ops = {
+ 	.setup_led		= e1000e_setup_led_generic,
  };
  
--static struct e1000_nvm_operations es2_nvm_ops = {
-+static const struct e1000_nvm_operations es2_nvm_ops = {
- 	.acquire		= e1000_acquire_nvm_80003es2lan,
- 	.read			= e1000e_read_nvm_eerd,
- 	.release		= e1000_release_nvm_80003es2lan,
+-static struct e1000_phy_operations es2_phy_ops = {
++static const struct e1000_phy_operations es2_phy_ops = {
+ 	.acquire		= e1000_acquire_phy_80003es2lan,
+ 	.check_polarity		= e1000_check_polarity_m88,
+ 	.check_reset_block	= e1000e_check_reset_block_generic,
 diff --git a/drivers/net/e1000e/hw.h b/drivers/net/e1000e/hw.h
-index a7d08da..0a75a9e 100644
+index a7d08da..8256b2f 100644
 --- a/drivers/net/e1000e/hw.h
 +++ b/drivers/net/e1000e/hw.h
-@@ -781,13 +781,13 @@ struct e1000_phy_operations {
- 
- /* Function pointers for the NVM. */
- struct e1000_nvm_operations {
--	s32  (*acquire)(struct e1000_hw *);
--	s32  (*read)(struct e1000_hw *, u16, u16, u16 *);
--	void (*release)(struct e1000_hw *);
--	s32  (*update)(struct e1000_hw *);
--	s32  (*valid_led_default)(struct e1000_hw *, u16 *);
--	s32  (*validate)(struct e1000_hw *);
--	s32  (*write)(struct e1000_hw *, u16, u16, u16 *);
-+	s32  (* const acquire)(struct e1000_hw *);
-+	s32  (* const read)(struct e1000_hw *, u16, u16, u16 *);
-+	void (* const release)(struct e1000_hw *);
-+	s32  (* const update)(struct e1000_hw *);
-+	s32  (* const valid_led_default)(struct e1000_hw *, u16 *);
-+	s32  (* const validate)(struct e1000_hw *);
-+	s32  (* const write)(struct e1000_hw *, u16, u16, u16 *);
+@@ -827,6 +827,7 @@ struct e1000_mac_info {
  };
  
- struct e1000_mac_info {
-@@ -861,7 +861,7 @@ struct e1000_phy_info {
- };
+ struct e1000_phy_info {
++	/* cannot be const, see drivers/net/e1000e/82571.c:e1000_init_phy_params_82571 */
+ 	struct e1000_phy_operations ops;
  
- struct e1000_nvm_info {
--	struct e1000_nvm_operations ops;
-+	const struct e1000_nvm_operations ops;
- 
- 	enum e1000_nvm_type type;
- 	enum e1000_nvm_override override;
+ 	enum e1000_phy_type type;
 diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
-index 7b33be9..e642cd4 100644
+index 7b33be9..01d56dc 100644
 --- a/drivers/net/e1000e/ich8lan.c
 +++ b/drivers/net/e1000e/ich8lan.c
-@@ -3323,7 +3323,7 @@ static struct e1000_phy_operations ich8_phy_ops = {
- 	.write_reg		= e1000e_write_phy_reg_igp,
+@@ -3309,7 +3309,7 @@ static struct e1000_mac_operations ich8_mac_ops = {
+ 	/* id_led_init dependent on mac type */
  };
  
--static struct e1000_nvm_operations ich8_nvm_ops = {
-+static const struct e1000_nvm_operations ich8_nvm_ops = {
- 	.acquire		= e1000_acquire_nvm_ich8lan,
- 	.read		 	= e1000_read_nvm_ich8lan,
- 	.release		= e1000_release_nvm_ich8lan,
+-static struct e1000_phy_operations ich8_phy_ops = {
++static const struct e1000_phy_operations ich8_phy_ops = {
+ 	.acquire		= e1000_acquire_swflag_ich8lan,
+ 	.check_reset_block	= e1000_check_reset_block_ich8lan,
+ 	.commit			= NULL,
 diff --git a/drivers/net/igb/e1000_82575.c b/drivers/net/igb/e1000_82575.c
-index e8e9e91..b13503e 100644
+index e8e9e91..0561e55 100644
 --- a/drivers/net/igb/e1000_82575.c
 +++ b/drivers/net/igb/e1000_82575.c
-@@ -1599,7 +1599,7 @@ static struct e1000_phy_operations e1000_phy_ops_82575 = {
- 	.release              = igb_release_phy_82575,
+@@ -1593,7 +1593,7 @@ static struct e1000_mac_operations e1000_mac_ops_82575 = {
+ 	.get_speed_and_duplex = igb_get_speed_and_duplex_copper,
  };
  
--static struct e1000_nvm_operations e1000_nvm_ops_82575 = {
-+static const struct e1000_nvm_operations e1000_nvm_ops_82575 = {
- 	.acquire              = igb_acquire_nvm_82575,
- 	.read                 = igb_read_nvm_eerd,
- 	.release              = igb_release_nvm_82575,
+-static struct e1000_phy_operations e1000_phy_ops_82575 = {
++static const struct e1000_phy_operations e1000_phy_ops_82575 = {
+ 	.acquire              = igb_acquire_phy_82575,
+ 	.get_cfg_done         = igb_get_cfg_done_82575,
+ 	.release              = igb_release_phy_82575,
 diff --git a/drivers/net/igb/e1000_hw.h b/drivers/net/igb/e1000_hw.h
-index dbaeb5f..662e1be 100644
+index dbaeb5f..3ae2bd5 100644
 --- a/drivers/net/igb/e1000_hw.h
 +++ b/drivers/net/igb/e1000_hw.h
-@@ -326,7 +326,7 @@ struct e1000_info {
+@@ -325,7 +325,7 @@ struct e1000_nvm_operations {
+ struct e1000_info {
  	s32 (*get_invariants)(struct e1000_hw *);
  	struct e1000_mac_operations *mac_ops;
- 	struct e1000_phy_operations *phy_ops;
--	struct e1000_nvm_operations *nvm_ops;
-+	const struct e1000_nvm_operations *nvm_ops;
+-	struct e1000_phy_operations *phy_ops;
++	const struct e1000_phy_operations *phy_ops;
+ 	struct e1000_nvm_operations *nvm_ops;
  };
  
- extern const struct e1000_info e1000_82575_info;
-@@ -412,6 +412,7 @@ struct e1000_phy_info {
+@@ -377,6 +377,7 @@ struct e1000_mac_info {
  };
  
- struct e1000_nvm_info {
-+	/* cannot be const, see drivers/net/igb/igb_main.c:igb_probe */
- 	struct e1000_nvm_operations ops;
+ struct e1000_phy_info {
++	/* cannot be const, see drivers/net/igb/e1000_82575.c:igb_get_invariants_82575 */
+ 	struct e1000_phy_operations ops;
  
- 	enum e1000_nvm_type type;
+ 	enum e1000_phy_type type;
 
