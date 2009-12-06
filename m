@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757007AbZLFBqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZLFBuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757007AbZLFBqf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 20:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZLFBqb
+	id S1757275AbZLFBuR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 20:50:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbZLFBuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 20:46:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50270 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755349AbZLFBqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 20:46:30 -0500
-Message-ID: <4B1B0D40.3040209@gmail.com>
-Date: Sun, 06 Dec 2009 02:47:44 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Sat, 5 Dec 2009 20:50:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37040 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755381AbZLFBuM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 20:50:12 -0500
+Date: Sat, 5 Dec 2009 17:50:10 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <200912060224.37752.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0912051745590.3560@localhost.localdomain>
+References: <200912052216.19540.rjw@sisk.pl> <200912060129.19245.rjw@sisk.pl> <alpine.LFD.2.00.0912051648520.3560@localhost.localdomain> <200912060224.37752.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
-       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
-       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
-       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
-References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com> <20091205000942.GA8224@suse.de> <4B19CA6F.4090700@gmail.com> <20091205041507.GA24885@suse.de>
-In-Reply-To: <20091205041507.GA24885@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Sat, Dec 05, 2009 at 03:50:23AM +0100, Emese Revfy wrote:
->> Greg KH wrote:
->>> On Sat, Dec 05, 2009 at 01:02:59AM +0100, Emese Revfy wrote:
->>>> -static struct file_operations ptmx_fops;
->>>> +static const struct file_operations ptmx_fops = {
->>>> +	.llseek		= no_llseek,
->>>> +	.read		= tty_read,
->>>> +	.write		= tty_write,
->>>> +	.poll		= tty_poll,
->>>> +	.unlocked_ioctl	= tty_ioctl,
->>>> +	.compat_ioctl	= tty_compat_ioctl,
->>>> +	.open		= ptmx_open,
->>>> +	.release	= tty_release,
->>>> +	.fasync		= tty_fasync,
->>>> +};
->>> You just made these functions all global, for no real good reason.  Why
->>> did you do this?
->> I think this is the only way to make ptmx_fops const, provided we want to. 
-> 
-> Why do we want to?
 
-Because I saw that checkpatch.pl itself tries to ensure the same I went
-through the whole tree looking for non-const file_operations structures
-and tried to make them const as best as I could. If you think making
-ptmx_fops const is not worth the effort I will remove it from the patch.
---
-Emese
+
+On Sun, 6 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > Multi-function PCI devices commonly share registers - they're on the same
+> > chip, after all.  And even when the _hardware_ is totally independent, we
+> > often have discovery rules and want to initialize in order because different
+> > drivers  will do things like unregister entirely on suspend, and then
+> > re-register on resume.
+> 
+> Do any of the PCI drivers do that?
+
+It used to be common at least for ethernet - there were a number of 
+drivers that essentially did the same thing on suspend/resume and on 
+module unload/reload.
+
+The point is, I don't know. And neither do you. It's much safer to just do 
+drivers one by one, and not touch drivers that people don't test.
+
+			Linus
