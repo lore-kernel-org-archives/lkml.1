@@ -1,1744 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZLFTew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592AbZLFTdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbZLFTew (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 14:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZLFTet
+	id S1752592AbZLFTdt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 14:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbZLFTds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 14:34:49 -0500
-Received: from mail.perches.com ([173.55.12.10]:1075 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750990AbZLFTer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 14:34:47 -0500
-Subject: [PATCH] drivers/staging/rtl8187x: Use %pM for mac address output
-From: Joe Perches <joe@perches.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: devel <devel@driverdev.osuosl.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 06 Dec 2009 11:34:52 -0800
-Message-ID: <1260128092.11126.119.camel@Joe-Laptop.home>
+	Sun, 6 Dec 2009 14:33:48 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43675 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbZLFTdq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 14:33:46 -0500
+Date: Sun, 6 Dec 2009 11:35:55 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Message-ID: <20091206113555.5a646713@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+References: <200912052216.19540.rjw@sisk.pl>
+	<200912060055.36130.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
+	<200912060254.10081.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="MP_/Z3T4fpKJS1mast=qfqs523h"
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uncompiled.  Doesn't currently build anyway.
+--MP_/Z3T4fpKJS1mast=qfqs523h
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Converted MAC_FMT to %pM
-Converted some %02x%02x%02x%02x%02x%02x to %pm
-Converted MAC_ARG to direct use
-Removed MAC_FMT and MAC_ARG macros
+On Sat, 5 Dec 2009 18:05:14 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/staging/rtl8187se/ieee80211/ieee80211.h    |    4 --
- .../rtl8187se/ieee80211/ieee80211_crypt_ccmp.c     |   21 +++-----
- .../rtl8187se/ieee80211/ieee80211_crypt_tkip.c     |   20 ++++----
- drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c |   48 +++++++++---------
- .../rtl8187se/ieee80211/ieee80211_softmac.c        |    2 +-
- drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c |    6 +-
- drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c |    4 +-
- drivers/staging/rtl8192e/ieee80211.h               |    3 -
- drivers/staging/rtl8192e/ieee80211/ieee80211.h     |    3 -
- .../rtl8192e/ieee80211/ieee80211_crypt_ccmp.c      |   18 +++----
- .../rtl8192e/ieee80211/ieee80211_crypt_tkip.c      |   27 +++++-----
- drivers/staging/rtl8192e/ieee80211/ieee80211_rx.c  |   52 ++++++++++----------
- .../staging/rtl8192e/ieee80211/ieee80211_softmac.c |    2 +-
- drivers/staging/rtl8192e/ieee80211/ieee80211_tx.c  |    4 +-
- drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c  |    4 +-
- .../staging/rtl8192e/ieee80211/rtl819x_BAProc.c    |    6 +-
- .../staging/rtl8192e/ieee80211/rtl819x_TSProc.c    |    6 +-
- drivers/staging/rtl8192e/r8192E_core.c             |    2 +-
- drivers/staging/rtl8192su/ieee80211/ieee80211.h    |    4 --
- .../rtl8192su/ieee80211/ieee80211_crypt_ccmp.c     |   21 +++-----
- .../rtl8192su/ieee80211/ieee80211_crypt_tkip.c     |   20 ++++----
- drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c |   48 +++++++++---------
- .../rtl8192su/ieee80211/ieee80211_softmac.c        |    2 +-
- drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c |    4 +-
- drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c |    4 +-
- .../staging/rtl8192su/ieee80211/rtl819x_BAProc.c   |    6 +-
- .../staging/rtl8192su/ieee80211/rtl819x_TSProc.c   |    6 +-
- drivers/staging/rtl8192su/r8192U_core.c            |    2 +-
- drivers/staging/rtl8192su/r8192U_dm.c              |    2 +-
- drivers/staging/rtl8192u/ieee80211.h               |    3 -
- drivers/staging/rtl8192u/ieee80211/ieee80211.h     |    3 -
- .../rtl8192u/ieee80211/ieee80211_crypt_ccmp.c      |   21 +++-----
- .../rtl8192u/ieee80211/ieee80211_crypt_tkip.c      |   20 ++++----
- drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c  |   48 +++++++++---------
- .../staging/rtl8192u/ieee80211/ieee80211_softmac.c |    2 +-
- drivers/staging/rtl8192u/ieee80211/ieee80211_tx.c  |    4 +-
- drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c  |    4 +-
- .../staging/rtl8192u/ieee80211/rtl819x_BAProc.c    |    6 +-
- .../staging/rtl8192u/ieee80211/rtl819x_TSProc.c    |    6 +-
- drivers/staging/rtl8192u/r8192U_core.c             |    4 +-
- 40 files changed, 221 insertions(+), 251 deletions(-)
-
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211.h b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
-index 3222c22..d2f0ee4 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
-@@ -161,10 +161,6 @@ do { if (ieee80211_debug_level & (level)) \
- #define IEEE80211_DEBUG(level, fmt, args...) do {} while (0)
- #endif	/* CONFIG_IEEE80211_DEBUG */
- 
--#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
--#define MAC_ARG(x) ((u8 *)(x))[0], ((u8 *)(x))[1], ((u8 *)(x))[2], \
--		   ((u8 *)(x))[3], ((u8 *)(x))[4], ((u8 *)(x))[5]
--
- /*
-  * To use the debug system;
-  *
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
-index 172e8f3..40f1b99 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
-@@ -285,7 +285,7 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (!(keyidx & (1 << 5))) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "CCMP: received packet without ExtIV"
--			       " flag from " MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       " flag from %pM\n", hdr->addr2);
- 		}
- 		key->dot11RSNAStatsCCMPFormatErrors++;
- 		return -2;
-@@ -298,9 +298,9 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	}
- 	if (!key->key_set) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "CCMP: received packet from " MAC_FMT
-+			printk(KERN_DEBUG "CCMP: received packet from %pM"
- 			       " with keyid=%d that does not have a configured"
--			       " key\n", MAC_ARG(hdr->addr2), keyidx);
-+			       " key\n", hdr->addr2, keyidx);
- 		}
- 		return -3;
- 	}
-@@ -315,11 +315,9 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 
- 	if (memcmp(pn, key->rx_pn, CCMP_PN_LEN) <= 0) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "CCMP: replay detected: STA=" MAC_FMT
--			       " previous PN %02x%02x%02x%02x%02x%02x "
--			       "received PN %02x%02x%02x%02x%02x%02x\n",
--			       MAC_ARG(hdr->addr2), MAC_ARG(key->rx_pn),
--			       MAC_ARG(pn));
-+			printk(KERN_DEBUG "CCMP: replay detected: STA=%pM"
-+			       " previous PN %pm received PN %pm\n",
-+			       hdr->addr2, key->rx_pn, pn);
- 		}
- 		key->dot11RSNAStatsCCMPReplays++;
- 		return -4;
-@@ -347,7 +345,7 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (memcmp(mic, a, CCMP_MIC_LEN) != 0) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "CCMP: decrypt failed: STA="
--			       MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       "%pM\n", hdr->addr2);
- 		}
- 		key->dot11RSNAStatsCCMPDecryptErrors++;
- 		return -5;
-@@ -423,11 +421,10 @@ static char * ieee80211_ccmp_print_stats(char *p, void *priv)
- {
- 	struct ieee80211_ccmp_data *ccmp = priv;
- 	p += sprintf(p, "key[%d] alg=CCMP key_set=%d "
--		     "tx_pn=%02x%02x%02x%02x%02x%02x "
--		     "rx_pn=%02x%02x%02x%02x%02x%02x "
-+		     "tx_pn=%pm rx_pn=%pm "
- 		     "format_errors=%d replays=%d decrypt_errors=%d\n",
- 		     ccmp->key_idx, ccmp->key_set,
--		     MAC_ARG(ccmp->tx_pn), MAC_ARG(ccmp->rx_pn),
-+		     ccmp->tx_pn, ccmp->rx_pn,
- 		     ccmp->dot11RSNAStatsCCMPFormatErrors,
- 		     ccmp->dot11RSNAStatsCCMPReplays,
- 		     ccmp->dot11RSNAStatsCCMPDecryptErrors);
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
-index e6d8385..a525411 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
-@@ -385,7 +385,7 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (!(keyidx & (1 << 5))) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "TKIP: received packet without ExtIV"
--			       " flag from " MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       " flag from %pM\n", hdr->addr2);
- 		}
- 		return -2;
- 	}
-@@ -397,9 +397,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	}
- 	if (!tkey->key_set) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "TKIP: received packet from " MAC_FMT
-+			printk(KERN_DEBUG "TKIP: received packet from %pM"
- 			       " with keyid=%d that does not have a configured"
--			       " key\n", MAC_ARG(hdr->addr2), keyidx);
-+			       " key\n", hdr->addr2, keyidx);
- 		}
- 		return -3;
- 	}
-@@ -410,9 +410,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (iv32 < tkey->rx_iv32 ||
- 	    (iv32 == tkey->rx_iv32 && iv16 <= tkey->rx_iv16)) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "TKIP: replay detected: STA=" MAC_FMT
-+			printk(KERN_DEBUG "TKIP: replay detected: STA=%pM"
- 			       " previous TSC %08x%04x received TSC "
--			       "%08x%04x\n", MAC_ARG(hdr->addr2),
-+			       "%08x%04x\n", hdr->addr2,
- 			       tkey->rx_iv32, tkey->rx_iv16, iv32, iv16);
- 		}
- 		tkey->dot11RSNAStatsTKIPReplays++;
-@@ -431,8 +431,8 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4)) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG ": TKIP: failed to decrypt "
--			       "received packet from " MAC_FMT "\n",
--			       MAC_ARG(hdr->addr2));
-+			       "received packet from %pM\n",
-+			       hdr->addr2);
- 		}
- 		return -7;
- 	}
-@@ -450,7 +450,7 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		}
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "TKIP: ICV error detected: STA="
--			       MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       "%pM\n", hdr->addr2);
- 		}
- 		tkey->dot11RSNAStatsTKIPICVErrors++;
- 		return -5;
-@@ -604,8 +604,8 @@ static int ieee80211_michael_mic_verify(struct sk_buff *skb, int keyidx,
- 		struct ieee80211_hdr_4addr *hdr;
- 		hdr = (struct ieee80211_hdr_4addr *)skb->data;
- 		printk(KERN_DEBUG "%s: Michael MIC verification failed for "
--		       "MSDU from " MAC_FMT " keyidx=%d\n",
--		       skb->dev ? skb->dev->name : "N/A", MAC_ARG(hdr->addr2),
-+		       "MSDU from %pM keyidx=%d\n",
-+		       skb->dev ? skb->dev->name : "N/A", hdr->addr2,
- 		       keyidx);
- 		if (skb->dev)
- 			ieee80211_michael_mic_failure(skb->dev, hdr, keyidx);
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-index f882dd8..3cb8954 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-@@ -311,8 +311,8 @@ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
- 	    strcmp(crypt->ops->name, "TKIP") == 0) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
--			       "received packet from " MAC_FMT "\n",
--			       ieee->dev->name, MAC_ARG(hdr->addr2));
-+			       "received packet from %pM\n",
-+			       ieee->dev->name, hdr->addr2);
- 		}
- 		return -1;
- 	}
-@@ -323,8 +323,8 @@ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
- 	atomic_dec(&crypt->refcnt);
- 	if (res < 0) {
- 		IEEE80211_DEBUG_DROP(
--			"decryption failed (SA=" MAC_FMT
--			") res=%d\n", MAC_ARG(hdr->addr2), res);
-+			"decryption failed (SA=%pM"
-+			") res=%d\n", hdr->addr2, res);
- 		if (res == -2)
- 			IEEE80211_DEBUG_DROP("Decryption failed ICV "
- 					     "mismatch (key %d)\n",
-@@ -356,8 +356,8 @@ ieee80211_rx_frame_decrypt_msdu(struct ieee80211_device* ieee, struct sk_buff *s
- 	atomic_dec(&crypt->refcnt);
- 	if (res < 0) {
- 		printk(KERN_DEBUG "%s: MSDU decryption/MIC verification failed"
--		       " (SA=" MAC_FMT " keyidx=%d)\n",
--		       ieee->dev->name, MAC_ARG(hdr->addr2), keyidx);
-+		       " (SA=%pM keyidx=%d)\n",
-+		       ieee->dev->name, hdr->addr2, keyidx);
- 		return -1;
- 	}
- 
-@@ -550,8 +550,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 			 * frames silently instead of filling system log with
- 			 * these reports. */
- 			IEEE80211_DEBUG_DROP("Decryption failed (not set)"
--					     " (SA=" MAC_FMT ")\n",
--					     MAC_ARG(hdr->addr2));
-+					     " (SA=%pM)\n",
-+					     hdr->addr2);
- 			ieee->ieee_stats.rx_discards_undecryptable++;
- 			goto rx_dropped;
- 		}
-@@ -709,8 +709,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 		} else {
- 			IEEE80211_DEBUG_DROP(
- 				"encryption configured, but RX "
--				"frame not encrypted (SA=" MAC_FMT ")\n",
--				MAC_ARG(hdr->addr2));
-+				"frame not encrypted (SA=%pM)\n",
-+				hdr->addr2);
- 			goto rx_dropped;
- 		}
- 	}
-@@ -729,9 +729,9 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 	    !ieee80211_is_eapol_frame(ieee, skb, hdrlen)) {
- 		IEEE80211_DEBUG_DROP(
- 			"dropped unencrypted RX data "
--			"frame from " MAC_FMT
-+			"frame from %pM"
- 			" (drop_unencrypted=1)\n",
--			MAC_ARG(hdr->addr2));
-+			hdr->addr2);
- 		goto rx_dropped;
- 	}
- /*
-@@ -1196,11 +1196,11 @@ inline int ieee80211_network_init(
- 	}
- 
- 	if (network->mode == 0) {
--		IEEE80211_DEBUG_SCAN("Filtered out '%s (" MAC_FMT ")' "
-+		IEEE80211_DEBUG_SCAN("Filtered out '%s (%pM)' "
- 				     "network.\n",
- 				     escape_essid(network->ssid,
- 						  network->ssid_len),
--				     MAC_ARG(network->bssid));
-+				     network->bssid);
- 		return 1;
- 	}
- 
-@@ -1341,9 +1341,9 @@ inline void ieee80211_process_probe_response(
- 	memset(&network, 0, sizeof(struct ieee80211_network));
- 
- 	IEEE80211_DEBUG_SCAN(
--		"'%s' (" MAC_FMT "): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
-+		"'%s' (%pM): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
- 		escape_essid(info_element->data, info_element->len),
--		MAC_ARG(beacon->header.addr3),
-+		beacon->header.addr3,
- 		(beacon->capability & (1<<0xf)) ? '1' : '0',
- 		(beacon->capability & (1<<0xe)) ? '1' : '0',
- 		(beacon->capability & (1<<0xd)) ? '1' : '0',
-@@ -1362,10 +1362,10 @@ inline void ieee80211_process_probe_response(
- 		(beacon->capability & (1<<0x0)) ? '1' : '0');
- 
- 	if (ieee80211_network_init(ieee, beacon, &network, stats)) {
--		IEEE80211_DEBUG_SCAN("Dropped '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Dropped '%s' (%pM) via %s.\n",
- 				     escape_essid(info_element->data,
- 						  info_element->len),
--				     MAC_ARG(beacon->header.addr3),
-+				     beacon->header.addr3,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-@@ -1464,11 +1464,11 @@ inline void ieee80211_process_probe_response(
- 			/* If there are no more slots, expire the oldest */
- 			list_del(&oldest->list);
- 			target = oldest;
--			IEEE80211_DEBUG_SCAN("Expired '%s' (" MAC_FMT ") from "
-+			IEEE80211_DEBUG_SCAN("Expired '%s' (%pM) from "
- 					     "network list.\n",
- 					     escape_essid(target->ssid,
- 							  target->ssid_len),
--					     MAC_ARG(target->bssid));
-+					     target->bssid);
- 		} else {
- 			/* Otherwise just pull from the free list */
- 			target = list_entry(ieee->network_free_list.next,
-@@ -1478,10 +1478,10 @@ inline void ieee80211_process_probe_response(
- 
- 
- #ifdef CONFIG_IEEE80211_DEBUG
--		IEEE80211_DEBUG_SCAN("Adding '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Adding '%s' (%pM) via %s.\n",
- 				     escape_essid(network.ssid,
- 						  network.ssid_len),
--				     MAC_ARG(network.bssid),
-+				     network.bssid,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-@@ -1492,10 +1492,10 @@ inline void ieee80211_process_probe_response(
- 		if(ieee->softmac_features & IEEE_SOFTMAC_ASSOCIATE)
- 			ieee80211_softmac_new_net(ieee,&network);
- 	} else {
--		IEEE80211_DEBUG_SCAN("Updating '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Updating '%s' (%pM) via %s.\n",
- 				     escape_essid(target->ssid,
- 						  target->ssid_len),
--				     MAC_ARG(target->bssid),
-+				     target->bssid,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-index 334e4c7..39f1181 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-@@ -1573,7 +1573,7 @@ ieee80211_rx_assoc_rq(struct ieee80211_device *ieee, struct sk_buff *skb)
- 		ieee80211_resp_to_assoc_rq(ieee, dest);
- 	}
- 
--	printk(KERN_INFO"New client associated: "MAC_FMT"\n", MAC_ARG(dest));
-+	printk(KERN_INFO"New client associated: %pM\n", dest);
- }
- 
- 
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
-index dde1f2e..8d19f10 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
-@@ -198,8 +198,8 @@ int ieee80211_encrypt_fragment(
- 		header = (struct ieee80211_hdr_4addr *)frag->data;
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
--			       "TX packet to " MAC_FMT "\n",
--			       ieee->dev->name, MAC_ARG(header->addr1));
-+			       "TX packet to %pM\n",
-+			       ieee->dev->name, header->addr1);
- 		}
- 		return -1;
- 	}
-@@ -407,7 +407,7 @@ int ieee80211_xmit(struct sk_buff *skb,
- 			memcpy(&header.addr2, src, ETH_ALEN);
- 			memcpy(&header.addr3, ieee->current_network.bssid, ETH_ALEN);
- 		}
--	//	printk(KERN_WARNING "essid MAC address is "MAC_FMT, MAC_ARG(&header.addr1));
-+	//	printk(KERN_WARNING "essid MAC address is %pM", &header.addr1);
- 		header.frame_ctl = cpu_to_le16(fc);
- 		//hdr_len = IEEE80211_3ADDR_LEN;
- 
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
-index 6aad48f..acd1077 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
-@@ -234,10 +234,10 @@ int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
- 			else
- 				IEEE80211_DEBUG_SCAN(
- 					"Not showing network '%s ("
--					MAC_FMT ")' due to age (%lums).\n",
-+					"%pM)' due to age (%lums).\n",
- 					escape_essid(network->ssid,
- 						     network->ssid_len),
--					MAC_ARG(network->bssid),
-+					network->bssid,
- 					(jiffies - network->last_scanned) / (HZ / 100));
- 		}
- 	}
-diff --git a/drivers/staging/rtl8192e/ieee80211.h b/drivers/staging/rtl8192e/ieee80211.h
-index 97137dd..d92c243 100644
---- a/drivers/staging/rtl8192e/ieee80211.h
-+++ b/drivers/staging/rtl8192e/ieee80211.h
-@@ -547,9 +547,6 @@ do { if (ieee80211_debug_level & (level)) \
- 
- /* debug macros not dependent on CONFIG_IEEE80211_DEBUG */
- 
--#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
--#define MAC_ARG(x) ((u8*)(x))[0],((u8*)(x))[1],((u8*)(x))[2],((u8*)(x))[3],((u8*)(x))[4],((u8*)(x))[5]
--
- /*
-  * To use the debug system;
-  *
-diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211.h b/drivers/staging/rtl8192e/ieee80211/ieee80211.h
-index 83c8452..dc07059 100644
---- a/drivers/staging/rtl8192e/ieee80211/ieee80211.h
-+++ b/drivers/staging/rtl8192e/ieee80211/ieee80211.h
-@@ -615,9 +615,6 @@ do { if (ieee80211_debug_level & (level)) \
- 
- /* debug macros not dependent on CONFIG_IEEE80211_DEBUG */
- 
--#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
--#define MAC_ARG(x) ((u8*)(x))[0],((u8*)(x))[1],((u8*)(x))[2],((u8*)(x))[3],((u8*)(x))[4],((u8*)(x))[5]
--
- /*
-  * To use the debug system;
-  *
-diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_ccmp.c b/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_ccmp.c
-index ab871b3..609c289 100644
---- a/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_ccmp.c
-+++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_ccmp.c
-@@ -331,7 +331,7 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (!(keyidx & (1 << 5))) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "CCMP: received packet without ExtIV"
--			       " flag from " MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       " flag from %pM\n", hdr->addr2);
- 		}
- 		key->dot11RSNAStatsCCMPFormatErrors++;
- 		return -2;
-@@ -344,9 +344,9 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	}
- 	if (!key->key_set) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "CCMP: received packet from " MAC_FMT
-+			printk(KERN_DEBUG "CCMP: received packet from %pM"
- 			       " with keyid=%d that does not have a configured"
--			       " key\n", MAC_ARG(hdr->addr2), keyidx);
-+			       " key\n", hdr->addr2, keyidx);
- 		}
- 		return -3;
- 	}
-@@ -361,11 +361,9 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 
- 	if (memcmp(pn, key->rx_pn, CCMP_PN_LEN) <= 0) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "CCMP: replay detected: STA=" MAC_FMT
--			       " previous PN %02x%02x%02x%02x%02x%02x "
--			       "received PN %02x%02x%02x%02x%02x%02x\n",
--			       MAC_ARG(hdr->addr2), MAC_ARG(key->rx_pn),
--			       MAC_ARG(pn));
-+			printk(KERN_DEBUG "CCMP: replay detected: STA=%pM"
-+			       " previous PN %pm received PN %pm\n",
-+			       hdr->addr2, key->rx_pn, pn);
- 		}
- 		key->dot11RSNAStatsCCMPReplays++;
- 		return -4;
-@@ -402,7 +400,7 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (memcmp(mic, a, CCMP_MIC_LEN) != 0) {
- 			if (net_ratelimit()) {
- 				printk(KERN_DEBUG "CCMP: decrypt failed: STA="
--				MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+				"%pM\n", hdr->addr2);
- 			}
- 			key->dot11RSNAStatsCCMPDecryptErrors++;
- 			return -5;
-@@ -482,7 +480,7 @@ static char * ieee80211_ccmp_print_stats(char *p, void *priv)
- 		     "rx_pn=%02x%02x%02x%02x%02x%02x "
- 		     "format_errors=%d replays=%d decrypt_errors=%d\n",
- 		     ccmp->key_idx, ccmp->key_set,
--		     MAC_ARG(ccmp->tx_pn), MAC_ARG(ccmp->rx_pn),
-+		     ccmp->tx_pn, ccmp->rx_pn,
- 		     ccmp->dot11RSNAStatsCCMPFormatErrors,
- 		     ccmp->dot11RSNAStatsCCMPReplays,
- 		     ccmp->dot11RSNAStatsCCMPDecryptErrors);
-diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_tkip.c b/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_tkip.c
-index 7a1797e..7056d93 100644
---- a/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_tkip.c
-+++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_crypt_tkip.c
-@@ -520,7 +520,7 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (!(keyidx & (1 << 5))) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "TKIP: received packet without ExtIV"
--			       " flag from " MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       " flag from %pM\n", hdr->addr2);
- 		}
- 		return -2;
- 	}
-@@ -532,9 +532,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	}
- 	if (!tkey->key_set) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "TKIP: received packet from " MAC_FMT
-+			printk(KERN_DEBUG "TKIP: received packet from %pM"
- 			       " with keyid=%d that does not have a configured"
--			       " key\n", MAC_ARG(hdr->addr2), keyidx);
-+			       " key\n", hdr->addr2, keyidx);
- 		}
- 		return -3;
- 	}
-@@ -547,9 +547,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (iv32 < tkey->rx_iv32 ||
- 		(iv32 == tkey->rx_iv32 && iv16 <= tkey->rx_iv16)) {
- 			if (net_ratelimit()) {
--				printk(KERN_DEBUG "TKIP: replay detected: STA=" MAC_FMT
-+				printk(KERN_DEBUG "TKIP: replay detected: STA=%pM"
- 				" previous TSC %08x%04x received TSC "
--				"%08x%04x\n", MAC_ARG(hdr->addr2),
-+				"%08x%04x\n", hdr->addr2,
- 				tkey->rx_iv32, tkey->rx_iv16, iv32, iv16);
- 			}
- 			tkey->dot11RSNAStatsTKIPReplays++;
-@@ -582,8 +582,8 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4)) {
- 			if (net_ratelimit()) {
- 				printk(KERN_DEBUG ": TKIP: failed to decrypt "
--						"received packet from " MAC_FMT "\n",
--						MAC_ARG(hdr->addr2));
-+						"received packet from %pM\n",
-+						hdr->addr2);
- 			}
- 			return -7;
- 		}
-@@ -606,8 +606,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 				tkey->rx_phase1_done = 0;
- 			}
- 			if (net_ratelimit()) {
--				printk(KERN_DEBUG "TKIP: ICV error detected: STA="
--				MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+				printk(KERN_DEBUG
-+				       "TKIP: ICV error detected: STA=%pM\n",
-+				       hdr->addr2);
- 			}
- 			tkey->dot11RSNAStatsTKIPICVErrors++;
- 			return -5;
-@@ -816,8 +817,8 @@ static void ieee80211_michael_mic_failure(struct net_device *dev,
- 
- 	/* TODO: needed parameters: count, keyid, key type, TSC */
- 	sprintf(buf, "MLME-MICHAELMICFAILURE.indication(keyid=%d %scast addr="
--		MAC_FMT ")", keyidx, hdr->addr1[0] & 0x01 ? "broad" : "uni",
--		MAC_ARG(hdr->addr2));
-+		"%pM)", keyidx, hdr->addr1[0] & 0x01 ? "broad" : "uni",
-+		hdr->addr2);
- 	memset(&wrqu, 0, sizeof(wrqu));
- 	wrqu.data.length = strlen(buf);
- 	wireless_send_event(dev, IWEVCUSTOM, &wrqu, buf);
-@@ -862,8 +863,8 @@ static int ieee80211_michael_mic_verify(struct sk_buff *skb, int keyidx,
- 		struct ieee80211_hdr_4addr *hdr;
- 		hdr = (struct ieee80211_hdr_4addr *) skb->data;
- 		printk(KERN_DEBUG "%s: Michael MIC verification failed for "
--		       "MSDU from " MAC_FMT " keyidx=%d\n",
--		       skb->dev ? skb->dev->name : "N/A", MAC_ARG(hdr->addr2),
-+		       "MSDU from %pM keyidx=%d\n",
-+		       skb->dev ? skb->dev->name : "N/A", hdr->addr2,
- 		       keyidx);
- 		if (skb->dev)
- 			ieee80211_michael_mic_failure(skb->dev, hdr, keyidx);
-diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_rx.c b/drivers/staging/rtl8192e/ieee80211/ieee80211_rx.c
-index 5dc478b..9cbcf81 100644
---- a/drivers/staging/rtl8192e/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_rx.c
-@@ -366,8 +366,8 @@ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
- 	    strcmp(crypt->ops->name, "TKIP") == 0) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
--			       "received packet from " MAC_FMT "\n",
--			       ieee->dev->name, MAC_ARG(hdr->addr2));
-+			       "received packet from %pM\n",
-+			       ieee->dev->name, hdr->addr2);
- 		}
- 		return -1;
- 	}
-@@ -378,8 +378,8 @@ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
- 	atomic_dec(&crypt->refcnt);
- 	if (res < 0) {
- 		IEEE80211_DEBUG_DROP(
--			"decryption failed (SA=" MAC_FMT
--			") res=%d\n", MAC_ARG(hdr->addr2), res);
-+			"decryption failed (SA=%pM"
-+			") res=%d\n", hdr->addr2, res);
- 		if (res == -2)
- 			IEEE80211_DEBUG_DROP("Decryption failed ICV "
- 					     "mismatch (key %d)\n",
-@@ -416,8 +416,8 @@ ieee80211_rx_frame_decrypt_msdu(struct ieee80211_device* ieee, struct sk_buff *s
- 	atomic_dec(&crypt->refcnt);
- 	if (res < 0) {
- 		printk(KERN_DEBUG "%s: MSDU decryption/MIC verification failed"
--		       " (SA=" MAC_FMT " keyidx=%d)\n",
--		       ieee->dev->name, MAC_ARG(hdr->addr2), keyidx);
-+		       " (SA=%pM keyidx=%d)\n",
-+		       ieee->dev->name, hdr->addr2, keyidx);
- 		return -1;
- 	}
- 
-@@ -1045,8 +1045,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 			 * frames silently instead of filling system log with
- 			 * these reports. */
- 			IEEE80211_DEBUG_DROP("Decryption failed (not set)"
--					     " (SA=" MAC_FMT ")\n",
--					     MAC_ARG(hdr->addr2));
-+					     " (SA=%pM)\n",
-+					     hdr->addr2);
- 			ieee->ieee_stats.rx_discards_undecryptable++;
- 			goto rx_dropped;
- 		}
-@@ -1114,8 +1114,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 		    (keyidx = hostap_rx_frame_decrypt(ieee, skb, crypt)) < 0)
- 		{
- 			printk(KERN_DEBUG "%s: failed to decrypt mgmt::auth "
--			       "from " MAC_FMT "\n", dev->name,
--			       MAC_ARG(hdr->addr2));
-+			       "from %pM\n", dev->name,
-+			       hdr->addr2);
- 			/* TODO: could inform hostapd about this so that it
- 			 * could send auth failure report */
- 			goto rx_dropped;
-@@ -1311,8 +1311,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 		} else {
- 			IEEE80211_DEBUG_DROP(
- 				"encryption configured, but RX "
--				"frame not encrypted (SA=" MAC_FMT ")\n",
--				MAC_ARG(hdr->addr2));
-+				"frame not encrypted (SA=%pM)\n",
-+				hdr->addr2);
- 			goto rx_dropped;
- 		}
- 	}
-@@ -1331,9 +1331,9 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 	    !ieee80211_is_eapol_frame(ieee, skb, hdrlen)) {
- 		IEEE80211_DEBUG_DROP(
- 			"dropped unencrypted RX data "
--			"frame from " MAC_FMT
-+			"frame from %pM"
- 			" (drop_unencrypted=1)\n",
--			MAC_ARG(hdr->addr2));
-+			hdr->addr2);
- 		goto rx_dropped;
- 	}
- /*
-@@ -2369,11 +2369,11 @@ static inline int ieee80211_network_init(
- 	}
- 
- 	if (network->mode == 0) {
--		IEEE80211_DEBUG_SCAN("Filtered out '%s (" MAC_FMT ")' "
-+		IEEE80211_DEBUG_SCAN("Filtered out '%s (%pM)' "
- 				     "network.\n",
- 				     escape_essid(network->ssid,
- 						  network->ssid_len),
--				     MAC_ARG(network->bssid));
-+				     network->bssid);
- 		return 1;
- 	}
- 
-@@ -2557,9 +2557,9 @@ static inline void ieee80211_process_probe_response(
- 
- 	memset(&network, 0, sizeof(struct ieee80211_network));
- 	IEEE80211_DEBUG_SCAN(
--		"'%s' (" MAC_FMT "): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
-+		"'%s' (%pM): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
- 		escape_essid(info_element->data, info_element->len),
--		MAC_ARG(beacon->header.addr3),
-+		beacon->header.addr3,
- 		(beacon->capability & (1<<0xf)) ? '1' : '0',
- 		(beacon->capability & (1<<0xe)) ? '1' : '0',
- 		(beacon->capability & (1<<0xd)) ? '1' : '0',
-@@ -2578,10 +2578,10 @@ static inline void ieee80211_process_probe_response(
- 		(beacon->capability & (1<<0x0)) ? '1' : '0');
- 
- 	if (ieee80211_network_init(ieee, beacon, &network, stats)) {
--		IEEE80211_DEBUG_SCAN("Dropped '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Dropped '%s' (%pM) via %s.\n",
- 				     escape_essid(info_element->data,
- 						  info_element->len),
--				     MAC_ARG(beacon->header.addr3),
-+				     beacon->header.addr3,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-@@ -2692,11 +2692,11 @@ static inline void ieee80211_process_probe_response(
- 			/* If there are no more slots, expire the oldest */
- 			list_del(&oldest->list);
- 			target = oldest;
--			IEEE80211_DEBUG_SCAN("Expired '%s' (" MAC_FMT ") from "
-+			IEEE80211_DEBUG_SCAN("Expired '%s' (%pM) from "
- 					     "network list.\n",
- 					     escape_essid(target->ssid,
- 							  target->ssid_len),
--					     MAC_ARG(target->bssid));
-+					     target->bssid);
- 		} else {
- 			/* Otherwise just pull from the free list */
- 			target = list_entry(ieee->network_free_list.next,
-@@ -2706,10 +2706,10 @@ static inline void ieee80211_process_probe_response(
- 
- 
- #ifdef CONFIG_IEEE80211_DEBUG
--		IEEE80211_DEBUG_SCAN("Adding '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Adding '%s' (%pM) via %s.\n",
- 				     escape_essid(network.ssid,
- 						  network.ssid_len),
--				     MAC_ARG(network.bssid),
-+				     network.bssid,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-@@ -2719,10 +2719,10 @@ static inline void ieee80211_process_probe_response(
- 		if(ieee->softmac_features & IEEE_SOFTMAC_ASSOCIATE)
- 			ieee80211_softmac_new_net(ieee,&network);
- 	} else {
--		IEEE80211_DEBUG_SCAN("Updating '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Updating '%s' (%pM) via %s.\n",
- 				     escape_essid(target->ssid,
- 						  target->ssid_len),
--				     MAC_ARG(target->bssid),
-+				     target->bssid,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_softmac.c b/drivers/staging/rtl8192e/ieee80211/ieee80211_softmac.c
-index eae7c45..c59d34c 100644
---- a/drivers/staging/rtl8192e/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_softmac.c
-@@ -1897,7 +1897,7 @@ ieee80211_rx_assoc_rq(struct ieee80211_device *ieee, struct sk_buff *skb)
- 		ieee80211_resp_to_assoc_rq(ieee, dest);
- 	}
- 
--	printk(KERN_INFO"New client associated: "MAC_FMT"\n", MAC_ARG(dest));
-+	printk(KERN_INFO"New client associated: %pM\n", dest);
- 	//FIXME
- 	#if 0
- 	spin_lock_irqsave(&ieee->lock,flags);
-diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_tx.c b/drivers/staging/rtl8192e/ieee80211/ieee80211_tx.c
-index 103b33c..52c4aa6 100644
---- a/drivers/staging/rtl8192e/ieee80211/ieee80211_tx.c
-+++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_tx.c
-@@ -200,8 +200,8 @@ int ieee80211_encrypt_fragment(
- 		header = (struct ieee80211_hdr *) frag->data;
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
--			       "TX packet to " MAC_FMT "\n",
--			       ieee->dev->name, MAC_ARG(header->addr1));
-+			       "TX packet to %pM\n",
-+			       ieee->dev->name, header->addr1);
- 		}
- 		return -1;
- 	}
-diff --git a/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c
-index 4e34a1f..f1e76f8 100644
---- a/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c
-+++ b/drivers/staging/rtl8192e/ieee80211/ieee80211_wx.c
-@@ -386,10 +386,10 @@ int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
- 		else
- 			IEEE80211_DEBUG_SCAN(
- 				"Not showing network '%s ("
--				MAC_FMT ")' due to age (%lums).\n",
-+				"%pM)' due to age (%lums).\n",
- 				escape_essid(network->ssid,
- 					     network->ssid_len),
--				MAC_ARG(network->bssid),
-+				network->bssid,
- 				(jiffies - network->last_scanned) / (HZ / 100));
- 	}
- 
-diff --git a/drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c b/drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c
-index 98b3bb6..e94efbd 100644
---- a/drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c
-+++ b/drivers/staging/rtl8192e/ieee80211/rtl819x_BAProc.c
-@@ -113,7 +113,7 @@ static struct sk_buff* ieee80211_ADDBA(struct ieee80211_device* ieee, u8* Dst, P
- 	u16 tmp = 0;
- 	u16 len = ieee->tx_headroom + 9;
- 	//category(1) + action field(1) + Dialog Token(1) + BA Parameter Set(2) +  BA Timeout Value(2) +  BA Start SeqCtrl(2)(or StatusCode(2))
--	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), frame(%d) sentd to:"MAC_FMT", ieee->dev:%p\n", __FUNCTION__, type, MAC_ARG(Dst), ieee->dev);
-+	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), frame(%d) sentd to:%pM, ieee->dev:%p\n", __FUNCTION__, type, Dst, ieee->dev);
- 	if (pBA == NULL||ieee == NULL)
- 	{
- 		IEEE80211_DEBUG(IEEE80211_DL_ERR, "pBA(%p) is NULL or ieee(%p) is NULL\n", pBA, ieee);
-@@ -243,7 +243,7 @@ static struct sk_buff* ieee80211_DELBA(
- 	u16 len = 6 + ieee->tx_headroom;
- 
- 	if (net_ratelimit())
--	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), ReasonCode(%d) sentd to:"MAC_FMT"\n", __FUNCTION__, ReasonCode, MAC_ARG(dst));
-+	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), ReasonCode(%d) sentd to:%pM\n", __FUNCTION__, ReasonCode, dst);
- 
- 	memset(&DelbaParamSet, 0, 2);
- 
-@@ -397,7 +397,7 @@ int ieee80211_rx_ADDBAReq( struct ieee80211_device* ieee, struct sk_buff *skb)
- 	pBaTimeoutVal = (u16*)(tag + 5);
- 	pBaStartSeqCtrl = (PSEQUENCE_CONTROL)(req + 7);
- 
--	printk("====================>rx ADDBAREQ from :"MAC_FMT"\n", MAC_ARG(dst));
-+	printk("====================>rx ADDBAREQ from :%pM\n", dst);
- //some other capability is not ready now.
- 	if(	(ieee->current_network.qos_data.active == 0) ||
- 		(ieee->pHTInfo->bCurrentHTSupport == false)) //||
-diff --git a/drivers/staging/rtl8192e/ieee80211/rtl819x_TSProc.c b/drivers/staging/rtl8192e/ieee80211/rtl819x_TSProc.c
-index 2816b60..e2cbfd3 100644
---- a/drivers/staging/rtl8192e/ieee80211/rtl819x_TSProc.c
-+++ b/drivers/staging/rtl8192e/ieee80211/rtl819x_TSProc.c
-@@ -304,7 +304,7 @@ PTS_COMMON_INFO SearchAdmitTRStream(struct ieee80211_device *ieee, u8*	Addr, u8
- 		if(search_dir[dir] ==false )
- 			continue;
- 		list_for_each_entry(pRet, psearch_list, List){
--	//		IEEE80211_DEBUG(IEEE80211_DL_TS, "ADD:"MAC_FMT", TID:%d, dir:%d\n", MAC_ARG(pRet->Addr), pRet->TSpec.f.TSInfo.field.ucTSID, pRet->TSpec.f.TSInfo.field.ucDirection);
-+	//		IEEE80211_DEBUG(IEEE80211_DL_TS, "ADD:%pM, TID:%d, dir:%d\n", pRet->Addr, pRet->TSpec.f.TSInfo.field.ucTSID, pRet->TSpec.f.TSInfo.field.ucDirection);
- 			if (memcmp(pRet->Addr, Addr, 6) == 0)
- 				if (pRet->TSpec.f.TSInfo.field.ucTSID == TID)
- 					if(pRet->TSpec.f.TSInfo.field.ucDirection == dir)
-@@ -466,7 +466,7 @@ bool GetTs(
- 					ResetRxTsEntry(tmp);
- 				}
- 
--				IEEE80211_DEBUG(IEEE80211_DL_TS, "to init current TS, UP:%d, Dir:%d, addr:"MAC_FMT"\n", UP, Dir, MAC_ARG(Addr));
-+				IEEE80211_DEBUG(IEEE80211_DL_TS, "to init current TS, UP:%d, Dir:%d, addr:%pM\n", UP, Dir, Addr);
- 				// Prepare TS Info releated field
- 				pTSInfo->field.ucTrafficType = 0;			// Traffic type: WMM is reserved in this field
- 				pTSInfo->field.ucTSID = UP;			// TSID
-@@ -552,7 +552,7 @@ void RemoveTsEntry(
- void RemovePeerTS(struct ieee80211_device* ieee, u8* Addr)
- {
- 	PTS_COMMON_INFO	pTS, pTmpTS;
--	printk("===========>RemovePeerTS,"MAC_FMT"\n", MAC_ARG(Addr));
-+	printk("===========>RemovePeerTS,%pM\n", Addr);
- #if 1
- 	list_for_each_entry_safe(pTS, pTmpTS, &ieee->Tx_TS_Pending_List, List)
- 	{
-diff --git a/drivers/staging/rtl8192e/r8192E_core.c b/drivers/staging/rtl8192e/r8192E_core.c
-index 8f4637a..7659e1e 100644
---- a/drivers/staging/rtl8192e/r8192E_core.c
-+++ b/drivers/staging/rtl8192e/r8192E_core.c
-@@ -6394,7 +6394,7 @@ void setKey(	struct net_device *dev,
- 	if (EntryNo >= TOTAL_CAM_ENTRY)
- 		RT_TRACE(COMP_ERR, "cam entry exceeds in setKey()\n");
- 
--	RT_TRACE(COMP_SEC, "====>to setKey(), dev:%p, EntryNo:%d, KeyIndex:%d, KeyType:%d, MacAddr"MAC_FMT"\n", dev,EntryNo, KeyIndex, KeyType, MAC_ARG(MacAddr));
-+	RT_TRACE(COMP_SEC, "====>to setKey(), dev:%p, EntryNo:%d, KeyIndex:%d, KeyType:%d, MacAddr%pM\n", dev,EntryNo, KeyIndex, KeyType, MacAddr);
- 
- 	if (DefaultKey)
- 		usConfig |= BIT15 | (KeyType<<2);
-diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211.h b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-index f22d024..06f009e 100644
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-@@ -195,10 +195,6 @@ extern u32 ieee80211_debug_level;
- #define IEEE80211_DEBUG_DATA(level, data, datalen) do {} while(0)
- #endif	/* CONFIG_IEEE80211_DEBUG */
- 
--#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
--#define MAC_ARG(x) ((u8 *)(x))[0], ((u8 *)(x))[1], ((u8 *)(x))[2], \
--		   ((u8 *)(x))[3], ((u8 *)(x))[4], ((u8 *)(x))[5]
--
- /*
-  * To use the debug system;
-  *
-diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c
-index 7bc956e..8a93f7d 100644
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c
-@@ -288,7 +288,7 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (!(keyidx & (1 << 5))) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "CCMP: received packet without ExtIV"
--			       " flag from " MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       " flag from %pM\n", hdr->addr2);
- 		}
- 		key->dot11RSNAStatsCCMPFormatErrors++;
- 		return -2;
-@@ -301,9 +301,9 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	}
- 	if (!key->key_set) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "CCMP: received packet from " MAC_FMT
-+			printk(KERN_DEBUG "CCMP: received packet from %pM"
- 			       " with keyid=%d that does not have a configured"
--			       " key\n", MAC_ARG(hdr->addr2), keyidx);
-+			       " key\n", hdr->addr2, keyidx);
- 		}
- 		return -3;
- 	}
-@@ -318,11 +318,9 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 
- 	if (memcmp(pn, key->rx_pn, CCMP_PN_LEN) <= 0) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "CCMP: replay detected: STA=" MAC_FMT
--			       " previous PN %02x%02x%02x%02x%02x%02x "
--			       "received PN %02x%02x%02x%02x%02x%02x\n",
--			       MAC_ARG(hdr->addr2), MAC_ARG(key->rx_pn),
--			       MAC_ARG(pn));
-+			printk(KERN_DEBUG "CCMP: replay detected: STA=%pM"
-+			       " previous PN %pm received PN %pm\n",
-+			       hdr->addr2, key->rx_pn, pn);
- 		}
- 		key->dot11RSNAStatsCCMPReplays++;
- 		return -4;
-@@ -359,7 +357,7 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (memcmp(mic, a, CCMP_MIC_LEN) != 0) {
- 			if (net_ratelimit()) {
- 				printk(KERN_DEBUG "CCMP: decrypt failed: STA="
--				MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+				"%pM\n", hdr->addr2);
- 			}
- 			key->dot11RSNAStatsCCMPDecryptErrors++;
- 			return -5;
-@@ -435,11 +433,10 @@ static char * ieee80211_ccmp_print_stats(char *p, void *priv)
- {
- 	struct ieee80211_ccmp_data *ccmp = priv;
- 	p += sprintf(p, "key[%d] alg=CCMP key_set=%d "
--		     "tx_pn=%02x%02x%02x%02x%02x%02x "
--		     "rx_pn=%02x%02x%02x%02x%02x%02x "
-+		     "tx_pn=%pm rx_pn=%pm "
- 		     "format_errors=%d replays=%d decrypt_errors=%d\n",
- 		     ccmp->key_idx, ccmp->key_set,
--		     MAC_ARG(ccmp->tx_pn), MAC_ARG(ccmp->rx_pn),
-+		     ccmp->tx_pn, ccmp->rx_pn,
- 		     ccmp->dot11RSNAStatsCCMPFormatErrors,
- 		     ccmp->dot11RSNAStatsCCMPReplays,
- 		     ccmp->dot11RSNAStatsCCMPDecryptErrors);
-diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-index 9b9438f..7e48748 100644
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-@@ -410,7 +410,7 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (!(keyidx & (1 << 5))) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "TKIP: received packet without ExtIV"
--			       " flag from " MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       " flag from %pM\n", hdr->addr2);
- 		}
- 		return -2;
- 	}
-@@ -422,9 +422,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	}
- 	if (!tkey->key_set) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "TKIP: received packet from " MAC_FMT
-+			printk(KERN_DEBUG "TKIP: received packet from %pM"
- 			       " with keyid=%d that does not have a configured"
--			       " key\n", MAC_ARG(hdr->addr2), keyidx);
-+			       " key\n", hdr->addr2, keyidx);
- 		}
- 		return -3;
- 	}
-@@ -437,9 +437,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (iv32 < tkey->rx_iv32 ||
- 		(iv32 == tkey->rx_iv32 && iv16 <= tkey->rx_iv16)) {
- 			if (net_ratelimit()) {
--				printk(KERN_DEBUG "TKIP: replay detected: STA=" MAC_FMT
-+				printk(KERN_DEBUG "TKIP: replay detected: STA=%pM"
- 				" previous TSC %08x%04x received TSC "
--				"%08x%04x\n", MAC_ARG(hdr->addr2),
-+				"%08x%04x\n", hdr->addr2,
- 				tkey->rx_iv32, tkey->rx_iv16, iv32, iv16);
- 			}
- 			tkey->dot11RSNAStatsTKIPReplays++;
-@@ -460,8 +460,8 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4)) {
- 			if (net_ratelimit()) {
- 				printk(KERN_DEBUG ": TKIP: failed to decrypt "
--						"received packet from " MAC_FMT "\n",
--						MAC_ARG(hdr->addr2));
-+						"received packet from %pM\n",
-+						hdr->addr2);
- 			}
- 			return -7;
- 		}
-@@ -480,7 +480,7 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 			}
- 			if (net_ratelimit()) {
- 				printk(KERN_DEBUG "TKIP: ICV error detected: STA="
--				MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+				"%pM\n", hdr->addr2);
- 			}
- 			tkey->dot11RSNAStatsTKIPICVErrors++;
- 			return -5;
-@@ -635,8 +635,8 @@ static int ieee80211_michael_mic_verify(struct sk_buff *skb, int keyidx,
- 		struct ieee80211_hdr_4addr *hdr;
- 		hdr = (struct ieee80211_hdr_4addr *) skb->data;
- 		printk(KERN_DEBUG "%s: Michael MIC verification failed for "
--		       "MSDU from " MAC_FMT " keyidx=%d\n",
--		       skb->dev ? skb->dev->name : "N/A", MAC_ARG(hdr->addr2),
-+		       "MSDU from %pM keyidx=%d\n",
-+		       skb->dev ? skb->dev->name : "N/A", hdr->addr2,
- 		       keyidx);
- 		if (skb->dev)
- 			ieee80211_michael_mic_failure(skb->dev, hdr, keyidx);
-diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-index ac223ce..826a394 100644
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-@@ -314,8 +314,8 @@ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
- 	    strcmp(crypt->ops->name, "TKIP") == 0) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
--			       "received packet from " MAC_FMT "\n",
--			       ieee->dev->name, MAC_ARG(hdr->addr2));
-+			       "received packet from %pM\n",
-+			       ieee->dev->name, hdr->addr2);
- 		}
- 		return -1;
- 	}
-@@ -326,8 +326,8 @@ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
- 	atomic_dec(&crypt->refcnt);
- 	if (res < 0) {
- 		IEEE80211_DEBUG_DROP(
--			"decryption failed (SA=" MAC_FMT
--			") res=%d\n", MAC_ARG(hdr->addr2), res);
-+			"decryption failed (SA=%pM"
-+			") res=%d\n", hdr->addr2, res);
- 		if (res == -2)
- 			IEEE80211_DEBUG_DROP("Decryption failed ICV "
- 					     "mismatch (key %d)\n",
-@@ -364,8 +364,8 @@ ieee80211_rx_frame_decrypt_msdu(struct ieee80211_device* ieee, struct sk_buff *s
- 	atomic_dec(&crypt->refcnt);
- 	if (res < 0) {
- 		printk(KERN_DEBUG "%s: MSDU decryption/MIC verification failed"
--		       " (SA=" MAC_FMT " keyidx=%d)\n",
--		       ieee->dev->name, MAC_ARG(hdr->addr2), keyidx);
-+		       " (SA=%pM keyidx=%d)\n",
-+		       ieee->dev->name, hdr->addr2, keyidx);
- 		return -1;
- 	}
- 
-@@ -939,8 +939,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 			 * frames silently instead of filling system log with
- 			 * these reports. */
- 			IEEE80211_DEBUG_DROP("Decryption failed (not set)"
--					     " (SA=" MAC_FMT ")\n",
--					     MAC_ARG(hdr->addr2));
-+					     " (SA=%pM)\n",
-+					     hdr->addr2);
- 			ieee->ieee_stats.rx_discards_undecryptable++;
- 			goto rx_dropped;
- 		}
-@@ -1143,8 +1143,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 		} else {
- 			IEEE80211_DEBUG_DROP(
- 				"encryption configured, but RX "
--				"frame not encrypted (SA=" MAC_FMT ")\n",
--				MAC_ARG(hdr->addr2));
-+				"frame not encrypted (SA=%pM)\n",
-+				hdr->addr2);
- 			goto rx_dropped;
- 		}
- 	}
-@@ -1163,9 +1163,9 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 	    !ieee80211_is_eapol_frame(ieee, skb, hdrlen)) {
- 		IEEE80211_DEBUG_DROP(
- 			"dropped unencrypted RX data "
--			"frame from " MAC_FMT
-+			"frame from %pM"
- 			" (drop_unencrypted=1)\n",
--			MAC_ARG(hdr->addr2));
-+			hdr->addr2);
- 		goto rx_dropped;
- 	}
- /*
-@@ -2159,11 +2159,11 @@ static inline int ieee80211_network_init(
- 	}
- 
- 	if (network->mode == 0) {
--		IEEE80211_DEBUG_SCAN("Filtered out '%s (" MAC_FMT ")' "
-+		IEEE80211_DEBUG_SCAN("Filtered out '%s (%pM)' "
- 				     "network.\n",
- 				     escape_essid(network->ssid,
- 						  network->ssid_len),
--				     MAC_ARG(network->bssid));
-+				     network->bssid);
- 		return 1;
- 	}
- 
-@@ -2345,9 +2345,9 @@ static inline void ieee80211_process_probe_response(
- 
- 	memset(&network, 0, sizeof(struct ieee80211_network));
- 	IEEE80211_DEBUG_SCAN(
--		"'%s' (" MAC_FMT "): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
-+		"'%s' (%pM): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
- 		escape_essid(info_element->data, info_element->len),
--		MAC_ARG(beacon->header.addr3),
-+		beacon->header.addr3,
- 		(beacon->capability & (1<<0xf)) ? '1' : '0',
- 		(beacon->capability & (1<<0xe)) ? '1' : '0',
- 		(beacon->capability & (1<<0xd)) ? '1' : '0',
-@@ -2366,10 +2366,10 @@ static inline void ieee80211_process_probe_response(
- 		(beacon->capability & (1<<0x0)) ? '1' : '0');
- 
- 	if (ieee80211_network_init(ieee, beacon, &network, stats)) {
--		IEEE80211_DEBUG_SCAN("Dropped '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Dropped '%s' (%pM) via %s.\n",
- 				     escape_essid(info_element->data,
- 						  info_element->len),
--				     MAC_ARG(beacon->header.addr3),
-+				     beacon->header.addr3,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-@@ -2478,11 +2478,11 @@ static inline void ieee80211_process_probe_response(
- 			/* If there are no more slots, expire the oldest */
- 			list_del(&oldest->list);
- 			target = oldest;
--			IEEE80211_DEBUG_SCAN("Expired '%s' (" MAC_FMT ") from "
-+			IEEE80211_DEBUG_SCAN("Expired '%s' (%pM) from "
- 					     "network list.\n",
- 					     escape_essid(target->ssid,
- 							  target->ssid_len),
--					     MAC_ARG(target->bssid));
-+					     target->bssid);
- 		} else {
- 			/* Otherwise just pull from the free list */
- 			target = list_entry(ieee->network_free_list.next,
-@@ -2492,10 +2492,10 @@ static inline void ieee80211_process_probe_response(
- 
- 
- #ifdef CONFIG_IEEE80211_DEBUG
--		IEEE80211_DEBUG_SCAN("Adding '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Adding '%s' (%pM) via %s.\n",
- 				     escape_essid(network.ssid,
- 						  network.ssid_len),
--				     MAC_ARG(network.bssid),
-+				     network.bssid,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-@@ -2505,10 +2505,10 @@ static inline void ieee80211_process_probe_response(
- 		if(ieee->softmac_features & IEEE_SOFTMAC_ASSOCIATE)
- 			ieee80211_softmac_new_net(ieee,&network);
- 	} else {
--		IEEE80211_DEBUG_SCAN("Updating '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Updating '%s' (%pM) via %s.\n",
- 				     escape_essid(target->ssid,
- 						  target->ssid_len),
--				     MAC_ARG(target->bssid),
-+				     target->bssid,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-index fd8e112..de67e35 100644
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-@@ -1709,7 +1709,7 @@ ieee80211_rx_assoc_rq(struct ieee80211_device *ieee, struct sk_buff *skb)
- 		ieee80211_resp_to_assoc_rq(ieee, dest);
- 	}
- 
--	printk(KERN_INFO"New client associated: "MAC_FMT"\n", MAC_ARG(dest));
-+	printk(KERN_INFO"New client associated: %pM\n", dest);
- 	//FIXME
- }
- 
-diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c b/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-index 60621d6..5aec564 100644
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-@@ -199,8 +199,8 @@ int ieee80211_encrypt_fragment(
- 		header = (struct rtl_ieee80211_hdr *)frag->data;
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
--			       "TX packet to " MAC_FMT "\n",
--			       ieee->dev->name, MAC_ARG(header->addr1));
-+			       "TX packet to %pM\n",
-+			       ieee->dev->name, header->addr1);
- 		}
- 		return -1;
- 	}
-diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-index 85c7e96..0f21ccb 100644
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-@@ -261,10 +261,10 @@ int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
- 		else
- 			IEEE80211_DEBUG_SCAN(
- 				"Not showing network '%s ("
--				MAC_FMT ")' due to age (%lums).\n",
-+				"%pM)' due to age (%lums).\n",
- 				escape_essid(network->ssid,
- 					     network->ssid_len),
--				MAC_ARG(network->bssid),
-+				network->bssid,
- 				(jiffies - network->last_scanned) / (HZ / 100));
- 	}
- 
-diff --git a/drivers/staging/rtl8192su/ieee80211/rtl819x_BAProc.c b/drivers/staging/rtl8192su/ieee80211/rtl819x_BAProc.c
-index 8d12ffc..6eb1096 100644
---- a/drivers/staging/rtl8192su/ieee80211/rtl819x_BAProc.c
-+++ b/drivers/staging/rtl8192su/ieee80211/rtl819x_BAProc.c
-@@ -113,7 +113,7 @@ static struct sk_buff* ieee80211_ADDBA(struct ieee80211_device* ieee, u8* Dst, P
- 	u16 tmp = 0;
- 	u16 len = ieee->tx_headroom + 9;
- 	//category(1) + action field(1) + Dialog Token(1) + BA Parameter Set(2) +  BA Timeout Value(2) +  BA Start SeqCtrl(2)(or StatusCode(2))
--	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), frame(%d) sentd to:"MAC_FMT", ieee->dev:%p\n", __FUNCTION__, type, MAC_ARG(Dst), ieee->dev);
-+	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), frame(%d) sentd to:%pM, ieee->dev:%p\n", __FUNCTION__, type, Dst, ieee->dev);
- 	if (pBA == NULL||ieee == NULL)
- 	{
- 		IEEE80211_DEBUG(IEEE80211_DL_ERR, "pBA(%p) is NULL or ieee(%p) is NULL\n", pBA, ieee);
-@@ -200,7 +200,7 @@ static struct sk_buff* ieee80211_DELBA(
- 	u16 len = 6 + ieee->tx_headroom;
- 
- 	if (net_ratelimit())
--	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), ReasonCode(%d) sentd to:"MAC_FMT"\n", __FUNCTION__, ReasonCode, MAC_ARG(dst));
-+	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), ReasonCode(%d) sentd to:%pM\n", __FUNCTION__, ReasonCode, dst);
- 
- 	memset(&DelbaParamSet, 0, 2);
- 
-@@ -354,7 +354,7 @@ int ieee80211_rx_ADDBAReq( struct ieee80211_device* ieee, struct sk_buff *skb)
- 	pBaTimeoutVal = (u16*)(tag + 5);
- 	pBaStartSeqCtrl = (PSEQUENCE_CONTROL)(req + 7);
- 
--	printk("====================>rx ADDBAREQ from :"MAC_FMT"\n", MAC_ARG(dst));
-+	printk("====================>rx ADDBAREQ from :%pM\n", dst);
- //some other capability is not ready now.
- 	if(	(ieee->current_network.qos_data.active == 0) ||
- 		(ieee->pHTInfo->bCurrentHTSupport == false) ||
-diff --git a/drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c b/drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c
-index ad3bf35..60cf1f8 100644
---- a/drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c
-+++ b/drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c
-@@ -291,7 +291,7 @@ PTS_COMMON_INFO SearchAdmitTRStream(struct ieee80211_device *ieee, u8*	Addr, u8
- 		if(search_dir[dir] ==false )
- 			continue;
- 		list_for_each_entry(pRet, psearch_list, List){
--	//		IEEE80211_DEBUG(IEEE80211_DL_TS, "ADD:"MAC_FMT", TID:%d, dir:%d\n", MAC_ARG(pRet->Addr), pRet->TSpec.f.TSInfo.field.ucTSID, pRet->TSpec.f.TSInfo.field.ucDirection);
-+	//		IEEE80211_DEBUG(IEEE80211_DL_TS, "ADD:%pM, TID:%d, dir:%d\n", pRet->Addr, pRet->TSpec.f.TSInfo.field.ucTSID, pRet->TSpec.f.TSInfo.field.ucDirection);
- 			if (memcmp(pRet->Addr, Addr, 6) == 0)
- 				if (pRet->TSpec.f.TSInfo.field.ucTSID == TID)
- 					if(pRet->TSpec.f.TSInfo.field.ucDirection == dir)
-@@ -447,7 +447,7 @@ bool GetTs(
- 					ResetRxTsEntry(tmp);
- 				}
- 
--				IEEE80211_DEBUG(IEEE80211_DL_TS, "to init current TS, UP:%d, Dir:%d, addr:"MAC_FMT"\n", UP, Dir, MAC_ARG(Addr));
-+				IEEE80211_DEBUG(IEEE80211_DL_TS, "to init current TS, UP:%d, Dir:%d, addr:%pM\n", UP, Dir, Addr);
- 				// Prepare TS Info releated field
- 				pTSInfo->field.ucTrafficType = 0;			// Traffic type: WMM is reserved in this field
- 				pTSInfo->field.ucTSID = UP;			// TSID
-@@ -533,7 +533,7 @@ void RemoveTsEntry(
- void RemovePeerTS(struct ieee80211_device* ieee, u8* Addr)
- {
- 	PTS_COMMON_INFO	pTS, pTmpTS;
--	printk("===========>RemovePeerTS,"MAC_FMT"\n", MAC_ARG(Addr));
-+	printk("===========>RemovePeerTS,%pM\n", Addr);
- #if 1
- 	list_for_each_entry_safe(pTS, pTmpTS, &ieee->Tx_TS_Pending_List, List)
- 	{
-diff --git a/drivers/staging/rtl8192su/r8192U_core.c b/drivers/staging/rtl8192su/r8192U_core.c
-index e24815f..8858b12 100644
---- a/drivers/staging/rtl8192su/r8192U_core.c
-+++ b/drivers/staging/rtl8192su/r8192U_core.c
-@@ -7675,7 +7675,7 @@ void setKey(	struct net_device *dev,
- 	if (EntryNo >= TOTAL_CAM_ENTRY)
- 		RT_TRACE(COMP_ERR, "cam entry exceeds in setKey()\n");
- 
--	RT_TRACE(COMP_SEC, "====>to setKey(), dev:%p, EntryNo:%d, KeyIndex:%d, KeyType:%d, MacAddr"MAC_FMT"\n", dev,EntryNo, KeyIndex, KeyType, MAC_ARG(MacAddr));
-+	RT_TRACE(COMP_SEC, "====>to setKey(), dev:%p, EntryNo:%d, KeyIndex:%d, KeyType:%d, MacAddr%pM\n", dev,EntryNo, KeyIndex, KeyType, MacAddr);
- 
- 	if (DefaultKey)
- 		usConfig |= BIT15 | (KeyType<<2);
-diff --git a/drivers/staging/rtl8192su/r8192U_dm.c b/drivers/staging/rtl8192su/r8192U_dm.c
-index 5358ae8..8b9eb7e 100644
---- a/drivers/staging/rtl8192su/r8192U_dm.c
-+++ b/drivers/staging/rtl8192su/r8192U_dm.c
-@@ -2697,7 +2697,7 @@ static void dm_check_edca_turbo(
- 		u8* peername[11] = {"unknown", "realtek", "realtek_92se", "broadcom", "ralink", "atheros", "cisco", "marvell", "92u_softap", "self_softap"};
- 		static int wb_tmp = 0;
- 		if (wb_tmp == 0){
--			printk("%s():iot peer is %#x:%s, bssid:"MAC_FMT"\n",__FUNCTION__,pHTInfo->IOTPeer,peername[pHTInfo->IOTPeer], MAC_ARG(priv->ieee80211->current_network.bssid));
-+			printk("%s():iot peer is %#x:%s, bssid:%pM\n",__FUNCTION__,pHTInfo->IOTPeer,peername[pHTInfo->IOTPeer], priv->ieee80211->current_network.bssid);
- 			wb_tmp = 1;
- 		}
- 	}
-diff --git a/drivers/staging/rtl8192u/ieee80211.h b/drivers/staging/rtl8192u/ieee80211.h
-index 3a47f12..9d05ed6 100644
---- a/drivers/staging/rtl8192u/ieee80211.h
-+++ b/drivers/staging/rtl8192u/ieee80211.h
-@@ -551,9 +551,6 @@ do { if (ieee80211_debug_level & (level)) \
- 
- /* debug macros not dependent on CONFIG_IEEE80211_DEBUG */
- 
--#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
--#define MAC_ARG(x) ((u8*)(x))[0],((u8*)(x))[1],((u8*)(x))[2],((u8*)(x))[3],((u8*)(x))[4],((u8*)(x))[5]
--
- /*
-  * To use the debug system;
-  *
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211.h b/drivers/staging/rtl8192u/ieee80211/ieee80211.h
-index 10908e1..3cda38b 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211.h
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211.h
-@@ -551,9 +551,6 @@ do { if (ieee80211_debug_level & (level)) \
- 
- /* debug macros not dependent on CONFIG_IEEE80211_DEBUG */
- 
--#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
--#define MAC_ARG(x) ((u8*)(x))[0],((u8*)(x))[1],((u8*)(x))[2],((u8*)(x))[3],((u8*)(x))[4],((u8*)(x))[5]
--
- /*
-  * To use the debug system;
-  *
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_ccmp.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_ccmp.c
-index 0b33bf4..0b57632 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_ccmp.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_ccmp.c
-@@ -288,7 +288,7 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (!(keyidx & (1 << 5))) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "CCMP: received packet without ExtIV"
--			       " flag from " MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       " flag from %pM\n", hdr->addr2);
- 		}
- 		key->dot11RSNAStatsCCMPFormatErrors++;
- 		return -2;
-@@ -301,9 +301,9 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	}
- 	if (!key->key_set) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "CCMP: received packet from " MAC_FMT
-+			printk(KERN_DEBUG "CCMP: received packet from %pM"
- 			       " with keyid=%d that does not have a configured"
--			       " key\n", MAC_ARG(hdr->addr2), keyidx);
-+			       " key\n", hdr->addr2, keyidx);
- 		}
- 		return -3;
- 	}
-@@ -318,11 +318,9 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 
- 	if (memcmp(pn, key->rx_pn, CCMP_PN_LEN) <= 0) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "CCMP: replay detected: STA=" MAC_FMT
--			       " previous PN %02x%02x%02x%02x%02x%02x "
--			       "received PN %02x%02x%02x%02x%02x%02x\n",
--			       MAC_ARG(hdr->addr2), MAC_ARG(key->rx_pn),
--			       MAC_ARG(pn));
-+			printk(KERN_DEBUG "CCMP: replay detected: STA=%pM"
-+			       " previous PN %pm received PN %pm\n",
-+			       hdr->addr2, key->rx_pn, pn);
- 		}
- 		key->dot11RSNAStatsCCMPReplays++;
- 		return -4;
-@@ -359,7 +357,7 @@ static int ieee80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (memcmp(mic, a, CCMP_MIC_LEN) != 0) {
- 			if (net_ratelimit()) {
- 				printk(KERN_DEBUG "CCMP: decrypt failed: STA="
--				MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+				"%pM\n", hdr->addr2);
- 			}
- 			key->dot11RSNAStatsCCMPDecryptErrors++;
- 			return -5;
-@@ -435,11 +433,10 @@ static char * ieee80211_ccmp_print_stats(char *p, void *priv)
- {
- 	struct ieee80211_ccmp_data *ccmp = priv;
- 	p += sprintf(p, "key[%d] alg=CCMP key_set=%d "
--		     "tx_pn=%02x%02x%02x%02x%02x%02x "
--		     "rx_pn=%02x%02x%02x%02x%02x%02x "
-+		     "tx_pn=%pm rx_pn=%pm "
- 		     "format_errors=%d replays=%d decrypt_errors=%d\n",
- 		     ccmp->key_idx, ccmp->key_set,
--		     MAC_ARG(ccmp->tx_pn), MAC_ARG(ccmp->rx_pn),
-+		     ccmp->tx_pn, ccmp->rx_pn,
- 		     ccmp->dot11RSNAStatsCCMPFormatErrors,
- 		     ccmp->dot11RSNAStatsCCMPReplays,
- 		     ccmp->dot11RSNAStatsCCMPDecryptErrors);
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c
-index 841b999..9510507 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c
-@@ -410,7 +410,7 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	if (!(keyidx & (1 << 5))) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "TKIP: received packet without ExtIV"
--			       " flag from " MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+			       " flag from %pM\n", hdr->addr2);
- 		}
- 		return -2;
- 	}
-@@ -422,9 +422,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 	}
- 	if (!tkey->key_set) {
- 		if (net_ratelimit()) {
--			printk(KERN_DEBUG "TKIP: received packet from " MAC_FMT
-+			printk(KERN_DEBUG "TKIP: received packet from %pM"
- 			       " with keyid=%d that does not have a configured"
--			       " key\n", MAC_ARG(hdr->addr2), keyidx);
-+			       " key\n", hdr->addr2, keyidx);
- 		}
- 		return -3;
- 	}
-@@ -437,9 +437,9 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (iv32 < tkey->rx_iv32 ||
- 		(iv32 == tkey->rx_iv32 && iv16 <= tkey->rx_iv16)) {
- 			if (net_ratelimit()) {
--				printk(KERN_DEBUG "TKIP: replay detected: STA=" MAC_FMT
-+				printk(KERN_DEBUG "TKIP: replay detected: STA=%pM"
- 				" previous TSC %08x%04x received TSC "
--				"%08x%04x\n", MAC_ARG(hdr->addr2),
-+				"%08x%04x\n", hdr->addr2,
- 				tkey->rx_iv32, tkey->rx_iv16, iv32, iv16);
- 			}
- 			tkey->dot11RSNAStatsTKIPReplays++;
-@@ -460,8 +460,8 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 		if (crypto_blkcipher_decrypt(&desc, &sg, &sg, plen + 4)) {
- 			if (net_ratelimit()) {
- 				printk(KERN_DEBUG ": TKIP: failed to decrypt "
--						"received packet from " MAC_FMT "\n",
--						MAC_ARG(hdr->addr2));
-+						"received packet from %pM\n",
-+						hdr->addr2);
- 			}
- 			return -7;
- 		}
-@@ -480,7 +480,7 @@ static int ieee80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 			}
- 			if (net_ratelimit()) {
- 				printk(KERN_DEBUG "TKIP: ICV error detected: STA="
--				MAC_FMT "\n", MAC_ARG(hdr->addr2));
-+				"%pM\n", hdr->addr2);
- 			}
- 			tkey->dot11RSNAStatsTKIPICVErrors++;
- 			return -5;
-@@ -635,8 +635,8 @@ static int ieee80211_michael_mic_verify(struct sk_buff *skb, int keyidx,
- 		struct ieee80211_hdr_4addr *hdr;
- 		hdr = (struct ieee80211_hdr_4addr *) skb->data;
- 		printk(KERN_DEBUG "%s: Michael MIC verification failed for "
--		       "MSDU from " MAC_FMT " keyidx=%d\n",
--		       skb->dev ? skb->dev->name : "N/A", MAC_ARG(hdr->addr2),
-+		       "MSDU from %pM keyidx=%d\n",
-+		       skb->dev ? skb->dev->name : "N/A", hdr->addr2,
- 		       keyidx);
- 		if (skb->dev)
- 			ieee80211_michael_mic_failure(skb->dev, hdr, keyidx);
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c
-index 0e003c5..7e9b367 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c
-@@ -360,8 +360,8 @@ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
- 	    strcmp(crypt->ops->name, "TKIP") == 0) {
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
--			       "received packet from " MAC_FMT "\n",
--			       ieee->dev->name, MAC_ARG(hdr->addr2));
-+			       "received packet from %pM\n",
-+			       ieee->dev->name, hdr->addr2);
- 		}
- 		return -1;
- 	}
-@@ -372,8 +372,8 @@ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
- 	atomic_dec(&crypt->refcnt);
- 	if (res < 0) {
- 		IEEE80211_DEBUG_DROP(
--			"decryption failed (SA=" MAC_FMT
--			") res=%d\n", MAC_ARG(hdr->addr2), res);
-+			"decryption failed (SA=%pM"
-+			") res=%d\n", hdr->addr2, res);
- 		if (res == -2)
- 			IEEE80211_DEBUG_DROP("Decryption failed ICV "
- 					     "mismatch (key %d)\n",
-@@ -410,8 +410,8 @@ ieee80211_rx_frame_decrypt_msdu(struct ieee80211_device* ieee, struct sk_buff *s
- 	atomic_dec(&crypt->refcnt);
- 	if (res < 0) {
- 		printk(KERN_DEBUG "%s: MSDU decryption/MIC verification failed"
--		       " (SA=" MAC_FMT " keyidx=%d)\n",
--		       ieee->dev->name, MAC_ARG(hdr->addr2), keyidx);
-+		       " (SA=%pM keyidx=%d)\n",
-+		       ieee->dev->name, hdr->addr2, keyidx);
- 		return -1;
- 	}
- 
-@@ -1016,8 +1016,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 			 * frames silently instead of filling system log with
- 			 * these reports. */
- 			IEEE80211_DEBUG_DROP("Decryption failed (not set)"
--					     " (SA=" MAC_FMT ")\n",
--					     MAC_ARG(hdr->addr2));
-+					     " (SA=%pM)\n",
-+					     hdr->addr2);
- 			ieee->ieee_stats.rx_discards_undecryptable++;
- 			goto rx_dropped;
- 		}
-@@ -1256,8 +1256,8 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 		} else {
- 			IEEE80211_DEBUG_DROP(
- 				"encryption configured, but RX "
--				"frame not encrypted (SA=" MAC_FMT ")\n",
--				MAC_ARG(hdr->addr2));
-+				"frame not encrypted (SA=%pM)\n",
-+				hdr->addr2);
- 			goto rx_dropped;
- 		}
- 	}
-@@ -1276,9 +1276,9 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 	    !ieee80211_is_eapol_frame(ieee, skb, hdrlen)) {
- 		IEEE80211_DEBUG_DROP(
- 			"dropped unencrypted RX data "
--			"frame from " MAC_FMT
-+			"frame from %pM"
- 			" (drop_unencrypted=1)\n",
--			MAC_ARG(hdr->addr2));
-+			hdr->addr2);
- 		goto rx_dropped;
- 	}
- /*
-@@ -2260,11 +2260,11 @@ static inline int ieee80211_network_init(
- 	}
- 
- 	if (network->mode == 0) {
--		IEEE80211_DEBUG_SCAN("Filtered out '%s (" MAC_FMT ")' "
-+		IEEE80211_DEBUG_SCAN("Filtered out '%s (%pM)' "
- 				     "network.\n",
- 				     escape_essid(network->ssid,
- 						  network->ssid_len),
--				     MAC_ARG(network->bssid));
-+				     network->bssid);
- 		return 1;
- 	}
- 
-@@ -2439,9 +2439,9 @@ static inline void ieee80211_process_probe_response(
- 
- 	memset(&network, 0, sizeof(struct ieee80211_network));
- 	IEEE80211_DEBUG_SCAN(
--		"'%s' (" MAC_FMT "): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
-+		"'%s' (%pM): %c%c%c%c %c%c%c%c-%c%c%c%c %c%c%c%c\n",
- 		escape_essid(info_element->data, info_element->len),
--		MAC_ARG(beacon->header.addr3),
-+		beacon->header.addr3,
- 		(beacon->capability & (1<<0xf)) ? '1' : '0',
- 		(beacon->capability & (1<<0xe)) ? '1' : '0',
- 		(beacon->capability & (1<<0xd)) ? '1' : '0',
-@@ -2460,10 +2460,10 @@ static inline void ieee80211_process_probe_response(
- 		(beacon->capability & (1<<0x0)) ? '1' : '0');
- 
- 	if (ieee80211_network_init(ieee, beacon, &network, stats)) {
--		IEEE80211_DEBUG_SCAN("Dropped '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Dropped '%s' (%pM) via %s.\n",
- 				     escape_essid(info_element->data,
- 						  info_element->len),
--				     MAC_ARG(beacon->header.addr3),
-+				     beacon->header.addr3,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-@@ -2574,11 +2574,11 @@ static inline void ieee80211_process_probe_response(
- 			/* If there are no more slots, expire the oldest */
- 			list_del(&oldest->list);
- 			target = oldest;
--			IEEE80211_DEBUG_SCAN("Expired '%s' (" MAC_FMT ") from "
-+			IEEE80211_DEBUG_SCAN("Expired '%s' (%pM) from "
- 					     "network list.\n",
- 					     escape_essid(target->ssid,
- 							  target->ssid_len),
--					     MAC_ARG(target->bssid));
-+					     target->bssid);
- 		} else {
- 			/* Otherwise just pull from the free list */
- 			target = list_entry(ieee->network_free_list.next,
-@@ -2588,10 +2588,10 @@ static inline void ieee80211_process_probe_response(
- 
- 
- #ifdef CONFIG_IEEE80211_DEBUG
--		IEEE80211_DEBUG_SCAN("Adding '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Adding '%s' (%pM) via %s.\n",
- 				     escape_essid(network.ssid,
- 						  network.ssid_len),
--				     MAC_ARG(network.bssid),
-+				     network.bssid,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-@@ -2601,10 +2601,10 @@ static inline void ieee80211_process_probe_response(
- 		if(ieee->softmac_features & IEEE_SOFTMAC_ASSOCIATE)
- 			ieee80211_softmac_new_net(ieee,&network);
- 	} else {
--		IEEE80211_DEBUG_SCAN("Updating '%s' (" MAC_FMT ") via %s.\n",
-+		IEEE80211_DEBUG_SCAN("Updating '%s' (%pM) via %s.\n",
- 				     escape_essid(target->ssid,
- 						  target->ssid_len),
--				     MAC_ARG(target->bssid),
-+				     target->bssid,
- 				     WLAN_FC_GET_STYPE(beacon->header.frame_ctl) ==
- 				     IEEE80211_STYPE_PROBE_RESP ?
- 				     "PROBE RESPONSE" : "BEACON");
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_softmac.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_softmac.c
-index 8a86e93..27d9257 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_softmac.c
-@@ -1731,7 +1731,7 @@ ieee80211_rx_assoc_rq(struct ieee80211_device *ieee, struct sk_buff *skb)
- 		ieee80211_resp_to_assoc_rq(ieee, dest);
- 	}
- 
--	printk(KERN_INFO"New client associated: "MAC_FMT"\n", MAC_ARG(dest));
-+	printk(KERN_INFO"New client associated: %pM\n", dest);
- 	//FIXME
- }
- 
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_tx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_tx.c
-index b29c36b..48537d9 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_tx.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_tx.c
-@@ -200,8 +200,8 @@ int ieee80211_encrypt_fragment(
- 		header = (struct ieee80211_hdr *) frag->data;
- 		if (net_ratelimit()) {
- 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
--			       "TX packet to " MAC_FMT "\n",
--			       ieee->dev->name, MAC_ARG(header->addr1));
-+			       "TX packet to %pM\n",
-+			       ieee->dev->name, header->addr1);
- 		}
- 		return -1;
- 	}
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-index d397f1d..f514b31 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_wx.c
-@@ -289,10 +289,10 @@ int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
- 		else
- 			IEEE80211_DEBUG_SCAN(
- 				"Not showing network '%s ("
--				MAC_FMT ")' due to age (%lums).\n",
-+				"%pM)' due to age (%lums).\n",
- 				escape_essid(network->ssid,
- 					     network->ssid_len),
--				MAC_ARG(network->bssid),
-+				network->bssid,
- 				(jiffies - network->last_scanned) / (HZ / 100));
- 	}
- 
-diff --git a/drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c b/drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c
-index 26af43b..6e81cbd 100644
---- a/drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c
-+++ b/drivers/staging/rtl8192u/ieee80211/rtl819x_BAProc.c
-@@ -113,7 +113,7 @@ static struct sk_buff* ieee80211_ADDBA(struct ieee80211_device* ieee, u8* Dst, P
- 	u16 tmp = 0;
- 	u16 len = ieee->tx_headroom + 9;
- 	//category(1) + action field(1) + Dialog Token(1) + BA Parameter Set(2) +  BA Timeout Value(2) +  BA Start SeqCtrl(2)(or StatusCode(2))
--	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), frame(%d) sentd to:"MAC_FMT", ieee->dev:%p\n", __FUNCTION__, type, MAC_ARG(Dst), ieee->dev);
-+	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), frame(%d) sentd to:%pM, ieee->dev:%p\n", __FUNCTION__, type, Dst, ieee->dev);
- 	if (pBA == NULL||ieee == NULL)
- 	{
- 		IEEE80211_DEBUG(IEEE80211_DL_ERR, "pBA(%p) is NULL or ieee(%p) is NULL\n", pBA, ieee);
-@@ -201,7 +201,7 @@ static struct sk_buff* ieee80211_DELBA(
- 	u16 len = 6 + ieee->tx_headroom;
- 
- 	if (net_ratelimit())
--	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), ReasonCode(%d) sentd to:"MAC_FMT"\n", __FUNCTION__, ReasonCode, MAC_ARG(dst));
-+	IEEE80211_DEBUG(IEEE80211_DL_TRACE | IEEE80211_DL_BA, "========>%s(), ReasonCode(%d) sentd to:%pM\n", __FUNCTION__, ReasonCode, dst);
- 
- 	memset(&DelbaParamSet, 0, 2);
- 
-@@ -355,7 +355,7 @@ int ieee80211_rx_ADDBAReq( struct ieee80211_device* ieee, struct sk_buff *skb)
- 	pBaTimeoutVal = (u16*)(tag + 5);
- 	pBaStartSeqCtrl = (PSEQUENCE_CONTROL)(req + 7);
- 
--	printk("====================>rx ADDBAREQ from :"MAC_FMT"\n", MAC_ARG(dst));
-+	printk("====================>rx ADDBAREQ from :%pM\n", dst);
- //some other capability is not ready now.
- 	if(	(ieee->current_network.qos_data.active == 0) ||
- 		(ieee->pHTInfo->bCurrentHTSupport == false)) //||
-diff --git a/drivers/staging/rtl8192u/ieee80211/rtl819x_TSProc.c b/drivers/staging/rtl8192u/ieee80211/rtl819x_TSProc.c
-index 5373d56..d1275e8 100644
---- a/drivers/staging/rtl8192u/ieee80211/rtl819x_TSProc.c
-+++ b/drivers/staging/rtl8192u/ieee80211/rtl819x_TSProc.c
-@@ -290,7 +290,7 @@ PTS_COMMON_INFO SearchAdmitTRStream(struct ieee80211_device *ieee, u8*	Addr, u8
- 		if(search_dir[dir] ==false )
- 			continue;
- 		list_for_each_entry(pRet, psearch_list, List){
--	//		IEEE80211_DEBUG(IEEE80211_DL_TS, "ADD:"MAC_FMT", TID:%d, dir:%d\n", MAC_ARG(pRet->Addr), pRet->TSpec.f.TSInfo.field.ucTSID, pRet->TSpec.f.TSInfo.field.ucDirection);
-+	//		IEEE80211_DEBUG(IEEE80211_DL_TS, "ADD:%pM, TID:%d, dir:%d\n", pRet->Addr, pRet->TSpec.f.TSInfo.field.ucTSID, pRet->TSpec.f.TSInfo.field.ucDirection);
- 			if (memcmp(pRet->Addr, Addr, 6) == 0)
- 				if (pRet->TSpec.f.TSInfo.field.ucTSID == TID)
- 					if(pRet->TSpec.f.TSInfo.field.ucDirection == dir)
-@@ -445,7 +445,7 @@ bool GetTs(
- 					ResetRxTsEntry(tmp);
- 				}
- 
--				IEEE80211_DEBUG(IEEE80211_DL_TS, "to init current TS, UP:%d, Dir:%d, addr:"MAC_FMT"\n", UP, Dir, MAC_ARG(Addr));
-+				IEEE80211_DEBUG(IEEE80211_DL_TS, "to init current TS, UP:%d, Dir:%d, addr:%pM\n", UP, Dir, Addr);
- 				// Prepare TS Info releated field
- 				pTSInfo->field.ucTrafficType = 0;			// Traffic type: WMM is reserved in this field
- 				pTSInfo->field.ucTSID = UP;			// TSID
-@@ -531,7 +531,7 @@ void RemoveTsEntry(
- void RemovePeerTS(struct ieee80211_device* ieee, u8* Addr)
- {
- 	PTS_COMMON_INFO	pTS, pTmpTS;
--	printk("===========>RemovePeerTS,"MAC_FMT"\n", MAC_ARG(Addr));
-+	printk("===========>RemovePeerTS,%pM\n", Addr);
- 	list_for_each_entry_safe(pTS, pTmpTS, &ieee->Tx_TS_Pending_List, List)
- 	{
- 		if (memcmp(pTS->Addr, Addr, 6) == 0)
-diff --git a/drivers/staging/rtl8192u/r8192U_core.c b/drivers/staging/rtl8192u/r8192U_core.c
-index adade13..5afc737 100644
---- a/drivers/staging/rtl8192u/r8192U_core.c
-+++ b/drivers/staging/rtl8192u/r8192U_core.c
-@@ -2976,7 +2976,7 @@ static void rtl8192_read_eeprom_info(struct net_device* dev)
- 		memcpy(dev->dev_addr, bMac_Tmp_Addr, 6);
- 		//should I set IDR0 here?
- 	}
--	RT_TRACE(COMP_EPROM, "MAC addr:"MAC_FMT"\n", MAC_ARG(dev->dev_addr));
-+	RT_TRACE(COMP_EPROM, "MAC addr:%pM\n", dev->dev_addr);
- 	priv->rf_type = RTL819X_DEFAULT_RF_TYPE; //default 1T2R
- 	priv->rf_chip = RF_8256;
- 
-@@ -6037,7 +6037,7 @@ void setKey(	struct net_device *dev,
- 	if (EntryNo >= TOTAL_CAM_ENTRY)
- 		RT_TRACE(COMP_ERR, "cam entry exceeds in setKey()\n");
- 
--	RT_TRACE(COMP_SEC, "====>to setKey(), dev:%p, EntryNo:%d, KeyIndex:%d, KeyType:%d, MacAddr"MAC_FMT"\n", dev,EntryNo, KeyIndex, KeyType, MAC_ARG(MacAddr));
-+	RT_TRACE(COMP_SEC, "====>to setKey(), dev:%p, EntryNo:%d, KeyIndex:%d, KeyType:%d, MacAddr%pM\n", dev,EntryNo, KeyIndex, KeyType, MacAddr);
- 
- 	if (DefaultKey)
- 		usConfig |= BIT15 | (KeyType<<2);
+> 
+> 
+> On Sun, 6 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > While the current settings are probably unsafe (like enabling PCI
+> > devices to be suspended asynchronously by default if there are not
+> > any direct dependences between them), there are provisions to make
+> > eveything safe, if we have enough information (which also is needed
+> > to put the required logic into the drivers).
+> 
+> I disagree.
+> 
+> Think of a situation that we already handle pretty poorly: USB mass 
+> storage devices over a suspend/resume.
+> 
+> > The device tree represents a good deal of the dependences
+> > between devices and the other dependences may be represented as PM
+> > links enforcing specific ordering of the PM callbacks.
+> 
+> The device tree means nothing at all, because it may need to be
+> entirely rebuilt at resume time. 
 
 
+btw I instrumented both the suspend and resume, and made graphs out of
+it for my laptop (modern laptop with Intel cpu/wifi/graphics of course).
+
+http://www.fenrus.org/graphs/suspend.svg
+http://www.fenrus.org/graphs/resume.svg
+
+(also attached for convenience)
+
+the resume clearly shows that all this talking about PCI stuff is
+completely without practical merit.. it's the USB stuff where the time
+is spent.
+
+in suspend, there's a PCI device (:1b) that does take some time, which
+is the audio controller. The bulk of the time is in the serio driver
+though..
+
+
+As an "interested bystander" to this thread.... sounds like Linus'
+arguments have merit, and that solving the USB resume to go async in
+some form will fix pretty much all we want solving...
+
+[and that at least we need to do this stuff data/measurement driven,
+and not just based on how we THINK things work]
+
+
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
+
+--MP_/Z3T4fpKJS1mast=qfqs523h
+Content-Type: image/svg+xml-compressed
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=suspend.svgz
+
+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
+
+--MP_/Z3T4fpKJS1mast=qfqs523h
+Content-Type: image/svg+xml-compressed
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=resume.svgz
+
+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
+AAA=
+
+--MP_/Z3T4fpKJS1mast=qfqs523h--
