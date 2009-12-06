@@ -1,85 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932559AbZLFJZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbZLFJah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932559AbZLFJZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 04:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbZLFJZW
+	id S932393AbZLFJah (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 04:30:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbZLFJac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 04:25:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50398 "EHLO hera.kernel.org"
+	Sun, 6 Dec 2009 04:30:32 -0500
+Received: from toro.web-alm.net ([62.245.132.31]:46286 "EHLO toro.web-alm.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755841AbZLFJZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 04:25:21 -0500
-Date: Sun, 6 Dec 2009 09:24:44 GMT
-From: tip-bot for Julia Lawall <julia@diku.dk>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       julia@diku.dk, hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, julia@diku.dk, paulus@samba.org,
-       acme@redhat.com, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
-References: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf tools: Correct size computation in tracepoint_id_to_path()
-Message-ID: <tip-59b4caeb797494043f5f3b98a610f5d9b75eefa3@git.kernel.org>
-Git-Commit-ID: 59b4caeb797494043f5f3b98a610f5d9b75eefa3
-X-Mailer: tip-git-log-daemon
+	id S1756164AbZLFJaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 04:30:30 -0500
+Message-ID: <4B1B785E.8010501@osadl.org>
+Date: Sun, 06 Dec 2009 10:24:46 +0100
+From: Carsten Emde <Carsten.Emde@osadl.org>
+Organization: Open Source Automation Development Lab (OSADL) eG
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Olof Johansson <olof@lixom.net>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/urgent] tracing: Fix trace_marker output
+References: <4B01AE5D.1010801@osadl.org> <tip-c13d2f7c3231e873f30db92b96c8caa48f100f33@git.kernel.org> <20091206051352.GA4628@lixom.net>
+In-Reply-To: <20091206051352.GA4628@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  59b4caeb797494043f5f3b98a610f5d9b75eefa3
-Gitweb:     http://git.kernel.org/tip/59b4caeb797494043f5f3b98a610f5d9b75eefa3
-Author:     Julia Lawall <julia@diku.dk>
-AuthorDate: Sun, 6 Dec 2009 10:16:30 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 6 Dec 2009 10:21:59 +0100
+Olof,
 
-perf tools: Correct size computation in tracepoint_id_to_path()
+> On Sun, Nov 22, 2009 at 10:24:48AM +0000, tip-bot for Carsten Emde wrote:
+>> Commit-ID:  c13d2f7c3231e873f30db92b96c8caa48f100f33
+>> Gitweb:     http://git.kernel.org/tip/c13d2f7c3231e873f30db92b96c8caa48f100f33
+>> Author:     Carsten Emde<Carsten.Emde@osadl.org>
+>> AuthorDate: Mon, 16 Nov 2009 20:56:13 +0100
+>> Committer:  Steven Rostedt<rostedt@goodmis.org>
+>> CommitDate: Tue, 17 Nov 2009 09:19:06 -0500
+>> tracing: Fix trace_marker output
+>> When a string was written to<debugfs>/tracing/trace_marker, some
+>> strange characters appeared in the trace output instead of the
+>> string, since a vprint function erroneously called a vararg print
+>> function with a va_list argument. This patch fixes the problem and
+>> simplifies the related code.
+>
+> [...]
+>
+>> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+>> index 03c7fd5..12b49ca 100644
+>> --- a/kernel/trace/trace.c
+>> +++ b/kernel/trace/trace.c
+>> @@ -1361,10 +1361,11 @@ int trace_array_vprintk(struct trace_array *tr,
+>>   	pause_graph_tracing();
+>>   	raw_local_irq_save(irq_flags);
+>>   	__raw_spin_lock(&trace_buf_lock);
+>> -	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+>> -
+>> -	len = min(len, TRACE_BUF_SIZE-1);
+>> -	trace_buf[len] = 0;
+>> +	if (args == NULL) {
+>> +		strncpy(trace_buf, fmt, TRACE_BUF_SIZE);
+>> +		len = strlen(trace_buf);
+>> +	} else
+>> +		len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+> Comparing a va_list with NULL is bogus. It's supposed to be treated like
+> an opaque type and only be manipulated with va_* accessors.
+>
+> I wouldn't really care much, but it broke builds on some ARM platforms:
+>
+> kernel/trace/trace.c: In function 'trace_array_vprintk':
+> kernel/trace/trace.c:1364: error: invalid operands to binary == (have 'va_list' and 'void *')
+> kernel/trace/trace.c: In function 'tracing_mark_write':
+> kernel/trace/trace.c:3349: error: incompatible type for argument 3 of 'trace_vprintk'
+Oops, sorry. Didn't know that the gcc warn/error level is so much 
+different across platforms.
 
-The size argument to zalloc should be the size of desired
-structure, not the pointer to it.
+>[..]
+> Oh, and I haven't had a chance to actually test and make sure it does
+> what is expected, since I don't have a testcase for it.
+The testcase is:
+# cd /sys/kernel/debug/tracing/
+[root@deliv1 tracing]# echo "I am a marker" >trace_marker
+[root@deliv1 tracing]# tail -1 trace
+             bash-6347  [002] 303160.793532: 0: I am a marker
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+> +	ret = trace_vprintk(ip, "%s", ap);
+This prevents the '%' character to be used in an output string. If used, 
+it may horribly crash the kernel.
 
-// <smpl>
-@expression@
-expression *x;
-@@
+I'll investigate the situation further and try to come back with a 
+better solution.
 
-x =
- <+...
--sizeof(x)
-+sizeof(*x)
-...+>// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/util/parse-events.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 9e5dbd6..448a13b 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -197,7 +197,7 @@ struct tracepoint_path *tracepoint_id_to_path(u64 config)
- 			if (id == config) {
- 				closedir(evt_dir);
- 				closedir(sys_dir);
--				path = zalloc(sizeof(path));
-+				path = zalloc(sizeof(*path));
- 				path->system = malloc(MAX_EVENT_LENGTH);
- 				if (!path->system) {
- 					free(path);
+	Carsten.
