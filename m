@@ -1,142 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbZLFUdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934138AbZLFUgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757897AbZLFUdn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 15:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757766AbZLFUdl
+	id S934138AbZLFUgk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 15:36:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbZLFUgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 15:33:41 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44763 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757607AbZLFUdk convert rfc822-to-8bit (ORCPT
+	Sun, 6 Dec 2009 15:36:37 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:48235 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757539AbZLFUgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 15:33:40 -0500
-Date: Sun, 6 Dec 2009 12:35:52 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+	Sun, 6 Dec 2009 15:36:37 -0500
+Date: Sun, 6 Dec 2009 15:36:40 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH] suspend: add initcall_debug style timing for suspend/resume
-Message-ID: <20091206123552.7be316b2@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <20091206113555.5a646713@infradead.org>
+Message-ID: <Pine.LNX.4.44L0.0912061534120.7903-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 6 Dec 2009, Arjan van de Ven wrote:
 
->From fcd52b97aa02f19baa570e4a62dfdfab0faed976 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 6 Dec 2009 12:32:28 -0800
-Subject: [PATCH] suspend: add initcall_debug style timing for suspend/resume
+> btw I instrumented both the suspend and resume, and made graphs out of
+> it for my laptop (modern laptop with Intel cpu/wifi/graphics of course).
+> 
+> http://www.fenrus.org/graphs/suspend.svg
+> http://www.fenrus.org/graphs/resume.svg
+> 
+> (also attached for convenience)
+> 
+> the resume clearly shows that all this talking about PCI stuff is
+> completely without practical merit.. it's the USB stuff where the time
+> is spent.
 
-In order to diagnose overall suspend/resume times, we need
-basic instrumentation to break down the total time into per
-device timing, similar to initcall_debug.
+Arjan, can you try testing the USB timings again with the patch below 
+(for vanilla 2.6.32)?
 
-This patch adds the basic timing instrumentation, needed
-for a scritps/bootgraph.pl equivalent or humans.
-The bootgraph.pl program is still a work in progress, but
-is far enough along to know that this patch is sufficient.
+Fair warning: I just composed this and haven't tried it out myself.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/base/power/main.c |   29 +++++++++++++++++++++++++++++
- include/linux/init.h      |    2 ++
- 2 files changed, 31 insertions(+), 0 deletions(-)
+Thanks,
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 8aa2443..2ad345c 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -25,6 +25,7 @@
- #include <linux/resume-trace.h>
- #include <linux/rwsem.h>
- #include <linux/interrupt.h>
-+#include <linux/sched.h>
+Alan Stern
+
+
+
+Index: 2.6.32/drivers/usb/core/driver.c
+===================================================================
+--- 2.6.32.orig/drivers/usb/core/driver.c
++++ 2.6.32/drivers/usb/core/driver.c
+@@ -1313,8 +1313,9 @@ static int usb_resume_both(struct usb_de
+ 			 * then we're stuck. */
+ 			status = usb_resume_device(udev, msg);
+ 		}
+-	} else if (udev->reset_resume)
++	} else {
+ 		status = usb_resume_device(udev, msg);
++	}
  
- #include "../base.h"
- #include "power.h"
-@@ -172,6 +173,12 @@ static int pm_op(struct device *dev,
- 		 pm_message_t state)
+ 	if (status == 0 && udev->actconfig) {
+ 		for (i = 0; i < udev->actconfig->desc.bNumInterfaces; i++) {
+Index: 2.6.32/drivers/usb/core/hub.c
+===================================================================
+--- 2.6.32.orig/drivers/usb/core/hub.c
++++ 2.6.32/drivers/usb/core/hub.c
+@@ -1674,7 +1674,7 @@ static int usb_configure_device_otg(stru
+ 		 * (Includes HNP test device.)
+ 		 */
+ 		if (udev->bus->b_hnp_enable || udev->bus->is_b_host) {
+-			err = usb_port_suspend(udev, PMSG_SUSPEND);
++			err = usb_port_suspend(udev, PMSG_AUTO_SUSPEND);
+ 			if (err < 0)
+ 				dev_dbg(&udev->dev, "HNP fail, %d\n", err);
+ 		}
+@@ -2060,6 +2060,7 @@ static int check_port_resume_type(struct
+ /*
+  * usb_port_suspend - suspend a usb device's upstream port
+  * @udev: device that's no longer in active use, not a root hub
++ * @msg: Power Management message describing this state transition
+  * Context: must be able to sleep; device not locked; pm locks held
+  *
+  * Suspends a USB device that isn't in active use, conserving power.
+@@ -2107,7 +2108,7 @@ int usb_port_suspend(struct usb_device *
  {
- 	int error = 0;
-+	ktime_t calltime, delta, rettime;
-+
-+	if (initcall_debug) {
-+		printk("calling  %s+ @ %i\n", dev_name(dev), task_pid_nr(current));
-+		calltime = ktime_get();
-+	}
+ 	struct usb_hub	*hub = hdev_to_hub(udev->parent);
+ 	int		port1 = udev->portnum;
+-	int		status;
++	int		status = 0;
  
- 	switch (state.event) {
- #ifdef CONFIG_SUSPEND
-@@ -219,6 +226,14 @@ static int pm_op(struct device *dev,
- 	default:
- 		error = -EINVAL;
+ 	// dev_dbg(hub->intfdev, "suspend port %d\n", port1);
+ 
+@@ -2128,6 +2129,13 @@ int usb_port_suspend(struct usb_device *
+ 					status);
  	}
-+
-+	if (initcall_debug) {
-+		rettime = ktime_get();
-+		delta = ktime_sub(rettime, calltime);
-+		printk("initcall %s+ returned %d after %Ld usecs\n", dev_name(dev),
-+			error, (unsigned long long) ktime_to_ns(delta) >> 10);
-+	}
-+
- 	return error;
- }
  
-@@ -236,6 +251,12 @@ static int pm_noirq_op(struct device *dev,
- 			pm_message_t state)
- {
- 	int error = 0;
-+	ktime_t calltime, delta, rettime;
++	/* For system sleep transitions we don't actually need to suspend
++	 * the port.  The device will suspend itself when the entire bus
++	 * is suspended.
++	 */
++	if (!(msg.event & (PM_EVENT_USER | PM_EVENT_REMOTE | PM_EVENT_AUTO)))
++		return status;
 +
-+	if (initcall_debug) {
-+		printk("calling  %s_i+ @ %i\n", dev_name(dev), task_pid_nr(current));
-+		calltime = ktime_get();
-+	}
- 
- 	switch (state.event) {
- #ifdef CONFIG_SUSPEND
-@@ -283,6 +304,14 @@ static int pm_noirq_op(struct device *dev,
- 	default:
- 		error = -EINVAL;
- 	}
-+
-+	if (initcall_debug) {
-+		rettime = ktime_get();
-+		delta = ktime_sub(rettime, calltime);
-+		printk("initcall %s_i+ returned %d after %Ld usecs\n", dev_name(dev),
-+			error, (unsigned long long) ktime_to_ns(delta) >> 10);
-+	}
-+
- 	return error;
- }
- 
-diff --git a/include/linux/init.h b/include/linux/init.h
-index ff8bde5..ab1d31f 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -149,6 +149,8 @@ void prepare_namespace(void);
- 
- extern void (*late_time_init)(void);
- 
-+extern int initcall_debug;
-+
- #endif
-   
- #ifndef MODULE
--- 
-1.6.2.5
+ 	/* see 7.1.7.6 */
+ 	status = set_port_feature(hub->hdev, port1, USB_PORT_FEAT_SUSPEND);
+ 	if (status) {
+@@ -2231,6 +2239,7 @@ static int finish_port_resume(struct usb
+ /*
+  * usb_port_resume - re-activate a suspended usb device's upstream port
+  * @udev: device to re-activate, not a root hub
++ * @msg: Power Management message describing this state transition
+  * Context: must be able to sleep; device not locked; pm locks held
+  *
+  * This will re-activate the suspended device, increasing power usage
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
