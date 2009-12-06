@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933692AbZLFLGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933744AbZLFLkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933692AbZLFLGv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 06:06:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933659AbZLFLGu
+	id S933744AbZLFLkX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 06:40:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933716AbZLFLkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 06:06:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59322 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933305AbZLFLGt (ORCPT
+	Sun, 6 Dec 2009 06:40:23 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:54398 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933703AbZLFLkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 06:06:49 -0500
-Subject: Re: [PATCH] perf/sched: fix for getting task's execute time
-From: Peter Zijlstra <peterz@infradead.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1260097512.7818.341.camel@laptop>
-References: <4B1B8E0E.3040007@cn.fujitsu.com>
-	 <1260097512.7818.341.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 06 Dec 2009 12:06:49 +0100
-Message-ID: <1260097609.7818.349.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 6 Dec 2009 06:40:22 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] perf: Fix timechart header handling
+Date: Sun, 06 Dec 2009 20:07:29 +0900
+Message-ID: <87ljhg8ioe.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-06 at 12:05 +0100, Peter Zijlstra wrote:
-> On Sun, 2009-12-06 at 18:57 +0800, Xiao Guangrong wrote:
-> > In current code, we get task's execute time by reading
-> > "/proc/<pid>/sched" file, it's wrong if the task is created
-> > by pthread_create(), because every thread task has same pid.
-> > So, the correct way is reading "/proc/<ppid>/task/<tid>/sched"
-> > file.
-> > 
-> > This patch also remove redundant include files since <sys/types.h>
-> > is included in "perf.h"
-> 
-> We really should not be using these proc files but instead make sure
-> this information gets transferred through a tracepoint or similar.
-> 
-> Reading these proc files is too prone to races.
+Hi,
 
-We can probably get the runtime by grouping a task-clock swcounter with
-an appropriate other event.
+Update "struct trace_entry" to match with current one. And remove
+"size" field from it.
 
+If it has "size", it become cause of alignment mismatch of structure
+with kernel.
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ tools/perf/builtin-timechart.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff -puN tools/perf/builtin-timechart.c~perf-fix-timechart-header-handling tools/perf/builtin-timechart.c
+--- linux-2.6/tools/perf/builtin-timechart.c~perf-fix-timechart-header-handling	2009-12-06 19:27:33.000000000 +0900
++++ linux-2.6-hirofumi/tools/perf/builtin-timechart.c	2009-12-06 19:27:44.000000000 +0900
+@@ -302,12 +302,11 @@ process_exit_event(event_t *event)
+ }
+ 
+ struct trace_entry {
+-	u32			size;
+ 	unsigned short		type;
+ 	unsigned char		flags;
+ 	unsigned char		preempt_count;
+ 	int			pid;
+-	int			tgid;
++	int			lock_depth;
+ };
+ 
+ struct power_entry {
+@@ -489,6 +488,7 @@ process_sample_event(event_t *event)
+ 	u64 stamp = 0;
+ 	u32 cpu = 0;
+ 	u32 pid = 0;
++	u32 size, *size_ptr;
+ 	struct trace_entry *te;
+ 
+ 	if (sample_type & PERF_SAMPLE_IP)
+@@ -518,9 +518,13 @@ process_sample_event(event_t *event)
+ 	if (sample_type & PERF_SAMPLE_PERIOD)
+ 		cursor++;
+ 
+-	te = (void *)&event->sample.array[cursor];
++	size_ptr = (void *)&event->sample.array[cursor];
+ 
+-	if (sample_type & PERF_SAMPLE_RAW && te->size > 0) {
++	size = *size_ptr;
++	size_ptr++;
++
++	te = (void *)size_ptr;
++	if (sample_type & PERF_SAMPLE_RAW && size > 0) {
+ 		char *event_str;
+ 		struct power_entry *pe;
+ 
+_
+
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
