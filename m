@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbZLFUcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbZLFUcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757773AbZLFUcA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 15:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757457AbZLFUb6
+	id S1757864AbZLFUcj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 15:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757623AbZLFUci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 15:31:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:11656 "EHLO mx1.redhat.com"
+	Sun, 6 Dec 2009 15:32:38 -0500
+Received: from mail.perches.com ([173.55.12.10]:1077 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752730AbZLFUb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 15:31:58 -0500
-Message-ID: <4B1C14BD.1030202@redhat.com>
-Date: Sun, 06 Dec 2009 15:31:57 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Larry Woodman <lwoodman@redhat.com>
-Subject: Re: [PATCH 4/7] Replace page_referenced() with wipe_page_reference()
-References: <20091204173233.5891.A69D9226@jp.fujitsu.com> <20091204174253.589D.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091204174253.589D.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1757457AbZLFUch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 15:32:37 -0500
+Subject: [PATCH 1/2] drivers/net/au1000_eth.c: Remove misuse of
+ DECLARE_MAC_BUF
+From: Joe Perches <joe@perches.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 06 Dec 2009 12:32:43 -0800
+Message-ID: <1260131563.11126.124.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/04/2009 03:43 AM, KOSAKI Motohiro wrote:
->  From d9110c2804a4b88e460edada140b8bb0f7eb3a18 Mon Sep 17 00:00:00 2001
-> From: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> Date: Fri, 4 Dec 2009 11:45:18 +0900
-> Subject: [PATCH 4/7] Replace page_referenced() with wipe_page_reference()
->
-> page_referenced() imply "test the page was referenced or not", but
-> shrink_active_list() use it for drop pte young bit. then, it should be
-> renamed.
->
-> Plus, vm_flags argument is really ugly. instead, introduce new
-> struct page_reference_context, it's for collect some statistics.
->
-> This patch doesn't have any behavior change.
->
-> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
+And use a directly declared buffer.
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+It's used in a call to prom_get_ethernet_addr to
+get a 6 byte address, not a formatted output string.
 
--- 
-All rights reversed.
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
+index 1acf2c1..af271fa 100644
+--- a/drivers/net/au1000_eth.c
++++ b/drivers/net/au1000_eth.c
+@@ -1006,7 +1006,7 @@ static int __devinit au1000_probe(struct platform_device *pdev)
+ 	db_dest_t *pDB, *pDBfree;
+ 	int irq, i, err = 0;
+ 	struct resource *base, *macen;
+-	DECLARE_MAC_BUF(ethaddr);
++	char ethaddr[ETH_ALEN];
+ 
+ 	base = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!base) {
+
+
