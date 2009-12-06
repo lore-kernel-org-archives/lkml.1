@@ -1,161 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932199AbZLFPsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932872AbZLFQUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932199AbZLFPsm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 10:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZLFPsi
+	id S932872AbZLFQUI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 11:20:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932745AbZLFQUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 10:48:38 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:50125 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbZLFPsh (ORCPT
+	Sun, 6 Dec 2009 11:20:07 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:58749 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932510AbZLFQUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 10:48:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=NmGi8Sd2cFqKXxxfrYK0KXPZzHRTM9WctSMV1Ahq17iuyfTvhs5gDJnF/Fu4+iteeh
-         iiH/UdSDVWFhsw3ViF7kQtPKaiiSRASfKVr9RyyNaDhhBI5NjAWmj0nwIbtq6vxHck2r
-         RdoMjsY6gcBS/+rg5EMLOGT/WDMY+5m2pjWZw=
-MIME-Version: 1.0
-In-Reply-To: <4B1A53AE.9020707@tremplin-utc.net>
-References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>
-	 <4B055609.9030306@tremplin-utc.net>
-	 <4B1A53AE.9020707@tremplin-utc.net>
-Date: Sun, 6 Dec 2009 16:48:43 +0100
-Message-ID: <40a4ed590912060748u40b9cf3au4258a66d257d27c0@mail.gmail.com>
-Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
-From: Zeno Davatz <zdavatz@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-Cc: linux-kernel@vger.kernel.org, Zac Medico <zmedico@gentoo.org>
-Content-Type: multipart/mixed; boundary=0015174c0f188bb604047a1146dc
+	Sun, 6 Dec 2009 11:20:06 -0500
+Subject: Re: [tip:tracing/urgent] tracing: Fix event format export
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20091203145504.GA959@elte.hu>
+References: <20091113224009.GB23942@elte.hu>
+	 <tip-811cb50baf63461ce0bdb234927046131fc7fa8b@git.kernel.org>
+	 <1259851297.12870.134.camel@gandalf.stny.rr.com>
+	 <20091203145504.GA959@elte.hu>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-+lCmXfhA7XxuLRqQwpt2"
+Date: Sun, 06 Dec 2009 17:19:41 +0100
+Message-ID: <1260116381.3461.16.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0015174c0f188bb604047a1146dc
-Content-Type: text/plain; charset=ISO-8859-1
+
+--=-+lCmXfhA7XxuLRqQwpt2
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Dec 5, 2009 at 1:35 PM, =C9ric Piel <Eric.Piel@tremplin-utc.net> wr=
-ote:
-> Op 19-11-09 15:28, =C9ric Piel schreef:
->> Op 19-11-09 09:52, Zeno Davatz schreef:
->>> Hi
->>>
->>> I am looking for the Asus Eeepc Poulsbo (psb) driver in Kernel
->>> 2.6.32-rc7. When is this driver expected to make it into the kernel?
-> :
->> Hi,
->> I'd also be interested by a patch to get the psb kernel module to
->> compile with 2.6.32. If anyone has this already available, please post i=
-t!
->> Or maybe someone knows what should be done to fix this type of errors?
-> Hello,
->
-> I've just noticed that Zac Medico has written the fixes (as sed scripts)
-> for the psb driver in gentoo. Below is the patch version of his fixes.
-> It works for me :-)
+On Thu, 2009-12-03 at 15:55 +0100, Ingo Molnar wrote:
 
-compiles fine. But I still get:
+> > Any reason that this did not make it into Mainline? 2.6.32 is out, and=20
+> > Johannes Berg was depending on this for his users.
+>=20
+> Yeah, it narrowly missed the last -rc (-rc8), and we only push=20
+> post-final-rc fixes for serious show-stopper regressions.
 
-psb: Unknown symbol i2c_bit_add_bus
+You have an interesting definition of "narrowly missed":
 
-when inserting the module.
+$ git show v2.6.32-rc8
+...
+Date:   Thu Nov 19 14:32:50 2009 -0800
+...
+$ git show --pretty=3Dfuller 811cb50baf63461ce0bdb234927046131fc7fa8b
+...
+CommitDate: Fri Nov 13 22:20:34 2009 -0500
 
-And this is my Xorg.0.log- see attachment.
+And Steven's pull request for this very simple fix was from the 14th.
+That's 5 days until -rc8.
 
-Best
-Zeno
+So maybe I have a personality problem, but suck it up -- you're wrong
+this time.
 
---0015174c0f188bb604047a1146dc
-Content-Type: text/plain; charset=US-ASCII; name="Xorg.0.log"
-Content-Disposition: attachment; filename="Xorg.0.log"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g2vzkves0
+johannes
 
-ClguT3JnIFggU2VydmVyIDEuNy4xClJlbGVhc2UgRGF0ZTogMjAwOS0xMC0yMwpYIFByb3RvY29s
-IFZlcnNpb24gMTEsIFJldmlzaW9uIDAKQnVpbGQgT3BlcmF0aW5nIFN5c3RlbTogTGludXggMi42
-LjMyLXJjNyBpNjg2IApDdXJyZW50IE9wZXJhdGluZyBTeXN0ZW06IExpbnV4IHpkYXZhdHotZWVl
-cGMgMi42LjMyICMxMiBTTVAgRnJpIERlYyA0IDIwOjMyOjA0IENFVCAyMDA5IGk2ODYKS2VybmVs
-IGNvbW1hbmQgbGluZTogQk9PVF9JTUFHRT0yLjYuMzIgcm8gcm9vdD04MDMgZWxldmF0b3I9bm9v
-cApCdWlsZCBEYXRlOiAxNyBOb3ZlbWJlciAyMDA5ICAwMjowMjoxMVBNCiAKQ3VycmVudCB2ZXJz
-aW9uIG9mIHBpeG1hbjogMC4xNi4yCglCZWZvcmUgcmVwb3J0aW5nIHByb2JsZW1zLCBjaGVjayBo
-dHRwOi8vd2lraS54Lm9yZwoJdG8gbWFrZSBzdXJlIHRoYXQgeW91IGhhdmUgdGhlIGxhdGVzdCB2
-ZXJzaW9uLgpNYXJrZXJzOiAoLS0pIHByb2JlZCwgKCoqKSBmcm9tIGNvbmZpZyBmaWxlLCAoPT0p
-IGRlZmF1bHQgc2V0dGluZywKCSgrKykgZnJvbSBjb21tYW5kIGxpbmUsICghISkgbm90aWNlLCAo
-SUkpIGluZm9ybWF0aW9uYWwsCgkoV1cpIHdhcm5pbmcsIChFRSkgZXJyb3IsIChOSSkgbm90IGlt
-cGxlbWVudGVkLCAoPz8pIHVua25vd24uCig9PSkgTG9nIGZpbGU6ICIvdmFyL2xvZy9Yb3JnLjAu
-bG9nIiwgVGltZTogU3VuIERlYyAgNiAxNjo0MjozNSAyMDA5Cig9PSkgVXNpbmcgY29uZmlnIGZp
-bGU6ICIvZXRjL1gxMS94b3JnLmNvbmYiCig9PSkgU2VydmVyTGF5b3V0ICJYLm9yZyBDb25maWd1
-cmVkIgooKiopIHwtLT5TY3JlZW4gIlNjcmVlbjAiICgwKQooKiopIHwgICB8LS0+TW9uaXRvciAi
-TW9uaXRvcjAiCigqKikgfCAgIHwtLT5EZXZpY2UgIkNhcmQwIgooKiopIHwtLT5JbnB1dCBEZXZp
-Y2UgIktleWJvYXJkIgooKiopIHwtLT5JbnB1dCBEZXZpY2UgIlN5bmFwdGljcyBUb3VjaHBhZCIK
-KCoqKSB8LS0+SW5wdXQgRGV2aWNlICJDb25maWd1cmVkIE1vdXNlIgooKiopIE9wdGlvbiAiQWxs
-b3dNb3VzZU9wZW5GYWlsIiAidHJ1ZSIKKCoqKSBPcHRpb24gIkF1dG9BZGREZXZpY2VzIiAibm8i
-CigqKikgTm90IGF1dG9tYXRpY2FsbHkgYWRkaW5nIGRldmljZXMKKD09KSBBdXRvbWF0aWNhbGx5
-IGVuYWJsaW5nIGRldmljZXMKKCoqKSBGb250UGF0aCBzZXQgdG86CgkvdXNyL3NoYXJlL2ZvbnRz
-L21pc2MvLAoJL3Vzci9zaGFyZS9mb250cy9UVEYvLAoJL3Vzci9zaGFyZS9mb250cy9PVEYsCgkv
-dXNyL3NoYXJlL2ZvbnRzL1R5cGUxLywKCS91c3Ivc2hhcmUvZm9udHMvMTAwZHBpLywKCS91c3Iv
-c2hhcmUvZm9udHMvNzVkcGkvLAoJL3Vzci9zaGFyZS9mb250cy9taXNjLywKCS91c3Ivc2hhcmUv
-Zm9udHMvVFRGLywKCS91c3Ivc2hhcmUvZm9udHMvT1RGLAoJL3Vzci9zaGFyZS9mb250cy9UeXBl
-MS8sCgkvdXNyL3NoYXJlL2ZvbnRzLzEwMGRwaS8sCgkvdXNyL3NoYXJlL2ZvbnRzLzc1ZHBpLwoo
-KiopIE1vZHVsZVBhdGggc2V0IHRvICIvdXNyL2xpYi94b3JnL21vZHVsZXMiCihXVykgRHVwbGlj
-YXRlIGNvcmUgcG9pbnRlciBkZXZpY2VzLiAgUmVtb3ZpbmcgY29yZSBwb2ludGVyIGF0dHJpYnV0
-ZSBmcm9tICJDb25maWd1cmVkIE1vdXNlIgooSUkpIExvYWRlciBtYWdpYzogMHg4MWU3ZTYwCihJ
-SSkgTW9kdWxlIEFCSSB2ZXJzaW9uczoKCVguT3JnIEFOU0kgQyBFbXVsYXRpb246IDAuNAoJWC5P
-cmcgVmlkZW8gRHJpdmVyOiA2LjAKCVguT3JnIFhJbnB1dCBkcml2ZXIgOiA3LjAKCVguT3JnIFNl
-cnZlciBFeHRlbnNpb24gOiAyLjAKKCsrKSB1c2luZyBWVCBudW1iZXIgNwoKKC0tKSBQQ0k6Kigw
-OjA6MjowKSA4MDg2OjgxMDg6MTA0Mzo4M2NlIEludGVsIENvcnBvcmF0aW9uIFN5c3RlbSBDb250
-cm9sbGVyIEh1YiAoU0NIIFBvdWxzYm8pIEdyYXBoaWNzIENvbnRyb2xsZXIgcmV2IDcsIE1lbSBA
-IDB4ZjNmODAwMDAvNTI0Mjg4LCAweGQwMDAwMDAwLzI2ODQzNTQ1NiwgMHhmM2Y0MDAwMC8yNjIx
-NDQsIEkvTyBAIDB4MDAwMGM4ODAvOAooSUkpIE9wZW4gQUNQSSBzdWNjZXNzZnVsICgvdmFyL3J1
-bi9hY3BpZC5zb2NrZXQpCihJSSkgImV4dG1vZCIgd2lsbCBiZSBsb2FkZWQuIFRoaXMgd2FzIGVu
-YWJsZWQgYnkgZGVmYXVsdCBhbmQgYWxzbyBzcGVjaWZpZWQgaW4gdGhlIGNvbmZpZyBmaWxlLgoo
-SUkpICJkYmUiIHdpbGwgYmUgbG9hZGVkLiBUaGlzIHdhcyBlbmFibGVkIGJ5IGRlZmF1bHQgYW5k
-IGFsc28gc3BlY2lmaWVkIGluIHRoZSBjb25maWcgZmlsZS4KKElJKSAiZ2x4IiB3aWxsIGJlIGxv
-YWRlZC4gVGhpcyB3YXMgZW5hYmxlZCBieSBkZWZhdWx0IGFuZCBhbHNvIHNwZWNpZmllZCBpbiB0
-aGUgY29uZmlnIGZpbGUuCihJSSkgInJlY29yZCIgd2lsbCBiZSBsb2FkZWQuIFRoaXMgd2FzIGVu
-YWJsZWQgYnkgZGVmYXVsdCBhbmQgYWxzbyBzcGVjaWZpZWQgaW4gdGhlIGNvbmZpZyBmaWxlLgoo
-SUkpICJkcmkiIHdpbGwgYmUgbG9hZGVkLiBUaGlzIHdhcyBlbmFibGVkIGJ5IGRlZmF1bHQgYW5k
-IGFsc28gc3BlY2lmaWVkIGluIHRoZSBjb25maWcgZmlsZS4KKElJKSAiZHJpMiIgd2lsbCBiZSBs
-b2FkZWQuIFRoaXMgd2FzIGVuYWJsZWQgYnkgZGVmYXVsdCBhbmQgYWxzbyBzcGVjaWZpZWQgaW4g
-dGhlIGNvbmZpZyBmaWxlLgooSUkpIExvYWRNb2R1bGU6ICJkYmUiCihJSSkgTG9hZGluZyAvdXNy
-L2xpYi94b3JnL21vZHVsZXMvZXh0ZW5zaW9ucy9saWJkYmUuc28KKElJKSBNb2R1bGUgZGJlOiB2
-ZW5kb3I9IlguT3JnIEZvdW5kYXRpb24iCgljb21waWxlZCBmb3IgMS43LjEsIG1vZHVsZSB2ZXJz
-aW9uID0gMS4wLjAKCU1vZHVsZSBjbGFzczogWC5PcmcgU2VydmVyIEV4dGVuc2lvbgoJQUJJIGNs
-YXNzOiBYLk9yZyBTZXJ2ZXIgRXh0ZW5zaW9uLCB2ZXJzaW9uIDIuMAooSUkpIExvYWRpbmcgZXh0
-ZW5zaW9uIERPVUJMRS1CVUZGRVIKKElJKSBMb2FkTW9kdWxlOiAiZHJpIgooSUkpIExvYWRpbmcg
-L3Vzci9saWIveG9yZy9tb2R1bGVzL2V4dGVuc2lvbnMvbGliZHJpLnNvCihJSSkgTW9kdWxlIGRy
-aTogdmVuZG9yPSJYLk9yZyBGb3VuZGF0aW9uIgoJY29tcGlsZWQgZm9yIDEuNy4xLCBtb2R1bGUg
-dmVyc2lvbiA9IDEuMC4wCglBQkkgY2xhc3M6IFguT3JnIFNlcnZlciBFeHRlbnNpb24sIHZlcnNp
-b24gMi4wCihJSSkgTG9hZGluZyBleHRlbnNpb24gWEZyZWU4Ni1EUkkKKElJKSBMb2FkTW9kdWxl
-OiAiZHJpMiIKKElJKSBMb2FkaW5nIC91c3IvbGliL3hvcmcvbW9kdWxlcy9leHRlbnNpb25zL2xp
-YmRyaTIuc28KKElJKSBNb2R1bGUgZHJpMjogdmVuZG9yPSJYLk9yZyBGb3VuZGF0aW9uIgoJY29t
-cGlsZWQgZm9yIDEuNy4xLCBtb2R1bGUgdmVyc2lvbiA9IDEuMS4wCglBQkkgY2xhc3M6IFguT3Jn
-IFNlcnZlciBFeHRlbnNpb24sIHZlcnNpb24gMi4wCihJSSkgTG9hZGluZyBleHRlbnNpb24gRFJJ
-MgooSUkpIExvYWRNb2R1bGU6ICJleHRtb2QiCihJSSkgTG9hZGluZyAvdXNyL2xpYi94b3JnL21v
-ZHVsZXMvZXh0ZW5zaW9ucy9saWJleHRtb2Quc28KKElJKSBNb2R1bGUgZXh0bW9kOiB2ZW5kb3I9
-IlguT3JnIEZvdW5kYXRpb24iCgljb21waWxlZCBmb3IgMS43LjEsIG1vZHVsZSB2ZXJzaW9uID0g
-MS4wLjAKCU1vZHVsZSBjbGFzczogWC5PcmcgU2VydmVyIEV4dGVuc2lvbgoJQUJJIGNsYXNzOiBY
-Lk9yZyBTZXJ2ZXIgRXh0ZW5zaW9uLCB2ZXJzaW9uIDIuMAooSUkpIExvYWRpbmcgZXh0ZW5zaW9u
-IE1JVC1TQ1JFRU4tU0FWRVIKKElJKSBMb2FkaW5nIGV4dGVuc2lvbiBYRnJlZTg2LVZpZE1vZGVF
-eHRlbnNpb24KKElJKSBMb2FkaW5nIGV4dGVuc2lvbiBYRnJlZTg2LURHQQooSUkpIExvYWRpbmcg
-ZXh0ZW5zaW9uIERQTVMKKElJKSBMb2FkaW5nIGV4dGVuc2lvbiBYVmlkZW8KKElJKSBMb2FkaW5n
-IGV4dGVuc2lvbiBYVmlkZW8tTW90aW9uQ29tcGVuc2F0aW9uCihJSSkgTG9hZGluZyBleHRlbnNp
-b24gWC1SZXNvdXJjZQooSUkpIExvYWRNb2R1bGU6ICJnbHgiCihJSSkgTG9hZGluZyAvdXNyL2xp
-Yi94b3JnL21vZHVsZXMvZXh0ZW5zaW9ucy9saWJnbHguc28KKElJKSBNb2R1bGUgZ2x4OiB2ZW5k
-b3I9IlguT3JnIEZvdW5kYXRpb24iCgljb21waWxlZCBmb3IgMS43LjEsIG1vZHVsZSB2ZXJzaW9u
-ID0gMS4wLjAKCUFCSSBjbGFzczogWC5PcmcgU2VydmVyIEV4dGVuc2lvbiwgdmVyc2lvbiAyLjAK
-KD09KSBBSUdMWCBlbmFibGVkCihJSSkgTG9hZGluZyBleHRlbnNpb24gR0xYCihJSSkgTG9hZE1v
-ZHVsZTogInJlY29yZCIKKElJKSBMb2FkaW5nIC91c3IvbGliL3hvcmcvbW9kdWxlcy9leHRlbnNp
-b25zL2xpYnJlY29yZC5zbwooSUkpIE1vZHVsZSByZWNvcmQ6IHZlbmRvcj0iWC5PcmcgRm91bmRh
-dGlvbiIKCWNvbXBpbGVkIGZvciAxLjcuMSwgbW9kdWxlIHZlcnNpb24gPSAxLjEzLjAKCU1vZHVs
-ZSBjbGFzczogWC5PcmcgU2VydmVyIEV4dGVuc2lvbgoJQUJJIGNsYXNzOiBYLk9yZyBTZXJ2ZXIg
-RXh0ZW5zaW9uLCB2ZXJzaW9uIDIuMAooSUkpIExvYWRpbmcgZXh0ZW5zaW9uIFJFQ09SRAooSUkp
-IExvYWRNb2R1bGU6ICJwc2IiCihJSSkgTG9hZGluZyAvdXNyL2xpYi94b3JnL21vZHVsZXMvZHJp
-dmVycy9wc2JfZHJ2LnNvCihJSSkgTW9kdWxlIHBzYjogdmVuZG9yPSJYLk9yZyBGb3VuZGF0aW9u
-IgoJY29tcGlsZWQgZm9yIDEuNy4xLCBtb2R1bGUgdmVyc2lvbiA9IDAuMjkuMAoJTW9kdWxlIGNs
-YXNzOiBYLk9yZyBWaWRlbyBEcml2ZXIKCUFCSSBjbGFzczogWC5PcmcgVmlkZW8gRHJpdmVyLCB2
-ZXJzaW9uIDYuMAooSUkpIERlYnVnOiBwc2JTZXR1cAo=
---0015174c0f188bb604047a1146dc--
+--=-+lCmXfhA7XxuLRqQwpt2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLG9maAAoJEODzc/N7+QmaK8oQAMl4krMRphc22T3pXmnssM8t
+gTkr3QSfF7asz+lWrqrMTlek8pwKJvT6rnuF54jAED9G0PRvoP/1HbF1tQHbd6zz
+oJS893HvcHaUpP3I2KrffOycrV/PJmiA7RxQNJcTkCRWEYNvhMLy954tkl79QR9F
+jCNejjNyUVlAacgf+r08IEzniWVDuPk1ZiDPnpa9eC9HKeHUkRlzca+21Xdc9f0q
+l5al8YdvTWfVQKWPO98KBZw1hu+AQHvvBWg9CS+XKUDVdxYLrIp3DEwIhLLnTnYH
+tS0TKohf5OHylx/euHgPjOsSMrg9lbyQokdXVV58nRIcR2m5aRrkBW26oXpQGkPW
+Pqjjm4YoFd6/rIs81NbCnSXbC5aRM2zXZrL/6s9xMM0AX82SgXLNpA8/yDl8Cx0M
+hWUJnVpkm4RlsmhCw/epReWtx6h3fO6Glj5gedVy2iF6OC9FE2cohoxTC/S+aeFR
+/sQhEDCwc+a4YBYjsNN38WN3R2M5UN/6sWoIXH/paYrZhEMGW6gwtZhh7QZQra9d
+CcvYPHCR3m6edIg+t/GIEGyhDXUNGV3T+VfSqtbU+xcltGgVYjzfMRZzMIfPoH8b
+KHMQ95SZKwzIJyjJAtf9DILhwT1d9AiE6aKHi/Rh0NAIxBnjsGl9fUq86M1QbVJU
+kvoja/0AnjZNwOcPEenc
+=010B
+-----END PGP SIGNATURE-----
+
+--=-+lCmXfhA7XxuLRqQwpt2--
+
