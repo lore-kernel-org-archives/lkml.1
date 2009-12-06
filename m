@@ -1,95 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbZLFFlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbZLFGzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751669AbZLFFlV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 00:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZLFFlP
+	id S1752692AbZLFGzT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 01:55:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZLFGzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 00:41:15 -0500
-Received: from mga14.intel.com ([143.182.124.37]:37341 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751284AbZLFFlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 00:41:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="219297270"
-Date: Sun, 6 Dec 2009 13:41:13 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: [PATCH] vmscan: aligned scan batching
-Message-ID: <20091206054113.GA23912@localhost>
-References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com>
+	Sun, 6 Dec 2009 01:55:14 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:40573 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbZLFGzM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 01:55:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=B/6R38pj0kw1gzFcgkzMciR4wqeDfJeAEuJo6e3wVcNBdQCOBvHBL8JsszBDs+O/xx
+         /aKCsshNgaluZRPSoihaBwXgOQSLZa10XJGDwCP+mUo9mUapjo0CfcddcMdhwPv5mO4v
+         j/bX2H/t8wIa5PQQMWOWZFPZFOfvRjIM4AUlg=
+Date: Sat, 5 Dec 2009 22:55:12 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: hermann pitton <hermann-pitton@arcor.de>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Christoph Bartelmus <lirc@bartelmus.de>,
+       awalls@radix.net, j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       khc@pm.waw.pl, kraxel@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       mchehab@redhat.com, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+Message-ID: <20091206065512.GA14651@core.coreip.homeip.net>
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091127091357.A7CC.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1260070593.3236.6.camel@pc07.localdom.local>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  - pass nr_to_scan into isolate_pages() directly instead
->    using SWAP_CLUSTER_MAX
+Hi,
 
-This patch will make sure nr_to_scan==SWAP_CLUSTER_MAX :)
+On Sun, Dec 06, 2009 at 04:36:33AM +0100, hermann pitton wrote:
+> Hi,
+> 
+> Am Freitag, den 04.12.2009, 19:28 -0500 schrieb Jon Smirl:
+> > On Fri, Dec 4, 2009 at 6:01 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
+> > > BTW, I just came across a XMP remote that seems to generate 3x64 bit scan
+> > > codes. Anyone here has docs on the XMP protocol?
+> > 
+> > Assuming a general purpose receiver (not one with fixed hardware
+> > decoding), is it important for Linux to receive IR signals from all
+> > possible remotes no matter how old or obscure? Or is it acceptable to
+> > tell the user to throw away their dedicated remote and buy a universal
+> > multi-function one?  Universal multi-function remotes are $12 in my
+> > grocery store - I don't even have to go to an electronics store.
+> 
+> finally we have some point here, IMHO, that is not acceptable and I told
+> you previously not to bet on such. Start some poll and win it, and I'll
+> shut up :)
+> 
 
-Thanks,
-Fengguang
----
-vmscan: aligned scan batching
+Who would participate in the poll though?
 
-Make sure ->isolate_pages() always scans in unit of SWAP_CLUSTER_MAX.
+> To be frank, you are quite mad at this point, or deliver working other
+> remotes to __all__ for free.
+> 
 
-CC: Rik van Riel <riel@redhat.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/vmscan.c |   20 ++++++--------------
- 1 file changed, 6 insertions(+), 14 deletions(-)
+I do not believe you are being realistic. Sometimes we just need to say
+that the device is a POS and is just not worth it. Remember, there is
+still "lirc hole" for the hard core people still using solder to produce
+something out of the spare electronic components that may be made to
+work (never mind that it causes the CPU constantly poll the device, not
+letting it sleep and wasting electricity as a result - just hypotetical
+example here).
 
---- linux-mm.orig/mm/vmscan.c	2009-12-06 13:13:28.000000000 +0800
-+++ linux-mm/mm/vmscan.c	2009-12-06 13:31:21.000000000 +0800
-@@ -1572,15 +1572,11 @@ static void get_scan_ratio(struct zone *
- static unsigned long nr_scan_try_batch(unsigned long nr_to_scan,
- 				       unsigned long *nr_saved_scan)
- {
--	unsigned long nr;
-+	unsigned long nr = *nr_saved_scan + nr_to_scan;
-+	unsigned long rem = nr & (SWAP_CLUSTER_MAX - 1);
- 
--	*nr_saved_scan += nr_to_scan;
--	nr = *nr_saved_scan;
--
--	if (nr >= SWAP_CLUSTER_MAX)
--		*nr_saved_scan = 0;
--	else
--		nr = 0;
-+	*nr_saved_scan = rem;
-+	nr -= rem;
- 
- 	return nr;
- }
-@@ -1592,7 +1588,6 @@ static void shrink_zone(int priority, st
- 				struct scan_control *sc)
- {
- 	unsigned long nr[NR_LRU_LISTS];
--	unsigned long nr_to_scan;
- 	unsigned long percent[2];	/* anon @ 0; file @ 1 */
- 	enum lru_list l;
- 	unsigned long nr_reclaimed = sc->nr_reclaimed;
-@@ -1625,11 +1620,8 @@ static void shrink_zone(int priority, st
- 					nr[LRU_INACTIVE_FILE]) {
- 		for_each_evictable_lru(l) {
- 			if (nr[l]) {
--				nr_to_scan = min_t(unsigned long,
--						   nr[l], SWAP_CLUSTER_MAX);
--				nr[l] -= nr_to_scan;
--
--				nr_reclaimed += shrink_list(l, nr_to_scan,
-+				nr[l] -= SWAP_CLUSTER_MAX;
-+				nr_reclaimed += shrink_list(l, SWAP_CLUSTER_MAX,
- 							    zone, sc, priority);
- 			}
- 		}
+We still need to do cost-benefit analysis and decide whether supporting
+the exotic setups _in kernel_ makes sense if it encumbers implementation
+and causes issues to the other 95% people.
+
+-- 
+Dmitry
