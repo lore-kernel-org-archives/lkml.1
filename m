@@ -1,108 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934268AbZLFV1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934291AbZLFVjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934268AbZLFV1F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 16:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934221AbZLFV1D
+	id S934291AbZLFVjd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 16:39:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbZLFVja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 16:27:03 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:64194 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934186AbZLFV1B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 16:27:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nPWwALAskBqw7inWJi7446cIhYcZF055JGagFT/inAt7lGRAqMqMQCRvKW8NUh9bVc
-         3B6qDK5kV+47Ds3gRcKFWg3NxdLNAnmxcUs8CSrV/54k+rLHsX1I0BYCukIT4aSmxqjm
-         HpfuMAgFGOq9HUk2vnWSM7p75fzCrYn2AjP0A=
-Subject: Re: XD/smartmedia - how to implement it right?
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alex Dubov <oakad@yahoo.com>, J?rn Engel <joern@logfs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, arnd <arnd@arndb.de>
-In-Reply-To: <20091205190913.GA1309@ucw.cz>
-References: <109361.10237.qm@web37604.mail.mud.yahoo.com>
-	 <1259589517.13049.31.camel@maxim-laptop>  <20091205190913.GA1309@ucw.cz>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 06 Dec 2009 23:27:00 +0200
-Message-ID: <1260134820.23100.23.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 6 Dec 2009 16:39:30 -0500
+Received: from thunk.org ([69.25.196.29]:37824 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754476AbZLFVja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 16:39:30 -0500
+Date: Sun, 6 Dec 2009 16:39:30 -0500
+From: tytso@mit.edu
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: "J. R. Okajima" <hooanon05@yahoo.co.jp>, linux-kernel@vger.kernel.org,
+       stewb@linux-foundation.org
+Subject: Re: [RFC 0/5] pathconf(3) with _PC_LINK_MAX
+Message-ID: <20091206213930.GA10720@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Al Viro <viro@ZenIV.linux.org.uk>,
+	"J. R. Okajima" <hooanon05@yahoo.co.jp>,
+	linux-kernel@vger.kernel.org, stewb@linux-foundation.org
+References: <1260086343-8406-1-git-send-email-hooanon05@yahoo.co.jp>
+ <20091206083958.GC14381@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091206083958.GC14381@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-12-05 at 20:09 +0100, Pavel Machek wrote: 
-> > > > First of all, thank you very much for your contributions.
-> > > > Could you explain, why we need an asynchronous mtd driver?
-> > > 
-> > > Because it's the future. ;-)
-> > Although I like the xD format, it has no future,
-> > Everyone migrated to SD now.
-> > 
-> > Reasons are very simple:
-> > 
-> > 1 - xD hardcodes device sizes, thus if somebody makes say 8GB card, many
-> > readers couldn't use it.
-> > I know that windows driver I was dealing with supports sizes up to 2GB
-> > 
-> > 
-> > 2 - xD is a nand card, but with 8-bit bus.
-> > Newer nand chips seem to favor 16 bit bus or more.
-> > Obviously, if they were to implement that it would be physically
-> > incompatible.
-> > 
-> > 3 - embedded cpus are cheap dirt now, and allow to use their, always
-> > 'better' FTL strategy, and also hide inner working of the chip.
+On Sun, Dec 06, 2009 at 08:39:58AM +0000, Al Viro wrote:
 > 
-> XDs are still used by at least olympus digital cameras. Ouch.
-Well, at least according to wikipedia, Olympus phased out XD support, as
-well as Fuji.
-This doesn't mean that there will be no users of XD in five following
-years, thats why I am writing the driver in first place.
-
-
+> Um...  Why do we need that, again?  Note that there is no way whatsoever
+> for predicting whether link(2) will fail due to having too many existing
+> links before you attempt the call - links can be created or removed between
+> stat(2) and link(2).  So any uses of that value are heuristical.
 > 
-> If you have onboard embedded cpu, you can bet it will not work
-> correctly over powerfail. If you do FTL on host, you have at least
-> chance to get it right.
-Thats correct. In fact we are both right here.
-Your viewpoint is based on a view of an user of a sane operation system.
-Sure, the whole idea of FTL is evil, the perfect place for wear leveling
-is in the filesystem itself, and in addition to that, there are several
-technologies that imply finite write cycle count, and that reason
-justifies such filesystem even more.
+> Can you actually show any use cases of that thing?  Preferably - in existing
+> code, but even a theoretical one would be interesting.
 
-I also use the same sane operation system, so for me its quite nice to
-have XD^WNAND removable chip support, and in my eyes the raw access to
-flash is very nice advantage.
+I think it's mainly a "if we're going to implement a POSIX interface,
+it would be nice if it returned something based on reality instead of
+a wild-assed guess".  :-)
 
-However, due to limitations of other less sane operation systems,
-hardware makers have to support wear leveling ether in the driver or in
-the hardware.
-This is yet another example, about why some operation systems 'just
-work'...
-Not that these operation systems are better, but that hardware makers do
-everything possible to patch all problems these operation systems have.
-Same is true for software generally.
+The "real life" use case I could think of is that backup programs that
+use hard links everywhere would be able to determine ahead of time in
+advance when it might need to create a new file instead of using a
+hard link, without needing to do the link and getting the EMLINK
+error.  I agree that the only way you can know for sure is by actually
+trying the link, so it's a pretty feeble use case.
 
+I will note that without a functional, ext3 and ext4 (or ext3
+filesystem with dir_nlink file system feature mounted with ext4) file
+systems would be indistinguishable.
 
-Supporting wear leveling in hardware is easier, because this way, they
-can be sure it works well, and not depend on each and every driver
-implementation to do that right.
-
-Small hint, you know how the windows driver for my controller handles
-COW?
-Very simple, every 512 bytes write (only accepts such) turns into whole
-erase/write cycle of whole block (32 KB usually).
-
-So, if you write a 32K or larger file , and no matter how clever the OS
-is, it will still end in 64 erase cycles...
-
-
-Best regards,
-Maxim Levitsky
-
+						- Ted
