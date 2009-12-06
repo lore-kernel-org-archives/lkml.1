@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbZLFR6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbZLFR7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757299AbZLFR6c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 12:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbZLFR6b
+	id S1757375AbZLFR7w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 12:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbZLFR7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 12:58:31 -0500
-Received: from www.tglx.de ([62.245.132.106]:58419 "EHLO www.tglx.de"
+	Sun, 6 Dec 2009 12:59:51 -0500
+Received: from www.tglx.de ([62.245.132.106]:32882 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757010AbZLFR6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 12:58:30 -0500
-Date: Sun, 6 Dec 2009 18:58:27 +0100 (CET)
+	id S1757102AbZLFR7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 12:59:51 -0500
+Date: Sun, 6 Dec 2009 18:59:38 +0100 (CET)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [GIT pull] bkl core patches for 2.6.33
-Message-ID: <alpine.LFD.2.00.0912061857340.3089@localhost.localdomain>
+Subject: [GIT pull] bkl removal in arch/* for 2.6.33
+Message-ID: <alpine.LFD.2.00.0912061858350.3089@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,312 +25,258 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest bkl-core-for-linus git tree from:
+Please pull the latest bkl-arch-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git bkl-core-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git bkl-arch-for-linus
 
 Thanks,
 
 	tglx
 
 ------------------>
-Jonathan Corbet (2):
-      pm_qos: remove BKL
-      pm_qos: clean up racy global "name" variable
+John Kacur (6):
+      blackfin: Remove the BKL from sys_execve
+      frv: Remove the BKL from sys_execve
+      h83000: Remove BKL from sys_execve
+      m68k: Remove the BKL from sys_execve
+      m68knommu: Remove the BKL from sys_execve
+      mn10300: Remove the BKL from sys_execve
 
-Thomas Gleixner (2):
-      sys: Remove BKL from sys_reboot
-      bkl: pushdown BKL locking to do_sysctl()
+Thomas Gleixner (3):
+      s390: Remove BKL from prng
+      um: Remove BKL from random
+      um: Remove BKL from mmapper
 
 
- arch/ia64/ia32/sys_ia32.c         |    2 --
- arch/mips/kernel/linux32.c        |    2 --
- arch/parisc/kernel/sys_parisc32.c |    2 --
- arch/powerpc/kernel/sys_ppc32.c   |    2 --
- arch/s390/kernel/compat_linux.c   |    2 --
- arch/sparc/kernel/sys_sparc32.c   |    2 --
- arch/x86/ia32/sys_ia32.c          |    2 --
- kernel/pm_qos_params.c            |   20 ++++++++------------
- kernel/sys.c                      |   14 +++++++-------
- kernel/sysctl.c                   |    6 ++++--
- 10 files changed, 19 insertions(+), 35 deletions(-)
+ arch/blackfin/kernel/process.c  |    6 +-----
+ arch/frv/kernel/process.c       |    5 +----
+ arch/h8300/kernel/process.c     |    5 +----
+ arch/m68k/kernel/process.c      |    5 +----
+ arch/m68knommu/kernel/process.c |    5 +----
+ arch/mn10300/kernel/process.c   |   12 ++++--------
+ arch/s390/crypto/prng.c         |    2 --
+ arch/um/drivers/mmapper_kern.c  |   11 ++++-------
+ arch/um/drivers/random.c        |    3 ---
+ 9 files changed, 13 insertions(+), 41 deletions(-)
 
-diff --git a/arch/ia64/ia32/sys_ia32.c b/arch/ia64/ia32/sys_ia32.c
-index 625ed8f..c0ed49c 100644
---- a/arch/ia64/ia32/sys_ia32.c
-+++ b/arch/ia64/ia32/sys_ia32.c
-@@ -1670,10 +1670,8 @@ sys32_sysctl (struct sysctl32 __user *args)
- 		return -EFAULT;
+diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
+index 430ae39..7d9c975 100644
+--- a/arch/blackfin/kernel/process.c
++++ b/arch/blackfin/kernel/process.c
+@@ -215,22 +215,18 @@ copy_thread(unsigned long clone_flags,
+ /*
+  * sys_execve() executes a new program.
+  */
+-
+ asmlinkage int sys_execve(char __user *name, char __user * __user *argv, char __user * __user *envp)
+ {
+ 	int error;
+ 	char *filename;
+ 	struct pt_regs *regs = (struct pt_regs *)((&name) + 6);
  
- 	set_fs(KERNEL_DS);
 -	lock_kernel();
- 	ret = do_sysctl(namep, a32.nlen, oldvalp, (size_t __user *) &oldlen,
- 			newvalp, (size_t) a32.newlen);
+ 	filename = getname(name);
+ 	error = PTR_ERR(filename);
+ 	if (IS_ERR(filename))
+-		goto out;
++		return error;
+ 	error = do_execve(filename, argv, envp, regs);
+ 	putname(filename);
+- out:
 -	unlock_kernel();
- 	set_fs(old_fs);
+ 	return error;
+ }
  
- 	if (oldvalp && put_user (oldlen, (int __user *) compat_ptr(a32.oldlenp)))
-diff --git a/arch/mips/kernel/linux32.c b/arch/mips/kernel/linux32.c
-index 6242bc6..3744608 100644
---- a/arch/mips/kernel/linux32.c
-+++ b/arch/mips/kernel/linux32.c
-@@ -302,10 +302,8 @@ SYSCALL_DEFINE1(32_sysctl, struct sysctl_args32 __user *, args)
- 		oldlenp = (size_t __user *)addr;
+diff --git a/arch/frv/kernel/process.c b/arch/frv/kernel/process.c
+index 9042559..21d0fd1 100644
+--- a/arch/frv/kernel/process.c
++++ b/arch/frv/kernel/process.c
+@@ -255,15 +255,12 @@ asmlinkage int sys_execve(char __user *name, char __user * __user *argv, char __
+ 	int error;
+ 	char * filename;
+ 
+-	lock_kernel();
+ 	filename = getname(name);
+ 	error = PTR_ERR(filename);
+ 	if (IS_ERR(filename))
+-		goto out;
++		return error;
+ 	error = do_execve(filename, argv, envp, __frame);
+ 	putname(filename);
+- out:
+-	unlock_kernel();
+ 	return error;
+ }
+ 
+diff --git a/arch/h8300/kernel/process.c b/arch/h8300/kernel/process.c
+index e2f33d0..bd883fa 100644
+--- a/arch/h8300/kernel/process.c
++++ b/arch/h8300/kernel/process.c
+@@ -218,15 +218,12 @@ asmlinkage int sys_execve(char *name, char **argv, char **envp,int dummy,...)
+ 	char * filename;
+ 	struct pt_regs *regs = (struct pt_regs *) ((unsigned char *)&dummy-4);
+ 
+-	lock_kernel();
+ 	filename = getname(name);
+ 	error = PTR_ERR(filename);
+ 	if (IS_ERR(filename))
+-		goto out;
++		return error;
+ 	error = do_execve(filename, argv, envp, regs);
+ 	putname(filename);
+-out:
+-	unlock_kernel();
+ 	return error;
+ }
+ 
+diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
+index 41230c5..0529659 100644
+--- a/arch/m68k/kernel/process.c
++++ b/arch/m68k/kernel/process.c
+@@ -317,15 +317,12 @@ asmlinkage int sys_execve(char __user *name, char __user * __user *argv, char __
+ 	char * filename;
+ 	struct pt_regs *regs = (struct pt_regs *) &name;
+ 
+-	lock_kernel();
+ 	filename = getname(name);
+ 	error = PTR_ERR(filename);
+ 	if (IS_ERR(filename))
+-		goto out;
++		return error;
+ 	error = do_execve(filename, argv, envp, regs);
+ 	putname(filename);
+-out:
+-	unlock_kernel();
+ 	return error;
+ }
+ 
+diff --git a/arch/m68knommu/kernel/process.c b/arch/m68knommu/kernel/process.c
+index 8f8f4ab..5c9ecd4 100644
+--- a/arch/m68knommu/kernel/process.c
++++ b/arch/m68knommu/kernel/process.c
+@@ -352,15 +352,12 @@ asmlinkage int sys_execve(char *name, char **argv, char **envp)
+ 	char * filename;
+ 	struct pt_regs *regs = (struct pt_regs *) &name;
+ 
+-	lock_kernel();
+ 	filename = getname(name);
+ 	error = PTR_ERR(filename);
+ 	if (IS_ERR(filename))
+-		goto out;
++		return error;
+ 	error = do_execve(filename, argv, envp, regs);
+ 	putname(filename);
+-out:
+-	unlock_kernel();
+ 	return error;
+ }
+ 
+diff --git a/arch/mn10300/kernel/process.c b/arch/mn10300/kernel/process.c
+index 892cce8..ec8a21d 100644
+--- a/arch/mn10300/kernel/process.c
++++ b/arch/mn10300/kernel/process.c
+@@ -275,16 +275,12 @@ asmlinkage long sys_execve(char __user *name,
+ 	char *filename;
+ 	int error;
+ 
+-	lock_kernel();
+-
+ 	filename = getname(name);
+ 	error = PTR_ERR(filename);
+-	if (!IS_ERR(filename)) {
+-		error = do_execve(filename, argv, envp, __frame);
+-		putname(filename);
+-	}
+-
+-	unlock_kernel();
++	if (IS_ERR(filename))
++		return error;
++	error = do_execve(filename, argv, envp, __frame);
++	putname(filename);
+ 	return error;
+ }
+ 
+diff --git a/arch/s390/crypto/prng.c b/arch/s390/crypto/prng.c
+index b49c00c..a320990 100644
+--- a/arch/s390/crypto/prng.c
++++ b/arch/s390/crypto/prng.c
+@@ -6,7 +6,6 @@
+ #include <linux/fs.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+-#include <linux/smp_lock.h>
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+@@ -49,7 +48,6 @@ static unsigned char parm_block[32] = {
+ 
+ static int prng_open(struct inode *inode, struct file *file)
+ {
+-	cycle_kernel_lock();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+diff --git a/arch/um/drivers/mmapper_kern.c b/arch/um/drivers/mmapper_kern.c
+index eb24032..d22f9e5 100644
+--- a/arch/um/drivers/mmapper_kern.c
++++ b/arch/um/drivers/mmapper_kern.c
+@@ -16,7 +16,7 @@
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
+ #include <linux/mm.h>
+-#include <linux/smp_lock.h>
++
+ #include <asm/uaccess.h>
+ #include "mem_user.h"
+ 
+@@ -78,7 +78,6 @@ out:
+ 
+ static int mmapper_open(struct inode *inode, struct file *file)
+ {
+-	cycle_kernel_lock();
+ 	return 0;
+ }
+ 
+@@ -115,18 +114,16 @@ static int __init mmapper_init(void)
+ 	v_buf = (char *) find_iomem("mmapper", &mmapper_size);
+ 	if (mmapper_size == 0) {
+ 		printk(KERN_ERR "mmapper_init - find_iomem failed\n");
+-		goto out;
++		return -ENODEV;
  	}
++	p_buf = __pa(v_buf);
  
--	lock_kernel();
- 	error = do_sysctl((int __user *)A(tmp.name), tmp.nlen, (void __user *)A(tmp.oldval),
- 			  oldlenp, (void __user *)A(tmp.newval), tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, (size_t __user *)addr) ||
-diff --git a/arch/parisc/kernel/sys_parisc32.c b/arch/parisc/kernel/sys_parisc32.c
-index 561388b..0d3bff2 100644
---- a/arch/parisc/kernel/sys_parisc32.c
-+++ b/arch/parisc/kernel/sys_parisc32.c
-@@ -137,11 +137,9 @@ asmlinkage long sys32_sysctl(struct __sysctl_args32 __user *args)
- 		oldlenp = (size_t *)addr;
+ 	err = misc_register(&mmapper_dev);
+ 	if (err) {
+ 		printk(KERN_ERR "mmapper - misc_register failed, err = %d\n",
+ 		       err);
+-		goto out;
++		return err;;
  	}
+-
+-	p_buf = __pa(v_buf);
+-out:
+ 	return 0;
+ }
  
--	lock_kernel();
- 	error = do_sysctl((int __user *)(u64)tmp.name, tmp.nlen,
- 			  (void __user *)(u64)tmp.oldval, oldlenp,
- 			  (void __user *)(u64)tmp.newval, tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, (size_t *)addr)) {
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index b97c2d6..934c0f9 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -555,11 +555,9 @@ asmlinkage long compat_sys_sysctl(struct __sysctl_args32 __user *args)
- 			return -EFAULT;
- 	}
- 
--	lock_kernel();
- 	error = do_sysctl(compat_ptr(tmp.name), tmp.nlen,
- 			  compat_ptr(tmp.oldval), oldlenp,
- 			  compat_ptr(tmp.newval), tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, oldlenp) ||
-diff --git a/arch/s390/kernel/compat_linux.c b/arch/s390/kernel/compat_linux.c
-index 0debcec..ef9c2c1 100644
---- a/arch/s390/kernel/compat_linux.c
-+++ b/arch/s390/kernel/compat_linux.c
-@@ -562,10 +562,8 @@ asmlinkage long sys32_sysctl(struct __sysctl_args32 __user *args)
- 		oldlenp = (size_t __user *)addr;
- 	}
- 
--	lock_kernel();
- 	error = do_sysctl(compat_ptr(tmp.name), tmp.nlen, compat_ptr(tmp.oldval),
- 			  oldlenp, compat_ptr(tmp.newval), tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, (size_t __user *)addr) ||
-diff --git a/arch/sparc/kernel/sys_sparc32.c b/arch/sparc/kernel/sys_sparc32.c
-index 04e28b2..6266ef0 100644
---- a/arch/sparc/kernel/sys_sparc32.c
-+++ b/arch/sparc/kernel/sys_sparc32.c
-@@ -627,14 +627,12 @@ asmlinkage long sys32_sysctl(struct __sysctl_args32 __user *args)
- 		oldlenp = (size_t __user *)addr;
- 	}
- 
--	lock_kernel();
- 	error = do_sysctl((int __user *)(unsigned long) tmp.name,
- 			  tmp.nlen,
- 			  (void __user *)(unsigned long) tmp.oldval,
- 			  oldlenp,
- 			  (void __user *)(unsigned long) tmp.newval,
- 			  tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, (size_t __user *)addr) ||
-diff --git a/arch/x86/ia32/sys_ia32.c b/arch/x86/ia32/sys_ia32.c
-index 9f55271..32a88e4 100644
---- a/arch/x86/ia32/sys_ia32.c
-+++ b/arch/x86/ia32/sys_ia32.c
-@@ -477,10 +477,8 @@ asmlinkage long sys32_sysctl(struct sysctl_ia32 __user *args32)
- 		return -EFAULT;
- 
- 	set_fs(KERNEL_DS);
--	lock_kernel();
- 	ret = do_sysctl(namep, a32.nlen, oldvalp, (size_t __user *)&oldlen,
- 			newvalp, (size_t) a32.newlen);
--	unlock_kernel();
- 	set_fs(old_fs);
- 
- 	if (oldvalp && put_user(oldlen, (int __user *)compat_ptr(a32.oldlenp)))
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index dfdec52..3db49b9 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -29,7 +29,6 @@
- 
- #include <linux/pm_qos_params.h>
+diff --git a/arch/um/drivers/random.c b/arch/um/drivers/random.c
+index 6eabb70..4949044 100644
+--- a/arch/um/drivers/random.c
++++ b/arch/um/drivers/random.c
+@@ -7,7 +7,6 @@
+  * of the GNU General Public License, incorporated herein by reference.
+  */
  #include <linux/sched.h>
 -#include <linux/smp_lock.h>
- #include <linux/spinlock.h>
- #include <linux/slab.h>
- #include <linux/time.h>
-@@ -344,37 +343,33 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
- }
- EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
+ #include <linux/module.h>
+ #include <linux/fs.h>
+ #include <linux/interrupt.h>
+@@ -34,8 +33,6 @@ static DECLARE_WAIT_QUEUE_HEAD(host_read_wait);
  
--#define PID_NAME_LEN sizeof("process_1234567890")
--static char name[PID_NAME_LEN];
-+#define PID_NAME_LEN 32
- 
- static int pm_qos_power_open(struct inode *inode, struct file *filp)
+ static int rng_dev_open (struct inode *inode, struct file *filp)
  {
- 	int ret;
- 	long pm_qos_class;
-+	char name[PID_NAME_LEN];
- 
--	lock_kernel();
- 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
- 	if (pm_qos_class >= 0) {
- 		filp->private_data = (void *)pm_qos_class;
--		sprintf(name, "process_%d", current->pid);
-+		snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 		ret = pm_qos_add_requirement(pm_qos_class, name,
- 					PM_QOS_DEFAULT_VALUE);
--		if (ret >= 0) {
--			unlock_kernel();
-+		if (ret >= 0)
- 			return 0;
--		}
- 	}
--	unlock_kernel();
+-	cycle_kernel_lock();
 -
- 	return -EPERM;
- }
- 
- static int pm_qos_power_release(struct inode *inode, struct file *filp)
- {
- 	int pm_qos_class;
-+	char name[PID_NAME_LEN];
- 
- 	pm_qos_class = (long)filp->private_data;
--	sprintf(name, "process_%d", current->pid);
-+	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 	pm_qos_remove_requirement(pm_qos_class, name);
- 
- 	return 0;
-@@ -385,13 +380,14 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- {
- 	s32 value;
- 	int pm_qos_class;
-+	char name[PID_NAME_LEN];
- 
- 	pm_qos_class = (long)filp->private_data;
- 	if (count != sizeof(s32))
+ 	/* enforce read-only access to this chrdev */
+ 	if ((filp->f_mode & FMODE_READ) == 0)
  		return -EINVAL;
- 	if (copy_from_user(&value, buf, sizeof(s32)))
- 		return -EFAULT;
--	sprintf(name, "process_%d", current->pid);
-+	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
- 	pm_qos_update_requirement(pm_qos_class, name, value);
- 
- 	return  sizeof(s32);
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 255475d..22ea955 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -8,7 +8,6 @@
- #include <linux/mm.h>
- #include <linux/utsname.h>
- #include <linux/mman.h>
--#include <linux/smp_lock.h>
- #include <linux/notifier.h>
- #include <linux/reboot.h>
- #include <linux/prctl.h>
-@@ -349,6 +348,9 @@ void kernel_power_off(void)
- 	machine_power_off();
- }
- EXPORT_SYMBOL_GPL(kernel_power_off);
-+
-+static DEFINE_MUTEX(reboot_mutex);
-+
- /*
-  * Reboot system call: for obvious reasons only root may call it,
-  * and even root needs to set up some magic numbers in the registers
-@@ -381,7 +383,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
- 	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !pm_power_off)
- 		cmd = LINUX_REBOOT_CMD_HALT;
- 
--	lock_kernel();
-+	mutex_lock(&reboot_mutex);
- 	switch (cmd) {
- 	case LINUX_REBOOT_CMD_RESTART:
- 		kernel_restart(NULL);
-@@ -397,20 +399,18 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
- 
- 	case LINUX_REBOOT_CMD_HALT:
- 		kernel_halt();
--		unlock_kernel();
- 		do_exit(0);
- 		panic("cannot halt");
- 
- 	case LINUX_REBOOT_CMD_POWER_OFF:
- 		kernel_power_off();
--		unlock_kernel();
- 		do_exit(0);
- 		break;
- 
- 	case LINUX_REBOOT_CMD_RESTART2:
- 		if (strncpy_from_user(&buffer[0], arg, sizeof(buffer) - 1) < 0) {
--			unlock_kernel();
--			return -EFAULT;
-+			ret = -EFAULT;
-+			break;
- 		}
- 		buffer[sizeof(buffer) - 1] = '\0';
- 
-@@ -433,7 +433,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
- 		ret = -EINVAL;
- 		break;
- 	}
--	unlock_kernel();
-+	mutex_unlock(&reboot_mutex);
- 	return ret;
- }
- 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 0d949c5..72040e5 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1848,6 +1848,8 @@ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *ol
- 			return -EFAULT;
- 	}
- 
-+	lock_kernel();
-+
- 	for (head = sysctl_head_next(NULL); head;
- 			head = sysctl_head_next(head)) {
- 		error = parse_table(name, nlen, oldval, oldlenp, 
-@@ -1858,6 +1860,8 @@ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *ol
- 			break;
- 		}
- 	}
-+
-+	unlock_kernel();
- 	return error;
- }
- 
-@@ -1873,10 +1877,8 @@ SYSCALL_DEFINE1(sysctl, struct __sysctl_args __user *, args)
- 	if (error)
- 		goto out;
- 
--	lock_kernel();
- 	error = do_sysctl(tmp.name, tmp.nlen, tmp.oldval, tmp.oldlenp,
- 			  tmp.newval, tmp.newlen);
--	unlock_kernel();
- out:
- 	return error;
- }
