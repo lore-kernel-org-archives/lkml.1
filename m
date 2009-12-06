@@ -1,135 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932524AbZLFNK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbZLFNES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932524AbZLFNK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 08:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbZLFNK2
+	id S1757004AbZLFNES (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 08:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbZLFNER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 08:10:28 -0500
-Received: from toro.web-alm.net ([62.245.132.31]:49040 "EHLO toro.web-alm.net"
+	Sun, 6 Dec 2009 08:04:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55721 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932315AbZLFNK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 08:10:27 -0500
-Message-ID: <4B1BAB74.104@osadl.org>
-Date: Sun, 06 Dec 2009 14:02:44 +0100
-From: Carsten Emde <Carsten.Emde@osadl.org>
-Organization: Open Source Automation Development Lab (OSADL) eG
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	id S1756773AbZLFNEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 08:04:16 -0500
+Date: Sun, 6 Dec 2009 13:03:44 GMT
+From: tip-bot for Frank Rowand <frank.rowand@am.sony.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, frank.rowand@am.sony.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, frank.rowand@am.sony.com,
+       mingo@elte.hu
+In-Reply-To: <4B05BBAE.2050005@am.sony.com>
+References: <4B05BBAE.2050005@am.sony.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/urgent] lockstat: Fix min, max times in /proc/lock_stats
+Message-ID: <tip-109d71c6dd52ec08878c2c67eb4c0bd67fcbc80b@git.kernel.org>
+Git-Commit-ID: 109d71c6dd52ec08878c2c67eb4c0bd67fcbc80b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/urgent] tracing: Fix trace_marker output
-References: <4B01AE5D.1010801@osadl.org> <tip-c13d2f7c3231e873f30db92b96c8caa48f100f33@git.kernel.org> <20091206051352.GA4628@lixom.net>
-In-Reply-To: <20091206051352.GA4628@lixom.net>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olof,
+Commit-ID:  109d71c6dd52ec08878c2c67eb4c0bd67fcbc80b
+Gitweb:     http://git.kernel.org/tip/109d71c6dd52ec08878c2c67eb4c0bd67fcbc80b
+Author:     Frank Rowand <frank.rowand@am.sony.com>
+AuthorDate: Thu, 19 Nov 2009 13:42:06 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 6 Dec 2009 13:20:00 +0100
 
-> On Sun, Nov 22, 2009 at 10:24:48AM +0000, tip-bot for Carsten Emde wrote:
->> Commit-ID:  c13d2f7c3231e873f30db92b96c8caa48f100f33
->> Gitweb:     http://git.kernel.org/tip/c13d2f7c3231e873f30db92b96c8caa48f100f33
->> Author:     Carsten Emde <Carsten.Emde@osadl.org>
->> AuthorDate: Mon, 16 Nov 2009 20:56:13 +0100
->> Committer:  Steven Rostedt <rostedt@goodmis.org>
->> CommitDate: Tue, 17 Nov 2009 09:19:06 -0500
->>
->> tracing: Fix trace_marker output
->>
->> When a string was written to <debugfs>/tracing/trace_marker, some
->> strange characters appeared in the trace output instead of the
->> string, since a vprint function erroneously called a vararg print
->> function with a va_list argument. This patch fixes the problem and
->> simplifies the related code.
-> 
-> [...]
-> 
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index 03c7fd5..12b49ca 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -1361,10 +1361,11 @@ int trace_array_vprintk(struct trace_array *tr,
->>  	pause_graph_tracing();
->>  	raw_local_irq_save(irq_flags);
->>  	__raw_spin_lock(&trace_buf_lock);
->> -	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
->> -
->> -	len = min(len, TRACE_BUF_SIZE-1);
->> -	trace_buf[len] = 0;
->> +	if (args == NULL) {
->> +		strncpy(trace_buf, fmt, TRACE_BUF_SIZE);
->> +		len = strlen(trace_buf);
->> +	} else
->> +		len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
-> 
-> 
-> Comparing a va_list with NULL is bogus. It's supposed to be treated like
-> an opaque type and only be manipulated with va_* accessors.
-> 
-> I wouldn't really care much, but it broke builds on some ARM platforms:
-> 
-> kernel/trace/trace.c: In function 'trace_array_vprintk':
-> kernel/trace/trace.c:1364: error: invalid operands to binary == (have 'va_list' and 'void *')
-> kernel/trace/trace.c: In function 'tracing_mark_write':
-> kernel/trace/trace.c:3349: error: incompatible type for argument 3 of 'trace_vprintk'
-Having looked at other possible solutions, I find that the best thing to do
-is to revert this part of the patch. Sorry that I didn't check it on ARM
-platforms.
+lockstat: Fix min, max times in /proc/lock_stats
 
-	Carsten.
+Fix min, max times in /proc/lock_stats
 
--=-
+(1) When collecting lock hold and wait times, if the current minimum
+    time is zero, it will be replaced by the next time.
 
-This patch partly reverts c13d2f7c3231e873f30db92b96c8caa48f100f33 and
-re-installs Steven's original mark_printk() mechanism.
+(2) When aggregating minimum and maximum lock hold and wait times
+    accross cpus, the values are added, instead of selecting the
+    minimum and maximum.
 
-Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+Signed-off-by: Frank Rowand <frank.rowand@am.sony.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <4B05BBAE.2050005@am.sony.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/lockdep.c |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
 
-Index: linux-2.6-tip/kernel/trace/trace.c
-===================================================================
---- linux-2.6-tip.orig/kernel/trace/trace.c
-+++ linux-2.6-tip/kernel/trace/trace.c
-@@ -1361,11 +1361,7 @@ int trace_array_vprintk(struct trace_arr
- 	pause_graph_tracing();
- 	raw_local_irq_save(irq_flags);
- 	__raw_spin_lock(&trace_buf_lock);
--	if (args == NULL) {
--		strncpy(trace_buf, fmt, TRACE_BUF_SIZE);
--		len = strlen(trace_buf);
--	} else
--		len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
-+	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index f5dcd36..7a3ae56 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -168,7 +168,7 @@ static void lock_time_inc(struct lock_time *lt, u64 time)
+ 	if (time > lt->max)
+ 		lt->max = time;
  
- 	size = sizeof(*entry) + len + 1;
- 	buffer = tr->buffer;
-@@ -3320,6 +3316,16 @@ tracing_entries_write(struct file *filp,
- 	return cnt;
- }
+-	if (time < lt->min || !lt->min)
++	if (time < lt->min || !lt->nr)
+ 		lt->min = time;
  
-+static int mark_printk(const char *fmt, ...)
-+{
-+	int ret;
-+	va_list args;
-+	va_start(args, fmt);
-+	ret = trace_vprintk(0, fmt, args);
-+	va_end(args);
-+	return ret;
-+}
+ 	lt->total += time;
+@@ -177,8 +177,15 @@ static void lock_time_inc(struct lock_time *lt, u64 time)
+ 
+ static inline void lock_time_add(struct lock_time *src, struct lock_time *dst)
+ {
+-	dst->min += src->min;
+-	dst->max += src->max;
++	if (!src->nr)
++		return;
 +
- static ssize_t
- tracing_mark_write(struct file *filp, const char __user *ubuf,
- 					size_t cnt, loff_t *fpos)
-@@ -3346,7 +3352,7 @@ tracing_mark_write(struct file *filp, co
- 	} else
- 		buf[cnt] = '\0';
- 
--	cnt = trace_vprintk(0, buf, NULL);
-+	cnt = mark_printk("%s", buf);
- 	kfree(buf);
- 	*fpos += cnt;
- 
++	if (src->max > dst->max)
++		dst->max = src->max;
++
++	if (src->min < dst->min || !dst->nr)
++		dst->min = src->min;
++
+ 	dst->total += src->total;
+ 	dst->nr += src->nr;
+ }
