@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbZLFTlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZLFTlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756434AbZLFTlO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 14:41:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZLFTlN
+	id S1757065AbZLFTlz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 14:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZLFTlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 14:41:13 -0500
-Received: from gerard.telenet-ops.be ([195.130.132.48]:49587 "EHLO
-	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbZLFTlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 14:41:12 -0500
-Date: Sun, 6 Dec 2009 20:41:16 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cpumask: Fix generate_sched_domains() for UP
-Message-ID: <alpine.DEB.2.00.0912062038070.5693@ayla.of.borg>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 6 Dec 2009 14:41:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3358 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753094AbZLFTlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 14:41:53 -0500
+Message-ID: <4B1C0902.1050209@redhat.com>
+Date: Sun, 06 Dec 2009 14:41:54 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Larry Woodman <lwoodman@redhat.com>
+Subject: Re: [PATCH 3/7] VM_LOCKED check don't need pte lock
+References: <20091204173233.5891.A69D9226@jp.fujitsu.com> <20091204174217.589A.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091204174217.589A.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit acc3f5d7cabbfd6cec71f0c1f9900621fa2d6ae7 ("cpumask:
-Partition_sched_domains takes array of cpumask_var_t") changed the function
-signature of generate_sched_domains() for the CONFIG_SMP=y case, but forgot to
-update the corresponding function for the CONFIG_SMP=n case, causing:
+On 12/04/2009 03:42 AM, KOSAKI Motohiro wrote:
+>  From 24f910b1ac966c21ea5aab825d1f26815b760304 Mon Sep 17 00:00:00 2001
+> From: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
+> Date: Thu, 3 Dec 2009 16:06:47 +0900
+> Subject: [PATCH 3/7] VM_LOCKED check don't need pte lock
+>
+> Currently, page_referenced_one() check VM_LOCKED after taking ptelock.
+> But it's unnecessary. We can check VM_LOCKED before to take lock.
+>
+> This patch does it.
 
-kernel/cpuset.c:2073: warning: passing argument 1 of 'generate_sched_domains' from incompatible pointer type
+Nice optimization.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- kernel/cpuset.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Signed-off-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
 
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 3cf2183..43fb7e8 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -737,7 +737,7 @@ static void do_rebuild_sched_domains(struct work_struct *unused)
- {
- }
- 
--static int generate_sched_domains(struct cpumask **domains,
-+static int generate_sched_domains(cpumask_var_t **domains,
- 			struct sched_domain_attr **attributes)
- {
- 	*domains = NULL;
+Reviewed-by: Rik van Riel <riel@redhat.com>
+
 -- 
-1.6.0.4
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+All rights reversed.
