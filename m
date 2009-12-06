@@ -1,106 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933877AbZLFPmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZLFPrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933877AbZLFPmc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 10:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933833AbZLFPmc
+	id S1755203AbZLFPrN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 10:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZLFPrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 10:42:32 -0500
-Received: from na3sys009aog101.obsmtp.com ([74.125.149.67]:55494 "EHLO
-	na3sys009aog101.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933818AbZLFPmb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 10:42:31 -0500
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>,
-       "Mukker, Atul" <Atul.Mukker@lsi.com>
-Date: Sun, 6 Dec 2009 08:42:28 -0700
-Subject: [PATCH 4/4] scsi: megaraid_sas - version and documentation update
-Thread-Topic: [PATCH 4/4] scsi: megaraid_sas - version and documentation
- update
-Thread-Index: Aco28IhK0BCwqEkwToSTDcG+BIA9kwDb1hagAACJvwADF6mW4AvxomIAAABDOFAAAINGoA==
-Message-ID: <4B6A08C587958942AA3002690DD4F8C3B7EAC2CE@cosmail02.lsi.com>
-References: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
- <4B6A08C587958942AA3002690DD4F8C35C6861A5@cosmail02.lsi.com>
- <4B6A08C587958942AA3002690DD4F8C3B7EAC2C7@cosmail02.lsi.com>
- <4B6A08C587958942AA3002690DD4F8C3B7EAC2C9@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C3B7EAC2C9@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sun, 6 Dec 2009 10:47:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37718 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752912AbZLFPrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 10:47:10 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] PM updates for 2.6.33 (updated)
+Date: Sun, 6 Dec 2009 16:47:38 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912061647.38169.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the version and documentation.
+Hi Linus,
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+Please pull power management updates for 2.6.33 from:
 
----
-Documentation/scsi/ChangeLog.megaraid_sas |   16 ++++++++++++++++
- drivers/scsi/megaraid/megaraid_sas.c      |    2 +-
- drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
- 3 files changed, 20 insertions(+), 4 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-diff -rupN old/Documentation/scsi/ChangeLog.megaraid_sas new/Documentation/scsi/ChangeLog.megaraid_sas
---- old/Documentation/scsi/ChangeLog.megaraid_sas	2009-12-06 04:53:06.000000000 -0500
-+++ new/Documentation/scsi/ChangeLog.megaraid_sas	2009-12-06 05:10:00.000000000 -0500
-@@ -1,3 +1,19 @@
-+1 Release Date    : Thur.  Oct 29, 2009 09:12:45 PST 2009 -
-+			(emaild-id:megaraidlinux@lsi.com)
-+			Bo Yang
-+
-+2 Current Version : 00.00.04.17.1-rc1
-+3 Older Version   : 00.00.04.12
-+
-+1.	Add the pad_0 in mfi frame structure to 0 to fix the
-+	context value larger than 32bit value issue.
-+
-+2.	Add the logic drive list to the driver.  Driver will
-+	keep the logic drive list internal after driver load.
-+
-+3.	driver fixed the device update issue after get the AEN
-+	PD delete/ADD, LD add/delete from FW.
-+
- 1 Release Date    : Tues.  July 28, 2009 10:12:45 PST 2009 -
- 			(emaild-id:megaraidlinux@lsi.com)
- 			Bo Yang
-diff -rupN old/drivers/scsi/megaraid/megaraid_sas.c new/drivers/scsi/megaraid/megaraid_sas.c
---- old/drivers/scsi/megaraid/megaraid_sas.c	2009-12-06 04:53:06.000000000 -0500
-+++ new/drivers/scsi/megaraid/megaraid_sas.c	2009-12-06 04:53:58.000000000 -0500
-@@ -10,7 +10,7 @@
-  *	   2 of the License, or (at your option) any later version.
-  *
-  * FILE		: megaraid_sas.c
-- * Version     : v00.00.04.12-rc1
-+ * Version     : v00.00.04.17.1-rc1
-  *
-  * Authors:
-  *	(email-id : megaraidlinux@lsi.com)
-diff -rupN old/drivers/scsi/megaraid/megaraid_sas.h new/drivers/scsi/megaraid/megaraid_sas.h
---- old/drivers/scsi/megaraid/megaraid_sas.h	2009-12-06 04:53:06.000000000 -0500
-+++ new/drivers/scsi/megaraid/megaraid_sas.h	2009-12-06 05:12:28.000000000 -0500
-@@ -18,9 +18,9 @@
- /*
-  * MegaRAID SAS Driver meta data
-  */
--#define MEGASAS_VERSION				"00.00.04.12-rc1"
--#define MEGASAS_RELDATE				"Sep. 17, 2009"
--#define MEGASAS_EXT_VERSION			"Thu Sep. 17 11:41:51 PST 2009"
-+#define MEGASAS_VERSION			"00.00.04.17.1-rc1"
-+#define MEGASAS_RELDATE			"Oct. 29, 2009"
-+#define MEGASAS_EXT_VERSION		"Thu. Oct. 29, 11:41:51 PST 2009"
- 
- /*
-  * Device IDs
+They include:
+
+* Fixes for the runtime PM framework from Alan Stern and me.
+
+* Hibernate cleanups from Nigel and Jiri Slaby.
+
+* Freezer optimisation from Tejun.
+
+
+ Documentation/power/runtime_pm.txt |   12 ++-
+ drivers/base/power/runtime.c       |   23 ++++---
+ include/linux/pm.h                 |    8 ++-
+ include/linux/pm_runtime.h         |   12 +++
+ kernel/power/Makefile              |    2 +-
+ kernel/power/hibernate.c           |   30 ++++++++
+ kernel/power/main.c                |    1 +
+ kernel/power/process.c             |   14 +++-
+ kernel/power/swap.c                |  107 ++++++++++++++++++++++++++++-
+ kernel/power/swsusp.c              |  130 ------------------------------------
+ 10 files changed, 184 insertions(+), 155 deletions(-)
+
+---------------
+
+Alan Stern (2):
+      PM / Runtime: Export the PM runtime workqueue
+      PM / Runtime: Use deferred_resume flag in pm_request_resume
+
+Jiri Slaby (1):
+      PM / Hibernate: Swap, use KERN_CONT
+
+Nigel Cunningham (2):
+      PM / Hibernate: Move swap functions to kernel/power/swap.c.
+      PM / Hibernate: Shift remaining code from swsusp.c to hibernate.c
+
+Rafael J. Wysocki (5):
+      PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
+      PM / Runtime: Ensure timer_expires is nonzero in pm_schedule_suspend()
+      PM / Runtime: Make documentation of runtime_idle() agree with the code
+      PM / Runtime: Remove unnecessary braces in __pm_runtime_set_status()
+      PM: Add flag for devices capable of generating run-time wake-up events
+
+Tejun Heo (1):
+      PM / freezer: Don't get over-anxious while waiting
+
