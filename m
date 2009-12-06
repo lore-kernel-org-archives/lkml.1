@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbZLFTM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZLFTfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757398AbZLFTM4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 14:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbZLFTMz
+	id S1756267AbZLFTfe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 14:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZLFTfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 14:12:55 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46754 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757193AbZLFTMy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 14:12:54 -0500
-Message-ID: <4B1C01F4.8020304@zytor.com>
-Date: Sun, 06 Dec 2009 11:11:48 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Sun, 6 Dec 2009 14:35:32 -0500
+Received: from reaktio.net ([194.89.68.22]:47942 "EHLO ydin.reaktio.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751740AbZLFTfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 14:35:31 -0500
+X-Greylist: delayed 1089 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Dec 2009 14:35:31 EST
+Date: Sun, 6 Dec 2009 21:17:29 +0200
+From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
+To: "Mr. Teo En Ming (Zhang Enming)" <space.time.universe@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32
+Message-ID: <20091206191729.GN16033@reaktio.net>
+References: <alpine.LFD.2.00.0912022125400.2872@localhost.localdomain> <f712b9cf0912032103j8c576e1kac0c85a42e2c444f@mail.gmail.com>
 MIME-Version: 1.0
-To: Jiri Slaby <jslaby@suse.cz>
-CC: mingo@elte.hu, jirislaby@gmail.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org
-Subject: Re: [PATCH 1/1] X86: use explicit register name for get/put_user
-References: <1260091808-8053-1-git-send-email-jslaby@suse.cz>
-In-Reply-To: <1260091808-8053-1-git-send-email-jslaby@suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f712b9cf0912032103j8c576e1kac0c85a42e2c444f@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/06/2009 01:30 AM, Jiri Slaby wrote:
+On Fri, Dec 04, 2009 at 01:03:03PM +0800, Mr. Teo En Ming (Zhang Enming) wrote:
+> On Thu, Dec 3, 2009 at 1:47 PM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
 > 
-> I don't know if this could ever cause any problems, but changing
-> the input to an explicit register ("a") makes it cleaner in my eyes.
-> There is no need of the back reference.
+> Dear Torvalds,
+> 
+> May I know if Xen paravirt-ops dom0 support will be merged upstream
+> into Linux kernel 2.6.33?
+> 
+> Fedora 12's release notes page speculates that support for Xen dom0
+> will be available in 2.6.33.
+> 
+> Thank you very much.
 > 
 
-It can't: the backreference refers to only the information that is in
-the register constraint, not to anything else.  I really would prefer
-avoiding any changes to working code that aren't justified, simply
-because every time we change an asm() we risk tickling a new obscure bug
-in some old version of gcc.
+Mr. Teo En Ming: Jeremy is the Xen maintainer, and he hasn't sent pull
+request for Xen pv_ops dom0 patches.
 
-As such,
+I don't think he's going to submit Xen dom0 patches for 2.6.33. You
+should talk with Jeremy about it.
 
-Nacked-by: H. Peter Anvin <hpa@zytor.com>
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+-- Pasi
 
