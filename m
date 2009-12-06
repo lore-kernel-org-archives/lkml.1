@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933728AbZLFLij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933750AbZLFLq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933728AbZLFLij (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 06:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933703AbZLFLii
+	id S933750AbZLFLq7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 06:46:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933723AbZLFLq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 06:38:38 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:35227 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933702AbZLFLih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 06:38:37 -0500
-Date: Sun, 6 Dec 2009 12:38:43 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andreas Mohr <andi@lisas.de>, Ondrej Zary <linux@rainbow-software.org>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
-Message-ID: <20091206113843.GA13276@rhlx01.hs-esslingen.de>
-References: <20091205073652.GA30203@rhlx01.hs-esslingen.de> <Pine.LNX.4.44L0.0912051211530.15558-100000@netrider.rowland.org>
+	Sun, 6 Dec 2009 06:46:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46010 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933721AbZLFLq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 06:46:56 -0500
+Message-ID: <4B1B99A5.2080903@redhat.com>
+Date: Sun, 06 Dec 2009 09:46:45 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0912051211530.15558-100000@netrider.rowland.org>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: hermann pitton <hermann-pitton@arcor.de>, Jon Smirl <jonsmirl@gmail.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net>
+In-Reply-To: <20091206065512.GA14651@core.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sat, Dec 05, 2009 at 12:16:13PM -0500, Alan Stern wrote:
-> On Sat, 5 Dec 2009, Andreas Mohr wrote:
+Dmitry Torokhov wrote:
+> Hi,
 > 
-> > Hi,
-> > 
-> > > Furthermore, the patch shows that the second-to-last argument to 
-> > > usb_fill_bulk_urb() -- the completion function -- is NULL.  That is 
-> > > strictly illegal and it should have caused an oops as soon as the URB 
-> > > was used.
-> > 
-> > Then there's definitely a WARN_ON or so missing in
-> > static inline void usb_fill_bulk_urb()
+> On Sun, Dec 06, 2009 at 04:36:33AM +0100, hermann pitton wrote:
+>> Hi,
+>>
+>> Am Freitag, den 04.12.2009, 19:28 -0500 schrieb Jon Smirl:
+>>> On Fri, Dec 4, 2009 at 6:01 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
+>>>> BTW, I just came across a XMP remote that seems to generate 3x64 bit scan
+>>>> codes. Anyone here has docs on the XMP protocol?
+>>> Assuming a general purpose receiver (not one with fixed hardware
+>>> decoding), is it important for Linux to receive IR signals from all
+>>> possible remotes no matter how old or obscure? Or is it acceptable to
+>>> tell the user to throw away their dedicated remote and buy a universal
+>>> multi-function one?  Universal multi-function remotes are $12 in my
+>>> grocery store - I don't even have to go to an electronics store.
+>> finally we have some point here, IMHO, that is not acceptable and I told
+>> you previously not to bet on such. Start some poll and win it, and I'll
+>> shut up :)
+>>
 > 
-> No there isn't.  That inline just fills in a bunch of fields.
-
-After the fact I've been thinking that yes, such an inline helper
-isn't really an appropriate location.
-
-> > And highly likely more checks in those areas that are causing my (and
-> > other people's) ftdi_sio tests and USB audio (MIPS mmap) to fail.
-> > Followup soon.
+> Who would participate in the poll though?
 > 
-> Sometimes having too many checks is worse than having too few, 
-> especially if the failure modes are relatively easy to handle.
+>> To be frank, you are quite mad at this point, or deliver working other
+>> remotes to __all__ for free.
+>>
+> 
+> I do not believe you are being realistic. Sometimes we just need to say
+> that the device is a POS and is just not worth it. Remember, there is
+> still "lirc hole" for the hard core people still using solder to produce
+> something out of the spare electronic components that may be made to
+> work (never mind that it causes the CPU constantly poll the device, not
+> letting it sleep and wasting electricity as a result - just hypotetical
+> example here).
+> 
+> We still need to do cost-benefit analysis and decide whether supporting
+> the exotic setups _in kernel_ makes sense if it encumbers implementation
+> and causes issues to the other 95% people.
 
-True, many checks in all sorts of user places instead of the one core
-place where it matters can clutter things. Especially since the WARN_ON
-checks are unconditional, not a debug-only setting.
+Fully agreed. The costs (our time) to add and keep supporting an in-kernel
+driver for an IR that just one person is still using is higher than 
+asking the user to get a new IR. This time would be better spent adding a new
+driver for other devices.
 
-Andreas Mohr
+Cheers,
+Mauro.
+
+
