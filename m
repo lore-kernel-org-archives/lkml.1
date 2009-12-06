@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934228AbZLFVIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934250AbZLFVJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934228AbZLFVIl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 16:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934195AbZLFVIk
+	id S934250AbZLFVJH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 16:09:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934195AbZLFVJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 16:08:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58071 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933833AbZLFVIj (ORCPT
+	Sun, 6 Dec 2009 16:09:06 -0500
+Received: from smtprelay03.ispgateway.de ([80.67.31.37]:54528 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934162AbZLFVJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 16:08:39 -0500
-Date: Sun, 6 Dec 2009 13:08:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Arjan van de Ven <arjan@infradead.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <20091206121803.70385c33@infradead.org>
-Message-ID: <alpine.LFD.2.00.0912061308060.3560@localhost.localdomain>
-References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl> <alpine.LFD.2.00.0912051635330.3560@localhost.localdomain> <200912060254.10081.rjw@sisk.pl> <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain> <20091206113555.5a646713@infradead.org>
- <alpine.LFD.2.00.0912061144100.3560@localhost.localdomain> <20091206121803.70385c33@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 6 Dec 2009 16:09:06 -0500
+References: <2a6e8c0d0912052133v3e112bdbx2c95b17437bdd182@mail.gmail.com> <cone.1260110279.127989.3159.1000@onepiie> <2a6e8c0d0912060712n32fa2890r9055ddbac440366a@mail.gmail.com>
+Message-ID: <cone.1260133750.467790.3159.1000@onepiie>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <peter@piie.net>
+To: Ian =?UTF-8?B?RS4=?= Morgan <penguin.wrangler@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: acerhdf: BIOS product mismatch due to whitespace
+Date: Sun, 06 Dec 2009 22:09:10 +0100
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ian E. Morgan writes:
 
-
-On Sun, 6 Dec 2009, Arjan van de Ven wrote:
-> > That serio thing is disgusting. We had serious problems with the
-> > serial driver timeouts for boot-time optimizations too, didn't we?
+> On Sun, Dec 6, 2009 at 09:37, Peter Feuerer <peter@piie.net> wrote:
+>>
+>> could you please be so kind and test:
+>> http://piie.net/files/acerhdf_kmod-0.5.22.tar.gz
 > 
-> isn't serio the PS/2 stuff?
+> Yep, that does the trick nicely. Thanks. Are you submitting that for .32-stable?
 
-Oh, you're right, I just assumed it was regular serial. So it's the 
-keyboard and mouse.
+I'll provide a patch for -mm and I think this patch can be also applied to .32
 
-		Linus
+thanks again for reporting and testing,
+--peter
