@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933744AbZLFLkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933770AbZLFLka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933744AbZLFLkX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 06:40:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933716AbZLFLkX
+	id S933770AbZLFLka (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 06:40:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933724AbZLFLk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 06:40:23 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:54398 "EHLO
+	Sun, 6 Dec 2009 06:40:27 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:54396 "EHLO
 	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933703AbZLFLkW (ORCPT
+	with ESMTP id S933698AbZLFLkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 6 Dec 2009 06:40:22 -0500
 From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
        Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] perf: Fix timechart header handling
-Date: Sun, 06 Dec 2009 20:07:29 +0900
-Message-ID: <87ljhg8ioe.fsf@devron.myhome.or.jp>
+Subject: [PATCH 2/3] perf: make common SAMPLE_EVENT parser
+References: <87ljhg8ioe.fsf@devron.myhome.or.jp>
+Date: Sun, 06 Dec 2009 20:08:24 +0900
+In-Reply-To: <87ljhg8ioe.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
+	"Sun, 06 Dec 2009 20:07:29 +0900")
+Message-ID: <87hbs48imv.fsf@devron.myhome.or.jp>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,62 +27,517 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Update "struct trace_entry" to match with current one. And remove
-"size" field from it.
+Currently, sample event data is parsed for each commands, and it is
+assuming that the data is not including other data. (E.g. timechart,
+trace, etc. can't parse the event if it has PERF_SAMPLE_CALLCHAIN)
 
-If it has "size", it become cause of alignment mismatch of structure
-with kernel.
+So, even if we record the superset data for multiple commands at a
+time, commands can't parse. etc.
+
+To fix it, this makes common sample event parser, and use it to parse
+sample event correctly. (PERF_SAMPLE_READ is unsupported for now
+though, it seems to be not using.)
 
 Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 ---
 
- tools/perf/builtin-timechart.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ tools/perf/builtin-kmem.c      |   36 +++++++--------------
+ tools/perf/builtin-report.c    |   39 ++++++++++-------------
+ tools/perf/builtin-sched.c     |   38 +++++++---------------
+ tools/perf/builtin-timechart.c |   56 ++++++++-------------------------
+ tools/perf/builtin-trace.c     |   48 ++++++++--------------------
+ tools/perf/util/event.c        |   67 ++++++++++++++++++++++++++++++++++++++++
+ tools/perf/util/event.h        |   17 +++++++++-
+ 7 files changed, 155 insertions(+), 146 deletions(-)
 
-diff -puN tools/perf/builtin-timechart.c~perf-fix-timechart-header-handling tools/perf/builtin-timechart.c
---- linux-2.6/tools/perf/builtin-timechart.c~perf-fix-timechart-header-handling	2009-12-06 19:27:33.000000000 +0900
-+++ linux-2.6-hirofumi/tools/perf/builtin-timechart.c	2009-12-06 19:27:44.000000000 +0900
-@@ -302,12 +302,11 @@ process_exit_event(event_t *event)
- }
- 
- struct trace_entry {
--	u32			size;
- 	unsigned short		type;
- 	unsigned char		flags;
- 	unsigned char		preempt_count;
- 	int			pid;
--	int			tgid;
-+	int			lock_depth;
+diff -puN tools/perf/util/event.h~perf-make-common-sample tools/perf/util/event.h
+--- linux-2.6/tools/perf/util/event.h~perf-make-common-sample	2009-12-06 19:42:51.000000000 +0900
++++ linux-2.6-hirofumi/tools/perf/util/event.h	2009-12-06 19:42:51.000000000 +0900
+@@ -56,11 +56,25 @@ struct read_event {
+ 	u64 id;
  };
  
- struct power_entry {
-@@ -489,6 +488,7 @@ process_sample_event(event_t *event)
- 	u64 stamp = 0;
- 	u32 cpu = 0;
- 	u32 pid = 0;
-+	u32 size, *size_ptr;
+-struct sample_event{
++struct sample_event {
+ 	struct perf_event_header        header;
+ 	u64 array[];
+ };
+ 
++struct sample_data {
++	u64 ip;
++	u32 pid, tid;
++	u64 time;
++	u64 addr;
++	u64 id;
++	u64 stream_id;
++	u32 cpu;
++	u64 period;
++	struct ip_callchain *callchain;
++	u32 raw_size;
++	void *raw_data;
++};
++
+ #define BUILD_ID_SIZE 20
+ 
+ struct build_id_event {
+@@ -155,5 +169,6 @@ int event__process_task(event_t *self);
+ struct addr_location;
+ int event__preprocess_sample(const event_t *self, struct addr_location *al,
+ 			     symbol_filter_t filter);
++int event__parse_sample(event_t *event, u64 type, struct sample_data *data);
+ 
+ #endif /* __PERF_RECORD_H */
+diff -puN tools/perf/builtin-report.c~perf-make-common-sample tools/perf/builtin-report.c
+--- linux-2.6/tools/perf/builtin-report.c~perf-make-common-sample	2009-12-06 19:42:51.000000000 +0900
++++ linux-2.6-hirofumi/tools/perf/builtin-report.c	2009-12-06 19:42:51.000000000 +0900
+@@ -605,44 +605,41 @@ static int validate_chain(struct ip_call
+ 
+ static int process_sample_event(event_t *event)
+ {
+-	u64 ip = event->ip.ip;
+-	u64 period = 1;
+-	void *more_data = event->ip.__more_data;
+-	struct ip_callchain *chain = NULL;
++	struct sample_data data;
+ 	int cpumode;
+ 	struct addr_location al;
+-	struct thread *thread = threads__findnew(event->ip.pid);
++	struct thread *thread;
+ 
+-	if (sample_type & PERF_SAMPLE_PERIOD) {
+-		period = *(u64 *)more_data;
+-		more_data += sizeof(u64);
+-	}
++	memset(&data, 0, sizeof(data));
++	data.period = 1;
++
++	event__parse_sample(event, sample_type, &data);
+ 
+ 	dump_printf("(IP, %d): %d/%d: %p period: %Ld\n",
+ 		event->header.misc,
+-		event->ip.pid, event->ip.tid,
+-		(void *)(long)ip,
+-		(long long)period);
++		data.pid, data.tid,
++		(void *)(long)data.ip,
++		(long long)data.period);
+ 
+ 	if (sample_type & PERF_SAMPLE_CALLCHAIN) {
+ 		unsigned int i;
+ 
+-		chain = (void *)more_data;
+-
+-		dump_printf("... chain: nr:%Lu\n", chain->nr);
++		dump_printf("... chain: nr:%Lu\n", data.callchain->nr);
+ 
+-		if (validate_chain(chain, event) < 0) {
++		if (validate_chain(data.callchain, event) < 0) {
+ 			pr_debug("call-chain problem with event, "
+ 				 "skipping it.\n");
+ 			return 0;
+ 		}
+ 
+ 		if (dump_trace) {
+-			for (i = 0; i < chain->nr; i++)
+-				dump_printf("..... %2d: %016Lx\n", i, chain->ips[i]);
++			for (i = 0; i < data.callchain->nr; i++)
++				dump_printf("..... %2d: %016Lx\n",
++					    i, data.callchain->ips[i]);
+ 		}
+ 	}
+ 
++	thread = threads__findnew(data.pid);
+ 	if (thread == NULL) {
+ 		pr_debug("problem processing %d event, skipping it.\n",
+ 			event->header.type);
+@@ -657,7 +654,7 @@ static int process_sample_event(event_t 
+ 	cpumode = event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
+ 
+ 	thread__find_addr_location(thread, cpumode,
+-				   MAP__FUNCTION, ip, &al, NULL);
++				   MAP__FUNCTION, data.ip, &al, NULL);
+ 	/*
+ 	 * We have to do this here as we may have a dso with no symbol hit that
+ 	 * has a name longer than the ones with symbols sampled.
+@@ -675,12 +672,12 @@ static int process_sample_event(event_t 
+ 	if (sym_list && al.sym && !strlist__has_entry(sym_list, al.sym->name))
+ 		return 0;
+ 
+-	if (hist_entry__add(&al, chain, period)) {
++	if (hist_entry__add(&al, data.callchain, data.period)) {
+ 		pr_debug("problem incrementing symbol count, skipping event\n");
+ 		return -1;
+ 	}
+ 
+-	event__stats.total += period;
++	event__stats.total += data.period;
+ 
+ 	return 0;
+ }
+diff -puN tools/perf/util/event.c~perf-make-common-sample tools/perf/util/event.c
+--- linux-2.6/tools/perf/util/event.c~perf-make-common-sample	2009-12-06 19:42:51.000000000 +0900
++++ linux-2.6-hirofumi/tools/perf/util/event.c	2009-12-06 19:42:51.000000000 +0900
+@@ -310,3 +310,70 @@ int event__preprocess_sample(const event
+ 			al->level == 'H' ? "[hypervisor]" : "<not found>");
+ 	return 0;
+ }
++
++int event__parse_sample(event_t *event, u64 type, struct sample_data *data)
++{
++	u64 *array = event->sample.array;
++
++	if (type & PERF_SAMPLE_IP) {
++		data->ip = event->ip.ip;
++		array++;
++	}
++
++	if (type & PERF_SAMPLE_TID) {
++		u32 *p = (u32 *)array;
++		data->pid = p[0];
++		data->tid = p[1];
++		array++;
++	}
++
++	if (type & PERF_SAMPLE_TIME) {
++		data->time = *array;
++		array++;
++	}
++
++	if (type & PERF_SAMPLE_ADDR) {
++		data->addr = *array;
++		array++;
++	}
++
++	if (type & PERF_SAMPLE_ID) {
++		data->id = *array;
++		array++;
++	}
++
++	if (type & PERF_SAMPLE_STREAM_ID) {
++		data->stream_id = *array;
++		array++;
++	}
++
++	if (type & PERF_SAMPLE_CPU) {
++		u32 *p = (u32 *)array;
++		data->cpu = *p;
++		array++;
++	}
++
++	if (type & PERF_SAMPLE_PERIOD) {
++		data->period = *array;
++		array++;
++	}
++
++	if (type & PERF_SAMPLE_READ) {
++		pr_debug("PERF_SAMPLE_READ is unsuported for now\n");
++		return -1;
++	}
++
++	if (type & PERF_SAMPLE_CALLCHAIN) {
++		data->callchain = (struct ip_callchain *)array;
++		array += 1 + data->callchain->nr;
++	}
++
++	if (type & PERF_SAMPLE_RAW) {
++		u32 *p = (u32 *)array;
++		data->raw_size = *p;
++		p++;
++		data->raw_data = p;
++	}
++
++	return 0;
++}
+diff -puN tools/perf/builtin-annotate.c~perf-make-common-sample tools/perf/builtin-annotate.c
+diff -puN tools/perf/builtin-kmem.c~perf-make-common-sample tools/perf/builtin-kmem.c
+--- linux-2.6/tools/perf/builtin-kmem.c~perf-make-common-sample	2009-12-06 19:42:51.000000000 +0900
++++ linux-2.6-hirofumi/tools/perf/builtin-kmem.c	2009-12-06 19:42:51.000000000 +0900
+@@ -320,35 +320,23 @@ process_raw_event(event_t *raw_event __u
+ 
+ static int process_sample_event(event_t *event)
+ {
+-	u64 ip = event->ip.ip;
+-	u64 timestamp = -1;
+-	u32 cpu = -1;
+-	u64 period = 1;
+-	void *more_data = event->ip.__more_data;
+-	struct thread *thread = threads__findnew(event->ip.pid);
+-
+-	if (sample_type & PERF_SAMPLE_TIME) {
+-		timestamp = *(u64 *)more_data;
+-		more_data += sizeof(u64);
+-	}
++	struct sample_data data;
++	struct thread *thread;
+ 
+-	if (sample_type & PERF_SAMPLE_CPU) {
+-		cpu = *(u32 *)more_data;
+-		more_data += sizeof(u32);
+-		more_data += sizeof(u32); /* reserved */
+-	}
++	memset(&data, 0, sizeof(data));
++	data.time = -1;
++	data.cpu = -1;
++	data.period = 1;
+ 
+-	if (sample_type & PERF_SAMPLE_PERIOD) {
+-		period = *(u64 *)more_data;
+-		more_data += sizeof(u64);
+-	}
++	event__parse_sample(event, sample_type, &data);
+ 
+ 	dump_printf("(IP, %d): %d/%d: %p period: %Ld\n",
+ 		event->header.misc,
+-		event->ip.pid, event->ip.tid,
+-		(void *)(long)ip,
+-		(long long)period);
++		data.pid, data.tid,
++		(void *)(long)data.ip,
++		(long long)data.period);
+ 
++	thread = threads__findnew(event->ip.pid);
+ 	if (thread == NULL) {
+ 		pr_debug("problem processing %d event, skipping it.\n",
+ 			 event->header.type);
+@@ -357,7 +345,7 @@ static int process_sample_event(event_t 
+ 
+ 	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
+ 
+-	process_raw_event(event, more_data, cpu, timestamp, thread);
++	process_raw_event(event, data.raw_data, data.cpu, data.time, thread);
+ 
+ 	return 0;
+ }
+diff -puN tools/perf/builtin-sched.c~perf-make-common-sample tools/perf/builtin-sched.c
+--- linux-2.6/tools/perf/builtin-sched.c~perf-make-common-sample	2009-12-06 19:42:51.000000000 +0900
++++ linux-2.6-hirofumi/tools/perf/builtin-sched.c	2009-12-06 19:42:51.000000000 +0900
+@@ -1598,40 +1598,26 @@ process_raw_event(event_t *raw_event __u
+ 
+ static int process_sample_event(event_t *event)
+ {
++	struct sample_data data;
+ 	struct thread *thread;
+-	u64 ip = event->ip.ip;
+-	u64 timestamp = -1;
+-	u32 cpu = -1;
+-	u64 period = 1;
+-	void *more_data = event->ip.__more_data;
+ 
+ 	if (!(sample_type & PERF_SAMPLE_RAW))
+ 		return 0;
+ 
+-	thread = threads__findnew(event->ip.pid);
++	memset(&data, 0, sizeof(data));
++	data.time = -1;
++	data.cpu = -1;
++	data.period = -1;
+ 
+-	if (sample_type & PERF_SAMPLE_TIME) {
+-		timestamp = *(u64 *)more_data;
+-		more_data += sizeof(u64);
+-	}
+-
+-	if (sample_type & PERF_SAMPLE_CPU) {
+-		cpu = *(u32 *)more_data;
+-		more_data += sizeof(u32);
+-		more_data += sizeof(u32); /* reserved */
+-	}
+-
+-	if (sample_type & PERF_SAMPLE_PERIOD) {
+-		period = *(u64 *)more_data;
+-		more_data += sizeof(u64);
+-	}
++	event__parse_sample(event, sample_type, &data);
+ 
+ 	dump_printf("(IP, %d): %d/%d: %p period: %Ld\n",
+ 		event->header.misc,
+-		event->ip.pid, event->ip.tid,
+-		(void *)(long)ip,
+-		(long long)period);
++		data.pid, data.tid,
++		(void *)(long)data.ip,
++		(long long)data.period);
+ 
++	thread = threads__findnew(data.pid);
+ 	if (thread == NULL) {
+ 		pr_debug("problem processing %d event, skipping it.\n",
+ 			 event->header.type);
+@@ -1640,10 +1626,10 @@ static int process_sample_event(event_t 
+ 
+ 	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
+ 
+-	if (profile_cpu != -1 && profile_cpu != (int) cpu)
++	if (profile_cpu != -1 && profile_cpu != (int)data.cpu)
+ 		return 0;
+ 
+-	process_raw_event(event, more_data, cpu, timestamp, thread);
++	process_raw_event(event, data.raw_data, data.cpu, data.time, thread);
+ 
+ 	return 0;
+ }
+diff -puN tools/perf/builtin-timechart.c~perf-make-common-sample tools/perf/builtin-timechart.c
+--- linux-2.6/tools/perf/builtin-timechart.c~perf-make-common-sample	2009-12-06 19:42:51.000000000 +0900
++++ linux-2.6-hirofumi/tools/perf/builtin-timechart.c	2009-12-06 19:42:51.000000000 +0900
+@@ -483,48 +483,22 @@ static void sched_switch(int cpu, u64 ti
+ static int
+ process_sample_event(event_t *event)
+ {
+-	int cursor = 0;
+-	u64 addr = 0;
+-	u64 stamp = 0;
+-	u32 cpu = 0;
+-	u32 pid = 0;
+-	u32 size, *size_ptr;
++	struct sample_data data;
  	struct trace_entry *te;
  
- 	if (sample_type & PERF_SAMPLE_IP)
-@@ -518,9 +518,13 @@ process_sample_event(event_t *event)
- 	if (sample_type & PERF_SAMPLE_PERIOD)
- 		cursor++;
+-	if (sample_type & PERF_SAMPLE_IP)
+-		cursor++;
+-
+-	if (sample_type & PERF_SAMPLE_TID) {
+-		pid = event->sample.array[cursor]>>32;
+-		cursor++;
+-	}
+-	if (sample_type & PERF_SAMPLE_TIME) {
+-		stamp = event->sample.array[cursor++];
++	memset(&data, 0, sizeof(data));
  
--	te = (void *)&event->sample.array[cursor];
-+	size_ptr = (void *)&event->sample.array[cursor];
+-		if (!first_time || first_time > stamp)
+-			first_time = stamp;
+-		if (last_time < stamp)
+-			last_time = stamp;
++	event__parse_sample(event, sample_type, &data);
  
--	if (sample_type & PERF_SAMPLE_RAW && te->size > 0) {
-+	size = *size_ptr;
-+	size_ptr++;
-+
-+	te = (void *)size_ptr;
-+	if (sample_type & PERF_SAMPLE_RAW && size > 0) {
++	if (sample_type & PERF_SAMPLE_TIME) {
++		if (!first_time || first_time > data.time)
++			first_time = data.time;
++		if (last_time < data.time)
++			last_time = data.time;
+ 	}
+-	if (sample_type & PERF_SAMPLE_ADDR)
+-		addr = event->sample.array[cursor++];
+-	if (sample_type & PERF_SAMPLE_ID)
+-		cursor++;
+-	if (sample_type & PERF_SAMPLE_STREAM_ID)
+-		cursor++;
+-	if (sample_type & PERF_SAMPLE_CPU)
+-		cpu = event->sample.array[cursor++] & 0xFFFFFFFF;
+-	if (sample_type & PERF_SAMPLE_PERIOD)
+-		cursor++;
+-
+-	size_ptr = (void *)&event->sample.array[cursor];
+-
+-	size = *size_ptr;
+-	size_ptr++;
+ 
+-	te = (void *)size_ptr;
+-	if (sample_type & PERF_SAMPLE_RAW && size > 0) {
++	te = (void *)data.raw_data;
++	if (sample_type & PERF_SAMPLE_RAW && data.raw_size > 0) {
  		char *event_str;
  		struct power_entry *pe;
  
+@@ -536,19 +510,19 @@ process_sample_event(event_t *event)
+ 			return 0;
+ 
+ 		if (strcmp(event_str, "power:power_start") == 0)
+-			c_state_start(cpu, stamp, pe->value);
++			c_state_start(data.cpu, data.time, pe->value);
+ 
+ 		if (strcmp(event_str, "power:power_end") == 0)
+-			c_state_end(cpu, stamp);
++			c_state_end(data.cpu, data.time);
+ 
+ 		if (strcmp(event_str, "power:power_frequency") == 0)
+-			p_state_change(cpu, stamp, pe->value);
++			p_state_change(data.cpu, data.time, pe->value);
+ 
+ 		if (strcmp(event_str, "sched:sched_wakeup") == 0)
+-			sched_wakeup(cpu, stamp, pid, te);
++			sched_wakeup(data.cpu, data.time, data.pid, te);
+ 
+ 		if (strcmp(event_str, "sched:sched_switch") == 0)
+-			sched_switch(cpu, stamp, te);
++			sched_switch(data.cpu, data.time, te);
+ 	}
+ 	return 0;
+ }
+diff -puN tools/perf/builtin-trace.c~perf-make-common-sample tools/perf/builtin-trace.c
+--- linux-2.6/tools/perf/builtin-trace.c~perf-make-common-sample	2009-12-06 19:42:51.000000000 +0900
++++ linux-2.6-hirofumi/tools/perf/builtin-trace.c	2009-12-06 19:42:51.000000000 +0900
+@@ -66,58 +66,40 @@ static u64			sample_type;
+ 
+ static int process_sample_event(event_t *event)
+ {
+-	u64 ip = event->ip.ip;
+-	u64 timestamp = -1;
+-	u32 cpu = -1;
+-	u64 period = 1;
+-	void *more_data = event->ip.__more_data;
+-	struct thread *thread = threads__findnew(event->ip.pid);
+-
+-	if (sample_type & PERF_SAMPLE_TIME) {
+-		timestamp = *(u64 *)more_data;
+-		more_data += sizeof(u64);
+-	}
++	struct sample_data data;
++	struct thread *thread;
+ 
+-	if (sample_type & PERF_SAMPLE_CPU) {
+-		cpu = *(u32 *)more_data;
+-		more_data += sizeof(u32);
+-		more_data += sizeof(u32); /* reserved */
+-	}
++	memset(&data, 0, sizeof(data));
++	data.time = -1;
++	data.cpu = -1;
++	data.period = 1;
+ 
+-	if (sample_type & PERF_SAMPLE_PERIOD) {
+-		period = *(u64 *)more_data;
+-		more_data += sizeof(u64);
+-	}
++	event__parse_sample(event, sample_type, &data);
+ 
+ 	dump_printf("(IP, %d): %d/%d: %p period: %Ld\n",
+ 		event->header.misc,
+-		event->ip.pid, event->ip.tid,
+-		(void *)(long)ip,
+-		(long long)period);
++		data.pid, data.tid,
++		(void *)(long)data.ip,
++		(long long)data.period);
+ 
++	thread = threads__findnew(event->ip.pid);
+ 	if (thread == NULL) {
+ 		pr_debug("problem processing %d event, skipping it.\n",
+ 			 event->header.type);
+ 		return -1;
+ 	}
+ 
+-	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
+-
+ 	if (sample_type & PERF_SAMPLE_RAW) {
+-		struct {
+-			u32 size;
+-			char data[0];
+-		} *raw = more_data;
+-
+ 		/*
+ 		 * FIXME: better resolve from pid from the struct trace_entry
+ 		 * field, although it should be the same than this perf
+ 		 * event pid
+ 		 */
+-		scripting_ops->process_event(cpu, raw->data, raw->size,
+-					     timestamp, thread->comm);
++		scripting_ops->process_event(data.cpu, data.raw_data,
++					     data.raw_size,
++					     data.time, thread->comm);
+ 	}
+-	event__stats.total += period;
++	event__stats.total += data.period;
+ 
+ 	return 0;
+ }
 _
-
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
