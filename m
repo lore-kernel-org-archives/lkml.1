@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbZLFXjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZLFXlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758199AbZLFXjE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 18:39:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbZLFXi7
+	id S1758223AbZLFXlG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 18:41:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757837AbZLFXlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 18:38:59 -0500
-Received: from kroah.org ([198.145.64.141]:33833 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 18:41:01 -0500
+Received: from kroah.org ([198.145.64.141]:33839 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758159AbZLFXiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 18:38:50 -0500
+	id S1758164AbZLFXiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 18:38:51 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 15:32:10 2009
-Message-Id: <20091206233210.538424805@mini.kroah.org>
+Message-Id: <20091206233210.667934007@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 15:30:48 -0800
+Date: Sun, 06 Dec 2009 15:30:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Libin Yang <libin.yang@amd.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [16/20] USB: ohci: quirk AMD prefetch for USB 1.1 ISO transfer
+       Oliver Neukum <oneukum@suse.de>,
+       Matthias Urlichs <smurf@smurf.noris.de>
+Subject: [17/20] USB: suspend/resume support for option driver
 References: <20091206233032.387950574@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ohci-quirk-amd-prefetch-for-usb-1.1-iso-transfer.patch
+Content-Disposition: inline; filename=usb-suspend-resume-support-for-option-driver.patch
 In-Reply-To: <20091206233711.GA11609@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,149 +30,172 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Libin Yang <libin.yang@amd.com>
+From: Oliver Neukum <oliver@neukum.org>
 
-commit a1f17a872bc7b1cb7efdd5486a2963e88a536e61 upstream.
+commit 4901b2c34ecb6fc45909228ad269c8126efe4401 upstream.
 
-The following patch in the driver is required to avoid USB 1.1 device
-failures that may occur due to requests from USB OHCI controllers may
-be overwritten if the latency for any pending request by the USB
-controller is very long (in the range of milliseconds).
+This patch implements suspend and resume methods for the
+option driver. With my hardware I can even suspend the system
+and keep up a connection for a short time.
 
-Signed-off-by: Libin Yang <libin.yang@amd.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+Signed-Off-By: Matthias Urlichs <smurf@smurf.noris.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ohci-hcd.c |    5 +++++
- drivers/usb/host/ohci-pci.c |   20 ++++++++++++++++++++
- drivers/usb/host/ohci-q.c   |   18 ++++++++++++------
- drivers/usb/host/ohci.h     |    9 +++++++++
- 4 files changed, 46 insertions(+), 6 deletions(-)
+ drivers/usb/serial/option.c |   86 ++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 80 insertions(+), 6 deletions(-)
 
---- a/drivers/usb/host/ohci-hcd.c
-+++ b/drivers/usb/host/ohci-hcd.c
-@@ -89,6 +89,7 @@ static int ohci_restart (struct ohci_hcd
- #ifdef CONFIG_PCI
- static void quirk_amd_pll(int state);
- static void amd_iso_dev_put(void);
-+static void sb800_prefetch(struct ohci_hcd *ohci, int on);
- #else
- static inline void quirk_amd_pll(int state)
- {
-@@ -98,6 +99,10 @@ static inline void amd_iso_dev_put(void)
- {
- 	return;
- }
-+static inline void sb800_prefetch(struct ohci_hcd *ohci, int on)
-+{
-+	return;
-+}
- #endif
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -62,6 +62,8 @@ static int  option_tiocmget(struct tty_s
+ static int  option_tiocmset(struct tty_struct *tty, struct file *file,
+ 				unsigned int set, unsigned int clear);
+ static int  option_send_setup(struct tty_struct *tty, struct usb_serial_port *port);
++static int  option_suspend(struct usb_serial *serial, pm_message_t message);
++static int  option_resume(struct usb_serial *serial);
  
+ /* Vendor and product IDs */
+ #define OPTION_VENDOR_ID			0x0AF0
+@@ -511,6 +513,8 @@ static struct usb_driver option_driver =
+ 	.name       = "option",
+ 	.probe      = usb_serial_probe,
+ 	.disconnect = usb_serial_disconnect,
++	.suspend    = usb_serial_suspend,
++	.resume     = usb_serial_resume,
+ 	.id_table   = option_ids,
+ 	.no_dynamic_id = 	1,
+ };
+@@ -539,6 +543,8 @@ static struct usb_serial_driver option_1
+ 	.attach            = option_startup,
+ 	.shutdown          = option_shutdown,
+ 	.read_int_callback = option_instat_callback,
++	.suspend           = option_suspend,
++	.resume            = option_resume,
+ };
  
---- a/drivers/usb/host/ohci-pci.c
-+++ b/drivers/usb/host/ohci-pci.c
-@@ -177,6 +177,13 @@ static int ohci_quirk_amd700(struct usb_
- 		return 0;
- 
- 	pci_read_config_byte(amd_smbus_dev, PCI_REVISION_ID, &rev);
-+
-+	/* SB800 needs pre-fetch fix */
-+	if ((rev >= 0x40) && (rev <= 0x4f)) {
-+		ohci->flags |= OHCI_QUIRK_AMD_PREFETCH;
-+		ohci_dbg(ohci, "enabled AMD prefetch quirk\n");
-+	}
-+
- 	if ((rev > 0x3b) || (rev < 0x30)) {
- 		pci_dev_put(amd_smbus_dev);
- 		amd_smbus_dev = NULL;
-@@ -262,6 +269,19 @@ static void amd_iso_dev_put(void)
- 
- }
- 
-+static void sb800_prefetch(struct ohci_hcd *ohci, int on)
-+{
-+	struct pci_dev *pdev;
-+	u16 misc;
-+
-+	pdev = to_pci_dev(ohci_to_hcd(ohci)->self.controller);
-+	pci_read_config_word(pdev, 0x50, &misc);
-+	if (on == 0)
-+		pci_write_config_word(pdev, 0x50, misc & 0xfcff);
-+	else
-+		pci_write_config_word(pdev, 0x50, misc | 0x0300);
-+}
-+
- /* List of quirks for OHCI */
- static const struct pci_device_id ohci_pci_quirks[] = {
- 	{
---- a/drivers/usb/host/ohci-q.c
-+++ b/drivers/usb/host/ohci-q.c
-@@ -49,9 +49,12 @@ __acquires(ohci->lock)
- 	switch (usb_pipetype (urb->pipe)) {
- 	case PIPE_ISOCHRONOUS:
- 		ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs--;
--		if (ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs == 0
--				&& quirk_amdiso(ohci))
--			quirk_amd_pll(1);
-+		if (ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs == 0) {
-+			if (quirk_amdiso(ohci))
-+				quirk_amd_pll(1);
-+			if (quirk_amdprefetch(ohci))
-+				sb800_prefetch(ohci, 0);
-+		}
- 		break;
- 	case PIPE_INTERRUPT:
- 		ohci_to_hcd(ohci)->self.bandwidth_int_reqs--;
-@@ -680,9 +683,12 @@ static void td_submit_urb (
- 				data + urb->iso_frame_desc [cnt].offset,
- 				urb->iso_frame_desc [cnt].length, urb, cnt);
+ static int debug;
+@@ -809,10 +815,10 @@ static void option_instat_callback(struc
+ 				req_pkt->bRequestType, req_pkt->bRequest);
  		}
--		if (ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs == 0
--				&& quirk_amdiso(ohci))
--			quirk_amd_pll(0);
-+		if (ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs == 0) {
-+			if (quirk_amdiso(ohci))
-+				quirk_amd_pll(0);
-+			if (quirk_amdprefetch(ohci))
-+				sb800_prefetch(ohci, 1);
-+		}
- 		periodic = ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs++ == 0
- 			&& ohci_to_hcd(ohci)->self.bandwidth_int_reqs == 0;
- 		break;
---- a/drivers/usb/host/ohci.h
-+++ b/drivers/usb/host/ohci.h
-@@ -402,6 +402,7 @@ struct ohci_hcd {
- #define	OHCI_QUIRK_FRAME_NO	0x80			/* no big endian frame_no shift */
- #define	OHCI_QUIRK_HUB_POWER	0x100			/* distrust firmware power/oc setup */
- #define	OHCI_QUIRK_AMD_ISO	0x200			/* ISO transfers*/
-+#define	OHCI_QUIRK_AMD_PREFETCH	0x400			/* pre-fetch for ISO transfer */
- 	// there are also chip quirks/bugs in init logic
+ 	} else
+-		dbg("%s: error %d", __func__, status);
++		err("%s: error %d", __func__, status);
  
- 	struct work_struct	nec_work;	/* Worker for NEC quirk */
-@@ -433,6 +434,10 @@ static inline int quirk_amdiso(struct oh
- {
- 	return ohci->flags & OHCI_QUIRK_AMD_ISO;
+ 	/* Resubmit urb so we continue receiving IRQ data */
+-	if (status != -ESHUTDOWN) {
++	if (status != -ESHUTDOWN && status != -ENOENT) {
+ 		urb->dev = serial->dev;
+ 		err = usb_submit_urb(urb, GFP_ATOMIC);
+ 		if (err)
+@@ -831,7 +837,6 @@ static int option_write_room(struct tty_
+ 
+ 	portdata = usb_get_serial_port_data(port);
+ 
+-
+ 	for (i = 0; i < N_OUT_URB; i++) {
+ 		this_urb = portdata->out_urbs[i];
+ 		if (this_urb && !test_bit(i, &portdata->out_busy))
+@@ -1090,14 +1095,12 @@ bail_out_error:
+ 	return 1;
  }
-+static inline int quirk_amdprefetch(struct ohci_hcd *ohci)
-+{
-+	return ohci->flags & OHCI_QUIRK_AMD_PREFETCH;
+ 
+-static void option_shutdown(struct usb_serial *serial)
++static void stop_read_write_urbs(struct usb_serial *serial)
+ {
+ 	int i, j;
+ 	struct usb_serial_port *port;
+ 	struct option_port_private *portdata;
+ 
+-	dbg("%s", __func__);
+-
+ 	/* Stop reading/writing urbs */
+ 	for (i = 0; i < serial->num_ports; ++i) {
+ 		port = serial->port[i];
+@@ -1107,6 +1110,17 @@ static void option_shutdown(struct usb_s
+ 		for (j = 0; j < N_OUT_URB; j++)
+ 			usb_kill_urb(portdata->out_urbs[j]);
+ 	}
 +}
- #else
- static inline int quirk_nec(struct ohci_hcd *ohci)
- {
-@@ -446,6 +451,10 @@ static inline int quirk_amdiso(struct oh
- {
- 	return 0;
- }
-+static inline int quirk_amdprefetch(struct ohci_hcd *ohci)
++
++static void option_shutdown(struct usb_serial *serial)
 +{
++	int i, j;
++	struct usb_serial_port *port;
++	struct option_port_private *portdata;
++
++	dbg("%s", __func__);
++
++	stop_read_write_urbs(serial);
+ 
+ 	/* Now free them */
+ 	for (i = 0; i < serial->num_ports; ++i) {
+@@ -1137,6 +1151,66 @@ static void option_shutdown(struct usb_s
+ 	}
+ }
+ 
++static int option_suspend(struct usb_serial *serial, pm_message_t message)
++{
++	dbg("%s entered", __func__);
++	stop_read_write_urbs(serial);
++
 +	return 0;
 +}
- #endif
- 
- /* convert between an hcd pointer and the corresponding ohci_hcd */
++
++static int option_resume(struct usb_serial *serial)
++{
++	int err, i, j;
++	struct usb_serial_port *port;
++	struct urb *urb;
++	struct option_port_private *portdata;
++
++	dbg("%s entered", __func__);
++	/* get the interrupt URBs resubmitted unconditionally */
++	for (i = 0; i < serial->num_ports; i++) {
++		port = serial->port[i];
++		if (!port->interrupt_in_urb) {
++			dbg("%s: No interrupt URB for port %d\n", __func__, i);
++			continue;
++		}
++		port->interrupt_in_urb->dev = serial->dev;
++		err = usb_submit_urb(port->interrupt_in_urb, GFP_NOIO);
++		dbg("Submitted interrupt URB for port %d (result %d)", i, err);
++		if (err < 0) {
++			err("%s: Error %d for interrupt URB of port%d",
++				 __func__, err, i);
++			return err;
++		}
++	}
++
++	for (i = 0; i < serial->num_ports; i++) {
++		/* walk all ports */
++		port = serial->port[i];
++		portdata = usb_get_serial_port_data(port);
++		mutex_lock(&port->mutex);
++
++		/* skip closed ports */
++		if (!port->port.count) {
++			mutex_unlock(&port->mutex);
++			continue;
++		}
++
++		for (j = 0; j < N_IN_URB; j++) {
++			urb = portdata->in_urbs[j];
++			err = usb_submit_urb(urb, GFP_NOIO);
++			if (err < 0) {
++				mutex_unlock(&port->mutex);
++				err("%s: Error %d for bulk URB %d",
++					 __func__, err, i);
++				return err;
++			}
++		}
++		mutex_unlock(&port->mutex);
++	}
++	return 0;
++}
++
+ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_VERSION(DRIVER_VERSION);
 
 
