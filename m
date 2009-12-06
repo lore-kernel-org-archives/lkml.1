@@ -1,319 +1,495 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934278AbZLFSF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934302AbZLFSFC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934278AbZLFSF4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 13:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934224AbZLFSFp
+	id S934302AbZLFSFC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 13:05:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934247AbZLFSE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 13:05:45 -0500
-Received: from www.tglx.de ([62.245.132.106]:33318 "EHLO www.tglx.de"
+	Sun, 6 Dec 2009 13:04:58 -0500
+Received: from www.tglx.de ([62.245.132.106]:33328 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934231AbZLFSEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 13:04:04 -0500
-Message-Id: <20091206111958.106929418@linutronix.de>
+	id S934249AbZLFSEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 13:04:07 -0500
+Message-Id: <20091206111958.146106628@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sun, 06 Dec 2009 18:03:44 -0000
+Date: Sun, 06 Dec 2009 18:03:50 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <peterz@infradead.org>,
        Linux-Arch <linux-arch@vger.kernel.org>
-Subject: [patch 21/23] hrtimers: Convert to raw_spinlocks
+Subject: [patch 22/23] perf_event: Convert to raw_spinlock
 References: <20091206110944.492100233@linutronix.de>
-Content-Disposition: inline; filename=timers-convert-to-core-locks.patch
+Content-Disposition: inline; filename=perf-convert-to-core-lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- include/linux/hrtimer.h   |    2 -
- kernel/hrtimer.c          |   50 +++++++++++++++++++++++-----------------------
- kernel/time/timer_list.c  |    6 ++---
- kernel/time/timer_stats.c |   14 ++++++------
- 4 files changed, 36 insertions(+), 36 deletions(-)
+ include/linux/perf_event.h |    2 
+ kernel/hw_breakpoint.c     |    4 -
+ kernel/perf_event.c        |  106 ++++++++++++++++++++++-----------------------
+ 3 files changed, 56 insertions(+), 56 deletions(-)
 
-Index: linux-2.6-tip/include/linux/hrtimer.h
+Index: linux-2.6-tip/include/linux/perf_event.h
 ===================================================================
---- linux-2.6-tip.orig/include/linux/hrtimer.h
-+++ linux-2.6-tip/include/linux/hrtimer.h
-@@ -168,7 +168,7 @@ struct hrtimer_clock_base {
-  * @nr_events:		Total number of timer interrupt events
-  */
- struct hrtimer_cpu_base {
+--- linux-2.6-tip.orig/include/linux/perf_event.h
++++ linux-2.6-tip/include/linux/perf_event.h
+@@ -685,7 +685,7 @@ struct perf_event_context {
+ 	 * Protect the states of the events in the list,
+ 	 * nr_active, and the list:
+ 	 */
 -	spinlock_t			lock;
 +	raw_spinlock_t			lock;
- 	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
- #ifdef CONFIG_HIGH_RES_TIMERS
- 	ktime_t				expires_next;
-Index: linux-2.6-tip/kernel/hrtimer.c
+ 	/*
+ 	 * Protect the list of events.  Locking either mutex or lock
+ 	 * is sufficient to ensure the list doesn't change; to change
+Index: linux-2.6-tip/kernel/hw_breakpoint.c
 ===================================================================
---- linux-2.6-tip.orig/kernel/hrtimer.c
-+++ linux-2.6-tip/kernel/hrtimer.c
-@@ -127,11 +127,11 @@ struct hrtimer_clock_base *lock_hrtimer_
- 	for (;;) {
- 		base = timer->base;
- 		if (likely(base != NULL)) {
--			spin_lock_irqsave(&base->cpu_base->lock, *flags);
-+			raw_spin_lock_irqsave(&base->cpu_base->lock, *flags);
- 			if (likely(base == timer->base))
- 				return base;
- 			/* The timer has migrated to another CPU: */
--			spin_unlock_irqrestore(&base->cpu_base->lock, *flags);
-+			raw_spin_unlock_irqrestore(&base->cpu_base->lock, *flags);
- 		}
- 		cpu_relax();
- 	}
-@@ -208,13 +208,13 @@ again:
+--- linux-2.6-tip.orig/kernel/hw_breakpoint.c
++++ linux-2.6-tip/kernel/hw_breakpoint.c
+@@ -130,7 +130,7 @@ static void toggle_bp_task_slot(struct t
  
- 		/* See the comment in lock_timer_base() */
- 		timer->base = NULL;
--		spin_unlock(&base->cpu_base->lock);
--		spin_lock(&new_base->cpu_base->lock);
-+		raw_spin_unlock(&base->cpu_base->lock);
-+		raw_spin_lock(&new_base->cpu_base->lock);
+ 	list = &ctx->event_list;
  
- 		if (cpu != this_cpu && hrtimer_check_target(timer, new_base)) {
- 			cpu = this_cpu;
--			spin_unlock(&new_base->cpu_base->lock);
--			spin_lock(&base->cpu_base->lock);
-+			raw_spin_unlock(&new_base->cpu_base->lock);
-+			raw_spin_lock(&base->cpu_base->lock);
- 			timer->base = base;
- 			goto again;
- 		}
-@@ -230,7 +230,7 @@ lock_hrtimer_base(const struct hrtimer *
- {
- 	struct hrtimer_clock_base *base = timer->base;
- 
--	spin_lock_irqsave(&base->cpu_base->lock, *flags);
-+	raw_spin_lock_irqsave(&base->cpu_base->lock, *flags);
- 
- 	return base;
- }
-@@ -619,12 +619,12 @@ static void retrigger_next_event(void *a
- 	base = &__get_cpu_var(hrtimer_bases);
- 
- 	/* Adjust CLOCK_REALTIME offset */
--	spin_lock(&base->lock);
-+	raw_spin_lock(&base->lock);
- 	base->clock_base[CLOCK_REALTIME].offset =
- 		timespec_to_ktime(realtime_offset);
- 
- 	hrtimer_force_reprogram(base, 0);
--	spin_unlock(&base->lock);
-+	raw_spin_unlock(&base->lock);
- }
- 
- /*
-@@ -685,9 +685,9 @@ static inline int hrtimer_enqueue_reprog
- {
- 	if (base->cpu_base->hres_active && hrtimer_reprogram(timer, base)) {
- 		if (wakeup) {
--			spin_unlock(&base->cpu_base->lock);
-+			raw_spin_unlock(&base->cpu_base->lock);
- 			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
--			spin_lock(&base->cpu_base->lock);
-+			raw_spin_lock(&base->cpu_base->lock);
- 		} else
- 			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
- 
-@@ -765,7 +765,7 @@ void __timer_stats_hrtimer_set_start_inf
- static inline
- void unlock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
- {
--	spin_unlock_irqrestore(&timer->base->cpu_base->lock, *flags);
-+	raw_spin_unlock_irqrestore(&timer->base->cpu_base->lock, *flags);
- }
- 
- /**
-@@ -1098,7 +1098,7 @@ ktime_t hrtimer_get_next_event(void)
- 	unsigned long flags;
- 	int i;
- 
--	spin_lock_irqsave(&cpu_base->lock, flags);
-+	raw_spin_lock_irqsave(&cpu_base->lock, flags);
- 
- 	if (!hrtimer_hres_active()) {
- 		for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++, base++) {
-@@ -1115,7 +1115,7 @@ ktime_t hrtimer_get_next_event(void)
- 		}
- 	}
- 
--	spin_unlock_irqrestore(&cpu_base->lock, flags);
-+	raw_spin_unlock_irqrestore(&cpu_base->lock, flags);
- 
- 	if (mindelta.tv64 < 0)
- 		mindelta.tv64 = 0;
-@@ -1197,11 +1197,11 @@ static void __run_hrtimer(struct hrtimer
- 	 * they get migrated to another cpu, therefore its safe to unlock
- 	 * the timer base.
- 	 */
--	spin_unlock(&cpu_base->lock);
-+	raw_spin_unlock(&cpu_base->lock);
- 	trace_hrtimer_expire_entry(timer, now);
- 	restart = fn(timer);
- 	trace_hrtimer_expire_exit(timer);
--	spin_lock(&cpu_base->lock);
-+	raw_spin_lock(&cpu_base->lock);
+-	spin_lock_irqsave(&ctx->lock, flags);
++	raw_spin_lock_irqsave(&ctx->lock, flags);
  
  	/*
- 	 * Note: We clear the CALLBACK bit after enqueue_hrtimer and
-@@ -1265,7 +1265,7 @@ void hrtimer_interrupt(struct clock_even
- 
- 	expires_next.tv64 = KTIME_MAX;
- 
--	spin_lock(&cpu_base->lock);
-+	raw_spin_lock(&cpu_base->lock);
- 	/*
- 	 * We set expires_next to KTIME_MAX here with cpu_base->lock
- 	 * held to prevent that a timer is enqueued in our queue via
-@@ -1321,7 +1321,7 @@ void hrtimer_interrupt(struct clock_even
- 	 * against it.
- 	 */
- 	cpu_base->expires_next = expires_next;
--	spin_unlock(&cpu_base->lock);
-+	raw_spin_unlock(&cpu_base->lock);
- 
- 	/* Reprogramming necessary ? */
- 	if (expires_next.tv64 != KTIME_MAX) {
-@@ -1423,7 +1423,7 @@ void hrtimer_run_queues(void)
- 			gettime = 0;
- 		}
- 
--		spin_lock(&cpu_base->lock);
-+		raw_spin_lock(&cpu_base->lock);
- 
- 		while ((node = base->first)) {
- 			struct hrtimer *timer;
-@@ -1435,7 +1435,7 @@ void hrtimer_run_queues(void)
- 
- 			__run_hrtimer(timer, &base->softirq_time);
- 		}
--		spin_unlock(&cpu_base->lock);
-+		raw_spin_unlock(&cpu_base->lock);
- 	}
- }
- 
-@@ -1591,7 +1591,7 @@ static void __cpuinit init_hrtimers_cpu(
- 	struct hrtimer_cpu_base *cpu_base = &per_cpu(hrtimer_bases, cpu);
- 	int i;
- 
--	spin_lock_init(&cpu_base->lock);
-+	raw_spin_lock_init(&cpu_base->lock);
- 
- 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++)
- 		cpu_base->clock_base[i].cpu_base = cpu_base;
-@@ -1649,16 +1649,16 @@ static void migrate_hrtimers(int scpu)
- 	 * The caller is globally serialized and nobody else
- 	 * takes two locks at once, deadlock is not possible.
- 	 */
--	spin_lock(&new_base->lock);
--	spin_lock_nested(&old_base->lock, SINGLE_DEPTH_NESTING);
-+	raw_spin_lock(&new_base->lock);
-+	raw_spin_lock_nested(&old_base->lock, SINGLE_DEPTH_NESTING);
- 
- 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++) {
- 		migrate_hrtimer_list(&old_base->clock_base[i],
- 				     &new_base->clock_base[i]);
+ 	 * The current breakpoint counter is not included in the list
+@@ -141,7 +141,7 @@ static void toggle_bp_task_slot(struct t
+ 			count++;
  	}
  
--	spin_unlock(&old_base->lock);
--	spin_unlock(&new_base->lock);
-+	raw_spin_unlock(&old_base->lock);
-+	raw_spin_unlock(&new_base->lock);
+-	spin_unlock_irqrestore(&ctx->lock, flags);
++	raw_spin_unlock_irqrestore(&ctx->lock, flags);
  
- 	/* Check, if we got expired work to do */
- 	__hrtimer_peek_ahead_timers();
-Index: linux-2.6-tip/kernel/time/timer_list.c
+ 	if (WARN_ONCE(count < 0, "No breakpoint counter found in the counter list"))
+ 		return;
+Index: linux-2.6-tip/kernel/perf_event.c
 ===================================================================
---- linux-2.6-tip.orig/kernel/time/timer_list.c
-+++ linux-2.6-tip/kernel/time/timer_list.c
-@@ -84,7 +84,7 @@ print_active_timers(struct seq_file *m, 
+--- linux-2.6-tip.orig/kernel/perf_event.c
++++ linux-2.6-tip/kernel/perf_event.c
+@@ -203,14 +203,14 @@ perf_lock_task_context(struct task_struc
+ 		 * if so.  If we locked the right context, then it
+ 		 * can't get swapped on us any more.
+ 		 */
+-		spin_lock_irqsave(&ctx->lock, *flags);
++		raw_spin_lock_irqsave(&ctx->lock, *flags);
+ 		if (ctx != rcu_dereference(task->perf_event_ctxp)) {
+-			spin_unlock_irqrestore(&ctx->lock, *flags);
++			raw_spin_unlock_irqrestore(&ctx->lock, *flags);
+ 			goto retry;
+ 		}
  
- next_one:
- 	i = 0;
--	spin_lock_irqsave(&base->cpu_base->lock, flags);
-+	raw_spin_lock_irqsave(&base->cpu_base->lock, flags);
- 
- 	curr = base->first;
- 	/*
-@@ -100,13 +100,13 @@ next_one:
- 
- 		timer = rb_entry(curr, struct hrtimer, node);
- 		tmp = *timer;
--		spin_unlock_irqrestore(&base->cpu_base->lock, flags);
-+		raw_spin_unlock_irqrestore(&base->cpu_base->lock, flags);
- 
- 		print_timer(m, timer, &tmp, i, now);
- 		next++;
- 		goto next_one;
+ 		if (!atomic_inc_not_zero(&ctx->refcount)) {
+-			spin_unlock_irqrestore(&ctx->lock, *flags);
++			raw_spin_unlock_irqrestore(&ctx->lock, *flags);
+ 			ctx = NULL;
+ 		}
  	}
--	spin_unlock_irqrestore(&base->cpu_base->lock, flags);
-+	raw_spin_unlock_irqrestore(&base->cpu_base->lock, flags);
+@@ -231,7 +231,7 @@ static struct perf_event_context *perf_p
+ 	ctx = perf_lock_task_context(task, &flags);
+ 	if (ctx) {
+ 		++ctx->pin_count;
+-		spin_unlock_irqrestore(&ctx->lock, flags);
++		raw_spin_unlock_irqrestore(&ctx->lock, flags);
+ 	}
+ 	return ctx;
  }
- 
- static void
-Index: linux-2.6-tip/kernel/time/timer_stats.c
-===================================================================
---- linux-2.6-tip.orig/kernel/time/timer_stats.c
-+++ linux-2.6-tip/kernel/time/timer_stats.c
-@@ -86,7 +86,7 @@ static DEFINE_SPINLOCK(table_lock);
- /*
-  * Per-CPU lookup locks for fast hash lookup:
-  */
--static DEFINE_PER_CPU(spinlock_t, lookup_lock);
-+static DEFINE_PER_CPU(raw_spinlock_t, lookup_lock);
- 
- /*
-  * Mutex to serialize state changes with show-stats activities:
-@@ -238,7 +238,7 @@ void timer_stats_update_stats(void *time
- 	/*
- 	 * It doesnt matter which lock we take:
- 	 */
--	spinlock_t *lock;
-+	raw_spinlock_t *lock;
- 	struct entry *entry, input;
+@@ -240,9 +240,9 @@ static void perf_unpin_context(struct pe
+ {
  	unsigned long flags;
  
-@@ -253,7 +253,7 @@ void timer_stats_update_stats(void *time
- 	input.pid = pid;
- 	input.timer_flag = timer_flag;
- 
--	spin_lock_irqsave(lock, flags);
-+	raw_spin_lock_irqsave(lock, flags);
- 	if (!timer_stats_active)
- 		goto out_unlock;
- 
-@@ -264,7 +264,7 @@ void timer_stats_update_stats(void *time
- 		atomic_inc(&overflow_count);
- 
-  out_unlock:
--	spin_unlock_irqrestore(lock, flags);
-+	raw_spin_unlock_irqrestore(lock, flags);
+-	spin_lock_irqsave(&ctx->lock, flags);
++	raw_spin_lock_irqsave(&ctx->lock, flags);
+ 	--ctx->pin_count;
+-	spin_unlock_irqrestore(&ctx->lock, flags);
++	raw_spin_unlock_irqrestore(&ctx->lock, flags);
+ 	put_ctx(ctx);
  }
  
- static void print_name_offset(struct seq_file *m, unsigned long addr)
-@@ -348,9 +348,9 @@ static void sync_access(void)
- 	int cpu;
+@@ -427,7 +427,7 @@ static void __perf_event_remove_from_con
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
  
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 	/*
+ 	 * Protect the list operation against NMI by disabling the
+ 	 * events on a global level.
+@@ -449,7 +449,7 @@ static void __perf_event_remove_from_con
+ 	}
+ 
+ 	perf_enable();
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ }
+ 
+ 
+@@ -488,12 +488,12 @@ retry:
+ 	task_oncpu_function_call(task, __perf_event_remove_from_context,
+ 				 event);
+ 
+-	spin_lock_irq(&ctx->lock);
++	raw_spin_lock_irq(&ctx->lock);
+ 	/*
+ 	 * If the context is active we need to retry the smp call.
+ 	 */
+ 	if (ctx->nr_active && !list_empty(&event->group_entry)) {
+-		spin_unlock_irq(&ctx->lock);
++		raw_spin_unlock_irq(&ctx->lock);
+ 		goto retry;
+ 	}
+ 
+@@ -504,7 +504,7 @@ retry:
+ 	 */
+ 	if (!list_empty(&event->group_entry))
+ 		list_del_event(event, ctx);
+-	spin_unlock_irq(&ctx->lock);
++	raw_spin_unlock_irq(&ctx->lock);
+ }
+ 
+ /*
+@@ -535,7 +535,7 @@ static void __perf_event_disable(void *i
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 
+ 	/*
+ 	 * If the event is on, turn it off.
+@@ -551,7 +551,7 @@ static void __perf_event_disable(void *i
+ 		event->state = PERF_EVENT_STATE_OFF;
+ 	}
+ 
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ }
+ 
+ /*
+@@ -584,12 +584,12 @@ static void perf_event_disable(struct pe
+  retry:
+ 	task_oncpu_function_call(task, __perf_event_disable, event);
+ 
+-	spin_lock_irq(&ctx->lock);
++	raw_spin_lock_irq(&ctx->lock);
+ 	/*
+ 	 * If the event is still active, we need to retry the cross-call.
+ 	 */
+ 	if (event->state == PERF_EVENT_STATE_ACTIVE) {
+-		spin_unlock_irq(&ctx->lock);
++		raw_spin_unlock_irq(&ctx->lock);
+ 		goto retry;
+ 	}
+ 
+@@ -602,7 +602,7 @@ static void perf_event_disable(struct pe
+ 		event->state = PERF_EVENT_STATE_OFF;
+ 	}
+ 
+-	spin_unlock_irq(&ctx->lock);
++	raw_spin_unlock_irq(&ctx->lock);
+ }
+ 
+ static int
+@@ -770,7 +770,7 @@ static void __perf_install_in_context(vo
+ 		cpuctx->task_ctx = ctx;
+ 	}
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 	ctx->is_active = 1;
+ 	update_context_time(ctx);
+ 
+@@ -820,7 +820,7 @@ static void __perf_install_in_context(vo
+  unlock:
+ 	perf_enable();
+ 
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ }
+ 
+ /*
+@@ -856,12 +856,12 @@ retry:
+ 	task_oncpu_function_call(task, __perf_install_in_context,
+ 				 event);
+ 
+-	spin_lock_irq(&ctx->lock);
++	raw_spin_lock_irq(&ctx->lock);
+ 	/*
+ 	 * we need to retry the smp call.
+ 	 */
+ 	if (ctx->is_active && list_empty(&event->group_entry)) {
+-		spin_unlock_irq(&ctx->lock);
++		raw_spin_unlock_irq(&ctx->lock);
+ 		goto retry;
+ 	}
+ 
+@@ -872,7 +872,7 @@ retry:
+ 	 */
+ 	if (list_empty(&event->group_entry))
+ 		add_event_to_ctx(event, ctx);
+-	spin_unlock_irq(&ctx->lock);
++	raw_spin_unlock_irq(&ctx->lock);
+ }
+ 
+ /*
+@@ -917,7 +917,7 @@ static void __perf_event_enable(void *in
+ 		cpuctx->task_ctx = ctx;
+ 	}
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 	ctx->is_active = 1;
+ 	update_context_time(ctx);
+ 
+@@ -959,7 +959,7 @@ static void __perf_event_enable(void *in
+ 	}
+ 
+  unlock:
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ }
+ 
+ /*
+@@ -985,7 +985,7 @@ static void perf_event_enable(struct per
+ 		return;
+ 	}
+ 
+-	spin_lock_irq(&ctx->lock);
++	raw_spin_lock_irq(&ctx->lock);
+ 	if (event->state >= PERF_EVENT_STATE_INACTIVE)
+ 		goto out;
+ 
+@@ -1000,10 +1000,10 @@ static void perf_event_enable(struct per
+ 		event->state = PERF_EVENT_STATE_OFF;
+ 
+  retry:
+-	spin_unlock_irq(&ctx->lock);
++	raw_spin_unlock_irq(&ctx->lock);
+ 	task_oncpu_function_call(task, __perf_event_enable, event);
+ 
+-	spin_lock_irq(&ctx->lock);
++	raw_spin_lock_irq(&ctx->lock);
+ 
+ 	/*
+ 	 * If the context is active and the event is still off,
+@@ -1020,7 +1020,7 @@ static void perf_event_enable(struct per
+ 		__perf_event_mark_enabled(event, ctx);
+ 
+  out:
+-	spin_unlock_irq(&ctx->lock);
++	raw_spin_unlock_irq(&ctx->lock);
+ }
+ 
+ static int perf_event_refresh(struct perf_event *event, int refresh)
+@@ -1042,7 +1042,7 @@ void __perf_event_sched_out(struct perf_
+ {
+ 	struct perf_event *event;
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 	ctx->is_active = 0;
+ 	if (likely(!ctx->nr_events))
+ 		goto out;
+@@ -1055,7 +1055,7 @@ void __perf_event_sched_out(struct perf_
+ 	}
+ 	perf_enable();
+  out:
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ }
+ 
+ /*
+@@ -1193,8 +1193,8 @@ void perf_event_task_sched_out(struct ta
+ 		 * order we take the locks because no other cpu could
+ 		 * be trying to lock both of these tasks.
+ 		 */
+-		spin_lock(&ctx->lock);
+-		spin_lock_nested(&next_ctx->lock, SINGLE_DEPTH_NESTING);
++		raw_spin_lock(&ctx->lock);
++		raw_spin_lock_nested(&next_ctx->lock, SINGLE_DEPTH_NESTING);
+ 		if (context_equiv(ctx, next_ctx)) {
+ 			/*
+ 			 * XXX do we need a memory barrier of sorts
+@@ -1208,8 +1208,8 @@ void perf_event_task_sched_out(struct ta
+ 
+ 			perf_event_sync_stat(ctx, next_ctx);
+ 		}
+-		spin_unlock(&next_ctx->lock);
+-		spin_unlock(&ctx->lock);
++		raw_spin_unlock(&next_ctx->lock);
++		raw_spin_unlock(&ctx->lock);
+ 	}
+ 	rcu_read_unlock();
+ 
+@@ -1251,7 +1251,7 @@ __perf_event_sched_in(struct perf_event_
+ 	struct perf_event *event;
+ 	int can_add_hw = 1;
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 	ctx->is_active = 1;
+ 	if (likely(!ctx->nr_events))
+ 		goto out;
+@@ -1306,7 +1306,7 @@ __perf_event_sched_in(struct perf_event_
+ 	}
+ 	perf_enable();
+  out:
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ }
+ 
+ /*
+@@ -1370,7 +1370,7 @@ static void perf_ctx_adjust_freq(struct 
+ 	struct hw_perf_event *hwc;
+ 	u64 interrupts, freq;
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 	list_for_each_entry_rcu(event, &ctx->event_list, event_entry) {
+ 		if (event->state != PERF_EVENT_STATE_ACTIVE)
+ 			continue;
+@@ -1425,7 +1425,7 @@ static void perf_ctx_adjust_freq(struct 
+ 			perf_enable();
+ 		}
+ 	}
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ }
+ 
+ /*
+@@ -1438,7 +1438,7 @@ static void rotate_ctx(struct perf_event
+ 	if (!ctx->nr_events)
+ 		return;
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 	/*
+ 	 * Rotate the first entry last (works just fine for group events too):
+ 	 */
+@@ -1449,7 +1449,7 @@ static void rotate_ctx(struct perf_event
+ 	}
+ 	perf_enable();
+ 
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ }
+ 
+ void perf_event_task_tick(struct task_struct *curr, int cpu)
+@@ -1498,7 +1498,7 @@ static void perf_event_enable_on_exec(st
+ 
+ 	__perf_event_task_sched_out(ctx);
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 
+ 	list_for_each_entry(event, &ctx->group_list, group_entry) {
+ 		if (!event->attr.enable_on_exec)
+@@ -1516,7 +1516,7 @@ static void perf_event_enable_on_exec(st
+ 	if (enabled)
+ 		unclone_ctx(ctx);
+ 
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ 
+ 	perf_event_task_sched_in(task, smp_processor_id());
+  out:
+@@ -1542,10 +1542,10 @@ static void __perf_event_read(void *info
+ 	if (ctx->task && cpuctx->task_ctx != ctx)
+ 		return;
+ 
+-	spin_lock(&ctx->lock);
++	raw_spin_lock(&ctx->lock);
+ 	update_context_time(ctx);
+ 	update_event_times(event);
+-	spin_unlock(&ctx->lock);
++	raw_spin_unlock(&ctx->lock);
+ 
+ 	event->pmu->read(event);
+ }
+@@ -1563,10 +1563,10 @@ static u64 perf_event_read(struct perf_e
+ 		struct perf_event_context *ctx = event->ctx;
+ 		unsigned long flags;
+ 
+-		spin_lock_irqsave(&ctx->lock, flags);
++		raw_spin_lock_irqsave(&ctx->lock, flags);
+ 		update_context_time(ctx);
+ 		update_event_times(event);
+-		spin_unlock_irqrestore(&ctx->lock, flags);
++		raw_spin_unlock_irqrestore(&ctx->lock, flags);
+ 	}
+ 
+ 	return atomic64_read(&event->count);
+@@ -1580,7 +1580,7 @@ __perf_event_init_context(struct perf_ev
+ 			    struct task_struct *task)
+ {
+ 	memset(ctx, 0, sizeof(*ctx));
+-	spin_lock_init(&ctx->lock);
++	raw_spin_lock_init(&ctx->lock);
+ 	mutex_init(&ctx->mutex);
+ 	INIT_LIST_HEAD(&ctx->group_list);
+ 	INIT_LIST_HEAD(&ctx->event_list);
+@@ -1650,7 +1650,7 @@ static struct perf_event_context *find_g
+ 	ctx = perf_lock_task_context(task, &flags);
+ 	if (ctx) {
+ 		unclone_ctx(ctx);
+-		spin_unlock_irqrestore(&ctx->lock, flags);
++		raw_spin_unlock_irqrestore(&ctx->lock, flags);
+ 	}
+ 
+ 	if (!ctx) {
+@@ -1988,7 +1988,7 @@ static int perf_event_period(struct perf
+ 	if (!value)
+ 		return -EINVAL;
+ 
+-	spin_lock_irq(&ctx->lock);
++	raw_spin_lock_irq(&ctx->lock);
+ 	if (event->attr.freq) {
+ 		if (value > sysctl_perf_event_sample_rate) {
+ 			ret = -EINVAL;
+@@ -2001,7 +2001,7 @@ static int perf_event_period(struct perf
+ 		event->hw.sample_period = value;
+ 	}
+ unlock:
+-	spin_unlock_irq(&ctx->lock);
++	raw_spin_unlock_irq(&ctx->lock);
+ 
+ 	return ret;
+ }
+@@ -4998,7 +4998,7 @@ void perf_event_exit_task(struct task_st
+ 	 * reading child->perf_event_ctxp, we wait until it has
+ 	 * incremented the context's refcount before we do put_ctx below.
+ 	 */
+-	spin_lock(&child_ctx->lock);
++	raw_spin_lock(&child_ctx->lock);
+ 	child->perf_event_ctxp = NULL;
+ 	/*
+ 	 * If this context is a clone; unclone it so it can't get
+@@ -5007,7 +5007,7 @@ void perf_event_exit_task(struct task_st
+ 	 */
+ 	unclone_ctx(child_ctx);
+ 	update_context_time(child_ctx);
+-	spin_unlock_irqrestore(&child_ctx->lock, flags);
++	raw_spin_unlock_irqrestore(&child_ctx->lock, flags);
+ 
+ 	/*
+ 	 * Report the task dead after unscheduling the events so that we
+@@ -5291,11 +5291,11 @@ perf_set_reserve_percpu(struct sysdev_cl
+ 	perf_reserved_percpu = val;
  	for_each_online_cpu(cpu) {
--		spin_lock_irqsave(&per_cpu(lookup_lock, cpu), flags);
-+		raw_spin_lock_irqsave(&per_cpu(lookup_lock, cpu), flags);
- 		/* nothing */
--		spin_unlock_irqrestore(&per_cpu(lookup_lock, cpu), flags);
-+		raw_spin_unlock_irqrestore(&per_cpu(lookup_lock, cpu), flags);
+ 		cpuctx = &per_cpu(perf_cpu_context, cpu);
+-		spin_lock_irq(&cpuctx->ctx.lock);
++		raw_spin_lock_irq(&cpuctx->ctx.lock);
+ 		mpt = min(perf_max_events - cpuctx->ctx.nr_events,
+ 			  perf_max_events - perf_reserved_percpu);
+ 		cpuctx->max_pertask = mpt;
+-		spin_unlock_irq(&cpuctx->ctx.lock);
++		raw_spin_unlock_irq(&cpuctx->ctx.lock);
  	}
- }
+ 	spin_unlock(&perf_resource_lock);
  
-@@ -408,7 +408,7 @@ void __init init_timer_stats(void)
- 	int cpu;
- 
- 	for_each_possible_cpu(cpu)
--		spin_lock_init(&per_cpu(lookup_lock, cpu));
-+		raw_spin_lock_init(&per_cpu(lookup_lock, cpu));
- }
- 
- static int __init init_tstats_procfs(void)
 
 
