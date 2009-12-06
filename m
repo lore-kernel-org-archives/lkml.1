@@ -1,114 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933835AbZLFPXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933842AbZLFPYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933835AbZLFPXr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 10:23:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933816AbZLFPXp
+	id S933842AbZLFPYa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 10:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933818AbZLFPY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 10:23:45 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:51744 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933814AbZLFPXn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 10:23:43 -0500
-Date: Sun, 6 Dec 2009 10:23:49 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
+	Sun, 6 Dec 2009 10:24:29 -0500
+Received: from na3sys009aog106.obsmtp.com ([74.125.149.77]:34429 "EHLO
+	na3sys009aog106.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933816AbZLFPY2 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 10:24:28 -0500
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "Mukker, Atul" <Atul.Mukker@lsi.com>
+Date: Sun, 6 Dec 2009 08:24:21 -0700
+Subject: [PATCH 1/4] scsi: megaraid_sas - Zero pad_0 in mfi structure 
+Thread-Topic: [PATCH 1/4] scsi: megaraid_sas - Zero pad_0 in mfi structure 
+Thread-Index: Aco28IhK0BCwqEkwToSTDcG+BIA9kwDb1hagAACJvwADF6mW4AvxomIA
+Message-ID: <4B6A08C587958942AA3002690DD4F8C3B7EAC2C7@cosmail02.lsi.com>
+References: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
+ <4B6A08C587958942AA3002690DD4F8C35C6861A5@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C6861A5@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Dec 2009, Linus Torvalds wrote:
+Add the pad_0 in mfi frame structure to 0 to fix the context value larger than 32bit value issue.
 
-> Think of a situation that we already handle pretty poorly: USB mass 
-> storage devices over a suspend/resume.
-> 
-> > The device tree represents a good deal of the dependences
-> > between devices and the other dependences may be represented as PM links
-> > enforcing specific ordering of the PM callbacks.
-> 
-> The device tree means nothing at all, because it may need to be entirely 
-> rebuilt at resume time. 
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-Nonsense.
+---
+megaraid_sas.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-> Optimally, what we _should_ be doing (and aren't) for suspend/resume of 
-> USB is to just tear down the whole topology and rebuild it and re-connect 
-> the things like mass storage devices. IOW, there would be no device tree 
-> to describe the topology, because we're finding it anew. And it's one of 
-> the things we _would_ want to do asynchronously with other things.
-
-That's ridiculous.  Having gone to all the trouble of building a device
-tree, one which is presumably still almost entirely correct, why go to
-all the trouble of tearing it down only to rebuild it again?  (Note:
-I'm talking about resume-from-RAM here, not resume-from-hibernation.)
-
-Instead what we do is verify that the devices we remember from before
-the suspend are still there, and then asynchronously handle new devices
-which have been plugged in during the meantime.  Doing this involves
-relatively little extra or new code; most of the routines are shared
-with the runtime PM and device reset paths.
-
-As for asynchronicity...  At init time, USB device discovery truly is 
-asynchronous.  It can happen long after you log in (especially if you 
-don't plug in the device until after you log in!).  But at resume time 
-we are more highly constrained.  User processes cannot be unfrozen 
-until all the devices have been resumed; otherwise they would encounter 
-errors when trying to do I/O to a suspended device.  (With the runtime 
-PM framework this is much less of a problem, but plenty of drivers 
-don't support runtime PM yet.)
-
-
-> We don't want to build up some irrelevant PM links and callbacks. We don't 
-> want to have some completely made-up new infrastructure for something that 
-> we _already_ want to handle totally differently for init time.
-> 
-> IOW, I argue very strongly against making up something PM-specific, when 
-> there really doesn't seem to be much of an advantage. We're much better 
-> off trying to share the init code than making up something new.
-
-If I understand correctly, what you're suggesting is impractical.  You
-would have each driver responsible for resuming the devices it
-registers.  If it registered some children synchronously (during the
-parent's probe) then it would resume them synchronously (during the
-parent's resume); if it registered them asynchronously then it would
-resume them asynchronously.  In essence, every single device_add() or
-device_register() call would have to be paired with a resume call.
-
-To make such significant changes in every driver would be prohibitively
-difficult.  What we need is a compromise which gives drivers control
-over the resume process without making them responsible for actually
-carrying it out.
-
-So consider this suggestion: Let's define PM groups.  Each device
-belongs to a group, and each group (except group 0, the initial group)  
-has an owner device.  By default a device is added to its parent's
-group during registration, but the driver can request that it be
-assigned to a different group, which must be owned by that parent.
-
-During resume, each PM group would correspond to an async task.  The 
-devices in each group would be resumed sequentially, in order of 
-registration, but asynchronously with respect to other groups.  The 
-async thread to resume a group would be launched after the group's 
-owner device was resumed.
-
-So for example, the sibling functions on a PCI card could all be
-assigned to the same group, but different cards could belong to
-different groups.  Likewise for ATA and PCMCIA controllers.  Extra
-cross-group constraints could be added if needed, but there should be
-relatively few of them.
-
-This way drivers can decide which of their devices will be resumed in 
-sequence or concurrently, but they won't have to do any of the 
-necessary work.
-
-Alan Stern
+diff -rupN old/drivers/scsi/megaraid/megaraid_sas.c new/drivers/scsi/megaraid/megaraid_sas.c
+--- old/drivers/scsi/megaraid/megaraid_sas.c	2009-12-04 05:25:19.000000000 -0500
++++ new/drivers/scsi/megaraid/megaraid_sas.c	2009-12-04 05:29:57.000000000 -0500
+@@ -843,6 +843,7 @@ megasas_build_dcdb(struct megasas_instan
+ 	pthru->lun = scp->device->lun;
+ 	pthru->cdb_len = scp->cmd_len;
+ 	pthru->timeout = 0;
++	pthru->pad_0 = 0;
+ 	pthru->flags = flags;
+ 	pthru->data_xfer_len = scsi_bufflen(scp);
+ 
+@@ -2250,6 +2251,7 @@ megasas_get_pd_list(struct megasas_insta
+ 	dcmd->sge_count = 1;
+ 	dcmd->flags = MFI_FRAME_DIR_READ;
+ 	dcmd->timeout = 0;
++	dcmd->pad_0 = 0;
+ 	dcmd->data_xfer_len = MEGASAS_MAX_PD * sizeof(struct MR_PD_LIST);
+ 	dcmd->opcode = MR_DCMD_PD_LIST_QUERY;
+ 	dcmd->sgl.sge32[0].phys_addr = ci_h;
+@@ -2339,6 +2341,7 @@ megasas_get_ctrl_info(struct megasas_ins
+ 	dcmd->sge_count = 1;
+ 	dcmd->flags = MFI_FRAME_DIR_READ;
+ 	dcmd->timeout = 0;
++	dcmd->pad_0 = 0;
+ 	dcmd->data_xfer_len = sizeof(struct megasas_ctrl_info);
+ 	dcmd->opcode = MR_DCMD_CTRL_GET_INFO;
+ 	dcmd->sgl.sge32[0].phys_addr = ci_h;
+@@ -2710,6 +2713,7 @@ megasas_get_seq_num(struct megasas_insta
+ 	dcmd->sge_count = 1;
+ 	dcmd->flags = MFI_FRAME_DIR_READ;
+ 	dcmd->timeout = 0;
++	dcmd->pad_0 = 0;
+ 	dcmd->data_xfer_len = sizeof(struct megasas_evt_log_info);
+ 	dcmd->opcode = MR_DCMD_CTRL_EVENT_GET_INFO;
+ 	dcmd->sgl.sge32[0].phys_addr = el_info_h;
+@@ -2824,6 +2828,7 @@ megasas_register_aen(struct megasas_inst
+ 	dcmd->sge_count = 1;
+ 	dcmd->flags = MFI_FRAME_DIR_READ;
+ 	dcmd->timeout = 0;
++	dcmd->pad_0 = 0;
+ 	dcmd->data_xfer_len = sizeof(struct megasas_evt_detail);
+ 	dcmd->opcode = MR_DCMD_CTRL_EVENT_WAIT;
+ 	dcmd->mbox.w[0] = seq_num;
+@@ -3162,6 +3167,7 @@ static void megasas_flush_cache(struct m
+ 	dcmd->sge_count = 0;
+ 	dcmd->flags = MFI_FRAME_DIR_NONE;
+ 	dcmd->timeout = 0;
++	dcmd->pad_0 = 0;
+ 	dcmd->data_xfer_len = 0;
+ 	dcmd->opcode = MR_DCMD_CTRL_CACHE_FLUSH;
+ 	dcmd->mbox.b[0] = MR_FLUSH_CTRL_CACHE | MR_FLUSH_DISK_CACHE;
+@@ -3201,6 +3207,7 @@ static void megasas_shutdown_controller(
+ 	dcmd->sge_count = 0;
+ 	dcmd->flags = MFI_FRAME_DIR_NONE;
+ 	dcmd->timeout = 0;
++	dcmd->pad_0 = 0;
+ 	dcmd->data_xfer_len = 0;
+ 	dcmd->opcode = opcode;
 
