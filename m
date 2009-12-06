@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbZLFGzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902AbZLFHFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752692AbZLFGzT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 01:55:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZLFGzO
+	id S1752902AbZLFHFA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 02:05:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZLFHEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 01:55:14 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:40573 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752194AbZLFGzM (ORCPT
+	Sun, 6 Dec 2009 02:04:53 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:54697 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbZLFHEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 01:55:12 -0500
+	Sun, 6 Dec 2009 02:04:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=B/6R38pj0kw1gzFcgkzMciR4wqeDfJeAEuJo6e3wVcNBdQCOBvHBL8JsszBDs+O/xx
-         /aKCsshNgaluZRPSoihaBwXgOQSLZa10XJGDwCP+mUo9mUapjo0CfcddcMdhwPv5mO4v
-         j/bX2H/t8wIa5PQQMWOWZFPZFOfvRjIM4AUlg=
-Date: Sat, 5 Dec 2009 22:55:12 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: hermann pitton <hermann-pitton@arcor.de>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Christoph Bartelmus <lirc@bartelmus.de>,
-       awalls@radix.net, j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       khc@pm.waw.pl, kraxel@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR  system?
-Message-ID: <20091206065512.GA14651@core.coreip.homeip.net>
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260070593.3236.6.camel@pc07.localdom.local>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ZmAETzC20VVoobcXgsvcLOIIUj73MxqzKsdzQiMt6Ke8YtnZeEwh9AUyryFejqxqxO
+         94fUHEaMCpFcQCfSLQOTJZvPMCAoxvmYvZu7SnTIeKjzgSXJO9/18djqipvgd4DIahSB
+         0kroY68B31uGK4ylXpSTsI/bL5ziSLFOXkxZo=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org
+Cc: Wu Zhangjin <wuzhangjin@gmail.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH v8 0/8] Loongson: YeeLoong: add platform drivers 
+Date: Sun,  6 Dec 2009 15:01:40 +0800
+Message-Id: <cover.1260082252.git.wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Wu Zhangjin <wuzhangjin@gmail.com>
 
-On Sun, Dec 06, 2009 at 04:36:33AM +0100, hermann pitton wrote:
-> Hi,
-> 
-> Am Freitag, den 04.12.2009, 19:28 -0500 schrieb Jon Smirl:
-> > On Fri, Dec 4, 2009 at 6:01 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
-> > > BTW, I just came across a XMP remote that seems to generate 3x64 bit scan
-> > > codes. Anyone here has docs on the XMP protocol?
-> > 
-> > Assuming a general purpose receiver (not one with fixed hardware
-> > decoding), is it important for Linux to receive IR signals from all
-> > possible remotes no matter how old or obscure? Or is it acceptable to
-> > tell the user to throw away their dedicated remote and buy a universal
-> > multi-function one?  Universal multi-function remotes are $12 in my
-> > grocery store - I don't even have to go to an electronics store.
-> 
-> finally we have some point here, IMHO, that is not acceptable and I told
-> you previously not to bet on such. Start some poll and win it, and I'll
-> shut up :)
-> 
+This patchset adds platform specific drivers for YeeLoong netbook. including
+the backlight, battery, hwmon, video output, suspend and hotkey(input)
+subdrivers. These drivers provide standard interfaces to the user-space
+applications to manage the related devices.
 
-Who would participate in the poll though?
+This v8 revision incorporates with the feedbacks from Pavel Machek, add the
+cleanups of the hwmon, video output and input/hotkey drivers.
 
-> To be frank, you are quite mad at this point, or deliver working other
-> remotes to __all__ for free.
-> 
+Hi, Ralf and Andrew Morton
 
-I do not believe you are being realistic. Sometimes we just need to say
-that the device is a POS and is just not worth it. Remember, there is
-still "lirc hole" for the hard core people still using solder to produce
-something out of the spare electronic components that may be made to
-work (never mind that it causes the CPU constantly poll the device, not
-letting it sleep and wasting electricity as a result - just hypotetical
-example here).
+Could you please queue this patchset for 2.6.33? of course, any new feedbacks
+are welcome, thanks!
 
-We still need to do cost-benefit analysis and decide whether supporting
-the exotic setups _in kernel_ makes sense if it encumbers implementation
-and causes issues to the other 95% people.
+Best Regards,
+	Wu Zhangjin
 
--- 
-Dmitry
+Wu Zhangjin (8):
+  MIPS: add subdirectory for platform extension drivers
+  Loongson: YeeLoong: add platform driver
+  Loongson: YeeLoong: add backlight driver
+  Loongson: YeeLoong: add battery driver
+  Loongson: YeeLoong: add hardware monitoring driver
+  Loongson: YeeLoong: add video output driver
+  Loongson: YeeLoong: add suspend support
+  Loongson: YeeLoong: add input/hotkey driver
+
+ arch/mips/include/asm/mach-loongson/ec_kb3310b.h |  191 ++++
+ arch/mips/include/asm/mach-loongson/loongson.h   |    6 +
+ arch/mips/loongson/common/cmdline.c              |    8 +
+ arch/mips/loongson/lemote-2f/Makefile            |    2 +-
+ arch/mips/loongson/lemote-2f/ec_kb3310b.c        |   12 +-
+ arch/mips/loongson/lemote-2f/ec_kb3310b.h        |  188 ----
+ arch/mips/loongson/lemote-2f/platform.c          |   40 +
+ arch/mips/loongson/lemote-2f/pm.c                |    4 +-
+ arch/mips/loongson/lemote-2f/reset.c             |    2 +-
+ drivers/platform/Kconfig                         |    4 +
+ drivers/platform/Makefile                        |    1 +
+ drivers/platform/mips/Kconfig                    |   33 +
+ drivers/platform/mips/Makefile                   |    5 +
+ drivers/platform/mips/yeeloong_laptop.c          | 1038 ++++++++++++++++++++++
+ 14 files changed, 1334 insertions(+), 200 deletions(-)
+ create mode 100644 arch/mips/include/asm/mach-loongson/ec_kb3310b.h
+ delete mode 100644 arch/mips/loongson/lemote-2f/ec_kb3310b.h
+ create mode 100644 arch/mips/loongson/lemote-2f/platform.c
+ create mode 100644 drivers/platform/mips/Kconfig
+ create mode 100644 drivers/platform/mips/Makefile
+ create mode 100644 drivers/platform/mips/yeeloong_laptop.c
+
