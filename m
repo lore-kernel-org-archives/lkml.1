@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932883AbZLFJ2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933056AbZLFJaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932883AbZLFJ2G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 04:28:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbZLFJ2E
+	id S933056AbZLFJaI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 04:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932066AbZLFJaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 04:28:04 -0500
-Received: from cs47.vkontakte.ru ([93.186.224.47]:57667 "EHLO vkontakte.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755858AbZLFJ2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 04:28:03 -0500
-Date: Sun, 6 Dec 2009 12:28:00 +0300
-To: linux-kernel <linux-kernel@vger.kernel.org>
-From: VK <admin@vkontakte.ru>
-Reply-to: "Pavel Durov, inContact.ru Admin" <admin@vkontakte.ru>
-Subject: =?UTF-8?Q?=D0=A1=D0=B5=D1=80=D0=B3=D0=B5=D0=B9_=D0=91=D0=B5=D0=BB=D0=BE?=
- =?UTF-8?Q?=D0=B2_has_added_you_as_a_friend_on_the_website_VK.com?=
-Message-ID: <8ab9c2cf17e7c694261e3cd8db069b2a@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+	Sun, 6 Dec 2009 04:30:07 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:59606 "EHLO
+	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756064AbZLFJaF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 04:30:05 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: mingo@elte.hu
+Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Subject: [PATCH 1/1] X86: use explicit register name for get/put_user
+Date: Sun,  6 Dec 2009 10:30:08 +0100
+Message-Id: <1260091808-8053-1-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-kernel,
+I couldn't find any traces of documentation for the behavior used
+in current get/put_user implementation. After the merge of
+32/64-bit version there is back register reference ("0") to the
+output register ("a"). The output is retval of int type, but
+the value in the input may be a long on 64-bit.
 
-Сергей Белов has added you as a friend on the website VK.com
+I don't know if this could ever cause any problems, but changing
+the input to an explicit register ("a") makes it cleaner in my eyes.
+There is no need of the back reference.
 
-You can log in and view your friends` pages using your email and automatically created password: 1MjAo0pu
+Change this for both get and put_user.
 
-VK.com is a website that helps dozens of millions of people find their old friends, share photos and events and always stay in touch.
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+---
+ arch/x86/include/asm/uaccess.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-To log in, please follow this link:
-http://vkontakte.ru/login.php?regemail=linux-kernel@vger.kernel.org#1MjAo0pu
-
-You can change your password in Settings.
-
-Attention: If you ignore this invitation, your registration will not be activated.
-
-Good luck!Best regards,
-VK Administration
-
+diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+index abd3e0e..35f483b 100644
+--- a/arch/x86/include/asm/uaccess.h
++++ b/arch/x86/include/asm/uaccess.h
+@@ -122,7 +122,7 @@ extern int __get_user_bad(void);
+ #define __get_user_x(size, ret, x, ptr)		      \
+ 	asm volatile("call __get_user_" #size	      \
+ 		     : "=a" (ret), "=d" (x)	      \
+-		     : "0" (ptr))		      \
++		     : "a" (ptr))		      \
+ 
+ /* Careful: we have to cast the result to the type of the pointer
+  * for sign reasons */
+@@ -181,7 +181,7 @@ extern int __get_user_bad(void);
+ 
+ #define __put_user_x(size, x, ptr, __ret_pu)			\
+ 	asm volatile("call __put_user_" #size : "=a" (__ret_pu)	\
+-		     : "0" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
++		     : "a" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
+ 
+ 
+ 
+-- 
+1.6.5.3
 
