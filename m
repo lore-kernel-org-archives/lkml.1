@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934207AbZLFTIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934120AbZLFSLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934207AbZLFTIc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 14:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934184AbZLFTI3
+	id S934120AbZLFSLb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 13:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934084AbZLFSL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 14:08:29 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:46295 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934114AbZLFTIY (ORCPT
+	Sun, 6 Dec 2009 13:11:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56854 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934065AbZLFSL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 14:08:24 -0500
-Date: Sun, 6 Dec 2009 10:04:58 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-media@vger.kernel.org
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [PATCH -next resend/fixed] media/miro: fix kconfig depends/select
-Message-Id: <20091206100458.9f24a9c8.randy.dunlap@oracle.com>
-In-Reply-To: <20091204203014.e8ee54ca.sfr@canb.auug.org.au>
-References: <20091204203014.e8ee54ca.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt358.oracle.com [141.146.40.158]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B1C0122.00AF:SCFMA4539814,ss=1,fgs=0
+	Sun, 6 Dec 2009 13:11:26 -0500
+Date: Sun, 6 Dec 2009 10:10:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [patch 04/23] locking: Convert raw_spinlock to arch_spinlock
+In-Reply-To: <20091206111957.454670287@linutronix.de>
+Message-ID: <alpine.LFD.2.00.0912061004580.3560@localhost.localdomain>
+References: <20091206110944.492100233@linutronix.de> <20091206111957.454670287@linutronix.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-miropcm20 uses ALSA (snd_) interfaces from the SND_MIRO
-driver, so it should depend on SND.
-(selecting SND_MIRO when CONFIG_SND is not enabled is a
-problem.)
 
-drivers/built-in.o: In function `vidioc_s_ctrl':
-radio-miropcm20.c:(.text+0x227499): undefined reference to `snd_aci_cmd'
-drivers/built-in.o: In function `vidioc_s_frequency':
-radio-miropcm20.c:(.text+0x227574): undefined reference to `snd_aci_cmd'
-radio-miropcm20.c:(.text+0x227588): undefined reference to `snd_aci_cmd'
-drivers/built-in.o: In function `pcm20_init':
-radio-miropcm20.c:(.init.text+0x2a784): undefined reference to `snd_aci_get_aci'
+On Sun, 6 Dec 2009, Thomas Gleixner wrote:
+>
+> Linus suggested to convert the raw_ to arch_ locks and cleanup the
+> name space instead of using an artifical name like core_spin,
+> atomic_spin or whatever
+> 
+> No functional change.
 
-miropcm20 selects SND_MIRO but SND_ISA may be not enabled, so
-also select SND_ISA so that the snd-miro driver will be built.
-Otherwise there are missing symbols:
+Ok, I'm obviously biased, since I suggested this as a possible solution to 
+the naming wars, but I have to say that I like this patch regardless of 
+any of the other patches in the series. IOW, even without any issue of 
+then re-using 'raw_spinlock' for the non-preemptable one, I like how this 
+kind of change JustMakesSense(tm):
 
-ERROR: "snd_opl4_create" [sound/isa/opti9xx/snd-miro.ko] undefined!
-ERROR: "snd_wss_pcm" [sound/isa/opti9xx/snd-miro.ko] undefined!
-ERROR: "snd_wss_timer" [sound/isa/opti9xx/snd-miro.ko] undefined!
-ERROR: "snd_wss_create" [sound/isa/opti9xx/snd-miro.ko] undefined!
-ERROR: "snd_wss_mixer" [sound/isa/opti9xx/snd-miro.ko] undefined!
+> --- linux-2.6-tip.orig/arch/alpha/include/asm/spinlock_types.h
+> +++ linux-2.6-tip/arch/alpha/include/asm/spinlock_types.h
+> @@ -7,7 +7,7 @@
+>  
+>  typedef struct {
+>  	volatile unsigned int lock;
+> -} raw_spinlock_t;
+> +} arch_spinlock_t;
+>  
+>  #define __RAW_SPIN_LOCK_UNLOCKED	{ 0 }
+>  
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/media/radio/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ie I just think that even just looking at the patch, this kind of change 
+simply makes sense. The architectures declare their own per-architecture 
+"arch_spinlock", and we can then do whatever we want at a higher level 
+around that notion.
 
---- linux-next-20091204.orig/drivers/media/radio/Kconfig
-+++ linux-next-20091204/drivers/media/radio/Kconfig
-@@ -197,7 +197,8 @@ config RADIO_MAESTRO
- 
- config RADIO_MIROPCM20
- 	tristate "miroSOUND PCM20 radio"
--	depends on ISA && VIDEO_V4L2
-+	depends on ISA && VIDEO_V4L2 && SND
-+	select SND_ISA
- 	select SND_MIRO
- 	---help---
- 	  Choose Y here if you have this FM radio card. You also need to enable
+That said, it _is_ 
+
+	 51 files changed, 164 insertions(+), 164 deletions(-)
+
+but it seems to really be mainly the obvious arch header files and the 
+tracing infrastructure, so while it's 51 files, the impact seems to be 
+reasonably well-contained. 
+
+So I like it, but maybe the arch people hate it?
+
+			Linus
