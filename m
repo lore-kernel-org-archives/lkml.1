@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934315AbZLFVxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934322AbZLFVzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934315AbZLFVxD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 16:53:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934256AbZLFVxC
+	id S934322AbZLFVzH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 16:55:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934271AbZLFVzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 16:53:02 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45172 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934253AbZLFVxB (ORCPT
+	Sun, 6 Dec 2009 16:55:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35453 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934260AbZLFVzC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 16:53:01 -0500
-Date: Sun, 6 Dec 2009 22:52:57 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH 2/3] staging/dream: add missing include files
-Message-ID: <20091206215257.GA14137@elf.ucw.cz>
-References: <20091101222717.GB20740@elf.ucw.cz>
- <20091119225602.GC18710@kroah.com>
- <20091120105726.GH11212@elf.ucw.cz>
- <20091120153054.GA23007@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120153054.GA23007@kroah.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 6 Dec 2009 16:55:02 -0500
+Date: Sun, 6 Dec 2009 13:57:11 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Message-ID: <20091206135711.34338809@infradead.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912061636170.9457-100000@netrider.rowland.org>
+References: <20091206131702.7d6cdc57@infradead.org>
+	<Pine.LNX.4.44L0.0912061636170.9457-100000@netrider.rowland.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-11-20 07:30:54, Greg KH wrote:
-> On Fri, Nov 20, 2009 at 11:57:26AM +0100, Pavel Machek wrote:
-> > Where can I get the tree to diff against?
-> > gregkh-08-staging-2.6.32-rc7-git4.patch just reverts everything.
-> > 
-> > I guess I can extract it from
-> > ://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/series ...
+On Sun, 6 Dec 2009 16:46:16 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
+h won't help.  Their delays can't be reduced.
 > 
-> Or grab the linux-next tree and branch from right before the "delete the
-> drivers/staging/dream/ directory" patch.
+> > I do not know how much I'm asking for, but would it be sensible to
+> > do a similar thing for hub resume as we did for boot? eg start
+> > resuming them all at the same time, so that the mandatory delays of
+> > these hubs will overlap ?
+> 
+> For one thing, there shouldn't be any mandatory delays for non-root
+> hubs during resume-from-RAM (although this depends to some extent on
+> your system firmware -- and it probably helps to have USB-2.0 hubs
+> rather than USB-1.1).
+> 
+> More importantly, what you're asking is impossible given the way the
+> PM core is structured.  The hub-resume routine can't return early
+> because then it wouldn't be possible to resume devices plugged into
+> that hub.
 
-What is the status here, BTW? staging/dream is still there in git pull
-from today. Would it be possible to avoid pushing that huge revert to
-Linus, after all? Fixes are available, and it would be nice to avoid
-big churn.... Pretty please...
-									Pavel
+having spent 30 minutes trying to grok this code, I think there may be
+a trick in using the async function call infrastructure.
+
+if each USB hub's resume (hub_resume()) would be done as an async
+function call, that would start allowing the hub resumes to go async,
+but this is not enough.
+
+usb_resume_both() would also then need to be an async call itself, and
+do its "resume the parent" recursion as a async function call, and then
+it needs to do a synchronization before actually resuming the device
+itself (provided it is not a hub or hub like device I suppose).
+
+the later synchronization guarantees that no device will be resumed
+before it's parent tree structure is resumed, while allowing parallel
+parts of the tree to be resumed in parallel.
+
+The hard part in this is the locking.... that is getting non-trivial
+once you have multiple asynchronous functions executing.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
