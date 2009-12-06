@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZLFJXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932559AbZLFJZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbZLFJXr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 04:23:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbZLFJXl
+	id S932559AbZLFJZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 04:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbZLFJZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 04:23:41 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:43378 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755814AbZLFJXh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 04:23:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=B0coc8oi4vTytG33Nggghs41eA1ZsnH5GEN8X7jQHLtYpOwMwR+ee7V4YTSxPmgG9Z
-         SLA5gheMXQeHoB+mSXe2G+w0o8ROH5oZXAcXcF41SbrXoZH2ZHegw0e6NhwroYDNMydl
-         WHfIzXyCHycZmpMiqkAF+suZs4gyq8yX9kAO8=
-Message-ID: <4B1B781C.3060307@gmail.com>
-Date: Sun, 06 Dec 2009 10:23:40 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-4.1 Thunderbird/3.0
+	Sun, 6 Dec 2009 04:25:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50398 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755841AbZLFJZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 04:25:21 -0500
+Date: Sun, 6 Dec 2009 09:24:44 GMT
+From: tip-bot for Julia Lawall <julia@diku.dk>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       julia@diku.dk, hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, julia@diku.dk, paulus@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
+References: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf tools: Correct size computation in tracepoint_id_to_path()
+Message-ID: <tip-59b4caeb797494043f5f3b98a610f5d9b75eefa3@git.kernel.org>
+Git-Commit-ID: 59b4caeb797494043f5f3b98a610f5d9b75eefa3
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Emese Revfy <re.emese@gmail.com>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
-References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com> <4B1A6B28.2020501@gmail.com> <4B1B193B.7080609@gmail.com>
-In-Reply-To: <4B1B193B.7080609@gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/06/2009 03:38 AM, Emese Revfy wrote:
-> Jiri Slaby wrote:
->> Apart you CCed hundreds of people
-> 
-> I looked up the maintainers of the patched files from the kernel sources
-> because I didn't know a better way to let everyone affected know.
+Commit-ID:  59b4caeb797494043f5f3b98a610f5d9b75eefa3
+Gitweb:     http://git.kernel.org/tip/59b4caeb797494043f5f3b98a610f5d9b75eefa3
+Author:     Julia Lawall <julia@diku.dk>
+AuthorDate: Sun, 6 Dec 2009 10:16:30 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 6 Dec 2009 10:21:59 +0100
 
-Well, if you had per subsystem patches, you would Cc only relevant
-people per patch.
+perf tools: Correct size computation in tracepoint_id_to_path()
 
->> and mixed thousand things together into one patch,
-> 
-> I thought that the best way is to have one patch contain changes for
-> a single structure type only.
+The size argument to zalloc should be the size of desired
+structure, not the pointer to it.
 
-The problem is that probably nobody will pick them up. Or you would need
-to collect Acks from all participants and run with these to Andrew
-Morton. Then it's up to him if he wants to merge them. If you split
-them, you can ask concrete maintainers for a merge.
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
--- 
-js
+// <smpl>
+@expression@
+expression *x;
+@@
+
+x =
+ <+...
+-sizeof(x)
++sizeof(*x)
+...+>// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/util/parse-events.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 9e5dbd6..448a13b 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -197,7 +197,7 @@ struct tracepoint_path *tracepoint_id_to_path(u64 config)
+ 			if (id == config) {
+ 				closedir(evt_dir);
+ 				closedir(sys_dir);
+-				path = zalloc(sizeof(path));
++				path = zalloc(sizeof(*path));
+ 				path->system = malloc(MAX_EVENT_LENGTH);
+ 				if (!path->system) {
+ 					free(path);
