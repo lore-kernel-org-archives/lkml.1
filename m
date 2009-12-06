@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934062AbZLFRwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbZLFR5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934062AbZLFRwJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 12:52:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934003AbZLFRwI
+	id S1757152AbZLFR5D (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 12:57:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbZLFR5C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 12:52:08 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:2086 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933969AbZLFRwF (ORCPT
+	Sun, 6 Dec 2009 12:57:02 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57264 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753917AbZLFR5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 12:52:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=C+ACgbDaXMJSQjSyuiGne/+HMToO55UFBXW17Gu0m5mHxVpH7yaCNrD1Y/4ONHHgDA
-         oO6mzbBXkTgu5kX8uG2aErFpEApErFQHPv7Jah5oFUlrHwAzYZFVzLMTxUTxXjJ64lCK
-         7ZjTPwZGGwZ+lVxXoacgXo4R0WBY7liP2O2/s=
+	Sun, 6 Dec 2009 12:57:01 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 6 Dec 2009 18:56:45 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] FireWire updates post 2.6.32
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.71d11155e1b4d897@s5r6.in-berlin.de>
 MIME-Version: 1.0
-In-Reply-To: <m3638k6lju.fsf@intrepid.localdomain>
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
-	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	 <1260070593.3236.6.camel@pc07.localdom.local>
-	 <20091206065512.GA14651@core.coreip.homeip.net>
-	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-Date: Sun, 6 Dec 2009 12:52:11 -0500
-Message-ID: <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 6, 2009 at 12:48 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> Once again: how about agreement about the LIRC interface
-> (kernel-userspace) and merging the actual LIRC code first? In-kernel
-> decoding can wait a bit, it doesn't change any kernel-user interface.
+Linus, please pull from the for-linus branch at
 
-I'd like to see a semi-complete design for an in-kernel IR system
-before anything is merged from any source.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
+to receive the following minor IEEE 1394/ FireWire subsystem update.
+
+Akinobu Mita (1):
+      ieee1394: Use hweight32
+
+Stefan Richter (9):
+      firewire: cdev: fix memory leak in an error path
+      firewire: normalize style of queue_work wrappers
+      firewire: cdev: normalize variable names
+      firewire: optimize config ROM creation
+      firewire: core: clarify generate_config_rom usage
+      firewire: core: optimize Topology Map creation
+      firewire: core: WARN on wrong usage of core transaction functions
+      firewire: ohci: 0 may be a valid DMA address
+      firewire: cdev: reduce stack usage by ioctl_dispatch
+
+ drivers/firewire/core-card.c        |   75 ++++++++----------
+ drivers/firewire/core-cdev.c        |  113 ++++++++++++++++-----------
+ drivers/firewire/core-topology.c    |   17 +++--
+ drivers/firewire/core-transaction.c |   19 ++---
+ drivers/firewire/core.h             |    9 +-
+ drivers/firewire/ohci.c             |   39 ++++++----
+ drivers/firewire/sbp2.c             |    9 ++-
+ drivers/ieee1394/ohci1394.c         |    8 +--
+ include/linux/firewire.h            |   17 +----
+ 9 files changed, 159 insertions(+), 147 deletions(-)
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Stefan Richter
+-=====-==--= ==-- --==-
+http://arcgraph.de/sr/
+
