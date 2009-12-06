@@ -1,101 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934279AbZLFVXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934268AbZLFV1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934279AbZLFVXs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 16:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934236AbZLFVXr
+	id S934268AbZLFV1F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 16:27:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934221AbZLFV1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 16:23:47 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:64412 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934223AbZLFVXq (ORCPT
+	Sun, 6 Dec 2009 16:27:03 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:64194 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934186AbZLFV1B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 16:23:46 -0500
+	Sun, 6 Dec 2009 16:27:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=HzoD0FRCGEPTrZ8+lyvCwDiGBhwYoraSqH691uHckg7ZkruvECBA7uH4XiOiCeUM01
-         JtA6TJD65eNOPTE4cUgZEegfw+Iwn7im+2VmpohbBEyTNz4PtSt9RazLHt/hSbdDqd8w
-         O9oTGTBqJrdxoHlpPpagAiw5DCj+1dMiaMBAU=
-MIME-Version: 1.0
-In-Reply-To: <m3skbn6dv1.fsf@intrepid.localdomain>
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
-	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	 <1260070593.3236.6.camel@pc07.localdom.local>
-	 <20091206065512.GA14651@core.coreip.homeip.net>
-	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	 <m3skbn6dv1.fsf@intrepid.localdomain>
-Date: Sun, 6 Dec 2009 16:23:51 -0500
-Message-ID: <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=nPWwALAskBqw7inWJi7446cIhYcZF055JGagFT/inAt7lGRAqMqMQCRvKW8NUh9bVc
+         3B6qDK5kV+47Ds3gRcKFWg3NxdLNAnmxcUs8CSrV/54k+rLHsX1I0BYCukIT4aSmxqjm
+         HpfuMAgFGOq9HUk2vnWSM7p75fzCrYn2AjP0A=
+Subject: Re: XD/smartmedia - how to implement it right?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alex Dubov <oakad@yahoo.com>, J?rn Engel <joern@logfs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, arnd <arnd@arndb.de>
+In-Reply-To: <20091205190913.GA1309@ucw.cz>
+References: <109361.10237.qm@web37604.mail.mud.yahoo.com>
+	 <1259589517.13049.31.camel@maxim-laptop>  <20091205190913.GA1309@ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 06 Dec 2009 23:27:00 +0200
+Message-ID: <1260134820.23100.23.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 6, 2009 at 3:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> Jon Smirl <jonsmirl@gmail.com> writes:
->
->>> Once again: how about agreement about the LIRC interface
->>> (kernel-userspace) and merging the actual LIRC code first? In-kernel
->>> decoding can wait a bit, it doesn't change any kernel-user interface.
->>
->> I'd like to see a semi-complete design for an in-kernel IR system
->> before anything is merged from any source.
->
-> This is a way to nowhere, there is no logical dependency between LIRC
-> and input layer IR.
->
-> There is only one thing which needs attention before/when merging LIRC:
-> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
-> actually, making a correct IR core design without the LIRC merged can be
-> only harder.
-
-Here's a few design review questions on the LIRC drivers that were posted....
-
-How is the pulse data going to be communicated to user space?
-Can the pulse data be reported via an existing interface without
-creating a new one?
-Where is the documentation for the protocol?
-Is it a device interface or something else?
-Does it work with poll, epoll, etc?
-What is the time standard for the data, where does it come from?
-How do you define the start and stop of sequences?
-What about capabilities of the receiver, what frequencies?
-If a receiver has multiple frequencies, how do you report what
-frequency the data came in on?
-What about multiple apps simultaneously using the pulse data?
-Is receiving synchronous or queued?
-How big is the receive queue?
-How does access work, root only or any user?
-What about transmit, how do you get pulse data into the device?
-Transmitter frequencies?
-Multiple transmitters?
-Is transmitting synchronous or queued?
-How big is the transmit queue?
-How are capabilities exposed, sysfs, etc?
-What is the interface for attaching an in-kernel decoder?
-If there is an in-kernel decoder should the pulse data stop being
-reported, partially stopped, something else?
-What is the mechanism to make sure both system don't process the same pulses?
-
-> --
-> Krzysztof Halasa
->
+On Sat, 2009-12-05 at 20:09 +0100, Pavel Machek wrote: 
+> > > > First of all, thank you very much for your contributions.
+> > > > Could you explain, why we need an asynchronous mtd driver?
+> > > 
+> > > Because it's the future. ;-)
+> > Although I like the xD format, it has no future,
+> > Everyone migrated to SD now.
+> > 
+> > Reasons are very simple:
+> > 
+> > 1 - xD hardcodes device sizes, thus if somebody makes say 8GB card, many
+> > readers couldn't use it.
+> > I know that windows driver I was dealing with supports sizes up to 2GB
+> > 
+> > 
+> > 2 - xD is a nand card, but with 8-bit bus.
+> > Newer nand chips seem to favor 16 bit bus or more.
+> > Obviously, if they were to implement that it would be physically
+> > incompatible.
+> > 
+> > 3 - embedded cpus are cheap dirt now, and allow to use their, always
+> > 'better' FTL strategy, and also hide inner working of the chip.
+> 
+> XDs are still used by at least olympus digital cameras. Ouch.
+Well, at least according to wikipedia, Olympus phased out XD support, as
+well as Fuji.
+This doesn't mean that there will be no users of XD in five following
+years, thats why I am writing the driver in first place.
 
 
+> 
+> If you have onboard embedded cpu, you can bet it will not work
+> correctly over powerfail. If you do FTL on host, you have at least
+> chance to get it right.
+Thats correct. In fact we are both right here.
+Your viewpoint is based on a view of an user of a sane operation system.
+Sure, the whole idea of FTL is evil, the perfect place for wear leveling
+is in the filesystem itself, and in addition to that, there are several
+technologies that imply finite write cycle count, and that reason
+justifies such filesystem even more.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+I also use the same sane operation system, so for me its quite nice to
+have XD^WNAND removable chip support, and in my eyes the raw access to
+flash is very nice advantage.
+
+However, due to limitations of other less sane operation systems,
+hardware makers have to support wear leveling ether in the driver or in
+the hardware.
+This is yet another example, about why some operation systems 'just
+work'...
+Not that these operation systems are better, but that hardware makers do
+everything possible to patch all problems these operation systems have.
+Same is true for software generally.
+
+
+Supporting wear leveling in hardware is easier, because this way, they
+can be sure it works well, and not depend on each and every driver
+implementation to do that right.
+
+Small hint, you know how the windows driver for my controller handles
+COW?
+Very simple, every 512 bytes write (only accepts such) turns into whole
+erase/write cycle of whole block (32 KB usually).
+
+So, if you write a 32K or larger file , and no matter how clever the OS
+is, it will still end in 64 erase cycles...
+
+
+Best regards,
+Maxim Levitsky
+
