@@ -1,291 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934297AbZLFSEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934269AbZLFSEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934297AbZLFSEn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 13:04:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934260AbZLFSEK
+	id S934269AbZLFSEQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 13:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934226AbZLFSEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 13:04:10 -0500
-Received: from www.tglx.de ([62.245.132.106]:33273 "EHLO www.tglx.de"
+	Sun, 6 Dec 2009 13:04:13 -0500
+Received: from www.tglx.de ([62.245.132.106]:33285 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934164AbZLFSDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 13:03:44 -0500
-Message-Id: <20091206111957.993628311@linutronix.de>
+	id S934190AbZLFSDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 13:03:48 -0500
+Message-Id: <20091206111958.029468469@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sun, 06 Dec 2009 18:03:22 -0000
+Date: Sun, 06 Dec 2009 18:03:30 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <peterz@infradead.org>,
        Linux-Arch <linux-arch@vger.kernel.org>
-Subject: [patch 18/23] rtmutes: Convert rtmutex.lock to raw_spinlock
+Subject: [patch 19/23] smp: Convert smplocks to raw_spinlocks
 References: <20091206110944.492100233@linutronix.de>
-Content-Disposition: inline;
-	filename=rtmutex-convert-wait-lock-to-core-lock.patch
+Content-Disposition: inline; filename=smp-convert-smplocks-to-core-locks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- include/linux/rtmutex.h |    6 +++---
- kernel/futex.c          |    6 +++---
- kernel/rtmutex.c        |   48 ++++++++++++++++++++++++------------------------
- 3 files changed, 30 insertions(+), 30 deletions(-)
+ kernel/smp.c |   32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
-Index: linux-2.6-tip/include/linux/rtmutex.h
+Index: linux-2.6-tip/kernel/smp.c
 ===================================================================
---- linux-2.6-tip.orig/include/linux/rtmutex.h
-+++ linux-2.6-tip/include/linux/rtmutex.h
-@@ -24,7 +24,7 @@
-  * @owner:	the mutex owner
-  */
- struct rt_mutex {
--	spinlock_t		wait_lock;
-+	raw_spinlock_t		wait_lock;
- 	struct plist_head	wait_list;
- 	struct task_struct	*owner;
- #ifdef CONFIG_DEBUG_RT_MUTEXES
-@@ -63,8 +63,8 @@ struct hrtimer_sleeper;
- #endif
+--- linux-2.6-tip.orig/kernel/smp.c
++++ linux-2.6-tip/kernel/smp.c
+@@ -16,11 +16,11 @@ static DEFINE_PER_CPU(struct call_single
  
- #define __RT_MUTEX_INITIALIZER(mutexname) \
--	{ .wait_lock = __SPIN_LOCK_UNLOCKED(mutexname.wait_lock) \
--	, .wait_list = PLIST_HEAD_INIT(mutexname.wait_list, mutexname.wait_lock) \
-+	{ .wait_lock = __RAW_SPIN_LOCK_UNLOCKED(mutexname.wait_lock) \
-+	, .wait_list = PLIST_HEAD_INIT_RAW(mutexname.wait_list, mutexname.wait_lock) \
- 	, .owner = NULL \
- 	__DEBUG_RT_MUTEX_INITIALIZER(mutexname)}
+ static struct {
+ 	struct list_head	queue;
+-	spinlock_t		lock;
++	raw_spinlock_t		lock;
+ } call_function __cacheline_aligned_in_smp =
+ 	{
+ 		.queue		= LIST_HEAD_INIT(call_function.queue),
+-		.lock		= __SPIN_LOCK_UNLOCKED(call_function.lock),
++		.lock		= __RAW_SPIN_LOCK_UNLOCKED(call_function.lock),
+ 	};
  
-Index: linux-2.6-tip/kernel/futex.c
-===================================================================
---- linux-2.6-tip.orig/kernel/futex.c
-+++ linux-2.6-tip/kernel/futex.c
-@@ -754,7 +754,7 @@ static int wake_futex_pi(u32 __user *uad
- 	if (!pi_state)
- 		return -EINVAL;
+ enum {
+@@ -35,7 +35,7 @@ struct call_function_data {
  
--	spin_lock(&pi_state->pi_mutex.wait_lock);
-+	raw_spin_lock(&pi_state->pi_mutex.wait_lock);
- 	new_owner = rt_mutex_next_owner(&pi_state->pi_mutex);
+ struct call_single_queue {
+ 	struct list_head	list;
+-	spinlock_t		lock;
++	raw_spinlock_t		lock;
+ };
+ 
+ static DEFINE_PER_CPU(struct call_function_data, cfd_data);
+@@ -80,7 +80,7 @@ static int __cpuinit init_call_single_da
+ 	for_each_possible_cpu(i) {
+ 		struct call_single_queue *q = &per_cpu(call_single_queue, i);
+ 
+-		spin_lock_init(&q->lock);
++		raw_spin_lock_init(&q->lock);
+ 		INIT_LIST_HEAD(&q->list);
+ 	}
+ 
+@@ -141,10 +141,10 @@ void generic_exec_single(int cpu, struct
+ 	unsigned long flags;
+ 	int ipi;
+ 
+-	spin_lock_irqsave(&dst->lock, flags);
++	raw_spin_lock_irqsave(&dst->lock, flags);
+ 	ipi = list_empty(&dst->list);
+ 	list_add_tail(&data->list, &dst->list);
+-	spin_unlock_irqrestore(&dst->lock, flags);
++	raw_spin_unlock_irqrestore(&dst->lock, flags);
  
  	/*
-@@ -783,7 +783,7 @@ static int wake_futex_pi(u32 __user *uad
- 		else if (curval != uval)
- 			ret = -EINVAL;
- 		if (ret) {
--			spin_unlock(&pi_state->pi_mutex.wait_lock);
-+			raw_spin_unlock(&pi_state->pi_mutex.wait_lock);
- 			return ret;
- 		}
- 	}
-@@ -799,7 +799,7 @@ static int wake_futex_pi(u32 __user *uad
- 	pi_state->owner = new_owner;
- 	raw_spin_unlock_irq(&new_owner->pi_lock);
- 
--	spin_unlock(&pi_state->pi_mutex.wait_lock);
-+	raw_spin_unlock(&pi_state->pi_mutex.wait_lock);
- 	rt_mutex_unlock(&pi_state->pi_mutex);
- 
- 	return 0;
-Index: linux-2.6-tip/kernel/rtmutex.c
-===================================================================
---- linux-2.6-tip.orig/kernel/rtmutex.c
-+++ linux-2.6-tip/kernel/rtmutex.c
-@@ -231,7 +231,7 @@ static int rt_mutex_adjust_prio_chain(st
- 		goto out_unlock_pi;
- 
- 	lock = waiter->lock;
--	if (!spin_trylock(&lock->wait_lock)) {
-+	if (!raw_spin_trylock(&lock->wait_lock)) {
- 		raw_spin_unlock_irqrestore(&task->pi_lock, flags);
- 		cpu_relax();
- 		goto retry;
-@@ -240,7 +240,7 @@ static int rt_mutex_adjust_prio_chain(st
- 	/* Deadlock detection */
- 	if (lock == orig_lock || rt_mutex_owner(lock) == top_task) {
- 		debug_rt_mutex_deadlock(deadlock_detect, orig_waiter, lock);
--		spin_unlock(&lock->wait_lock);
-+		raw_spin_unlock(&lock->wait_lock);
- 		ret = deadlock_detect ? -EDEADLK : 0;
- 		goto out_unlock_pi;
- 	}
-@@ -280,7 +280,7 @@ static int rt_mutex_adjust_prio_chain(st
- 	raw_spin_unlock_irqrestore(&task->pi_lock, flags);
- 
- 	top_waiter = rt_mutex_top_waiter(lock);
--	spin_unlock(&lock->wait_lock);
-+	raw_spin_unlock(&lock->wait_lock);
- 
- 	if (!detect_deadlock && waiter != top_waiter)
- 		goto out_put_task;
-@@ -459,12 +459,12 @@ static int task_blocks_on_rt_mutex(struc
- 	 */
- 	get_task_struct(owner);
- 
--	spin_unlock(&lock->wait_lock);
-+	raw_spin_unlock(&lock->wait_lock);
- 
- 	res = rt_mutex_adjust_prio_chain(owner, detect_deadlock, lock, waiter,
- 					 task);
- 
--	spin_lock(&lock->wait_lock);
-+	raw_spin_lock(&lock->wait_lock);
- 
- 	return res;
- }
-@@ -575,11 +575,11 @@ static void remove_waiter(struct rt_mute
- 	/* gets dropped in rt_mutex_adjust_prio_chain()! */
- 	get_task_struct(owner);
- 
--	spin_unlock(&lock->wait_lock);
-+	raw_spin_unlock(&lock->wait_lock);
- 
- 	rt_mutex_adjust_prio_chain(owner, 0, lock, NULL, current);
- 
--	spin_lock(&lock->wait_lock);
-+	raw_spin_lock(&lock->wait_lock);
- }
- 
- /*
-@@ -672,14 +672,14 @@ __rt_mutex_slowlock(struct rt_mutex *loc
- 				break;
+ 	 * The list addition should be visible before sending the IPI
+@@ -201,9 +201,9 @@ void generic_smp_call_function_interrupt
+ 		refs = atomic_dec_return(&data->refs);
+ 		WARN_ON(refs < 0);
+ 		if (!refs) {
+-			spin_lock(&call_function.lock);
++			raw_spin_lock(&call_function.lock);
+ 			list_del_rcu(&data->csd.list);
+-			spin_unlock(&call_function.lock);
++			raw_spin_unlock(&call_function.lock);
  		}
  
--		spin_unlock(&lock->wait_lock);
-+		raw_spin_unlock(&lock->wait_lock);
- 
- 		debug_rt_mutex_print_deadlock(waiter);
- 
- 		if (waiter->task)
- 			schedule_rt_mutex(lock);
- 
--		spin_lock(&lock->wait_lock);
-+		raw_spin_lock(&lock->wait_lock);
- 		set_current_state(state);
- 	}
- 
-@@ -700,11 +700,11 @@ rt_mutex_slowlock(struct rt_mutex *lock,
- 	debug_rt_mutex_init_waiter(&waiter);
- 	waiter.task = NULL;
- 
--	spin_lock(&lock->wait_lock);
-+	raw_spin_lock(&lock->wait_lock);
- 
- 	/* Try to acquire the lock again: */
- 	if (try_to_take_rt_mutex(lock)) {
--		spin_unlock(&lock->wait_lock);
-+		raw_spin_unlock(&lock->wait_lock);
- 		return 0;
- 	}
- 
-@@ -731,7 +731,7 @@ rt_mutex_slowlock(struct rt_mutex *lock,
+ 		if (refs)
+@@ -230,9 +230,9 @@ void generic_smp_call_function_single_in
  	 */
- 	fixup_rt_mutex_waiters(lock);
+ 	WARN_ON_ONCE(!cpu_online(smp_processor_id()));
  
--	spin_unlock(&lock->wait_lock);
-+	raw_spin_unlock(&lock->wait_lock);
+-	spin_lock(&q->lock);
++	raw_spin_lock(&q->lock);
+ 	list_replace_init(&q->list, &list);
+-	spin_unlock(&q->lock);
++	raw_spin_unlock(&q->lock);
  
- 	/* Remove pending timer: */
- 	if (unlikely(timeout))
-@@ -758,7 +758,7 @@ rt_mutex_slowtrylock(struct rt_mutex *lo
- {
- 	int ret = 0;
+ 	while (!list_empty(&list)) {
+ 		struct call_single_data *data;
+@@ -449,14 +449,14 @@ void smp_call_function_many(const struct
+ 	cpumask_clear_cpu(this_cpu, data->cpumask);
+ 	atomic_set(&data->refs, cpumask_weight(data->cpumask));
  
--	spin_lock(&lock->wait_lock);
-+	raw_spin_lock(&lock->wait_lock);
- 
- 	if (likely(rt_mutex_owner(lock) != current)) {
- 
-@@ -770,7 +770,7 @@ rt_mutex_slowtrylock(struct rt_mutex *lo
- 		fixup_rt_mutex_waiters(lock);
- 	}
- 
--	spin_unlock(&lock->wait_lock);
-+	raw_spin_unlock(&lock->wait_lock);
- 
- 	return ret;
- }
-@@ -781,7 +781,7 @@ rt_mutex_slowtrylock(struct rt_mutex *lo
- static void __sched
- rt_mutex_slowunlock(struct rt_mutex *lock)
- {
--	spin_lock(&lock->wait_lock);
-+	raw_spin_lock(&lock->wait_lock);
- 
- 	debug_rt_mutex_unlock(lock);
- 
-@@ -789,13 +789,13 @@ rt_mutex_slowunlock(struct rt_mutex *loc
- 
- 	if (!rt_mutex_has_waiters(lock)) {
- 		lock->owner = NULL;
--		spin_unlock(&lock->wait_lock);
-+		raw_spin_unlock(&lock->wait_lock);
- 		return;
- 	}
- 
- 	wakeup_next_waiter(lock);
- 
--	spin_unlock(&lock->wait_lock);
-+	raw_spin_unlock(&lock->wait_lock);
- 
- 	/* Undo pi boosting if necessary: */
- 	rt_mutex_adjust_prio(current);
-@@ -970,8 +970,8 @@ EXPORT_SYMBOL_GPL(rt_mutex_destroy);
- void __rt_mutex_init(struct rt_mutex *lock, const char *name)
- {
- 	lock->owner = NULL;
--	spin_lock_init(&lock->wait_lock);
--	plist_head_init(&lock->wait_list, &lock->wait_lock);
-+	raw_spin_lock_init(&lock->wait_lock);
-+	plist_head_init_raw(&lock->wait_list, &lock->wait_lock);
- 
- 	debug_rt_mutex_init(lock, name);
- }
-@@ -1032,7 +1032,7 @@ int rt_mutex_start_proxy_lock(struct rt_
- {
- 	int ret;
- 
--	spin_lock(&lock->wait_lock);
-+	raw_spin_lock(&lock->wait_lock);
- 
- 	mark_rt_mutex_waiters(lock);
- 
-@@ -1040,7 +1040,7 @@ int rt_mutex_start_proxy_lock(struct rt_
- 		/* We got the lock for task. */
- 		debug_rt_mutex_lock(lock);
- 		rt_mutex_set_owner(lock, task, 0);
--		spin_unlock(&lock->wait_lock);
-+		raw_spin_unlock(&lock->wait_lock);
- 		rt_mutex_deadlock_account_lock(lock, task);
- 		return 1;
- 	}
-@@ -1056,7 +1056,7 @@ int rt_mutex_start_proxy_lock(struct rt_
- 		 */
- 		ret = 0;
- 	}
--	spin_unlock(&lock->wait_lock);
-+	raw_spin_unlock(&lock->wait_lock);
- 
- 	debug_rt_mutex_print_deadlock(waiter);
- 
-@@ -1106,7 +1106,7 @@ int rt_mutex_finish_proxy_lock(struct rt
- {
- 	int ret;
- 
--	spin_lock(&lock->wait_lock);
-+	raw_spin_lock(&lock->wait_lock);
- 
- 	set_current_state(TASK_INTERRUPTIBLE);
- 
-@@ -1124,7 +1124,7 @@ int rt_mutex_finish_proxy_lock(struct rt
+-	spin_lock_irqsave(&call_function.lock, flags);
++	raw_spin_lock_irqsave(&call_function.lock, flags);
+ 	/*
+ 	 * Place entry at the _HEAD_ of the list, so that any cpu still
+ 	 * observing the entry in generic_smp_call_function_interrupt()
+ 	 * will not miss any other list entries:
  	 */
- 	fixup_rt_mutex_waiters(lock);
- 
--	spin_unlock(&lock->wait_lock);
-+	raw_spin_unlock(&lock->wait_lock);
+ 	list_add_rcu(&data->csd.list, &call_function.queue);
+-	spin_unlock_irqrestore(&call_function.lock, flags);
++	raw_spin_unlock_irqrestore(&call_function.lock, flags);
  
  	/*
- 	 * Readjust priority, when we did not get the lock. We might have been
+ 	 * Make the list addition visible before sending the ipi.
+@@ -501,20 +501,20 @@ EXPORT_SYMBOL(smp_call_function);
+ 
+ void ipi_call_lock(void)
+ {
+-	spin_lock(&call_function.lock);
++	raw_spin_lock(&call_function.lock);
+ }
+ 
+ void ipi_call_unlock(void)
+ {
+-	spin_unlock(&call_function.lock);
++	raw_spin_unlock(&call_function.lock);
+ }
+ 
+ void ipi_call_lock_irq(void)
+ {
+-	spin_lock_irq(&call_function.lock);
++	raw_spin_lock_irq(&call_function.lock);
+ }
+ 
+ void ipi_call_unlock_irq(void)
+ {
+-	spin_unlock_irq(&call_function.lock);
++	raw_spin_unlock_irq(&call_function.lock);
+ }
 
 
