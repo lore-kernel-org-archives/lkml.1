@@ -1,63 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933637AbZLFDiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbZLFDq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933637AbZLFDiz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 22:38:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbZLFDit
+	id S1758100AbZLFDq4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 22:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbZLFDqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 22:38:49 -0500
-Received: from mail-in-17.arcor-online.net ([151.189.21.57]:38504 "EHLO
-	mail-in-17.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758027AbZLFDis (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 22:38:48 -0500
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-11.arcor-online.net D1520E3912
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR  system?
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       awalls@radix.net, j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
-       khc@pm.waw.pl, kraxel@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-In-Reply-To: <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-References: <20091204220708.GD25669@core.coreip.homeip.net>
-	 <BEJgSGGXqgB@lirc>
-	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 06 Dec 2009 04:36:33 +0100
-Message-Id: <1260070593.3236.6.camel@pc07.localdom.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Dec 2009 22:46:53 -0500
+Received: from mga14.intel.com ([143.182.124.37]:34345 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758047AbZLFDqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 22:46:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="219284004"
+Date: Sun, 6 Dec 2009 11:46:36 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Li, Haicheng" <haicheng.li@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [RFC] print symbolic page flag names in bad_page()
+Message-ID: <20091206034636.GA7109@localhost>
+References: <20091204212606.29258.98531.stgit@bob.kio>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091204212606.29258.98531.stgit@bob.kio>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Alex,
 
-Am Freitag, den 04.12.2009, 19:28 -0500 schrieb Jon Smirl:
-> On Fri, Dec 4, 2009 at 6:01 PM, Christoph Bartelmus <lirc@bartelmus.de> wrote:
-> > BTW, I just came across a XMP remote that seems to generate 3x64 bit scan
-> > codes. Anyone here has docs on the XMP protocol?
+On Sat, Dec 05, 2009 at 05:29:48AM +0800, Alex Chiang wrote:
+[...]
+> Teach page-types the -k mode, which parses and describes the bits in
+> the internal kernel order:
 > 
-> Assuming a general purpose receiver (not one with fixed hardware
-> decoding), is it important for Linux to receive IR signals from all
-> possible remotes no matter how old or obscure? Or is it acceptable to
-> tell the user to throw away their dedicated remote and buy a universal
-> multi-function one?  Universal multi-function remotes are $12 in my
-> grocery store - I don't even have to go to an electronics store.
+>   # ./Documentation/vm/page-types -k 0x4000
+>   0x0000000000004000  ______________H_________  compound_head
+[...]
+> The implication is that attempting to use page-types -k on a kernel
+> with different CONFIG_* settings may lead to surprising and misleading
+> results. To retain sanity, always use the page-types built out of the
+> kernel tree you are actually testing.
 
-finally we have some point here, IMHO, that is not acceptable and I told
-you previously not to bet on such. Start some poll and win it, and I'll
-shut up :)
+This is useful feature, however not as convenient if the kernel can
+print its page flag names directly :)
+(especially when the dmesg comes from some end user)
 
-To be frank, you are quite mad at this point, or deliver working other
-remotes to __all__ for free.
+So how about this patch?
+---
 
-Cheers,
-Hermann
+mm: introduce dump_page()
 
+- introduce dump_page() to print the page info for debugging some error condition.
+- print an extra field: the symbolic names of page->flags
+- convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
 
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/internal.h       |    2 +
+ mm/memory.c         |    8 +---
+ mm/memory_hotplug.c |    6 +--
+ mm/page_alloc.c     |   75 +++++++++++++++++++++++++++++++++++++++---
+ 4 files changed, 78 insertions(+), 13 deletions(-)
 
-
+--- linux-mm.orig/mm/page_alloc.c	2009-12-06 10:11:08.000000000 +0800
++++ linux-mm/mm/page_alloc.c	2009-12-06 11:22:58.000000000 +0800
+@@ -48,6 +48,7 @@
+ #include <linux/page_cgroup.h>
+ #include <linux/debugobjects.h>
+ #include <linux/kmemleak.h>
++#include <linux/kernel-page-flags.h>
+ #include <trace/events/kmem.h>
+ 
+ #include <asm/tlbflush.h>
+@@ -262,10 +263,7 @@ static void bad_page(struct page *page)
+ 
+ 	printk(KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
+ 		current->comm, page_to_pfn(page));
+-	printk(KERN_ALERT
+-		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
+-		page, (void *)page->flags, page_count(page),
+-		page_mapcount(page), page->mapping, page->index);
++	dump_page(page);
+ 
+ 	dump_stack();
+ out:
+@@ -5106,3 +5104,72 @@ bool is_free_buddy_page(struct page *pag
+ 	return order < MAX_ORDER;
+ }
+ #endif
++
++static char *page_flag_names[] = {
++	[KPF_LOCKED]		= "L:locked",
++	[KPF_ERROR]		= "E:error",
++	[KPF_REFERENCED]	= "R:referenced",
++	[KPF_UPTODATE]		= "U:uptodate",
++	[KPF_DIRTY]		= "D:dirty",
++	[KPF_LRU]		= "l:lru",
++	[KPF_ACTIVE]		= "A:active",
++	[KPF_SLAB]		= "S:slab",
++	[KPF_WRITEBACK]		= "W:writeback",
++	[KPF_RECLAIM]		= "I:reclaim",
++	[KPF_BUDDY]		= "B:buddy",
++
++	[KPF_MMAP]		= "M:mmap",
++	[KPF_ANON]		= "a:anonymous",
++	[KPF_SWAPCACHE]		= "s:swapcache",
++	[KPF_SWAPBACKED]	= "b:swapbacked",
++	[KPF_COMPOUND_HEAD]	= "H:compound_head",
++	[KPF_COMPOUND_TAIL]	= "T:compound_tail",
++	[KPF_HUGE]		= "G:huge",
++	[KPF_UNEVICTABLE]	= "u:unevictable",
++	[KPF_HWPOISON]		= "X:hwpoison",
++	[KPF_NOPAGE]		= "n:nopage",
++	[KPF_KSM]		= "V:shared",
++
++	[KPF_RESERVED]		= "r:reserved",
++	[KPF_MLOCKED]		= "m:mlocked",
++	[KPF_MAPPEDTODISK]	= "d:mappedtodisk",
++	[KPF_PRIVATE]		= "P:private",
++	[KPF_PRIVATE_2]		= "p:private_2",
++	[KPF_OWNER_PRIVATE]	= "O:owner_private",
++	[KPF_ARCH]		= "h:arch",
++	[KPF_UNCACHED]		= "c:uncached",
++};
++
++static char *page_flags_longname(struct page *page, char *buf, int buflen)
++{
++	int i, n;
++	u64 flags;
++
++	flags = stable_page_flags(page);
++
++	for (i = 0, n = 0; i < ARRAY_SIZE(page_flag_names); i++) {
++		if (!page_flag_names[i])
++			continue;
++		if ((flags >> i) & 1)
++			n += snprintf(buf + n, buflen - n, "%s,",
++					page_flag_names[i] + 2);
++	}
++	if (n)
++		n--;
++	buf[n] = '\0';
++
++	return buf;
++}
++
++void dump_page(struct page *page)
++{
++	char buf[1024];
++
++	printk(KERN_ALERT
++	"page:%p flags:%p(%s) count:%d mapcount:%d mapping:%p index:%lx\n",
++		page, (void *)page->flags,
++		page_flags_longname(page, buf, sizeof(buf)),
++		page_count(page), page_mapcount(page),
++		page->mapping, page->index);
++}
++EXPORT_SYMBOL(dump_page);
+--- linux-mm.orig/mm/memory.c	2009-12-06 10:37:47.000000000 +0800
++++ linux-mm/mm/memory.c	2009-12-06 10:57:25.000000000 +0800
+@@ -430,12 +430,8 @@ static void print_bad_pte(struct vm_area
+ 		"BUG: Bad page map in process %s  pte:%08llx pmd:%08llx\n",
+ 		current->comm,
+ 		(long long)pte_val(pte), (long long)pmd_val(*pmd));
+-	if (page) {
+-		printk(KERN_ALERT
+-		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
+-		page, (void *)page->flags, page_count(page),
+-		page_mapcount(page), page->mapping, page->index);
+-	}
++	if (page)
++		dump_page(page);
+ 	printk(KERN_ALERT
+ 		"addr:%p vm_flags:%08lx anon_vma:%p mapping:%p index:%lx\n",
+ 		(void *)addr, vma->vm_flags, vma->anon_vma, mapping, index);
+--- linux-mm.orig/mm/internal.h	2009-12-06 10:47:37.000000000 +0800
++++ linux-mm/mm/internal.h	2009-12-06 11:03:53.000000000 +0800
+@@ -264,6 +264,8 @@ int __get_user_pages(struct task_struct 
+ #define ZONE_RECLAIM_SUCCESS	1
+ #endif
+ 
++void dump_page(struct page *page);
++
+ extern int hwpoison_filter(struct page *p);
+ 
+ extern u32 hwpoison_filter_dev_major;
+--- linux-mm.orig/mm/memory_hotplug.c	2009-12-06 11:01:20.000000000 +0800
++++ linux-mm/mm/memory_hotplug.c	2009-12-06 11:01:23.000000000 +0800
+@@ -678,9 +678,9 @@ do_migrate_range(unsigned long start_pfn
+ 			if (page_count(page))
+ 				not_managed++;
+ #ifdef CONFIG_DEBUG_VM
+-			printk(KERN_INFO "removing from LRU failed"
+-					 " %lx/%d/%lx\n",
+-				pfn, page_count(page), page->flags);
++			printk(KERN_INFO "removing pfn %lx from LRU failed\n",
++				pfn);
++			dump_page(page);
+ #endif
+ 		}
+ 	}
