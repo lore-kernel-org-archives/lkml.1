@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932551AbZLFJQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbZLFJQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932551AbZLFJQL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 04:16:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZLFJQI
+	id S932601AbZLFJQb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 04:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZLFJQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 04:16:08 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:47567 "EHLO mgw1.diku.dk"
+	Sun, 6 Dec 2009 04:16:27 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:47578 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755695AbZLFJQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 04:16:06 -0500
-Date: Sun, 6 Dec 2009 10:16:11 +0100 (CET)
+	id S932101AbZLFJQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 04:16:25 -0500
+Date: Sun, 6 Dec 2009 10:16:30 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Faisal Latif <faisal.latif@intel.com>,
-       Chien Tung <chien.tin.tung@intel.com>,
-       Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/5] drivers/infiniband: correct size computation
-Message-ID: <Pine.LNX.4.64.0912061015540.20858@ask.diku.dk>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/5] tools/perf/util: correct size computation
+Message-ID: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,8 +24,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The size argument to ioremap_nocache should be the size of desired
-information, not the pointer to it.
+The size argument to zalloc should be the size of desired structure,
+not the pointer to it.
 
 The semantic patch that makes this change is as follows:
 (http://coccinelle.lip6.fr/)
@@ -46,20 +44,18 @@ x =
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/infiniband/hw/nes/nes.c     |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ tools/perf/util/parse-events.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/infiniband/hw/nes/nes.c b/drivers/infiniband/hw/nes/nes.c
-index cbde0cf..b8c5372 100644
---- a/drivers/infiniband/hw/nes/nes.c
-+++ b/drivers/infiniband/hw/nes/nes.c
-@@ -521,7 +521,8 @@ static int __devinit nes_probe(struct pci_dev *pcidev, const struct pci_device_i
- 	spin_lock_init(&nesdev->indexed_regs_lock);
- 
- 	/* Remap the PCI registers in adapter BAR0 to kernel VA space */
--	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0), sizeof(mmio_regs));
-+	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0),
-+				    sizeof(*mmio_regs));
- 	if (mmio_regs == NULL) {
- 		printk(KERN_ERR PFX "Unable to remap BAR0\n");
- 		ret = -EIO;
+diff -u -p a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -197,7 +197,7 @@ struct tracepoint_path *tracepoint_id_to
+ 			if (id == config) {
+ 				closedir(evt_dir);
+ 				closedir(sys_dir);
+-				path = zalloc(sizeof(path));
++				path = zalloc(sizeof(*path));
+ 				path->system = malloc(MAX_EVENT_LENGTH);
+ 				if (!path->system) {
+ 					free(path);
