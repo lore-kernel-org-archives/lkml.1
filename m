@@ -1,59 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933768AbZLFLzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZLFMCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933768AbZLFLzF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 06:55:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933724AbZLFLzE
+	id S1756214AbZLFMCn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 07:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZLFMC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 06:55:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54047 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933723AbZLFLzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 06:55:02 -0500
-Date: Sun, 6 Dec 2009 12:54:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Arjan van de Ven <arjan@infradead.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] perf: Fix timechart header handling
-Message-ID: <20091206115458.GA21964@elte.hu>
-References: <87ljhg8ioe.fsf@devron.myhome.or.jp>
+	Sun, 6 Dec 2009 07:02:29 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:57475 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751734AbZLFMC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 07:02:26 -0500
+Date: 06 Dec 2009 12:58:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: dmitry.torokhov@gmail.com
+Cc: awalls@radix.net
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: jarod@wilsonet.com
+Cc: jonsmirl@gmail.com
+Cc: khc@pm.waw.pl
+Cc: kraxel@redhat.com
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: mchehab@redhat.com
+Cc: superm1@ubuntu.com
+Message-ID: <BENgwLGXqgB@lirc>
+In-Reply-To: <20091204231527.GA3682@core.coreip.homeip.net>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ljhg8ioe.fsf@devron.myhome.or.jp>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX18iwK8QbuLsKFNjeP7Ym7bvgwrTTDvJSek13q+
+ McSAVYj2YQ9w2cIFY9L2TPdL4SZxO4LzX1RFm5YlG2PYM0cs3h
+ tHaDOxyBvPFyBdgQff2Q/+sDk/2VzmM
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Dmitry,
 
-* OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+on 04 Dec 09 at 15:15, Dmitry Torokhov wrote:
+[...]
+>>>>>> http://lirc.sourceforge.net/remotes/lg/6711A20015N
+>>>>>>
+>>>>>> This is an air-conditioner remote.
+>>>>>> The entries that you see in this config file are not really separate
+>>>>>> buttons. Instead the remote just sends the current settings for e.g.
+>>>>>> temperature encoded in the protocol when you press some up/down key.
+>>>>>> You really don't want to map all possible temperature settings to KEY_*
+>>>>>> events. For such cases it would be nice to have access at the raw scan
+>>>>>> codes from user space to do interpretation of the data.
+>>>>>> The default would still be to pass the data to the input layer, but it
+>>>>>> won't hurt to have the possibility to access the raw data somehow.
+>>>>
+>>>>> Interesting. IMHO, the better would be to add an evdev ioctl to return
+>>>>> the scancode for such cases, instead of returning the keycode.
+>>>>
+>>>> That means you would have to set up a pseudo keymap, so that you can get
+>>>> the key event which you could than react on with a ioctl. Or are you
+>>>> generating KEY_UNKNOWN for every scancode that is not mapped?
+>>>> What if different scan codes are mapped to the same key event? How do you
+>>>> retrieve the scan code for the key event?
+>>>> I don't think it can work this way.
+>>>>
+>>
+>>> EV_MSC/MSC_SCAN.
+>>
+>> How would I get the 64 bit scan codes that the iMON devices generate?
+>> How would I know that the scan code is 64 bit?
+>> input_event.value is __s32.
+>>
 
-> Hi,
-> 
-> Update "struct trace_entry" to match with current one. And remove
-> "size" field from it.
-> 
-> If it has "size", it become cause of alignment mismatch of structure
-> with kernel.
-> 
-> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> ---
-> 
->  tools/perf/builtin-timechart.c |   12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
+> I suppose we could add MSC_SCAN_END event so that we can transmit
+> "scancodes" of arbitrary length. You'd get several MSC_SCAN followed by
+> MSC_SCAN_END marker. If you don't get MSC_SCAN_END assume the code is 32
+> bit.
 
-Just curious, have you tested timechart functionality after having done 
-this change - does it still work fine for you?
+And I set a timeout to know that no MSC_SCAN_END will arrive? This is  
+broken design IMHO.
 
-Thanks,
+Furthermore lircd needs to know the length of the scan code in bits, not  
+as a multiple of 32.
 
-	Ingo
+> FWIW there is MSC_RAW as well.
+
+It took me some time to convice people that this is not the right way to  
+handle raw timing data.
+
+Christoph
