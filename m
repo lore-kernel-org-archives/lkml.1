@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZLFBZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbZLFBji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbZLFBZe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Dec 2009 20:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZLFBZ3
+	id S1756162AbZLFBji (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Dec 2009 20:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZLFBjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Dec 2009 20:25:29 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36426 "EHLO ogre.sisk.pl"
+	Sat, 5 Dec 2009 20:39:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43936 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754740AbZLFBZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Dec 2009 20:25:28 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 02:26:06 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl> <20091205164541.5e0f209a@infradead.org>
-In-Reply-To: <20091205164541.5e0f209a@infradead.org>
+	id S1754885AbZLFBjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Dec 2009 20:39:33 -0500
+Message-ID: <4B1B0BC9.7070005@gmail.com>
+Date: Sun, 06 Dec 2009 02:41:29 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: matthew@wil.cx, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 28/31] Constify struct super_operations for 2.6.32 v1
+References: <4B198670.2000406@gmail.com> <4B199173.3050207@gmail.com> <20091206012329.GB14381@ZenIV.linux.org.uk>
+In-Reply-To: <20091206012329.GB14381@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912060226.06217.rjw@sisk.pl>
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 December 2009, Arjan van de Ven wrote:
-> On Sun, 6 Dec 2009 00:55:36 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Al Viro wrote:
+> On Fri, Dec 04, 2009 at 11:47:15PM +0100, Emese Revfy wrote:
+>> From: Emese Revfy <re.emese@gmail.com>
+>>
+>> Constify struct super_operations.
 > 
-> > 
-> > Disk spinup/spindown takes time, but also some ACPI devices resume
-> > slowly, serio devices do that too and there are surprisingly many
-> > drivers that wait (using msleep() during suspend and resume).  Apart
-> > from this, every PCI device going from D0 to D3 during suspend and
-> > from D3 to D0 during resume requires us to sleep for 10 ms (the
-> > sleeping is done by the PCI core, so the drivers don't even realize
-> > its there).
+> What the _hell_ is that?
 > 
-> maybe a good step is to make a scripts/bootgraph.pl equivalent for
-> suspend/resume (or make a debug mode that outputs in a compatible format
-> so that the script can be used as is.. I don't mind either way, and
-> consider this my offer to help with such a script as long as there's
-> sufficient logging in dmesg ;-)
+>> +   	struct inode *(* const alloc_inode)(struct super_block *sb);
+> 
+> This is ugly and has all marks of cargo-cult patches.  NAKed at least
+> until you give exceptionally good reasons for doing that.
 
-OK, so what kind of logging is needed?
+My idea was that since each instance of super_operations is const,
+I figured that there is an implicit policy of not wanting writable
+super_operations structures in the kernel. If this is actually the
+case then my patch makes the compiler enforce this policy, otherwise
+please ignore it.
+--
+Emese
 
-> that way we can SEE which ones are an issue.... and by how much.
-
-Well, why not.
-
-Thanks,
-Rafael
