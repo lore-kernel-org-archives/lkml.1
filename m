@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934291AbZLFVjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934306AbZLFVqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934291AbZLFVjd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 16:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbZLFVja
+	id S934306AbZLFVqP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 16:46:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934238AbZLFVqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 16:39:30 -0500
-Received: from thunk.org ([69.25.196.29]:37824 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754476AbZLFVja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 16:39:30 -0500
-Date: Sun, 6 Dec 2009 16:39:30 -0500
-From: tytso@mit.edu
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: "J. R. Okajima" <hooanon05@yahoo.co.jp>, linux-kernel@vger.kernel.org,
-       stewb@linux-foundation.org
-Subject: Re: [RFC 0/5] pathconf(3) with _PC_LINK_MAX
-Message-ID: <20091206213930.GA10720@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Al Viro <viro@ZenIV.linux.org.uk>,
-	"J. R. Okajima" <hooanon05@yahoo.co.jp>,
-	linux-kernel@vger.kernel.org, stewb@linux-foundation.org
-References: <1260086343-8406-1-git-send-email-hooanon05@yahoo.co.jp>
- <20091206083958.GC14381@ZenIV.linux.org.uk>
+	Sun, 6 Dec 2009 16:46:12 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:49162 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S934236AbZLFVqM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 16:46:12 -0500
+Date: Sun, 6 Dec 2009 16:46:16 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <20091206131702.7d6cdc57@infradead.org>
+Message-ID: <Pine.LNX.4.44L0.0912061636170.9457-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091206083958.GC14381@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 06, 2009 at 08:39:58AM +0000, Al Viro wrote:
+On Sun, 6 Dec 2009, Arjan van de Ven wrote:
+
+> > Arjan, can you try testing the USB timings again with the patch below 
+> > (for vanilla 2.6.32)?
+> > 
+> > Fair warning: I just composed this and haven't tried it out myself.
 > 
-> Um...  Why do we need that, again?  Note that there is no way whatsoever
-> for predicting whether link(2) will fail due to having too many existing
-> links before you attempt the call - links can be created or removed between
-> stat(2) and link(2).  So any uses of that value are heuristical.
+> unfortunately it does not make a difference that I can notice in the
+> graphs.
 > 
-> Can you actually show any use cases of that thing?  Preferably - in existing
-> code, but even a theoretical one would be interesting.
+> http://www.fenrus.org/graphs/resume2.svg
 
-I think it's mainly a "if we're going to implement a POSIX interface,
-it would be nice if it returned something based on reality instead of
-a wild-assed guess".  :-)
+Disappointing...
 
-The "real life" use case I could think of is that backup programs that
-use hard links everywhere would be able to determine ahead of time in
-advance when it might need to create a new file instead of using a
-hard link, without needing to do the link and getting the EMLINK
-error.  I agree that the only way you can know for sure is by actually
-trying the link, so it's a pretty feeble use case.
+> the resume problem seems to be that we resume all the hubs sequentially,
+> much like we used to discover them sequentially during boot....
 
-I will note that without a functional, ext3 and ext4 (or ext3
-filesystem with dir_nlink file system feature mounted with ext4) file
-systems would be indistinguishable.
+But the patch should have reduced the time required to resume each 
+non-root hub.  So the fact that they go sequentially shouldn't matter 
+as much.
 
-						- Ted
+For root hubs the patch won't help.  Their delays can't be reduced.
+
+> I do not know how much I'm asking for, but would it be sensible to do a
+> similar thing for hub resume as we did for boot? eg start resuming them
+> all at the same time, so that the mandatory delays of these hubs will
+> overlap ?
+
+For one thing, there shouldn't be any mandatory delays for non-root
+hubs during resume-from-RAM (although this depends to some extent on
+your system firmware -- and it probably helps to have USB-2.0 hubs
+rather than USB-1.1).
+
+More importantly, what you're asking is impossible given the way the PM
+core is structured.  The hub-resume routine can't return early because
+then it wouldn't be possible to resume devices plugged into that hub.
+
+(Ironically, your request is essentially what Rafael was trying to 
+accomplish in the patches that provoked this email conversation.)
+
+Guess I'll just have to try out your timing log addition for myself and
+see what's going on...
+
+Alan Stern
+
