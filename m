@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbZLFXtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbZLFX1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758119AbZLFXtl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 18:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757886AbZLFXtk
+	id S1757821AbZLFX1j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 18:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757720AbZLFX1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 18:49:40 -0500
-Received: from mbox1.netikka.net ([213.250.81.202]:54649 "EHLO
-	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757779AbZLFXtj (ORCPT
+	Sun, 6 Dec 2009 18:27:38 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:31544 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757592AbZLFX1i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 18:49:39 -0500
-X-Greylist: delayed 1522 seconds by postgrey-1.27 at vger.kernel.org; Sun, 06 Dec 2009 18:49:39 EST
-Message-ID: <4B1C3D25.4010903@mandriva.org>
-Date: Mon, 07 Dec 2009 01:24:21 +0200
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 6 Dec 2009 18:27:38 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=cR+WrPGTh84YiC3zpLMZtluYMC1A+t6a5u3uY5hyNSpY8NProtV9/sype7l0Bq1nV
+	ANbsziRbjDA4odhQ6AlxA==
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: [stable] x86: Remove STACKPROTECTOR_ALL
-References: <200911021859.nA2Ix4cB023712@hera.kernel.org> <4AF9E7D4.9080309@mandriva.org> <20091205195852.GC21172@kroah.com>
-In-Reply-To: <20091205195852.GC21172@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091206205041.GA12555@elf.ucw.cz>
+References: <20091206205041.GA12555@elf.ucw.cz>
+Date: Sun, 6 Dec 2009 15:27:38 -0800
+Message-ID: <a55d774e0912061527t5b09b510g1fc458b53a423c04@mail.gmail.com>
+Subject: Re: HTC Dream: dream is better name for this machine
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Iliyan Malchev <malchev@google.com>
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH skrev:
-> On Wed, Nov 11, 2009 at 12:23:16AM +0200, Thomas Backlund wrote:
->> I think this one should go to 2.6.31.x too ...
->>
->>> Gitweb:     http://git.kernel.org/linus/14a3f40aafacde1dfd6912327ae14df4baf10304
->>> Commit:     14a3f40aafacde1dfd6912327ae14df4baf10304
->>> Parent:     02dd0a0613e0d84c7dd8315e3fe6204d005b7c79
->>> Author:     Arjan van de Ven <arjan@infradead.org>
->>> AuthorDate: Fri Oct 23 07:31:01 2009 -0700
->>> Committer:  Ingo Molnar <mingo@elte.hu>
->>> CommitDate: Fri Oct 23 16:35:23 2009 +0200
->>>
->>>     x86: Remove STACKPROTECTOR_ALL
->>>     
->>>     STACKPROTECTOR_ALL has a really high overhead (runtime and stack
->>>     footprint) and is not really worth it protection wise (the
->>>     normal STACKPROTECTOR is in effect for all functions with
->>>     buffers already), so lets just remove the option entirely.
->>>     
->>>     Reported-by: Dave Jones <davej@redhat.com>
->>>     Reported-by: Chuck Ebbert <cebbert@redhat.com>
->>>     Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
->>>     Cc: Eric Sandeen <sandeen@redhat.com>
->>>     LKML-Reference: <20091023073101.3dce4ebb@infradead.org>
->>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> It doesn't really "fix" anything, so I'd prefer not too.
-> 
+On Sun, Dec 6, 2009 at 12:50 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>
+> While few people may know HTC Dream by its codename, it is better to
+> use name of released hardware in the sources.
 
-The reason for I suggested it was that is's supposed to remove some
-bloating, and reportedly xfs from blowing up:
+I still think that it'd be less pain for everyone to leave it as
+trout.  If you go by sales volume, the most known released hardware
+name is "Tmobile G1", some people know it as ADP1, and I believe it
+has sold under a few other names in other markets, but the software
+has, since day one, been trout and changing that just makes it harder
+to merge other existing changes where we'd have to deal with renames
+as well.  The bootloader identifies it as "trout", and the userspace
+software stack's hardware-specific bits refer to trout.
 
-http://marc.info/?l=linux-kernel&m=125614028227106&w=2
+If it really drives everyone crazy, we could do a big rename once it's
+all in and working, but right now I just don't see the benefit.
 
-But anyway, it's your call...
-
---
-Thomas
-
+Brian
