@@ -1,62 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933871AbZLFPlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933877AbZLFPmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933871AbZLFPlK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 10:41:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933833AbZLFPlJ
+	id S933877AbZLFPmc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 10:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933833AbZLFPmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 10:41:09 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:61944 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933832AbZLFPlI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 10:41:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vuBhlWH+/XalBDtCuSYrY/7+c4tCTlKWYkGpH7c5i8abT6iLItgeNQwFEbDvmAqbZN
-         /CircGPoPAH+4K84eKzRsv6Y7+afTQzR5t1hH0Q7VjhNJ7T7Zq7BykktDhEa+YyNpAqx
-         JSsPpJTSFFAXDgYEIHlZXTIwD4W4Bsg2ELQLo=
-MIME-Version: 1.0
-In-Reply-To: <4B1A53AE.9020707@tremplin-utc.net>
-References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>
-	 <4B055609.9030306@tremplin-utc.net>
-	 <4B1A53AE.9020707@tremplin-utc.net>
-Date: Sun, 6 Dec 2009 16:41:14 +0100
-Message-ID: <40a4ed590912060741n4042ab1bg8188cd4eff28ca78@mail.gmail.com>
-Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
-From: Zeno Davatz <zdavatz@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-Cc: linux-kernel@vger.kernel.org, Zac Medico <zmedico@gentoo.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 6 Dec 2009 10:42:32 -0500
+Received: from na3sys009aog101.obsmtp.com ([74.125.149.67]:55494 "EHLO
+	na3sys009aog101.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933818AbZLFPmb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 10:42:31 -0500
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "Mukker, Atul" <Atul.Mukker@lsi.com>
+Date: Sun, 6 Dec 2009 08:42:28 -0700
+Subject: [PATCH 4/4] scsi: megaraid_sas - version and documentation update
+Thread-Topic: [PATCH 4/4] scsi: megaraid_sas - version and documentation
+ update
+Thread-Index: Aco28IhK0BCwqEkwToSTDcG+BIA9kwDb1hagAACJvwADF6mW4AvxomIAAABDOFAAAINGoA==
+Message-ID: <4B6A08C587958942AA3002690DD4F8C3B7EAC2CE@cosmail02.lsi.com>
+References: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
+ <4B6A08C587958942AA3002690DD4F8C35C6861A5@cosmail02.lsi.com>
+ <4B6A08C587958942AA3002690DD4F8C3B7EAC2C7@cosmail02.lsi.com>
+ <4B6A08C587958942AA3002690DD4F8C3B7EAC2C9@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C3B7EAC2C9@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 5, 2009 at 1:35 PM, Éric Piel <Eric.Piel@tremplin-utc.net> wrote:
-> Op 19-11-09 15:28, Éric Piel schreef:
->> Op 19-11-09 09:52, Zeno Davatz schreef:
->>> Hi
->>>
->>> I am looking for the Asus Eeepc Poulsbo (psb) driver in Kernel
->>> 2.6.32-rc7. When is this driver expected to make it into the kernel?
-> :
->> Hi,
->> I'd also be interested by a patch to get the psb kernel module to
->> compile with 2.6.32. If anyone has this already available, please post it!
->> Or maybe someone knows what should be done to fix this type of errors?
-> Hello,
->
-> I've just noticed that Zac Medico has written the fixes (as sed scripts)
-> for the psb driver in gentoo. Below is the patch version of his fixes.
-> It works for me :-)
+Update the version and documentation.
 
-Ok, it does compile but when I insert the module I get:
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-psb: Unknown symbol i2c_bit_add_bus
+---
+Documentation/scsi/ChangeLog.megaraid_sas |   16 ++++++++++++++++
+ drivers/scsi/megaraid/megaraid_sas.c      |    2 +-
+ drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
+ 3 files changed, 20 insertions(+), 4 deletions(-)
 
-I got the exact same error with 2.6.29
-
-Best
-Zeno
+diff -rupN old/Documentation/scsi/ChangeLog.megaraid_sas new/Documentation/scsi/ChangeLog.megaraid_sas
+--- old/Documentation/scsi/ChangeLog.megaraid_sas	2009-12-06 04:53:06.000000000 -0500
++++ new/Documentation/scsi/ChangeLog.megaraid_sas	2009-12-06 05:10:00.000000000 -0500
+@@ -1,3 +1,19 @@
++1 Release Date    : Thur.  Oct 29, 2009 09:12:45 PST 2009 -
++			(emaild-id:megaraidlinux@lsi.com)
++			Bo Yang
++
++2 Current Version : 00.00.04.17.1-rc1
++3 Older Version   : 00.00.04.12
++
++1.	Add the pad_0 in mfi frame structure to 0 to fix the
++	context value larger than 32bit value issue.
++
++2.	Add the logic drive list to the driver.  Driver will
++	keep the logic drive list internal after driver load.
++
++3.	driver fixed the device update issue after get the AEN
++	PD delete/ADD, LD add/delete from FW.
++
+ 1 Release Date    : Tues.  July 28, 2009 10:12:45 PST 2009 -
+ 			(emaild-id:megaraidlinux@lsi.com)
+ 			Bo Yang
+diff -rupN old/drivers/scsi/megaraid/megaraid_sas.c new/drivers/scsi/megaraid/megaraid_sas.c
+--- old/drivers/scsi/megaraid/megaraid_sas.c	2009-12-06 04:53:06.000000000 -0500
++++ new/drivers/scsi/megaraid/megaraid_sas.c	2009-12-06 04:53:58.000000000 -0500
+@@ -10,7 +10,7 @@
+  *	   2 of the License, or (at your option) any later version.
+  *
+  * FILE		: megaraid_sas.c
+- * Version     : v00.00.04.12-rc1
++ * Version     : v00.00.04.17.1-rc1
+  *
+  * Authors:
+  *	(email-id : megaraidlinux@lsi.com)
+diff -rupN old/drivers/scsi/megaraid/megaraid_sas.h new/drivers/scsi/megaraid/megaraid_sas.h
+--- old/drivers/scsi/megaraid/megaraid_sas.h	2009-12-06 04:53:06.000000000 -0500
++++ new/drivers/scsi/megaraid/megaraid_sas.h	2009-12-06 05:12:28.000000000 -0500
+@@ -18,9 +18,9 @@
+ /*
+  * MegaRAID SAS Driver meta data
+  */
+-#define MEGASAS_VERSION				"00.00.04.12-rc1"
+-#define MEGASAS_RELDATE				"Sep. 17, 2009"
+-#define MEGASAS_EXT_VERSION			"Thu Sep. 17 11:41:51 PST 2009"
++#define MEGASAS_VERSION			"00.00.04.17.1-rc1"
++#define MEGASAS_RELDATE			"Oct. 29, 2009"
++#define MEGASAS_EXT_VERSION		"Thu. Oct. 29, 11:41:51 PST 2009"
+ 
+ /*
+  * Device IDs
