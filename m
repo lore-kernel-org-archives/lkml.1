@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934048AbZLFRqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934058AbZLFRsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934048AbZLFRqP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 12:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934021AbZLFRqL
+	id S934058AbZLFRsU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 12:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756954AbZLFRsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 12:46:11 -0500
-Received: from mail.perches.com ([173.55.12.10]:1063 "EHLO mail.perches.com"
+	Sun, 6 Dec 2009 12:48:18 -0500
+Received: from khc.piap.pl ([195.187.100.11]:46295 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934007AbZLFRqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 12:46:11 -0500
-Subject: Re: [PATCH] scripts/checkpatch.pl: Add warning about leading
- contination tests
-From: Joe Perches <joe@perches.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, Andy Whitcroft <apw@canonical.com>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       William Allen Simpson <william.allen.simpson@gmail.com>
-In-Reply-To: <20091206131324.55436006@hyperion.delvare>
-References: <1260035884.11126.58.camel@Joe-Laptop.home>
-	 <4B1B6CB8.7000107@gmail.com>  <20091206131324.55436006@hyperion.delvare>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 06 Dec 2009 09:46:16 -0800
-Message-ID: <1260121576.11126.83.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1756929AbZLFRsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 12:48:17 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Jon Smirl <jonsmirl@gmail.com>, Christoph Bartelmus <lirc@bartelmus.de>,
+       awalls@radix.net, j@jannau.net, jarod@redhat.com, jarod@wilsonet.com,
+       kraxel@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
+	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	<1260070593.3236.6.camel@pc07.localdom.local>
+	<20091206065512.GA14651@core.coreip.homeip.net>
+	<4B1B99A5.2080903@redhat.com>
+Date: Sun, 06 Dec 2009 18:48:21 +0100
+In-Reply-To: <4B1B99A5.2080903@redhat.com> (Mauro Carvalho Chehab's message of
+	"Sun, 06 Dec 2009 09:46:45 -0200")
+Message-ID: <m3638k6lju.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-06 at 13:13 +0100, Jean Delvare wrote:
-> Not fine with me. Placing the binary logic operator at the beginning
-> of a line can be a deliberate choice, either to make complex binary
-> expressions more readable, or to avoid long lines. I don't see much
-> point in banning this style, which BTW is used over 8000 times in the
-> current kernel tree.
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-Anyone that thinks that checkpatch is the
-last word on linux coding style and all of
-its pronouncements must be followed all the
-time is simply wrong.
+>> I do not believe you are being realistic. Sometimes we just need to say
+>> that the device is a POS and is just not worth it. Remember, there is
+>> still "lirc hole" for the hard core people still using solder to produce
+>> something out of the spare electronic components that may be made to
+>> work
 
-It's not a ban.  It's neither a command nor
-an edict.  It's a warning.  It's a notice
-that leading logical continuations are not
-the preferred style and it can be ignored
-at will.
+Which device? It was about a remote controller, not the receiver. The IR
+receivers are frequently coupled with a DVB etc. receiver. There is
+absolutely no problem supporting almost any remote if the hardware is
+compatible with the receiver (i.e. IR to IR, the carrier frequency is
+not 36 vs 56 kHz, the receiver supports the protocol etc).
 
-I think it's rather like the long line, >80
-column warning.  There are a whole lot more
-than 8k long lines in kernel source and no
-one is suggesting reformatting all of them
-out of existence.
+I don't say we need to support in-kernel decoding for arbitrary
+protocols.
 
-cheers, Joe
+>> (never mind that it causes the CPU constantly poll the device, not
+>> letting it sleep and wasting electricity as a result - just hypotetical
+>> example here).
 
+Very hypotetical, indeed :-)
+
+Most (all?) home-made receivers don't need polling, they use IRQs
+instead ("the" home-made receiver is based on serial port and uses IRQ).
+They are hardly the "obscure hardware" that nobody has.
+
+The "more advanced" receivers using shift registers may use polling.
+
+> Fully agreed. The costs (our time) to add and keep supporting an in-kernel
+> driver for an IR that just one person is still using is higher than 
+> asking the user to get a new IR. This time would be better spent adding a new
+> driver for other devices.
+
+Agreed, I think nobody argues we should support such things in the
+kernel.
+
+
+Once again: how about agreement about the LIRC interface
+(kernel-userspace) and merging the actual LIRC code first? In-kernel
+decoding can wait a bit, it doesn't change any kernel-user interface.
+-- 
+Krzysztof Halasa
