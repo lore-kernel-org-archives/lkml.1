@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZLFMNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbZLFMNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756340AbZLFMNu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 07:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbZLFMNt
+	id S1756257AbZLFMNW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 07:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZLFMNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 07:13:49 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:58035 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753945AbZLFMNr (ORCPT
+	Sun, 6 Dec 2009 07:13:21 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:52141 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753638AbZLFMNU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 07:13:47 -0500
-Date: 06 Dec 2009 13:12:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: jonsmirl@gmail.com
-Cc: awalls@radix.net
-Cc: dmitry.torokhov@gmail.com
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: jarod@wilsonet.com
-Cc: khc@pm.waw.pl
-Cc: kraxel@redhat.com
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: mchehab@redhat.com
-Cc: superm1@ubuntu.com
-Message-ID: <BENh5lRHqgB@lirc>
-In-Reply-To: <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX19ajFUiBsakkJrfjNDJ4k8x3zql57dG/zp0cFt
- TGNT5pgeAn7Fh51a3GuGu1ZrBuVTiIUCanOX7WyMqTUff2VkFW
- mnXmjCdmj6TftBxe5rzVWXxKfRaPXH5
+	Sun, 6 Dec 2009 07:13:20 -0500
+Date: Sun, 6 Dec 2009 13:13:24 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Joe Perches <joe@perches.com>, Andy Whitcroft <apw@canonical.com>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       William Allen Simpson <william.allen.simpson@gmail.com>
+Subject: Re: [PATCH] scripts/checkpatch.pl: Add warning about leading
+ contination tests
+Message-ID: <20091206131324.55436006@hyperion.delvare>
+In-Reply-To: <4B1B6CB8.7000107@gmail.com>
+References: <1260035884.11126.58.camel@Joe-Laptop.home>
+	<4B1B6CB8.7000107@gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jon,
+On Sun, 06 Dec 2009 09:35:04 +0100, Eric Dumazet wrote:
+> Joe Perches a écrit :
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > 
+> > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> > index bc4114f..c35933a 100755
+> > --- a/scripts/checkpatch.pl
+> > +++ b/scripts/checkpatch.pl
+> > @@ -2064,6 +2064,11 @@ sub process {
+> >  			CHK("multiple assignments should be avoided\n" . $herecurr);
+> >  		}
+> >  
+> > +# Check use of leading logical continuation tests
+> > +		if ($line =~ /^.\s*(\|\||&&)/) {
+> > +			WARN("Continuation logic should be at end of previous line\n" . $herecurr);
+> > +		}
+> > +
+> >  ## # check for multiple declarations, allowing for a function declaration
+> >  ## # continuation.
+> >  ## 		if ($line =~ /^.\s*$Type\s+$Ident(?:\s*=[^,{]*)?\s*,\s*$Ident.*/ &&
+> > 
+> > 
+> 
+> Fine with me, but please add relevant info in Documentation/CodingStyle ?
 
-on 04 Dec 09 at 19:28, Jon Smirl wrote:
->> BTW, I just came across a XMP remote that seems to generate 3x64 bit
->> scan codes. Anyone here has docs on the XMP protocol?
->
-> Assuming a general purpose receiver (not one with fixed hardware
-> decoding), is it important for Linux to receive IR signals from all
-> possible remotes no matter how old or obscure? Or is it acceptable to
-[...]
-> Of course transmitting is a completely different problem, but we
-> haven't been talking about transmitting. I can see how we would need
-> to record any IR protocol in order to retransmit it. But that's in the
-> 5% of users world, not the 90% that want MythTV to "just work".  Use
-> something like LIRC if you want to transmit.
+Not fine with me. Placing the binary logic operator at the beginning
+of a line can be a deliberate choice, either to make complex binary
+expressions more readable, or to avoid long lines. I don't see much
+point in banning this style, which BTW is used over 8000 times in the
+current kernel tree.
 
-I don't think anyone here is in the position to be able to tell what is  
-90% or 5%. Personally I use LIRC exclusively for transmit to my settop box  
-using an old and obscure RECS80 protocol.
-No, I won't replace my setup just because it's old and obscure.
-
-Cable companies tend to provide XMP based boxes to subscribers more often  
-these days. Simply not supporting these setups is a no-go for me.
-
-Christoph
+-- 
+Jean Delvare
