@@ -1,75 +1,464 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933792AbZLFONd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbZLFONZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933792AbZLFONd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 09:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933674AbZLFONJ
+	id S933781AbZLFONZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 09:13:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933673AbZLFONL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 09:13:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59041 "EHLO
+	Sun, 6 Dec 2009 09:13:11 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:59043 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933637AbZLFONG (ORCPT
+	with ESMTP id S933670AbZLFONG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 6 Dec 2009 09:13:06 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <20091206313.812075626@firstfloor.org>
 In-Reply-To: <20091206313.812075626@firstfloor.org>
-To: x86@kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/3] x86: Remove CONFIG_GBPAGES option
-Message-Id: <20091206141310.CB4C9B151F@basil.firstfloor.org>
-Date: Sun,  6 Dec 2009 15:13:10 +0100 (CET)
+To: jbeulich@novell.com, jbeulich@novell.com, x86@kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [3/3] Fix unwind annotations for 64bit kernel
+Message-Id: <20091206141311.CE0A0B151F@basil.firstfloor.org>
+Date: Sun,  6 Dec 2009 15:13:11 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Support for GB pages mapped direct memory has been around for quite
-some time and has not caused any problems as far as I know.
+>From Jan Beulich <jbeulich@novell.com>
 
-So it's time to remove the CONFIG_GBPAGES option and always enable
-it by default. The option only controlled the default anyways, no
-code. gbpages can be still disabled at runtime.
+This is an older patch from Jan Beulich to fix various problems
+with the dwarf2 CFI unwind annotations in 64bit entry_64.S/head_64.S
+CFI annotations are needed for reliable backtraces with 
+gdb, systemtap and other unwinders.
 
+[AK: I keep forward porting it to to newer kernels for my own use,
+but it should be really just included. So I'm submitting it on Jan's
+behalf]
+
+Cc: jbeulich@novell.com
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/Kconfig   |    9 ---------
- arch/x86/mm/init.c |    6 +-----
- 2 files changed, 1 insertion(+), 14 deletions(-)
+ arch/x86/kernel/entry_64.S |  193 +++++++++++++++++++++++----------------------
+ arch/x86/kernel/head_64.S  |   13 +++
+ 2 files changed, 115 insertions(+), 91 deletions(-)
 
-Index: linux-2.6.32-ak/arch/x86/Kconfig
+Index: linux-2.6.32-ak/arch/x86/kernel/entry_64.S
 ===================================================================
---- linux-2.6.32-ak.orig/arch/x86/Kconfig
-+++ linux-2.6.32-ak/arch/x86/Kconfig
-@@ -1110,15 +1110,6 @@ config X86_PAE
- config ARCH_PHYS_ADDR_T_64BIT
- 	def_bool X86_64 || X86_PAE
+--- linux-2.6.32-ak.orig/arch/x86/kernel/entry_64.S
++++ linux-2.6.32-ak/arch/x86/kernel/entry_64.S
+@@ -38,6 +38,7 @@
+  */
  
--config DIRECT_GBPAGES
--	bool "Enable 1GB pages for kernel pagetables" if EMBEDDED
--	default y
--	depends on X86_64
--	---help---
--	  Allow the kernel linear mapping to use 1GB pages on CPUs that
--	  support it. This can improve the kernel's performance a tiny bit by
--	  reducing TLB pressure. If in doubt, say "Y".
--
- # Common NUMA Features
- config NUMA
- 	bool "Numa Memory Allocation and Scheduler Support"
-Index: linux-2.6.32-ak/arch/x86/mm/init.c
+ #include <linux/linkage.h>
++#include <linux/stringify.h>
+ #include <asm/segment.h>
+ #include <asm/cache.h>
+ #include <asm/errno.h>
+@@ -240,21 +241,21 @@ ENDPROC(native_usergs_sysret64)
+ /*
+  * initial frame state for interrupts (and exceptions without error code)
+  */
+-	.macro EMPTY_FRAME start=1 offset=0
+-	.if \start
++	.macro EMPTY_FRAME offset=0
+ 	CFI_STARTPROC simple
+ 	CFI_SIGNAL_FRAME
+-	CFI_DEF_CFA rsp,8+\offset
+-	.else
+-	CFI_DEF_CFA_OFFSET 8+\offset
+-	.endif
++	CFI_DEF_CFA rsp,\offset
+ 	.endm
+ 
+ /*
+  * initial frame state for interrupts (and exceptions without error code)
+  */
+ 	.macro INTR_FRAME start=1 offset=0
+-	EMPTY_FRAME \start, SS+8+\offset-RIP
++	.if \start
++	EMPTY_FRAME __stringify(SS+8+\offset-RIP)
++	.else
++	CFI_DEF_CFA_OFFSET SS+8+\offset-RIP
++	.endif
+ 	/*CFI_REL_OFFSET ss, SS+\offset-RIP*/
+ 	CFI_REL_OFFSET rsp, RSP+\offset-RIP
+ 	/*CFI_REL_OFFSET rflags, EFLAGS+\offset-RIP*/
+@@ -267,15 +268,16 @@ ENDPROC(native_usergs_sysret64)
+  * with vector already pushed)
+  */
+ 	.macro XCPT_FRAME start=1 offset=0
+-	INTR_FRAME \start, RIP+\offset-ORIG_RAX
+-	/*CFI_REL_OFFSET orig_rax, ORIG_RAX-ORIG_RAX*/
++	INTR_FRAME \start, __stringify(RIP+\offset-ORIG_RAX)
+ 	.endm
+ 
+ /*
+  * frame that enables calling into C.
+  */
+ 	.macro PARTIAL_FRAME start=1 offset=0
+-	XCPT_FRAME \start, ORIG_RAX+\offset-ARGOFFSET
++	.if \start >= 0
++	XCPT_FRAME \start, __stringify(ORIG_RAX+\offset-ARGOFFSET)
++	.endif
+ 	CFI_REL_OFFSET rdi, RDI+\offset-ARGOFFSET
+ 	CFI_REL_OFFSET rsi, RSI+\offset-ARGOFFSET
+ 	CFI_REL_OFFSET rdx, RDX+\offset-ARGOFFSET
+@@ -291,7 +293,9 @@ ENDPROC(native_usergs_sysret64)
+  * frame that enables passing a complete pt_regs to a C function.
+  */
+ 	.macro DEFAULT_FRAME start=1 offset=0
+-	PARTIAL_FRAME \start, R11+\offset-R15
++	.if \start >= -1
++	PARTIAL_FRAME \start, __stringify(R11+\offset-R15)
++	.endif
+ 	CFI_REL_OFFSET rbx, RBX+\offset
+ 	CFI_REL_OFFSET rbp, RBP+\offset
+ 	CFI_REL_OFFSET r12, R12+\offset
+@@ -302,21 +306,23 @@ ENDPROC(native_usergs_sysret64)
+ 
+ /* save partial stack frame */
+ ENTRY(save_args)
+-	XCPT_FRAME
++	XCPT_FRAME offset=__stringify(ORIG_RAX-ARGOFFSET+16)
+ 	cld
+-	movq_cfi rdi, RDI+16-ARGOFFSET
+-	movq_cfi rsi, RSI+16-ARGOFFSET
+-	movq_cfi rdx, RDX+16-ARGOFFSET
+-	movq_cfi rcx, RCX+16-ARGOFFSET
+-	movq_cfi rax, RAX+16-ARGOFFSET
+-	movq_cfi  r8,  R8+16-ARGOFFSET
+-	movq_cfi  r9,  R9+16-ARGOFFSET
+-	movq_cfi r10, R10+16-ARGOFFSET
+-	movq_cfi r11, R11+16-ARGOFFSET
++	movq %rdi, RDI+16-ARGOFFSET(%rsp)
++	movq %rsi, RSI+16-ARGOFFSET(%rsp)
++	movq %rdx, RDX+16-ARGOFFSET(%rsp)
++	movq %rcx, RCX+16-ARGOFFSET(%rsp)
++	movq_cfi rax, __stringify(RAX+16-ARGOFFSET)
++	movq  %r8,  R8+16-ARGOFFSET(%rsp)
++	movq  %r9,  R9+16-ARGOFFSET(%rsp)
++	movq %r10, R10+16-ARGOFFSET(%rsp)
++	movq_cfi r11, __stringify(R11+16-ARGOFFSET)
+ 
+ 	leaq -ARGOFFSET+16(%rsp),%rdi	/* arg1 for handler */
+ 	movq_cfi rbp, 8		/* push %rbp */
+ 	leaq 8(%rsp), %rbp		/* mov %rsp, %ebp */
++	CFI_DEF_CFA_REGISTER rbp
++	CFI_ADJUST_CFA_OFFSET -8
+ 	testl $3, CS(%rdi)
+ 	je 1f
+ 	SWAPGS
+@@ -328,11 +334,10 @@ ENTRY(save_args)
+ 	 */
+ 1:	incl PER_CPU_VAR(irq_count)
+ 	jne 2f
+-	popq_cfi %rax			/* move return address... */
++	popq %rax			/* move return address... */
+ 	mov PER_CPU_VAR(irq_stack_ptr),%rsp
+-	EMPTY_FRAME 0
+-	pushq_cfi %rbp			/* backlink for unwinder */
+-	pushq_cfi %rax			/* ... to the new stack */
++	pushq %rbp			/* backlink for unwinder */
++	pushq %rax			/* ... to the new stack */
+ 	/*
+ 	 * We entered an interrupt context - irqs are off:
+ 	 */
+@@ -342,14 +347,14 @@ ENTRY(save_args)
+ END(save_args)
+ 
+ ENTRY(save_rest)
+-	PARTIAL_FRAME 1 REST_SKIP+8
++	CFI_STARTPROC
+ 	movq 5*8+16(%rsp), %r11	/* save return address */
+-	movq_cfi rbx, RBX+16
+-	movq_cfi rbp, RBP+16
+-	movq_cfi r12, R12+16
+-	movq_cfi r13, R13+16
+-	movq_cfi r14, R14+16
+-	movq_cfi r15, R15+16
++	movq %rbx, RBX+16(%rsp)
++	movq %rbp, RBP+16(%rsp)
++	movq %r12, R12+16(%rsp)
++	movq %r13, R13+16(%rsp)
++	movq %r14, R14+16(%rsp)
++	movq %r15, R15+16(%rsp)
+ 	movq %r11, 8(%rsp)	/* return address */
+ 	FIXUP_TOP_OF_STACK %r11, 16
+ 	ret
+@@ -359,23 +364,23 @@ END(save_rest)
+ /* save complete stack frame */
+ 	.pushsection .kprobes.text, "ax"
+ ENTRY(save_paranoid)
+-	XCPT_FRAME 1 RDI+8
++	XCPT_FRAME offset=__stringify(ORIG_RAX-R15+8)
+ 	cld
+-	movq_cfi rdi, RDI+8
+-	movq_cfi rsi, RSI+8
+-	movq_cfi rdx, RDX+8
+-	movq_cfi rcx, RCX+8
+-	movq_cfi rax, RAX+8
+-	movq_cfi r8, R8+8
+-	movq_cfi r9, R9+8
+-	movq_cfi r10, R10+8
+-	movq_cfi r11, R11+8
+-	movq_cfi rbx, RBX+8
+-	movq_cfi rbp, RBP+8
+-	movq_cfi r12, R12+8
+-	movq_cfi r13, R13+8
+-	movq_cfi r14, R14+8
+-	movq_cfi r15, R15+8
++	movq %rdi, RDI+8(%rsp)
++	movq %rsi, RSI+8(%rsp)
++	movq_cfi rdx, __stringify(RDX+8)
++	movq_cfi rcx, __stringify(RCX+8)
++	movq_cfi rax, __stringify(RAX+8)
++	movq %r8, R8+8(%rsp)
++	movq %r9, R9+8(%rsp)
++	movq %r10, R10+8(%rsp)
++	movq %r11, R11+8(%rsp)
++	movq_cfi rbx, __stringify(RBX+8)
++	movq %rbp, RBP+8(%rsp)
++	movq %r12, R12+8(%rsp)
++	movq %r13, R13+8(%rsp)
++	movq %r14, R14+8(%rsp)
++	movq %r15, R15+8(%rsp)
+ 	movl $1,%ebx
+ 	movl $MSR_GS_BASE,%ecx
+ 	rdmsr
+@@ -685,7 +690,7 @@ ENTRY(\label)
+ 	subq $REST_SKIP, %rsp
+ 	CFI_ADJUST_CFA_OFFSET REST_SKIP
+ 	call save_rest
+-	DEFAULT_FRAME 0 8		/* offset 8: return address */
++	DEFAULT_FRAME -2 8		/* offset 8: return address */
+ 	leaq 8(%rsp), \arg	/* pt_regs pointer */
+ 	call \func
+ 	jmp ptregscall_common
+@@ -702,12 +707,12 @@ END(\label)
+ ENTRY(ptregscall_common)
+ 	DEFAULT_FRAME 1 8	/* offset 8: return address */
+ 	RESTORE_TOP_OF_STACK %r11, 8
+-	movq_cfi_restore R15+8, r15
+-	movq_cfi_restore R14+8, r14
+-	movq_cfi_restore R13+8, r13
+-	movq_cfi_restore R12+8, r12
+-	movq_cfi_restore RBP+8, rbp
+-	movq_cfi_restore RBX+8, rbx
++	movq_cfi_restore __stringify(R15+8), r15
++	movq_cfi_restore __stringify(R14+8), r14
++	movq_cfi_restore __stringify(R13+8), r13
++	movq_cfi_restore __stringify(R12+8), r12
++	movq_cfi_restore __stringify(RBP+8), rbp
++	movq_cfi_restore __stringify(RBX+8), rbx
+ 	ret $REST_SKIP		/* pop extended registers */
+ 	CFI_ENDPROC
+ END(ptregscall_common)
+@@ -796,10 +801,12 @@ END(interrupt)
+ 
+ /* 0(%rsp): ~(interrupt number) */
+ 	.macro interrupt func
+-	subq $10*8, %rsp
+-	CFI_ADJUST_CFA_OFFSET 10*8
++	subq $ORIG_RAX-ARGOFFSET+8, %rsp
++	CFI_ADJUST_CFA_OFFSET ORIG_RAX-ARGOFFSET+8
+ 	call save_args
+-	PARTIAL_FRAME 0
++	PARTIAL_FRAME -1 8
++	CFI_REL_OFFSET rbp, 0
++	CFI_DEF_CFA_REGISTER rbp
+ 	call \func
+ 	.endm
+ 
+@@ -1028,10 +1035,10 @@ ENTRY(\sym)
+ 	INTR_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	pushq_cfi $-1		/* ORIG_RAX: no syscall to restart */
+-	subq $15*8,%rsp
+-	CFI_ADJUST_CFA_OFFSET 15*8
++	subq $ORIG_RAX-R15, %rsp
++	CFI_ADJUST_CFA_OFFSET ORIG_RAX-R15
+ 	call error_entry
+-	DEFAULT_FRAME 0
++	DEFAULT_FRAME -1
+ 	movq %rsp,%rdi		/* pt_regs pointer */
+ 	xorl %esi,%esi		/* no error code */
+ 	call \do_sym
+@@ -1046,8 +1053,10 @@ ENTRY(\sym)
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	pushq $-1		/* ORIG_RAX: no syscall to restart */
+ 	CFI_ADJUST_CFA_OFFSET 8
+-	subq $15*8, %rsp
++	subq $ORIG_RAX-R15, %rsp
++	CFI_ADJUST_CFA_OFFSET ORIG_RAX-R15
+ 	call save_paranoid
++	DEFAULT_FRAME -1
+ 	TRACE_IRQS_OFF
+ 	movq %rsp,%rdi		/* pt_regs pointer */
+ 	xorl %esi,%esi		/* no error code */
+@@ -1063,8 +1072,10 @@ ENTRY(\sym)
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	pushq $-1		/* ORIG_RAX: no syscall to restart */
+ 	CFI_ADJUST_CFA_OFFSET 8
+-	subq $15*8, %rsp
++	subq $ORIG_RAX-R15, %rsp
++	CFI_ADJUST_CFA_OFFSET ORIG_RAX-R15
+ 	call save_paranoid
++	DEFAULT_FRAME -1
+ 	TRACE_IRQS_OFF
+ 	movq %rsp,%rdi		/* pt_regs pointer */
+ 	xorl %esi,%esi		/* no error code */
+@@ -1081,10 +1092,10 @@ END(\sym)
+ ENTRY(\sym)
+ 	XCPT_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+-	subq $15*8,%rsp
+-	CFI_ADJUST_CFA_OFFSET 15*8
++	subq $ORIG_RAX-R15, %rsp
++	CFI_ADJUST_CFA_OFFSET ORIG_RAX-R15
+ 	call error_entry
+-	DEFAULT_FRAME 0
++	DEFAULT_FRAME -1
+ 	movq %rsp,%rdi			/* pt_regs pointer */
+ 	movq ORIG_RAX(%rsp),%rsi	/* get error code */
+ 	movq $-1,ORIG_RAX(%rsp)		/* no syscall to restart */
+@@ -1099,10 +1110,10 @@ END(\sym)
+ ENTRY(\sym)
+ 	XCPT_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+-	subq $15*8,%rsp
+-	CFI_ADJUST_CFA_OFFSET 15*8
++	subq $ORIG_RAX-R15, %rsp
++	CFI_ADJUST_CFA_OFFSET ORIG_RAX-R15
+ 	call save_paranoid
+-	DEFAULT_FRAME 0
++	DEFAULT_FRAME -1
+ 	TRACE_IRQS_OFF
+ 	movq %rsp,%rdi			/* pt_regs pointer */
+ 	movq ORIG_RAX(%rsp),%rsi	/* get error code */
+@@ -1400,7 +1411,7 @@ paranoidzeroentry machine_check *machine
+ 
+ 	/* ebx:	no swapgs flag */
+ ENTRY(paranoid_exit)
+-	INTR_FRAME
++	DEFAULT_FRAME
+ 	DISABLE_INTERRUPTS(CLBR_NONE)
+ 	TRACE_IRQS_OFF
+ 	testl %ebx,%ebx				/* swapgs needed? */
+@@ -1450,25 +1461,24 @@ END(paranoid_exit)
+  * returns in "no swapgs flag" in %ebx.
+  */
+ ENTRY(error_entry)
+-	XCPT_FRAME
+-	CFI_ADJUST_CFA_OFFSET 15*8
++	XCPT_FRAME offset=__stringify(ORIG_RAX-R15+8)
+ 	/* oldrax contains error code */
+ 	cld
+-	movq_cfi rdi, RDI+8
+-	movq_cfi rsi, RSI+8
+-	movq_cfi rdx, RDX+8
+-	movq_cfi rcx, RCX+8
+-	movq_cfi rax, RAX+8
+-	movq_cfi  r8,  R8+8
+-	movq_cfi  r9,  R9+8
+-	movq_cfi r10, R10+8
+-	movq_cfi r11, R11+8
+-	movq_cfi rbx, RBX+8
+-	movq_cfi rbp, RBP+8
+-	movq_cfi r12, R12+8
+-	movq_cfi r13, R13+8
+-	movq_cfi r14, R14+8
+-	movq_cfi r15, R15+8
++	movq %rdi, RDI+8(%rsp)
++	movq %rsi, RSI+8(%rsp)
++	movq %rdx, RDX+8(%rsp)
++	movq %rcx, RCX+8(%rsp)
++	movq %rax, RAX+8(%rsp)
++	movq  %r8,  R8+8(%rsp)
++	movq  %r9,  R9+8(%rsp)
++	movq %r10, R10+8(%rsp)
++	movq %r11, R11+8(%rsp)
++	movq_cfi rbx, __stringify(RBX+8)
++	movq %rbp, RBP+8(%rsp)
++	movq %r12, R12+8(%rsp)
++	movq %r13, R13+8(%rsp)
++	movq %r14, R14+8(%rsp)
++	movq %r15, R15+8(%rsp)
+ 	xorl %ebx,%ebx
+ 	testl $3,CS+8(%rsp)
+ 	je error_kernelspace
+@@ -1477,7 +1487,6 @@ error_swapgs:
+ error_sti:
+ 	TRACE_IRQS_OFF
+ 	ret
+-	CFI_ENDPROC
+ 
+ /*
+  * There are two places in the kernel that can potentially fault with
+@@ -1487,6 +1496,7 @@ error_sti:
+  * compat mode. Check for these here too.
+  */
+ error_kernelspace:
++	CFI_REL_OFFSET rcx, RCX+8
+ 	incl %ebx
+ 	leaq irq_return(%rip),%rcx
+ 	cmpq %rcx,RIP+8(%rsp)
+@@ -1497,6 +1507,7 @@ error_kernelspace:
+ 	cmpq $gs_change,RIP+8(%rsp)
+ 	je error_swapgs
+ 	jmp error_sti
++	CFI_ENDPROC
+ END(error_entry)
+ 
+ 
+@@ -1525,10 +1536,10 @@ ENTRY(nmi)
+ 	INTR_FRAME
+ 	PARAVIRT_ADJUST_EXCEPTION_FRAME
+ 	pushq_cfi $-1
+-	subq $15*8, %rsp
+-	CFI_ADJUST_CFA_OFFSET 15*8
++	subq $ORIG_RAX-R15, %rsp
++	CFI_ADJUST_CFA_OFFSET ORIG_RAX-R15
+ 	call save_paranoid
+-	DEFAULT_FRAME 0
++	DEFAULT_FRAME -1
+ 	/* paranoidentry do_nmi, 0; without TRACE_IRQS_OFF */
+ 	movq %rsp,%rdi
+ 	movq $-1,%rsi
+Index: linux-2.6.32-ak/arch/x86/kernel/head_64.S
 ===================================================================
---- linux-2.6.32-ak.orig/arch/x86/mm/init.c
-+++ linux-2.6.32-ak/arch/x86/mm/init.c
-@@ -22,11 +22,7 @@ unsigned long __meminitdata e820_table_t
+--- linux-2.6.32-ak.orig/arch/x86/kernel/head_64.S
++++ linux-2.6.32-ak/arch/x86/kernel/head_64.S
+@@ -285,6 +285,8 @@ early_idt_handlers:
  
- int after_bootmem;
- 
--int direct_gbpages
--#ifdef CONFIG_DIRECT_GBPAGES
--				= 1
--#endif
--;
-+int direct_gbpages = 1;
- 
- static void __init find_early_table_space(unsigned long end, int use_pse,
- 					  int use_gbpages)
+ ENTRY(early_idt_handler)
+ #ifdef CONFIG_EARLY_PRINTK
++#include <asm/calling.h>
++#include <asm/dwarf2.h>
+ 	cmpl $2,early_recursion_flag(%rip)
+ 	jz  1f
+ 	incl early_recursion_flag(%rip)
+@@ -300,6 +302,16 @@ ENTRY(early_idt_handler)
+ 	testl $0x27d00,%eax
+ 	je 0f
+ 	popq %r8		# get error code
++
++	CFI_STARTPROC	simple
++	CFI_SIGNAL_FRAME
++	CFI_DEF_CFA	rsp, SS+8-RIP
++#	CFI_REL_OFFSET	ss, SS-RIP
++	CFI_REL_OFFSET	rsp, RSP-RIP
++#	CFI_REL_OFFSET	rflags, EFLAGS-RIP
++#	CFI_REL_OFFSET	cs, CS-RIP
++	CFI_REL_OFFSET	rip, RIP-RIP
++
+ 0:	movq 0(%rsp),%rcx	# get ip
+ 	movq 8(%rsp),%rdx	# get cs
+ 	xorl %eax,%eax
+@@ -313,6 +325,7 @@ ENTRY(early_idt_handler)
+ 	movq 0(%rsp),%rsi	# get rip again
+ 	call __print_symbol
+ #endif
++	CFI_ENDPROC
+ #endif /* EARLY_PRINTK */
+ 1:	hlt
+ 	jmp 1b
