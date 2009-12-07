@@ -1,118 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbZLGHU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbZLGH12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758417AbZLGHU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbZLGHUY
+	id S1758593AbZLGH12 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:27:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbZLGH12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:20:24 -0500
-Received: from mail.windriver.com ([147.11.1.11]:34959 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757975AbZLGHUY (ORCPT
+	Mon, 7 Dec 2009 02:27:28 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:52602 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754876AbZLGH11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:20:24 -0500
-Message-ID: <4B1CAD55.3010808@windriver.com>
-Date: Mon, 07 Dec 2009 15:23:01 +0800
-From: Wang Liming <liming.wang@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Tom Zanussi <tzanussi@gmail.com>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       rostedt@goodmis.org, acme@ghostprotocols.net
-Subject: Re: [PATCH 2/2] perf trace/scripting: Don't display 'scripting unsupported'
- msg unnecessarily
-References: <1260163919-6679-1-git-send-email-tzanussi@gmail.com>	 <1260163919-6679-3-git-send-email-tzanussi@gmail.com>	 <4B1CA15D.1000605@windriver.com> <1260170006.6632.10.camel@tropicana>
-In-Reply-To: <1260170006.6632.10.camel@tropicana>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 7 Dec 2009 02:27:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=Ct70tVd3UzdW56B5DOxNjcdSIVOB0HQEjBUNC/JV5ufYgR9CZiVIWT/nWzkDHS6ztn
+         OdhyFrMZ/NGZf97c1HRe84Cl1xYi8FGQrwzRFFr1Zt1lxctdPxcrLEvz80tkxzlFdqiM
+         WgGGg40MKHaKDriw+tbm8A29XVVRybm6hZ4Bo=
+Subject: Re: [PATCH v8 8/8] Loongson: YeeLoong: add input/hotkey driver
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20091207064857.GG21451@core.coreip.homeip.net>
+References: <cover.1260082252.git.wuzhangjin@gmail.com>
+	 <b164d5bb79963a57621d024c22e5664de0ff8662.1260082252.git.wuzhangjin@gmail.com>
+	 <20091207064857.GG21451@core.coreip.homeip.net>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Mon, 07 Dec 2009 15:26:47 +0800
+Message-ID: <1260170807.9092.9.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Dec 2009 07:20:15.0652 (UTC) FILETIME=[B90EDE40:01CA770D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tom Zanussi wrote:
-> Hi,
+On Sun, 2009-12-06 at 22:48 -0800, Dmitry Torokhov wrote:
+> Hi Wu,
 > 
-> On Mon, 2009-12-07 at 14:31 +0800, Wang Liming wrote:
->> Tom Zanussi wrote:
->>> The 'scripting unsupported' message should only be displayed when the
->>> -s or -g options are used, and not when they aren't, as the current
->>> code does.
->>>
->>> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
->>> ---
->>>  tools/perf/util/trace-event-perl.c |   64 +++++++++++++++++++++++++++++++-----
->>>  1 files changed, 55 insertions(+), 9 deletions(-)
->>>
->>> diff --git a/tools/perf/util/trace-event-perl.c b/tools/perf/util/trace-event-perl.c
->>> index 59564b2..a5ffe60 100644
->>> --- a/tools/perf/util/trace-event-perl.c
->>> +++ b/tools/perf/util/trace-event-perl.c
->>> @@ -570,26 +570,72 @@ struct scripting_ops perl_scripting_ops = {
->>>  	.generate_script = perl_generate_script,
->>>  };
->>>  
->>> -#ifdef NO_LIBPERL
->>> -void setup_perl_scripting(void)
->>> +static void print_unsupported_msg(void)
->>>  {
->>>  	fprintf(stderr, "Perl scripting not supported."
->>> -		"  Install libperl and rebuild perf to enable it.  e.g. "
->>> -		"apt-get install libperl-dev (ubuntu), yum install "
->>> -		"perl-ExtUtils-Embed (Fedora), etc.\n");
->>> +		"  Install libperl and rebuild perf to enable it.\n"
->>> +		"For example:\n  # apt-get install libperl-dev (ubuntu)"
->>> +		"\n  # yum install perl-ExtUtils-Embed (Fedora)"
->>> +		"\n  etc.\n");
->>>  }
->> I have one question about how to compile c program that embedded perl function:
->>
->> $cat foo.c
->> #include <EXTERN.h>
->> #include <perl.h>
->> int main(void)
->> {
->>          perl_alloc();
->>          return 0;
->> }
->>
->> $gcc  -x c foo.c `perl -MExtUtils::Embed -e ccopts 2>/dev/null`  -o foo `perl 
->> -MExtUtils::Embed -e ldopts 2>/dev/null`
->> /usr/lib/perl/5.8/auto/DynaLoader/DynaLoader.a:1: error: expected identifier or 
->> '(' before '!' token
->> /usr/lib/perl/5.8/auto/DynaLoader/DynaLoader.a:2: error: stray '`' in program
->> ...
->>
->> About thousand of error.
->> I'm using ubuntu 8.04. Above error leads "tools/perl/Makefile" can't find the 
->> libperl-dev and define "NO_LIBPERL", but I have installed "libperl-dev".
->>
->> Did you ever encounter this error?
->> Thanks.
+> On Sun, Dec 06, 2009 at 03:01:48PM +0800, Wu Zhangjin wrote:
+> > +
+> > +#define EC_VER_LEN 64
+> > +
+> > +static int black_screen_handler(int status)
+> > +{
+> > +	char *p, ec_ver[EC_VER_LEN];
+> > +
+> > +	p = strstr(loongson_cmdline, "EC_VER=");
+> > +	if (!p)
+> > +		memset(ec_ver, 0, EC_VER_LEN);
+> > +	else {
+> > +		strncpy(ec_ver, p, EC_VER_LEN);
+> > +		p = strstr(ec_ver, " ");
+> > +		if (p)
+> > +			*p = '\0';
+> > +	}
+> > +
 > 
-> No, I haven't seen it, but I'm using ubuntu 8.10, which has perl
-> v5.10.0.
+> Hmm, why do you copy and parse command lineinstead of using module
+> param and also doing it just once?
 > 
-> ubuntu 8.04 uses what's apparently an ancient version of perl, 5.8,
-Yes, it uses perl 5.8.
 
-> which is I'm guessing where the problem is - I'll have to look into
-> getting things working with 5.8 in any case...
-Another compile error:
+The kernel command line (EC_VER=blabla) is passed by bootloader(PMON)
+automatically, so, I think it's better to use it.
 
-     CC util/trace-event-perl.o
-cc1: warnings being treated as errors
-util/trace-event-perl.c: In function 'xs_init':
-util/trace-event-perl.c:43: warning: passing argument 2 of 'Perl_newXS' discards 
-qualifiers from pointer target type
-util/trace-event-perl.c:43: warning: passing argument 4 of 'Perl_newXS' discards 
-qualifiers from pointer target type
-util/trace-event-perl.c:45: warning: passing argument 2 of 'Perl_newXS' discards 
-qualifiers from pointer target type
-util/trace-event-perl.c:45: warning: passing argument 4 of 'Perl_newXS' discards 
-qualifiers from pointer target type
-make: *** [util/trace-event-perl.o] Error 1
+Using an extra module param is good, but may make the users confused and
+will also add extra jobs to the distribution developers ;) in the
+future, the information of the EC and the other information of the
+devices will be passed to kernel from BIOS via something like
+FDT(Flattened Device Tree, used on PowerPC machines) as Ralf introduced,
+so, the above method is a temp solution.
 
-Liming Wang
+Thanks & Regards,
+	Wu Zhangjin
+
+> > +	/* Seems EC(>=PQ1D26) does this job for us, we can not do it again,
+> > +	 * otherwise, the brightness will not resume to the normal level! */
+> > +	if (strncasecmp(ec_ver, "EC_VER=PQ1D26", 64) < 0)
+> > +		yeeloong_lcd_vo_set(status);
+> > +
+> > +	return status;
+> > +}
 > 
-> Tom
+> Thanks.
 > 
+
+
