@@ -1,168 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758687AbZLGS6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbZLGS6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758687AbZLGS6a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758424AbZLGS62
+	id S1758730AbZLGS6h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758714AbZLGS6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:58:28 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:13107 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758119AbZLGS61 (ORCPT
+	Mon, 7 Dec 2009 13:58:35 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:34507 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758424AbZLGS6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:58:27 -0500
-X-Trace: 303009791/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.111.197
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlABAGPfHEtQKW/F/2dsb2JhbAAI2j2EMwSBZw
-X-IronPort-AV: E=Sophos;i="4.47,356,1257120000"; 
-   d="scan'208";a="303009791"
-Date: Mon, 7 Dec 2009 18:58:25 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Al Viro <viro@ftp.linux.org.uk>, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCHSET] mremap/mmap mess
-In-Reply-To: <20091207035857.GF14381@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0912071710540.14445@sister.anvils>
-References: <E1NGzzu-0008RH-T2@ZenIV.linux.org.uk> <20091207035857.GF14381@ZenIV.linux.org.uk>
+	Mon, 7 Dec 2009 13:58:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=usAj7xnFRM0TIym1zPqSISZ3GSVURxOLzQWHWNSjMC/1j7OMlgOQ2HgGN9nCSCe2FZ
+         3CPTnmoGW6utDPfP1Smg7sVp/7ye3I9AKxTFkWrlEcgwtfWEshQJ5mWOO9B13+2dVTgZ
+         KobJXfRR8CZoUApeAC9NSgwmndVNAD4P9I2Qs=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 7 Dec 2009 20:58:35 +0200
+Message-ID: <8b8dd87a0912071058p1ab9ba20y931baa576d370f43@mail.gmail.com>
+Subject: Badness at kernel/rcutree.c:1228
+From: kordex - <kordex@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009, Al Viro wrote:
-> 	Updated series posted, with fixes merged.  It should also cover
-> the shm bug caught by dwg - in case of hugepage shm we ended up with
-> oopsen due to b0rken ->get_unmapped_area().
+Hello,
 
-I've now gone over these, is it okay for me to comment all in one?
-I do like the way complex conditions have evaporated, though sometimes
-I had to spend a long time looking to see how it was justified.
-I've given no more thought to that nasty PITA you raise, since
-Linus reminded me of the pushf emulation issue (and what I proposed
-would also have needed more to handle the exec args case).
+I encountered this and I am able to reproduce, unfortunately. I was
+syncing files from two large HDD drives and I saw difference between
+cksum so I first suspected faulty filesystem but it was not that. Then
+I ran couple of Seagate Seatools tests on these disks of mine, still
+nothing. I suspected there was something bad in rsync(1) code but
+still negative as tar worked in the same way. Ofcourse I did the dmesg
+checking but after reboot after checking the disks were fine.  It
+showed up clean. So I went there and tried to resync my non raid disk
+with raid0 disk. Still same problem, data mismatch. I read something
+from google when installing new sata controller about lib_sata an sil
+3114 and seagates disks not working so this time i though of checking
+dmesg. And there it was nice little surprise:
 
-[PATCH 1/19] untangling do_mremap(), part 1
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+------------[ cut here ]------------
+Badness at kernel/rcutree.c:1228
+NIP: c004ecbc LR: c004f14c CTR: c007bd70
+REGS: df34dde0 TRAP: 0700   Not tainted  (2.6.32)
+MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24024482  XER: 20000000
+TASK = d12c2d10[2734] 'buffer' THREAD: df34c000
+GPR00: 00000001 df34de90 d12c2d10 c0746498 c07465a0 00b1ed55 00000001 00138c4a
+GPR08: 00001032 c07b0000 00009032 00000008 44024488 1001c6ac 1002efd8 1002f064
+GPR16: 10060000 10070000 10070000 c073a590 c073a710 c0685204 00000000 c07a5520
+GPR24: c07a5520 0000000a df34c000 c0746498 c0746420 c0746528 00000009 c07465a0
+NIP [c004ecbc] __rcu_process_callbacks+0x34/0x48c
+LR [c004f14c] rcu_process_callbacks+0x38/0x4c
+Call Trace:
+[df34de90] [c004efec] __rcu_process_callbacks+0x364/0x48c (unreliable)
+[df34deb0] [c004f14c] rcu_process_callbacks+0x38/0x4c
+[df34ded0] [c0028e8c] __do_softirq+0xa4/0x120
+[df34df10] [c0006a0c] do_softirq+0x40/0x58
+[df34df20] [c0028c8c] irq_exit+0x38/0x80
+[df34df30] [c0010d28] timer_interrupt+0x11c/0x138
+[df34df40] [c00143a0] ret_from_except+0x0/0x14
+--- Exception: 901 at 0x10002ddc
+    LR = 0x10002d80
+Instruction dump:
+7c0802a6 bf410008 7c9f2378 7c7b1b78 90010024 8804000e 2f800000 40be002c
+3d20c07b 8009a334 7c000034 5400d97e <0f000000> 2f800000 41be0010 38000001
+munin-update: page allocation failure. order:1, mode:0x20
+Call Trace:
+[c59bfa30] [c0008a24] show_stack+0x4c/0x14c (unreliable)
+[c59bfa70] [c0058154] __alloc_pages_nodemask+0x468/0x4b8
+[c59bfb00] [c0077448] cache_alloc_refill+0x2d8/0x55c
+[c59bfb50] [c0077830] kmem_cache_alloc+0x64/0xb0
+[c59bfb70] [c04862fc] sk_prot_alloc+0x2c/0x78
+[c59bfb90] [c04863e0] sk_clone+0x20/0x1b0
+[c59bfbb0] [c04bca70] inet_csk_clone+0x1c/0x8c
+[c59bfbc0] [c04d1358] tcp_create_openreq_child+0x20/0x2c4
+[c59bfbe0] [c04d00a0] tcp_v4_syn_recv_sock+0x58/0x17c
+[c59bfc00] [c04d11c4] tcp_check_req+0x268/0x3dc
+[c59bfc40] [c04cf87c] tcp_v4_do_rcv+0xa0/0x198
+[c59bfc70] [c04cfdb8] tcp_v4_rcv+0x444/0x6d4
+[c59bfca0] [c04b450c] ip_local_deliver+0x104/0x1d8
+[c59bfcc0] [c04b43d0] ip_rcv+0x508/0x540
+[c59bfcf0] [c049227c] netif_receive_skb+0x390/0x3bc
+[c59bfd20] [c0492344] process_backlog+0x9c/0x134
+[c59bfd50] [c0492b44] net_rx_action+0x80/0x190
+[c59bfd80] [c0028e8c] __do_softirq+0xa4/0x120
+[c59bfdc0] [c0006a0c] do_softirq+0x40/0x58
+[c59bfdd0] [c0028db4] local_bh_enable+0x7c/0x9c
+[c59bfde0] [c04852c8] release_sock+0x94/0xa8
+[c59bfe00] [c04dcd48] inet_stream_connect+0x224/0x29c
+[c59bfe50] [c0482a54] sys_connect+0x78/0xa8
+[c59bff00] [c0484088] sys_socketcall+0xf0/0x240
+[c59bff40] [c0013cf4] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xfd51434
+    LR = 0xff66550
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:  186, btch:  31 usd:  87
+active_anon:6308 inactive_anon:8347 isolated_anon:0
+ active_file:52970 inactive_file:53351 isolated_file:0
+ unevictable:0 dirty:12753 writeback:0 unstable:0
+ free:1728 slab_reclaimable:2017 slab_unreclaimable:1020
+ mapped:2045 shmem:410 pagetables:431 bounce:0
+DMA free:6912kB min:2884kB low:3604kB high:4324kB active_anon:25232kB
+inactive_anon:33388kB active_file:211880kB inactive_file:213404kB
+unevictable:0kB isolated(anon):0kB isolated(file):0kB present:520192kB
+mlocked:0kB dirty:51012kB writeback:0kB mapped:8180kB shmem:1640kB
+slab_reclaimable:8068kB slab_unreclaimable:4080kB kernel_stack:992kB
+pagetables:1724kB unstable:0kB bounce:0kB writeback_tmp:0kB
+pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: 1728*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB
+0*1024kB 0*2048kB 0*4096kB = 6912kB
+106743 total pagecache pages
+0 pages in swap cache
+Swap cache stats: add 0, delete 0, find 0/0
+Free swap  = 779144kB
+Total swap = 779144kB
+131072 pages RAM
+0 pages HighMem
+3391 pages reserved
+14583 pages shared
+121040 pages non-shared
 
-[PATCH 2/19] do_mremap() untangling, part 2
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+...
 
-[PATCH 3/19] do_mremap() untangling, part 3
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Full dmesg: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.dmesg.txt
+Kernel config: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.config.txt
 
-[PATCH 4/19] fix checks for expand-in-place mremap
+uname -a: Linux navi 2.6.32 #2 Mon Dec 7 13:35:57 EET 2009 ppc GNU/Linux
 
-A couple of points on vma_expandable() in 4/19:
-+	if (arch_mmap_check(vma->vm_start, end - vma->vm_start, MAP_FIXED))
-+		return 0;
-+	if (get_unmapped_area(NULL, vma->vm_start, end - vma->vm_start,
-+			      0, MAP_FIXED) & ~PAGE_MASK)
- 		return 0;
+And no I am not running any patches on this. Same occurred with
+2.6.31.6 which I had patched with Con Kolivas' BFS so I upgraded to
+latest stable vanilla without any patches and still there it is. You
+know, it ain't too interesting to sync 1TB disks 5 times (yea I needed
+to do some testing for rsync) with slow controllers like these.
 
-I wondered why you don't pass the appropriate filp and pgoff here?
-Maybe it doesn't matter for anything at present (given that you're
-expanding an existing mmap), but even if that's the case, I do think
-it would be more robust to pass the correct filp and pgoff.
+Sincerely Yours,
 
-And that arch_mmap_check(,, MAP_FIXED) there: no problem with that,
-but it does become a problem later on (mainly in 9 and 11 and 16):
-one idiocy you haven't yet noticed, is that (a) nothing has been
-using the flags arg to arch_mmap_check(), and (b) do_mmap_pgoff()
-and do_brk() disagree on whether they're MAP_ flags or VM_ flags
-(and MAP_FIXED == VM_MAYREAD).
-
-You're going for MAP_ flags, fine, but then do_brk() will need
-changing once you take notice of those flags (in 9 and 11).
-
-[PATCH 5/19] fix the arch checks in MREMAP_FIXED case
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-[PATCH 6/19] fix pgoff in "have to relocate" case of mremap()
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-but that get_unmapped_area() ought to be accompanied by an
-arch_mmap_check(), oughtn't it?  Doesn't really matter because
-in the end arch_mmap_check() moves into get_unmapped_area()
-anyway, so maybe you decided to leave that issue until then,
-and just stick to the pgoff fix here for this patch.
-
-[PATCH 7/19] kill useless checks in sparc mremap variants
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-[PATCH 8/19] file ->get_unmapped_area() shouldn't duplicate work of get_unmapped_area()
-
-I kept on finding more interesting things to do than arrive at a
-full understanding of file ->get_unmapped_area()s: they confuse me,
-and obviously that's not your fault.  But, while I agree with your
-principle of apportioning the work appropriately between the different
-helpers, I did wonder (a) what actual benefit this patch brings? you
-don't mention it, and it looks like a rearrangement which is very
-easy to get wrong (which you admit you did), and (b) whether the patch
-is complete, since there are lots of driver ->get_unmapped_area()s
-which are not doing the current->mm->get_unmapped_area thing.
-I think.  Maybe they're all NOMMU, and it doesn't matter there:
-I gave up on trying to work it all out and moved on.
-
-[PATCH 9/19] arm: add arch_mmap_check(), get rid of sys_arm_mremap()
-
-You give arm an arch_mmap_check() which tests MAP_FIXED,
-so now do_brk() needs fixing.  Or can arm's get_unmapped_area()
-handle this, without any arch_mmap_check()?  In the end you move
-the arch_mmap_check() call into get_unmapped_area(), but could it be
-eliminated completely, in favour of code in arch's get_unmapped_area()?
-
-[PATCH 10/19] Kill ancient crap in s390 compat mmap
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-[PATCH 11/19] arch_mmap_check() on mn10300
-Like 9/19, another arch_mmap_check() which tests MAP_FIXED.
-
-[PATCH 12/19] Cut hugetlb case early for 32bit on ia64
-Could you explain this one a bit more, please?  I worry because
-MAP_HUGETLB is a recently added special, there's plenty of hugetlb
-without MAP_HUGETLB, so I wonder if you're really catching early
-all that you want to be catching, whatever that is.
-
-[PATCH 13/19] Unify sys_mmap*
-Couple of points on this one.
-(a) I didn't understand the arch/score part of it, why you said it
-should almost certainly shift pgoff too, nor why you left in the
-(pgoff & (~PAGE_MASK >> 12)) part, which looked redundant to me.
-
-And (b) I thought you were being perverse in putting sys_mmap_pgoff()
-in mm/util.c, that's never where I'd look for it, we have a file
-mm/mmap.c which is just the place for it, after do_mmap_pgoff().
-Ah, you're trying to avoid duplicating it in mm/nommu.c?  Hmm,
-well, I'd much rather you do duplicate it.  Particularly once
-14/19 complicates it with the MAP_HUGETLB fix, which we should
-keep in in mm/mmap.c, and shouldn't be needed in mm/nommu.c.
-
-[PATCH 14/19] fix a struct file leak in do_mmap_pgoff()
-Good catch, but please transfer to mm/mmap.c.
-
-[PATCH 15/19] Take arch_mmap_check() into get_unmapped_area()
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-[PATCH 16/19] switch do_brk() to get_unmapped_area()
-Here we see do_brk()'s confusion over arch_mmap_check()'s flags.
-
-[PATCH 17/19] sparc_brk() is not needed anymore
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-[PATCH 18/19] Get rid of open-coding in ia64_brk()
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-[PATCH 19/19] fix broken aliasing checks for MAP_FIXED on sparc32, mips, arm and sh
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-
-Thanks,
-Hugh
+--Mikko Kortelainen
