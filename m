@@ -1,54 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758414AbZLGBA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbZLGBL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758414AbZLGBA7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 20:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758302AbZLGBA6
+	id S1758503AbZLGBL7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 20:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758325AbZLGBL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 20:00:58 -0500
-Received: from lo.gmane.org ([80.91.229.12]:56909 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758266AbZLGBA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 20:00:57 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: walt <w41ter@gmail.com>
-Subject: [2.6.32.git] commit 1cedae7 breaks gdb
-Date: Sun, 06 Dec 2009 17:03:20 -0800
-Message-ID: <4B1C5458.1030707@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-X-Gmane-NNTP-Posting-Host: adsl-69-234-195-198.dsl.irvnca.pacbell.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.3a1pre) Gecko/20091206 Thunderbird/3.1a1pre
+	Sun, 6 Dec 2009 20:11:58 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:32650 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758302AbZLGBL5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 20:11:57 -0500
+X-Trace: 302593096/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.111.197
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhsBAHvkG0tQKW/F/2dsb2JhbAAI1S2EMwSBZw
+X-IronPort-AV: E=Sophos;i="4.47,351,1257120000"; 
+   d="scan'208";a="302593096"
+Date: Mon, 7 Dec 2009 01:11:55 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       Soeren Sandmann Pedersen <sandmann@redhat.com>, a.p.zijlstra@chello.nl,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [022/119] highmem: Fix debug_kmap_atomic() to also handle
+ KM_IRQ_PTE, KM_NMI, and KM_NMI_PTE
+In-Reply-To: <20091207000643.892734717@mini.kroah.org>
+Message-ID: <Pine.LNX.4.64.0912070105370.2642@sister.anvils>
+References: <20091206235936.208334321@mini.kroah.org> <20091207000643.892734717@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys.  This commit:
+On Sun, 6 Dec 2009, Greg KH wrote:
 
-commit 1cedae72904b85462082dbcfd5190309ba37f8bd
-Author: Frederic Weisbecker <fweisbec@gmail.com>
-Date:   Wed Dec 2 07:32:16 2009 +0100
+> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
+> 
+> ------------------
+> From: Soeren Sandmann <sandmann@daimi.au.dk>
+> 
+> commit d4515646699b6ad7b1a98ceb871296b957f3ef47 upstream.
+> 
+> Previously calling debug_kmap_atomic() with these types would
+> cause spurious warnings.
+> 
+> (triggered by SysProf using perf events)
+> 
+> Signed-off-by: Soeren Sandmann Pedersen <sandmann@redhat.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: a.p.zijlstra@chello.nl
+> LKML-Reference: <ye8vdhz8krw.fsf@camel23.daimi.au.dk>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-     hw-breakpoints: Keep track of user disabled breakpoints
+IIRC, this patch caused build failures in a number of architectures,
+those which didn't already define KM_NMI, KM_NMI_PTE or KM_IRQ_PTE
+e.g. compare the 2.6.32 arch/arm/include/asm/kmap_types.h against
+its 2.6.31 version.
 
-breaks debugging with gdb (at least gdb-7.0, anyway).
+Should be fixable if you include the extras necessary, but I'm
+ashamed to say I've left that as an exercise for the reader ;)
 
-For example, if you start firefox with the -g flag, it will run
-in gdb.  When running a kernel with this commit, gdb will stop
-with the message: "Couldn't write debug register: No space left
-on device".  When trying to quit gdb by typing 'q', the process
-hangs forever.
+Hugh
 
-This seems to be related to the size of the program being debugged.
-Running /bin/ls with gdb, for example, works normally.  But large
-programs like firefox, thunderbird, or evolution (from gnome) all
-trigger the same error message.
-
-Can anyone reproduce this?
-
-Thanks.
-
-
+> 
+> ---
+>  mm/highmem.c |   13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
+> 
+> --- a/mm/highmem.c
+> +++ b/mm/highmem.c
+> @@ -432,10 +432,15 @@ void debug_kmap_atomic(enum km_type type
+>  		return;
+>  
+>  	if (unlikely(in_interrupt())) {
+> -		if (in_irq()) {
+> +		if (in_nmi()) {
+> +			if (type != KM_NMI && type != KM_NMI_PTE) {
+> +				WARN_ON(1);
+> +				warn_count--;
+> +			}
+> +		} else if (in_irq()) {
+>  			if (type != KM_IRQ0 && type != KM_IRQ1 &&
+>  			    type != KM_BIO_SRC_IRQ && type != KM_BIO_DST_IRQ &&
+> -			    type != KM_BOUNCE_READ) {
+> +			    type != KM_BOUNCE_READ && type != KM_IRQ_PTE) {
+>  				WARN_ON(1);
+>  				warn_count--;
+>  			}
+> @@ -452,7 +457,9 @@ void debug_kmap_atomic(enum km_type type
+>  	}
+>  
+>  	if (type == KM_IRQ0 || type == KM_IRQ1 || type == KM_BOUNCE_READ ||
+> -			type == KM_BIO_SRC_IRQ || type == KM_BIO_DST_IRQ) {
+> +			type == KM_BIO_SRC_IRQ || type == KM_BIO_DST_IRQ ||
+> +			type == KM_IRQ_PTE || type == KM_NMI ||
+> +			type == KM_NMI_PTE ) {
+>  		if (!irqs_disabled()) {
+>  			WARN_ON(1);
+>  			warn_count--;
+> 
+> 
+> --
