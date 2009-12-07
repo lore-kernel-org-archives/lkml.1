@@ -1,117 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964924AbZLGSK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964950AbZLGSMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964924AbZLGSK2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964859AbZLGSK1
+	id S964950AbZLGSMN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964921AbZLGSMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:10:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32815 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 13:12:13 -0500
+Received: from mga09.intel.com ([134.134.136.24]:42060 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964871AbZLGSK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:10:26 -0500
-Message-ID: <4B1D4513.1020206@redhat.com>
-Date: Mon, 07 Dec 2009 13:10:27 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Andrea Arcangeli <aarcange@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Larry Woodman <lwoodman@redhat.com>
-Subject: Re: [early RFC][PATCH 8/7] vmscan: Don't deactivate many touched
- page
-References: <20091204173233.5891.A69D9226@jp.fujitsu.com> <20091207203427.E955.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091207203427.E955.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S964911AbZLGSML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 13:12:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,356,1257148800"; 
+   d="scan'208";a="473582046"
+Subject: Re: linux-next: net/kbuild trees build failure
+From: reinette chatre <reinette.chatre@intel.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091207160903.GB18939@tuxdriver.com>
+References: <20091207200317.57820f0a.sfr@canb.auug.org.au>
+	 <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz>
+	 <20091207160903.GB18939@tuxdriver.com>
+Content-Type: text/plain
+Date: Mon, 07 Dec 2009 10:12:17 -0800
+Message-Id: <1260209537.4653.778.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/07/2009 06:36 AM, KOSAKI Motohiro wrote:
->
-> Andrea, Can you please try following patch on your workload?
->
->
->  From a7758c66d36a136d5fbbcf0b042839445f0ca522 Mon Sep 17 00:00:00 2001
-> From: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> Date: Mon, 7 Dec 2009 18:37:20 +0900
-> Subject: [PATCH] [RFC] vmscan: Don't deactivate many touched page
->
-> Changelog
->   o from andrea's original patch
->     - Rebase topon my patches.
->     - Use list_cut_position/list_splice_tail pair instead
->       list_del/list_add to make pte scan fairness.
->     - Only use max young threshold when soft_try is true.
->       It avoid wrong OOM sideeffect.
->     - Return SWAP_AGAIN instead successful result if max
->       young threshold exceed. It prevent the pages without clear
->       pte young bit will be deactivated wrongly.
->     - Add to treat ksm page logic
+Hi John,
 
-I like the concept and your changes, and really only
-have a few small nitpicks :)
+On Mon, 2009-12-07 at 08:09 -0800, John W. Linville wrote:
+> On Mon, Dec 07, 2009 at 01:22:50PM +0100, Michal Marek wrote:
+> > On 7.12.2009 12:41, Sam Ravnborg wrote:
+> > > On Mon, Dec 07, 2009 at 08:03:17PM +1100, Stephen Rothwell wrote:
+> > >> Hi Dave,
+> > >>
+> > >> Today's linux-next build (powerpc allyesconfig) failed like this:
+> > >>
+> > >> In file included from drivers/net/wireless/iwlwifi/iwl3945-base.c:57:
+> > >> drivers/net/wireless/iwlwifi/iwl-core.h:66:30: error: linux/utsrelease.h: No such file or directory
+> > >>
+> > >> Caused by commit 250cce26d5d03337aec4ff8405121f026adb4a89 ("iwlwifi:
+> > >> driver version track kernel version") from the net tree interacting with
+> > >> commit 8e5c76aace9705b6983cfbf5eb2f2e869dab6738 ("kbuild: move
+> > >> utsrelease.h to include/generated") from the kbuild tree.
+> > >>
+> > >> I applied this patch for today (and will carry it as necessary):
+> > > 
+> > > The right fix would be to use 'utsname()->sysname' (I think sysname
+> > > is the right member).
+> > 
+> > ->release would be the right one. One could also question why iwlwifi
+> > needs to repeat the kernel version it was built / is running against,
+> > but I that's not the point here :). Dave, John, can we agree that
+> > whichever tree gets merged first, the other tree applies the one-liner?
+> 
+> Hmmm...well, the suggested fixes are fine for the printk (i.e. runtime)
+> usage.  But (other than Stephen's) they don't seem to help with the
+> MODULE_VERSION (i.e. compile time) usage.  Is there an approved
+> solution for that?
 
-First, the VM uses a mix of "referenced", "accessed" and
-"young".  We should probably avoid adding "active" to that
-mix, and may even want to think about moving to just one
-or two terms :)
+Right - could we please use the solution that works at compile time? I
+used UTS_RELEASE after learning about its use in init/version.c, would
+that not make it an approved solution?
 
-> +#define MAX_YOUNG_BIT_CLEARED 64
-> +/*
-> + * if VM pressure is low and the page have too many active mappings, there isn't
-> + * any reason to continue clear young bit of other ptes. Otherwise,
-> + *  - Makes meaningless cpu wasting, many touched page sholdn't be reclaimed.
-> + *  - Makes lots IPI for pte change and it might cause another sadly lock
-> + *    contention.
-> + */
+> For some reason the Intel drivers encode some of their build options
+> into their MODULE_VERSION string.
 
-If VM pressure is low and the page has lots of active users, we only
-clear up to MAX_YOUNG_BIT_CLEARED accessed bits at a time.  Clearing
-accessed bits takes CPU time, needs TLB invalidate IPIs and could
-cause lock contention.  Since a heavily shared page is very likely
-to be used again soon, the cost outweighs the benefit of making such
-a heavily shared page a candidate for eviction.
+This has been useful many times, especially to know if users compiled
+with debug support so that we can immediately support users to
+understand why the debug flags they are providing does not work.
 
-> diff --git a/mm/rmap.c b/mm/rmap.c
-> index cfda0a0..f4517f3 100644
-> --- a/mm/rmap.c
-> +++ b/mm/rmap.c
-> @@ -473,6 +473,21 @@ static int wipe_page_reference_anon(struct page *page,
->   		ret = wipe_page_reference_one(page, refctx, vma, address);
->   		if (ret != SWAP_SUCCESS)
->   			break;
-> +		if (too_many_young_bit_found(refctx)) {
-> +			LIST_HEAD(tmp_list);
-> +
-> +			/*
-> +			 * The scanned ptes move to list tail. it help every ptes
-> +			 * on this page will be tested by ptep_clear_young().
-> +			 * Otherwise, this shortcut makes unfair thing.
-> +			 */
-> +			list_cut_position(&tmp_list,
-> +					&vma->anon_vma_node,
-> +					&anon_vma->head);
-> +			list_splice_tail(&tmp_list,&vma->anon_vma_node);
-> +			ret = SWAP_AGAIN;
-> +			break;
-> +		}
+>   Other than that, the vermagic
+> field from modinfo would seem to suffice for replacing this version
+> information.  Honestly, I'm not too fond of the "build options in
+> the version string" stuff...perhaps we could just get rid of it all?
 
-I do not understand the unfairness here, since all a page needs
-to stay on the active list is >64 referenced PTEs.  It does not
-matter which of the PTEs mapping the page were recently referenced.
+I would prefer not to since it has been useful on many occasions
+already.
 
-However, rotating the anon vmas around may help spread out lock
-pressure in the VM and help things that way, so the code looks
-useful to me.
+Reinette
 
-In short, you can give the next version of this patch my
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
-
-All I have are comment nitpicks :)
-
--- 
-All rights reversed.
