@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935282AbZLGPRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935295AbZLGPSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935282AbZLGPRD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 10:17:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935259AbZLGPRB
+	id S935295AbZLGPSa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 10:18:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935259AbZLGPS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 10:17:01 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42592 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932508AbZLGPQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 10:16:59 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Mon, 7 Dec 2009 16:17:51 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain> <20091206223112.77433d13@infradead.org> <20091207063236.GF21451@core.coreip.homeip.net>
-In-Reply-To: <20091207063236.GF21451@core.coreip.homeip.net>
+	Mon, 7 Dec 2009 10:18:27 -0500
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:35397 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932683AbZLGPS0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 10:18:26 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B1D1CF5.6030502@cam.ac.uk>
+Date: Mon, 07 Dec 2009 15:19:17 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Staging: IIO: add selection of IIO_SW_RING to LIS3L02DQ as
+ needed
+References: <20091204203014.e8ee54ca.sfr@canb.auug.org.au> <20091206101225.7d8ce4a4.randy.dunlap@oracle.com>
+In-Reply-To: <20091206101225.7d8ce4a4.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912071617.51262.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 December 2009, Dmitry Torokhov wrote:
-> On Sun, Dec 06, 2009 at 10:31:12PM -0800, Arjan van de Ven wrote:
-> > On Sun, 6 Dec 2009 22:15:49 -0800
-> > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > 
-> > > And the bad thing is that violates multiple layers in the kernel.
-> > > Atkbd driver does not have to be using i8042; neither does psmouse.
-> > > Althtough they do in 99% of the cases there are other controllers
-> > > providing the i8042-style ports. Just grep for SERIO_8042 in
-> > > drivers/input/serio.
-> > > 
-> > > I do not want to hard-code the i8042-psmouse-atkbd dependency.
-> > 
-> > it's not a specific dependency.
-> > 
-> > it's a "I know I'm critical, so everything before me needs to be done".
-> > 
-> > that doesn't encode an actual relationship, it encodes a potential
-> > relationship... with a worst case behavior of ... what we do right
-> > now ;_)
-> 
-> This is the case with every parent device, isn't it? It is important for
-> its children. And wasn't Rafael patchset trying to address exactkly
-> this?
 
-Yes, it was.
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
 
-Thanks,
-Rafael
+ Thanks to Randy for the report. Sorry for the slow response.
+ I've been meaning to carefully check for any remaining cases like
+ this.
+ Here I've kept the selection of IIO_SW_RING separate from
+ IIO_TRIGGER as it will go away fairly shortly when the ring buffer
+ type becomes configurable on a per device basis, whereas the
+ IIO_TRIGGER select will remain. Whether to retain the option to
+ remove the support for ring buffers entirely is one for after that
+ support is in place.
+
+ Touch wood I think this is the last one, but I'll try a selection of
+ unusual combinations now and post others as replies to this email.
+
+ drivers/staging/iio/accel/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/iio/accel/Kconfig b/drivers/staging/iio/accel/Kconfig
+index 4044663..3d3c333 100644
+--- a/drivers/staging/iio/accel/Kconfig
++++ b/drivers/staging/iio/accel/Kconfig
+@@ -14,6 +14,7 @@ config LIS3L02DQ
+ 	tristate "ST Microelectronics LIS3L02DQ Accelerometer Driver"
+ 	depends on SPI
+ 	select IIO_TRIGGER if IIO_RING_BUFFER
++	select IIO_SW_RING if IIO_RING_BUFFER
+ 	help
+ 	  Say yes here to build SPI support for the ST microelectronics
+ 	  accelerometer. The driver supplies direct access via sysfs files
+-- 
+1.6.4.4
