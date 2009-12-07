@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbZLGPvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934571AbZLGPwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758177AbZLGPvG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 10:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZLGPvF
+	id S934571AbZLGPwZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 10:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932422AbZLGPwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 10:51:05 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:58372 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751553AbZLGPvE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 10:51:04 -0500
-To: Andrew Lutomirski <luto@mit.edu>
-CC: alan@lxorguk.ukuu.org.uk, miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <cb0375e10912070703j4e5769c7tec6090378248a187@mail.gmail.com>
-	(message from Andrew Lutomirski on Mon, 7 Dec 2009 10:03:33 -0500)
-Subject: Re: [PATCH v3] vfs: new O_NODE open flag
-References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu> <E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu> 
-	<20091207122346.6d18a8e1@lxorguk.ukuu.org.uk> <E1NHctp-00032C-A1@pomaz-ex.szeredi.hu> 
-	<E1NHd0J-000345-Kw@pomaz-ex.szeredi.hu> <20091207130339.620b904b@lxorguk.ukuu.org.uk> 
-	<E1NHdJy-00037l-Jb@pomaz-ex.szeredi.hu> <20091207131546.2af06647@lxorguk.ukuu.org.uk> 
-	<E1NHdS9-00039i-B6@pomaz-ex.szeredi.hu> <20091207141321.0964461d@lxorguk.ukuu.org.uk> <cb0375e10912070703j4e5769c7tec6090378248a187@mail.gmail.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1NHfrW-0003YW-Rn@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 07 Dec 2009 16:50:58 +0100
+	Mon, 7 Dec 2009 10:52:24 -0500
+Received: from lo.gmane.org ([80.91.229.12]:53401 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751207AbZLGPwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 10:52:24 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: walt <w41ter@gmail.com>
+Subject: Re: [2.6.32.git] commit 1cedae7 breaks gdb
+Date: Mon, 07 Dec 2009 07:54:25 -0800
+Message-ID: <hfj8al$ni8$1@ger.gmane.org>
+References: <4B1C5458.1030707@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: adsl-69-234-192-22.dsl.irvnca.pacbell.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.3a1pre) Gecko/20091206 Thunderbird/3.1a1pre
+In-Reply-To: <4B1C5458.1030707@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009, Andrew Lutomirski wrote:
-> On Mon, Dec 7, 2009 at 9:13 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > First obvious attack: get an O_NODE handle to a device you have assigned
-> > to your ownership
-> >
-> >        while(1)
-> >                fchmod(fd, 0666);
-> >
-> > wait for device to unload, reload and be intended for another user
-> > Race udev to a real open. You have a similar problem with vhangup() and
-> > ttys.
-> 
-> Huh?  I would've thought that udev would (and already does?), on
-> device unload, chown to 0:0, then chmod to 0000, then unlink, in which
-> case that attack doesn't work.
+On 12/06/2009 05:03 PM, walt wrote:
+> Hi guys.  This commit:
+>
+> commit 1cedae72904b85462082dbcfd5190309ba37f8bd
+> Author: Frederic Weisbecker <fweisbec@gmail.com>
+> Date: Wed Dec 2 07:32:16 2009 +0100
+>
+> hw-breakpoints: Keep track of user disabled breakpoints
+>
+> breaks debugging with gdb (at least gdb-7.0, anyway).
 
-Git version of udev does:
+For the record, this bug is fixed in the thread
+[GIT PULL] hw-breakpoints fixes. (Less than one day!)
 
-	chmod(filename, 0000);
-	chown(filename, 0, 0);
-	err = unlink(filename);
+Thanks Frederic!
 
-It should probably do it the other way round, which is how it was
-originally, until this commit messed it up:
-
-  commit 39087d3bdd0b5195c2570a4f858b88a82d42a066
-  Author: Kay Sievers <kay.sievers@vrfy.org>
-  Date:   Sat Aug 29 16:10:24 2009 +0200
-  
-      util_unlink_secure(): chmod() before chown()
-  
-      Suggested by Florian Zumbiehl <florz@florz.de>.
-
-And the thread where it came from:
-
-  http://markmail.org/thread/ozwcbju52yb3qs5d
-
-where the poster actually warned Kay that it was wrong...
-
-> Would you be okay with a patch that prevented opening
-> /proc/self/fd/xxx on O_NODE handles?
-
-We can't sanely do that.
-
-Thanks,
-Miklos
