@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbZLGGf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbZLGGfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756381AbZLGGf4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 01:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZLGGfz
+	id S1756341AbZLGGfI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 01:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZLGGfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 01:35:55 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:57875 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbZLGGfy (ORCPT
+	Mon, 7 Dec 2009 01:35:06 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44479 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753427AbZLGGfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 01:35:54 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf_event: fix for processing raw event - fix
-References: <4B1C7EE1.8030906@cn.fujitsu.com>
-	<4B1C7F45.5080105@cn.fujitsu.com> <4B1C8CC4.4050007@cn.fujitsu.com>
-	<87ein747k7.fsf@devron.myhome.or.jp>
-Date: Mon, 07 Dec 2009 15:35:59 +0900
-In-Reply-To: <87ein747k7.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
-	"Mon, 07 Dec 2009 15:33:28 +0900")
-Message-ID: <87aaxv47g0.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 Dec 2009 01:35:04 -0500
+Date: Sun, 6 Dec 2009 22:37:20 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Alan Stern <stern@rowland.harvard.edu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Message-ID: <20091206223720.77cc8d80@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0912062122460.3560@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
+	<1260158279.27069.181.camel@rzhang1-desktop>
+	<alpine.LFD.2.00.0912062122460.3560@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
+On Sun, 6 Dec 2009 21:57:55 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> writes:
->
->> raw->size is not used, this patch just cleanup it
->
-> Oops, I didn't notice those. Thanks.
->
->> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
->> ---
->>  tools/perf/builtin-kmem.c  |   38 +++++++-----------
->>  tools/perf/builtin-sched.c |   94 +++++++++++++++++++------------------------
->>  2 files changed, 56 insertions(+), 76 deletions(-)
->>
->> diff --git a/tools/perf/builtin-kmem.c b/tools/perf/builtin-kmem.c
->> index f84d7a3..7551a5f 100644
->> --- a/tools/perf/builtin-kmem.c
->> +++ b/tools/perf/builtin-kmem.c
->> @@ -57,11 +57,6 @@ static struct rb_root root_caller_sorted;
->>  static unsigned long total_requested, total_allocated;
->>  static unsigned long nr_allocs, nr_cross_allocs;
->>  
->> -struct raw_event_sample {
->> -	u32 size;
->> -	char data[0];
->> -};
->> -
->>  #define PATH_SYS_NODE	"/sys/devices/system/node"
->>  
->>  static void init_cpunode_map(void)
->> @@ -201,7 +196,7 @@ static void insert_caller_stat(unsigned long call_site,
->>  	}
->>  }
->>  
->> -static void process_alloc_event(struct raw_event_sample *raw,
->> +static void process_alloc_event(void *data,
->>  				struct event *event,
->>  				int cpu,
->>  				u64 timestamp __used,
->
-> How about the following patch instead of playing with unsafe "void *"?
-> With this, I guess it does type check, and filed handling functions can
+> 
+> Now, the problem remains that when you walk the device tree starting
+> off all these potentially asynchronous events, you don't want to do
+> that serialization part (the "parent suspend") as you walk the tree -
+> because then you would only ever do one single level asynchronously.
+> Which is why I suggested splitting the suspend into a "pre-suspend"
+> phase (and a "post-resume" one). Because then the tree walk goes from
 
-s/filed handling/field handling of sample raw data/
+> I dunno. Maybe I'm overlooking something, but the above is much
+> closer to what I think would be worth doing.
 
-> check "size" by passing "struct sample_raw_data" instead of "void *" in
-> future.
+with what you're describing I suspect the current async function calls
+could be used;
+in the first tree walk, the drivers do an async_schedule() of the
+things they want done asynchronous;
+all the core then needs to do is a full synchronization step between the
+two tree walks... and we get pretty much all the benefits without
+needing the read-then-write-lock primitive for synchronization.
+
+alternative would be to do the synchronization in the part where we
+know there's a dependency (like your lock is doing); 
+but instead of a lock we could store the async cookie there; and just
+wait on that in the 2nd phase....  this would be more finegrained, and
+an optimization from the "global synchronize"... but I'm not sure it'll
+be worth it in practice; it will if there's significant cost in various
+parts of the tree AND in the 2nd run; if the 2nd run is cheap in
+general, you're not going to get real extra parallelism at the price of
+more complexity.
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
