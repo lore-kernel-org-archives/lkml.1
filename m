@@ -1,70 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbZLGUDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbZLGUEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758798AbZLGUDX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbZLGUDW
+	id S1758809AbZLGUEk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758640AbZLGUEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:03:22 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58530 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758772AbZLGUDV (ORCPT
+	Mon, 7 Dec 2009 15:04:39 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:43337 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758351AbZLGUEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:03:21 -0500
-Date: Mon, 7 Dec 2009 21:03:26 +0100
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Herring Robert-RA7055 <ra7055@freescale.com>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>,
-       Amit Kucheria <amit.kucheria@canonical.com>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>,
-       grant.likely@secretlab.ca, valentin.longchamp@epfl.ch, daniel@caiaq.de,
-       Nguyen Dinh-R00091 <R00091@freescale.com>,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC][PATCH 03/10] arm: mxc: changes to common plat-mxc codeto
-	add support for i.MX5
-Message-ID: <20091207200326.GU22533@pengutronix.de>
-References: <cover.1259893118.git.amit.kucheria@canonical.com> <58eb7d14c6cf56cbc874657dff5789c47116b49e.1259893118.git.amit.kucheria@canonical.com> <DE2504B3A515524BBE6934369EFDC0DA08C2A56C@az33exm20.fsl.freescale.net> <20091204105908.GJ15126@pengutronix.de> <DE2504B3A515524BBE6934369EFDC0DA08C2A879@az33exm20.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <DE2504B3A515524BBE6934369EFDC0DA08C2A879@az33exm20.fsl.freescale.net>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 21:02:05 up 56 days,  8:51, 10 users,  load average: 0.04, 0.05,
-	0.01
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 7 Dec 2009 15:04:38 -0500
+Subject: Re: [PATCH] Fix tracing infrastructure to support multiple
+ includes when defining CREATE_TRACE_POINTS
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@redhat.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>
+In-Reply-To: <20091203193549.GA18664@hmsreliant.think-freely.org>
+References: <20091202191916.GA7589@hmsreliant.think-freely.org>
+	 <1259849726.12870.123.camel@gandalf.stny.rr.com>
+	 <20091203193549.GA18664@hmsreliant.think-freely.org>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 07 Dec 2009 15:04:42 -0500
+Message-Id: <1260216282.4845.3.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob,
+On Thu, 2009-12-03 at 14:35 -0500, Neil Horman wrote:
 
-On Mon, Dec 07, 2009 at 10:17:52AM -0700, Herring Robert-RA7055 wrote:
-> Sorry, my mistake. Sasha is correct that MX27 is v1 and MX25 is v2.
+> Fix tracing infrastructure to allow multiple header files with TRACE_EVENTS to
+> be included with CREATE_TRACE_EVENTS defined
 > 
-> timer_is_v1 is just !timer_is_v2, so really only one is needed. I would
-> define it like this to avoid having to change the timer code again for
-> any new chips:
+> I've been workingon adding a few tracepoints to the network stack, and in so
+> doing it was convienient for me to add a second include file to
+> net/core/net-traces.c with TRACE_EVENTS defined in them.  net-traces.c defines
+> CREATE_TRACE_EVENTS, and during the build it was failing, complaining about
+> duplicate definitions of __tpstrtab_<name>.  I tracked down the bug to find that
+> define_trace.h redefined DECLARE_TRACE to be DEFINE_TRACE, so after the first
+> run through define_trace.h (which is included from skb.h, included in
+> net-trace.c first), the DECLARE_TRACE macro was left with an improper definition
+> to start a new cycle with the next header.
 > 
-> #define timer_is_v2()   (!(cpu_is_mx1() || cpu_is_mx21() ||
-> cpu_is_mx27()))
+> The fix I came up with was to make sure that DECLARE_TRACE was undefined at the
+> end of define_trace.h, and to add a conditional re-definition in tracepoint.h.
+> This places us back in the proper state to define a new set of tracepoints in a
+> subsequent header file.
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
 
-Are you sure that FSL won't invent a v3 timer in the future?
+By itself, this patch breaks the build (for me). I take it that you
+converted the napi.h file to use TRACE_EVENT. Currently it uses a
+DECLARE_TRACE, which will break with this patch. We need a patch that
+removes that DECLARE_TRACE before we can apply this patch.
 
-rsc
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+To keep bisectablity, we either need to make one patch that converts the
+napi to TRACE_EVENT and this patch, or we need to first remove the
+napi.h DECLARE_TRACE, add this patch, and then one that adds
+TRACE_EVENT.
+
+-- Steve
+
+> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> index 2aac8a8..311abbf 100644
+> --- a/include/linux/tracepoint.h
+> +++ b/include/linux/tracepoint.h
+> @@ -58,28 +58,6 @@ struct tracepoint {
+>  		rcu_read_unlock_sched_notrace();			\
+>  	} while (0)
+>  
+> -/*
+> - * Make sure the alignment of the structure in the __tracepoints section will
+> - * not add unwanted padding between the beginning of the section and the
+> - * structure. Force alignment to the same alignment as the section start.
+> - */
+> -#define DECLARE_TRACE(name, proto, args)				\
+> -	extern struct tracepoint __tracepoint_##name;			\
+> -	static inline void trace_##name(proto)				\
+> -	{								\
+> -		if (unlikely(__tracepoint_##name.state))		\
+> -			__DO_TRACE(&__tracepoint_##name,		\
+> -				TP_PROTO(proto), TP_ARGS(args));	\
+> -	}								\
+> -	static inline int register_trace_##name(void (*probe)(proto))	\
+> -	{								\
+> -		return tracepoint_probe_register(#name, (void *)probe);	\
+> -	}								\
+> -	static inline int unregister_trace_##name(void (*probe)(proto))	\
+> -	{								\
+> -		return tracepoint_probe_unregister(#name, (void *)probe);\
+> -	}
+> -
+>  
+>  #define DEFINE_TRACE_FN(name, reg, unreg)				\
+>  	static const char __tpstrtab_##name[]				\
+> @@ -173,6 +151,29 @@ static inline void tracepoint_synchronize_unregister(void)
+>   *  trace event headers under one "CREATE_TRACE_POINTS" the first include
+>   *  will override the TRACE_EVENT and break the second include.
+>   */
+> +#if defined(CONFIG_TRACEPOINTS) && !defined(DECLARE_TRACE)
+> +/*
+> + * Make sure the alignment of the structure in the __tracepoints section will
+> + * not add unwanted padding between the beginning of the section and the
+> + * structure. Force alignment to the same alignment as the section start.
+> + */
+> +#define DECLARE_TRACE(name, proto, args)                                \
+> +	extern struct tracepoint __tracepoint_##name;                   \
+> +	static inline void trace_##name(proto)                          \
+> +	{                                                               \
+> +		if (unlikely(__tracepoint_##name.state))                \
+> +			__DO_TRACE(&__tracepoint_##name,                \
+> +				TP_PROTO(proto), TP_ARGS(args));        \
+> +	}                                                               \
+> +	static inline int register_trace_##name(void (*probe)(proto))   \
+> +	{                                                               \
+> +		return tracepoint_probe_register(#name, (void *)probe); \
+> +	}                                                               \
+> +	static inline int unregister_trace_##name(void (*probe)(proto)) \
+> +	{                                                               \
+> +		return tracepoint_probe_unregister(#name, (void *)probe);\
+> +	}
+> +#endif
+>  
+>  #ifndef TRACE_EVENT
+>  /*
+> diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
+> index 2a4b3bf..a3e0095 100644
+> --- a/include/trace/define_trace.h
+> +++ b/include/trace/define_trace.h
+> @@ -64,6 +64,7 @@
+>  #undef TRACE_EVENT
+>  #undef TRACE_EVENT_FN
+>  #undef TRACE_HEADER_MULTI_READ
+> +#undef DECLARE_TRACE
+>  
+>  /* Only undef what we defined in this file */
+>  #ifdef UNDEF_TRACE_INCLUDE_FILE
+
