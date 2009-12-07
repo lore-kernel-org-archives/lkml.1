@@ -1,170 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbZLGBjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbZLGBqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbZLGBjR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 20:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758325AbZLGBjP
+	id S1758498AbZLGBqo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 20:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbZLGBqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 20:39:15 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64023 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758046AbZLGBjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 20:39:14 -0500
-Message-ID: <4B1C5BC9.3010001@cn.fujitsu.com>
-Date: Mon, 07 Dec 2009 09:35:05 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 6 Dec 2009 20:46:42 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:59534 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755622AbZLGBql (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 20:46:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FdxLkg+tEGz7Qb6PfgYGUTfLyahtd5/Y5L3L0UNxr+Q6AprpBV9wR/CdkPgPifL5cY
+         97jfNbOVr1ELLGBoOkypeXULSEqd5LtW5ssg9KPxpEa4s98sThl4bM9TYVVVS5FC7rOv
+         2tYS4rgrGjXdVlDYkevKDNdVKIheHg6dEZO9o=
+Date: Mon, 7 Dec 2009 02:46:47 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/9] perf: Remove pointless union that wraps the hw
+	breakpoint fields
+Message-ID: <20091207014645.GD4966@nowhere>
+References: <1260084898-11686-1-git-send-regression-fweisbec@gmail.com> <1260084898-11686-3-git-send-regression-fweisbec@gmail.com> <1260095935.7818.258.camel@laptop>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       czoccolo@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: Block IO Controller V4
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <4B15C828.4080407@cn.fujitsu.com> <20091202142508.GA31715@redhat.com> <4B1779CE.1050801@cn.fujitsu.com> <20091203143641.GA3887@redhat.com>
-In-Reply-To: <20091203143641.GA3887@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260095935.7818.258.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Thu, Dec 03, 2009 at 04:41:50PM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->>> On Wed, Dec 02, 2009 at 09:51:36AM +0800, Gui Jianfeng wrote:
->>>> Vivek Goyal wrote:
->>>>> Hi Jens,
->>>>>
->>>>> This is V4 of the Block IO controller patches on top of "for-2.6.33" branch
->>>>> of block tree.
->>>>>
->>>>> A consolidated patch can be found here:
->>>>>
->>>>> http://people.redhat.com/vgoyal/io-controller/blkio-controller/blkio-controller-v4.patch
->>>>>
->>>> Hi Vivek,
->>>>
->>>> It seems this version doesn't work very well for "direct(O_DIRECT) sequence read" mode.
->>>> For example, you can create group A and group B, then assign weight 100 to group A and
->>>> weight 400 to group B, and you run "direct sequence read" workload in group A and B 
->>>> simultaneously. Ideally, we should see 1:4 disk time differentiation for group A and B. 
->>>> But actually, I see almost 1:2 disk time differentiation for group A and B. I'm looking
->>>> into this issue.
->>>> BTW, V3 works well for this case.
->>> Hi Gui,
->>>
->>> In my testing of 8 fio jobs in 8 cgroups, direct sequential reads seems to
->>> be working fine.
->>>
->>> http://lkml.org/lkml/2009/12/1/367
->>>
->>> I suspect that in some case we choose not to idle on the group and it gets
->>> deleted from service tree hence we loose share. Can you have a look at
->>> blkio.dequeue files. If there are excessive deletions, that will signify
->>> that we are loosing share because we chose not to idle.
->>>
->>> If yes, please also run blktrace to see in what cases we chose not to
->>> idle.
->>>
->>> In V3, I had a stronger check to idle on the group if it is empty using
->>> wait_busy() function. In V4 I have removed that and trying to wait busy
->>> on a queue by extending its slice if it has consumed its allocated slice.
->> Hi Vivek,
->>
->> I ckecked the blktrace output, it seems that io group was deleted all the time,
->> because we don't have group idle any more. I pulled the wait_busy code back to
->> V4, and retest it, problem seems disappeared.
->>
->> So i suggest that we need to retain the wait_busy code.
+On Sun, Dec 06, 2009 at 11:38:55AM +0100, Peter Zijlstra wrote:
+> On Sun, 2009-12-06 at 08:34 +0100, Frederic Weisbecker wrote:
+> > It stands to anonymize a structure, but structures can already
+> > anonymize by themselves.
+> > 
+> > Reported-by: Peter Zijlstra <peterz@infradead.org>
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>
+> > ---
+> >  include/linux/perf_event.h |   14 ++++++--------
+> >  1 files changed, 6 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> > index a61e4de..53230e9 100644
+> > --- a/include/linux/perf_event.h
+> > +++ b/include/linux/perf_event.h
+> > @@ -215,14 +215,12 @@ struct perf_event_attr {
+> >  		__u32		wakeup_watermark; /* bytes before wakeup   */
+> >  	};
+> >  
+> > -	union {
+> > -		struct { /* Hardware breakpoint info */
+> > -			__u64		bp_addr;
+> > -			__u32		bp_type;
+> > -			__u32		bp_len;
+> > -			__u64		__bp_reserved_1;
+> > -			__u64		__bp_reserved_2;
+> > -		};
+> > +	struct { /* Hardware breakpoint info */
+> > +		__u64		bp_addr;
+> > +		__u32		bp_type;
+> > +		__u32		bp_len;
+> > +		__u64		__bp_reserved_1;
+> > +		__u64		__bp_reserved_2;
+> >  	};
+> >  
+> >  	__u32			__reserved_2;
 > 
-> Hi Gui,
-> 
-> We need to figure out why the existing code is not working on your system.
-> In V4, I introduced the functionality to extend the slice by slice_idle
-> so that we will arm slice idle timer and wait for new request to come in
-> and then expire the queue. Following is the code to extend the slice.
-> 
->                 /*
->                  * If this queue consumed its slice and this is last queue
->                  * in the group, wait for next request before we expire
->                  * the queue
->                  */
->                 if (cfq_slice_used(cfqq) && cfqq->cfqg->nr_cfqq == 1) {
->                         cfqq->slice_end = jiffies + cfqd->cfq_slice_idle;
->                         cfq_mark_cfqq_wait_busy(cfqq);
->                 }
-> 
-> One loop hole I see is that, I extend the slice only if current slice has
-> been used. If if we on the boundary and slice has not been used yet, then
-> I will not extend the slice. We also might not arm the timer thinking that
-> remaining slice is less than think time of process and that can lead to
-> expiry of queue. To rule out this possibility, can you remove following
-> code in arm_slice_timer() and try it again.
-> 
->         /*
->          * If our average think time is larger than the remaining time
->          * slice, then don't idle. This avoids overrunning the allotted
->          * time slice.
->          */
->         if (sample_valid(cic->ttime_samples) &&
->             (cfqq->slice_end - jiffies < cic->ttime_mean))
->                 return;
-> 
-> The other possiblity is that at the request completion time slice has not
-> expired hence we don't extend the slice and arm the timer. But then
-> select_queue() hits and by that time slice has expired and we expire the
-> queue. I thought this will not happen very frequently.
-> 
-> Can you figure out what is happening on your system. Why we are not doing
-> wait busy on the queue/group (new queue wait_busy and wait_busy_done
-> flags) and instead expiring the queue and hence group.
-
-Hi Vivek,
-
-Sorry for the late reply.
-In V4, we don't have wait_busy() in select_queue(), so if there isn't any 
-request on this queue and no cooperator queue available, this queue will
-expire immediately. We don't have a chance to get that queue backlogged
-again. So group will get removed frequently.
-
-
-> You can send your blktrace logs to me also. I can also try figuring out
-> what is happening.
-
-I think here is the most significant part of blktrace output for this issue.
-
-  8,16   0     4024     0.642072068  3924  Q   R 320708977 + 8 [rwio]
-  8,16   0     4025     0.642078523  3924  G   R 320708977 + 8 [rwio]
-  8,16   0     4026     0.642082632  3924  I   R 320708977 + 8 [rwio]
-  8,16   0        0     0.642084075     0  m   N cfq3924S /test1 insert_request
-  8,16   0        0     0.642087062     0  m   N cfq3924S /test1 dispatch_insert
-  8,16   0        0     0.642088250     0  m   N cfq3924S /test1 dispatched a request
-  8,16   0        0     0.642089242     0  m   N cfq3924S /test1 activate rq, drv=1
-  8,16   0     4027     0.642089573  3924  D   R 320708977 + 8 [rwio]
-  8,16   0        0     0.642185679     0  m   N cfq3924S /test1 slice expired t=0   <= I think this happens in select_queue()
-  8,16   0        0     0.642187132     0  m   N cfq3924S /test1 sl_used=60 sect=2056
-  8,16   0        0     0.642189007     0  m   N /test1 served: vt=276536888 min_vt=275308088
-  8,16   0        0     0.642190265     0  m   N cfq3924S /test1 del_from_rr
-  8,16   0        0     0.642190941     0  m   N /test1 del_from_rr group
-  8,16   0        0     0.642192600     0  m   N cfq3925S /test2 set_active
-  8,16   0        0     0.642194414     0  m   N cfq3925S /test2 fifo=(null)
-  8,16   0        0     0.642195296     0  m   N cfq3925S /test2 dispatch_insert
-  8,16   0        0     0.642196709     0  m   N cfq3925S /test2 dispatched a request
-  8,16   0        0     0.642197737     0  m   N cfq3925S /test2 activate rq, drv=2
-  8,16   0     4028     0.642198102  3924  D   R 324900545 + 8 [rwio]
-  8,16   0     4029     0.642204612  3924  U   N [rwio] 2
+> So I'm a bit puzzled by the need for
+>  - that structure to begin with
 
 
 
-> 
-> Thanks
-> Vivek
-> 
-> 
-> 
+It has no practical use. It's just a logical separation
+that makes it easier to review.
 
--- 
-Regards
-Gui Jianfeng
+I won't mind much if you prefer to remove it.
+
+
+>  - specialized __bp reserves
+
+
+Because we'll probably have further new needs in the future
+in the breakpoint fields. But well, these can map to the
+current reserved fields already.
+
+
+
+> Furthermore, you still got the packing wrong, leading to different
+> structure layout on 32 and 64 bit platforms,..
+> 
+> How about?
+> 
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index 89098e3..5595154 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -215,17 +215,12 @@ struct perf_event_attr {
+>  		__u32		wakeup_watermark; /* bytes before wakeup   */
+>  	};
+>  
+> -	struct { /* Hardware breakpoint info */
+> -		__u64		bp_addr;
+> -		__u32		bp_type;
+> -		__u32		bp_len;
+> -		__u64		__bp_reserved_1;
+> -		__u64		__bp_reserved_2;
+> -	};
+> -
+>  	__u32			__reserved_2;
+>  
+> -	__u64			__reserved_3;
+> +	/* Hardware breakpoint info */
+> +	__u64		bp_addr;
+> +	__u32		bp_type;
+> +	__u32		bp_len;
+>  };
+
+
+
+Right this fixes the packing layout, but what if
+we need other fields for the breakpoints in the future?
+
+Thanks.
 
