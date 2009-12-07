@@ -1,110 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933826AbZLGL1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934115AbZLGLdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933826AbZLGL1G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 06:27:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933744AbZLGL1G
+	id S934115AbZLGLdZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 06:33:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934038AbZLGLdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 06:27:06 -0500
-Received: from f0.cmpxchg.org ([85.214.51.133]:34571 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933737AbZLGL1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 06:27:05 -0500
-Date: Mon, 7 Dec 2009 12:27:05 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Larry Woodman <lwoodman@redhat.com>
-Subject: Re: [PATCH 1/7] Replace page_mapping_inuse() with page_mapped()
-Message-ID: <20091207112705.GA5772@cmpxchg.org>
-References: <20091204173233.5891.A69D9226@jp.fujitsu.com> <20091204174016.5894.A69D9226@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091204174016.5894.A69D9226@jp.fujitsu.com>
+	Mon, 7 Dec 2009 06:33:24 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:44462 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933740AbZLGLdX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 06:33:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=tGn+YN9AYFJOzTMsMzHhxEfalnsAZsEpFTJa0ne3TSkLCjOmEb4bfV91/vfnENEw8b
+         varreV6gI7CsoiB7rRiYiWVIdqrPt+Xf3XMxN3rMFA2o/ETWJbEMxb652eIThSOYgsOv
+         ZJA4IGW1UGsjdDMVNpM1ZgmN/tmCDsKlwspS0=
+Message-ID: <4B1CE844.1040108@gmail.com>
+Date: Mon, 07 Dec 2009 12:34:28 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
+       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SUNRPC: IS_ERR/PTR_ERR confusion
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 05:41:35PM +0900, KOSAKI Motohiro wrote:
-> From c0cd3ee2bb13567a36728600a86f43abac3125b5 Mon Sep 17 00:00:00 2001
-> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Date: Wed, 2 Dec 2009 12:05:26 +0900
-> Subject: [PATCH 1/7] Replace page_mapping_inuse() with page_mapped()
-> 
-> page reclaim logic need to distingish mapped and unmapped pages.
-> However page_mapping_inuse() don't provide proper test way. it test
-> the address space (i.e. file) is mmpad(). Why `page' reclaim need
-> care unrelated page's mapped state? it's unrelated.
-> 
-> Thus, This patch replace page_mapping_inuse() with page_mapped()
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
+IS_ERR returns 1 or 0, PTR_ERR returns the error value.
 
-Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ net/sunrpc/auth_gss/auth_gss.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> ---
->  mm/vmscan.c |   25 ++-----------------------
->  1 files changed, 2 insertions(+), 23 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index da6cf42..4ba08da 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -262,27 +262,6 @@ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
->  	return ret;
->  }
->  
-> -/* Called without lock on whether page is mapped, so answer is unstable */
-> -static inline int page_mapping_inuse(struct page *page)
-> -{
-> -	struct address_space *mapping;
-> -
-> -	/* Page is in somebody's page tables. */
-> -	if (page_mapped(page))
-> -		return 1;
-> -
-> -	/* Be more reluctant to reclaim swapcache than pagecache */
-> -	if (PageSwapCache(page))
-> -		return 1;
-> -
-> -	mapping = page_mapping(page);
-> -	if (!mapping)
-> -		return 0;
-> -
-> -	/* File is mmap'd by somebody? */
-> -	return mapping_mapped(mapping);
-> -}
-> -
->  static inline int is_page_cache_freeable(struct page *page)
->  {
->  	/*
-> @@ -649,7 +628,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
->  		 * try_to_unmap moves it to unevictable list
->  		 */
->  		if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
-> -					referenced && page_mapping_inuse(page)
-> +					referenced && page_mapped(page)
->  					&& !(vm_flags & VM_LOCKED))
->  			goto activate_locked;
->  
-> @@ -1356,7 +1335,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
->  		}
->  
->  		/* page_referenced clears PageReferenced */
-> -		if (page_mapping_inuse(page) &&
-> +		if (page_mapped(page) &&
->  		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
->  			nr_rotated++;
->  			/*
-> -- 
-> 1.6.5.2
-> 
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+diff --git a/net/sunrpc/auth_gss/auth_gss.c b/net/sunrpc/auth_gss/auth_gss.c
+index fc6a43c..129d75e 100644
+--- a/net/sunrpc/auth_gss/auth_gss.c
++++ b/net/sunrpc/auth_gss/auth_gss.c
+@@ -485,7 +485,7 @@ gss_refresh_upcall(struct rpc_task *task)
+ 	dprintk("RPC: %5u gss_refresh_upcall for uid %u\n", task->tk_pid,
+ 								cred->cr_uid);
+ 	gss_msg = gss_setup_upcall(task->tk_client, gss_auth, cred);
+-	if (IS_ERR(gss_msg) == -EAGAIN) {
++	if (PTR_ERR(gss_msg) == -EAGAIN) {
+ 		/* XXX: warning on the first, under the assumption we
+ 		 * shouldn't normally hit this case on a refresh. */
+ 		warn_gssd();
