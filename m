@@ -1,145 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbZLGUEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbZLGUFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758809AbZLGUEk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758640AbZLGUEj
+	id S1758852AbZLGUFK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbZLGUFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:04:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:43337 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758351AbZLGUEi (ORCPT
+	Mon, 7 Dec 2009 15:05:08 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:16930 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758817AbZLGUFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:04:38 -0500
-Subject: Re: [PATCH] Fix tracing infrastructure to support multiple
- includes when defining CREATE_TRACE_POINTS
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@redhat.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>
-In-Reply-To: <20091203193549.GA18664@hmsreliant.think-freely.org>
-References: <20091202191916.GA7589@hmsreliant.think-freely.org>
-	 <1259849726.12870.123.camel@gandalf.stny.rr.com>
-	 <20091203193549.GA18664@hmsreliant.think-freely.org>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 07 Dec 2009 15:04:42 -0500
-Message-Id: <1260216282.4845.3.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 15:05:06 -0500
+X-Trace: 302558329/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.111.197
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlABAH/uHEtQKW/F/2dsb2JhbAAI2jeEMwQ
+X-IronPort-AV: E=Sophos;i="4.47,356,1257120000"; 
+   d="scan'208";a="302558329"
+Date: Mon, 7 Dec 2009 20:05:05 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Al Viro <viro@ftp.linux.org.uk>, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCHSET] mremap/mmap mess
+In-Reply-To: <20091207193048.GI14381@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0912071953490.24794@sister.anvils>
+References: <E1NGzzu-0008RH-T2@ZenIV.linux.org.uk> <20091207035857.GF14381@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0912071710540.14445@sister.anvils> <20091207193048.GI14381@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-03 at 14:35 -0500, Neil Horman wrote:
+Thanks for the explanations,
+it sounds as if you and Linus would like to push forward.
 
-> Fix tracing infrastructure to allow multiple header files with TRACE_EVENTS to
-> be included with CREATE_TRACE_EVENTS defined
+On Mon, 7 Dec 2009, Al Viro wrote:
+> On Mon, Dec 07, 2009 at 06:58:25PM +0000, Hugh Dickins wrote:
 > 
-> I've been workingon adding a few tracepoints to the network stack, and in so
-> doing it was convienient for me to add a second include file to
-> net/core/net-traces.c with TRACE_EVENTS defined in them.  net-traces.c defines
-> CREATE_TRACE_EVENTS, and during the build it was failing, complaining about
-> duplicate definitions of __tpstrtab_<name>.  I tracked down the bug to find that
-> define_trace.h redefined DECLARE_TRACE to be DEFINE_TRACE, so after the first
-> run through define_trace.h (which is included from skb.h, included in
-> net-trace.c first), the DECLARE_TRACE macro was left with an improper definition
-> to start a new cycle with the next header.
+> > [PATCH 9/19] arm: add arch_mmap_check(), get rid of sys_arm_mremap()
+> > 
+> > You give arm an arch_mmap_check() which tests MAP_FIXED,
+> > so now do_brk() needs fixing.  Or can arm's get_unmapped_area()
+> > handle this, without any arch_mmap_check()?  In the end you move
+> > the arch_mmap_check() call into get_unmapped_area(), but could it be
+> > eliminated completely, in favour of code in arch's get_unmapped_area()?
 > 
-> The fix I came up with was to make sure that DECLARE_TRACE was undefined at the
-> end of define_trace.h, and to add a conditional re-definition in tracepoint.h.
-> This places us back in the proper state to define a new set of tracepoints in a
-> subsequent header file.
+> Point, but take a look at actual check there.  do_brk() won't run afoul
+> of it anyway with existing callers on arm.  But yes, I agree that flags
+> need to be fixed there.
+
+Right, all that matters is whether MAP_FIXED is set here, and the
+fact that it is set through both an explicit MAP_FIXED and a confused
+VM_MAYREAD does not really matter - something to clean up, but not
+something that will break anybody before it's cleaned up.
+
+> > And (b) I thought you were being perverse in putting sys_mmap_pgoff()
+> > in mm/util.c, that's never where I'd look for it, we have a file
+> > mm/mmap.c which is just the place for it, after do_mmap_pgoff().
+> > Ah, you're trying to avoid duplicating it in mm/nommu.c?  Hmm,
+> > well, I'd much rather you do duplicate it.  Particularly once
+> > 14/19 complicates it with the MAP_HUGETLB fix, which we should
+> > keep in in mm/mmap.c, and shouldn't be needed in mm/nommu.c.
 > 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
+> I'm not too happy with mm/util.c, but I really don't like the mmap vs nommu
+> duplications.  Hell knows; we can always split and move later on.
 
-By itself, this patch breaks the build (for me). I take it that you
-converted the napi.h file to use TRACE_EVENT. Currently it uses a
-DECLARE_TRACE, which will break with this patch. We need a patch that
-removes that DECLARE_TRACE before we can apply this patch.
+mm/nommu.c is all about duplicating stuff with variations:
+unsatisfactory, but no reason to go do it differently here.
+Yes, I'll want to revert the util.c mods, but you don't need
+to do so now.
 
-To keep bisectablity, we either need to make one patch that converts the
-napi to TRACE_EVENT and this patch, or we need to first remove the
-napi.h DECLARE_TRACE, add this patch, and then one that adds
-TRACE_EVENT.
-
--- Steve
-
-> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> index 2aac8a8..311abbf 100644
-> --- a/include/linux/tracepoint.h
-> +++ b/include/linux/tracepoint.h
-> @@ -58,28 +58,6 @@ struct tracepoint {
->  		rcu_read_unlock_sched_notrace();			\
->  	} while (0)
->  
-> -/*
-> - * Make sure the alignment of the structure in the __tracepoints section will
-> - * not add unwanted padding between the beginning of the section and the
-> - * structure. Force alignment to the same alignment as the section start.
-> - */
-> -#define DECLARE_TRACE(name, proto, args)				\
-> -	extern struct tracepoint __tracepoint_##name;			\
-> -	static inline void trace_##name(proto)				\
-> -	{								\
-> -		if (unlikely(__tracepoint_##name.state))		\
-> -			__DO_TRACE(&__tracepoint_##name,		\
-> -				TP_PROTO(proto), TP_ARGS(args));	\
-> -	}								\
-> -	static inline int register_trace_##name(void (*probe)(proto))	\
-> -	{								\
-> -		return tracepoint_probe_register(#name, (void *)probe);	\
-> -	}								\
-> -	static inline int unregister_trace_##name(void (*probe)(proto))	\
-> -	{								\
-> -		return tracepoint_probe_unregister(#name, (void *)probe);\
-> -	}
-> -
->  
->  #define DEFINE_TRACE_FN(name, reg, unreg)				\
->  	static const char __tpstrtab_##name[]				\
-> @@ -173,6 +151,29 @@ static inline void tracepoint_synchronize_unregister(void)
->   *  trace event headers under one "CREATE_TRACE_POINTS" the first include
->   *  will override the TRACE_EVENT and break the second include.
->   */
-> +#if defined(CONFIG_TRACEPOINTS) && !defined(DECLARE_TRACE)
-> +/*
-> + * Make sure the alignment of the structure in the __tracepoints section will
-> + * not add unwanted padding between the beginning of the section and the
-> + * structure. Force alignment to the same alignment as the section start.
-> + */
-> +#define DECLARE_TRACE(name, proto, args)                                \
-> +	extern struct tracepoint __tracepoint_##name;                   \
-> +	static inline void trace_##name(proto)                          \
-> +	{                                                               \
-> +		if (unlikely(__tracepoint_##name.state))                \
-> +			__DO_TRACE(&__tracepoint_##name,                \
-> +				TP_PROTO(proto), TP_ARGS(args));        \
-> +	}                                                               \
-> +	static inline int register_trace_##name(void (*probe)(proto))   \
-> +	{                                                               \
-> +		return tracepoint_probe_register(#name, (void *)probe); \
-> +	}                                                               \
-> +	static inline int unregister_trace_##name(void (*probe)(proto)) \
-> +	{                                                               \
-> +		return tracepoint_probe_unregister(#name, (void *)probe);\
-> +	}
-> +#endif
->  
->  #ifndef TRACE_EVENT
->  /*
-> diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-> index 2a4b3bf..a3e0095 100644
-> --- a/include/trace/define_trace.h
-> +++ b/include/trace/define_trace.h
-> @@ -64,6 +64,7 @@
->  #undef TRACE_EVENT
->  #undef TRACE_EVENT_FN
->  #undef TRACE_HEADER_MULTI_READ
-> +#undef DECLARE_TRACE
->  
->  /* Only undef what we defined in this file */
->  #ifdef UNDEF_TRACE_INCLUDE_FILE
-
+Hugh
