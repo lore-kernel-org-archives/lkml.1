@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934667AbZLGDyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934680AbZLGDyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934667AbZLGDyW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 22:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934617AbZLGDyS
+	id S934680AbZLGDyc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 22:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934651AbZLGDy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 22:54:18 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51494 "EHLO
+	Sun, 6 Dec 2009 22:54:29 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51497 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934661AbZLGDyO (ORCPT
+	with ESMTP id S934671AbZLGDy0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 22:54:14 -0500
-Date: Mon, 07 Dec 2009 03:54:20 +0000
+	Sun, 6 Dec 2009 22:54:26 -0500
+Date: Mon, 07 Dec 2009 03:54:31 +0000
 To: linux-arch@vger.kernel.org
-Subject: [PATCH 15/19] Take arch_mmap_check() into get_unmapped_area()
+Subject: [PATCH 16/19] switch do_brk() to get_unmapped_area()
 Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <E1NHUg0-0007yN-RU@ZenIV.linux.org.uk>
+Message-Id: <E1NHUgB-0007yw-2K@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,85 +27,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- mm/mmap.c   |   14 +++++++++-----
- mm/mremap.c |   15 +++------------
- 2 files changed, 12 insertions(+), 17 deletions(-)
+ mm/mmap.c |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
 
 diff --git a/mm/mmap.c b/mm/mmap.c
-index fd49f40..e92cbe5 100644
+index e92cbe5..f364677 100644
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -932,13 +932,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 	if (!(flags & MAP_FIXED))
- 		addr = round_hint_to_min(addr);
+@@ -1989,20 +1989,14 @@ unsigned long do_brk(unsigned long addr, unsigned long len)
+ 	if (!len)
+ 		return addr;
+ 
+-	if ((addr + len) > TASK_SIZE || (addr + len) < addr)
+-		return -EINVAL;
+-
+-	if (is_hugepage_only_range(mm, addr, len))
+-		return -EINVAL;
+-
+ 	error = security_file_mmap(NULL, 0, 0, 0, addr, 1);
+ 	if (error)
+ 		return error;
+ 
+ 	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
  
 -	error = arch_mmap_check(addr, len, flags);
 -	if (error)
--		return error;
--
- 	/* Careful about overflows.. */
- 	len = PAGE_ALIGN(len);
--	if (!len || len > TASK_SIZE)
-+	if (!len)
- 		return -ENOMEM;
++	error = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED | flags);
++	if (error & ~PAGE_MASK)
+ 		return error;
  
- 	/* offset overflow? */
-@@ -1441,6 +1437,14 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
- 	unsigned long (*get_area)(struct file *, unsigned long,
- 				  unsigned long, unsigned long, unsigned long);
- 
-+	unsigned long error = arch_mmap_check(addr, len, flags);
-+	if (error)
-+		return error;
-+
-+	/* Careful about overflows.. */
-+	if (len > TASK_SIZE)
-+		return -ENOMEM;
-+
- 	get_area = current->mm->get_unmapped_area;
- 	if (file && file->f_op && file->f_op->get_unmapped_area)
- 		get_area = file->f_op->get_unmapped_area;
-diff --git a/mm/mremap.c b/mm/mremap.c
-index bbbbbf5..8451908 100644
---- a/mm/mremap.c
-+++ b/mm/mremap.c
-@@ -27,10 +27,6 @@
- 
- #include "internal.h"
- 
--#ifndef arch_mmap_check
--#define arch_mmap_check(addr, len, flags)	(0)
--#endif
--
- static pmd_t *get_old_pmd(struct mm_struct *mm, unsigned long addr)
- {
- 	pgd_t *pgd;
-@@ -366,9 +362,7 @@ static unsigned long mremap_to(unsigned long addr,
- 	map_flags = MAP_FIXED;
- 	if (vma->vm_flags & VM_MAYSHARE)
- 		map_flags |= MAP_SHARED;
--	ret = arch_mmap_check(new_addr, new_len, map_flags);
--	if (ret)
--		goto out1;
-+
- 	ret = get_unmapped_area(vma->vm_file, new_addr, new_len, vma->vm_pgoff +
- 				((addr - vma->vm_start) >> PAGE_SHIFT),
- 				map_flags);
-@@ -388,12 +382,9 @@ out:
- static int vma_expandable(struct vm_area_struct *vma, unsigned long delta)
- {
- 	unsigned long end = vma->vm_end + delta;
--	unsigned long max_addr = TASK_SIZE;
--	if (vma->vm_next)
--		max_addr = vma->vm_next->vm_start;
--	if (max_addr < end || end < vma->vm_end)
-+	if (end < vma->vm_end) /* overflow */
- 		return 0;
--	if (arch_mmap_check(vma->vm_start, end - vma->vm_start, MAP_FIXED))
-+	if (vma->vm_next && vma->vm_next->vm_start < end) /* intersection */
- 		return 0;
- 	if (get_unmapped_area(NULL, vma->vm_start, end - vma->vm_start,
- 			      0, MAP_FIXED) & ~PAGE_MASK)
+ 	/*
 -- 
 1.5.6.5
 
