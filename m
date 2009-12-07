@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935038AbZLGKSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935026AbZLGKSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935038AbZLGKSZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 05:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935029AbZLGKSW
+	id S935026AbZLGKSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 05:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934916AbZLGKSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 05:18:22 -0500
-Received: from verein.lst.de ([213.95.11.210]:38791 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934998AbZLGKSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 05:18:22 -0500
-From: Torsten Duwe <duwe@lst.de>
-Organization: LST e.V.
-To: arun@linux.vnet.ibm.com
-Subject: Re: [v10 PATCH 2/9]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
-Date: Mon, 7 Dec 2009 11:17:57 +0100
-User-Agent: KMail/1.9.10
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20091202095427.GA27251@linux.vnet.ibm.com> <200912042320.01320.duwe@lst.de> <20091206051928.GA18300@linux.vnet.ibm.com>
-In-Reply-To: <20091206051928.GA18300@linux.vnet.ibm.com>
+	Mon, 7 Dec 2009 05:18:13 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:60722 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934999AbZLGKSM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 05:18:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VR5U2HklDsjPjMhHUG6KUlaDUV1ML3/LqjEt/UYQwjHJs84zbmIGT81vwbnocevDwk
+         O6J4Hak//s6/U4TGfMCeyl/91K4FuMZJNqlktKYEA46KgFtw3UWz00xODq+Ep6wpWasn
+         r3nxiOiS50X3Ifcl2bogToCM3WQB/Hu+uDBAk=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912071117.58163.duwe@lst.de>
-X-Spam-Score: 0 () 
+In-Reply-To: <4B1CD457.3060801@tremplin-utc.net>
+References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>
+	 <4B1A53AE.9020707@tremplin-utc.net>
+	 <40a4ed590912060741n4042ab1bg8188cd4eff28ca78@mail.gmail.com>
+	 <4B1BDAA3.10601@gentoo.org>
+	 <40a4ed590912060835s61aea6aqfe6780395bfd2993@mail.gmail.com>
+	 <4B1C38B5.2060204@tremplin-utc.net>
+	 <40a4ed590912070143j231e07b6uafd04d0f2ee15dca@mail.gmail.com>
+	 <4B1CD029.3080503@tremplin-utc.net>
+	 <40a4ed590912070202q30852e2fo35023f557919966e@mail.gmail.com>
+	 <4B1CD457.3060801@tremplin-utc.net>
+Date: Mon, 7 Dec 2009 11:18:17 +0100
+Message-ID: <40a4ed590912070218i5a851773t6307d73c1d613c33@mail.gmail.com>
+Subject: Re: [OT] Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
+From: Zeno Davatz <zdavatz@gmail.com>
+To: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
+Cc: Zac Medico <zmedico@gentoo.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 December 2009, Arun R Bharadwaj wrote:
+On Mon, Dec 7, 2009 at 11:09 AM, Éric Piel <eric.piel@tremplin-utc.net> wrote:
+> Op 07-12-09 11:02, Zeno Davatz schreef:
+> :
+>> Not the same on Gentoo. I think I have to find the kernel boot-option
+>> that I can pass to lilo.
+>>
+>> Also: When I force remove the modules psb and drm_psb with "rmmod -f"
+>> and then start X I get the same error:
+>>
+>> X: symbol lookup error: /usr/lib/xorg/modules/drivers/psb_drv.so:
+>> undefined symbol: LoaderRefSymLists
+>>
+>> X just does not yet like psb.
+> You are also aware that it does not work on Xserver 1.7, right? 1.6 is
+> the the maximum.
 
-> Peter objected to the idea of integrating this with the old pm_idle
-> because it has already caused a lot of problems on x86 and we wouldn't
-> want to be doing the same mistake on POWER. The discussion related to
-> that could be found here http://lkml.org/lkml/2009/8/26/233
+Thanks. I thought it should work with 1.7 as well. Will try that then.
 
-And BenH has sketched how it should be done on ppc, in that thread:
-http://lkml.org/lkml/2009/8/26/624 AFAIS this comment is still valid for v10.
-
-Not only I would like to understand what is the conceptual idea behind the 
-other changes. Nothing wrong with cleanups, but there's got to be a purpose 
-and benefits.
-
-	Torsten
+Best
+Zeno
