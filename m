@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934644AbZLGJXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934775AbZLGJZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934644AbZLGJXg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 04:23:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759312AbZLGJXe
+	id S934775AbZLGJZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 04:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933573AbZLGJZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 04:23:34 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:60239 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759310AbZLGJXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 04:23:33 -0500
-Date: Mon, 7 Dec 2009 20:23:35 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: linux-next: block tree build failure
-Message-Id: <20091207202335.77ea4068.sfr@canb.auug.org.au>
-In-Reply-To: <20091207084903.GU8742@kernel.dk>
-References: <20091207194429.d33903ed.sfr@canb.auug.org.au>
-	<20091207084903.GU8742@kernel.dk>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__7_Dec_2009_20_23_35_+1100_v63eLyP8LD/O=EvZ"
+	Mon, 7 Dec 2009 04:25:28 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34214 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933049AbZLGJZ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 04:25:27 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 0/7] some page_referenced() improvement
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Rik van Riel <riel@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Larry Woodman <lwoodman@redhat.com>
+In-Reply-To: <20091204173233.5891.A69D9226@jp.fujitsu.com>
+References: <20091204173233.5891.A69D9226@jp.fujitsu.com>
+Message-Id: <20091207182442.E94D.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  7 Dec 2009 18:25:30 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__7_Dec_2009_20_23_35_+1100_v63eLyP8LD/O=EvZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Hi
+> 
+> here is my refactoring and improvement patchset of page_referenced().
+> I think it solve Larry's AIM7 scalability issue.
+> 
+> I'll test this patches on stress workload at this weekend. but I hope to
+> receive guys review concurrently.
 
-Hi Jens,
+OK. this patches survived my stress workload correctly for two days of last weekend.
 
-On Mon, 7 Dec 2009 09:49:03 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> Thanks Stephen, I merged your patch and updated the branches.
 
-I presume that you build tested as well - or do you trust me ;-)
 
-Thanks.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__7_Dec_2009_20_23_35_+1100_v63eLyP8LD/O=EvZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkscyZcACgkQjjKRsyhoI8zKnACfanesHYKiEWayZmu74nR4FCJz
-RkkAoJiM4MEZHK15NRdLgx2mFUYZcdgQ
-=iCjs
------END PGP SIGNATURE-----
-
---Signature=_Mon__7_Dec_2009_20_23_35_+1100_v63eLyP8LD/O=EvZ--
