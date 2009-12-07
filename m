@@ -1,184 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932617AbZLGOuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932709AbZLGOuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932617AbZLGOuN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 09:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbZLGOuM
+	id S932709AbZLGOuX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 09:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932665AbZLGOuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 09:50:12 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:51214 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932476AbZLGOuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 09:50:10 -0500
-Date: Mon, 7 Dec 2009 14:50:11 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: werner <w.landgraf@ru.ru>, linux-kernel@vger.kernel.org,
-       David Rientjes <rientjes@google.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kernel problem
-Message-ID: <20091207145011.GA14743@csn.ul.ie>
-References: <web-100877149@zbackend1.aha.ru> <20091204154109.GB1716@goodmis.org>
+	Mon, 7 Dec 2009 09:50:22 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:52130 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932471AbZLGOuT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 09:50:19 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091204154109.GB1716@goodmis.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1259581514-15356-1-git-send-email-amit.kucheria@verdurent.com>
+References: <1259581514-15356-1-git-send-email-amit.kucheria@verdurent.com>
+Date: Mon, 7 Dec 2009 16:50:23 +0200
+Message-ID: <37786d4b0912070650g7ba7604bv63365a21f980501d@mail.gmail.com>
+Subject: Re: [PATCHv2 0/2] Introducing the Ambient Light Sensor (ALS) class
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+To: List Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: rui.zhang@intel.com, jic23@cam.ac.uk, khali@linux-fr.org,
+       alan@linux.intel.com, linux-acpi@vger.kernel.org, gregkh@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 10:41:09AM -0500, Steven Rostedt wrote:
-> [ Added Cc's of people that may be interested in this ]
-> > <SNIP>
-> > ------------[ cut here ]------------
-> > WARNING: at mm/page_alloc.c:1805
-> > __alloc_pages_nodemask+0x127/0x48f()
-> > Hardware name: System Product Name
-> > Modules linked in:
-> > Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
-> > Call Trace:
-> >  [<c103d94b>] warn_slowpath_common+0x65/0x95
-> >  [<c103d98d>] warn_slowpath_null+0x12/0x15
-> >  [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
-> >  [<c10be964>] ? get_slab+0x8/0x50
-> >  [<c10b8979>] alloc_page_interleave+0x2e/0x6e
-> >  [<c10b8a10>] alloc_pages_current+0x57/0x99
-> >  [<c2083a4a>] ? xd_init+0x0/0x482
-> >  [<c1094c38>] __get_free_pages+0xd/0x1e
-> >  [<c2083a94>] xd_init+0x4a/0x482
-> >  [<c2082df0>] ? loop_init+0x104/0x16a
-> >  [<c169162d>] ? loop_probe+0x0/0xaf
-> >  [<c2083a4a>] ? xd_init+0x0/0x482
-> >  [<c1001143>] do_one_initcall+0x51/0x13f
-> >  [<c204a307>] kernel_init+0x10b/0x15f
-> >  [<c204a1fc>] ? kernel_init+0x0/0x15f
-> >  [<c1004347>] kernel_thread_helper+0x7/0x10
-> > ---[ end trace 686db6333ade6e7a ]---
-> > xd: Out of memory.
+On Mon, Nov 30, 2009 at 1:45 PM, Amit Kucheria
+<amit.kucheria@verdurent.com> wrote:
+> Introduce a new class of devices to handle ambient light sensors. Currently
+> only one sysfs inteface, 'illuminance' is introduced. More will be added as
+> drivers are ported to use this new class.
+>
+> Amit Kucheria (1):
+>  als: add unique device-ids to the als device class
+>
+> Zhang Rui (1):
+>  introduce ALS sysfs class
+>
+>  Documentation/ABI/testing/sysfs-class-als |    9 ++
+>  MAINTAINERS                               |    6 ++
+>  drivers/Kconfig                           |    2 +
+>  drivers/Makefile                          |    1 +
+>  drivers/als/Kconfig                       |   10 +++
+>  drivers/als/Makefile                      |    5 +
+>  drivers/als/als_sys.c                     |  116 +++++++++++++++++++++++++++++
+>  include/linux/als_sys.h                   |   35 +++++++++
+>  8 files changed, 184 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-als
+>  create mode 100644 drivers/als/Kconfig
+>  create mode 100644 drivers/als/Makefile
+>  create mode 100644 drivers/als/als_sys.c
+>  create mode 100644 include/linux/als_sys.h
+>
 
-First off, it would appear that every block driver under the sun is
-being loaded. I seriously doubt this controller really exists in the
-machine.
+(Bump)
 
-Second, it's a real warning as the driver is trying to allocate a buffer of
-size 0 which get_order() chokes on. For bonus points, it tries to allocate
-a buffer before it knows what size it should be. This patch should resolve
-the problem but because I don't have the hardware to test it on, it could
-do with a second set of eyes just to be sure the rejigged logic makes sense.
+Is there any blocker to adding this for 2.6.33? Which maintainer will
+pick up the ALS framework?
 
-If this is ok, what is the appropriate submission path for unmaintained
-block drivers? Is it the block maintainer or someone else?
+Rui, do you have an updated patch for the ACPI ALS driver?
 
-==== CUT HERE ====
-block,xd: Delay allocation of DMA buffers until device is known
-
-Loading the XD module triggers a warning like
-
- WARNING: at mm/page_alloc.c:1805
- __alloc_pages_nodemask+0x127/0x48f()
- Hardware name: System Product Name
- Modules linked in:
- Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
- Call Trace:
-  [<c103d94b>] warn_slowpath_common+0x65/0x95
-  [<c103d98d>] warn_slowpath_null+0x12/0x15
-  [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
-  [<c10be964>] ? get_slab+0x8/0x50
-  [<c10b8979>] alloc_page_interleave+0x2e/0x6e
-  [<c10b8a10>] alloc_pages_current+0x57/0x99
-  [<c2083a4a>] ? xd_init+0x0/0x482
-  [<c1094c38>] __get_free_pages+0xd/0x1e
-  [<c2083a94>] xd_init+0x4a/0x482
-  [<c2082df0>] ? loop_init+0x104/0x16a
-  [<c169162d>] ? loop_probe+0x0/0xaf
-  [<c2083a4a>] ? xd_init+0x0/0x482
-  [<c1001143>] do_one_initcall+0x51/0x13f
-  [<c204a307>] kernel_init+0x10b/0x15f
-  [<c204a1fc>] ? kernel_init+0x0/0x15f
-  [<c1004347>] kernel_thread_helper+0x7/0x10
- ---[ end trace 686db6333ade6e7a ]---
- xd: Out of memory.
-
-The warning is because the alloc_pages is called with an
-order >= MAX_ORDER. The simplistic reason is that get_order(0) returns garbage
-values when given 0 as a size. The more complex reason is that the XD driver
-initialisation is broken.
-
-It's not clear why this ever worked. XD allocates a buffer for DMA based
-on the value of xd_maxsectors. This value is determined by the exact
-type of controller in use but the value is determined *after* an attempt
-has been made to allocate the buffer. i.e. the requested size of the DMA
-buffer will always be 0.
-
-This patch alters how XD is initialised slightly by allocating the
-buffer when and if a device has actually been detected. The error paths
-are updated to suit the new logic.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- drivers/block/xd.c |   30 +++++++++++++++++++-----------
- 1 files changed, 19 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/block/xd.c b/drivers/block/xd.c
-index 0877d36..d1fd032 100644
---- a/drivers/block/xd.c
-+++ b/drivers/block/xd.c
-@@ -169,13 +169,6 @@ static int __init xd_init(void)
- 
- 	init_timer (&xd_watchdog_int); xd_watchdog_int.function = xd_watchdog;
- 
--	if (!xd_dma_buffer)
--		xd_dma_buffer = (char *)xd_dma_mem_alloc(xd_maxsectors * 0x200);
--	if (!xd_dma_buffer) {
--		printk(KERN_ERR "xd: Out of memory.\n");
--		return -ENOMEM;
--	}
--
- 	err = -EBUSY;
- 	if (register_blkdev(XT_DISK_MAJOR, "xd"))
- 		goto out1;
-@@ -202,6 +195,19 @@ static int __init xd_init(void)
- 			xd_drives,xd_drives == 1 ? "" : "s",xd_irq,xd_dma);
- 	}
- 
-+	/*
-+	 * With the drive detected, xd_maxsectors should now be known.
-+	 * If xd_maxsectors is 0, nothing was detected and we fall through
-+	 * to return -ENODEV
-+	 */
-+	if (!xd_dma_buffer && xd_maxsectors) {
-+		xd_dma_buffer = (char *)xd_dma_mem_alloc(xd_maxsectors * 0x200);
-+		if (!xd_dma_buffer) {
-+			printk(KERN_ERR "xd: Out of memory.\n");
-+			goto out3;
-+		}
-+	}
-+
- 	err = -ENODEV;
- 	if (!xd_drives)
- 		goto out3;
-@@ -249,15 +255,17 @@ out4:
- 	for (i = 0; i < xd_drives; i++)
- 		put_disk(xd_gendisk[i]);
- out3:
--	release_region(xd_iobase,4);
-+	if (xd_maxsectors)
-+		release_region(xd_iobase,4);
-+
-+	if (xd_dma_buffer)
-+		xd_dma_mem_free((unsigned long)xd_dma_buffer,
-+				xd_maxsectors * 0x200);
- out2:
- 	blk_cleanup_queue(xd_queue);
- out1a:
- 	unregister_blkdev(XT_DISK_MAJOR, "xd");
- out1:
--	if (xd_dma_buffer)
--		xd_dma_mem_free((unsigned long)xd_dma_buffer,
--				xd_maxsectors * 0x200);
- 	return err;
- Enomem:
- 	err = -ENOMEM;
+Regards,
+Amit
