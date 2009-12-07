@@ -1,72 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbZLGIcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbZLGIf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbZLGIcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759188AbZLGIcQ
+	id S1759101AbZLGIf7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:35:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759033AbZLGIf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:32:16 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:13111 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759160AbZLGIcP convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 03:35:58 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44077 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758962AbZLGIf6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:32:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=um56MDcsP9MfFG1aJ77taEf3OsA8PKBY9OE0dELFOvisKLXdinaZR1MAw3OqJbqCtK
-         dE8RF6mCzuAlOIoiYQnjYvFXZJwjiqrZkT4LFoUgpxBoJKeGMwNP98t5t2G0QRZht6V1
-         A/c4HYZJjmh6LjboMe0QWBEk4dIuCoBhkazoU=
-MIME-Version: 1.0
-In-Reply-To: <4B1C38B5.2060204@tremplin-utc.net>
-References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>
-	 <4B055609.9030306@tremplin-utc.net>
-	 <4B1A53AE.9020707@tremplin-utc.net>
-	 <40a4ed590912060741n4042ab1bg8188cd4eff28ca78@mail.gmail.com>
-	 <4B1BDAA3.10601@gentoo.org>
-	 <40a4ed590912060835s61aea6aqfe6780395bfd2993@mail.gmail.com>
-	 <4B1C38B5.2060204@tremplin-utc.net>
-Date: Mon, 7 Dec 2009 09:32:19 +0100
-Message-ID: <40a4ed590912070032h110fc965l5756822799ad8b29@mail.gmail.com>
-Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
-From: Zeno Davatz <zdavatz@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-Cc: Zac Medico <zmedico@gentoo.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Dec 2009 03:35:58 -0500
+Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <4B1C85D3.3080401@kernel.org>
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>
+	 <1259726212-30259-5-git-send-email-tj@kernel.org>
+	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>
+	 <4B1C85D3.3080401@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Dec 2009 09:35:00 +0100
+Message-ID: <1260174900.8223.1159.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 7, 2009 at 12:05 AM, Éric Piel <Eric.Piel@tremplin-utc.net> wrote:
-> Op 06-12-09 17:35, Zeno Davatz schreef:
-> :
->>
->> Yes, thanks. That helped another step. I am getting the correct screen
->> resolution after enabling that in the kernel as well. The boot [ok]
->> messages of Gentoo are in a higher resolution now though. That is a
->> good start.
->>
->> But after my X starts I get a black screen with a
->>
->> -
->>
->> in the top left corner. They keyboard also does not work. May be an
->> X.org config problem.
->>
-> I've got similar behaviour here if psb is loaded before the X server starts
-> (aka there is a framebuffer). If the console is just ascii (no vga=...
-> argument on the kernel boot line, and no "modprobe psb"), then X starts
-> fine.
+On Mon, 2009-12-07 at 13:34 +0900, Tejun Heo wrote:
+> Hello, Peter.
+> 
+> On 12/04/2009 07:43 PM, Peter Zijlstra wrote:
+> >>> force_cpus_allowed() will be used for concurrency-managed workqueue.
+> >>
+> >> Would still like to know why all this is needed.
+> > 
+> > That is, what problem do these new-fangled workqueues have and why is
+> > this a good solution.
+> 
+> This is the original RFC posting of cmwq which includes the whole
+> thing.  I'm a few days away from posting a new version but the usage
+> of force_cpus_allowed() remains the same.
+> 
+>   http://thread.gmane.org/gmane.linux.kernel/896268/focus=896294
+> 
+> There are two tests which are bypassed by the force_ variant.
+> 
+> * PF_THREAD_BOUND.  This is used to mark tasks which are bound to a
+>   cpu using kthread_bind() to be bound permanently.  However, new
+>   trustee based workqueue hotplugging decouples per-cpu workqueue
+>   flushing with cpu hot plug/unplugging.  This is necessary because
+>   with cmwq, long running works can be served by regular workqueues,
+>   so delaying completion of hot plug/unplugging till certain works are
+>   flushed isn't feasible.  So, what becomes necessary is the ability
+>   to re-bind tasks which has PF_THREAD_BOUND set but unbound from its
+>   now offline cpu which is coming online again.
 
-When I do X -configure I also get:
+I'm not at all sure I like that. I'd be perfectly happy with delaying
+the hot-unplug.
 
-X: symbol lookup error: /usr/lib/xorg/modules/drivers/psb_drv.so:
-undefined symbol: LoaderRefSymLists
+The whole cpu hotplug mess is tricky enough as it is and I see no
+compelling reason to further complicate it. If people are really going
+to enqueue strict per-cpu worklets (queue_work_on()) that takes seconds
+to complete, then they get to keep the results of that, which includes
+slow hot unplug.
 
-Let me know if you need any other info.
+Having an off-line cpu still process code like it was online is asking
+for trouble, don't go there.
 
-I will now try Eric's version from above.
+> * cpu_active() test.  CPU activeness encloses cpu online status which
+>   is the actual on/offline state.  Workqueues need to keep running
+>   while a cpu is going down and with cmwq keeping workqueues running
+>   involves creation of new workers (it consists part of
+>   forward-progress guarantee and one of cpu down callbacks might end
+>   up waiting on completion of certain works).
+> 
+>   The problem with active state is that during cpu down, active going
+>   off doesn't mean all tasks have been migrated off the cpu, so
+>   without a migration interface which is synchronized with the actual
+>   offline migration, it is difficult to guarantee that all works are
+>   either running on the designated cpu if the cpu is online or all
+>   work on other cpus if the cpu is offline.
+> 
+>   Another related problem is that there's no way to monitor the cpu
+>   activeness change notifications.
 
-Best
-Zeno
+cpu_active() is basically meant for the scheduler to not stick new tasks
+on a dying cpu.
+
+So on hot-unplug you'd want to splice your worklets to another cpu,
+except maybe those strictly enqueued to the dying cpu, and since there
+was work on the dying cpu, you already had a task processing them, so
+you don't need new tasks, right?
+
+
+
+
