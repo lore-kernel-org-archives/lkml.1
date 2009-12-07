@@ -1,85 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbZLGH17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbZLGHaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbZLGH17 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:27:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbZLGH16
+	id S1758678AbZLGHaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbZLGHaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:27:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34753 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758527AbZLGH16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:27:58 -0500
-Date: Mon, 7 Dec 2009 08:27:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for
- analyzing lock statistics
-Message-ID: <20091207072752.GG10868@elte.hu>
-References: <20091115022135.GA5427@nowhere>
- <1260156884-8474-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <20091207044125.GB5262@nowhere>
+	Mon, 7 Dec 2009 02:30:06 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56413 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754503AbZLGHaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 02:30:04 -0500
+Message-ID: <4B1CAF01.8000103@cs.helsinki.fi>
+Date: Mon, 07 Dec 2009 09:30:09 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091207044125.GB5262@nowhere>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kmemcheck: make bitfield annotations truly no-ops when
+ disabled
+References: <1260121333-19642-1-git-send-email-vegard.nossum@gmail.com>
+In-Reply-To: <1260121333-19642-1-git-send-email-vegard.nossum@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Mon, Dec 07, 2009 at 12:34:44PM +0900, Hitoshi Mitake wrote:
-> > This patch adds new subcommand "lock" to perf for analyzing lock usage statistics.
-> > Current perf lock is very primitive. This cannot provide the minimum functions.
-> > Of course I continue to working on this.
-> > But too big patch is not good thing for you, so I post this.
+Vegard Nossum kirjoitti:
+> It turns out that even zero-sized struct members (int foo[0];) will affect
+> the struct layout, causing us in particular to lose 4 bytes in struct sock.
 > 
-> Oh great!
-> Yeah, the work can be done incrementally.
->
-[...]
->
+> This patch fixes the regression in CONFIG_KMEMCHECK=n case.
 > 
-> Very nice and promising!
+> Reported-by: Eric Dumazet <eric.dumazet@gmail.com>
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+> ---
+>  include/linux/kmemcheck.h |  110 ++++++++++++++++++++++++---------------------
+>  1 files changed, 58 insertions(+), 52 deletions(-)
 > 
-> I can't wait to try it.
+> Andrew: Compile tested on x86_32 and x86_64, but because of my bad track
+> record when it comes to brown paper bugs, can you please keep this in -mm
+> for a little while? Thanks.
+> 
+> diff --git a/include/linux/kmemcheck.h b/include/linux/kmemcheck.h
+> index e880d4c..08d7dc4 100644
+> --- a/include/linux/kmemcheck.h
+> +++ b/include/linux/kmemcheck.h
+> @@ -36,6 +36,56 @@ int kmemcheck_hide_addr(unsigned long address);
+>  
+>  bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size);
+>  
+> +/*
+> + * Bitfield annotations
+> + *
+> + * How to use: If you have a struct using bitfields, for example
+> + *
+> + *     struct a {
+> + *             int x:8, y:8;
+> + *     };
+> + *
+> + * then this should be rewritten as
+> + *
+> + *     struct a {
+> + *             kmemcheck_bitfield_begin(flags);
+> + *             int x:8, y:8;
+> + *             kmemcheck_bitfield_end(flags);
+> + *     };
+> + *
+> + * Now the "flags_begin" and "flags_end" members may be used to refer to the
+> + * beginning and end, respectively, of the bitfield (and things like
+> + * &x.flags_begin is allowed). As soon as the struct is allocated, the bit-
+> + * fields should be annotated:
+> + *
+> + *     struct a *a = kmalloc(sizeof(struct a), GFP_KERNEL);
+> + *     kmemcheck_annotate_bitfield(a, flags);
+> + */
+> +#define kmemcheck_bitfield_begin(name)	\
+> +	int name##_begin[0];
+> +
+> +#define kmemcheck_bitfield_end(name)	\
+> +	int name##_end[0];
+> +
+> +#define kmemcheck_annotate_bitfield(ptr, name)				\
+> +	do {								\
+> +		int _n;							\
+> +									\
+> +		if (!ptr)						\
+> +			break;						\
+> +									\
+> +		_n = (long) &((ptr)->name##_end)			\
+> +			- (long) &((ptr)->name##_begin);		\
+> +		MAYBE_BUILD_BUG_ON(_n < 0);				\
+> +									\
+> +		kmemcheck_mark_initialized(&((ptr)->name##_begin), _n);	\
+> +	} while (0)
+> +
+> +#define kmemcheck_annotate_variable(var)				\
+> +	do {								\
+> +		kmemcheck_mark_initialized(&(var), sizeof(var));	\
+> +	} while (0)							\
+> +
+>  #else
+>  #define kmemcheck_enabled 0
+>  
+> @@ -106,60 +156,16 @@ static inline bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
+>  	return true;
+>  }
+>  
+> -#endif /* CONFIG_KMEMCHECK */
+> -
+> -/*
+> - * Bitfield annotations
+> - *
+> - * How to use: If you have a struct using bitfields, for example
+> - *
+> - *     struct a {
+> - *             int x:8, y:8;
+> - *     };
+> - *
+> - * then this should be rewritten as
+> - *
+> - *     struct a {
+> - *             kmemcheck_bitfield_begin(flags);
+> - *             int x:8, y:8;
+> - *             kmemcheck_bitfield_end(flags);
+> - *     };
+> - *
+> - * Now the "flags_begin" and "flags_end" members may be used to refer to the
+> - * beginning and end, respectively, of the bitfield (and things like
+> - * &x.flags_begin is allowed). As soon as the struct is allocated, the bit-
+> - * fields should be annotated:
+> - *
+> - *     struct a *a = kmalloc(sizeof(struct a), GFP_KERNEL);
+> - *     kmemcheck_annotate_bitfield(a, flags);
+> - *
+> - * Note: We provide the same definitions for both kmemcheck and non-
+> - * kmemcheck kernels. This makes it harder to introduce accidental errors. It
+> - * is also allowed to pass NULL pointers to kmemcheck_annotate_bitfield().
+> - */
+> -#define kmemcheck_bitfield_begin(name)	\
+> -	int name##_begin[0];
+> -
+> -#define kmemcheck_bitfield_end(name)	\
+> -	int name##_end[0];
+> +#define kmemcheck_bitfield_begin(name)
+> +#define kmemcheck_bitfield_end(name)
+> +#define kmemcheck_annotate_bitfield(ptr, name)	\
+> +	do {					\
+> +	} while (0)
+>  
+> -#define kmemcheck_annotate_bitfield(ptr, name)				\
+> -	do {								\
+> -		int _n;							\
+> -									\
+> -		if (!ptr)						\
+> -			break;						\
+> -									\
+> -		_n = (long) &((ptr)->name##_end)			\
+> -			- (long) &((ptr)->name##_begin);		\
+> -		MAYBE_BUILD_BUG_ON(_n < 0);				\
+> -									\
+> -		kmemcheck_mark_initialized(&((ptr)->name##_begin), _n);	\
+> +#define kmemcheck_annotate_variable(var)	\
+> +	do {					\
+>  	} while (0)
+>  
+> -#define kmemcheck_annotate_variable(var)				\
+> -	do {								\
+> -		kmemcheck_mark_initialized(&(var), sizeof(var));	\
+> -	} while (0)							\
+> +#endif /* CONFIG_KMEMCHECK */
+>  
+>  #endif /* LINUX_KMEMCHECK_H */
 
-ok, to ease testing i've created a new (and not yet permanent) topic 
-tree for it to track this new perf feature: tip:perf/lock and pushed it 
-out.
-
-Note: because it's not yet in a final form i have not merged it into 
-tip:master yet - when you are working on these bits you need to do this 
-manually via:
-
-  git merge tip/perf/lock
-
-Also, we might need to rebase this branch as it's WIP, so the commit IDs 
-are not permanent yet. But i thought it would be easier to do deltas on 
-this basis.
-
-Hitoshi-san, the patches did not have a Signed-off-by line from you, can 
-i add them for you?
-
-Also, i agree that the performance aspect is probably the most pressing 
-issue. Note that 'perf bench sched messaging' is very locking intense so 
-a 10x slowdown is not entirely unexpected - we still ought to optimize 
-it all some more. 'perf lock' is an excellent testcase for this in any 
-case.
-
-Thanks,
-
-	Ingo
