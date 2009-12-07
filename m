@@ -1,140 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935688AbZLGXof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964937AbZLGXut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935688AbZLGXof (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 18:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935475AbZLGXoe
+	id S964937AbZLGXut (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 18:50:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935715AbZLGXuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 18:44:34 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3543 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 18:50:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35797 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935324AbZLGXoc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 18:44:32 -0500
-Message-ID: <4B1D934E.7030103@redhat.com>
-Date: Mon, 07 Dec 2009 21:44:14 -0200
+	id S935711AbZLGXuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 18:50:39 -0500
+Message-ID: <4B1D94C4.3030102@redhat.com>
+Date: Mon, 07 Dec 2009 21:50:28 -0200
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: jonsmirl@gmail.com, awalls@radix.net, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, jarod@wilsonet.com, khc@pm.waw.pl,
+       kraxel@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
 Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR 	system?
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>	 <1260070593.3236.6.camel@pc07.localdom.local>	 <20091206065512.GA14651@core.coreip.homeip.net>	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>	 <m3skbn6dv1.fsf@intrepid.localdomain> <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-In-Reply-To: <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
+ IR  system?
+References: <BENh5lRHqgB@lirc>
+In-Reply-To: <BENh5lRHqgB@lirc>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let me add my view for those questions.
-
-Jon Smirl wrote:
-> On Sun, Dec 6, 2009 at 3:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
->> Jon Smirl <jonsmirl@gmail.com> writes:
->>
->>>> Once again: how about agreement about the LIRC interface
->>>> (kernel-userspace) and merging the actual LIRC code first? In-kernel
->>>> decoding can wait a bit, it doesn't change any kernel-user interface.
->>> I'd like to see a semi-complete design for an in-kernel IR system
->>> before anything is merged from any source.
->> This is a way to nowhere, there is no logical dependency between LIRC
->> and input layer IR.
->>
->> There is only one thing which needs attention before/when merging LIRC:
->> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
->> actually, making a correct IR core design without the LIRC merged can be
->> only harder.
+Christoph Bartelmus wrote:
+> Hi Jon,
 > 
-> Here's a few design review questions on the LIRC drivers that were posted....
+> on 04 Dec 09 at 19:28, Jon Smirl wrote:
+>>> BTW, I just came across a XMP remote that seems to generate 3x64 bit
+>>> scan codes. Anyone here has docs on the XMP protocol?
+>> Assuming a general purpose receiver (not one with fixed hardware
+>> decoding), is it important for Linux to receive IR signals from all
+>> possible remotes no matter how old or obscure? Or is it acceptable to
+> [...]
+>> Of course transmitting is a completely different problem, but we
+>> haven't been talking about transmitting. I can see how we would need
+>> to record any IR protocol in order to retransmit it. But that's in the
+>> 5% of users world, not the 90% that want MythTV to "just work".  Use
+>> something like LIRC if you want to transmit.
 > 
-> How is the pulse data going to be communicated to user space?
+> I don't think anyone here is in the position to be able to tell what is  
+> 90% or 5%.
 
-lirc_dev will implement a revised version of the lirc API. I'm assuming that
-Jerod and Christoph will do this review, in order to be sure that it is stable
-enough for kernel inclusion (as proposed by Gerd).
+True. Yet, cases like IR devices made by someone's own use is something
+that we don't need to care to have an in-kernel driver.
 
-> Can the pulse data be reported via an existing interface without
-> creating a new one?
+> Personally I use LIRC exclusively for transmit to my settop box  
+> using an old and obscure RECS80 protocol.
+> No, I won't replace my setup just because it's old and obscure.
+> 
+> Cable companies tend to provide XMP based boxes to subscribers more often  
+> these days. Simply not supporting these setups is a no-go for me.
 
-Raw pulse data should be reported only via lirc_dev, but it can be converted
-into a keycode and reported via evdev as well, via an existing interface.
-
-> Where is the documentation for the protocol?
-
-I'm not sure what you're meaning here. I've started a doc about IR at the media
-docbook. This is currently inside the kernel Documents/DocBook. If you want
-to browse, it is also available as:
-
-	http://linuxtv.org/downloads/v4l-dvb-apis/ch17.html
-
-For sure we need to better document the IR's, and explain the API's there.
-
-> Is it a device interface or something else?
-
-lirc_dev should create a device interface.
-
-> What about capabilities of the receiver, what frequencies?
-> If a receiver has multiple frequencies, how do you report what
-> frequency the data came in on?
-
-IMO, via sysfs.
-
-> What about multiple apps simultaneously using the pulse data?
-
-IMO, the better is to limit the raw interface to just one open.
-
-> How big is the receive queue?
-
-It should be big enough to receive at least one keycode event. Considering that
-the driver will use kfifo (IMO, it is a good strategy, especially since you
-won't need any lock if just one open is allowed), it will require a power of two size.
-
-> How does access work, root only or any user?
-
-IMO, it should be the same requirement as used by an input interface.
-
-> How are capabilities exposed, sysfs, etc?
-
-IMO, sysfs.
-
-> What is the interface for attaching an in-kernel decoder?
-
-IMO, it should use the kfifo for it. However, if we allow both raw data and
-in-kernel decoders to read data there, we'll need a spinlock to protect the
-kfifo.
-
-> If there is an in-kernel decoder should the pulse data stop being
-> reported, partially stopped, something else?
-
-I don't have a strong opinion here, but, from the previous discussions, it
-seems that people want it to be double-reported by default. If so, I think
-we need to implement a command at the raw interface to allow disabling the
-in-kernel decoder, while the raw interface is kept open.
-
-> What is the mechanism to make sure both system don't process the same pulses?
-
-I don't see a good way to avoid it.
-
-> Does it work with poll, epoll, etc?
-> What is the time standard for the data, where does it come from?
-> How do you define the start and stop of sequences?
-> Is receiving synchronous or queued?
-> What about transmit, how do you get pulse data into the device?
-> Transmitter frequencies?
-> Multiple transmitters?
-> Is transmitting synchronous or queued?
-> How big is the transmit queue?
-
-I don't have a clear answer for those. I'll let those to LIRC developers to answer.
-
+I don't see any reason why not supporting STB protocols. Several such
+hardware use Linux, anyway. So, eventually the STB manufacturers may send
+us decoders that work with their IR's.
 
 Cheers,
-Mauro
+Mauro.
+
 
 
