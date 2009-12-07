@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbZLGTOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934487AbZLGUJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758764AbZLGTOy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 14:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758627AbZLGTOy
+	id S934487AbZLGUJc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:09:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758872AbZLGUJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 14:14:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41529 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 15:09:30 -0500
+Received: from mga01.intel.com ([192.55.52.88]:12527 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758261AbZLGTOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 14:14:53 -0500
-Date: Mon, 7 Dec 2009 14:09:25 -0600
-From: David Teigland <teigland@redhat.com>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: tony.luck@intel.com, fenghua.yu@intel.com, benh@kernel.crashing.org,
-       lethal@linux-sh.org, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, axboe@kernel.dk, gregkh@suse.de, petero2@telia.com,
-       davej@redhat.com, maciej.sosnowski@intel.com, dougthompson@xmission.com,
-       airlied@linux.ie, rolandd@cisco.com, sean.hefty@intel.com,
-       hal.rosenstock@gmail.com, neilb@suse.de, davem@davemloft.net,
-       rdunlap@xenotime.net, kyle@mcmartin.ca, deller@gmx.de,
-       jejb@parisc-linux.org, jbarnes@virtuousgeek.org, hjk@linutronix.de,
-       david.vrabel@csr.com, jeremy@xensource.com, chris.mason@oracle.com,
-       ccaulfie@redhat.com, tytso@mit.edu, adilger@sun.com,
-       swhiteho@redhat.com, mfasheh@suse.com, joel.becker@oracle.com,
-       rusty@rustcorp.com.au, penberg@cs.helsinki.fi,
-       shemminger@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 29/31] Constify struct sysfs_ops for 2.6.32 v1
-Message-ID: <20091207200925.GA333@redhat.com>
-References: <4B198670.2000406@gmail.com> <4B1991E2.5010903@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1991E2.5010903@gmail.com>
-User-Agent: Mutt/1.4.2.2i
+	id S1758861AbZLGUJ3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 15:09:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,356,1257148800"; 
+   d="scan'208";a="520598136"
+From: "Tung, Chien Tin" <chien.tin.tung@intel.com>
+To: Julia Lawall <julia@diku.dk>
+CC: "Latif, Faisal" <faisal.latif@intel.com>,
+       Roland Dreier <rolandd@cisco.com>, "Hefty, Sean" <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>,
+       "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
+Date: Mon, 7 Dec 2009 13:09:32 -0700
+Subject: RE: [PATCH 3/5] drivers/infiniband: correct size computation
+Thread-Topic: [PATCH 3/5] drivers/infiniband: correct size computation
+Thread-Index: Acp3d43yESnDgPY5Rgqg7GQ8MDbT3wAAL1gA
+Message-ID: <603F8A3875DCE940BA37B49D0A6EA0AE3CE373A4@azsmsx501.amr.corp.intel.com>
+References: <Pine.LNX.4.64.0912061015540.20858@ask.diku.dk>
+ <603F8A3875DCE940BA37B49D0A6EA0AE3CE36BF4@azsmsx501.amr.corp.intel.com>
+ <Pine.LNX.4.64.0912071720520.15109@ask.diku.dk>
+ <603F8A3875DCE940BA37B49D0A6EA0AE3CE36C9F@azsmsx501.amr.corp.intel.com>
+ <Pine.LNX.4.64.0912072056160.1202@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0912072056160.1202@ask.diku.dk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 11:49:06PM +0100, Emese Revfy wrote:
-> From: Emese Revfy <re.emese@gmail.com>
-> 
-> Constify struct sysfs_ops.
-> 
-> Signed-off-by: Emese Revfy <re.emese@gmail.com>
-> ---
->  fs/dlm/lockspace.c                    |    2 +-
+>From: Julia Lawall <julia@diku.dk>
+>
+>The size argument to ioremap_nocache should be the size of desired
+>information, not the pointer to it.
+>
+>The semantic match that finds this problem is as follows:
+>(http://coccinelle.lip6.fr/)
+>
+>// <smpl>
+>@expression@
+>expression *x;
+>@@
+>
+>x =
+> <+...
+>*sizeof(x)
+>...+>// </smpl>
+>
+>Signed-off-by: Julia Lawall <julia@diku.dk>
+>
+>---
+> drivers/infiniband/hw/nes/nes.c     |    3 ++-
+> 1 files changed, 2 insertions(+), 1 deletions(-)
+>
+>diff --git a/drivers/infiniband/hw/nes/nes.c b/drivers/infiniband/hw/nes/nes.c
+>index cbde0cf..95db98f 100644
+>--- a/drivers/infiniband/hw/nes/nes.c
+>+++ b/drivers/infiniband/hw/nes/nes.c
+>@@ -521,7 +521,8 @@ static int __devinit nes_probe(struct pci_dev *pcidev, const struct pci_device_i
+> 	spin_lock_init(&nesdev->indexed_regs_lock);
+>
+> 	/* Remap the PCI registers in adapter BAR0 to kernel VA space */
+>-	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0), sizeof(mmio_regs));
+>+	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0),
+>+				    pci_resource_len(pcidev, BAR_0));
+> 	if (mmio_regs == NULL) {
+> 		printk(KERN_ERR PFX "Unable to remap BAR0\n");
+> 		ret = -EIO;
 
-Acked-by: David Teigland <teigland@redhat.com>
-
+Acked-by: Chien Tung <chien.tin.tung@intel.com>
