@@ -1,123 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935625AbZLGVc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935631AbZLGVdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935625AbZLGVc3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 16:32:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935616AbZLGVc2
+	id S935631AbZLGVdL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 16:33:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935592AbZLGVdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 16:32:28 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:55599 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935615AbZLGVc1 (ORCPT
+	Mon, 7 Dec 2009 16:33:10 -0500
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:62837 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935561AbZLGVdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 16:32:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GvoQLAP1trj9B0PsLhDXUow6Az8X/Kpy9IIUMUBBFtOl9PZV0uAnmibUcMG0pu6si4
-         BFfrq1h+MvafteiVNvZrCnLrhxWATWithrwupBrs8NU4atcnYO8kkzuUinnGeqUk+WDC
-         fvrDCuJ7jTKctPFFfT1AHfY88cdFscjPKzJDY=
-Date: Mon, 7 Dec 2009 22:32:30 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 03/13] tracing: Move a printk out of
-	ftrace_raw_reg_event_foo()
-Message-ID: <20091207213228.GG5049@nowhere>
-References: <4B1CB14A.4080402@cn.fujitsu.com> <4B1CB183.7040202@cn.fujitsu.com>
+	Mon, 7 Dec 2009 16:33:08 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+ocfXaqvS1po83VPz5TsAK
+Date: Mon, 7 Dec 2009 13:32:50 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: Imre Deak <imre.deak@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-fbdev@vger.kernel.org,
+       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] [RESEND] Amstrad Delta: add support for LCD
+ contrast
+Message-ID: <20091207213250.GI24013@atomide.com>
+References: <200911231857.55566.jkrzyszt@tis.icnet.pl>
+ <200912051454.52966.jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4B1CB183.7040202@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200912051454.52966.jkrzyszt@tis.icnet.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 03:40:51PM +0800, Li Zefan wrote:
-> Move the printk from each ftrace_raw_reg_event_foo() to
-> its caller ftrace_event_enable_disable().
+* Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091205 05:54]:
+> Monday 23 November 2009 18:57:51 Janusz Krzysztofik napisał(a):
+> > Initialy submitted on 2009-11-16
+> > (http://www.spinics.net/lists/linux-omap/msg20629.html).
+> > Resendig due to fbdev mailing list address changed.
+> >
+> > The series consists of 2 patches:
+> >
+> >  [PATCH 1/2] omapfb: lcd_ams_delta: add support for contrast control
+> >  [PATCH 2/2] OMAP: ams_delta_defconfig: enable LCD class device support
+> >
+> > It is intended for 2.6.33, if it's not too late.
 > 
-> See how much space this saves:
+> Hi,
 > 
->    text    data     bss     dec     hex filename
-> 5454538 2005772 7103796 14564106         de3b0a vmlinux.o
-> 5440766 2005772 7103796 14550334         de053e vmlinux.o
+> Now that Tony has changed the series status from New to Awaiting Upstream in 
+> his patchwork queue[1][2], chances of getting it in throungh linux-omap tree, 
+> like a few other omapfb related patches managed to do lately, seem falling 
+> down drastically to me if still not answered by anyone involved in omapfb 
+> development.
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  include/trace/ftrace.h        |   16 ++--------------
->  kernel/trace/trace_events.c   |   17 +++++++++++++----
->  kernel/trace/trace_syscalls.c |   10 ++--------
->  3 files changed, 17 insertions(+), 26 deletions(-)
+> Imre,
+> Could you please take the patches, or give your ack for Tony to take them, or 
+> just point me on the right way to the get them integrated or NAKed, if none 
+> of the former is?
 > 
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index 84d6f23..4aac981 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -555,13 +555,7 @@ static void ftrace_profile_disable_##name(struct ftrace_event_call *unused)\
->   *
->   * static int ftrace_reg_event_<call>(struct ftrace_event_call *unused)
->   * {
-> - *	int ret;
-> - *
-> - *	ret = register_trace_<call>(ftrace_event_<call>);
-> - *	if (!ret)
-> - *		pr_info("event trace: Could not activate trace point "
-> - *			"probe to  <call>");
-> - *	return ret;
-> + *	return register_trace_<call>(ftrace_event_<call>);
->   * }
->   *
->   * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
-> @@ -733,13 +727,7 @@ static void ftrace_raw_event_##call(proto)				\
->  									\
->  static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
->  {									\
-> -	int ret;							\
-> -									\
-> -	ret = register_trace_##call(ftrace_raw_event_##call);		\
-> -	if (ret)							\
-> -		pr_info("event trace: Could not activate trace point "	\
-> -			"probe to " #call "\n");			\
-> -	return ret;							\
-> +	return register_trace_##call(ftrace_raw_event_##call);		\
->  }									\
->  									\
->  static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)\
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 9fa6736..f22eaec 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -104,9 +104,11 @@ void trace_destroy_fields(struct ftrace_event_call *call)
->  	}
->  }
->  
-> -static void ftrace_event_enable_disable(struct ftrace_event_call *call,
-> +static int ftrace_event_enable_disable(struct ftrace_event_call *call,
->  					int enable)
->  {
-> +	int ret = 0;
-> +
->  	switch (enable) {
->  	case 0:
->  		if (call->enabled) {
-> @@ -117,12 +119,19 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
->  		break;
->  	case 1:
->  		if (!call->enabled) {
-> +			if (ret) {
-> +				pr_info("event trace: Could not enable event "
-> +					"%s\n", call->name);
-> +				break;
-> +			}
->  			call->enabled = 1;
->  			tracing_start_cmdline_record();
-> -			call->regfunc(call);
-> +			ret = call->regfunc(call);
+> Tomi,
+> I am not sure if you are the right person for bothering here, but maybe you 
+> could give your comments that would help pushing it forward?
 
+I'd prefer Tomi to merge all the drivers/video/omap code rather
+than merge it via linux-omap tree. Ideally with an ack from
+Imre where possible.
 
+Tony
 
-Heh, I'm pretty sure I will never see this warning ;-)
-
+ 
+> Thanks,
+> Janusz
+> 
+> [1] http://patchwork.kernel.org/patch/62248/
+> [2] http://patchwork.kernel.org/patch/62249/
