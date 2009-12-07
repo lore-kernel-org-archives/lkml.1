@@ -1,124 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbZLGS2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964937AbZLGSGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758488AbZLGS2s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758444AbZLGS2o
+	id S964937AbZLGSGs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:06:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964868AbZLGSGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:28:44 -0500
-Received: from twilight.fidra.de ([88.198.14.164]:55745 "EHLO
-	twilight.fidra.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757943AbZLGS2l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:28:41 -0500
-X-Greylist: delayed 1919 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Dec 2009 13:28:40 EST
-From: Volker Lanz <vl@fidra.de>
-To: linux-kernel@vger.kernel.org
-Subject: [BISECTED, REGRESSION] Successful resume from suspend but freezes after I/O
-Date: Mon, 7 Dec 2009 18:56:48 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.28-17-generic; KDE/4.3.2; x86_64; ; )
-Cc: yinghai@kernel.org, mingo@elte.hu
+	Mon, 7 Dec 2009 13:06:47 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53894 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964862AbZLGSGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 13:06:47 -0500
+Date: Mon, 7 Dec 2009 09:57:43 -0800
+From: Greg KH <gregkh@suse.de>
+To: Emese Revfy <re.emese@gmail.com>
+Cc: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
+       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
+       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
+       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
+Message-ID: <20091207175743.GA25930@suse.de>
+References: <4B198C43.50205@gmail.com>
+ <4B19A333.5080103@gmail.com>
+ <20091205000942.GA8224@suse.de>
+ <4B19CA6F.4090700@gmail.com>
+ <20091205041507.GA24885@suse.de>
+ <4B1B0D40.3040209@gmail.com>
+ <20091206172526.GA17480@suse.de>
+ <4B1C500E.5040406@gmail.com>
+ <20091207151156.GA27574@suse.de>
+ <4B1D3CCB.5000607@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912071856.48125.vl@fidra.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1D3CCB.5000607@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Dec 07, 2009 at 06:35:07PM +0100, Emese Revfy wrote:
+> >> From: Emese Revfy <re.emese@gmail.com>
+> >>
+> >> Constify struct file_operations with some exceptions.
+> > 
+> > Now please break this patch (and your others) out into "one subsystem at
+> > a time" type thing so it will have a chance at being applied.
+> 
+> Shall i split them up per subsystem and structure type or
+> only per subsystem (that is, include all affected structures
+> in the given subsystem)?
 
-updating to my distro's new 2.6.31 kernel on an x86_64 quad core machine with 
-6 GB of RAM I noticed resuming from suspend still worked as before, but the 
-machine will now reproducably freeze (have to hard reset) afterwards as soon 
-as I do something disk I/O heavy, though the problem is probably not related 
-to disk activity at all.
+Both.
 
-A current mainline 2.6.32 checkout shows the same behaviour.
+thanks,
 
-I git-bisected the problem to this commit:
-
-
------------------------------------------------------------------------------
-commit 78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
-Author: Yinghai Lu <yinghai@kernel.org>
-Date:   Thu Mar 12 22:36:01 2009 -0700
-
-    x86: make e820_update_range() handle small range update
-
-    Impact: enhance e820 code to handle more cases
-
-    Try to handle new range which could be covered by one entry.
-
-    Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-    Cc: jbeulich@novell.com
-    LKML-Reference: <49B9F0C1.10402@kernel.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
------------------------------------------------------------------------------
-
-
-A kernel built from this revision does not boot, so the first booting kernel 
-to show the problem actually seems to be:
-
-
------------------------------------------------------------------------------
-commit 6d7942dc2a70a7e74c352107b150265602671588
-Author: Yinghai Lu <yinghai@kernel.org>
-Date:   Sat Mar 14 14:32:41 2009 -0700
-
-    x86: fix 64k corruption-check
-
-    Impact: fix boot crash
-
-    Need to exit early if the addr is far above 64k.
-
-    The crash got exposed by:
-
-      78a8b35: x86: make e820_update_range() handle small range update
-
-    Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-    Cc: <stable@kernel.org>
-    LKML-Reference: <49BC2279.2030101@kernel.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
------------------------------------------------------------------------------
-
-
-The last kernel to work without problems thus seems to be this one:
-
-
------------------------------------------------------------------------------
-commit 773e673de27297d07d852e7e9bfd1a695cae1da2
-Author: Yinghai Lu <yinghai@kernel.org>
-Date:   Thu Mar 12 21:35:18 2009 -0700
-
-    x86: fix e820_update_range()
-
-    Impact: fix left range size on head
-
-    | commit 5c0e6f035df983210e4d22213aed624ced502d3d
-    |    x86: fix code paths used by update_mptable
-    |    Impact: fix crashes under Xen due to unrobust e820 code
-
-    fixes one e820 bug, but introduces another bug.
-
-    Need to update size for left range at first in case it is header.
-
-    also add __e820_add_region take more parameter.
-
-    Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-    Cc: jbeulich@novell.com
-    LKML-Reference: <49B9E286.502@kernel.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
------------------------------------------------------------------------------
-
-
-The problem is 100% reproducable on this machine: Resuming and then copying 
-/usr/ to $HOME will freeze after a few hundred MB have been copied. Earlier 
-kernels worked fine for the last couple of months.
-
-What additional information is required to help diagnose and hopefully fix the 
-problem?
-
-
-Volker
-
+greg k-h
