@@ -1,59 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZLGSoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbZLGSxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758674AbZLGSoe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758555AbZLGSoe
+	id S1758703AbZLGSxa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758649AbZLGSx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:44:34 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44078 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758503AbZLGSod (ORCPT
+	Mon, 7 Dec 2009 13:53:28 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:35397 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758601AbZLGSx1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:44:33 -0500
-Date: Mon, 7 Dec 2009 18:44:38 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/19] untangling do_mremap(), part 1
-Message-ID: <20091207184438.GH14381@ZenIV.linux.org.uk>
-References: <E1NHUdk-0007ul-Oc@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912070911290.3560@localhost.localdomain>
+	Mon, 7 Dec 2009 13:53:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type;
+        b=akWnbZ+HhYSOIwgPpb2Phpv96rr3+CHuV+68FGmSzXXj7lENhDJIpTY2iJVIQ0r81B
+         e0TLVY1uu8Ercudmb4Hlck3GYZfIcmV6p3xS+UPR6t5/Oviu8Uhvl5af43C7CQwnXsj2
+         sdC53eS7T72ccQKd2Fg5Qq8Kt8GFu6h2DH4p0=
+Message-ID: <4B1D4F29.8020309@gmail.com>
+Date: Mon, 07 Dec 2009 13:53:29 -0500
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912070911290.3560@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: torvalds@linux-foundation.org
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: [GIT PULL] AlacrityVM guest drivers for 2.6.33
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig60DE440AFE06F18CF3FEB625"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 09:17:40AM -0800, Linus Torvalds wrote:
-> 
-> Al, 
->  just checking: do you think this is ready for merging now? The lack of 
-> RFC seems to imply it is, but I don't see the Ack's from David from your 
-> previous series, for example.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig60DE440AFE06F18CF3FEB625
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Which David? ;-)  All sparc-related bits seem to have been ACKed by
-davem.
+Hi Linus,
 
-Hugetlbfs tests seem to be OK with this series, but there's an odd
-thing going on - expanding mremap() crossing into hugepage range on
-ppc takes a while to convert it into 4Kb pages.  Fair enough, but
-it seems to work _much_ faster if the process is ptraced.  NFI why;
-waiting for dgw to get around to profiling it...
+Please pull AlacrityVM guest support for 2.6.33 from:
 
-I'd love to see comments from ia64 and s390 folks, actually.
+git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/alacrityvm/linux-2=
+=2E6.git
+for-linus
 
-Known issues:
-	* expand_stack() one.  Missing checks, not obvious which way to
-deal with that.  Same as in mainline.  Itanic and sparc32 are killable
-by that, on itanic with hw 32bit support it looks even nastier (likely
-escalation to execution of user code in ring 0).
-	* remap_file_pages() seems to ignore any alignment rules; it
-is OK wrt to address range (it works on existing vma), but cache
-coherency might be buggered.  Same as in mainline.
-	* spufs (ppc cell stuff) does 64Kb-paged mappings; what happens
-upon mremap() and friends?  VM_HUGETLB will *not* be set on it, so the
-usual checks in mm/* are going to miss.  _Probably_ unchanged compared
-to mainline, but I'd really like to understand how it's supposed to work.
+All of these patches have stewed in linux-next for quite a while now:
+
+Gregory Haskins (26):
+      shm-signal: shared-memory signals
+      ioq: Add basic definitions for a shared-memory, lockless queue
+      vbus: add a "vbus-proxy" bus model for vbus_driver objects
+      vbus-proxy: add a pci-to-vbus bridge
+      ioq: add driver-side vbus helpers
+      net: add vbus_enet driver
+      venet: Update maintainer
+      venet: fix gso.hdr_len to report correct length
+      venet: add pre-mapped tx descriptor feature
+      venet: report actual used descriptor size
+      venet: cache the ringlen values at init
+      venet: add eventq protocol
+      venet: use an skblist for outstanding descriptors
+      venet: add a tx-complete event for out-of-order support
+      venet: add Layer-4 Reassembler Offload (L4RO) support
+      vbus: allow shmsignals to be named
+      vbus: register shm-signal events as standard Linux IRQ vectors
+      net: fix vbus-enet Kconfig dependencies
+      venet: fix locking issue with dev_kfree_skb()
+      vbus: fix kmalloc() from interrupt context to use GFP_ATOMIC
+      fix irq resource leak
+      vbus: remove create_irq() references from the pcibridge
+      vbus: make library code properly declared as GPL
+      venet: add missing ethtool include
+      vbus: add autoprobe capability to guest
+      vbus: fix pcibridge busmaster support
+
+Jaswinder Singh Rajput (1):
+      ioq: includecheck fix
+
+Patrick Mullaney (1):
+      vbus-enet: fix l4ro pool non-atomic allocations in softirq context
+
+Rakib Mullick (1):
+      vbus: Fix section mismatch warnings in pci-bridge.c
+
+Randy Dunlap (2):
+      vbus-proxy also uses ioq, so it should select IOQ.
+      Eliminate all cast warnings in vbus-enet.c and pci-bridge.c.
+
+Thadeu Lima de Souza Cascardo (1):
+      trivial: fix a typo in SHM_SIGNAL config description
+
+ MAINTAINERS                 |   25 +
+ arch/x86/Kconfig            |    2 +
+ drivers/Makefile            |    1 +
+ drivers/net/Kconfig         |   14 +
+ drivers/net/Makefile        |    1 +
+ drivers/net/vbus-enet.c     | 1560
++++++++++++++++++++++++++++++++++++++++++++
+ drivers/vbus/Kconfig        |   25 +
+ drivers/vbus/Makefile       |    6 +
+ drivers/vbus/bus-proxy.c    |  247 +++++++
+ drivers/vbus/pci-bridge.c   | 1015 ++++++++++++++++++++++++++++
+ include/linux/Kbuild        |    4 +
+ include/linux/ioq.h         |  414 ++++++++++++
+ include/linux/shm_signal.h  |  189 ++++++
+ include/linux/vbus_driver.h |   83 +++
+ include/linux/vbus_pci.h    |  145 ++++
+ include/linux/venet.h       |  133 ++++
+ lib/Kconfig                 |   21 +
+ lib/Makefile                |    2 +
+ lib/ioq.c                   |  300 +++++++++
+ lib/shm_signal.c            |  196 ++++++
+ 20 files changed, 4383 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/net/vbus-enet.c
+ create mode 100644 drivers/vbus/Kconfig
+ create mode 100644 drivers/vbus/Makefile
+ create mode 100644 drivers/vbus/bus-proxy.c
+ create mode 100644 drivers/vbus/pci-bridge.c
+ create mode 100644 include/linux/ioq.h
+ create mode 100644 include/linux/shm_signal.h
+ create mode 100644 include/linux/vbus_driver.h
+ create mode 100644 include/linux/vbus_pci.h
+ create mode 100644 include/linux/venet.h
+ create mode 100644 lib/ioq.c
+ create mode 100644 lib/shm_signal.c
+
+
+--------------enig60DE440AFE06F18CF3FEB625
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAksdTykACgkQP5K2CMvXmqEMgwCeNEOmsfPP3FiDa1oBtXJq+XkZ
+krMAn09WC3h6hnXuVxmLA1ftoQ8SElju
+=jjgY
+-----END PGP SIGNATURE-----
+
+--------------enig60DE440AFE06F18CF3FEB625--
