@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934435AbZLGA0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934413AbZLGA1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934435AbZLGA0t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934412AbZLGA0g
+	id S934413AbZLGA1K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:27:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932825AbZLGA0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:26:36 -0500
-Received: from kroah.org ([198.145.64.141]:34463 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:26:34 -0500
+Received: from kroah.org ([198.145.64.141]:34458 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758508AbZLGANR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758359AbZLGANR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 6 Dec 2009 19:13:17 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:50 2009
-Message-Id: <20091207000650.636746886@mini.kroah.org>
+Message-Id: <20091207000650.809125417@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:35 -0800
+Date: Sun, 06 Dec 2009 16:00:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roel Kluin <roel.kluin@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Len Brown <len.brown@intel.com>
-Subject: [059/119] thinkpad-acpi: fix sign of ERESTARTSYS return
+       Harald Welte <HaraldWelte@viatech.com>, Dave Jones <davej@redhat.com>
+Subject: [060/119] [CPUFREQ] Enable ACPI PDC handshake for VIA/Centaur CPUs
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=thinkpad-acpi-fix-sign-of-erestartsys-return.patch
+Content-Disposition: inline; filename=enable-acpi-pdc-handshake-for-via-centaur-cpus.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,32 +29,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Roel Kluin <roel.kluin@gmail.com>
+From: Harald Welte <HaraldWelte@viatech.com>
 
-commit 80a8d1228e90349b4514e8c925c061fa5cbcea75 upstream.
+commit d77b81974521c82fa6fda38dfff1b491dcc62a32 upstream.
 
-The returned error should be negative
+In commit 0de51088e6a82bc8413d3ca9e28bbca2788b5b53, we introduced the
+use of acpi-cpufreq on VIA/Centaur CPU's by removing a vendor check for
+VENDOR_INTEL.  However, as it turns out, at least the Nano CPU's also
+need the PDC (processor driver capabilities) handshake in order to
+activate the methods required for acpi-cpufreq.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Since arch_acpi_processor_init_pdc() contains another vendor check for
+Intel, the PDC is not initialized on VIA CPU's.  The resulting behavior
+of a current mainline kernel on such systems is:  acpi-cpufreq
+loads and it indicates CPU frequency changes.  However, the CPU stays at
+a single frequency
+
+This trivial patch ensures that init_intel_pdc() is called on Intel and
+VIA/Centaur CPU's alike.
+
+Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+Signed-off-by: Dave Jones <davej@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/thinkpad_acpi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/acpi/processor.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -5863,7 +5863,7 @@ static int brightness_write(char *buf)
- 	 * Doing it this way makes the syscall restartable in case of EINTR
- 	 */
- 	rc = brightness_set(level);
--	return (rc == -EINTR)? ERESTARTSYS : rc;
-+	return (rc == -EINTR)? -ERESTARTSYS : rc;
- }
+--- a/arch/x86/kernel/acpi/processor.c
++++ b/arch/x86/kernel/acpi/processor.c
+@@ -79,7 +79,8 @@ void arch_acpi_processor_init_pdc(struct
+ 	struct cpuinfo_x86 *c = &cpu_data(pr->id);
  
- static struct ibm_struct brightness_driver_data = {
+ 	pr->pdc = NULL;
+-	if (c->x86_vendor == X86_VENDOR_INTEL)
++	if (c->x86_vendor == X86_VENDOR_INTEL ||
++	    c->x86_vendor == X86_VENDOR_CENTAUR)
+ 		init_intel_pdc(pr, c);
+ 
+ 	return;
 
 
