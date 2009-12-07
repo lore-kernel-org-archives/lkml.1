@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935057AbZLGN34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935061AbZLGNcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935057AbZLGN34 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 08:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935014AbZLGN3z
+	id S935061AbZLGNcY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 08:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934940AbZLGNcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 08:29:55 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:9603 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934940AbZLGN3y (ORCPT
+	Mon, 7 Dec 2009 08:32:22 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:59164 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934777AbZLGNcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 08:29:54 -0500
+	Mon, 7 Dec 2009 08:32:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=UPuKFKmVJb2M1sxKS/wS+8cw1H25fwYTnZUEJK76aGAdb6tzVphk2/vYfAc7NQnYav
-         by0qGwndwar2kSUYgsgOuesV/TLnyM2uPytI2fTFXsZWVomEFPugElRzbjRZ7yGJrwY/
-         0QRWUBP7PqipMJwjHnFX17euXhb1tqbLZTuoE=
-Message-ID: <4B1D0399.2070307@gmail.com>
-Date: Mon, 07 Dec 2009 14:31:05 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=M4N7D40MFia+bYRbT11CyFa/XccN9kE8srPgYg2i/CJG7p5np4zAVovL/JEmsB83rq
+         cecj1OFPKalvM3ibVEgh9NlGPkgztIetdyfJ3O6dwglFcxtpE6Sk7db3sbKcKzcRzqeD
+         /ZvmChndMVEhx0evq5OWhEdFJk7Xgc4UEGFUg=
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] s390: PTR_ERR return of wrong pointer in fallback_init_cip()
+In-Reply-To: <20091203085127.4370.1737.sendpatchset@localhost.localdomain>
+References: <20091203085127.4370.1737.sendpatchset@localhost.localdomain>
+Date: Mon, 7 Dec 2009 15:32:26 +0200
+Message-ID: <b263e5900912070532i6ab63c36o48030a191c091dd5@mail.gmail.com>
+Subject: Re: [Patch] selinux: remove a useless return
+From: Dan Carpenter <error27.lkml@gmail.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@parisplace.org>,
+       linux-security-module@vger.kernel.org, akpm@linux-foundation.org,
+       James Morris <jmorris@namei.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Return the PTR_ERR of the correct pointer.
+On 12/3/09, Amerigo Wang <amwang@redhat.com> wrote:
+> The last return is unreachable, remove the 'return'
+> in default, let it fall through.
+>
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> Cc: James Morris <jmorris@namei.org>
+> Cc: Eric Paris <eparis@parisplace.org>
+>
+> ---
+>
+> diff --git a/security/selinux/ss/mls.c b/security/selinux/ss/mls.c
+> index b5407f1..718823d 100644
+> --- a/security/selinux/ss/mls.c
+> +++ b/security/selinux/ss/mls.c
+> @@ -542,7 +542,7 @@ int mls_compute_sid(struct context *scontext,
+>  		/* Use the process effective MLS attributes. */
+>  		return mls_context_cpy_low(newcontext, scontext);
+>  	default:
+> -		return -EINVAL;
+> +		/* Fallthrough */
+>  	}
+>  	return -EINVAL;
+>  }
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- arch/s390/crypto/aes_s390.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I don't think this compiles.  GCC doesn't let you end a switch block
+with a label.
 
-diff --git a/arch/s390/crypto/aes_s390.c b/arch/s390/crypto/aes_s390.c
-index 6118890..6be4503 100644
---- a/arch/s390/crypto/aes_s390.c
-+++ b/arch/s390/crypto/aes_s390.c
-@@ -174,7 +174,7 @@ static int fallback_init_cip(struct crypto_tfm *tfm)
- 	if (IS_ERR(sctx->fallback.cip)) {
- 		pr_err("Allocating AES fallback algorithm %s failed\n",
- 		       name);
--		return PTR_ERR(sctx->fallback.blk);
-+		return PTR_ERR(sctx->fallback.cip);
- 	}
- 
- 	return 0;
+I also have sent the selinux people a patch that didn't compile by
+mistake.  Afterward I wrote this script so hopefully I won't mess up
+again.
+
+#!/bin/bash -e
+
+files=$(grep +++ /home/dcarpenter/var/mail/postponed-msgs | cut -f 1 |
+cut -b 5-)
+for file in $files ; do
+	file=${file/devel\//}
+	file=${file/new\//}
+	kchecker $file
+	if which sparse | grep -q sparse ; then
+		kchecker --sparse $file
+	fi
+done
+
+
+You will have to change the path names.  Hm....  Also you will have to
+get the kchecker script from the smatch_data/ directory of smatch
+(http://repo.or.cz/w/smatch.git).
+
+regards,
+dan carpenter
