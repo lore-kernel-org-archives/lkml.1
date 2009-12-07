@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935432AbZLGQiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935439AbZLGQj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935432AbZLGQiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935422AbZLGQiw
+	id S935439AbZLGQj3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:39:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935361AbZLGQj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:38:52 -0500
-Received: from mga14.intel.com ([143.182.124.37]:22216 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935420AbZLGQiv convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 11:39:27 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:61936 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934829AbZLGQj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:38:51 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="219714715"
-From: "Tung, Chien Tin" <chien.tin.tung@intel.com>
-To: Julia Lawall <julia@diku.dk>
-CC: "Latif, Faisal" <faisal.latif@intel.com>,
-       Roland Dreier <rolandd@cisco.com>, "Hefty, Sean" <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Date: Mon, 7 Dec 2009 09:38:55 -0700
-Subject: RE: [PATCH 3/5] drivers/infiniband: correct size computation
-Thread-Topic: [PATCH 3/5] drivers/infiniband: correct size computation
-Thread-Index: Acp3WX/uWyMCHYN/TPqBTJSTa63e5gAAcqtg
-Message-ID: <603F8A3875DCE940BA37B49D0A6EA0AE3CE36C9F@azsmsx501.amr.corp.intel.com>
-References: <Pine.LNX.4.64.0912061015540.20858@ask.diku.dk>
- <603F8A3875DCE940BA37B49D0A6EA0AE3CE36BF4@azsmsx501.amr.corp.intel.com>
- <Pine.LNX.4.64.0912071720520.15109@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0912071720520.15109@ask.diku.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Dec 2009 11:39:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=gxLk/4iVLABhGgiBcRSAFDtNCQPYE76ygTQektEkqI66TUcBdGQbGOzltGl3YibGNm
+         JQ1n5BlmdEEY35Iyc4iu5acLMg5YhXoFE3K64eSG6gznnq6lkAtlTzD7FOK9iFAlyVog
+         htPe4utfku6fqyW6FAhzF3TD8+Ww1JbvEjNUg=
+Message-ID: <4B1D2FC3.4090003@garzik.org>
+Date: Mon, 07 Dec 2009 11:39:31 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [git patches] libata updates for 2.6.33
+References: <20091206210752.GA19268@havoc.gtf.org> <4B1D02F9.4000503@ru.mvista.com>
+In-Reply-To: <4B1D02F9.4000503@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > 	/* Remap the PCI registers in adapter BAR0 to kernel VA space */
->> >-	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0), sizeof(mmio_regs));
->> >+	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0),
->> >+				    sizeof(*mmio_regs));
->> > 	if (mmio_regs == NULL) {
->> > 		printk(KERN_ERR PFX "Unable to remap BAR0\n");
->> > 		ret = -EIO;
->>
->> mmio_regs is initialized to NULL at the top of the function so
->> *mmio_regs wouldn't be a good idea.  Instead of sizeof(*mmio_regs) use
->> pci_resource_len(pcidev, BAR_0).  If you can recreate the patch with
->> this change I will ack it.
+On 12/07/2009 08:28 AM, Sergei Shtylyov wrote:
+> Hello.
 >
->When you say that it isn't a good idea, do you mean that the result is
->wrong, or that it looks odd?  I didn't think sizeof looked at the value,
->but only at the type?
+> Jeff Garzik wrote:
+>
+>> Nothing world-shakingly-notable. Notable notables:
+>
+>> - TRIM work from Christoph and mkp, to make SSD life a bit better
+>> - PATA fixes and updates from Bart and Alan
+>> - long overdue removal of 'experimental' tag from PATA driver submenu
+>> in Kconfig
+>> - various bug fixes and minor updates
+>
+>> Please pull from 'upstream-linus' branch of
+>> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+>> upstream-linus
+>
+>> to receive the following updates:
+>
+> [...]
+>
+>> Alan Cox (6):
+>> pata_via: Blacklist some combinations of Transcend Flash and via
+>> pata_sis: Implement MWDMA for the UDMA 133 capable chips
+>
+> Unfortunately, this patch contains a coding mistake. Probably too late
+> to correct it now though Linus hasn't pulled as yet...
+
+Well, absence of a push does not necessarily imply absence of a pull :) 
+  In fact it seems pretty normal these days that Linus collects a bunch 
+of pull requests, and then pushes them out later all in one batch.
+
+But we can revert, absolutely, given the feedback from you and Bart...
+
+	Jeff
 
 
-I misspoke on the problem.  Mmio_regs is declared as a void pointer:
-
-        void __iomem *mmio_regs = NULL;
-
-Thus pci_resource_len(pcidev, BAR_0) is the correct fix.
-
-Chien
 
 
