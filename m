@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbZLGSEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964925AbZLGSGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964896AbZLGSEm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:04:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964862AbZLGSEj
+	id S964925AbZLGSGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964908AbZLGSGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:04:39 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:38227 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964858AbZLGSEj (ORCPT
+	Mon, 7 Dec 2009 13:06:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54335 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964859AbZLGSGQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:04:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=A9uB3z5zKDVHP7L7LtEqib8dIlRmzxIx12nwtzKzR/gioGMkZHoJ0g6u2cKlwU0p7H
-         cQzm9yDGOcCpzflq+PqvvINIcREXlinmdTijBxs2boACABgsbVM8nsspPxuaM62A58ee
-         h2Hgcw/y2nhKThKMs9MEyfbZLWqTUSMt6vGlg=
-Date: Mon, 7 Dec 2009 21:04:36 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Fix bogus warning in
-	apic_noop.apic_write()
-Message-ID: <20091207180436.GC5489@lenovo>
-References: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain> <tip-a946d8f11f0da9cfc714248036fcfd3a794d1e27@git.kernel.org> <20091207150425.GA5489@lenovo> <alpine.LFD.2.00.0912071629350.3089@localhost.localdomain> <20091207163057.GB5489@lenovo> <alpine.LFD.2.00.0912071755130.3089@localhost.localdomain>
+	Mon, 7 Dec 2009 13:06:16 -0500
+Date: Mon, 7 Dec 2009 10:05:56 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <Pine.LNX.4.44L0.0912071217220.2644-100000@iolanthe.rowland.org>
+Message-ID: <alpine.LFD.2.00.0912070956350.3560@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912071217220.2644-100000@iolanthe.rowland.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912071755130.3089@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 05:55:37PM +0100, Thomas Gleixner wrote:
-...
-> > And, btw if some code is trying to write to apic when
-> > it's disabled via boot option -- it means the code is
-> > buggy and this is not a false positive but rather proper
-> > warning.
-> > 
-> > Thomas, if you've changed this code I suppose you saw some
-> > warning triggered, right? Could you pointed me on it?
+
+
+On Mon, 7 Dec 2009, Alan Stern wrote:
 > 
-> http://www.kerneloops.org/searchweek.php?search=native_apic_write_dummy
-> 
+> Okay, I think I've got it.  But you're wrong about one thing: Resume
+> isn't _exactly_ the reverse of suspend.
 
-Doh!
+Yeah, no. But I think I made it much closer by getting rid of pre-suspend 
+and post-resume (my next email to the one you quoted).
 
-The most cases show inapropriate usage of apic->write() operation.
-set_perf_event_pending() already fixed by
-7d42896628202a551ad1107697cd215dc5fca099,
-intel_init_thermal() fixed as well with
-5ce4243dcefbbc43791ffc36e1be55067ceec916
+And yeah, I started thinking along those lines exactly because it wasn't 
+as clean a mirror image as I thought it should be able to be.
 
-(all was in -tip).
+> A non-async driver (i.e., most of them) would ignore the pre- pass
+> entirely and do all its work in the second pass.
 
-Though throttling code is just buggy and intel_init_thermal() should
-check if cpu_has_apic. So the former code does exactly what
-it should -- it catches inapropriate writes.
+See my second email, where I think I can get rid of the whole second pass 
+thing. I think you'll agree that it's an even nicer mirror image.
 
-Thomas, I just don't know -- from my pov, write() is really different
-from read(), since it implies that APIC changes it behaviour, it could
-be timer setup, vector setup operation or whatever. I even doubt if
-enabling IPI in apic-noop is a good idea (since perf code already
-implemented to check apic presence by Peter and IPI is not called).
+> There's some question about what to do if a suspend or resume fails.  A
+> bunch of async threads will have been launched for other devices, but
+> now there won't be anything to wait for them.  It's not clear how this
+> should be handled.
 
-Though I'm not insisting, I simply don't have spare time at moment
-to check all apic_writes() again :(
+I think the rule for "suspend fails" is very simple: you can't fail in the 
+async codepath. There's no sane way to return errors, and trying to would 
+be too complex anyway. What would you do? 
 
-	-- Cyrill
+In fact, even though we _can_ fail in the synchronous path, I personally 
+consider a device driver that ever fails its suspend to be terminally 
+broken. We're practically always better off suspending and simply turning 
+off the power than saying "uh, I failed the suspend".
+
+I've occasionally hit a few drivers that caused suspend failures, and each 
+and every time it was a driver bug, and the right thing to do was to just 
+ignore the error and suspend anyway - returning an error code and trying 
+to undo the suspend is not what anybody ever really wants, even if our 
+model _allows_ for it.
+
+(And the rule for "resume fails" is even simpler: there's nothing we can 
+really do if something fails to resume - and that's true whether the 
+failure is synchronous or asynchronous. The device is dead. Try to reset 
+it, or remove it from the device tree. Tough).
+
+				Linus
