@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934705AbZLGMYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934810AbZLGMej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934705AbZLGMYJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 07:24:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934287AbZLGMYJ
+	id S934810AbZLGMej (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 07:34:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934730AbZLGMeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 07:24:09 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:54723 "EHLO
+	Mon, 7 Dec 2009 07:34:37 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:52193 "EHLO
 	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933842AbZLGMYI (ORCPT
+	with ESMTP id S934728AbZLGMeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 07:24:08 -0500
-Message-ID: <4B1CF3ED.4040305@simtec.co.uk>
-Date: Mon, 07 Dec 2009 12:24:13 +0000
-From: Ben Dooks <ben@simtec.co.uk>
-Organization: Simtec Electronics, UK
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: netdev@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Wolfram Sang <w.sang@pengutronix.de>, doong.ping@micrel.com,
-       tristram.ha@micrel.com, linux@simtec.co.uk
+	Mon, 7 Dec 2009 07:34:36 -0500
+Date: Mon, 7 Dec 2009 12:34:31 +0000
+From: Ben Dooks <ben@fluff.org.uk>
+To: netdev@vger.kernel.org
+Cc: linux@simtec.co.uk, doong.ping@micrel.com, tristram.ha@micrel.com,
+       Wolfram Sang <w.sang@pengutronix.de>, Jean Delvare <khali@linux-fr.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: [patch 1/9] eeprom_93cx6: Add data direction control.
-References: <20091207121727.016092171@fluff.org.uk>	<20091207121827.433183360@fluff.org.uk> <20091207132141.1db65cd3@hyperion.delvare>
-In-Reply-To: <20091207132141.1db65cd3@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20091207123431.GA17863@fluff.org.uk>
+References: <20091207121501.819539008@fluff.org.uk>
+ <20091207121646.260524161@fluff.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091207121646.260524161@fluff.org.uk>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Mon, 07 Dec 2009 12:17:28 +0000, Ben Dooks wrote:
->> Some devices need to know if the data is to be output or read, so add a
->> data direction into the eeprom structure to tell the driver whether the
->> data line should be driven.
->>
->> The user in this case is the Micrel KS8851 which has a direction
->> control for the EEPROM data line and thus needs to know whether
->> to drive it (writing) or to tristate it for receiving.
->>
->> Signed-off-by: Ben Dooks <ben@simtec.co.uk>
->> Cc: Wolfram Sang <w.sang@pengutronix.de>
->> Cc: Jean Delvare <khali@linux-fr.org>
->> Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-> 
-> FYI, I will not be reviewing this patch nor any other patch to the
-> eeprom_93cx6 driver. I have no clue what these devices are, no access
-> to any and no interest in them either.
-
-Ok, scripts/get_maintainer.pl came up with yourself, Wolfram and linux-kernel
-as the people to send this to.
+Please ignore this first set, sent without changing from: address. (I
+did try and stop quilt, but it seems I didn't kill all the processes)
 
 -- 
-Ben Dooks, Design & Software Engineer, Simtec Electronics
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-http://www.simtec.co.uk/
+  'a smiley only costs 4 bytes'
