@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbZLGOnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbZLGOpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757595AbZLGOnM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 09:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbZLGOnK
+	id S1757821AbZLGOpE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 09:45:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbZLGOpC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 09:43:10 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:54283 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756588AbZLGOnJ convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 09:45:02 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55778 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756689AbZLGOpA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 09:43:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dSV4zzBuumZKB26ZonFu8hZ9BaGufjp4cY4WpgjuoOmJw+lfjLHFCY5wLm5bTNQKWJ
-         Foa6usVZviYxZKNbx5U2A1xsydwnA4caWm2IHR67V7QD0mUdLaKyeM/nPauVz3uHtaYb
-         cJHbwHmvXeBiGRs+PbkTm+ff5VumAd0pSntIE=
-MIME-Version: 1.0
-In-Reply-To: <4B1CB1B7.7080106@cn.fujitsu.com>
-References: <4B1CB14A.4080402@cn.fujitsu.com> <4B1CB1B7.7080106@cn.fujitsu.com>
-Date: Mon, 7 Dec 2009 15:43:15 +0100
-Message-ID: <c62985530912070643l69edb5e4x2b74ad8ff67b5b2d@mail.gmail.com>
-Subject: Re: [PATCH 06/13] function-graph: Allow writing the same val to 
-	set_graph_function
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Dec 2009 09:45:00 -0500
+Date: Mon, 7 Dec 2009 14:46:23 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: miklos@szeredi.hu, luto@mit.edu, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] vfs: new O_NODE open flag
+Message-ID: <20091207144623.692fbc1e@lxorguk.ukuu.org.uk>
+In-Reply-To: <E1NHeXH-0003Lb-3q@pomaz-ex.szeredi.hu>
+References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
+	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>
+	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu>
+	<20091202204828.4fa0c108@lxorguk.ukuu.org.uk>
+	<E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
+	<4B1A7159.3070101@mit.edu>
+	<E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
+	<20091205202838.3456b6fc@lxorguk.ukuu.org.uk>
+	<E1NH1MB-0007v8-Ps@pomaz-ex.szeredi.hu>
+	<20091205231304.03a4af61@lxorguk.ukuu.org.uk>
+	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu>
+	<20091207122346.6d18a8e1@lxorguk.ukuu.org.uk>
+	<E1NHctp-00032C-A1@pomaz-ex.szeredi.hu>
+	<E1NHd0J-000345-Kw@pomaz-ex.szeredi.hu>
+	<20091207130339.620b904b@lxorguk.ukuu.org.uk>
+	<E1NHdJy-00037l-Jb@pomaz-ex.szeredi.hu>
+	<20091207131546.2af06647@lxorguk.ukuu.org.uk>
+	<E1NHdS9-00039i-B6@pomaz-ex.szeredi.hu>
+	<20091207141321.0964461d@lxorguk.ukuu.org.uk>
+	<E1NHeXH-0003Lb-3q@pomaz-ex.szeredi.hu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/7 Li Zefan <lizf@cn.fujitsu.com>:
->  # echo 'do_open' > set_graph_function
->  # echo 'do_open' >> set_graph_function
->  bash: echo: write error: Invalid argument
->
-> Make it valid to write the same value to set_graph_function,
-> which is consistent with set_ftrace_filter interface.
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> > First obvious attack: get an O_NODE handle to a device you have assigned
+> > to your ownership
+> > 
+> > 	while(1)
+> > 		fchmod(fd, 0666);
+> > 
+> > wait for device to unload, reload and be intended for another user
+> > Race udev to a real open. You have a similar problem with vhangup() and
+> > ttys.
+> 
+> If this was a udev device, the same attack is possible with a hard
+> link to the device.  Except the attacker simply does link() instad of
+> open(O_NODE) and chmod() instead of fchmod().
 
+If your distribution does not use a separate tmpfs for devices then yes -
+but that's old news - and also needs revoke() to fix. It's a requirement
+of udev as it stands that it runs on its own file system and I would hope
+that all distributions using udev get this right. With O_NODE I don't
+need to make the hardlink and all the "same as a hardlink" justifications
+come crashing down.
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+This always comes back to the same thing - you need revoke() on device
+files. The general case revoke is much more questionable (and indeed
+almost every Unixen with revoke does not support revoke of files)
 
+So we are back where we started - a prerequisite for O_NODE is revoke()
+at least for device files and possibly for O_NODE opens on normal files.
+O_NODE isn't per-se the problem, the problem is the lack of revoke() - it
+just gets caught up in the fallout along with many other things including
+all sorts of stuff the GUI folks want to do but cannot currently provide.
 
-> ---
->  kernel/trace/ftrace.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index ff8aecd..7968762 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -2552,10 +2552,9 @@ ftrace_set_func(unsigned long *array, int *idx, char *buffer)
->                                        exists = true;
->                                        break;
->                                }
-> -                       if (!exists) {
-> +                       if (!exists)
->                                array[(*idx)++] = rec->ip;
-> -                               found = 1;
-> -                       }
-> +                       found = 1;
->                }
->        } while_for_each_ftrace_rec();
->
-> --
-> 1.6.3
->
->
+Alan
