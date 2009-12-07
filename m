@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbZLGANw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbZLGAXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758592AbZLGANw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:13:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932836AbZLGANr
+	id S1758604AbZLGAXl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:23:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758562AbZLGAXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:13:47 -0500
-Received: from kroah.org ([198.145.64.141]:34592 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:23:38 -0500
+Received: from kroah.org ([198.145.64.141]:34598 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758543AbZLGANe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:13:34 -0500
+	id S1758550AbZLGANf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:13:35 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:54 2009
-Message-Id: <20091207000654.364893397@mini.kroah.org>
+Message-Id: <20091207000654.584900701@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:54 -0800
+Date: Sun, 06 Dec 2009 16:00:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roel Kluin <roel.kluin@gmail.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [078/119] sparc64: replace parentheses in pmul()
+Subject: [079/119] sparc: Move of_set_property_mutex acquisition outside of devtree_lock grab.
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=sparc64-replace-parentheses-in-pmul.patch
+Content-Disposition: inline; filename=sparc-move-of_set_property_mutex-acquisition-outside-of-devtree_lock-grab.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,30 +29,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Roel Kluin <roel.kluin@gmail.com>
+From: David S. Miller <davem@davemloft.net>
 
-[ Upstream commit 88b938e63e68fd35e603421f722be0f35dde1016 ]
+[ Upstream commit 1c9d80ddc60f8ac26344ec3db9830e5f8016c16d ]
 
-`>>' has a higher precedence than `?' so src2 evaluated to
-either 16 or 0 dependent on the bits set in rs2.
+Otherwise we try to sleep with preemption disabled, etc.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Noticed by Thomas Gleixner.
+
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/sparc/kernel/visemul.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/sparc/kernel/prom_common.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/sparc/kernel/visemul.c
-+++ b/arch/sparc/kernel/visemul.c
-@@ -617,7 +617,7 @@ static void pmul(struct pt_regs *regs, u
- 		rs2 = fps_regval(f, RS2(insn));
+--- a/arch/sparc/kernel/prom_common.c
++++ b/arch/sparc/kernel/prom_common.c
+@@ -76,6 +76,7 @@ int of_set_property(struct device_node *
  
- 		rd_val = 0;
--		src2 = (rs2 >> (opf == FMUL8x16AU_OPF) ? 16 : 0);
-+		src2 = rs2 >> (opf == FMUL8x16AU_OPF ? 16 : 0);
- 		for (byte = 0; byte < 4; byte++) {
- 			u16 src1 = (rs1 >> (byte * 8)) & 0x00ff;
- 			u32 prod = src1 * src2;
+ 	err = -ENODEV;
+ 
++	mutex_lock(&of_set_property_mutex);
+ 	write_lock(&devtree_lock);
+ 	prevp = &dp->properties;
+ 	while (*prevp) {
+@@ -85,9 +86,7 @@ int of_set_property(struct device_node *
+ 			void *old_val = prop->value;
+ 			int ret;
+ 
+-			mutex_lock(&of_set_property_mutex);
+ 			ret = prom_setprop(dp->node, name, val, len);
+-			mutex_unlock(&of_set_property_mutex);
+ 
+ 			err = -EINVAL;
+ 			if (ret >= 0) {
+@@ -106,6 +105,7 @@ int of_set_property(struct device_node *
+ 		prevp = &(*prevp)->next;
+ 	}
+ 	write_unlock(&devtree_lock);
++	mutex_unlock(&of_set_property_mutex);
+ 
+ 	/* XXX Upate procfs if necessary... */
+ 
 
 
