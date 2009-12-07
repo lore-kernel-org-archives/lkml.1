@@ -1,50 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759058AbZLGIZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbZLGIZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759058AbZLGIZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759033AbZLGIZs
+	id S1759089AbZLGIZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759066AbZLGIZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:25:48 -0500
-Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:45501 "EHLO
+	Mon, 7 Dec 2009 03:25:52 -0500
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:45512 "EHLO
 	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758962AbZLGIZr (ORCPT
+	by vger.kernel.org with ESMTP id S1759047AbZLGIZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:25:47 -0500
+	Mon, 7 Dec 2009 03:25:49 -0500
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: [PATCH 0/9] Squashfs: Add support for LZMA compressed filesystems 
-Message-Id: <E1NHYun-000287-Vq@dylan.lougher.demon.co.uk>
+Subject: [PATCH 1/9] Squashfs: move zlib decompression wrapper code into a separate file
+Message-Id: <E1NHYuo-00028C-3c@dylan.lougher.demon.co.uk>
 From: root <root@lougher.demon.co.uk>
-Date: Mon, 07 Dec 2009 08:25:53 +0000
+Date: Mon, 07 Dec 2009 08:25:54 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-The following patches add LZMA decompression support to Squashfs, using the
-in-kernel LZMA decompression library.
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/Makefile       |    2 +-
+ fs/squashfs/block.c        |   74 ++----------------------------
+ fs/squashfs/squashfs.h     |    4 ++
+ fs/squashfs/zlib_wrapper.c |  109 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 118 insertions(+), 71 deletions(-)
+ create mode 100644 fs/squashfs/zlib_wrapper.c
 
-The patches also add a decompression framework to Squashfs.
-This allows LZMA decompression to be added cleanly, and it allows
-additional decompressors to be easily added in the future.
-
-To enable the in-kernel LZMA decompression code to be used by Squashfs,
-there are two patches to the lzma code itself: one to make lzma available
-to non-init code, and one to make lzma reentrant.  These are obviously
-not restricted to Squashfs, but are needed by any non-init code that
-may wish to use lzma compression.
-
-These patches are available in my squashfs-devel git tree in a slightly
-different format (these patches have been refactored for posting, they'll
-be put into a git tree ASAP).
-
-http://git.kernel.org/?p=linux/kernel/git/pkl/squashfs-devel.git;a=summary
-
-I would like to thank the CE Linux Forum (CELF) for supporting this work.
-
-Thanks
-
-Phillip
+diff --git a/fs/squashfs/Makefile b/fs/squashfs/Makefile
+index 70e3244..a397e6f 100644
+--- a/fs/squashfs/Makefile
++++ b/fs/squashfs/Makefile
+@@ -4,4 +4,4 @@
+ 
+ obj-$(CONFIG_SQUASHFS) += squashfs.o
+ squashfs-y += block.o cache.o dir.o export.o file.o fragment.o id.o inode.o
+-squashfs-y += namei.o super.o symlink.o
++squashfs-y += namei.o super.o symlink.o zlib_wrapper.o
+diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
+index 2a79603..5cd3934 100644
+--- a/fs/squashfs/block.c
++++ b/fs/squashfs/block.c
+@@ -29,7 +29,6 @@
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+ #include <linux/slab.h>
+-#include <linux/mutex.h>
+ #include <linux/string.h>
+ #include <linux/buffer_head.h>
+ #include <linux/zlib.h>
+@@ -153,72 +152,10 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 	}
+ 
+ 	if (compressed) {
+-		int zlib_err = 0, zlib_init = 0;
+-
+-		/*
+-		 * Uncompress block.
+-		 */
+-
+-		mutex_lock(&msblk->read_data_mutex);
+-
+-		msblk->stream.avail_out = 0;
+-		msblk->stream.avail_in = 0;
+-
+-		bytes = length;
+-		do {
+-			if (msblk->stream.avail_in == 0 && k < b) {
+-				avail = min(bytes, msblk->devblksize - offset);
+-				bytes -= avail;
+-				wait_on_buffer(bh[k]);
+-				if (!buffer_uptodate(bh[k]))
+-					goto release_mutex;
+-
+-				if (avail == 0) {
+-					offset = 0;
+-					put_bh(bh[k++]);
+-					continue;
+-				}
+-
+-				msblk->stream.next_in = bh[k]->b_data + offset;
+-				msblk->stream.avail_in = avail;
+-				offset = 0;
+-			}
+-
+-			if (msblk->stream.avail_out == 0 && page < pages) {
+-				msblk->stream.next_out = buffer[page++];
+-				msblk->stream.avail_out = PAGE_CACHE_SIZE;
+-			}
+-
+-			if (!zlib_init) {
+-				zlib_err = zlib_inflateInit(&msblk->stream);
+-				if (zlib_err != Z_OK) {
+-					ERROR("zlib_inflateInit returned"
+-						" unexpected result 0x%x,"
+-						" srclength %d\n", zlib_err,
+-						srclength);
+-					goto release_mutex;
+-				}
+-				zlib_init = 1;
+-			}
+-
+-			zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
+-
+-			if (msblk->stream.avail_in == 0 && k < b)
+-				put_bh(bh[k++]);
+-		} while (zlib_err == Z_OK);
+-
+-		if (zlib_err != Z_STREAM_END) {
+-			ERROR("zlib_inflate error, data probably corrupt\n");
+-			goto release_mutex;
+-		}
+-
+-		zlib_err = zlib_inflateEnd(&msblk->stream);
+-		if (zlib_err != Z_OK) {
+-			ERROR("zlib_inflate error, data probably corrupt\n");
+-			goto release_mutex;
+-		}
+-		length = msblk->stream.total_out;
+-		mutex_unlock(&msblk->read_data_mutex);
++		length = zlib_uncompress(msblk, buffer, bh, b, offset, length,
++			srclength, pages);
++		if (length < 0)
++			goto read_failure;
+ 	} else {
+ 		/*
+ 		 * Block is uncompressed.
+@@ -255,9 +192,6 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 	kfree(bh);
+ 	return length;
+ 
+-release_mutex:
+-	mutex_unlock(&msblk->read_data_mutex);
+-
+ block_release:
+ 	for (; k < b; k++)
+ 		put_bh(bh[k]);
+diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
+index 0e9feb6..988bdce 100644
+--- a/fs/squashfs/squashfs.h
++++ b/fs/squashfs/squashfs.h
+@@ -70,6 +70,10 @@ extern struct inode *squashfs_iget(struct super_block *, long long,
+ 				unsigned int);
+ extern int squashfs_read_inode(struct inode *, long long);
+ 
++/* zlib_wrapper.c */
++extern int zlib_uncompress(struct squashfs_sb_info *, void **,
++				struct buffer_head **, int, int, int, int, int);
++
+ /*
+  * Inodes and files operations
+  */
+diff --git a/fs/squashfs/zlib_wrapper.c b/fs/squashfs/zlib_wrapper.c
+new file mode 100644
+index 0000000..486a2a7
+--- /dev/null
++++ b/fs/squashfs/zlib_wrapper.c
+@@ -0,0 +1,109 @@
++/*
++ * Squashfs - a compressed read only filesystem for Linux
++ *
++ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
++ * Phillip Lougher <phillip@lougher.demon.co.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ * zlib_wrapper.c
++ */
++
++
++#include <linux/mutex.h>
++#include <linux/buffer_head.h>
++#include <linux/zlib.h>
++
++#include "squashfs_fs.h"
++#include "squashfs_fs_sb.h"
++#include "squashfs_fs_i.h"
++#include "squashfs.h"
++
++int zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
++	struct buffer_head **bh, int b, int offset, int length, int srclength,
++	int pages)
++{
++	int zlib_err = 0, zlib_init = 0;
++	int avail, bytes, k = 0, page = 0;
++
++	mutex_lock(&msblk->read_data_mutex);
++
++	msblk->stream.avail_out = 0;
++	msblk->stream.avail_in = 0;
++
++	bytes = length;
++	do {
++		if (msblk->stream.avail_in == 0 && k < b) {
++			avail = min(bytes, msblk->devblksize - offset);
++			bytes -= avail;
++			wait_on_buffer(bh[k]);
++			if (!buffer_uptodate(bh[k]))
++				goto release_mutex;
++
++			if (avail == 0) {
++				offset = 0;
++				put_bh(bh[k++]);
++				continue;
++			}
++
++			msblk->stream.next_in = bh[k]->b_data + offset;
++			msblk->stream.avail_in = avail;
++			offset = 0;
++		}
++
++		if (msblk->stream.avail_out == 0 && page < pages) {
++			msblk->stream.next_out = buffer[page++];
++			msblk->stream.avail_out = PAGE_CACHE_SIZE;
++		}
++
++		if (!zlib_init) {
++			zlib_err = zlib_inflateInit(&msblk->stream);
++			if (zlib_err != Z_OK) {
++				ERROR("zlib_inflateInit returned unexpected "
++					"result 0x%x, srclength %d\n",
++					zlib_err, srclength);
++				goto release_mutex;
++			}
++			zlib_init = 1;
++		}
++
++		zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
++
++		if (msblk->stream.avail_in == 0 && k < b)
++			put_bh(bh[k++]);
++	} while (zlib_err == Z_OK);
++
++	if (zlib_err != Z_STREAM_END) {
++		ERROR("zlib_inflate error, data probably corrupt\n");
++		goto release_mutex;
++	}
++
++	zlib_err = zlib_inflateEnd(&msblk->stream);
++	if (zlib_err != Z_OK) {
++		ERROR("zlib_inflate error, data probably corrupt\n");
++		goto release_mutex;
++	}
++
++	mutex_unlock(&msblk->read_data_mutex);
++	return msblk->stream.total_out;
++
++release_mutex:
++	mutex_unlock(&msblk->read_data_mutex);
++
++	for (; k < b; k++)
++		put_bh(bh[k]);
++
++	return -EIO;
++}
+-- 
+1.6.3.3
 
