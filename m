@@ -1,183 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935307AbZLGQPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934969AbZLGQJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935307AbZLGQPN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:15:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934857AbZLGQPL
+	id S934969AbZLGQJc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:09:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934347AbZLGQJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:15:11 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39897 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934757AbZLGQPK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:15:10 -0500
-Date: Mon, 7 Dec 2009 11:09:03 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Reinette Chatre <reinette.chatre@intel.com>
-Subject: Re: linux-next: net/kbuild trees build failure
-Message-ID: <20091207160903.GB18939@tuxdriver.com>
-References: <20091207200317.57820f0a.sfr@canb.auug.org.au> <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1CF39A.5050806@suse.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 7 Dec 2009 11:09:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8494 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933577AbZLGQJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 11:09:30 -0500
+Subject: Re: [PATCH 1/2] Does raw_field_ptr() supports __data_loc?
+From: Steven Rostedt <srostedt@redhat.com>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>
+In-Reply-To: <1260156884-8474-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+References: <20091115022135.GA5427@nowhere>
+	 <1260156884-8474-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Mon, 07 Dec 2009 11:09:18 -0500
+Message-Id: <1260202158.31359.170.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 01:22:50PM +0100, Michal Marek wrote:
-> On 7.12.2009 12:41, Sam Ravnborg wrote:
-> > On Mon, Dec 07, 2009 at 08:03:17PM +1100, Stephen Rothwell wrote:
-> >> Hi Dave,
-> >>
-> >> Today's linux-next build (powerpc allyesconfig) failed like this:
-> >>
-> >> In file included from drivers/net/wireless/iwlwifi/iwl3945-base.c:57:
-> >> drivers/net/wireless/iwlwifi/iwl-core.h:66:30: error: linux/utsrelease.h: No such file or directory
-> >>
-> >> Caused by commit 250cce26d5d03337aec4ff8405121f026adb4a89 ("iwlwifi:
-> >> driver version track kernel version") from the net tree interacting with
-> >> commit 8e5c76aace9705b6983cfbf5eb2f2e869dab6738 ("kbuild: move
-> >> utsrelease.h to include/generated") from the kbuild tree.
-> >>
-> >> I applied this patch for today (and will carry it as necessary):
-> > 
-> > The right fix would be to use 'utsname()->sysname' (I think sysname
-> > is the right member).
+On Mon, 2009-12-07 at 12:34 +0900, Hitoshi Mitake wrote:
+> VERY very sorry for my long silence...
 > 
-> ->release would be the right one. One could also question why iwlwifi
-> needs to repeat the kernel version it was built / is running against,
-> but I that's not the point here :). Dave, John, can we agree that
-> whichever tree gets merged first, the other tree applies the one-liner?
+> Please don't commit this patch, Ingo.
+> This patch is required to test the next patch for perf lock.
+> 
+> I have a question for Steven Rostedt and Tom Zanussi.
+> Does current raw_field_ptr() support __data_loc?
+> 
+> At 064739bc4b3d7f424b2f25547e6611bcf0132415 ,
+> support for the modifier "__data_loc" of format is added.
+> 
+> But, when I wanted to parse format of lock_acquired (or some event else),
+> raw_field_ptr() did not returned correct pointer.
+> 
+> So I modified raw_field_ptr() like this patch. Then raw_field_ptr() works well.
+> Parser was large so I'd like to ask you about this.
+> 
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Tom Zanussi <tzanussi@gmail.com>
+> Cc: Steven Rostedt <srostedt@redhat.com>
+> 
+> I have a question
+> ---
+>  tools/perf/util/trace-event-parse.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+> index 0302405..494a470 100644
+> --- a/tools/perf/util/trace-event-parse.c
+> +++ b/tools/perf/util/trace-event-parse.c
+> @@ -1925,6 +1925,13 @@ void *raw_field_ptr(struct event *event, const char *name, void *data)
+>  	if (!field)
+>  		return NULL;
+>  
+> +	if (field->flags & FIELD_IS_STRING) {
+> +		int offset;
+> +		offset = *(int *)(data + field->offset);
+> +		offset &= 0xffff;
+> +		return data + offset;
+> +	}
+> +
 
-Hmmm...well, the suggested fixes are fine for the printk (i.e. runtime)
-usage.  But (other than Stephen's) they don't seem to help with the
-MODULE_VERSION (i.e. compile time) usage.  Is there an approved
-solution for that?
+Hmm, I guess I need to update the code in perf again. The way I did this
+was to have FIELD_IS_STRING evaluated in the eval_num_arg.
 
-For some reason the Intel drivers encode some of their build options
-into their MODULE_VERSION string.  Other than that, the vermagic
-field from modinfo would seem to suffice for replacing this version
-information.  Honestly, I'm not too fond of the "build options in
-the version string" stuff...perhaps we could just get rid of it all?
 
-From: John W. Linville <linville@tuxdriver.com>
-Subject: [PATCH] iwlwifi: remove DRV_VERSION altogether
+-- Steve
 
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
----
- drivers/net/wireless/iwlwifi/iwl-agn.c      |   18 +-----------------
- drivers/net/wireless/iwlwifi/iwl-core.c     |    1 -
- drivers/net/wireless/iwlwifi/iwl-core.h     |    1 -
- drivers/net/wireless/iwlwifi/iwl3945-base.c |   16 +---------------
- 4 files changed, 2 insertions(+), 34 deletions(-)
+>  	return data + field->offset;
+>  }
+>  
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
-index b8377ef..9d9dfef 100644
---- a/drivers/net/wireless/iwlwifi/iwl-agn.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -67,23 +67,7 @@
-  */
- #define DRV_DESCRIPTION	"Intel(R) Wireless WiFi Link AGN driver for Linux"
- 
--#ifdef CONFIG_IWLWIFI_DEBUG
--#define VD "d"
--#else
--#define VD
--#endif
--
--#ifdef CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT
--#define VS "s"
--#else
--#define VS
--#endif
--
--#define DRV_VERSION     IWLWIFI_VERSION VD VS
--
--
- MODULE_DESCRIPTION(DRV_DESCRIPTION);
--MODULE_VERSION(DRV_VERSION);
- MODULE_AUTHOR(DRV_COPYRIGHT " " DRV_AUTHOR);
- MODULE_LICENSE("GPL");
- MODULE_ALIAS("iwl4965");
-@@ -3707,7 +3691,7 @@ static int __init iwl_init(void)
- {
- 
- 	int ret;
--	printk(KERN_INFO DRV_NAME ": " DRV_DESCRIPTION ", " DRV_VERSION "\n");
-+	printk(KERN_INFO DRV_NAME ": " DRV_DESCRIPTION "\n");
- 	printk(KERN_INFO DRV_NAME ": " DRV_COPYRIGHT "\n");
- 
- 	ret = iwlagn_rate_control_register();
-diff --git a/drivers/net/wireless/iwlwifi/iwl-core.c b/drivers/net/wireless/iwlwifi/iwl-core.c
-index 574d366..1e79a57 100644
---- a/drivers/net/wireless/iwlwifi/iwl-core.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-core.c
-@@ -43,7 +43,6 @@
- 
- 
- MODULE_DESCRIPTION("iwl core");
--MODULE_VERSION(IWLWIFI_VERSION);
- MODULE_AUTHOR(DRV_COPYRIGHT " " DRV_AUTHOR);
- MODULE_LICENSE("GPL");
- 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-core.h b/drivers/net/wireless/iwlwifi/iwl-core.h
-index 675b7df..31594b2 100644
---- a/drivers/net/wireless/iwlwifi/iwl-core.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-core.h
-@@ -72,7 +72,6 @@ struct iwl_host_cmd;
- struct iwl_cmd;
- 
- 
--#define IWLWIFI_VERSION UTS_RELEASE "-k"
- #define DRV_COPYRIGHT	"Copyright(c) 2003-2009 Intel Corporation"
- #define DRV_AUTHOR     "<ilw@linux.intel.com>"
- 
-diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-index 2a28a1f..fb9e7c3 100644
---- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-+++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-@@ -64,24 +64,10 @@
- #define DRV_DESCRIPTION	\
- "Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux"
- 
--#ifdef CONFIG_IWLWIFI_DEBUG
--#define VD "d"
--#else
--#define VD
--#endif
--
--#ifdef CONFIG_IWL3945_SPECTRUM_MEASUREMENT
--#define VS "s"
--#else
--#define VS
--#endif
--
--#define DRV_VERSION  IWLWIFI_VERSION VD VS
- #define DRV_COPYRIGHT	"Copyright(c) 2003-2009 Intel Corporation"
- #define DRV_AUTHOR     "<ilw@linux.intel.com>"
- 
- MODULE_DESCRIPTION(DRV_DESCRIPTION);
--MODULE_VERSION(DRV_VERSION);
- MODULE_AUTHOR(DRV_COPYRIGHT " " DRV_AUTHOR);
- MODULE_LICENSE("GPL");
- 
-@@ -4278,7 +4264,7 @@ static int __init iwl3945_init(void)
- {
- 
- 	int ret;
--	printk(KERN_INFO DRV_NAME ": " DRV_DESCRIPTION ", " DRV_VERSION "\n");
-+	printk(KERN_INFO DRV_NAME ": " DRV_DESCRIPTION "\n");
- 	printk(KERN_INFO DRV_NAME ": " DRV_COPYRIGHT "\n");
- 
- 	ret = iwl3945_rate_control_register();
--- 
-1.6.2.5
-
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
