@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbZLGPAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbZLGPCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbZLGPAu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 10:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758207AbZLGPAs
+	id S932733AbZLGPCZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 10:02:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932595AbZLGPCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 10:00:48 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:54771 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757926AbZLGPAp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 10:00:45 -0500
-Date: Tue, 08 Dec 2009 00:00:48 +0900 (JST)
-Message-Id: <20091208.000048.123217523.mitake@dcl.info.waseda.ac.jp>
-To: xiaoguangrong@cn.fujitsu.com
-Cc: mingo@elte.hu, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, paulus@samba.org, tzanussi@gmail.com,
-       srostedt@redhat.com, kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for
- analyzing lock statistics
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <4B1CBEEB.3090800@cn.fujitsu.com>
-References: <20091207044125.GB5262@nowhere>
-	<20091207072752.GG10868@elte.hu>
-	<4B1CBEEB.3090800@cn.fujitsu.com>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	Mon, 7 Dec 2009 10:02:24 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60357 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932496AbZLGPCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 10:02:23 -0500
+Subject: Re: [PATCH 5/5] security/selinux/ss: correct size computation
+From: Eric Paris <eparis@redhat.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0912061016310.20858@ask.diku.dk>
+References: <Pine.LNX.4.64.0912061016310.20858@ask.diku.dk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Dec 2009 10:02:23 -0500
+Message-Id: <1260198143.13226.9.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for analyzing lock statistics
-Date: Mon, 07 Dec 2009 16:38:03 +0800
+On Sun, 2009-12-06 at 10:16 +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> The size argument to kcalloc should be the size of desired structure,
+> not the pointer to it.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @expression@
+> expression *x;
+> @@
+> 
+> x =
+>  <+...
+> -sizeof(x)
+> +sizeof(*x)
+> ...+>// </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Hi Xiao,
+Acked-by: Eric Paris <eparis@redhat.com>
+
+no real hurry, to get this in, the sizeof() is the same in either case,
+but it should be fixed.
+
 
 > 
+> ---
+>  security/selinux/ss/services.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> Ingo Molnar wrote:
-> 
-> > Also, i agree that the performance aspect is probably the most pressing 
-> > issue. Note that 'perf bench sched messaging' is very locking intense so 
-> > a 10x slowdown is not entirely unexpected - we still ought to optimize 
-> > it all some more. 'perf lock' is an excellent testcase for this in any 
-> > case.
-> > 
-> 
-> Here are some test results to show the overhead of lockdep trace events:
-> 
->                    select    pagefault   mmap    Memory par   Cont_SW
->                    latency    latency   latency   R/W BD      latency
-> 
-> disable ftrace        0         0         0         0          0
-> 
-> enable all ftrace  -16.65%    -109.80%   -93.62%   0.14%      -6.94%
-> 
-> enable all ftrace  -2.67%      1.08%     -3.65%   -0.52%      -0.68%
-> except lockdep
-> 
-> 
-> We also found big overhead when using kernbench and fio, but we haven't
-> verified whether it's caused by lockdep events.
+> diff -u -p a/security/selinux/ss/services.c b/security/selinux/ss/services.c
+> --- a/security/selinux/ss/services.c
+> +++ b/security/selinux/ss/services.c
+> @@ -2555,7 +2555,7 @@ int security_get_classes(char ***classes
+>  	read_lock(&policy_rwlock);
+>  
+>  	*nclasses = policydb.p_classes.nprim;
+> -	*classes = kcalloc(*nclasses, sizeof(*classes), GFP_ATOMIC);
+> +	*classes = kcalloc(*nclasses, sizeof(**classes), GFP_ATOMIC);
+>  	if (!*classes)
+>  		goto out;
+>  
+> @@ -2602,7 +2602,7 @@ int security_get_permissions(char *class
+>  	}
+>  
+>  	*nperms = match->permissions.nprim;
+> -	*perms = kcalloc(*nperms, sizeof(*perms), GFP_ATOMIC);
+> +	*perms = kcalloc(*nperms, sizeof(**perms), GFP_ATOMIC);
+>  	if (!*perms)
+>  		goto out;
+>  
 
-Thanks for your terrible but important data.
-Difference between "enable all ftrace" and "enable all ftrace except lockdep"
-is significant... This must be reduced.
 
-Thanks
-	Hitoshi
