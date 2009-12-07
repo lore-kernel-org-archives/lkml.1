@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934985AbZLGKJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934991AbZLGKKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934985AbZLGKJZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 05:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934942AbZLGKJX
+	id S934991AbZLGKKL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 05:10:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934963AbZLGKKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 05:09:23 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:2158 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934941AbZLGKJX (ORCPT
+	Mon, 7 Dec 2009 05:10:10 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:50986 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934942AbZLGKKI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 05:09:23 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <4B1CD457.3060801@tremplin-utc.net>
-Date: Mon, 07 Dec 2009 11:09:27 +0100
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091009 Mandriva/2.0.0.23-3mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
+	Mon, 7 Dec 2009 05:10:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=OhdQ1+omjTPcHCC6c5rBplqOqZGDBe2zua57JXQsfDx8Noi/2Ub4WR8W3NpaqV7m3P
+         UIbVhFC5BhW11M6F/C5zmLuYXLh3iVICeAH8hHQeJxYwWdKSEcgE0YGrG7rldPhbnx7F
+         4s1x9tQqoq30ZTcTYuJ1GaZHX6llBmxPIzSyk=
 MIME-Version: 1.0
-To: Zeno Davatz <zdavatz@gmail.com>
-Cc: Zac Medico <zmedico@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: [OT] Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
-References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>	 <4B055609.9030306@tremplin-utc.net>	 <4B1A53AE.9020707@tremplin-utc.net>	 <40a4ed590912060741n4042ab1bg8188cd4eff28ca78@mail.gmail.com>	 <4B1BDAA3.10601@gentoo.org>	 <40a4ed590912060835s61aea6aqfe6780395bfd2993@mail.gmail.com>	 <4B1C38B5.2060204@tremplin-utc.net>	 <40a4ed590912070143j231e07b6uafd04d0f2ee15dca@mail.gmail.com>	 <4B1CD029.3080503@tremplin-utc.net> <40a4ed590912070202q30852e2fo35023f557919966e@mail.gmail.com>
-In-Reply-To: <40a4ed590912070202q30852e2fo35023f557919966e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <643.1260026074@redhat.com>
+References: <1244854869-2563-1-git-send-email-vapier@gentoo.org> 
+	<14959.1259948697@redhat.com> <4B19A92A.5030804@analog.com> 
+	<643.1260026074@redhat.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 7 Dec 2009 05:09:55 -0500
+Message-ID: <8bd0f97a0912070209k5c87643cm53a24566f7e63a9f@mail.gmail.com>
+Subject: Re: [uClinux-dev] [PATCH/RFC] FDPIC: add hook for arches to customize 
+	program header parsing
+To: David Howells <dhowells@redhat.com>
+Cc: Jie Zhang <jie.zhang@analog.com>,
+       uClinux development list <uclinux-dev@uclinux.org>,
+       linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       David McCullough <davidm@snapgear.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 07-12-09 11:02, Zeno Davatz schreef:
-:
-> Not the same on Gentoo. I think I have to find the kernel boot-option
-> that I can pass to lilo.
-> 
-> Also: When I force remove the modules psb and drm_psb with "rmmod -f"
-> and then start X I get the same error:
-> 
-> X: symbol lookup error: /usr/lib/xorg/modules/drivers/psb_drv.so:
-> undefined symbol: LoaderRefSymLists
-> 
-> X just does not yet like psb.
-You are also aware that it does not work on Xserver 1.7, right? 1.6 is
-the the maximum.
+On Sat, Dec 5, 2009 at 10:14, David Howells wrote:
+> Jie Zhang <jie.zhang@analog.com> wrote:
+>> > There needs to be a mapping covering the SRAM region for the purposes of the
+>>
+>> Our GDB is still lack of the feature to debug applications using SRAM. So this
+>> part of code was not got exercised. So if we remove this line, can this patch
+>> got merged?
+>
+> No.  Firstly, the piece of storage that gets munmapped isn't used, so unmapping
+> it isn't wrong.  What you need to do is to put a mapping over the bit of the
+> SRAM you wish to use and then fill it and use it.  Ideally, you'd do this
+> inside of do_mmap_pgoff() - that way those bits of the SRAM can be shared, but
+> I'm not sure how best to do that.
 
-See you
-Eric
+we've looked into trying to represent the SRAM regions with normal
+VMA's a few times, but i think the conclusion every time has been that
+it isnt [currently] doable.  i vaguely recall it's due to the fact
+that Blackfin SRAM is harvard based and VMA's cant cope with this
+restriction.  Sonic should be able to provide more details though.
+
+currently we have a simpler allocator for kernel/user space to
+leverage so that small pieces can be dynamically allocated/freed.
+
+> But you need to stick a VMA over it so that various checks don't spit
+> EFAULT/EIO at you.
+
+we give SRAM's a "pass" in every place where addresses are checked
+-mike
