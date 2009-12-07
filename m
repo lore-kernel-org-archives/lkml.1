@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbZLGHe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbZLGHjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933559AbZLGHe6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:34:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbZLGHe6
+	id S1758720AbZLGHjO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758623AbZLGHjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:34:58 -0500
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:57205 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933171AbZLGHe5 (ORCPT
+	Mon, 7 Dec 2009 02:39:13 -0500
+Received: from e28smtp01.in.ibm.com ([122.248.162.1]:60409 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758647AbZLGHjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:34:57 -0500
-Date: Mon, 7 Dec 2009 13:04:55 +0530
+	Mon, 7 Dec 2009 02:39:13 -0500
+Date: Mon, 7 Dec 2009 13:09:14 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Veaceslav Falico <vfalico@redhat.com>
 Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
@@ -25,30 +25,32 @@ Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
        Louis Rilling <louis.rilling@kerlabs.com>,
        David Howells <dhowells@redhat.com>,
        Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: Re: [PATCH v2 1/4] copy_signal cleanup: use zalloc and remove
- initializations
-Message-ID: <20091207073454.GD5780@balbir.in.ibm.com>
+Subject: Re: [PATCH v2 2/4] copy_signal cleanup: clean acct_init_pacct() and
+ taskstats_tgid_init()
+Message-ID: <20091207073914.GE5780@balbir.in.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 References: <20091201221036.GA10052@darkmag.usersys.redhat.com>
  <20091202135759.GA791@redhat.com>
- <20091204142814.GH10052@darkmag.usersys.redhat.com>
+ <20091204142901.GI10052@darkmag.usersys.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091204142814.GH10052@darkmag.usersys.redhat.com>
+In-Reply-To: <20091204142901.GI10052@darkmag.usersys.redhat.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Veaceslav Falico <vfalico@redhat.com> [2009-12-04 15:28:14]:
+* Veaceslav Falico <vfalico@redhat.com> [2009-12-04 15:29:01]:
 
-> Use kmem_cache_zalloc() on signal creation and remove unneeded initialization
-> lines in copy_signal().
+> Remove unneeded initializations in acct_init_pacct() and taskstats_tgid_init().
+> These are accessed only via copy_signal() and are useless after using
+> kmem_cache_zalloc() in copy_signal().
 > 
 > Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
 
-Good cleanup, thanks!
+As Oleg suggested, please reorder the cleanup to remove the empty
+functions.
 
 -- 
 	Balbir
