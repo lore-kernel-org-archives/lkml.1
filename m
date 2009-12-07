@@ -1,95 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbZLGH12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbZLGH17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbZLGH12 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbZLGH12
+	id S1758672AbZLGH17 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbZLGH16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:27:28 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:52602 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754876AbZLGH11 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:27:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=Ct70tVd3UzdW56B5DOxNjcdSIVOB0HQEjBUNC/JV5ufYgR9CZiVIWT/nWzkDHS6ztn
-         OdhyFrMZ/NGZf97c1HRe84Cl1xYi8FGQrwzRFFr1Zt1lxctdPxcrLEvz80tkxzlFdqiM
-         WgGGg40MKHaKDriw+tbm8A29XVVRybm6hZ4Bo=
-Subject: Re: [PATCH v8 8/8] Loongson: YeeLoong: add input/hotkey driver
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
-       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <20091207064857.GG21451@core.coreip.homeip.net>
-References: <cover.1260082252.git.wuzhangjin@gmail.com>
-	 <b164d5bb79963a57621d024c22e5664de0ff8662.1260082252.git.wuzhangjin@gmail.com>
-	 <20091207064857.GG21451@core.coreip.homeip.net>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Mon, 07 Dec 2009 15:26:47 +0800
-Message-ID: <1260170807.9092.9.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 02:27:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34753 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758527AbZLGH16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 02:27:58 -0500
+Date: Mon, 7 Dec 2009 08:27:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for
+ analyzing lock statistics
+Message-ID: <20091207072752.GG10868@elte.hu>
+References: <20091115022135.GA5427@nowhere>
+ <1260156884-8474-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
+ <20091207044125.GB5262@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091207044125.GB5262@nowhere>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-06 at 22:48 -0800, Dmitry Torokhov wrote:
-> Hi Wu,
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> On Mon, Dec 07, 2009 at 12:34:44PM +0900, Hitoshi Mitake wrote:
+> > This patch adds new subcommand "lock" to perf for analyzing lock usage statistics.
+> > Current perf lock is very primitive. This cannot provide the minimum functions.
+> > Of course I continue to working on this.
+> > But too big patch is not good thing for you, so I post this.
 > 
-> On Sun, Dec 06, 2009 at 03:01:48PM +0800, Wu Zhangjin wrote:
-> > +
-> > +#define EC_VER_LEN 64
-> > +
-> > +static int black_screen_handler(int status)
-> > +{
-> > +	char *p, ec_ver[EC_VER_LEN];
-> > +
-> > +	p = strstr(loongson_cmdline, "EC_VER=");
-> > +	if (!p)
-> > +		memset(ec_ver, 0, EC_VER_LEN);
-> > +	else {
-> > +		strncpy(ec_ver, p, EC_VER_LEN);
-> > +		p = strstr(ec_ver, " ");
-> > +		if (p)
-> > +			*p = '\0';
-> > +	}
-> > +
+> Oh great!
+> Yeah, the work can be done incrementally.
+>
+[...]
+>
 > 
-> Hmm, why do you copy and parse command lineinstead of using module
-> param and also doing it just once?
+> Very nice and promising!
 > 
+> I can't wait to try it.
 
-The kernel command line (EC_VER=blabla) is passed by bootloader(PMON)
-automatically, so, I think it's better to use it.
+ok, to ease testing i've created a new (and not yet permanent) topic 
+tree for it to track this new perf feature: tip:perf/lock and pushed it 
+out.
 
-Using an extra module param is good, but may make the users confused and
-will also add extra jobs to the distribution developers ;) in the
-future, the information of the EC and the other information of the
-devices will be passed to kernel from BIOS via something like
-FDT(Flattened Device Tree, used on PowerPC machines) as Ralf introduced,
-so, the above method is a temp solution.
+Note: because it's not yet in a final form i have not merged it into 
+tip:master yet - when you are working on these bits you need to do this 
+manually via:
 
-Thanks & Regards,
-	Wu Zhangjin
+  git merge tip/perf/lock
 
-> > +	/* Seems EC(>=PQ1D26) does this job for us, we can not do it again,
-> > +	 * otherwise, the brightness will not resume to the normal level! */
-> > +	if (strncasecmp(ec_ver, "EC_VER=PQ1D26", 64) < 0)
-> > +		yeeloong_lcd_vo_set(status);
-> > +
-> > +	return status;
-> > +}
-> 
-> Thanks.
-> 
+Also, we might need to rebase this branch as it's WIP, so the commit IDs 
+are not permanent yet. But i thought it would be easier to do deltas on 
+this basis.
 
+Hitoshi-san, the patches did not have a Signed-off-by line from you, can 
+i add them for you?
 
+Also, i agree that the performance aspect is probably the most pressing 
+issue. Note that 'perf bench sched messaging' is very locking intense so 
+a 10x slowdown is not entirely unexpected - we still ought to optimize 
+it all some more. 'perf lock' is an excellent testcase for this in any 
+case.
+
+Thanks,
+
+	Ingo
