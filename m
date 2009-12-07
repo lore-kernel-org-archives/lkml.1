@@ -1,318 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbZLGWKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933521AbZLGWLC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758382AbZLGWKu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 17:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbZLGWKt
+	id S933521AbZLGWLC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:11:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932807AbZLGWK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 17:10:49 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:35406 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758278AbZLGWKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 17:10:48 -0500
-From: Michal Marek <mmarek@suse.cz>
-To: linux-kbuild@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH v3] kbuild: generate modules.builtin
-Date: Mon,  7 Dec 2009 23:09:45 +0100
-Message-Id: <1260223785-8604-1-git-send-email-mmarek@suse.cz>
-X-Mailer: git-send-email 1.6.5.3
+	Mon, 7 Dec 2009 17:10:59 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:36106 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932780AbZLGWKz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 17:10:55 -0500
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+References: <20091130100041.GA29610@infradead.org>
+	<alpine.LFD.2.00.0911300722370.2872@localhost.localdomain>
+	<20091130174638.GA9782@elte.hu>
+	<alpine.LFD.2.00.0911302206370.24119@localhost.localdomain>
+	<1259616429.26472.499.camel@laptop>
+	<alpine.LFD.2.00.0911302300550.24119@localhost.localdomain>
+	<alpine.LFD.2.00.0911301409560.2872@localhost.localdomain>
+	<alpine.LFD.2.00.0911302328350.24119@localhost.localdomain>
+	<alpine.LFD.2.00.0911301443110.2872@localhost.localdomain>
+	<m1y6lg7q3n.fsf@fess.ebiederm.org> <20091207183226.GA20139@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 07 Dec 2009 14:10:50 -0800
+In-Reply-To: <20091207183226.GA20139@redhat.com> (Oleg Nesterov's message of "Mon\, 7 Dec 2009 19\:32\:26 +0100")
+Message-ID: <m1aaxu305x.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [rfc] "fair" rw spinlocks
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To make it easier for module-init-tools and scripts like mkinitrd to
-distinguish builtin and missing modules, install a modules.builtin file
-listing all builtin modules. This is done by generating an additional
-config file (tristate.conf) with tristate options set to uppercase 'Y'
-or 'M'. If we source that config file, the builtin modules appear in
-obj-Y.
+Oleg Nesterov <oleg@redhat.com> writes:
 
-Signed-off-by: Michal Marek <mmarek@suse.cz>
----
-Only minor changes since the last posting:
-* checkpatch fixes
-* tristate.conf lists only tristate options, not boolean ones
+> On 12/05, Eric W. Biederman wrote:
+>>
+>> Atomically sending signal to every member of a process group, is the
+>> big fly in the ointment I am aware of.  Last time I looked I could
+>> not see how to convert it rcu.
+>
+> I am not sure, but iirc we can do this lockless (under rcu_lock).
+> We need to modify pid_link to use list_entry and attach_pid() should
+> add the new task to the end. Of course we need more changes, but
+> (again iirc) this is not too hard.
 
- .gitignore                       |    1 +
- Documentation/kbuild/kbuild.txt  |   14 +++++++++
- Documentation/kbuild/kconfig.txt |    5 +++
- Makefile                         |   14 +++++++---
- scripts/Kbuild.include           |    6 ++++
- scripts/Makefile.modbuiltin      |   55 ++++++++++++++++++++++++++++++++++++++
- scripts/kconfig/confdata.c       |   22 ++++++++++++++-
- 7 files changed, 112 insertions(+), 5 deletions(-)
- create mode 100644 scripts/Makefile.modbuiltin
+The problem is that even adding to the end of the list, we could run
+into a deleted entry and not see the new end of the list.
 
-diff --git a/.gitignore b/.gitignore
-index 4980606..9399f1a 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -22,6 +22,7 @@
- *.lst
- *.symtypes
- *.order
-+modules.builtin
- *.elf
- *.bin
- *.gz
-diff --git a/Documentation/kbuild/kbuild.txt b/Documentation/kbuild/kbuild.txt
-index bb3bf38..6f8c1ca 100644
---- a/Documentation/kbuild/kbuild.txt
-+++ b/Documentation/kbuild/kbuild.txt
-@@ -1,3 +1,17 @@
-+Output files
-+
-+modules.order
-+--------------------------------------------------
-+This file records the order in which modules appear in Makefiles. This
-+is used by modprobe to deterministically resolve aliases that match
-+multiple modules.
-+
-+modules.builtin
-+--------------------------------------------------
-+This file lists all modules that are built into the kernel. This is used
-+by modprobe to not fail when trying to load something builtin.
-+
-+
- Environment variables
- 
- KCPPFLAGS
-diff --git a/Documentation/kbuild/kconfig.txt b/Documentation/kbuild/kconfig.txt
-index ab8dc35..49efae7 100644
---- a/Documentation/kbuild/kconfig.txt
-+++ b/Documentation/kbuild/kconfig.txt
-@@ -103,6 +103,11 @@ KCONFIG_AUTOCONFIG
- This environment variable can be set to specify the path & name of the
- "auto.conf" file.  Its default value is "include/config/auto.conf".
- 
-+KCONFIG_TRISTATE
-+--------------------------------------------------
-+This environment variable can be set to specify the path & name of the
-+"tristate.conf" file.  Its default value is "include/config/tristate.conf".
-+
- KCONFIG_AUTOHEADER
- --------------------------------------------------
- This environment variable can be set to specify the path & name of the
-diff --git a/Makefile b/Makefile
-index 74ad9a9..90692ff 100644
---- a/Makefile
-+++ b/Makefile
-@@ -463,7 +463,7 @@ ifeq ($(KBUILD_EXTMOD),)
- # Carefully list dependencies so we do not try to build scripts twice
- # in parallel
- PHONY += scripts
--scripts: scripts_basic include/config/auto.conf
-+scripts: scripts_basic include/config/auto.conf include/config/tristate.conf
- 	$(Q)$(MAKE) $(build)=$(@)
- 
- # Objects we will link into vmlinux / subdirs we need to visit
-@@ -490,7 +490,7 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
- # with it and forgot to run make oldconfig.
- # if auto.conf.cmd is missing then we are probably in a cleaned tree so
- # we execute the config step to be sure to catch updated Kconfig files
--include/config/auto.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
-+include/config/%.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
- 	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
- else
- # external modules needs include/generated/autoconf.h and include/config/auto.conf
-@@ -875,6 +875,9 @@ $(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
- PHONY += $(vmlinux-dirs)
- $(vmlinux-dirs): prepare scripts
- 	$(Q)$(MAKE) $(build)=$@
-+ifdef CONFIG_MODULES
-+	$(Q)$(MAKE) $(modbuiltin)=$@
-+endif
- 
- # Build the kernel release string
- #
-@@ -1079,6 +1082,7 @@ all: modules
- PHONY += modules
- modules: $(vmlinux-dirs) $(if $(KBUILD_BUILTIN),vmlinux)
- 	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.order) > $(objtree)/modules.order
-+	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.builtin) > $(objtree)/modules.builtin
- 	@$(kecho) '  Building modules, stage 2.';
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modbuild
-@@ -1108,6 +1112,7 @@ _modinst_:
- 		ln -s $(objtree) $(MODLIB)/build ; \
- 	fi
- 	@cp -f $(objtree)/modules.order $(MODLIB)/
-+	@cp -f $(objtree)/modules.builtin $(MODLIB)/
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
- 
- # This depmod is only for convenience to give the initial
-@@ -1168,7 +1173,7 @@ clean: archclean $(clean-dirs)
- 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
- 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
- 		-o -name '*.symtypes' -o -name 'modules.order' \
--		-o -name '.tmp_*.o.*' \
-+		-o modules.order -o -name '.tmp_*.o.*' \
- 		-o -name '*.gcno' \) -type f -print | xargs rm -f
- 
- # mrproper - Delete all generated files, including .config
-@@ -1366,7 +1371,8 @@ $(clean-dirs):
- 
- clean:	rm-dirs := $(MODVERDIR)
- clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers \
--                   $(KBUILD_EXTMOD)/modules.order
-+                   $(KBUILD_EXTMOD)/modules.order \
-+                   $(KBUILD_EXTMOD)/modules.builtin
- clean: $(clean-dirs)
- 	$(call cmd,rmdirs)
- 	$(call cmd,rmfiles)
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-index c67e73e..ed2773e 100644
---- a/scripts/Kbuild.include
-+++ b/scripts/Kbuild.include
-@@ -149,6 +149,12 @@ ld-option = $(call try-run,\
- # $(Q)$(MAKE) $(build)=dir
- build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
- 
-+###
-+# Shorthand for $(Q)$(MAKE) -f scripts/Makefile.modbuiltin obj=
-+# Usage:
-+# $(Q)$(MAKE) $(modbuiltin)=dir
-+modbuiltin := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.modbuiltin obj
-+
- # Prefix -I with $(srctree) if it is not an absolute path.
- # skip if -I has no parameter
- addtree = $(if $(patsubst -I%,%,$(1)), \
-diff --git a/scripts/Makefile.modbuiltin b/scripts/Makefile.modbuiltin
-new file mode 100644
-index 0000000..102a276
---- /dev/null
-+++ b/scripts/Makefile.modbuiltin
-@@ -0,0 +1,55 @@
-+# ==========================================================================
-+# Generating modules.builtin
-+# ==========================================================================
-+
-+src := $(obj)
-+
-+PHONY := __modbuiltin
-+__modbuiltin:
-+
-+-include include/config/auto.conf
-+# tristate.conf sets tristate variables to uppercase 'Y' or 'M'
-+# That way, we get the list of built-in modules in obj-Y
-+-include include/config/tristate.conf
-+
-+include scripts/Kbuild.include
-+
-+# The filename Kbuild has precedence over Makefile
-+kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
-+kbuild-file := $(if $(wildcard $(kbuild-dir)/Kbuild),$(kbuild-dir)/Kbuild,$(kbuild-dir)/Makefile)
-+include $(kbuild-file)
-+
-+include scripts/Makefile.lib
-+__subdir-Y     := $(patsubst %/,%,$(filter %/, $(obj-Y)))
-+subdir-Y       += $(__subdir-Y)
-+subdir-ym      := $(sort $(subdir-y) $(subdir-Y) $(subdir-m))
-+subdir-ym      := $(addprefix $(obj)/,$(subdir-ym))
-+obj-Y          := $(addprefix $(obj)/,$(obj-Y))
-+
-+modbuiltin-subdirs := $(patsubst %,%/modules.builtin, $(subdir-ym))
-+modbuiltin-mods    := $(filter %.ko, $(obj-Y:.o=.ko))
-+modbuiltin-target  := $(obj)/modules.builtin
-+
-+__modbuiltin: $(modbuiltin-target) $(subdir-ym)
-+	@:
-+
-+$(modbuiltin-target): $(subdir-ym) FORCE
-+	$(Q)(for m in $(modbuiltin-mods); do echo kernel/$$m; done;	\
-+	cat /dev/null $(modbuiltin-subdirs)) > $@
-+
-+PHONY += FORCE
-+
-+FORCE:
-+
-+# Descending
-+# ---------------------------------------------------------------------------
-+
-+PHONY += $(subdir-ym)
-+$(subdir-ym):
-+	$(Q)$(MAKE) $(modbuiltin)=$@
-+
-+
-+# Declare the contents of the .PHONY variable as phony.  We keep that
-+# information in a variable se we can use it in if_changed and friends.
-+
-+.PHONY: $(PHONY)
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 797a741..c4dec80 100644
---- a/scripts/kconfig/confdata.c
-+++ b/scripts/kconfig/confdata.c
-@@ -677,7 +677,7 @@ int conf_write_autoconf(void)
- 	struct symbol *sym;
- 	const char *str;
- 	const char *name;
--	FILE *out, *out_h;
-+	FILE *out, *tristate, *out_h;
- 	time_t now;
- 	int i, l;
- 
-@@ -692,9 +692,16 @@ int conf_write_autoconf(void)
- 	if (!out)
- 		return 1;
- 
-+	tristate = fopen(".tmpconfig_tristate", "w");
-+	if (!tristate) {
-+		fclose(out);
-+		return 1;
-+	}
-+
- 	out_h = fopen(".tmpconfig.h", "w");
- 	if (!out_h) {
- 		fclose(out);
-+		fclose(tristate);
- 		return 1;
- 	}
- 
-@@ -707,6 +714,9 @@ int conf_write_autoconf(void)
- 		     "# %s"
- 		     "#\n",
- 		     sym_get_string_value(sym), ctime(&now));
-+	fprintf(tristate, "#\n"
-+			  "# Automatically generated - do not edit\n"
-+			  "\n");
- 	fprintf(out_h, "/*\n"
- 		       " * Automatically generated C config: don't edit\n"
- 		       " * Linux kernel version: %s\n"
-@@ -727,10 +737,14 @@ int conf_write_autoconf(void)
- 				break;
- 			case mod:
- 				fprintf(out, "CONFIG_%s=m\n", sym->name);
-+				fprintf(tristate, "CONFIG_%s=M\n", sym->name);
- 				fprintf(out_h, "#define CONFIG_%s_MODULE 1\n", sym->name);
- 				break;
- 			case yes:
- 				fprintf(out, "CONFIG_%s=y\n", sym->name);
-+				if (sym->type == S_TRISTATE)
-+					fprintf(tristate, "CONFIG_%s=Y\n",
-+							sym->name);
- 				fprintf(out_h, "#define CONFIG_%s 1\n", sym->name);
- 				break;
- 			}
-@@ -772,6 +786,7 @@ int conf_write_autoconf(void)
- 		}
- 	}
- 	fclose(out);
-+	fclose(tristate);
- 	fclose(out_h);
- 
- 	name = getenv("KCONFIG_AUTOHEADER");
-@@ -779,6 +794,11 @@ int conf_write_autoconf(void)
- 		name = "include/generated/autoconf.h";
- 	if (rename(".tmpconfig.h", name))
- 		return 1;
-+	name = getenv("KCONFIG_TRISTATE");
-+	if (!name)
-+		name = "include/config/tristate.conf";
-+	if (rename(".tmpconfig_tristate", name))
-+		return 1;
- 	name = conf_get_autoconfig_name();
- 	/*
- 	 * This must be the last step, kbuild has a dependency on auto.conf
--- 
-1.6.5.3
+Suppose when we start iterating the list we have:
 
+  A -> B -> C -> D
+
+Then someone deletes some of the entries while we are iterating the list.
+
+A ->
+ B' -> C' -> D'
+
+We will continue on traversing through the deleted entries.
+
+Then someone adds a new entry to the end of the list.
+
+A-> N
+
+Since we are at B', C' or D' we will never see the new entry on the
+end of the list.
+
+If there was a way to iterate a list with a guarantee that we always saw
+new entries while we are traversing it I would love to see it.
+
+Additionally we have the other possibility that if a child is forking
+we send the signal to the parent after the child forks away but before
+the child joins whichever list we are walking, and we complete our
+traversal without seeing the child.
+
+>> This is a pain because we occasionally signal a process group from
+>> interrupt context.
+>
+> Only send_sigio/etc does so, right?
+
+That seems right.  My memory is vague and as I recall you were the one
+who found the senders in interrupt context.
+
+> I didn't read the previous discussion yet (will try tomorrow), sorry
+> if I am off-topic. But I think the nastiest problem with tasklist
+> is that it protects parent/child relationship. We need per-process
+> lock, but first we should change ptrace to avoid this lock somehow.
+> (this is one of the goals of ptrace-utrace, but not "immediate").
+
+That is another good one.  The discussion was roughly:
+We should get rid of rwlocks.
+tasklist_lock is a rwlock.
+What prevents us from making tasklist_lock a spinlock etc.
+
+On that score since we take tasklist_lock for write in ptrace_attach
+and I presume in the other parent/child cases  I don't think that
+issue prevents us from moving off of rwlocks for tasklist_lock.
+
+Eric
