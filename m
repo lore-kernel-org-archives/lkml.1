@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934918AbZLGJtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934935AbZLGJva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934918AbZLGJtN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 04:49:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934886AbZLGJtL
+	id S934935AbZLGJva (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 04:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934900AbZLGJv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 04:49:11 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57827 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934875AbZLGJtK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 04:49:10 -0500
-Date: Mon, 7 Dec 2009 10:49:10 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
-       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v8 5/8] Loongson: YeeLoong: add hardware monitoring
- driver
-Message-ID: <20091207094909.GD23088@elf.ucw.cz>
-References: <cover.1260082252.git.wuzhangjin@gmail.com>
- <d8789fa7e97d8a170c4e2516d7ef2d2fbbe42cc6.1260082252.git.wuzhangjin@gmail.com>
- <20091206084717.GD2766@ucw.cz>
- <1260147298.3126.2.camel@falcon.domain.org>
- <20091207080446.GB23088@elf.ucw.cz>
- <1260178870.9092.34.camel@falcon.domain.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260178870.9092.34.camel@falcon.domain.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 7 Dec 2009 04:51:29 -0500
+Received: from lo.gmane.org ([80.91.229.12]:37586 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934886AbZLGJv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 04:51:28 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [022/119] highmem: Fix debug_kmap_atomic() to also handle
+ KM_IRQ_PTE, KM_NMI, and KM_NMI_PTE
+Date: Mon, 7 Dec 2009 10:50:34 +0100
+Message-ID: <20091207105034.4dd2beac@schatten.dmk.lab>
+References: <20091206235936.208334321@mini.kroah.org>
+	<20091207000643.892734717@mini.kroah.org>
+	<Pine.LNX.4.64.0912070105370.2642@sister.anvils>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-Gmane-NNTP-Posting-Host: f053213116.adsl.alicedsl.de
+In-Reply-To: <Pine.LNX.4.64.0912070105370.2642@sister.anvils>
+X-Newsreader: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-12-07 17:41:10, Wu Zhangjin wrote:
-> On Mon, 2009-12-07 at 09:04 +0100, Pavel Machek wrote:
-> > > > What is going on here? I thought the value is already in two's
-> > > > complement... Is the above equivalent of
-> > > > 
-> > > > 	      if (value < 0)
-> > > > 	      	 value = -value; 
-> > > > 
-> > > > ? If so, why? If not, can you add a comment?
-> > > 
-> > > Right, then, will use this instead:
-> > > 
-> > > static int get_battery_current(void)
-> > > { 
-> > > 	s16 value;
-> > > 
-> > > 	value = (ec_read(REG_BAT_CURRENT_HIGH) << 8) |
-> > > 		(ec_read(REG_BAT_CURRENT_LOW));
-> > > 
-> > > 	return abs(value);
-> > > }
+On Mon, 7 Dec 2009 01:11:55 +0000 (GMT)
+Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+
+> On Sun, 6 Dec 2009, Greg KH wrote:
+> 
+> > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 > > 
-> > That's certainly better. But... why not return signed value? Current
-> > flowing from the battery is certainly very different from current
-> > flowing into it...
+> > ------------------
+> > From: Soeren Sandmann <sandmann@daimi.au.dk>
+> > 
+> > commit d4515646699b6ad7b1a98ceb871296b957f3ef47 upstream.
+> > 
+> > Previously calling debug_kmap_atomic() with these types would
+> > cause spurious warnings.
+> > 
+> > (triggered by SysProf using perf events)
+> > 
+> > Signed-off-by: Soeren Sandmann Pedersen <sandmann@redhat.com>
+> > Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> > Cc: a.p.zijlstra@chello.nl
+> > LKML-Reference: <ye8vdhz8krw.fsf@camel23.daimi.au.dk>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> You are totally right ;)
+> IIRC, this patch caused build failures in a number of architectures,
+> those which didn't already define KM_NMI, KM_NMI_PTE or KM_IRQ_PTE
+> e.g. compare the 2.6.32 arch/arm/include/asm/kmap_types.h against
+> its 2.6.31 version.
 > 
-> Just test it, when flowing from the battery, the value is negative, and
-> when flowing into the battery, the value is positive, so, no abs()
-> needed. thanks!
+> Should be fixable if you include the extras necessary, but I'm
+> ashamed to say I've left that as an exercise for the reader ;)
+> 
+> Hugh
 
-Make it return -value, then. I believe other code uses >0 values for
-discharge.
-									Pavel
+grepping the git log for KM_NMI did find these two fixes in linus tree:
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+e8105903d78c81119754a42926951d9d17e191ba powerpc: Fix DEBUG_HIGHMEM build break from d4515646699
+4ff1fa278b0bd1b2dd3c42efc0cb86788ffe05d5 [ARM] kmap: fix build errors with DEBUG_HIGHMEM enabled
+
+hth,
+Flo
+
