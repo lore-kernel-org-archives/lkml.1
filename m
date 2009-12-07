@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbZLGAZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbZLGAYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758522AbZLGAZQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932797AbZLGAN0
+	id S1758809AbZLGAYV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758431AbZLGANa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:13:26 -0500
-Received: from kroah.org ([198.145.64.141]:34496 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:13:30 -0500
+Received: from kroah.org ([198.145.64.141]:34502 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758527AbZLGANV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:13:21 -0500
+	id S1758502AbZLGANW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:13:22 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:51 2009
-Message-Id: <20091207000651.565883198@mini.kroah.org>
+Message-Id: <20091207000651.695885127@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:40 -0800
+Date: Sun, 06 Dec 2009 16:00:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Denis Loginov <dinvlad@gmail.com>,
        Jean-Francois Moine <moinejf@free.fr>,
        Mauro Carvalho Chehab <mchehab@redhat.com>,
        Michael Krufky <mkrufky@linuxtv.org>
-Subject: [064/119] V4L/DVB (12280): gspca - sonixj: Remove auto gain/wb/expo for the ov7660 sensor.
+Subject: [065/119] V4L/DVB (12356): gspca - sonixj: Webcam 0c45:6148 added
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=v4l-dvb-12280-gspca-sonixj-remove-auto-gain-wb-expo-for-the-ov7660-sensor.patch
+Content-Disposition: inline; filename=v4l-dvb-12356-gspca-sonixj-webcam-0c45-6148-added.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,59 +32,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jean-Francois Moine <moinejf@free.fr>
+From: Denis Loginov <dinvlad@gmail.com>
 
-commit d8f400efc1ef7b344e07590fb6b77431bc358ba0 upstream.
+commit 6baefab531b22288be3b4ddef5671ea6469b09f8 upstream.
 
+Signed-off-by: Denis Loginov <dinvlad@gmail.com>
 Signed-off-by: Jean-Francois Moine <moinejf@free.fr>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/gspca/sonixj.c |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ Documentation/video4linux/gspca.txt |    1 +
+ drivers/media/video/gspca/sonixj.c  |    8 ++++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
+--- a/Documentation/video4linux/gspca.txt
++++ b/Documentation/video4linux/gspca.txt
+@@ -284,6 +284,7 @@ sonixj		0c45:613a	Microdia Sonix PC Came
+ sonixj		0c45:613b	Surfer SN-206
+ sonixj		0c45:613c	Sonix Pccam168
+ sonixj		0c45:6143	Sonix Pccam168
++sonixj		0c45:6148	Digitus DA-70811/ZSMC USB PC Camera ZS211/Microdia
+ sn9c20x		0c45:6240	PC Camera (SN9C201 + MT9M001)
+ sn9c20x		0c45:6242	PC Camera (SN9C201 + MT9M111)
+ sn9c20x		0c45:6248	PC Camera (SN9C201 + OV9655)
 --- a/drivers/media/video/gspca/sonixj.c
 +++ b/drivers/media/video/gspca/sonixj.c
-@@ -727,13 +727,13 @@ static const u8 ov7660_sensor_init[][8] 
- 	{0xa1, 0x21, 0x12, 0x05, 0x00, 0x00, 0x00, 0x10},
- 						/* Outformat = rawRGB */
- 	{0xa1, 0x21, 0x13, 0xb8, 0x00, 0x00, 0x00, 0x10}, /* init COM8 */
--	{0xd1, 0x21, 0x00, 0x01, 0x74, 0x74, 0x00, 0x10},
-+	{0xd1, 0x21, 0x00, 0x01, 0x74, 0x92, 0x00, 0x10},
- 						/* GAIN BLUE RED VREF */
- 	{0xd1, 0x21, 0x04, 0x00, 0x7d, 0x62, 0x00, 0x10},
- 						/* COM 1 BAVE GEAVE AECHH */
- 	{0xb1, 0x21, 0x08, 0x83, 0x01, 0x00, 0x00, 0x10}, /* RAVE COM2 */
- 	{0xd1, 0x21, 0x0c, 0x00, 0x08, 0x04, 0x4f, 0x10}, /* COM 3 4 5 6 */
--	{0xd1, 0x21, 0x10, 0x7f, 0x40, 0x05, 0xff, 0x10},
-+	{0xd1, 0x21, 0x10, 0x7f, 0x40, 0x05, 0xf8, 0x10},
- 						/* AECH CLKRC COM7 COM8 */
- 	{0xc1, 0x21, 0x14, 0x2c, 0x00, 0x02, 0x00, 0x10}, /* COM9 COM10 */
- 	{0xd1, 0x21, 0x17, 0x10, 0x60, 0x02, 0x7b, 0x10},
-@@ -1637,16 +1637,19 @@ static void setfreq(struct gspca_dev *gs
- 	if (gspca_dev->ctrl_dis & (1 << FREQ_IDX))
- 		return;
- 	if (sd->sensor == SENSOR_OV7660) {
-+		u8 com8;
-+
-+		com8 = 0xf8;		/* no auto gain/wb/expo */
- 		switch (sd->freq) {
- 		case 0: /* Banding filter disabled */
--			i2c_w1(gspca_dev, 0x13, 0xdf);
-+			i2c_w1(gspca_dev, 0x13, com8 & 0xdf);
- 			break;
- 		case 1: /* 50 hz */
--			i2c_w1(gspca_dev, 0x13, 0xff);
-+			i2c_w1(gspca_dev, 0x13, com8);
- 			i2c_w1(gspca_dev, 0x3b, 0x0a);
- 			break;
- 		case 2: /* 60 hz */
--			i2c_w1(gspca_dev, 0x13, 0xff);
-+			i2c_w1(gspca_dev, 0x13, com8);
- 			i2c_w1(gspca_dev, 0x3b, 0x02);
- 			break;
- 		}
+@@ -2339,7 +2339,8 @@ static const __devinitdata struct usb_de
+ 	{USB_DEVICE(0x0c45, 0x60fe), BSI(SN9C105, OV7630, 0x21)},
+ #endif
+ 	{USB_DEVICE(0x0c45, 0x6100), BSI(SN9C120, MI0360, 0x5d)}, /*sn9c128*/
+-/*	{USB_DEVICE(0x0c45, 0x6108), BSI(SN9C120, OM6801, 0x??)}, */
++/*	{USB_DEVICE(0x0c45, 0x6102), BSI(SN9C120, PO2030N, ??)}, */
++/*	{USB_DEVICE(0x0c45, 0x6108), BSI(SN9C120, OM6802, 0x21)}, */
+ 	{USB_DEVICE(0x0c45, 0x610a), BSI(SN9C120, OV7648, 0x21)}, /*sn9c128*/
+ 	{USB_DEVICE(0x0c45, 0x610b), BSI(SN9C120, OV7660, 0x21)}, /*sn9c128*/
+ 	{USB_DEVICE(0x0c45, 0x610c), BSI(SN9C120, HV7131R, 0x11)}, /*sn9c128*/
+@@ -2355,6 +2356,7 @@ static const __devinitdata struct usb_de
+ #if !defined CONFIG_USB_SN9C102 && !defined CONFIG_USB_SN9C102_MODULE
+ 	{USB_DEVICE(0x0c45, 0x6130), BSI(SN9C120, MI0360, 0x5d)},
+ #endif
++/*	{USB_DEVICE(0x0c45, 0x6132), BSI(SN9C120, OV7670, 0x21)}, */
+ 	{USB_DEVICE(0x0c45, 0x6138), BSI(SN9C120, MO4000, 0x21)},
+ 	{USB_DEVICE(0x0c45, 0x613a), BSI(SN9C120, OV7648, 0x21)},
+ #if !defined CONFIG_USB_SN9C102 && !defined CONFIG_USB_SN9C102_MODULE
+@@ -2362,7 +2364,9 @@ static const __devinitdata struct usb_de
+ #endif
+ 	{USB_DEVICE(0x0c45, 0x613c), BSI(SN9C120, HV7131R, 0x11)},
+ 	{USB_DEVICE(0x0c45, 0x613e), BSI(SN9C120, OV7630, 0x21)},
+-	{USB_DEVICE(0x0c45, 0x6143), BSI(SN9C120, SP80708, 0x18)},
++/*	{USB_DEVICE(0x0c45, 0x6142), BSI(SN9C120, PO2030N, ??)}, *sn9c120b*/
++	{USB_DEVICE(0x0c45, 0x6143), BSI(SN9C120, SP80708, 0x18)}, /*sn9c120b*/
++	{USB_DEVICE(0x0c45, 0x6148), BSI(SN9C120, OM6802, 0x21)}, /*sn9c120b*/
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(usb, device_table);
 
 
