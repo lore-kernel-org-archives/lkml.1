@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbZLGHmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758872AbZLGHmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbZLGHmH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758655AbZLGHmF
+	id S1758872AbZLGHmc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbZLGHmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:42:05 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51093 "EHLO song.cn.fujitsu.com"
+	Mon, 7 Dec 2009 02:42:31 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55140 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758610AbZLGHmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:42:03 -0500
-Message-ID: <4B1CB1B7.7080106@cn.fujitsu.com>
-Date: Mon, 07 Dec 2009 15:41:43 +0800
+	id S1758655AbZLGHma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 02:42:30 -0500
+Message-ID: <4B1CB1D2.8000505@cn.fujitsu.com>
+Date: Mon, 07 Dec 2009 15:42:10 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -18,7 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 06/13] function-graph: Allow writing the same val to set_graph_function
+Subject: [PATCH 07/13] tracing: Use seq file for trace_options
 References: <4B1CB14A.4080402@cn.fujitsu.com>
 In-Reply-To: <4B1CB14A.4080402@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -27,34 +27,111 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- # echo 'do_open' > set_graph_function
- # echo 'do_open' >> set_graph_function
- bash: echo: write error: Invalid argument
-
-Make it valid to write the same value to set_graph_function,
-which is consistent with set_ftrace_filter interface.
+Code simplification for reading trace_options.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/ftrace.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ kernel/trace/trace.c |   60 ++++++++++++++-----------------------------------
+ 1 files changed, 17 insertions(+), 43 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index ff8aecd..7968762 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2552,10 +2552,9 @@ ftrace_set_func(unsigned long *array, int *idx, char *buffer)
- 					exists = true;
- 					break;
- 				}
--			if (!exists) {
-+			if (!exists)
- 				array[(*idx)++] = rec->ip;
--				found = 1;
--			}
-+			found = 1;
- 		}
- 	} while_for_each_ftrace_rec();
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 874f289..e989fc9 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2291,67 +2291,32 @@ static const struct file_operations tracing_cpumask_fops = {
+ 	.write		= tracing_cpumask_write,
+ };
+ 
+-static ssize_t
+-tracing_trace_options_read(struct file *filp, char __user *ubuf,
+-		       size_t cnt, loff_t *ppos)
++static int tracing_trace_options_show(struct seq_file *m, void *v)
+ {
+ 	struct tracer_opt *trace_opts;
+ 	u32 tracer_flags;
+-	int len = 0;
+-	char *buf;
+-	int r = 0;
+ 	int i;
+ 
+-
+-	/* calculate max size */
+-	for (i = 0; trace_options[i]; i++) {
+-		len += strlen(trace_options[i]);
+-		len += 3; /* "no" and newline */
+-	}
+-
+ 	mutex_lock(&trace_types_lock);
+ 	tracer_flags = current_trace->flags->val;
+ 	trace_opts = current_trace->flags->opts;
+ 
+-	/*
+-	 * Increase the size with names of options specific
+-	 * of the current tracer.
+-	 */
+-	for (i = 0; trace_opts[i].name; i++) {
+-		len += strlen(trace_opts[i].name);
+-		len += 3; /* "no" and newline */
+-	}
+-
+-	/* +1 for \0 */
+-	buf = kmalloc(len + 1, GFP_KERNEL);
+-	if (!buf) {
+-		mutex_unlock(&trace_types_lock);
+-		return -ENOMEM;
+-	}
+-
+ 	for (i = 0; trace_options[i]; i++) {
+ 		if (trace_flags & (1 << i))
+-			r += sprintf(buf + r, "%s\n", trace_options[i]);
++			seq_printf(m, "%s\n", trace_options[i]);
+ 		else
+-			r += sprintf(buf + r, "no%s\n", trace_options[i]);
++			seq_printf(m, "no%s\n", trace_options[i]);
+ 	}
+ 
+ 	for (i = 0; trace_opts[i].name; i++) {
+ 		if (tracer_flags & trace_opts[i].bit)
+-			r += sprintf(buf + r, "%s\n",
+-				trace_opts[i].name);
++			seq_printf(m, "%s\n", trace_opts[i].name);
+ 		else
+-			r += sprintf(buf + r, "no%s\n",
+-				trace_opts[i].name);
++			seq_printf(m, "no%s\n", trace_opts[i].name);
+ 	}
+ 	mutex_unlock(&trace_types_lock);
+ 
+-	WARN_ON(r >= len + 1);
+-
+-	r = simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
+-
+-	kfree(buf);
+-	return r;
++	return 0;
+ }
+ 
+ /* Try to assign a tracer specific option */
+@@ -2446,9 +2411,18 @@ tracing_trace_options_write(struct file *filp, const char __user *ubuf,
+ 	return cnt;
+ }
+ 
++static int tracing_trace_options_open(struct inode *inode, struct file *file)
++{
++	if (tracing_disabled)
++		return -ENODEV;
++	return single_open(file, tracing_trace_options_show, NULL);
++}
++
+ static const struct file_operations tracing_iter_fops = {
+-	.open		= tracing_open_generic,
+-	.read		= tracing_trace_options_read,
++	.open		= tracing_trace_options_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
+ 	.write		= tracing_trace_options_write,
+ };
  
 -- 
 1.6.3
