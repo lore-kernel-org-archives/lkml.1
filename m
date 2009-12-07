@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935322AbZLGPmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935357AbZLGPmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935322AbZLGPmV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 10:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935235AbZLGPmU
+	id S935357AbZLGPmY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 10:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935342AbZLGPmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 10:42:20 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55926 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934347AbZLGPmT (ORCPT
+	Mon, 7 Dec 2009 10:42:22 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35958 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935258AbZLGPmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 10:42:19 -0500
-Date: Mon, 7 Dec 2009 15:42:24 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH 13/19] Unify sys_mmap*
-Message-ID: <20091207154224.GG14381@ZenIV.linux.org.uk>
-References: <E1NHUfg-0007xZ-R1@ZenIV.linux.org.uk> <10f740e80912070032j3ef3e9b2n55199d38abf710d2@mail.gmail.com>
+	Mon, 7 Dec 2009 10:42:20 -0500
+Date: Mon, 7 Dec 2009 10:42:26 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <alpine.LFD.2.00.0912062110240.3560@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0912071029260.3064-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <10f740e80912070032j3ef3e9b2n55199d38abf710d2@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 09:32:05AM +0100, Geert Uytterhoeven wrote:
-> On Mon, Dec 7, 2009 at 04:54, Al Viro <viro@ftp.linux.org.uk> wrote:
+On Sun, 6 Dec 2009, Linus Torvalds wrote:
 
-> > ??asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
-> > ?? ?? ?? ??unsigned long prot, unsigned long flags,
-> > ?? ?? ?? ??unsigned long fd, unsigned long pgoff)
-> > ??{
-> > - ?? ?? ?? return do_mmap2(addr, len, prot, flags, fd, pgoff);
-> > + ?? ?? ?? /* this is wrong for sun3, BTW */
+> I can imagine that doing USB resume specially is worth it, since USB is 
+> fundamentally a pretty slow bus. But USB is also a fairly clear hierarchy, 
+> so there is no point in PM groups or any other information outside of the 
+> pure topology.
 > 
-> Can you please add the why part to the comment?
-> Thanks!
+> But there is absolutely zero point in doing that for devices in general. 
+> PCI drivers simply do not want concurrent initialization. The upsides are 
+> basically zero (win a few msecs?) and the downsides are the pointless 
+> complexity. We don't do PCI discovery asyncronously either - for all the 
+> same reasons.
+> 
+> Now, a PCI driver may then implement a bus that is slow (ie SCSI, ATA, 
+> USB), and that bus may itself then want to do something else. If it really 
+> is a good idea to add the whole hierarchical model to USB suspend/resume, 
+> I can live with that, but that is absolutely no excuse for then doing it 
+> for cases where the hierarchy is (a) known to be broken (ie the whole PCI 
+> multifunction thing, but also things like motherboard power management 
+> devices) and (b) don't have the same kind of slow bus issues.
 
-Try libc mmap64() with e.g. 65536 as the last argument.  On mac and sun3.
-Compare the results...
+Okay.  I can understand not wanting to burden everybody else with USB's 
+weaknesses.
 
-Basically, sun3 has larger pages and forgets to compensate.  Corresponding
-part in libc (actual libc6 m68k binary) is
-	movel %d6,%d2
-	moveq #20,%d0
-	lsll %d0,%d2
-	movel %d7,%d1
-	moveq #12,%d3
-	lsrl %d3,%d1
-	orl %d2,%d1
-	moveal %d1,%a0		/* a0 = d6d7 >> 12 */
-	movel %a3,%d5
-	movel %a4,%d4
-	movel %a5,%d3
-	movel %a2,%d2
-	%fp@(8),%d1
- 	moveq #63,%d0
-	notb %d0		/* 256 ^ 63, i.e. 192, i.e. __NR_mmap2 */
-	trap #0
+Simply doing an async suspend & resume of each USB root hub might be
+enough to give a significant advantage.  For the most part these root
+hubs tend to be registered sequentially with few or no other devices in
+between.[*]  Hence the "stalls" that would occur when suspending a
+parent or resuming a child wouldn't slow things down very much.  We
+would not always reap the maximum advantage of a fully-asyncronous
+approach but there would be some improvement.
 
-It does the last argument of mmap2 in 4Kb units (as on almost all
-targets; ia64 is the exception, but it's actually not used by libc -
-they have mmap64 aliased to mmap and using sys_mmap, not sys_mmap2).
+This is sort of what Arjan suggested yesterday.  Its benefit is that 
+nothing outside usbcore has to change.
 
-So sun3 ought to shift the argument down by 1 before passing it to
-do_mmap_pgoff() (or sys_mmap_pgoff() with these patches) - mm/mmap.c
-stuff really expects the argument in PAGE_SIZE units.
+Alan Stern
 
-Generally I'd agree that existing behaviour is a part of ABI, however
-weird it might be, but since it's actually wrong for the only libc user
-of the syscall *and* differs from the behaviour on other subarchitectures...
+[*] In fact this is true only on systems where the USB host controller 
+drivers are built as modules.  If everything is compiled into the 
+kernel then the devices are registered in the worst possible order:
+controller 1, root hub 1, controller 2, root hub 2, ...
+
+I suppose the root hubs could be registered in a delayed work routine.  
+It would be a little awkward but it would solve this issue.
+
