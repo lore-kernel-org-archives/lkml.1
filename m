@@ -1,246 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934734AbZLGIjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934723AbZLGIjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934734AbZLGIjz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbZLGIhx
+	id S934723AbZLGIjo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:39:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933588AbZLGIjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:37:53 -0500
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:65200 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759083AbZLGIhn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:37:43 -0500
-To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: [PATCH 6/9] Squashfs: add support for LZMA compressed filesystems
-Message-Id: <E1NHZ6L-00029o-9Y@dylan.lougher.demon.co.uk>
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Mon, 07 Dec 2009 08:37:49 +0000
+	Mon, 7 Dec 2009 03:39:40 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53789 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S933619AbZLGIjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 03:39:37 -0500
+Message-ID: <4B1CBEEB.3090800@cn.fujitsu.com>
+Date: Mon, 07 Dec 2009 16:38:03 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for analyzing
+ lock statistics
+References: <20091115022135.GA5427@nowhere> <1260156884-8474-2-git-send-email-mitake@dcl.info.waseda.ac.jp> <20091207044125.GB5262@nowhere> <20091207072752.GG10868@elte.hu>
+In-Reply-To: <20091207072752.GG10868@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
----
- fs/squashfs/Kconfig        |    5 ++
- fs/squashfs/Makefile       |    1 +
- fs/squashfs/decompressor.c |    4 +
- fs/squashfs/lzma_wrapper.c |  151 ++++++++++++++++++++++++++++++++++++++++++++
- fs/squashfs/squashfs.h     |    3 +
- 5 files changed, 164 insertions(+), 0 deletions(-)
- create mode 100644 fs/squashfs/lzma_wrapper.c
 
-diff --git a/fs/squashfs/Kconfig b/fs/squashfs/Kconfig
-index 25a00d1..0294aa2 100644
---- a/fs/squashfs/Kconfig
-+++ b/fs/squashfs/Kconfig
-@@ -26,6 +26,11 @@ config SQUASHFS
- 
- 	  If unsure, say N.
- 
-+config SQUASHFS_LZMA
-+	bool "Include support for LZMA compressed file systems"
-+	depends on SQUASHFS
-+	select DECOMPRESS_LZMA
-+
- config SQUASHFS_EMBEDDED
- 
- 	bool "Additional option for memory-constrained systems" 
-diff --git a/fs/squashfs/Makefile b/fs/squashfs/Makefile
-index df8a19e..45aaefd 100644
---- a/fs/squashfs/Makefile
-+++ b/fs/squashfs/Makefile
-@@ -5,3 +5,4 @@
- obj-$(CONFIG_SQUASHFS) += squashfs.o
- squashfs-y += block.o cache.o dir.o export.o file.o fragment.o id.o inode.o
- squashfs-y += namei.o super.o symlink.o zlib_wrapper.o decompressor.o
-+squashfs-$(CONFIG_SQUASHFS_LZMA) += lzma_wrapper.o
-diff --git a/fs/squashfs/decompressor.c b/fs/squashfs/decompressor.c
-index 157478d..0b6ad9b 100644
---- a/fs/squashfs/decompressor.c
-+++ b/fs/squashfs/decompressor.c
-@@ -50,7 +50,11 @@ static const struct squashfs_decompressor squashfs_unknown_comp_ops = {
- 
- static const struct squashfs_decompressor *decompressor[] = {
- 	&squashfs_zlib_comp_ops,
-+#ifdef CONFIG_SQUASHFS_LZMA
-+	&squashfs_lzma_comp_ops,
-+#else
- 	&squashfs_lzma_unsupported_comp_ops,
-+#endif
- 	&squashfs_lzo_unsupported_comp_ops,
- 	&squashfs_unknown_comp_ops
- };
-diff --git a/fs/squashfs/lzma_wrapper.c b/fs/squashfs/lzma_wrapper.c
-new file mode 100644
-index 0000000..cef06d6
---- /dev/null
-+++ b/fs/squashfs/lzma_wrapper.c
-@@ -0,0 +1,151 @@
-+/*
-+ * Squashfs - a compressed read only filesystem for Linux
-+ *
-+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-+ * Phillip Lougher <phillip@lougher.demon.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2,
-+ * or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-+ *
-+ * lzma_wrapper.c
-+ */
-+
-+#include <asm/unaligned.h>
-+#include <linux/buffer_head.h>
-+#include <linux/mutex.h>
-+#include <linux/vmalloc.h>
-+#include <linux/decompress/unlzma.h>
-+
-+#include "squashfs_fs.h"
-+#include "squashfs_fs_sb.h"
-+#include "squashfs_fs_i.h"
-+#include "squashfs.h"
-+#include "decompressor.h"
-+
-+struct squashfs_lzma {
-+	void	*input;
-+	void	*output;
-+};
-+
-+/* decompress_unlzma.c is currently non re-entrant... */
-+DEFINE_MUTEX(lzma_mutex);
-+
-+/* decompress_unlzma.c doesn't provide any context in its callbacks... */
-+static int lzma_error;
-+
-+static void error(char *m)
-+{
-+	ERROR("unlzma error: %s\n", m);
-+	lzma_error = 1;
-+}
-+
-+
-+static void *lzma_init(struct squashfs_sb_info *msblk)
-+{
-+	struct squashfs_lzma *stream = kzalloc(sizeof(*stream), GFP_KERNEL);
-+	if (stream == NULL)
-+		goto failed;
-+	stream->input = vmalloc(msblk->block_size);
-+	if (stream->input == NULL)
-+		goto failed;
-+	stream->output = vmalloc(msblk->block_size);
-+	if (stream->output == NULL)
-+		goto failed2;
-+
-+	return stream;
-+
-+failed2:
-+	vfree(stream->input);
-+failed:
-+	ERROR("failed to allocate lzma workspace\n");
-+	kfree(stream);
-+	return NULL;
-+}
-+
-+
-+static void lzma_free(void *strm)
-+{
-+	struct squashfs_lzma *stream = strm;
-+
-+	if (stream) {
-+		vfree(stream->input);
-+		vfree(stream->output);
-+	}
-+	kfree(stream);
-+}
-+
-+
-+static int lzma_uncompress(struct squashfs_sb_info *msblk, void **buffer,
-+	struct buffer_head **bh, int b, int offset, int length, int srclength,
-+	int pages)
-+{
-+	struct squashfs_lzma *stream = msblk->stream;
-+	void *buff = stream->input;
-+	int avail, i, bytes = length, res;
-+
-+	mutex_lock(&lzma_mutex);
-+
-+	for (i = 0; i < b; i++) {
-+		wait_on_buffer(bh[i]);
-+		if (!buffer_uptodate(bh[i]))
-+			goto block_release;
-+
-+		avail = min(bytes, msblk->devblksize - offset);
-+		memcpy(buff, bh[i]->b_data + offset, avail);
-+		buff += avail;
-+		bytes -= avail;
-+		offset = 0;
-+		put_bh(bh[i]);
-+	}
-+
-+	lzma_error = 0;
-+	res = unlzma(stream->input, length, NULL, NULL, stream->output, NULL,
-+							error);
-+	if (res || lzma_error)
-+		goto failed;
-+
-+	/* uncompressed size is stored in the LZMA header (5 byte offset) */
-+	res = bytes = get_unaligned_le32(stream->input + 5);
-+	for (i = 0, buff = stream->output; bytes && i < pages; i++) {
-+		avail = min_t(int, bytes, PAGE_CACHE_SIZE);
-+		memcpy(buffer[i], buff, avail);
-+		buff += avail;
-+		bytes -= avail;
-+	}
-+	if (bytes)
-+		goto failed;
-+
-+	mutex_unlock(&lzma_mutex);
-+	return res;
-+
-+block_release:
-+	for (; i < b; i++)
-+		put_bh(bh[i]);
-+
-+failed:
-+	mutex_unlock(&lzma_mutex);
-+
-+	ERROR("lzma decompression failed, data probably corrupt\n");
-+	return -EIO;
-+}
-+
-+const struct squashfs_decompressor squashfs_lzma_comp_ops = {
-+	.init = lzma_init,
-+	.free = lzma_free,
-+	.decompress = lzma_uncompress,
-+	.id = LZMA_COMPRESSION,
-+	.name = "lzma",
-+	.supported = 1
-+};
-+
-diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
-index fe2587a..d094886 100644
---- a/fs/squashfs/squashfs.h
-+++ b/fs/squashfs/squashfs.h
-@@ -94,3 +94,6 @@ extern const struct address_space_operations squashfs_symlink_aops;
- 
- /* zlib_wrapper.c */
- extern const struct squashfs_decompressor squashfs_zlib_comp_ops;
-+
-+/* lzma wrapper.c */
-+extern const struct squashfs_decompressor squashfs_lzma_comp_ops;
--- 
-1.6.3.3
+Ingo Molnar wrote:
 
+> Also, i agree that the performance aspect is probably the most pressing 
+> issue. Note that 'perf bench sched messaging' is very locking intense so 
+> a 10x slowdown is not entirely unexpected - we still ought to optimize 
+> it all some more. 'perf lock' is an excellent testcase for this in any 
+> case.
+> 
+
+Here are some test results to show the overhead of lockdep trace events:
+
+                   select    pagefault   mmap    Memory par   Cont_SW
+                   latency    latency   latency   R/W BD      latency
+
+disable ftrace        0         0         0         0          0
+
+enable all ftrace  -16.65%    -109.80%   -93.62%   0.14%      -6.94%
+
+enable all ftrace  -2.67%      1.08%     -3.65%   -0.52%      -0.68%
+except lockdep
+
+
+We also found big overhead when using kernbench and fio, but we haven't
+verified whether it's caused by lockdep events.
+
+Thanks,
+Xiao
