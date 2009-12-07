@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965075AbZLGVmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965106AbZLGVqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965075AbZLGVmA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 16:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965055AbZLGVl7
+	id S965106AbZLGVqt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 16:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965068AbZLGVqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 16:41:59 -0500
-Received: from cantor.suse.de ([195.135.220.2]:57620 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965010AbZLGVl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 16:41:57 -0500
-Message-ID: <4B1D76B1.6070601@suse.cz>
-Date: Mon, 07 Dec 2009 22:42:09 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 7 Dec 2009 16:46:48 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:42046 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965092AbZLGVqr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 16:46:47 -0500
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Arnd Bergmann <arnd@arndb.de>
+References: <alpine.LFD.2.00.0912061857340.3089@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 07 Dec 2009 13:46:42 -0800
+In-Reply-To: <alpine.LFD.2.00.0912061857340.3089@localhost.localdomain> (Thomas Gleixner's message of "Sun\, 6 Dec 2009 18\:58\:27 +0100 \(CET\)")
+Message-ID: <m1iqci4ful.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: net/kbuild trees build failure
-References: <20091207200317.57820f0a.sfr@canb.auug.org.au>	 <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz>	 <20091207160903.GB18939@tuxdriver.com> <1260209537.4653.778.camel@rc-desk>
-In-Reply-To: <1260209537.4653.778.camel@rc-desk>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [GIT pull] bkl core patches for 2.6.33
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reinette chatre napsal(a):
-> Hi John,
-> 
-> On Mon, 2009-12-07 at 08:09 -0800, John W. Linville wrote:
->> On Mon, Dec 07, 2009 at 01:22:50PM +0100, Michal Marek wrote:
->>> On 7.12.2009 12:41, Sam Ravnborg wrote:
->>>> On Mon, Dec 07, 2009 at 08:03:17PM +1100, Stephen Rothwell wrote:
->>>>> Hi Dave,
->>>>>
->>>>> Today's linux-next build (powerpc allyesconfig) failed like this:
->>>>>
->>>>> In file included from drivers/net/wireless/iwlwifi/iwl3945-base.c:57:
->>>>> drivers/net/wireless/iwlwifi/iwl-core.h:66:30: error: linux/utsrelease.h: No such file or directory
->>>>>
->>>>> Caused by commit 250cce26d5d03337aec4ff8405121f026adb4a89 ("iwlwifi:
->>>>> driver version track kernel version") from the net tree interacting with
->>>>> commit 8e5c76aace9705b6983cfbf5eb2f2e869dab6738 ("kbuild: move
->>>>> utsrelease.h to include/generated") from the kbuild tree.
->>>>>
->>>>> I applied this patch for today (and will carry it as necessary):
->>>> The right fix would be to use 'utsname()->sysname' (I think sysname
->>>> is the right member).
->>> ->release would be the right one. One could also question why iwlwifi
->>> needs to repeat the kernel version it was built / is running against,
->>> but I that's not the point here :). Dave, John, can we agree that
->>> whichever tree gets merged first, the other tree applies the one-liner?
->> Hmmm...well, the suggested fixes are fine for the printk (i.e. runtime)
->> usage.  But (other than Stephen's) they don't seem to help with the
->> MODULE_VERSION (i.e. compile time) usage.  Is there an approved
->> solution for that?
-> 
-> Right - could we please use the solution that works at compile time? I
-> used UTS_RELEASE after learning about its use in init/version.c, would
-> that not make it an approved solution?
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-It seems there is some misunderstanding.
-The original problem reported by Stephen was that linux/utsrelease.h was
-moved to generated/utsrelease.h in the kbuild tree (that commit also
-patched init/version.c and all other users known at that time). This
-change in kbuild broke the new iwlwifi in the net tree. Stephen attached
-the most obvious fix, i.e. change linux/utsrelease.h to
-generated/utsrelease.h in the iwlwifi source
-(http://lkml.org/lkml/2009/12/7/121). My suggestion was to let Stephen
-carry the fix in linux-next for now, and once one of the trees (kbuild
-or net) hits mainline, the other tree would apply Stephen's patch. Would
-that work for everyone?
+> Linus,
+>
+> Please pull the latest bkl-core-for-linus git tree from:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git bkl-core-for-linus
+>
+> Thanks,
 
-Now if someone wants to remove the DRV_VERSION macro from iwlwifi or rip
-the UTS_RELEASE part out of it, that would make this problem go away,
-but I don't think it's necessary _just_ because of the kbuild change.
 
-Michal
+Was this tree in linux-next?  I'm certain I would have remembered the
+conflict in kernel/sysctl.c.  Among other things in my sysctl tree
+lock_kernel() is gone.  The removal of lock_kernel() happened to fall
+out of my other changes.  I remember having a conversation with Arnd
+Bergmann about this, and the conclusion being was that my change
+correct and superior to this patch.  So I'm surprised a sysctl change
+made it into your tree.
+
+Eric
+
+
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 0d949c5..72040e5 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -1848,6 +1848,8 @@ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *ol
+>  			return -EFAULT;
+>  	}
+>  
+> +	lock_kernel();
+> +
+>  	for (head = sysctl_head_next(NULL); head;
+>  			head = sysctl_head_next(head)) {
+>  		error = parse_table(name, nlen, oldval, oldlenp, 
+> @@ -1858,6 +1860,8 @@ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *ol
+>  			break;
+>  		}
+>  	}
+> +
+> +	unlock_kernel();
+>  	return error;
+>  }
+>  
+> @@ -1873,10 +1877,8 @@ SYSCALL_DEFINE1(sysctl, struct __sysctl_args __user *, args)
+>  	if (error)
+>  		goto out;
+>  
+> -	lock_kernel();
+>  	error = do_sysctl(tmp.name, tmp.nlen, tmp.oldval, tmp.oldlenp,
+>  			  tmp.newval, tmp.newlen);
+> -	unlock_kernel();
+>  out:
+>  	return error;
+>  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
