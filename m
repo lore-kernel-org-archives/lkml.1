@@ -1,65 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965045AbZLGVaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935612AbZLGVcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965045AbZLGVaa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 16:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935036AbZLGVa3
+	id S935612AbZLGVcL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 16:32:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935561AbZLGVcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 16:30:29 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:36014 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932191AbZLGVa3 convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 16:32:11 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:33258 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935559AbZLGVcK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 16:30:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=K06c/VJL0nr/rb++j4Oz0MG2cNeW5uHSf/WFMp4mm5hyF/86DzUGlN5tzho9ernT2t
-         u065S0Udy2+IRI6ykYK+FoX3uSK7w10jw3SnxTaatGDteyiQGHgzzcs7JPmdpcjQdKw/
-         /j2IAJwIkgrw81B+UJ2w0Ge0nVdMqvuucfs/Y=
+	Mon, 7 Dec 2009 16:32:10 -0500
+Date: Mon, 7 Dec 2009 16:32:10 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <alpine.LFD.2.00.0912071239270.3560@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0912071610520.15701-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <SNT111-DS1957B574BA05A48FEDBFF0A7900@phx.gbl>
-References: <Acp3UXhD1R6mbV5yTGykTs+HAU6bQg==>
-	 <SNT111-DS1957B574BA05A48FEDBFF0A7900@phx.gbl>
-Date: Mon, 7 Dec 2009 13:30:35 -0800
-X-Google-Sender-Auth: 7698a8027b22f693
-Message-ID: <1f1b08da0912071330i35808790r554f7a3a8d712ca7@mail.gmail.com>
-Subject: Re: timer interrupt stucks using tickless kernel
-From: john stultz <johnstul@us.ibm.com>
-To: Ioannis Kyriakopoulos <johnkyr83@hotmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 7, 2009 at 7:25 AM, Ioannis Kyriakopoulos
-<johnkyr83@hotmail.com> wrote:
-> I have configured my kernel (2.6.31.6) so that I get periodic ticks from
-> the timer interrupt (i.e. tickless is not configured) with a rate determined
-> by the HZ value. I've also checked the "high resolution timer support"
-> and also SMP support. The posblem is that the timer is getting incremented
-> very slowly (way slower than the HZ value), just like it would be if the
-> kernel was tickless. Is there an explanation for that? How can I get
-> periodic
-> timer ticks?
->
-> AFAI understand, the HPET timer is used through the IO-APIC controller to
-> trigger the processors (N.B. if the "High Resolution Timer Support" option
-> wasn't checked, the timer used would  be PIT, right?) and each processor's
-> LAPIC timer is used for time keeping. Please correct me if I am wrong.
+On Mon, 7 Dec 2009, Linus Torvalds wrote:
 
-Not quite, if High Resolution Timers support was disabled, you would
-still use the HPET hardware instead of the pit, but you'd stay in
-periodic mode. However, since you have Highres Timers on, the system
-is using oneshot mode (which is necessary to trigger interrupts faster
-then HZ), and likely has chosen the LAPIC timer as the interrupt
-source.
+> > The consequence is that there's no way to hand off an entire subtree to 
+> > an async thread.  And as a result, your single-pass algorithm runs into 
+> > the kind of "stall" problem I described before.
+> 
+> No, look again. There's no stall in the thing, because all it really 
+> depends on is (for the suspend path) is that it sees all children before 
+> the parent (because the child will do a "down_read()" on the parent node 
+> and that should not stall), and for the resume path it depends on seeing 
+> the parent node before any children (because the parent node does that 
+> "down_write()" on its own node).
+> 
+> Everything else is _entirely_ asynchronous, including all the other locks 
+> it takes. So there are no stalls (except, of course, if we then hit limits 
+> on numbers of outstanding async work and refuse to create too many 
+> outstanding async things, but that's a separate issue, and intentional, of 
+> course).
 
-In this case, the timer tick becomes an hrt event, that triggers every
-HZ, instead of being caused by a periodic interrupt.
+It only seems that way because you didn't take into account devices 
+that suspend synchronously but whose children suspend asynchronously.
 
-thanks
--john
+A synchronous suspend routine for a device with async child suspends
+would have to look just like your usb_node_suspend():
+
+	suspend_one_node(dev)
+	{
+		/* Wait until the children are suspended */
+		down_write(dev->lock);
+		Suspend dev
+		up_write(dev->lock);
+
+		/* Allow the parent to suspend */
+		up_read(dev->parent->lock);
+	}
+
+So now suppose we've got two USB host controllers, A and B.  They are
+PCI devices, so they suspend synchronously.  Each has a root hub child
+(P and Q respectively) which is a USB device and therefore suspends
+asynchronously.  dpm_list contains: A, P, B, Q.  (In fact A doesn't 
+enter into this discussion; you can ignore it.)
+
+In your one-pass algorithm, we start with usb_node_suspend(Q).  It does 
+down_read(B->lock) and starts an async task for Q.  Then we move on to 
+suspend_one_node(B).  It does down_write(B->lock) and blocks until the 
+async task finishes; then it suspends B.  Finally we move on to 
+usb_node_suspend(P), which does down_read(A->lock) and starts an async 
+task for P.
+
+The upshot is that P is stuck waiting for Q to suspend, even though it 
+should have been able to suspend in parallel.  This is simply because P 
+precedes B in the list, and B is synchronous and must wait for Q to 
+finish.
+
+With my two-pass algorithm, we start with Q.  The first loop does
+down_read(B->lock) and starts an async task for Q.  We move on to B and
+do down_read(B->parent->lock), nothing more.  Then we move to to P,
+with down_read(A->lock) and start an async task for P.  Finally we do
+down_read(A->parent->lock).  Notice that now there are two async tasks,
+for P and Q, running in parallel.
+
+The second pass waits for Q to finish before suspending B 
+synchronously, and waits for P to finish before suspending A 
+synchronously.  This is unavoidable.  The point is that it allows P and 
+Q to suspend at the same time, not one after the other as in the 
+one-pass scheme.
+
+Alan Stern
+
