@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935418AbZLGQim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935432AbZLGQiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935418AbZLGQim (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:38:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935376AbZLGQik
+	id S935432AbZLGQiy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935422AbZLGQiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:38:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17958 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 11:38:52 -0500
+Received: from mga14.intel.com ([143.182.124.37]:22216 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755737AbZLGQij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:38:39 -0500
-Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for
- analyzing lock statistics
-From: Steven Rostedt <srostedt@redhat.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-In-Reply-To: <4B1CBEEB.3090800@cn.fujitsu.com>
-References: <20091115022135.GA5427@nowhere>
-	 <1260156884-8474-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <20091207044125.GB5262@nowhere> <20091207072752.GG10868@elte.hu>
-	 <4B1CBEEB.3090800@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Mon, 07 Dec 2009 11:38:05 -0500
-Message-Id: <1260203885.31359.177.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S935420AbZLGQiv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 11:38:51 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="219714715"
+From: "Tung, Chien Tin" <chien.tin.tung@intel.com>
+To: Julia Lawall <julia@diku.dk>
+CC: "Latif, Faisal" <faisal.latif@intel.com>,
+       Roland Dreier <rolandd@cisco.com>, "Hefty, Sean" <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>,
+       "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
+Date: Mon, 7 Dec 2009 09:38:55 -0700
+Subject: RE: [PATCH 3/5] drivers/infiniband: correct size computation
+Thread-Topic: [PATCH 3/5] drivers/infiniband: correct size computation
+Thread-Index: Acp3WX/uWyMCHYN/TPqBTJSTa63e5gAAcqtg
+Message-ID: <603F8A3875DCE940BA37B49D0A6EA0AE3CE36C9F@azsmsx501.amr.corp.intel.com>
+References: <Pine.LNX.4.64.0912061015540.20858@ask.diku.dk>
+ <603F8A3875DCE940BA37B49D0A6EA0AE3CE36BF4@azsmsx501.amr.corp.intel.com>
+ <Pine.LNX.4.64.0912071720520.15109@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0912071720520.15109@ask.diku.dk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 16:38 +0800, Xiao Guangrong wrote:
-> 
-> Ingo Molnar wrote:
-> 
-> > Also, i agree that the performance aspect is probably the most pressing 
-> > issue. Note that 'perf bench sched messaging' is very locking intense so 
-> > a 10x slowdown is not entirely unexpected - we still ought to optimize 
-> > it all some more. 'perf lock' is an excellent testcase for this in any 
-> > case.
-> > 
-> 
-> Here are some test results to show the overhead of lockdep trace events:
-> 
->                    select    pagefault   mmap    Memory par   Cont_SW
->                    latency    latency   latency   R/W BD      latency
-> 
-> disable ftrace        0         0         0         0          0
-> 
-> enable all ftrace  -16.65%    -109.80%   -93.62%   0.14%      -6.94%
-> 
-> enable all ftrace  -2.67%      1.08%     -3.65%   -0.52%      -0.68%
-> except lockdep
-> 
-> 
-> We also found big overhead when using kernbench and fio, but we haven't
-> verified whether it's caused by lockdep events.
+>> > 	/* Remap the PCI registers in adapter BAR0 to kernel VA space */
+>> >-	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0), sizeof(mmio_regs));
+>> >+	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0),
+>> >+				    sizeof(*mmio_regs));
+>> > 	if (mmio_regs == NULL) {
+>> > 		printk(KERN_ERR PFX "Unable to remap BAR0\n");
+>> > 		ret = -EIO;
+>>
+>> mmio_regs is initialized to NULL at the top of the function so
+>> *mmio_regs wouldn't be a good idea.  Instead of sizeof(*mmio_regs) use
+>> pci_resource_len(pcidev, BAR_0).  If you can recreate the patch with
+>> this change I will ack it.
+>
+>When you say that it isn't a good idea, do you mean that the result is
+>wrong, or that it looks odd?  I didn't think sizeof looked at the value,
+>but only at the type?
 
-Well, it is expected that recording all locking is going to have a
-substantial overhead. In my measurements, a typical event takes around
-250ns per event (note, I've gotten this down to 140ns in recent updates,
-and even 90ns by disabling integrity checks, but I don't want to disable
-those checks in production).
 
-Anyway, if you add just 100ns to every lock taken in the kernel, that
-will definitely increase the overhead. Just enable spin_lock() in the
-function tracer and watch the performance go down.  This is why, when
-using the function tracer I usually add all locking to the notrace
-filter. This alone helps tremendously in tracing functions.
+I misspoke on the problem.  Mmio_regs is declared as a void pointer:
 
--- Steve
+        void __iomem *mmio_regs = NULL;
+
+Thus pci_resource_len(pcidev, BAR_0) is the correct fix.
+
+Chien
 
 
