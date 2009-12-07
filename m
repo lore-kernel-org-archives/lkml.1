@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935305AbZLGPUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935311AbZLGPWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935305AbZLGPUi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 10:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935259AbZLGPUg
+	id S935311AbZLGPWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 10:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935271AbZLGPWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 10:20:36 -0500
-Received: from procserver.webwayone.co.uk ([62.8.115.202]:52710 "EHLO
-	procserver.webwayone.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932683AbZLGPUg (ORCPT
+	Mon, 7 Dec 2009 10:22:37 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:60890 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935267AbZLGPWg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 10:20:36 -0500
-DomainKey-Signature: a=rsa-sha1; s=procserver; d=webwayone.co.uk; c=nofws; q=dns;
-	h=x-dkim:dkim-signature:x-batv:x-virus-status:
-	x-virus-scanned:x-dkim:authentication-results:from:to:cc:subject:references:date:
-	in-reply-to:message-id:user-agent:mime-version:content-type;
-	b=QCNz5QB9kaAs2vKPrYDnxf7oz+bOMvrqD3dAEkb0FYo/61PSjsgowyscmJNPf/0/4
-	dwDEXwJKq/FY8YdHo6iGw==
-X-DKIM: OpenDKIM Filter v1.1.1.dev procserver.webwayone.co.uk nB7FKdhY018536
-X-BATV: Sendmail BATV Filter v0.4.0 procserver nB7FKdhY018536
-X-DKIM: OpenDKIM Filter v1.1.1.dev procserver.webwayone.co.uk nB7FKdhY018536
-Authentication-Results: procserver.webwayone.co.uk; dkim=none
-	(no signature) header.i=unknown; dkim-adsp=none
-From: Graham Murray <gmurray@webwayone.co.uk>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.32 CONFIG_SX marked as BROKEN
-References: <7wd42vyp2i.fsf@webwayone.co.uk> <20091204170252.GA2504@suse.de>
-Date: Mon, 07 Dec 2009 15:20:39 +0000
-In-Reply-To: <20091204170252.GA2504@suse.de> (Greg KH's message of "Fri, 4 Dec
-	2009 09:02:52 -0800")
-Message-ID: <7wzl5uajzs.fsf@webwayone.co.uk>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (i686-pc-linux-gnu)
+	Mon, 7 Dec 2009 10:22:36 -0500
+Date: Mon, 7 Dec 2009 10:22:41 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ondrej Zary <linux@rainbow-software.org>
+cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
+Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
+In-Reply-To: <200912071002.54308.linux@rainbow-software.org>
+Message-ID: <Pine.LNX.4.44L0.0912071015180.3064-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+On Mon, 7 Dec 2009, Ondrej Zary wrote:
 
-> On Fri, Dec 04, 2009 at 11:08:05AM +0000, Graham Murray wrote:
->> Commit 412145947adfca60a4b5b4893fbae82dffa25edd marked CONFIG_SX as
->> Broken. The commit comments state that there are no users. We are using
->> SX cards in production servers. I discovered this when I attempted to
->> upgrade a development server to 2.6.32 and it failed to find the cards.
->
-> Do you have the ability to test patches to verify changes in order to
-> help fix up this driver?
+> > > diff between ehci and uhci logs:
+> > > There seems to be some problem with timing.
+> > > Also order of ehci_usb vs uhci_usb loading changes.
+> >
+> > That order doesn't matter much.  But this...
+> 
+> Looks like it does matter. I compiled ehci_hcd in kernel and left uhci_hcd as 
+> module - and the hub was always attached to ehci. Compiled uhci_hcd in kernel 
+> and ehci_hcd as module - and it was always attached to uhci. So the HW is 
+> probably OK.
 
-Yes, I have the ability to test patches. 
+As a matter of fact, it probably isn't.  The hub should have switched
+over to EHCI when the module was loaded.  The question remains whether 
+the problem is in the hub or in the EHCI controller.
+
+You don't have to compile either driver into the kernel.  Try doing
+this:
+
+	rmmod ehci-hcd
+
+	dmesg -c >/dev/null (clear the log buffer)
+
+	Start up usbmon on the 0u file
+
+	Plug in the hub, which attaches to UHCI
+
+	modprobe ehci-hcd
+	At this point the hub should switch over to EHCI
+
+It will make things easier to understand if you unplug all other USB 
+devices first.  Let's see what that shows, both in usbmon and in dmesg.
+
+It would be nice if the EHCI controller turned out to be at fault.  
+Then we could blame this entire problem on the controller hardware.  :-)
+
+Alan Stern
+
