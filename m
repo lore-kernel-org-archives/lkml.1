@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934561AbZLGEaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934553AbZLGEdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934561AbZLGEaU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 23:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934475AbZLGEaT
+	id S934553AbZLGEdh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 23:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934476AbZLGEdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 23:30:19 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:56825 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933554AbZLGEaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 23:30:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=RJjhFYquTcq3u4RCztLBT6jPTYktVBNpT1IzvUGAspoeMux9s0mMMcm5NDc4jOnIRk
-         DfzqUzr/8S5Ms2K4fI1RyQGoWCfcWuqJtfTIVDTLm6WM7GqtpxbhFQ9qC8hIUOrT6Yyi
-         vgSIJvODhejHM4hAfUqDtpP6Z/IbkDGbvarCc=
-MIME-Version: 1.0
-In-Reply-To: <4B1C6856.4060207@ct.jp.nec.com>
-References: <200912032240.nB3Mevae027408@imap1.linux-foundation.org>
-	 <20091204021444.GA8392@x200> <4B1888CE.8000406@ct.jp.nec.com>
-	 <20091204051729.GA3927@x200> <4B1C6856.4060207@ct.jp.nec.com>
-Date: Mon, 7 Dec 2009 07:30:22 +0300
-Message-ID: <b6fcc0a0912062030q88117d4sdb49637d647230dc@mail.gmail.com>
-Subject: Re: + task_struct-make-journal_info-conditional.patch added to -mm 
-	tree
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       chris.mason@oracle.com, konishi.ryusuke@lab.ntt.co.jp,
-       swhiteho@redhat.com, tytso@mit.edu
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 6 Dec 2009 23:33:35 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38882 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934475AbZLGEdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 23:33:35 -0500
+Date: Mon, 7 Dec 2009 15:33:36 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Buchbinder <adam.buchbinder@gmail.com>,
+       Andy Walls <awalls@radix.net>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: linux-next: manual merge of the trivial tree with the v4l-dvb tree
+Message-Id: <20091207153336.58c56059.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__7_Dec_2009_15_33_36_+1100_n.BnQSF=42zzSLSC"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/7/09, Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> I understand it's a regression, so how about make this option Y by
-> default?
+--Signature=_Mon__7_Dec_2009_15_33_36_+1100_n.BnQSF=42zzSLSC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sorry, this is still loss in functionality for just one pointer in task_struct.
+Hi Jiri,
+
+Today's linux-next merge of the trivial tree got a conflict in
+drivers/media/video/cx18/cx18-mailbox.h between commit
+368cb90a38d346d76cd32d882fbc620fc01e4102 ("V4L/DVB (13429): cx18: Add
+Memory Descriptor List (MDL) layer to buffer handling") from the v4l-dvb
+tree and commit 6070d81eb5f2d4943223c96e7609a53cdc984364 ("tree-wide: fix
+misspelling of "definition" in comments") from the trivial tree.
+
+I fixed it up (see below) and can carry the fix as necessary.  It is very
+trivial, though. :-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/media/video/cx18/cx18-mailbox.h
+index 5ea0735,522ad53..0000000
+--- a/drivers/media/video/cx18/cx18-mailbox.h
++++ b/drivers/media/video/cx18/cx18-mailbox.h
+@@@ -39,9 -39,9 +39,9 @@@
+  struct cx18;
+ =20
+  /*
+ - * This structure is used by CPU to provide completed buffers information
+ - * Its structure is dictrated by the layout of the SCB, required by the
+ + * This structure is used by CPU to provide completed MDL & buffers infor=
+mation.
+ + * Its structure is dictated by the layout of the SCB, required by the
+-  * firmware, but its defintion needs to be here, instead of in cx18-scb.h,
++  * firmware, but its definition needs to be here, instead of in cx18-scb.=
+h,
+   * for mailbox work order scheduling
+   */
+  struct cx18_mdl_ack {
+
+--Signature=_Mon__7_Dec_2009_15_33_36_+1100_n.BnQSF=42zzSLSC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkschaAACgkQjjKRsyhoI8yw3gCggCKiZ7n/9T9D6GxInX6WRnGI
+3a4AoMC4moPGVWjgS2y0lKyAkLVKe/mH
+=MP2+
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__7_Dec_2009_15_33_36_+1100_n.BnQSF=42zzSLSC--
