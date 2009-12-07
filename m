@@ -1,103 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbZLGIf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934719AbZLGIiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759101AbZLGIf7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759033AbZLGIf6
+	id S934719AbZLGIiQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:38:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbZLGIiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:35:58 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44077 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758962AbZLGIf6 (ORCPT
+	Mon, 7 Dec 2009 03:38:13 -0500
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:60703 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759195AbZLGIhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:35:58 -0500
-Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <4B1C85D3.3080401@kernel.org>
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>
-	 <1259726212-30259-5-git-send-email-tj@kernel.org>
-	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>
-	 <4B1C85D3.3080401@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Dec 2009 09:35:00 +0100
-Message-ID: <1260174900.8223.1159.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 03:37:45 -0500
+To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       phillip.lougher@gmail.com, tim.bird@am.sony.com
+Subject: [PATCH 1/9] Squashfs: move zlib decompression wrapper code into a separate file
+Message-Id: <E1NHZ6K-00029O-Vp@dylan.lougher.demon.co.uk>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Mon, 07 Dec 2009 08:37:48 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 13:34 +0900, Tejun Heo wrote:
-> Hello, Peter.
-> 
-> On 12/04/2009 07:43 PM, Peter Zijlstra wrote:
-> >>> force_cpus_allowed() will be used for concurrency-managed workqueue.
-> >>
-> >> Would still like to know why all this is needed.
-> > 
-> > That is, what problem do these new-fangled workqueues have and why is
-> > this a good solution.
-> 
-> This is the original RFC posting of cmwq which includes the whole
-> thing.  I'm a few days away from posting a new version but the usage
-> of force_cpus_allowed() remains the same.
-> 
->   http://thread.gmane.org/gmane.linux.kernel/896268/focus=896294
-> 
-> There are two tests which are bypassed by the force_ variant.
-> 
-> * PF_THREAD_BOUND.  This is used to mark tasks which are bound to a
->   cpu using kthread_bind() to be bound permanently.  However, new
->   trustee based workqueue hotplugging decouples per-cpu workqueue
->   flushing with cpu hot plug/unplugging.  This is necessary because
->   with cmwq, long running works can be served by regular workqueues,
->   so delaying completion of hot plug/unplugging till certain works are
->   flushed isn't feasible.  So, what becomes necessary is the ability
->   to re-bind tasks which has PF_THREAD_BOUND set but unbound from its
->   now offline cpu which is coming online again.
 
-I'm not at all sure I like that. I'd be perfectly happy with delaying
-the hot-unplug.
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/Makefile       |    2 +-
+ fs/squashfs/block.c        |   74 ++----------------------------
+ fs/squashfs/squashfs.h     |    4 ++
+ fs/squashfs/zlib_wrapper.c |  109 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 118 insertions(+), 71 deletions(-)
+ create mode 100644 fs/squashfs/zlib_wrapper.c
 
-The whole cpu hotplug mess is tricky enough as it is and I see no
-compelling reason to further complicate it. If people are really going
-to enqueue strict per-cpu worklets (queue_work_on()) that takes seconds
-to complete, then they get to keep the results of that, which includes
-slow hot unplug.
-
-Having an off-line cpu still process code like it was online is asking
-for trouble, don't go there.
-
-> * cpu_active() test.  CPU activeness encloses cpu online status which
->   is the actual on/offline state.  Workqueues need to keep running
->   while a cpu is going down and with cmwq keeping workqueues running
->   involves creation of new workers (it consists part of
->   forward-progress guarantee and one of cpu down callbacks might end
->   up waiting on completion of certain works).
-> 
->   The problem with active state is that during cpu down, active going
->   off doesn't mean all tasks have been migrated off the cpu, so
->   without a migration interface which is synchronized with the actual
->   offline migration, it is difficult to guarantee that all works are
->   either running on the designated cpu if the cpu is online or all
->   work on other cpus if the cpu is offline.
-> 
->   Another related problem is that there's no way to monitor the cpu
->   activeness change notifications.
-
-cpu_active() is basically meant for the scheduler to not stick new tasks
-on a dying cpu.
-
-So on hot-unplug you'd want to splice your worklets to another cpu,
-except maybe those strictly enqueued to the dying cpu, and since there
-was work on the dying cpu, you already had a task processing them, so
-you don't need new tasks, right?
-
-
-
+diff --git a/fs/squashfs/Makefile b/fs/squashfs/Makefile
+index 70e3244..a397e6f 100644
+--- a/fs/squashfs/Makefile
++++ b/fs/squashfs/Makefile
+@@ -4,4 +4,4 @@
+ 
+ obj-$(CONFIG_SQUASHFS) += squashfs.o
+ squashfs-y += block.o cache.o dir.o export.o file.o fragment.o id.o inode.o
+-squashfs-y += namei.o super.o symlink.o
++squashfs-y += namei.o super.o symlink.o zlib_wrapper.o
+diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
+index 2a79603..5cd3934 100644
+--- a/fs/squashfs/block.c
++++ b/fs/squashfs/block.c
+@@ -29,7 +29,6 @@
+ #include <linux/fs.h>
+ #include <linux/vfs.h>
+ #include <linux/slab.h>
+-#include <linux/mutex.h>
+ #include <linux/string.h>
+ #include <linux/buffer_head.h>
+ #include <linux/zlib.h>
+@@ -153,72 +152,10 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 	}
+ 
+ 	if (compressed) {
+-		int zlib_err = 0, zlib_init = 0;
+-
+-		/*
+-		 * Uncompress block.
+-		 */
+-
+-		mutex_lock(&msblk->read_data_mutex);
+-
+-		msblk->stream.avail_out = 0;
+-		msblk->stream.avail_in = 0;
+-
+-		bytes = length;
+-		do {
+-			if (msblk->stream.avail_in == 0 && k < b) {
+-				avail = min(bytes, msblk->devblksize - offset);
+-				bytes -= avail;
+-				wait_on_buffer(bh[k]);
+-				if (!buffer_uptodate(bh[k]))
+-					goto release_mutex;
+-
+-				if (avail == 0) {
+-					offset = 0;
+-					put_bh(bh[k++]);
+-					continue;
+-				}
+-
+-				msblk->stream.next_in = bh[k]->b_data + offset;
+-				msblk->stream.avail_in = avail;
+-				offset = 0;
+-			}
+-
+-			if (msblk->stream.avail_out == 0 && page < pages) {
+-				msblk->stream.next_out = buffer[page++];
+-				msblk->stream.avail_out = PAGE_CACHE_SIZE;
+-			}
+-
+-			if (!zlib_init) {
+-				zlib_err = zlib_inflateInit(&msblk->stream);
+-				if (zlib_err != Z_OK) {
+-					ERROR("zlib_inflateInit returned"
+-						" unexpected result 0x%x,"
+-						" srclength %d\n", zlib_err,
+-						srclength);
+-					goto release_mutex;
+-				}
+-				zlib_init = 1;
+-			}
+-
+-			zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
+-
+-			if (msblk->stream.avail_in == 0 && k < b)
+-				put_bh(bh[k++]);
+-		} while (zlib_err == Z_OK);
+-
+-		if (zlib_err != Z_STREAM_END) {
+-			ERROR("zlib_inflate error, data probably corrupt\n");
+-			goto release_mutex;
+-		}
+-
+-		zlib_err = zlib_inflateEnd(&msblk->stream);
+-		if (zlib_err != Z_OK) {
+-			ERROR("zlib_inflate error, data probably corrupt\n");
+-			goto release_mutex;
+-		}
+-		length = msblk->stream.total_out;
+-		mutex_unlock(&msblk->read_data_mutex);
++		length = zlib_uncompress(msblk, buffer, bh, b, offset, length,
++			srclength, pages);
++		if (length < 0)
++			goto read_failure;
+ 	} else {
+ 		/*
+ 		 * Block is uncompressed.
+@@ -255,9 +192,6 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 	kfree(bh);
+ 	return length;
+ 
+-release_mutex:
+-	mutex_unlock(&msblk->read_data_mutex);
+-
+ block_release:
+ 	for (; k < b; k++)
+ 		put_bh(bh[k]);
+diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
+index 0e9feb6..988bdce 100644
+--- a/fs/squashfs/squashfs.h
++++ b/fs/squashfs/squashfs.h
+@@ -70,6 +70,10 @@ extern struct inode *squashfs_iget(struct super_block *, long long,
+ 				unsigned int);
+ extern int squashfs_read_inode(struct inode *, long long);
+ 
++/* zlib_wrapper.c */
++extern int zlib_uncompress(struct squashfs_sb_info *, void **,
++				struct buffer_head **, int, int, int, int, int);
++
+ /*
+  * Inodes and files operations
+  */
+diff --git a/fs/squashfs/zlib_wrapper.c b/fs/squashfs/zlib_wrapper.c
+new file mode 100644
+index 0000000..486a2a7
+--- /dev/null
++++ b/fs/squashfs/zlib_wrapper.c
+@@ -0,0 +1,109 @@
++/*
++ * Squashfs - a compressed read only filesystem for Linux
++ *
++ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
++ * Phillip Lougher <phillip@lougher.demon.co.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ * zlib_wrapper.c
++ */
++
++
++#include <linux/mutex.h>
++#include <linux/buffer_head.h>
++#include <linux/zlib.h>
++
++#include "squashfs_fs.h"
++#include "squashfs_fs_sb.h"
++#include "squashfs_fs_i.h"
++#include "squashfs.h"
++
++int zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
++	struct buffer_head **bh, int b, int offset, int length, int srclength,
++	int pages)
++{
++	int zlib_err = 0, zlib_init = 0;
++	int avail, bytes, k = 0, page = 0;
++
++	mutex_lock(&msblk->read_data_mutex);
++
++	msblk->stream.avail_out = 0;
++	msblk->stream.avail_in = 0;
++
++	bytes = length;
++	do {
++		if (msblk->stream.avail_in == 0 && k < b) {
++			avail = min(bytes, msblk->devblksize - offset);
++			bytes -= avail;
++			wait_on_buffer(bh[k]);
++			if (!buffer_uptodate(bh[k]))
++				goto release_mutex;
++
++			if (avail == 0) {
++				offset = 0;
++				put_bh(bh[k++]);
++				continue;
++			}
++
++			msblk->stream.next_in = bh[k]->b_data + offset;
++			msblk->stream.avail_in = avail;
++			offset = 0;
++		}
++
++		if (msblk->stream.avail_out == 0 && page < pages) {
++			msblk->stream.next_out = buffer[page++];
++			msblk->stream.avail_out = PAGE_CACHE_SIZE;
++		}
++
++		if (!zlib_init) {
++			zlib_err = zlib_inflateInit(&msblk->stream);
++			if (zlib_err != Z_OK) {
++				ERROR("zlib_inflateInit returned unexpected "
++					"result 0x%x, srclength %d\n",
++					zlib_err, srclength);
++				goto release_mutex;
++			}
++			zlib_init = 1;
++		}
++
++		zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
++
++		if (msblk->stream.avail_in == 0 && k < b)
++			put_bh(bh[k++]);
++	} while (zlib_err == Z_OK);
++
++	if (zlib_err != Z_STREAM_END) {
++		ERROR("zlib_inflate error, data probably corrupt\n");
++		goto release_mutex;
++	}
++
++	zlib_err = zlib_inflateEnd(&msblk->stream);
++	if (zlib_err != Z_OK) {
++		ERROR("zlib_inflate error, data probably corrupt\n");
++		goto release_mutex;
++	}
++
++	mutex_unlock(&msblk->read_data_mutex);
++	return msblk->stream.total_out;
++
++release_mutex:
++	mutex_unlock(&msblk->read_data_mutex);
++
++	for (; k < b; k++)
++		put_bh(bh[k]);
++
++	return -EIO;
++}
+-- 
+1.6.3.3
 
