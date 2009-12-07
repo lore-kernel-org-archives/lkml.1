@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965000AbZLGW2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935655AbZLGWaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965000AbZLGW2D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 17:28:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934639AbZLGW2B
+	id S935655AbZLGWaQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:30:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935606AbZLGWaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 17:28:01 -0500
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:59463 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934416AbZLGW2B (ORCPT
+	Mon, 7 Dec 2009 17:30:14 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:49697 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933422AbZLGWaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 17:28:01 -0500
-Message-ID: <4B1D8176.9040209@gmail.com>
-Date: Mon, 07 Dec 2009 23:28:06 +0100
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091205 Lightning/1.0pre Shredder/3.0
+	Mon, 7 Dec 2009 17:30:13 -0500
+Date: Mon, 7 Dec 2009 17:28:53 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Michal Marek <mmarek@suse.cz>
+Cc: reinette chatre <reinette.chatre@intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: net/kbuild trees build failure
+Message-ID: <20091207222853.GE18939@tuxdriver.com>
+References: <20091207200317.57820f0a.sfr@canb.auug.org.au> <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz> <20091207160903.GB18939@tuxdriver.com> <1260209537.4653.778.camel@rc-desk> <4B1D76B1.6070601@suse.cz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>
-CC: LKML <linux-kernel@vger.kernel.org>, erbrochendes@gmx.de,
-       divinespear@gmail.com, andjelo@gmx.net
-Subject: Rt2x00 problem traced back to x86 ACPI/PCI/e820 handling.
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Dec 2009 22:28:06.0864 (UTC) FILETIME=[8C6E3500:01CA778C]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1D76B1.6070601@suse.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Yinghai,
+On Mon, Dec 07, 2009 at 10:42:09PM +0100, Michal Marek wrote:
+> reinette chatre napsal(a):
 
-For a while now we have seen reports of the rt2x00 driver not working correctly
-where bogus information was read from the EEPROM. This resulted in a non-functional
-driver.
-It has been established that the problem has introduced itself sometimes in the 2.6.31
-development cycle.
+> > Right - could we please use the solution that works at compile time? I
+> > used UTS_RELEASE after learning about its use in init/version.c, would
+> > that not make it an approved solution?
+> 
+> It seems there is some misunderstanding.
 
-Lately the failures have been traced back to commit 5d423ccd7ba4285f1084e91b26805e1d0ae978ed
-of a patch created by Yinghai and committed Ingo.
+Alright, if Stephen's fix is acceptable then your suggestion is fine.
+Sam seemed to suggest that Stephen's fix was a stop-gap.
 
-Reverting this patch seems to fix the problems with the rt2x00 driver.
-
-Also, it has been established that another work-around is to supply the pci=use_crs boot parameter.
-
-Do any of you have any idea as to what is going on here, and if this is something where the
-rt2x00 driver is at fault, or where the x86 ACPI/PCI/e820 code is buggy?
-
-So far I can establish that all the cases for which it is known what kind of HW it is that these
-are all MSI laptops.
-
-The related bug reports are:
-	http://bugzilla.kernel.org/show_bug.cgi?id=14460
-	https://bugs.launchpad.net/ubuntu/+source/linux/+bug/404596
-
----
-Gertjan.
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
