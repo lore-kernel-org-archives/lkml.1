@@ -1,86 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934487AbZLGUJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbZLGUQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934487AbZLGUJc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:09:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758872AbZLGUJa
+	id S964810AbZLGUQz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933589AbZLGUQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:09:30 -0500
-Received: from mga01.intel.com ([192.55.52.88]:12527 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758861AbZLGUJ3 convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 15:16:53 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:34354 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932856AbZLGUQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:09:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,356,1257148800"; 
-   d="scan'208";a="520598136"
-From: "Tung, Chien Tin" <chien.tin.tung@intel.com>
-To: Julia Lawall <julia@diku.dk>
-CC: "Latif, Faisal" <faisal.latif@intel.com>,
-       Roland Dreier <rolandd@cisco.com>, "Hefty, Sean" <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Date: Mon, 7 Dec 2009 13:09:32 -0700
-Subject: RE: [PATCH 3/5] drivers/infiniband: correct size computation
-Thread-Topic: [PATCH 3/5] drivers/infiniband: correct size computation
-Thread-Index: Acp3d43yESnDgPY5Rgqg7GQ8MDbT3wAAL1gA
-Message-ID: <603F8A3875DCE940BA37B49D0A6EA0AE3CE373A4@azsmsx501.amr.corp.intel.com>
-References: <Pine.LNX.4.64.0912061015540.20858@ask.diku.dk>
- <603F8A3875DCE940BA37B49D0A6EA0AE3CE36BF4@azsmsx501.amr.corp.intel.com>
- <Pine.LNX.4.64.0912071720520.15109@ask.diku.dk>
- <603F8A3875DCE940BA37B49D0A6EA0AE3CE36C9F@azsmsx501.amr.corp.intel.com>
- <Pine.LNX.4.64.0912072056160.1202@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0912072056160.1202@ask.diku.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Dec 2009 15:16:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=l4Qt0LGQwLHPquQx0OEMATQNJXU5MMEdxSUY3qBR7KryC+Lw2RpRegz2ht9VomzVL4
+         EwNdWUzyGRMJET3K7JspeLnrFf/41oMSMxzzlp7fv9NQ5J3wRDnXtzHekWsZmHtmi7kS
+         mqcN/9eI1Pds5QoTJzijwsfMzNYna28FDiVKw=
+Date: Mon, 7 Dec 2009 21:16:55 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       paulus@samba.org, tzanussi@gmail.com, srostedt@redhat.com
+Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for
+	analyzing lock statistics
+Message-ID: <20091207201652.GD5049@nowhere>
+References: <20091115022135.GA5427@nowhere> <1260156884-8474-2-git-send-email-mitake@dcl.info.waseda.ac.jp> <20091207044125.GB5262@nowhere> <20091207.235123.186008685.mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091207.235123.186008685.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Julia Lawall <julia@diku.dk>
->
->The size argument to ioremap_nocache should be the size of desired
->information, not the pointer to it.
->
->The semantic match that finds this problem is as follows:
->(http://coccinelle.lip6.fr/)
->
->// <smpl>
->@expression@
->expression *x;
->@@
->
->x =
-> <+...
->*sizeof(x)
->...+>// </smpl>
->
->Signed-off-by: Julia Lawall <julia@diku.dk>
->
->---
-> drivers/infiniband/hw/nes/nes.c     |    3 ++-
-> 1 files changed, 2 insertions(+), 1 deletions(-)
->
->diff --git a/drivers/infiniband/hw/nes/nes.c b/drivers/infiniband/hw/nes/nes.c
->index cbde0cf..95db98f 100644
->--- a/drivers/infiniband/hw/nes/nes.c
->+++ b/drivers/infiniband/hw/nes/nes.c
->@@ -521,7 +521,8 @@ static int __devinit nes_probe(struct pci_dev *pcidev, const struct pci_device_i
-> 	spin_lock_init(&nesdev->indexed_regs_lock);
->
-> 	/* Remap the PCI registers in adapter BAR0 to kernel VA space */
->-	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0), sizeof(mmio_regs));
->+	mmio_regs = ioremap_nocache(pci_resource_start(pcidev, BAR_0),
->+				    pci_resource_len(pcidev, BAR_0));
-> 	if (mmio_regs == NULL) {
-> 		printk(KERN_ERR PFX "Unable to remap BAR0\n");
-> 		ret = -EIO;
+On Mon, Dec 07, 2009 at 11:51:23PM +0900, Hitoshi Mitake wrote:
+> From: Frederic Weisbecker <fweisbec@gmail.com>
+> > Indeed. I think every lock instance has its own lockdep_map.
+> > And this lockdep_map is passed in every lock event but is
+> > only used to retrieve the name of the lock.
+> > 
+> > Why not adding the address of the lockdep_map in the event?
+> 
+> It's good idea. Address cannot be used as index of array directly,
+> but dealing with it is far easier than string and low cost.
 
-Acked-by: Chien Tung <chien.tin.tung@intel.com>
+
+Yeah, dealing with lock strings as identifier is like dealing
+with the lock class instead of the lock instance. It would
+require a very tricky state machine to sort it out.
+
+The address of the lockdep map would be useful as an identifier.
+Probably a hashlist based on it would be a good way: we can use
+the hashlist from the kernel headers (list.h) in perf tools
+already.
+
+
+ 
+> > I think that the lock events are much more sensible than the sched events,
+> > and that by nature: these are very high frequency events class, probably the
+> > highest among every event classes we have (the worst beeing function tracing :)
+> > 
+> > But still, you're right, there are certainly various things we need to
+> > optimize in this area.
+> > 
+> > More than 8 times slower is high.
+> 
+> It seems that lockdep contains some O(n) codes.
+> Of course lockdep is important, but analyzing statistics of lock usage
+> is another problem.
+> I think separating lockdep and lock event for stats can be solution.
+
+
+Indeed.
+
+Thanks!
+
