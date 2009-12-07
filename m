@@ -1,125 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758381AbZLGSZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZLGSYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758381AbZLGSZH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:25:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758303AbZLGSZD
+	id S1757965AbZLGSYo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757857AbZLGSYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:25:03 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55425 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758297AbZLGSY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:24:59 -0500
-Message-ID: <4B1D4842.80000@kernel.org>
-Date: Mon, 07 Dec 2009 10:24:02 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 7 Dec 2009 13:24:42 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:56115 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757798AbZLGSYl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 13:24:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=L/i1w19HBlHbqW+BTYflNrYh7WRXsPEwmOtc7GFxbHmR3d6IWxyhuvj/lLGnoFILgB
+         KzzIXrsGT710189aWnLp1TWdEFrz8jS+v7B8RV10Rcw677+J0A51QqoGh3Lft0kPEPs5
+         IsPgZNxDych5Jd+DeFf/VS0oSJlEmH6r9XYQM=
+Date: Mon, 7 Dec 2009 10:24:38 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Emmanuel =?iso-8859-1?Q?Fust=E9?= <emmanuel.fuste@thalesgroup.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR system?
+Message-ID: <20091207182438.GB998@core.coreip.homeip.net>
+References: <4B1D415F.5090308@thalesgroup.com>
 MIME-Version: 1.0
-To: Volker Lanz <vl@fidra.de>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [BISECTED, REGRESSION] Successful resume from suspend but freezes
- after I/O
-References: <200912071856.48125.vl@fidra.de>
-In-Reply-To: <200912071856.48125.vl@fidra.de>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B1D415F.5090308@thalesgroup.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Volker Lanz wrote:
-> Hi,
-> 
-> updating to my distro's new 2.6.31 kernel on an x86_64 quad core machine with 
-> 6 GB of RAM I noticed resuming from suspend still worked as before, but the 
-> machine will now reproducably freeze (have to hard reset) afterwards as soon 
-> as I do something disk I/O heavy, though the problem is probably not related 
-> to disk activity at all.
-> 
-> A current mainline 2.6.32 checkout shows the same behaviour.
-> 
-> I git-bisected the problem to this commit:
-> 
-> 
-> -----------------------------------------------------------------------------
-> commit 78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
-> Author: Yinghai Lu <yinghai@kernel.org>
-> Date:   Thu Mar 12 22:36:01 2009 -0700
-> 
->     x86: make e820_update_range() handle small range update
-> 
->     Impact: enhance e820 code to handle more cases
-> 
->     Try to handle new range which could be covered by one entry.
-> 
->     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->     Cc: jbeulich@novell.com
->     LKML-Reference: <49B9F0C1.10402@kernel.org>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> -----------------------------------------------------------------------------
-> 
-> 
-> A kernel built from this revision does not boot, so the first booting kernel 
-> to show the problem actually seems to be:
-> 
-> 
-> -----------------------------------------------------------------------------
-> commit 6d7942dc2a70a7e74c352107b150265602671588
-> Author: Yinghai Lu <yinghai@kernel.org>
-> Date:   Sat Mar 14 14:32:41 2009 -0700
-> 
->     x86: fix 64k corruption-check
-> 
->     Impact: fix boot crash
-> 
->     Need to exit early if the addr is far above 64k.
-> 
->     The crash got exposed by:
-> 
->       78a8b35: x86: make e820_update_range() handle small range update
-> 
->     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->     Cc: <stable@kernel.org>
->     LKML-Reference: <49BC2279.2030101@kernel.org>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> -----------------------------------------------------------------------------
-> 
-> 
-> The last kernel to work without problems thus seems to be this one:
-> 
-> 
-> -----------------------------------------------------------------------------
-> commit 773e673de27297d07d852e7e9bfd1a695cae1da2
-> Author: Yinghai Lu <yinghai@kernel.org>
-> Date:   Thu Mar 12 21:35:18 2009 -0700
-> 
->     x86: fix e820_update_range()
-> 
->     Impact: fix left range size on head
-> 
->     | commit 5c0e6f035df983210e4d22213aed624ced502d3d
->     |    x86: fix code paths used by update_mptable
->     |    Impact: fix crashes under Xen due to unrobust e820 code
-> 
->     fixes one e820 bug, but introduces another bug.
-> 
->     Need to update size for left range at first in case it is header.
-> 
->     also add __e820_add_region take more parameter.
-> 
->     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->     Cc: jbeulich@novell.com
->     LKML-Reference: <49B9E286.502@kernel.org>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> -----------------------------------------------------------------------------
-> 
-> 
-> The problem is 100% reproducable on this machine: Resuming and then copying 
-> /usr/ to $HOME will freeze after a few hundred MB have been copied. Earlier 
-> kernels worked fine for the last couple of months.
-> 
-> What additional information is required to help diagnose and hopefully fix the 
-> problem?
+On Mon, Dec 07, 2009 at 06:54:39PM +0100, Emmanuel Fusté wrote:
+> Mauro Carvalho Chehab wrote:
+>
+>> In summary,
+>>
+>> While the current EVIO[G|S]KEYCODE works sub-optimally for scancodes up 
+>> to 16 bytes
+>> (since a read loop for 2^16 is not that expensive), the current approach
+>> won't scale with bigger scancode spaces. So, it is needed expand it
+>> to work with bigger scancode spaces, used by more recent IR protocols.
+>>
+>> I'm afraid that any tricks we may try to go around the current limits to still
+>> keep using the same ioctl definition will sooner or later cause big headaches.
+>> The better is to redesign it to allow using different scancode spaces.
+>>
+>>
+>>   
+> I second you: input layer events from drivers should be augmented with a
+> protocol member, allowing us to define new ioctl and new ways to
+> efficiently store and manage sparse scancode spaces (tree, hashtable
+> ....).
 
-whole boot log with CONFIG_PCI_DEBUG and debug on command line.
+Userspace has no business knowing how driver maps hardware data stream
+into a keycode, only what is being mapped to what. The way is is done
+can change from driver-to-driver, from release to release. If I come up
+with an super-smart or super-stupid way of storing key mapping I won't
+want to modify userpsace tools to support it.
 
-YH
+> It will allow us to abstract the scancode value and to use
+> variable length scancode depending on the used protocol, and using the
+> most appropriate scheme to store the scancode/keycode mapping per protocol.
+> The today scancode space will be the legacy one, the default if not
+> specified "protocol". It will permit to progressively clean up the
+> actual acceptable mess in the input layer and finally using real
+> scancode -> keycode mappings everywhere if it is cleaner/convenient.
+>
+
+I am unable to parse this part, sorry.
+
+-- 
+Dmitry
