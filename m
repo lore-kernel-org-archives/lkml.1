@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbZLGHnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbZLGHnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758904AbZLGHnN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758767AbZLGHnL
+	id S1758917AbZLGHnk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758760AbZLGHnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:43:11 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60040 "EHLO song.cn.fujitsu.com"
+	Mon, 7 Dec 2009 02:43:40 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64007 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758706AbZLGHnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:43:09 -0500
-Message-ID: <4B1CB1FA.2090308@cn.fujitsu.com>
-Date: Mon, 07 Dec 2009 15:42:50 +0800
+	id S1758754AbZLGHnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 02:43:39 -0500
+Message-ID: <4B1CB217.1030702@cn.fujitsu.com>
+Date: Mon, 07 Dec 2009 15:43:19 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -18,7 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 09/13] tracing: Remove useless trace option
+Subject: [PATCH 10/13] tracing: Simplify trace_option_write()
 References: <4B1CB14A.4080402@cn.fujitsu.com>
 In-Reply-To: <4B1CB14A.4080402@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -27,62 +27,153 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since commit 4d9493c90f8e6e1b164aede3814010a290161abb
-("ftrace: remove add-hoc code"), option "sched-tree"
-has become useless.
+- remove duplicate code inside trace_options_write()
+- extract duplicate code in trace_options_write() and set_tracer_option()
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/trace.c |    1 -
- kernel/trace/trace.h |   23 +++++++++++------------
- 2 files changed, 11 insertions(+), 13 deletions(-)
+ kernel/trace/trace.c |   85 ++++++++++++++++++-------------------------------
+ 1 files changed, 31 insertions(+), 54 deletions(-)
 
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 75871e5..2801b0b 100644
+index 2801b0b..9359b74 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -313,7 +313,6 @@ static const char *trace_options[] = {
- 	"bin",
- 	"block",
- 	"stacktrace",
--	"sched-tree",
- 	"trace_printk",
- 	"ftrace_preempt",
- 	"branch",
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index ea5dda4..60f9471 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -597,18 +597,17 @@ enum trace_iterator_flags {
- 	TRACE_ITER_BIN			= 0x40,
- 	TRACE_ITER_BLOCK		= 0x80,
- 	TRACE_ITER_STACKTRACE		= 0x100,
--	TRACE_ITER_SCHED_TREE		= 0x200,
--	TRACE_ITER_PRINTK		= 0x400,
--	TRACE_ITER_PREEMPTONLY		= 0x800,
--	TRACE_ITER_BRANCH		= 0x1000,
--	TRACE_ITER_ANNOTATE		= 0x2000,
--	TRACE_ITER_USERSTACKTRACE       = 0x4000,
--	TRACE_ITER_SYM_USEROBJ          = 0x8000,
--	TRACE_ITER_PRINTK_MSGONLY	= 0x10000,
--	TRACE_ITER_CONTEXT_INFO		= 0x20000, /* Print pid/cpu/time */
--	TRACE_ITER_LATENCY_FMT		= 0x40000,
--	TRACE_ITER_SLEEP_TIME		= 0x80000,
--	TRACE_ITER_GRAPH_TIME		= 0x100000,
-+	TRACE_ITER_PRINTK		= 0x200,
-+	TRACE_ITER_PREEMPTONLY		= 0x400,
-+	TRACE_ITER_BRANCH		= 0x800,
-+	TRACE_ITER_ANNOTATE		= 0x1000,
-+	TRACE_ITER_USERSTACKTRACE       = 0x2000,
-+	TRACE_ITER_SYM_USEROBJ          = 0x4000,
-+	TRACE_ITER_PRINTK_MSGONLY	= 0x8000,
-+	TRACE_ITER_CONTEXT_INFO		= 0x10000, /* Print pid/cpu/time */
-+	TRACE_ITER_LATENCY_FMT		= 0x20000,
-+	TRACE_ITER_SLEEP_TIME		= 0x40000,
-+	TRACE_ITER_GRAPH_TIME		= 0x80000,
- };
+@@ -2318,38 +2318,39 @@ static int tracing_trace_options_show(struct seq_file *m, void *v)
+ 	return 0;
+ }
  
- /*
++static int __set_tracer_option(struct tracer *trace,
++			       struct tracer_flags *tracer_flags,
++			       struct tracer_opt *opts, int neg)
++{
++	int ret;
++
++	ret = trace->set_flag(tracer_flags->val, opts->bit, !neg);
++	if (ret)
++		return ret;
++
++	if (neg)
++		tracer_flags->val &= ~opts->bit;
++	else
++		tracer_flags->val |= opts->bit;
++	return 0;
++}
++
+ /* Try to assign a tracer specific option */
+ static int set_tracer_option(struct tracer *trace, char *cmp, int neg)
+ {
+ 	struct tracer_flags *tracer_flags = trace->flags;
+ 	struct tracer_opt *opts = NULL;
+-	int ret = 0, i = 0;
+-	int len;
++	int i;
+ 
+ 	for (i = 0; tracer_flags->opts[i].name; i++) {
+ 		opts = &tracer_flags->opts[i];
+-		len = strlen(opts->name);
+ 
+-		if (strncmp(cmp, opts->name, len) == 0) {
+-			ret = trace->set_flag(tracer_flags->val,
+-				opts->bit, !neg);
+-			break;
+-		}
++		if (strcmp(cmp, opts->name) == 0)
++			return __set_tracer_option(trace, trace->flags,
++						   opts, neg);
+ 	}
+-	/* Not found */
+-	if (!tracer_flags->opts[i].name)
+-		return -EINVAL;
+ 
+-	/* Refused to handle */
+-	if (ret)
+-		return ret;
+-
+-	if (neg)
+-		tracer_flags->val &= ~opts->bit;
+-	else
+-		tracer_flags->val |= opts->bit;
+-
+-	return 0;
++	return -EINVAL;
+ }
+ 
+ static void set_tracer_flags(unsigned int mask, int enabled)
+@@ -2369,7 +2370,7 @@ tracing_trace_options_write(struct file *filp, const char __user *ubuf,
+ 			size_t cnt, loff_t *ppos)
+ {
+ 	char buf[64];
+-	char *cmp = buf;
++	char *cmp;
+ 	int neg = 0;
+ 	int ret;
+ 	int i;
+@@ -2381,16 +2382,15 @@ tracing_trace_options_write(struct file *filp, const char __user *ubuf,
+ 		return -EFAULT;
+ 
+ 	buf[cnt] = 0;
++	cmp = strstrip(buf);
+ 
+-	if (strncmp(buf, "no", 2) == 0) {
++	if (strncmp(cmp, "no", 2) == 0) {
+ 		neg = 1;
+ 		cmp += 2;
+ 	}
+ 
+ 	for (i = 0; trace_options[i]; i++) {
+-		int len = strlen(trace_options[i]);
+-
+-		if (strncmp(cmp, trace_options[i], len) == 0) {
++		if (strcmp(cmp, trace_options[i]) == 0) {
+ 			set_tracer_flags(1 << i, !neg);
+ 			break;
+ 		}
+@@ -3888,39 +3888,16 @@ trace_options_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = 0;
+-	switch (val) {
+-	case 0:
+-		/* do nothing if already cleared */
+-		if (!(topt->flags->val & topt->opt->bit))
+-			break;
+-
+-		mutex_lock(&trace_types_lock);
+-		if (current_trace->set_flag)
+-			ret = current_trace->set_flag(topt->flags->val,
+-						      topt->opt->bit, 0);
+-		mutex_unlock(&trace_types_lock);
+-		if (ret)
+-			return ret;
+-		topt->flags->val &= ~topt->opt->bit;
+-		break;
+-	case 1:
+-		/* do nothing if already set */
+-		if (topt->flags->val & topt->opt->bit)
+-			break;
++	if (val != 0 && val != 1)
++		return -EINVAL;
+ 
++	if (!!(topt->flags->val & topt->opt->bit) != val) {
+ 		mutex_lock(&trace_types_lock);
+-		if (current_trace->set_flag)
+-			ret = current_trace->set_flag(topt->flags->val,
+-						      topt->opt->bit, 1);
++		ret = __set_tracer_option(current_trace, topt->flags,
++					  topt->opt, val);
+ 		mutex_unlock(&trace_types_lock);
+ 		if (ret)
+ 			return ret;
+-		topt->flags->val |= topt->opt->bit;
+-		break;
+-
+-	default:
+-		return -EINVAL;
+ 	}
+ 
+ 	*ppos += cnt;
 -- 
 1.6.3
 
