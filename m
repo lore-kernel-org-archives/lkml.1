@@ -1,57 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbZLGI5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934801AbZLGI5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759203AbZLGI5S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:57:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934821AbZLGI5Q
+	id S934801AbZLGI5A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934770AbZLGI47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:57:16 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48190 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934778AbZLGI5I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:57:08 -0500
-Subject: Re: [PATCH 7/7] sched: implement try_to_wake_up_local()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-In-Reply-To: <1260175804.8223.1217.camel@laptop>
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>
-	 <1259726212-30259-8-git-send-email-tj@kernel.org>
-	 <1259923487.3977.1940.camel@laptop>  <4B1C75F3.9080808@kernel.org>
-	 <1260175804.8223.1217.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Dec 2009 09:56:39 +0100
-Message-ID: <1260176199.8223.1237.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 03:56:59 -0500
+Received: from mail.atheros.com ([12.36.123.2]:29299 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934763AbZLGI46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 03:56:58 -0500
+From: <jie.yang@atheros.com>
+To: <davem@davemloft.net>
+CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       Jie Yang <jie.yang@atheros.com>
+Subject: [PATCH net-next]atl1c:add pci map direction in atl1c_buffer flags
+Date: Mon, 7 Dec 2009 16:56:59 +0800
+Message-ID: <12601762192681-git-send-email-jie.yang@atheros.com>
+X-Mailer: git-send-email 1.5.2.2
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 09:50 +0100, Peter Zijlstra wrote:
-> On Mon, 2009-12-07 at 12:26 +0900, Tejun Heo wrote:
+From: Jie Yang <jie.yang@atheros.com>
 
-> > Hmmm... it was intentional as, before this patch, there's no
-> > try_to_wake_up_local() so it was strange to mention it in the comment.
-> > I can move the comments but I don't think it's particularly better
-> > that way.
-> 
-> /me reads the comments and goes ah!
-> 
-> OK, maybe you've got a point there ;-)
+add pci map direction in atl1c_buffer flags, it is used when call pci_unmap 
+apis.
+Signed-off-by: Jie Yang <jie.yang@atheros.com>
+---
 
+ drivers/net/atl1c/atl1c.h      |   11 ++++++++---
+ drivers/net/atl1c/atl1c_main.c |   22 ++++++++++++++++------
+ 2 files changed, 24 insertions(+), 9 deletions(-)
 
-OK, so you fork and wakeup a new thread when an existing one goes to
-sleep, but do you also limit the concurrency on wakeup?
-
-Otherwise we can end up with say 100 workqueue tasks running, simply
-because they all ran into a contended lock and then woke up again.
-
-Where does that fork happen? Having to do memory allocations and all
-that while holding the rq->lock doesn't seem like a very good idea.
-
-What happens when you run out of memory and the workqueue progress is
-needed to get free memory?
-
+diff --git a/drivers/net/atl1c/atl1c.h b/drivers/net/atl1c/atl1c.h
+index a348a22..7e09084 100644
+--- a/drivers/net/atl1c/atl1c.h
++++ b/drivers/net/atl1c/atl1c.h
+@@ -479,6 +479,9 @@ struct atl1c_buffer {
+ #define ATL1C_PCIMAP_PAGE		0x0008
+ #define ATL1C_PCIMAP_TYPE_MASK		0x000C
+ 
++#define ATL1C_PCIMAP_TODEVICE		0x0010
++#define ATL1C_PCIMAP_FROMDEVICE		0x0020
++#define ATL1C_PCIMAP_DIRECTION_MASK	0x0030
+ 	dma_addr_t dma;
+ };
+ 
+@@ -487,9 +490,11 @@ struct atl1c_buffer {
+ 	((buff)->flags) |= (state);			\
+ 	} while (0)
+ 
+-#define ATL1C_SET_PCIMAP_TYPE(buff, type) do {		\
+-	((buff)->flags) &= ~ATL1C_PCIMAP_TYPE_MASK;	\
+-	((buff)->flags) |= (type);			\
++#define ATL1C_SET_PCIMAP_TYPE(buff, type, direction) do {	\
++	((buff)->flags) &= ~ATL1C_PCIMAP_TYPE_MASK;		\
++	((buff)->flags) |= (type);				\
++	((buff)->flags) &= ~ATL1C_PCIMAP_DIRECTION_MASK;	\
++	((buff)->flags) |= (direction);				\
+ 	} while (0)
+ 
+ /* transimit packet descriptor (tpd) ring */
+diff --git a/drivers/net/atl1c/atl1c_main.c b/drivers/net/atl1c/atl1c_main.c
+index 1e2f57d..1098dad 100644
+--- a/drivers/net/atl1c/atl1c_main.c
++++ b/drivers/net/atl1c/atl1c_main.c
+@@ -713,15 +713,21 @@ static int __devinit atl1c_sw_init(struct atl1c_adapter *adapter)
+ static inline void atl1c_clean_buffer(struct pci_dev *pdev,
+ 				struct atl1c_buffer *buffer_info, int in_irq)
+ {
++	u16 pci_driection;
+ 	if (buffer_info->flags & ATL1C_BUFFER_FREE)
+ 		return;
+ 	if (buffer_info->dma) {
++		if (buffer_info->flags & ATL1C_PCIMAP_FROMDEVICE)
++			pci_driection = PCI_DMA_FROMDEVICE;
++		else
++			pci_driection = PCI_DMA_TODEVICE;
++
+ 		if (buffer_info->flags & ATL1C_PCIMAP_SINGLE)
+ 			pci_unmap_single(pdev, buffer_info->dma,
+-					buffer_info->length, PCI_DMA_TODEVICE);
++					buffer_info->length, pci_driection);
+ 		else if (buffer_info->flags & ATL1C_PCIMAP_PAGE)
+ 			pci_unmap_page(pdev, buffer_info->dma,
+-					buffer_info->length, PCI_DMA_TODEVICE);
++					buffer_info->length, pci_driection);
+ 	}
+ 	if (buffer_info->skb) {
+ 		if (in_irq)
+@@ -1606,7 +1612,8 @@ static int atl1c_alloc_rx_buffer(struct atl1c_adapter *adapter, const int ringid
+ 		buffer_info->dma = pci_map_single(pdev, vir_addr,
+ 						buffer_info->length,
+ 						PCI_DMA_FROMDEVICE);
+-		ATL1C_SET_PCIMAP_TYPE(buffer_info, ATL1C_PCIMAP_SINGLE);
++		ATL1C_SET_PCIMAP_TYPE(buffer_info, ATL1C_PCIMAP_SINGLE,
++			ATL1C_PCIMAP_FROMDEVICE);
+ 		rfd_desc->buffer_addr = cpu_to_le64(buffer_info->dma);
+ 		rfd_next_to_use = next_next;
+ 		if (++next_next == rfd_ring->count)
+@@ -1967,7 +1974,8 @@ static void atl1c_tx_map(struct atl1c_adapter *adapter,
+ 		buffer_info->dma = pci_map_single(adapter->pdev,
+ 					skb->data, hdr_len, PCI_DMA_TODEVICE);
+ 		ATL1C_SET_BUFFER_STATE(buffer_info, ATL1C_BUFFER_BUSY);
+-		ATL1C_SET_PCIMAP_TYPE(buffer_info, ATL1C_PCIMAP_SINGLE);
++		ATL1C_SET_PCIMAP_TYPE(buffer_info, ATL1C_PCIMAP_SINGLE,
++			ATL1C_PCIMAP_TODEVICE);
+ 		mapped_len += map_len;
+ 		use_tpd->buffer_addr = cpu_to_le64(buffer_info->dma);
+ 		use_tpd->buffer_len = cpu_to_le16(buffer_info->length);
+@@ -1988,7 +1996,8 @@ static void atl1c_tx_map(struct atl1c_adapter *adapter,
+ 			pci_map_single(adapter->pdev, skb->data + mapped_len,
+ 					buffer_info->length, PCI_DMA_TODEVICE);
+ 		ATL1C_SET_BUFFER_STATE(buffer_info, ATL1C_BUFFER_BUSY);
+-		ATL1C_SET_PCIMAP_TYPE(buffer_info, ATL1C_PCIMAP_SINGLE);
++		ATL1C_SET_PCIMAP_TYPE(buffer_info, ATL1C_PCIMAP_SINGLE,
++			ATL1C_PCIMAP_TODEVICE);
+ 		use_tpd->buffer_addr = cpu_to_le64(buffer_info->dma);
+ 		use_tpd->buffer_len  = cpu_to_le16(buffer_info->length);
+ 	}
+@@ -2009,7 +2018,8 @@ static void atl1c_tx_map(struct atl1c_adapter *adapter,
+ 					buffer_info->length,
+ 					PCI_DMA_TODEVICE);
+ 		ATL1C_SET_BUFFER_STATE(buffer_info, ATL1C_BUFFER_BUSY);
+-		ATL1C_SET_PCIMAP_TYPE(buffer_info, ATL1C_PCIMAP_PAGE);
++		ATL1C_SET_PCIMAP_TYPE(buffer_info, ATL1C_PCIMAP_PAGE,
++			ATL1C_PCIMAP_TODEVICE);
+ 		use_tpd->buffer_addr = cpu_to_le64(buffer_info->dma);
+ 		use_tpd->buffer_len  = cpu_to_le16(buffer_info->length);
+ 	}
