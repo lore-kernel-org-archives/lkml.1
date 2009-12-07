@@ -1,93 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935295AbZLGX2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935510AbZLGXgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935295AbZLGX2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 18:28:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935229AbZLGX2i
+	id S935510AbZLGXgx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 18:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935187AbZLGXgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 18:28:38 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:53536 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932709AbZLGX2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 18:28:37 -0500
-Date: Mon, 7 Dec 2009 23:28:38 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Thomas Hellstrom <thellstrom@vmware.com>, Dave Airlie <airlied@redhat.com>,
-       dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: DRM/ttm: Unreachable code in ttm_bo_add_ttm
-In-Reply-To: <4B1D68AD.2090409@gmail.com>
-Message-ID: <alpine.DEB.2.00.0912072328050.14943@skynet.skynet.ie>
-References: <4B1D68AD.2090409@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 Dec 2009 18:36:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60767 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932617AbZLGXgv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 18:36:51 -0500
+Date: Mon, 7 Dec 2009 15:35:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Jan Beulich" <JBeulich@novell.com>
+Cc: <linux-kernel@vger.kernel.org>, <tony.luck@intel.com>, <tj@kernel.org>,
+       <linux-mm@kvack.org>, linux-ia64@vger.kernel.org,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] mm/vmalloc: don't use vmalloc_end
+Message-Id: <20091207153552.0fadf335.akpm@linux-foundation.org>
+In-Reply-To: <4B1D3A3302000078000241CD@vpn.id2.novell.com>
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009, Jiri Slaby wrote:
+(cc linux-ia64)
 
-> Hi,
-> 
-> Stanse found unreachable code in ttm_bo_add_ttm:
-> http://decibel.fi.muni.cz/~xslaby/stanse/error.cgi?db=32&id=714#l238
-> 
-> Excerpt from there:
->   230| case ttm_bo_type_user:
->   231|  bo->ttm = ttm_tt_create(bdev, bo->num_pages << 12,
->   232|     page_flags | (1 << 1),
->   233|     glob->dummy_read_page);
->   234|  if (bo->ttm == ((void *)0))
->   235|   ret = -12;
->   236|  break;
->   237|
->   238|  ret = ttm_tt_set_user(bo->ttm, get_current(),
->      |This node is unreachable prev next
->   239|          bo->buffer_start, bo->num_pages);
->   240|  if (ret != 0)
->   241|   ttm_tt_destroy(bo->ttm);
->   242|  break;
-> 
+On Mon, 07 Dec 2009 16:24:03 +0000
+"Jan Beulich" <JBeulich@novell.com> wrote:
+
+> At least on ia64 vmalloc_end is a global variable that VMALLOC_END
+> expands to. Hence having a local variable named vmalloc_end and
+> initialized from VMALLOC_END won't work on such platforms. Rename
+> these variables, and for consistency also rename vmalloc_start.
 > 
 
-Thanks,
-I've pushed this patch.
+erk.  So does 2.6.32's vmalloc() actually work correctly on ia64?
 
->From 447aeb907e417e0e837b4a4026d5081c88b6e8ca Mon Sep 17 00:00:00 2001
-From: Dave Airlie <airlied@redhat.com>
-Date: Tue, 8 Dec 2009 09:25:45 +1000
-Subject: [PATCH] drm/ttm: fix unreachable code.
+Perhaps vmalloc_end wasn't a well chosen name for an arch-specific
+global variable.
 
-None of the in-tree drivers use user objects yet so this wasn't hitting
-us.
+arch/m68k/include/asm/pgtable_mm.h does the same thing.  Did it break too?
 
-Stanse found unreachable code in ttm_bo_add_ttm:
-http://decibel.fi.muni.cz/~xslaby/stanse/error.cgi?db=32&id=714#l238
-
-Reported-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
----
- drivers/gpu/drm/ttm/ttm_bo.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/gpu/drm/ttm/ttm_bo.c b/drivers/gpu/drm/ttm/ttm_bo.c
-index 87c0625..e13fd23 100644
---- a/drivers/gpu/drm/ttm/ttm_bo.c
-+++ b/drivers/gpu/drm/ttm/ttm_bo.c
-@@ -275,9 +275,10 @@ static int ttm_bo_add_ttm(struct ttm_buffer_object *bo, bool zero_alloc)
- 		bo->ttm = ttm_tt_create(bdev, bo->num_pages << PAGE_SHIFT,
- 					page_flags | TTM_PAGE_FLAG_USER,
- 					glob->dummy_read_page);
--		if (unlikely(bo->ttm == NULL))
-+		if (unlikely(bo->ttm == NULL)) {
- 			ret = -ENOMEM;
--		break;
-+			break;
-+		}
- 
- 		ret = ttm_tt_set_user(bo->ttm, current,
- 				      bo->buffer_start, bo->num_pages);
--- 
-1.6.5.2
-
+> ---
+>  mm/vmalloc.c |   16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+> 
+> --- linux-2.6.32/mm/vmalloc.c
+> +++ 2.6.32-dont-use-vmalloc_end/mm/vmalloc.c
+> @@ -2060,13 +2060,13 @@ static unsigned long pvm_determine_end(s
+>  				       struct vmap_area **pprev,
+>  				       unsigned long align)
+>  {
+> -	const unsigned long vmalloc_end = VMALLOC_END & ~(align - 1);
+> +	const unsigned long end = VMALLOC_END & ~(align - 1);
+>  	unsigned long addr;
+>  
+>  	if (*pnext)
+> -		addr = min((*pnext)->va_start & ~(align - 1), vmalloc_end);
+> +		addr = min((*pnext)->va_start & ~(align - 1), end);
+>  	else
+> -		addr = vmalloc_end;
+> +		addr = end;
+>  
+>  	while (*pprev && (*pprev)->va_end > addr) {
+>  		*pnext = *pprev;
+> @@ -2105,8 +2105,8 @@ struct vm_struct **pcpu_get_vm_areas(con
+>  				     const size_t *sizes, int nr_vms,
+>  				     size_t align, gfp_t gfp_mask)
+>  {
+> -	const unsigned long vmalloc_start = ALIGN(VMALLOC_START, align);
+> -	const unsigned long vmalloc_end = VMALLOC_END & ~(align - 1);
+> +	const unsigned long vstart = ALIGN(VMALLOC_START, align);
+> +	const unsigned long vend = VMALLOC_END & ~(align - 1);
+>  	struct vmap_area **vas, *prev, *next;
+>  	struct vm_struct **vms;
+>  	int area, area2, last_area, term_area;
+> @@ -2142,7 +2142,7 @@ struct vm_struct **pcpu_get_vm_areas(con
+>  	}
+>  	last_end = offsets[last_area] + sizes[last_area];
+>  
+> -	if (vmalloc_end - vmalloc_start < last_end) {
+> +	if (vend - vstart < last_end) {
+>  		WARN_ON(true);
+>  		return NULL;
+>  	}
+> @@ -2167,7 +2167,7 @@ retry:
+>  	end = start + sizes[area];
+>  
+>  	if (!pvm_find_next_prev(vmap_area_pcpu_hole, &next, &prev)) {
+> -		base = vmalloc_end - last_end;
+> +		base = vend - last_end;
+>  		goto found;
+>  	}
+>  	base = pvm_determine_end(&next, &prev, align) - end;
+> @@ -2180,7 +2180,7 @@ retry:
+>  		 * base might have underflowed, add last_end before
+>  		 * comparing.
+>  		 */
+> -		if (base + last_end < vmalloc_start + last_end) {
+> +		if (base + last_end < vstart + last_end) {
+>  			spin_unlock(&vmap_area_lock);
+>  			if (!purged) {
+>  				purge_vmap_area_lazy();
+> 
