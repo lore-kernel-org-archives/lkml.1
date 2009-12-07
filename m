@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbZLGSay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbZLGSiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758345AbZLGSay (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:30:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbZLGSax
+	id S1758613AbZLGSiy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758551AbZLGSix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:30:53 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:63165 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757112AbZLGSaw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:30:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=imdsTE+AKBMtYTSbE1GjoqArrGQ4et1eTnmbIAxB5cnlmroVuLtIXxO775ri6HY2Hg
-         zCgGt2VyLjtP/wrzfy++BjpMHSrs/AAUutNynJvub6uDxqYD9fs1VazoMFbKc55pd/ne
-         MOjz85cSSgyL9Z4EhOMkxGWUw9TSKOQWDkoOQ=
+	Mon, 7 Dec 2009 13:38:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16331 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758478AbZLGSiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 13:38:52 -0500
+Date: Mon, 7 Dec 2009 19:32:26 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] "fair" rw spinlocks
+Message-ID: <20091207183226.GA20139@redhat.com>
+References: <20091130100041.GA29610@infradead.org> <alpine.LFD.2.00.0911300722370.2872@localhost.localdomain> <20091130174638.GA9782@elte.hu> <alpine.LFD.2.00.0911302206370.24119@localhost.localdomain> <1259616429.26472.499.camel@laptop> <alpine.LFD.2.00.0911302300550.24119@localhost.localdomain> <alpine.LFD.2.00.0911301409560.2872@localhost.localdomain> <alpine.LFD.2.00.0911302328350.24119@localhost.localdomain> <alpine.LFD.2.00.0911301443110.2872@localhost.localdomain> <m1y6lg7q3n.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-In-Reply-To: <4B1BBE71.70305@gmail.com>
-References: <b6fcc0a0912052114v790f04c9h9a7367ff74d12426@mail.gmail.com>
-	 <4B1BBE71.70305@gmail.com>
-Date: Mon, 7 Dec 2009 20:30:58 +0200
-Message-ID: <b6fcc0a0912071030y4ca0deabk1635ec2f3e7ffe26@mail.gmail.com>
-Subject: Re: [PATCH 28/31] Constify struct super_operations for 2.6.32 v1
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1y6lg7q3n.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/6/09, Emese Revfy <re.emese@gmail.com> wrote:
-> Alexey Dobriyan wrote:
->>> -   	struct inode *(*alloc_inode)(struct super_block *sb);
->>> +   	struct inode *(* const alloc_inode)(struct super_block *sb);
->>
->> Good rule is if adding const doesn't move object from one section
->> to another, it isn't worth it.
->>
->> I suggest we stick to it or risk another wave of jumbo patches.
->>
-> If all instances of a given ops structure are const and we would like to
-> preserve this policy for the future as well, then  it is very useful
-> to give future programmers a strong hint about this policy by making
-> the compiler complain about any violation attempts. Otherwise they may
-> very well write code that modifies such structures and we will have to
-> work extra to undo that (or change the policy but in that case it is
-> good to know why we have to do that).
+On 12/05, Eric W. Biederman wrote:
+>
+> Atomically sending signal to every member of a process group, is the
+> big fly in the ointment I am aware of.  Last time I looked I could
+> not see how to convert it rcu.
 
-You may want to look what filesystems do with superblock operations.
-And after super operations were made const writes to it will be caught
-with readonly .rodata config option.
+I am not sure, but iirc we can do this lockless (under rcu_lock).
+We need to modify pid_link to use list_entry and attach_pid() should
+add the new task to the end. Of course we need more changes, but
+(again iirc) this is not too hard.
 
-You're going too far with these modifiers.
+> This is a pain because we occasionally signal a process group from
+> interrupt context.
 
-Nothing will be caught.
+Only send_sigio/etc does so, right?
+
+
+I didn't read the previous discussion yet (will try tomorrow), sorry
+if I am off-topic. But I think the nastiest problem with tasklist
+is that it protects parent/child relationship. We need per-process
+lock, but first we should change ptrace to avoid this lock somehow.
+(this is one of the goals of ptrace-utrace, but not "immediate").
+
+Oleg.
+
