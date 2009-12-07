@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934857AbZLGJnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934881AbZLGJq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934857AbZLGJnm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 04:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934800AbZLGJnj
+	id S934881AbZLGJq1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 04:46:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934826AbZLGJqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 04:43:39 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:35565 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934781AbZLGJni convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 04:46:25 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:38968 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759298AbZLGJqX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 04:43:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YHXc5VSIv3u+CibmIPC5pK81mkpWv05zDi36Ax72nDMiYi+NO2U6IKdEOImwy6XDz5
-         +CTH6Tgm/J/s0n4Y4No8jUMQbxduF2OlkaoSwzjnEDQE5qXEqKd4rQmc/PGUoJvzU+V+
-         5GEg0/kakWm7dFax5zE6HOMlutRlZyOeTNFt0=
+	Mon, 7 Dec 2009 04:46:23 -0500
+From: Nicolas Palix <npalix@diku.dk>
+To: Paul Mundt <lethal@linux-sh.org>, kernel-janitors@vger.kernel.org,
+       Stuart Menefy <stuart.menefy@st.com>, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] arch/sh: Replace an explicit computation by the use of the container_of macro
+Date: Mon, 7 Dec 2009 10:46:26 +0100
+User-Agent: KMail/1.11.2 (Linux/2.6.28-17-generic; KDE/4.2.2; i686; ; )
 MIME-Version: 1.0
-In-Reply-To: <4B1C38B5.2060204@tremplin-utc.net>
-References: <40a4ed590911190052w63a18bb7p516a5e759e0ffa23@mail.gmail.com>
-	 <4B055609.9030306@tremplin-utc.net>
-	 <4B1A53AE.9020707@tremplin-utc.net>
-	 <40a4ed590912060741n4042ab1bg8188cd4eff28ca78@mail.gmail.com>
-	 <4B1BDAA3.10601@gentoo.org>
-	 <40a4ed590912060835s61aea6aqfe6780395bfd2993@mail.gmail.com>
-	 <4B1C38B5.2060204@tremplin-utc.net>
-Date: Mon, 7 Dec 2009 10:43:43 +0100
-Message-ID: <40a4ed590912070143j231e07b6uafd04d0f2ee15dca@mail.gmail.com>
-Subject: Re: Intel Poulsbo [psb] driver for Asus Eeepc 1101
-From: Zeno Davatz <zdavatz@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-Cc: Zac Medico <zmedico@gentoo.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200912071046.27330.npalix@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 7, 2009 at 12:05 AM, Éric Piel <Eric.Piel@tremplin-utc.net> wrote:
-> Op 06-12-09 17:35, Zeno Davatz schreef:
-> :
->>
->> Yes, thanks. That helped another step. I am getting the correct screen
->> resolution after enabling that in the kernel as well. The boot [ok]
->> messages of Gentoo are in a higher resolution now though. That is a
->> good start.
->>
->> But after my X starts I get a black screen with a
->>
->> -
->>
->> in the top left corner. They keyboard also does not work. May be an
->> X.org config problem.
->>
-> I've got similar behaviour here if psb is loaded before the X server starts
-> (aka there is a framebuffer). If the console is just ascii (no vga=...
-> argument on the kernel boot line, and no "modprobe psb"), then X starts
-> fine.
+>From 945e75c0e3202ab4cd0b8f185ea4be5609806edb Mon Sep 17 00:00:00 2001
+From: Nicolas Palix <npalix@diku.dk>
+Date: Mon, 7 Dec 2009 10:38:55 +0100
 
-What are the exact options that you are using for "no vga"?
+The macro container_of from kernel.h performs the same
+pointer arithmetic operation.
 
-My terminal seems to automatically load "psb". I have no modprobe
-loading "psb" explicitly.
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-Best
-Zeno
+// <smpl>
+@@
+type T;
+expression mptr;
+expression member;
+@@
+
+- (void *)((char *)mptr - offsetof(T, member))
++ container_of(mptr, T, member)
+// </smpl>
+
+Signed-off-by: Nicolas Palix <npalix@diku.dk>
+---
+ arch/sh/kernel/cpu/irq/ipr.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/sh/kernel/cpu/irq/ipr.c b/arch/sh/kernel/cpu/irq/ipr.c
+index c1508a9..9282d96 100644
+--- a/arch/sh/kernel/cpu/irq/ipr.c
++++ b/arch/sh/kernel/cpu/irq/ipr.c
+@@ -17,16 +17,17 @@
+  * for more details.
+  */
+ #include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
+ #include <linux/irq.h>
++#include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/io.h>
+-#include <linux/interrupt.h>
+ #include <linux/topology.h>
+ 
+ static inline struct ipr_desc *get_ipr_desc(unsigned int irq)
+ {
+ 	struct irq_chip *chip = get_irq_chip(irq);
+-	return (void *)((char *)chip - offsetof(struct ipr_desc, chip));
++	return container_of(chip, struct ipr_desc, chip);
+ }
+ 
+ static void disable_ipr_irq(unsigned int irq)
+-- 
+1.6.0.4
+
