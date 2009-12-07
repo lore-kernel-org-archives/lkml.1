@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934571AbZLGAbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbZLGAM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934571AbZLGAbp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758395AbZLGAMy
+	id S1758404AbZLGAM5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbZLGAMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:12:54 -0500
-Received: from kroah.org ([198.145.64.141]:34261 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:12:52 -0500
+Received: from kroah.org ([198.145.64.141]:34267 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758349AbZLGAMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:12:46 -0500
+	id S1758331AbZLGAMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:12:47 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:44 2009
-Message-Id: <20091207000644.555026790@mini.kroah.org>
+Message-Id: <20091207000644.688098245@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:02 -0800
+Date: Sun, 06 Dec 2009 16:00:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Henk Vergonet <Henk.Vergonet@gmail.com>,
-       Michael Krufky <mkrufky@kernellabs.com>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
        Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [026/119] V4L/DVB (13107): tda18271: fix overflow in FM radio frequency calculation
+Subject: [027/119] V4L/DVB (13190): em28xx: fix panic that can occur when starting audio streaming
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=v4l-dvb-13107-tda18271-fix-overflow-in-fm-radio-frequency-calculation.patch
+Content-Disposition: inline; filename=v4l-dvb-13190-em28xx-fix-panic-that-can-occur-when-starting-audio-streaming.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,42 +30,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Michael Krufky <mkrufky@kernellabs.com>
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
 
-commit 4d8317876d5f53ef792e90f89d8f162d7bca5c81 upstream.
+commit 96fbf771d86a90ff006bc62ca4d4de6474b3de31 upstream.
 
-Multiplication by 62500 causes an overflow in the 32 bit freq variable,
-which is later divided by 1000 when using FM radio.
+Because the counters were not reset when starting up streaming, they would
+be reused from the previous run.  This can result in cases such that when the
+second instance of streaming starts up, the "cnt" variable in
+em28xx_audio_isocirq() can end up being negative, resulting in attempting to
+write to memory before the start of runtime->dma_area (as well as having a
+negative number of bytes to copy).
 
-This patch prevents the overflow by scaling the frequency value correctly
-upfront.  Thanks to Henk Vergonet for spotting the problem and providing
-a preliminary patch, which this changeset was based upon.
-
-Cc: Henk Vergonet <Henk.Vergonet@gmail.com>
-Signed-off-by: Michael Krufky <mkrufky@kernellabs.com>
+Signed-off-by: Devin Heitmueller <dheitmueller@kernellabs.com>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/common/tuners/tda18271-fe.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/media/video/em28xx/em28xx-audio.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/drivers/media/common/tuners/tda18271-fe.c
-+++ b/drivers/media/common/tuners/tda18271-fe.c
-@@ -963,12 +963,12 @@ static int tda18271_set_analog_params(st
- 	struct tda18271_std_map_item *map;
- 	char *mode;
- 	int ret;
--	u32 freq = params->frequency * 62500;
-+	u32 freq = params->frequency * 125 *
-+		((params->mode == V4L2_TUNER_RADIO) ? 1 : 1000) / 2;
+--- a/drivers/media/video/em28xx/em28xx-audio.c
++++ b/drivers/media/video/em28xx/em28xx-audio.c
+@@ -383,6 +383,11 @@ static int snd_em28xx_hw_capture_free(st
  
- 	priv->mode = TDA18271_ANALOG;
+ static int snd_em28xx_prepare(struct snd_pcm_substream *substream)
+ {
++	struct em28xx *dev = snd_pcm_substream_chip(substream);
++
++	dev->adev.hwptr_done_capture = 0;
++	dev->adev.capture_transfer_done = 0;
++
+ 	return 0;
+ }
  
- 	if (params->mode == V4L2_TUNER_RADIO) {
--		freq = freq / 1000;
- 		map = &std_map->fm_radio;
- 		mode = "fm";
- 	} else if (params->std & V4L2_STD_MN) {
 
 
