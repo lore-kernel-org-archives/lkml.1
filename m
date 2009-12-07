@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935098AbZLGNos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935063AbZLGNtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935098AbZLGNos (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 08:44:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935089AbZLGNor
+	id S935063AbZLGNtB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 08:49:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935028AbZLGNs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 08:44:47 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:39059 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934963AbZLGNoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 08:44:44 -0500
-Date: Mon, 7 Dec 2009 07:44:48 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Miller <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v6] x86/apic: limit irq affinity
-Message-ID: <20091207134448.GB1005@sgi.com>
-References: <20091125074033.4c46c1b0@infradead.org> <20091203165004.GA14665@sgi.com> <Pine.WNT.4.64.0912030851500.13880@ppwaskie-MOBL2.amr.corp.intel.com> <20091203170149.GA15151@sgi.com> <Pine.WNT.4.64.0912030905530.16084@ppwaskie-MOBL2.amr.corp.intel.com> <20091203171946.GC15151@sgi.com> <Pine.WNT.4.64.0912031048590.8104@ppwaskie-MOBL2.amr.corp.intel.com> <20091204164227.GA28378@sgi.com> <1259961477.23199.39.camel@localhost> <m1eina9vw1.fsf@fess.ebiederm.org>
+	Mon, 7 Dec 2009 08:48:59 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:56629 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934927AbZLGNs6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 08:48:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Jm5bx/gsWJFJgiSE1nFzpmWG3TV7BBibG97HrQQH19d8BMAVRXgJCbiuyYpJbFTgIM
+         N0vxz/dw2E3wSMZevjXN3OEYjAX24samgbE45SB6QNmY07IbK/qRH4gX+WONaBE0Lwdn
+         vTJ5WD8FtK/AK7+Kg7/XF7MXdQkkF+PDf9q7I=
+Message-ID: <4B1D0813.4070502@gmail.com>
+Date: Mon, 07 Dec 2009 14:50:11 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1eina9vw1.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ext3: PTR_ERR return of wrong pointer in setup_new_group_blocks()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 03:12:14PM -0800, Eric W. Biederman wrote:
-> Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com> writes:
-> 
-> >> > > As a matter of fact, driver's allocating rings, buffers, queues on other nodes should optimally be made aware of the restriction.
-> >> > 
-> >> > The idea is that the driver will do its memory allocations for everything 
-> >> > across nodes.  When it does that, it will use the kernel interface 
-> >> > (function call) to set the corresponding mask it wants for those queue 
-> >> > resources.  That is my end-goal for this code.
-> >> > 
-> >> 
-> >> OK, but we will eventually have to reject any irqbalance attempts to send irqs to restricted nodes.
-> >
-> > See above.
-> 
-> Either I am parsing this conversation wrong or there is a strong
-> reality distortion field in place.  It appears you are asking that we
-> depend on a user space application to not attempt the physically
-> impossible, when we could just as easily ignore or report -EINVAL to.
-> 
-> We really have two separate problems hear.
-> - How to avoid the impossible.
+Return the PTR_ERR of the correct pointer.
 
-The kernel does need to restrict attempts at the impossible.  However I see
-nothing wrong with providing apps with information as to what the impossible
-actually is.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ fs/ext3/resize.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> - How to deal with NUMA affinity.
+diff --git a/fs/ext3/resize.c b/fs/ext3/resize.c
+index 8359e7b..5f83b61 100644
+--- a/fs/ext3/resize.c
++++ b/fs/ext3/resize.c
+@@ -266,7 +266,7 @@ static int setup_new_group_blocks(struct super_block *sb,
+ 			goto exit_bh;
+ 
+ 		if (IS_ERR(gdb = bclean(handle, sb, block))) {
+-			err = PTR_ERR(bh);
++			err = PTR_ERR(gdb);
+ 			goto exit_bh;
+ 		}
+ 		ext3_journal_dirty_metadata(handle, gdb);
