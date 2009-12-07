@@ -1,135 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbZLGTYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbZLGTbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758747AbZLGTYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 14:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758646AbZLGTYW
+	id S1758813AbZLGTbD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 14:31:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758774AbZLGTbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 14:24:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56191 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758344AbZLGTYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 14:24:21 -0500
-Message-ID: <4B1D561C.9030802@kernel.org>
-Date: Mon, 07 Dec 2009 11:23:08 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 7 Dec 2009 14:31:00 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:37392 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758794AbZLGTa7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 14:30:59 -0500
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       =?iso-8859-1?Q?Ozan_=C7a=3F=3Flayan?= <ozan@pardus.org.tr>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       "scameron@beardog.cce.hp.com" <scameron@beardog.cce.hp.com>
+Date: Mon, 7 Dec 2009 19:30:37 +0000
+Subject: RE: CCISS performance drop in buffered disk reads in newer kernels
+Thread-Topic: CCISS performance drop in buffered disk reads in newer kernels
+Thread-Index: Acp3bKf29YqxjjeQRE2QWZuVKELENQABE3Ig
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77886994120A79@GVW0547EXC.americas.hpqcorp.net>
+References: <4B1CDCE6.5040502@pardus.org.tr>
+ <0F5B06BAB751E047AB5C87D1F77A778869941207A5@GVW0547EXC.americas.hpqcorp.net>
+ <4B1D47C5.7030804@pardus.org.tr> <20091207183946.GE8742@kernel.dk>
+In-Reply-To: <20091207183946.GE8742@kernel.dk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Volker Lanz <vl@fidra.de>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [BISECTED, REGRESSION] Successful resume from suspend but freezes
- after I/O
-References: <200912071856.48125.vl@fidra.de> <4B1D4842.80000@kernel.org> <200912072013.46332.vl@fidra.de>
-In-Reply-To: <200912072013.46332.vl@fidra.de>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Volker Lanz wrote:
-> On Monday 07 December 2009 19:24:02 Yinghai Lu wrote:
->> Volker Lanz wrote:
->>> Hi,
->>>
->>> updating to my distro's new 2.6.31 kernel on an x86_64 quad core machine
->>> with 6 GB of RAM I noticed resuming from suspend still worked as before,
->>> but the machine will now reproducably freeze (have to hard reset)
->>> afterwards as soon as I do something disk I/O heavy, though the problem
->>> is probably not related to disk activity at all.
->>>
->>> A current mainline 2.6.32 checkout shows the same behaviour.
->>>
->>> I git-bisected the problem to this commit:
->>>
->>>
->>> -------------------------------------------------------------------------
->>> ---- commit 78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
->>> Author: Yinghai Lu <yinghai@kernel.org>
->>> Date:   Thu Mar 12 22:36:01 2009 -0700
->>>
->>>     x86: make e820_update_range() handle small range update
->>>
->>>     Impact: enhance e820 code to handle more cases
->>>
->>>     Try to handle new range which could be covered by one entry.
->>>
->>>     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>     Cc: jbeulich@novell.com
->>>     LKML-Reference: <49B9F0C1.10402@kernel.org>
->>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>> -------------------------------------------------------------------------
->>> ----
->>>
->>>
->>> A kernel built from this revision does not boot, so the first booting
->>> kernel to show the problem actually seems to be:
->>>
->>>
->>> -------------------------------------------------------------------------
->>> ---- commit 6d7942dc2a70a7e74c352107b150265602671588
->>> Author: Yinghai Lu <yinghai@kernel.org>
->>> Date:   Sat Mar 14 14:32:41 2009 -0700
->>>
->>>     x86: fix 64k corruption-check
->>>
->>>     Impact: fix boot crash
->>>
->>>     Need to exit early if the addr is far above 64k.
->>>
->>>     The crash got exposed by:
->>>
->>>       78a8b35: x86: make e820_update_range() handle small range update
->>>
->>>     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>     Cc: <stable@kernel.org>
->>>     LKML-Reference: <49BC2279.2030101@kernel.org>
->>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>> -------------------------------------------------------------------------
->>> ----
->>>
->>>
->>> The last kernel to work without problems thus seems to be this one:
->>>
->>>
->>> -------------------------------------------------------------------------
->>> ---- commit 773e673de27297d07d852e7e9bfd1a695cae1da2
->>> Author: Yinghai Lu <yinghai@kernel.org>
->>> Date:   Thu Mar 12 21:35:18 2009 -0700
->>>
->>>     x86: fix e820_update_range()
->>>
->>>     Impact: fix left range size on head
->>>
->>>     | commit 5c0e6f035df983210e4d22213aed624ced502d3d
->>>     |    x86: fix code paths used by update_mptable
->>>     |    Impact: fix crashes under Xen due to unrobust e820 code
->>>
->>>     fixes one e820 bug, but introduces another bug.
->>>
->>>     Need to update size for left range at first in case it is header.
->>>
->>>     also add __e820_add_region take more parameter.
->>>
->>>     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>     Cc: jbeulich@novell.com
->>>     LKML-Reference: <49B9E286.502@kernel.org>
->>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>> -------------------------------------------------------------------------
->>> ----
->>>
->>>
->>> The problem is 100% reproducable on this machine: Resuming and then
->>> copying /usr/ to $HOME will freeze after a few hundred MB have been
->>> copied. Earlier kernels worked fine for the last couple of months.
->>>
->>> What additional information is required to help diagnose and hopefully
->>> fix the problem?
->> whole boot log with CONFIG_PCI_DEBUG and debug on command line.
+ 
+
+> -----Original Message-----
+> From: Jens Axboe [mailto:jens.axboe@oracle.com] 
+> Sent: Monday, December 07, 2009 12:40 PM
+> To: Ozan Ça??layan
+> Cc: Miller, Mike (OS Dev); linux-kernel; scameron@beardog.cce.hp.com
+> Subject: Re: CCISS performance drop in buffered disk reads in 
+> newer kernels
 > 
-> Here it is. It's huge, I hope you were expecting that...
+> On Mon, Dec 07 2009, Ozan Ça??layan wrote:
+> > Miller, Mike (OS Dev) wrote:
+> > > Ozan,
+> > > I'm aware of the performance drop. Please see: 
+> http://bugzilla.kernel.org/show_bug.cgi?id=13127. I removed 
+> the huge read ahead value of 1024 that we used because users 
+> were complaining about small writes being starved. That was 
+> back around the 2.6.25 timeframe. Since that timeframe there 
+> have no changes in the main i/o path. I'll get back on this 
+> as time allows.
+> > >
+> > > Meanwhile, you can tweak some of the block layer tunables as such.
+> > >
+> > >     echo 64 > /sys/block/cciss\!c0d1/queue/read_ahead_kb
+> > > OR
+> > >     blockdev --setra 128 /dev/cciss/c0d1
+> > >
+> > > These are just example values. There is also 
+> max_hw_sectors_kb and max_sectors_kb that be adjusted.
+> > >   
+> > 
+> > Hi,
+> > 
+> > Actually the "#define READ_AHEAD 1024" was removed on March 
+> 2008 which 
+> > was included in the 2.6.25.y tree so 2.6.25.20 has 128kB read_ahead 
+> > value too.
+> > 
+> > *But* setting read_ahead to 2048 increases buffered disk 
+> read average 
+> > from 60~MB/s to 190~MB/s hence the kernel compile time 
+> drops to 2 minutes.
+> > 
+> > So maybe the regression/change is in another place?
+> > 
+> > The server is just a compile-farm so it's triggered by 
+> hand, compiles 
+> > distribution's packages and stays idle until the next 
+> compilation queue.
+> > Is it safe/OK to use that 2048kB read_ahead value for such workload?
+> 
+> Yes, it's definitely safe.
 
-and the one with current tip?
+I agree. 
 
-http://people.redhat.com/mingo/tip.git/readme.txt
+> 
+> > (max_hw_sectors_kb is 512 on my 2.6.25.20 setup and 1024 on 
+> 2.6.30.9 
+> > but it seems that it's read-only)
+> 
+> The *_hw_* values are the driver exported hardware limits, so 
+> they are always read-only.
 
-YH
+Ahhh, I didn't know that. There is also an nr_requests attribute which to me implies limiting requests somewhere. The value of nr_request is 128 but the max commands to the cciss controllers exceed that value. What is nr_request supposed to do?
+
+-- mikem
+
+> 
+> --
+> Jens Axboe
+> 
+> 
