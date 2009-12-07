@@ -1,250 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935456AbZLGQvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935454AbZLGQwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935456AbZLGQvJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:51:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935369AbZLGQvI
+	id S935454AbZLGQwd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935411AbZLGQwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:51:08 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:49674 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935285AbZLGQvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:51:07 -0500
-Date: Mon, 7 Dec 2009 11:51:12 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patch] libata fix
-Message-ID: <20091207165112.GA14576@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Mon, 7 Dec 2009 11:52:32 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:26645 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935398AbZLGQwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 11:52:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=sr+R8X91xVj849691DTm4ewSYFCwKXl7Kum9ySh5aajYRgCxW/OFTOeuXUcYJQNlSr
+         S/cGXCWv2tUqxm3kPgVDHv506iOM0SSuEcy5RSDgpQAypld53dv95+dqhaePUwj7COh0
+         fVi26tdCt50raYRUm/XZ/2jRyO3c5icjvMsEk=
+Message-ID: <4B1D32D1.4090404@gmail.com>
+Date: Mon, 07 Dec 2009 17:52:33 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-9.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Neil Horman <nhorman@tuxdriver.com>, Oleg Nesterov <oleg@redhat.com>
+Subject: [PULL] pull request for writable limits for 2.6.33-rc1
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-Linus,
+please pull from writable limits git. It contains naming fixes suggested
+by Ingo, so that we have task_rlimit() and similar helpers for rlimits now.
 
-One of the commits had bugs caught in late review, and needed to be
-reverted.  This commit was appended to the usual git branch(es).
+--
+The following changes since commit 6ec22f9b037fc0c2e00ddb7023fad279c365324d:
+  Linus Torvalds (1):
+        Merge branch 'x86-debug-for-linus' of
+git://git.kernel.org/.../tip/linux-2.6-tip
 
-Please pull from the "upstream-linus" branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+are available in the git repository at:
 
-to receive the commit below.  If you have not yet pulled the previous
-upstream-linus batch for libata, you will receive the contents of the
-previous push + the commit below.  If you have pulled, you will only
-receive the commit below.
+  git://decibel.fi.muni.cz/~xslaby/linux writable_limits
 
+Jiri Slaby (25):
+      SECURITY: selinux, fix update_rlimit_cpu parameter
+      SECURITY: add task_struct to setrlimit
+      core: add task_struct to update_rlimit_cpu
+      core: split sys_setrlimit
+      core: allow setrlimit to non-current tasks
+      core: optimize setrlimit for current task
+      FS: proc, switch limits reading to fops
+      FS: proc, make limits writable
+      core: do security check under task_lock
+      core: rename setrlimit to do_setrlimit
+      resource: move kernel functions inside __KERNEL__
+      core: posix-cpu-timers, cleanup rlimits usage
+      resource: add helpers for fetching rlimits
+      IA64: use helpers for rlimits
+      PPC: use helpers for rlimits
+      S390: use helpers for rlimits
+      SPARC: use helpers for rlimits
+      X86: use helpers for rlimits
+      FS: use helpers for rlimits
+      MM: use helpers for rlimits
+      core: use helpers for rlimits
+      misc: use helpers for rlimits
+      core: implement getprlimit and setprlimit syscalls
+      COMPAT: add get/put_compat_rlimit
+      x86: add ia32 compat prlimit syscalls
 
-commit 1b52f2a41c41052d2a7c78af0bd9b8b11d70f49a
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Mon Dec 7 11:41:25 2009 -0500
+Neil Horman (1):
+      unistd: add __NR_[get|set]prlimit syscall numbers
 
-    Revert "pata_sis: Implement MWDMA for the UDMA 133 capable chips"
-    
-    This reverts commit f20941f334d8fdb6b598658979709b4e94cd034b.
-    
-    Sergei Shtylyov notes "You call min() on uncomparables [in
-    mwdma_clip_to_pio()], i.e. mwdma_to_pio[] contains XFER_PIO_* and
-    adev->pio_mode - XFER_PIO_0 yields you a mode number.  Thus the second
-    argument will always "win" as a minimal one"
-    
-    Bartlomiej Zolnierkiewicz adds "There are more issues with the patch related
-    to mwdma_clip_to_pio().  The function can return values between 0 and
-    4 which obviously won't work well for the new code below for values
-    >2 (i.e. resulting in out-of-bounds array access for the common-case
-    of dev->pio_mode == XFER_PIO_4)."
-    
-    Bartlomiej Zolnierkiewicz also notes the patch is incomplete, failing to
-    update MWDMA mode masks.
-    
-    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Oleg Nesterov (1):
+      sys_setrlimit: make sure ->rlim_max never grows
 
-diff --git a/drivers/ata/pata_sis.c b/drivers/ata/pata_sis.c
-index 8af0dc8..5c30d56 100644
---- a/drivers/ata/pata_sis.c
-+++ b/drivers/ata/pata_sis.c
-@@ -252,25 +252,24 @@ static void sis_100_set_piomode (struct ata_port *ap, struct ata_device *adev)
- }
- 
- /**
-- *	sis_133_do_piomode - Initialize host controller PATA PIO/DMA timings
-+ *	sis_133_set_piomode - Initialize host controller PATA PIO timings
-  *	@ap: Port whose timings we are configuring
-  *	@adev: Device we are configuring for.
-  *
-  *	Set PIO mode for device, in host controller PCI config space. This
-- *	function handles PIO set up for the later ATA133 devices. The same
-- *	timings are used for MWDMA.
-+ *	function handles PIO set up for the later ATA133 devices.
-  *
-  *	LOCKING:
-  *	None (inherited from caller).
-  */
- 
--static void sis_133_do_piomode(struct ata_port *ap, struct ata_device *adev,
--					int speed)
-+static void sis_133_set_piomode (struct ata_port *ap, struct ata_device *adev)
- {
- 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
- 	int port = 0x40;
- 	u32 t1;
- 	u32 reg54;
-+	int speed = adev->pio_mode - XFER_PIO_0;
- 
- 	const u32 timing133[] = {
- 		0x28269000,	/* Recovery << 24 | Act << 16 | Ini << 12 */
-@@ -306,42 +305,6 @@ static void sis_133_do_piomode(struct ata_port *ap, struct ata_device *adev,
- }
- 
- /**
-- *	sis_133_set_piomode - Initialize host controller PATA PIO timings
-- *	@ap: Port whose timings we are configuring
-- *	@adev: Device we are configuring for.
-- *
-- *	Set PIO mode for device, in host controller PCI config space. This
-- *	function handles PIO set up for the later ATA133 devices.
-- *
-- *	LOCKING:
-- *	None (inherited from caller).
-- */
--
--static void sis_133_set_piomode (struct ata_port *ap, struct ata_device *adev)
--{
--
--	sis_133_do_piomode(ap, adev, adev->pio_mode - XFER_PIO_0);
--}
--
--/**
-- *	mwdma_clip_to_pio		-	clip MWDMA mode
-- *	@adev: device
-- *
-- *	As the SiS shared MWDMA and PIO timings we must program the equivalent
-- *	PIO timing for the MWDMA mode but we must not program one higher than
-- *	the permitted PIO timing of the device.
-- */
--
--static int mwdma_clip_to_pio(struct ata_device *adev)
--{
--	const int mwdma_to_pio[3] = {
--		XFER_PIO_0, XFER_PIO_3, XFER_PIO_4
--	};
--	return min(mwdma_to_pio[adev->dma_mode - XFER_MW_DMA_0],
--				adev->pio_mode - XFER_PIO_0);
--}
--
--/**
-  *	sis_old_set_dmamode - Initialize host controller PATA DMA timings
-  *	@ap: Port whose timings we are configuring
-  *	@adev: Device to program
-@@ -369,7 +332,6 @@ static void sis_old_set_dmamode (struct ata_port *ap, struct ata_device *adev)
- 	if (adev->dma_mode < XFER_UDMA_0) {
- 		/* bits 3-0 hold recovery timing bits 8-10 active timing and
- 		   the higher bits are dependant on the device */
--		speed = mwdma_clip_to_pio(adev);
- 		timing &= ~0x870F;
- 		timing |= mwdma_bits[speed];
- 	} else {
-@@ -410,7 +372,6 @@ static void sis_66_set_dmamode (struct ata_port *ap, struct ata_device *adev)
- 	if (adev->dma_mode < XFER_UDMA_0) {
- 		/* bits 3-0 hold recovery timing bits 8-10 active timing and
- 		   the higher bits are dependant on the device, bit 15 udma */
--		speed = mwdma_clip_to_pio(adev);
- 		timing &= ~0x870F;
- 		timing |= mwdma_bits[speed];
- 	} else {
-@@ -428,7 +389,7 @@ static void sis_66_set_dmamode (struct ata_port *ap, struct ata_device *adev)
-  *	@adev: Device to program
-  *
-  *	Set UDMA/MWDMA mode for device, in host controller PCI config space.
-- *	Handles later UDMA100 devices.
-+ *	Handles UDMA66 and early UDMA100 devices.
-  *
-  *	LOCKING:
-  *	None (inherited from caller).
-@@ -439,25 +400,21 @@ static void sis_100_set_dmamode (struct ata_port *ap, struct ata_device *adev)
- 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
- 	int speed = adev->dma_mode - XFER_MW_DMA_0;
- 	int drive_pci = sis_old_port_base(adev);
--	u16 timing;
-+	u8 timing;
- 
--	const u16 udma_bits[]  = {
--		0x8B00, 0x8700, 0x8500, 0x8300, 0x8200, 0x8100};
--	const u8 mwdma_bits[] = { 0x08, 0x32, 0x31 };
-+	const u8 udma_bits[]  = { 0x8B, 0x87, 0x85, 0x83, 0x82, 0x81};
- 
--	pci_read_config_word(pdev, drive_pci, &timing);
-+	pci_read_config_byte(pdev, drive_pci + 1, &timing);
- 
- 	if (adev->dma_mode < XFER_UDMA_0) {
--		speed = mwdma_clip_to_pio(adev);
--		timing &= ~0x80FF;
--		timing |= mwdma_bits[speed];
-+		/* NOT SUPPORTED YET: NEED DATA SHEET. DITTO IN OLD DRIVER */
- 	} else {
- 		/* Bit 7 is UDMA on/off, bit 0-3 are cycle time */
- 		speed = adev->dma_mode - XFER_UDMA_0;
--		timing &= ~0x8F00;
-+		timing &= ~0x8F;
- 		timing |= udma_bits[speed];
- 	}
--	pci_write_config_word(pdev, drive_pci, timing);
-+	pci_write_config_byte(pdev, drive_pci + 1, timing);
- }
- 
- /**
-@@ -477,26 +434,21 @@ static void sis_133_early_set_dmamode (struct ata_port *ap, struct ata_device *a
- 	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
- 	int speed = adev->dma_mode - XFER_MW_DMA_0;
- 	int drive_pci = sis_old_port_base(adev);
--	u16 timing;
--	/* Bits 15-12  are timing */
--	static const u16 udma_bits[]  = {
--		0x8F00, 0x8A00, 0x8700, 0x8500, 0x8300, 0x8200, 0x8100
--	};
--	static const u8 mwdma_bits[] = { 0x08, 0x32, 0x31 };
-+	u8 timing;
-+	/* Low 4 bits are timing */
-+	static const u8 udma_bits[]  = { 0x8F, 0x8A, 0x87, 0x85, 0x83, 0x82, 0x81};
- 
--	pci_read_config_word(pdev, drive_pci, &timing);
-+	pci_read_config_byte(pdev, drive_pci + 1, &timing);
- 
- 	if (adev->dma_mode < XFER_UDMA_0) {
--		speed = mwdma_clip_to_pio(adev);
--		timing &= ~0x80FF;
--		timing = mwdma_bits[speed];
-+		/* NOT SUPPORTED YET: NEED DATA SHEET. DITTO IN OLD DRIVER */
- 	} else {
- 		/* Bit 7 is UDMA on/off, bit 0-3 are cycle time */
- 		speed = adev->dma_mode - XFER_UDMA_0;
--		timing &= ~0x8F00;
-+		timing &= ~0x8F;
- 		timing |= udma_bits[speed];
- 	}
--	pci_write_config_word(pdev, drive_pci, timing);
-+	pci_write_config_byte(pdev, drive_pci + 1, timing);
- }
- 
- /**
-@@ -527,12 +479,13 @@ static void sis_133_set_dmamode (struct ata_port *ap, struct ata_device *adev)
- 	if (reg54 & 0x40000000)
- 		port = 0x70;
- 	port += (8 * ap->port_no) +  (4 * adev->devno);
-+
- 	pci_read_config_dword(pdev, port, &t1);
- 
- 	if (adev->dma_mode < XFER_UDMA_0) {
--		speed = mwdma_clip_to_pio(adev);
--		sis_133_do_piomode(ap, adev, speed);
--		t1 &= ~4;	/* UDMA off */
-+		t1 &= ~0x00000004;
-+		/* FIXME: need data sheet to add MWDMA here. Also lacking on
-+		   ide/pci driver */
- 	} else {
- 		speed = adev->dma_mode - XFER_UDMA_0;
- 		/* if & 8 no UDMA133 - need info for ... */
+ arch/ia64/kernel/perfmon.c                     |    2 +-
+ arch/ia64/kernel/sys_ia64.c                    |    2 +-
+ arch/ia64/mm/init.c                            |    2 +-
+ arch/powerpc/mm/mmap_64.c                      |    4 +-
+ arch/powerpc/platforms/cell/spufs/coredump.c   |    2 +-
+ arch/s390/mm/mmap.c                            |    4 +-
+ arch/sparc/kernel/sys_sparc_64.c               |    6 +-
+ arch/x86/ia32/ia32_aout.c                      |    2 +-
+ arch/x86/ia32/ia32entry.S                      |    2 +
+ arch/x86/include/asm/unistd_32.h               |    4 +-
+ arch/x86/include/asm/unistd_64.h               |    4 +
+ arch/x86/kernel/syscall_table_32.S             |    2 +
+ arch/x86/mm/mmap.c                             |    4 +-
+ drivers/infiniband/core/umem.c                 |    2 +-
+ drivers/infiniband/hw/ipath/ipath_user_pages.c |    3 +-
+ fs/attr.c                                      |    2 +-
+ fs/binfmt_aout.c                               |    2 +-
+ fs/binfmt_flat.c                               |    2 +-
+ fs/exec.c                                      |    8 +-
+ fs/fcntl.c                                     |    2 +-
+ fs/file.c                                      |    2 +-
+ fs/proc/array.c                                |    4 +-
+ fs/proc/base.c                                 |  101 ++++++++++++++--
+ fs/select.c                                    |    2 +-
+ include/asm-generic/unistd.h                   |    6 +-
+ include/linux/Kbuild                           |    2 +-
+ include/linux/posix-timers.h                   |    2 +-
+ include/linux/resource.h                       |   10 ++-
+ include/linux/sched.h                          |   22 ++++
+ include/linux/security.h                       |    9 +-
+ include/linux/syscalls.h                       |    4 +
+ ipc/mqueue.c                                   |    2 +-
+ ipc/shm.c                                      |    3 +-
+ kernel/compat.c                                |   91 +++++++++++---
+ kernel/fork.c                                  |   10 +-
+ kernel/perf_event.c                            |    2 +-
+ kernel/posix-cpu-timers.c                      |   52 ++++----
+ kernel/sched.c                                 |    4 +-
+ kernel/sched_rt.c                              |    5 +-
+ kernel/signal.c                                |    2 +-
+ kernel/sys.c                                   |  161
++++++++++++++++++++----
+ mm/filemap.c                                   |    2 +-
+ mm/mlock.c                                     |   12 +-
+ mm/mmap.c                                      |   13 +-
+ mm/mremap.c                                    |    2 +-
+ security/capability.c                          |    3 +-
+ security/security.c                            |    5 +-
+ security/selinux/hooks.c                       |   10 +-
+ 48 files changed, 451 insertions(+), 153 deletions(-)
+
+thanks,
+-- 
+js
