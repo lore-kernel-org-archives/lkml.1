@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933700AbZLGQB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934594AbZLGQEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933700AbZLGQB7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932704AbZLGQB6
+	id S934594AbZLGQEP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:04:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933577AbZLGQEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:01:58 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:40908 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932422AbZLGQB5 (ORCPT
+	Mon, 7 Dec 2009 11:04:14 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:39817 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932685AbZLGQEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:01:57 -0500
-Date: Mon, 7 Dec 2009 11:02:04 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ondrej Zary <linux@rainbow-software.org>
-cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
-Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
-In-Reply-To: <200912071607.38351.linux@rainbow-software.org>
-Message-ID: <Pine.LNX.4.44L0.0912071056160.3064-100000@iolanthe.rowland.org>
+	Mon, 7 Dec 2009 11:04:14 -0500
+Message-ID: <4B1D277E.207@canonical.com>
+Date: Mon, 07 Dec 2009 17:04:14 +0100
+From: Stefan Bader <stefan.bader@canonical.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Libin Yang <libin.yang@amd.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [041/119] USB: ohci: quirk AMD prefetch for USB
+ 1.1	ISO transfer
+References: <20091206235936.208334321@mini.kroah.org> <20091207000646.961519997@mini.kroah.org>
+In-Reply-To: <20091207000646.961519997@mini.kroah.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009, Ondrej Zary wrote:
+Just to verify this, the patch also adds a call to quirk_amd_pll
+but from the description it is not clear to me this is intended.
 
-> Just tried another hub. Now there are two hubs connected to separate ports
-> on the machine. Nexio is the only device connected to the "new" hub. No matter
-> where I connect the device or the 2nd hub, it always appears on "Bus 001":
-
-That's what is supposed to happen.  It sounds like the second hub works 
-correctly and the first hub doesn't.  Try running the test described in 
-my previous email with the second hub as well as with the first hub.
-
-> The problem is still the same. Removing the module causes devices on the other
-> hub to fail.
-
-(Presumably you mean the failure occurs if you leave out the code to
-prevent resubmits for -ESTALL from the touchscreen driver.)
-
-It doesn't cause the devices to fail; it causes the ehci-hcd driver to
-fail.
-
-> Disconnecting the touchscreen first and then removing the module does not
-> cause any problems (with either of the hubs) - so it must be a software
-> problem.
-
-Yes, we still need to track it down.  Which means we need to find out 
-when that pointer is getting set to NULL.
-
-Alan Stern
-
+-Stefan
