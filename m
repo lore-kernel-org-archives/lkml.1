@@ -1,156 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbZLGMSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934778AbZLGMTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbZLGMSk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 07:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbZLGMSg
+	id S934778AbZLGMTg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 07:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934723AbZLGMTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 07:18:36 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:48561 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934680AbZLGMSc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 07:18:32 -0500
-Message-Id: <20091207121827.642709465@fluff.org.uk>
-User-Agent: quilt/0.48-1
-Date: Mon, 07 Dec 2009 12:17:29 +0000
-From: Ben Dooks <ben@simtec.co.uk>
-To: netdev@vger.kernel.org
-Cc: linux@simtec.co.uk, doong.ping@micrel.com, tristram.ha@micrel.com,
-       Wolfram Sang <w.sang@pengutronix.de>, Jean Delvare <khali@linux-fr.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [patch 2/9] eeprom_93cx6: Add write support
-References: <20091207121727.016092171@fluff.org.uk>
-Content-Disposition: inline; filename=93c-eeprom-add-write.patch
+	Mon, 7 Dec 2009 07:19:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37191 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934721AbZLGMTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 07:19:31 -0500
+Date: Mon, 7 Dec 2009 12:18:37 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain>
+References: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Fix bogus warning in apic_noop.apic_write()
+Message-ID: <tip-a946d8f11f0da9cfc714248036fcfd3a794d1e27@git.kernel.org>
+Git-Commit-ID: a946d8f11f0da9cfc714248036fcfd3a794d1e27
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for writing data to EEPROM.
+Commit-ID:  a946d8f11f0da9cfc714248036fcfd3a794d1e27
+Gitweb:     http://git.kernel.org/tip/a946d8f11f0da9cfc714248036fcfd3a794d1e27
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Mon, 7 Dec 2009 12:59:46 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 7 Dec 2009 13:16:37 +0100
 
-Signed-off-by: Ben Dooks <ben@simtec.co.uk>
-Cc: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+x86: Fix bogus warning in apic_noop.apic_write()
 
+apic_noop is used to provide dummy apic functions. It's installed
+when the CPU has no APIC or when the APIC is disabled on the kernel
+command line.
+
+The apic_noop implementation of apic_write() warns when the CPU has
+an APIC or when the APIC is not disabled.
+
+That's bogus. The warning should only happen when the CPU has an
+APIC _AND_ the APIC is not disabled. apic_noop.apic_read() has the
+correct check.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: <stable@kernel.org> # in <= .32 this typo resides in native_apic_write_dummy()
+LKML-Reference: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/misc/eeprom/eeprom_93cx6.c |   86 +++++++++++++++++++++++++++++++++++++
- include/linux/eeprom_93cx6.h       |    7 +++
- 2 files changed, 93 insertions(+)
+ arch/x86/kernel/apic/apic_noop.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: b/drivers/misc/eeprom/eeprom_93cx6.c
-===================================================================
---- a/drivers/misc/eeprom/eeprom_93cx6.c	2009-10-06 15:51:18.000000000 +0100
-+++ b/drivers/misc/eeprom/eeprom_93cx6.c	2009-10-06 15:54:36.000000000 +0100
-@@ -241,3 +241,89 @@ void eeprom_93cx6_multiread(struct eepro
- }
- EXPORT_SYMBOL_GPL(eeprom_93cx6_multiread);
+diff --git a/arch/x86/kernel/apic/apic_noop.c b/arch/x86/kernel/apic/apic_noop.c
+index d9acc3b..e31b9ff 100644
+--- a/arch/x86/kernel/apic/apic_noop.c
++++ b/arch/x86/kernel/apic/apic_noop.c
+@@ -127,7 +127,7 @@ static u32 noop_apic_read(u32 reg)
  
-+
-+/**
-+ * eeprom_93cx6_wren - set the write enable state
-+ * @eeprom: Pointer to eeprom structure
-+ * @enable: true to enable writes, otherwise disable writes
-+ *
-+ * Set the EEPROM write enable state to either allow or deny
-+ * writes depending on the @enable value.
-+ */
-+void eeprom_93cx6_wren(struct eeprom_93cx6 *eeprom, bool enable)
-+{
-+	u16 command;
-+
-+	/* start the command */
-+	eeprom_93cx6_startup(eeprom);
-+
-+	/* create command to enable/disable */
-+
-+	command = enable ? PCI_EEPROM_EWEN_OPCODE : PCI_EEPROM_EWDS_OPCODE;
-+	command <<= (eeprom->width - 2);
-+
-+	eeprom_93cx6_write_bits(eeprom, command,
-+				PCI_EEPROM_WIDTH_OPCODE + eeprom->width);
-+
-+	eeprom_93cx6_cleanup(eeprom);
-+}
-+EXPORT_SYMBOL_GPL(eeprom_93cx6_wren);
-+
-+/**
-+ * eeprom_93cx6_write - write data to the EEPROM
-+ * @eeprom: Pointer to eeprom structure
-+ * @addr: Address to write data to.
-+ * @data: The data to write to address @addr.
-+ *
-+ * Write the @data to the specified @addr in the EEPROM and
-+ * waiting for the device to finish writing.
-+ *
-+ * Note, since we do not expect large number of write operations
-+ * we use msleep() to delay in between parts of the operation to
-+ * avoid using excessive amounts of CPU time busy waiting.
-+ */
-+void eeprom_93cx6_write(struct eeprom_93cx6 *eeprom, u8 addr, u16 data)
-+{
-+	int timeout = 100;
-+	u16 command;
-+
-+	/* start the command */
-+	eeprom_93cx6_startup(eeprom);
-+
-+	command = PCI_EEPROM_WRITE_OPCODE << eeprom->width;
-+	command |= addr;
-+
-+	/* send write command */
-+	eeprom_93cx6_write_bits(eeprom, command,
-+				PCI_EEPROM_WIDTH_OPCODE + eeprom->width);
-+
-+	/* send data */
-+	eeprom_93cx6_write_bits(eeprom, data, 16);
-+
-+	/* get ready to check for busy */
-+	eeprom->drive_data = 0;
-+	eeprom->reg_chip_select = 1;
-+	eeprom->register_write(eeprom);
-+
-+	/* wait at-least 250ns to get DO to be the busy signal */
-+	msleep(1);
-+
-+	/* wait for DO to go high to signify finish */
-+
-+	while (true) {
-+		eeprom->register_read(eeprom);
-+
-+		if (eeprom->reg_data_out)
-+			break;
-+
-+		msleep(1);
-+
-+		if (--timeout <= 0) {
-+			printk(KERN_ERR "%s: timeout\n", __func__);
-+			break;
-+		}			
-+	}
-+
-+	eeprom_93cx6_cleanup(eeprom);
-+}
-+EXPORT_SYMBOL_GPL(eeprom_93cx6_write);
-Index: b/include/linux/eeprom_93cx6.h
-===================================================================
---- a/include/linux/eeprom_93cx6.h	2009-10-06 15:51:18.000000000 +0100
-+++ b/include/linux/eeprom_93cx6.h	2009-10-06 15:53:16.000000000 +0100
-@@ -32,6 +32,7 @@
- #define PCI_EEPROM_WIDTH_93C66	8
- #define PCI_EEPROM_WIDTH_OPCODE	3
- #define PCI_EEPROM_WRITE_OPCODE	0x05
-+#define PCI_EEPROM_ERASE_OPCODE 0x07
- #define PCI_EEPROM_READ_OPCODE	0x06
- #define PCI_EEPROM_EWDS_OPCODE	0x10
- #define PCI_EEPROM_EWEN_OPCODE	0x13
-@@ -73,3 +74,9 @@ extern void eeprom_93cx6_read(struct eep
- 	const u8 word, u16 *data);
- extern void eeprom_93cx6_multiread(struct eeprom_93cx6 *eeprom,
- 	const u8 word, __le16 *data, const u16 words);
-+
-+extern void eeprom_93cx6_wren(struct eeprom_93cx6 *eeprom, bool enable);
-+
-+extern void eeprom_93cx6_write(struct eeprom_93cx6 *eeprom,
-+			       u8 addr, u16 data);
-+
-
+ static void noop_apic_write(u32 reg, u32 v)
+ {
+-	WARN_ON_ONCE((cpu_has_apic || !disable_apic));
++	WARN_ON_ONCE(cpu_has_apic && !disable_apic);
+ }
+ 
+ struct apic apic_noop = {
