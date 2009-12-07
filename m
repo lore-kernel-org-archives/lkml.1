@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965159AbZLGWEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933141AbZLGWHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965159AbZLGWEy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 17:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965065AbZLGWEx
+	id S933141AbZLGWHF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758173AbZLGWHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 17:04:53 -0500
-Received: from fieldses.org ([174.143.236.118]:49021 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965010AbZLGWEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 17:04:53 -0500
-Date: Mon, 7 Dec 2009 17:05:01 -0500
-To: Joe Perches <joe@perches.com>
-Cc: Andy Whitcroft <apw@canonical.com>, David Miller <davem@davemloft.net>,
+	Mon, 7 Dec 2009 17:07:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59402 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757804AbZLGWHB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 17:07:01 -0500
+Date: Mon, 7 Dec 2009 14:06:59 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        LKML <linux-kernel@vger.kernel.org>,
-       William Allen Simpson <william.allen.simpson@gmail.com>
-Subject: Re: [PATCH] scripts/checkpatch.pl: Add warning about leading
-	contination tests
-Message-ID: <20091207220501.GF32454@fieldses.org>
-References: <1260035884.11126.58.camel@Joe-Laptop.home>
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <Pine.LNX.4.44L0.0912071652040.15701-100000@iolanthe.rowland.org>
+Message-ID: <alpine.LFD.2.00.0912071403520.3560@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912071652040.15701-100000@iolanthe.rowland.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260035884.11126.58.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 05, 2009 at 09:58:04AM -0800, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
+
+
+On Mon, 7 Dec 2009, Alan Stern wrote:
+> > 
+> > Make the USB host controller do its suspend asynchronously. We don't 
+> > suspend PCI bridges anyway, iirc (but I didn't actually check). And at 
+> > worst, we can make the PCI _bridges_ know about async suspends, and solve 
+> > it that way - without actually making any normal PCI drivers do it.
 > 
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index bc4114f..c35933a 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -2064,6 +2064,11 @@ sub process {
->  			CHK("multiple assignments should be avoided\n" . $herecurr);
->  		}
->  
-> +# Check use of leading logical continuation tests
-> +		if ($line =~ /^.\s*(\|\||&&)/) {
-> +			WARN("Continuation logic should be at end of previous line\n" . $herecurr);
-> +		}
-> +
->  ## # check for multiple declarations, allowing for a function declaration
->  ## # continuation.
->  ## 		if ($line =~ /^.\s*$Type\s+$Ident(?:\s*=[^,{]*)?\s*,\s*$Ident.*/ &&
+> This sounds suspiciously like pushing the problem up a level and 
+> hoping it will go away.  (Sometimes that even works.)
 
-Where does this preference come from?
+The "we don't suspend bridges anyway" is definitely a "hoping it will go 
+away" issue. I think we did suspend bridges for a short while during the 
+PM switch-over some time ago, and it worked most of the time, and then on 
+some machines it just didn't work at all. Probably because ACPI ends up 
+touching registers behind bridges that we closed down etc.
 
-In
+So PCI bridges are kind of special. Right now we don't touch them, and if 
+we ever do, that will be another issue.
 
-	excessivelylongcondition
-	&& anotherreallylongcondition
-	&& yetanotherunbelievablylongcondition
-	&& yetanotherwellyougettheidea
+> In the end it isn't a very big issue.  Using one vs. two passes in 
+> dpm_suspend() is pretty unimportant.
 
-I want to be able to keep the &&'s all justified.
+I also suspect that even if you do the USB host controller suspend 
+synchronously, doing the actual USB devices asynchronously would still 
+help - even if it's only "asynchronously per bus" thing. 
 
-Or look for well-typeset math or CS texts and try to find any that leave
-operators dangling on the right.
+So in fact, it's probably a good first step to start off doing only the 
+USB devices, not the controller.
 
-I don't really care much about this particular point, but: the
-checkpatch output is already getting too verbose to be useful, without
-adding advice that's actually the opposite of what I'd normally want to
-do....
-
---b.
+		Linus
