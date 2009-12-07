@@ -1,95 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935030AbZLGK03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935044AbZLGK1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935030AbZLGK03 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 05:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934864AbZLGK01
+	id S935044AbZLGK1Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 05:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935004AbZLGK1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 05:26:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:26338 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 05:27:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37416 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933573AbZLGK00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 05:26:26 -0500
-Date: Mon, 7 Dec 2009 05:25:07 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Mel Gorman <mel@csn.ul.ie>, Alexey Dobriyan <adobriyan@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, stable@kernel.org,
-       Amerigo Wang <amwang@redhat.com>, akpm@linux-foundation.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Message-Id: <20091207102808.4312.38760.sendpatchset@localhost.localdomain>
-Subject: [Patch] proc: fill 'lib' field in /proc/<pid>/statm
+	id S934869AbZLGK1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 05:27:23 -0500
+Message-ID: <4B1CD89F.9000802@kernel.org>
+Date: Mon, 07 Dec 2009 19:27:43 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] sched: implement try_to_wake_up_local()
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>	 <1259726212-30259-8-git-send-email-tj@kernel.org>	 <1259923487.3977.1940.camel@laptop>  <4B1C75F3.9080808@kernel.org>	 <1260175804.8223.1217.camel@laptop> <1260176199.8223.1237.camel@laptop>
+In-Reply-To: <1260176199.8223.1237.camel@laptop>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, the 'lib' field of /proc/<pid>/statm is
-always 0, we should fill it with the right value,
-the same with 'VmLib'.
+Hello,
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: stable@kernel.org
+On 12/07/2009 05:56 PM, Peter Zijlstra wrote:
+> OK, so you fork and wakeup a new thread when an existing one goes to
+> sleep, but do you also limit the concurrency on wakeup?
+>
+> Otherwise we can end up with say 100 workqueue tasks running, simply
+> because they all ran into a contended lock and then woke up again.
 
----
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 4badde1..d710293 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -623,7 +623,7 @@ int proc_pid_statm(struct seq_file *m, struct pid_namespace *ns,
- 	struct mm_struct *mm = get_task_mm(task);
- 
- 	if (mm) {
--		size = task_statm(mm, &shared, &text, &data, &resident);
-+		size = task_statm(mm, &shared, &text, &data, &resident, &lib);
- 		mmput(mm);
- 	}
- 	seq_printf(m, "%d %d %d %d %d %d %d\n",
-diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 753ca37..5b7ab52 100644
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -98,7 +98,7 @@ extern spinlock_t proc_subdir_lock;
- struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *);
- int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir);
- unsigned long task_vsize(struct mm_struct *);
--int task_statm(struct mm_struct *, int *, int *, int *, int *);
-+int task_statm(struct mm_struct *, int *, int *, int *, int *, int *);
- void task_mem(struct seq_file *, struct mm_struct *);
- 
- struct proc_dir_entry *de_get(struct proc_dir_entry *de);
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 2a1bef9..ea5bdd9 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -63,13 +63,14 @@ unsigned long task_vsize(struct mm_struct *mm)
- }
- 
- int task_statm(struct mm_struct *mm, int *shared, int *text,
--	       int *data, int *resident)
-+	       int *data, int *resident, int *lib)
- {
- 	*shared = get_mm_counter(mm, file_rss);
- 	*text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK))
- 								>> PAGE_SHIFT;
- 	*data = mm->total_vm - mm->shared_vm;
- 	*resident = *shared + get_mm_counter(mm, anon_rss);
-+	*lib = mm->exec_vm - *text;
- 	return mm->total_vm;
- }
- 
-diff --git a/fs/proc/task_nommu.c b/fs/proc/task_nommu.c
-index 8f5c05d..d851ff7 100644
---- a/fs/proc/task_nommu.c
-+++ b/fs/proc/task_nommu.c
-@@ -92,7 +92,7 @@ unsigned long task_vsize(struct mm_struct *mm)
- }
- 
- int task_statm(struct mm_struct *mm, int *shared, int *text,
--	       int *data, int *resident)
-+	       int *data, int *resident, int *lib)
- {
- 	struct vm_area_struct *vma;
- 	struct vm_region *region;
+Yes, the total number of workers is limited.
+
+> Where does that fork happen? Having to do memory allocations and all
+> that while holding the rq->lock doesn't seem like a very good idea.
+
+There always is guaranteed to be at least one idle worker and when the
+last running worker goes to sleep, one idle worker is woken up which
+assumes the role of manager which if necessary forks another worker,
+so all that happens under rq->lock is waking up another worker.
+
+> What happens when you run out of memory and the workqueue progress is
+> needed to get free memory?
+
+That's when the "rescuer" workers kick in.  All workqueues which might
+be used during allocation paths are required to have one.  When
+manager fails to fork a new worker, it summons the rescuers.  They
+migrate to the distressed cpu and processes only the works from their
+specific workqueues thus guaranteeing forward progress.
+
+Thanks.
+
+-- 
+tejun
