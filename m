@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935601AbZLGVNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935608AbZLGVVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935601AbZLGVNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 16:13:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965023AbZLGVNM
+	id S935608AbZLGVVf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 16:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965023AbZLGVVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 16:13:12 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:37691 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935549AbZLGVNM (ORCPT
+	Mon, 7 Dec 2009 16:21:34 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:38429 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935595AbZLGVVe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 16:13:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=vqLtXd66OZ70ek3f4rwzL/JT3YqoAxp/UNHrFl9U2H5HMBGY5E3+8LXwGCb5lCF+R1
-         c22StrdabR4xt6gKI8x3iGl/rNH7e3KFj6po6ppgn1jOl7CQS6d89+C9rC7t0r2Uw97r
-         IVx0r7gttdTIQmH9w2gtgsUpY/roVCWImc3eU=
-Message-ID: <4B1D702D.3020007@gmail.com>
-Date: Mon, 07 Dec 2009 22:14:21 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 7 Dec 2009 16:21:34 -0500
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, galak@kernel.crashing.org,
-       avorontsov@ru.mvista.com
-Subject: [PATCH] powerpc/85xx: Wrong variable returned on error
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [RFC][PATCH 03/10] arm: mxc: changes to common plat-mxc codetoadd support for i.MX5
+Date: Mon, 7 Dec 2009 14:21:42 -0700
+Message-ID: <DE2504B3A515524BBE6934369EFDC0DA08C2A949@az33exm20.fsl.freescale.net>
+In-Reply-To: <20091207200326.GU22533@pengutronix.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC][PATCH 03/10] arm: mxc: changes to common plat-mxc codetoadd support for i.MX5
+Thread-Index: Acp3eGNL/Pitoqv4TXG9RH6EFoYVzAACBPig
+References: <cover.1259893118.git.amit.kucheria@canonical.com> <58eb7d14c6cf56cbc874657dff5789c47116b49e.1259893118.git.amit.kucheria@canonical.com> <DE2504B3A515524BBE6934369EFDC0DA08C2A56C@az33exm20.fsl.freescale.net> <20091204105908.GJ15126@pengutronix <20091207200326.GU22533@pengutronix.de>
+From: "Herring Robert-RA7055" <ra7055@freescale.com>
+To: "Robert Schwebel" <r.schwebel@pengutronix.de>
+Cc: "Sascha Hauer" <s.hauer@pengutronix.de>,
+       "Amit Kucheria" <amit.kucheria@canonical.com>,
+       "List Linux Kernel" <linux-kernel@vger.kernel.org>,
+       <grant.likely@secretlab.ca>, <valentin.longchamp@epfl.ch>,
+       <daniel@caiaq.de>, "Nguyen Dinh-R00091" <R00091@freescale.com>,
+       <linux-arm-kernel@lists.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The wrong variable was returned in the case of an error
+Robert,
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> -----Original Message-----
+> From: Robert Schwebel [mailto:r.schwebel@pengutronix.de] 
+> Sent: Monday, December 07, 2009 2:03 PM
+> To: Herring Robert-RA7055
+> Cc: Sascha Hauer; Amit Kucheria; List Linux Kernel; 
+> grant.likely@secretlab.ca; valentin.longchamp@epfl.ch; 
+> daniel@caiaq.de; Nguyen Dinh-R00091; 
+> linux-arm-kernel@lists.infradead.org
+> Subject: Re: [RFC][PATCH 03/10] arm: mxc: changes to common 
+> plat-mxc codetoadd support for i.MX5
+> 
+> Rob,
+> 
+> On Mon, Dec 07, 2009 at 10:17:52AM -0700, Herring Robert-RA7055 wrote:
+> > Sorry, my mistake. Sasha is correct that MX27 is v1 and MX25 is v2.
+> > 
+> > timer_is_v1 is just !timer_is_v2, so really only one is 
+> needed. I would
+> > define it like this to avoid having to change the timer 
+> code again for
+> > any new chips:
+> > 
+> > #define timer_is_v2()   (!(cpu_is_mx1() || cpu_is_mx21() ||
+> > cpu_is_mx27()))
+> 
+> Are you sure that FSL won't invent a v3 timer in the future?
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 3909d57..ad1609c 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -86,7 +86,7 @@ static int mpc8568_fixup_125_clock(struct phy_device *phydev)
- 	scr = phy_read(phydev, MV88E1111_SCR);
- 
- 	if (scr < 0)
--		return err;
-+		return scr;
- 
- 	err = phy_write(phydev, MV88E1111_SCR, scr | 0x0008);
- 
+There is no change on my radar, and it has not changed in 5 years. As
+long as I'm around it won't change if I can help it. What is coming are
+chips with a mixture of i.MX and stmp (Sigmatel) blocks. So there could
+be a chip with the stmp timer, but it is completely different anyway.
+
+Regards,
+Rob
+
+> 
+> rsc
+> -- 
+> Pengutronix e.K.                           |                  
+>            |
+> Industrial Linux Solutions                 | 
+> http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: 
+> +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   
+> +49-5121-206917-5555 |
+> 
+> 
