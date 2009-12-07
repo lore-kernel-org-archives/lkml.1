@@ -1,50 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934631AbZLGD4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934444AbZLGClu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934631AbZLGD4v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 22:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933168AbZLGDwz
+	id S934444AbZLGClu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 21:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934341AbZLGClt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 22:52:55 -0500
-Received: from xenotime.net ([72.52.64.118]:40688 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S934489AbZLGDwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 22:52:54 -0500
-Date: Sun, 06 Dec 2009 18:30:44 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: linux-kernel@vger.kernel.org
-Cc: Marin Mitov <mitov@issp.bas.bg>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 2/6] docs: use DMA_BIT_MASK instead of inline constant
-Message-ID: <1260153044407@xenotime.net>
-In-Reply-To: <12601530442994@xenotime.net>
-X-Mailer: gregkh_patchbomb
+	Sun, 6 Dec 2009 21:41:49 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:38002 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934331AbZLGCls (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 21:41:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=SF+c+iR9LKdEr9w408w1Q4zibYtMyQcSJL4Ed8pQhaX6hFvA1VwI7cwnc+BzhdMDEn
+         t4xMtRxClE6MxWtxjGHjbjhuYUah5CPpmMHNqq/SXLN5fh5D9HtQwM+O/W6DYKS/OiQ7
+         zQORc3IQl64OzupYm37baUsuLICxyeVF2fKj8=
+Subject: Re: perf DEBUG=1 build fails due to perl bindings
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091206134203.GA4337@ghostprotocols.net>
+References: <20091206134203.GA4337@ghostprotocols.net>
+Content-Type: text/plain
+Date: Sun, 06 Dec 2009 20:41:52 -0600
+Message-Id: <1260153712.6564.4.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marin Mitov <mitov@issp.bas.bg>
-Subject: use DMA_BIT_MASK instead of inline constant
+On Sun, 2009-12-06 at 11:42 -0200, Arnaldo Carvalho de Melo wrote:
+> [acme@ana linux-2.6-tip]$ make DEBUG=1 -j3 -C tools/perf/ install
+> make: Entering directory `/home/acme/git/linux-2.6-tip/tools/perf'
+>     LINK perf
+> libperf.a(trace-event-perl.o): In function `xs_init':
+> /home/acme/git/linux-2.6-tip/tools/perf/util/trace-event-perl.c:43: undefined reference to `boot_Perf__Trace__Context'
+> /home/acme/git/linux-2.6-tip/tools/perf/util/trace-event-perl.c:45: undefined reference to `boot_DynaLoader'
+> collect2: ld returned 1 exit status
+> make: *** [perf] Error 1
+> make: Leaving directory `/home/acme/git/linux-2.6-tip/tools/perf'
+> [acme@ana linux-2.6-tip]$
 
-Use DMA_BIT_MASK(24) instead of 0x00ffffff in DMA-mapping.txt
+Hi,
 
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+This patch should fix it.
+
+Thanks,
+
+Tom
+
+[PATCH] perf trace/scripting: Fix compile err when libperl not installed
+
+When I added the xs callbacks into perf, I forgot to re-check the
+no-libperl case.  This patch fixes the undefined reference error for
+that.
+
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 ---
- Documentation/DMA-mapping.txt |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/perf/util/trace-event-perl.c |    3 ---
+ tools/perf/util/trace-event-perl.h |    4 ++++
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
---- lnx-2632-rc6.orig/Documentation/DMA-mapping.txt
-+++ lnx-2632-rc6/Documentation/DMA-mapping.txt
-@@ -214,7 +214,7 @@ most specific mask.
- Here is pseudo-code showing how this might be done:
+diff --git a/tools/perf/util/trace-event-perl.c b/tools/perf/util/trace-event-perl.c
+index 51e833f..59564b2 100644
+--- a/tools/perf/util/trace-event-perl.c
++++ b/tools/perf/util/trace-event-perl.c
+@@ -32,9 +32,6 @@
  
- 	#define PLAYBACK_ADDRESS_BITS	DMA_BIT_MASK(32)
--	#define RECORD_ADDRESS_BITS	0x00ffffff
-+	#define RECORD_ADDRESS_BITS	DMA_BIT_MASK(24)
+ void xs_init(pTHX);
  
- 	struct my_sound_card *card;
- 	struct pci_dev *pdev;
-
-
+-void boot_Perf__Trace__Context(pTHX_ CV *cv);
+-void boot_DynaLoader(pTHX_ CV *cv);
+-
+ void xs_init(pTHX)
+ {
+ 	const char *file = __FILE__;
+diff --git a/tools/perf/util/trace-event-perl.h b/tools/perf/util/trace-event-perl.h
+index 8fe0d86..e88fb26 100644
+--- a/tools/perf/util/trace-event-perl.h
++++ b/tools/perf/util/trace-event-perl.h
+@@ -34,9 +34,13 @@ typedef int INTERP;
+ #define dXSUB_SYS
+ #define pTHX_
+ static inline void newXS(const char *a, void *b, const char *c) {}
++static void boot_Perf__Trace__Context(pTHX_ CV *cv) {}
++static void boot_DynaLoader(pTHX_ CV *cv) {}
+ #else
+ #include <EXTERN.h>
+ #include <perl.h>
++void boot_Perf__Trace__Context(pTHX_ CV *cv);
++void boot_DynaLoader(pTHX_ CV *cv);
+ typedef PerlInterpreter * INTERP;
+ #endif
+ 
 -- 
+1.6.4.GIT
+
+
 
