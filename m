@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934831AbZLGIuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934706AbZLGIrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934831AbZLGIuD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:50:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934789AbZLGIuA
+	id S934706AbZLGIrn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933594AbZLGIrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:50:00 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51550 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S934796AbZLGIt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:49:58 -0500
-Message-ID: <4B1CC0BD.1000405@cn.fujitsu.com>
-Date: Mon, 07 Dec 2009 16:45:49 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>, jens.axboe@oracle.com
-CC: linux-kernel@vger.kernel.org, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, czoccolo@gmail.com,
-       Alan.Brunelle@hp.com
-Subject: Re: Block IO Controller V4
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <4B15C828.4080407@cn.fujitsu.com> <20091202142508.GA31715@redhat.com> <4B1779CE.1050801@cn.fujitsu.com> <20091203143641.GA3887@redhat.com> <20091203181003.GD2735@redhat.com> <20091203235153.GG2735@redhat.com>
-In-Reply-To: <20091203235153.GG2735@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 7 Dec 2009 03:47:41 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51978 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933627AbZLGIrk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 03:47:40 -0500
+Subject: Re: [PATCH 16/19] workqueue: reimplement workqueue flushing using
+ color coded works
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: torvalds@linux-foundation.org, awalls@radix.net,
+       linux-kernel@vger.kernel.org, jeff@garzik.org, mingo@elte.hu,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net
+In-Reply-To: <4B196610.7090101@kernel.org>
+References: <1258692407-8985-1-git-send-email-tj@kernel.org>
+	 <1258692407-8985-17-git-send-email-tj@kernel.org>
+	 <1259927181.17907.98.camel@laptop>  <4B196610.7090101@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Dec 2009 09:46:02 +0100
+Message-ID: <1260175562.8223.1204.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Thu, Dec 03, 2009 at 01:10:03PM -0500, Vivek Goyal wrote:
+On Sat, 2009-12-05 at 04:42 +0900, Tejun Heo wrote: 
+> Hello,
 > 
-> [..]
->> Hi Gui,
->>
->> Can you please try following patch and see if it helps you. If not, then
->> we need to figure out why we choose to not idle and delete the group from
->> service tree.
->>
+> On 12/04/2009 08:46 PM, Peter Zijlstra wrote:
+> > Hmm, a long while back I did a PI aware workqueue implementation, that
+> > used nested work-lists to implement barriers and flushing.
+> > 
+> > This colour thing seems very prone to starvation when you want to extend
+> > worklets with priority.
 > 
-> Hi Gui,
-> 
-> Please try this version of the patch instead of previous one. During more
-> testing I saw some additional deletions where we should have waited and
-> the reason being that we were hitting boundary condition. At the request
-> completion time slice has not expired but after 4-5 ns, select_queue hits
-> and jiffy has incremented by then and slice expires.
-> 
-> ttime_mean, is not covering this condition because this workload is so
-> sequential that ttime_mean=0.
-> 
-> So I am checking for new condition where if we are into last ms of slice,
-> mark the queue wait_busy.
-> 
-> Thanks
-> Vivek
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> Can you elaborate how it would be prone to starvation?  I was assuming
+> flat-priority while designing and implementing this as that was the
+> current behavior and never really thought about priority.
 
-Hi, Vivek
+A sudden influx of high prio worklets would hold back the completion of
+existing worklets, so simply waiting for a particular colour to deplete
+is going to last a long while.
 
-I add some debug message in select_queue, it does meet the boundary condition. 
-I tried this patch, and works fine on my box.
+The barrier semantics I implemented ensured worklets couldn't cross a
+barrier, so if a high prio item got stuck behind a barrier it would
+simply elevate the priority of everything before the barrier, and would
+complete everything before that barrier before running itself.
 
-Acked-by: Gui Jianfeng <guijiafneng@cn.fujitsu.com>
-
-Thanks,
-Gui
+This insures progress and thereby guarantees completion of flushes.
 
