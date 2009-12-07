@@ -1,98 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935612AbZLGVcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935625AbZLGVc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935612AbZLGVcL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 16:32:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935561AbZLGVcL
+	id S935625AbZLGVc3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 16:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935616AbZLGVc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 16:32:11 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:33258 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S935559AbZLGVcK (ORCPT
+	Mon, 7 Dec 2009 16:32:28 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:55599 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935615AbZLGVc1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 16:32:10 -0500
-Date: Mon, 7 Dec 2009 16:32:10 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <alpine.LFD.2.00.0912071239270.3560@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0912071610520.15701-100000@iolanthe.rowland.org>
+	Mon, 7 Dec 2009 16:32:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GvoQLAP1trj9B0PsLhDXUow6Az8X/Kpy9IIUMUBBFtOl9PZV0uAnmibUcMG0pu6si4
+         BFfrq1h+MvafteiVNvZrCnLrhxWATWithrwupBrs8NU4atcnYO8kkzuUinnGeqUk+WDC
+         fvrDCuJ7jTKctPFFfT1AHfY88cdFscjPKzJDY=
+Date: Mon, 7 Dec 2009 22:32:30 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/13] tracing: Move a printk out of
+	ftrace_raw_reg_event_foo()
+Message-ID: <20091207213228.GG5049@nowhere>
+References: <4B1CB14A.4080402@cn.fujitsu.com> <4B1CB183.7040202@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1CB183.7040202@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009, Linus Torvalds wrote:
-
-> > The consequence is that there's no way to hand off an entire subtree to 
-> > an async thread.  And as a result, your single-pass algorithm runs into 
-> > the kind of "stall" problem I described before.
+On Mon, Dec 07, 2009 at 03:40:51PM +0800, Li Zefan wrote:
+> Move the printk from each ftrace_raw_reg_event_foo() to
+> its caller ftrace_event_enable_disable().
 > 
-> No, look again. There's no stall in the thing, because all it really 
-> depends on is (for the suspend path) is that it sees all children before 
-> the parent (because the child will do a "down_read()" on the parent node 
-> and that should not stall), and for the resume path it depends on seeing 
-> the parent node before any children (because the parent node does that 
-> "down_write()" on its own node).
+> See how much space this saves:
 > 
-> Everything else is _entirely_ asynchronous, including all the other locks 
-> it takes. So there are no stalls (except, of course, if we then hit limits 
-> on numbers of outstanding async work and refuse to create too many 
-> outstanding async things, but that's a separate issue, and intentional, of 
-> course).
+>    text    data     bss     dec     hex filename
+> 5454538 2005772 7103796 14564106         de3b0a vmlinux.o
+> 5440766 2005772 7103796 14550334         de053e vmlinux.o
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  include/trace/ftrace.h        |   16 ++--------------
+>  kernel/trace/trace_events.c   |   17 +++++++++++++----
+>  kernel/trace/trace_syscalls.c |   10 ++--------
+>  3 files changed, 17 insertions(+), 26 deletions(-)
+> 
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index 84d6f23..4aac981 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -555,13 +555,7 @@ static void ftrace_profile_disable_##name(struct ftrace_event_call *unused)\
+>   *
+>   * static int ftrace_reg_event_<call>(struct ftrace_event_call *unused)
+>   * {
+> - *	int ret;
+> - *
+> - *	ret = register_trace_<call>(ftrace_event_<call>);
+> - *	if (!ret)
+> - *		pr_info("event trace: Could not activate trace point "
+> - *			"probe to  <call>");
+> - *	return ret;
+> + *	return register_trace_<call>(ftrace_event_<call>);
+>   * }
+>   *
+>   * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+> @@ -733,13 +727,7 @@ static void ftrace_raw_event_##call(proto)				\
+>  									\
+>  static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
+>  {									\
+> -	int ret;							\
+> -									\
+> -	ret = register_trace_##call(ftrace_raw_event_##call);		\
+> -	if (ret)							\
+> -		pr_info("event trace: Could not activate trace point "	\
+> -			"probe to " #call "\n");			\
+> -	return ret;							\
+> +	return register_trace_##call(ftrace_raw_event_##call);		\
+>  }									\
+>  									\
+>  static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)\
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index 9fa6736..f22eaec 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -104,9 +104,11 @@ void trace_destroy_fields(struct ftrace_event_call *call)
+>  	}
+>  }
+>  
+> -static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+> +static int ftrace_event_enable_disable(struct ftrace_event_call *call,
+>  					int enable)
+>  {
+> +	int ret = 0;
+> +
+>  	switch (enable) {
+>  	case 0:
+>  		if (call->enabled) {
+> @@ -117,12 +119,19 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+>  		break;
+>  	case 1:
+>  		if (!call->enabled) {
+> +			if (ret) {
+> +				pr_info("event trace: Could not enable event "
+> +					"%s\n", call->name);
+> +				break;
+> +			}
+>  			call->enabled = 1;
+>  			tracing_start_cmdline_record();
+> -			call->regfunc(call);
+> +			ret = call->regfunc(call);
 
-It only seems that way because you didn't take into account devices 
-that suspend synchronously but whose children suspend asynchronously.
 
-A synchronous suspend routine for a device with async child suspends
-would have to look just like your usb_node_suspend():
 
-	suspend_one_node(dev)
-	{
-		/* Wait until the children are suspended */
-		down_write(dev->lock);
-		Suspend dev
-		up_write(dev->lock);
-
-		/* Allow the parent to suspend */
-		up_read(dev->parent->lock);
-	}
-
-So now suppose we've got two USB host controllers, A and B.  They are
-PCI devices, so they suspend synchronously.  Each has a root hub child
-(P and Q respectively) which is a USB device and therefore suspends
-asynchronously.  dpm_list contains: A, P, B, Q.  (In fact A doesn't 
-enter into this discussion; you can ignore it.)
-
-In your one-pass algorithm, we start with usb_node_suspend(Q).  It does 
-down_read(B->lock) and starts an async task for Q.  Then we move on to 
-suspend_one_node(B).  It does down_write(B->lock) and blocks until the 
-async task finishes; then it suspends B.  Finally we move on to 
-usb_node_suspend(P), which does down_read(A->lock) and starts an async 
-task for P.
-
-The upshot is that P is stuck waiting for Q to suspend, even though it 
-should have been able to suspend in parallel.  This is simply because P 
-precedes B in the list, and B is synchronous and must wait for Q to 
-finish.
-
-With my two-pass algorithm, we start with Q.  The first loop does
-down_read(B->lock) and starts an async task for Q.  We move on to B and
-do down_read(B->parent->lock), nothing more.  Then we move to to P,
-with down_read(A->lock) and start an async task for P.  Finally we do
-down_read(A->parent->lock).  Notice that now there are two async tasks,
-for P and Q, running in parallel.
-
-The second pass waits for Q to finish before suspending B 
-synchronously, and waits for P to finish before suspending A 
-synchronously.  This is unavoidable.  The point is that it allows P and 
-Q to suspend at the same time, not one after the other as in the 
-one-pass scheme.
-
-Alan Stern
+Heh, I'm pretty sure I will never see this warning ;-)
 
