@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbZLGGmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZLGGs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827AbZLGGmh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 01:42:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbZLGGmg
+	id S1755270AbZLGGs6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 01:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZLGGs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 01:42:36 -0500
-Received: from rex.securecomputing.com ([203.24.151.4]:50385 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753747AbZLGGmg (ORCPT
+	Mon, 7 Dec 2009 01:48:57 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:51741 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753086AbZLGGs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 01:42:36 -0500
-Message-ID: <4B1CA3E3.7000603@snapgear.com>
-Date: Mon, 07 Dec 2009 16:42:43 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 7 Dec 2009 01:48:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NsGhP62BIU7rMU77428bagzQeHPYbMPcyPmFUW4n3VBgDGc7KcD/1h5SGc2kzk6vAs
+         lj+r/fYtcAAhmWf0YwIr+RIH0GagmV2bQV3gFbTGgm6NIncqIiOvG6bWZmHw6XQGzZch
+         uxss7dyC9HqsrHyUoaLzymDQhQaaoZk5LPvFE=
+Date: Sun, 6 Dec 2009 22:48:57 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v8 8/8] Loongson: YeeLoong: add input/hotkey driver
+Message-ID: <20091207064857.GG21451@core.coreip.homeip.net>
+References: <cover.1260082252.git.wuzhangjin@gmail.com> <b164d5bb79963a57621d024c22e5664de0ff8662.1260082252.git.wuzhangjin@gmail.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Maxim Kuvyrkov <maxim@codesourcery.com>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       uClinux development list <uclinux-dev@uclinux.org>
-Subject: Re: M68k tree updates
-References: <alpine.DEB.2.00.0911252213340.31650@ayla.of.borg>	 <4B13CC00.9080607@codesourcery.com> <10f740e80912041157j41984f4ay6ca2e56d70ac08e2@mail.gmail.com>
-In-Reply-To: <10f740e80912041157j41984f4ay6ca2e56d70ac08e2@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b164d5bb79963a57621d024c22e5664de0ff8662.1260082252.git.wuzhangjin@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Mon, Nov 30, 2009 at 14:43, Maxim Kuvyrkov <maxim@codesourcery.com> wrote:
->> Geert Uytterhoeven wrote:
->>> It took me a while, but finally I managed to update
->>> http://git.kernel.org/?p=linux/kernel/git/geert/linux-m68k.git again.
->> ...
->>> If anything is missing, please tell me. Thx!
->> How about the NPTL patch (0001-Add-NPTL-support-for-m68k.patch,
->> http://marc.info/?l=linux-m68k&m=125447760017098&w=2)?
-> 
-> As you're adding syscalls (which are shared with m68knommu), I'll have
-> to ask whether
-> you will make it work on nommu, too?
-> 
-> Furthermore, when building for Sun3:
-> 
-> arch/m68k/kernel/sys_m68k.c:706: warning: passing argument 1 of
-> 'kunmap' from incompatible pointer type
-> arch/m68k/kernel/sys_m68k.c:714: warning: passing argument 1 of
-> 'kunmap' from incompatible pointer type
-> 
-> Which looks like a problem with the Sun 3 version of pte_unmap().
-> 
-> I'm gonna add it to the m68k tree though, unless someone complains.
-> 
->> Also, this trivial fix (0004-Fix-m68k-s-asm-swab.h-for-ColdFire.patch,
->> http://marc.info/?l=linux-m68k&m=125447494213740&w=2) can go in.
-> 
-> I want to run this one by the nommu people as well...
+Hi Wu,
 
-That patch looks good to me.
+On Sun, Dec 06, 2009 at 03:01:48PM +0800, Wu Zhangjin wrote:
+> +
+> +#define EC_VER_LEN 64
+> +
+> +static int black_screen_handler(int status)
+> +{
+> +	char *p, ec_ver[EC_VER_LEN];
+> +
+> +	p = strstr(loongson_cmdline, "EC_VER=");
+> +	if (!p)
+> +		memset(ec_ver, 0, EC_VER_LEN);
+> +	else {
+> +		strncpy(ec_ver, p, EC_VER_LEN);
+> +		p = strstr(ec_ver, " ");
+> +		if (p)
+> +			*p = '\0';
+> +	}
+> +
 
-Acked-by: Greg Ungerer <gerg@uclinux.org>
+Hmm, why do you copy and parse command lineinstead of using module
+param and also doing it just once?
 
-Regards
-Greg
+> +	/* Seems EC(>=PQ1D26) does this job for us, we can not do it again,
+> +	 * otherwise, the brightness will not resume to the normal level! */
+> +	if (strncasecmp(ec_ver, "EC_VER=PQ1D26", 64) < 0)
+> +		yeeloong_lcd_vo_set(status);
+> +
+> +	return status;
+> +}
 
+Thanks.
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-8 Gardner Close                             FAX:         +61 7 3217 5323
-Milton, QLD, 4064, Australia                WEB: http://www.SnapGear.com
+-- 
+Dmitry
