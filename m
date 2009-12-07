@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935333AbZLGPhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935355AbZLGPhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935333AbZLGPhF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 10:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932577AbZLGPhD
+	id S935355AbZLGPhk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 10:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935346AbZLGPhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 10:37:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:51143 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 10:37:37 -0500
+Received: from thunk.org ([69.25.196.29]:43852 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932685AbZLGPhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 10:37:01 -0500
-Message-ID: <4B1D2109.9090108@redhat.com>
-Date: Mon, 07 Dec 2009 13:36:41 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S932577AbZLGPhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 10:37:36 -0500
+Date: Mon, 7 Dec 2009 10:37:28 -0500
+From: tytso@mit.edu
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext3: PTR_ERR return of wrong pointer in
+ setup_new_group_blocks()
+Message-ID: <20091207153728.GC27692@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Roel Kluin <roel.kluin@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>
+References: <4B1D0813.4070502@gmail.com>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR 	system?
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>	 <1260070593.3236.6.camel@pc07.localdom.local>	 <20091206065512.GA14651@core.coreip.homeip.net>	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-In-Reply-To: <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1D0813.4070502@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
-> On Sun, Dec 6, 2009 at 12:48 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
->> Once again: how about agreement about the LIRC interface
->> (kernel-userspace) and merging the actual LIRC code first? 
+On Mon, Dec 07, 2009 at 02:50:11PM +0100, Roel Kluin wrote:
+> Return the PTR_ERR of the correct pointer.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-That's fine for me.
+Reviewed-by: "Theodore Ts'o" <tytso@mit.edu>
 
->> In-kernel
->> decoding can wait a bit, it doesn't change any kernel-user interface.
+Thanks for pointing this out!  I've added a similar patch for ext4 in
+the patch queue.
 
-This may occur in parallel, but, as we've been discussing, there are
-still some needs there that will require kernel-user interfaces.
-
-> I'd like to see a semi-complete design for an in-kernel IR system
-> before anything is merged from any source.
-
-There are some tasks there that are independent of any API design.
-
-For example, I'm currently doing some cleanups and improvements 
-at the existing IR in-kernel code to create a common IR core that replaces
-the already existing feature of handling 7-bits scancode/keycode table to
-use the complete scancodes found at the current in-kernel drivers.
-
-This approach works for the current drivers, as none of them currently support
-any protocol that requires more than 16 bits for scancodes. However, the
-current EVIOGKEYCODE implementation won't scale with bigger scancode spaces.
-
-This code is written to be generic enough to be used by V4L, DVB and LIRC
-drivers. So, after having this work done, it should be easy to connect the lirc_dev
-to a decoder and to this core support. There are already some in-kernel decoders
-that can be used for some protocols, but the better is to review the decoders in
-the light of lirc. I expect that the lirc decoders will be in a better shape.
-
-While I'm here, I intend also to create the sysfs bits to create sys/class/irrcv,
-as already discussed and submit the patch here for discussions.
-
-Of course, after writing different API's to control the IR tables, we'll
-need to improve it, but this depends on the results of the architecture discussions.
-
-Cheers,
-Mauro
+					- Ted
