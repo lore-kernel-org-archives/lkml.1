@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934515AbZLGA35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934520AbZLGAaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934515AbZLGA35 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934448AbZLGA3s
+	id S934520AbZLGAaW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934442AbZLGA3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:29:48 -0500
-Received: from kroah.org ([198.145.64.141]:34367 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:29:46 -0500
+Received: from kroah.org ([198.145.64.141]:34372 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758429AbZLGANB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:13:01 -0500
+	id S1758325AbZLGANC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:13:02 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:47 2009
-Message-Id: <20091207000647.094897781@mini.kroah.org>
+Message-Id: <20091207000647.288211308@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:18 -0800
+Date: Sun, 06 Dec 2009 16:00:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Pete Zaitcev <zaitcev@redhat.com>
-Subject: [042/119] USB: usbmon: fix bug in mon_buff_area_shrink
+       Zhang Le <r0bertz@gentoo.org>
+Subject: [043/119] USB: option.c: add support for D-Link DWM-162-U5
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=usb-usbmon-fix-bug-in-mon_buff_area_shrink.patch
+Content-Disposition: inline; filename=usb-option.c-add-support-for-d-link-dwm-162-u5.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,69 +29,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Zhang Le <r0bertz@gentoo.org>
 
-commit fca94748c5136ff390eadc443871b82f1f77dcd6 upstream.
+commit ff854ce0b17161a86b5ae444c6cb0aa221720fab upstream.
 
-This patch (as1299b) fixes a bug in an error-handling path of usbmon's
-binary interface.  The storage area for URB data is divided into
-fixed-size blocks.  If an URB's data can't be copied, the area
-reserved for it should be decreased to the size of the truncated
-information (rounded up to a block boundary).  Rounding up the amount
-to be removed and subtracting it from the reserved size is definitely
-the wrong thing to do.
+Add D-Link DWM-162-U5 device id 1e0e:ce16 into option driver. The device
+has 4 interfaces, of which 1 is handled by storage and the other 3 by
+option driver.
 
-Also, when the data for an isochronous URB can't be copied, we can
-still copy the isoc packet descriptors.  In fact the current code does
-copy the descriptors, but then sets the capture length to 0 so they
-remain inaccessible.  The capture length should be reduced to the
-length of the descriptors, not set to 0.
+The device appears first as CD-only 05c6:2100 device and must be
+switched to 1e0e:ce16 mode either by using "eject CD" or usb_modeswitch.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Acked-by: Pete Zaitcev <zaitcev@redhat.com>
+The MessageContent for usb_modeswitch.conf is:
+"55534243e0c26a85000000000000061b000000020000000000000000000000"
+
+Signed-off-by: Zhang Le <r0bertz@gentoo.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/mon/mon_bin.c |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/usb/serial/option.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/usb/mon/mon_bin.c
-+++ b/drivers/usb/mon/mon_bin.c
-@@ -350,12 +350,12 @@ static unsigned int mon_buff_area_alloc_
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -309,6 +309,7 @@ static int  option_resume(struct usb_ser
  
- /*
-  * Return a few (kilo-)bytes to the head of the buffer.
-- * This is used if a DMA fetch fails.
-+ * This is used if a data fetch fails.
-  */
- static void mon_buff_area_shrink(struct mon_reader_bin *rp, unsigned int size)
- {
+ #define DLINK_VENDOR_ID				0x1186
+ #define DLINK_PRODUCT_DWM_652			0x3e04
++#define DLINK_PRODUCT_DWM_652_U5		0xce16
  
--	size = (size + PKT_ALIGN-1) & ~(PKT_ALIGN-1);
-+	/* size &= ~(PKT_ALIGN-1);  -- we're called with aligned size */
- 	rp->b_cnt -= size;
- 	if (rp->b_in < size)
- 		rp->b_in += rp->b_size;
-@@ -442,6 +442,7 @@ static void mon_bin_event(struct mon_rea
- 	unsigned int urb_length;
- 	unsigned int offset;
- 	unsigned int length;
-+	unsigned int delta;
- 	unsigned int ndesc, lendesc;
- 	unsigned char dir;
- 	struct mon_bin_hdr *ep;
-@@ -546,8 +547,10 @@ static void mon_bin_event(struct mon_rea
- 	if (length != 0) {
- 		ep->flag_data = mon_bin_get_data(rp, offset, urb, length);
- 		if (ep->flag_data != 0) {	/* Yes, it's 0x00, not '0' */
--			ep->len_cap = 0;
--			mon_buff_area_shrink(rp, length);
-+			delta = (ep->len_cap + PKT_ALIGN-1) & ~(PKT_ALIGN-1);
-+			ep->len_cap -= length;
-+			delta -= (ep->len_cap + PKT_ALIGN-1) & ~(PKT_ALIGN-1);
-+			mon_buff_area_shrink(rp, delta);
- 		}
- 	} else {
- 		ep->flag_data = data_tag;
+ #define QISDA_VENDOR_ID				0x1da5
+ #define QISDA_PRODUCT_H21_4512			0x4512
+@@ -587,6 +588,7 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_AC2726, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE(BENQ_VENDOR_ID, BENQ_PRODUCT_H10) },
+ 	{ USB_DEVICE(DLINK_VENDOR_ID, DLINK_PRODUCT_DWM_652) },
++	{ USB_DEVICE(ALINK_VENDOR_ID, DLINK_PRODUCT_DWM_652_U5) }, /* Yes, ALINK_VENDOR_ID */
+ 	{ USB_DEVICE(QISDA_VENDOR_ID, QISDA_PRODUCT_H21_4512) },
+ 	{ USB_DEVICE(QISDA_VENDOR_ID, QISDA_PRODUCT_H21_4523) },
+ 	{ USB_DEVICE(QISDA_VENDOR_ID, QISDA_PRODUCT_H20_4515) },
 
 
