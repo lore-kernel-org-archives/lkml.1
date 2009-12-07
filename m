@@ -1,140 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964855AbZLGXh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935688AbZLGXof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964855AbZLGXh4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 18:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935309AbZLGXhy
+	id S935688AbZLGXof (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 18:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935475AbZLGXoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 18:37:54 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:40478 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935193AbZLGXhx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 18:37:53 -0500
-Message-ID: <4B1D91C8.7040900@us.ibm.com>
-Date: Mon, 07 Dec 2009 15:37:44 -0800
-From: Vernon Mauery <vernux@us.ibm.com>
-Reply-To: vernux@us.ibm.com
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 7 Dec 2009 18:44:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3543 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935324AbZLGXoc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 18:44:32 -0500
+Message-ID: <4B1D934E.7030103@redhat.com>
+Date: Mon, 07 Dec 2009 21:44:14 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Clark Williams <williams@redhat.com>
-Subject: [RT] Silent hang on -rt kernel using tc
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Krzysztof Halasa <khc@pm.waw.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>	 <1260070593.3236.6.camel@pc07.localdom.local>	 <20091206065512.GA14651@core.coreip.homeip.net>	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>	 <m3skbn6dv1.fsf@intrepid.localdomain> <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
+In-Reply-To: <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am seeing a silent hang on -rt kernels that is getting provoked
-when using tc (traffic control) to enforce bandwidth limiting on
-a network interface.  I set up the rate-limiting using HTB (or CBQ)
-and then send traffic out on the interface and the machine hangs.
+Let me add my view for those questions.
 
-When the machine hangs, it is nearly completely unresponsive, with
-sysrq sometimes working, but I can crash it with an NMI.  Sometimes
-the machine will also spit out messages from the SCSI or SAN or
-NIC drivers that are getting timeouts because of the hang.
+Jon Smirl wrote:
+> On Sun, Dec 6, 2009 at 3:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+>> Jon Smirl <jonsmirl@gmail.com> writes:
+>>
+>>>> Once again: how about agreement about the LIRC interface
+>>>> (kernel-userspace) and merging the actual LIRC code first? In-kernel
+>>>> decoding can wait a bit, it doesn't change any kernel-user interface.
+>>> I'd like to see a semi-complete design for an in-kernel IR system
+>>> before anything is merged from any source.
+>> This is a way to nowhere, there is no logical dependency between LIRC
+>> and input layer IR.
+>>
+>> There is only one thing which needs attention before/when merging LIRC:
+>> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
+>> actually, making a correct IR core design without the LIRC merged can be
+>> only harder.
+> 
+> Here's a few design review questions on the LIRC drivers that were posted....
+> 
+> How is the pulse data going to be communicated to user space?
 
-Here is how I have been able to cause the hang:
+lirc_dev will implement a revised version of the lirc API. I'm assuming that
+Jerod and Christoph will do this review, in order to be sure that it is stable
+enough for kernel inclusion (as proposed by Gerd).
 
-#!/bin/bash
+> Can the pulse data be reported via an existing interface without
+> creating a new one?
 
-if [ -z "$1" ]; then
-        ETH=eth2
-else
-        ETH="$1"
-fi
+Raw pulse data should be reported only via lirc_dev, but it can be converted
+into a keycode and reported via evdev as well, via an existing interface.
 
-SPEED=`ethtool $ETH | grep Speed | sed 's/[^0-9]*\([0-9]*\).*/\1/'`
-case $SPEED in
-   10000) ZEROS=00 ;;
-    1000) ZEROS=0 ;;
- default) ZEROS='' ;;
-esac
+> Where is the documentation for the protocol?
 
-tc qdisc del dev $ETH root >&/dev/null || :
-tc qdisc add dev $ETH root handle 1: htb default 30 r2q 600$ZEROS
-tc class add dev $ETH parent 1: classid 1:1 htb rate 30${ZEROS}mbit
-tc class add dev $ETH parent 1:1 classid 1:10 htb rate 5${ZEROS}mbit prio 1
-tc class add dev $ETH parent 1:1 classid 1:20 htb rate 5${ZEROS}mbit prio 2
-tc class add dev $ETH parent 1:1 classid 1:30 htb rate 8${ZEROS}mbit
+I'm not sure what you're meaning here. I've started a doc about IR at the media
+docbook. This is currently inside the kernel Documents/DocBook. If you want
+to browse, it is also available as:
 
--------
+	http://linuxtv.org/downloads/v4l-dvb-apis/ch17.html
 
-Run netserver on another machine that is connected to the desired interface.
-Then run:
+For sure we need to better document the IR's, and explain the API's there.
 
-netperf -l 2000 -H $IP -t UDP_STREAM -- -m 65505
+> Is it a device interface or something else?
 
-Wait a bit and the machine should hang.
+lirc_dev should create a device interface.
 
-I can only reproduce on 8-way systems; smaller systems don't hang for me.  I
-see the hang within seconds of running netperf after running the tc commands.
+> What about capabilities of the receiver, what frequencies?
+> If a receiver has multiple frequencies, how do you report what
+> frequency the data came in on?
 
-I can reproduce it on any of my available network interfaces 1GbE or 10GbE.
-It usually takes a little bit longer on the 1GbE interface, but it still
-will hang.  It seems to hang faster if I am running `top -d .2` in another
-shell on that machine which produces a fair amount of network traffic
-and CPU utilization.
+IMO, via sysfs.
 
-I can reproduce it on 2.6.24-rt and on 2.6.31-rt, but not on 2.6.32 vanilla.
+> What about multiple apps simultaneously using the pulse data?
 
-Often when it hangs, the machine will only respond to an NMI, though on
-occasion, I have been able to use sysrq over the SOL line.
+IMO, the better is to limit the raw interface to just one open.
 
-Once, I did see the machine give an oops when running this scenario, but
-it is much much more common to see a silent hang.  Here is the oops message:
+> How big is the receive queue?
 
-Unable to handle kernel NULL pointer dereference at 0000000000000010 RIP:
- [<ffffffff8113b38c>] rb_erase+0x1f3/0x2b1
-PGD 14e150067 PUD 142d34067 PMD 0
-Oops: 0000 [1] PREEMPT SMP
-CPU 2
-Modules linked in: sch_htb pktgen nfs nfsd lockd nfs_acl auth_rpcgss exportfs
-ipmi_devintf ipmi_si ipmi_msghandler ibm_rtl ipv6 autofs4 i2c_dev i2c_core hidp
-rfcomm l2cap bluetooth sunrpc dm_mirror dm_multipath scsi_dh dm_mod video
-output sbs sbshc battery ac parport_pc lp parport sg bnx2 button netxen_nic
-serio_raw amd64_edac edac_core pcspkr shpchp mptsas mptscsih mptbase
-scsi_transport_sas sd_mod scsi_mod ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd
-Pid: 38, comm: sirq-hrtimer/2 Not tainted 2.6.24-rt #1
-RIP: 0010:[<ffffffff8113b38c>]  [<ffffffff8113b38c>] rb_erase+0x1f3/0x2b1
-RSP: 0018:ffff81014f16fe50  EFLAGS: 00010082
-RAX: 0000000000000000 RBX: ffff81014640bac8 RCX: ffff810001085780
-RDX: 0000000000000000 RSI: ffff8100010076a8 RDI: 0000000000000000
-RBP: ffff81014f16fe60 R08: ffff81033f15dac8 R09: 0000000000000000
-R10: 0000000000000002 R11: 0000000000000000 R12: ffff8100010076a8
-R13: 0000000000000000 R14: 0000000000000002 R15: 0000000000000080
-FS:  00007ff9960016e0(0000) GS:ffff81014fc09cc0(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000010 CR3: 000000014e188000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process sirq-hrtimer/2 (pid: 38, threadinfo ffff81014f16e000, task
-ffff81014f16c300)
-Stack:  ffff81013a5e67d0 ffff810001007698 ffff81014f16fe90 ffffffff81054dfc
- ffffffff81227401 ffff81013a5e67d0 ffff810001085640 0000000000000002
- ffff81014f16fec0 ffffffff81055cbb 0000000000000002 ffffffff815005e8
-Call Trace:
- [<ffffffff81054dfc>] __remove_hrtimer+0x6e/0x7b
- [<ffffffff81227401>] ? qdisc_watchdog+0x0/0x23
- [<ffffffff81055cbb>] run_hrtimer_softirq+0x7a/0x14e
- [<ffffffff81043d26>] ksoftirqd+0x16a/0x26f
- [<ffffffff81043bbc>] ? ksoftirqd+0x0/0x26f
- [<ffffffff81043bbc>] ? ksoftirqd+0x0/0x26f
- [<ffffffff8105261c>] kthread+0x49/0x79
- [<ffffffff8100d088>] child_rip+0xa/0x12
- [<ffffffff810525d3>] ? kthread+0x0/0x79
- [<ffffffff8100d07e>] ? child_rip+0x0/0x12
+It should be big enough to receive at least one keycode event. Considering that
+the driver will use kfifo (IMO, it is a good strategy, especially since you
+won't need any lock if just one open is allowed), it will require a power of two size.
 
+> How does access work, root only or any user?
 
-Code: e8 d2 fb ff ff e9 8b 00 00 00 48 8b 07 a8 01 75 1a 48 83 c8 01 4c 89 e6
-48 89 07 48 83 23 fe 48 89 df e8 10 fc ff ff 48 8b 7b 10 <48> 8b 57 10 48 85 d2
-74 05 f6 02 01 74 2c 48 8b 47 08 48 85 c0
-RIP  [<ffffffff8113b38c>] rb_erase+0x1f3/0x2b1
- RSP <ffff81014f16fe50>
+IMO, it should be the same requirement as used by an input interface.
+
+> How are capabilities exposed, sysfs, etc?
+
+IMO, sysfs.
+
+> What is the interface for attaching an in-kernel decoder?
+
+IMO, it should use the kfifo for it. However, if we allow both raw data and
+in-kernel decoders to read data there, we'll need a spinlock to protect the
+kfifo.
+
+> If there is an in-kernel decoder should the pulse data stop being
+> reported, partially stopped, something else?
+
+I don't have a strong opinion here, but, from the previous discussions, it
+seems that people want it to be double-reported by default. If so, I think
+we need to implement a command at the raw interface to allow disabling the
+in-kernel decoder, while the raw interface is kept open.
+
+> What is the mechanism to make sure both system don't process the same pulses?
+
+I don't see a good way to avoid it.
+
+> Does it work with poll, epoll, etc?
+> What is the time standard for the data, where does it come from?
+> How do you define the start and stop of sequences?
+> Is receiving synchronous or queued?
+> What about transmit, how do you get pulse data into the device?
+> Transmitter frequencies?
+> Multiple transmitters?
+> Is transmitting synchronous or queued?
+> How big is the transmit queue?
+
+I don't have a clear answer for those. I'll let those to LIRC developers to answer.
 
 
-Any help in debugging this would be greatly appreciated.
+Cheers,
+Mauro
 
---Vernon
+
