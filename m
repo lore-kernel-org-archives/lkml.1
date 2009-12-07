@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965103AbZLGWbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935666AbZLGWpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965103AbZLGWbJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 17:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933422AbZLGWbI
+	id S935666AbZLGWpJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:45:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934201AbZLGWpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 17:31:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43785 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935642AbZLGWbH (ORCPT
+	Mon, 7 Dec 2009 17:45:06 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37865 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758321AbZLGWpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 17:31:07 -0500
-Date: Mon, 7 Dec 2009 14:30:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Richard Zidlicky <rz@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.32 regression, hard lock
-Message-Id: <20091207143057.53c6a362.akpm@linux-foundation.org>
-In-Reply-To: <20091206141419.GA6195@linux-m68k.org>
-References: <20091206141419.GA6195@linux-m68k.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 17:45:05 -0500
+Date: Mon, 7 Dec 2009 17:32:37 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: net/wireless/wireless-current tree build warning
+Message-ID: <20091207223236.GF18939@tuxdriver.com>
+References: <20091201133524.32756cef.sfr@canb.auug.org.au> <1260191754.3737.1.camel@johannes.local> <20091208092057.dd2eeaeb.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091208092057.dd2eeaeb.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Dec 2009 15:14:19 +0100
-Richard Zidlicky <rz@linux-m68k.org> wrote:
-
-> Hello,
+On Tue, Dec 08, 2009 at 09:20:57AM +1100, Stephen Rothwell wrote:
+> Hi Dave, John,
 > 
-> first visible symptom is that ppp over UMTS connection "stops working", connection
-> did not die. Trying to restart the connection fails and the related processes hang.
+> On Mon, 07 Dec 2009 14:15:54 +0100 Johannes Berg <johannes@sipsolutions.net> wrote:
+> >
+> > > drivers/net/wireless/iwlwifi/iwl-tx.c: In function 'iwl_tx_agg_stop':
+> > > drivers/net/wireless/iwlwifi/iwl-tx.c:1356: warning: passing argument 1 of 'ieee80211_stop_tx_ba_cb_irqsafe' from incompatible pointer type
+> > > include/net/mac80211.h:2128: note: expected 'struct ieee80211_vif *' but argument is of type 'struct ieee80211_hw *'
+> > 
+> > This has now snuck into wireless-testing as well.
 > 
-> After that one after another everything stops working, "telinit 6" does not do its
-> job and SysRQ sync-umount-reboot is logged in messages but has no visible effect.
-> 
-> Attaching messages and .config.
-> 
+> Johannes is right, the patch I posted need to be part of the wireless
+> tree once the wireless-current tree was merged into it.  Now this patch
+> (reposted below) is needed in the wireless and net trees ...
 
-I uploaded your dmesg output to
-http://userweb.kernel.org/~akpm/stuff/messages.txt
+I've just merged such a patch...thanks!
 
-I'm looking at those traces and am not able to develop a theory to
-explain it :(
-
-There's some libata implication at timestamp 13203.385345 but that
-looks like it's just a fluke.
-
-
-So I'm stumped, sorry.  Maybe someone else can think of a way to attack
-this.
-
-
-btw, why does your kernel say "To Be Filled By O.E.M." in the traces? 
-The kernel.org kernel doesn't do that.  Is that kernel patched at all?
-
-Thanks.
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
