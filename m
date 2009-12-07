@@ -1,231 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965002AbZLGUrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964911AbZLGUqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965002AbZLGUrM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935253AbZLGUrI
+	id S964911AbZLGUqp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935185AbZLGUqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:47:08 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63652 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935185AbZLGUrG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:47:06 -0500
-Subject: Re: [PATCH] Fix tracing infrastructure to support multiple
- includes when defining CREATE_TRACE_POINTS
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@redhat.com,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20091207201829.GG8073@hmsreliant.think-freely.org>
-References: <20091202191916.GA7589@hmsreliant.think-freely.org>
-	 <1259849726.12870.123.camel@gandalf.stny.rr.com>
-	 <20091203193549.GA18664@hmsreliant.think-freely.org>
-	 <1260216282.4845.3.camel@gandalf.stny.rr.com>
-	 <20091207201829.GG8073@hmsreliant.think-freely.org>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 07 Dec 2009 15:47:11 -0500
-Message-Id: <1260218831.3518.3.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Mon, 7 Dec 2009 15:46:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43639 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932191AbZLGUqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 15:46:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Date: Mon, 7 Dec 2009 21:47:13 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Zhang Rui <rui.zhang@intel.com>, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org> <200912071615.34788.rjw@sisk.pl> <alpine.LFD.2.00.0912070832330.3560@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912070832330.3560@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912072147.13851.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 15:18 -0500, Neil Horman wrote:
-> On Mon, Dec 07, 2009 at 03:04:42PM -0500, Steven Rostedt wrote:
-> > On Thu, 2009-12-03 at 14:35 -0500, Neil Horman wrote:
+On Monday 07 December 2009, Linus Torvalds wrote:
+> 
+> On Mon, 7 Dec 2009, Rafael J. Wysocki wrote:
 > > 
-> > > Fix tracing infrastructure to allow multiple header files with TRACE_EVENTS to
-> > > be included with CREATE_TRACE_EVENTS defined
-> > > 
-> > > I've been workingon adding a few tracepoints to the network stack, and in so
-> > > doing it was convienient for me to add a second include file to
-> > > net/core/net-traces.c with TRACE_EVENTS defined in them.  net-traces.c defines
-> > > CREATE_TRACE_EVENTS, and during the build it was failing, complaining about
-> > > duplicate definitions of __tpstrtab_<name>.  I tracked down the bug to find that
-> > > define_trace.h redefined DECLARE_TRACE to be DEFINE_TRACE, so after the first
-> > > run through define_trace.h (which is included from skb.h, included in
-> > > net-trace.c first), the DECLARE_TRACE macro was left with an improper definition
-> > > to start a new cycle with the next header.
-> > > 
-> > > The fix I came up with was to make sure that DECLARE_TRACE was undefined at the
-> > > end of define_trace.h, and to add a conditional re-definition in tracepoint.h.
-> > > This places us back in the proper state to define a new set of tracepoints in a
-> > > subsequent header file.
-> > > 
-> > > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> > > 
+> > > The advantage: untouched drivers don't change ANY SEMANTICS AT ALL.
 > > 
-> > By itself, this patch breaks the build (for me). I take it that you
-> > converted the napi.h file to use TRACE_EVENT. Currently it uses a
-> > DECLARE_TRACE, which will break with this patch. We need a patch that
-> > removes that DECLARE_TRACE before we can apply this patch.
-> > 
-> Yes, I did that conversion, sorry, wasn't thinking about how that might affect
-> the build.  Given that converting to a TRACE_EVENT shouldn't be noticible to any
-> of the users of that tracepoint (it can still be hooked in an identical
-> fashion), I'd vote for just doing a monolitic patch.  please find that below.
+> > This also was true for my patchset.
 > 
-> Regards
-> Neil
+> That's simply not trye.
 > 
-> 
-> 
-> Fix tracing infrastructure to allow multiple header files with TRACE_EVENTS to
-> be included with CREATE_TRACE_EVENTS defined
-> 
-> I've been workingon adding a few tracepoints to the network stack, and in so
-> doing it was convienient for me to add a second include file to
-> net/core/net-traces.c with TRACE_EVENTS defined in them.  net-traces.c defines
-> CREATE_TRACE_EVENTS, and during the build it was failing, complaining about
-> duplicate definitions of __tpstrtab_<name>.  I tracked down the bug to find that
-> define_trace.h redefined DECLARE_TRACE to be DEFINE_TRACE, so after the first
-> run through define_trace.h (which is included from skb.h, included in
-> net-trace.c first), the DECLARE_TRACE macro was left with an improper definition
-> to start a new cycle with the next header.
-> 
-> The fix I came up with was to make sure that DECLARE_TRACE was undefined at the
-> end of define_trace.h, and to add a conditional re-definition in tracepoint.h.
-> This places us back in the proper state to define a new set of tracepoints in a
-> subsequent header file.
-> 
-> 
-> Note this patch also converts the napi_poll tracepoint to a TRACE_EVENT.  This
-> is done so that the TRACE_EVENT fix doesn't break the build, and because its
-> rather pointless I think given the current tracing infrastructure to not have
-> napi_poll be an independent event.
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> You set async_suspend on every single PCI driver. I object very heavily to 
+> it.
 
-Thanks, I'll give it a test. But because this now touches networking
-code, I need an Acked-by from David Miller before I can pull it in.
+That was a mistake, I admit.
 
--- Steve
+However, it was done in a separate patch that (1) was not necessary and (2)
+shouldn't have been there.  Sorry for making the mistake of including that into
+the patchset.  So I understand your objection to that and let's not get back to
+this again, ok?
 
+> You also introduce this whole big "callback when ready", and 
+> "non-topoligical PM dependency chain" thing. Which I also object to.
 
+These things are also non-essential.  Acutally they wasn't there in the initial
+version of my patches and were added after people had complained that it had
+not been parallel enough and hadn't take the off-tree dependecies into account.
 
+I could remove these things either and quite easily.
+
+> Notice how with the simpler "lock parent" model, you _can_ actually encode 
+> non-topological dependencies, but you do it by simply read-locking 
+> whatever other independent device you want. So if an architecture has some 
+> system devices that have odd rules, that architecture can simply encode 
+> those rules in its suspend() functions.
+
+I'm not arguing against that.  In fact, my only worry were that additional
+suspend/resume callbacks I really wouldn't like to introduce.  But since you've
+found a way of doing things without them, I'm totally fine with this approach.
+
+> It doesn't need to expose it to the device layer - because the device 
+> layer won't even care. The code will just automatically "do the right 
+> thing" without even having that notion of PM dependencies at any other 
+> level than the driver that knows about it.
 > 
+> No registration, no callbacks, no nothing.
+>
+> > In my patchset the drivers didn't need to do all that stuff.  The only thing
+> > they needed, if they wanted their suspend/resume to be executed
+> > asynchronously, was to set the async_suspend flag.
 > 
-> linux/tracepoint.h   |   45 +++++++++++++++++++++++----------------------
-> trace/define_trace.h |    1 +
-> trace/events/napi.h  |   25 ++++++++++++++++++++++---
-> 3 files changed, 46 insertions(+), 25 deletions(-)
+> In my patchset, the drivers don't need to either.
 > 
-> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> index 2aac8a8..311abbf 100644
-> --- a/include/linux/tracepoint.h
-> +++ b/include/linux/tracepoint.h
-> @@ -58,28 +58,6 @@ struct tracepoint {
->  		rcu_read_unlock_sched_notrace();			\
->  	} while (0)
->  
-> -/*
-> - * Make sure the alignment of the structure in the __tracepoints section will
-> - * not add unwanted padding between the beginning of the section and the
-> - * structure. Force alignment to the same alignment as the section start.
-> - */
-> -#define DECLARE_TRACE(name, proto, args)				\
-> -	extern struct tracepoint __tracepoint_##name;			\
-> -	static inline void trace_##name(proto)				\
-> -	{								\
-> -		if (unlikely(__tracepoint_##name.state))		\
-> -			__DO_TRACE(&__tracepoint_##name,		\
-> -				TP_PROTO(proto), TP_ARGS(args));	\
-> -	}								\
-> -	static inline int register_trace_##name(void (*probe)(proto))	\
-> -	{								\
-> -		return tracepoint_probe_register(#name, (void *)probe);	\
-> -	}								\
-> -	static inline int unregister_trace_##name(void (*probe)(proto))	\
-> -	{								\
-> -		return tracepoint_probe_unregister(#name, (void *)probe);\
-> -	}
-> -
->  
->  #define DEFINE_TRACE_FN(name, reg, unreg)				\
->  	static const char __tpstrtab_##name[]				\
-> @@ -173,6 +151,29 @@ static inline void tracepoint_synchronize_unregister(void)
->   *  trace event headers under one "CREATE_TRACE_POINTS" the first include
->   *  will override the TRACE_EVENT and break the second include.
->   */
-> +#if defined(CONFIG_TRACEPOINTS) && !defined(DECLARE_TRACE)
-> +/*
-> + * Make sure the alignment of the structure in the __tracepoints section will
-> + * not add unwanted padding between the beginning of the section and the
-> + * structure. Force alignment to the same alignment as the section start.
-> + */
-> +#define DECLARE_TRACE(name, proto, args)                                \
-> +	extern struct tracepoint __tracepoint_##name;                   \
-> +	static inline void trace_##name(proto)                          \
-> +	{                                                               \
-> +		if (unlikely(__tracepoint_##name.state))                \
-> +			__DO_TRACE(&__tracepoint_##name,                \
-> +				TP_PROTO(proto), TP_ARGS(args));        \
-> +	}                                                               \
-> +	static inline int register_trace_##name(void (*probe)(proto))   \
-> +	{                                                               \
-> +		return tracepoint_probe_register(#name, (void *)probe); \
-> +	}                                                               \
-> +	static inline int unregister_trace_##name(void (*probe)(proto)) \
-> +	{                                                               \
-> +		return tracepoint_probe_unregister(#name, (void *)probe);\
-> +	}
-> +#endif
->  
->  #ifndef TRACE_EVENT
->  /*
-> diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-> index 2a4b3bf..a3e0095 100644
-> --- a/include/trace/define_trace.h
-> +++ b/include/trace/define_trace.h
-> @@ -64,6 +64,7 @@
->  #undef TRACE_EVENT
->  #undef TRACE_EVENT_FN
->  #undef TRACE_HEADER_MULTI_READ
-> +#undef DECLARE_TRACE
->  
->  /* Only undef what we defined in this file */
->  #ifdef UNDEF_TRACE_INCLUDE_FILE
-> diff --git a/include/trace/events/napi.h b/include/trace/events/napi.h
-> index a8989c4..25a1709 100644
-> --- a/include/trace/events/napi.h
-> +++ b/include/trace/events/napi.h
-> @@ -1,11 +1,30 @@
-> -#ifndef _TRACE_NAPI_H_
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM napi
-> +
-> +#if !defined(_TRACE_NAPI_H_) || defined(TRACE_HEADER_MULTI_READ)
->  #define _TRACE_NAPI_H_
->  
->  #include <linux/netdevice.h>
->  #include <linux/tracepoint.h>
->  
-> -DECLARE_TRACE(napi_poll,
-> +TRACE_EVENT(napi_poll,
-> +
->  	TP_PROTO(struct napi_struct *napi),
-> -	TP_ARGS(napi));
-> +
-> +	TP_ARGS(napi),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(        struct napi_struct *,	napi)
-> +        ),
-> +
-> +        TP_fast_assign(
-> +                __entry->napi = napi;
-> +        ),
-> +
-> +        TP_printk("napi poll on napi struct %p for device %s",
-> +		__entry->napi, __entry->napi->dev->name)
-> +);
->  
->  #endif
-> +
-> +#include <trace/define_trace.h>
+> The _only_ thing that would do this is something like the USB layer. We're 
+> talking ten lines of code or so. And you get rid of all the PM 
+> dependencies and all the infrastructure - because the model is so simple 
+> that it doesn't need any.
 
+It just uses a different way of representing these things, perhaps more
+efficiently.
+
+> (Well, except for the infrastructure to run things asynchronously, but 
+> that was kind of my point from the very beginning: we can just re-use all 
+> that existing async infrastructure. We already have that).
+
+So I guess the only thing we need at the core level is to call
+async_synchronize_full() after every stage of suspend/resume, right?
+
+Rafael
