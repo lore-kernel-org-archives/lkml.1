@@ -1,80 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbZLGOpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932617AbZLGOuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757821AbZLGOpE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 09:45:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbZLGOpC
+	id S932617AbZLGOuN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 09:50:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbZLGOuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 09:45:02 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55778 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756689AbZLGOpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 09:45:00 -0500
-Date: Mon, 7 Dec 2009 14:46:23 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: miklos@szeredi.hu, luto@mit.edu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] vfs: new O_NODE open flag
-Message-ID: <20091207144623.692fbc1e@lxorguk.ukuu.org.uk>
-In-Reply-To: <E1NHeXH-0003Lb-3q@pomaz-ex.szeredi.hu>
-References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
-	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>
-	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu>
-	<20091202204828.4fa0c108@lxorguk.ukuu.org.uk>
-	<E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
-	<4B1A7159.3070101@mit.edu>
-	<E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
-	<20091205202838.3456b6fc@lxorguk.ukuu.org.uk>
-	<E1NH1MB-0007v8-Ps@pomaz-ex.szeredi.hu>
-	<20091205231304.03a4af61@lxorguk.ukuu.org.uk>
-	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu>
-	<20091207122346.6d18a8e1@lxorguk.ukuu.org.uk>
-	<E1NHctp-00032C-A1@pomaz-ex.szeredi.hu>
-	<E1NHd0J-000345-Kw@pomaz-ex.szeredi.hu>
-	<20091207130339.620b904b@lxorguk.ukuu.org.uk>
-	<E1NHdJy-00037l-Jb@pomaz-ex.szeredi.hu>
-	<20091207131546.2af06647@lxorguk.ukuu.org.uk>
-	<E1NHdS9-00039i-B6@pomaz-ex.szeredi.hu>
-	<20091207141321.0964461d@lxorguk.ukuu.org.uk>
-	<E1NHeXH-0003Lb-3q@pomaz-ex.szeredi.hu>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 09:50:12 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:51214 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932476AbZLGOuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 09:50:10 -0500
+Date: Mon, 7 Dec 2009 14:50:11 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: werner <w.landgraf@ru.ru>, linux-kernel@vger.kernel.org,
+       David Rientjes <rientjes@google.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kernel problem
+Message-ID: <20091207145011.GA14743@csn.ul.ie>
+References: <web-100877149@zbackend1.aha.ru> <20091204154109.GB1716@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091204154109.GB1716@goodmis.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > First obvious attack: get an O_NODE handle to a device you have assigned
-> > to your ownership
-> > 
-> > 	while(1)
-> > 		fchmod(fd, 0666);
-> > 
-> > wait for device to unload, reload and be intended for another user
-> > Race udev to a real open. You have a similar problem with vhangup() and
-> > ttys.
-> 
-> If this was a udev device, the same attack is possible with a hard
-> link to the device.  Except the attacker simply does link() instad of
-> open(O_NODE) and chmod() instead of fchmod().
+On Fri, Dec 04, 2009 at 10:41:09AM -0500, Steven Rostedt wrote:
+> [ Added Cc's of people that may be interested in this ]
+> > <SNIP>
+> > ------------[ cut here ]------------
+> > WARNING: at mm/page_alloc.c:1805
+> > __alloc_pages_nodemask+0x127/0x48f()
+> > Hardware name: System Product Name
+> > Modules linked in:
+> > Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
+> > Call Trace:
+> >  [<c103d94b>] warn_slowpath_common+0x65/0x95
+> >  [<c103d98d>] warn_slowpath_null+0x12/0x15
+> >  [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
+> >  [<c10be964>] ? get_slab+0x8/0x50
+> >  [<c10b8979>] alloc_page_interleave+0x2e/0x6e
+> >  [<c10b8a10>] alloc_pages_current+0x57/0x99
+> >  [<c2083a4a>] ? xd_init+0x0/0x482
+> >  [<c1094c38>] __get_free_pages+0xd/0x1e
+> >  [<c2083a94>] xd_init+0x4a/0x482
+> >  [<c2082df0>] ? loop_init+0x104/0x16a
+> >  [<c169162d>] ? loop_probe+0x0/0xaf
+> >  [<c2083a4a>] ? xd_init+0x0/0x482
+> >  [<c1001143>] do_one_initcall+0x51/0x13f
+> >  [<c204a307>] kernel_init+0x10b/0x15f
+> >  [<c204a1fc>] ? kernel_init+0x0/0x15f
+> >  [<c1004347>] kernel_thread_helper+0x7/0x10
+> > ---[ end trace 686db6333ade6e7a ]---
+> > xd: Out of memory.
 
-If your distribution does not use a separate tmpfs for devices then yes -
-but that's old news - and also needs revoke() to fix. It's a requirement
-of udev as it stands that it runs on its own file system and I would hope
-that all distributions using udev get this right. With O_NODE I don't
-need to make the hardlink and all the "same as a hardlink" justifications
-come crashing down.
+First off, it would appear that every block driver under the sun is
+being loaded. I seriously doubt this controller really exists in the
+machine.
 
-This always comes back to the same thing - you need revoke() on device
-files. The general case revoke is much more questionable (and indeed
-almost every Unixen with revoke does not support revoke of files)
+Second, it's a real warning as the driver is trying to allocate a buffer of
+size 0 which get_order() chokes on. For bonus points, it tries to allocate
+a buffer before it knows what size it should be. This patch should resolve
+the problem but because I don't have the hardware to test it on, it could
+do with a second set of eyes just to be sure the rejigged logic makes sense.
 
-So we are back where we started - a prerequisite for O_NODE is revoke()
-at least for device files and possibly for O_NODE opens on normal files.
-O_NODE isn't per-se the problem, the problem is the lack of revoke() - it
-just gets caught up in the fallout along with many other things including
-all sorts of stuff the GUI folks want to do but cannot currently provide.
+If this is ok, what is the appropriate submission path for unmaintained
+block drivers? Is it the block maintainer or someone else?
 
-Alan
+==== CUT HERE ====
+block,xd: Delay allocation of DMA buffers until device is known
+
+Loading the XD module triggers a warning like
+
+ WARNING: at mm/page_alloc.c:1805
+ __alloc_pages_nodemask+0x127/0x48f()
+ Hardware name: System Product Name
+ Modules linked in:
+ Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
+ Call Trace:
+  [<c103d94b>] warn_slowpath_common+0x65/0x95
+  [<c103d98d>] warn_slowpath_null+0x12/0x15
+  [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
+  [<c10be964>] ? get_slab+0x8/0x50
+  [<c10b8979>] alloc_page_interleave+0x2e/0x6e
+  [<c10b8a10>] alloc_pages_current+0x57/0x99
+  [<c2083a4a>] ? xd_init+0x0/0x482
+  [<c1094c38>] __get_free_pages+0xd/0x1e
+  [<c2083a94>] xd_init+0x4a/0x482
+  [<c2082df0>] ? loop_init+0x104/0x16a
+  [<c169162d>] ? loop_probe+0x0/0xaf
+  [<c2083a4a>] ? xd_init+0x0/0x482
+  [<c1001143>] do_one_initcall+0x51/0x13f
+  [<c204a307>] kernel_init+0x10b/0x15f
+  [<c204a1fc>] ? kernel_init+0x0/0x15f
+  [<c1004347>] kernel_thread_helper+0x7/0x10
+ ---[ end trace 686db6333ade6e7a ]---
+ xd: Out of memory.
+
+The warning is because the alloc_pages is called with an
+order >= MAX_ORDER. The simplistic reason is that get_order(0) returns garbage
+values when given 0 as a size. The more complex reason is that the XD driver
+initialisation is broken.
+
+It's not clear why this ever worked. XD allocates a buffer for DMA based
+on the value of xd_maxsectors. This value is determined by the exact
+type of controller in use but the value is determined *after* an attempt
+has been made to allocate the buffer. i.e. the requested size of the DMA
+buffer will always be 0.
+
+This patch alters how XD is initialised slightly by allocating the
+buffer when and if a device has actually been detected. The error paths
+are updated to suit the new logic.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ drivers/block/xd.c |   30 +++++++++++++++++++-----------
+ 1 files changed, 19 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/block/xd.c b/drivers/block/xd.c
+index 0877d36..d1fd032 100644
+--- a/drivers/block/xd.c
++++ b/drivers/block/xd.c
+@@ -169,13 +169,6 @@ static int __init xd_init(void)
+ 
+ 	init_timer (&xd_watchdog_int); xd_watchdog_int.function = xd_watchdog;
+ 
+-	if (!xd_dma_buffer)
+-		xd_dma_buffer = (char *)xd_dma_mem_alloc(xd_maxsectors * 0x200);
+-	if (!xd_dma_buffer) {
+-		printk(KERN_ERR "xd: Out of memory.\n");
+-		return -ENOMEM;
+-	}
+-
+ 	err = -EBUSY;
+ 	if (register_blkdev(XT_DISK_MAJOR, "xd"))
+ 		goto out1;
+@@ -202,6 +195,19 @@ static int __init xd_init(void)
+ 			xd_drives,xd_drives == 1 ? "" : "s",xd_irq,xd_dma);
+ 	}
+ 
++	/*
++	 * With the drive detected, xd_maxsectors should now be known.
++	 * If xd_maxsectors is 0, nothing was detected and we fall through
++	 * to return -ENODEV
++	 */
++	if (!xd_dma_buffer && xd_maxsectors) {
++		xd_dma_buffer = (char *)xd_dma_mem_alloc(xd_maxsectors * 0x200);
++		if (!xd_dma_buffer) {
++			printk(KERN_ERR "xd: Out of memory.\n");
++			goto out3;
++		}
++	}
++
+ 	err = -ENODEV;
+ 	if (!xd_drives)
+ 		goto out3;
+@@ -249,15 +255,17 @@ out4:
+ 	for (i = 0; i < xd_drives; i++)
+ 		put_disk(xd_gendisk[i]);
+ out3:
+-	release_region(xd_iobase,4);
++	if (xd_maxsectors)
++		release_region(xd_iobase,4);
++
++	if (xd_dma_buffer)
++		xd_dma_mem_free((unsigned long)xd_dma_buffer,
++				xd_maxsectors * 0x200);
+ out2:
+ 	blk_cleanup_queue(xd_queue);
+ out1a:
+ 	unregister_blkdev(XT_DISK_MAJOR, "xd");
+ out1:
+-	if (xd_dma_buffer)
+-		xd_dma_mem_free((unsigned long)xd_dma_buffer,
+-				xd_maxsectors * 0x200);
+ 	return err;
+ Enomem:
+ 	err = -ENOMEM;
