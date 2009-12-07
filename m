@@ -1,366 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750939AbZLGFFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751207AbZLGFTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750939AbZLGFFl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 00:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbZLGFFk
+	id S1751207AbZLGFTI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 00:19:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZLGFTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 00:05:40 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58072 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750707AbZLGFFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 00:05:39 -0500
-Message-ID: <4B1C8CC4.4050007@cn.fujitsu.com>
-Date: Mon, 07 Dec 2009 13:04:04 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
+	Mon, 7 Dec 2009 00:19:07 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:41413 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbZLGFTG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 00:19:06 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        Paul Mackerras <paulus@samba.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
        Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] perf_event: fix for processing raw event - fix
-References: <4B1C7EE1.8030906@cn.fujitsu.com> <4B1C7F45.5080105@cn.fujitsu.com>
-In-Reply-To: <4B1C7F45.5080105@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 3/3] perf_event: fix __dsos__write_buildid_table()
+References: <4B1C7EE1.8030906@cn.fujitsu.com>
+	<4B1C7F45.5080105@cn.fujitsu.com> <4B1C7F73.80707@cn.fujitsu.com>
+Date: Mon, 07 Dec 2009 14:19:06 +0900
+In-Reply-To: <4B1C7F73.80707@cn.fujitsu.com> (Xiao Guangrong's message of
+	"Mon, 07 Dec 2009 12:07:15 +0800")
+Message-ID: <87r5r74b05.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-raw->size is not used, this patch just cleanup it
+Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> writes:
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- tools/perf/builtin-kmem.c  |   38 +++++++-----------
- tools/perf/builtin-sched.c |   94 +++++++++++++++++++------------------------
- 2 files changed, 56 insertions(+), 76 deletions(-)
+> The remain buff size is 'len - pos->long_name_len - 1', not
+> 'len - pos->long_name_len + 1'
+>
+> This bug is imported by:
+> Commit-ID:  7691b1ec2e4a8d4bd88dcf88b29792399ebe1c91
+> Gitweb:     http://git.kernel.org/tip/7691b1ec2e4a8d4bd88dcf88b29792399ebe1c91
+> Author:     OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> AuthorDate: Sun, 6 Dec 2009 20:10:49 +0900
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sun, 6 Dec 2009 18:15:02 +0100
+>
+> perf tools: Misc small fixes
 
-diff --git a/tools/perf/builtin-kmem.c b/tools/perf/builtin-kmem.c
-index f84d7a3..7551a5f 100644
---- a/tools/perf/builtin-kmem.c
-+++ b/tools/perf/builtin-kmem.c
-@@ -57,11 +57,6 @@ static struct rb_root root_caller_sorted;
- static unsigned long total_requested, total_allocated;
- static unsigned long nr_allocs, nr_cross_allocs;
- 
--struct raw_event_sample {
--	u32 size;
--	char data[0];
--};
--
- #define PATH_SYS_NODE	"/sys/devices/system/node"
- 
- static void init_cpunode_map(void)
-@@ -201,7 +196,7 @@ static void insert_caller_stat(unsigned long call_site,
- 	}
- }
- 
--static void process_alloc_event(struct raw_event_sample *raw,
-+static void process_alloc_event(void *data,
- 				struct event *event,
- 				int cpu,
- 				u64 timestamp __used,
-@@ -214,10 +209,10 @@ static void process_alloc_event(struct raw_event_sample *raw,
- 	int bytes_alloc;
- 	int node1, node2;
- 
--	ptr = raw_field_value(event, "ptr", raw->data);
--	call_site = raw_field_value(event, "call_site", raw->data);
--	bytes_req = raw_field_value(event, "bytes_req", raw->data);
--	bytes_alloc = raw_field_value(event, "bytes_alloc", raw->data);
-+	ptr = raw_field_value(event, "ptr", data);
-+	call_site = raw_field_value(event, "call_site", data);
-+	bytes_req = raw_field_value(event, "bytes_req", data);
-+	bytes_alloc = raw_field_value(event, "bytes_alloc", data);
- 
- 	insert_alloc_stat(call_site, ptr, bytes_req, bytes_alloc, cpu);
- 	insert_caller_stat(call_site, bytes_req, bytes_alloc);
-@@ -227,7 +222,7 @@ static void process_alloc_event(struct raw_event_sample *raw,
- 
- 	if (node) {
- 		node1 = cpunode_map[cpu];
--		node2 = raw_field_value(event, "node", raw->data);
-+		node2 = raw_field_value(event, "node", data);
- 		if (node1 != node2)
- 			nr_cross_allocs++;
- 	}
-@@ -262,7 +257,7 @@ static struct alloc_stat *search_alloc_stat(unsigned long ptr,
- 	return NULL;
- }
- 
--static void process_free_event(struct raw_event_sample *raw,
-+static void process_free_event(void *data,
- 			       struct event *event,
- 			       int cpu,
- 			       u64 timestamp __used,
-@@ -271,7 +266,7 @@ static void process_free_event(struct raw_event_sample *raw,
- 	unsigned long ptr;
- 	struct alloc_stat *s_alloc, *s_caller;
- 
--	ptr = raw_field_value(event, "ptr", raw->data);
-+	ptr = raw_field_value(event, "ptr", data);
- 
- 	s_alloc = search_alloc_stat(ptr, 0, &root_alloc_stat, ptr_cmp);
- 	if (!s_alloc)
-@@ -289,35 +284,30 @@ static void process_free_event(struct raw_event_sample *raw,
- }
- 
- static void
--process_raw_event(event_t *raw_event __used, u32 size, void *data,
-+process_raw_event(event_t *raw_event __used, void *data,
- 		  int cpu, u64 timestamp, struct thread *thread)
- {
--	struct raw_event_sample *raw;
- 	struct event *event;
- 	int type;
- 
--	raw = malloc_or_die(sizeof(*raw)+size);
--	raw->size = size;
--	memcpy(raw->data, data, size);
--
--	type = trace_parse_common_type(raw->data);
-+	type = trace_parse_common_type(data);
- 	event = trace_find_event(type);
- 
- 	if (!strcmp(event->name, "kmalloc") ||
- 	    !strcmp(event->name, "kmem_cache_alloc")) {
--		process_alloc_event(raw, event, cpu, timestamp, thread, 0);
-+		process_alloc_event(data, event, cpu, timestamp, thread, 0);
- 		return;
- 	}
- 
- 	if (!strcmp(event->name, "kmalloc_node") ||
- 	    !strcmp(event->name, "kmem_cache_alloc_node")) {
--		process_alloc_event(raw, event, cpu, timestamp, thread, 1);
-+		process_alloc_event(data, event, cpu, timestamp, thread, 1);
- 		return;
- 	}
- 
- 	if (!strcmp(event->name, "kfree") ||
- 	    !strcmp(event->name, "kmem_cache_free")) {
--		process_free_event(raw, event, cpu, timestamp, thread);
-+		process_free_event(data, event, cpu, timestamp, thread);
- 		return;
- 	}
- }
-@@ -349,7 +339,7 @@ static int process_sample_event(event_t *event)
- 
- 	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
- 
--	process_raw_event(event, data.raw_size, data.raw_data, data.cpu,
-+	process_raw_event(event, data.raw_data, data.cpu,
- 			  data.time, thread);
- 
- 	return 0;
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 4655e16..19f43fa 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -628,11 +628,6 @@ static void test_calibrations(void)
- 	printf("the sleep test took %Ld nsecs\n", T1-T0);
- }
- 
--struct raw_event_sample {
--	u32 size;
--	char data[0];
--};
--
- #define FILL_FIELD(ptr, field, event, data)	\
- 	ptr.field = (typeof(ptr.field)) raw_field_value(event, #field, data)
- 
-@@ -1356,7 +1351,7 @@ static void sort_lat(void)
- static struct trace_sched_handler *trace_handler;
- 
- static void
--process_sched_wakeup_event(struct raw_event_sample *raw,
-+process_sched_wakeup_event(void *data,
- 			   struct event *event,
- 			   int cpu __used,
- 			   u64 timestamp __used,
-@@ -1364,13 +1359,13 @@ process_sched_wakeup_event(struct raw_event_sample *raw,
- {
- 	struct trace_wakeup_event wakeup_event;
- 
--	FILL_COMMON_FIELDS(wakeup_event, event, raw->data);
-+	FILL_COMMON_FIELDS(wakeup_event, event, data);
- 
--	FILL_ARRAY(wakeup_event, comm, event, raw->data);
--	FILL_FIELD(wakeup_event, pid, event, raw->data);
--	FILL_FIELD(wakeup_event, prio, event, raw->data);
--	FILL_FIELD(wakeup_event, success, event, raw->data);
--	FILL_FIELD(wakeup_event, cpu, event, raw->data);
-+	FILL_ARRAY(wakeup_event, comm, event, data);
-+	FILL_FIELD(wakeup_event, pid, event, data);
-+	FILL_FIELD(wakeup_event, prio, event, data);
-+	FILL_FIELD(wakeup_event, success, event, data);
-+	FILL_FIELD(wakeup_event, cpu, event, data);
- 
- 	if (trace_handler->wakeup_event)
- 		trace_handler->wakeup_event(&wakeup_event, event, cpu, timestamp, thread);
-@@ -1469,7 +1464,7 @@ map_switch_event(struct trace_switch_event *switch_event,
- 
- 
- static void
--process_sched_switch_event(struct raw_event_sample *raw,
-+process_sched_switch_event(void *data,
- 			   struct event *event,
- 			   int this_cpu,
- 			   u64 timestamp __used,
-@@ -1477,15 +1472,15 @@ process_sched_switch_event(struct raw_event_sample *raw,
- {
- 	struct trace_switch_event switch_event;
- 
--	FILL_COMMON_FIELDS(switch_event, event, raw->data);
-+	FILL_COMMON_FIELDS(switch_event, event, data);
- 
--	FILL_ARRAY(switch_event, prev_comm, event, raw->data);
--	FILL_FIELD(switch_event, prev_pid, event, raw->data);
--	FILL_FIELD(switch_event, prev_prio, event, raw->data);
--	FILL_FIELD(switch_event, prev_state, event, raw->data);
--	FILL_ARRAY(switch_event, next_comm, event, raw->data);
--	FILL_FIELD(switch_event, next_pid, event, raw->data);
--	FILL_FIELD(switch_event, next_prio, event, raw->data);
-+	FILL_ARRAY(switch_event, prev_comm, event, data);
-+	FILL_FIELD(switch_event, prev_pid, event, data);
-+	FILL_FIELD(switch_event, prev_prio, event, data);
-+	FILL_FIELD(switch_event, prev_state, event, data);
-+	FILL_ARRAY(switch_event, next_comm, event, data);
-+	FILL_FIELD(switch_event, next_pid, event, data);
-+	FILL_FIELD(switch_event, next_prio, event, data);
- 
- 	if (curr_pid[this_cpu] != (u32)-1) {
- 		/*
-@@ -1502,7 +1497,7 @@ process_sched_switch_event(struct raw_event_sample *raw,
- }
- 
- static void
--process_sched_runtime_event(struct raw_event_sample *raw,
-+process_sched_runtime_event(void *data,
- 			   struct event *event,
- 			   int cpu __used,
- 			   u64 timestamp __used,
-@@ -1510,17 +1505,17 @@ process_sched_runtime_event(struct raw_event_sample *raw,
- {
- 	struct trace_runtime_event runtime_event;
- 
--	FILL_ARRAY(runtime_event, comm, event, raw->data);
--	FILL_FIELD(runtime_event, pid, event, raw->data);
--	FILL_FIELD(runtime_event, runtime, event, raw->data);
--	FILL_FIELD(runtime_event, vruntime, event, raw->data);
-+	FILL_ARRAY(runtime_event, comm, event, data);
-+	FILL_FIELD(runtime_event, pid, event, data);
-+	FILL_FIELD(runtime_event, runtime, event, data);
-+	FILL_FIELD(runtime_event, vruntime, event, data);
- 
- 	if (trace_handler->runtime_event)
- 		trace_handler->runtime_event(&runtime_event, event, cpu, timestamp, thread);
- }
- 
- static void
--process_sched_fork_event(struct raw_event_sample *raw,
-+process_sched_fork_event(void *data,
- 			 struct event *event,
- 			 int cpu __used,
- 			 u64 timestamp __used,
-@@ -1528,12 +1523,12 @@ process_sched_fork_event(struct raw_event_sample *raw,
- {
- 	struct trace_fork_event fork_event;
- 
--	FILL_COMMON_FIELDS(fork_event, event, raw->data);
-+	FILL_COMMON_FIELDS(fork_event, event, data);
- 
--	FILL_ARRAY(fork_event, parent_comm, event, raw->data);
--	FILL_FIELD(fork_event, parent_pid, event, raw->data);
--	FILL_ARRAY(fork_event, child_comm, event, raw->data);
--	FILL_FIELD(fork_event, child_pid, event, raw->data);
-+	FILL_ARRAY(fork_event, parent_comm, event, data);
-+	FILL_FIELD(fork_event, parent_pid, event, data);
-+	FILL_ARRAY(fork_event, child_comm, event, data);
-+	FILL_FIELD(fork_event, child_pid, event, data);
- 
- 	if (trace_handler->fork_event)
- 		trace_handler->fork_event(&fork_event, event, cpu, timestamp, thread);
-@@ -1550,7 +1545,7 @@ process_sched_exit_event(struct event *event,
- }
- 
- static void
--process_sched_migrate_task_event(struct raw_event_sample *raw,
-+process_sched_migrate_task_event(void *data,
- 			   struct event *event,
- 			   int cpu __used,
- 			   u64 timestamp __used,
-@@ -1558,46 +1553,42 @@ process_sched_migrate_task_event(struct raw_event_sample *raw,
- {
- 	struct trace_migrate_task_event migrate_task_event;
- 
--	FILL_COMMON_FIELDS(migrate_task_event, event, raw->data);
-+	FILL_COMMON_FIELDS(migrate_task_event, event, data);
- 
--	FILL_ARRAY(migrate_task_event, comm, event, raw->data);
--	FILL_FIELD(migrate_task_event, pid, event, raw->data);
--	FILL_FIELD(migrate_task_event, prio, event, raw->data);
--	FILL_FIELD(migrate_task_event, cpu, event, raw->data);
-+	FILL_ARRAY(migrate_task_event, comm, event, data);
-+	FILL_FIELD(migrate_task_event, pid, event, data);
-+	FILL_FIELD(migrate_task_event, prio, event, data);
-+	FILL_FIELD(migrate_task_event, cpu, event, data);
- 
- 	if (trace_handler->migrate_task_event)
- 		trace_handler->migrate_task_event(&migrate_task_event, event, cpu, timestamp, thread);
- }
- 
- static void
--process_raw_event(event_t *raw_event __used, u32 size, void *data,
-+process_raw_event(event_t *raw_event __used, void *data,
- 		  int cpu, u64 timestamp, struct thread *thread)
- {
--	struct raw_event_sample *raw;
- 	struct event *event;
- 	int type;
- 
--	raw = malloc_or_die(sizeof(*raw)+size);
--	raw->size = size;
--	memcpy(raw->data, data, size);
- 
--	type = trace_parse_common_type(raw->data);
-+	type = trace_parse_common_type(data);
- 	event = trace_find_event(type);
- 
- 	if (!strcmp(event->name, "sched_switch"))
--		process_sched_switch_event(raw, event, cpu, timestamp, thread);
-+		process_sched_switch_event(data, event, cpu, timestamp, thread);
- 	if (!strcmp(event->name, "sched_stat_runtime"))
--		process_sched_runtime_event(raw, event, cpu, timestamp, thread);
-+		process_sched_runtime_event(data, event, cpu, timestamp, thread);
- 	if (!strcmp(event->name, "sched_wakeup"))
--		process_sched_wakeup_event(raw, event, cpu, timestamp, thread);
-+		process_sched_wakeup_event(data, event, cpu, timestamp, thread);
- 	if (!strcmp(event->name, "sched_wakeup_new"))
--		process_sched_wakeup_event(raw, event, cpu, timestamp, thread);
-+		process_sched_wakeup_event(data, event, cpu, timestamp, thread);
- 	if (!strcmp(event->name, "sched_process_fork"))
--		process_sched_fork_event(raw, event, cpu, timestamp, thread);
-+		process_sched_fork_event(data, event, cpu, timestamp, thread);
- 	if (!strcmp(event->name, "sched_process_exit"))
- 		process_sched_exit_event(event, cpu, timestamp, thread);
- 	if (!strcmp(event->name, "sched_migrate_task"))
--		process_sched_migrate_task_event(raw, event, cpu, timestamp, thread);
-+		process_sched_migrate_task_event(data, event, cpu, timestamp, thread);
- }
- 
- static int process_sample_event(event_t *event)
-@@ -1633,8 +1624,7 @@ static int process_sample_event(event_t *event)
- 	if (profile_cpu != -1 && profile_cpu != (int)data.cpu)
- 		return 0;
- 
--	process_raw_event(event, data.raw_size, data.raw_data, data.cpu,
--			  data.time, thread);
-+	process_raw_event(event, data.raw_data, data.cpu, data.time, thread);
- 
- 	return 0;
- }
+Oops, I forgot parens. Thanks for fixing it.
+
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  tools/perf/util/header.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+> index 08b6759..59a9c0b 100644
+> --- a/tools/perf/util/header.c
+> +++ b/tools/perf/util/header.c
+> @@ -209,7 +209,7 @@ static int __dsos__write_buildid_table(struct list_head *head, int fd)
+>  		err = do_write(fd, pos->long_name, pos->long_name_len + 1);
+>  		if (err < 0)
+>  			return err;
+> -		err = do_write(fd, zero_buf, len - pos->long_name_len + 1);
+> +		err = do_write(fd, zero_buf, len - pos->long_name_len - 1);
+>  		if (err < 0)
+>  			return err;
+>  	}
+
 -- 
-1.6.1.2
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
