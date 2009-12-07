@@ -1,159 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972AbZLGFr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbZLGFsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752972AbZLGFr7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 00:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZLGFr6
+	id S1753273AbZLGFsY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 00:48:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZLGFsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 00:47:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53238 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131AbZLGFr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 00:47:57 -0500
-Message-ID: <4B1C96C4.5080709@redhat.com>
-Date: Mon, 07 Dec 2009 15:46:44 +1000
-From: Peter Hutterer <peter.hutterer@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Mon, 7 Dec 2009 00:48:21 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35418 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753032AbZLGFsE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 00:48:04 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 1/4] vmscan: more simplify shrink_inactive_list()
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091206041907.GB21709@localhost>
+References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com> <20091206041907.GB21709@localhost>
+Message-Id: <20091207144404.E947.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Peter Korsgaard <jacmet@sunsite.dk>
-CC: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
-References: <20091203050810.GA26595@barra.bne.redhat.com>	<87zl60s17o.fsf@macbook.be.48ers.dk> <4B1836A6.405@redhat.com>	<871vjasxnm.fsf@macbook.be.48ers.dk> <4B190D88.4090102@redhat.com> <87ws12rh5j.fsf@macbook.be.48ers.dk>
-In-Reply-To: <87ws12rh5j.fsf@macbook.be.48ers.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  7 Dec 2009 14:48:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/12/09 23:40, Peter Korsgaard wrote:
->>>>>> "Peter" == Peter Hutterer<peter.hutterer@redhat.com>  writes:
->   Peter>  with the quirk, the device exposes three /dev/input/event files, the
->   Peter>  highest of which sends the actual events now (in X/Y). number two
->   Peter>  looks like a mouse device (like yours), number three like a
->   Peter>  touchscreen (BTN_TOUCH, etc.)
->   Peter>  without the quirk, I only get two devices, the second of which looks
->   Peter>  like a mix of mouse/touchscreen and it sends ABS_Z/ABS_RX while ABS_X
->   Peter>  and ABS_Y are mute. I can get you the full evtest blurb but not before
->   Peter>  Monday, the screen is in the office.
->
-> Ahh ok, strange that I'm not seing the same as you. The reason why
-> there's two devices by default is that the NW pretends to be a keyboard
-> with numlock/scrolllock/caplock so it can go into calibration mode if
-> you press the button a number of times (by default 6).
+> Hi KOSAKI,
+> 
+> It would be easier to review if you can split the changes and the big
+> "unshift" :)
 
-evtest output for the mouse device on kernel 2.6.31.6-150.fc12.x86_64, 
-I'll spare you the keyboard device, it's not particularly interesting.
-
-Input driver version is 1.0.0
-Input device ID: bus 0x3 vendor 0x1926 product 0x3 version 0x100
-Input device name: "NextWindow Touchscreen"
-Supported events:
-   Event type 0 (Sync)
-   Event type 1 (Key)
-     Event code 272 (LeftBtn)
-     Event code 273 (RightBtn)
-     Event code 274 (MiddleBtn)
-     Event code 320 (ToolPen)
-     Event code 330 (Touch)
-   Event type 2 (Relative)
-     Event code 8 (Wheel)
-   Event type 3 (Absolute)
-     Event code 0 (X)
-       Value  16384
-       Min        0
-       Max    32767
-     Event code 1 (Y)
-       Value  16384
-       Min        0
-       Max    32767
-     Event code 2 (Z)
-       Value  15078
-       Min        0
-       Max    32767
-     Event code 3 (Rx)
-       Value  20008
-       Min        0
-       Max    32767
-   Event type 4 (Misc)
-     Event code 4 (ScanCode)
-Testing ... (interrupt to exit)
-Event: time 1260143900.146760, type 1 (Key), code 320 (ToolPen), value 1
-Event: time 1260143900.146775, type 3 (Absolute), code 2 (Z), value 14953
-Event: time 1260143900.146777, type 3 (Absolute), code 3 (Rx), value 19456
-Event: time 1260143900.146780, -------------- Report Sync ------------
-Event: time 1260143900.150722, type 4 (Misc), code 4 (ScanCode), value d0042
-Event: time 1260143900.150729, type 1 (Key), code 330 (Touch), value 1
-Event: time 1260143900.150733, -------------- Report Sync ------------
-Event: time 1260143900.166736, type 3 (Absolute), code 2 (Z), value 14931
-Event: time 1260143900.166750, type 3 (Absolute), code 3 (Rx), value 19440
-Event: time 1260143900.166753, -------------- Report Sync ------------
-Event: time 1260143900.186736, type 3 (Absolute), code 2 (Z), value 14904
-Event: time 1260143900.186749, type 3 (Absolute), code 3 (Rx), value 19394
-Event: time 1260143900.186751, -------------- Report Sync ------------
-Event: time 1260143900.202737, type 3 (Absolute), code 2 (Z), value 14844
-Event: time 1260143900.202751, type 3 (Absolute), code 3 (Rx), value 19223
-Event: time 1260143900.202754, -------------- Report Sync ------------
-Event: time 1260143900.222737, type 4 (Misc), code 4 (ScanCode), value d0042
-Event: time 1260143900.222748, type 1 (Key), code 330 (Touch), value 0
-Event: time 1260143900.222753, -------------- Report Sync ------------
-Event: time 1260143900.226723, type 1 (Key), code 320 (ToolPen), value 0
+Umm. I don't like break checkpatch.pl rule ;)
+if you have enough time, can you please use diff -b yourself?
 
 
->   Peter>  where do I get nwtool from? google is unusually quiet about it.
->
-> I guess I need more google-foo ;) It's a tool I wrote:
->
-> http://git.korsgaard.com/cgi-bin/gitweb.cgi?p=nwtool.git;a=summary
->
-> You can git clone from http://git.korsgaard.com/git/nwtool.git
->
-> Nextwindow unfortunately never documented the really interesting
-> commands (like how to make settings persistent), so it cannot do
-> everything the Windows tool can.
->
->   Peter>  is it possible that you changed the report mode (or have it different
->   Peter>  to me anyway) and that affects things?
->
-> Not that I'm aware - I just plugged the device in seconds before running
-> evtest.
+> Otherwise it looks good to me. (actually I've advocated it before ;)
+> 
+> Thanks,
+> Fengguang
+> 
+> On Fri, Nov 27, 2009 at 09:17:48AM +0900, KOSAKI Motohiro wrote:
+> > This patch depend on "vmscan : simplify code" patch (written by Huang Shijie)
+> > 
+> > =========================================
+> > Now, max_scan of shrink_inactive_list() is always passed less than
+> > SWAP_CLUSTER_MAX. then, we can remove scanning pages loop in it.
+> > 
+> > detail
+> >  - remove "while (nr_scanned < max_scan)" loop
+> >  - remove nr_freed variable (now, we use nr_reclaimed directly)
+> >  - remove nr_scan variable (now, we use nr_scanned directly)
+> >  - rename max_scan to nr_to_scan
+> >  - pass nr_to_scan into isolate_pages() directly instead
+> >    using SWAP_CLUSTER_MAX
+> > 
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> >  mm/vmscan.c |  194 ++++++++++++++++++++++++++++-------------------------------
+> >  1 files changed, 91 insertions(+), 103 deletions(-)
+> > 
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index 7536991..a58ff15 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -1085,16 +1085,22 @@ static int too_many_isolated(struct zone *zone, int file,
+> >   * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+> >   * of reclaimed pages
+> >   */
+> > -static unsigned long shrink_inactive_list(unsigned long max_scan,
+> > -			struct zone *zone, struct scan_control *sc,
+> > -			int priority, int file)
+> > +static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+> > +					  struct zone *zone, struct scan_control *sc,
+> > +					  int priority, int file)
+> >  {
+> >  	LIST_HEAD(page_list);
+> >  	struct pagevec pvec;
+> > -	unsigned long nr_scanned = 0;
+> > +	unsigned long nr_scanned;
+> >  	unsigned long nr_reclaimed = 0;
+> >  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+> >  	int lumpy_reclaim = 0;
+> > +	struct page *page;
+> > +	unsigned long nr_taken;
+> > +	unsigned long nr_active;
+> > +	unsigned int count[NR_LRU_LISTS] = { 0, };
+> > +	unsigned long nr_anon;
+> > +	unsigned long nr_file;
+> >  
+> >  	while (unlikely(too_many_isolated(zone, file, sc))) {
+> >  		congestion_wait(BLK_RW_ASYNC, HZ/10);
+> > @@ -1120,119 +1126,101 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
+> >  
+> >  	lru_add_drain();
+> >  	spin_lock_irq(&zone->lru_lock);
+> > -	do {
+> > -		struct page *page;
+> > -		unsigned long nr_taken;
+> > -		unsigned long nr_scan;
+> > -		unsigned long nr_freed;
+> > -		unsigned long nr_active;
+> > -		unsigned int count[NR_LRU_LISTS] = { 0, };
+> > -		int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
+> > -		unsigned long nr_anon;
+> > -		unsigned long nr_file;
+> > -
+> > -		nr_taken = sc->isolate_pages(SWAP_CLUSTER_MAX,
+> > -			     &page_list, &nr_scan, sc->order, mode,
+> > -				zone, sc->mem_cgroup, 0, file);
+> > +	nr_taken = sc->isolate_pages(nr_to_scan,
+> > +				     &page_list, &nr_scanned, sc->order,
+> > +				     lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE,
+> > +				     zone, sc->mem_cgroup, 0, file);
+> >  
+> > -		if (scanning_global_lru(sc)) {
+> > -			zone->pages_scanned += nr_scan;
+> > -			if (current_is_kswapd())
+> > -				__count_zone_vm_events(PGSCAN_KSWAPD, zone,
+> > -						       nr_scan);
+> > -			else
+> > -				__count_zone_vm_events(PGSCAN_DIRECT, zone,
+> > -						       nr_scan);
+> > -		}
+> > +	if (scanning_global_lru(sc)) {
+> > +		zone->pages_scanned += nr_scanned;
+> > +		if (current_is_kswapd())
+> > +			__count_zone_vm_events(PGSCAN_KSWAPD, zone, nr_scanned);
+> > +		else
+> > +			__count_zone_vm_events(PGSCAN_DIRECT, zone, nr_scanned);
+> > +	}
+> >  
+> > -		if (nr_taken == 0)
+> > -			goto done;
+> > +	if (nr_taken == 0)
+> > +		goto done;
+> >  
+> > -		nr_active = clear_active_flags(&page_list, count);
+> > -		__count_vm_events(PGDEACTIVATE, nr_active);
+> > +	nr_active = clear_active_flags(&page_list, count);
+> > +	__count_vm_events(PGDEACTIVATE, nr_active);
+> >  
+> > -		__mod_zone_page_state(zone, NR_ACTIVE_FILE,
+> > -						-count[LRU_ACTIVE_FILE]);
+> > -		__mod_zone_page_state(zone, NR_INACTIVE_FILE,
+> > -						-count[LRU_INACTIVE_FILE]);
+> > -		__mod_zone_page_state(zone, NR_ACTIVE_ANON,
+> > -						-count[LRU_ACTIVE_ANON]);
+> > -		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
+> > -						-count[LRU_INACTIVE_ANON]);
+> > +	__mod_zone_page_state(zone, NR_ACTIVE_FILE,
+> > +			      -count[LRU_ACTIVE_FILE]);
+> > +	__mod_zone_page_state(zone, NR_INACTIVE_FILE,
+> > +			      -count[LRU_INACTIVE_FILE]);
+> > +	__mod_zone_page_state(zone, NR_ACTIVE_ANON,
+> > +			      -count[LRU_ACTIVE_ANON]);
+> > +	__mod_zone_page_state(zone, NR_INACTIVE_ANON,
+> > +			      -count[LRU_INACTIVE_ANON]);
+> >  
+> > -		nr_anon = count[LRU_ACTIVE_ANON] + count[LRU_INACTIVE_ANON];
+> > -		nr_file = count[LRU_ACTIVE_FILE] + count[LRU_INACTIVE_FILE];
+> > -		__mod_zone_page_state(zone, NR_ISOLATED_ANON, nr_anon);
+> > -		__mod_zone_page_state(zone, NR_ISOLATED_FILE, nr_file);
+> > +	nr_anon = count[LRU_ACTIVE_ANON] + count[LRU_INACTIVE_ANON];
+> > +	nr_file = count[LRU_ACTIVE_FILE] + count[LRU_INACTIVE_FILE];
+> > +	__mod_zone_page_state(zone, NR_ISOLATED_ANON, nr_anon);
+> > +	__mod_zone_page_state(zone, NR_ISOLATED_FILE, nr_file);
+> >  
+> > -		reclaim_stat->recent_scanned[0] += nr_anon;
+> > -		reclaim_stat->recent_scanned[1] += nr_file;
+> > +	reclaim_stat->recent_scanned[0] += nr_anon;
+> > +	reclaim_stat->recent_scanned[1] += nr_file;
+> >  
+> > -		spin_unlock_irq(&zone->lru_lock);
+> > +	spin_unlock_irq(&zone->lru_lock);
+> >  
+> > -		nr_scanned += nr_scan;
+> > -		nr_freed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
+> > +	nr_reclaimed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
+> > +
+> > +	/*
+> > +	 * If we are direct reclaiming for contiguous pages and we do
+> > +	 * not reclaim everything in the list, try again and wait
+> > +	 * for IO to complete. This will stall high-order allocations
+> > +	 * but that should be acceptable to the caller
+> > +	 */
+> > +	if (nr_reclaimed < nr_taken && !current_is_kswapd() && lumpy_reclaim) {
+> > +		congestion_wait(BLK_RW_ASYNC, HZ/10);
+> >  
+> >  		/*
+> > -		 * If we are direct reclaiming for contiguous pages and we do
+> > -		 * not reclaim everything in the list, try again and wait
+> > -		 * for IO to complete. This will stall high-order allocations
+> > -		 * but that should be acceptable to the caller
+> > +		 * The attempt at page out may have made some
+> > +		 * of the pages active, mark them inactive again.
+> >  		 */
+> > -		if (nr_freed < nr_taken && !current_is_kswapd() &&
+> > -		    lumpy_reclaim) {
+> > -			congestion_wait(BLK_RW_ASYNC, HZ/10);
+> > -
+> > -			/*
+> > -			 * The attempt at page out may have made some
+> > -			 * of the pages active, mark them inactive again.
+> > -			 */
+> > -			nr_active = clear_active_flags(&page_list, count);
+> > -			count_vm_events(PGDEACTIVATE, nr_active);
+> > -
+> > -			nr_freed += shrink_page_list(&page_list, sc,
+> > -							PAGEOUT_IO_SYNC);
+> > -		}
+> > +		nr_active = clear_active_flags(&page_list, count);
+> > +		count_vm_events(PGDEACTIVATE, nr_active);
+> >  
+> > -		nr_reclaimed += nr_freed;
+> > +		nr_reclaimed += shrink_page_list(&page_list, sc,
+> > +						 PAGEOUT_IO_SYNC);
+> > +	}
+> >  
+> > -		local_irq_disable();
+> > -		if (current_is_kswapd())
+> > -			__count_vm_events(KSWAPD_STEAL, nr_freed);
+> > -		__count_zone_vm_events(PGSTEAL, zone, nr_freed);
+> > +	local_irq_disable();
+> > +	if (current_is_kswapd())
+> > +		__count_vm_events(KSWAPD_STEAL, nr_reclaimed);
+> > +	__count_zone_vm_events(PGSTEAL, zone, nr_reclaimed);
+> >  
+> > -		spin_lock(&zone->lru_lock);
+> > -		/*
+> > -		 * Put back any unfreeable pages.
+> > -		 */
+> > -		while (!list_empty(&page_list)) {
+> > -			int lru;
+> > -			page = lru_to_page(&page_list);
+> > -			VM_BUG_ON(PageLRU(page));
+> > -			list_del(&page->lru);
+> > -			if (unlikely(!page_evictable(page, NULL))) {
+> > -				spin_unlock_irq(&zone->lru_lock);
+> > -				putback_lru_page(page);
+> > -				spin_lock_irq(&zone->lru_lock);
+> > -				continue;
+> > -			}
+> > -			SetPageLRU(page);
+> > -			lru = page_lru(page);
+> > -			add_page_to_lru_list(zone, page, lru);
+> > -			if (is_active_lru(lru)) {
+> > -				int file = is_file_lru(lru);
+> > -				reclaim_stat->recent_rotated[file]++;
+> > -			}
+> > -			if (!pagevec_add(&pvec, page)) {
+> > -				spin_unlock_irq(&zone->lru_lock);
+> > -				__pagevec_release(&pvec);
+> > -				spin_lock_irq(&zone->lru_lock);
+> > -			}
+> > +	spin_lock(&zone->lru_lock);
+> > +	/*
+> > +	 * Put back any unfreeable pages.
+> > +	 */
+> > +	while (!list_empty(&page_list)) {
+> > +		int lru;
+> > +		page = lru_to_page(&page_list);
+> > +		VM_BUG_ON(PageLRU(page));
+> > +		list_del(&page->lru);
+> > +		if (unlikely(!page_evictable(page, NULL))) {
+> > +			spin_unlock_irq(&zone->lru_lock);
+> > +			putback_lru_page(page);
+> > +			spin_lock_irq(&zone->lru_lock);
+> > +			continue;
+> >  		}
+> > -		__mod_zone_page_state(zone, NR_ISOLATED_ANON, -nr_anon);
+> > -		__mod_zone_page_state(zone, NR_ISOLATED_FILE, -nr_file);
+> > -
+> > -  	} while (nr_scanned < max_scan);
+> > +		SetPageLRU(page);
+> > +		lru = page_lru(page);
+> > +		add_page_to_lru_list(zone, page, lru);
+> > +		if (is_active_lru(lru)) {
+> > +			int file = is_file_lru(lru);
+> > +			reclaim_stat->recent_rotated[file]++;
+> > +		}
+> > +		if (!pagevec_add(&pvec, page)) {
+> > +			spin_unlock_irq(&zone->lru_lock);
+> > +			__pagevec_release(&pvec);
+> > +			spin_lock_irq(&zone->lru_lock);
+> > +		}
+> > +	}
+> > +	__mod_zone_page_state(zone, NR_ISOLATED_ANON, -nr_anon);
+> > +	__mod_zone_page_state(zone, NR_ISOLATED_FILE, -nr_file);
+> >  
+> >  done:
+> >  	spin_unlock_irq(&zone->lru_lock);
+> > -- 
+> > 1.6.5.2
+> > 
+> > 
+> > 
+> > --
+> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> > the body to majordomo@kvack.org.  For more info on Linux MM,
+> > see: http://www.linux-mm.org/ .
+> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-[root@touchie sbin]# ./nwtool -u -i
-Version:		2.99
-Serial:			617241
-Model:			1901
-HW capabilities:	0x40
-Rightclick delay:	1000 ms
-Doubleclick time:	200 ms
-Report mode:		4
-Drag threshold:		500
-Buzzer time:		40 ms
-Buzzer tone:		40
-Calibration key:	4
-Calibration presses:	3
-
-looks like we do have a different reporting mode. Setting mode to 1 with 
-nwtool yields the same information that you provided in your last email. 
-After booting into Vista and resetting the screen to factory defaults, 
-the reporting mode is still 4.
-
-> FYI, now that we're talking about NW touchscreens - How is multiscreen
-> setups with evdev supposed to work? We need something to bind a
-> touchscreen to an Xrandr output to translate (and with 1.3+ reverse
-> transform) the coordinates. In the old days you could use evtouch with
-> seperate X screens and bind the touchscreens to each screen.
->
-> It's probably offtopic here, but we can move the discussion to the X
-> list if you prefer - Last time I asked there I didn't get any reply
-> though:
->
-> http://article.gmane.org/gmane.comp.freedesktop.xorg/40071/
-
-Ask louder :) I think I remember your email but it got flooded out of my 
-inbox. In general there should be some method to do that though I need 
-to check the implementation.
-
-Cheers,
-   Peter
 
 
