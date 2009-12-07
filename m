@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935061AbZLGNcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935075AbZLGNcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935061AbZLGNcY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 08:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934940AbZLGNcW
+	id S935075AbZLGNcc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 08:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935065AbZLGNcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 08:32:22 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:59164 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934777AbZLGNcV (ORCPT
+	Mon, 7 Dec 2009 08:32:32 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:62534 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935064AbZLGNc1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 08:32:21 -0500
+	Mon, 7 Dec 2009 08:32:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=M4N7D40MFia+bYRbT11CyFa/XccN9kE8srPgYg2i/CJG7p5np4zAVovL/JEmsB83rq
-         cecj1OFPKalvM3ibVEgh9NlGPkgztIetdyfJ3O6dwglFcxtpE6Sk7db3sbKcKzcRzqeD
-         /ZvmChndMVEhx0evq5OWhEdFJk7Xgc4UEGFUg=
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Uu8OaqmiVeZ+Zq9y6NgOX5HpzbQAYUwI3/02TzvIoE5RRoFsuV/alUqAs9Wg1OKRZh
+         VSzr4HHj3Vltmr5raNfWDE5QA6hY47r8qUOxjIkUJTk/mAaeu1DoEw4QLraat6GrAu/S
+         Cp0AkxzLXuwZ9+jWeHZ5niJuqV7m50f9z7Uao=
+Message-ID: <4B1D0433.3080506@gmail.com>
+Date: Mon, 07 Dec 2009 14:33:39 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091203085127.4370.1737.sendpatchset@localhost.localdomain>
-References: <20091203085127.4370.1737.sendpatchset@localhost.localdomain>
-Date: Mon, 7 Dec 2009 15:32:26 +0200
-Message-ID: <b263e5900912070532i6ab63c36o48030a191c091dd5@mail.gmail.com>
-Subject: Re: [Patch] selinux: remove a useless return
-From: Dan Carpenter <error27.lkml@gmail.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@parisplace.org>,
-       linux-security-module@vger.kernel.org, akpm@linux-foundation.org,
-       James Morris <jmorris@namei.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tty: PTR_ERR return of wrong pointer in fs3270_open()
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/3/09, Amerigo Wang <amwang@redhat.com> wrote:
-> The last return is unreachable, remove the 'return'
-> in default, let it fall through.
->
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: James Morris <jmorris@namei.org>
-> Cc: Eric Paris <eparis@parisplace.org>
->
-> ---
->
-> diff --git a/security/selinux/ss/mls.c b/security/selinux/ss/mls.c
-> index b5407f1..718823d 100644
-> --- a/security/selinux/ss/mls.c
-> +++ b/security/selinux/ss/mls.c
-> @@ -542,7 +542,7 @@ int mls_compute_sid(struct context *scontext,
->  		/* Use the process effective MLS attributes. */
->  		return mls_context_cpy_low(newcontext, scontext);
->  	default:
-> -		return -EINVAL;
-> +		/* Fallthrough */
->  	}
->  	return -EINVAL;
->  }
+Return the PTR_ERR of the correct pointer.
 
-I don't think this compiles.  GCC doesn't let you end a switch block
-with a label.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/s390/char/fs3270.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I also have sent the selinux people a patch that didn't compile by
-mistake.  Afterward I wrote this script so hopefully I won't mess up
-again.
-
-#!/bin/bash -e
-
-files=$(grep +++ /home/dcarpenter/var/mail/postponed-msgs | cut -f 1 |
-cut -b 5-)
-for file in $files ; do
-	file=${file/devel\//}
-	file=${file/new\//}
-	kchecker $file
-	if which sparse | grep -q sparse ; then
-		kchecker --sparse $file
-	fi
-done
-
-
-You will have to change the path names.  Hm....  Also you will have to
-get the kchecker script from the smatch_data/ directory of smatch
-(http://repo.or.cz/w/smatch.git).
-
-regards,
-dan carpenter
+diff --git a/drivers/s390/char/fs3270.c b/drivers/s390/char/fs3270.c
+index 097d384..2ae58d0 100644
+--- a/drivers/s390/char/fs3270.c
++++ b/drivers/s390/char/fs3270.c
+@@ -465,7 +465,7 @@ fs3270_open(struct inode *inode, struct file *filp)
+ 	if (IS_ERR(ib)) {
+ 		raw3270_put_view(&fp->view);
+ 		raw3270_del_view(&fp->view);
+-		rc = PTR_ERR(fp);
++		rc = PTR_ERR(ib);
+ 		goto out;
+ 	}
+ 	fp->rdbuf = ib;
