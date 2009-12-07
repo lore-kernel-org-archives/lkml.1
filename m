@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965153AbZLGWDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965163AbZLGWD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965153AbZLGWDZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 17:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965110AbZLGWDY
+	id S965163AbZLGWD7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:03:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965130AbZLGWD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 17:03:24 -0500
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:50153 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965111AbZLGWDY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 17:03:24 -0500
-Message-ID: <4B1D7BB1.5040709@gmail.com>
-Date: Mon, 07 Dec 2009 23:03:29 +0100
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091205 Lightning/1.0pre Shredder/3.0
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Ivo van Doorn <IvDoorn@gmail.com>, linux-wireless@vger.kernel.org,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: REGRESSION for RT2561/RT61 in 2.6.32
-References: <Pine.LNX.4.44L0.0912061705050.9883-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912061705050.9883-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 7 Dec 2009 17:03:58 -0500
+Received: from mga09.intel.com ([134.134.136.24]:13132 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965103AbZLGWD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 17:03:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,357,1257148800"; 
+   d="scan'208";a="576498058"
+Subject: Re: linux-next: net/kbuild trees build failure
+From: reinette chatre <reinette.chatre@intel.com>
+To: Michal Marek <mmarek@suse.cz>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B1D76B1.6070601@suse.cz>
+References: <20091207200317.57820f0a.sfr@canb.auug.org.au>
+	 <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz>
+	 <20091207160903.GB18939@tuxdriver.com> <1260209537.4653.778.camel@rc-desk>
+	 <4B1D76B1.6070601@suse.cz>
+Content-Type: text/plain
+Date: Mon, 07 Dec 2009 14:04:03 -0800
+Message-Id: <1260223443.4653.794.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Dec 2009 22:03:29.0708 (UTC) FILETIME=[1BFA16C0:01CA7789]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/06/09 23:12, Alan Stern wrote:
-> Sorry for the late notice; I haven't tried running new kernels on this 
-> computer in a long time.
-> 
-> When I use 2.6.32 (or indeed 2.6.32-rc1), it works fine up until the 
-> point where the wireless card is ifconfig'ed.  Then not long afterward 
-> (a few seconds to a minute) the system hangs.
-> 
-> # lspci -vv -s d.0
-> 00:0d.0 Network controller: RaLink RT2561/RT61 802.11g PCI
->         Subsystem: Linksys WMP54G ver 4.1
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
->         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=slow >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Latency: 64, Cache Line Size: 64 bytes
->         Interrupt: pin A routed to IRQ 11
->         Region 0: Memory at cfff0000 (32-bit, non-prefetchable) [size=32K]
->         Capabilities: [40] Power Management version 2
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
->                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
->         Kernel driver in use: rt61pci
->         Kernel modules: rt61pci
-> 
-> While the system is hung, Alt-SysRq-keys still work but nothing else
-> shows up when I type (using a VT console, not X).  However I don't know
-> what debugging to do or what to look for.
-> 
-> Under 2.6.31 everything works okay.
-> 
+On Mon, 2009-12-07 at 13:42 -0800, Michal Marek wrote:
+> It seems there is some misunderstanding.
+> The original problem reported by Stephen was that linux/utsrelease.h was
+> moved to generated/utsrelease.h in the kbuild tree (that commit also
+> patched init/version.c and all other users known at that time). This
+> change in kbuild broke the new iwlwifi in the net tree. Stephen attached
+> the most obvious fix, i.e. change linux/utsrelease.h to
+> generated/utsrelease.h in the iwlwifi source
+> (http://lkml.org/lkml/2009/12/7/121). My suggestion was to let Stephen
+> carry the fix in linux-next for now, and once one of the trees (kbuild
+> or net) hits mainline, the other tree would apply Stephen's patch. Would
+> that work for everyone?
 
-Hmmm, that's odd. I haven't seen any other reports on this (on full system hangs that is).
+I am not involved in the merging part and would thus not be the one
+applying Stephen's patch. I would like the iwlwifi patch that uses
+UTS_RELEASE as well as Stephen's fix to find it in the right place to go
+in though (end up in linux-2.6).
 
-It would be very hard to figure out what is going wrong without any form of logging of
-an oops or something. Is there any way you can find out if any oops information is present?
+> Now if someone wants to remove the DRV_VERSION macro from iwlwifi or rip
+> the UTS_RELEASE part out of it, that would make this problem go away,
+> but I don't think it's necessary _just_ because of the kbuild change.
 
-What does Alt-SysRq-l tell us, what are the CPU's doing when the system is hung?
+This is perhaps something John and I should discuss separately.
 
----
-Gertjan.
+Thank you
+
+Reinette
+
