@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbZLGFb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbZLGFbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024AbZLGFb4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 00:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZLGFby
+	id S1751830AbZLGFbc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 00:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZLGFb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 00:31:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49296 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520AbZLGFbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 00:31:53 -0500
-Date: Mon, 7 Dec 2009 05:31:18 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, peterz@infradead.org,
-       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, peterz@infradead.org,
-       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4B1C7F73.80707@cn.fujitsu.com>
-References: <4B1C7F73.80707@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf_event: Fix __dsos__write_buildid_table()
-Message-ID: <tip-d9541ed3241bb6c2b805d3ea0e87563cf2a0c5c3@git.kernel.org>
-Git-Commit-ID: d9541ed3241bb6c2b805d3ea0e87563cf2a0c5c3
-X-Mailer: tip-git-log-daemon
+	Mon, 7 Dec 2009 00:31:29 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:64407 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbZLGFb2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 00:31:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wzjRvZM/dxHj3yJGs5lRH+dPXgP6iI+kqwxySiDEhukTvLlSOAAUODLl/Z0GW6b6xY
+         hxi/wN77C6sStrzSU3SAImzO/RAbibhe8dNDIS4LX6MuN+IngIfxE9wnROJkIGesAlyT
+         sTdWpZXLE9QQoojjnpRKPl/udKgc8HfYTAXMg=
+Date: Mon, 7 Dec 2009 06:31:32 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/2] perf: Make location of kernel source configurable
+Message-ID: <20091207053131.GC5262@nowhere>
+References: <20091206307.542816612@firstfloor.org> <20091207013339.GC4966@nowhere> <20091207052521.GA21422@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091207052521.GA21422@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d9541ed3241bb6c2b805d3ea0e87563cf2a0c5c3
-Gitweb:     http://git.kernel.org/tip/d9541ed3241bb6c2b805d3ea0e87563cf2a0c5c3
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Mon, 7 Dec 2009 12:07:15 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 7 Dec 2009 06:26:24 +0100
+On Mon, Dec 07, 2009 at 06:25:21AM +0100, Ingo Molnar wrote:
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > On Sun, Dec 06, 2009 at 03:07:30PM +0100, Andi Kleen wrote:
+> > > 
+> > > tools/perf has no support for separate object directories
+> > > and lots of hard coded paths assuming that the kernel source
+> > > is always in ../..
+> > > 
+> > > As a first step of compiling it separately without messing
+> > > up clean source trees allow to configure the kernel source
+> > > location using a KERNELSRC variable 
+> > > 
+> > > This allows at least to copy the whole tools/perf
+> > > directory elsewhere and build it separately.
+> > > 
+> > > The default is still ../.., so for a standard build
+> > > nothing changes
+> > > 
+> > > This also removes a lot of ugly ../.. from the source.
+> > > 
+> > > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> > 
+> > 
+> > It worry about that too.
+> > 
+> > Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> 
+> Frederic, mind queueing Andi's fix up in your tree and testing it there, 
+> before pushing it to me via the regular route?
+> 
+> Thanks,
+> 
+> 	Ingo
 
-perf_event: Fix __dsos__write_buildid_table()
 
-The remain buff size is 'len - pos->long_name_len - 1', not
-'len - pos->long_name_len + 1'
+Sure.
 
-This bug was introduced by commit 7691b1e ("perf tools: Misc small
-fixes").
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4B1C7F73.80707@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/util/header.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 08b6759..59a9c0b 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -209,7 +209,7 @@ static int __dsos__write_buildid_table(struct list_head *head, int fd)
- 		err = do_write(fd, pos->long_name, pos->long_name_len + 1);
- 		if (err < 0)
- 			return err;
--		err = do_write(fd, zero_buf, len - pos->long_name_len + 1);
-+		err = do_write(fd, zero_buf, len - pos->long_name_len - 1);
- 		if (err < 0)
- 			return err;
- 	}
