@@ -1,73 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934778AbZLGMTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZLGMT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934778AbZLGMTg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 07:19:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934723AbZLGMTe
+	id S1756911AbZLGMT0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 07:19:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbZLGMTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 07:19:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37191 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934721AbZLGMTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 07:19:31 -0500
-Date: Mon, 7 Dec 2009 12:18:37 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain>
-References: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Fix bogus warning in apic_noop.apic_write()
-Message-ID: <tip-a946d8f11f0da9cfc714248036fcfd3a794d1e27@git.kernel.org>
-Git-Commit-ID: a946d8f11f0da9cfc714248036fcfd3a794d1e27
-X-Mailer: tip-git-log-daemon
+	Mon, 7 Dec 2009 07:19:24 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52285 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756172AbZLGMTY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 07:19:24 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: NFS lockdep lock misordering mmap_sem<->i_mutex_key with 2.6.32-git1
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Trond.Myklebust@netapp.com
+In-Reply-To: <20091207115949.GA7610@basil.fritz.box>
+References: <20091207115949.GA7610@basil.fritz.box>
+Message-Id: <20091207211216.E95E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  7 Dec 2009 21:19:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a946d8f11f0da9cfc714248036fcfd3a794d1e27
-Gitweb:     http://git.kernel.org/tip/a946d8f11f0da9cfc714248036fcfd3a794d1e27
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Mon, 7 Dec 2009 12:59:46 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 7 Dec 2009 13:16:37 +0100
+> 
+> While booting 2.6.32-git1 on a NFS root box I got the following
+> lockdep warning early at boot. I haven't looked at details.
 
-x86: Fix bogus warning in apic_noop.apic_write()
+It seems typical ABBA deadlock.
 
-apic_noop is used to provide dummy apic functions. It's installed
-when the CPU has no APIC or when the APIC is disabled on the kernel
-command line.
+ vfs_readdir				[grab i_mutex]
+   nfs_readdir
+     nfs_do_filldir
+       filldir
+         copy_to_user
+           [page_fault]			[grab mmap_sem]
 
-The apic_noop implementation of apic_write() warns when the CPU has
-an APIC or when the APIC is not disabled.
+ sys_mmap				[grab mmap_sem]
+   do_mmap_pgoff
+     mmap_region
+       nfs_file_mmap
+         nfs_revalidate_mapping  
+           nfs_invalidate_mapping	[grab i_mutex]
 
-That's bogus. The warning should only happen when the CPU has an
-APIC _AND_ the APIC is not disabled. apic_noop.apic_read() has the
-correct check.
+I guess recent lockdep improvement find old bug.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: <stable@kernel.org> # in <= .32 this typo resides in native_apic_write_dummy()
-LKML-Reference: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/apic/apic_noop.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/apic_noop.c b/arch/x86/kernel/apic/apic_noop.c
-index d9acc3b..e31b9ff 100644
---- a/arch/x86/kernel/apic/apic_noop.c
-+++ b/arch/x86/kernel/apic/apic_noop.c
-@@ -127,7 +127,7 @@ static u32 noop_apic_read(u32 reg)
- 
- static void noop_apic_write(u32 reg, u32 v)
- {
--	WARN_ON_ONCE((cpu_has_apic || !disable_apic));
-+	WARN_ON_ONCE(cpu_has_apic && !disable_apic);
- }
- 
- struct apic apic_noop = {
+
+> 
+> -Andi
+> 
+> VFS: Mounted root (nfs filesystem) on device 0:15.
+> VFS: Mounted root (nfs filesystem) on device 0:15.
+> Freeing unused kernel memory: 2376k freed
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> -------------------------------------------------------
+> udevinfo/2551 is trying to acquire lock:
+>  (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<ffffffff8118e0d3>] nfs_revalidate_mapping+0x7c/0xc5
+> 
+> but task is already holding lock:
+>  (&mm->mmap_sem){++++++}, at: [<ffffffff8100fc83>] sys_mmap+0x76/0xc7
+> 
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&mm->mmap_sem){++++++}:
+>        [<ffffffff81071d0b>] __lock_acquire+0x1435/0x1774
+>        [<ffffffff81072106>] lock_acquire+0xbc/0xd9
+>        [<ffffffff810baa14>] might_fault+0x84/0xa4
+>        [<ffffffff810ec340>] filldir+0x6a/0xcb
+>        [<ffffffff81189bad>] nfs_do_filldir+0x39d/0x4ac
+>        [<ffffffff8118a4e9>] nfs_readdir+0x82d/0x8ce
+>        [<ffffffff810ec4bf>] vfs_readdir+0x6c/0xa1
+>        [<ffffffff810ec632>] sys_getdents+0x7d/0xc9
+>        [<ffffffff8100ba6b>] system_call_fastpath+0x16/0x1b
+> 
+> -> #0 (&sb->s_type->i_mutex_key#5){+.+.+.}:
+>        [<ffffffff81071a30>] __lock_acquire+0x115a/0x1774
+>        [<ffffffff81072106>] lock_acquire+0xbc/0xd9
+>        [<ffffffff8149210d>] mutex_lock_nested+0x68/0x2d2
+>        [<ffffffff8118e0d3>] nfs_revalidate_mapping+0x7c/0xc5
+>        [<ffffffff8118bad9>] nfs_file_mmap+0x68/0x71
+>        [<ffffffff810c29c0>] mmap_region+0x311/0x50f
+>        [<ffffffff810c2f13>] do_mmap_pgoff+0x355/0x3b8
+>        [<ffffffff8100fca1>] sys_mmap+0x94/0xc7
+>        [<ffffffff8100ba6b>] system_call_fastpath+0x16/0x1b
+> 
+> other info that might help us debug this:
+> 
+> 1 lock held by udevinfo/2551:
+>  #0:  (&mm->mmap_sem){++++++}, at: [<ffffffff8100fc83>] sys_mmap+0x76/0xc7
+> 
+> stack backtrace:
+> Pid: 2551, comm: udevinfo Not tainted 2.6.32-git1 #31
+> Call Trace:
+>  [<ffffffff81070388>] print_circular_bug+0xb3/0xc2
+>  [<ffffffff81071a30>] __lock_acquire+0x115a/0x1774
+>  [<ffffffff810a401d>] ? find_get_pages_tag+0x0/0x12a
+>  [<ffffffff81072106>] lock_acquire+0xbc/0xd9
+>  [<ffffffff8118e0d3>] ? nfs_revalidate_mapping+0x7c/0xc5
+>  [<ffffffff8149210d>] mutex_lock_nested+0x68/0x2d2
+>  [<ffffffff8118e0d3>] ? nfs_revalidate_mapping+0x7c/0xc5
+>  [<ffffffff8118e0d3>] ? nfs_revalidate_mapping+0x7c/0xc5
+>  [<ffffffff810c291d>] ? mmap_region+0x26e/0x50f
+>  [<ffffffff8118e0d3>] nfs_revalidate_mapping+0x7c/0xc5
+>  [<ffffffff8118bad9>] nfs_file_mmap+0x68/0x71
+>  [<ffffffff810c29c0>] mmap_region+0x311/0x50f
+>  [<ffffffff810c2f13>] do_mmap_pgoff+0x355/0x3b8
+>  [<ffffffff8100fca1>] sys_mmap+0x94/0xc7
+>  [<ffffffff8100ba6b>] system_call_fastpath+0x16/0x1b
+> 
+> -Andi
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+
