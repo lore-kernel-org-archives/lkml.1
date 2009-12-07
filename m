@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934844AbZLGMVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934705AbZLGMYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934844AbZLGMVx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 07:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934809AbZLGMVv
+	id S934705AbZLGMYJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 07:24:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934287AbZLGMYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 07:21:51 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42544 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757044AbZLGMVt (ORCPT
+	Mon, 7 Dec 2009 07:24:09 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:54723 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933842AbZLGMYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 07:21:49 -0500
-Date: Mon, 7 Dec 2009 12:23:46 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: miklos@szeredi.hu, luto@mit.edu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] vfs: new O_NODE open flag
-Message-ID: <20091207122346.6d18a8e1@lxorguk.ukuu.org.uk>
-In-Reply-To: <E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu>
-References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
-	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>
-	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu>
-	<20091202204828.4fa0c108@lxorguk.ukuu.org.uk>
-	<E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
-	<4B1A7159.3070101@mit.edu>
-	<E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
-	<20091205202838.3456b6fc@lxorguk.ukuu.org.uk>
-	<E1NH1MB-0007v8-Ps@pomaz-ex.szeredi.hu>
-	<20091205231304.03a4af61@lxorguk.ukuu.org.uk>
-	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 Dec 2009 07:24:08 -0500
+Message-ID: <4B1CF3ED.4040305@simtec.co.uk>
+Date: Mon, 07 Dec 2009 12:24:13 +0000
+From: Ben Dooks <ben@simtec.co.uk>
+Organization: Simtec Electronics, UK
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: netdev@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Wolfram Sang <w.sang@pengutronix.de>, doong.ping@micrel.com,
+       tristram.ha@micrel.com, linux@simtec.co.uk
+Subject: Re: [patch 1/9] eeprom_93cx6: Add data direction control.
+References: <20091207121727.016092171@fluff.org.uk>	<20091207121827.433183360@fluff.org.uk> <20091207132141.1db65cd3@hyperion.delvare>
+In-Reply-To: <20091207132141.1db65cd3@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The standard udev unload is a true open barrier so has an implicit
-revoke() caused by the fact you cannot keep a handle to the filename open
-during the udev sequence (or the old driver would be pinned by a refcount
-and not unload).
+Jean Delvare wrote:
+> On Mon, 07 Dec 2009 12:17:28 +0000, Ben Dooks wrote:
+>> Some devices need to know if the data is to be output or read, so add a
+>> data direction into the eeprom structure to tell the driver whether the
+>> data line should be driven.
+>>
+>> The user in this case is the Micrel KS8851 which has a direction
+>> control for the EEPROM data line and thus needs to know whether
+>> to drive it (writing) or to tristate it for receiving.
+>>
+>> Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+>> Cc: Wolfram Sang <w.sang@pengutronix.de>
+>> Cc: Jean Delvare <khali@linux-fr.org>
+>> Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+> 
+> FYI, I will not be reviewing this patch nor any other patch to the
+> eeprom_93cx6 driver. I have no clue what these devices are, no access
+> to any and no interest in them either.
 
-This isn't about hard links, its about object and handle lifetimes.
-Ownership is also involved in the case of things like a tty device (so if
-you can fchmod down the handle you can break the security model).
+Ok, scripts/get_maintainer.pl came up with yourself, Wolfram and linux-kernel
+as the people to send this to.
 
-It only works because you have a true revoke (by virtue of refcounting in
-the kernel driver modules)
+-- 
+Ben Dooks, Design & Software Engineer, Simtec Electronics
 
-Alan
+http://www.simtec.co.uk/
