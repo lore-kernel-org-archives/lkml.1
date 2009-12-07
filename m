@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935015AbZLGKRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935038AbZLGKSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935015AbZLGKRR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 05:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934999AbZLGKRQ
+	id S935038AbZLGKSZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 05:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935029AbZLGKSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 05:17:16 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:50739 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934827AbZLGKRP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 05:17:15 -0500
-X-IronPort-AV: E=Sophos;i="4.47,353,1257138000"; 
-   d="scan'208";a="8451113"
-Message-ID: <4B1CD62D.8000702@analog.com>
-Date: Mon, 7 Dec 2009 18:17:17 +0800
-From: Jie Zhang <jie.zhang@analog.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Lightning/1.0pre Shredder/3.0
+	Mon, 7 Dec 2009 05:18:22 -0500
+Received: from verein.lst.de ([213.95.11.210]:38791 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934998AbZLGKSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 05:18:22 -0500
+From: Torsten Duwe <duwe@lst.de>
+Organization: LST e.V.
+To: arun@linux.vnet.ibm.com
+Subject: Re: [v10 PATCH 2/9]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
+Date: Mon, 7 Dec 2009 11:17:57 +0100
+User-Agent: KMail/1.9.10
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20091202095427.GA27251@linux.vnet.ibm.com> <200912042320.01320.duwe@lst.de> <20091206051928.GA18300@linux.vnet.ibm.com>
+In-Reply-To: <20091206051928.GA18300@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: David Howells <dhowells@redhat.com>,
-       uClinux development list <uclinux-dev@uclinux.org>,
-       linux-kernel@vger.kernel.org, Greg Ungerer <gerg@uclinux.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       David McCullough <davidm@snapgear.com>
-Subject: Re: [uClinux-dev] [PATCH/RFC] FDPIC: add hook for arches to customize
- 	program header parsing
-References: <1244854869-2563-1-git-send-email-vapier@gentoo.org> 	<14959.1259948697@redhat.com> <4B19A92A.5030804@analog.com> <8bd0f97a0912070210m4f13e174y154fc82732ef136c@mail.gmail.com>
-In-Reply-To: <8bd0f97a0912070210m4f13e174y154fc82732ef136c@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Dec 2009 10:17:18.0018 (UTC) FILETIME=[747B4A20:01CA7726]
+Content-Disposition: inline
+Message-Id: <200912071117.58163.duwe@lst.de>
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/07/2009 06:10 PM, Mike Frysinger wrote:
-> On Fri, Dec 4, 2009 at 19:28, Jie Zhang<wrote:
->> On 12/05/2009 01:44 AM, David Howells wrote:
->>> Mike Frysinger<vapier@gentoo.org>    wrote:
->>>> The Blackfin port has custom program header flags/addresses for
->>>> automatically loading regions into the dedicated on-chip SRAM.  So add a
->>>> hook for ports to leverage.
->>>
->>> Now that I've ACK'd this, I feel I'm going to have to NAK it.  I'm not
->>> against
->>> the general concept, but:
->>>
->>>> +               do_munmap(mm, *maddr, phdr->p_memsz + *disp);
->>>
->>> There needs to be a mapping covering the SRAM region for the purposes of
->>> the
->>
->> Our GDB is still lack of the feature to debug applications using SRAM.
->
-> semi true.  L1 text appears to work fine:
+On Sunday 06 December 2009, Arun R Bharadwaj wrote:
 
-This is by lucky. We need some feature in GDB 7.0 to cope with code or 
-data in L1 SRAM.
+> Peter objected to the idea of integrating this with the old pm_idle
+> because it has already caused a lot of problems on x86 and we wouldn't
+> want to be doing the same mistake on POWER. The discussion related to
+> that could be found here http://lkml.org/lkml/2009/8/26/233
 
+And BenH has sketched how it should be done on ppc, in that thread:
+http://lkml.org/lkml/2009/8/26/624 AFAIS this comment is still valid for v10.
 
-Jie
+Not only I would like to understand what is the conceptual idea behind the 
+other changes. Nothing wrong with cleanups, but there's got to be a purpose 
+and benefits.
+
+	Torsten
