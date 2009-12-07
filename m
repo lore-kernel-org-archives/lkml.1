@@ -1,258 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934861AbZLGJar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbZLGJlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934861AbZLGJar (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 04:30:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934851AbZLGJaq
+	id S1759198AbZLGJlg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 04:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759227AbZLGJlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 04:30:46 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:45987 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934849AbZLGJao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 04:30:44 -0500
-Date: Mon, 7 Dec 2009 09:30:45 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Alex Chiang <achiang@hp.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Li, Haicheng" <haicheng.li@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC] print symbolic page flag names in bad_page()
-Message-ID: <20091207093045.GA2107@csn.ul.ie>
-References: <20091204212606.29258.98531.stgit@bob.kio> <20091206034636.GA7109@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20091206034636.GA7109@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 7 Dec 2009 04:41:35 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:59464 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759180AbZLGJld (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 04:41:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=H6FQwCvgvdQVIp3vxc3nqFCFO98BG1sYujLquQqpLeCoQUn/+MaIIj6nQN14dlY6nf
+         iIPn1kGE6Pe4trvKp87bfGrzM/2wyifvOorxRsItmms097aiKuzE+z3Ih30YgFOg6ZuM
+         dq7KXM/w9EUCLOZ2PzqeM1iQYLWfnxkZXrdJY=
+Subject: Re: [PATCH v8 5/8] Loongson: YeeLoong: add hardware monitoring
+ driver
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20091207080446.GB23088@elf.ucw.cz>
+References: <cover.1260082252.git.wuzhangjin@gmail.com>
+	 <d8789fa7e97d8a170c4e2516d7ef2d2fbbe42cc6.1260082252.git.wuzhangjin@gmail.com>
+	 <20091206084717.GD2766@ucw.cz> <1260147298.3126.2.camel@falcon.domain.org>
+	 <20091207080446.GB23088@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Mon, 07 Dec 2009 17:41:10 +0800
+Message-ID: <1260178870.9092.34.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 06, 2009 at 11:46:36AM +0800, Wu Fengguang wrote:
-> Hi Alex,
-> 
-> On Sat, Dec 05, 2009 at 05:29:48AM +0800, Alex Chiang wrote:
-> [...]
-> > Teach page-types the -k mode, which parses and describes the bits in
-> > the internal kernel order:
+On Mon, 2009-12-07 at 09:04 +0100, Pavel Machek wrote:
+> > > What is going on here? I thought the value is already in two's
+> > > complement... Is the above equivalent of
+> > > 
+> > > 	      if (value < 0)
+> > > 	      	 value = -value; 
+> > > 
+> > > ? If so, why? If not, can you add a comment?
 > > 
-> >   # ./Documentation/vm/page-types -k 0x4000
-> >   0x0000000000004000  ______________H_________  compound_head
-> [...]
-> > The implication is that attempting to use page-types -k on a kernel
-> > with different CONFIG_* settings may lead to surprising and misleading
-> > results. To retain sanity, always use the page-types built out of the
-> > kernel tree you are actually testing.
+> > Right, then, will use this instead:
+> > 
+> > static int get_battery_current(void)
+> > { 
+> > 	s16 value;
+> > 
+> > 	value = (ec_read(REG_BAT_CURRENT_HIGH) << 8) |
+> > 		(ec_read(REG_BAT_CURRENT_LOW));
+> > 
+> > 	return abs(value);
+> > }
 > 
-> This is useful feature, however not as convenient if the kernel can
-> print its page flag names directly :)
-> (especially when the dmesg comes from some end user)
-> 
-> So how about this patch?
+> That's certainly better. But... why not return signed value? Current
+> flowing from the battery is certainly very different from current
+> flowing into it...
 
-There is a neat way of declaring strings that are used for the symbolic
-printing of flags in a bitfield. It's orientated around ftrace so not
-immediately usable for printk. Maybe the approaches can be merged but
-minimally, it'd be nice to match the declaration style. An example is
-show_gfp_flags in include/event/trace/kmem.h
+You are totally right ;)
 
-> ---
-> 
-> mm: introduce dump_page()
-> 
-> - introduce dump_page() to print the page info for debugging some error condition.
-> - print an extra field: the symbolic names of page->flags
-> - convert three mm users: bad_page(), print_bad_pte() and memory offline failure. 
-> 
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/internal.h       |    2 +
->  mm/memory.c         |    8 +---
->  mm/memory_hotplug.c |    6 +--
->  mm/page_alloc.c     |   75 +++++++++++++++++++++++++++++++++++++++---
->  4 files changed, 78 insertions(+), 13 deletions(-)
-> 
-> --- linux-mm.orig/mm/page_alloc.c	2009-12-06 10:11:08.000000000 +0800
-> +++ linux-mm/mm/page_alloc.c	2009-12-06 11:22:58.000000000 +0800
-> @@ -48,6 +48,7 @@
->  #include <linux/page_cgroup.h>
->  #include <linux/debugobjects.h>
->  #include <linux/kmemleak.h>
-> +#include <linux/kernel-page-flags.h>
->  #include <trace/events/kmem.h>
->  
->  #include <asm/tlbflush.h>
-> @@ -262,10 +263,7 @@ static void bad_page(struct page *page)
->  
->  	printk(KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
->  		current->comm, page_to_pfn(page));
-> -	printk(KERN_ALERT
-> -		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
-> -		page, (void *)page->flags, page_count(page),
-> -		page_mapcount(page), page->mapping, page->index);
-> +	dump_page(page);
->  
->  	dump_stack();
->  out:
-> @@ -5106,3 +5104,72 @@ bool is_free_buddy_page(struct page *pag
->  	return order < MAX_ORDER;
->  }
->  #endif
-> +
-> +static char *page_flag_names[] = {
-> +	[KPF_LOCKED]		= "L:locked",
-> +	[KPF_ERROR]		= "E:error",
-> +	[KPF_REFERENCED]	= "R:referenced",
-> +	[KPF_UPTODATE]		= "U:uptodate",
-> +	[KPF_DIRTY]		= "D:dirty",
-> +	[KPF_LRU]		= "l:lru",
-> +	[KPF_ACTIVE]		= "A:active",
-> +	[KPF_SLAB]		= "S:slab",
-> +	[KPF_WRITEBACK]		= "W:writeback",
-> +	[KPF_RECLAIM]		= "I:reclaim",
-> +	[KPF_BUDDY]		= "B:buddy",
-> +
-> +	[KPF_MMAP]		= "M:mmap",
-> +	[KPF_ANON]		= "a:anonymous",
-> +	[KPF_SWAPCACHE]		= "s:swapcache",
-> +	[KPF_SWAPBACKED]	= "b:swapbacked",
-> +	[KPF_COMPOUND_HEAD]	= "H:compound_head",
-> +	[KPF_COMPOUND_TAIL]	= "T:compound_tail",
-> +	[KPF_HUGE]		= "G:huge",
-> +	[KPF_UNEVICTABLE]	= "u:unevictable",
-> +	[KPF_HWPOISON]		= "X:hwpoison",
-> +	[KPF_NOPAGE]		= "n:nopage",
-> +	[KPF_KSM]		= "V:shared",
-> +
-> +	[KPF_RESERVED]		= "r:reserved",
-> +	[KPF_MLOCKED]		= "m:mlocked",
-> +	[KPF_MAPPEDTODISK]	= "d:mappedtodisk",
-> +	[KPF_PRIVATE]		= "P:private",
-> +	[KPF_PRIVATE_2]		= "p:private_2",
-> +	[KPF_OWNER_PRIVATE]	= "O:owner_private",
-> +	[KPF_ARCH]		= "h:arch",
-> +	[KPF_UNCACHED]		= "c:uncached",
-> +};
-> +
-> +static char *page_flags_longname(struct page *page, char *buf, int buflen)
-> +{
-> +	int i, n;
-> +	u64 flags;
-> +
-> +	flags = stable_page_flags(page);
-> +
+Just test it, when flowing from the battery, the value is negative, and
+when flowing into the battery, the value is positive, so, no abs()
+needed. thanks!
 
-I don't see where this is defined. I assume there is a patch dependency
-I'm not seeing.
+BTW: This part of source code was written by another EC guy, not checked
+it carefully, sorry ;)
 
-> +	for (i = 0, n = 0; i < ARRAY_SIZE(page_flag_names); i++) {
-> +		if (!page_flag_names[i])
-> +			continue;
+Best Regards,
+	Wu Zhangjin
 
-How it is possible to get flags that are not recognised? Surely that
-that spark some sort of warning.
-
-> +		if ((flags >> i) & 1)
-> +			n += snprintf(buf + n, buflen - n, "%s,",
-> +					page_flag_names[i] + 2);
-
-Should that be | instead of , ?
-Why page_flag_names[i] + 2?
-
-> +	}
-> +	if (n)
-> +		n--;
-> +	buf[n] = '\0';
-> +
-> +	return buf;
-> +}
-
-As the symbolic long name is always going to printk(), why buffer it?
-It's slower to call printk() multiple times but it's hardly a
-performance-critical path and it avoids the declaration of buf.
-
-> +
-> +void dump_page(struct page *page)
-> +{
-> +	char buf[1024];
-> +
-
-Ingo flagged this already.
-
-> +	printk(KERN_ALERT
-> +	"page:%p flags:%p(%s) count:%d mapcount:%d mapping:%p index:%lx\n",
-> +		page, (void *)page->flags,
-> +		page_flags_longname(page, buf, sizeof(buf)),
-
-This can push things like count, mapcount and the like beyond the edge
-of 80 columns. While it rarely matters, it can get truncated on serial
-consoles depending on how they are being recorded. Can the string go to
-a line of it's own?
-
-> +		page_count(page), page_mapcount(page),
-> +		page->mapping, page->index);
-> +}
-> +EXPORT_SYMBOL(dump_page);
-
-Ingo pointed out that this is exported GPL but I'm confused as to why
-it's exported at all. What module needs it?
-
-> --- linux-mm.orig/mm/memory.c	2009-12-06 10:37:47.000000000 +0800
-> +++ linux-mm/mm/memory.c	2009-12-06 10:57:25.000000000 +0800
-> @@ -430,12 +430,8 @@ static void print_bad_pte(struct vm_area
->  		"BUG: Bad page map in process %s  pte:%08llx pmd:%08llx\n",
->  		current->comm,
->  		(long long)pte_val(pte), (long long)pmd_val(*pmd));
-> -	if (page) {
-> -		printk(KERN_ALERT
-> -		"page:%p flags:%p count:%d mapcount:%d mapping:%p index:%lx\n",
-> -		page, (void *)page->flags, page_count(page),
-> -		page_mapcount(page), page->mapping, page->index);
-> -	}
-> +	if (page)
-> +		dump_page(page);
->  	printk(KERN_ALERT
->  		"addr:%p vm_flags:%08lx anon_vma:%p mapping:%p index:%lx\n",
->  		(void *)addr, vma->vm_flags, vma->anon_vma, mapping, index);
-> --- linux-mm.orig/mm/internal.h	2009-12-06 10:47:37.000000000 +0800
-> +++ linux-mm/mm/internal.h	2009-12-06 11:03:53.000000000 +0800
-> @@ -264,6 +264,8 @@ int __get_user_pages(struct task_struct 
->  #define ZONE_RECLAIM_SUCCESS	1
->  #endif
->  
-> +void dump_page(struct page *page);
-> +
->  extern int hwpoison_filter(struct page *p);
->  
->  extern u32 hwpoison_filter_dev_major;
-> --- linux-mm.orig/mm/memory_hotplug.c	2009-12-06 11:01:20.000000000 +0800
-> +++ linux-mm/mm/memory_hotplug.c	2009-12-06 11:01:23.000000000 +0800
-> @@ -678,9 +678,9 @@ do_migrate_range(unsigned long start_pfn
->  			if (page_count(page))
->  				not_managed++;
->  #ifdef CONFIG_DEBUG_VM
-> -			printk(KERN_INFO "removing from LRU failed"
-> -					 " %lx/%d/%lx\n",
-> -				pfn, page_count(page), page->flags);
-> +			printk(KERN_INFO "removing pfn %lx from LRU failed\n",
-> +				pfn);
-> +			dump_page(page);
-
-The message is printed at KERN_INFO and the dump at KERN_ALERT. Is this
-intentional?
-
->  #endif
->  		}
->  	}
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
