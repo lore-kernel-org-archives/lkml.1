@@ -1,136 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbZLGFdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751553AbZLGF27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753007AbZLGFdI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 00:33:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbZLGFdG
+	id S1751553AbZLGF27 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 00:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZLGF26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 00:33:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49349 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752862AbZLGFc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 00:32:57 -0500
-Date: Mon, 7 Dec 2009 05:31:02 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, penberg@cs.helsinki.fi,
-       peterz@infradead.org, eduard.munteanu@linux360.ro,
-       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
-       lizf@cn.fujitsu.com, peterz@infradead.org, eduard.munteanu@linux360.ro,
-       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4B1C7F45.5080105@cn.fujitsu.com>
-References: <4B1C7F45.5080105@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf_event: Fix raw event processing
-Message-ID: <tip-d8bd9e0aedabcb47887712497bc386a06ddcbd12@git.kernel.org>
-Git-Commit-ID: d8bd9e0aedabcb47887712497bc386a06ddcbd12
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Mon, 7 Dec 2009 00:28:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:49564 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbZLGF25 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 00:28:57 -0500
+Date: Sun, 6 Dec 2009 21:31:12 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Message-ID: <20091206213112.568c602b@infradead.org>
+In-Reply-To: <20091207022706.GA20770@core.coreip.homeip.net>
+References: <200912052216.19540.rjw@sisk.pl>
+ <200912060055.36130.rjw@sisk.pl>
+ <alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
+ <200912060254.10081.rjw@sisk.pl>
+ <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+ <20091206113555.5a646713@infradead.org>
+ <alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
+ <20091206121803.70385c33@infradead.org>
+ <7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
+ <20091206171856.394ce6d8@infradead.org>
+ <20091207022706.GA20770@core.coreip.homeip.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d8bd9e0aedabcb47887712497bc386a06ddcbd12
-Gitweb:     http://git.kernel.org/tip/d8bd9e0aedabcb47887712497bc386a06ddcbd12
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Mon, 7 Dec 2009 12:06:29 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 7 Dec 2009 06:26:24 +0100
+On Sun, 6 Dec 2009 18:27:07 -0800
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-perf_event: Fix raw event processing
+> On Sun, Dec 06, 2009 at 05:18:56PM -0800, Arjan van de Ven wrote:
+> > On Sun, 6 Dec 2009 14:54:48 -0800
+> > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > 
+> > > Yes, that's your PS/2 mouse (rather touchpad) and the delay comes
+> > > from device reset (needed by some keyboard controllers - I
+> > > remember HP -or it and keyboard will be dead at resume).
+> > > 
+> > 
+> > btw could we do this reset in an async function call (as long as we
+> > wait for it to complete before we pull the plug finally) ?
+> 
+> It has to complete before we start shutting down i8042, so there are
+> dependencies involved...
 
-We use 'data.raw_data' parameter to call process_raw_event(),
-but data.raw_data buffer not include data size. it can make perf
-tool crash.
+async function calls have 2 methods for synchronization:
 
-This bug was introduced by commit 180f95e29a ("perf: Make common
-SAMPLE_EVENT parser").
+* inside an async function, you can wait for all "earlier" async
+  functions to complete  (async_synchronize_cookie)
+* outside an async function, you can wait for all scheduled async
+  functions to complete (async_synchronize_full)
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4B1C7F45.5080105@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/builtin-kmem.c  |   11 ++++++++---
- tools/perf/builtin-sched.c |   11 ++++++++---
- 2 files changed, 16 insertions(+), 6 deletions(-)
+so there's two options to use the async code to cut down this time:
 
-diff --git a/tools/perf/builtin-kmem.c b/tools/perf/builtin-kmem.c
-index f218990..f84d7a3 100644
---- a/tools/perf/builtin-kmem.c
-+++ b/tools/perf/builtin-kmem.c
-@@ -289,13 +289,17 @@ static void process_free_event(struct raw_event_sample *raw,
- }
- 
- static void
--process_raw_event(event_t *raw_event __used, void *more_data,
-+process_raw_event(event_t *raw_event __used, u32 size, void *data,
- 		  int cpu, u64 timestamp, struct thread *thread)
- {
--	struct raw_event_sample *raw = more_data;
-+	struct raw_event_sample *raw;
- 	struct event *event;
- 	int type;
- 
-+	raw = malloc_or_die(sizeof(*raw)+size);
-+	raw->size = size;
-+	memcpy(raw->data, data, size);
-+
- 	type = trace_parse_common_type(raw->data);
- 	event = trace_find_event(type);
- 
-@@ -345,7 +349,8 @@ static int process_sample_event(event_t *event)
- 
- 	dump_printf(" ... thread: %s:%d\n", thread->comm, thread->pid);
- 
--	process_raw_event(event, data.raw_data, data.cpu, data.time, thread);
-+	process_raw_event(event, data.raw_size, data.raw_data, data.cpu,
-+			  data.time, thread);
- 
- 	return 0;
- }
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 7481ebd..4655e16 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -1570,13 +1570,17 @@ process_sched_migrate_task_event(struct raw_event_sample *raw,
- }
- 
- static void
--process_raw_event(event_t *raw_event __used, void *more_data,
-+process_raw_event(event_t *raw_event __used, u32 size, void *data,
- 		  int cpu, u64 timestamp, struct thread *thread)
- {
--	struct raw_event_sample *raw = more_data;
-+	struct raw_event_sample *raw;
- 	struct event *event;
- 	int type;
- 
-+	raw = malloc_or_die(sizeof(*raw)+size);
-+	raw->size = size;
-+	memcpy(raw->data, data, size);
-+
- 	type = trace_parse_common_type(raw->data);
- 	event = trace_find_event(type);
- 
-@@ -1629,7 +1633,8 @@ static int process_sample_event(event_t *event)
- 	if (profile_cpu != -1 && profile_cpu != (int)data.cpu)
- 		return 0;
- 
--	process_raw_event(event, data.raw_data, data.cpu, data.time, thread);
-+	process_raw_event(event, data.raw_size, data.raw_data, data.cpu,
-+			  data.time, thread);
- 
- 	return 0;
- }
+1) Make both the mouse, keyboard AND the i8042 suspend functions async,
+   and in the i8042 function the code first synchronizes on all previous
+   async work
+2) only make the mouse and keyboard suspend async, and just wait for all
+   async work in i8042 suspend
+
+I strongly prefer number 1, in terms of getting the best suspend speed.
+It means that all other suspend code can run in parallel to the whole
+serio/i8042 suspend.
+Option two is simpler, but the delay is in the normal, synchronous path,
+so other suspend code will not run in parallel.
+
+The good news is that neither is hard for someone familiar with the
+code...
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
