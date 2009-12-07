@@ -1,53 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965086AbZLGVqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934638AbZLGW2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965086AbZLGVqc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 16:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965068AbZLGVqb
+	id S934638AbZLGW2e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934639AbZLGW2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 16:46:31 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43853 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965055AbZLGVqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 16:46:30 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Mon, 7 Dec 2009 22:47:02 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912071610520.15701-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912071337020.3560@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912071337020.3560@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912072247.02318.rjw@sisk.pl>
+	Mon, 7 Dec 2009 17:28:33 -0500
+Received: from smtpout.eastlink.ca ([24.222.0.30]:37603 "EHLO
+	smtpout.eastlink.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934624AbZLGW2c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 17:28:32 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqsBALYQHUvOhDAYmWdsb2JhbACbUgEBAQEBCAsKBxMcvh+EMwQ
+X-IronPort-AV: E=Sophos;i="4.47,357,1257134400";   d="scan'208";a="645791704"
+Message-id: <1260222960.4b1d79f035456@webmail.xcelco.on.ca>
+Date: Mon, 07 Dec 2009 16:56:00 -0500
+From: CGNL <info@cgnl.com>
+Reply-to: mr.keith_logan657435@gala.net
+To: luckywinner@winners.com
+Subject: 2009 END OF YEAR JACK-POT WINNER.
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 66.154.97.22
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 December 2009, Linus Torvalds wrote:
-> 
-> On Mon, 7 Dec 2009, Alan Stern wrote:
-> > 
-> > It only seems that way because you didn't take into account devices 
-> > that suspend synchronously but whose children suspend asynchronously.
-> 
-> But why would I care? If somebody suspends synchronously, then that's what 
-> he wants.
-> 
-> > A synchronous suspend routine for a device with async child suspends
-> > would have to look just like your usb_node_suspend():
-> 
-> Sure. But that sounds like a "Doctor, it hurts when I do this" situation. 
-> Don't do that.
-> 
-> Make the USB host controller do its suspend asynchronously. We don't 
-> suspend PCI bridges anyway, iirc (but I didn't actually check).
 
-That's correct, we don't.
 
-Rafael
+891,934.000GBP has been awarded to you.Provide
+Name:Address:Age:Sex:Occupation:Tel:Country:.This
+is to notify you.
