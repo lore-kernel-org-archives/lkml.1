@@ -1,216 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934834AbZLGMn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934863AbZLGMr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934834AbZLGMn6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 07:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934652AbZLGMn5
+	id S934863AbZLGMr6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 07:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934104AbZLGMr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 07:43:57 -0500
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:56187 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933576AbZLGMn4 (ORCPT
+	Mon, 7 Dec 2009 07:47:57 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43274 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933576AbZLGMr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 07:43:56 -0500
-Date: Mon, 7 Dec 2009 13:44:05 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [GIT PULL] s390 patches for 2.6.33
-Message-ID: <20091207134405.0bb0ac51@mschwide.boeblingen.de.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 07:47:56 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: luto@mit.edu, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <E1NHctp-00032C-A1@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Mon, 07 Dec 2009 13:41:09 +0100)
+Subject: Re: [PATCH v3] vfs: new O_NODE open flag
+References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
+	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>
+	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu>
+	<20091202204828.4fa0c108@lxorguk.ukuu.org.uk>
+	<E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
+	<4B1A7159.3070101@mit.edu>
+	<E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
+	<20091205202838.3456b6fc@lxorguk.ukuu.org.uk>
+	<E1NH1MB-0007v8-Ps@pomaz-ex.szeredi.hu>
+	<20091205231304.03a4af61@lxorguk.ukuu.org.uk>
+	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu> <20091207122346.6d18a8e1@lxorguk.ukuu.org.uk> <E1NHctp-00032C-A1@pomaz-ex.szeredi.hu>
+Message-Id: <E1NHd0J-000345-Kw@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 07 Dec 2009 13:47:51 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 07 Dec 2009, Miklos Szeredi wrote:
+>   ln /dev/foo /dev/shm/my_secret_device_link
+>   (foo is removed)
+>   open("/dev/shm/my_secret_device_link", O_RDWR)
+> 
+> How is this different than keeping the device open with O_NODE?
 
-please pull from 'for-linus' branch of
+In other words, revoking file handles is not enough, we really need to
+revoke the _inode_.  And if we do that then O_NODE handles are
+perfectly harmless.
 
-	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
-
-to receive the main bulk of the s390 updates for 2.6.33:
-
-Aristeu Rozanski (1):
-      [S390] ftrace: build ftrace.o when CONFIG_FTRACE_SYSCALLS is set for s390
-
-Arnd Bergmann (1):
-      [S390] tty3270: move keyboard compat ioctls
-
-Boaz Harrosh (1):
-      [S390] s390: remove unused nfsd #includes
-
-Christian Borntraeger (4):
-      [S390] dasd: remove dead code
-      [S390] use generic termbits.h header file
-      [S390] use generic sockios.h header file
-      [S390] s390: use change recording override for kernel mapping
-
-Felix Beck (7):
-      [S390] zcrypt: initialize ap_messages for cex3 exploitation
-      [S390] zcrypt: special command support for cex3 exploitation
-      [S390] zcrypt: add support for cex3 device types
-      [S390] zcrypt: use definitions for cex3
-      [S390] zcrypt: adjust speed rating between cex2 and pcixcc
-      [S390] zcrypt: adjust speed rating of cex3 adapters
-      [S390] zcrypt: Do not simultaneously schedule hrtimer
-
-Gerald Schaefer (4):
-      [S390] Use do_exception() in pagetable walk usercopy functions.
-      [S390] monreader: remove lock_kernel() from open() function
-      [S390] monwriter: remove lock_kernel() from open() function
-      [S390] vmwatchdog: remove lock_kernel() from open() function
-
-Heiko Carstens (3):
-      [S390] smp: remove unused typedef and defines
-      [S390] etr/stp: put correct per cpu variable
-      [S390] 3215/3270 console: remove wrong comment
-
-Hendrik Brueckner (1):
-      [S390] s390: clear high-order bits of registers after sam64
-
-Joe Perches (1):
-      [S390] MAINTAINERS: Add s390 drivers block
-
-Martin Schwidefsky (17):
-      [S390] Improve address space check.
-      [S390] Improve address space mode selection.
-      [S390] Improve notify_page_fault implementation.
-      [S390] fault handler performance optimization.
-      [S390] fault handler access flags check.
-      [S390] tape: remove f_pos changes from read / write function.
-      [S390] tape: fix tape remove function
-      [S390] tape: cleanup reference counting
-      [S390] tape: remove BKL from tape driver
-      [S390] Improve code generated by atomic operations.
-      [S390] cmm: free pages on hibernate.
-      [S390] sclp: improve servicability setting
-      [S390] 3270: remove BKL
-      [S390] zcrypt: remove BKL
-      [S390] vmur: remove BKL
-      [S390] vmlogrdr: remove BKL
-      [S390] dasd: remove BKL from extended error reporting code
-
-Peter Oberparleiter (19):
-      [S390] cio: fix double free in case of probe failure
-      [S390] cio: fix repeat setting of cdev parent association
-      [S390] cio: introduce parent-initiated device move
-      [S390] cio: introduce subchannel todos
-      [S390] cio: introduce ccw device todos
-      [S390] cio: inform user when online/offline processing fails
-      [S390] cio: handle error during device recognition consistently
-      [S390] cio: handle error during path verification consistently
-      [S390] cio: ensure proper locking during device recognition
-      [S390] cio: dont panic in non-fatal conditions
-      [S390] cio: consistent infrastructure for internal I/O requests
-      [S390] cio: use ccw request infrastructure for sense id
-      [S390] cio: use ccw request infrastructure for pgid
-      [S390] cio: allow setting not-operational devices offline
-      [S390] cio: remove intretry flag
-      [S390] cio: split PGID settings and status
-      [S390] cio: use sense-pgid operation for path verification
-      [S390] cio: make steal lock procedure more robust
-      [S390] cio: improve error recovery for internal I/Os
-
-Sebastian Ott (8):
-      [S390] cio: remove registered flag from ccw_device_private
-      [S390] cio: add per device initialization status flag
-      [S390] cio: fix quiesce state
-      [S390] cio: handle failed disable_subchannel after device recognition
-      [S390] cio: handle busy subchannel in ccw_device_move_to_sch
-      [S390] cio: quiesce subchannel in io_subchannel_remove
-      [S390] cio: change locking in io_subchannel_remove
-      [S390] cio: dont unregister a busy device in ccw_device_set_offline
-
-Stefan Haberland (1):
-      [S390] dasd: remove strings from s390dbf
-
-Stefan Weinhuber (4):
-      [S390] dasd: support DIAG access for read-only devices
-      [S390] dasd: enable prefix independent of pav support
-      [S390] dasd: improve error recovery for internal I/O
-      [S390] dasd: let device initialization wait for LCU setup
-
- MAINTAINERS                         |    3 +
- arch/s390/Kconfig                   |   15 -
- arch/s390/defconfig                 |    1 -
- arch/s390/include/asm/atomic.h      |    8 +-
- arch/s390/include/asm/ccwdev.h      |    4 +
- arch/s390/include/asm/mmu_context.h |    4 +-
- arch/s390/include/asm/pgalloc.h     |    3 +-
- arch/s390/include/asm/pgtable.h     |    4 +-
- arch/s390/include/asm/setup.h       |   17 +-
- arch/s390/include/asm/smp.h         |   54 +--
- arch/s390/include/asm/sockios.h     |   21 +-
- arch/s390/include/asm/termbits.h    |  206 +-------
- arch/s390/include/asm/todclk.h      |   23 -
- arch/s390/include/asm/uaccess.h     |    2 +
- arch/s390/kernel/Makefile           |    1 +
- arch/s390/kernel/compat_linux.c     |    6 -
- arch/s390/kernel/compat_linux.h     |    4 -
- arch/s390/kernel/head64.S           |    3 +
- arch/s390/kernel/setup.c            |   36 +-
- arch/s390/kernel/time.c             |    4 +-
- arch/s390/kernel/vdso.c             |    9 +-
- arch/s390/kvm/Kconfig               |    1 -
- arch/s390/lib/uaccess_mvcos.c       |    4 -
- arch/s390/lib/uaccess_pt.c          |  147 ++----
- arch/s390/mm/cmm.c                  |   61 ++-
- arch/s390/mm/fault.c                |  378 +++++++-------
- arch/s390/mm/pgtable.c              |    2 +-
- arch/s390/mm/vmem.c                 |   11 +-
- drivers/s390/block/dasd.c           |  237 ++++++---
- drivers/s390/block/dasd_3990_erp.c  |   47 ++-
- drivers/s390/block/dasd_alias.c     |   77 +++-
- drivers/s390/block/dasd_diag.c      |   20 +-
- drivers/s390/block/dasd_eckd.c      |  170 ++++--
- drivers/s390/block/dasd_eckd.h      |    4 +-
- drivers/s390/block/dasd_eer.c       |    5 -
- drivers/s390/block/dasd_fba.c       |   11 +-
- drivers/s390/block/dasd_int.h       |   13 +
- drivers/s390/block/dasd_ioctl.c     |    4 +-
- drivers/s390/char/con3215.c         |    1 -
- drivers/s390/char/con3270.c         |    1 -
- drivers/s390/char/fs3270.c          |   10 +-
- drivers/s390/char/monreader.c       |    8 +-
- drivers/s390/char/monwriter.c       |    7 +-
- drivers/s390/char/sclp_cmd.c        |    1 +
- drivers/s390/char/tape.h            |    9 +-
- drivers/s390/char/tape_34xx.c       |    8 +-
- drivers/s390/char/tape_3590.c       |    2 +-
- drivers/s390/char/tape_block.c      |   17 +-
- drivers/s390/char/tape_char.c       |   54 +-
- drivers/s390/char/tape_core.c       |   65 ++--
- drivers/s390/char/tape_proc.c       |    2 +-
- drivers/s390/char/tty3270.c         |   20 +
- drivers/s390/char/vmlogrdr.c        |    8 +-
- drivers/s390/char/vmur.c            |    3 -
- drivers/s390/char/vmwatchdog.c      |   29 +-
- drivers/s390/cio/Makefile           |    2 +-
- drivers/s390/cio/ccwreq.c           |  328 ++++++++++++
- drivers/s390/cio/cio.h              |    8 +-
- drivers/s390/cio/css.c              |   57 ++-
- drivers/s390/cio/css.h              |    3 +
- drivers/s390/cio/device.c           | 1006 +++++++++++++++--------------------
- drivers/s390/cio/device.h           |   25 +-
- drivers/s390/cio/device_fsm.c       |  411 ++++-----------
- drivers/s390/cio/device_id.c        |  375 +++++---------
- drivers/s390/cio/device_ops.c       |  144 +++---
- drivers/s390/cio/device_pgid.c      |  963 ++++++++++++++++-----------------
- drivers/s390/cio/device_status.c    |    3 -
- drivers/s390/cio/io_sch.h           |   73 +++-
- drivers/s390/crypto/ap_bus.c        |   31 +-
- drivers/s390/crypto/ap_bus.h        |   18 +-
- drivers/s390/crypto/zcrypt_api.c    |   11 +-
- drivers/s390/crypto/zcrypt_api.h    |    2 +
- drivers/s390/crypto/zcrypt_cex2a.c  |   75 ++-
- drivers/s390/crypto/zcrypt_pcica.c  |    2 +
- drivers/s390/crypto/zcrypt_pcicc.c  |    2 +
- drivers/s390/crypto/zcrypt_pcixcc.c |   38 ++-
- 76 files changed, 2728 insertions(+), 2714 deletions(-)
- delete mode 100644 arch/s390/include/asm/todclk.h
- create mode 100644 drivers/s390/cio/ccwreq.c
+Miklos
