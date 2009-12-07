@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934538AbZLGAbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934515AbZLGA35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934538AbZLGAbB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:31:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934449AbZLGAa6
+	id S934515AbZLGA35 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934448AbZLGA3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:30:58 -0500
-Received: from kroah.org ([198.145.64.141]:34359 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:29:48 -0500
+Received: from kroah.org ([198.145.64.141]:34367 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758420AbZLGANA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:13:00 -0500
+	id S1758429AbZLGANB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:13:01 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:47 2009
-Message-Id: <20091207000646.961519997@mini.kroah.org>
+Message-Id: <20091207000647.094897781@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:17 -0800
+Date: Sun, 06 Dec 2009 16:00:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Libin Yang <libin.yang@amd.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [041/119] USB: ohci: quirk AMD prefetch for USB 1.1 ISO transfer
+       Alan Stern <stern@rowland.harvard.edu>,
+       Pete Zaitcev <zaitcev@redhat.com>
+Subject: [042/119] USB: usbmon: fix bug in mon_buff_area_shrink
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ohci-quirk-amd-prefetch-for-usb-1.1-iso-transfer.patch
+Content-Disposition: inline; filename=usb-usbmon-fix-bug-in-mon_buff_area_shrink.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,149 +30,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Libin Yang <libin.yang@amd.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit a1f17a872bc7b1cb7efdd5486a2963e88a536e61 upstream.
+commit fca94748c5136ff390eadc443871b82f1f77dcd6 upstream.
 
-The following patch in the driver is required to avoid USB 1.1 device
-failures that may occur due to requests from USB OHCI controllers may
-be overwritten if the latency for any pending request by the USB
-controller is very long (in the range of milliseconds).
+This patch (as1299b) fixes a bug in an error-handling path of usbmon's
+binary interface.  The storage area for URB data is divided into
+fixed-size blocks.  If an URB's data can't be copied, the area
+reserved for it should be decreased to the size of the truncated
+information (rounded up to a block boundary).  Rounding up the amount
+to be removed and subtracting it from the reserved size is definitely
+the wrong thing to do.
 
-Signed-off-by: Libin Yang <libin.yang@amd.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>
+Also, when the data for an isochronous URB can't be copied, we can
+still copy the isoc packet descriptors.  In fact the current code does
+copy the descriptors, but then sets the capture length to 0 so they
+remain inaccessible.  The capture length should be reduced to the
+length of the descriptors, not set to 0.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Acked-by: Pete Zaitcev <zaitcev@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ohci-hcd.c |    5 +++++
- drivers/usb/host/ohci-pci.c |   20 ++++++++++++++++++++
- drivers/usb/host/ohci-q.c   |   18 ++++++++++++------
- drivers/usb/host/ohci.h     |    9 +++++++++
- 4 files changed, 46 insertions(+), 6 deletions(-)
+ drivers/usb/mon/mon_bin.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/host/ohci.h
-+++ b/drivers/usb/host/ohci.h
-@@ -402,6 +402,7 @@ struct ohci_hcd {
- #define	OHCI_QUIRK_FRAME_NO	0x80			/* no big endian frame_no shift */
- #define	OHCI_QUIRK_HUB_POWER	0x100			/* distrust firmware power/oc setup */
- #define	OHCI_QUIRK_AMD_ISO	0x200			/* ISO transfers*/
-+#define	OHCI_QUIRK_AMD_PREFETCH	0x400			/* pre-fetch for ISO transfer */
- 	// there are also chip quirks/bugs in init logic
+--- a/drivers/usb/mon/mon_bin.c
++++ b/drivers/usb/mon/mon_bin.c
+@@ -350,12 +350,12 @@ static unsigned int mon_buff_area_alloc_
  
- 	struct work_struct	nec_work;	/* Worker for NEC quirk */
-@@ -433,6 +434,10 @@ static inline int quirk_amdiso(struct oh
+ /*
+  * Return a few (kilo-)bytes to the head of the buffer.
+- * This is used if a DMA fetch fails.
++ * This is used if a data fetch fails.
+  */
+ static void mon_buff_area_shrink(struct mon_reader_bin *rp, unsigned int size)
  {
- 	return ohci->flags & OHCI_QUIRK_AMD_ISO;
- }
-+static inline int quirk_amdprefetch(struct ohci_hcd *ohci)
-+{
-+	return ohci->flags & OHCI_QUIRK_AMD_PREFETCH;
-+}
- #else
- static inline int quirk_nec(struct ohci_hcd *ohci)
- {
-@@ -446,6 +451,10 @@ static inline int quirk_amdiso(struct oh
- {
- 	return 0;
- }
-+static inline int quirk_amdprefetch(struct ohci_hcd *ohci)
-+{
-+	return 0;
-+}
- #endif
  
- /* convert between an hcd pointer and the corresponding ohci_hcd */
---- a/drivers/usb/host/ohci-hcd.c
-+++ b/drivers/usb/host/ohci-hcd.c
-@@ -88,6 +88,7 @@ static int ohci_restart (struct ohci_hcd
- #ifdef CONFIG_PCI
- static void quirk_amd_pll(int state);
- static void amd_iso_dev_put(void);
-+static void sb800_prefetch(struct ohci_hcd *ohci, int on);
- #else
- static inline void quirk_amd_pll(int state)
- {
-@@ -97,6 +98,10 @@ static inline void amd_iso_dev_put(void)
- {
- 	return;
- }
-+static inline void sb800_prefetch(struct ohci_hcd *ohci, int on)
-+{
-+	return;
-+}
- #endif
- 
- 
---- a/drivers/usb/host/ohci-pci.c
-+++ b/drivers/usb/host/ohci-pci.c
-@@ -177,6 +177,13 @@ static int ohci_quirk_amd700(struct usb_
- 		return 0;
- 
- 	pci_read_config_byte(amd_smbus_dev, PCI_REVISION_ID, &rev);
-+
-+	/* SB800 needs pre-fetch fix */
-+	if ((rev >= 0x40) && (rev <= 0x4f)) {
-+		ohci->flags |= OHCI_QUIRK_AMD_PREFETCH;
-+		ohci_dbg(ohci, "enabled AMD prefetch quirk\n");
-+	}
-+
- 	if ((rev > 0x3b) || (rev < 0x30)) {
- 		pci_dev_put(amd_smbus_dev);
- 		amd_smbus_dev = NULL;
-@@ -262,6 +269,19 @@ static void amd_iso_dev_put(void)
- 
- }
- 
-+static void sb800_prefetch(struct ohci_hcd *ohci, int on)
-+{
-+	struct pci_dev *pdev;
-+	u16 misc;
-+
-+	pdev = to_pci_dev(ohci_to_hcd(ohci)->self.controller);
-+	pci_read_config_word(pdev, 0x50, &misc);
-+	if (on == 0)
-+		pci_write_config_word(pdev, 0x50, misc & 0xfcff);
-+	else
-+		pci_write_config_word(pdev, 0x50, misc | 0x0300);
-+}
-+
- /* List of quirks for OHCI */
- static const struct pci_device_id ohci_pci_quirks[] = {
- 	{
---- a/drivers/usb/host/ohci-q.c
-+++ b/drivers/usb/host/ohci-q.c
-@@ -49,9 +49,12 @@ __acquires(ohci->lock)
- 	switch (usb_pipetype (urb->pipe)) {
- 	case PIPE_ISOCHRONOUS:
- 		ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs--;
--		if (ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs == 0
--				&& quirk_amdiso(ohci))
--			quirk_amd_pll(1);
-+		if (ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs == 0) {
-+			if (quirk_amdiso(ohci))
-+				quirk_amd_pll(1);
-+			if (quirk_amdprefetch(ohci))
-+				sb800_prefetch(ohci, 0);
-+		}
- 		break;
- 	case PIPE_INTERRUPT:
- 		ohci_to_hcd(ohci)->self.bandwidth_int_reqs--;
-@@ -680,9 +683,12 @@ static void td_submit_urb (
- 				data + urb->iso_frame_desc [cnt].offset,
- 				urb->iso_frame_desc [cnt].length, urb, cnt);
+-	size = (size + PKT_ALIGN-1) & ~(PKT_ALIGN-1);
++	/* size &= ~(PKT_ALIGN-1);  -- we're called with aligned size */
+ 	rp->b_cnt -= size;
+ 	if (rp->b_in < size)
+ 		rp->b_in += rp->b_size;
+@@ -442,6 +442,7 @@ static void mon_bin_event(struct mon_rea
+ 	unsigned int urb_length;
+ 	unsigned int offset;
+ 	unsigned int length;
++	unsigned int delta;
+ 	unsigned int ndesc, lendesc;
+ 	unsigned char dir;
+ 	struct mon_bin_hdr *ep;
+@@ -546,8 +547,10 @@ static void mon_bin_event(struct mon_rea
+ 	if (length != 0) {
+ 		ep->flag_data = mon_bin_get_data(rp, offset, urb, length);
+ 		if (ep->flag_data != 0) {	/* Yes, it's 0x00, not '0' */
+-			ep->len_cap = 0;
+-			mon_buff_area_shrink(rp, length);
++			delta = (ep->len_cap + PKT_ALIGN-1) & ~(PKT_ALIGN-1);
++			ep->len_cap -= length;
++			delta -= (ep->len_cap + PKT_ALIGN-1) & ~(PKT_ALIGN-1);
++			mon_buff_area_shrink(rp, delta);
  		}
--		if (ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs == 0
--				&& quirk_amdiso(ohci))
--			quirk_amd_pll(0);
-+		if (ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs == 0) {
-+			if (quirk_amdiso(ohci))
-+				quirk_amd_pll(0);
-+			if (quirk_amdprefetch(ohci))
-+				sb800_prefetch(ohci, 1);
-+		}
- 		periodic = ohci_to_hcd(ohci)->self.bandwidth_isoc_reqs++ == 0
- 			&& ohci_to_hcd(ohci)->self.bandwidth_int_reqs == 0;
- 		break;
+ 	} else {
+ 		ep->flag_data = data_tag;
 
 
