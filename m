@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934779AbZLGT5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbZLGUDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934779AbZLGT5r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 14:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934353AbZLGT5q
+	id S1758798AbZLGUDX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbZLGUDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 14:57:46 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:38024 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932244AbZLGT5p (ORCPT
+	Mon, 7 Dec 2009 15:03:22 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58530 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758772AbZLGUDV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 14:57:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=b5L/Tq4yzW8SjwG/5ZmWi7XF/iGtSF4elIbIsPaWnZvf81dTqT71ebGcUWe5yJBsYP
-         MLeJXSIjQ/W7vGIWb60au54TrM1AYY5Sj9yWyfRBnt16aCjFZg4cC3+5RQg85SOtH74T
-         HjRQk/6VUN+MbnOCdiwoA4/POIfEFUweFLPts=
-Date: Mon, 7 Dec 2009 20:57:48 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for
-	analyzing lock statistics
-Message-ID: <20091207195740.GC5049@nowhere>
-References: <20091115022135.GA5427@nowhere> <1260156884-8474-2-git-send-email-mitake@dcl.info.waseda.ac.jp> <20091207044125.GB5262@nowhere> <20091207072752.GG10868@elte.hu> <4B1CBEEB.3090800@cn.fujitsu.com> <20091207194802.GB5049@nowhere>
+	Mon, 7 Dec 2009 15:03:21 -0500
+Date: Mon, 7 Dec 2009 21:03:26 +0100
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Herring Robert-RA7055 <ra7055@freescale.com>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>,
+       Amit Kucheria <amit.kucheria@canonical.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>,
+       grant.likely@secretlab.ca, valentin.longchamp@epfl.ch, daniel@caiaq.de,
+       Nguyen Dinh-R00091 <R00091@freescale.com>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC][PATCH 03/10] arm: mxc: changes to common plat-mxc codeto
+	add support for i.MX5
+Message-ID: <20091207200326.GU22533@pengutronix.de>
+References: <cover.1259893118.git.amit.kucheria@canonical.com> <58eb7d14c6cf56cbc874657dff5789c47116b49e.1259893118.git.amit.kucheria@canonical.com> <DE2504B3A515524BBE6934369EFDC0DA08C2A56C@az33exm20.fsl.freescale.net> <20091204105908.GJ15126@pengutronix.de> <DE2504B3A515524BBE6934369EFDC0DA08C2A879@az33exm20.fsl.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20091207194802.GB5049@nowhere>
+In-Reply-To: <DE2504B3A515524BBE6934369EFDC0DA08C2A879@az33exm20.fsl.freescale.net>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 21:02:05 up 56 days,  8:51, 10 users,  load average: 0.04, 0.05,
+	0.01
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 08:48:05PM +0100, Frederic Weisbecker wrote:
-> On Mon, Dec 07, 2009 at 04:38:03PM +0800, Xiao Guangrong wrote:
-> > 
-> > 
-> > Ingo Molnar wrote:
-> > 
-> > > Also, i agree that the performance aspect is probably the most pressing 
-> > > issue. Note that 'perf bench sched messaging' is very locking intense so 
-> > > a 10x slowdown is not entirely unexpected - we still ought to optimize 
-> > > it all some more. 'perf lock' is an excellent testcase for this in any 
-> > > case.
-> > > 
-> > 
-> > Here are some test results to show the overhead of lockdep trace events:
-> > 
-> >                    select    pagefault   mmap    Memory par   Cont_SW
-> >                    latency    latency   latency   R/W BD      latency
-> > 
-> > disable ftrace        0         0         0         0          0
-> > 
-> > enable all ftrace  -16.65%    -109.80%   -93.62%   0.14%      -6.94%
-> > 
-> > enable all ftrace  -2.67%      1.08%     -3.65%   -0.52%      -0.68%
-> > except lockdep
-> > 
-> > 
-> > We also found big overhead when using kernbench and fio, but we haven't
-> > verified whether it's caused by lockdep events.
-> > 
-> > Thanks,
-> > Xiao
+Rob,
+
+On Mon, Dec 07, 2009 at 10:17:52AM -0700, Herring Robert-RA7055 wrote:
+> Sorry, my mistake. Sasha is correct that MX27 is v1 and MX25 is v2.
 > 
+> timer_is_v1 is just !timer_is_v2, so really only one is needed. I would
+> define it like this to avoid having to change the timer code again for
+> any new chips:
 > 
-> This profile has been done using ftrace with perf right?
-> It might be because the lock events are high rate events and
-> fill a lot of perf buffer space. More than other events.
-> In one of your previous mails, you showed us the difference
-> of the size of perf.data by capturing either scheduler events
-> or lock events.
+> #define timer_is_v2()   (!(cpu_is_mx1() || cpu_is_mx21() ||
+> cpu_is_mx27()))
 
+Are you sure that FSL won't invent a v3 timer in the future?
 
-
-I'm not sure who sent this email actually. May be you or Hitoshi.
-
-But, anyway you got the point :)
-
+rsc
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
