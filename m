@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbZLGXKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965155AbZLGXMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758801AbZLGXKO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 18:10:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935635AbZLGXKN
+	id S965155AbZLGXMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 18:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935707AbZLGXML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 18:10:13 -0500
-Received: from www.tglx.de ([62.245.132.106]:53858 "EHLO www.tglx.de"
+	Mon, 7 Dec 2009 18:12:11 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:4535 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757698AbZLGXKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 18:10:12 -0500
-Date: Tue, 8 Dec 2009 00:09:31 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jakub Jelinek <jakub@redhat.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: GCC 4.x random code generator for x86_64 ?
-In-Reply-To: <20091207181301.GQ22813@hs20-bc2-1.build.redhat.com>
-Message-ID: <alpine.LFD.2.00.0912072150450.3089@localhost.localdomain>
-References: <alpine.LFD.2.00.0912071707540.3089@localhost.localdomain> <20091207181301.GQ22813@hs20-bc2-1.build.redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S935670AbZLGXMK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 18:12:10 -0500
+X-IronPort-AV: E=Sophos;i="4.47,357,1257148800"; 
+   d="scan'208";a="284993501"
+Subject: Re: [PATCH] SUNRPC: IS_ERR/PTR_ERR confusion
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Roel Kluin <roel.kluin@gmail.com>
+In-Reply-To: <20091207230726.GA4685@fieldses.org>
+References: <4B1CE844.1040108@gmail.com>
+	 <20091207152654.GA29416@fieldses.org> <1260227059.2951.13.camel@localhost>
+	 <20091207230726.GA4685@fieldses.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Mon, 07 Dec 2009 18:12:15 -0500
+Message-Id: <1260227535.2951.21.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+X-OriginalArrivalTime: 07 Dec 2009 23:12:16.0833 (UTC) FILETIME=[B7EF6310:01CA7792]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009, Jakub Jelinek wrote:
-> On Mon, Dec 07, 2009 at 06:50:17PM +0100, Thomas Gleixner wrote:
-> > Can anyone shed some light on the following:
-> > 
-> > Applying a patch which adds a yet unused "extern int bla(void);" line
-> > to a header file results in something which is beyond me.
-> > 
-> > The .i files differ as expected in exaclty _one_ line.
+On Mon, 2009-12-07 at 18:07 -0500, J. Bruce Fields wrote: 
+> On Mon, Dec 07, 2009 at 06:04:19PM -0500, Trond Myklebust wrote:
+> > Are you planning on shepherding this fix into mainline, or should I?
 > 
-> The source code is different, so this doesn't seem to be random code
-> generation.  The extra declaration means following decls will have higher
-> uids and there is a bunch of places in gcc where hash tables are traversed
-> and code generation depends on the order in the traversal.  While hash
-> tables hashed on pointer values are considered important bugs because
-> generated code could change in between runs with the same source, traversal
-> of tables hashed by decl uids are far less severe - gcc makes no promises
-> that different sources result in the same generated code.
+> I don't care, but I think of that as client-side code, so I'm assuming
+> you're taking it.
 
-Sorry, I do not consider that delta an effective code change and I
-don't think that the "no promise" answer is a good explanation for
-generated code which is randomly different and in some places worse
-for no good reason.
 
-We often use(d) binary comparisions to verify that an assumed zero
-change patch actually does what it promises. That way we verified the
-bulk of the i386/x86_64 code move and I never saw such odd behaviour
-back then (the deltas were way larger than that single line change).
-
-> You are using quite oldish gcc, if you reproduce it with something newer
-
-I was compiling 2.6.32 which is quite oldish code. That deserves an
-quite oldish compiler. :)
-
-Seriously, the gcc I'm using is shipped with F11 and that's what a lot
-of people (still) have on their machines.
-
-> (current 4.5 trunk or recent gcc from redhat/gcc-4_4-branch) and provide
-> full preprocessed source and exact command line options, I'll have a look
-> though.
-
-F12 gcc [(GCC) 4.4.2 20091027 (Red Hat 4.4.2-7)] has similar
-randomization. I'll send you the preprocessed source + command line
-options tomorrow.
-
-The current 4.5 trunk creates identical binary files with and without
-the patch.
-
-Thanks,
-
-	tglx
+OK. Will do...
