@@ -1,116 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935405AbZLGQeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935401AbZLGQi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935405AbZLGQeN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:34:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935382AbZLGQeM
+	id S935401AbZLGQi2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:38:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935376AbZLGQi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:34:12 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:56330 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935378AbZLGQeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:34:11 -0500
-Message-ID: <4B1D2E79.4000405@cs.wisc.edu>
-Date: Mon, 07 Dec 2009 10:34:01 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 7 Dec 2009 11:38:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47544 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935321AbZLGQiZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 11:38:25 -0500
+Date: Mon, 7 Dec 2009 08:37:56 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Zhang Rui <rui.zhang@intel.com>, Alan Stern <stern@rowland.harvard.edu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <200912071615.34788.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0912070832330.3560@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org> <1260158279.27069.181.camel@rzhang1-desktop> <alpine.LFD.2.00.0912062122460.3560@localhost.localdomain> <200912071615.34788.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: open-iscsi@googlegroups.com
-CC: James.Bottomley@hansenpartnership.com, davem@davemloft.net,
-       swise@opengridcomputing.com, kxie@chelsio.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, rakesh@chelsio.com
-Subject: Re: [PATCH 1/1] cxgb3i: Fix a login over vlan issue
-References: <1259924665-2301-1-git-send-email-rakesh@chelsio.com>
-In-Reply-To: <1259924665-2301-1-git-send-email-rakesh@chelsio.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rakesh Ranjan wrote:
-> Fix a login over vlan issue, when parent interface is vlan and we are using cxgb3i sepecific
-> private ip address in '/etc/iscsi/ifaces/' iface file.
-> 
-> Acked-by: Karen Xie <kxie@chelsio.com>
-> Signed-off-by: Rakesh Ranjan <rakesh@chelsio.com>
-> ---
->  drivers/scsi/cxgb3i/cxgb3i_offload.c |   34 +++++++++++++++++++++++++++++++++-
->  1 files changed, 33 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-> index c1d5be4..66d52e4 100644
-> --- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
-> +++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-> @@ -1440,6 +1440,10 @@ void cxgb3i_c3cn_release(struct s3_conn *c3cn)
->  static int is_cxgb3_dev(struct net_device *dev)
->  {
->  	struct cxgb3i_sdev_data *cdata;
-> +	struct net_device *ndev = dev;
-> +
-> +	if (dev->priv_flags & IFF_802_1Q_VLAN)
-> +		ndev = vlan_dev_real_dev(dev);
->  
->  	write_lock(&cdata_rwlock);
->  	list_for_each_entry(cdata, &cdata_list, list) {
-> @@ -1447,7 +1451,7 @@ static int is_cxgb3_dev(struct net_device *dev)
->  		int i;
->  
->  		for (i = 0; i < ports->nports; i++)
-> -			if (dev == ports->lldevs[i]) {
-> +			if (ndev == ports->lldevs[i]) {
->  				write_unlock(&cdata_rwlock);
->  				return 1;
->  			}
-> @@ -1566,6 +1570,26 @@ out_err:
->  	return -1;
->  }
->  
-> +/**
-> + * cxgb3i_find_dev - find the interface associated with the given address
-> + * @ipaddr: ip address
-> + */
-> +static struct net_device *
-> +cxgb3i_find_dev(__be32 ipaddr)
-> +{
-> +	struct flowi fl;
-> +	int err;
-> +	struct rtable *rt;
-> +
-> +	memset(&fl, 0, sizeof(fl));
-> +	fl.nl_u.ip4_u.daddr = ipaddr;
-> +
-> +	err = ip_route_output_key(&init_net, &rt, &fl);
-> +	if (!err)
-> +		return (&rt->u.dst)->dev;
-> +
-> +	return NULL;
-> +}
->  
->  /**
->   * cxgb3i_c3cn_connect - initiates an iscsi tcp connection to a given address
-> @@ -1581,6 +1605,7 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
->  	struct cxgb3i_sdev_data *cdata;
->  	struct t3cdev *cdev;
->  	__be32 sipv4;
-> +	struct net_device *dstdev;
->  	int err;
->  
->  	c3cn_conn_debug("c3cn 0x%p, dev 0x%p.\n", c3cn, dev);
-> @@ -1591,6 +1616,13 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
->  	c3cn->daddr.sin_port = usin->sin_port;
->  	c3cn->daddr.sin_addr.s_addr = usin->sin_addr.s_addr;
->  
-> +	dstdev = cxgb3i_find_dev(usin->sin_addr.s_addr);
-> +	if (!dstdev || !is_cxgb3_dev(dstdev))
-> +		return -ENETUNREACH;
-> +
-> +	if (dstdev->priv_flags & IFF_802_1Q_VLAN)
-> +		dev = dstdev;
-> +
->  	rt = find_route(dev, c3cn->saddr.sin_addr.s_addr,
->  			c3cn->daddr.sin_addr.s_addr,
->  			c3cn->saddr.sin_port,
 
 
-Looks sane. I am not a expert on the networks apis being used though.
+On Mon, 7 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > The advantage: untouched drivers don't change ANY SEMANTICS AT ALL.
+> 
+> This also was true for my patchset.
+
+That's simply not trye.
+
+You set async_suspend on every single PCI driver. I object very heavily to 
+it.
+
+You also introduce this whole big "callback when ready", and 
+"non-topoligical PM dependency chain" thing. Which I also object to.
+
+Notice how with the simpler "lock parent" model, you _can_ actually encode 
+non-topological dependencies, but you do it by simply read-locking 
+whatever other independent device you want. So if an architecture has some 
+system devices that have odd rules, that architecture can simply encode 
+those rules in its suspend() functions.
+
+It doesn't need to expose it to the device layer - because the device 
+layer won't even care. The code will just automatically "do the right 
+thing" without even having that notion of PM dependencies at any other 
+level than the driver that knows about it.
+
+No registration, no callbacks, no nothing.
+
+> In my patchset the drivers didn't need to do all that stuff.  The only thing
+> they needed, if they wanted their suspend/resume to be executed
+> asynchronously, was to set the async_suspend flag.
+
+In my patchset, the drivers don't need to either.
+
+The _only_ thing that would do this is something like the USB layer. We're 
+talking ten lines of code or so. And you get rid of all the PM 
+dependencies and all the infrastructure - because the model is so simple 
+that it doesn't need any.
+
+(Well, except for the infrastructure to run things asynchronously, but 
+that was kind of my point from the very beginning: we can just re-use all 
+that existing async infrastructure. We already have that).
+
+		Linus
