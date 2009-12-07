@@ -1,171 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbZLGIBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbZLGIEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759018AbZLGIBt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758996AbZLGIBs
+	id S1758977AbZLGIEs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757495AbZLGIEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:01:48 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:56683 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758969AbZLGIBe (ORCPT
+	Mon, 7 Dec 2009 03:04:46 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58255 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752822AbZLGIEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:01:34 -0500
-Message-ID: <4B1CB5DD.8050803@ah.jp.nec.com>
-Date: Mon, 07 Dec 2009 16:59:25 +0900
-From: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-Reply-To: n-horiguchi@ah.jp.nec.com
-Organization: NEC Corporation
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Mon, 7 Dec 2009 03:04:45 -0500
+Date: Mon, 7 Dec 2009 09:04:46 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v8 5/8] Loongson: YeeLoong: add hardware monitoring
+ driver
+Message-ID: <20091207080446.GB23088@elf.ucw.cz>
+References: <cover.1260082252.git.wuzhangjin@gmail.com>
+ <d8789fa7e97d8a170c4e2516d7ef2d2fbbe42cc6.1260082252.git.wuzhangjin@gmail.com>
+ <20091206084717.GD2766@ucw.cz>
+ <1260147298.3126.2.camel@falcon.domain.org>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: ak@linux.intel.com, Wu Fengguang <fengguang.wu@intel.com>,
-       linux-mm <linux-mm@kvack.org>
-Subject: [PATCH 2/2] mm hugetlb: add hugepage support to pagemap
-References: <1260172193-14397-1-git-send-email-n-horiguchi@ah.jp.nec.com>
-In-Reply-To: <1260172193-14397-1-git-send-email-n-horiguchi@ah.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260147298.3126.2.camel@falcon.domain.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables to extract pfn of the hugepage from
-/proc/pid/pagemap in architecture independent manner.
 
-Signed-off-by: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/proc/task_mmu.c |   43 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/mm.h |    3 +++
- mm/pagewalk.c      |   18 ++++++++++++++++--
- 3 files changed, 62 insertions(+), 2 deletions(-)
+> > What is going on here? I thought the value is already in two's
+> > complement... Is the above equivalent of
+> > 
+> > 	      if (value < 0)
+> > 	      	 value = -value; 
+> > 
+> > ? If so, why? If not, can you add a comment?
+> 
+> Right, then, will use this instead:
+> 
+> static int get_battery_current(void)
+> { 
+> 	s16 value;
+> 
+> 	value = (ec_read(REG_BAT_CURRENT_HIGH) << 8) |
+> 		(ec_read(REG_BAT_CURRENT_LOW));
+> 
+> 	return abs(value);
+> }
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 2a1bef9..5d8e86b 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -650,6 +650,48 @@ static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- 	return err;
- }
- 
-+static u64 huge_pte_to_pagemap_entry(pte_t pte, int offset)
-+{
-+	u64 pme = 0;
-+	if (pte_present(pte))
-+		pme = PM_PFRAME(pte_pfn(pte) + offset)
-+			| PM_PSHIFT(PAGE_SHIFT) | PM_PRESENT;
-+	return pme;
-+}
-+
-+static int pagemap_hugetlb_range(pte_t *pte, unsigned long addr,
-+				 unsigned long end, struct mm_walk *walk)
-+{
-+	struct vm_area_struct *vma;
-+	struct pagemapread *pm = walk->private;
-+	struct hstate *hs = NULL;
-+	int err = 0;
-+
-+	vma = find_vma(walk->mm, addr);
-+	hs = hstate_vma(vma);
-+	for (; addr != end; addr += PAGE_SIZE) {
-+		u64 pfn = PM_NOT_PRESENT;
-+
-+		if (vma && (addr >= vma->vm_end)) {
-+			vma = find_vma(walk->mm, addr);
-+			hs = hstate_vma(vma);
-+		}
-+
-+		if (vma && (vma->vm_start <= addr) && is_vm_hugetlb_page(vma)) {
-+			/* calculate pfn of the "raw" page in the hugepage. */
-+			int offset = (addr & ~huge_page_mask(hs)) >> PAGE_SHIFT;
-+			pfn = huge_pte_to_pagemap_entry(*pte, offset);
-+		}
-+		err = add_to_pagemap(addr, pfn, pm);
-+		if (err)
-+			return err;
-+	}
-+
-+	cond_resched();
-+
-+	return err;
-+}
-+
- /*
-  * /proc/pid/pagemap - an array mapping virtual pages to pfns
-  *
-@@ -742,6 +784,7 @@ static ssize_t pagemap_read(struct file *file, char __user *buf,
- 
- 	pagemap_walk.pmd_entry = pagemap_pte_range;
- 	pagemap_walk.pte_hole = pagemap_pte_hole;
-+	pagemap_walk.hugetlb_entry = pagemap_hugetlb_range;
- 	pagemap_walk.mm = mm;
- 	pagemap_walk.private = &pm;
- 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 4d33403..14835f0 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -758,6 +758,7 @@ unsigned long unmap_vmas(struct mmu_gather **tlb,
-  * @pmd_entry: if set, called for each non-empty PMD (3rd-level) entry
-  * @pte_entry: if set, called for each non-empty PTE (4th-level) entry
-  * @pte_hole: if set, called for each hole at all levels
-+ * @hugetlb_entry: if set, called for each hugetlb entry
-  *
-  * (see walk_page_range for more details)
-  */
-@@ -767,6 +768,8 @@ struct mm_walk {
- 	int (*pmd_entry)(pmd_t *, unsigned long, unsigned long, struct mm_walk *);
- 	int (*pte_entry)(pte_t *, unsigned long, unsigned long, struct mm_walk *);
- 	int (*pte_hole)(unsigned long, unsigned long, struct mm_walk *);
-+	int (*hugetlb_entry)(pte_t *, unsigned long, unsigned long,
-+			     struct mm_walk *);
- 	struct mm_struct *mm;
- 	void *private;
- };
-diff --git a/mm/pagewalk.c b/mm/pagewalk.c
-index 3d88824..2d27a23 100644
---- a/mm/pagewalk.c
-+++ b/mm/pagewalk.c
-@@ -106,9 +106,11 @@ int walk_page_range(unsigned long addr, unsigned long end,
- 		    struct mm_walk *walk)
- {
- 	pgd_t *pgd;
-+	pte_t *pte;
- 	unsigned long next;
- 	int err = 0;
- 	struct vm_area_struct *vma;
-+	struct hstate *hs;
- 
- 	if (addr >= end)
- 		return err;
-@@ -120,11 +122,23 @@ int walk_page_range(unsigned long addr, unsigned long end,
- 	do {
- 		next = pgd_addr_end(addr, end);
- 
--		/* skip hugetlb vma to avoid hugepage PMD being cleared
--		 * in pmd_none_or_clear_bad(). */
-+		/*
-+		 * handle hugetlb vma individually because pagetable walk for
-+		 * the hugetlb page is dependent on the architecture and
-+		 * we can't handled it in the same manner as non-huge pages.
-+		 */
- 		vma = find_vma(walk->mm, addr);
- 		if (is_vm_hugetlb_page(vma)) {
- 			next = (vma->vm_end < next) ? vma->vm_end : next;
-+			hs = hstate_vma(vma);
-+			pte = huge_pte_offset(walk->mm,
-+					      addr & huge_page_mask(hs));
-+			if (pte && !huge_pte_none(huge_ptep_get(pte))
-+			    && walk->hugetlb_entry)
-+				err = walk->hugetlb_entry(pte, addr,
-+							  next, walk);
-+			if (err)
-+				break;
- 			continue;
- 		}
- 
+That's certainly better. But... why not return signed value? Current
+flowing from the battery is certainly very different from current
+flowing into it...
+									Pavel
 -- 
-1.6.0.6
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
