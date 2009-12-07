@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbZLGHpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758953AbZLGHpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758975AbZLGHpY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758962AbZLGHpX
+	id S1758953AbZLGHpL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758791AbZLGHpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:45:23 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65462 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758827AbZLGHpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:45:22 -0500
-Message-ID: <4B1CB27E.4000709@cn.fujitsu.com>
-Date: Mon, 07 Dec 2009 15:45:02 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 7 Dec 2009 02:45:08 -0500
+Received: from gate.lvk.cs.msu.su ([158.250.17.1]:40897 "EHLO
+	mail.lvk.cs.msu.su" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758777AbZLGHpH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 02:45:07 -0500
+X-Spam-ASN: 
+From: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: When it is save to kfree() hrtimer object?
+Date: Mon, 7 Dec 2009 10:45:08 +0300
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [PATCH 13/13] ksym_tracer: Fix compile warnings
-References: <4B1CB14A.4080402@cn.fujitsu.com>
-In-Reply-To: <4B1CB14A.4080402@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200912071045.09827@blacky.localdomain>
+X-AV-Checked: ClamAV using ClamSMTP
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix these 2 warnings:
+Hi
 
-kernel/trace/trace_ksym.c: In function 'ksym_trace_filter_read':
-kernel/trace/trace_ksym.c:239: warning: cast to pointer from integer of different size
-kernel/trace/trace_ksym.c: In function 'ksym_trace_filter_write':
-kernel/trace/trace_ksym.c:295: warning: ignoring return value of 'strstrip', declared with attribute warn_unused_result
+I'm writing a device driver that processes it's requests.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace_ksym.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+Each request is described by a request structure. There may be arbitary 
+number of requests pending, so I have a kmem_cache for those objects.
 
-diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-index acb87d4..e393146 100644
---- a/kernel/trace/trace_ksym.c
-+++ b/kernel/trace/trace_ksym.c
-@@ -236,7 +236,8 @@ static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
- 	mutex_lock(&ksym_tracer_mutex);
- 
- 	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
--		ret = trace_seq_printf(s, "%pS:", (void *)entry->attr.bp_addr);
-+		ret = trace_seq_printf(s, "%pS:",
-+				(void *)(unsigned long)entry->attr.bp_addr);
- 		if (entry->attr.bp_type == HW_BREAKPOINT_R)
- 			ret = trace_seq_puts(s, "r--\n");
- 		else if (entry->attr.bp_type == HW_BREAKPOINT_W)
-@@ -278,7 +279,7 @@ static ssize_t ksym_trace_filter_write(struct file *file,
- {
- 	struct trace_ksym *entry;
- 	struct hlist_node *node;
--	char *input_string, *ksymname = NULL;
-+	char *input_string, *buf, *ksymname = NULL;
- 	unsigned long ksym_addr = 0;
- 	int ret, op, changed = 0;
- 
-@@ -292,7 +293,7 @@ static ssize_t ksym_trace_filter_write(struct file *file,
- 	}
- 	input_string[count] = '\0';
- 
--	strstrip(input_string);
-+	buf = strstrip(input_string);
- 
- 	/*
- 	 * Clear all breakpoints if:
-@@ -300,14 +301,14 @@ static ssize_t ksym_trace_filter_write(struct file *file,
- 	 * 2: echo 0 > ksym_trace_filter
- 	 * 3: echo "*:---" > ksym_trace_filter
- 	 */
--	if (!input_string[0] || !strcmp(input_string, "0") ||
--	    !strcmp(input_string, "*:---")) {
-+	if (!buf[0] || !strcmp(buf, "0") ||
-+	    !strcmp(buf, "*:---")) {
- 		__ksym_trace_reset();
- 		kfree(input_string);
- 		return count;
- 	}
- 
--	ret = op = parse_ksym_trace_str(input_string, &ksymname, &ksym_addr);
-+	ret = op = parse_ksym_trace_str(buf, &ksymname, &ksym_addr);
- 	if (ret < 0) {
- 		kfree(input_string);
- 		return ret;
--- 
-1.6.3
+Request processing may include "retry after N usecs" on some conditions, so 
+I have a struct htrimer embedded into my request structure, and use it to 
+implement the delay.
 
+When request processing is complete, I deallocate request structure with 
+kmem_cache_free().
+
+I faced an issue when request processing is complete when running inside 
+hrtimer callback. I have nothing in my request processing that can't be 
+done in atomic context - just several device register accesses and 
+wake_up_interruptible() call. So I thought that I may do everything inside 
+hrtimer callback. Including kmem_cache_free() the request structure.
+
+But looks like I can't. Hrtimer code does access hrtimer object after 
+return from callback, even if HRTIMER_NORESTART is returned. So if request 
+object (that is container of hrtimer object in my case) is deallocated, 
+slab corruption happens.
+
+Looks like I will have to implement some ugly workaround for that ...  like 
+a "garbage-collector" thread that will do nothing but deallocate requests 
+from some sort of free list.
+
+I'd like to ask several questions.
+
+- Isn't it a bug that timer object is accessed after it's callback was 
+called and returned HRTIMER_NORESTART?
+
+- If that is not a bug, then when it is "officially safe" to deallocate 
+struct hrtimer object?
+
+- Are there any recommendations on how to implement "single-shot" timers 
+like in my case?
+
+Nikita
