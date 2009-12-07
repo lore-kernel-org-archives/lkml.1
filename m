@@ -1,82 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935587AbZLGUsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965030AbZLGUuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935587AbZLGUsy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935574AbZLGUsx
+	id S965030AbZLGUuE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:50:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965022AbZLGUuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:48:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55470 "EHLO
+	Mon, 7 Dec 2009 15:50:01 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44746 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935185AbZLGUsw (ORCPT
+	by vger.kernel.org with ESMTP id S965021AbZLGUt7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:48:52 -0500
-Date: Mon, 7 Dec 2009 12:48:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <Pine.LNX.4.44L0.0912071449470.15701-100000@iolanthe.rowland.org>
-Message-ID: <alpine.LFD.2.00.0912071239270.3560@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912071449470.15701-100000@iolanthe.rowland.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 Dec 2009 15:49:59 -0500
+Date: Mon, 7 Dec 2009 12:48:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Steven Rostedt <rostedt@goodmis.org>, werner <w.landgraf@ru.ru>,
+       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: kernel problem
+Message-Id: <20091207124828.85e814b8.akpm@linux-foundation.org>
+In-Reply-To: <20091207145011.GA14743@csn.ul.ie>
+References: <web-100877149@zbackend1.aha.ru>
+	<20091204154109.GB1716@goodmis.org>
+	<20091207145011.GA14743@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 7 Dec 2009 14:50:11 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-
-On Mon, 7 Dec 2009, Alan Stern wrote:
+> On Fri, Dec 04, 2009 at 10:41:09AM -0500, Steven Rostedt wrote:
+> > [ Added Cc's of people that may be interested in this ]
+> > > <SNIP>
+> > > ------------[ cut here ]------------
+> > > WARNING: at mm/page_alloc.c:1805
+> > > __alloc_pages_nodemask+0x127/0x48f()
+> > > Hardware name: System Product Name
+> > > Modules linked in:
+> > > Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
+> > > Call Trace:
+> > >  [<c103d94b>] warn_slowpath_common+0x65/0x95
+> > >  [<c103d98d>] warn_slowpath_null+0x12/0x15
+> > >  [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
+> > >  [<c10be964>] ? get_slab+0x8/0x50
+> > >  [<c10b8979>] alloc_page_interleave+0x2e/0x6e
+> > >  [<c10b8a10>] alloc_pages_current+0x57/0x99
+> > >  [<c2083a4a>] ? xd_init+0x0/0x482
+> > >  [<c1094c38>] __get_free_pages+0xd/0x1e
+> > >  [<c2083a94>] xd_init+0x4a/0x482
+> > >  [<c2082df0>] ? loop_init+0x104/0x16a
+> > >  [<c169162d>] ? loop_probe+0x0/0xaf
+> > >  [<c2083a4a>] ? xd_init+0x0/0x482
+> > >  [<c1001143>] do_one_initcall+0x51/0x13f
+> > >  [<c204a307>] kernel_init+0x10b/0x15f
+> > >  [<c204a1fc>] ? kernel_init+0x0/0x15f
+> > >  [<c1004347>] kernel_thread_helper+0x7/0x10
+> > > ---[ end trace 686db6333ade6e7a ]---
+> > > xd: Out of memory.
 > 
-> Yes, I like this approach better and better.
+> First off, it would appear that every block driver under the sun is
+> being loaded. I seriously doubt this controller really exists in the
+> machine.
+
+I'd be surprised if anyone uses xd.c any more.
+
+> Second, it's a real warning as the driver is trying to allocate a buffer of
+> size 0 which get_order() chokes on.
+
+ooh, good one.  I couldn't work it out.
+
+Have we changed behaviour here?  Is it possible that an
+xd_dma_mem_alloc(0) in some earlier kernel did something different?
+
+> For bonus points, it tries to allocate
+> a buffer before it knows what size it should be. This patch should resolve
+> the problem but because I don't have the hardware to test it on, it could
+> do with a second set of eyes just to be sure the rejigged logic makes sense.
 > 
-> There is still a problem.  In your code outlines, you have presented a
-> classic depth-first (suspend) or depth-last (resume) tree algorithm. 
+> If this is ok, what is the appropriate submission path for unmaintained
+> block drivers? Is it the block maintainer or someone else?
 
-Yes, I did that because that clarifies the locking rules (ie "we traverse 
-parents nodes last/first"), not because it was actually relevant to 
-anything else.
+Yup, Jens would be the appropriate target.
 
-And the whole pre-order vs post-order is important, and really only shows 
-up when you show the pseudo-code as a tree walk. 
-
-> But that's not how the PM core works.  Instead it maintains dpm_list, a
-> list of all devices in order of registration.
-
-Right. I did mention that in a couple of the asides, I'm well aware that 
-we don't actually traverse the tree as a tree.
-
-But the "traverse list forward" is logically the same thing as doing 
-a pre-order DFS, while going backwards is equivalent to doing a post-order 
-DFS, since all we really care about is the whole "parent first" or 
-"children first" part of the ordering.
-
-So I wanted to show the logic in pseudo-code using the tree walk (because 
-that explains the logic _conceptually_ much better), but the actual code 
-would just do the list traversal.
-
-> The consequence is that there's no way to hand off an entire subtree to 
-> an async thread.  And as a result, your single-pass algorithm runs into 
-> the kind of "stall" problem I described before.
-
-No, look again. There's no stall in the thing, because all it really 
-depends on is (for the suspend path) is that it sees all children before 
-the parent (because the child will do a "down_read()" on the parent node 
-and that should not stall), and for the resume path it depends on seeing 
-the parent node before any children (because the parent node does that 
-"down_write()" on its own node).
-
-Everything else is _entirely_ asynchronous, including all the other locks 
-it takes. So there are no stalls (except, of course, if we then hit limits 
-on numbers of outstanding async work and refuse to create too many 
-outstanding async things, but that's a separate issue, and intentional, of 
-course).
-
-You're right that my first one (two-phase suspend) had a stall situation.
-
-		Linus
+> ==== CUT HERE ====
+> block,xd: Delay allocation of DMA buffers until device is known
+> 
+> Loading the XD module triggers a warning like
+> 
+>  WARNING: at mm/page_alloc.c:1805
+>  __alloc_pages_nodemask+0x127/0x48f()
+>  Hardware name: System Product Name
+>  Modules linked in:
+>  Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
+>  Call Trace:
+>   [<c103d94b>] warn_slowpath_common+0x65/0x95
+>   [<c103d98d>] warn_slowpath_null+0x12/0x15
+>   [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
+>   [<c10be964>] ? get_slab+0x8/0x50
+>   [<c10b8979>] alloc_page_interleave+0x2e/0x6e
+>   [<c10b8a10>] alloc_pages_current+0x57/0x99
+>   [<c2083a4a>] ? xd_init+0x0/0x482
+>   [<c1094c38>] __get_free_pages+0xd/0x1e
+>   [<c2083a94>] xd_init+0x4a/0x482
+>   [<c2082df0>] ? loop_init+0x104/0x16a
+>   [<c169162d>] ? loop_probe+0x0/0xaf
+>   [<c2083a4a>] ? xd_init+0x0/0x482
+>   [<c1001143>] do_one_initcall+0x51/0x13f
+>   [<c204a307>] kernel_init+0x10b/0x15f
+>   [<c204a1fc>] ? kernel_init+0x0/0x15f
+>   [<c1004347>] kernel_thread_helper+0x7/0x10
+>  ---[ end trace 686db6333ade6e7a ]---
+>  xd: Out of memory.
+>
+> ...
