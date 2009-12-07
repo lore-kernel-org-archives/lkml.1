@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbZLGHcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbZLGHe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758690AbZLGHcJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbZLGHcJ
+	id S933559AbZLGHe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbZLGHe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:32:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60387 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757980AbZLGHcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:32:07 -0500
-Date: Mon, 7 Dec 2009 08:30:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Xiao Guangrong <ericxiao.gr@gmail.com>,
+	Mon, 7 Dec 2009 02:34:58 -0500
+Received: from e28smtp03.in.ibm.com ([122.248.162.3]:57205 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933171AbZLGHe5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 02:34:57 -0500
+Date: Mon, 7 Dec 2009 13:04:55 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Veaceslav Falico <vfalico@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
+       Miloslav Trmac <mitr@redhat.com>, James Morris <jmorris@namei.org>,
+       Alan Cox <alan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, T??r??k Edwin <edwintorok@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] perf/sched: fix for getting task's execution time
-Message-ID: <20091207073043.GH10868@elte.hu>
-References: <4B1B8E0E.3040007@cn.fujitsu.com>
- <1260097512.7818.341.camel@laptop>
- <1260097609.7818.349.camel@laptop>
- <4B1BE588.8020608@gmail.com>
- <4B1CACC4.3030709@cn.fujitsu.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
+       Louis Rilling <louis.rilling@kerlabs.com>,
+       David Howells <dhowells@redhat.com>,
+       Stanislaw Gruszka <sgruszka@redhat.com>
+Subject: Re: [PATCH v2 1/4] copy_signal cleanup: use zalloc and remove
+ initializations
+Message-ID: <20091207073454.GD5780@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091201221036.GA10052@darkmag.usersys.redhat.com>
+ <20091202135759.GA791@redhat.com>
+ <20091204142814.GH10052@darkmag.usersys.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4B1CACC4.3030709@cn.fujitsu.com>
+In-Reply-To: <20091204142814.GH10052@darkmag.usersys.redhat.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Veaceslav Falico <vfalico@redhat.com> [2009-12-04 15:28:14]:
 
-* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
-
-> In current code, task's execute time is got by reading
-> '/proc/<pid>/sched' file, it's wrong if the task is created
-> by pthread_create(), because every thread task has same pid.
+> Use kmem_cache_zalloc() on signal creation and remove unneeded initialization
+> lines in copy_signal().
 > 
-> This way also has two demerits:
-> 
-> 1: 'perf sched replay' can't work if the kernel not compile with
->    'CONFIG_SCHED_DEBUG' option
-> 2: perf tool should depend on proc file system
-> 
-> So, this patch call getrusage() to get task's execution time instead
-> of reading /proc file
+> Signed-off-by: Veaceslav Falico <vfalico@redhat.com>
 
-ok, that's better than /proc, but how about using 
-PERF_COUNT_SW_TASK_CLOCK instead of rusage, to recover the CPU time 
-used? It would be more precise, and it would use the perf API. (Some 
-helper functions in tools/perf/lib/ would be nice to make it as easy to 
-use as rusage (or even easier if possible).)
+Good cleanup, thanks!
 
-	Ingo
+-- 
+	Balbir
