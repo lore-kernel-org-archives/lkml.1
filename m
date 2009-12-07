@@ -1,205 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbZLGQcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935390AbZLGQdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964792AbZLGQcK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:32:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935373AbZLGQcJ
+	id S935390AbZLGQdH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935373AbZLGQdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:32:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60166 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935361AbZLGQcI (ORCPT
+	Mon, 7 Dec 2009 11:33:05 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:4710 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935370AbZLGQdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:32:08 -0500
-Date: Mon, 7 Dec 2009 08:31:39 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <Pine.LNX.4.44L0.0912071003270.3064-100000@iolanthe.rowland.org>
-Message-ID: <alpine.LFD.2.00.0912070737150.3560@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912071003270.3064-100000@iolanthe.rowland.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 7 Dec 2009 11:33:03 -0500
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: =?iso-8859-9?Q?Ozan_=C7a=F0layan?= <ozan@pardus.org.tr>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+CC: "scameron@beardog.cce.hp.com" <scameron@beardog.cce.hp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Date: Mon, 7 Dec 2009 16:32:36 +0000
+Subject: RE: CCISS performance drop in buffered disk reads in newer kernels
+Thread-Topic: CCISS performance drop in buffered disk reads in newer kernels
+Thread-Index: Acp3KaQKPtaA/rJJS8CZ3lHJWvO95wAKOu7Q
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A778869941207A5@GVW0547EXC.americas.hpqcorp.net>
+References: <4B1CDCE6.5040502@pardus.org.tr>
+In-Reply-To: <4B1CDCE6.5040502@pardus.org.tr>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: multipart/mixed;
+	boundary="_002_0F5B06BAB751E047AB5C87D1F77A778869941207A5GVW0547EXCame_"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--_002_0F5B06BAB751E047AB5C87D1F77A778869941207A5GVW0547EXCame_
+Content-Type: text/plain; charset="iso-8859-9"
+Content-Transfer-Encoding: quoted-printable
+
+=20
+
+> -----Original Message-----
+> From: Ozan =C7a=F0layan [mailto:ozan@pardus.org.tr]=20
+> Sent: Monday, December 07, 2009 4:46 AM
+> To: linux-kernel
+> Cc: scameron@beardog.cce.hp.com; Miller, Mike (OS Dev);=20
+> jens.axboe@oracle.com
+> Subject: CCISS performance drop in buffered disk reads in=20
+> newer kernels
+>=20
+> Hi,
+>=20
+> We have 2 HP Proliant DL380G5 server running with different kernels.
+>=20
+> I was inspecting a basic kernel-compile time. On the one with=20
+> 2.6.25.20 kernel, the compilation took ~1.5 minutes. On the=20
+> one with 2.6.30.9 kernel, it took ~6 minutes. Both systems=20
+> are using ccache as a build helper.
+>=20
+> Then I ran hdparm on both systems, the results are below.
+>=20
+> I'd like to help debugging this issue through bisect or=20
+> another method but since there are more parameters that=20
+> differ from one to the other server than only the kernel=20
+> version, I'm a little bit stuck.
+>=20
+> Thanks,
+> Ozan
+>=20
+
+Ozan,
+I'm aware of the performance drop. Please see: http://bugzilla.kernel.org/s=
+how_bug.cgi?id=3D13127. I removed the huge read ahead value of 1024 that we=
+ used because users were complaining about small writes being starved. That=
+ was back around the 2.6.25 timeframe. Since that timeframe there have no c=
+hanges in the main i/o path. I'll get back on this as time allows.
+
+Meanwhile, you can tweak some of the block layer tunables as such.
+
+    echo 64 > /sys/block/cciss\!c0d1/queue/read_ahead_kb
+OR
+    blockdev --setra 128 /dev/cciss/c0d1
+
+These are just example values. There is also max_hw_sectors_kb and max_sect=
+ors_kb that be adjusted.
+
+-- mikem
+
+>=20
+> ### 2.6.30.9 (Slow one, compiled with PAE support, FS is ext4) ###
+>=20
+> # sync; sleep 2; echo 3 > /proc/sys/vm/drop_caches; hdparm -tT -vvvv
+> /dev/cciss/c0d0p5
+>=20
+> /dev/cciss/c0d0p5:
+>  HDIO_DRIVE_CMD(identify) failed: Invalid exchange
+>  readonly      =3D  0 (off)
+>  readahead     =3D 256 (on)
+>  geometry      =3D 245410/255/32, sectors =3D 2002550382, start =3D 42251=
+58
+>  Timing cached reads:   12038 in  2.00 seconds =3D 6027.00 MB/sec
+>  Timing buffered disk reads:  184 MB in  3.00 seconds =3D  61.31
+> MB/sec             <------ Note the drop here!
+>=20
+> # dmesg | grep cciss
+> [    0.000000] Kernel command line: root=3DLABEL=3DPARDUS_ROOT vga=3D791
+> splash=3Dsilent quiet resume=3D/dev/cciss/c0d0p1
+> [    6.023542] cciss 0000:18:08.0: PCI INT A -> GSI 19 (level, low) ->
+> IRQ 19
+> [    6.023566] cciss: MSI init failed
+> [    6.053008] IRQ 19/cciss0: IRQF_DISABLED is not guaranteed=20
+> on shared IRQs
+> [    6.053015] cciss0: <0x3238> at PCI 0000:18:08.0 IRQ 19 using DAC
+> [    6.053918]  cciss/c0d0: p1 p2 < p5 >
+> [    6.320852] kjournald2 starting: pid 190, dev=20
+> cciss!c0d0p5:8, commit
+> interval 5 seconds
+> [    6.322344] EXT4-fs: mounted filesystem cciss!c0d0p5 with ordered
+> data mode
+> [   10.994505] EXT4 FS on cciss!c0d0p5, internal journal on=20
+> cciss!c0d0p5:8
+> [   11.783302] Adding 2112508k swap on /dev/cciss/c0d0p1.  Priority:-1
+> extents:1 across:2112508k
+> [   16.696090] JBD: barrier-based sync failed on cciss!c0d0p5:8 -
+> disabling barriers
+>=20
+>=20
+> ### 2.6.25.20 (Fast one, no PAE support, FS is ext3) ###
+>=20
+> # sync;sleep 2; echo 3 > /proc/sys/vm/drop_caches; hdparm -tT -vvv
+> /dev/cciss/c0d0p5
+>=20
+> /dev/cciss/c0d0p5:
+>  readonly      =3D  0 (off)
+>  readahead     =3D 256 (on)
+>  geometry      =3D 245426/255/32, sectors =3D 2002678902, start =3D 40966=
+38
+>  Timing cached reads:   10650 MB in  2.00 seconds =3D 5334.38 MB/sec
+>  Timing buffered disk reads:  420 MB in  3.01 seconds =3D 139.72 MB/sec
+>=20
+> # dmesg | grep cciss
+> Kernel command line: root=3DLABEL=3DPARDUS_ROOT vga=3D791=20
+> splash=3Dsilent quiet
+> resume=3D/dev/cciss/c0d0p1
+> cciss0: <0x3238> at PCI 0000:18:08.0 IRQ 212 using DAC
+>  cciss/c0d0: p1 p2 < p5 >
+> EXT3 FS on cciss/c0d0p5, internal journal Adding 2048248k=20
+> swap on /dev/cciss/c0d0p1.  Priority:-1 extents:1 across:2048248k
+>=20
+> =
+
+--_002_0F5B06BAB751E047AB5C87D1F77A778869941207A5GVW0547EXCame_
+Content-Type: message/rfc822
+
+Received: from g1t0039.austin.hp.com (16.236.32.45) by
+ G3W0060.americas.hpqcorp.net (16.232.1.155) with Microsoft SMTP Server id
+ 8.2.176.0; Mon, 7 Dec 2009 15:33:53 +0000
+Received: from g2u0301c.austin.hp.com (g2u0301c.austin.hp.com [16.238.112.31])
+	by g1t0039.austin.hp.com (Postfix) with ESMTP id 3590C340A3	for
+ <MIKE.MILLER@hp.com>; Mon,  7 Dec 2009 15:29:58 +0000 (UTC)
+Received: (from d7cadm@localhost)	by g2u0301c.austin.hp.com (@(#)Sendmail
+ version 8.13.3 - Revision 1.004 - 12 January 2007/8.11.1) id nB7FTwv8024947
+	for MIKE.MILLER@hP.COM; Mon, 7 Dec 2009 15:29:58 GMT
+From: "Rodriguez, Jennifer (JCI)" <rodriguez.jennifer@hp.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Date: Mon, 7 Dec 2009 15:29:58 +0000
+Subject: Notification number 001000029587 put in process
+Thread-Topic: Notification number 001000029587 put in process
+Thread-Index: Acp3Uq8hXoZtgpVRTFuB18azS09K4g==
+Message-ID: <ADR34000001442227D7C300@hp.com>
+X-MS-Exchange-Organization-AuthAs: Internal
+X-MS-Exchange-Organization-AuthMechanism: 10
+X-MS-Exchange-Organization-AuthSource: G3W0060.americas.hpqcorp.net
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-authentication-warning: g2u0301c.austin.hp.com: d7cadm set sender to
+ rodriguez.jennifer@hp.com using -f
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Notification number 001000029587 put in process for user  phone number  Sho=
+rt Desc Hot spot in lab M71B276
 
 
-On Mon, 7 Dec 2009, Alan Stern wrote:
-> > 
-> > I dunno. Maybe I'm overlooking something, but the above is much closer to 
-> > what I think would be worth doing.
-> 
-> You're overlooking resume.  It's more difficult than suspend.  The
-> issue is that a child can't start its async part until the parent's
-> synchronous part is finished.
-
-No, I haven't overlooked resume at all. I just assumed that it was 
-obvious. It's the exact same thing, except in reverse (the locking ends 
-up being slightly different, but the changes are actually fairly 
-straightforward).
-
-And by reverse, I mean that you walk the tree in the reverse order too, 
-exactly like we already do - on suspend we walk it children-first, on 
-resume we walk it parents-first (small detail: we actually just walk a 
-simple linked list, but the list is topologically ordered, so walking it 
-forwards/backwards is topologically the same thing as doing that 
-depth-first search).
-
-> So for example, suppose the device listing contains P, C, Q, where C is
-> a child of P, Q is unrelated, and P has a long-lasting asynchronous
-> requirement.  The resume process will stall upon reaching C, waiting
-> for P to finish.  Thus even though P and Q might be able to resume in
-> parallel, they won't get the chance.
-
-No. The resume process does EXCTLY THE SAME THING as I outlined for 
-suspend, but just all in reverse. So now the resume process becomes the 
-same two-phase thing:
-
-	# Phase one
-	resume(root)
-	{
-		// This can do things asynchronously if it wants,
-		// but needs to take the write lock on itself until
-		// it is done if it does
-		resume_one_node(root);
-		for_each_child(root)
-			resume(child);
-	}
-
-	# Phase two
-	post_resume(root)
-	{
-		post_resume_one_node(root);
-		for_each_child(root)
-			post_resume(child);
-	}
-
-Notice? It's _exactly_ the same thing as suspend - except all turned 
-around. We do the nodes before the children ("walk the list backwards"), 
-and we also do the locking the other way around (ie on suspend we'd lock 
-the _parent_ if we wanted to do async stuff - to keep it around - but on 
-resume we lock _ourselves_, so that the children can have something to 
-wait on. Also note how we take a _write_ lock rather than a read lock).
-
-(And again, I've only written it out in email, I've not tested it or 
-thought about it all that deeply, so you'll excuse any stupid thinkos.)
-
-Now, for something like PCI, I'd suggest (once more) leaving all drivers 
-totally unchanged, and you end up with the exact same behavior as we had 
-before (no real change to the whole resume ordering, and everything is 
-synchronous so there is no relevant locking). 
-
-But how would the USB layer do this?
-
-Simple: all the normal leaf devices would have their resume callback be 
-called at "post_resume()" time (exactly the reverse of the suspend phase: 
-we suspend early, and we resume late - it's all a mirror image). And I'd 
-suggest that the USB layer do it all totally asynchronously, except again 
-turned around the other way.
-
-Remember how on suspend, the suspend of a leaf device ended up being an 
-issue of asynchronously calling a function that did the suspend, and then 
-released the read-lock of the parent. Resume is the same, except now we'd 
-actually want to take the parent read-lock asynchronously too, so you'd do
-
-	down_write(leaf->lock);
-	async_schedule(usb_node_resume, leaf);
-
-where that function simply does
-
-	usb_node_resume(node)
-	{
-		/* Wait for the parent to have resumed completely */
-		down_read(node->parent->lock);
-		node->resume(node)
-		up_read(node->parent->lock);
-		up_write(node->lock);
-	}
-
-and you're all done. Once more the ordering and the locking takes care of 
-any need to serialize - there is no data structures to keep track of.
-
-And what about USB hubs? They get resumed in the first phase (again, 
-exactly the mirror image of the suspend), and the only thing they need to 
-do is that _exact_ same thing above:
-
-	down_write(hub->lock);
-	async_schedule(usb_node_resume, hub);
-
- - Ta-daa! All done.
-
-Notice? It's really pretty straightforward, and there are _zero_ new 
-concepts. And again, no callbacks, no nothing.  Just the obvious mirror 
-image of what happened when suspending. We do everything with simple async 
-calls. And none of the tree walking actually blocks (yes, we do a 
-"down_write()" on the nodes as we schedule the resume code, but it won't 
-be a blocking one, since that is the first time we encounter that node: 
-the blocking will come later when the async threads actually need to wait 
-for things).
-
-Again, I do not guarantee that I've dotted every i, and crossed every t. 
-It's just that I'm pretty sure that we really don't need any fancy 
-"infrastructure" for something this simple. And I really much prefer 
-"conceptually simple high-level model" over a model of "keep track of all 
-the relationships and have some complex model of devices".
-
-So let's just look at your example:
-
-> So for example, suppose the device listing contains P, C, Q, where C is
-> a child of P, Q is unrelated, and P has a long-lasting asynchronous
-> requirement.
-
-The tree is:
-
-	... -> P -> C
-	    -> Q
-
-and with what I suggest, during phase one, P will asynchronously start the 
-resume. As part of its async resume it will have to wait for it's parents, 
-of course, but all of that happens in a separate context, and the tree 
-traversal goes on. 
-
-And during phase #1, C and Q won't do anything at all. We _could_ do them 
-during this phase, and it would actually all work out fine, but we 
-wouldn't want to do that for a simple reason: we _want_ the pre_suspend 
-and post_resume phases to be total mirror images, because if we end up 
-doing error handling for the pre-suspend case, then the post-resume phase 
-would be the "fixup" for it, so we actually want leaf things to happen 
-during phase #2 - not because it would screw up locking or ordering, but 
-because of other issues.
-
-When we hit phase #2, we then do C and Q, and do the same thing - we have 
-an async call that does the read-lock on the parent to make sure it's 
-all resumed, and then we resume C and Q. And they'll automatically resume 
-in parallel (unless C is waiting for P, of course, in which case P and Q 
-end up resuming in parallel, and C ends up waiting).
-
-Now, the above just takes care of the inter-device ordering. There are 
-unrelated semantics we want to give, like "all devices will have resumed 
-before we start waking up user space". Those are unrelated to the 
-topological requirements, of course, and are not a requirement imposed by 
-the device tree, but by our _other_ semantics (IOW, in this respect it's 
-kind of like how we wanted pre-suspend and post-resume to be mirror images 
-for other outside reasons).
-
-So we'd actually have a "phase #3", but that phase wouldn't be visible to 
-the devices themselves, it would be a 
-
-	# Phase tree: make sure everything is resumed
-	for_each_device() {
-		read_lock(dev->lock);
-		read_unlock(dev->lock);
-	}
-
-but as you can see, there's no actual device callbacks involved. It would 
-be just the code device layer saying "ok, now I'm going to wait for all 
-the devices to have finished their resume".
-
-			Linus
+--_002_0F5B06BAB751E047AB5C87D1F77A778869941207A5GVW0547EXCame_--
