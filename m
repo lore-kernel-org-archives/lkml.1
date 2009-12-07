@@ -1,121 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965030AbZLGUuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965007AbZLGUtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965030AbZLGUuE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:50:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965022AbZLGUuB
+	id S965007AbZLGUtX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935268AbZLGUtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:50:01 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44746 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965021AbZLGUt7 (ORCPT
+	Mon, 7 Dec 2009 15:49:21 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:58011 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935253AbZLGUtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:49:59 -0500
-Date: Mon, 7 Dec 2009 12:48:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Steven Rostedt <rostedt@goodmis.org>, werner <w.landgraf@ru.ru>,
-       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: kernel problem
-Message-Id: <20091207124828.85e814b8.akpm@linux-foundation.org>
-In-Reply-To: <20091207145011.GA14743@csn.ul.ie>
-References: <web-100877149@zbackend1.aha.ru>
-	<20091204154109.GB1716@goodmis.org>
-	<20091207145011.GA14743@csn.ul.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Mon, 7 Dec 2009 15:49:21 -0500
+Subject: Re: [PATCH] Fix tracing infrastructure to support multiple
+ includes when defining CREATE_TRACE_POINTS
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@redhat.com,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <1260218831.3518.3.camel@gandalf.stny.rr.com>
+References: <20091202191916.GA7589@hmsreliant.think-freely.org>
+	 <1259849726.12870.123.camel@gandalf.stny.rr.com>
+	 <20091203193549.GA18664@hmsreliant.think-freely.org>
+	 <1260216282.4845.3.camel@gandalf.stny.rr.com>
+	 <20091207201829.GG8073@hmsreliant.think-freely.org>
+	 <1260218831.3518.3.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 07 Dec 2009 15:49:26 -0500
+Message-Id: <1260218966.3518.4.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009 14:50:11 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
+On Mon, 2009-12-07 at 15:47 -0500, Steven Rostedt wrote:
 
-> On Fri, Dec 04, 2009 at 10:41:09AM -0500, Steven Rostedt wrote:
-> > [ Added Cc's of people that may be interested in this ]
-> > > <SNIP>
-> > > ------------[ cut here ]------------
-> > > WARNING: at mm/page_alloc.c:1805
-> > > __alloc_pages_nodemask+0x127/0x48f()
-> > > Hardware name: System Product Name
-> > > Modules linked in:
-> > > Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
-> > > Call Trace:
-> > >  [<c103d94b>] warn_slowpath_common+0x65/0x95
-> > >  [<c103d98d>] warn_slowpath_null+0x12/0x15
-> > >  [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
-> > >  [<c10be964>] ? get_slab+0x8/0x50
-> > >  [<c10b8979>] alloc_page_interleave+0x2e/0x6e
-> > >  [<c10b8a10>] alloc_pages_current+0x57/0x99
-> > >  [<c2083a4a>] ? xd_init+0x0/0x482
-> > >  [<c1094c38>] __get_free_pages+0xd/0x1e
-> > >  [<c2083a94>] xd_init+0x4a/0x482
-> > >  [<c2082df0>] ? loop_init+0x104/0x16a
-> > >  [<c169162d>] ? loop_probe+0x0/0xaf
-> > >  [<c2083a4a>] ? xd_init+0x0/0x482
-> > >  [<c1001143>] do_one_initcall+0x51/0x13f
-> > >  [<c204a307>] kernel_init+0x10b/0x15f
-> > >  [<c204a1fc>] ? kernel_init+0x0/0x15f
-> > >  [<c1004347>] kernel_thread_helper+0x7/0x10
-> > > ---[ end trace 686db6333ade6e7a ]---
-> > > xd: Out of memory.
+> > 
+> > Note this patch also converts the napi_poll tracepoint to a TRACE_EVENT.  This
+> > is done so that the TRACE_EVENT fix doesn't break the build, and because its
+> > rather pointless I think given the current tracing infrastructure to not have
+> > napi_poll be an independent event.
+> > 
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 > 
-> First off, it would appear that every block driver under the sun is
-> being loaded. I seriously doubt this controller really exists in the
-> machine.
-
-I'd be surprised if anyone uses xd.c any more.
-
-> Second, it's a real warning as the driver is trying to allocate a buffer of
-> size 0 which get_order() chokes on.
-
-ooh, good one.  I couldn't work it out.
-
-Have we changed behaviour here?  Is it possible that an
-xd_dma_mem_alloc(0) in some earlier kernel did something different?
-
-> For bonus points, it tries to allocate
-> a buffer before it knows what size it should be. This patch should resolve
-> the problem but because I don't have the hardware to test it on, it could
-> do with a second set of eyes just to be sure the rejigged logic makes sense.
+> Thanks, I'll give it a test. But because this now touches networking
+> code, I need an Acked-by from David Miller before I can pull it in.
 > 
-> If this is ok, what is the appropriate submission path for unmaintained
-> block drivers? Is it the block maintainer or someone else?
-
-Yup, Jens would be the appropriate target.
-
-> ==== CUT HERE ====
-> block,xd: Delay allocation of DMA buffers until device is known
+> -- Steve
 > 
-> Loading the XD module triggers a warning like
 > 
->  WARNING: at mm/page_alloc.c:1805
->  __alloc_pages_nodemask+0x127/0x48f()
->  Hardware name: System Product Name
->  Modules linked in:
->  Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
->  Call Trace:
->   [<c103d94b>] warn_slowpath_common+0x65/0x95
->   [<c103d98d>] warn_slowpath_null+0x12/0x15
->   [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
->   [<c10be964>] ? get_slab+0x8/0x50
->   [<c10b8979>] alloc_page_interleave+0x2e/0x6e
->   [<c10b8a10>] alloc_pages_current+0x57/0x99
->   [<c2083a4a>] ? xd_init+0x0/0x482
->   [<c1094c38>] __get_free_pages+0xd/0x1e
->   [<c2083a94>] xd_init+0x4a/0x482
->   [<c2082df0>] ? loop_init+0x104/0x16a
->   [<c169162d>] ? loop_probe+0x0/0xaf
->   [<c2083a4a>] ? xd_init+0x0/0x482
->   [<c1001143>] do_one_initcall+0x51/0x13f
->   [<c204a307>] kernel_init+0x10b/0x15f
->   [<c204a1fc>] ? kernel_init+0x0/0x15f
->   [<c1004347>] kernel_thread_helper+0x7/0x10
->  ---[ end trace 686db6333ade6e7a ]---
->  xd: Out of memory.
->
-> ...
+> 
+> > 
+> > 
+> > linux/tracepoint.h   |   45 +++++++++++++++++++++++----------------------
+> > trace/define_trace.h |    1 +
+> > trace/events/napi.h  |   25 ++++++++++++++++++++++---
+
+Hmm, This really isn't networking code. But still, a patch that changes
+the way a networking trace point works, I would rather have an ack.
+
+Thanks,
+
+-- Steve
+
+> > 3 files changed, 46 insertions(+), 25 deletions(-)
+> > 
+> > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> > index 2aac8a8..311abbf 100644
+> > --- a/include/linux/tracepoint.h
+> > +++ b/include/linux/tracepoint.h
+> > @@ -58,28 +58,6 @@ struct tracepoint {
+> >  		rcu_read_unlock_sched_notrace();			\
+> >  	} while (0)
+> >  
+
+
