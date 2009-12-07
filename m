@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934504AbZLGWOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934577AbZLGWQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934504AbZLGWOi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 17:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933458AbZLGWOi
+	id S934577AbZLGWQj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934004AbZLGWQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 17:14:38 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57328 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933310AbZLGWOh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 17:14:37 -0500
-Date: Mon, 7 Dec 2009 14:13:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] kmemcheck: make bitfield annotations truly no-ops when
- disabled
-Message-Id: <20091207141356.9e83fd5b.akpm@linux-foundation.org>
-In-Reply-To: <1260121333-19642-1-git-send-email-vegard.nossum@gmail.com>
-References: <1260121333-19642-1-git-send-email-vegard.nossum@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Mon, 7 Dec 2009 17:16:37 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54074 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933458AbZLGWQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 17:16:37 -0500
+Date: Tue, 8 Dec 2009 09:16:39 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: input tree build failure
+Message-Id: <20091208091639.bb3569d1.sfr@canb.auug.org.au>
+In-Reply-To: <20091207173640.GA998@core.coreip.homeip.net>
+References: <20091207200344.01323cb5.sfr@canb.auug.org.au>
+	<4B1D2C80.4060202@oracle.com>
+	<20091207173640.GA998@core.coreip.homeip.net>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__8_Dec_2009_09_16_39_+1100_vVPobnhKzYc6YnOx"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun,  6 Dec 2009 18:42:13 +0100
-Vegard Nossum <vegard.nossum@gmail.com> wrote:
+--Signature=_Tue__8_Dec_2009_09_16_39_+1100_vVPobnhKzYc6YnOx
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> It turns out that even zero-sized struct members (int foo[0];) will affect
-> the struct layout, causing us in particular to lose 4 bytes in struct sock.
-> 
-> This patch fixes the regression in CONFIG_KMEMCHECK=n case.
+Hi Dmitry,
 
-Which kernel version is the regression relative to?
+On Mon, 7 Dec 2009 09:36:41 -0800 Dmitry Torokhov <dmitry.torokhov@gmail.co=
+m> wrote:
+>
+> I removed the stray EXPORT_SYMBOL(), shold be good now.
 
-Should we backport this into 2.6.32.x?
+Thanks.
 
-If so, we have a slight problem: someone did
-s/MAYBE_BUILD_BUG_ON/BUILD_BUG_ON/ in linux-next (I have feeling it was
-me ;)) so the patch I applied had that slight massaging.  Perhaps the
--stable stalwarts can take care of that slight difference.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__8_Dec_2009_09_16_39_+1100_vVPobnhKzYc6YnOx
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksdfscACgkQjjKRsyhoI8zggACgu2Aa2l9JhIKfIDZFNbr5DYse
+f3kAn3M03n9iyuNP7ld3zzgGpoVaJKNN
+=HwVb
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__8_Dec_2009_09_16_39_+1100_vVPobnhKzYc6YnOx--
