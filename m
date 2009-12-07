@@ -1,190 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbZLGF54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbZLGGAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbZLGF54 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 00:57:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZLGF5z
+	id S1753249AbZLGGAx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 01:00:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZLGGAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 00:57:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58629 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751522AbZLGF5y (ORCPT
+	Mon, 7 Dec 2009 01:00:52 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:53797 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751634AbZLGGAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 00:57:54 -0500
-Date: Sun, 6 Dec 2009 21:57:55 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Zhang Rui <rui.zhang@intel.com>
-cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Mon, 7 Dec 2009 01:00:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=F1EY6q1hBWt+X1RHwRYkfVPTSOILuzp2wmHJJIJHCTV6gSGmCwEsDVn98vYbuQ2Kgm
+         /4vnEz3GmWqJPe7xNIRo9ZnttdeCRFy+bASzwomsciGIdox7GaCbUt2mtqXsaw/U7QfG
+         Sxi3rg1AqciLMvnnoovHd2MIxHVXFv1nRKyWY=
+Date: Sun, 6 Dec 2009 22:00:53 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <1260158279.27069.181.camel@rzhang1-desktop>
-Message-ID: <alpine.LFD.2.00.0912062122460.3560@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org> <1260158279.27069.181.camel@rzhang1-desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Message-ID: <20091207060053.GA21451@core.coreip.homeip.net>
+References: <alpine.LFD.2.00.0912051635330.3560@localhost.localdomain> <200912060254.10081.rjw@sisk.pl> <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain> <20091206113555.5a646713@infradead.org> <alpine.LFD.2.00.0912061144100.3560@localhost.localdomain> <20091206121803.70385c33@infradead.org> <7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com> <20091206165551.2529075f@infradead.org> <20091207022756.GB20770@core.coreip.homeip.net> <20091206212600.44806308@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091206212600.44806308@infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 7 Dec 2009, Zhang Rui wrote:
+On Sun, Dec 06, 2009 at 09:26:00PM -0800, Arjan van de Ven wrote:
+> On Sun, 6 Dec 2009 18:27:56 -0800
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 > 
-> Hi, Linus,
-> can you please look at this patch set and see if the idea is right?
-> http://marc.info/?l=linux-kernel&m=124840449826386&w=2
-> http://marc.info/?l=linux-acpi&m=124840456826456&w=2
-> http://marc.info/?l=linux-acpi&m=124840456926459&w=2
-> http://marc.info/?l=linux-acpi&m=124840457026468&w=2
-> http://marc.info/?l=linux-acpi&m=124840457126471&w=2
+> > On Sun, Dec 06, 2009 at 04:55:51PM -0800, Arjan van de Ven wrote:
+> > > On Sun, 6 Dec 2009 14:54:48 -0800
+> > > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > > 
+> > > > > isn't serio the PS/2 stuff?
+> > > > 
+> > > > Yes, that's your PS/2 mouse (rather touchpad) and the delay comes
+> > > > from device reset (needed by some keyboard controllers - I
+> > > > remember HP -or it and keyboard will be dead at resume).
+> > > 
+> > > and I have a HP laptop... so this makes perfect sense.
+> > > Thanks for the explenation!
+> > > 
+> > 
+> > Well, we do it for everyone, it's just a particular series of HPs
+> > forced us to add it.
+> > 
+> wonder if it should be a DMI based quirk instead...
+> 
 
-So I'm not entirely sure about that patch-set, but the thing I like about 
-it is how drivers really sign up to it one by one, rather than having all 
-PCI devices automatically signed up for async behavior.
+I have not received reports where it causes harm or reduces
+functionality so I'd prefer having it by default and not try to race
+with manufacturers.
 
-That said, the thing I don't like about it is some of the same thing I 
-don't necessarily like about the series in Rafael's tree either: it looks 
-rather over-designed with the whole infrastructure for async device logic 
-(your patch in http://marc.info/?l=linux-acpi&m=124840456926459&w=2). How 
-would you explain that whole async_dev_register() logic in simple terms to 
-somebody else?
-
-(I think yours is simpler that the one in the PM tree, but I dunno. I've 
-not really compared the two).
-
-So let me explain my dislike by trying to outline some conceptually simple 
-thing that doesn't have any call-backs, doesn't have any "classes", 
-doesn't require registration etc. It just allows drivers at any level to 
-decide to do some things (not necessarily everything) asynchronously.
-
-Here's the outline:
-
- - first off: drivers that don't know that they nest clearly don't do 
-   anything asynchronous. No "PCI devices can be done in parallel" crap, 
-   because they really can't - not in the general case. So just forget 
-   about that kind of logic entirely: it's just wrong.
-
- - the 'suspend' thing is a depth-first tree walk. As we suspend a node, 
-   we first suspend the child nodes, and then we suspend the node itself. 
-   Everybody agrees about that, right?
-
- - Trivial "async rule": the tree is walked synchronously, but as we walk 
-   it, any point in the tree may decide to do some or all of its suspend 
-   asynchronously. For example, when we hit a disk node, the disk driver 
-   may just decide that (a) it knows that the disk is an independent thing 
-   and (b) it's hierarchical wrt it's parent so (c) it can do the disk 
-   suspend asynchronously.
-
- - To protect against a parent node being suspended before any async child 
-   work has completed, the child suspend - before it kicks off the actual 
-   async work - just needs to take a read-lock on the parent (read-lock, 
-   because you may have multiple children sharing a parent, and they don't 
-   lock each other out). Then the only thing the asynchronous code needs 
-   to do is to release the read lock when it is done.
-
- - Now, the rule just becomes that the parent has to take a write lock on 
-   itself when it suspends itself. That will automatically block until 
-   all children are done.
-
-Doesn't the above sound _simple_? Doesn't that sound like it should just 
-obviously do the right thing? It sounds like something you can explain as 
-a locking rule without having any complex semantic registration or 
-anything at all.
-
-Now, the problem remains that when you walk the device tree starting off 
-all these potentially asynchronous events, you don't want to do that 
-serialization part (the "parent suspend") as you walk the tree - because 
-then you would only ever do one single level asynchronously. Which is why 
-I suggested splitting the suspend into a "pre-suspend" phase (and a 
-"post-resume" one). Because then the tree walk goes from
-
-	# single depth-first thing
-	suspend(root)
-	{
-		for_each_child(root) {
-			// This may take the parent lock for
-			// reading if it does something async
-			suspend(child);
-		}
-
-		// This serializes with any async children
-		write_lock(root->lock);
-		suspend_one_node(root);
-		write_unlock(root->lock);
-	}
-
-to
-
-	# Phase one: walk the tree synchronously, starting any
-	# async work on the leaves
-	suspend_prepare(root)
-	{
-		for_each_child(root) {
-			// This may take the parent lock for
-			// reading if it does something async
-			suspend_prepare(child);
-		}
-		suspend_prepare_one_node(root);
-	}
-
-	# Phase two: walk the tree synchronously, waiting for
-	# and finishing the suspend
-	suspend(root)
-	{
-		for_each_child(root) {
-			suspend(child);
-		}
-		// This serializes with any async children started in phase 1
-		write_lock(root->lock);
-		suspend_one_node(root);
-		write_unlock(root->lock);
-	}
-
-and I really think this should work.
-
-The advantage: untouched drivers don't change ANY SEMANTICS AT ALL. If 
-they don't have a 'suspend_prepare()' function, then they still see that 
-exact same sequence of 'suspend()' calls. In fact, even if they have 
-children that _do_ have drivers that have that async phase, they'll never 
-know, because that simple write-semaphore trivially guarantees that 
-whether there was async work or not, it will be completed by the time we 
-call 'suspend()'.
-
-And drivers that want to do things asynchronously don't need to register 
-or worry: all they do is literally
-
- - move their 'suspend()' function to 'suspend_prepare()' instead
-
- - add a
-
-	down_read(dev->parent->lock);
-	async_run(mysuspend, dev);
-
-   to the point that they want to be asynchronous (which may be _all_ of 
-   it or just some slow part). The 'mysuspend' part would be the async 
-   part.
-
- - add a
-
-	up_read(dev->parent->lock);
-
-   to the end of their asynchronous 'mysuspend()' function, so that when 
-   the child has finished suspending, the parent down_write() will finally 
-   succeed.
-
-Doesn't that all sound pretty simple? And it has a very clear architecture 
-that is pretty easy to explain to anybody who knows about traversing trees 
-depth-first.
-
-No complex concepts. No change to existing tested drivers. No callbacks, 
-no flags, no nothing. And a pretty simple way for a driver to decide: I'll 
-do my suspends asynchronously (without parent drivers really ever even 
-having to know about it).
-
-I dunno. Maybe I'm overlooking something, but the above is much closer to 
-what I think would be worth doing.
-
-			Linus
+-- 
+Dmitry
