@@ -1,76 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbZLGSmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbZLGStV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758659AbZLGSmB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbZLGSl7
+	id S1758630AbZLGStV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758119AbZLGStU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:41:59 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:55849 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758444AbZLGSl6 (ORCPT
+	Mon, 7 Dec 2009 13:49:20 -0500
+Received: from exprod7og113.obsmtp.com ([64.18.2.179]:38799 "HELO
+	exprod7og113.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757860AbZLGStT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:41:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WWymiW+hUFbRt8IazPnhi08/gspkBVfjiI5OZuBdIV2LIkokvqKdjt1NCoZvksGXvj
-         7kJfBzq6aFhhnSzXzFQ3clO0k3XlYWPvqgEZp/X3AXA3oGzyVbfznhsnMWzRAnqA2s82
-         DsOW9Q6/HjXPNP0RLFkjjPR0zd/aUk0r02/a4=
-Date: Mon, 7 Dec 2009 10:41:53 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR  system?
-Message-ID: <20091207184153.GD998@core.coreip.homeip.net>
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain>
+	Mon, 7 Dec 2009 13:49:19 -0500
+X-Greylist: delayed 313 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Dec 2009 13:49:18 EST
+From: "Jacques, Hugo" <Hugo.Jacques@verint.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Jacques, Hugo" <Hugo.Jacques@verint.com>
+Date: Mon, 7 Dec 2009 13:43:00 -0500
+Subject: Error in SEND(2) man page ?
+Thread-Topic: Error in SEND(2) man page ?
+Thread-Index: Acp3bRotwJDtdyu+SUm0y0Rk60tvJw==
+Message-ID: <579B119545DAEF4689C8FBEEFEC5793F01FA2F6FC6C8@ATLMBX.verint.corp.verintsystems.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3skbn6dv1.fsf@intrepid.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 06, 2009 at 09:34:26PM +0100, Krzysztof Halasa wrote:
-> Jon Smirl <jonsmirl@gmail.com> writes:
-> 
-> >> Once again: how about agreement about the LIRC interface
-> >> (kernel-userspace) and merging the actual LIRC code first? In-kernel
-> >> decoding can wait a bit, it doesn't change any kernel-user interface.
-> >
-> > I'd like to see a semi-complete design for an in-kernel IR system
-> > before anything is merged from any source.
-> 
-> This is a way to nowhere, there is no logical dependency between LIRC
-> and input layer IR.
-> 
-> There is only one thing which needs attention before/when merging LIRC:
-> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
-> actually, making a correct IR core design without the LIRC merged can be
-> only harder.
 
-This sounds like "merge first, think later"...
+Hi,
 
-The question is why we need to merge lirc interface right now, before we
-agreed on the sybsystem architecture? Noone _in kernel_ user lirc-dev
-yet and, looking at the way things are shaping, no drivers will be
-_directly_ using it after it is complete. So, even if we merge it right
-away, the code will have to be restructured and reworked. Unfortunately,
-just merging what Jarod posted, will introduce sysfs hierarchy which
-is userspace interface as well (although we not as good maintaining it
-at times) and will add more constraints on us.
+I think I found a discrepancy between the man page of send()and the actual implementation.
 
-That is why I think we should go the other way around - introduce the
-core which receivers could plug into and decoder framework and once it
-is ready register lirc-dev as one of the available decoders.
+Man page mentions that:
 
--- 
-Dmitry
+"[...] When the message does not fit into the send buffer of the socket, send() normally blocks, unless the socket has been placed in non-blocking I/O mode. In non-blocking mode it would fail with the error EAGAIN or EWOULDBLOCK in this case.  [...]"
+
+This tells me that if doing a send() on a tcp non-blocking socket whose send buffer is full, the call should return with -1 and errno=EAGAIN.
+
+But running a trivial test app (code below), send() will indicate (return value) that is sent some but not all of the data buffer when the socket's send buffer is full.
+
+Am I missing anything?
+Is the man page or the code wrong?
+
+Please CC answers/comments to me personally (I am not a lkml subscriber)
+
+Thanks,
+
+Hugo Jacques
+
+Sample code: 
+
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <pthread.h>
+#include <stdio.h>
+
+#define MY_IP_ADDR 0x7F000001
+#define MY_PORT 12345
+#define MY_CHUNK_SIZE 100
+
+static int server_ready = 0;
+
+static void* server_function(void* arg)
+{
+	struct sockaddr_in serv_addr;
+	int conn_socket = -1;	
+	/* server socket */	
+	int serv_socket= socket(AF_INET,SOCK_STREAM,0);	   	
+   	memset(&serv_addr, 0, sizeof(struct sockaddr_in));
+   	serv_addr.sin_family = AF_INET;
+   	serv_addr.sin_port   = htons(MY_PORT);
+   	serv_addr.sin_addr.s_addr = htonl(MY_IP_ADDR);		
+	bind(serv_socket,(struct sockaddr*)&serv_addr,sizeof(serv_addr));	
+	listen(serv_socket,1);	
+	server_ready = 1;
+	conn_socket = accept(serv_socket,NULL,NULL);	
+	if (conn_socket != 1)
+	{
+		printf("got connection on socket %d\n",conn_socket);		
+		while(1)
+		{		
+			sleep(1);
+		}			
+	}							
+}	
+
+int main(void)
+{
+	pthread_t thread;
+	int client_socket = -1;
+	struct sockaddr_in client_addr;
+	int ret = -1;
+	int bytes_sent = 0;
+		
+	pthread_create(&thread,NULL,&server_function,NULL);
+	
+	/* lazy wait for the server to be ready */
+	while (!server_ready)
+	{
+		sleep(1);		
+	}		
+	printf("Connecting to server\n");	
+	client_socket = socket(AF_INET,SOCK_STREAM,0);	
+   	memset(&client_addr, 0, sizeof(struct sockaddr_in));
+   	client_addr.sin_family = AF_INET;
+   	client_addr.sin_port   = htons(MY_PORT);
+   	client_addr.sin_addr.s_addr = htonl(INADDR_ANY);	
+	ret = connect(	client_socket,
+			(struct sockaddr*)&client_addr,
+			sizeof(client_addr));
+	if (ret != 0)
+		perror("connect failed\n");	
+	printf("Connected to server\n");
+	
+	/* send data in chunks to server */
+	while (1)
+	{
+		char data[MY_CHUNK_SIZE];		
+		/* send data in non-blocking manner */
+		int send_ret = send(	client_socket,
+					data,
+					MY_CHUNK_SIZE,
+					MSG_DONTWAIT);
+		
+		if (send_ret != MY_CHUNK_SIZE)		
+		{
+			if (send_ret == -1)
+				perror("send failed\n");			
+			else
+				printf("send returned %d while attempting to send %d bytes (total data sent=%d)\n",send_ret,MY_CHUNK_SIZE,bytes_sent+send_ret);
+			break;				
+		}
+		else
+			bytes_sent+=MY_CHUNK_SIZE;
+	}		
+	return 0;	
+}
+This electronic message may contain proprietary and confidential information of Verint Systems Inc., its affiliates and/or subsidiaries.
+The information is intended to be for the use of the individual(s) or
+entity(ies) named above.  If you are not the intended recipient (or authorized to receive this e-mail for the intended recipient), you may not use, copy, disclose or distribute to anyone this message or any information contained in this message.  If you have received this electronic message in error, please notify us by replying to this e-mail.
+
