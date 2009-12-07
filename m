@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751553AbZLGF27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbZLGFb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751553AbZLGF27 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 00:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZLGF26
+	id S1752024AbZLGFb4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 00:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZLGFby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 00:28:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49564 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbZLGF25 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 00:28:57 -0500
-Date: Sun, 6 Dec 2009 21:31:12 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Message-ID: <20091206213112.568c602b@infradead.org>
-In-Reply-To: <20091207022706.GA20770@core.coreip.homeip.net>
-References: <200912052216.19540.rjw@sisk.pl>
- <200912060055.36130.rjw@sisk.pl>
- <alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
- <200912060254.10081.rjw@sisk.pl>
- <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
- <20091206113555.5a646713@infradead.org>
- <alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
- <20091206121803.70385c33@infradead.org>
- <7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
- <20091206171856.394ce6d8@infradead.org>
- <20091207022706.GA20770@core.coreip.homeip.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 7 Dec 2009 00:31:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:49296 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751520AbZLGFbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 00:31:53 -0500
+Date: Mon, 7 Dec 2009 05:31:18 GMT
+From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, lizf@cn.fujitsu.com, peterz@infradead.org,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
+       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, peterz@infradead.org,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
+       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4B1C7F73.80707@cn.fujitsu.com>
+References: <4B1C7F73.80707@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf_event: Fix __dsos__write_buildid_table()
+Message-ID: <tip-d9541ed3241bb6c2b805d3ea0e87563cf2a0c5c3@git.kernel.org>
+Git-Commit-ID: d9541ed3241bb6c2b805d3ea0e87563cf2a0c5c3
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Dec 2009 18:27:07 -0800
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+Commit-ID:  d9541ed3241bb6c2b805d3ea0e87563cf2a0c5c3
+Gitweb:     http://git.kernel.org/tip/d9541ed3241bb6c2b805d3ea0e87563cf2a0c5c3
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Mon, 7 Dec 2009 12:07:15 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 7 Dec 2009 06:26:24 +0100
 
-> On Sun, Dec 06, 2009 at 05:18:56PM -0800, Arjan van de Ven wrote:
-> > On Sun, 6 Dec 2009 14:54:48 -0800
-> > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > 
-> > > Yes, that's your PS/2 mouse (rather touchpad) and the delay comes
-> > > from device reset (needed by some keyboard controllers - I
-> > > remember HP -or it and keyboard will be dead at resume).
-> > > 
-> > 
-> > btw could we do this reset in an async function call (as long as we
-> > wait for it to complete before we pull the plug finally) ?
-> 
-> It has to complete before we start shutting down i8042, so there are
-> dependencies involved...
+perf_event: Fix __dsos__write_buildid_table()
 
-async function calls have 2 methods for synchronization:
+The remain buff size is 'len - pos->long_name_len - 1', not
+'len - pos->long_name_len + 1'
 
-* inside an async function, you can wait for all "earlier" async
-  functions to complete  (async_synchronize_cookie)
-* outside an async function, you can wait for all scheduled async
-  functions to complete (async_synchronize_full)
+This bug was introduced by commit 7691b1e ("perf tools: Misc small
+fixes").
 
-so there's two options to use the async code to cut down this time:
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <4B1C7F73.80707@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/util/header.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-1) Make both the mouse, keyboard AND the i8042 suspend functions async,
-   and in the i8042 function the code first synchronizes on all previous
-   async work
-2) only make the mouse and keyboard suspend async, and just wait for all
-   async work in i8042 suspend
-
-I strongly prefer number 1, in terms of getting the best suspend speed.
-It means that all other suspend code can run in parallel to the whole
-serio/i8042 suspend.
-Option two is simpler, but the delay is in the normal, synchronous path,
-so other suspend code will not run in parallel.
-
-The good news is that neither is hard for someone familiar with the
-code...
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 08b6759..59a9c0b 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -209,7 +209,7 @@ static int __dsos__write_buildid_table(struct list_head *head, int fd)
+ 		err = do_write(fd, pos->long_name, pos->long_name_len + 1);
+ 		if (err < 0)
+ 			return err;
+-		err = do_write(fd, zero_buf, len - pos->long_name_len + 1);
++		err = do_write(fd, zero_buf, len - pos->long_name_len - 1);
+ 		if (err < 0)
+ 			return err;
+ 	}
