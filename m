@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbZLGRgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935510AbZLGRin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964840AbZLGRgp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 12:36:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935482AbZLGRgo
+	id S935510AbZLGRin (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 12:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935496AbZLGRij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 12:36:44 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:53632 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935467AbZLGRgn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 12:36:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vf/+vGcDWM1eWM4oKb0bvohA3lyLq+czaj9jviE0X5Bltph6F/57JhrOnLyzwef71G
-         wW1/Ub0xmaeANYcsv/Boi50zBmB2HH9IeKrsVrIIQfx6TYzF1fs7W3oUBo1ytTUS5U2Q
-         jmbMQExj5Zerr0H/yQ75IOXskZY0lQ00deLQw=
-Date: Mon, 7 Dec 2009 09:36:41 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: input tree build failure
-Message-ID: <20091207173640.GA998@core.coreip.homeip.net>
-References: <20091207200344.01323cb5.sfr@canb.auug.org.au> <4B1D2C80.4060202@oracle.com>
+	Mon, 7 Dec 2009 12:38:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41682 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964861AbZLGRig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 12:38:36 -0500
+Date: Mon, 7 Dec 2009 17:36:50 GMT
+From: tip-bot for Juha Leppanen <juha_motorsportcom@luukku.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       juha_motorsportcom@luukku.com, dle-develop@lists.sourceforge.net,
+       fweisbec@gmail.com, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu, systemtap@sources.redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       juha_motorsportcom@luukku.com, dle-develop@lists.sourceforge.net,
+       fweisbec@gmail.com, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu, systemtap@sources.redhat.com
+In-Reply-To: <20091207170040.19230.37464.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20091207170040.19230.37464.stgit@dhcp-100-2-132.bos.redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf probe: Fix strtailcmp() to compare s1and s2[0]
+Message-ID: <tip-d56728b8d7fb3e1e5e5f97b88fdf6b43a35b4f5e@git.kernel.org>
+Git-Commit-ID: d56728b8d7fb3e1e5e5f97b88fdf6b43a35b4f5e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4B1D2C80.4060202@oracle.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 08:25:36AM -0800, Randy Dunlap wrote:
-> Stephen Rothwell wrote:
-> > Hi Dmitry,
-> > 
-> > Today's linux-next build (powerpc allyesconfig) failed like this:
-> > 
-> > drivers/input/sparse-keymap.c:101: error: __ksymtab_sparse_keymap_setkeycode causes a section type conflict
-> > 
-> > Caused by commit a2dd9f7ceeb28f495587834aa5778c721611d61b ("Input: add
-> > generic support for sparse keymaps").
-> > 
-> > static functions should not given to EXPORT_SYMBOL().
-> > 
-> > I have reverted that commit for today.
-> 
-> (DT:) Is that what causes wistron_btns builds to fail also?
-> 
+Commit-ID:  d56728b8d7fb3e1e5e5f97b88fdf6b43a35b4f5e
+Gitweb:     http://git.kernel.org/tip/d56728b8d7fb3e1e5e5f97b88fdf6b43a35b4f5e
+Author:     Juha Leppanen <juha_motorsportcom@luukku.com>
+AuthorDate: Mon, 7 Dec 2009 12:00:40 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 7 Dec 2009 18:33:20 +0100
 
-Umm... Wistron and dm355evm_keys now using sparse keymap library so if
-it is missing they would fail to compile.
+perf probe: Fix strtailcmp() to compare s1and s2[0]
 
-I removed the stray EXPORT_SYMBOL(), shold be good now.
+Fix strtailcmp() to compare s1[0] and s2[0]. strtailcmp() returns 0
+if "a" and "b" or "a" and "ab", it's a wrong behavior. This patch
+fixes it.
 
--- 
-Dmitry
+Signed-off-by: "Juha Leppanen" <juha_motorsportcom@luukku.com>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: systemtap <systemtap@sources.redhat.com>
+Cc: DLE <dle-develop@lists.sourceforge.net>
+Cc: Juha Leppanen <juha_motorsportcom@luukku.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20091207170040.19230.37464.stgit@dhcp-100-2-132.bos.redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/util/probe-finder.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+index 293cdfc..4585f1d 100644
+--- a/tools/perf/util/probe-finder.c
++++ b/tools/perf/util/probe-finder.c
+@@ -106,7 +106,7 @@ static int strtailcmp(const char *s1, const char *s2)
+ {
+ 	int i1 = strlen(s1);
+ 	int i2 = strlen(s2);
+-	while (--i1 > 0 && --i2 > 0) {
++	while (--i1 >= 0 && --i2 >= 0) {
+ 		if (s1[i1] != s2[i2])
+ 			return s1[i1] - s2[i2];
+ 	}
