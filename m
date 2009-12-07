@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZLGAN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbZLGAXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbZLGAN4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758440AbZLGANt
+	id S1758849AbZLGAXR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbZLGAXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:13:49 -0500
-Received: from kroah.org ([198.145.64.141]:34611 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:23:14 -0500
+Received: from kroah.org ([198.145.64.141]:34619 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758539AbZLGANg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:13:36 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:54 2009
-Message-Id: <20091207000654.821385285@mini.kroah.org>
+	id S1758560AbZLGANh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:13:37 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:55 2009
+Message-Id: <20091207000655.004715013@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:56 -0800
+Date: Sun, 06 Dec 2009 16:00:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [080/119] sched: Fix boot crash by zalloc()ing most of the cpu masks
+       Michael Krufky <mkrufky@kernellabs.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [081/119] V4L/DVB (13202): smsusb: add autodetection support for three additional Hauppauge USB IDs
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=sched-fix-boot-crash-by-zalloc-ing-most-of-the-cpu-masks.patch
+Content-Disposition: inline; filename=v4l-dvb-13202-smsusb-add-autodetection-support-for-three-additional-hauppauge-usb-ids.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,45 +30,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Rusty Russell <rusty@rustcorp.com.au>
+From: Michael Krufky <mkrufky@kernellabs.com>
 
-commit 49557e620339cb134127b5bfbcfecc06b77d0232 upstream.
+commit 78c948ab0cc44f9c8ae397d7d9d217bb498bfa2f upstream.
 
-I got a boot crash when forcing cpumasks offstack on 32 bit,
-because find_new_ilb() returned 3 on my UP system (nohz.cpu_mask
-wasn't zeroed).
+Add support for three new Hauppauge Device USB IDs:
 
-AFAICT the others need to be zeroed too: only
-nohz.ilb_grp_nohz_mask is initialized before use.
+2040:b900
+2040:b910
+2040:c000
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <200911022037.21282.rusty@rustcorp.com.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Michael Krufky <mkrufky@kernellabs.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 
 ---
- kernel/sched.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/dvb/siano/smsusb.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9383,13 +9383,13 @@ void __init sched_init(void)
- 	current->sched_class = &fair_sched_class;
+--- a/drivers/media/dvb/siano/smsusb.c
++++ b/drivers/media/dvb/siano/smsusb.c
+@@ -529,6 +529,12 @@ struct usb_device_id smsusb_id_table[] =
+ 		.driver_info = SMS1XXX_BOARD_SIANO_NICE },
+ 	{ USB_DEVICE(0x187f, 0x0301),
+ 		.driver_info = SMS1XXX_BOARD_SIANO_VENICE },
++	{ USB_DEVICE(0x2040, 0xb900),
++		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
++	{ USB_DEVICE(0x2040, 0xb910),
++		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
++	{ USB_DEVICE(0x2040, 0xc000),
++		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
+ 	{ } /* Terminating entry */
+ 	};
  
- 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
--	alloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
-+	zalloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
- #ifdef CONFIG_SMP
- #ifdef CONFIG_NO_HZ
--	alloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
-+	zalloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
- 	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
- #endif
--	alloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
-+	zalloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
- #endif /* SMP */
- 
- 	perf_counter_init();
 
 
