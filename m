@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZLGUI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbZLGTOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879AbZLGUI5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758849AbZLGUIz
+	id S1758764AbZLGTOy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 14:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758627AbZLGTOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:08:55 -0500
-Received: from khc.piap.pl ([195.187.100.11]:55363 "EHLO khc.piap.pl"
+	Mon, 7 Dec 2009 14:14:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41529 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758846AbZLGUIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:08:54 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
-	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	<1260070593.3236.6.camel@pc07.localdom.local>
-	<20091206065512.GA14651@core.coreip.homeip.net>
-	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	<m3skbn6dv1.fsf@intrepid.localdomain>
-	<20091207184153.GD998@core.coreip.homeip.net>
-Date: Mon, 07 Dec 2009 21:08:57 +0100
-In-Reply-To: <20091207184153.GD998@core.coreip.homeip.net> (Dmitry Torokhov's
-	message of "Mon, 7 Dec 2009 10:41:53 -0800")
-Message-ID: <m3my1u35t2.fsf@intrepid.localdomain>
-MIME-Version: 1.0
+	id S1758261AbZLGTOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 14:14:53 -0500
+Date: Mon, 7 Dec 2009 14:09:25 -0600
+From: David Teigland <teigland@redhat.com>
+To: Emese Revfy <re.emese@gmail.com>
+Cc: tony.luck@intel.com, fenghua.yu@intel.com, benh@kernel.crashing.org,
+       lethal@linux-sh.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, axboe@kernel.dk, gregkh@suse.de, petero2@telia.com,
+       davej@redhat.com, maciej.sosnowski@intel.com, dougthompson@xmission.com,
+       airlied@linux.ie, rolandd@cisco.com, sean.hefty@intel.com,
+       hal.rosenstock@gmail.com, neilb@suse.de, davem@davemloft.net,
+       rdunlap@xenotime.net, kyle@mcmartin.ca, deller@gmx.de,
+       jejb@parisc-linux.org, jbarnes@virtuousgeek.org, hjk@linutronix.de,
+       david.vrabel@csr.com, jeremy@xensource.com, chris.mason@oracle.com,
+       ccaulfie@redhat.com, tytso@mit.edu, adilger@sun.com,
+       swhiteho@redhat.com, mfasheh@suse.com, joel.becker@oracle.com,
+       rusty@rustcorp.com.au, penberg@cs.helsinki.fi,
+       shemminger@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 29/31] Constify struct sysfs_ops for 2.6.32 v1
+Message-ID: <20091207200925.GA333@redhat.com>
+References: <4B198670.2000406@gmail.com> <4B1991E2.5010903@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1991E2.5010903@gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
+On Fri, Dec 04, 2009 at 11:49:06PM +0100, Emese Revfy wrote:
+> From: Emese Revfy <re.emese@gmail.com>
+> 
+> Constify struct sysfs_ops.
+> 
+> Signed-off-by: Emese Revfy <re.emese@gmail.com>
+> ---
+>  fs/dlm/lockspace.c                    |    2 +-
 
->> There is only one thing which needs attention before/when merging LIRC:
->> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
->> actually, making a correct IR core design without the LIRC merged can be
->> only harder.
->
-> This sounds like "merge first, think later"...
+Acked-by: David Teigland <teigland@redhat.com>
 
-I'd say "merge the sane agreed and stable things first and think later
-about improvements".
-
-> The question is why we need to merge lirc interface right now, before we
-> agreed on the sybsystem architecture?
-
-Because we need the features and we can't improve something which is
-outside the kernel. What "subsystem architecture" do you want to
-discuss? Unrelated (input layer) interface?
-
-Those are simple things. The only part which needs to be stable is the
-(in this case LIRC) kernel-user interface.
-
-> Noone _in kernel_ user lirc-dev
-> yet and, looking at the way things are shaping, no drivers will be
-> _directly_ using it after it is complete. So, even if we merge it right
-> away, the code will have to be restructured and reworked.
-
-Sure. We do this constantly to every part of the kernel.
-
-> Unfortunately,
-> just merging what Jarod posted, will introduce sysfs hierarchy which
-> is userspace interface as well (although we not as good maintaining it
-> at times) and will add more constraints on us.
-
-Then perhaps it should be skipped, leaving only the things udev needs to
-create /dev/ entries. They don't have to be particularly stable.
-Perhaps it should go to the staging first. We can't work with the code
-outside the kernel, staging has not such limitation.
-
-> That is why I think we should go the other way around - introduce the
-> core which receivers could plug into and decoder framework and once it
-> is ready register lirc-dev as one of the available decoders.
-
-That means all the work has to be kept and then merged "atomically",
-it seems there is a lack of manpower for this.
--- 
-Krzysztof Halasa
