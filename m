@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934820AbZLGMhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934801AbZLGMlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934820AbZLGMhW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 07:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934734AbZLGMhU
+	id S934801AbZLGMlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 07:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934652AbZLGMlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 07:37:20 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:60899 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934730AbZLGMhT (ORCPT
+	Mon, 7 Dec 2009 07:41:19 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36561 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932432AbZLGMlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 07:37:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=YvLX9uVXmFwKtL9OdFZ4rjttNZsZbA9dQa/E5xpc/qQw5pDs0a4frnIcg7eG/8oW/p
-         rjxOywnNLQhVgSozX6YOMxiQDWEtC8x/c6W+04LR1qd1/pOiHu9C/GqgNEdpHnY1GlKD
-         ibZfliF+SF5CzrFfN3PGB07Pn8k5m1nhBKgw4=
-Message-ID: <4B1CF701.3070805@gmail.com>
-Date: Mon, 07 Dec 2009 13:37:21 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-9.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org
-Subject: Re: [PATCH 1/1] X86: use explicit register name for get/put_user
-References: <1260091808-8053-1-git-send-email-jslaby@suse.cz> <4B1C01F4.8020304@zytor.com>
-In-Reply-To: <4B1C01F4.8020304@zytor.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 07:41:18 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: miklos@szeredi.hu, miklos@szeredi.hu, luto@mit.edu,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20091207122346.6d18a8e1@lxorguk.ukuu.org.uk> (message from Alan
+	Cox on Mon, 7 Dec 2009 12:23:46 +0000)
+Subject: Re: [PATCH v3] vfs: new O_NODE open flag
+References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
+	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>
+	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu>
+	<20091202204828.4fa0c108@lxorguk.ukuu.org.uk>
+	<E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
+	<4B1A7159.3070101@mit.edu>
+	<E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
+	<20091205202838.3456b6fc@lxorguk.ukuu.org.uk>
+	<E1NH1MB-0007v8-Ps@pomaz-ex.szeredi.hu>
+	<20091205231304.03a4af61@lxorguk.ukuu.org.uk>
+	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu> <20091207122346.6d18a8e1@lxorguk.ukuu.org.uk>
+Message-Id: <E1NHctp-00032C-A1@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 07 Dec 2009 13:41:09 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/06/2009 08:11 PM, H. Peter Anvin wrote:
-> On 12/06/2009 01:30 AM, Jiri Slaby wrote:
->>
->> I don't know if this could ever cause any problems, but changing
->> the input to an explicit register ("a") makes it cleaner in my eyes.
->> There is no need of the back reference.
->>
-> 
-> It can't: the backreference refers to only the information that is in
-> the register constraint, not to anything else.
+On Mon, 7 Dec 2009, Alan Cox wrote:
+> The standard udev unload is a true open barrier so has an implicit
+> revoke() caused by the fact you cannot keep a handle to the filename open
+> during the udev sequence (or the old driver would be pinned by a refcount
+> and not unload).
 
-Is this documented somewhere? Or do we rely on an undocumented feature?
-I mean it doesn't refer only to the constraint but also to a concrete
-register allocation. As far as I understand it (from the gcc 4.4
-documentation), if one does
- "insn %0" : "=r" (out) : "0" (in)
-the "0" constraint corresponds to the concrete register allocated for
-out, not to any register (which is the constraint "r").
+True, udev unload is an open barrier (modulo races), but O_NODE opens
+simply don't matter in this respect, because they don't have anything
+to do with the driver.
 
-In the document they write only about the "same location" occupied by in
-and out, nothing is said about size (and hence I think we cannot
-mismatch size of operands). And I couldn't find any other
-restrictions/documentation about inline assembly, hence the patch,
-because nothing assured me this cannot change in the future.
+  ln /dev/foo /dev/shm/my_secret_device_link
+  (foo is removed)
+  open("/dev/shm/my_secret_device_link", O_RDWR)
 
-Now I tried different compilers (clang, llvm-gcc) and they choke on that:
-$ cat c.c
-void x(void)
-{
-        unsigned long in;
-        int out;
-        asm("insn %0" : "=r" (out) : "0" (in));
-}
-$ clang c.c -S -o -
-c.c:5:36: error: unsupported inline asm: input with type 'unsigned long'
-      matching output with type 'int'
-        asm("insn %0" : "=r" (out) : "0" (in));
-                              ~~~         ^~
-1 diagnostic generated.
-$ llvm-gcc c.c -S -o -
-c.c: In function 'x':
-c.c:5: error: unsupported inline asm: input constraint with a matching
-output constraint of incompatible type!
+How is this different than keeping the device open with O_NODE?
 
-thanks for the review,
--- 
-js
+Thanks,
+Miklos
