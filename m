@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934969AbZLGKHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934980AbZLGKI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934969AbZLGKHG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 05:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934938AbZLGKHF
+	id S934980AbZLGKI2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 05:08:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934942AbZLGKIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 05:07:05 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53875 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934893AbZLGKHE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 05:07:04 -0500
-Date: Mon, 7 Dec 2009 11:07:03 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>
-Subject: Re: HTC Dream: dream is better name for this machine
-Message-ID: <20091207100703.GF23088@elf.ucw.cz>
-References: <20091206205041.GA12555@elf.ucw.cz>
- <a55d774e0912061527t5b09b510g1fc458b53a423c04@mail.gmail.com>
+	Mon, 7 Dec 2009 05:08:25 -0500
+Received: from mx.sz.bfs.de ([194.94.69.70]:40304 "EHLO mx.sz.bfs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934938AbZLGKIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 05:08:24 -0500
+Message-ID: <4B1CD40F.4010407@bfs.de>
+Date: Mon, 07 Dec 2009 11:08:15 +0100
+From: walter harms <wharms@bfs.de>
+Reply-To: wharms@bfs.de
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a55d774e0912061527t5b09b510g1fc458b53a423c04@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Julia Lawall <julia@diku.dk>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/5] tools/perf/util: correct size computation
+References: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0912061016120.20858@ask.diku.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-12-06 15:27:38, Brian Swetland wrote:
-> On Sun, Dec 6, 2009 at 12:50 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> >
-> > While few people may know HTC Dream by its codename, it is better to
-> > use name of released hardware in the sources.
+
+
+Julia Lawall schrieb:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> I still think that it'd be less pain for everyone to leave it as
-> trout.  If you go by sales volume, the most known released hardware
-> name is "Tmobile G1", some people know it as ADP1, and I believe it
-> has sold under a few other names in other markets, but the software
+> The size argument to zalloc should be the size of desired structure,
+> not the pointer to it.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @expression@
+> expression *x;
+> @@
+> 
+> x =
+>  <+...
+> -sizeof(x)
+> +sizeof(*x)
+> ...+>// </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  tools/perf/util/parse-events.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -u -p a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+> --- a/tools/perf/util/parse-events.c
+> +++ b/tools/perf/util/parse-events.c
+> @@ -197,7 +197,7 @@ struct tracepoint_path *tracepoint_id_to
+>  			if (id == config) {
+>  				closedir(evt_dir);
+>  				closedir(sys_dir);
+> -				path = zalloc(sizeof(path));
+> +				path = zalloc(sizeof(*path));
+>  				path->system = malloc(MAX_EVENT_LENGTH);
+>  				if (!path->system) {
+>  					free(path);
 
-Yes, operators brand their handsets. Unfortunately g1/adp1 names suck
--- for being alphabet soups -- and HTC Dream *is* name of the
-hardware.
-
-http://en.wikipedia.org/wiki/HTC_Dream
-
-(and it is certainly better name than trout).
-
-> has, since day one, been trout and changing that just makes it harder
-> to merge other existing changes where we'd have to deal with renames
-> as well.  The bootloader identifies it as "trout", and the userspace
-> software stack's hardware-specific bits refer to trout.
-
-Well, the longer we wait, the harder it will be to change the nema...
-
-> If it really drives everyone crazy, we could do a big rename once it's
-> all in and working, but right now I just don't see the benefit.
-
-It is normally better to change such stuff before merging to
-mainline. Splitting/cleaning patches is generally enough work that
-little renaming should not be huge problem. 
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+and zalloc() can not fail ?
+re,
+ wh
