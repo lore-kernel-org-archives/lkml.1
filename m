@@ -1,106 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZLGGRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZLGGSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbZLGGRq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 01:17:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZLGGRp
+	id S1754225AbZLGGSi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 01:18:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZLGGSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 01:17:45 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36709 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbZLGGRo (ORCPT
+	Mon, 7 Dec 2009 01:18:37 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:40190 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753303AbZLGGSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 01:17:44 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH] vmscan: aligned scan batching
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <20091206054113.GA23912@localhost>
-References: <20091127091357.A7CC.A69D9226@jp.fujitsu.com> <20091206054113.GA23912@localhost>
-Message-Id: <20091207143548.E944.A69D9226@jp.fujitsu.com>
+	Mon, 7 Dec 2009 01:18:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=V+lSTjCoXo5XozUU7paAmYBHHxYROYbgSyFnEAuthuY47ke25mIBxyhktvBOVEA2EQ
+         2Bws7RRl7va7cInz5v7KZsS5X2l5mnQ8ny1TsbnkycX0GcZxwSXa2EX/yoD3VFLsUmHy
+         hREyRZxcqIKFcKD3Hryz1/5HW5N0Y+OnGxjbY=
+Date: Mon, 7 Dec 2009 07:18:40 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/2] perf: Make location of kernel source configurable
+Message-ID: <20091207061839.GB5186@nowhere>
+References: <20091206307.542816612@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon,  7 Dec 2009 15:17:48 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091206307.542816612@firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  - pass nr_to_scan into isolate_pages() directly instead
-> >    using SWAP_CLUSTER_MAX
+On Sun, Dec 06, 2009 at 03:07:30PM +0100, Andi Kleen wrote:
 > 
-> This patch will make sure nr_to_scan==SWAP_CLUSTER_MAX :)
+> tools/perf has no support for separate object directories
+> and lots of hard coded paths assuming that the kernel source
+> is always in ../..
 > 
-> Thanks,
-> Fengguang
-> ---
-> vmscan: aligned scan batching
+> As a first step of compiling it separately without messing
+> up clean source trees allow to configure the kernel source
+> location using a KERNELSRC variable 
 > 
-> Make sure ->isolate_pages() always scans in unit of SWAP_CLUSTER_MAX.
+> This allows at least to copy the whole tools/perf
+> directory elsewhere and build it separately.
 > 
-> CC: Rik van Riel <riel@redhat.com>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/vmscan.c |   20 ++++++--------------
->  1 file changed, 6 insertions(+), 14 deletions(-)
-
-Hm, Your patch always pass SWAP_CLUSTER_MAX to shrink_list().
-Can we remove nr_to_scan argument of shrink_list() completely?
-
-Anyway, this diffstat itsef explain this patch's worth. I'll queue
-this patch into my vmscan cleanup branch.
-
-
+> The default is still ../.., so for a standard build
+> nothing changes
 > 
-> --- linux-mm.orig/mm/vmscan.c	2009-12-06 13:13:28.000000000 +0800
-> +++ linux-mm/mm/vmscan.c	2009-12-06 13:31:21.000000000 +0800
-> @@ -1572,15 +1572,11 @@ static void get_scan_ratio(struct zone *
->  static unsigned long nr_scan_try_batch(unsigned long nr_to_scan,
->  				       unsigned long *nr_saved_scan)
->  {
-> -	unsigned long nr;
-> +	unsigned long nr = *nr_saved_scan + nr_to_scan;
-> +	unsigned long rem = nr & (SWAP_CLUSTER_MAX - 1);
->  
-> -	*nr_saved_scan += nr_to_scan;
-> -	nr = *nr_saved_scan;
-> -
-> -	if (nr >= SWAP_CLUSTER_MAX)
-> -		*nr_saved_scan = 0;
-> -	else
-> -		nr = 0;
-> +	*nr_saved_scan = rem;
-> +	nr -= rem;
->  
->  	return nr;
->  }
-> @@ -1592,7 +1588,6 @@ static void shrink_zone(int priority, st
->  				struct scan_control *sc)
->  {
->  	unsigned long nr[NR_LRU_LISTS];
-> -	unsigned long nr_to_scan;
->  	unsigned long percent[2];	/* anon @ 0; file @ 1 */
->  	enum lru_list l;
->  	unsigned long nr_reclaimed = sc->nr_reclaimed;
-> @@ -1625,11 +1620,8 @@ static void shrink_zone(int priority, st
->  					nr[LRU_INACTIVE_FILE]) {
->  		for_each_evictable_lru(l) {
->  			if (nr[l]) {
-> -				nr_to_scan = min_t(unsigned long,
-> -						   nr[l], SWAP_CLUSTER_MAX);
-> -				nr[l] -= nr_to_scan;
-> -
-> -				nr_reclaimed += shrink_list(l, nr_to_scan,
-> +				nr[l] -= SWAP_CLUSTER_MAX;
-> +				nr_reclaimed += shrink_list(l, SWAP_CLUSTER_MAX,
->  							    zone, sc, priority);
->  			}
->  		}
+> This also removes a lot of ugly ../.. from the source.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 
+It does not apply cleanly, it seems you are using 2.6.32
+There have a been a lot of updates in this merge window.
+
+Could you please resend against latest linus tree?
+
+Thanks.
 
