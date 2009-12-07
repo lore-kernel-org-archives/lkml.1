@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964917AbZLGRje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935551AbZLGRqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964917AbZLGRje (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 12:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964902AbZLGRjd
+	id S935551AbZLGRqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 12:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935462AbZLGRqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 12:39:33 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45843 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964881AbZLGRjP (ORCPT
+	Mon, 7 Dec 2009 12:46:17 -0500
+Received: from ausxippc101.us.dell.com ([143.166.85.207]:52351 "EHLO
+	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935373AbZLGRqR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 12:39:15 -0500
-Date: Mon, 7 Dec 2009 17:40:49 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: miklos@szeredi.hu, luto@mit.edu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] vfs: new O_NODE open flag
-Message-ID: <20091207174049.50537ddf@lxorguk.ukuu.org.uk>
-In-Reply-To: <E1NHfEu-0003SM-U0@pomaz-ex.szeredi.hu>
-References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
-	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>
-	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu>
-	<20091202204828.4fa0c108@lxorguk.ukuu.org.uk>
-	<E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
-	<4B1A7159.3070101@mit.edu>
-	<E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
-	<20091205202838.3456b6fc@lxorguk.ukuu.org.uk>
-	<E1NH1MB-0007v8-Ps@pomaz-ex.szeredi.hu>
-	<20091205231304.03a4af61@lxorguk.ukuu.org.uk>
-	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu>
-	<20091207122346.6d18a8e1@lxorguk.ukuu.org.uk>
-	<E1NHctp-00032C-A1@pomaz-ex.szeredi.hu>
-	<E1NHd0J-000345-Kw@pomaz-ex.szeredi.hu>
-	<20091207130339.620b904b@lxorguk.ukuu.org.uk>
-	<E1NHdJy-00037l-Jb@pomaz-ex.szeredi.hu>
-	<20091207131546.2af06647@lxorguk.ukuu.org.uk>
-	<E1NHdS9-00039i-B6@pomaz-ex.szeredi.hu>
-	<20091207141321.0964461d@lxorguk.ukuu.org.uk>
-	<E1NHeXH-0003Lb-3q@pomaz-ex.szeredi.hu>
-	<20091207144623.692fbc1e@lxorguk.ukuu.org.uk>
-	<E1NHfEu-0003SM-U0@pomaz-ex.szeredi.hu>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	Mon, 7 Dec 2009 12:46:17 -0500
+X-Loopcount0: from 143.166.82.43
+Date: Mon, 7 Dec 2009 11:46:20 -0600
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Emese Revfy <re.emese@gmail.com>
+Cc: tony.luck@intel.com, fenghua.yu@intel.com, benh@kernel.crashing.org,
+       lethal@linux-sh.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, axboe@kernel.dk, gregkh@suse.de, petero2@telia.com,
+       davej@redhat.com, maciej.sosnowski@intel.com, dougthompson@xmission.com,
+       airlied@linux.ie, rolandd@cisco.com, sean.hefty@intel.com,
+       hal.rosenstock@gmail.com, neilb@suse.de, davem@davemloft.net,
+       rdunlap@xenotime.net, kyle@mcmartin.ca, deller@gmx.de,
+       jejb@parisc-linux.org, jbarnes@virtuousgeek.org, hjk@linutronix.de,
+       david.vrabel@csr.com, jeremy@xensource.com, chris.mason@oracle.com,
+       ccaulfie@redhat.com, teigland@redhat.com, tytso@mit.edu,
+       adilger@sun.com, swhiteho@redhat.com, mfasheh@suse.com,
+       joel.becker@oracle.com, rusty@rustcorp.com.au, penberg@cs.helsinki.fi,
+       shemminger@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 29/31] Constify struct sysfs_ops for 2.6.32 v1
+Message-ID: <20091207174620.GA16608@auslistsprd01.us.dell.com>
+References: <4B198670.2000406@gmail.com> <4B1991E2.5010903@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1991E2.5010903@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, yes.  That's true.  But I still don't think revoke() is the
-> answer here.  For example even without the possibility of hard links
-> there's still a race in udev in the following course of events:
+On Fri, Dec 04, 2009 at 11:49:06PM +0100, Emese Revfy wrote:
+> From: Emese Revfy <re.emese@gmail.com>
 > 
->   open("/dev/foo", O_RDWR)
->   ... open passes permission checks
->   ... driver gets unloaded
->   ... driver intended for other user gets loaded
->   ... open finds new driver
+> Constify struct sysfs_ops.
+> 
+> Signed-off-by: Emese Revfy <re.emese@gmail.com>
+> ---
+>  drivers/firmware/edd.c                |    2 +-
+>  drivers/firmware/efivars.c            |    2 +-
 
-> What we really need is to revoke the *inode*, so that it cannot be
-> opened any more.  Doing it with unlink() and revoke() and requiring
-> that link() does not work on the filesystem is a poor and racy
-> substitute for that.
+Acked-by: Matt Domsch <Matt_Domsch@dell.com>
 
-Can't argue with that and going through the kernel logic I don't see
-anything preventing an exploit based on that from working.
 
-Alan
+-- 
+Matt Domsch
+Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
