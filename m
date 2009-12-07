@@ -1,78 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935461AbZLGRJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964822AbZLGRO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935461AbZLGRJJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 12:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758120AbZLGRJI
+	id S964822AbZLGRO7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 12:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964805AbZLGRO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 12:09:08 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:45637 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757954AbZLGRJH (ORCPT
+	Mon, 7 Dec 2009 12:14:57 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58672 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751377AbZLGRO4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 12:09:07 -0500
-Message-ID: <4B1D3669.4020204@oracle.com>
-Date: Mon, 07 Dec 2009 09:07:53 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Jonathan Cameron <jic23@cam.ac.uk>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Staging: IIO: add selection of IIO_SW_RING to LIS3L02DQ
- as needed
-References: <20091204203014.e8ee54ca.sfr@canb.auug.org.au> <20091206101225.7d8ce4a4.randy.dunlap@oracle.com> <4B1D1CF5.6030502@cam.ac.uk>
-In-Reply-To: <4B1D1CF5.6030502@cam.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4B1D36AC.0103:SCFMA4539814,ss=1,fgs=0
+	Mon, 7 Dec 2009 12:14:56 -0500
+Date: Mon, 7 Dec 2009 17:16:38 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] vfs: new O_NODE open flag
+Message-ID: <20091207171638.1cfbbb97@lxorguk.ukuu.org.uk>
+In-Reply-To: <cb0375e10912070703j4e5769c7tec6090378248a187@mail.gmail.com>
+References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
+	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu>
+	<20091207122346.6d18a8e1@lxorguk.ukuu.org.uk>
+	<E1NHctp-00032C-A1@pomaz-ex.szeredi.hu>
+	<E1NHd0J-000345-Kw@pomaz-ex.szeredi.hu>
+	<20091207130339.620b904b@lxorguk.ukuu.org.uk>
+	<E1NHdJy-00037l-Jb@pomaz-ex.szeredi.hu>
+	<20091207131546.2af06647@lxorguk.ukuu.org.uk>
+	<E1NHdS9-00039i-B6@pomaz-ex.szeredi.hu>
+	<20091207141321.0964461d@lxorguk.ukuu.org.uk>
+	<cb0375e10912070703j4e5769c7tec6090378248a187@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Cameron wrote:
-> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
-> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-Thanks.
-
-
-> ---
+> >        while(1)
+> >                fchmod(fd, 0666);
+> >
+> > wait for device to unload, reload and be intended for another user
+> > Race udev to a real open. You have a similar problem with vhangup() and
+> > ttys.
 > 
->  Thanks to Randy for the report. Sorry for the slow response.
->  I've been meaning to carefully check for any remaining cases like
->  this.
->  Here I've kept the selection of IIO_SW_RING separate from
->  IIO_TRIGGER as it will go away fairly shortly when the ring buffer
->  type becomes configurable on a per device basis, whereas the
->  IIO_TRIGGER select will remain. Whether to retain the option to
->  remove the support for ring buffers entirely is one for after that
->  support is in place.
-> 
->  Touch wood I think this is the last one, but I'll try a selection of
->  unusual combinations now and post others as replies to this email.
-> 
->  drivers/staging/iio/accel/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/staging/iio/accel/Kconfig b/drivers/staging/iio/accel/Kconfig
-> index 4044663..3d3c333 100644
-> --- a/drivers/staging/iio/accel/Kconfig
-> +++ b/drivers/staging/iio/accel/Kconfig
-> @@ -14,6 +14,7 @@ config LIS3L02DQ
->  	tristate "ST Microelectronics LIS3L02DQ Accelerometer Driver"
->  	depends on SPI
->  	select IIO_TRIGGER if IIO_RING_BUFFER
-> +	select IIO_SW_RING if IIO_RING_BUFFER
->  	help
->  	  Say yes here to build SPI support for the ST microelectronics
->  	  accelerometer. The driver supplies direct access via sysfs files
+> Huh?  I would've thought that udev would (and already does?), on
+> device unload, chown to 0:0, then chmod to 0000, then unlink, in which
+> case that attack doesn't work.
 
+udev doesn't control the device unload/reload. It responds to messages
+from the kernel which are to some extent asynchronous to actual events.
+It may be ok if udev is very careful but the fact it requires a close
+inspection of the kernel and user space sides doesn't bode well (with or
+without O_NODE). The fact we currently have an implied revoke by the
+device refcounts is a big helper at the moment.
 
--- 
-~Randy
+The tty cases using vhangup() assume that the handle is killed and would
+also need addressing.
+
+> Would you be okay with a patch that prevented opening
+> /proc/self/fd/xxx on O_NODE handles?  I personally don't care about
+
+I'd like to see what Al Viro has to say on the subject first.
+The /proc/self stuff bothers me less - I've not seen a convincing
+description of it being misuable where ptrace wouldn't allow the same
+actions. Even the constructed scenarios share that property.
+
+> O_NODE all that much, but I'd like a decent in-kernel AFS
+> implementation (and a decent revoke() implementation, and especially
+> the ability to revoke whole filesystems would be really nice too).
+
+The AFS case is probably the easier one - its things like device files
+where one handle can change completely what it references (due to device
+loads/unloads and dynamic major/minor assignment) that make it evil.
+
+CIFS/SMB is horrible for different reasons (a handle open on some piece
+of namespace isn't going to always been the same actual file) but you
+could simply decide CIFS/SMB and any other problematic cases don't
+support it.
+
+I don't really have a problem with it providing its restricted to
+ordinary files on a file system where having a local inode reference
+means you have a stable reference to an object on the remote system or
+the local media.
+
+The way to start this is firstly to convince Al Viro (always a good
+sanity check), and then to start with the obviously safe cases only -
+regular files, only file systems with stable inode references.
+
+Devices are hard - why do we need O_NODE on devices anyway ?
+
