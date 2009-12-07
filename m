@@ -1,33 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935199AbZLGOYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935214AbZLGO0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935199AbZLGOYt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 09:24:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935145AbZLGOYs
+	id S935214AbZLGO0I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 09:26:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935178AbZLGO0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 09:24:48 -0500
-Received: from web83816.mail.sp1.yahoo.com ([69.147.85.95]:27737 "HELO
-	web83816.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S935130AbZLGOYs (ORCPT
+	Mon, 7 Dec 2009 09:26:07 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59874 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935157AbZLGO0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 09:24:48 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
-  b=Wmv53TTfhCKXXl5H8kKYPt0e8ljLGsKxoqT31vQ+q16khy4yYl552VbIUf5i4hQkMpepQrhw3i/hfRh/AYDsVVc2GuD/Vrn4tbIntkLXqKFwmLMPsxYpNvPqx1Y/mlXRNOWK9EdOgSVMZo5x4IaFzSPACvqVqXeW7vK7I6TF8tA=;
-Message-ID: <494818.83841.qm@web83816.mail.sp1.yahoo.com>
-X-YMail-OSG: c6ZI40kVM1lc0FdCrsxhBJgY.BvKgwM8mxdogCoh8QABPQxvsbsVkKfJj39x5v4l0GomTgiOxKde3o28DwfYxt0gKCyd6_LT7lbyEt0BGqqPtcnXNm9ytqXTBYE03cMotvHKrsYtve3NGoPfHzBQFDMzXHz7QCwdGK08uUwDtngoTToDY84EhfAqlsJEcuEu2JZfCuHme9.melmFBZCn4B0bGXhA2mM7B0cFkuarWSeTxO5XDxO9U3Zc3e50zaLrCHMxekjrVQRLzf3Qu0PPF6nF1XlHtJjO6JHzrgVV.SxRYE4onFRyecBU_QGidN.z2TmT4_Xxvcn7Zqk_6fK9Dnw3ZnMo54.IuKmkS.UONXrRetkr7rPPgndAccyq4Rv6p2kuCJq3LWo4QtAALrAozmA8UOUTUIYDOltCTnzFlddBJKVKAm3IXoLVe6qZ1EqPeKdZjz8SxX2oKkJ0n7mNMRmqulLXW176nSNlnf4BHRSR5ZWlePqbcs5eVsPr6q9G9WbqK.NGtiKmGl3P3PrEnttU8n1WXXCAAAwpsN4XZF2mbDiF9AlBymB.Xwq4ous4eKW1Mq_2SqLptYb4nZ9BAy0HKu4c3rfOaLuBGPvqvYm3dqELdxZhC6pGvuH5DkIU.cXcBljDJVCfnbChQxLNyEmOzPc0
-X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
-Date: Mon, 7 Dec 2009 06:24:54 -0800 (PST)
-From: Toyota End Of Year Promo <0otraviso0@sbcglobal.net>
-Reply-To: mrbryansteve@9.cn
-Subject: This is to inform you that 750,000.00 Pounds has been awarded to your email ID in this Year Toyota Promo
-To: undisclosed recipients:;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 Dec 2009 09:26:06 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: miklos@szeredi.hu, miklos@szeredi.hu, luto@mit.edu,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20091207141321.0964461d@lxorguk.ukuu.org.uk> (message from Alan
+	Cox on Mon, 7 Dec 2009 14:13:21 +0000)
+Subject: Re: [PATCH v3] vfs: new O_NODE open flag
+References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
+	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>
+	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu>
+	<20091202204828.4fa0c108@lxorguk.ukuu.org.uk>
+	<E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
+	<4B1A7159.3070101@mit.edu>
+	<E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
+	<20091205202838.3456b6fc@lxorguk.ukuu.org.uk>
+	<E1NH1MB-0007v8-Ps@pomaz-ex.szeredi.hu>
+	<20091205231304.03a4af61@lxorguk.ukuu.org.uk>
+	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu>
+	<20091207122346.6d18a8e1@lxorguk.ukuu.org.uk>
+	<E1NHctp-00032C-A1@pomaz-ex.szeredi.hu>
+	<E1NHd0J-000345-Kw@pomaz-ex.szeredi.hu>
+	<20091207130339.620b904b@lxorguk.ukuu.org.uk>
+	<E1NHdJy-00037l-Jb@pomaz-ex.szeredi.hu>
+	<20091207131546.2af06647@lxorguk.ukuu.org.uk>
+	<E1NHdS9-00039i-B6@pomaz-ex.szeredi.hu> <20091207141321.0964461d@lxorguk.ukuu.org.uk>
+Message-Id: <E1NHeXH-0003Lb-3q@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 07 Dec 2009 15:25:59 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Name
-Address
-Occupation
+On Mon, 7 Dec 2009, Alan Cox wrote:
+> > > That is *exactly* the problem, which is clearly what you are missing here.
+> > 
+> > I don't think so, but maybe I'm wrong.  Could you describe your attack
+> > scenario in detail then, please?
+> 
+> First obvious attack: get an O_NODE handle to a device you have assigned
+> to your ownership
+> 
+> 	while(1)
+> 		fchmod(fd, 0666);
+> 
+> wait for device to unload, reload and be intended for another user
+> Race udev to a real open. You have a similar problem with vhangup() and
+> ttys.
+
+If this was a udev device, the same attack is possible with a hard
+link to the device.  Except the attacker simply does link() instad of
+open(O_NODE) and chmod() instead of fchmod().
+
+See?
+
+Thanks,
+Miklos
