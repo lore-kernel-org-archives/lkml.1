@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934872AbZLGUS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964979AbZLGUWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934872AbZLGUS7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933589AbZLGUS6
+	id S964979AbZLGUWl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964930AbZLGUWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:18:58 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:56180 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932850AbZLGUS5 (ORCPT
+	Mon, 7 Dec 2009 15:22:07 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:55187 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964894AbZLGUWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:18:57 -0500
-Message-ID: <4B1D6334.9070004@canonical.com>
-Date: Mon, 07 Dec 2009 21:19:00 +0100
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Libin Yang <libin.yang@amd.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [041/119] USB: ohci: quirk AMD prefetch for USB
- 1.1	ISO transfer
-References: <20091206235936.208334321@mini.kroah.org> <20091207000646.961519997@mini.kroah.org> <4B1D277E.207@canonical.com> <20091207164816.GA31258@suse.de>
-In-Reply-To: <20091207164816.GA31258@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 15:22:04 -0500
+Message-Id: <20091207201903.864817226@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Mon, 07 Dec 2009 15:19:03 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Olsa <jolsa@redhat.com>
+Subject: [PATCH 0/4] [GIT PULL] tracing: fix function graph tracer output
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Dec 07, 2009 at 05:04:14PM +0100, Stefan Bader wrote:
->> Just to verify this, the patch also adds a call to quirk_amd_pll
->> but from the description it is not clear to me this is intended.
-> 
-> Why not?
 
-Just as the title just states amdprefech and the code adds both quirks.
-But ok, its the same upstream and its really better to keep it the same.
+Ingo,
 
--Stefan
+This is rebased to latest Linus repo. As Jirka found, the function graph
+tracer can lose events or show incorrectly a nested function when it
+should have been a leaf. This patch series corrects the issue.
+
+Please pull the latest tip/tracing/core tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core
+
+
+Jiri Olsa (1):
+      tracing: Fix function graph trace_pipe to properly display failed entries
+
+Johannes Berg (1):
+      tracing: Add full state to trace_seq
+
+Steven Rostedt (2):
+      tracing: Add pipe_close interface
+      tracing: Buffer the output of seq_file in case of filled buffer
+
+----
+ include/linux/ftrace_event.h         |    1 +
+ include/linux/trace_seq.h            |    6 +-
+ kernel/trace/trace.c                 |   39 ++++++++-
+ kernel/trace/trace.h                 |    2 +
+ kernel/trace/trace_functions_graph.c |  165 +++++++++++++++++++++++++++-------
+ kernel/trace/trace_output.c          |   75 +++++++++++++---
+ 6 files changed, 235 insertions(+), 53 deletions(-)
