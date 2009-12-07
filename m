@@ -1,63 +1,318 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933141AbZLGWHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbZLGWKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933141AbZLGWHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 17:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758173AbZLGWHD
+	id S1758382AbZLGWKu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbZLGWKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 17:07:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59402 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757804AbZLGWHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 17:07:01 -0500
-Date: Mon, 7 Dec 2009 14:06:59 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <Pine.LNX.4.44L0.0912071652040.15701-100000@iolanthe.rowland.org>
-Message-ID: <alpine.LFD.2.00.0912071403520.3560@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912071652040.15701-100000@iolanthe.rowland.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 Dec 2009 17:10:49 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:35406 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758278AbZLGWKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 17:10:48 -0500
+From: Michal Marek <mmarek@suse.cz>
+To: linux-kbuild@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH v3] kbuild: generate modules.builtin
+Date: Mon,  7 Dec 2009 23:09:45 +0100
+Message-Id: <1260223785-8604-1-git-send-email-mmarek@suse.cz>
+X-Mailer: git-send-email 1.6.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+To make it easier for module-init-tools and scripts like mkinitrd to
+distinguish builtin and missing modules, install a modules.builtin file
+listing all builtin modules. This is done by generating an additional
+config file (tristate.conf) with tristate options set to uppercase 'Y'
+or 'M'. If we source that config file, the builtin modules appear in
+obj-Y.
 
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+---
+Only minor changes since the last posting:
+* checkpatch fixes
+* tristate.conf lists only tristate options, not boolean ones
 
-On Mon, 7 Dec 2009, Alan Stern wrote:
-> > 
-> > Make the USB host controller do its suspend asynchronously. We don't 
-> > suspend PCI bridges anyway, iirc (but I didn't actually check). And at 
-> > worst, we can make the PCI _bridges_ know about async suspends, and solve 
-> > it that way - without actually making any normal PCI drivers do it.
-> 
-> This sounds suspiciously like pushing the problem up a level and 
-> hoping it will go away.  (Sometimes that even works.)
+ .gitignore                       |    1 +
+ Documentation/kbuild/kbuild.txt  |   14 +++++++++
+ Documentation/kbuild/kconfig.txt |    5 +++
+ Makefile                         |   14 +++++++---
+ scripts/Kbuild.include           |    6 ++++
+ scripts/Makefile.modbuiltin      |   55 ++++++++++++++++++++++++++++++++++++++
+ scripts/kconfig/confdata.c       |   22 ++++++++++++++-
+ 7 files changed, 112 insertions(+), 5 deletions(-)
+ create mode 100644 scripts/Makefile.modbuiltin
 
-The "we don't suspend bridges anyway" is definitely a "hoping it will go 
-away" issue. I think we did suspend bridges for a short while during the 
-PM switch-over some time ago, and it worked most of the time, and then on 
-some machines it just didn't work at all. Probably because ACPI ends up 
-touching registers behind bridges that we closed down etc.
+diff --git a/.gitignore b/.gitignore
+index 4980606..9399f1a 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -22,6 +22,7 @@
+ *.lst
+ *.symtypes
+ *.order
++modules.builtin
+ *.elf
+ *.bin
+ *.gz
+diff --git a/Documentation/kbuild/kbuild.txt b/Documentation/kbuild/kbuild.txt
+index bb3bf38..6f8c1ca 100644
+--- a/Documentation/kbuild/kbuild.txt
++++ b/Documentation/kbuild/kbuild.txt
+@@ -1,3 +1,17 @@
++Output files
++
++modules.order
++--------------------------------------------------
++This file records the order in which modules appear in Makefiles. This
++is used by modprobe to deterministically resolve aliases that match
++multiple modules.
++
++modules.builtin
++--------------------------------------------------
++This file lists all modules that are built into the kernel. This is used
++by modprobe to not fail when trying to load something builtin.
++
++
+ Environment variables
+ 
+ KCPPFLAGS
+diff --git a/Documentation/kbuild/kconfig.txt b/Documentation/kbuild/kconfig.txt
+index ab8dc35..49efae7 100644
+--- a/Documentation/kbuild/kconfig.txt
++++ b/Documentation/kbuild/kconfig.txt
+@@ -103,6 +103,11 @@ KCONFIG_AUTOCONFIG
+ This environment variable can be set to specify the path & name of the
+ "auto.conf" file.  Its default value is "include/config/auto.conf".
+ 
++KCONFIG_TRISTATE
++--------------------------------------------------
++This environment variable can be set to specify the path & name of the
++"tristate.conf" file.  Its default value is "include/config/tristate.conf".
++
+ KCONFIG_AUTOHEADER
+ --------------------------------------------------
+ This environment variable can be set to specify the path & name of the
+diff --git a/Makefile b/Makefile
+index 74ad9a9..90692ff 100644
+--- a/Makefile
++++ b/Makefile
+@@ -463,7 +463,7 @@ ifeq ($(KBUILD_EXTMOD),)
+ # Carefully list dependencies so we do not try to build scripts twice
+ # in parallel
+ PHONY += scripts
+-scripts: scripts_basic include/config/auto.conf
++scripts: scripts_basic include/config/auto.conf include/config/tristate.conf
+ 	$(Q)$(MAKE) $(build)=$(@)
+ 
+ # Objects we will link into vmlinux / subdirs we need to visit
+@@ -490,7 +490,7 @@ $(KCONFIG_CONFIG) include/config/auto.conf.cmd: ;
+ # with it and forgot to run make oldconfig.
+ # if auto.conf.cmd is missing then we are probably in a cleaned tree so
+ # we execute the config step to be sure to catch updated Kconfig files
+-include/config/auto.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
++include/config/%.conf: $(KCONFIG_CONFIG) include/config/auto.conf.cmd
+ 	$(Q)$(MAKE) -f $(srctree)/Makefile silentoldconfig
+ else
+ # external modules needs include/generated/autoconf.h and include/config/auto.conf
+@@ -875,6 +875,9 @@ $(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
+ PHONY += $(vmlinux-dirs)
+ $(vmlinux-dirs): prepare scripts
+ 	$(Q)$(MAKE) $(build)=$@
++ifdef CONFIG_MODULES
++	$(Q)$(MAKE) $(modbuiltin)=$@
++endif
+ 
+ # Build the kernel release string
+ #
+@@ -1079,6 +1082,7 @@ all: modules
+ PHONY += modules
+ modules: $(vmlinux-dirs) $(if $(KBUILD_BUILTIN),vmlinux)
+ 	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.order) > $(objtree)/modules.order
++	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.builtin) > $(objtree)/modules.builtin
+ 	@$(kecho) '  Building modules, stage 2.';
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modbuild
+@@ -1108,6 +1112,7 @@ _modinst_:
+ 		ln -s $(objtree) $(MODLIB)/build ; \
+ 	fi
+ 	@cp -f $(objtree)/modules.order $(MODLIB)/
++	@cp -f $(objtree)/modules.builtin $(MODLIB)/
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
+ 
+ # This depmod is only for convenience to give the initial
+@@ -1168,7 +1173,7 @@ clean: archclean $(clean-dirs)
+ 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+ 		-o -name '*.symtypes' -o -name 'modules.order' \
+-		-o -name '.tmp_*.o.*' \
++		-o modules.order -o -name '.tmp_*.o.*' \
+ 		-o -name '*.gcno' \) -type f -print | xargs rm -f
+ 
+ # mrproper - Delete all generated files, including .config
+@@ -1366,7 +1371,8 @@ $(clean-dirs):
+ 
+ clean:	rm-dirs := $(MODVERDIR)
+ clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers \
+-                   $(KBUILD_EXTMOD)/modules.order
++                   $(KBUILD_EXTMOD)/modules.order \
++                   $(KBUILD_EXTMOD)/modules.builtin
+ clean: $(clean-dirs)
+ 	$(call cmd,rmdirs)
+ 	$(call cmd,rmfiles)
+diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+index c67e73e..ed2773e 100644
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -149,6 +149,12 @@ ld-option = $(call try-run,\
+ # $(Q)$(MAKE) $(build)=dir
+ build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
+ 
++###
++# Shorthand for $(Q)$(MAKE) -f scripts/Makefile.modbuiltin obj=
++# Usage:
++# $(Q)$(MAKE) $(modbuiltin)=dir
++modbuiltin := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.modbuiltin obj
++
+ # Prefix -I with $(srctree) if it is not an absolute path.
+ # skip if -I has no parameter
+ addtree = $(if $(patsubst -I%,%,$(1)), \
+diff --git a/scripts/Makefile.modbuiltin b/scripts/Makefile.modbuiltin
+new file mode 100644
+index 0000000..102a276
+--- /dev/null
++++ b/scripts/Makefile.modbuiltin
+@@ -0,0 +1,55 @@
++# ==========================================================================
++# Generating modules.builtin
++# ==========================================================================
++
++src := $(obj)
++
++PHONY := __modbuiltin
++__modbuiltin:
++
++-include include/config/auto.conf
++# tristate.conf sets tristate variables to uppercase 'Y' or 'M'
++# That way, we get the list of built-in modules in obj-Y
++-include include/config/tristate.conf
++
++include scripts/Kbuild.include
++
++# The filename Kbuild has precedence over Makefile
++kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
++kbuild-file := $(if $(wildcard $(kbuild-dir)/Kbuild),$(kbuild-dir)/Kbuild,$(kbuild-dir)/Makefile)
++include $(kbuild-file)
++
++include scripts/Makefile.lib
++__subdir-Y     := $(patsubst %/,%,$(filter %/, $(obj-Y)))
++subdir-Y       += $(__subdir-Y)
++subdir-ym      := $(sort $(subdir-y) $(subdir-Y) $(subdir-m))
++subdir-ym      := $(addprefix $(obj)/,$(subdir-ym))
++obj-Y          := $(addprefix $(obj)/,$(obj-Y))
++
++modbuiltin-subdirs := $(patsubst %,%/modules.builtin, $(subdir-ym))
++modbuiltin-mods    := $(filter %.ko, $(obj-Y:.o=.ko))
++modbuiltin-target  := $(obj)/modules.builtin
++
++__modbuiltin: $(modbuiltin-target) $(subdir-ym)
++	@:
++
++$(modbuiltin-target): $(subdir-ym) FORCE
++	$(Q)(for m in $(modbuiltin-mods); do echo kernel/$$m; done;	\
++	cat /dev/null $(modbuiltin-subdirs)) > $@
++
++PHONY += FORCE
++
++FORCE:
++
++# Descending
++# ---------------------------------------------------------------------------
++
++PHONY += $(subdir-ym)
++$(subdir-ym):
++	$(Q)$(MAKE) $(modbuiltin)=$@
++
++
++# Declare the contents of the .PHONY variable as phony.  We keep that
++# information in a variable se we can use it in if_changed and friends.
++
++.PHONY: $(PHONY)
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index 797a741..c4dec80 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -677,7 +677,7 @@ int conf_write_autoconf(void)
+ 	struct symbol *sym;
+ 	const char *str;
+ 	const char *name;
+-	FILE *out, *out_h;
++	FILE *out, *tristate, *out_h;
+ 	time_t now;
+ 	int i, l;
+ 
+@@ -692,9 +692,16 @@ int conf_write_autoconf(void)
+ 	if (!out)
+ 		return 1;
+ 
++	tristate = fopen(".tmpconfig_tristate", "w");
++	if (!tristate) {
++		fclose(out);
++		return 1;
++	}
++
+ 	out_h = fopen(".tmpconfig.h", "w");
+ 	if (!out_h) {
+ 		fclose(out);
++		fclose(tristate);
+ 		return 1;
+ 	}
+ 
+@@ -707,6 +714,9 @@ int conf_write_autoconf(void)
+ 		     "# %s"
+ 		     "#\n",
+ 		     sym_get_string_value(sym), ctime(&now));
++	fprintf(tristate, "#\n"
++			  "# Automatically generated - do not edit\n"
++			  "\n");
+ 	fprintf(out_h, "/*\n"
+ 		       " * Automatically generated C config: don't edit\n"
+ 		       " * Linux kernel version: %s\n"
+@@ -727,10 +737,14 @@ int conf_write_autoconf(void)
+ 				break;
+ 			case mod:
+ 				fprintf(out, "CONFIG_%s=m\n", sym->name);
++				fprintf(tristate, "CONFIG_%s=M\n", sym->name);
+ 				fprintf(out_h, "#define CONFIG_%s_MODULE 1\n", sym->name);
+ 				break;
+ 			case yes:
+ 				fprintf(out, "CONFIG_%s=y\n", sym->name);
++				if (sym->type == S_TRISTATE)
++					fprintf(tristate, "CONFIG_%s=Y\n",
++							sym->name);
+ 				fprintf(out_h, "#define CONFIG_%s 1\n", sym->name);
+ 				break;
+ 			}
+@@ -772,6 +786,7 @@ int conf_write_autoconf(void)
+ 		}
+ 	}
+ 	fclose(out);
++	fclose(tristate);
+ 	fclose(out_h);
+ 
+ 	name = getenv("KCONFIG_AUTOHEADER");
+@@ -779,6 +794,11 @@ int conf_write_autoconf(void)
+ 		name = "include/generated/autoconf.h";
+ 	if (rename(".tmpconfig.h", name))
+ 		return 1;
++	name = getenv("KCONFIG_TRISTATE");
++	if (!name)
++		name = "include/config/tristate.conf";
++	if (rename(".tmpconfig_tristate", name))
++		return 1;
+ 	name = conf_get_autoconfig_name();
+ 	/*
+ 	 * This must be the last step, kbuild has a dependency on auto.conf
+-- 
+1.6.5.3
 
-So PCI bridges are kind of special. Right now we don't touch them, and if 
-we ever do, that will be another issue.
-
-> In the end it isn't a very big issue.  Using one vs. two passes in 
-> dpm_suspend() is pretty unimportant.
-
-I also suspect that even if you do the USB host controller suspend 
-synchronously, doing the actual USB devices asynchronously would still 
-help - even if it's only "asynchronously per bus" thing. 
-
-So in fact, it's probably a good first step to start off doing only the 
-USB devices, not the controller.
-
-		Linus
