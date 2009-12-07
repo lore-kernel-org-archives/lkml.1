@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbZLGIZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbZLGI0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbZLGIZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759066AbZLGIZw
+	id S1759117AbZLGI0G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:26:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759081AbZLGIZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:25:52 -0500
-Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:45512 "EHLO
-	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759047AbZLGIZt (ORCPT
+	Mon, 7 Dec 2009 03:25:56 -0500
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:49472 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759062AbZLGIZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:25:49 -0500
+	Mon, 7 Dec 2009 03:25:51 -0500
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: [PATCH 1/9] Squashfs: move zlib decompression wrapper code into a separate file
-Message-Id: <E1NHYuo-00028C-3c@dylan.lougher.demon.co.uk>
+Subject: [PATCH 9/9] lzma: make lzma reentrant
+Message-Id: <E1NHYuo-00028v-Kh@dylan.lougher.demon.co.uk>
 From: root <root@lougher.demon.co.uk>
 Date: Mon, 07 Dec 2009 08:25:54 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -22,254 +22,353 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+The error function pointer used by lzma is global (file scope) which
+prevents it being used concurrently.  This patch removes the global
+error pointer use, and instead passes it to all functions that need it.
+
+The error function pointer is still used by bzip2 and inflate.
+This patch moves the definition into the separate bzip2/inflate
+header files.  This prevents gcc from complaining about an
+unused definition compiling lzma.
+
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/Makefile       |    2 +-
- fs/squashfs/block.c        |   74 ++----------------------------
- fs/squashfs/squashfs.h     |    4 ++
- fs/squashfs/zlib_wrapper.c |  109 ++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 118 insertions(+), 71 deletions(-)
- create mode 100644 fs/squashfs/zlib_wrapper.c
+ include/linux/decompress/bunzip2_mm.h |    1 +
+ include/linux/decompress/inflate_mm.h |    1 +
+ include/linux/decompress/mm.h         |    1 -
+ lib/decompress_unlzma.c               |   82 +++++++++++++++++----------------
+ 4 files changed, 44 insertions(+), 41 deletions(-)
 
-diff --git a/fs/squashfs/Makefile b/fs/squashfs/Makefile
-index 70e3244..a397e6f 100644
---- a/fs/squashfs/Makefile
-+++ b/fs/squashfs/Makefile
-@@ -4,4 +4,4 @@
+diff --git a/include/linux/decompress/bunzip2_mm.h b/include/linux/decompress/bunzip2_mm.h
+index cac6fef..863efd0 100644
+--- a/include/linux/decompress/bunzip2_mm.h
++++ b/include/linux/decompress/bunzip2_mm.h
+@@ -7,6 +7,7 @@
+ #else
+ /* Compile for initramfs/initrd code only */
+ #define INIT __init
++static void(*error)(char *m);
+ #endif
  
- obj-$(CONFIG_SQUASHFS) += squashfs.o
- squashfs-y += block.o cache.o dir.o export.o file.o fragment.o id.o inode.o
--squashfs-y += namei.o super.o symlink.o
-+squashfs-y += namei.o super.o symlink.o zlib_wrapper.o
-diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
-index 2a79603..5cd3934 100644
---- a/fs/squashfs/block.c
-+++ b/fs/squashfs/block.c
-@@ -29,7 +29,6 @@
- #include <linux/fs.h>
- #include <linux/vfs.h>
- #include <linux/slab.h>
--#include <linux/mutex.h>
- #include <linux/string.h>
- #include <linux/buffer_head.h>
- #include <linux/zlib.h>
-@@ -153,72 +152,10 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ #endif
+diff --git a/include/linux/decompress/inflate_mm.h b/include/linux/decompress/inflate_mm.h
+index ca4a2ae..87a742b 100644
+--- a/include/linux/decompress/inflate_mm.h
++++ b/include/linux/decompress/inflate_mm.h
+@@ -7,6 +7,7 @@
+ #else
+ /* Compile for initramfs/initrd code only */
+ #define INIT __init
++static void(*error)(char *m);
+ #endif
+ 
+ #endif
+diff --git a/include/linux/decompress/mm.h b/include/linux/decompress/mm.h
+index 80f5ba4..32651e4 100644
+--- a/include/linux/decompress/mm.h
++++ b/include/linux/decompress/mm.h
+@@ -72,7 +72,6 @@ static void free(void *where)
+ #define large_malloc(a) vmalloc(a)
+ #define large_free(a) vfree(a)
+ 
+-static void(*error)(char *m);
+ #define set_error_fn(x) error = x;
+ 
+ #define STATIC
+diff --git a/lib/decompress_unlzma.c b/lib/decompress_unlzma.c
+index a614b26..3e85763 100644
+--- a/lib/decompress_unlzma.c
++++ b/lib/decompress_unlzma.c
+@@ -89,7 +89,7 @@ static int nofill(void *buffer, unsigned int len)
+ }
+ 
+ /* Called twice: once at startup and once in rc_normalize() */
+-static void INIT rc_read(struct rc *rc)
++static void INIT rc_read(struct rc *rc, void(*error)(char *x))
+ {
+ 	rc->buffer_size = rc->fill((char *)rc->buffer, LZMA_IOBUF_SIZE);
+ 	if (rc->buffer_size <= 0)
+@@ -116,13 +116,13 @@ static inline void INIT rc_init(struct rc *rc,
+ 	rc->range = 0xFFFFFFFF;
+ }
+ 
+-static inline void INIT rc_init_code(struct rc *rc)
++static inline void INIT rc_init_code(struct rc *rc, void(*error)(char *x))
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < 5; i++) {
+ 		if (rc->ptr >= rc->buffer_end)
+-			rc_read(rc);
++			rc_read(rc, error);
+ 		rc->code = (rc->code << 8) | *rc->ptr++;
+ 	}
+ }
+@@ -135,32 +135,33 @@ static inline void INIT rc_free(struct rc *rc)
+ }
+ 
+ /* Called twice, but one callsite is in inline'd rc_is_bit_0_helper() */
+-static void INIT rc_do_normalize(struct rc *rc)
++static void INIT rc_do_normalize(struct rc *rc, void(*error)(char *x))
+ {
+ 	if (rc->ptr >= rc->buffer_end)
+-		rc_read(rc);
++		rc_read(rc, error);
+ 	rc->range <<= 8;
+ 	rc->code = (rc->code << 8) | *rc->ptr++;
+ }
+-static inline void INIT rc_normalize(struct rc *rc)
++static inline void INIT rc_normalize(struct rc *rc, void(*error)(char *x))
+ {
+ 	if (rc->range < (1 << RC_TOP_BITS))
+-		rc_do_normalize(rc);
++		rc_do_normalize(rc, error);
+ }
+ 
+ /* Called 9 times */
+ /* Why rc_is_bit_0_helper exists?
+  *Because we want to always expose (rc->code < rc->bound) to optimizer
+  */
+-static inline uint32_t INIT rc_is_bit_0_helper(struct rc *rc, uint16_t *p)
++static inline uint32_t INIT rc_is_bit_0_helper(struct rc *rc, uint16_t *p,
++						void (*error)(char *x))
+ {
+-	rc_normalize(rc);
++	rc_normalize(rc, error);
+ 	rc->bound = *p * (rc->range >> RC_MODEL_TOTAL_BITS);
+ 	return rc->bound;
+ }
+-static inline int INIT rc_is_bit_0(struct rc *rc, uint16_t *p)
++static inline int INIT rc_is_bit_0(struct rc *rc, uint16_t *p, void(*error)(char *x))
+ {
+-	uint32_t t = rc_is_bit_0_helper(rc, p);
++	uint32_t t = rc_is_bit_0_helper(rc, p, error);
+ 	return rc->code < t;
+ }
+ 
+@@ -178,9 +179,9 @@ static inline void rc_update_bit_1(struct rc *rc, uint16_t *p)
+ }
+ 
+ /* Called 4 times in unlzma loop */
+-static int INIT rc_get_bit(struct rc *rc, uint16_t *p, int *symbol)
++static int INIT rc_get_bit(struct rc *rc, uint16_t *p, int *symbol, void(*error)(char *x))
+ {
+-	if (rc_is_bit_0(rc, p)) {
++	if (rc_is_bit_0(rc, p, error)) {
+ 		rc_update_bit_0(rc, p);
+ 		*symbol *= 2;
+ 		return 0;
+@@ -192,9 +193,9 @@ static int INIT rc_get_bit(struct rc *rc, uint16_t *p, int *symbol)
+ }
+ 
+ /* Called once */
+-static inline int INIT rc_direct_bit(struct rc *rc)
++static inline int INIT rc_direct_bit(struct rc *rc , void(*error)(char *x))
+ {
+-	rc_normalize(rc);
++	rc_normalize(rc, error);
+ 	rc->range >>= 1;
+ 	if (rc->code >= rc->range) {
+ 		rc->code -= rc->range;
+@@ -205,13 +206,14 @@ static inline int INIT rc_direct_bit(struct rc *rc)
+ 
+ /* Called twice */
+ static inline void INIT
+-rc_bit_tree_decode(struct rc *rc, uint16_t *p, int num_levels, int *symbol)
++rc_bit_tree_decode(struct rc *rc, uint16_t *p, int num_levels, int *symbol,
++							void(*error)(char *x))
+ {
+ 	int i = num_levels;
+ 
+ 	*symbol = 1;
+ 	while (i--)
+-		rc_get_bit(rc, p + *symbol, symbol);
++		rc_get_bit(rc, p + *symbol, symbol, error);
+ 	*symbol -= 1 << num_levels;
+ }
+ 
+@@ -348,7 +350,8 @@ static inline void INIT copy_bytes(struct writer *wr,
+ static inline void INIT process_bit0(struct writer *wr, struct rc *rc,
+ 				     struct cstate *cst, uint16_t *p,
+ 				     int pos_state, uint16_t *prob,
+-				     int lc, uint32_t literal_pos_mask) {
++				     int lc, uint32_t literal_pos_mask,
++				     void(*error)(char *x)) {
+ 	int mi = 1;
+ 	rc_update_bit_0(rc, prob);
+ 	prob = (p + LZMA_LITERAL +
+@@ -366,7 +369,7 @@ static inline void INIT process_bit0(struct writer *wr, struct rc *rc,
+ 			match_byte <<= 1;
+ 			bit = match_byte & 0x100;
+ 			prob_lit = prob + 0x100 + bit + mi;
+-			if (rc_get_bit(rc, prob_lit, &mi)) {
++			if (rc_get_bit(rc, prob_lit, &mi, error)) {
+ 				if (!bit)
+ 					break;
+ 			} else {
+@@ -377,7 +380,7 @@ static inline void INIT process_bit0(struct writer *wr, struct rc *rc,
+ 	}
+ 	while (mi < 0x100) {
+ 		uint16_t *prob_lit = prob + mi;
+-		rc_get_bit(rc, prob_lit, &mi);
++		rc_get_bit(rc, prob_lit, &mi, error);
+ 	}
+ 	write_byte(wr, mi);
+ 	if (cst->state < 4)
+@@ -390,7 +393,8 @@ static inline void INIT process_bit0(struct writer *wr, struct rc *rc,
+ 
+ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 					    struct cstate *cst, uint16_t *p,
+-					    int pos_state, uint16_t *prob) {
++					    int pos_state, uint16_t *prob,
++					    void(*error)(char *x)) {
+   int offset;
+ 	uint16_t *prob_len;
+ 	int num_bits;
+@@ -398,7 +402,7 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 
+ 	rc_update_bit_1(rc, prob);
+ 	prob = p + LZMA_IS_REP + cst->state;
+-	if (rc_is_bit_0(rc, prob)) {
++	if (rc_is_bit_0(rc, prob, error)) {
+ 		rc_update_bit_0(rc, prob);
+ 		cst->rep3 = cst->rep2;
+ 		cst->rep2 = cst->rep1;
+@@ -408,13 +412,13 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 	} else {
+ 		rc_update_bit_1(rc, prob);
+ 		prob = p + LZMA_IS_REP_G0 + cst->state;
+-		if (rc_is_bit_0(rc, prob)) {
++		if (rc_is_bit_0(rc, prob, error)) {
+ 			rc_update_bit_0(rc, prob);
+ 			prob = (p + LZMA_IS_REP_0_LONG
+ 				+ (cst->state <<
+ 				   LZMA_NUM_POS_BITS_MAX) +
+ 				pos_state);
+-			if (rc_is_bit_0(rc, prob)) {
++			if (rc_is_bit_0(rc, prob, error)) {
+ 				rc_update_bit_0(rc, prob);
+ 
+ 				cst->state = cst->state < LZMA_NUM_LIT_STATES ?
+@@ -429,13 +433,13 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 
+ 			rc_update_bit_1(rc, prob);
+ 			prob = p + LZMA_IS_REP_G1 + cst->state;
+-			if (rc_is_bit_0(rc, prob)) {
++			if (rc_is_bit_0(rc, prob, error)) {
+ 				rc_update_bit_0(rc, prob);
+ 				distance = cst->rep1;
+ 			} else {
+ 				rc_update_bit_1(rc, prob);
+ 				prob = p + LZMA_IS_REP_G2 + cst->state;
+-				if (rc_is_bit_0(rc, prob)) {
++				if (rc_is_bit_0(rc, prob, error)) {
+ 					rc_update_bit_0(rc, prob);
+ 					distance = cst->rep2;
+ 				} else {
+@@ -453,7 +457,7 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
  	}
  
- 	if (compressed) {
--		int zlib_err = 0, zlib_init = 0;
--
--		/*
--		 * Uncompress block.
--		 */
--
--		mutex_lock(&msblk->read_data_mutex);
--
--		msblk->stream.avail_out = 0;
--		msblk->stream.avail_in = 0;
--
--		bytes = length;
--		do {
--			if (msblk->stream.avail_in == 0 && k < b) {
--				avail = min(bytes, msblk->devblksize - offset);
--				bytes -= avail;
--				wait_on_buffer(bh[k]);
--				if (!buffer_uptodate(bh[k]))
--					goto release_mutex;
--
--				if (avail == 0) {
--					offset = 0;
--					put_bh(bh[k++]);
--					continue;
--				}
--
--				msblk->stream.next_in = bh[k]->b_data + offset;
--				msblk->stream.avail_in = avail;
--				offset = 0;
--			}
--
--			if (msblk->stream.avail_out == 0 && page < pages) {
--				msblk->stream.next_out = buffer[page++];
--				msblk->stream.avail_out = PAGE_CACHE_SIZE;
--			}
--
--			if (!zlib_init) {
--				zlib_err = zlib_inflateInit(&msblk->stream);
--				if (zlib_err != Z_OK) {
--					ERROR("zlib_inflateInit returned"
--						" unexpected result 0x%x,"
--						" srclength %d\n", zlib_err,
--						srclength);
--					goto release_mutex;
--				}
--				zlib_init = 1;
--			}
--
--			zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
--
--			if (msblk->stream.avail_in == 0 && k < b)
--				put_bh(bh[k++]);
--		} while (zlib_err == Z_OK);
--
--		if (zlib_err != Z_STREAM_END) {
--			ERROR("zlib_inflate error, data probably corrupt\n");
--			goto release_mutex;
--		}
--
--		zlib_err = zlib_inflateEnd(&msblk->stream);
--		if (zlib_err != Z_OK) {
--			ERROR("zlib_inflate error, data probably corrupt\n");
--			goto release_mutex;
--		}
--		length = msblk->stream.total_out;
--		mutex_unlock(&msblk->read_data_mutex);
-+		length = zlib_uncompress(msblk, buffer, bh, b, offset, length,
-+			srclength, pages);
-+		if (length < 0)
-+			goto read_failure;
+ 	prob_len = prob + LZMA_LEN_CHOICE;
+-	if (rc_is_bit_0(rc, prob_len)) {
++	if (rc_is_bit_0(rc, prob_len, error)) {
+ 		rc_update_bit_0(rc, prob_len);
+ 		prob_len = (prob + LZMA_LEN_LOW
+ 			    + (pos_state <<
+@@ -463,7 +467,7 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
  	} else {
- 		/*
- 		 * Block is uncompressed.
-@@ -255,9 +192,6 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
- 	kfree(bh);
- 	return length;
+ 		rc_update_bit_1(rc, prob_len);
+ 		prob_len = prob + LZMA_LEN_CHOICE_2;
+-		if (rc_is_bit_0(rc, prob_len)) {
++		if (rc_is_bit_0(rc, prob_len, error)) {
+ 			rc_update_bit_0(rc, prob_len);
+ 			prob_len = (prob + LZMA_LEN_MID
+ 				    + (pos_state <<
+@@ -479,7 +483,7 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 		}
+ 	}
  
--release_mutex:
--	mutex_unlock(&msblk->read_data_mutex);
+-	rc_bit_tree_decode(rc, prob_len, num_bits, &len);
++	rc_bit_tree_decode(rc, prob_len, num_bits, &len, error);
+ 	len += offset;
+ 
+ 	if (cst->state < 4) {
+@@ -494,7 +498,7 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 			 << LZMA_NUM_POS_SLOT_BITS);
+ 		rc_bit_tree_decode(rc, prob,
+ 				   LZMA_NUM_POS_SLOT_BITS,
+-				   &pos_slot);
++				   &pos_slot, error);
+ 		if (pos_slot >= LZMA_START_POS_MODEL_INDEX) {
+ 			int i, mi;
+ 			num_bits = (pos_slot >> 1) - 1;
+@@ -507,7 +511,7 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 				num_bits -= LZMA_NUM_ALIGN_BITS;
+ 				while (num_bits--)
+ 					cst->rep0 = (cst->rep0 << 1) |
+-						rc_direct_bit(rc);
++						rc_direct_bit(rc, error);
+ 				prob = p + LZMA_ALIGN;
+ 				cst->rep0 <<= LZMA_NUM_ALIGN_BITS;
+ 				num_bits = LZMA_NUM_ALIGN_BITS;
+@@ -515,7 +519,7 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 			i = 1;
+ 			mi = 1;
+ 			while (num_bits--) {
+-				if (rc_get_bit(rc, prob + mi, &mi))
++				if (rc_get_bit(rc, prob + mi, &mi, error))
+ 					cst->rep0 |= i;
+ 				i <<= 1;
+ 			}
+@@ -537,7 +541,7 @@ STATIC int INIT unlzma(unsigned char *buf, int in_len,
+ 			      int(*flush)(void*, unsigned int),
+ 			      unsigned char *output,
+ 			      int *posp,
+-			      void(*error_fn)(char *x)
++			      void(*error)(char *x)
+ 	)
+ {
+ 	struct lzma_header header;
+@@ -553,8 +557,6 @@ STATIC int INIT unlzma(unsigned char *buf, int in_len,
+ 	unsigned char *inbuf;
+ 	int ret = -1;
+ 
+-	set_error_fn(error_fn);
 -
- block_release:
- 	for (; k < b; k++)
- 		put_bh(bh[k]);
-diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
-index 0e9feb6..988bdce 100644
---- a/fs/squashfs/squashfs.h
-+++ b/fs/squashfs/squashfs.h
-@@ -70,6 +70,10 @@ extern struct inode *squashfs_iget(struct super_block *, long long,
- 				unsigned int);
- extern int squashfs_read_inode(struct inode *, long long);
+ 	if (buf)
+ 		inbuf = buf;
+ 	else
+@@ -577,7 +579,7 @@ STATIC int INIT unlzma(unsigned char *buf, int in_len,
  
-+/* zlib_wrapper.c */
-+extern int zlib_uncompress(struct squashfs_sb_info *, void **,
-+				struct buffer_head **, int, int, int, int, int);
-+
- /*
-  * Inodes and files operations
-  */
-diff --git a/fs/squashfs/zlib_wrapper.c b/fs/squashfs/zlib_wrapper.c
-new file mode 100644
-index 0000000..486a2a7
---- /dev/null
-+++ b/fs/squashfs/zlib_wrapper.c
-@@ -0,0 +1,109 @@
-+/*
-+ * Squashfs - a compressed read only filesystem for Linux
-+ *
-+ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-+ * Phillip Lougher <phillip@lougher.demon.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2,
-+ * or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-+ *
-+ * zlib_wrapper.c
-+ */
-+
-+
-+#include <linux/mutex.h>
-+#include <linux/buffer_head.h>
-+#include <linux/zlib.h>
-+
-+#include "squashfs_fs.h"
-+#include "squashfs_fs_sb.h"
-+#include "squashfs_fs_i.h"
-+#include "squashfs.h"
-+
-+int zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
-+	struct buffer_head **bh, int b, int offset, int length, int srclength,
-+	int pages)
-+{
-+	int zlib_err = 0, zlib_init = 0;
-+	int avail, bytes, k = 0, page = 0;
-+
-+	mutex_lock(&msblk->read_data_mutex);
-+
-+	msblk->stream.avail_out = 0;
-+	msblk->stream.avail_in = 0;
-+
-+	bytes = length;
-+	do {
-+		if (msblk->stream.avail_in == 0 && k < b) {
-+			avail = min(bytes, msblk->devblksize - offset);
-+			bytes -= avail;
-+			wait_on_buffer(bh[k]);
-+			if (!buffer_uptodate(bh[k]))
-+				goto release_mutex;
-+
-+			if (avail == 0) {
-+				offset = 0;
-+				put_bh(bh[k++]);
-+				continue;
-+			}
-+
-+			msblk->stream.next_in = bh[k]->b_data + offset;
-+			msblk->stream.avail_in = avail;
-+			offset = 0;
-+		}
-+
-+		if (msblk->stream.avail_out == 0 && page < pages) {
-+			msblk->stream.next_out = buffer[page++];
-+			msblk->stream.avail_out = PAGE_CACHE_SIZE;
-+		}
-+
-+		if (!zlib_init) {
-+			zlib_err = zlib_inflateInit(&msblk->stream);
-+			if (zlib_err != Z_OK) {
-+				ERROR("zlib_inflateInit returned unexpected "
-+					"result 0x%x, srclength %d\n",
-+					zlib_err, srclength);
-+				goto release_mutex;
-+			}
-+			zlib_init = 1;
-+		}
-+
-+		zlib_err = zlib_inflate(&msblk->stream, Z_SYNC_FLUSH);
-+
-+		if (msblk->stream.avail_in == 0 && k < b)
-+			put_bh(bh[k++]);
-+	} while (zlib_err == Z_OK);
-+
-+	if (zlib_err != Z_STREAM_END) {
-+		ERROR("zlib_inflate error, data probably corrupt\n");
-+		goto release_mutex;
-+	}
-+
-+	zlib_err = zlib_inflateEnd(&msblk->stream);
-+	if (zlib_err != Z_OK) {
-+		ERROR("zlib_inflate error, data probably corrupt\n");
-+		goto release_mutex;
-+	}
-+
-+	mutex_unlock(&msblk->read_data_mutex);
-+	return msblk->stream.total_out;
-+
-+release_mutex:
-+	mutex_unlock(&msblk->read_data_mutex);
-+
-+	for (; k < b; k++)
-+		put_bh(bh[k]);
-+
-+	return -EIO;
-+}
+ 	for (i = 0; i < sizeof(header); i++) {
+ 		if (rc.ptr >= rc.buffer_end)
+-			rc_read(&rc);
++			rc_read(&rc, error);
+ 		((unsigned char *)&header)[i] = *rc.ptr++;
+ 	}
+ 
+@@ -622,17 +624,17 @@ STATIC int INIT unlzma(unsigned char *buf, int in_len,
+ 	for (i = 0; i < num_probs; i++)
+ 		p[i] = (1 << RC_MODEL_TOTAL_BITS) >> 1;
+ 
+-	rc_init_code(&rc);
++	rc_init_code(&rc, error);
+ 
+ 	while (get_pos(&wr) < header.dst_size) {
+ 		int pos_state =	get_pos(&wr) & pos_state_mask;
+ 		uint16_t *prob = p + LZMA_IS_MATCH +
+ 			(cst.state << LZMA_NUM_POS_BITS_MAX) + pos_state;
+-		if (rc_is_bit_0(&rc, prob))
++		if (rc_is_bit_0(&rc, prob, error))
+ 			process_bit0(&wr, &rc, &cst, p, pos_state, prob,
+-				     lc, literal_pos_mask);
++				     lc, literal_pos_mask, error);
+ 		else {
+-			process_bit1(&wr, &rc, &cst, p, pos_state, prob);
++			process_bit1(&wr, &rc, &cst, p, pos_state, prob, error);
+ 			if (cst.rep0 == 0)
+ 				break;
+ 		}
 -- 
 1.6.3.3
 
