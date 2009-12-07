@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZLGAz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbZLGBQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbZLGAz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758173AbZLGAzY
+	id S1758571AbZLGBQP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 20:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758541AbZLGBQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:55:24 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:37979 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758162AbZLGAzX (ORCPT
+	Sun, 6 Dec 2009 20:16:15 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41418 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758436AbZLGBQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:55:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=I6uvZ2PaPM6y7ndiKCLZkEpzoJWk30r+wPwtscZ2JQAK5po1400Luc5yEAz7LlXANO
-         OVLNqkqbH97j9IzY4INpPBZF1QGx8b6f8hEkqMOLOMud+C/gd4lfrmbKT9RxD8eOPjWg
-         VOs3PO9WPPM+AOfqZblK2wgdoZa61AAwLFjqc=
-Subject: Re: [PATCH v8 5/8] Loongson: YeeLoong: add hardware monitoring
- driver
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
-       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20091206084717.GD2766@ucw.cz>
-References: <cover.1260082252.git.wuzhangjin@gmail.com>
-	 <d8789fa7e97d8a170c4e2516d7ef2d2fbbe42cc6.1260082252.git.wuzhangjin@gmail.com>
-	 <20091206084717.GD2766@ucw.cz>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Mon, 07 Dec 2009 08:54:58 +0800
-Message-ID: <1260147298.3126.2.camel@falcon.domain.org>
+	Sun, 6 Dec 2009 20:16:14 -0500
+Date: Sun, 6 Dec 2009 16:55:51 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Message-ID: <20091206165551.2529075f@infradead.org>
+In-Reply-To: <7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
+References: <200912052216.19540.rjw@sisk.pl>
+	<200912060055.36130.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
+	<200912060254.10081.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+	<20091206113555.5a646713@infradead.org>
+	<alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
+	<20091206121803.70385c33@infradead.org>
+	<7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-06 at 09:47 +0100, Pavel Machek wrote: 
-> Hi!
+On Sun, 6 Dec 2009 14:54:48 -0800
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+
+> > isn't serio the PS/2 stuff?
 > 
-> > +static int get_battery_current(void)
-> > +{
-> > +	s16 value;
-> > +
-> > +	value = (ec_read(REG_BAT_CURRENT_HIGH) << 8) |
-> > +		(ec_read(REG_BAT_CURRENT_LOW));
-> > +
-> > +	if (value < 0)
-> > +		value = ~value + 1;
-> > +
-> > +	return value;
-> > +}
-> 
-> What is going on here? I thought the value is already in two's
-> complement... Is the above equivalent of
-> 
-> 	      if (value < 0)
-> 	      	 value = -value; 
-> 
-> ? If so, why? If not, can you add a comment?
+> Yes, that's your PS/2 mouse (rather touchpad) and the delay comes
+> from device reset (needed by some keyboard controllers - I remember
+> HP -or it and keyboard will be dead at resume).
 
-Right, then, will use this instead:
+and I have a HP laptop... so this makes perfect sense.
+Thanks for the explenation!
 
-static int get_battery_current(void)
-{ 
-	s16 value;
-
-	value = (ec_read(REG_BAT_CURRENT_HIGH) << 8) |
-		(ec_read(REG_BAT_CURRENT_LOW));
-
-	return abs(value);
-}
-
-Thanks & Best Regards,
-	Wu Zhangjin
+Now, the good news is that serio is near invisible on resume...
 
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
