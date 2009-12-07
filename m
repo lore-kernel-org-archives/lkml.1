@@ -1,46 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935704AbZLGXER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935709AbZLGXGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935704AbZLGXER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 18:04:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935636AbZLGXEP
+	id S935709AbZLGXGH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 18:06:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935676AbZLGXGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 18:04:15 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:60575 "EHLO mx2.netapp.com"
+	Mon, 7 Dec 2009 18:06:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45223 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935635AbZLGXEO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 18:04:14 -0500
-X-IronPort-AV: E=Sophos;i="4.47,357,1257148800"; 
-   d="scan'208";a="284989867"
-Subject: Re: [PATCH] SUNRPC: IS_ERR/PTR_ERR confusion
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Roel Kluin <roel.kluin@gmail.com>
-In-Reply-To: <20091207152654.GA29416@fieldses.org>
-References: <4B1CE844.1040108@gmail.com>
-	 <20091207152654.GA29416@fieldses.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Organization: NetApp
-Date: Mon, 07 Dec 2009 18:04:19 -0500
-Message-Id: <1260227059.2951.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-X-OriginalArrivalTime: 07 Dec 2009 23:04:21.0091 (UTC) FILETIME=[9C5EEB30:01CA7791]
+	id S935639AbZLGXGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 18:06:05 -0500
+Message-ID: <4B1D8A27.6050008@kernel.org>
+Date: Mon, 07 Dec 2009 15:05:11 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Volker Lanz <vl@fidra.de>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [BISECTED, REGRESSION] Successful resume from suspend but freezes
+ after I/O
+References: <200912071856.48125.vl@fidra.de> <200912072013.46332.vl@fidra.de> <4B1D561C.9030802@kernel.org> <200912072136.40202.vl@fidra.de>
+In-Reply-To: <200912072136.40202.vl@fidra.de>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 10:26 -0500, J. Bruce Fields wrote: 
-> On Mon, Dec 07, 2009 at 12:34:28PM +0100, Roel Kluin wrote:
-> > IS_ERR returns 1 or 0, PTR_ERR returns the error value.
+Volker Lanz wrote:
+> On Monday 07 December 2009 20:23:08 Yinghai Lu wrote:
+>> Volker Lanz wrote:
+>>> On Monday 07 December 2009 19:24:02 Yinghai Lu wrote:
+>>>> Volker Lanz wrote:
+>>>>> Hi,
+>>>>>
+>>>>> updating to my distro's new 2.6.31 kernel on an x86_64 quad core
+>>>>> machine with 6 GB of RAM I noticed resuming from suspend still worked
+>>>>> as before, but the machine will now reproducably freeze (have to hard
+>>>>> reset) afterwards as soon as I do something disk I/O heavy, though the
+>>>>> problem is probably not related to disk activity at all.
+>>>>>
+>>>>> A current mainline 2.6.32 checkout shows the same behaviour.
+>>>>>
+>>>>> I git-bisected the problem to this commit:
+>>>>>
+>>>>>
+>>>>> -----------------------------------------------------------------------
+>>>>> -- ---- commit 78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+>>>>> Author: Yinghai Lu <yinghai@kernel.org>
+>>>>> Date:   Thu Mar 12 22:36:01 2009 -0700
+>>>>>
+>>>>>     x86: make e820_update_range() handle small range update
+>>>>>
+>>>>>     Impact: enhance e820 code to handle more cases
+>>>>>
+>>>>>     Try to handle new range which could be covered by one entry.
+>>>>>
+>>>>>     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>>>     Cc: jbeulich@novell.com
+>>>>>     LKML-Reference: <49B9F0C1.10402@kernel.org>
+>>>>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>>> -----------------------------------------------------------------------
+>>>>> -- ----
+>>>>>
+>>>>>
+>>>>> A kernel built from this revision does not boot, so the first booting
+>>>>> kernel to show the problem actually seems to be:
+>>>>>
+>>>>>
+>>>>> -----------------------------------------------------------------------
+>>>>> -- ---- commit 6d7942dc2a70a7e74c352107b150265602671588
+>>>>> Author: Yinghai Lu <yinghai@kernel.org>
+>>>>> Date:   Sat Mar 14 14:32:41 2009 -0700
+>>>>>
+>>>>>     x86: fix 64k corruption-check
+>>>>>
+>>>>>     Impact: fix boot crash
+>>>>>
+>>>>>     Need to exit early if the addr is far above 64k.
+>>>>>
+>>>>>     The crash got exposed by:
+>>>>>
+>>>>>       78a8b35: x86: make e820_update_range() handle small range update
+>>>>>
+>>>>>     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>>>     Cc: <stable@kernel.org>
+>>>>>     LKML-Reference: <49BC2279.2030101@kernel.org>
+>>>>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>>> -----------------------------------------------------------------------
+>>>>> -- ----
+>>>>>
+>>>>>
+>>>>> The last kernel to work without problems thus seems to be this one:
+>>>>>
+>>>>>
+>>>>> -----------------------------------------------------------------------
+>>>>> -- ---- commit 773e673de27297d07d852e7e9bfd1a695cae1da2
+>>>>> Author: Yinghai Lu <yinghai@kernel.org>
+>>>>> Date:   Thu Mar 12 21:35:18 2009 -0700
+>>>>>
+>>>>>     x86: fix e820_update_range()
+>>>>>
+>>>>>     Impact: fix left range size on head
+>>>>>
+>>>>>     | commit 5c0e6f035df983210e4d22213aed624ced502d3d
+>>>>>     |    x86: fix code paths used by update_mptable
+>>>>>     |    Impact: fix crashes under Xen due to unrobust e820 code
+>>>>>
+>>>>>     fixes one e820 bug, but introduces another bug.
+>>>>>
+>>>>>     Need to update size for left range at first in case it is header.
+>>>>>
+>>>>>     also add __e820_add_region take more parameter.
+>>>>>
+>>>>>     Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>>>     Cc: jbeulich@novell.com
+>>>>>     LKML-Reference: <49B9E286.502@kernel.org>
+>>>>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>>> -----------------------------------------------------------------------
+>>>>> -- ----
+>>>>>
+>>>>>
+>>>>> The problem is 100% reproducable on this machine: Resuming and then
+>>>>> copying /usr/ to $HOME will freeze after a few hundred MB have been
+>>>>> copied. Earlier kernels worked fine for the last couple of months.
+>>>>>
+>>>>> What additional information is required to help diagnose and hopefully
+>>>>> fix the problem?
+>>>> whole boot log with CONFIG_PCI_DEBUG and debug on command line.
+>>> Here it is. It's huge, I hope you were expecting that...
+>> and the one with current tip?
+>>
+>> http://people.redhat.com/mingo/tip.git/readme.txt
 > 
-> Whoops, thanks, looks like that was my mistake, from
-> 79a3f20b641f9f93787ada49d1d7cfa98ee5a11e "rpc: use count of pipe openers
-> to wait for first open".
+> With this kernel, the problem persists. Here's the log:
+> 
+> 
+> -----------------------------------------------------------------------------
+> [    0.000000] Initializing cgroup subsys cpuset
+> [    0.000000] Initializing cgroup subsys cpu
+> [    0.000000] Linux version 2.6.32-tip-02731-gd17424f (vl@trevor) (gcc 
+> version 4.4.1 (Ubuntu 4.4.1-4ubuntu8) ) #22 SMP Mon Dec 7 21:09:21 CET 2009
+> [    0.000000] Command line: root=UUID=160351ee-c9b0-4a72-9fd5-9962c8137a7e ro 
+> nosplash debug
+> [    0.000000] BIOS-provided physical RAM map:
+> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+> [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000cfee0000 (usable)
+> [    0.000000]  BIOS-e820: 00000000cfee0000 - 00000000cfee2000 (ACPI NVS)
+> [    0.000000]  BIOS-e820: 00000000cfee2000 - 00000000cfef0000 (ACPI data)
+> [    0.000000]  BIOS-e820: 00000000cfef0000 - 00000000cff00000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000e4000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000100000000 - 00000001b0000000 (usable)
+> [    0.000000] NX (Execute Disable) protection: active
+> [    0.000000] DMI 2.4 present.
+> [    0.000000] last_pfn = 0x1b0000 max_arch_pfn = 0x400000000
+> [    0.000000] MTRR default type: uncachable
+> [    0.000000] MTRR fixed ranges enabled:
+> [    0.000000]   00000-9FFFF write-back
+> [    0.000000]   A0000-BFFFF uncachable
+> [    0.000000]   C0000-CBFFF write-protect
+> [    0.000000]   CC000-EFFFF uncachable
+> [    0.000000]   F0000-FFFFF write-through
+> [    0.000000] MTRR variable ranges enabled:
+> [    0.000000]   0 base 000000000 mask F00000000 write-back
+> [    0.000000]   1 base 0E0000000 mask FE0000000 uncachable
+> [    0.000000]   2 base 0D0000000 mask FF0000000 uncachable
+> [    0.000000]   3 base 100000000 mask F00000000 write-back
+> [    0.000000]   4 base 1C0000000 mask FC0000000 uncachable
+> [    0.000000]   5 base 1B0000000 mask FF0000000 uncachable
+> [    0.000000]   6 base 0CFF00000 mask FFFF00000 uncachable
+> [    0.000000]   7 disabled
+> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 
+> 0x7010600070106
+> [    0.000000] e820 update range: 00000000cff00000 - 0000000100000000 (usable) 
+> ==> (reserved)
+> [    0.000000] last_pfn = 0xcfee0 max_arch_pfn = 0x400000000
+> [    0.000000] e820 update range: 0000000000001000 - 0000000000006000 (usable) 
+> ==> (reserved)
+> [    0.000000] Scanning 1 areas for low memory corruption
+> [    0.000000] modified physical RAM map:
+> [    0.000000]  modified: 0000000000000000 - 0000000000001000 (usable)
+> [    0.000000]  modified: 0000000000001000 - 0000000000006000 (reserved)
+> [    0.000000]  modified: 0000000000006000 - 000000000009f800 (usable)
+> [    0.000000]  modified: 000000000009f800 - 00000000000a0000 (reserved)
+> [    0.000000]  modified: 00000000000f0000 - 0000000000100000 (reserved)
+> [    0.000000]  modified: 0000000000100000 - 00000000cfee0000 (usable)
+> [    0.000000]  modified: 00000000cfee0000 - 00000000cfee2000 (ACPI NVS)
+> [    0.000000]  modified: 00000000cfee2000 - 00000000cfef0000 (ACPI data)
+> [    0.000000]  modified: 00000000cfef0000 - 00000000cff00000 (reserved)
+> [    0.000000]  modified: 00000000e0000000 - 00000000e4000000 (reserved)
+> [    0.000000]  modified: 00000000fec00000 - 0000000100000000 (reserved)
+> [    0.000000]  modified: 0000000100000000 - 00000001b0000000 (usable)
 
-Are you planning on shepherding this fix into mainline, or should I?
+the updated e820 table is the same to the one for 2.6.29...
 
-Trond
+so could be some other patch cause the problem.
+
+please check if revert
+2547089ca2db132e307ef68848ba029a8ec2f341
+could help.
+
+YH
