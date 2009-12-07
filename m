@@ -1,41 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbZLGSlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758659AbZLGSmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbZLGSlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758301AbZLGSlS
+	id S1758659AbZLGSmB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758503AbZLGSl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:41:18 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:42472 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757553AbZLGSlS (ORCPT
+	Mon, 7 Dec 2009 13:41:59 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:55849 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758444AbZLGSl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:41:18 -0500
-Message-ID: <4B1D4C38.2060801@zytor.com>
-Date: Mon, 07 Dec 2009 10:40:56 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	Mon, 7 Dec 2009 13:41:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WWymiW+hUFbRt8IazPnhi08/gspkBVfjiI5OZuBdIV2LIkokvqKdjt1NCoZvksGXvj
+         7kJfBzq6aFhhnSzXzFQ3clO0k3XlYWPvqgEZp/X3AXA3oGzyVbfznhsnMWzRAnqA2s82
+         DsOW9Q6/HjXPNP0RLFkjjPR0zd/aUk0r02/a4=
+Date: Mon, 7 Dec 2009 10:41:53 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+Message-ID: <20091207184153.GD998@core.coreip.homeip.net>
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Emese Revfy <re.emese@gmail.com>
-CC: tglx@linutronix.de, mingo@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 21/31] Constify struct mtrr_ops for 2.6.32 v1
-References: <4B198670.2000406@gmail.com> <4B198F61.7010304@gmail.com>
-In-Reply-To: <4B198F61.7010304@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3skbn6dv1.fsf@intrepid.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/04/2009 02:38 PM, Emese Revfy wrote:
-> From: Emese Revfy <re.emese@gmail.com>
+On Sun, Dec 06, 2009 at 09:34:26PM +0100, Krzysztof Halasa wrote:
+> Jon Smirl <jonsmirl@gmail.com> writes:
 > 
-> Constify struct mtrr_ops.
+> >> Once again: how about agreement about the LIRC interface
+> >> (kernel-userspace) and merging the actual LIRC code first? In-kernel
+> >> decoding can wait a bit, it doesn't change any kernel-user interface.
+> >
+> > I'd like to see a semi-complete design for an in-kernel IR system
+> > before anything is merged from any source.
 > 
+> This is a way to nowhere, there is no logical dependency between LIRC
+> and input layer IR.
+> 
+> There is only one thing which needs attention before/when merging LIRC:
+> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
+> actually, making a correct IR core design without the LIRC merged can be
+> only harder.
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+This sounds like "merge first, think later"...
+
+The question is why we need to merge lirc interface right now, before we
+agreed on the sybsystem architecture? Noone _in kernel_ user lirc-dev
+yet and, looking at the way things are shaping, no drivers will be
+_directly_ using it after it is complete. So, even if we merge it right
+away, the code will have to be restructured and reworked. Unfortunately,
+just merging what Jarod posted, will introduce sysfs hierarchy which
+is userspace interface as well (although we not as good maintaining it
+at times) and will add more constraints on us.
+
+That is why I think we should go the other way around - introduce the
+core which receivers could plug into and decoder framework and once it
+is ready register lirc-dev as one of the available decoders.
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Dmitry
