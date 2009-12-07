@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934413AbZLGA1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934419AbZLGA0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934413AbZLGA1K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932825AbZLGA0e
+	id S934419AbZLGA0i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932803AbZLGA0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:26:34 -0500
-Received: from kroah.org ([198.145.64.141]:34458 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:26:33 -0500
+Received: from kroah.org ([198.145.64.141]:34476 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758359AbZLGANR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:13:17 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:50 2009
-Message-Id: <20091207000650.809125417@mini.kroah.org>
+	id S1758515AbZLGANS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:13:18 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:51 2009
+Message-Id: <20091207000650.986021785@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:36 -0800
+Date: Sun, 06 Dec 2009 16:00:37 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Harald Welte <HaraldWelte@viatech.com>, Dave Jones <davej@redhat.com>
-Subject: [060/119] [CPUFREQ] Enable ACPI PDC handshake for VIA/Centaur CPUs
+       Robert Lowery <rglowery@exemail.com.au>,
+       Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [061/119] V4L/DVB (13436): cxusb: Fix hang on DViCO FusionHDTV DVB-T Dual Digital 4 (rev 1)
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=enable-acpi-pdc-handshake-for-via-centaur-cpus.patch
+Content-Disposition: inline; filename=v4l-dvb-13436-cxusb-fix-hang-on-dvico-fusionhdtv-dvb-t-dual-digital-4-rev-1.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,44 +31,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Harald Welte <HaraldWelte@viatech.com>
+From: Robert Lowery <rglowery@exemail.com.au>
 
-commit d77b81974521c82fa6fda38dfff1b491dcc62a32 upstream.
+commit 0bc3518019f917a370935055f07698a4e9b3ea20 upstream.
 
-In commit 0de51088e6a82bc8413d3ca9e28bbca2788b5b53, we introduced the
-use of acpi-cpufreq on VIA/Centaur CPU's by removing a vendor check for
-VENDOR_INTEL.  However, as it turns out, at least the Nano CPU's also
-need the PDC (processor driver capabilities) handshake in order to
-activate the methods required for acpi-cpufreq.
+Address yet another regression introduced by the introduction of the zl10353
+disable_i2c_gate field.
 
-Since arch_acpi_processor_init_pdc() contains another vendor check for
-Intel, the PDC is not initialized on VIA CPU's.  The resulting behavior
-of a current mainline kernel on such systems is:  acpi-cpufreq
-loads and it indicates CPU frequency changes.  However, the CPU stays at
-a single frequency
+djh - I unmangled the patch which apparently got screwed up in the user's
+email client.
 
-This trivial patch ensures that init_intel_pdc() is called on Intel and
-VIA/Centaur CPU's alike.
-
-Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
-Signed-off-by: Dave Jones <davej@redhat.com>
+Signed-off-by: Robert Lowery <rglowery@exemail.com.au>
+Signed-off-by: Devin Heitmueller <dheitmueller@kernellabs.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/acpi/processor.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/media/dvb/dvb-usb/cxusb.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
---- a/arch/x86/kernel/acpi/processor.c
-+++ b/arch/x86/kernel/acpi/processor.c
-@@ -79,7 +79,8 @@ void arch_acpi_processor_init_pdc(struct
- 	struct cpuinfo_x86 *c = &cpu_data(pr->id);
+--- a/drivers/media/dvb/dvb-usb/cxusb.c
++++ b/drivers/media/dvb/dvb-usb/cxusb.c
+@@ -663,6 +663,14 @@ static struct zl10353_config cxusb_zl103
+ 	.parallel_ts = 1,
+ };
  
- 	pr->pdc = NULL;
--	if (c->x86_vendor == X86_VENDOR_INTEL)
-+	if (c->x86_vendor == X86_VENDOR_INTEL ||
-+	    c->x86_vendor == X86_VENDOR_CENTAUR)
- 		init_intel_pdc(pr, c);
++static struct zl10353_config cxusb_zl10353_xc3028_config_no_i2c_gate = {
++	.demod_address = 0x0f,
++	.if2 = 45600,
++	.no_tuner = 1,
++	.parallel_ts = 1,
++	.disable_i2c_gate_ctrl = 1,
++};
++
+ static struct mt352_config cxusb_mt352_xc3028_config = {
+ 	.demod_address = 0x0f,
+ 	.if2 = 4560,
+@@ -894,7 +902,7 @@ static int cxusb_dualdig4_frontend_attac
+ 	cxusb_bluebird_gpio_pulse(adap->dev, 0x02, 1);
  
- 	return;
+ 	if ((adap->fe = dvb_attach(zl10353_attach,
+-				   &cxusb_zl10353_xc3028_config,
++				   &cxusb_zl10353_xc3028_config_no_i2c_gate,
+ 				   &adap->dev->i2c_adap)) == NULL)
+ 		return -EIO;
+ 
 
 
