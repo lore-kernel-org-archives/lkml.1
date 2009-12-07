@@ -1,215 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964952AbZLGUWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934925AbZLGUWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964952AbZLGUWk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:22:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934468AbZLGUWI
+	id S934925AbZLGUWO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934887AbZLGUWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:22:08 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:61325 "EHLO
+	Mon, 7 Dec 2009 15:22:10 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:55190 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964885AbZLGUWE (ORCPT
+	with ESMTP id S964899AbZLGUWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 7 Dec 2009 15:22:04 -0500
-Message-Id: <20091207202209.046451439@goodmis.org>
+Message-Id: <20091207202209.349568674@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Mon, 07 Dec 2009 15:19:05 -0500
+Date: Mon, 07 Dec 2009 15:19:06 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Olsa <jolsa@redhat.com>
-Subject: [PATCH 2/4] [PATCH 2/4] tracing: Buffer the output of seq_file in case of filled buffer
+       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH 3/4] [PATCH 3/4] tracing: Add full state to trace_seq
 References: <20091207201903.864817226@goodmis.org>
-Content-Disposition: inline; filename=0002-tracing-Buffer-the-output-of-seq_file-in-case-of-fil.patch
+Content-Disposition: inline; filename=0003-tracing-Add-full-state-to-trace_seq.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Johannes Berg <johannes@sipsolutions.net>
 
-If the seq_read fills the buffer it will call s_start again on the next
-itertation with the same position. This causes a problem with the
-function_graph tracer because it consumes the iteration in order to
-determine leaf functions.
+The trace_seq buffer might fill up, and right now one needs to check the
+return value of each printf into the buffer to check for that.
 
-What happens is that the iterator stores the entry, and the function
-graph plugin will look at the next entry. If that next entry is a return
-of the same function and task, then the function is a leaf and the
-function_graph plugin calls ring_buffer_read which moves the ring buffer
-iterator forward (the trace iterator still points to the function start
-entry).
+Instead, have the buffer keep track of whether it is full or not, and
+reject more input if it is full or would have overflowed with an input
+that wasn't added.
 
-The copying of the trace_seq to the seq_file buffer will fail if the
-seq_file buffer is full. The seq_read will not show this entry.
-The next read by userspace will cause seq_read to again call s_start
-which will reuse the trace iterator entry (the function start entry).
-But the function return entry was already consumed. The function graph
-plugin will think that this entry is a nested function and not a leaf.
-
-To solve this, the trace code now checks the return status of the
-seq_printf (trace_print_seq). If the writing to the seq_file buffer
-fails, we set a flag in the iterator (leftover) and we do not reset
-the trace_seq buffer. On the next call to s_start, we check the leftover
-flag, and if it is set, we just reuse the trace_seq buffer and do not
-call into the plugin print functions.
-
-Before this patch:
-
- 2)               |      fput() {
- 2)               |        __fput() {
- 2)   0.550 us    |          inotify_inode_queue_event();
- 2)               |          __fsnotify_parent() {
- 2)   0.540 us    |          inotify_dentry_parent_queue_event();
-
-After the patch:
-
- 2)               |      fput() {
- 2)               |        __fput() {
- 2)   0.550 us    |          inotify_inode_queue_event();
- 2)   0.548 us    |          __fsnotify_parent();
- 2)   0.540 us    |          inotify_dentry_parent_queue_event();
-
-Reported-by: Jiri Olsa <jolsa@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ftrace_event.h |    1 +
- include/linux/trace_seq.h    |    4 ++--
- kernel/trace/trace.c         |   35 ++++++++++++++++++++++++++++++++---
- kernel/trace/trace_output.c  |   14 +++++++++++---
- 4 files changed, 46 insertions(+), 8 deletions(-)
+ include/linux/trace_seq.h   |    2 +
+ kernel/trace/trace_output.c |   61 +++++++++++++++++++++++++++++++++++--------
+ 2 files changed, 52 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 47bbdf9..38f8d65 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -57,6 +57,7 @@ struct trace_iterator {
- 	/* The below is zeroed out in pipe_read */
- 	struct trace_seq	seq;
- 	struct trace_entry	*ent;
-+	int			leftover;
- 	int			cpu;
- 	u64			ts;
- 
 diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
-index 09077f6..48d81df 100644
+index 48d81df..dd38678 100644
 --- a/include/linux/trace_seq.h
 +++ b/include/linux/trace_seq.h
-@@ -33,7 +33,7 @@ extern int trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
- 	__attribute__ ((format (printf, 2, 0)));
- extern int
- trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary);
--extern void trace_print_seq(struct seq_file *m, struct trace_seq *s);
-+extern int trace_print_seq(struct seq_file *m, struct trace_seq *s);
- extern ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
- 				 size_t cnt);
- extern int trace_seq_puts(struct trace_seq *s, const char *str);
-@@ -55,7 +55,7 @@ trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
- 	return 0;
+@@ -14,6 +14,7 @@ struct trace_seq {
+ 	unsigned char		buffer[PAGE_SIZE];
+ 	unsigned int		len;
+ 	unsigned int		readpos;
++	int			full;
+ };
+ 
+ static inline void
+@@ -21,6 +22,7 @@ trace_seq_init(struct trace_seq *s)
+ {
+ 	s->len = 0;
+ 	s->readpos = 0;
++	s->full = 0;
  }
  
--static inline void trace_print_seq(struct seq_file *m, struct trace_seq *s)
-+static inline int trace_print_seq(struct seq_file *m, struct trace_seq *s)
- {
- }
- static inline ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index f804b40..596dcf2 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1516,6 +1516,8 @@ static void *s_next(struct seq_file *m, void *v, loff_t *pos)
- 	int i = (int)*pos;
- 	void *ent;
- 
-+	WARN_ON_ONCE(iter->leftover);
-+
- 	(*pos)++;
- 
- 	/* can't go backwards */
-@@ -1614,8 +1616,16 @@ static void *s_start(struct seq_file *m, loff_t *pos)
- 			;
- 
- 	} else {
--		l = *pos - 1;
--		p = s_next(m, p, &l);
-+		/*
-+		 * If we overflowed the seq_file before, then we want
-+		 * to just reuse the trace_seq buffer again.
-+		 */
-+		if (iter->leftover)
-+			p = iter;
-+		else {
-+			l = *pos - 1;
-+			p = s_next(m, p, &l);
-+		}
- 	}
- 
- 	trace_event_read_lock();
-@@ -1923,6 +1933,7 @@ static enum print_line_t print_trace_line(struct trace_iterator *iter)
- static int s_show(struct seq_file *m, void *v)
- {
- 	struct trace_iterator *iter = v;
-+	int ret;
- 
- 	if (iter->ent == NULL) {
- 		if (iter->tr) {
-@@ -1942,9 +1953,27 @@ static int s_show(struct seq_file *m, void *v)
- 			if (!(trace_flags & TRACE_ITER_VERBOSE))
- 				print_func_help_header(m);
- 		}
-+	} else if (iter->leftover) {
-+		/*
-+		 * If we filled the seq_file buffer earlier, we
-+		 * want to just show it now.
-+		 */
-+		ret = trace_print_seq(m, &iter->seq);
-+
-+		/* ret should this time be zero, but you never know */
-+		iter->leftover = ret;
-+
- 	} else {
- 		print_trace_line(iter);
--		trace_print_seq(m, &iter->seq);
-+		ret = trace_print_seq(m, &iter->seq);
-+		/*
-+		 * If we overflow the seq_file buffer, then it will
-+		 * ask us for this data again at start up.
-+		 * Use that instead.
-+		 *  ret is 0 if seq_file write succeeded.
-+		 *        -1 otherwise.
-+		 */
-+		iter->leftover = ret;
- 	}
- 
- 	return 0;
+ /*
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index b6c12c6..e5cf90f 100644
+index e5cf90f..8e46b33 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
-@@ -23,13 +23,21 @@ static struct hlist_head event_hash[EVENT_HASHSIZE] __read_mostly;
+@@ -93,7 +93,7 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+ 	va_list ap;
+ 	int ret;
  
- static int next_event_type = __TRACE_LAST_TYPE + 1;
+-	if (!len)
++	if (s->full || !len)
+ 		return 0;
  
--void trace_print_seq(struct seq_file *m, struct trace_seq *s)
-+int trace_print_seq(struct seq_file *m, struct trace_seq *s)
+ 	va_start(ap, fmt);
+@@ -101,8 +101,10 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+ 	va_end(ap);
+ 
+ 	/* If we can't write it all, don't bother writing anything */
+-	if (ret >= len)
++	if (ret >= len) {
++		s->full = 1;
+ 		return 0;
++	}
+ 
+ 	s->len += ret;
+ 
+@@ -127,14 +129,16 @@ trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
+ 	int len = (PAGE_SIZE - 1) - s->len;
+ 	int ret;
+ 
+-	if (!len)
++	if (s->full || !len)
+ 		return 0;
+ 
+ 	ret = vsnprintf(s->buffer + s->len, len, fmt, args);
+ 
+ 	/* If we can't write it all, don't bother writing anything */
+-	if (ret >= len)
++	if (ret >= len) {
++		s->full = 1;
+ 		return 0;
++	}
+ 
+ 	s->len += ret;
+ 
+@@ -147,14 +151,16 @@ int trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
+ 	int len = (PAGE_SIZE - 1) - s->len;
+ 	int ret;
+ 
+-	if (!len)
++	if (s->full || !len)
+ 		return 0;
+ 
+ 	ret = bstr_printf(s->buffer + s->len, len, fmt, binary);
+ 
+ 	/* If we can't write it all, don't bother writing anything */
+-	if (ret >= len)
++	if (ret >= len) {
++		s->full = 1;
+ 		return 0;
++	}
+ 
+ 	s->len += ret;
+ 
+@@ -175,9 +181,14 @@ int trace_seq_puts(struct trace_seq *s, const char *str)
  {
- 	int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
-+	int ret;
+ 	int len = strlen(str);
+ 
+-	if (len > ((PAGE_SIZE - 1) - s->len))
++	if (s->full)
+ 		return 0;
+ 
++	if (len > ((PAGE_SIZE - 1) - s->len)) {
++		s->full = 1;
++		return 0;
++	}
 +
-+	ret = seq_write(m, s->buffer, len);
+ 	memcpy(s->buffer + s->len, str, len);
+ 	s->len += len;
  
--	seq_write(m, s->buffer, len);
-+	/*
-+	 * Only reset this buffer if we successfully wrote to the
-+	 * seq_file buffer.
-+	 */
-+	if (!ret)
-+		trace_seq_init(s);
+@@ -186,9 +197,14 @@ int trace_seq_puts(struct trace_seq *s, const char *str)
  
--	trace_seq_init(s);
-+	return ret;
+ int trace_seq_putc(struct trace_seq *s, unsigned char c)
+ {
+-	if (s->len >= (PAGE_SIZE - 1))
++	if (s->full)
+ 		return 0;
+ 
++	if (s->len >= (PAGE_SIZE - 1)) {
++		s->full = 1;
++		return 0;
++	}
++
+ 	s->buffer[s->len++] = c;
+ 
+ 	return 1;
+@@ -196,9 +212,14 @@ int trace_seq_putc(struct trace_seq *s, unsigned char c)
+ 
+ int trace_seq_putmem(struct trace_seq *s, const void *mem, size_t len)
+ {
+-	if (len > ((PAGE_SIZE - 1) - s->len))
++	if (s->full)
+ 		return 0;
+ 
++	if (len > ((PAGE_SIZE - 1) - s->len)) {
++		s->full = 1;
++		return 0;
++	}
++
+ 	memcpy(s->buffer + s->len, mem, len);
+ 	s->len += len;
+ 
+@@ -211,6 +232,9 @@ int trace_seq_putmem_hex(struct trace_seq *s, const void *mem, size_t len)
+ 	const unsigned char *data = mem;
+ 	int i, j;
+ 
++	if (s->full)
++		return 0;
++
+ #ifdef __BIG_ENDIAN
+ 	for (i = 0, j = 0; i < len; i++) {
+ #else
+@@ -228,8 +252,13 @@ void *trace_seq_reserve(struct trace_seq *s, size_t len)
+ {
+ 	void *ret;
+ 
+-	if (len > ((PAGE_SIZE - 1) - s->len))
++	if (s->full)
++		return 0;
++
++	if (len > ((PAGE_SIZE - 1) - s->len)) {
++		s->full = 1;
+ 		return NULL;
++	}
+ 
+ 	ret = s->buffer + s->len;
+ 	s->len += len;
+@@ -241,8 +270,14 @@ int trace_seq_path(struct trace_seq *s, struct path *path)
+ {
+ 	unsigned char *p;
+ 
+-	if (s->len >= (PAGE_SIZE - 1))
++	if (s->full)
+ 		return 0;
++
++	if (s->len >= (PAGE_SIZE - 1)) {
++		s->full = 1;
++		return 0;
++	}
++
+ 	p = d_path(path, s->buffer + s->len, PAGE_SIZE - s->len);
+ 	if (!IS_ERR(p)) {
+ 		p = mangle_path(s->buffer + s->len, p, "\n");
+@@ -255,6 +290,7 @@ int trace_seq_path(struct trace_seq *s, struct path *path)
+ 		return 1;
+ 	}
+ 
++	s->full = 1;
+ 	return 0;
  }
  
- enum print_line_t trace_print_bprintk_msg_only(struct trace_iterator *iter)
+@@ -381,6 +417,9 @@ int seq_print_user_ip(struct trace_seq *s, struct mm_struct *mm,
+ 	unsigned long vmstart = 0;
+ 	int ret = 1;
+ 
++	if (s->full)
++		return 0;
++
+ 	if (mm) {
+ 		const struct vm_area_struct *vma;
+ 
 -- 
 1.6.5
 
