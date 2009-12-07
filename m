@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbZLGANA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934560AbZLGAbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758424AbZLGANA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758407AbZLGAM5
+	id S934560AbZLGAbY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758398AbZLGAM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:12:57 -0500
-Received: from kroah.org ([198.145.64.141]:34281 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:12:56 -0500
+Received: from kroah.org ([198.145.64.141]:34287 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758368AbZLGAMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:12:48 -0500
+	id S1758371AbZLGAMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:12:49 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:45 2009
-Message-Id: <20091207000644.975903460@mini.kroah.org>
+Message-Id: <20091207000645.124173920@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:00:05 -0800
+Date: Sun, 06 Dec 2009 16:00:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mike Isely <isely@pobox.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [029/119] V4L/DVB (13230): s2255drv: Dont conditionalize video buffer completion on waiting processes
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: [030/119] uids: Prevent tear down race
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=v4l-dvb-13230-s2255drv-don-t-conditionalize-video-buffer-completion-on-waiting-processes.patch
+Content-Disposition: inline; filename=uids-prevent-tear-down-race.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,48 +32,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mike Isely <isely@pobox.com>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 1f95725755ab67f3198df3b5bf7517f926f310ca upstream.
+commit b00bc0b237055b4c45816325ee14f0bd83e6f590 upstream.
 
-The s2255 driver had logic which aborted processing of a video frame
-if there was no process waiting on the video buffer in question.  That
-simply doesn't work when the application is doing things in an
-asynchronous manner.  If the application went to the trouble to queue
-the buffer in the first place, then the driver should always attempt
-to complete it - even if the application at that moment has its
-attention turned elsewhere.  Applications which always blocked waiting
-for I/O on the capture device would not have been affected by this.
-Applications which *mostly* blocked waiting for I/O on the capture
-device probably only would have been somewhat affected (frame lossage,
-at a rate which goes up as the application blocks less).  Applications
-which never blocked on the capture device (e.g. polling only) however
-would never have been able to receive any video frames, since in that
-case this "is anyone waiting on this?" check on the buffer never would
-have evalutated true.  This patch just deletes that harmful check
-against the buffer's wait queue.
+Ingo triggered the following warning:
 
-Signed-off-by: Mike Isely <isely@pobox.com>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+WARNING: at lib/debugobjects.c:255 debug_print_object+0x42/0x50()
+Hardware name: System Product Name
+ODEBUG: init active object type: timer_list
+Modules linked in:
+Pid: 2619, comm: dmesg Tainted: G        W  2.6.32-rc5-tip+ #5298
+Call Trace:
+ [<81035443>] warn_slowpath_common+0x6a/0x81
+ [<8120e483>] ? debug_print_object+0x42/0x50
+ [<81035498>] warn_slowpath_fmt+0x29/0x2c
+ [<8120e483>] debug_print_object+0x42/0x50
+ [<8120ec2a>] __debug_object_init+0x279/0x2d7
+ [<8120ecb3>] debug_object_init+0x13/0x18
+ [<810409d2>] init_timer_key+0x17/0x6f
+ [<81041526>] free_uid+0x50/0x6c
+ [<8104ed2d>] put_cred_rcu+0x61/0x72
+ [<81067fac>] rcu_do_batch+0x70/0x121
+
+debugobjects warns about an enqueued timer being initialized. If
+CONFIG_USER_SCHED=y the user management code uses delayed work to
+remove the user from the hash table and tear down the sysfs objects.
+
+free_uid is called from RCU and initializes/schedules delayed work if
+the usage count of the user_struct is 0. The init/schedule happens
+outside of the uidhash_lock protected region which allows a concurrent
+caller of find_user() to reference the about to be destroyed
+user_struct w/o preventing the work from being scheduled. If the next
+free_uid call happens before the work timer expired then the active
+timer is initialized and the work scheduled again.
+
+The race was introduced in commit 5cb350ba (sched: group scheduling,
+sysfs tunables) and made more prominent by commit 3959214f (sched:
+delayed cleanup of user_struct)
+
+Move the init/schedule_delayed_work inside of the uidhash_lock
+protected region to prevent the race.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Paul E. McKenney <paulmck@us.ibm.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/s2255drv.c |    5 -----
- 1 file changed, 5 deletions(-)
+ kernel/user.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/media/video/s2255drv.c
-+++ b/drivers/media/video/s2255drv.c
-@@ -598,11 +598,6 @@ static int s2255_got_frame(struct s2255_
- 	buf = list_entry(dma_q->active.next,
- 			 struct s2255_buffer, vb.queue);
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -330,9 +330,9 @@ done:
+  */
+ static void free_user(struct user_struct *up, unsigned long flags)
+ {
+-	spin_unlock_irqrestore(&uidhash_lock, flags);
+ 	INIT_DELAYED_WORK(&up->work, cleanup_user_struct);
+ 	schedule_delayed_work(&up->work, msecs_to_jiffies(1000));
++	spin_unlock_irqrestore(&uidhash_lock, flags);
+ }
  
--	if (!waitqueue_active(&buf->vb.done)) {
--		/* no one active */
--		rc = -1;
--		goto unlock;
--	}
- 	list_del(&buf->vb.queue);
- 	do_gettimeofday(&buf->vb.ts);
- 	dprintk(100, "[%p/%d] wakeup\n", buf, buf->vb.i);
+ #else	/* CONFIG_USER_SCHED && CONFIG_SYSFS */
 
 
