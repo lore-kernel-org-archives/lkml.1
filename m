@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933138AbZLGD0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933120AbZLGDXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933138AbZLGD0n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 22:26:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933073AbZLGD0m
+	id S933120AbZLGDXd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 22:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933043AbZLGDXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 22:26:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36588 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933048AbZLGD0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 22:26:41 -0500
-Message-ID: <4B1C75F3.9080808@kernel.org>
-Date: Mon, 07 Dec 2009 12:26:43 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	Sun, 6 Dec 2009 22:23:30 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:1430 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933030AbZLGDX3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 22:23:29 -0500
+From: "Zhang, Sonic" <Sonic.Zhang@analog.com>
+X-IronPort-AV: E=Sophos;i="4.47,351,1257138000"; 
+   d="scan'208";a="9991160"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] sched: implement try_to_wake_up_local()
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>	 <1259726212-30259-8-git-send-email-tj@kernel.org> <1259923487.3977.1940.camel@laptop>
-In-Reply-To: <1259923487.3977.1940.camel@laptop>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Uclinux-dist-devel] [uClinux-dev] [PATCH/RFC] FDPIC: add hook for arches to customize program header parsing
+Date: Mon, 7 Dec 2009 11:27:40 +0800
+Message-ID: <0F1B54C89D5F954D8535DB252AF412FA0534B43B@chinexm1.ad.analog.com>
+In-Reply-To: <4B19A92A.5030804@analog.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Uclinux-dist-devel] [uClinux-dev] [PATCH/RFC] FDPIC: add hook for arches to customize program header parsing
+Thread-Index: Acp1RKC5k8OXJsXTTcKtf20T5swnswBqBZ8A
+References: <1244854869-2563-1-git-send-email-vapier@gentoo.org><14959.1259948697@redhat.com> <4B19A92A.5030804@analog.com>
+To: "Jie Zhang" <jie.zhang@analog.com>, "David Howells" <dhowells@redhat.com>
+CC: <uclinux-dist-devel@blackfin.uclinux.org>,
+       "Greg Ungerer" <gerg@uclinux.org>,
+       "uClinux development list" <uclinux-dev@uclinux.org>,
+       "David McCullough" <davidm@snapgear.com>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Dec 2009 03:23:33.0260 (UTC) FILETIME=[A7C5D4C0:01CA76EC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+No. The sram device can not be accessed by any user space application.
+The applications can only do malloc/free via system call.
 
-On 12/04/2009 07:44 PM, Peter Zijlstra wrote:
-> On Wed, 2009-12-02 at 12:56 +0900, Tejun Heo wrote:
-> 
->> +++ b/kernel/sched.c
->> @@ -2410,6 +2410,10 @@ static inline void ttwu_woken_up(struct task_struct *p, struct rq *rq,
->>  		rq->idle_stamp = 0;
->>  	}
->>  #endif
->> +	/*
->> +	 * Wake up is complete, fire wake up notifier.  This allows
->> +	 * try_to_wake_up_local() to be called from wake up notifiers.
->> +	 */
->>  	if (success)
->>  		fire_sched_notifiers(p, wakeup);
->>  }
-> 
->> @@ -5437,6 +5488,11 @@ need_resched_nonpreemptible:
->>  		if (unlikely(signal_pending_state(prev->state, prev))) {
->>  			prev->state = TASK_RUNNING;
->>  		} else {
->> +			/*
->> +			 * Fire sleep notifier before changing any scheduler
->> +			 * state.  This allows try_to_wake_up_local() to be
->> +			 * called from sleep notifiers.
->> +			 */
->>  			fire_sched_notifiers(prev, sleep);
->>  			deactivate_task(rq, prev, 1);
->>  		}
-> 
-> These two hunks seem to belong to patch 6
+Sonic 
 
-Hmmm... it was intentional as, before this patch, there's no
-try_to_wake_up_local() so it was strange to mention it in the comment.
-I can move the comments but I don't think it's particularly better
-that way.
+-----Original Message-----
+From: uclinux-dist-devel-bounces@blackfin.uclinux.org
+[mailto:uclinux-dist-devel-bounces@blackfin.uclinux.org] On Behalf Of
+Jie Zhang
+Sent: Saturday, December 05, 2009 8:28 AM
+To: David Howells
+Cc: uclinux-dist-devel@blackfin.uclinux.org; Greg Ungerer; uClinux
+development list; David McCullough; linux-kernel@vger.kernel.org
+Subject: Re: [Uclinux-dist-devel] [uClinux-dev] [PATCH/RFC] FDPIC: add
+hook for arches to customize program header parsing
 
-Thanks.
+On 12/05/2009 01:44 AM, David Howells wrote:
+> Mike Frysinger<vapier@gentoo.org>  wrote:
+>
+>> The Blackfin port has custom program header flags/addresses for 
+>> automatically loading regions into the dedicated on-chip SRAM.  So 
+>> add a hook for ports to leverage.
+>
+> Now that I've ACK'd this, I feel I'm going to have to NAK it.  I'm not
 
--- 
-tejun
+> against the general concept, but:
+>
+>> +		do_munmap(mm, *maddr, phdr->p_memsz + *disp);
+>
+> There needs to be a mapping covering the SRAM region for the purposes 
+> of the
+
+Our GDB is still lack of the feature to debug applications using SRAM. 
+So this part of code was not got exercised. So if we remove this line,
+can this patch got merged?
+
+> debugger.  Do you have a chardev covering the SRAM device?  Perhaps 
+> through MTD?
+>
+Sorry, I don't know the answer to these two questions.
+
+
+Jie
+
+
+_______________________________________________
+Uclinux-dist-devel mailing list
+Uclinux-dist-devel@blackfin.uclinux.org
+https://blackfin.uclinux.org/mailman/listinfo/uclinux-dist-devel
