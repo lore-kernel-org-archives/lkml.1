@@ -1,155 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZLGGan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbZLGGcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbZLGGan (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 01:30:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZLGGak
+	id S1755101AbZLGGcj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 01:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZLGGcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 01:30:40 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63118 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753279AbZLGGak (ORCPT
+	Mon, 7 Dec 2009 01:32:36 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:39668 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753388AbZLGGcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 01:30:40 -0500
-Message-ID: <4B1CA15D.1000605@windriver.com>
-Date: Mon, 07 Dec 2009 14:31:57 +0800
-From: Wang Liming <liming.wang@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 7 Dec 2009 01:32:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GJnwMHekAWtSOOnqFZynqSwjNYh4amWHVAJEmLS0TUplIMgNzdTtjw7vsVYlX4CaDb
+         0TRoUS3D3T+Ua8714QaafkYpLeuHn/0Ohy5KTwwEEL09hl8lWCNEYmyVFJSy0aPbBqRI
+         uNqmz7MKLtDSrBULKiFofcwzWU191VRFXXg6E=
+Date: Sun, 6 Dec 2009 22:32:37 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Message-ID: <20091207063236.GF21451@core.coreip.homeip.net>
+References: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain> <20091206113555.5a646713@infradead.org> <alpine.LFD.2.00.0912061144100.3560@localhost.localdomain> <20091206121803.70385c33@infradead.org> <7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com> <20091206171856.394ce6d8@infradead.org> <20091207022706.GA20770@core.coreip.homeip.net> <20091206213112.568c602b@infradead.org> <20091207061548.GB21451@core.coreip.homeip.net> <20091206223112.77433d13@infradead.org>
 MIME-Version: 1.0
-To: Tom Zanussi <tzanussi@gmail.com>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       rostedt@goodmis.org, acme@ghostprotocols.net
-Subject: Re: [PATCH 2/2] perf trace/scripting: Don't display 'scripting unsupported'
- msg unnecessarily
-References: <1260163919-6679-1-git-send-email-tzanussi@gmail.com> <1260163919-6679-3-git-send-email-tzanussi@gmail.com>
-In-Reply-To: <1260163919-6679-3-git-send-email-tzanussi@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Dec 2009 06:30:36.0883 (UTC) FILETIME=[C992CA30:01CA7706]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091206223112.77433d13@infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tom Zanussi wrote:
-> The 'scripting unsupported' message should only be displayed when the
-> -s or -g options are used, and not when they aren't, as the current
-> code does.
+On Sun, Dec 06, 2009 at 10:31:12PM -0800, Arjan van de Ven wrote:
+> On Sun, 6 Dec 2009 22:15:49 -0800
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 > 
-> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-> ---
->  tools/perf/util/trace-event-perl.c |   64 +++++++++++++++++++++++++++++++-----
->  1 files changed, 55 insertions(+), 9 deletions(-)
+> > And the bad thing is that violates multiple layers in the kernel.
+> > Atkbd driver does not have to be using i8042; neither does psmouse.
+> > Althtough they do in 99% of the cases there are other controllers
+> > providing the i8042-style ports. Just grep for SERIO_8042 in
+> > drivers/input/serio.
+> > 
+> > I do not want to hard-code the i8042-psmouse-atkbd dependency.
 > 
-> diff --git a/tools/perf/util/trace-event-perl.c b/tools/perf/util/trace-event-perl.c
-> index 59564b2..a5ffe60 100644
-> --- a/tools/perf/util/trace-event-perl.c
-> +++ b/tools/perf/util/trace-event-perl.c
-> @@ -570,26 +570,72 @@ struct scripting_ops perl_scripting_ops = {
->  	.generate_script = perl_generate_script,
->  };
->  
-> -#ifdef NO_LIBPERL
-> -void setup_perl_scripting(void)
-> +static void print_unsupported_msg(void)
->  {
->  	fprintf(stderr, "Perl scripting not supported."
-> -		"  Install libperl and rebuild perf to enable it.  e.g. "
-> -		"apt-get install libperl-dev (ubuntu), yum install "
-> -		"perl-ExtUtils-Embed (Fedora), etc.\n");
-> +		"  Install libperl and rebuild perf to enable it.\n"
-> +		"For example:\n  # apt-get install libperl-dev (ubuntu)"
-> +		"\n  # yum install perl-ExtUtils-Embed (Fedora)"
-> +		"\n  etc.\n");
->  }
+> it's not a specific dependency.
+> 
+> it's a "I know I'm critical, so everything before me needs to be done".
+> 
+> that doesn't encode an actual relationship, it encodes a potential
+> relationship... with a worst case behavior of ... what we do right
+> now ;_)
 
-I have one question about how to compile c program that embedded perl function:
+This is the case with every parent device, isn't it? It is important for
+its children. And wasn't Rafael patchset trying to address exactkly
+this?
 
-$cat foo.c
-#include <EXTERN.h>
-#include <perl.h>
-int main(void)
-{
-         perl_alloc();
-         return 0;
-}
-
-$gcc  -x c foo.c `perl -MExtUtils::Embed -e ccopts 2>/dev/null`  -o foo `perl 
--MExtUtils::Embed -e ldopts 2>/dev/null`
-/usr/lib/perl/5.8/auto/DynaLoader/DynaLoader.a:1: error: expected identifier or 
-'(' before '!' token
-/usr/lib/perl/5.8/auto/DynaLoader/DynaLoader.a:2: error: stray '`' in program
-...
-
-About thousand of error.
-I'm using ubuntu 8.04. Above error leads "tools/perl/Makefile" can't find the 
-libperl-dev and define "NO_LIBPERL", but I have installed "libperl-dev".
-
-Did you ever encounter this error?
-Thanks.
-
-Liming Wang
-> -#else
-> -void setup_perl_scripting(void)
-> +
-> +static int perl_start_script_unsupported(const char *script __unused)
-> +{
-> +	print_unsupported_msg();
-> +
-> +	return -1;
-> +}
-> +
-> +static int perl_stop_script_unsupported(void)
-> +{
-> +	return 0;
-> +}
-> +
-> +static void perl_process_event_unsupported(int cpu __unused,
-> +					   void *data __unused,
-> +					   int size __unused,
-> +					   unsigned long long nsecs __unused,
-> +					   char *comm __unused)
-> +{
-> +}
-> +
-> +static int perl_generate_script_unsupported(const char *outfile __unused)
-> +{
-> +	print_unsupported_msg();
-> +
-> +	return -1;
-> +}
-> +
-> +struct scripting_ops perl_scripting_unsupported_ops = {
-> +	.name = "Perl",
-> +	.start_script = perl_start_script_unsupported,
-> +	.stop_script = perl_stop_script_unsupported,
-> +	.process_event = perl_process_event_unsupported,
-> +	.generate_script = perl_generate_script_unsupported,
-> +};
-> +
-> +static void register_perl_scripting(struct scripting_ops *scripting_ops)
->  {
->  	int err;
-> -	err = script_spec_register("Perl", &perl_scripting_ops);
-> +	err = script_spec_register("Perl", scripting_ops);
->  	if (err)
->  		die("error registering Perl script extension");
->  
-> -	err = script_spec_register("pl", &perl_scripting_ops);
-> +	err = script_spec_register("pl", scripting_ops);
->  	if (err)
->  		die("error registering pl script extension");
->  
->  	scripting_context = malloc(sizeof(struct scripting_context));
->  }
-> +
-> +#ifdef NO_LIBPERL
-> +void setup_perl_scripting(void)
-> +{
-> +	register_perl_scripting(&perl_scripting_unsupported_ops);
-> +}
-> +#else
-> +void setup_perl_scripting(void)
-> +{
-> +	register_perl_scripting(&perl_scripting_ops);
-> +}
->  #endif
-
+-- 
+Dmitry
