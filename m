@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934370AbZLGL7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934754AbZLGMdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934370AbZLGL7r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 06:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934269AbZLGL7q
+	id S934754AbZLGMdN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 07:33:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934728AbZLGMdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 06:59:46 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:40365 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934215AbZLGL7p (ORCPT
+	Mon, 7 Dec 2009 07:33:12 -0500
+Received: from mail.southpole.se ([193.12.106.18]:34269 "EHLO
+	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934727AbZLGMdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 06:59:45 -0500
-Date: Mon, 7 Dec 2009 12:59:50 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com
-Subject: NFS lockdep lock misordering mmap_sem<->i_mutex_key with
-	2.6.32-git1
-Message-ID: <20091207115949.GA7610@basil.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 7 Dec 2009 07:33:12 -0500
+X-Greylist: delayed 1329 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Dec 2009 07:33:12 EST
+Subject: gpio gpio_to_irq
+From: Kenneth Johansson <kenneth@southpole.se>
+To: linux-kernel@vger.kernel.org
+Cc: alek.du@intel.com, david-b@pacbell.net, tglx@linutronix.de
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Dec 2009 13:11:07 +0100
+Message-ID: <1260187867.16040.35.camel@kenjo-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have a few questions regarding the gpio related to interrupts.
 
-While booting 2.6.32-git1 on a NFS root box I got the following
-lockdep warning early at boot. I haven't looked at details.
+The hardware is a generic gpio block that is located on pci. The pins
+themselves can be configured to in/out and generate interrupts.
 
--Andi
-
-VFS: Mounted root (nfs filesystem) on device 0:15.
-VFS: Mounted root (nfs filesystem) on device 0:15.
-Freeing unused kernel memory: 2376k freed
-
-=======================================================
-[ INFO: possible circular locking dependency detected ]
--------------------------------------------------------
-udevinfo/2551 is trying to acquire lock:
- (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<ffffffff8118e0d3>] nfs_revalidate_mapping+0x7c/0xc5
-
-but task is already holding lock:
- (&mm->mmap_sem){++++++}, at: [<ffffffff8100fc83>] sys_mmap+0x76/0xc7
-
-which lock already depends on the new lock.
+All in all it looks to be very similar to the langwell gpio. 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/gpio/langwell_gpio.c;h=4baf3d7d0f8e6e4f1f7887625b7f73a62dba1a83;hb=22763c5cf3690a681551162c15d34d935308c8d7
 
 
-the existing dependency chain (in reverse order) is:
+Many gpio drivers use the set_irq_chained_handler() instead of calling
+request_irq to get the main gpio interrupt. But doing so on a shared pci
+interrupt do not look like a good idea. 
 
--> #1 (&mm->mmap_sem){++++++}:
-       [<ffffffff81071d0b>] __lock_acquire+0x1435/0x1774
-       [<ffffffff81072106>] lock_acquire+0xbc/0xd9
-       [<ffffffff810baa14>] might_fault+0x84/0xa4
-       [<ffffffff810ec340>] filldir+0x6a/0xcb
-       [<ffffffff81189bad>] nfs_do_filldir+0x39d/0x4ac
-       [<ffffffff8118a4e9>] nfs_readdir+0x82d/0x8ce
-       [<ffffffff810ec4bf>] vfs_readdir+0x6c/0xa1
-       [<ffffffff810ec632>] sys_getdents+0x7d/0xc9
-       [<ffffffff8100ba6b>] system_call_fastpath+0x16/0x1b
+Under what circumstance is set_irq_chained_handler allowed ? 
 
--> #0 (&sb->s_type->i_mutex_key#5){+.+.+.}:
-       [<ffffffff81071a30>] __lock_acquire+0x115a/0x1774
-       [<ffffffff81072106>] lock_acquire+0xbc/0xd9
-       [<ffffffff8149210d>] mutex_lock_nested+0x68/0x2d2
-       [<ffffffff8118e0d3>] nfs_revalidate_mapping+0x7c/0xc5
-       [<ffffffff8118bad9>] nfs_file_mmap+0x68/0x71
-       [<ffffffff810c29c0>] mmap_region+0x311/0x50f
-       [<ffffffff810c2f13>] do_mmap_pgoff+0x355/0x3b8
-       [<ffffffff8100fca1>] sys_mmap+0x94/0xc7
-       [<ffffffff8100ba6b>] system_call_fastpath+0x16/0x1b
+The next thing is that the drivers then registers a "fake" interrupt
+chip to make it possible for the gpio client to call request_irq with
+the irq number returned from gpio_to_irq().
 
-other info that might help us debug this:
+While using this interface is neat it do require that the gpio driver
+somehow can just take over a few irq numbers from the system. 
 
-1 lock held by udevinfo/2551:
- #0:  (&mm->mmap_sem){++++++}, at: [<ffffffff8100fc83>] sys_mmap+0x76/0xc7
+How is this supposed to be done?? the langwell driver reads a number
+located at BAR1 and simply use that as the first irq number, hu?
 
-stack backtrace:
-Pid: 2551, comm: udevinfo Not tainted 2.6.32-git1 #31
-Call Trace:
- [<ffffffff81070388>] print_circular_bug+0xb3/0xc2
- [<ffffffff81071a30>] __lock_acquire+0x115a/0x1774
- [<ffffffff810a401d>] ? find_get_pages_tag+0x0/0x12a
- [<ffffffff81072106>] lock_acquire+0xbc/0xd9
- [<ffffffff8118e0d3>] ? nfs_revalidate_mapping+0x7c/0xc5
- [<ffffffff8149210d>] mutex_lock_nested+0x68/0x2d2
- [<ffffffff8118e0d3>] ? nfs_revalidate_mapping+0x7c/0xc5
- [<ffffffff8118e0d3>] ? nfs_revalidate_mapping+0x7c/0xc5
- [<ffffffff810c291d>] ? mmap_region+0x26e/0x50f
- [<ffffffff8118e0d3>] nfs_revalidate_mapping+0x7c/0xc5
- [<ffffffff8118bad9>] nfs_file_mmap+0x68/0x71
- [<ffffffff810c29c0>] mmap_region+0x311/0x50f
- [<ffffffff810c2f13>] do_mmap_pgoff+0x355/0x3b8
- [<ffffffff8100fca1>] sys_mmap+0x94/0xc7
- [<ffffffff8100ba6b>] system_call_fastpath+0x16/0x1b
+others start to allocate from the top and so on. what is the correct way
+to do this on a x86 with a gpio device on the pci bus ?? 
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
+
