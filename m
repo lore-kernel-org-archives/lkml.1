@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935171AbZLGOMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935183AbZLGONA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935171AbZLGOMk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 09:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935132AbZLGOMi
+	id S935183AbZLGONA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 09:13:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935156AbZLGONA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 09:12:38 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:63797 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935122AbZLGOMi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 09:12:38 -0500
-Date: Mon, 7 Dec 2009 09:12:29 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/31] Constify struct extent_io_ops for 2.6.32 v1
-Message-ID: <20091207141229.GB1710@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Emese Revfy <re.emese@gmail.com>, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <4B198670.2000406@gmail.com>
- <4B198B4C.3030201@gmail.com>
+	Mon, 7 Dec 2009 09:13:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39763 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935132AbZLGOM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 09:12:59 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
+References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
+	<4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
+	<4e5e476b0912060245x4d64300hb9689243bd712f2c@mail.gmail.com>
+	<20091206104950.GN8742@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 07 Dec 2009 09:13:00 -0500
+In-Reply-To: <20091206104950.GN8742@kernel.dk> (Jens Axboe's message of "Sun,
+	6 Dec 2009 11:49:50 +0100")
+Message-ID: <x49iqciyis3.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B198B4C.3030201@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B1D0D50.00DF:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 11:21:00PM +0100, Emese Revfy wrote:
-> From: Emese Revfy <re.emese@gmail.com>
-> 
-> Constify struct extent_io_ops.
-> 
-> Signed-off-by: Emese Revfy <re.emese@gmail.com>
-> ---
->  fs/btrfs/disk-io.c   |    4 ++--
->  fs/btrfs/extent_io.h |   30 +++++++++++++++---------------
->  fs/btrfs/inode.c     |    4 ++--
->  3 files changed, 19 insertions(+), 19 deletions(-)
-> 
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-Thanks, I'll pick this up in the btrfs tree unless Linus has already
-grabbed it.
+> On Sun, Dec 06 2009, Corrado Zoccolo wrote:
+>> Hi Jeff,
+>> I remember you saw large performance drop on your SAN for sequential
+>> writes with low_latency=1.  Can you test if Shaohua's and this patch
+>> fix allow to recover some bandwidth?  I think that enabling the queue
+>> depth ramp up only if a sync request was delayed should disable it for
+>> fast hardware like yours, so you should not be seeing the slowdown any
+>> more.
+>
+> I queued this up for post inclusion into 2.6.33, with the time_after()
+> fixed.
+>
+> The patch was word-wrapped, btw.
 
--chris
+So in what branch can I find this fix?  Once I know that I can queue up
+some tests.
+
+Cheers,
+Jeff
