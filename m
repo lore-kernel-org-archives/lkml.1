@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZLGHEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbZLGHF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbZLGHEK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:04:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZLGHEK
+	id S1755692AbZLGHF6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:05:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZLGHF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:04:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43076 "EHLO mx2.mail.elte.hu"
+	Mon, 7 Dec 2009 02:05:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36746 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754077AbZLGHEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:04:09 -0500
-Date: Mon, 7 Dec 2009 08:04:09 +0100
+	id S1754228AbZLGHF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 02:05:56 -0500
+Date: Mon, 7 Dec 2009 08:05:56 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Walt <w41ter@gmail.com>,
-       Prasad <prasad@linux.vnet.ibm.com>
-Subject: Re: [GIT PULL] hw-breakpoints fixes
-Message-ID: <20091207070409.GA10868@elte.hu>
-References: <1260166977-5894-1-git-send-regression-fweisbec@gmail.com>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       acme@ghostprotocols.net
+Subject: Re: [PATCH 0/2] perf trace/scripting: A couple bugfixes
+Message-ID: <20091207070556.GB10868@elte.hu>
+References: <1260163919-6679-1-git-send-email-tzanussi@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260166977-5894-1-git-send-regression-fweisbec@gmail.com>
+In-Reply-To: <1260163919-6679-1-git-send-email-tzanussi@gmail.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
@@ -34,32 +34,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+* Tom Zanussi <tzanussi@gmail.com> wrote:
 
-> Ingo,
+> One fixes a compile error when libperl isn't installed, the other
+> fixes an annoying message about scripting being unsupported even when
+> the perf trace cmd isn't trying to use scripting.
 > 
-> Please pull the perf/urgent branch that can be found at:
+> Tom Zanussi (2):
+>   perf trace/scripting: Fix compile err when libperl not installed
+>   perf trace/scripting: Don't display 'scripting unsupported' msg
+>     unnecessarily
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	perf/urgent
-> 
-> The first patch prevents from stack randomnesses in a breakpoint
-> definition.
-> The second fixes a ptrace regression reported by walt.
-> 
-> Thanks,
-> 	Frederic
-> ---
-> 
-> Frederic Weisbecker (2):
->       hw-breakpoints: Zeroe the breakpoint attrs on initialization
->       hw-breakpoints: Fix task-bound breakpoint slot allocation
-> 
-> 
->  include/linux/hw_breakpoint.h |    2 +
->  kernel/hw_breakpoint.c        |   74 +++++++++++++++++++++++++----------------
->  2 files changed, 47 insertions(+), 29 deletions(-)
+>  tools/perf/util/trace-event-perl.c |   67 +++++++++++++++++++++++++++++------
+>  tools/perf/util/trace-event-perl.h |    4 ++
+>  2 files changed, 59 insertions(+), 12 deletions(-)
 
-Pulled, thanks a lot Frederic!
+Applied, thanks a lot Tom!
+
+( Note, i already applied patch #1 out of your previous email - this 
+  version has the same content, right? )
 
 	Ingo
