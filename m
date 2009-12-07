@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935655AbZLGWaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965103AbZLGWbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935655AbZLGWaQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 17:30:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935606AbZLGWaO
+	id S965103AbZLGWbJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 17:31:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933422AbZLGWbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 17:30:14 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:49697 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933422AbZLGWaN (ORCPT
+	Mon, 7 Dec 2009 17:31:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43785 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935642AbZLGWbH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 17:30:13 -0500
-Date: Mon, 7 Dec 2009 17:28:53 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: reinette chatre <reinette.chatre@intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: net/kbuild trees build failure
-Message-ID: <20091207222853.GE18939@tuxdriver.com>
-References: <20091207200317.57820f0a.sfr@canb.auug.org.au> <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz> <20091207160903.GB18939@tuxdriver.com> <1260209537.4653.778.camel@rc-desk> <4B1D76B1.6070601@suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1D76B1.6070601@suse.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 7 Dec 2009 17:31:07 -0500
+Date: Mon, 7 Dec 2009 14:30:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Richard Zidlicky <rz@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.32 regression, hard lock
+Message-Id: <20091207143057.53c6a362.akpm@linux-foundation.org>
+In-Reply-To: <20091206141419.GA6195@linux-m68k.org>
+References: <20091206141419.GA6195@linux-m68k.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 10:42:09PM +0100, Michal Marek wrote:
-> reinette chatre napsal(a):
+On Sun, 6 Dec 2009 15:14:19 +0100
+Richard Zidlicky <rz@linux-m68k.org> wrote:
 
-> > Right - could we please use the solution that works at compile time? I
-> > used UTS_RELEASE after learning about its use in init/version.c, would
-> > that not make it an approved solution?
+> Hello,
 > 
-> It seems there is some misunderstanding.
+> first visible symptom is that ppp over UMTS connection "stops working", connection
+> did not die. Trying to restart the connection fails and the related processes hang.
+> 
+> After that one after another everything stops working, "telinit 6" does not do its
+> job and SysRQ sync-umount-reboot is logged in messages but has no visible effect.
+> 
+> Attaching messages and .config.
+> 
 
-Alright, if Stephen's fix is acceptable then your suggestion is fine.
-Sam seemed to suggest that Stephen's fix was a stop-gap.
+I uploaded your dmesg output to
+http://userweb.kernel.org/~akpm/stuff/messages.txt
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+I'm looking at those traces and am not able to develop a theory to
+explain it :(
+
+There's some libata implication at timestamp 13203.385345 but that
+looks like it's just a fluke.
+
+
+So I'm stumped, sorry.  Maybe someone else can think of a way to attack
+this.
+
+
+btw, why does your kernel say "To Be Filled By O.E.M." in the traces? 
+The kernel.org kernel doesn't do that.  Is that kernel patched at all?
+
+Thanks.
