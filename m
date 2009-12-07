@@ -1,117 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964864AbZLGRig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964917AbZLGRje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964864AbZLGRig (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 12:38:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935510AbZLGRie
+	id S964917AbZLGRje (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 12:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964902AbZLGRjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 12:38:34 -0500
-Received: from mail-iw0-f197.google.com ([209.85.223.197]:62987 "EHLO
-	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935482AbZLGRid convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 12:39:33 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45843 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964881AbZLGRjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 12:38:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=OMIVOledLZO+irBu+sF9j/Lk1ji4VZFkPUN6zyQ4gHxOE0PzHfrmqAVmOZAyOKdW2j
-         tU0Jqbcecy1zodhlmjVq0kgF5Yk2VJseP85QLomfymSYeQpOPzCqMxupR8AzRIAZkHJo
-         UZ6XlrlOYOn3z2H5QHTzFNNHI0icNuUd5T/lk=
-MIME-Version: 1.0
-In-Reply-To: <20091207132009.GI18989@one.firstfloor.org>
-References: <20091207115949.GA7610@basil.fritz.box>
-	 <20091207211216.E95E.A69D9226@jp.fujitsu.com>
-	 <20091207132009.GI18989@one.firstfloor.org>
-Date: Tue, 8 Dec 2009 02:38:39 +0900
-X-Google-Sender-Auth: 5f0883962e7490d1
-Message-ID: <2f11576a0912070938s44172cb9mda6b49e997ac1d74@mail.gmail.com>
-Subject: Re: NFS lockdep lock misordering mmap_sem<->i_mutex_key with 
-	2.6.32-git1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com,
-       linux-fsdevel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Dec 2009 12:39:15 -0500
+Date: Mon, 7 Dec 2009 17:40:49 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: miklos@szeredi.hu, luto@mit.edu, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] vfs: new O_NODE open flag
+Message-ID: <20091207174049.50537ddf@lxorguk.ukuu.org.uk>
+In-Reply-To: <E1NHfEu-0003SM-U0@pomaz-ex.szeredi.hu>
+References: <E1NFrsv-0000mE-2L@pomaz-ex.szeredi.hu>
+	<20091202191549.1dbffa2e@lxorguk.ukuu.org.uk>
+	<E1NFva6-0001AI-0J@pomaz-ex.szeredi.hu>
+	<20091202204828.4fa0c108@lxorguk.ukuu.org.uk>
+	<E1NG4WJ-00026r-GE@pomaz-ex.szeredi.hu>
+	<4B1A7159.3070101@mit.edu>
+	<E1NH0Ub-0007oy-43@pomaz-ex.szeredi.hu>
+	<20091205202838.3456b6fc@lxorguk.ukuu.org.uk>
+	<E1NH1MB-0007v8-Ps@pomaz-ex.szeredi.hu>
+	<20091205231304.03a4af61@lxorguk.ukuu.org.uk>
+	<E1NHWlu-00029N-1t@pomaz-ex.szeredi.hu>
+	<20091207122346.6d18a8e1@lxorguk.ukuu.org.uk>
+	<E1NHctp-00032C-A1@pomaz-ex.szeredi.hu>
+	<E1NHd0J-000345-Kw@pomaz-ex.szeredi.hu>
+	<20091207130339.620b904b@lxorguk.ukuu.org.uk>
+	<E1NHdJy-00037l-Jb@pomaz-ex.szeredi.hu>
+	<20091207131546.2af06647@lxorguk.ukuu.org.uk>
+	<E1NHdS9-00039i-B6@pomaz-ex.szeredi.hu>
+	<20091207141321.0964461d@lxorguk.ukuu.org.uk>
+	<E1NHeXH-0003Lb-3q@pomaz-ex.szeredi.hu>
+	<20091207144623.692fbc1e@lxorguk.ukuu.org.uk>
+	<E1NHfEu-0003SM-U0@pomaz-ex.szeredi.hu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc to linux-fsdevel)
+> Well, yes.  That's true.  But I still don't think revoke() is the
+> answer here.  For example even without the possibility of hard links
+> there's still a race in udev in the following course of events:
+> 
+>   open("/dev/foo", O_RDWR)
+>   ... open passes permission checks
+>   ... driver gets unloaded
+>   ... driver intended for other user gets loaded
+>   ... open finds new driver
 
-2009/12/7 Andi Kleen <andi@firstfloor.org>:
-> On Mon, Dec 07, 2009 at 09:19:28PM +0900, KOSAKI Motohiro wrote:
->> >
->> > While booting 2.6.32-git1 on a NFS root box I got the following
->> > lockdep warning early at boot. I haven't looked at details.
->>
->> It seems typical ABBA deadlock.
->>
->>  vfs_readdir                          [grab i_mutex]
->>    nfs_readdir
->>      nfs_do_filldir
->>        filldir
->>          copy_to_user
->>            [page_fault]                       [grab mmap_sem]
->>
->>  sys_mmap                             [grab mmap_sem]
->>    do_mmap_pgoff
->>      mmap_region
->>        nfs_file_mmap
->>          nfs_revalidate_mapping
->>            nfs_invalidate_mapping     [grab i_mutex]
->>
->> I guess recent lockdep improvement find old bug.
->
-> Thanks for the analysis.
->
-> I guess should never do copy_*_user while holding i_mutex? There might
-> be lots of cases like that.
->
-> -Andi
+> What we really need is to revoke the *inode*, so that it cannot be
+> opened any more.  Doing it with unlink() and revoke() and requiring
+> that link() does not work on the filesystem is a poor and racy
+> substitute for that.
 
-I'm not sure exactly vfs rule. but at least mm/rmap.c explained
-collect order is i_mutex -> mmap_sem
+Can't argue with that and going through the kernel logic I don't see
+anything preventing an exploit based on that from working.
 
-rmap.c
----------------------------------------------------------------------
- * Lock ordering in mm:
- *
- * inode->i_mutex       (while writing or truncating, not reading or faulting)
- *   inode->i_alloc_sem (vmtruncate_range)
- *   mm->mmap_sem
- *     page->flags PG_locked (lock_page)
- *       mapping->i_mmap_lock
- *         anon_vma->lock
- *           mm->page_table_lock or pte_lock
- *             zone->lru_lock (in mark_page_accessed, isolate_lru_page)
- *             swap_lock (in swap_duplicate, swap_info_get)
- *               mmlist_lock (in mmput, drain_mmlist and others)
- *               mapping->private_lock (in __set_page_dirty_buffers)
- *               inode_lock (in set_page_dirty's __mark_inode_dirty)
- *                 sb_lock (within inode_lock in fs/fs-writeback.c)
- *                 mapping->tree_lock (widely used, in set_page_dirty,
- *                           in arch-dependent flush_dcache_mmap_lock,
- *                           within inode_lock in __sync_single_inode)
--------------------------------------------------------------------------------------------------
-
-
-Plus, ext4 have following comment. it imply nfs mmap implementaion is wrong...
-
---------------------------------------------------------------------------------------
-int ext4_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
-{
-        struct page *page = vmf->page;
-        loff_t size;
-        unsigned long len;
-        int ret = -EINVAL;
-        void *fsdata;
-        struct file *file = vma->vm_file;
-        struct inode *inode = file->f_path.dentry->d_inode;
-        struct address_space *mapping = inode->i_mapping;
-
-        /*
-         * Get i_alloc_sem to stop truncates messing with the inode. We cannot
-         * get i_mutex because we are already holding mmap_sem.
-         */
+Alan
