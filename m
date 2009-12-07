@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965026AbZLGU41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965041AbZLGVJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965026AbZLGU41 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:56:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935590AbZLGU41
+	id S965041AbZLGVJk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 16:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935590AbZLGVJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:56:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46358 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935593AbZLGU40 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:56:26 -0500
-Date: Mon, 7 Dec 2009 12:56:00 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Zhang Rui <rui.zhang@intel.com>, Alan Stern <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <200912072147.13851.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0912071249390.3560@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org> <200912071615.34788.rjw@sisk.pl> <alpine.LFD.2.00.0912070832330.3560@localhost.localdomain> <200912072147.13851.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 7 Dec 2009 16:09:39 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:35461 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935561AbZLGVJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 16:09:38 -0500
+Date: Mon, 7 Dec 2009 22:09:43 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Steven Rostedt <rostedt@goodmis.org>, werner <w.landgraf@ru.ru>,
+       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kernel problem
+Message-ID: <20091207210943.GH8742@kernel.dk>
+References: <web-100877149@zbackend1.aha.ru> <20091204154109.GB1716@goodmis.org> <20091207145011.GA14743@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091207145011.GA14743@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 7 Dec 2009, Rafael J. Wysocki wrote:
+On Mon, Dec 07 2009, Mel Gorman wrote:
+> On Fri, Dec 04, 2009 at 10:41:09AM -0500, Steven Rostedt wrote:
+> > [ Added Cc's of people that may be interested in this ]
+> > > <SNIP>
+> > > ------------[ cut here ]------------
+> > > WARNING: at mm/page_alloc.c:1805
+> > > __alloc_pages_nodemask+0x127/0x48f()
+> > > Hardware name: System Product Name
+> > > Modules linked in:
+> > > Pid: 1, comm: swapper Not tainted 2.6.32-rc8-git5 #1
+> > > Call Trace:
+> > >  [<c103d94b>] warn_slowpath_common+0x65/0x95
+> > >  [<c103d98d>] warn_slowpath_null+0x12/0x15
+> > >  [<c109550c>] __alloc_pages_nodemask+0x127/0x48f
+> > >  [<c10be964>] ? get_slab+0x8/0x50
+> > >  [<c10b8979>] alloc_page_interleave+0x2e/0x6e
+> > >  [<c10b8a10>] alloc_pages_current+0x57/0x99
+> > >  [<c2083a4a>] ? xd_init+0x0/0x482
+> > >  [<c1094c38>] __get_free_pages+0xd/0x1e
+> > >  [<c2083a94>] xd_init+0x4a/0x482
+> > >  [<c2082df0>] ? loop_init+0x104/0x16a
+> > >  [<c169162d>] ? loop_probe+0x0/0xaf
+> > >  [<c2083a4a>] ? xd_init+0x0/0x482
+> > >  [<c1001143>] do_one_initcall+0x51/0x13f
+> > >  [<c204a307>] kernel_init+0x10b/0x15f
+> > >  [<c204a1fc>] ? kernel_init+0x0/0x15f
+> > >  [<c1004347>] kernel_thread_helper+0x7/0x10
+> > > ---[ end trace 686db6333ade6e7a ]---
+> > > xd: Out of memory.
 > 
-> So I guess the only thing we need at the core level is to call
-> async_synchronize_full() after every stage of suspend/resume, right?
+> First off, it would appear that every block driver under the sun is
+> being loaded. I seriously doubt this controller really exists in the
+> machine.
+> 
+> Second, it's a real warning as the driver is trying to allocate a buffer of
+> size 0 which get_order() chokes on. For bonus points, it tries to allocate
+> a buffer before it knows what size it should be. This patch should resolve
+> the problem but because I don't have the hardware to test it on, it could
+> do with a second set of eyes just to be sure the rejigged logic makes sense.
+> 
+> If this is ok, what is the appropriate submission path for unmaintained
+> block drivers? Is it the block maintainer or someone else?
 
-Yes and no.
+Thanks Mel, I'll add this to the next pull queue.
 
-Yes in the sense that _if_ everybody always uses "async_schedule()" (or 
-whatever the call is named - I've really only written pseudo-code and 
-haven't even tried to look up the details), then the only thing you need 
-to do is async_synchronize_full().
+-- 
+Jens Axboe
 
-But one of the nice things about using just the trivial rwlock model and 
-letting any async users just depend on that is that we could easily just 
-depend entirely on those device locks, and allow drivers to do async 
-shutdowns other ways too.
-
-For example, I could imagine some driver just doing an async suspend (or 
-resume) that gets completed in an interrupt context, rather than being 
-done by 'async_schedule()' at all. 
-
-So in many ways it's nicer to serialize by just doing
-
-	serialize_all_PM_events()
-	{
-		for_each_device() {
-			down_write(dev->lock);
-			up_write(dev->lock);
-		}
-	}
-
-rather than depend on something like async_synchronize_full() that 
-obviously waits for all async events, but doesn't have the capability to 
-wait for any other event that some random driver might be using.
-
-[ That "down+up" is kind of stupid, but I don't think we have a "wait for 
-  unlocked" rwsem operation. We could add one, and it would be cheaper for 
-  the case where the device never did anything async at all, and didn't 
-  really need to dirty that cacheline by doing that write lock/unlock 
-  pair. ]
-
-But that really isn't a big deal. I think it would be perfectly ok to also 
-just say "if you do any async PM, you need to use 'async_schedule()' 
-because that's all we're going to wait for". It's probably perfectly fine.
-
-			Linus
