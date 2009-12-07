@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759003AbZLGIOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759029AbZLGIQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759003AbZLGIOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbZLGIOS
+	id S1759029AbZLGIQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbZLGIQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:14:18 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58412 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758880AbZLGIOS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:14:18 -0500
-Subject: Re: [tip:perf/urgent] perf_event: Eliminate raw->size
-From: Peter Zijlstra <peterz@infradead.org>
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
-       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-f48f669d42e133db839af16656fd720107ef6742@git.kernel.org>
-References: <4B1C8CC4.4050007@cn.fujitsu.com>
-	 <tip-f48f669d42e133db839af16656fd720107ef6742@git.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Dec 2009 09:13:49 +0100
-Message-ID: <1260173629.8223.1068.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 03:16:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53031 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758888AbZLGIQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 03:16:14 -0500
+Date: Mon, 7 Dec 2009 08:15:44 GMT
+From: tip-bot for OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       hirofumi@mail.parknet.co.jp, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <878wdg8icq.fsf@devron.myhome.or.jp>
+References: <878wdg8icq.fsf@devron.myhome.or.jp>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] x86: Compile insn.c and inat.c only for KPROBES
+Message-ID: <tip-cbe5c34c8c1f8ed1afbe6273f4ad57fcfad7822f@git.kernel.org>
+Git-Commit-ID: cbe5c34c8c1f8ed1afbe6273f4ad57fcfad7822f
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 05:31 +0000, tip-bot for Xiao Guangrong wrote:
-> Commit-ID:  f48f669d42e133db839af16656fd720107ef6742
-> Gitweb:     http://git.kernel.org/tip/f48f669d42e133db839af16656fd720107ef6742
-> Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> AuthorDate: Mon, 7 Dec 2009 13:04:04 +0800
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Mon, 7 Dec 2009 06:26:25 +0100
-> 
-> perf_event: Eliminate raw->size
-> 
-> raw->size is not used, this patch just cleans it up.
+Commit-ID:  cbe5c34c8c1f8ed1afbe6273f4ad57fcfad7822f
+Gitweb:     http://git.kernel.org/tip/cbe5c34c8c1f8ed1afbe6273f4ad57fcfad7822f
+Author:     OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+AuthorDate: Sun, 6 Dec 2009 20:14:29 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 7 Dec 2009 08:31:28 +0100
 
-This patch feels wrong.. I would suspect it to be used to validate the
-data parsing, like do we consume past the end and did we consume
-everything.
+x86: Compile insn.c and inat.c only for KPROBES
 
+At least, insn.c and inat.c is needed for kprobe for now. So,
+this compile those only if KPROBES is enabled.
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+LKML-Reference: <878wdg8icq.fsf@devron.myhome.or.jp>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig.debug |    4 ++--
+ arch/x86/lib/Makefile  |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 7d0b681..0e90929 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -187,8 +187,8 @@ config HAVE_MMIOTRACE_SUPPORT
+ 	def_bool y
+ 
+ config X86_DECODER_SELFTEST
+-     bool "x86 instruction decoder selftest"
+-     depends on DEBUG_KERNEL
++	bool "x86 instruction decoder selftest"
++	depends on DEBUG_KERNEL && KPROBES
+ 	---help---
+ 	 Perform x86 instruction decoder selftests at build time.
+ 	 This option is useful for checking the sanity of x86 instruction
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index a2d6472..442b3b3 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -20,7 +20,7 @@ lib-y := delay.o
+ lib-y += thunk_$(BITS).o
+ lib-y += usercopy_$(BITS).o getuser.o putuser.o
+ lib-y += memcpy_$(BITS).o
+-lib-y += insn.o inat.o
++lib-$(CONFIG_KPROBES) += insn.o inat.o
+ 
+ obj-y += msr-reg.o msr-reg-export.o
+ 
