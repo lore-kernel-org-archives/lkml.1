@@ -1,104 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935468AbZLGRCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935499AbZLGRCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935468AbZLGRCJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 12:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935442AbZLGRCI
+	id S935499AbZLGRCs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 12:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935424AbZLGRCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 12:02:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48736 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935424AbZLGRCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 12:02:05 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: jamie@shareable.org, pavel@ucw.cz, miklos@szeredi.hu,
-       viro@ZenIV.linux.org.uk, duaneg@dghda.com, ebiederm@xmission.com
-Subject: [PATCH] vfs: force reval of target when following LAST_BIND symlinks (try #7)
-Date: Mon,  7 Dec 2009 12:01:50 -0500
-Message-Id: <1260205310-18710-1-git-send-email-jlayton@redhat.com>
+	Mon, 7 Dec 2009 12:02:46 -0500
+Received: from filtteri1.pp.htv.fi ([213.243.153.184]:44757 "EHLO
+	filtteri1.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935483AbZLGRCp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 12:02:45 -0500
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH] SLAB: Fix slab_test.c CONFIG_CPUMASK_OFFSTACK build
+Date: Mon,  7 Dec 2009 19:02:43 +0200
+Message-Id: <1260205363-6015-1-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.6.3.3
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-procfs-style symlinks return a last_type of LAST_BIND without an actual
-path string. This causes __follow_link to skip calling __vfs_follow_link
-and so the dentry isn't revalidated.
+Stephen Rothwell reported the following build breakage:
 
-This is a problem when the link target sits on NFSv4 as it depends on
-the VFS to revalidate the dentry before using it on an open call. Ensure
-that this occurs by forcing a revalidation of the target dentry of
-LAST_BIND symlinks.
+  Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-Acked-by: Miklos Szeredi <mszeredi@suse.cz>
+  tests/slab_test.c: In function 'test_func':
+  tests/slab_test.c:176: error: implicit declaration of function 'set_cpus_allowed'
+
+  Caused by commit 1c999557258d251e2e5790de4b723d5996c06d5d ("Add slab
+  performance tests").
+
+  set_cpus_allowed it now only defined if CONFIG_CPUMASK_OFFSTACK is not
+  set.  This was changed by commit e0ad955680878998ff7dc51ce06ddad12260423a
+  ("cpumask: don't define set_cpus_allowed() if CONFIG_CPUMASK_OFFSTACK=y")
+  which entered Linus' tree before 2.6.32-rc1.
+
+Fix that up.
+
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- fs/namei.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 45 insertions(+), 0 deletions(-)
+ tests/slab_test.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/fs/namei.c b/fs/namei.c
-index 3374917..339789e 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -414,6 +414,46 @@ do_revalidate(struct dentry *dentry, struct nameidata *nd)
- }
+diff --git a/tests/slab_test.c b/tests/slab_test.c
+index e97afc4..0d23dc1 100644
+--- a/tests/slab_test.c
++++ b/tests/slab_test.c
+@@ -170,10 +170,13 @@ static int started;
+ static int test_func(void *private)
+ {
+ 	struct test_struct *t = private;
+-	cpumask_t newmask = CPU_MASK_NONE;
++	cpumask_var_t newmask;
  
- /*
-+ * force_reval_path - force revalidation of a dentry
-+ *
-+ * In some situations the path walking code will trust dentries without
-+ * revalidating them. This causes problems for filesystems that depend on
-+ * d_revalidate to handle file opens (e.g. NFSv4). When FS_REVAL_DOT is set
-+ * (which indicates that it's possible for the dentry to go stale), force
-+ * a d_revalidate call before proceeding.
-+ *
-+ * Returns 0 if the revalidation was successful. If the revalidation fails,
-+ * either return the error returned by d_revalidate or -ESTALE if the
-+ * revalidation it just returned 0. If d_revalidate returns 0, we attempt to
-+ * invalidate the dentry. It's up to the caller to handle putting references
-+ * to the path if necessary.
-+ */
-+static int
-+force_reval_path(struct path *path, struct nameidata *nd)
-+{
-+	int status;
-+	struct dentry *dentry = path->dentry;
+-        cpu_set(t->cpu, newmask);
+-        set_cpus_allowed(current, newmask);
++	if (!alloc_cpumask_var(&newmask, GFP_KERNEL))
++		return -ENOMEM;
 +
-+	/*
-+	 * only check on filesystems where it's possible for the dentry to
-+	 * become stale. It's assumed that if this flag is set then the
-+	 * d_revalidate op will also be defined.
-+	 */
-+	if (!(dentry->d_sb->s_type->fs_flags & FS_REVAL_DOT))
-+		return 0;
-+
-+	status = dentry->d_op->d_revalidate(dentry, nd);
-+	if (status > 0)
-+		return 0;
-+
-+	if (!status) {
-+		d_invalidate(dentry);
-+		status = -ESTALE;
-+	}
-+	return status;
-+}
-+
-+/*
-  * Internal lookup() using the new generic dcache.
-  * SMP-safe
-  */
-@@ -641,6 +681,11 @@ static __always_inline int __do_follow_link(struct path *path, struct nameidata
- 		error = 0;
- 		if (s)
- 			error = __vfs_follow_link(nd, s);
-+		else if (nd->last_type == LAST_BIND) {
-+			error = force_reval_path(&nd->path, nd);
-+			if (error)
-+				path_put(&nd->path);
-+		}
- 		if (dentry->d_inode->i_op->put_link)
- 			dentry->d_inode->i_op->put_link(dentry, nd, cookie);
- 	}
++        cpumask_set_cpu(t->cpu, newmask);
++        set_cpus_allowed_ptr(current, newmask);
+ 	t->v = kzalloc(t->count * sizeof(void *), GFP_KERNEL);
+ 
+ 	atomic_inc(&tests_running);
+@@ -188,6 +191,7 @@ static int test_func(void *private)
+ 		t->test_p2(t);
+ 	t->stop2 = get_cycles();
+ 	kfree(t->v);
++	free_cpumask_var(newmask);
+ 	atomic_dec(&tests_running);
+ 	set_current_state(TASK_UNINTERRUPTIBLE);
+ 	schedule();
 -- 
-1.5.5.6
+1.6.3.3
 
