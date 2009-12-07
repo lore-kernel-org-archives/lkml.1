@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935473AbZLGQ4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935447AbZLGQzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935473AbZLGQ4D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:56:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935465AbZLGQ4B
+	id S935447AbZLGQzy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbZLGQzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:56:01 -0500
-Received: from www.tglx.de ([62.245.132.106]:49927 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935464AbZLGQz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:55:59 -0500
-Date: Mon, 7 Dec 2009 17:55:37 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Fix bogus warning in
- apic_noop.apic_write()
-In-Reply-To: <20091207163057.GB5489@lenovo>
-Message-ID: <alpine.LFD.2.00.0912071755130.3089@localhost.localdomain>
-References: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain> <tip-a946d8f11f0da9cfc714248036fcfd3a794d1e27@git.kernel.org> <20091207150425.GA5489@lenovo> <alpine.LFD.2.00.0912071629350.3089@localhost.localdomain> <20091207163057.GB5489@lenovo>
+	Mon, 7 Dec 2009 11:55:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54474 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935437AbZLGQzu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 11:55:50 -0500
+Date: Mon, 7 Dec 2009 08:55:51 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <alpine.LFD.2.00.0912070737150.3560@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0912070841250.3560@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912071003270.3064-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912070737150.3560@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,68 +29,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009, Cyrill Gorcunov wrote:
-> On Mon, Dec 07, 2009 at 04:48:51PM +0100, Thomas Gleixner wrote:
-> > On Mon, 7 Dec 2009, Cyrill Gorcunov wrote:
-> > > On Mon, Dec 07, 2009 at 12:18:37PM +0000, tip-bot for Thomas Gleixner wrote:
-> > > > Commit-ID:  a946d8f11f0da9cfc714248036fcfd3a794d1e27
-> > > > Gitweb:     http://git.kernel.org/tip/a946d8f11f0da9cfc714248036fcfd3a794d1e27
-> > > > Author:     Thomas Gleixner <tglx@linutronix.de>
-> > > > AuthorDate: Mon, 7 Dec 2009 12:59:46 +0100
-> > > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > > CommitDate: Mon, 7 Dec 2009 13:16:37 +0100
-> > > > 
-> > > > x86: Fix bogus warning in apic_noop.apic_write()
-> > > > 
-> > > > apic_noop is used to provide dummy apic functions. It's installed
-> > > > when the CPU has no APIC or when the APIC is disabled on the kernel
-> > > > command line.
-> > > > 
-> > > > The apic_noop implementation of apic_write() warns when the CPU has
-> > > > an APIC or when the APIC is not disabled.
-> > > > 
-> > > > That's bogus. The warning should only happen when the CPU has an
-> > > > APIC _AND_ the APIC is not disabled. apic_noop.apic_read() has the
-> > > > correct check.
-> > > > 
-> > > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > > > Cc: Cyrill Gorcunov <gorcunov@openvz.org>
-> > > > Cc: <stable@kernel.org> # in <= .32 this typo resides in native_apic_write_dummy()
-> > > > LKML-Reference: <alpine.LFD.2.00.0912071255420.3089@localhost.localdomain>
-> > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > > ---
-> > > >  arch/x86/kernel/apic/apic_noop.c |    2 +-
-> > > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > > ...
-> > > 
-> > > Hi Thomas, Ingo,
-> > > 
-> > > please do not change it. There are still machines without
-> > > cpu_has_apic bit support so with this patch any attempt
-> > > to write to 82489DX will success. So the former code has
-> > > been using "OR" by a purpose, there is no error.
-> > 
-> > Err, your warning has the following false positive:
-> > 
-> >      cpu_has_apic == true and disable_apic == true
-> 
-> This combination impossible at moment (by "impossible" I mean
-> at moment of apic_write action). When apic disabled via boot
-> option cpu_has_apic cleared as well.
-> 
-> static int __init setup_disableapic(char *arg)
-> {
-> 	disable_apic = 1;
-> 	setup_clear_cpu_cap(X86_FEATURE_APIC);
-> 	return 0;
-> }
-> 
-> And, btw if some code is trying to write to apic when
-> it's disabled via boot option -- it means the code is
-> buggy and this is not a false positive but rather proper
-> warning.
-> 
-> Thomas, if you've changed this code I suppose you saw some
-> warning triggered, right? Could you pointed me on it?
 
-http://www.kerneloops.org/searchweek.php?search=native_apic_write_dummy
+
+On Mon, 7 Dec 2009, Linus Torvalds wrote:
+> 
+> And during phase #1, C and Q won't do anything at all. We _could_ do them 
+> during this phase, and it would actually all work out fine, but we 
+> wouldn't want to do that for a simple reason: we _want_ the pre_suspend 
+> and post_resume phases to be total mirror images, because if we end up 
+> doing error handling for the pre-suspend case, then the post-resume phase 
+> would be the "fixup" for it, so we actually want leaf things to happen 
+> during phase #2 - not because it would screw up locking or ordering, but 
+> because of other issues.
+
+Ho humm.
+
+This part made me think. Since I started mulling over the fact that we 
+could do the resume thing in a single phase (and really only wanted the 
+second phase in order to be a mirror image to the suspend), I started 
+thinking that we could perhaps do even the suspend with a single phase, 
+and avoid introducing that pre-suspend/post-resume phase at all.
+
+And now that I think about it, we can do that by simply changing the 
+locking just a tiny bit.
+
+I originally envisioned that two-pase suspend because I was thinking that 
+the first phase would start off the suspend, and the second phase would 
+finish it, but we can actually do it all with a single phase that does 
+both. So starting with just the regular depth-first post-ordering that is 
+a suspend:
+
+        suspend(root)
+        {
+                for_each_child(root)
+			suspend(child);
+		suspend_one_node(root)
+        }
+
+the rule would be that for something like USB that wants to do the suspend 
+asynchronously, the node suspend routine would do
+
+	usb_node_suspend(node)
+	{
+		// Make sure parent doesn't suspend: this will not block, 
+		// because we'll call the 'suspend' function for all nodes
+		// before we call it for the parent.
+		down_read(node->parent->lock);
+
+		// Do the part that may block asynchronously
+		async_schedule(do_usb_node_suspend, node);
+	}
+
+	do_usb_node_suspend(node)
+	{
+		// Start out suspend. This will block if we have any
+		// children that are still busy suspending (they will
+		// have done a down_read() in their suspend).
+		down_write(node->lock);
+		node->suspend(node);
+		up_write(node->lock);
+
+		// This lets our parent continue
+		up_read(node->parent->lock);
+	}
+
+and it looks like we don't even need a second phase at all.
+
+IOW, I think USB could do this on its own right now, with no extra 
+infrastructure from the device layer AT ALL, except for one small thing: 
+that new "rwsem" lock in the device data structure, and then we'd need the 
+"wait for everybody to have completed" loop, ie
+
+	for_each_dev(dev) {
+		down_write(dev->lock);
+		up_write(dev->lock);
+	}
+
+thing at the end of the suspend loop (same thing as I mentioned about 
+resuming).
+
+So I think even that whole two-phase thing was unnecessarily complicated.
+
+		Linus
