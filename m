@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbZLGUFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZLGUI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbZLGUFK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 15:05:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbZLGUFI
+	id S1758879AbZLGUI5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 15:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758849AbZLGUIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 15:05:08 -0500
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:16930 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758817AbZLGUFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 15:05:06 -0500
-X-Trace: 302558329/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.111.197
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlABAH/uHEtQKW/F/2dsb2JhbAAI2jeEMwQ
-X-IronPort-AV: E=Sophos;i="4.47,356,1257120000"; 
-   d="scan'208";a="302558329"
-Date: Mon, 7 Dec 2009 20:05:05 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Al Viro <viro@ftp.linux.org.uk>, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCHSET] mremap/mmap mess
-In-Reply-To: <20091207193048.GI14381@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0912071953490.24794@sister.anvils>
-References: <E1NGzzu-0008RH-T2@ZenIV.linux.org.uk> <20091207035857.GF14381@ZenIV.linux.org.uk>
- <Pine.LNX.4.64.0912071710540.14445@sister.anvils> <20091207193048.GI14381@ZenIV.linux.org.uk>
+	Mon, 7 Dec 2009 15:08:55 -0500
+Received: from khc.piap.pl ([195.187.100.11]:55363 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758846AbZLGUIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 15:08:54 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
+	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	<1260070593.3236.6.camel@pc07.localdom.local>
+	<20091206065512.GA14651@core.coreip.homeip.net>
+	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
+	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	<m3skbn6dv1.fsf@intrepid.localdomain>
+	<20091207184153.GD998@core.coreip.homeip.net>
+Date: Mon, 07 Dec 2009 21:08:57 +0100
+In-Reply-To: <20091207184153.GD998@core.coreip.homeip.net> (Dmitry Torokhov's
+	message of "Mon, 7 Dec 2009 10:41:53 -0800")
+Message-ID: <m3my1u35t2.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the explanations,
-it sounds as if you and Linus would like to push forward.
+Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
 
-On Mon, 7 Dec 2009, Al Viro wrote:
-> On Mon, Dec 07, 2009 at 06:58:25PM +0000, Hugh Dickins wrote:
-> 
-> > [PATCH 9/19] arm: add arch_mmap_check(), get rid of sys_arm_mremap()
-> > 
-> > You give arm an arch_mmap_check() which tests MAP_FIXED,
-> > so now do_brk() needs fixing.  Or can arm's get_unmapped_area()
-> > handle this, without any arch_mmap_check()?  In the end you move
-> > the arch_mmap_check() call into get_unmapped_area(), but could it be
-> > eliminated completely, in favour of code in arch's get_unmapped_area()?
-> 
-> Point, but take a look at actual check there.  do_brk() won't run afoul
-> of it anyway with existing callers on arm.  But yes, I agree that flags
-> need to be fixed there.
+>> There is only one thing which needs attention before/when merging LIRC:
+>> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
+>> actually, making a correct IR core design without the LIRC merged can be
+>> only harder.
+>
+> This sounds like "merge first, think later"...
 
-Right, all that matters is whether MAP_FIXED is set here, and the
-fact that it is set through both an explicit MAP_FIXED and a confused
-VM_MAYREAD does not really matter - something to clean up, but not
-something that will break anybody before it's cleaned up.
+I'd say "merge the sane agreed and stable things first and think later
+about improvements".
 
-> > And (b) I thought you were being perverse in putting sys_mmap_pgoff()
-> > in mm/util.c, that's never where I'd look for it, we have a file
-> > mm/mmap.c which is just the place for it, after do_mmap_pgoff().
-> > Ah, you're trying to avoid duplicating it in mm/nommu.c?  Hmm,
-> > well, I'd much rather you do duplicate it.  Particularly once
-> > 14/19 complicates it with the MAP_HUGETLB fix, which we should
-> > keep in in mm/mmap.c, and shouldn't be needed in mm/nommu.c.
-> 
-> I'm not too happy with mm/util.c, but I really don't like the mmap vs nommu
-> duplications.  Hell knows; we can always split and move later on.
+> The question is why we need to merge lirc interface right now, before we
+> agreed on the sybsystem architecture?
 
-mm/nommu.c is all about duplicating stuff with variations:
-unsatisfactory, but no reason to go do it differently here.
-Yes, I'll want to revert the util.c mods, but you don't need
-to do so now.
+Because we need the features and we can't improve something which is
+outside the kernel. What "subsystem architecture" do you want to
+discuss? Unrelated (input layer) interface?
 
-Hugh
+Those are simple things. The only part which needs to be stable is the
+(in this case LIRC) kernel-user interface.
+
+> Noone _in kernel_ user lirc-dev
+> yet and, looking at the way things are shaping, no drivers will be
+> _directly_ using it after it is complete. So, even if we merge it right
+> away, the code will have to be restructured and reworked.
+
+Sure. We do this constantly to every part of the kernel.
+
+> Unfortunately,
+> just merging what Jarod posted, will introduce sysfs hierarchy which
+> is userspace interface as well (although we not as good maintaining it
+> at times) and will add more constraints on us.
+
+Then perhaps it should be skipped, leaving only the things udev needs to
+create /dev/ entries. They don't have to be particularly stable.
+Perhaps it should go to the staging first. We can't work with the code
+outside the kernel, staging has not such limitation.
+
+> That is why I think we should go the other way around - introduce the
+> core which receivers could plug into and decoder framework and once it
+> is ready register lirc-dev as one of the available decoders.
+
+That means all the work has to be kept and then merged "atomically",
+it seems there is a lack of manpower for this.
+-- 
+Krzysztof Halasa
