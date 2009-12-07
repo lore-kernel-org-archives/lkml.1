@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935694AbZLGXC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935704AbZLGXER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935694AbZLGXC7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 18:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935616AbZLGXC5
+	id S935704AbZLGXER (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 18:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935636AbZLGXEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 18:02:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:5515 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 18:04:15 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:60575 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758458AbZLGXCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 18:02:55 -0500
-Message-ID: <4B1D898A.5070000@redhat.com>
-Date: Mon, 07 Dec 2009 21:02:34 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Jarod Wilson <jarod@wilsonet.com>
-CC: Andy Walls <awalls@radix.net>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <m3k4xe7dtz.fsf@intrepid.localdomain>  <4B0E8B32.3020509@redhat.com> <1259264614.1781.47.camel@localhost> <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
-In-Reply-To: <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S935635AbZLGXEO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 18:04:14 -0500
+X-IronPort-AV: E=Sophos;i="4.47,357,1257148800"; 
+   d="scan'208";a="284989867"
+Subject: Re: [PATCH] SUNRPC: IS_ERR/PTR_ERR confusion
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Roel Kluin <roel.kluin@gmail.com>
+In-Reply-To: <20091207152654.GA29416@fieldses.org>
+References: <4B1CE844.1040108@gmail.com>
+	 <20091207152654.GA29416@fieldses.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Mon, 07 Dec 2009 18:04:19 -0500
+Message-Id: <1260227059.2951.13.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+X-OriginalArrivalTime: 07 Dec 2009 23:04:21.0091 (UTC) FILETIME=[9C5EEB30:01CA7791]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson wrote:
-> On Nov 26, 2009, at 2:43 PM, Andy Walls wrote:
+On Mon, 2009-12-07 at 10:26 -0500, J. Bruce Fields wrote: 
+> On Mon, Dec 07, 2009 at 12:34:28PM +0100, Roel Kluin wrote:
+> > IS_ERR returns 1 or 0, PTR_ERR returns the error value.
 > 
->> On Thu, 2009-11-26 at 12:05 -0200, Mauro Carvalho Chehab wrote:
+> Whoops, thanks, looks like that was my mistake, from
+> 79a3f20b641f9f93787ada49d1d7cfa98ee5a11e "rpc: use count of pipe openers
+> to wait for first open".
 
->> Maybe I'm being too conservative here, but I have a personal interest in
->> keeping Linux free and unencumbered even in the US which, I cannot deny,
->> has a patent system that is screwed up.
-> 
-> So I had one of the people who does all the license and patent audits for 
-> Fedora packages look at the Philips patent on RC-6. He's 100% positive 
-> that the patent *only* covers hardware, there should be no problem whatsoever
-> writing a software decoder for RC-6.
+Are you planning on shepherding this fix into mainline, or should I?
 
-That's good!
-
-Cheers,
-Mauro.
-
+Trond
