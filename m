@@ -1,148 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbZLGStV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZLGSoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758630AbZLGStV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 13:49:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758119AbZLGStU
+	id S1758674AbZLGSoe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 13:44:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758555AbZLGSoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 13:49:20 -0500
-Received: from exprod7og113.obsmtp.com ([64.18.2.179]:38799 "HELO
-	exprod7og113.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757860AbZLGStT convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 13:44:34 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44078 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758503AbZLGSod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 13:49:19 -0500
-X-Greylist: delayed 313 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Dec 2009 13:49:18 EST
-From: "Jacques, Hugo" <Hugo.Jacques@verint.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "Jacques, Hugo" <Hugo.Jacques@verint.com>
-Date: Mon, 7 Dec 2009 13:43:00 -0500
-Subject: Error in SEND(2) man page ?
-Thread-Topic: Error in SEND(2) man page ?
-Thread-Index: Acp3bRotwJDtdyu+SUm0y0Rk60tvJw==
-Message-ID: <579B119545DAEF4689C8FBEEFEC5793F01FA2F6FC6C8@ATLMBX.verint.corp.verintsystems.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Dec 2009 13:44:33 -0500
+Date: Mon, 7 Dec 2009 18:44:38 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/19] untangling do_mremap(), part 1
+Message-ID: <20091207184438.GH14381@ZenIV.linux.org.uk>
+References: <E1NHUdk-0007ul-Oc@ZenIV.linux.org.uk> <alpine.LFD.2.00.0912070911290.3560@localhost.localdomain>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912070911290.3560@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 07, 2009 at 09:17:40AM -0800, Linus Torvalds wrote:
+> 
+> Al, 
+>  just checking: do you think this is ready for merging now? The lack of 
+> RFC seems to imply it is, but I don't see the Ack's from David from your 
+> previous series, for example.
 
-Hi,
+Which David? ;-)  All sparc-related bits seem to have been ACKed by
+davem.
 
-I think I found a discrepancy between the man page of send()and the actual implementation.
+Hugetlbfs tests seem to be OK with this series, but there's an odd
+thing going on - expanding mremap() crossing into hugepage range on
+ppc takes a while to convert it into 4Kb pages.  Fair enough, but
+it seems to work _much_ faster if the process is ptraced.  NFI why;
+waiting for dgw to get around to profiling it...
 
-Man page mentions that:
+I'd love to see comments from ia64 and s390 folks, actually.
 
-"[...] When the message does not fit into the send buffer of the socket, send() normally blocks, unless the socket has been placed in non-blocking I/O mode. In non-blocking mode it would fail with the error EAGAIN or EWOULDBLOCK in this case.  [...]"
-
-This tells me that if doing a send() on a tcp non-blocking socket whose send buffer is full, the call should return with -1 and errno=EAGAIN.
-
-But running a trivial test app (code below), send() will indicate (return value) that is sent some but not all of the data buffer when the socket's send buffer is full.
-
-Am I missing anything?
-Is the man page or the code wrong?
-
-Please CC answers/comments to me personally (I am not a lkml subscriber)
-
-Thanks,
-
-Hugo Jacques
-
-Sample code: 
-
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <pthread.h>
-#include <stdio.h>
-
-#define MY_IP_ADDR 0x7F000001
-#define MY_PORT 12345
-#define MY_CHUNK_SIZE 100
-
-static int server_ready = 0;
-
-static void* server_function(void* arg)
-{
-	struct sockaddr_in serv_addr;
-	int conn_socket = -1;	
-	/* server socket */	
-	int serv_socket= socket(AF_INET,SOCK_STREAM,0);	   	
-   	memset(&serv_addr, 0, sizeof(struct sockaddr_in));
-   	serv_addr.sin_family = AF_INET;
-   	serv_addr.sin_port   = htons(MY_PORT);
-   	serv_addr.sin_addr.s_addr = htonl(MY_IP_ADDR);		
-	bind(serv_socket,(struct sockaddr*)&serv_addr,sizeof(serv_addr));	
-	listen(serv_socket,1);	
-	server_ready = 1;
-	conn_socket = accept(serv_socket,NULL,NULL);	
-	if (conn_socket != 1)
-	{
-		printf("got connection on socket %d\n",conn_socket);		
-		while(1)
-		{		
-			sleep(1);
-		}			
-	}							
-}	
-
-int main(void)
-{
-	pthread_t thread;
-	int client_socket = -1;
-	struct sockaddr_in client_addr;
-	int ret = -1;
-	int bytes_sent = 0;
-		
-	pthread_create(&thread,NULL,&server_function,NULL);
-	
-	/* lazy wait for the server to be ready */
-	while (!server_ready)
-	{
-		sleep(1);		
-	}		
-	printf("Connecting to server\n");	
-	client_socket = socket(AF_INET,SOCK_STREAM,0);	
-   	memset(&client_addr, 0, sizeof(struct sockaddr_in));
-   	client_addr.sin_family = AF_INET;
-   	client_addr.sin_port   = htons(MY_PORT);
-   	client_addr.sin_addr.s_addr = htonl(INADDR_ANY);	
-	ret = connect(	client_socket,
-			(struct sockaddr*)&client_addr,
-			sizeof(client_addr));
-	if (ret != 0)
-		perror("connect failed\n");	
-	printf("Connected to server\n");
-	
-	/* send data in chunks to server */
-	while (1)
-	{
-		char data[MY_CHUNK_SIZE];		
-		/* send data in non-blocking manner */
-		int send_ret = send(	client_socket,
-					data,
-					MY_CHUNK_SIZE,
-					MSG_DONTWAIT);
-		
-		if (send_ret != MY_CHUNK_SIZE)		
-		{
-			if (send_ret == -1)
-				perror("send failed\n");			
-			else
-				printf("send returned %d while attempting to send %d bytes (total data sent=%d)\n",send_ret,MY_CHUNK_SIZE,bytes_sent+send_ret);
-			break;				
-		}
-		else
-			bytes_sent+=MY_CHUNK_SIZE;
-	}		
-	return 0;	
-}
-This electronic message may contain proprietary and confidential information of Verint Systems Inc., its affiliates and/or subsidiaries.
-The information is intended to be for the use of the individual(s) or
-entity(ies) named above.  If you are not the intended recipient (or authorized to receive this e-mail for the intended recipient), you may not use, copy, disclose or distribute to anyone this message or any information contained in this message.  If you have received this electronic message in error, please notify us by replying to this e-mail.
-
+Known issues:
+	* expand_stack() one.  Missing checks, not obvious which way to
+deal with that.  Same as in mainline.  Itanic and sparc32 are killable
+by that, on itanic with hw 32bit support it looks even nastier (likely
+escalation to execution of user code in ring 0).
+	* remap_file_pages() seems to ignore any alignment rules; it
+is OK wrt to address range (it works on existing vma), but cache
+coherency might be buggered.  Same as in mainline.
+	* spufs (ppc cell stuff) does 64Kb-paged mappings; what happens
+upon mremap() and friends?  VM_HUGETLB will *not* be set on it, so the
+usual checks in mm/* are going to miss.  _Probably_ unchanged compared
+to mainline, but I'd really like to understand how it's supposed to work.
