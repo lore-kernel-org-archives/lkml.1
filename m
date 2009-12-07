@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZLGBQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbZLGBVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbZLGBQl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 20:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbZLGBQk
+	id S932805AbZLGBVj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 20:21:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbZLGBVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 20:16:40 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41425 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758543AbZLGBQj (ORCPT
+	Sun, 6 Dec 2009 20:21:36 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:35619 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753758AbZLGBVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 20:16:39 -0500
-Date: Sun, 6 Dec 2009 17:18:56 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Message-ID: <20091206171856.394ce6d8@infradead.org>
-In-Reply-To: <7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
-References: <200912052216.19540.rjw@sisk.pl>
-	<200912060055.36130.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
-	<200912060254.10081.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
-	<20091206113555.5a646713@infradead.org>
-	<alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
-	<20091206121803.70385c33@infradead.org>
-	<7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 6 Dec 2009 20:21:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iBOBtVrEeHSqkdrZmjXwgRVpR3ikDhkz+C6kgM4zCAOU+n0MSH64f4/tiZcavp8D+V
+         JsM8hYJQTAznZShM3wayJbw6XPWYc+Fsl/CC49ujbJB54a7kmSgsxGXLa3tdLUQeeqJG
+         1XYEXESJnvfVS1WM9jTB7KYuXqDCQjGuCl6Gk=
+Date: Mon, 7 Dec 2009 02:21:41 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [patch 13/23] plist: Make plist debugging raw_spinlock aware
+Message-ID: <20091207012140.GB4966@nowhere>
+References: <20091206110944.492100233@linutronix.de> <20091206111957.806855005@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091206111957.806855005@linutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 Dec 2009 14:54:48 -0800
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-
-> Yes, that's your PS/2 mouse (rather touchpad) and the delay comes
-> from device reset (needed by some keyboard controllers - I remember
-> HP -or it and keyboard will be dead at resume).
+On Sun, Dec 06, 2009 at 06:02:57PM -0000, Thomas Gleixner wrote:
+> plists are used with spinlocks and raw_spinlocks. Change the plist
+> debugging to handle both types.
 > 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  include/linux/plist.h |   43 +++++++++++++++++++++++++++++++++++++------
+>  kernel/futex.c        |    6 +++---
+>  lib/plist.c           |    8 +++++---
+>  3 files changed, 45 insertions(+), 12 deletions(-)
+> 
+> Index: linux-2.6-tip/include/linux/plist.h
+> ===================================================================
+> --- linux-2.6-tip.orig/include/linux/plist.h
+> +++ linux-2.6-tip/include/linux/plist.h
+> @@ -81,7 +81,8 @@ struct plist_head {
+>  	struct list_head prio_list;
+>  	struct list_head node_list;
+>  #ifdef CONFIG_DEBUG_PI_LIST
+> -	spinlock_t *lock;
+> +	raw_spinlock_t *rawlock;
+> +	spinlock_t *spinlock;
+>  #endif
+>  };
 
-btw could we do this reset in an async function call (as long as we
-wait for it to complete before we pull the plug finally) ?
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+This could be a union probably, as we don't use both at the
+same time?
+
