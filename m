@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932820AbZLGKz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbZLGK4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932820AbZLGKz0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 05:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932547AbZLGKzY
+	id S932908AbZLGK4P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 05:56:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932551AbZLGK4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 05:55:24 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42517 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932524AbZLGKzY (ORCPT
+	Mon, 7 Dec 2009 05:56:15 -0500
+Received: from e28smtp09.in.ibm.com ([122.248.162.9]:35351 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932547AbZLGK4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 05:55:24 -0500
-Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <4B1CDA1C.3000802@kernel.org>
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>
-	 <1259726212-30259-5-git-send-email-tj@kernel.org>
-	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>
-	 <4B1C85D3.3080401@kernel.org> <1260174900.8223.1159.camel@laptop>
-	 <4B1CDA1C.3000802@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Dec 2009 11:54:38 +0100
-Message-ID: <1260183278.8223.1500.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 05:56:14 -0500
+Date: Mon, 7 Dec 2009 16:26:16 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v10 PATCH 2/9]: cpuidle: cleanup drivers/cpuidle/cpuidle.c
+Message-ID: <20091207105616.GC21290@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091202095427.GA27251@linux.vnet.ibm.com>
+ <200912042320.01320.duwe@lst.de>
+ <20091206051928.GA18300@linux.vnet.ibm.com>
+ <200912071117.58163.duwe@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <200912071117.58163.duwe@lst.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 19:34 +0900, Tejun Heo wrote:
-> Hello,
+* Torsten Duwe <duwe@lst.de> [2009-12-07 11:17:57]:
+
+> On Sunday 06 December 2009, Arun R Bharadwaj wrote:
 > 
-> On 12/07/2009 05:35 PM, Peter Zijlstra wrote:
-> >> * PF_THREAD_BOUND.  This is used to mark tasks which are bound to a
-> >>   cpu using kthread_bind() to be bound permanently.  However, new
-> >>   trustee based workqueue hotplugging decouples per-cpu workqueue
-> >>   flushing with cpu hot plug/unplugging.  This is necessary because
-> >>   with cmwq, long running works can be served by regular workqueues,
-> >>   so delaying completion of hot plug/unplugging till certain works are
-> >>   flushed isn't feasible.  So, what becomes necessary is the ability
-> >>   to re-bind tasks which has PF_THREAD_BOUND set but unbound from its
-> >>   now offline cpu which is coming online again.
-> > 
-> > I'm not at all sure I like that. I'd be perfectly happy with delaying
-> > the hot-unplug.
-> > 
-> > The whole cpu hotplug mess is tricky enough as it is and I see no
-> > compelling reason to further complicate it. If people are really going
-> > to enqueue strict per-cpu worklets (queue_work_on()) that takes seconds
-> > to complete, then they get to keep the results of that, which includes
-> > slow hot unplug.
-> > 
-> > Having an off-line cpu still process code like it was online is asking
-> > for trouble, don't go there.
+> > Peter objected to the idea of integrating this with the old pm_idle
+> > because it has already caused a lot of problems on x86 and we wouldn't
+> > want to be doing the same mistake on POWER. The discussion related to
+> > that could be found here http://lkml.org/lkml/2009/8/26/233
 > 
-> We're already there.  Users of workqueue which require strict CPU
-> affinity are required to flush respective works from CPU down
-> notifiers and fire them as necessary on up notifiers; otherwise, works
-> will continue to run until they're done after the cpu went down
-> regardless of whether explicit queue_work_on() was used or not.
+> And BenH has sketched how it should be done on ppc, in that thread:
+> http://lkml.org/lkml/2009/8/26/624 AFAIS this comment is still valid for v10.
+> 
+> Not only I would like to understand what is the conceptual idea behind the 
+> other changes. Nothing wrong with cleanups, but there's got to be a purpose 
+> and benefits.
+> 
+> 	Torsten
 
-So we seem to do cleanup_workqueue_thread() from CPU_POST_DEAD, but at
-that time any thread that might still be around will most certainly not
-be running on the offlined cpu anymore.
+The reason for the cleanups is that we should have just one idle
+function manager instead of having one for each arch, which needs to
+be exported and hence really ugly. So thats why we
+decided to do away with pm_idle and make cpuidle as _the_ idle
+function manager. So in case of POWER, we have the ppc_md.power_save
+which is the pm_idle equivalent. We discussed that in this thread
+http://lkml.org/lkml/2009/9/2/20
 
-If you really want to ensure you remain on the cpu, you have to complete
-from CPU_DOWN_PREPARE.
-
-We're not running things from offline CPUs.
-
-
-
+thanks
+arun
