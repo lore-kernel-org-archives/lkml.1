@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934594AbZLGQEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934918AbZLGQGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934594AbZLGQEP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 11:04:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933577AbZLGQEO
+	id S934918AbZLGQGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 11:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934681AbZLGQGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 11:04:14 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:39817 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932685AbZLGQEO (ORCPT
+	Mon, 7 Dec 2009 11:06:17 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:35579 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934560AbZLGQGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 11:04:14 -0500
-Message-ID: <4B1D277E.207@canonical.com>
-Date: Mon, 07 Dec 2009 17:04:14 +0100
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 7 Dec 2009 11:06:15 -0500
+Date: Mon, 7 Dec 2009 10:06:09 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Ioannis Kyriakopoulos <johnkyr83@hotmail.com>
+cc: linux-kernel@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: timer interrupt stucks using tickless kernel
+In-Reply-To: <SNT111-DS1957B574BA05A48FEDBFF0A7900@phx.gbl>
+Message-ID: <alpine.DEB.2.00.0912070959310.1208@router.home>
+References: <SNT111-DS1957B574BA05A48FEDBFF0A7900@phx.gbl>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Libin Yang <libin.yang@amd.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [041/119] USB: ohci: quirk AMD prefetch for USB
- 1.1	ISO transfer
-References: <20091206235936.208334321@mini.kroah.org> <20091207000646.961519997@mini.kroah.org>
-In-Reply-To: <20091207000646.961519997@mini.kroah.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just to verify this, the patch also adds a call to quirk_amd_pll
-but from the description it is not clear to me this is intended.
+On Mon, 7 Dec 2009, Ioannis Kyriakopoulos wrote:
 
--Stefan
+> I have configured my kernel (2.6.31.6) so that I get periodic ticks from
+> the timer interrupt (i.e. tickless is not configured) with a rate determined
+> by the HZ value. I've also checked the "high resolution timer support"
+> and also SMP support. The posblem is that the timer is getting incremented
+> very slowly (way slower than the HZ value), just like it would be if the
+> kernel was tickless. Is there an explanation for that? How can I get
+> periodic
+> timer ticks?
+
+This is what platform? Embedded? Timer is referring to the system time
+running slow? kernel boot log would be useful.
+
+> AFAI understand, the HPET timer is used through the IO-APIC controller to
+> trigger the processors (N.B. if the "High Resolution Timer Support" option
+> wasn't checked, the timer used would  be PIT, right?) and each processor's
+> LAPIC timer is used for time keeping. Please correct me if I am wrong.
+>
+> Another question is how the LAPIC timner's rate is determined? In my case,
+> it seams that an interurpt by LAPIC timer is generated very appoximately
+> 0.25 sec (that is HZ which is 1000 * 4) but I can't understand why.
+
+You could have 4 processors that each need a timer interrupt at
+1000 HZ?
+
