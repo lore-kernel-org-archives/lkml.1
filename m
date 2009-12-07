@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbZLGAU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbZLGAUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758793AbZLGAU7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934385AbZLGAUl
+	id S1758597AbZLGAUn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:20:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbZLGAUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:20:41 -0500
-Received: from kroah.org ([198.145.64.141]:34681 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:20:39 -0500
+Received: from kroah.org ([198.145.64.141]:34691 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758410AbZLGANs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:13:48 -0500
+	id S1758499AbZLGANt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:13:49 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:57 2009
-Message-Id: <20091207000657.032254620@mini.kroah.org>
+Message-Id: <20091207000657.204461287@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:01:08 -0800
+Date: Sun, 06 Dec 2009 16:01:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Mack <daniel@caiaq.de>, Pierre Ossman <pierre@ossman.eu>,
-       linux-mmc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Eric Miao <eric.y.miao@gmail.com>
-Subject: [092/119] [ARM] pxamci: call mmc_remove_host() before freeing resources
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [093/119] param: dont complain about unused module parameters.
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=pxamci-call-mmc_remove_host-before-freeing-resources.patch
+Content-Disposition: inline; filename=param-don-t-complain-about-unused-module-parameters.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,93 +29,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Daniel Mack <daniel@caiaq.de>
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-commit 5d6b1edf8ccc4b7e4e77dff3fc80882833d6186e upstream.
+commit f066a4f6df68f03b565dfe867dde54dfeb26576e upstream.
 
-mmc_remove_host() will cause the mmc core to switch off the bus power by
-eventually calling pxamci_set_ios(). This function uses the regulator or
-the GPIO which have been freed already.
+Jon confirms that recent modprobe will look in /proc/cmdline, so these
+cmdline options can still be used.
 
-This causes the following Oops on module unload.
+See http://bugzilla.kernel.org/show_bug.cgi?id=14164
 
-[   49.519649] Unable to handle kernel paging request at virtual address 30303a70
-[   49.526878] pgd = c7084000
-[   49.529563] [30303a70] *pgd=00000000
-[   49.533136] Internal error: Oops: 5 [#1]
-[   49.537025] last sysfs file: /sys/devices/platform/pxa27x-ohci/usb1/1-1/1-1:1.0/host0/target0:0:0/0:0:0:0/scsi_level
-[   49.547471] Modules linked in: pxamci(-) eeti_ts
-[   49.552061] CPU: 0    Not tainted  (2.6.32-rc8 #322)
-[   49.557001] PC is at regulator_is_enabled+0x3c/0xbc
-[   49.561846] LR is at regulator_is_enabled+0x30/0xbc
-[   49.566691] pc : [<c01a2448>]    lr : [<c01a243c>]    psr: 60000013
-[   49.566702] sp : c7083e70  ip : 30303a30  fp : 00000000
-[   49.578093] r10: c705e200  r9 : c7082000  r8 : c705e2e0
-[   49.583280] r7 : c7061340  r6 : c7061340  r5 : c7083e70  r4 : 00000000
-[   49.589759] r3 : c04dc434  r2 : c04dc434  r1 : c03eecea  r0 : 00000047
-[   49.596241] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
-[   49.603329] Control: 0000397f  Table: a7084018  DAC: 00000015
-[   49.609031] Process rmmod (pid: 1101, stack limit = 0xc7082278)
-[   49.614908] Stack: (0xc7083e70 to 0xc7084000)
-[   49.619238] 3e60:                                     c7082000 c703c4f8 c705ea00 c04f4074
-[   49.627366] 3e80: 00000000 c705e3a0 ffffffff c0247ddc c70361a0 00000000 c705e3a0 ffffffff
-[   49.635499] 3ea0: c705e200 bf006400 c78c4f00 c705e200 c705e3a0 ffffffff c705e200 ffffffff
-[   49.643633] 3ec0: c04d8ac8 c02476d0 ffffffff c0247c60 c705e200 c0248678 c705e200 c0249064
-[   49.651765] 3ee0: ffffffff bf006204 c04d8ad0 c04d8ad0 c04d8ac8 bf007490 00000880 c00440c4
-[   49.659898] 3f00: 0000b748 c01c5708 bf007490 c01c44c8 c04d8ac8 c04d8afc bf007490 c01c4570
-[   49.668031] 3f20: bf007490 bf00750c c04f4258 c01c37a4 00000000 bf00750c c7083f44 c007b014
-[   49.676162] 3f40: 4000d000 6d617870 08006963 00000001 00000000 c7085000 00000001 00000000
-[   49.684287] 3f60: 4000d000 c7083f8c 00000001 bea01a54 00005401 c7ab1400 c00440c4 00082000
-[   49.692420] 3f80: bf00750c 00000880 c7083f8c 00000000 4000cfa8 00000000 00000880 bea01cc8
-[   49.700552] 3fa0: 00000081 c0043f40 00000000 00000880 bea01cc8 00000880 00000006 00000000
-[   49.708677] 3fc0: 00000000 00000880 bea01cc8 00000081 00000097 0000cca4 0000b748 00000000
-[   49.716802] 3fe0: 4001a4f0 bea01cc0 00018bf4 4001a4fc 20000010 bea01cc8 a063e021 a063e421
-[   49.724958] [<c01a2448>] (regulator_is_enabled+0x3c/0xbc) from [<c0247ddc>] (mmc_regulator_set_ocr+0x14/0xd8)
-[   49.734836] [<c0247ddc>] (mmc_regulator_set_ocr+0x14/0xd8) from [<bf006400>] (pxamci_set_ios+0xd8/0x17c [pxamci])
-[   49.745044] [<bf006400>] (pxamci_set_ios+0xd8/0x17c [pxamci]) from [<c02476d0>] (mmc_power_off+0x50/0x58)
-[   49.754555] [<c02476d0>] (mmc_power_off+0x50/0x58) from [<c0247c60>] (mmc_detach_bus+0x68/0xc4)
-[   49.763207] [<c0247c60>] (mmc_detach_bus+0x68/0xc4) from [<c0248678>] (mmc_stop_host+0xd4/0x1bc)
-[   49.771944] [<c0248678>] (mmc_stop_host+0xd4/0x1bc) from [<c0249064>] (mmc_remove_host+0xc/0x20)
-[   49.780681] [<c0249064>] (mmc_remove_host+0xc/0x20) from [<bf006204>] (pxamci_remove+0xc8/0x174 [pxamci])
-[   49.790211] [<bf006204>] (pxamci_remove+0xc8/0x174 [pxamci]) from [<c01c5708>] (platform_drv_remove+0x1c/0x24)
-[   49.800164] [<c01c5708>] (platform_drv_remove+0x1c/0x24) from [<c01c44c8>] (__device_release_driver+0x7c/0xc4)
-[   49.810110] [<c01c44c8>] (__device_release_driver+0x7c/0xc4) from [<c01c4570>] (driver_detach+0x60/0x8c)
-[   49.819535] [<c01c4570>] (driver_detach+0x60/0x8c) from [<c01c37a4>] (bus_remove_driver+0x90/0xcc)
-[   49.828452] [<c01c37a4>] (bus_remove_driver+0x90/0xcc) from [<c007b014>] (sys_delete_module+0x1d8/0x254)
-[   49.837891] [<c007b014>] (sys_delete_module+0x1d8/0x254) from [<c0043f40>] (ret_fast_syscall+0x0/0x28)
-[   49.847145] Code: eb06c53a e596c030 e1a0500d e59f106c (e59c0040)
-[   49.853566] ---[ end trace b5fa66a00cea142f ]---
-
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Reported-by: Sven Neumann <s.neumann@raumfeld.com>
-Cc: Pierre Ossman <pierre@ossman.eu>
-Cc: linux-mmc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
+Reported-by: Adam Williamson <awilliam@redhat.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mmc/host/pxamci.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ init/main.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
---- a/drivers/mmc/host/pxamci.c
-+++ b/drivers/mmc/host/pxamci.c
-@@ -694,14 +694,14 @@ static int pxamci_remove(struct platform
- 	if (mmc) {
- 		struct pxamci_host *host = mmc_priv(mmc);
+--- a/init/main.c
++++ b/init/main.c
+@@ -250,7 +250,7 @@ early_param("loglevel", loglevel);
  
-+		mmc_remove_host(mmc);
-+
- 		if (host->vcc)
- 			regulator_put(host->vcc);
+ /*
+  * Unknown boot options get handed to init, unless they look like
+- * failed parameters
++ * unused parameters (modprobe will find them in /proc/cmdline).
+  */
+ static int __init unknown_bootoption(char *param, char *val)
+ {
+@@ -271,14 +271,9 @@ static int __init unknown_bootoption(cha
+ 	if (obsolete_checksetup(param))
+ 		return 0;
  
- 		if (host->pdata && host->pdata->exit)
- 			host->pdata->exit(&pdev->dev, mmc);
+-	/*
+-	 * Preemptive maintenance for "why didn't my misspelled command
+-	 * line work?"
+-	 */
+-	if (strchr(param, '.') && (!val || strchr(param, '.') < val)) {
+-		printk(KERN_ERR "Unknown boot option `%s': ignoring\n", param);
++	/* Unused module parameter. */
++	if (strchr(param, '.') && (!val || strchr(param, '.') < val))
+ 		return 0;
+-	}
  
--		mmc_remove_host(mmc);
--
- 		pxamci_stop_clock(host);
- 		writel(TXFIFO_WR_REQ|RXFIFO_RD_REQ|CLK_IS_OFF|STOP_CMD|
- 		       END_CMD_RES|PRG_DONE|DATA_TRAN_DONE,
+ 	if (panic_later)
+ 		return 0;
 
 
