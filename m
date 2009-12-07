@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbZLGAPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbZLGAOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758696AbZLGAPJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:15:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758497AbZLGAOf
+	id S1758667AbZLGAOh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:14:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758658AbZLGAOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:14:35 -0500
-Received: from kroah.org ([198.145.64.141]:34817 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:14:34 -0500
+Received: from kroah.org ([198.145.64.141]:34716 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934387AbZLGAOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:14:10 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:07:00 2009
-Message-Id: <20091207000700.711075465@mini.kroah.org>
+	id S934398AbZLGAOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:14:11 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:07:01 2009
+Message-Id: <20091207000700.872612815@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:01:31 -0800
+Date: Sun, 06 Dec 2009 16:01:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [115/119] PCI: Prevent AER driver from being loaded on non-root port PCIE devices
+       Peter Feuerer <peter@piie.net>, Andreas Mohr <andi@lisas.de>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [116/119] acerhdf: additional BIOS versions
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=pci-prevent-aer-driver-from-being-loaded-on-non-root-port-pcie-devices.patch
+Content-Disposition: inline; filename=acerhdf-additional-bios-versions.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,44 +31,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+From: Peter Feuerer <peter@piie.net>
 
-commit 30fc24b5cbc55f9e6c686e2710cc812419bddc0c upstream.
+commit f944915187f53810130eb1c56985e27e3cbe4a6d upstream.
 
-A bug was seen on boards using a PLX 8518 switch device which advertises
-AER on each of it's transparent bridges. The AER driver was loaded for
-each bridge and this driver tried to access the AER source ID register
-whenever an interrupt occured on the shared PCI INTX lines. The source
-ID register does not exist on non root port PCIE device's  which
-advertise AER and trying to access this register causes a unsupported
-request error on the bridge. Thus, when the next interrupt occurs,
-another error is found and the non existent source ID register is
-accessed again, and so it goes on.
+Added BIOS versions:
+Acer: AOA110-v0.3307, AOA150-v0.3301, AOA150-v0.3307
+Packard Bell: AOA150-v0.3105
 
-The result is a spammed dmesg with unsupported request PCI express
-errors on the bridge device that the AER driver is loaded against.
-
-Reported-by: Malcolm Crossley <malcolm.crossley2@gefanuc.com>
-Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Tested-by: Malcolm Crossley <malcolm.crossley2@gefanuc.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Peter Feuerer <peter@piie.net>
+Cc: Andreas Mohr <andi@lisas.de>
+Cc: Borislav Petkov <petkovbb@googlemail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pcie/aer/aerdrv.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/platform/x86/acerhdf.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/drivers/pci/pcie/aer/aerdrv.c
-+++ b/drivers/pci/pcie/aer/aerdrv.c
-@@ -52,7 +52,7 @@ static struct pci_error_handlers aer_err
- 
- static struct pcie_port_service_driver aerdriver = {
- 	.name		= "aer",
--	.port_type	= PCIE_ANY_PORT,
-+	.port_type	= PCIE_RC_PORT,
- 	.service	= PCIE_PORT_SERVICE_AER,
- 
- 	.probe		= aer_probe,
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -139,13 +139,16 @@ static const struct bios_settings_t bios
+ 	{"Acer", "AOA110", "v0.3301", 0x55, 0x58, {0xaf, 0x00} },
+ 	{"Acer", "AOA110", "v0.3304", 0x55, 0x58, {0xaf, 0x00} },
+ 	{"Acer", "AOA110", "v0.3305", 0x55, 0x58, {0xaf, 0x00} },
++	{"Acer", "AOA110", "v0.3307", 0x55, 0x58, {0xaf, 0x00} },
+ 	{"Acer", "AOA110", "v0.3308", 0x55, 0x58, {0x21, 0x00} },
+ 	{"Acer", "AOA110", "v0.3309", 0x55, 0x58, {0x21, 0x00} },
+ 	{"Acer", "AOA110", "v0.3310", 0x55, 0x58, {0x21, 0x00} },
+ 	/* AOA150 */
+ 	{"Acer", "AOA150", "v0.3114", 0x55, 0x58, {0x20, 0x00} },
++	{"Acer", "AOA150", "v0.3301", 0x55, 0x58, {0x20, 0x00} },
+ 	{"Acer", "AOA150", "v0.3304", 0x55, 0x58, {0x20, 0x00} },
+ 	{"Acer", "AOA150", "v0.3305", 0x55, 0x58, {0x20, 0x00} },
++	{"Acer", "AOA150", "v0.3307", 0x55, 0x58, {0x20, 0x00} },
+ 	{"Acer", "AOA150", "v0.3308", 0x55, 0x58, {0x20, 0x00} },
+ 	{"Acer", "AOA150", "v0.3309", 0x55, 0x58, {0x20, 0x00} },
+ 	{"Acer", "AOA150", "v0.3310", 0x55, 0x58, {0x20, 0x00} },
+@@ -154,6 +157,7 @@ static const struct bios_settings_t bios
+ 	{"Gateway", "AOA150", "v0.3103", 0x55, 0x58, {0x20, 0x00} },
+ 	{"Packard Bell", "DOA150", "v0.3104", 0x55, 0x58, {0x21, 0x00} },
+ 	{"Packard Bell", "AOA110", "v0.3105", 0x55, 0x58, {0x21, 0x00} },
++	{"Packard Bell", "AOA150", "v0.3105", 0x55, 0x58, {0x20, 0x00} },
+ 	/* pewpew-terminator */
+ 	{"", "", "", 0, 0, {0, 0} }
+ };
 
 
