@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbZLGASy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbZLGAOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbZLGASy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758593AbZLGANx
+	id S1758630AbZLGAOA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:14:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758440AbZLGAN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:13:53 -0500
-Received: from kroah.org ([198.145.64.141]:34649 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:13:56 -0500
+Received: from kroah.org ([198.145.64.141]:34654 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758582AbZLGANm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 19:13:42 -0500
+	id S1758460AbZLGANn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Dec 2009 19:13:43 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:06:56 2009
-Message-Id: <20091207000656.155029308@mini.kroah.org>
+Message-Id: <20091207000656.289038717@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:01:02 -0800
+Date: Sun, 06 Dec 2009 16:01:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>
-Subject: [086/119] USB: EHCI: dont send Clear-TT-Buffer following a STALL
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: [087/119] USB: musb_gadget: fix STALL handling
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ehci-don-t-send-clear-tt-buffer-following-a-stall.patch
+Content-Disposition: inline; filename=usb-musb_gadget-fix-stall-handling.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,71 +29,223 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit c2f6595fbdb408d3d6850cfae590c8fa93e27399 upstream.
+commit cea83241b3a84499c4f9b12f8288f787e7aa6383 upstream.
 
-This patch (as1304) fixes a regression in ehci-hcd.  Evidently some
-hubs don't handle Clear-TT-Buffer requests correctly, so we should
-avoid sending them when they don't appear to be absolutely necessary.
-The reported symptom is that output on a downstream audio device cuts
-out because the hub stops relaying isochronous packets.
+The driver incorrectly cancels the mass-storage device CSW request
+(which leads to device reset) due to giving back URB at the head of
+endpoint's queue after sending each STALL handshake; stop doing that
+and start checking for the queue being non-empty before stalling an
+endpoint and disallowing stall in such case in musb_gadget_set_halt()
+like the other gadget drivers do.
 
-The patch prevents Clear-TT-Buffer requests from being sent following
-a STALL handshake.  In theory a STALL indicates either that the
-downstream device sent a STALL or that no matching TT buffer could be
-found.  In either case, the transfer is completed and the TT buffer
-does not remain busy, so it doesn't need to be cleared.
+Moreover, the driver starts Rx request despite of the endpoint being
+halted -- fix this by moving the SendStall bit check from musb_g_rx()
+to rxstate().  And we also sometimes get into rxstate() with DMA still
+active after clearing an endpoint's halt (not clear why), so bail out
+in this case, similarly to what txstate() does...
 
-Also, the patch fixes a minor flaw in the code that actually sends the
-Clear-TT-Buffer requests.  Although the pipe direction isn't really
-used for control transfers, it should be a Send rather than a Receive.
+While at it, also do the following changes :
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-by: Javier Kohen <jkohen@users.sourceforge.net>
-CC: David Brownell <david-b@pacbell.net>
+- in musb_gadget_set_halt(), remove pointless Tx FIFO flushing (the
+  driver does not allow stalling with non-empty Tx FIFO anyway);
+
+- in rxstate(), stop pointlessly zeroing the 'csr' variable;
+
+- in musb_gadget_set_halt(), move the 'done' label to a more proper
+  place;
+
+- in musb_g_rx(), eliminate the 'done' label completely...
+
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/hub.c    |    2 +-
- drivers/usb/host/ehci-q.c |   16 ++++++++++++++--
- 2 files changed, 15 insertions(+), 3 deletions(-)
+ drivers/usb/musb/musb_gadget.c |   79 +++++++++++++++++------------------------
+ 1 file changed, 34 insertions(+), 45 deletions(-)
 
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -439,7 +439,7 @@ resubmit:
- static inline int
- hub_clear_tt_buffer (struct usb_device *hdev, u16 devinfo, u16 tt)
- {
--	return usb_control_msg(hdev, usb_rcvctrlpipe(hdev, 0),
-+	return usb_control_msg(hdev, usb_sndctrlpipe(hdev, 0),
- 			       HUB_CLEAR_TT_BUFFER, USB_RT_PORT, devinfo,
- 			       tt, NULL, 0, 1000);
- }
---- a/drivers/usb/host/ehci-q.c
-+++ b/drivers/usb/host/ehci-q.c
-@@ -475,8 +475,20 @@ halt:
- 			 * we must clear the TT buffer (11.17.5).
- 			 */
- 			if (unlikely(last_status != -EINPROGRESS &&
--					last_status != -EREMOTEIO))
--				ehci_clear_tt_buffer(ehci, qh, urb, token);
-+					last_status != -EREMOTEIO)) {
-+				/* The TT's in some hubs malfunction when they
-+				 * receive this request following a STALL (they
-+				 * stop sending isochronous packets).  Since a
-+				 * STALL can't leave the TT buffer in a busy
-+				 * state (if you believe Figures 11-48 - 11-51
-+				 * in the USB 2.0 spec), we won't clear the TT
-+				 * buffer in this case.  Strictly speaking this
-+				 * is a violation of the spec.
-+				 */
-+				if (last_status != -EPIPE)
-+					ehci_clear_tt_buffer(ehci, qh, urb,
-+							token);
-+			}
+--- a/drivers/usb/musb/musb_gadget.c
++++ b/drivers/usb/musb/musb_gadget.c
+@@ -4,6 +4,7 @@
+  * Copyright 2005 Mentor Graphics Corporation
+  * Copyright (C) 2005-2006 by Texas Instruments
+  * Copyright (C) 2006-2007 Nokia Corporation
++ * Copyright (C) 2009 MontaVista Software, Inc. <source@mvista.com>
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+@@ -436,14 +437,6 @@ void musb_g_tx(struct musb *musb, u8 epn
+ 			csr |= MUSB_TXCSR_P_WZC_BITS;
+ 			csr &= ~MUSB_TXCSR_P_SENTSTALL;
+ 			musb_writew(epio, MUSB_TXCSR, csr);
+-			if (dma_channel_status(dma) == MUSB_DMA_STATUS_BUSY) {
+-				dma->status = MUSB_DMA_STATUS_CORE_ABORT;
+-				musb->dma_controller->channel_abort(dma);
+-			}
+-
+-			if (request)
+-				musb_g_giveback(musb_ep, request, -EPIPE);
+-
+ 			break;
  		}
  
- 		/* if we're removing something not at the queue head,
+@@ -582,15 +575,25 @@ void musb_g_tx(struct musb *musb, u8 epn
+  */
+ static void rxstate(struct musb *musb, struct musb_request *req)
+ {
+-	u16			csr = 0;
+ 	const u8		epnum = req->epnum;
+ 	struct usb_request	*request = &req->request;
+ 	struct musb_ep		*musb_ep = &musb->endpoints[epnum].ep_out;
+ 	void __iomem		*epio = musb->endpoints[epnum].regs;
+ 	unsigned		fifo_count = 0;
+ 	u16			len = musb_ep->packet_sz;
++	u16			csr = musb_readw(epio, MUSB_RXCSR);
+ 
+-	csr = musb_readw(epio, MUSB_RXCSR);
++	/* We shouldn't get here while DMA is active, but we do... */
++	if (dma_channel_status(musb_ep->dma) == MUSB_DMA_STATUS_BUSY) {
++		DBG(4, "DMA pending...\n");
++		return;
++	}
++
++	if (csr & MUSB_RXCSR_P_SENDSTALL) {
++		DBG(5, "%s stalling, RXCSR %04x\n",
++		    musb_ep->end_point.name, csr);
++		return;
++	}
+ 
+ 	if (is_cppi_enabled() && musb_ep->dma) {
+ 		struct dma_controller	*c = musb->dma_controller;
+@@ -761,19 +764,10 @@ void musb_g_rx(struct musb *musb, u8 epn
+ 			csr, dma ? " (dma)" : "", request);
+ 
+ 	if (csr & MUSB_RXCSR_P_SENTSTALL) {
+-		if (dma_channel_status(dma) == MUSB_DMA_STATUS_BUSY) {
+-			dma->status = MUSB_DMA_STATUS_CORE_ABORT;
+-			(void) musb->dma_controller->channel_abort(dma);
+-			request->actual += musb_ep->dma->actual_len;
+-		}
+-
+ 		csr |= MUSB_RXCSR_P_WZC_BITS;
+ 		csr &= ~MUSB_RXCSR_P_SENTSTALL;
+ 		musb_writew(epio, MUSB_RXCSR, csr);
+-
+-		if (request)
+-			musb_g_giveback(musb_ep, request, -EPIPE);
+-		goto done;
++		return;
+ 	}
+ 
+ 	if (csr & MUSB_RXCSR_P_OVERRUN) {
+@@ -795,7 +789,7 @@ void musb_g_rx(struct musb *musb, u8 epn
+ 		DBG((csr & MUSB_RXCSR_DMAENAB) ? 4 : 1,
+ 			"%s busy, csr %04x\n",
+ 			musb_ep->end_point.name, csr);
+-		goto done;
++		return;
+ 	}
+ 
+ 	if (dma && (csr & MUSB_RXCSR_DMAENAB)) {
+@@ -826,22 +820,15 @@ void musb_g_rx(struct musb *musb, u8 epn
+ 		if ((request->actual < request->length)
+ 				&& (musb_ep->dma->actual_len
+ 					== musb_ep->packet_sz))
+-			goto done;
++			return;
+ #endif
+ 		musb_g_giveback(musb_ep, request, 0);
+ 
+ 		request = next_request(musb_ep);
+ 		if (!request)
+-			goto done;
+-
+-		/* don't start more i/o till the stall clears */
+-		musb_ep_select(mbase, epnum);
+-		csr = musb_readw(epio, MUSB_RXCSR);
+-		if (csr & MUSB_RXCSR_P_SENDSTALL)
+-			goto done;
++			return;
+ 	}
+ 
+-
+ 	/* analyze request if the ep is hot */
+ 	if (request)
+ 		rxstate(musb, to_musb_request(request));
+@@ -849,8 +836,6 @@ void musb_g_rx(struct musb *musb, u8 epn
+ 		DBG(3, "packet waiting for %s%s request\n",
+ 				musb_ep->desc ? "" : "inactive ",
+ 				musb_ep->end_point.name);
+-
+-done:
+ 	return;
+ }
+ 
+@@ -1244,7 +1229,7 @@ int musb_gadget_set_halt(struct usb_ep *
+ 	void __iomem		*mbase;
+ 	unsigned long		flags;
+ 	u16			csr;
+-	struct musb_request	*request = NULL;
++	struct musb_request	*request;
+ 	int			status = 0;
+ 
+ 	if (!ep)
+@@ -1260,24 +1245,29 @@ int musb_gadget_set_halt(struct usb_ep *
+ 
+ 	musb_ep_select(mbase, epnum);
+ 
+-	/* cannot portably stall with non-empty FIFO */
+ 	request = to_musb_request(next_request(musb_ep));
+-	if (value && musb_ep->is_in) {
+-		csr = musb_readw(epio, MUSB_TXCSR);
+-		if (csr & MUSB_TXCSR_FIFONOTEMPTY) {
+-			DBG(3, "%s fifo busy, cannot halt\n", ep->name);
+-			spin_unlock_irqrestore(&musb->lock, flags);
+-			return -EAGAIN;
++	if (value) {
++		if (request) {
++			DBG(3, "request in progress, cannot halt %s\n",
++			    ep->name);
++			status = -EAGAIN;
++			goto done;
++		}
++		/* Cannot portably stall with non-empty FIFO */
++		if (musb_ep->is_in) {
++			csr = musb_readw(epio, MUSB_TXCSR);
++			if (csr & MUSB_TXCSR_FIFONOTEMPTY) {
++				DBG(3, "FIFO busy, cannot halt %s\n", ep->name);
++				status = -EAGAIN;
++				goto done;
++			}
+ 		}
+-
+ 	}
+ 
+ 	/* set/clear the stall and toggle bits */
+ 	DBG(2, "%s: %s stall\n", ep->name, value ? "set" : "clear");
+ 	if (musb_ep->is_in) {
+ 		csr = musb_readw(epio, MUSB_TXCSR);
+-		if (csr & MUSB_TXCSR_FIFONOTEMPTY)
+-			csr |= MUSB_TXCSR_FLUSHFIFO;
+ 		csr |= MUSB_TXCSR_P_WZC_BITS
+ 			| MUSB_TXCSR_CLRDATATOG;
+ 		if (value)
+@@ -1300,14 +1290,13 @@ int musb_gadget_set_halt(struct usb_ep *
+ 		musb_writew(epio, MUSB_RXCSR, csr);
+ 	}
+ 
+-done:
+-
+ 	/* maybe start the first request in the queue */
+ 	if (!musb_ep->busy && !value && request) {
+ 		DBG(3, "restarting the request\n");
+ 		musb_ep_restart(musb, request);
+ 	}
+ 
++done:
+ 	spin_unlock_irqrestore(&musb->lock, flags);
+ 	return status;
+ }
 
 
