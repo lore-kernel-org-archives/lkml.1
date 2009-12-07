@@ -1,155 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933181AbZLGDv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbZLGDwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933181AbZLGDv4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 22:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933073AbZLGDvz
+	id S933320AbZLGDwJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 22:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbZLGDwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 22:51:55 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51464 "EHLO
+	Sun, 6 Dec 2009 22:52:08 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51466 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933144AbZLGDvz (ORCPT
+	with ESMTP id S933286AbZLGDwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 22:51:55 -0500
-Date: Mon, 07 Dec 2009 03:52:00 +0000
+	Sun, 6 Dec 2009 22:52:04 -0500
+Date: Mon, 07 Dec 2009 03:52:10 +0000
 To: linux-arch@vger.kernel.org
-Subject: [PATCH 1/19] untangling do_mremap(), part 1
+Subject: [PATCH 2/19] do_mremap() untangling, part 2
 Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <E1NHUdk-0007ul-Oc@ZenIV.linux.org.uk>
+Message-Id: <E1NHUdu-0007uy-OT@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Take locating vma and checks on it to a separate helper (it will be
-shared between MREMAP_FIXED/non-MREMAP_FIXED cases when we split
-them in the next patch)
+Take the MREMAP_FIXED into a separate helper, simplify the living
+hell out of conditions in both cases.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- mm/mremap.c |   88 +++++++++++++++++++++++++++++++++++++----------------------
- 1 files changed, 55 insertions(+), 33 deletions(-)
+ mm/mremap.c |  120 +++++++++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 72 insertions(+), 48 deletions(-)
 
 diff --git a/mm/mremap.c b/mm/mremap.c
-index 97bff25..6776136 100644
+index 6776136..5f34617 100644
 --- a/mm/mremap.c
 +++ b/mm/mremap.c
-@@ -261,6 +261,58 @@ static unsigned long move_vma(struct vm_area_struct *vma,
- 	return new_addr;
+@@ -313,6 +313,59 @@ Eagain:
+ 	return ERR_PTR(-EAGAIN);
  }
  
-+static struct vm_area_struct *vma_to_resize(unsigned long addr,
-+	unsigned long old_len, unsigned long new_len, unsigned long *p)
++static unsigned long mremap_to(unsigned long addr,
++	unsigned long old_len, unsigned long new_addr,
++	unsigned long new_len)
 +{
 +	struct mm_struct *mm = current->mm;
-+	struct vm_area_struct *vma = find_vma(mm, addr);
++	struct vm_area_struct *vma;
++	unsigned long ret = -EINVAL;
++	unsigned long charged = 0;
 +
-+	if (!vma || vma->vm_start > addr)
-+		goto Efault;
++	if (new_addr & ~PAGE_MASK)
++		goto out;
 +
-+	if (is_vm_hugetlb_page(vma))
-+		goto Einval;
++	if (new_len > TASK_SIZE || new_addr > TASK_SIZE - new_len)
++		goto out;
 +
-+	/* We can't remap across vm area boundaries */
-+	if (old_len > vma->vm_end - addr)
-+		goto Efault;
++	/* Check if the location we're moving into overlaps the
++	 * old location at all, and fail if it does.
++	 */
++	if ((new_addr <= addr) && (new_addr+new_len) > addr)
++		goto out;
 +
-+	if (vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP)) {
-+		if (new_len > old_len)
-+			goto Efault;
++	if ((addr <= new_addr) && (addr+old_len) > new_addr)
++		goto out;
++
++	ret = security_file_mmap(NULL, 0, 0, 0, new_addr, 1);
++	if (ret)
++		goto out;
++
++	ret = do_munmap(mm, new_addr, new_len);
++	if (ret)
++		goto out;
++
++	if (old_len >= new_len) {
++		ret = do_munmap(mm, addr+new_len, old_len - new_len);
++		if (ret && old_len != new_len)
++			goto out;
++		old_len = new_len;
 +	}
 +
-+	if (vma->vm_flags & VM_LOCKED) {
-+		unsigned long locked, lock_limit;
-+		locked = mm->locked_vm << PAGE_SHIFT;
-+		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
-+		locked += new_len - old_len;
-+		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+			goto Eagain;
++	vma = vma_to_resize(addr, old_len, new_len, &charged);
++	if (IS_ERR(vma)) {
++		ret = PTR_ERR(vma);
++		goto out;
 +	}
 +
-+	if (!may_expand_vm(mm, (new_len - old_len) >> PAGE_SHIFT))
-+		goto Enomem;
++	ret = move_vma(vma, addr, old_len, new_len, new_addr);
++	if (ret & ~PAGE_MASK)
++		vm_unacct_memory(charged);
 +
-+	if (vma->vm_flags & VM_ACCOUNT) {
-+		unsigned long charged = (new_len - old_len) >> PAGE_SHIFT;
-+		if (security_vm_enough_memory(charged))
-+			goto Efault;
-+		*p = charged;
-+	}
-+
-+	return vma;
-+
-+Efault:	/* very odd choice for most of the cases, but... */
-+	return ERR_PTR(-EFAULT);
-+Einval:
-+	return ERR_PTR(-EINVAL);
-+Enomem:
-+	return ERR_PTR(-ENOMEM);
-+Eagain:
-+	return ERR_PTR(-EAGAIN);
++out:
++	return ret;
 +}
 +
  /*
   * Expand (or shrink) an existing mapping, potentially moving it at the
   * same time (controlled by the MREMAP_MAYMOVE flag and available VM space)
-@@ -340,41 +392,12 @@ unsigned long do_mremap(unsigned long addr,
- 	/*
- 	 * Ok, we need to grow..  or relocate.
- 	 */
--	ret = -EFAULT;
--	vma = find_vma(mm, addr);
--	if (!vma || vma->vm_start > addr)
--		goto out;
--	if (is_vm_hugetlb_page(vma)) {
--		ret = -EINVAL;
--		goto out;
--	}
--	/* We can't remap across vm area boundaries */
--	if (old_len > vma->vm_end - addr)
--		goto out;
--	if (vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP)) {
--		if (new_len > old_len)
--			goto out;
--	}
--	if (vma->vm_flags & VM_LOCKED) {
--		unsigned long locked, lock_limit;
--		locked = mm->locked_vm << PAGE_SHIFT;
--		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
--		locked += new_len - old_len;
--		ret = -EAGAIN;
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
--			goto out;
--	}
--	if (!may_expand_vm(mm, (new_len - old_len) >> PAGE_SHIFT)) {
--		ret = -ENOMEM;
-+	vma = vma_to_resize(addr, old_len, new_len, &charged);
-+	if (IS_ERR(vma)) {
-+		ret = PTR_ERR(vma);
+@@ -346,32 +399,10 @@ unsigned long do_mremap(unsigned long addr,
+ 	if (!new_len)
  		goto out;
+ 
+-	/* new_addr is only valid if MREMAP_FIXED is specified */
+ 	if (flags & MREMAP_FIXED) {
+-		if (new_addr & ~PAGE_MASK)
+-			goto out;
+-		if (!(flags & MREMAP_MAYMOVE))
+-			goto out;
+-
+-		if (new_len > TASK_SIZE || new_addr > TASK_SIZE - new_len)
+-			goto out;
+-
+-		/* Check if the location we're moving into overlaps the
+-		 * old location at all, and fail if it does.
+-		 */
+-		if ((new_addr <= addr) && (new_addr+new_len) > addr)
+-			goto out;
+-
+-		if ((addr <= new_addr) && (addr+old_len) > new_addr)
+-			goto out;
+-
+-		ret = security_file_mmap(NULL, 0, 0, 0, new_addr, 1);
+-		if (ret)
+-			goto out;
+-
+-		ret = do_munmap(mm, new_addr, new_len);
+-		if (ret)
+-			goto out;
++		if (flags & MREMAP_MAYMOVE)
++			ret = mremap_to(addr, old_len, new_addr, new_len);
++		goto out;
  	}
  
--	if (vma->vm_flags & VM_ACCOUNT) {
--		charged = (new_len - old_len) >> PAGE_SHIFT;
--		if (security_vm_enough_memory(charged))
--			goto out_nc;
--	}
--
- 	/* old_len exactly to the end of the area..
- 	 * And we're not relocating the area.
- 	 */
-@@ -430,7 +453,6 @@ unsigned long do_mremap(unsigned long addr,
- out:
- 	if (ret & ~PAGE_MASK)
- 		vm_unacct_memory(charged);
--out_nc:
- 	return ret;
- }
+ 	/*
+@@ -384,13 +415,11 @@ unsigned long do_mremap(unsigned long addr,
+ 		if (ret && old_len != new_len)
+ 			goto out;
+ 		ret = addr;
+-		if (!(flags & MREMAP_FIXED) || (new_addr == addr))
+-			goto out;
+-		old_len = new_len;
++		goto out;
+ 	}
  
+ 	/*
+-	 * Ok, we need to grow..  or relocate.
++	 * Ok, we need to grow..
+ 	 */
+ 	vma = vma_to_resize(addr, old_len, new_len, &charged);
+ 	if (IS_ERR(vma)) {
+@@ -399,11 +428,8 @@ unsigned long do_mremap(unsigned long addr,
+ 	}
+ 
+ 	/* old_len exactly to the end of the area..
+-	 * And we're not relocating the area.
+ 	 */
+-	if (old_len == vma->vm_end - addr &&
+-	    !((flags & MREMAP_FIXED) && (addr != new_addr)) &&
+-	    (old_len != new_len || !(flags & MREMAP_MAYMOVE))) {
++	if (old_len == vma->vm_end - addr) {
+ 		unsigned long max_addr = TASK_SIZE;
+ 		if (vma->vm_next)
+ 			max_addr = vma->vm_next->vm_start;
+@@ -432,22 +458,20 @@ unsigned long do_mremap(unsigned long addr,
+ 	 */
+ 	ret = -ENOMEM;
+ 	if (flags & MREMAP_MAYMOVE) {
+-		if (!(flags & MREMAP_FIXED)) {
+-			unsigned long map_flags = 0;
+-			if (vma->vm_flags & VM_MAYSHARE)
+-				map_flags |= MAP_SHARED;
+-
+-			new_addr = get_unmapped_area(vma->vm_file, 0, new_len,
+-						vma->vm_pgoff, map_flags);
+-			if (new_addr & ~PAGE_MASK) {
+-				ret = new_addr;
+-				goto out;
+-			}
+-
+-			ret = security_file_mmap(NULL, 0, 0, 0, new_addr, 1);
+-			if (ret)
+-				goto out;
++		unsigned long map_flags = 0;
++		if (vma->vm_flags & VM_MAYSHARE)
++			map_flags |= MAP_SHARED;
++
++		new_addr = get_unmapped_area(vma->vm_file, 0, new_len,
++					vma->vm_pgoff, map_flags);
++		if (new_addr & ~PAGE_MASK) {
++			ret = new_addr;
++			goto out;
+ 		}
++
++		ret = security_file_mmap(NULL, 0, 0, 0, new_addr, 1);
++		if (ret)
++			goto out;
+ 		ret = move_vma(vma, addr, old_len, new_len, new_addr);
+ 	}
+ out:
 -- 
 1.5.6.5
 
