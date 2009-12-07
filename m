@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759222AbZLGIhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934734AbZLGIjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759222AbZLGIhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbZLGIhr
+	id S934734AbZLGIjz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbZLGIhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:37:47 -0500
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:65195 "EHLO
+	Mon, 7 Dec 2009 03:37:53 -0500
+Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:65200 "EHLO
 	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759067AbZLGIhn (ORCPT
+	by vger.kernel.org with ESMTP id S1759083AbZLGIhn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 7 Dec 2009 03:37:43 -0500
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: [PATCH 8/9] Squashfs: select DECOMPRESS_LZMA_NEEDED when including support for lzma
-Message-Id: <E1NHZ6L-0002A0-Dz@dylan.lougher.demon.co.uk>
+Subject: [PATCH 6/9] Squashfs: add support for LZMA compressed filesystems
+Message-Id: <E1NHZ6L-00029o-9Y@dylan.lougher.demon.co.uk>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Mon, 07 Dec 2009 08:37:49 +0000
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,21 +24,223 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
 ---
- fs/squashfs/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ fs/squashfs/Kconfig        |    5 ++
+ fs/squashfs/Makefile       |    1 +
+ fs/squashfs/decompressor.c |    4 +
+ fs/squashfs/lzma_wrapper.c |  151 ++++++++++++++++++++++++++++++++++++++++++++
+ fs/squashfs/squashfs.h     |    3 +
+ 5 files changed, 164 insertions(+), 0 deletions(-)
+ create mode 100644 fs/squashfs/lzma_wrapper.c
 
 diff --git a/fs/squashfs/Kconfig b/fs/squashfs/Kconfig
-index 0294aa2..7ec5d7e 100644
+index 25a00d1..0294aa2 100644
 --- a/fs/squashfs/Kconfig
 +++ b/fs/squashfs/Kconfig
-@@ -30,6 +30,7 @@ config SQUASHFS_LZMA
- 	bool "Include support for LZMA compressed file systems"
- 	depends on SQUASHFS
- 	select DECOMPRESS_LZMA
-+	select DECOMPRESS_LZMA_NEEDED
+@@ -26,6 +26,11 @@ config SQUASHFS
  
+ 	  If unsure, say N.
+ 
++config SQUASHFS_LZMA
++	bool "Include support for LZMA compressed file systems"
++	depends on SQUASHFS
++	select DECOMPRESS_LZMA
++
  config SQUASHFS_EMBEDDED
  
+ 	bool "Additional option for memory-constrained systems" 
+diff --git a/fs/squashfs/Makefile b/fs/squashfs/Makefile
+index df8a19e..45aaefd 100644
+--- a/fs/squashfs/Makefile
++++ b/fs/squashfs/Makefile
+@@ -5,3 +5,4 @@
+ obj-$(CONFIG_SQUASHFS) += squashfs.o
+ squashfs-y += block.o cache.o dir.o export.o file.o fragment.o id.o inode.o
+ squashfs-y += namei.o super.o symlink.o zlib_wrapper.o decompressor.o
++squashfs-$(CONFIG_SQUASHFS_LZMA) += lzma_wrapper.o
+diff --git a/fs/squashfs/decompressor.c b/fs/squashfs/decompressor.c
+index 157478d..0b6ad9b 100644
+--- a/fs/squashfs/decompressor.c
++++ b/fs/squashfs/decompressor.c
+@@ -50,7 +50,11 @@ static const struct squashfs_decompressor squashfs_unknown_comp_ops = {
+ 
+ static const struct squashfs_decompressor *decompressor[] = {
+ 	&squashfs_zlib_comp_ops,
++#ifdef CONFIG_SQUASHFS_LZMA
++	&squashfs_lzma_comp_ops,
++#else
+ 	&squashfs_lzma_unsupported_comp_ops,
++#endif
+ 	&squashfs_lzo_unsupported_comp_ops,
+ 	&squashfs_unknown_comp_ops
+ };
+diff --git a/fs/squashfs/lzma_wrapper.c b/fs/squashfs/lzma_wrapper.c
+new file mode 100644
+index 0000000..cef06d6
+--- /dev/null
++++ b/fs/squashfs/lzma_wrapper.c
+@@ -0,0 +1,151 @@
++/*
++ * Squashfs - a compressed read only filesystem for Linux
++ *
++ * Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
++ * Phillip Lougher <phillip@lougher.demon.co.uk>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2,
++ * or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ * lzma_wrapper.c
++ */
++
++#include <asm/unaligned.h>
++#include <linux/buffer_head.h>
++#include <linux/mutex.h>
++#include <linux/vmalloc.h>
++#include <linux/decompress/unlzma.h>
++
++#include "squashfs_fs.h"
++#include "squashfs_fs_sb.h"
++#include "squashfs_fs_i.h"
++#include "squashfs.h"
++#include "decompressor.h"
++
++struct squashfs_lzma {
++	void	*input;
++	void	*output;
++};
++
++/* decompress_unlzma.c is currently non re-entrant... */
++DEFINE_MUTEX(lzma_mutex);
++
++/* decompress_unlzma.c doesn't provide any context in its callbacks... */
++static int lzma_error;
++
++static void error(char *m)
++{
++	ERROR("unlzma error: %s\n", m);
++	lzma_error = 1;
++}
++
++
++static void *lzma_init(struct squashfs_sb_info *msblk)
++{
++	struct squashfs_lzma *stream = kzalloc(sizeof(*stream), GFP_KERNEL);
++	if (stream == NULL)
++		goto failed;
++	stream->input = vmalloc(msblk->block_size);
++	if (stream->input == NULL)
++		goto failed;
++	stream->output = vmalloc(msblk->block_size);
++	if (stream->output == NULL)
++		goto failed2;
++
++	return stream;
++
++failed2:
++	vfree(stream->input);
++failed:
++	ERROR("failed to allocate lzma workspace\n");
++	kfree(stream);
++	return NULL;
++}
++
++
++static void lzma_free(void *strm)
++{
++	struct squashfs_lzma *stream = strm;
++
++	if (stream) {
++		vfree(stream->input);
++		vfree(stream->output);
++	}
++	kfree(stream);
++}
++
++
++static int lzma_uncompress(struct squashfs_sb_info *msblk, void **buffer,
++	struct buffer_head **bh, int b, int offset, int length, int srclength,
++	int pages)
++{
++	struct squashfs_lzma *stream = msblk->stream;
++	void *buff = stream->input;
++	int avail, i, bytes = length, res;
++
++	mutex_lock(&lzma_mutex);
++
++	for (i = 0; i < b; i++) {
++		wait_on_buffer(bh[i]);
++		if (!buffer_uptodate(bh[i]))
++			goto block_release;
++
++		avail = min(bytes, msblk->devblksize - offset);
++		memcpy(buff, bh[i]->b_data + offset, avail);
++		buff += avail;
++		bytes -= avail;
++		offset = 0;
++		put_bh(bh[i]);
++	}
++
++	lzma_error = 0;
++	res = unlzma(stream->input, length, NULL, NULL, stream->output, NULL,
++							error);
++	if (res || lzma_error)
++		goto failed;
++
++	/* uncompressed size is stored in the LZMA header (5 byte offset) */
++	res = bytes = get_unaligned_le32(stream->input + 5);
++	for (i = 0, buff = stream->output; bytes && i < pages; i++) {
++		avail = min_t(int, bytes, PAGE_CACHE_SIZE);
++		memcpy(buffer[i], buff, avail);
++		buff += avail;
++		bytes -= avail;
++	}
++	if (bytes)
++		goto failed;
++
++	mutex_unlock(&lzma_mutex);
++	return res;
++
++block_release:
++	for (; i < b; i++)
++		put_bh(bh[i]);
++
++failed:
++	mutex_unlock(&lzma_mutex);
++
++	ERROR("lzma decompression failed, data probably corrupt\n");
++	return -EIO;
++}
++
++const struct squashfs_decompressor squashfs_lzma_comp_ops = {
++	.init = lzma_init,
++	.free = lzma_free,
++	.decompress = lzma_uncompress,
++	.id = LZMA_COMPRESSION,
++	.name = "lzma",
++	.supported = 1
++};
++
+diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
+index fe2587a..d094886 100644
+--- a/fs/squashfs/squashfs.h
++++ b/fs/squashfs/squashfs.h
+@@ -94,3 +94,6 @@ extern const struct address_space_operations squashfs_symlink_aops;
+ 
+ /* zlib_wrapper.c */
+ extern const struct squashfs_decompressor squashfs_zlib_comp_ops;
++
++/* lzma wrapper.c */
++extern const struct squashfs_decompressor squashfs_lzma_comp_ops;
 -- 
 1.6.3.3
 
