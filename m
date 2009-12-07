@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935547AbZLGRdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964904AbZLGRjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935547AbZLGRdy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 12:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935509AbZLGRdx
+	id S964904AbZLGRjc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 12:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935558AbZLGRix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 12:33:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49899 "EHLO mx2.mail.elte.hu"
+	Mon, 7 Dec 2009 12:38:53 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41700 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935529AbZLGRdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 12:33:52 -0500
-Message-ID: <4B1D3CCB.5000607@gmail.com>
-Date: Mon, 07 Dec 2009 18:35:07 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	id S935544AbZLGRit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 12:38:49 -0500
+Date: Mon, 7 Dec 2009 17:36:36 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jens.axboe@oracle.com, fweisbec@gmail.com,
+       dle-develop@lists.sourceforge.net, arekm@maven.pl, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu, systemtap@sources.redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, fweisbec@gmail.com,
+       dle-develop@lists.sourceforge.net, arekm@maven.pl, tglx@linutronix.de,
+       mhiramat@redhat.com, systemtap@sources.redhat.com, mingo@elte.hu
+In-Reply-To: <20091207170033.19230.37688.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20091207170033.19230.37688.stgit@dhcp-100-2-132.bos.redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] x86 insn: Delete empty or incomplete inat-tables.c
+Message-ID: <tip-d32ba45503acf9c23b301eba2397ca2ee322627b@git.kernel.org>
+Git-Commit-ID: d32ba45503acf9c23b301eba2397ca2ee322627b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
-       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
-       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
-       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
-References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com> <20091205000942.GA8224@suse.de> <4B19CA6F.4090700@gmail.com> <20091205041507.GA24885@suse.de> <4B1B0D40.3040209@gmail.com> <20091206172526.GA17480@suse.de> <4B1C500E.5040406@gmail.com> <20091207151156.GA27574@suse.de>
-In-Reply-To: <20091207151156.GA27574@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> From: Emese Revfy <re.emese@gmail.com>
->>
->> Constify struct file_operations with some exceptions.
-> 
-> Now please break this patch (and your others) out into "one subsystem at
-> a time" type thing so it will have a chance at being applied.
+Commit-ID:  d32ba45503acf9c23b301eba2397ca2ee322627b
+Gitweb:     http://git.kernel.org/tip/d32ba45503acf9c23b301eba2397ca2ee322627b
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Mon, 7 Dec 2009 12:00:33 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 7 Dec 2009 18:33:19 +0100
 
-Shall i split them up per subsystem and structure type or
-only per subsystem (that is, include all affected structures
-in the given subsystem)?
---
-Emese
+x86 insn: Delete empty or incomplete inat-tables.c
 
+Delete empty or incomplete inat-tables.c if gen-insn-attr-x86.awk
+failed, because it causes a build error if user tries to build
+kernel next time.
+
+Reported-by: Arkadiusz Miskiewicz <arekm@maven.pl>
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: systemtap <systemtap@sources.redhat.com>
+Cc: DLE <dle-develop@lists.sourceforge.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20091207170033.19230.37688.stgit@dhcp-100-2-132.bos.redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/lib/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index 442b3b3..45b20e4 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -5,7 +5,7 @@
+ inat_tables_script = $(srctree)/arch/x86/tools/gen-insn-attr-x86.awk
+ inat_tables_maps = $(srctree)/arch/x86/lib/x86-opcode-map.txt
+ quiet_cmd_inat_tables = GEN     $@
+-      cmd_inat_tables = $(AWK) -f $(inat_tables_script) $(inat_tables_maps) > $@
++      cmd_inat_tables = $(AWK) -f $(inat_tables_script) $(inat_tables_maps) > $@ || rm -f $@
+ 
+ $(obj)/inat-tables.c: $(inat_tables_script) $(inat_tables_maps)
+ 	$(call cmd,inat_tables)
