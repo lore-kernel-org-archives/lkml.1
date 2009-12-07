@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbZLGHk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbZLGHlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758800AbZLGHk5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 02:40:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758623AbZLGHk4
+	id S1758814AbZLGHlO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 02:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbZLGHlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 02:40:56 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64228 "EHLO song.cn.fujitsu.com"
+	Mon, 7 Dec 2009 02:41:12 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49574 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758700AbZLGHkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 02:40:55 -0500
-Message-ID: <4B1CB173.8080204@cn.fujitsu.com>
-Date: Mon, 07 Dec 2009 15:40:35 +0800
+	id S1758623AbZLGHlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 02:41:11 -0500
+Message-ID: <4B1CB183.7040202@cn.fujitsu.com>
+Date: Mon, 07 Dec 2009 15:40:51 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -18,7 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 02/13] tracing: Extract calls to trace_define_common_fields()
+Subject: [PATCH 03/13] tracing: Move a printk out of ftrace_raw_reg_event_foo()
 References: <4B1CB14A.4080402@cn.fujitsu.com>
 In-Reply-To: <4B1CB14A.4080402@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -27,148 +27,140 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Call trace_define_common_fields() in event_create_dir() only.
+Move the printk from each ftrace_raw_reg_event_foo() to
+its caller ftrace_event_enable_disable().
+
+See how much space this saves:
 
    text    data     bss     dec     hex filename
-5456157 2005772 7103796 14565725         de415d vmlinux.o
 5454538 2005772 7103796 14564106         de3b0a vmlinux.o
+5440766 2005772 7103796 14550334         de053e vmlinux.o
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- include/linux/ftrace_event.h  |    1 -
- include/trace/ftrace.h        |    4 ----
- kernel/trace/trace_events.c   |    7 ++++---
- kernel/trace/trace_export.c   |    4 ----
- kernel/trace/trace_kprobe.c   |    8 --------
- kernel/trace/trace_syscalls.c |    8 --------
- 6 files changed, 4 insertions(+), 28 deletions(-)
+ include/trace/ftrace.h        |   16 ++--------------
+ kernel/trace/trace_events.c   |   17 +++++++++++++----
+ kernel/trace/trace_syscalls.c |   10 ++--------
+ 3 files changed, 17 insertions(+), 26 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 47bbdf9..02de70f 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -157,7 +157,6 @@ enum {
- 	FILTER_PTR_STRING,
- };
- 
--extern int trace_define_common_fields(struct ftrace_event_call *call);
- extern int trace_define_field(struct ftrace_event_call *call, const char *type,
- 			      const char *name, int offset, int size,
- 			      int is_signed, int filter_type);
 diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 4d114c9..84d6f23 100644
+index 84d6f23..4aac981 100644
 --- a/include/trace/ftrace.h
 +++ b/include/trace/ftrace.h
-@@ -436,10 +436,6 @@ ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
- 	struct ftrace_raw_##call field;					\
- 	int ret;							\
+@@ -555,13 +555,7 @@ static void ftrace_profile_disable_##name(struct ftrace_event_call *unused)\
+  *
+  * static int ftrace_reg_event_<call>(struct ftrace_event_call *unused)
+  * {
+- *	int ret;
+- *
+- *	ret = register_trace_<call>(ftrace_event_<call>);
+- *	if (!ret)
+- *		pr_info("event trace: Could not activate trace point "
+- *			"probe to  <call>");
+- *	return ret;
++ *	return register_trace_<call>(ftrace_event_<call>);
+  * }
+  *
+  * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+@@ -733,13 +727,7 @@ static void ftrace_raw_event_##call(proto)				\
  									\
--	ret = trace_define_common_fields(event_call);			\
--	if (ret)							\
--		return ret;						\
+ static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
+ {									\
+-	int ret;							\
 -									\
- 	tstruct;							\
+-	ret = register_trace_##call(ftrace_raw_event_##call);		\
+-	if (ret)							\
+-		pr_info("event trace: Could not activate trace point "	\
+-			"probe to " #call "\n");			\
+-	return ret;							\
++	return register_trace_##call(ftrace_raw_event_##call);		\
+ }									\
  									\
- 	return ret;							\
+ static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)\
 diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 1d18315..9fa6736 100644
+index 9fa6736..f22eaec 100644
 --- a/kernel/trace/trace_events.c
 +++ b/kernel/trace/trace_events.c
-@@ -78,7 +78,7 @@ EXPORT_SYMBOL_GPL(trace_define_field);
- 	if (ret)							\
- 		return ret;
- 
--int trace_define_common_fields(struct ftrace_event_call *call)
-+static int trace_define_common_fields(struct ftrace_event_call *call)
- {
- 	int ret;
- 	struct trace_entry ent;
-@@ -91,7 +91,6 @@ int trace_define_common_fields(struct ftrace_event_call *call)
- 
- 	return ret;
+@@ -104,9 +104,11 @@ void trace_destroy_fields(struct ftrace_event_call *call)
+ 	}
  }
--EXPORT_SYMBOL_GPL(trace_define_common_fields);
  
- void trace_destroy_fields(struct ftrace_event_call *call)
+-static void ftrace_event_enable_disable(struct ftrace_event_call *call,
++static int ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 					int enable)
  {
-@@ -913,7 +912,9 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
- 		 		  id);
++	int ret = 0;
++
+ 	switch (enable) {
+ 	case 0:
+ 		if (call->enabled) {
+@@ -117,12 +119,19 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 		break;
+ 	case 1:
+ 		if (!call->enabled) {
++			if (ret) {
++				pr_info("event trace: Could not enable event "
++					"%s\n", call->name);
++				break;
++			}
+ 			call->enabled = 1;
+ 			tracing_start_cmdline_record();
+-			call->regfunc(call);
++			ret = call->regfunc(call);
+ 		}
+ 		break;
+ 	}
++
++	return ret;
+ }
  
- 	if (call->define_fields) {
--		ret = call->define_fields(call);
-+		ret = trace_define_common_fields(call);
-+		if (!ret)
-+			ret = call->define_fields(call);
- 		if (ret < 0) {
- 			pr_warning("Could not initialize trace point"
- 				   " events/%s\n", call->name);
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index dff8c84..458e5bf 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -184,10 +184,6 @@ ftrace_define_fields_##name(struct ftrace_event_call *event_call)	\
- 	struct struct_name field;					\
- 	int ret;							\
- 									\
--	ret = trace_define_common_fields(event_call);			\
--	if (ret)							\
--		return ret;						\
--									\
- 	tstruct;							\
- 									\
- 	return ret;							\
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index aff5f80..e3c80e9 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -1113,10 +1113,6 @@ static int kprobe_event_define_fields(struct ftrace_event_call *event_call)
- 	struct kprobe_trace_entry field;
- 	struct trace_probe *tp = (struct trace_probe *)event_call->data;
+ static void ftrace_clear_events(void)
+@@ -401,7 +410,7 @@ event_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 	case 0:
+ 	case 1:
+ 		mutex_lock(&event_mutex);
+-		ftrace_event_enable_disable(call, val);
++		ret = ftrace_event_enable_disable(call, val);
+ 		mutex_unlock(&event_mutex);
+ 		break;
  
--	ret = trace_define_common_fields(event_call);
--	if (!ret)
--		return ret;
--
- 	DEFINE_FIELD(unsigned long, ip, FIELD_STRING_IP, 0);
- 	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
- 	/* Set argument names as fields */
-@@ -1131,10 +1127,6 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
- 	struct kretprobe_trace_entry field;
- 	struct trace_probe *tp = (struct trace_probe *)event_call->data;
+@@ -411,7 +420,7 @@ event_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
  
--	ret = trace_define_common_fields(event_call);
--	if (!ret)
--		return ret;
--
- 	DEFINE_FIELD(unsigned long, func, FIELD_STRING_FUNC, 0);
- 	DEFINE_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP, 0);
- 	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
+ 	*ppos += cnt;
+ 
+-	return cnt;
++	return ret ? ret : cnt;
+ }
+ 
+ static ssize_t
 diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index 57501d9..b957edd 100644
+index b957edd..75289f3 100644
 --- a/kernel/trace/trace_syscalls.c
 +++ b/kernel/trace/trace_syscalls.c
-@@ -217,10 +217,6 @@ int syscall_enter_define_fields(struct ftrace_event_call *call)
- 	int i;
- 	int offset = offsetof(typeof(trace), args);
- 
--	ret = trace_define_common_fields(call);
--	if (ret)
--		return ret;
--
- 	ret = trace_define_field(call, SYSCALL_FIELD(int, nr), FILTER_OTHER);
- 	if (ret)
- 		return ret;
-@@ -241,10 +237,6 @@ int syscall_exit_define_fields(struct ftrace_event_call *call)
- 	struct syscall_trace_exit trace;
- 	int ret;
- 
--	ret = trace_define_common_fields(call);
--	if (ret)
--		return ret;
--
- 	ret = trace_define_field(call, SYSCALL_FIELD(int, nr), FILTER_OTHER);
- 	if (ret)
- 		return ret;
+@@ -325,10 +325,7 @@ int reg_event_syscall_enter(struct ftrace_event_call *call)
+ 	mutex_lock(&syscall_trace_lock);
+ 	if (!sys_refcount_enter)
+ 		ret = register_trace_sys_enter(ftrace_syscall_enter);
+-	if (ret) {
+-		pr_info("event trace: Could not activate"
+-				"syscall entry trace point");
+-	} else {
++	if (!ret) {
+ 		set_bit(num, enabled_enter_syscalls);
+ 		sys_refcount_enter++;
+ 	}
+@@ -362,10 +359,7 @@ int reg_event_syscall_exit(struct ftrace_event_call *call)
+ 	mutex_lock(&syscall_trace_lock);
+ 	if (!sys_refcount_exit)
+ 		ret = register_trace_sys_exit(ftrace_syscall_exit);
+-	if (ret) {
+-		pr_info("event trace: Could not activate"
+-				"syscall exit trace point");
+-	} else {
++	if (!ret) {
+ 		set_bit(num, enabled_exit_syscalls);
+ 		sys_refcount_exit++;
+ 	}
 -- 
 1.6.3
 
