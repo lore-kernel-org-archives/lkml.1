@@ -1,57 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934754AbZLGMdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934534AbZLGMRC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934754AbZLGMdN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 07:33:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934728AbZLGMdM
+	id S934534AbZLGMRC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 07:17:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934474AbZLGMRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 07:33:12 -0500
-Received: from mail.southpole.se ([193.12.106.18]:34269 "EHLO
-	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934727AbZLGMdM (ORCPT
+	Mon, 7 Dec 2009 07:17:01 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:48527 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934450AbZLGMQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 07:33:12 -0500
-X-Greylist: delayed 1329 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Dec 2009 07:33:12 EST
-Subject: gpio gpio_to_irq
-From: Kenneth Johansson <kenneth@southpole.se>
-To: linux-kernel@vger.kernel.org
-Cc: alek.du@intel.com, david-b@pacbell.net, tglx@linutronix.de
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Dec 2009 13:11:07 +0100
-Message-ID: <1260187867.16040.35.camel@kenjo-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 07:16:58 -0500
+Message-Id: <20091207121646.260524161@fluff.org.uk>
+User-Agent: quilt/0.48-1
+Date: Mon, 07 Dec 2009 12:15:02 +0000
+From: ben@fluff.org.uk
+To: netdev@vger.kernel.org
+Cc: linux@simtec.co.uk, doong.ping@micrel.com, tristram.ha@micrel.com,
+       Wolfram Sang <w.sang@pengutronix.de>, Jean Delvare <khali@linux-fr.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [patch 1/9] eeprom_93cx6: Add data direction control.
+References: <20091207121501.819539008@fluff.org.uk>
+Content-Disposition: inline; filename=93c-eeprom-add-direction.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a few questions regarding the gpio related to interrupts.
+Some devices need to know if the data is to be output or read, so add a
+data direction into the eeprom structure to tell the driver whether the
+data line should be driven.
 
-The hardware is a generic gpio block that is located on pci. The pins
-themselves can be configured to in/out and generate interrupts.
+The user in this case is the Micrel KS8851 which has a direction
+control for the EEPROM data line and thus needs to know whether
+to drive it (writing) or to tristate it for receiving.
 
-All in all it looks to be very similar to the langwell gpio. 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/gpio/langwell_gpio.c;h=4baf3d7d0f8e6e4f1f7887625b7f73a62dba1a83;hb=22763c5cf3690a681551162c15d34d935308c8d7
+Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+Cc: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
 
+--
+ drivers/misc/eeprom/eeprom_93cx6.c |    3 +++
+ include/linux/eeprom_93cx6.h       |    2 ++
+ 2 files changed, 5 insertions(+)
 
-Many gpio drivers use the set_irq_chained_handler() instead of calling
-request_irq to get the main gpio interrupt. But doing so on a shared pci
-interrupt do not look like a good idea. 
-
-Under what circumstance is set_irq_chained_handler allowed ? 
-
-The next thing is that the drivers then registers a "fake" interrupt
-chip to make it possible for the gpio client to call request_irq with
-the irq number returned from gpio_to_irq().
-
-While using this interface is neat it do require that the gpio driver
-somehow can just take over a few irq numbers from the system. 
-
-How is this supposed to be done?? the langwell driver reads a number
-located at BAR1 and simply use that as the first irq number, hu?
-
-others start to allocate from the top and so on. what is the correct way
-to do this on a x86 with a gpio device on the pci bus ?? 
-
-
+Index: b/drivers/misc/eeprom/eeprom_93cx6.c
+===================================================================
+--- a/drivers/misc/eeprom/eeprom_93cx6.c	2009-10-06 15:35:38.000000000 +0100
++++ b/drivers/misc/eeprom/eeprom_93cx6.c	2009-10-06 15:51:18.000000000 +0100
+@@ -70,6 +70,7 @@ static void eeprom_93cx6_startup(struct 
+ 	eeprom->reg_data_out = 0;
+ 	eeprom->reg_data_clock = 0;
+ 	eeprom->reg_chip_select = 1;
++	eeprom->drive_data = 1;
+ 	eeprom->register_write(eeprom);
+ 
+ 	/*
+@@ -108,6 +109,7 @@ static void eeprom_93cx6_write_bits(stru
+ 	 */
+ 	eeprom->reg_data_in = 0;
+ 	eeprom->reg_data_out = 0;
++	eeprom->drive_data = 1;
+ 
+ 	/*
+ 	 * Start writing all bits.
+@@ -147,6 +149,7 @@ static void eeprom_93cx6_read_bits(struc
+ 	 */
+ 	eeprom->reg_data_in = 0;
+ 	eeprom->reg_data_out = 0;
++	eeprom->drive_data = 0;
+ 
+ 	/*
+ 	 * Start reading all bits.
+Index: b/include/linux/eeprom_93cx6.h
+===================================================================
+--- a/include/linux/eeprom_93cx6.h	2009-10-06 15:35:38.000000000 +0100
++++ b/include/linux/eeprom_93cx6.h	2009-10-06 15:51:18.000000000 +0100
+@@ -45,6 +45,7 @@
+  * @register_write(struct eeprom_93cx6 *eeprom): handler to
+  * write to the eeprom register by using all reg_* fields.
+  * @width: eeprom width, should be one of the PCI_EEPROM_WIDTH_* defines
++ * @drive_data: Set if we're driving the data line.
+  * @reg_data_in: register field to indicate data input
+  * @reg_data_out: register field to indicate data output
+  * @reg_data_clock: register field to set the data clock
+@@ -61,6 +62,7 @@ struct eeprom_93cx6 {
+ 
+ 	int width;
+ 
++	char drive_data;
+ 	char reg_data_in;
+ 	char reg_data_out;
+ 	char reg_data_clock;
 
