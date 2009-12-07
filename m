@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbZLGAOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbZLGAOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758667AbZLGAOh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 19:14:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758658AbZLGAOe
+	id S1758680AbZLGAOj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 19:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758633AbZLGAOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 19:14:34 -0500
-Received: from kroah.org ([198.145.64.141]:34716 "EHLO coco.kroah.org"
+	Sun, 6 Dec 2009 19:14:33 -0500
+Received: from kroah.org ([198.145.64.141]:34832 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934398AbZLGAOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934403AbZLGAOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 6 Dec 2009 19:14:11 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Sun Dec  6 16:07:01 2009
-Message-Id: <20091207000700.872612815@mini.kroah.org>
+Message-Id: <20091207000701.040805568@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Sun, 06 Dec 2009 16:01:32 -0800
+Date: Sun, 06 Dec 2009 16:01:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Peter Feuerer <peter@piie.net>, Andreas Mohr <andi@lisas.de>,
-       Borislav Petkov <petkovbb@googlemail.com>,
        Len Brown <len.brown@intel.com>
-Subject: [116/119] acerhdf: additional BIOS versions
+Subject: [117/119] acerhdf: return temperature in milidegree instead of degree
 References: <20091206235936.208334321@mini.kroah.org>
-Content-Disposition: inline; filename=acerhdf-additional-bios-versions.patch
+Content-Disposition: inline; filename=acerhdf-return-temperature-in-milidegree-instead-of-degree.patch
 In-Reply-To: <20091207000938.GA24743@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,49 +32,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Peter Feuerer <peter@piie.net>
 
-commit f944915187f53810130eb1c56985e27e3cbe4a6d upstream.
+commit 7005291706341a11c094f39a756a01c9e649e5f9 upstream.
 
-Added BIOS versions:
-Acer: AOA110-v0.3307, AOA150-v0.3301, AOA150-v0.3307
-Packard Bell: AOA150-v0.3105
+Return temperature in milidegree instead of degree, as sysfs-api requires
+the temperature in milidegree.
 
 Signed-off-by: Peter Feuerer <peter@piie.net>
+Tested-by: Borislav Petkov <petkovbb@gmail.com>
 Cc: Andreas Mohr <andi@lisas.de>
-Cc: Borislav Petkov <petkovbb@googlemail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/acerhdf.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/platform/x86/acerhdf.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 --- a/drivers/platform/x86/acerhdf.c
 +++ b/drivers/platform/x86/acerhdf.c
-@@ -139,13 +139,16 @@ static const struct bios_settings_t bios
- 	{"Acer", "AOA110", "v0.3301", 0x55, 0x58, {0xaf, 0x00} },
- 	{"Acer", "AOA110", "v0.3304", 0x55, 0x58, {0xaf, 0x00} },
- 	{"Acer", "AOA110", "v0.3305", 0x55, 0x58, {0xaf, 0x00} },
-+	{"Acer", "AOA110", "v0.3307", 0x55, 0x58, {0xaf, 0x00} },
- 	{"Acer", "AOA110", "v0.3308", 0x55, 0x58, {0x21, 0x00} },
- 	{"Acer", "AOA110", "v0.3309", 0x55, 0x58, {0x21, 0x00} },
- 	{"Acer", "AOA110", "v0.3310", 0x55, 0x58, {0x21, 0x00} },
- 	/* AOA150 */
- 	{"Acer", "AOA150", "v0.3114", 0x55, 0x58, {0x20, 0x00} },
-+	{"Acer", "AOA150", "v0.3301", 0x55, 0x58, {0x20, 0x00} },
- 	{"Acer", "AOA150", "v0.3304", 0x55, 0x58, {0x20, 0x00} },
- 	{"Acer", "AOA150", "v0.3305", 0x55, 0x58, {0x20, 0x00} },
-+	{"Acer", "AOA150", "v0.3307", 0x55, 0x58, {0x20, 0x00} },
- 	{"Acer", "AOA150", "v0.3308", 0x55, 0x58, {0x20, 0x00} },
- 	{"Acer", "AOA150", "v0.3309", 0x55, 0x58, {0x20, 0x00} },
- 	{"Acer", "AOA150", "v0.3310", 0x55, 0x58, {0x20, 0x00} },
-@@ -154,6 +157,7 @@ static const struct bios_settings_t bios
- 	{"Gateway", "AOA150", "v0.3103", 0x55, 0x58, {0x20, 0x00} },
- 	{"Packard Bell", "DOA150", "v0.3104", 0x55, 0x58, {0x21, 0x00} },
- 	{"Packard Bell", "AOA110", "v0.3105", 0x55, 0x58, {0x21, 0x00} },
-+	{"Packard Bell", "AOA150", "v0.3105", 0x55, 0x58, {0x20, 0x00} },
- 	/* pewpew-terminator */
- 	{"", "", "", 0, 0, {0, 0} }
- };
+@@ -61,7 +61,7 @@
+  * measured by the on-die thermal monitor are within 0 <= Tj <= 90. So,
+  * assume 89°C is critical temperature.
+  */
+-#define ACERHDF_TEMP_CRIT 89
++#define ACERHDF_TEMP_CRIT 89000
+ #define ACERHDF_FAN_OFF 0
+ #define ACERHDF_FAN_AUTO 1
+ 
+@@ -69,7 +69,7 @@
+  * No matter what value the user puts into the fanon variable, turn on the fan
+  * at 80 degree Celsius to prevent hardware damage
+  */
+-#define ACERHDF_MAX_FANON 80
++#define ACERHDF_MAX_FANON 80000
+ 
+ /*
+  * Maximum interval between two temperature checks is 15 seconds, as the die
+@@ -85,8 +85,8 @@ static int kernelmode;
+ #endif
+ 
+ static unsigned int interval = 10;
+-static unsigned int fanon = 63;
+-static unsigned int fanoff = 58;
++static unsigned int fanon = 63000;
++static unsigned int fanoff = 58000;
+ static unsigned int verbose;
+ static unsigned int fanstate = ACERHDF_FAN_AUTO;
+ static char force_bios[16];
+@@ -171,7 +171,7 @@ static int acerhdf_get_temp(int *temp)
+ 	if (ec_read(bios_cfg->tempreg, &read_temp))
+ 		return -EINVAL;
+ 
+-	*temp = read_temp;
++	*temp = read_temp * 1000;
+ 
+ 	return 0;
+ }
 
 
