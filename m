@@ -1,132 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934692AbZLGDym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934698AbZLGDyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934692AbZLGDym (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Dec 2009 22:54:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934659AbZLGDyj
+	id S934698AbZLGDyv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Dec 2009 22:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934635AbZLGDys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Dec 2009 22:54:39 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51499 "EHLO
+	Sun, 6 Dec 2009 22:54:48 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51500 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934553AbZLGDyf (ORCPT
+	with ESMTP id S934659AbZLGDyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Dec 2009 22:54:35 -0500
-Date: Mon, 07 Dec 2009 03:54:41 +0000
+	Sun, 6 Dec 2009 22:54:45 -0500
+Date: Mon, 07 Dec 2009 03:54:51 +0000
 To: linux-arch@vger.kernel.org
-Subject: [PATCH 17/19] sparc_brk() is not needed anymore
+Subject: [PATCH 18/19] Get rid of open-coding in ia64_brk()
 Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <E1NHUgL-0007z9-2o@ZenIV.linux.org.uk>
+Message-Id: <E1NHUgV-0007zH-2z@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-the checks it's doing are duplicated in sys_brk() and failing
-them early makes no sense, AFAICT.
+The comment in there used to be true, but these days do_brk() does
+the arch-specific check that covers what we open-coded here.  So we
+can use sys_brk() just fine, only need to do force_successful_syscall_return()
+after it.
+
+See commit 3a459756810912d2c2bf188cef566af255936b4d - that's when the
+checks in do_brk() had been originally added.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/sparc/kernel/sys_sparc_32.c |    9 ---------
- arch/sparc/kernel/sys_sparc_64.c |   12 ------------
- arch/sparc/kernel/systbls.h      |    1 -
- arch/sparc/kernel/systbls_32.S   |    2 +-
- arch/sparc/kernel/systbls_64.S   |    4 ++--
- 5 files changed, 3 insertions(+), 25 deletions(-)
+ arch/ia64/kernel/sys_ia64.c |   46 +------------------------------------------
+ 1 files changed, 1 insertions(+), 45 deletions(-)
 
-diff --git a/arch/sparc/kernel/sys_sparc_32.c b/arch/sparc/kernel/sys_sparc_32.c
-index 36f6f26..997bdd0 100644
---- a/arch/sparc/kernel/sys_sparc_32.c
-+++ b/arch/sparc/kernel/sys_sparc_32.c
-@@ -79,15 +79,6 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsi
- 	}
- }
- 
--asmlinkage unsigned long sparc_brk(unsigned long brk)
--{
--	if(ARCH_SUN4C) {
--		if ((brk & 0xe0000000) != (current->mm->brk & 0xe0000000))
--			return current->mm->brk;
+diff --git a/arch/ia64/kernel/sys_ia64.c b/arch/ia64/kernel/sys_ia64.c
+index ae384a2..609d500 100644
+--- a/arch/ia64/kernel/sys_ia64.c
++++ b/arch/ia64/kernel/sys_ia64.c
+@@ -100,51 +100,7 @@ sys_getpagesize (void)
+ asmlinkage unsigned long
+ ia64_brk (unsigned long brk)
+ {
+-	unsigned long rlim, retval, newbrk, oldbrk;
+-	struct mm_struct *mm = current->mm;
+-
+-	/*
+-	 * Most of this replicates the code in sys_brk() except for an additional safety
+-	 * check and the clearing of r8.  However, we can't call sys_brk() because we need
+-	 * to acquire the mmap_sem before we can do the test...
+-	 */
+-	down_write(&mm->mmap_sem);
+-
+-	if (brk < mm->end_code)
+-		goto out;
+-	newbrk = PAGE_ALIGN(brk);
+-	oldbrk = PAGE_ALIGN(mm->brk);
+-	if (oldbrk == newbrk)
+-		goto set_brk;
+-
+-	/* Always allow shrinking brk. */
+-	if (brk <= mm->brk) {
+-		if (!do_munmap(mm, newbrk, oldbrk-newbrk))
+-			goto set_brk;
+-		goto out;
 -	}
--	return sys_brk(brk);
--}
 -
- /*
-  * sys_pipe() is the normal C calling standard for creating
-  * a pipe. It's not the way unix traditionally does this, though.
-diff --git a/arch/sparc/kernel/sys_sparc_64.c b/arch/sparc/kernel/sys_sparc_64.c
-index 8f9cd58..cfa0e19 100644
---- a/arch/sparc/kernel/sys_sparc_64.c
-+++ b/arch/sparc/kernel/sys_sparc_64.c
-@@ -403,18 +403,6 @@ void arch_pick_mmap_layout(struct mm_struct *mm)
- 	}
+-	/* Check against unimplemented/unmapped addresses: */
+-	if ((newbrk - oldbrk) > RGN_MAP_LIMIT || REGION_OFFSET(newbrk) > RGN_MAP_LIMIT)
+-		goto out;
+-
+-	/* Check against rlimit.. */
+-	rlim = current->signal->rlim[RLIMIT_DATA].rlim_cur;
+-	if (rlim < RLIM_INFINITY && brk - mm->start_data > rlim)
+-		goto out;
+-
+-	/* Check against existing mmap mappings. */
+-	if (find_vma_intersection(mm, oldbrk, newbrk+PAGE_SIZE))
+-		goto out;
+-
+-	/* Ok, looks good - let it rip. */
+-	if (do_brk(oldbrk, newbrk-oldbrk) != oldbrk)
+-		goto out;
+-set_brk:
+-	mm->brk = brk;
+-out:
+-	retval = mm->brk;
+-	up_write(&mm->mmap_sem);
++	unsigned long retval = sys_brk(brk);
+ 	force_successful_syscall_return();
+ 	return retval;
  }
- 
--SYSCALL_DEFINE1(sparc_brk, unsigned long, brk)
--{
--	/* People could try to be nasty and use ta 0x6d in 32bit programs */
--	if (test_thread_flag(TIF_32BIT) && brk >= STACK_TOP32)
--		return current->mm->brk;
--
--	if (unlikely(straddles_64bit_va_hole(current->mm->brk, brk)))
--		return current->mm->brk;
--
--	return sys_brk(brk);
--}
--                                                                
- /*
-  * sys_pipe() is the normal C calling standard for creating
-  * a pipe. It's not the way unix traditionally does this, though.
-diff --git a/arch/sparc/kernel/systbls.h b/arch/sparc/kernel/systbls.h
-index a63c5d2..d2f999a 100644
---- a/arch/sparc/kernel/systbls.h
-+++ b/arch/sparc/kernel/systbls.h
-@@ -9,7 +9,6 @@
- struct new_utsname;
- 
- extern asmlinkage unsigned long sys_getpagesize(void);
--extern asmlinkage unsigned long sparc_brk(unsigned long brk);
- extern asmlinkage long sparc_pipe(struct pt_regs *regs);
- extern asmlinkage long sys_ipc(unsigned int call, int first,
- 			       unsigned long second,
-diff --git a/arch/sparc/kernel/systbls_32.S b/arch/sparc/kernel/systbls_32.S
-index 81822a8..14f950a 100644
---- a/arch/sparc/kernel/systbls_32.S
-+++ b/arch/sparc/kernel/systbls_32.S
-@@ -19,7 +19,7 @@ sys_call_table:
- /*0*/	.long sys_restart_syscall, sys_exit, sys_fork, sys_read, sys_write
- /*5*/	.long sys_open, sys_close, sys_wait4, sys_creat, sys_link
- /*10*/  .long sys_unlink, sunos_execv, sys_chdir, sys_chown16, sys_mknod
--/*15*/	.long sys_chmod, sys_lchown16, sparc_brk, sys_nis_syscall, sys_lseek
-+/*15*/	.long sys_chmod, sys_lchown16, sys_brk, sys_nis_syscall, sys_lseek
- /*20*/	.long sys_getpid, sys_capget, sys_capset, sys_setuid16, sys_getuid16
- /*25*/	.long sys_vmsplice, sys_ptrace, sys_alarm, sys_sigaltstack, sys_pause
- /*30*/	.long sys_utime, sys_lchown, sys_fchown, sys_access, sys_nice
-diff --git a/arch/sparc/kernel/systbls_64.S b/arch/sparc/kernel/systbls_64.S
-index fa3d4d7..b58349a 100644
---- a/arch/sparc/kernel/systbls_64.S
-+++ b/arch/sparc/kernel/systbls_64.S
-@@ -21,7 +21,7 @@ sys_call_table32:
- /*0*/	.word sys_restart_syscall, sys32_exit, sys_fork, sys_read, sys_write
- /*5*/	.word sys32_open, sys_close, sys32_wait4, sys32_creat, sys_link
- /*10*/  .word sys_unlink, sunos_execv, sys_chdir, sys_chown16, sys32_mknod
--/*15*/	.word sys_chmod, sys_lchown16, sys_sparc_brk, sys32_perfctr, sys32_lseek
-+/*15*/	.word sys_chmod, sys_lchown16, sys_brk, sys32_perfctr, sys32_lseek
- /*20*/	.word sys_getpid, sys_capget, sys_capset, sys_setuid16, sys_getuid16
- /*25*/	.word sys32_vmsplice, compat_sys_ptrace, sys_alarm, sys32_sigaltstack, sys_pause
- /*30*/	.word compat_sys_utime, sys_lchown, sys_fchown, sys32_access, sys32_nice
-@@ -96,7 +96,7 @@ sys_call_table:
- /*0*/	.word sys_restart_syscall, sparc_exit, sys_fork, sys_read, sys_write
- /*5*/	.word sys_open, sys_close, sys_wait4, sys_creat, sys_link
- /*10*/  .word sys_unlink, sys_nis_syscall, sys_chdir, sys_chown, sys_mknod
--/*15*/	.word sys_chmod, sys_lchown, sys_sparc_brk, sys_perfctr, sys_lseek
-+/*15*/	.word sys_chmod, sys_lchown, sys_brk, sys_perfctr, sys_lseek
- /*20*/	.word sys_getpid, sys_capget, sys_capset, sys_setuid, sys_getuid
- /*25*/	.word sys_vmsplice, sys_ptrace, sys_alarm, sys_sigaltstack, sys_nis_syscall
- /*30*/	.word sys_utime, sys_nis_syscall, sys_nis_syscall, sys_access, sys_nice
 -- 
 1.5.6.5
 
