@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935276AbZLGPPD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935256AbZLGPNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935276AbZLGPPD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 10:15:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935249AbZLGPPB
+	id S935256AbZLGPNb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 10:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935228AbZLGPN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 10:15:01 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40356 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935216AbZLGPPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 10:15:00 -0500
-Date: Mon, 7 Dec 2009 07:11:56 -0800
-From: Greg KH <gregkh@suse.de>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: lenb@kernel.org, astarikovskiy@suse.de, mchehab@infradead.org,
-       linville@tuxdriver.com, miklos@szeredi.hu, davem@davemloft.net,
-       rostedt@goodmis.org, fweisbec@gmail.com, mingo@redhat.com,
-       avi@redhat.com, mtosatti@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 11/31] Constify struct file_operations for 2.6.32 v1
-Message-ID: <20091207151156.GA27574@suse.de>
-References: <4B198670.2000406@gmail.com> <4B198C43.50205@gmail.com> <4B19A333.5080103@gmail.com> <20091205000942.GA8224@suse.de> <4B19CA6F.4090700@gmail.com> <20091205041507.GA24885@suse.de> <4B1B0D40.3040209@gmail.com> <20091206172526.GA17480@suse.de> <4B1C500E.5040406@gmail.com>
+	Mon, 7 Dec 2009 10:13:29 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:51019 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935223AbZLGPN2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 10:13:28 -0500
+Date: Mon, 7 Dec 2009 10:13:34 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+In-Reply-To: <alpine.LFD.2.00.0912062122460.3560@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0912071003270.3064-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1C500E.5040406@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 01:45:02AM +0100, Emese Revfy wrote:
-> Greg KH wrote:
-> > On Sun, Dec 06, 2009 at 02:47:44AM +0100, Emese Revfy wrote:
-> >> Greg KH wrote:
-> >>> On Sat, Dec 05, 2009 at 03:50:23AM +0100, Emese Revfy wrote:
-> >>>> Greg KH wrote:
-> >>>>> On Sat, Dec 05, 2009 at 01:02:59AM +0100, Emese Revfy wrote:
-> >>>>>> -static struct file_operations ptmx_fops;
-> >>>>>> +static const struct file_operations ptmx_fops = {
-> >>>>>> +	.llseek		= no_llseek,
-> >>>>>> +	.read		= tty_read,
-> >>>>>> +	.write		= tty_write,
-> >>>>>> +	.poll		= tty_poll,
-> >>>>>> +	.unlocked_ioctl	= tty_ioctl,
-> >>>>>> +	.compat_ioctl	= tty_compat_ioctl,
-> >>>>>> +	.open		= ptmx_open,
-> >>>>>> +	.release	= tty_release,
-> >>>>>> +	.fasync		= tty_fasync,
-> >>>>>> +};
-> >>>>> You just made these functions all global, for no real good reason.  Why
-> >>>>> did you do this?
-> >>>> I think this is the only way to make ptmx_fops const, provided we want to. 
-> >>> Why do we want to?
-> >> Because I saw that checkpatch.pl itself tries to ensure the same I went
-> >> through the whole tree looking for non-const file_operations structures
-> >> and tried to make them const as best as I could. If you think making
-> >> ptmx_fops const is not worth the effort I will remove it from the patch.
-> > 
-> > Based on the patch, I would think it is not worth it.
-> > 
-> > thanks,
-> > 
-> > greg k-h
-> > 
-> Ok, I removed the affected hunks.
+On Sun, 6 Dec 2009, Linus Torvalds wrote:
+
+> 	# Phase one: walk the tree synchronously, starting any
+> 	# async work on the leaves
+> 	suspend_prepare(root)
+> 	{
+> 		for_each_child(root) {
+> 			// This may take the parent lock for
+> 			// reading if it does something async
+> 			suspend_prepare(child);
+> 		}
+> 		suspend_prepare_one_node(root);
+> 	}
 > 
-> From: Emese Revfy <re.emese@gmail.com>
+> 	# Phase two: walk the tree synchronously, waiting for
+> 	# and finishing the suspend
+> 	suspend(root)
+> 	{
+> 		for_each_child(root) {
+> 			suspend(child);
+> 		}
+> 		// This serializes with any async children started in phase 1
+> 		write_lock(root->lock);
+> 		suspend_one_node(root);
+> 		write_unlock(root->lock);
+> 	}
 > 
-> Constify struct file_operations with some exceptions.
+> and I really think this should work.
 
-Now please break this patch (and your others) out into "one subsystem at
-a time" type thing so it will have a chance at being applied.
+> No complex concepts. No change to existing tested drivers. No callbacks, 
+> no flags, no nothing. And a pretty simple way for a driver to decide: I'll 
+> do my suspends asynchronously (without parent drivers really ever even 
+> having to know about it).
+> 
+> I dunno. Maybe I'm overlooking something, but the above is much closer to 
+> what I think would be worth doing.
 
-thanks,
+You're overlooking resume.  It's more difficult than suspend.  The
+issue is that a child can't start its async part until the parent's
+synchronous part is finished.
 
-greg k-h
+So for example, suppose the device listing contains P, C, Q, where C is
+a child of P, Q is unrelated, and P has a long-lasting asynchronous
+requirement.  The resume process will stall upon reaching C, waiting
+for P to finish.  Thus even though P and Q might be able to resume in
+parallel, they won't get the chance.
+
+An approach that handles resume well can probably be adapted to handle 
+suspend too.  The reverse isn't true, as this example shows.
+
+Alan Stern
+
