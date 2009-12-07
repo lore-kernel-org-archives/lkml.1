@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbZLGPCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbZLGPBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932733AbZLGPCZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 10:02:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932595AbZLGPCY
+	id S932645AbZLGPBo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 10:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbZLGPBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 10:02:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60357 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932496AbZLGPCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 10:02:23 -0500
-Subject: Re: [PATCH 5/5] security/selinux/ss: correct size computation
-From: Eric Paris <eparis@redhat.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0912061016310.20858@ask.diku.dk>
-References: <Pine.LNX.4.64.0912061016310.20858@ask.diku.dk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Dec 2009 10:02:23 -0500
-Message-Id: <1260198143.13226.9.camel@localhost>
-Mime-Version: 1.0
+	Mon, 7 Dec 2009 10:01:44 -0500
+Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:57866 "EHLO
+	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756604AbZLGPBn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 10:01:43 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B1D190A.1060300@cam.ac.uk>
+Date: Mon, 07 Dec 2009 15:02:34 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
+MIME-Version: 1.0
+To: Amit Kucheria <amit.kucheria@verdurent.com>
+CC: List Linux Kernel <linux-kernel@vger.kernel.org>, rui.zhang@intel.com,
+       khali@linux-fr.org, alan@linux.intel.com, linux-acpi@vger.kernel.org,
+       gregkh@suse.de, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCHv2 0/2] Introducing the Ambient Light Sensor (ALS) class
+References: <1259581514-15356-1-git-send-email-amit.kucheria@verdurent.com> <37786d4b0912070650g7ba7604bv63365a21f980501d@mail.gmail.com>
+In-Reply-To: <37786d4b0912070650g7ba7604bv63365a21f980501d@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-06 at 10:16 +0100, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+Amit Kucheria wrote:
+> On Mon, Nov 30, 2009 at 1:45 PM, Amit Kucheria
+> <amit.kucheria@verdurent.com> wrote:
+>> Introduce a new class of devices to handle ambient light sensors. Currently
+>> only one sysfs inteface, 'illuminance' is introduced. More will be added as
+>> drivers are ported to use this new class.
+>>
+>> Amit Kucheria (1):
+>>  als: add unique device-ids to the als device class
+>>
+>> Zhang Rui (1):
+>>  introduce ALS sysfs class
+>>
+>>  Documentation/ABI/testing/sysfs-class-als |    9 ++
+>>  MAINTAINERS                               |    6 ++
+>>  drivers/Kconfig                           |    2 +
+>>  drivers/Makefile                          |    1 +
+>>  drivers/als/Kconfig                       |   10 +++
+>>  drivers/als/Makefile                      |    5 +
+>>  drivers/als/als_sys.c                     |  116 +++++++++++++++++++++++++++++
+>>  include/linux/als_sys.h                   |   35 +++++++++
+>>  8 files changed, 184 insertions(+), 0 deletions(-)
+>>  create mode 100644 Documentation/ABI/testing/sysfs-class-als
+>>  create mode 100644 drivers/als/Kconfig
+>>  create mode 100644 drivers/als/Makefile
+>>  create mode 100644 drivers/als/als_sys.c
+>>  create mode 100644 include/linux/als_sys.h
+>>
 > 
-> The size argument to kcalloc should be the size of desired structure,
-> not the pointer to it.
+> (Bump)
 > 
-> The semantic patch that makes this change is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @expression@
-> expression *x;
-> @@
-> 
-> x =
->  <+...
-> -sizeof(x)
-> +sizeof(*x)
-> ...+>// </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> Is there any blocker to adding this for 2.6.33? Which maintainer will
+> pick up the ALS framework?
+None that I know of.  Rui offered to maintain ALS, so I guess he could send
+a pull request from suitable git tree directly or talk someone else into doing it.
 
-Acked-by: Eric Paris <eparis@redhat.com>
-
-no real hurry, to get this in, the sizeof() is the same in either case,
-but it should be fixed.
-
+Andrew might be willing?
 
 > 
-> ---
->  security/selinux/ss/services.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> Rui, do you have an updated patch for the ACPI ALS driver?
 > 
-> diff -u -p a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-> --- a/security/selinux/ss/services.c
-> +++ b/security/selinux/ss/services.c
-> @@ -2555,7 +2555,7 @@ int security_get_classes(char ***classes
->  	read_lock(&policy_rwlock);
->  
->  	*nclasses = policydb.p_classes.nprim;
-> -	*classes = kcalloc(*nclasses, sizeof(*classes), GFP_ATOMIC);
-> +	*classes = kcalloc(*nclasses, sizeof(**classes), GFP_ATOMIC);
->  	if (!*classes)
->  		goto out;
->  
-> @@ -2602,7 +2602,7 @@ int security_get_permissions(char *class
->  	}
->  
->  	*nperms = match->permissions.nprim;
-> -	*perms = kcalloc(*nperms, sizeof(*perms), GFP_ATOMIC);
-> +	*perms = kcalloc(*nperms, sizeof(**perms), GFP_ATOMIC);
->  	if (!*perms)
->  		goto out;
->  
-
+> Regards,
+> Amit
+> 
 
