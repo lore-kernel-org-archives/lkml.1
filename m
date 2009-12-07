@@ -1,136 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934721AbZLGIpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934730AbZLGIo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934721AbZLGIpW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 03:45:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbZLGIpV
+	id S934730AbZLGIo2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 03:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbZLGIoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 03:45:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57250 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S933595AbZLGIpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 03:45:20 -0500
-Message-ID: <4B1CBFA7.5090603@cn.fujitsu.com>
-Date: Mon, 07 Dec 2009 16:41:11 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com,
-       czoccolo@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: Block IO Controller V4
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com> <4B15C828.4080407@cn.fujitsu.com> <20091202142508.GA31715@redhat.com> <4B1779CE.1050801@cn.fujitsu.com> <20091203143641.GA3887@redhat.com> <4B1C5BC9.3010001@cn.fujitsu.com>
-In-Reply-To: <4B1C5BC9.3010001@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 7 Dec 2009 03:44:25 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:55395 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933582AbZLGIoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 03:44:24 -0500
+Date: Mon, 7 Dec 2009 19:44:29 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: linux-next: block tree build failure
+Message-Id: <20091207194429.d33903ed.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gui Jianfeng wrote:
-> Vivek Goyal wrote:
->> On Thu, Dec 03, 2009 at 04:41:50PM +0800, Gui Jianfeng wrote:
->>> Vivek Goyal wrote:
->>>> On Wed, Dec 02, 2009 at 09:51:36AM +0800, Gui Jianfeng wrote:
->>>>> Vivek Goyal wrote:
->>>>>> Hi Jens,
->>>>>>
->>>>>> This is V4 of the Block IO controller patches on top of "for-2.6.33" branch
->>>>>> of block tree.
->>>>>>
->>>>>> A consolidated patch can be found here:
->>>>>>
->>>>>> http://people.redhat.com/vgoyal/io-controller/blkio-controller/blkio-controller-v4.patch
->>>>>>
->>>>> Hi Vivek,
->>>>>
->>>>> It seems this version doesn't work very well for "direct(O_DIRECT) sequence read" mode.
->>>>> For example, you can create group A and group B, then assign weight 100 to group A and
->>>>> weight 400 to group B, and you run "direct sequence read" workload in group A and B 
->>>>> simultaneously. Ideally, we should see 1:4 disk time differentiation for group A and B. 
->>>>> But actually, I see almost 1:2 disk time differentiation for group A and B. I'm looking
->>>>> into this issue.
->>>>> BTW, V3 works well for this case.
->>>> Hi Gui,
->>>>
->>>> In my testing of 8 fio jobs in 8 cgroups, direct sequential reads seems to
->>>> be working fine.
->>>>
->>>> http://lkml.org/lkml/2009/12/1/367
->>>>
->>>> I suspect that in some case we choose not to idle on the group and it gets
->>>> deleted from service tree hence we loose share. Can you have a look at
->>>> blkio.dequeue files. If there are excessive deletions, that will signify
->>>> that we are loosing share because we chose not to idle.
->>>>
->>>> If yes, please also run blktrace to see in what cases we chose not to
->>>> idle.
->>>>
->>>> In V3, I had a stronger check to idle on the group if it is empty using
->>>> wait_busy() function. In V4 I have removed that and trying to wait busy
->>>> on a queue by extending its slice if it has consumed its allocated slice.
->>> Hi Vivek,
->>>
->>> I ckecked the blktrace output, it seems that io group was deleted all the time,
->>> because we don't have group idle any more. I pulled the wait_busy code back to
->>> V4, and retest it, problem seems disappeared.
->>>
->>> So i suggest that we need to retain the wait_busy code.
->> Hi Gui,
->>
->> We need to figure out why the existing code is not working on your system.
->> In V4, I introduced the functionality to extend the slice by slice_idle
->> so that we will arm slice idle timer and wait for new request to come in
->> and then expire the queue. Following is the code to extend the slice.
->>
->>                 /*
->>                  * If this queue consumed its slice and this is last queue
->>                  * in the group, wait for next request before we expire
->>                  * the queue
->>                  */
->>                 if (cfq_slice_used(cfqq) && cfqq->cfqg->nr_cfqq == 1) {
->>                         cfqq->slice_end = jiffies + cfqd->cfq_slice_idle;
->>                         cfq_mark_cfqq_wait_busy(cfqq);
->>                 }
->>
->> One loop hole I see is that, I extend the slice only if current slice has
->> been used. If if we on the boundary and slice has not been used yet, then
->> I will not extend the slice. We also might not arm the timer thinking that
->> remaining slice is less than think time of process and that can lead to
->> expiry of queue. To rule out this possibility, can you remove following
->> code in arm_slice_timer() and try it again.
->>
->>         /*
->>          * If our average think time is larger than the remaining time
->>          * slice, then don't idle. This avoids overrunning the allotted
->>          * time slice.
->>          */
->>         if (sample_valid(cic->ttime_samples) &&
->>             (cfqq->slice_end - jiffies < cic->ttime_mean))
->>                 return;
->>
->> The other possiblity is that at the request completion time slice has not
->> expired hence we don't extend the slice and arm the timer. But then
->> select_queue() hits and by that time slice has expired and we expire the
->> queue. I thought this will not happen very frequently.
->>
->> Can you figure out what is happening on your system. Why we are not doing
->> wait busy on the queue/group (new queue wait_busy and wait_busy_done
->> flags) and instead expiring the queue and hence group.
-> 
-> Hi Vivek,
-> 
-> Sorry for the late reply.
-> In V4, we don't have wait_busy() in select_queue(), so if there isn't any 
-> request on this queue and no cooperator queue available, this queue will
-> expire immediately. We don't have a chance to get that queue backlogged
-> again. So group will get removed frequently.
+Hi Jens,
 
-  Please ignore the above.
-  I confirm that cfqq is expired because of using up time slice.
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
-Thanks
-Gui
+block/blk-cgroup.c: In function 'blkiocg_create':
+block/blk-cgroup.c:285: error: implicit declaration of function 'ERR_PTR'
+block/blk-cgroup.c:285: warning: return makes pointer from integer without a cast
+block/blk-cgroup.c:289: warning: return makes pointer from integer without a cast
 
+Caused by commit 31e4c28d95e64f2d5d3c497a3ecf37c62de635b4 ("blkio:
+Introduce blkio controller cgroup interface").
+
+I applied this patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 7 Dec 2009 19:29:39 +1100
+Subject: [PATCH] block: include linux/err.h to use ERR_PTR
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ block/blk-cgroup.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
+index 3ad497f..1fa2654 100644
+--- a/block/blk-cgroup.c
++++ b/block/blk-cgroup.c
+@@ -14,6 +14,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/kdev_t.h>
+ #include <linux/module.h>
++#include <linux/err.h>
+ #include "blk-cgroup.h"
+ 
+ static DEFINE_SPINLOCK(blkio_list_lock);
+-- 
+1.6.5.3
+
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
