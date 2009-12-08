@@ -1,164 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935543AbZLHEXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935602AbZLHEYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935543AbZLHEXl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 23:23:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935106AbZLHEXk
+	id S935602AbZLHEYR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 23:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935079AbZLHEYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 23:23:40 -0500
-Received: from mail-px0-f191.google.com ([209.85.216.191]:56297 "EHLO
-	mail-px0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934835AbZLHEXj (ORCPT
+	Mon, 7 Dec 2009 23:24:16 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:39298 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934929AbZLHEYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 23:23:39 -0500
+	Mon, 7 Dec 2009 23:24:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=xWQEIJ4I3MS4QNEGaVYPXjOz9gV428AnS4TTgcmlyM3uaCUhIWiyQcggnndt+liyC8
-         dHYoQwAs8kfrhKK/ILtj5aQwGqZlDThw7OK3TYspBAIgPjvWmP9Ta3npP/A7MTB/htBC
-         TZUWdSgkYBR1nIjSUGYb51EsRxAvct4YKUeTg=
-Date: Mon, 7 Dec 2009 20:23:40 -0800
+        b=TiCzxptFZF35J6bMa/pPkk46fk3yo1ZH/jQB3RIfeEzN1SDptmLT59tF1Q3Dii5pxb
+         uTIo7wGFZeia75u2OsqxxiGhN4jpxbCb5JUsyV1LUduKTdfQv9U3Pg6KHlUAz3y+u0gB
+         VjagbIWNmfd8Db3Y+Y84EdSB9kyKOUT139340=
+Date: Mon, 7 Dec 2009 20:24:18 -0800
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR  system?
-Message-ID: <20091208042340.GC11147@core.coreip.homeip.net>
-References: <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain> <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com> <4B1D934E.7030103@redhat.com>
+To: Gary Stein <lordcnidarian@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver/input/ff-memless.c
+Message-ID: <20091208042417.GD11147@core.coreip.homeip.net>
+References: <fce72f9b0912071137i1f2d7952tf70b83d4ba5686f8@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B1D934E.7030103@redhat.com>
+In-Reply-To: <fce72f9b0912071137i1f2d7952tf70b83d4ba5686f8@mail.gmail.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 09:44:14PM -0200, Mauro Carvalho Chehab wrote:
-> Let me add my view for those questions.
-> 
-> Jon Smirl wrote:
-> > On Sun, Dec 6, 2009 at 3:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> >> Jon Smirl <jonsmirl@gmail.com> writes:
-> >>
-> >>>> Once again: how about agreement about the LIRC interface
-> >>>> (kernel-userspace) and merging the actual LIRC code first? In-kernel
-> >>>> decoding can wait a bit, it doesn't change any kernel-user interface.
-> >>> I'd like to see a semi-complete design for an in-kernel IR system
-> >>> before anything is merged from any source.
-> >> This is a way to nowhere, there is no logical dependency between LIRC
-> >> and input layer IR.
-> >>
-> >> There is only one thing which needs attention before/when merging LIRC:
-> >> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
-> >> actually, making a correct IR core design without the LIRC merged can be
-> >> only harder.
-> > 
-> > Here's a few design review questions on the LIRC drivers that were posted....
-> > 
-> > How is the pulse data going to be communicated to user space?
-> 
-> lirc_dev will implement a revised version of the lirc API. I'm assuming that
-> Jerod and Christoph will do this review, in order to be sure that it is stable
-> enough for kernel inclusion (as proposed by Gerd).
-> 
-> > Can the pulse data be reported via an existing interface without
-> > creating a new one?
-> 
-> Raw pulse data should be reported only via lirc_dev, but it can be converted
-> into a keycode and reported via evdev as well, via an existing interface.
-> 
-> > Where is the documentation for the protocol?
-> 
-> I'm not sure what you're meaning here. I've started a doc about IR at the media
-> docbook. This is currently inside the kernel Documents/DocBook. If you want
-> to browse, it is also available as:
-> 
-> 	http://linuxtv.org/downloads/v4l-dvb-apis/ch17.html
-> 
-> For sure we need to better document the IR's, and explain the API's there.
-> 
-> > Is it a device interface or something else?
-> 
-> lirc_dev should create a device interface.
-> 
-> > What about capabilities of the receiver, what frequencies?
-> > If a receiver has multiple frequencies, how do you report what
-> > frequency the data came in on?
-> 
-> IMO, via sysfs.
+Hi Gary,
 
-We probably need to think what exactly we report through sysfs siunce it
-is ABI of sorts.
-
+On Mon, Dec 07, 2009 at 02:37:30PM -0500, Gary Stein wrote:
+> I was experiencing force feedback joystick issues in my Force 3D Pro and
+> when developing a new driver for the new Logitech G940 after I
+> recompiled my kernel.
 > 
-> > What about multiple apps simultaneously using the pulse data?
+> I was able to track it down to a signed vs unsigned problem in
+> ff-memless.c and gcc 4.4.2.
+> The code in question did not seem to give a problem with gcc 4.2.4.
 > 
-> IMO, the better is to limit the raw interface to just one open.
+> According to gitweb, a signed vs unsigned was changed on May 8th by
+> Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+> Input: ff-memless - fix signed to unsigned bit overflow
+> 
+> to change the gain from a signed to an unsigned int to fix a rumble
+> issue, but it appears to broke a the
+> constant force section of the code.
+> 
+> It is a simple, cast to fix and should not have any ill effects.
 > 
 
-Why woudl we want to do this? Quite often there is a need for "observer"
-that maybe does not act on data but allows capturing it. Single-user
-inetrfaces are PITA. 
+Could I please have your "Signed-off-by: ..."? Thanks.
 
-> > How big is the receive queue?
+> gary
 > 
-> It should be big enough to receive at least one keycode event. Considering that
-> the driver will use kfifo (IMO, it is a good strategy, especially since you
-> won't need any lock if just one open is allowed), it will require a power of two size.
 > 
-
-Would not it be wither driver- or protocol-specific?
-
-> > How does access work, root only or any user?
-> 
-> IMO, it should be the same requirement as used by an input interface.
-> 
-> > How are capabilities exposed, sysfs, etc?
-> 
-> IMO, sysfs.
-> 
-> > What is the interface for attaching an in-kernel decoder?
-> 
-> IMO, it should use the kfifo for it. However, if we allow both raw data and
-> in-kernel decoders to read data there, we'll need a spinlock to protect the
-> kfifo.
-> 
-
-I think Jon meant userspace interface for attaching particular decoder.
-
-> > If there is an in-kernel decoder should the pulse data stop being
-> > reported, partially stopped, something else?
-> 
-> I don't have a strong opinion here, but, from the previous discussions, it
-> seems that people want it to be double-reported by default. If so, I think
-> we need to implement a command at the raw interface to allow disabling the
-> in-kernel decoder, while the raw interface is kept open.
-
-Why don't you simply let consumers decide where they will get their data?
-
-> 
-> > What is the mechanism to make sure both system don't process the same pulses?
-> 
-> I don't see a good way to avoid it.
-> 
-> > Does it work with poll, epoll, etc?
-> > What is the time standard for the data, where does it come from?
-> > How do you define the start and stop of sequences?
-> > Is receiving synchronous or queued?
-> > What about transmit, how do you get pulse data into the device?
-> > Transmitter frequencies?
-> > Multiple transmitters?
-> > Is transmitting synchronous or queued?
-> > How big is the transmit queue?
-> 
-> I don't have a clear answer for those. I'll let those to LIRC developers to answer.
-> 
+> --- linux-2.6.31.orig/drivers/input/ff-memless.c	2009-09-09
+> 17:13:59.000000000 -0500
+> +++ linux-2.6.31.int/drivers/input/ff-memless.c	2009-12-07
+> 15:09:22.000000000 -0500
+> @@ -239,8 +239,8 @@
+>  		level = fixp_new16(apply_envelope(state,
+>  					new->u.constant.level,
+>  					&new->u.constant.envelope));
+> -		x = fixp_mult(fixp_sin(i), level) * gain / 0xffff;
+> -		y = fixp_mult(-fixp_cos(i), level) * gain / 0xffff;
+> +		x = (int)(fixp_mult(fixp_sin(i), level) * gain) / 0xffff;
+> +		y = (int)(fixp_mult(-fixp_cos(i), level) * gain) / 0xffff;
+>  		/*
+>  		 * here we abuse ff_ramp to hold x and y of constant force
+>  		 * If in future any driver wants something else than x and y
 
 -- 
 Dmitry
