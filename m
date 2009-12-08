@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbZLHOWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZLHO0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755619AbZLHOWG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:22:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbZLHOWE
+	id S1755343AbZLHO0B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:26:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbZLHO0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:22:04 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:62501 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755310AbZLHOWB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:22:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Ik4je0yqWCkOHxEV9OzQFxVl1FcVlb/7kjpPceRt7zyRhxdT5NlbbJZQxmEgbV4M1c
-         fZmUWTGzokpKVHNfiZEAKO5W63pl6ekWDQXhvMMq3tvGncTotSHZ8tMwDfyONMdsmJJT
-         XOtgtoaiHg1Kk2kIW6glA3VAbRqsajgIiHh7U=
-From: Stefan Seyfried <stefan.seyfried@googlemail.com>
-To: linux-wireless@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Stefan Seyfried <seife@sphairon.com>
-Subject: [PATCH 2/2] zd1211rw: improve ejecting of fake CDROM
-Date: Tue,  8 Dec 2009 15:21:35 +0100
-Message-Id: <1260282095-17042-3-git-send-email-stefan.seyfried@googlemail.com>
-X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <1260282095-17042-2-git-send-email-stefan.seyfried@googlemail.com>
-References: <1260282095-17042-1-git-send-email-stefan.seyfried@googlemail.com>
- <1260282095-17042-2-git-send-email-stefan.seyfried@googlemail.com>
+	Tue, 8 Dec 2009 09:26:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35568 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755223AbZLHOZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:25:59 -0500
+Message-ID: <4B1E61E1.5070705@redhat.com>
+Date: Tue, 08 Dec 2009 12:25:37 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andy Walls <awalls@radix.net>,
+       Jarod Wilson <jarod@wilsonet.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph>	<1259024037.3871.36.camel@palomino.walls.org>	<m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com>	<1259264614.1781.47.camel@localhost>	<6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>	<1260240142.3086.14.camel@palomino.walls.org>	<20091208042210.GA11147@core.coreip.homeip.net>	<4B1E3C1D.7070704@redhat.com> <m3vdghtuy1.fsf@intrepid.localdomain>
+In-Reply-To: <m3vdghtuy1.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Seyfried <seife@sphairon.com>
+Krzysztof Halasa wrote:
+> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+>> IMO, the better is to have an API to allow creation of multiple interfaces
+>> per IR receiver, based on some scancode matching table and/or on some
+>> matching mask.
+> 
+> I think setting the keytables for each logical device would do.
 
-The zd1211rw always assumed that the storage device is at endpoint 1,
-but there are devices (Spairon Homelink 1202) that are at endpoint 0.
-Try both, starting with 1 to make sure to not break existing setups.
+Yes.
+> 
+> I.e. just have a way to create additional logical devices. Each can have
+> its own keytable. The decoders would send their output to all logical
+> remotes, trying to match the tables etc.
+> 
+>> It should be possible to use the filter API to match different IR's by
+>> vendor/product on protocols that supports it,
+> 
+> That would mean unnecessary limiting.
 
-Signed-off-by: Stefan Seyfried <seife@sphairon.com>
----
- drivers/net/wireless/zd1211rw/zd_usb.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
+If the mask is (unsigned)-1, it will not add any limit. This should be the default.
 
-diff --git a/drivers/net/wireless/zd1211rw/zd_usb.c b/drivers/net/wireless/zd1211rw/zd_usb.c
-index ac19ecd..4daf1c9 100644
---- a/drivers/net/wireless/zd1211rw/zd_usb.c
-+++ b/drivers/net/wireless/zd1211rw/zd_usb.c
-@@ -1078,11 +1078,15 @@ static int eject_installer(struct usb_interface *intf)
- 	int r;
- 
- 	/* Find bulk out endpoint */
--	endpoint = &iface_desc->endpoint[1].desc;
--	if (usb_endpoint_dir_out(endpoint) &&
--	    usb_endpoint_xfer_bulk(endpoint)) {
--		bulk_out_ep = endpoint->bEndpointAddress;
--	} else {
-+	for (r = 1; r >= 0; r--) {
-+		endpoint = &iface_desc->endpoint[r].desc;
-+		if (usb_endpoint_dir_out(endpoint) &&
-+		    usb_endpoint_xfer_bulk(endpoint)) {
-+			bulk_out_ep = endpoint->bEndpointAddress;
-+			break;
-+		}
-+	}
-+	if (r == -1) {
- 		dev_err(&udev->dev,
- 			"zd1211rw: Could not find bulk out endpoint\n");
- 		return -ENODEV;
--- 
-1.6.5.3
+The advantage of the mask is that you can speedup the keycode decoding by not calling
+a seek routine in the cases where it doesn't make sense.
+
+Also, the cost of scancode & scancode_mask is cheap enough, comparing with the 
+potential optimization gain of not seeking a data in a table that wouldn't match anyway.
+
+Also, the IR core may automatically generate such mask, by doing an "and" operation of all
+the scancodes at the table during table initialization/changes. If the mask is zero, it
+defaults to use a (unsigned) -1 mask.
+
+Cheers,
+Mauro.
 
