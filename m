@@ -1,85 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965357AbZLHCB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965388AbZLHCE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965357AbZLHCB3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 21:01:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935172AbZLHCB1
+	id S965388AbZLHCE6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 21:04:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935172AbZLHCE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 21:01:27 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:50827 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934901AbZLHCB1 (ORCPT
+	Mon, 7 Dec 2009 21:04:57 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:43237 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934933AbZLHCE4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 21:01:27 -0500
+	Mon, 7 Dec 2009 21:04:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=PEz7vG/Wr4H9bIw5xAE0LtoCID3BrncpCuAAinvfujfVIYWPNlnT1ZM52mTP9zpFZk
-         gEtywB6ooCR6pG4LtI2PL9q/Ojx+E+kFeAAa8cUFhDZMx3Nq9i+bixBaq7J+sBT57VcK
-         qj7rAR3aImA8nytJ3x/bSrmjrYyli0qCMz5Bo=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=L5ZnLpneZO4VjHwP+0uUwPpICgBhfJ1rrCrRtRYJ7eAD0zEgnB0yQcpA3Xhpn+ShPd
+         PIG1jcdPL28dviHXObJ5MjXHd+WYwb3mQKpRZzil6jQkO3LtFfMHjdk0PmjZivKcXFpb
+         wh9hkbl6XKE/EIqRENFBv0PV44EbZWjLR6qTk=
 MIME-Version: 1.0
-Date: Mon, 7 Dec 2009 21:01:32 -0500
-Message-ID: <70438690912071801q19c566a3j38e344ef1530497@mail.gmail.com>
-Subject: 2.6 kernels wrongly declare "fdiv_bug: no"
-From: ZB <zbigniewbrzezinskix@gmail.com>
-To: linux-kernel@vger.kernel.org
+In-Reply-To: <SNT111-DS236E5F267E98707B3AFB0AA78F0@phx.gbl>
+References: <SNT111-DS1957B574BA05A48FEDBFF0A7900@phx.gbl>
+	 <1f1b08da0912071330i35808790r554f7a3a8d712ca7@mail.gmail.com>
+	 <SNT111-DS1740657A3615A93A6C0EDFA78F0@phx.gbl>
+	 <1260232212.6255.33.camel@localhost.localdomain>
+	 <SNT111-DS236E5F267E98707B3AFB0AA78F0@phx.gbl>
+Date: Mon, 7 Dec 2009 18:05:02 -0800
+X-Google-Sender-Auth: d1507e8fd5394cd0
+Message-ID: <1f1b08da0912071805m7bbd65cdhfcf9284379bbe23c@mail.gmail.com>
+Subject: Re: timer interrupt stucks using tickless kernel
+From: john stultz <johnstul@us.ibm.com>
+To: Ioannis Kyriakopoulos <johnkyr83@hotmail.com>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/proc/cpuinfo fdiv_bug says "no" in 2.6.32 and other 2.6 kernels,
-but 2.4 kernels say "yes" as does the Intel utility
+On Mon, Dec 7, 2009 at 5:33 PM, Ioannis Kyriakopoulos
+<johnkyr83@hotmail.com> wrote:
+> Thanks for the valuable help so far.
+>
+>>> 2.   When performing cat proc/interrupts, I see that:
+>>>           0:        157   IO-APIC-edge      timer
+>>>      How the system timer is attached on IO-APIC at the time that the
+>>> IO-APIC
+>>>       is disabled on kernel configurations? Basically, the timer is not the
+>>> only
+>>>       peripheral attached to IO-APIC as can be seen by /proc/interrupts.
+>>>
+>>> Here is the output of /proc/interrupts :
+>>>
+>>>            CPU0
+>>>   0:        157   IO-APIC-edge      timer
+>>>   1:          2   IO-APIC-edge      i8042
+>>>   4:        544   IO-APIC-edge      serial
+>>>   8:          1   IO-APIC-edge      rtc0
+>>>   9:          0   IO-APIC-fasteoi   acpi
+>>>  12:          4   IO-APIC-edge      i8042
+>>>  14:          4   IO-APIC-edge      ata_piix
+>>>  15:          0   IO-APIC-edge      ata_piix
+>>>  16:          0   IO-APIC-fasteoi   uhci_hcd:usb5
+>>>  18:          0   IO-APIC-fasteoi   uhci_hcd:usb4
+>>>  19:         45   IO-APIC-fasteoi   ata_piix, uhci_hcd:usb3
+>>>  22:        149   IO-APIC-fasteoi   HDA Intel
+>>>  23:         72   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+>>>  27:          0   PCI-MSI-edge      eth0
+>>> NMI:          0   Non-maskable interrupts
+>>> LOC:    1865130   Local timer interrupts
+>>            ^^^
+>>This value should be incrementing at HZ freq.
+>
+> Are you sure about that? ASAIK the Local timer interrupts (generated
+> by the LAPIC timer) are only used for timekeeping.
 
-2.4.37:
-Intel Pentium with F0 0F bug - workaround enabled.
-CPU: Intel Pentium 75 - 200 stepping 01
-Hmm, FPU with FDIV bug.
-Checking 'hlt' instruction... OK.
+Actually local timer interrupts are more often used for per-cpu
+scheduler ticks (as well as running per-cpu timers).  Timekeeping is
+done from only one cpu (usually 0, but that varies depending on
+hotplug, etc).
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 5
-model		: 2
-model name	: Pentium 75 - 200
-stepping	: 1
-cpu MHz		: 90.205
-fdiv_bug	: yes
-hlt_bug		: no
-f00f_bug	: yes
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 1
-wp		: yes
-flags		: fpu vme de pse tsc msr mce cx8
-bogomips	: 179.81
+> The system tick is
+> generated by IRQ0 which in my second configuration should be triggered
+> by HPET (because I have enabled the HPET timer support).
 
+System tick?
 
-2.6.32:
-Intel Pentium with F0 0F bug - workaround enabled.
-[blank line here]
-CPU: Intel Pentium 75 - 200 stepping 01
-Checking 'hlt' instruction... OK.
+> Also, if the
+> interrupts generated by LAPIC are incremented at HZ freq, why the
+> interrupts generated by the timer (IRQ0) not happen at the same frequency
+>  as well?
 
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 5
-model           : 2
-model name      : Pentium 75 - 200
-stepping        : 1
-cpu MHz         : 90.199
-cache size      : 0 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : yes
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr mce cx8
-bogomips        : 180.91
-clflush size    : 32
-cache_alignment : 32
-address sizes   : 32 bits physical, 32 bits virtual
-power management:
+Why take two interrupts when you could only take one?
+
+> Furthermore, we don't have an answer on why IO-APIC is used at the time
+> that it is disabled on kernel configurations. The fact that I have enabled
+> LAPIC timer support doesn't justify the use of the IO-APIC controller
+> by each own.
+
+Honestly, I dunno on the details there.   If  CONFIG_X86_IO_APIC=n, it
+looks like you should not be seeing the IO-APIC-* names in
+/proc/interrupts.  Are you sure your booting the right kernel, or
+CONFIG_X86_IO_APIC is actally on in your .config?
+
+>>Is there something your actually having problems with here? Ignoring
+>>which interrupt line is used for the timer event, the system is
+>>functioning properly, right?
+>
+> Yes, apart from that, everything is working OK but it's really important
+> for me to get an answer on these issues.
+
+Ok. I hope these aren't homework questions :)
+
+thanks
+-john
