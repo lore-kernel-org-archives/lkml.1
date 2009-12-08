@@ -1,189 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965205AbZLHA2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965212AbZLHAa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965205AbZLHA2M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:28:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964961AbZLHA2K
+	id S965212AbZLHAa2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965161AbZLHAa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:28:10 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:64480 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964883AbZLHA2I convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 19:30:26 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:44435 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964961AbZLHAaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:28:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kQeppyuzqTXbleheISVSr3q1u9XGTwwK0IxnfVwXz6pV9pCpVEPYwbZ9cJV5jLE6rl
-         u9568ePL1K303IeL9QTh9kItNBKthIU+jPZ08wSA+o5fWKoh1shyr0QpiMcFZYtVXmUy
-         WyjQfqfpqYvNmiUkMwN9TiLJA4T0aVMmpeS48=
-MIME-Version: 1.0
-In-Reply-To: <4B1D934E.7030103@redhat.com>
-References: <20091204220708.GD25669@core.coreip.homeip.net>
-	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	 <1260070593.3236.6.camel@pc07.localdom.local>
-	 <20091206065512.GA14651@core.coreip.homeip.net>
-	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	 <m3skbn6dv1.fsf@intrepid.localdomain>
-	 <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-	 <4B1D934E.7030103@redhat.com>
-Date: Mon, 7 Dec 2009 19:28:13 -0500
-Message-ID: <9e4733910912071628x3f3eba82r4c964982f9d8c5a4@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Dec 2009 19:30:25 -0500
+Subject: RE: timer interrupt stucks using tickless kernel
+From: john stultz <johnstul@us.ibm.com>
+To: Ioannis Kyriakopoulos <johnkyr83@hotmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <SNT111-DS1740657A3615A93A6C0EDFA78F0@phx.gbl>
+References: <Acp3UXhD1R6mbV5yTGykTs+HAU6bQg==>
+	 <SNT111-DS1957B574BA05A48FEDBFF0A7900@phx.gbl>
+	 <1f1b08da0912071330i35808790r554f7a3a8d712ca7@mail.gmail.com>
+	 <SNT111-DS1740657A3615A93A6C0EDFA78F0@phx.gbl>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Dec 2009 16:30:12 -0800
+Message-ID: <1260232212.6255.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 7, 2009 at 6:44 PM, Mauro Carvalho Chehab
-<mchehab@redhat.com> wrote:
-> Let me add my view for those questions.
->
-> Jon Smirl wrote:
->> On Sun, Dec 6, 2009 at 3:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
->>> Jon Smirl <jonsmirl@gmail.com> writes:
->>>
->>>>> Once again: how about agreement about the LIRC interface
->>>>> (kernel-userspace) and merging the actual LIRC code first? In-kernel
->>>>> decoding can wait a bit, it doesn't change any kernel-user interface.
->>>> I'd like to see a semi-complete design for an in-kernel IR system
->>>> before anything is merged from any source.
->>> This is a way to nowhere, there is no logical dependency between LIRC
->>> and input layer IR.
->>>
->>> There is only one thing which needs attention before/when merging LIRC:
->>> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
->>> actually, making a correct IR core design without the LIRC merged can be
->>> only harder.
->>
->> Here's a few design review questions on the LIRC drivers that were posted....
->>
->> How is the pulse data going to be communicated to user space?
->
-> lirc_dev will implement a revised version of the lirc API. I'm assuming that
-> Jarod and Christoph will do this review, in order to be sure that it is stable
-> enough for kernel inclusion (as proposed by Gerd).
->
->> Can the pulse data be reported via an existing interface without
->> creating a new one?
->
-> Raw pulse data should be reported only via lirc_dev, but it can be converted
-> into a keycode and reported via evdev as well, via an existing interface.
->
->> Where is the documentation for the protocol?
->
-> I'm not sure what you're meaning here. I've started a doc about IR at the media
+On Tue, 2009-12-08 at 00:18 +0000, Ioannis Kyriakopoulos wrote:
+> >> I have configured my kernel (2.6.31.6) so that I get periodic ticks from
+> >> the timer interrupt (i.e. tickless is not configured) with a rate
+> determined
+> >> by the HZ value. I've also checked the "high resolution timer support"
+> >> and also SMP support. The posblem is that the timer is getting
+> incremented
+> >> very slowly (way slower than the HZ value), just like it would be if the
+> >> kernel was tickless. Is there an explanation for that? How can I get
+> >> periodic
+> >> timer ticks?
+> >>
+> >> AFAI understand, the HPET timer is used through the IO-APIC controller to
+> >> trigger the processors (N.B. if the "High Resolution Timer Support"
+> option
+> >> wasn't checked, the timer used would  be PIT, right?) and each
+> processor's
+> >> LAPIC timer is used for time keeping. Please correct me if I am wrong.
+> >
+> >Not quite, if High Resolution Timers support was disabled, you would
+> >still use the HPET hardware instead of the pit, but you'd stay in
+> >periodic mode. However, since you have Highres Timers on, the system
+> >is using oneshot mode (which is necessary to trigger interrupts faster
+> >then HZ), and likely has chosen the LAPIC timer as the interrupt
+> >source.
+> >
+> >In this case, the timer tick becomes an hrt event, that triggers every
+> >HZ, instead of being caused by a periodic interrupt.
+> 
+> OK, so I configured the kernel as follows, expecting to have periodic 
+> interrupts by the HPET timer using the PIC controller using only a single
+> processor (UP configuration). 
+> 
+> Unselected: 
+> Tickless System (Dynamic Ticks)
+> High Resolution Timer Support  
+> Symmetric multi-processing support 
+> IO-APIC support on uniprocessors (NEW)
+> 
+> Selected: 
+> Local APIC support on uniprocessors
+> HPET timer support
+>  
+> However, when I ran /proc/interrupts, I noticed many weird things:
+> 1.	The timer is still not getting incremented at a rate determined by
+> HZ.
 
-What is the format of the pulse stream data coming out of the lirc device?
-
-> docbook. This is currently inside the kernel Documents/DocBook. If you want
-> to browse, it is also available as:
->
->        http://linuxtv.org/downloads/v4l-dvb-apis/ch17.html
->
-> For sure we need to better document the IR's, and explain the API's there.
->
->> Is it a device interface or something else?
->
-> lirc_dev should create a device interface.
->
->> What about capabilities of the receiver, what frequencies?
->> If a receiver has multiple frequencies, how do you report what
->> frequency the data came in on?
->
-> IMO, via sysfs.
-
-Say you have a hardware device with two IR diodes, one at 38K and one
-at 56K. Both of these receivers can get pulses. How do we tell the
-user space app which frequency the pulses were received on? Seems to
-me like there has to be a header on the pulse data indicating the
-received carrier frequency. There is also baseband signaling. sysfs
-won't work for this because of the queuing latency.
-
-How is over-run signaled to the app? You'd get an over-run if the app
-is too slow at reading the data out of the FIFO. If you ignore
-over-run you'll be processing bad data because part of the message was
-lost. An over-run signal tell the abort to abort the signal and start
-over.
-
->> What about multiple apps simultaneously using the pulse data?
->
-> IMO, the better is to limit the raw interface to just one open.
->
->> How big is the receive queue?
->
-> It should be big enough to receive at least one keycode event. Considering that
-> the driver will use kfifo (IMO, it is a good strategy, especially since you
-> won't need any lock if just one open is allowed), it will require a power of two size.
-
-How is end of a pulse train detected? timeout? without decoding the
-protocol there is no way to tell the end of signal other than timeout.
-
->
->> How does access work, root only or any user?
->
-> IMO, it should be the same requirement as used by an input interface.
->
->> How are capabilities exposed, sysfs, etc?
->
-> IMO, sysfs.
->
->> What is the interface for attaching an in-kernel decoder?
->
-> IMO, it should use the kfifo for it. However, if we allow both raw data and
-> in-kernel decoders to read data there, we'll need a spinlock to protect the
-> kfifo.
->
->> If there is an in-kernel decoder should the pulse data stop being
->> reported, partially stopped, something else?
->
-> I don't have a strong opinion here, but, from the previous discussions, it
-> seems that people want it to be double-reported by default. If so, I think
-> we need to implement a command at the raw interface to allow disabling the
-> in-kernel decoder, while the raw interface is kept open.
-
-Data could be sent to the in-kernel decoders first and then if they
-don't handle it, send it to user space.
+Right, the system has switched to using the local apic instead of the
+PIT or HPET (connected to irq0).
 
 
->
->> What is the mechanism to make sure both system don't process the same pulses?
->
-> I don't see a good way to avoid it.
->
->> Does it work with poll, epoll, etc?
->> What is the time standard for the data, where does it come from?
->> How do you define the start and stop of sequences?
->> Is receiving synchronous or queued?
->> What about transmit, how do you get pulse data into the device?
->> Transmitter frequencies?
->> Multiple transmitters?
->> Is transmitting synchronous or queued?
->> How big is the transmit queue?
->
-> I don't have a clear answer for those. I'll let those to LIRC developers to answer.
->
->
-> Cheers,
-> Mauro
->
->
->
+> 2.	When performing cat proc/interrupts, I see that:
+>           0:        157   IO-APIC-edge      timer
+> 	How the system timer is attached on IO-APIC at the time that the
+> IO-APIC 
+>       is disabled on kernel configurations? Basically, the timer is not the
+> only
+>       peripheral attached to IO-APIC as can be seen by /proc/interrupts.
+> 
+> Here is the output of /proc/interrupts :
+> 
+>            CPU0
+>   0:        157   IO-APIC-edge      timer
+>   1:          2   IO-APIC-edge      i8042
+>   4:        544   IO-APIC-edge      serial
+>   8:          1   IO-APIC-edge      rtc0
+>   9:          0   IO-APIC-fasteoi   acpi
+>  12:          4   IO-APIC-edge      i8042
+>  14:          4   IO-APIC-edge      ata_piix
+>  15:          0   IO-APIC-edge      ata_piix
+>  16:          0   IO-APIC-fasteoi   uhci_hcd:usb5
+>  18:          0   IO-APIC-fasteoi   uhci_hcd:usb4
+>  19:         45   IO-APIC-fasteoi   ata_piix, uhci_hcd:usb3
+>  22:        149   IO-APIC-fasteoi   HDA Intel
+>  23:         72   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+>  27:          0   PCI-MSI-edge      eth0
+> NMI:          0   Non-maskable interrupts
+> LOC:    1865130   Local timer interrupts
+            ^^^
+This value should be incrementing at HZ freq.
 
 
+> SPU:          0   Spurious interrupts
+> CNT:          0   Performance counter interrupts
+> PND:          0   Performance pending work
+> TRM:          0   Thermal event interrupts
+> THR:          0   Threshold APIC interrupts
+> MCE:          0   Machine check exceptions
+> MCP:          7   Machine check polls
+> ERR:          0
+> MIS:          0
+> 
+> Is it that difficult to have periodic timer interrupts using HZ rate?
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+I suspect you already do. If you really want the interrupts to be coming
+in via irq0, try booting w/ nolapic.
+
+Is there something your actually having problems with here? Ignoring
+which interrupt line is used for the timer event, the system is
+functioning properly, right?
+
+thanks
+-john
+
