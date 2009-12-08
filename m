@@ -1,381 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965779AbZLHSFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965710AbZLHSH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965779AbZLHSFr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 13:05:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965761AbZLHSFn
+	id S965710AbZLHSH7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 13:07:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965711AbZLHSH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 13:05:43 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:48492 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965762AbZLHSFm (ORCPT
+	Tue, 8 Dec 2009 13:07:56 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:51834 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965698AbZLHSHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 13:05:42 -0500
-Subject: Re: Block IO Controller V4
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com
-In-Reply-To: <20091208163259.GD28615@redhat.com>
-References: <1259549968-10369-1-git-send-email-vgoyal@redhat.com>
-	 <4e5e476b0911300734h34a22c88oa5d7d4e5642ead50@mail.gmail.com>
-	 <20091130160024.GD11670@redhat.com>
-	 <4e5e476b0911301334o2440ea8fi7444aa7d5a688ed1@mail.gmail.com>
-	 <1259618433.2701.31.camel@cail> <20091130225640.GO11670@redhat.com>
-	 <1260285468.6686.12.camel@cail>  <20091208163259.GD28615@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 13:05:41 -0500
-Message-ID: <1260295541.6686.37.camel@cail>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 13:07:55 -0500
+Date: Tue, 8 Dec 2009 13:08:01 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+In-Reply-To: <alpine.LFD.2.00.0912080833170.3560@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0912081234030.3046-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 11:32 -0500, Vivek Goyal wrote:
-> On Tue, Dec 08, 2009 at 10:17:48AM -0500, Alan D. Brunelle wrote:
-> > Hi Vivek - 
-> > 
-> > Sorry, I've been off doing other work and haven't had time to follow up
-> > on this (until recently). I have runs based upon Jens' for-2.6.33 tree
-> > as of commit 0d99519efef15fd0cf84a849492c7b1deee1e4b7 and your V4 patch
-> > sequence (the refresh patch you sent me on 3 December 2009). I _think_
-> > things look pretty darn good.
-> 
-> That's good to hear. :-)
-> 
-> >There are three modes compared:
-> > 
-> > (1) base - just Jens' for-2.6.33 tree, not patched.
-> > (2) i1,s8 - Your patches added and slice_idle set to 8 (default)
-> > (3) i1,s0 - Your patched added and slice_idle set to 0
-> > 
-> 
-> Thanks Alan. Whenever you run your tests again, it would be better to run
-> it against Jens's for-2.6.33 branch as Jens has merged block IO controller
-> patches.
+On Tue, 8 Dec 2009, Linus Torvalds wrote:
 
-Will do another set of runs w/ the straight branch.
+> On Tue, 8 Dec 2009, Alan Stern wrote:
+> > 
+> > The semantics needed for this kind of lock aren't really the same as
+> > for an rwsem (although obviously an rwsem will do the job).  Basically
+> > it needs to have the capability for multiple users to lock it (no
+> > blocking when acquiring a lock) and the capability for a user to wait
+> > until it is totally unlocked.  It could be implemented trivially using
+> > an atomic_t counter and a waitqueue head.
+> > 
+> > Is this a standard sort of lock?
+> 
+> Yes it is.
+> 
+> It's called a rwlock. The counter is for readers, the exclusion is for 
+> writers.
+> 
+> Really.
+> 
+> And the thing is, you actually do want the rwlock semantics, because on 
+> the resume side you want the parent to lock it for writing first (so that 
+> the children can wait for the parent to have completed its resume.
+> 
+> So we actually _want_ the full rwlock semantics. 
 
-> 
-> > I did both synchronous and asynchronous runs, direct I/Os in both case,
-> > random and sequential, with reads, writes and 80%/20% read/write cases.
-> > The results are in throughput (as reported by fio). The first table
-> > shows overall test results, the other tables show breakdowns per cgroup
-> > (disk).
-> 
-> What is asynchronous direct sequential read? Reads done through libaio?
+I'm not convinced.  Condense the description a little farther:
 
-Yep - An asynchronous run would have fio job files like:
+	Suspend:  Children lock the parent first.  When they are
+		finished they unlock the parent, allowing it to
+		proceed.
 
-[global]
-size=8g
-overwrite=0
-runtime=120
-ioengine=libaio
-iodepth=128
-iodepth_low=128
-iodepth_batch=128
-iodepth_batch_complete=32
-direct=1
-bs=4k
-readwrite=randread
-[/mnt/sda/data.0]
-filename=/mnt/sda/data.0
+	Resume:  Parent locks itself first.  When it is finished
+		it unlocks itself, allowing the children to proceed.
 
-The equivalent synchronous run would be:
+The whole readers vs. writers thing is a non-sequitur.  (For instance,
+this never uses the fact that writers exclude each other.)  In each
+case a lock is taken and eventually released, allowing someone else to
+stop waiting and move forward.  In the suspend case we have multiple
+lockers and one waiter, whereas in the resume case we have one locker
+and multiple waiters.
 
-[global]
-size=8g
-overwrite=0
-runtime=120
-ioengine=sync
-direct=1
-bs=4k
-readwrite=randread
-[/mnt/sda/data.0]
-filename=/mnt/sda/data.0
+The simplest generalization is to allow both multiple lockers and
+multiple waiters.  Call it a waitlock, for want of a better name:
 
-~                         
-> 
-> Few thoughts/questions inline.
-> 
-> > 
-> > Regards,
-> > Alan
-> > 
-> 
-> I am assuming that purpose of following table is to see what is the
-> overhead of IO controller patches. If yes, this looks more or less
-> good except there is slight dip in as seq rd case.
-> 
-> > ---- ---- - --------- --------- --------- --------- --------- ---------
-> > Mode RdWr N  as,base  as,i1,s8  as,i1,s0   sy,base  sy,i1,s8  sy,i1,s0
-> > ---- ---- - --------- --------- --------- --------- --------- ---------
-> > rnd  rd   2      39.7      39.1      43.7      20.5      20.5      20.4
-> > rnd  rd   4      33.9      33.3      41.2      28.5      28.5      28.5
-> > rnd  rd   8      23.7      25.0      36.7      34.4      34.5      34.6
-> > 
-> 
-> slice_idle=0 improves throughput for "as" case. That's interesting.
-> Especially in case of 8 random readers running. Well that should be a
-> general CFQ property and not effect of group IO control.
-> 
-> I am not sure, why did you not capture base with slice_idle=0 mode so that
-> apple vs apple comaprison could be done.
+	wait_lock(wl)
+	{
+		atomic_inc(&wl->count);
+	}
 
-Could add that...will add that...
+	wait_unlock(wl)
+	{
+		if (atomic_dec_and_test(&wl->count)) {
+			smp_mb__after_atomic_dec();
+			wake_up_all(wl->wqh);
+		}
+	}
 
-> 
-> 
-> > rnd  wr   2      66.1      67.8      68.9      71.8      71.8      71.9
-> > rnd  wr   4      57.8      62.9      66.1      64.1      64.2      64.3
-> > rnd  wr   8      39.5      47.4      60.6      54.7      54.6      54.9
-> > 
-> > rnd  rdwr 2      50.2      49.1      54.5      31.1      31.1      31.1
-> > rnd  rdwr 4      41.4      41.3      50.9      38.9      39.1      39.6
-> > rnd  rdwr 8      28.1      30.5      46.3      42.5      42.6      43.8
-> > 
-> > seq  rd   2     612.3     605.7     611.2     509.6     528.3     608.6
-> > seq  rd   4     614.1     606.9     606.2     493.0     490.6     615.4
-> > seq  rd   8     613.6     603.8     605.9     453.0     461.8     617.6
-> > 
-> 
-> Not sure where does this 1-2% dip in as seq read comes from.
-> 
-> 
-> > seq  wr   2     694.6     726.1     701.2     685.8     661.8     314.2
-> > seq  wr   4     687.6     715.3     628.3     702.9     702.3     317.8
-> > seq  wr   8     695.0     710.0     629.8     704.0     708.3     339.4
-> > 
-> > seq  rdwr 2     692.3     664.9     693.8     508.4     504.0     642.8
-> > seq  rdwr 4     664.5     657.1     639.3     484.5     481.0     694.3
-> > seq  rdwr 8     659.0     648.0     634.4     458.1     460.4     709.6
-> > 
-> > ===============================================================
-> > 
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > as,base     rnd  rd   2  20.0  19.7
-> > as,base     rnd  rd   4   8.8   8.5   8.3   8.3
-> > as,base     rnd  rd   8   3.3   3.1   3.3   3.2   2.7   2.7   2.8   2.6
-> > 
-> > as,base     rnd  wr   2  33.2  32.9
-> > as,base     rnd  wr   4  15.9  15.2  14.5  12.3
-> > as,base     rnd  wr   8   5.8   3.4   7.8   8.7   3.5   3.4   3.8   3.1
-> > 
-> > as,base     rnd  rdwr 2  25.0  25.2
-> > as,base     rnd  rdwr 4  10.6  10.4  10.2  10.2
-> > as,base     rnd  rdwr 8   3.7   3.6   4.0   4.1   3.2   3.4   3.3   2.9
-> > 
-> > 
-> > as,base     seq  rd   2 305.9 306.4
-> > as,base     seq  rd   4 159.4 160.5 147.3 146.9
-> > as,base     seq  rd   8  79.7  80.0  77.3  78.4  73.0  70.0  77.5  77.7
-> > 
-> > as,base     seq  wr   2 348.6 346.0
-> > as,base     seq  wr   4 189.9 187.6 154.7 155.3
-> > as,base     seq  wr   8  87.9  88.3  84.7  85.3  84.5  85.1  90.4  88.8
-> > 
-> > as,base     seq  rdwr 2 347.2 345.1
-> > as,base     seq  rdwr 4 181.6 181.8 150.8 150.2
-> > as,base     seq  rdwr 8  83.6  82.1  82.1  82.7  80.6  82.7  82.2  82.9
-> > 
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > as,i1,s8    rnd  rd   2  12.7  26.3
-> > as,i1,s8    rnd  rd   4   1.2   3.7  12.2  16.3
-> > as,i1,s8    rnd  rd   8   0.5   0.8   1.2   1.7   2.1   3.5   6.7   8.4
-> > 
-> 
-> This looks more or less good except the fact that last two groups seem to
-> have got much more share of disk. In general it would be nice to also
-> capture the disk time also apart from BW.
+	wait_for_lock(wl)
+	{
+		wait_event(wl->wqh, atomic_read(&wl->count) == 0);
+		smp_rmb();
+	}
 
-What specifically are you looking for? Any other fields from the fio
-output? I have all that data & could reprocess it easily enough. 
+Note that both wait_lock() and wait_unlock() can be called 
+in_interrupt.
 
+> See the code I posted earlier. Here condensed into one email:
 > 
-> > as,i1,s8    rnd  wr   2  18.5  49.3
-> > as,i1,s8    rnd  wr   4   1.0   1.6  20.7  39.6
-> > as,i1,s8    rnd  wr   8   0.5   0.7   0.9   1.2   1.7   2.5  15.5  24.5
-> > 
+>  - resume:
 > 
-> Same as random read. Last two group got much more BW than their share. Can
-> you send me your exact fio command you used to run async workload. I would
-> like to try it out on my system and see what's happenig.
+>         usb_node_resume(node)
+>         {
+> 		// Wait for parent to finish resume
+>                 down_read(node->parent->lock);
+> 		// .. before resuming outselves
+>                 node->resume(node)
 > 
-> > as,i1,s8    rnd  rdwr 2  16.2  32.9
-> > as,i1,s8    rnd  rdwr 4   1.2   4.7  15.6  19.9
-> > as,i1,s8    rnd  rdwr 8   0.6   0.8   1.1   1.7   2.1   3.4   9.4  11.5
-> > 
-> > as,i1,s8    seq  rd   2 202.7 403.0
-> > as,i1,s8    seq  rd   4  92.1 114.7 182.4 217.6
-> > as,i1,s8    seq  rd   8  38.7  76.2  74.0  73.9  74.5  74.7  84.7 107.0
-> > 
-> > as,i1,s8    seq  wr   2 243.8 482.3
-> > as,i1,s8    seq  wr   4 107.7 155.5 200.4 251.7
-> > as,i1,s8    seq  wr   8  52.1  77.2  81.9  80.8  89.6  99.9 109.8 118.7
-> > 
+> 		// Now we're all done
+>                 up_read(node->parent->lock);
+>                 up_write(node->lock);
+>         }
 > 
-> We do see increasing BW in case of async seq rd and seq wr but again is
-> not very proportionate to weights. Again disk time will help here.
-> 
-> > as,i1,s8    seq  rdwr 2 225.8 439.1
-> > as,i1,s8    seq  rdwr 4 103.2 140.2 186.5 227.2
-> > as,i1,s8    seq  rdwr 8  50.3  77.4  77.5  78.9  80.5  83.9  94.3 105.2
-> > 
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > as,i1,s0    rnd  rd   2  21.9  21.8
-> > as,i1,s0    rnd  rd   4  11.4  12.0   9.1   8.7
-> > as,i1,s0    rnd  rd   8   3.2   3.2   6.7   6.7   4.7   4.0   4.7   3.5
-> > 
-> > as,i1,s0    rnd  wr   2  34.5  34.4
-> > as,i1,s0    rnd  wr   4  21.6  20.5  12.6  11.4
-> > as,i1,s0    rnd  wr   8   5.1   4.8  18.2  16.9   4.1   4.0   4.0   3.3
-> > 
-> > as,i1,s0    rnd  rdwr 2  27.5  27.0
-> > as,i1,s0    rnd  rdwr 4  16.1  15.4  10.2   9.2
-> > as,i1,s0    rnd  rdwr 8   5.3   4.6   9.9   9.7   4.6   4.0   4.4   3.8
-> > 
-> > as,i1,s0    seq  rd   2 305.5 305.6
-> > as,i1,s0    seq  rd   4 159.5 157.3 144.1 145.3
-> > as,i1,s0    seq  rd   8  74.1  74.6  76.7  76.4  74.6  76.7  75.5  77.4
-> > 
-> > as,i1,s0    seq  wr   2 350.3 350.9
-> > as,i1,s0    seq  wr   4 160.3 161.7 153.1 153.2
-> > as,i1,s0    seq  wr   8  79.5  80.9  78.2  78.7  79.7  78.3  77.8  76.7
-> > 
-> > as,i1,s0    seq  rdwr 2 346.8 347.0
-> > as,i1,s0    seq  rdwr 4 163.3 163.5 156.7 155.8
-> > as,i1,s0    seq  rdwr 8  79.1  79.4  80.1  80.3  79.1  78.9  79.6  77.8
-> > 
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > sy,base     rnd  rd   2  10.2  10.2
-> > sy,base     rnd  rd   4   7.2   7.2   7.1   7.0
-> > sy,base     rnd  rd   8   4.1   4.1   4.5   4.5   4.3   4.3   4.4   4.1
-> > 
-> > sy,base     rnd  wr   2  36.1  35.7
-> > sy,base     rnd  wr   4  16.7  16.5  15.6  15.3
-> > sy,base     rnd  wr   8   5.7   5.4   9.0   8.6   6.6   6.5   6.8   6.0
-> > 
-> > sy,base     rnd  rdwr 2  15.5  15.5
-> > sy,base     rnd  rdwr 4   9.9   9.8   9.7   9.6
-> > sy,base     rnd  rdwr 8   4.8   4.9   5.8   5.8   5.4   5.4   5.4   4.9
-> > 
-> > sy,base     seq  rd   2 254.7 254.8
-> > sy,base     seq  rd   4 124.2 123.6 121.8 123.4
-> > sy,base     seq  rd   8  56.9  56.5  56.1  56.8  56.6  56.7  56.5  56.9
-> > 
-> > sy,base     seq  wr   2 343.1 342.8
-> > sy,base     seq  wr   4 177.4 177.9 173.1 174.7
-> > sy,base     seq  wr   8  86.2  87.5  87.6  89.5  86.8  89.6  88.0  88.7
-> > 
-> > sy,base     seq  rdwr 2 254.0 254.4
-> > sy,base     seq  rdwr 4 124.2 124.5 118.0 117.8
-> > sy,base     seq  rdwr 8  57.2  56.8  57.0  58.8  56.8  56.3  57.5  57.8
-> > 
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > sy,i1,s8    rnd  rd   2  10.2  10.2
-> > sy,i1,s8    rnd  rd   4   7.2   7.2   7.1   7.1
-> > sy,i1,s8    rnd  rd   8   4.1   4.1   4.5   4.5   4.4   4.4   4.4   4.2
-> > 
-> 
-> This is consitent. All random/sync-idle IO will be in root group with
-> group_isolation=0 and we will not see service differentiation between
-> groups.
->  
-> > sy,i1,s8    rnd  wr   2  36.2  35.5
-> > sy,i1,s8    rnd  wr   4  16.9  17.0  15.3  15.0
-> > sy,i1,s8    rnd  wr   8   5.7   5.6   8.5   8.7   6.7   6.5   6.6   6.3
-> > 
-> 
-> On my system I was seeing service differentiation for random writes also.
-> The kind of pattern fio was generating, for most part of the run, CFQ
-> categorized these as sync-idle workload hence these got fairness even with
-> group_isolation=0.
-> 
-> If you run the same test with group_isolation=1, you should see better
-> numbers for this case.
+> 	/* caller: */
+> 	..
+> 	// This won't block, because we resume parents before children,
+> 	// and the children will take the read lock. 
+>         down_write(leaf->lock);
+> 	// Do the blocking part asynchronously
+>         async_schedule(usb_node_resume, leaf);
+> 	..
 
-I'll work on updating my script to work w/ the new FIO bits (that have
-cgroup included).
+This becomes:
 
-> 
-> > sy,i1,s8    rnd  rdwr 2  15.5  15.5
-> > sy,i1,s8    rnd  rdwr 4   9.8   9.8   9.7   9.6
-> > sy,i1,s8    rnd  rdwr 8   4.9   4.9   5.9   5.8   5.4   5.4   5.4   5.0
-> > 
-> > sy,i1,s8    seq  rd   2 165.9 362.3
-> > sy,i1,s8    seq  rd   4  54.0  97.2 145.5 193.9
-> > sy,i1,s8    seq  rd   8  14.9  31.4  41.8  52.8  62.8  73.2  85.9  98.8
-> > 
-> > sy,i1,s8    seq  wr   2 220.7 441.1
-> > sy,i1,s8    seq  wr   4  77.6 141.9 208.6 274.3
-> > sy,i1,s8    seq  wr   8  24.9  47.3  63.8  79.1  97.8 114.8 132.1 148.6
-> > 
-> 
-> Above seq rd and seq wr look very good. BW seems to be in proportiona to
-> weight.
-> 
-> > sy,i1,s8    seq  rdwr 2 167.7 336.4
-> > sy,i1,s8    seq  rdwr 4  54.5  98.2 141.1 187.2
-> > sy,i1,s8    seq  rdwr 8  16.7  31.8  41.4  52.3  63.1  73.9  84.6  96.7
-> > 
-> 
-> with slice_idle=0 generally you will not get any service differentiation
-> until and unless group is continously backlogged. So if you launch
-> multiple processes in the group, then you should see service
-> differentiation even with slice_idle=0.
-> 
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > Test        Mode RdWr N test0 test1 test2 test3 test4 test5 test6 test7
-> > ----------- ---- ---- - ----- ----- ----- ----- ----- ----- ----- -----
-> > sy,i1,s0    rnd  rd   2  10.2  10.2
-> > sy,i1,s0    rnd  rd   4   7.2   7.2   7.1   7.1
-> > sy,i1,s0    rnd  rd   8   4.1   4.1   4.6   4.6   4.4   4.4   4.4   4.2
-> > 
-> > sy,i1,s0    rnd  wr   2  36.3  35.6
-> > sy,i1,s0    rnd  wr   4  16.9  17.0  15.3  15.2
-> > sy,i1,s0    rnd  wr   8   6.0   6.0   8.9   8.8   6.5   6.2   6.5   5.9
-> > 
-> > sy,i1,s0    rnd  rdwr 2  15.6  15.6
-> > sy,i1,s0    rnd  rdwr 4  10.0  10.0   9.8   9.8
-> > sy,i1,s0    rnd  rdwr 8   5.0   5.0   6.0   6.0   5.5   5.5   5.6   5.1
-> > 
-> > sy,i1,s0    seq  rd   2 304.2 304.3
-> > sy,i1,s0    seq  rd   4 154.2 154.2 153.4 153.7
-> > sy,i1,s0    seq  rd   8  76.9  76.8  77.3  76.9  77.1  77.2  77.4  78.0
-> > 
-> > sy,i1,s0    seq  wr   2 156.8 157.4
-> > sy,i1,s0    seq  wr   4  80.7  79.6  78.5  79.0
-> > sy,i1,s0    seq  wr   8  43.2  41.7  41.7  42.6  42.1  42.6  42.8  42.7
-> > 
-> > sy,i1,s0    seq  rdwr 2 321.1 321.7
-> > sy,i1,s0    seq  rdwr 4 174.2 174.0 172.6 173.6
-> > sy,i1,s0    seq  rdwr 8  86.6  86.3  88.6  88.9  90.2  89.8  90.1  89.0
-> > 
-> 
-> In summary, async results look little bit off and need investigation. Can
-> you please send me one sample async fio script.
+	usb_node_resume(node)
+	{
+		// Wait for parent to finish resume
+		wait_for_lock(node->parent->lock);
+		// .. before resuming outselves
+                node->resume(node)
 
-The fio file I included above should help, right? If not, let me know,
-I'll send you all the command files...
+		// Now we're all done
+		wait_unlock(node->lock);
+	}
 
+	/* caller: */
+	..
+	// This can't block, because wait_lock() is non-blocking.
+	wait_lock(node->lock);
+	// Do the blocking part asynchronously
+	async_schedule(usb_node_resume, leaf);
+	..
+
+>  - suspend:
 > 
-> Thanks
-> Vivek
+>         usb_node_suspend(node)
+>         {
+>                 // Start our suspend. This will block if we have any
+>                 // children that are still busy suspending (they will
+>                 // have done a down_read() in their suspend).
+>                 down_write(node->lock);
+>                 node->suspend(node);
+>                 up_write(node->lock);
+> 
+>                 // This lets our parent continue
+>                 up_read(node->parent->lock);
+>         }
+> 
+> 	/* caller: */
+> 
+> 	// This won't block, because we suspend nodes before parents
+>         down_read(node->parent->lock);
+> 	// Do the part that may block asynchronously
+> 	async_schedule(do_usb_node_suspend, node);
 
+	usb_node_suspend(node)
+	{
+		// Start our suspend.  This will block if we have any
+		// children that are still busy suspending (they will
+		// have done a wait_lock() in their suspend).
+		wait_for_lock(node->lock);
+		node->suspend(node);
 
+		// This lets our parent continue
+		wait_unlock(node->parent->lock);
+	}
+
+	/* caller: */
+	..
+	// This can't block, because wait_lock is non-blocking.
+	wait_lock(node->parent->lock);
+	// Do the part that may block asynchronously
+	async_schedule(do_usb_node_suspend, node);
+	..
+
+> It really should be that simple. Nothing more, nothing less. And with the 
+> above, finishing the suspend (or resume) from interrupts is fine, and you 
+> don't have any new lock that has undefined memory ordering issues etc.
+
+Aren't waitlocks simpler than rwsems?  Not as generally useful,
+perhaps.  But just as correct in this situation.
+
+Alan Stern
 
