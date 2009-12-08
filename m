@@ -1,94 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZLHJYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbZLHJ2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601AbZLHJYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 04:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZLHJYj
+	id S1752825AbZLHJ2O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 04:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZLHJ2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 04:24:39 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43878 "EHLO hera.kernel.org"
+	Tue, 8 Dec 2009 04:28:13 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57626 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752134AbZLHJYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 04:24:37 -0500
-Message-ID: <4B1E1B68.5050503@kernel.org>
-Date: Tue, 08 Dec 2009 18:24:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <JBeulich@novell.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-mm@kvack.org, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] mm/vmalloc: don't use vmalloc_end
-References: <4B1D3A3302000078000241CD@vpn.id2.novell.com>	 <20091207153552.0fadf335.akpm@linux-foundation.org> <10f740e80912080111l57b0562doebedb1f878592105@mail.gmail.com>
-In-Reply-To: <10f740e80912080111l57b0562doebedb1f878592105@mail.gmail.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1752263AbZLHJ2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 04:28:08 -0500
+Date: Tue, 8 Dec 2009 20:28:07 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for December 8
+Message-Id: <20091208202807.3084f8a6.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__8_Dec_2009_20_28_07_+1100_PRSvA0sNxD8_k6rP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--Signature=_Tue__8_Dec_2009_20_28_07_+1100_PRSvA0sNxD8_k6rP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Geert Uytterhoeven wrote:
-> Rename to m68k_vmalloc_{end,start}?
-> Hmm, sounds better than introducing allcaps variables...
+Hi all,
 
-We definitely can do that too but I don't know.  It still has the risk
-of aliasing behind both the developer's and compiler's back.  Aliasing
-a macro directly to a macro just isn't a very good idea.  We can
-definitely make it more complex - make the prefix more unlikely,
-prevent it from being used as lvalue and so on but given that it's a
-pretty special case anyway, I think all caps variable isn't too bad
-here.
+My usual call for calm: please do not put stuff destined for 2.6.34 into
+linux-next trees until after 2.6.33-rc1.
 
-But you're the maintainer, if you prefer the following version, I'll
-go forward with it.
+Changes since 20091207:
 
-Thanks.
+Since Linus is now merging trees into his, various conflicts move from
+tree to tree.
 
-diff --git a/arch/m68k/include/asm/pgtable_mm.h b/arch/m68k/include/asm/pgtable_mm.h
-index fe60e1a..2db057f 100644
---- a/arch/m68k/include/asm/pgtable_mm.h
-+++ b/arch/m68k/include/asm/pgtable_mm.h
-@@ -83,9 +83,9 @@
- #define VMALLOC_START (((unsigned long) high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
- #define VMALLOC_END KMAP_START
- #else
--extern unsigned long vmalloc_end;
- #define VMALLOC_START 0x0f800000
--#define VMALLOC_END vmalloc_end
-+extern unsigned long m68k_vmalloc_end;
-+#define VMALLOC_END m68k_vmalloc_end
- #endif /* CONFIG_SUN3 */
- 
- /* zero page used for uninitialized stuff */
-diff --git a/arch/m68k/sun3/mmu_emu.c b/arch/m68k/sun3/mmu_emu.c
-index 3cd1939..94f81ec 100644
---- a/arch/m68k/sun3/mmu_emu.c
-+++ b/arch/m68k/sun3/mmu_emu.c
-@@ -45,8 +45,8 @@
- ** Globals
- */
- 
--unsigned long vmalloc_end;
--EXPORT_SYMBOL(vmalloc_end);
-+unsigned long m68k_vmalloc_end;
-+EXPORT_SYMBOL(m68k_vmalloc_end);
- 
- unsigned long pmeg_vaddr[PMEGS_NUM];
- unsigned char pmeg_alloc[PMEGS_NUM];
-@@ -172,8 +172,8 @@ void mmu_emu_init(unsigned long bootmem_end)
- #endif
- 			// the lowest mapping here is the end of our
- 			// vmalloc region
--			if(!vmalloc_end)
--				vmalloc_end = seg;
-+			if (!m68k_vmalloc_end)
-+				m68k_vmalloc_end = seg;
- 
- 			// mark the segmap alloc'd, and reserve any
- 			// of the first 0xbff pages the hardware is
+The samsung tree needed a fixup for left over merge conflict artifacts.
 
---
-tejun
+The nfs tree lost its build failure.
+
+The kbuild tree lost its conflict.
+
+The input tree lost its build failure.
+
+The block tree lost its build failure.
+
+The pcmcia tree lost its conflicts.
+
+The slab tree lost its build failure but gained another so I used the
+version from next-20091204.
+
+The percpu tree gained a build failure due to an interaction with the tip
+tree for which I applied a patch.
+
+The hwpoison tree gained a build failure so I used the version from
+next-20091207.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 155 trees (counting Linus' and 22 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/for-linus
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+CONFLICT (content): Merge conflict in arch/arm/mach-omap2/Makefile
+Merging pxa/for-next
+Merging samsung/next-samsung
+CONFLICT (content): Merge conflict in arch/arm/Kconfig
+CONFLICT (content): Merge conflict in arch/arm/mach-s3c2440/mach-anubis.c
+CONFLICT (add/add): Merge conflict in arch/arm/plat-s3c/dev-hsmmc2.c
+CONFLICT (content): Merge conflict in arch/arm/plat-s3c/include/plat/sdhci.h
+CONFLICT (add/add): Merge conflict in arch/arm/plat-samsung/Kconfig
+Merging avr32/avr32-arch
+CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
+pu.h
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+CONFLICT (content): Merge conflict in arch/m68k/include/asm/ptrace.h
+Merging microblaze/next
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/Kconfig
+CONFLICT (content): Merge conflict in arch/mips/Makefile
+CONFLICT (content): Merge conflict in arch/mips/include/asm/ftrace.h
+CONFLICT (add/add): Merge conflict in arch/mips/kernel/ftrace.c
+CONFLICT (add/add): Merge conflict in arch/mips/kernel/mcount.S
+CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+CONFLICT (content): Merge conflict in fs/cifs/dir.c
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging logfs/master
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+CONFLICT (add/add): Merge conflict in fs/9p/cache.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/amd_iommu_init.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging kbuild/for-next
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in drivers/pci/hotplug/acpiphp_glue.c
+Merging ieee1394/for-next
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-13=
+94.c
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-av=
+c.c
+CONFLICT (add/add): Merge conflict in drivers/media/dvb/firewire/firedtv-fw=
+.c
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv.h
+Merging ubi/linux-next
+Merging kvm/linux-next
+CONFLICT (content): Merge conflict in arch/Kconfig
+CONFLICT (content): Merge conflict in kernel/Makefile
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Applying: wireless: fix for mismerge
+Applying: net: fix for utsrelease.h moving to generated
+Merging wireless/master
+Merging mtd/master
+CONFLICT (content): Merge conflict in drivers/mtd/devices/m25p80.c
+CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
+CONFLICT (delete/modify): drivers/mtd/nand/excite_nandflash.c deleted in HE=
+AD and modified in mtd/master. Version mtd/master of drivers/mtd/nand/excit=
+e_nandflash.c left in tree.
+CONFLICT (content): Merge conflict in drivers/mtd/nand/pxa3xx_nand.c
+CONFLICT (content): Merge conflict in kernel/printk.c
+$ git rm -f drivers/mtd/nand/excite_nandflash.c
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+CONFLICT (content): Merge conflict in include/acpi/processor.h
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/arm/kernel/vmlinux.lds.S
+Applying: modpost: autoconf.h has moved to include/generated
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+CONFLICT (content): Merge conflict in drivers/platform/x86/thinkpad_acpi.c
+Merging kgdb/kgdb-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/kgdb.c
+Merging slab/for-next
+$ git reset --hard HEAD^
+Merging refs/next/20091204/slab
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
+CONFLICT (content): Merge conflict in drivers/mfd/Makefile
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+CONFLICT (content): Merge conflict in Documentation/video4linux/gspca.txt
+CONFLICT (content): Merge conflict in drivers/md/dm-crypt.c
+CONFLICT (content): Merge conflict in drivers/media/video/cx18/cx18-mailbox=
+.h
+CONFLICT (content): Merge conflict in kernel/irq/chip.c
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+CONFLICT (content): Merge conflict in fs/afs/write.c
+CONFLICT (content): Merge conflict in fs/cifs/dir.c
+CONFLICT (content): Merge conflict in fs/ubifs/file.c
+CONFLICT (content): Merge conflict in include/asm-generic/fcntl.h
+CONFLICT (content): Merge conflict in net/compat.c
+CONFLICT (content): Merge conflict in net/socket.c
+Merging irda/for-next
+CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+Merging limits/writable_limits
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+Merging omap_dss2/for-next
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/Kconfig
+CONFLICT (content): Merge conflict in kernel/Makefile
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/powerpc/platforms/pseries/hvCall=
+.S
+CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
+CONFLICT (content): Merge conflict in kernel/softlockup.c
+CONFLICT (content): Merge conflict in mm/slab.c
+Applying: percpu: merge fixup for variable renaming
+Applying: percpu: make per_cpu variable name unique in hw_breakpoint.c
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+CONFLICT (content): Merge conflict in MAINTAINERS
+$ git reset --hard HEAD^
+Merging refs/next/20091207/hwpoison
+Merging sysctl/master
+CONFLICT (content): Merge conflict in kernel/sysctl_check.c
+CONFLICT (content): Merge conflict in net/ipv4/sysctl_net_ipv4.c
+CONFLICT (content): Merge conflict in net/ipv6/addrconf.c
+CONFLICT (content): Merge conflict in net/sctp/sysctl.c
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+CONFLICT (content): Merge conflict in arch/arm/plat-mxc/Makefile
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/staging/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/Makefile
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_lab=
+pc_cs.c
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_mio=
+_cs.c
+Merging scsi-post-merge/master
+
+--Signature=_Tue__8_Dec_2009_20_28_07_+1100_PRSvA0sNxD8_k6rP
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkseHCcACgkQjjKRsyhoI8xZxgCghpOrB7/8vZuOFBgRLkyWcTo4
+6b4Anjq0MWkr2GG4tnVs48sVMi5y4HT0
+=yCfo
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__8_Dec_2009_20_28_07_+1100_PRSvA0sNxD8_k6rP--
