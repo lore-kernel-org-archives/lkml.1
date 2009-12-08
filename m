@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZLHHnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZLHHrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbZLHHnJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 02:43:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZLHHnI
+	id S1753800AbZLHHrx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 02:47:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZLHHrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 02:43:08 -0500
-Received: from mail-vw0-f197.google.com ([209.85.212.197]:46974 "EHLO
-	mail-vw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbZLHHnI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 02:43:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uINiiJwVOUkeJU++7XZr6QyleakYar//+6bZYEblZ7Zn0CzcubGjcklDbgNXMDN40J
-         CLYCzn3QJPzbPMH3MArAGivVjqniLU4aiggQIFObt5PsYHcQKnVlljcJ0ul61HfbqyG0
-         3XHd2bfbN/+4xzICzgHWWnJLo3iBjJzgzw8Iw=
+	Tue, 8 Dec 2009 02:47:51 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51348 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751591AbZLHHrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 02:47:51 -0500
+Message-ID: <4B1E03AD.7060606@cn.fujitsu.com>
+Date: Tue, 08 Dec 2009 15:43:41 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
-References: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
-Date: Tue, 8 Dec 2009 08:43:13 +0100
-Message-ID: <71cd59b00912072343g2fe258b6sc495337cdccd169e@mail.gmail.com>
-Subject: Re: [Resend] [PATCH] asus-laptop: add Lenovo SL LenovoCare LED 
-	support
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Ike Panhc <ike.pan@canonical.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       acpi4asus-user@lists.sourceforge.net,
-       Alexandre Rostovtsev <tetromino@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] cfq: Optimization for close cooperating queue searching
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 8:37 AM, Ike Panhc <ike.pan@canonical.com> wrote:
-> Resend because the email address of signed-off is wrong in prior mail
->
-> This patch is to enable the LenovoCare LED support on Lenovo SL laptop. Based
-> on the found of the control interface by Alexandre Rostovtsev
->
-> Turn on the LenovoCare LED:
->  (As root privileges) echo 1 > /sys/class/leds/asus\:\:LenovoCare/brightness
-> Trun off the LenovoCare LED:
->  (As root privileges) echo 0 > /sys/class/leds/asus\:\:LenovoCare/brightness
->
-> The patch against current checkout of acpi4asus is below.
->
-> Signed-off-by: Ike Panhc <ike.pan@canonical.com>
+It doesn't make any sense to try to find out a close cooperating 
+queue if current cfqq is the only one in the group.
 
-Hi,
-Is there another method to control that led in _SB.ATKD ?
-Could you re-send me some Leveno dsdt (if possible, more than one) ?
-Thanks,
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/cfq-iosched.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index cfb0b2f..89b5dd9 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1750,6 +1750,12 @@ static struct cfq_queue *cfq_close_cooperator(struct cfq_data *cfqd,
+ 		return NULL;
+ 
+ 	/*
++	 * Don't search priority tree if it's the only queue in the group.
++	 */
++	if (cur_cfqq->cfqg->nr_cfqq == 1)
++		return NULL;
++
++	/*
+ 	 * We should notice if some of the queues are cooperating, eg
+ 	 * working closely on the same area of the disk. In that case,
+ 	 * we can group them together and don't waste time idling.
 -- 
-Corentin Chary
-http://xf.iksaif.net
+1.5.4.rc3
+
