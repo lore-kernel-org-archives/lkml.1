@@ -1,80 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbZLHMs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbZLHMv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbZLHMs6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 07:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZLHMsz
+	id S1754555AbZLHMv7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 07:51:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbZLHMv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 07:48:55 -0500
-Received: from mail1.radix.net ([207.192.128.31]:55285 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754498AbZLHMsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 07:48:54 -0500
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Andy Walls <awalls@radix.net>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
-       j@jannau.net, jarod@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-In-Reply-To: <4B1E394A.1090807@redhat.com>
+	Tue, 8 Dec 2009 07:51:57 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:60159 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754148AbZLHMvz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 07:51:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YpFHQcKtxAKd/ZrKOdAXNDkmfFWgDFUCVzLLz4zKug4l+2D6VSNBKICrApUeHc98Zt
+         nRz4vVJ8a2ywjXFPos3vsHClysXlM0yxv92BkttV/caBS82/JPUFctNS4uRDl8gw+rAy
+         0oetSFc8eXoADxVwW7q2OV4s+cSjuRl/Y4vuk=
+MIME-Version: 1.0
+In-Reply-To: <1260275743.3094.6.camel@palomino.walls.org>
 References: <BDRae8rZjFB@christoph>
 	 <1259024037.3871.36.camel@palomino.walls.org>
-	 <m3k4xe7dtz.fsf@intrepid.localdomain>  <4B0E8B32.3020509@redhat.com>
+	 <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com>
 	 <1259264614.1781.47.camel@localhost>
 	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
-	 <1260240142.3086.14.camel@palomino.walls.org> <4B1E394A.1090807@redhat.com>
-Content-Type: text/plain
-Date: Tue, 08 Dec 2009 07:46:52 -0500
-Message-Id: <1260276412.3094.17.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	 <1260240142.3086.14.camel@palomino.walls.org>
+	 <20091208042210.GA11147@core.coreip.homeip.net>
+	 <1260275743.3094.6.camel@palomino.walls.org>
+Date: Tue, 8 Dec 2009 07:52:02 -0500
+Message-ID: <9e4733910912080452p42efa794mb7fd608fa4fbad7c@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Andy Walls <awalls@radix.net>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@wilsonet.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 09:32 -0200, Mauro Carvalho Chehab wrote:
-> Andy Walls wrote:
-> > On Mon, 2009-12-07 at 13:19 -0500, Jarod Wilson wrote:
+On Tue, Dec 8, 2009 at 7:35 AM, Andy Walls <awalls@radix.net> wrote:
+> On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
+>> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
+>
+>> > So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+>> > end of the month.
+>> >
+>> > I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+>> > a common set of parameters, so I may be able to set up the decoders to
+>> > handle decoding from two different remote types at once.  The HVR boards
+>> > can ship with either type of remote AFAIK.
+>> >
+>> > I wonder if I can flip the keytables on the fly or if I have to create
+>> > two different input devices?
+>> >
+>>
+>> Can you distinguish between the 2 remotes (not receivers)?
+>
+> Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
+> (Honestly I could pile on more protocols that have similar pulse time
+> periods, but that's complexity for no good reason and I don't know of a
+> vendor that bundles 3 types of remotes per TV card.)
+>
+>
+>>  Like I said,
+>> I think the preferred way is to represent every remote that can be
+>> distinguished from each other as a separate input device.
+>
+> OK.  With RC-5, NEC, and RC-6 at least there is also an address or
+> system byte or word to distingish different remotes.  However creating
+> multiple input devices on the fly for detected remotes would be madness
+> - especially with a decoding error in the address bits.
 
-> > So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
-> > end of the month.
-> 
-> Good! Please, try to design the decoder as an independent module that gets
-> data from a kfifo and generate scancodes for the input API.
+I agree that creating devices on the fly has problems. Another
+solution is to create one device for each map that is loaded. There
+would be a couple built-in maps for bundled remotes - each would
+create a device. Then the user could load more maps with each map
+creating a device.
 
-Hmmm.  Let me see how the protoype turns out keeping that design
-objective in mind.  I've already got the current RC-5 and NEC decoding
-state machines in cx23885-input a bit layered, but they are taking
-advantage of specific events signaled by my v4l2_subdev implementation.
+Incoming scancodes are matched against all of the loaded maps and a
+keycode event is generated if a match occurs.
 
-Strictly speaking the state machines don't have to.  All of the remote
-protocols I have played with make framing pretty easy.
-
-
-
-> > I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
-> > a common set of parameters, so I may be able to set up the decoders to
-> > handle decoding from two different remote types at once.  The HVR boards
-> > can ship with either type of remote AFAIK.
-> > 
-> > I wonder if I can flip the keytables on the fly or if I have to create
-> > two different input devices?
-> 
-> IMO, the better is, by default, to open just one input device per IR receiver.
-> >From what I understand from our discussions, if the user wants to filter IR
-> commands into several input interfaces, some userspace interface will be 
-> provided to allow the creation of other input interfaces for that purpose.
-
-Hmm. That's not what I just thought I read from Dmitry....
-
-Oh well.  If I don'y get it done by 24 Dec, it'll be in the new year.
+This illustrates why there should an EV_IR event which communicates
+scancodes, without this event you can't see the scancodes that don't
+match a map entry. A scancode would be first matched against the map,
+then if there as no match an EV_IR event would be reported.
 
 
-Regards,
-Andy
+>
+> Any one vendor usually picks one address for their bundled remote.
+> Hauppaugue uses address 0x1e for it's RC-5 remotes AFAICT.
+>
+>
+>
+>>  Applications
+>> expect to query device capabilities and expect them to stay somewhat
+>> stable (we do support keymap change but I don't think anyone expectes
+>> flip-flopping).
+>
+> OK.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-input" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
 
 
+-- 
+Jon Smirl
+jonsmirl@gmail.com
