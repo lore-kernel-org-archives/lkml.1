@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965349AbZLHBJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965373AbZLHBNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965349AbZLHBJd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 20:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbZLHBJc
+	id S965373AbZLHBNT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 20:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbZLHBNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 20:09:32 -0500
-Received: from mail-vw0-f197.google.com ([209.85.212.197]:34101 "EHLO
-	mail-vw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965270AbZLHBJb (ORCPT
+	Mon, 7 Dec 2009 20:13:17 -0500
+Received: from twilight.fidra.de ([88.198.14.164]:50425 "EHLO
+	twilight.fidra.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965364AbZLHBNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 20:09:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=u0v0Wz8J9CO+O5knKmkzj0i9u05Yw72HY65eKGAXfx9OcPLUlG+jKVZsURjp1Gol9b
-         +YYTR2yXmRrcNm2tDbknCv/auTVdJwdSyXTYL7onP+KFhpcU+1JAsVrDSS32jC+vUXib
-         O6wBKqVf1zTL3EyOtzXbbbY6zxbC90X3up4Lo=
+	Mon, 7 Dec 2009 20:13:17 -0500
+From: Volker Lanz <vl@fidra.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [BISECTED, REGRESSION] Successful resume from suspend but freezes after I/O
+Date: Tue, 8 Dec 2009 02:13:20 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.31-rc9-00019-geaa959d; KDE/4.3.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+References: <200912071856.48125.vl@fidra.de> <200912072136.40202.vl@fidra.de> <4B1D8A27.6050008@kernel.org>
+In-Reply-To: <4B1D8A27.6050008@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0912041936541.3981@axis700.grange>
-References: <Pine.LNX.4.64.0912041936541.3981@axis700.grange>
-Date: Mon, 7 Dec 2009 18:09:37 -0700
-X-Google-Sender-Auth: 1c3bde5dd0f663fe
-Message-ID: <e9c3a7c20912071709s200074bbhe6ce07c22fcdbb55@mail.gmail.com>
-Subject: Re: [PATCH 0/5] sh: fix the shdma driver, improve dmatest, support 
-	sh7724
-From: Dan Williams <dan.j.williams@intel.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
-       Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912080213.20502.vl@fidra.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 4, 2009 at 11:44 AM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> Hi
->
-> Not all of these patches are connected, only the ones, affecting the same
-> file should be applied in a specific order, otherwise the patches are
-> independent and can be applied separately.
+On Tuesday 08 December 2009 00:05:11 Yinghai Lu wrote:
+> the updated e820 table is the same to the one for 2.6.29...
+> 
+> so could be some other patch cause the problem.
+> 
+> please check if revert
+> 2547089ca2db132e307ef68848ba029a8ec2f341
+> could help.
 
-I'll take 1 and 2 straight away, 4 with the bool fixup and a changelog
-explaing the dmae_is_idle() change, and 3 after an ack from Nobuhiro
-(or when I get a chance to look at it a bit deeper).
+I reverted to one commit before that, which would be 
+eaa959df299157e2640fcb3321537501b6afd9e6
+if I am not mistaken. I built and booted that kernel and could reproduce the 
+freeze with it (TBH this was not surprising to me, because I originally pinned 
+down the problem by bisecting the commits and this commit is after the one 
+bisecting found. Am I missing a detail here?)
 
-Thanks,
-Dan
+But strangely enough the freeze this time produced an oops before it locked 
+the machine. I couldn't save it to a file but took a picture. The screenshot 
+is here:
+http://banane.volker-lanz.de/08122009013.jpg
+The oops is _not _reproducable. After a reboot with this same kernel, a 
+suspend/resume cycle and some I/O the machine locks again without showing the 
+oops.
+
+Volker
