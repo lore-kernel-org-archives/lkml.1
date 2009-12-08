@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966438AbZLHVVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966407AbZLHVU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966438AbZLHVVH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966258AbZLHVUu
+	id S966407AbZLHVU4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966392AbZLHVUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:20:50 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49531 "EHLO
+	Tue, 8 Dec 2009 16:20:48 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49526 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966257AbZLHVQW (ORCPT
+	with ESMTP id S966261AbZLHVQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:16:22 -0500
+	Tue, 8 Dec 2009 16:16:23 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200912081016.198135742@firstfloor.org>
 In-Reply-To: <200912081016.198135742@firstfloor.org>
-To: fengguang.wu@intel.com, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] [12/31] HWPOISON: remove the free buddy page handler
-Message-Id: <20091208211628.63512B151F@basil.firstfloor.org>
-Date: Tue,  8 Dec 2009 22:16:28 +0100 (CET)
+To: fengguang.wu@intel.com, npiggin@suse.de, mel@linux.vnet.ibm.com,
+       fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH] [13/31] HWPOISON: detect free buddy pages explicitly
+Message-Id: <20091208211629.660E2B151F@basil.firstfloor.org>
+Date: Tue,  8 Dec 2009 22:16:29 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,52 +26,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Wu Fengguang <fengguang.wu@intel.com>
 
-The buddy page has already be handled in the very beginning.
-So remove redundant code.
+Most free pages in the buddy system have no PG_buddy set.
+Introduce is_free_buddy_page() for detecting them reliably.
 
+CC: Nick Piggin <npiggin@suse.de> 
+CC: Mel Gorman <mel@linux.vnet.ibm.com> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/memory-failure.c |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ mm/internal.h       |    3 +++
+ mm/memory-failure.c |    9 +++++++--
+ mm/page_alloc.c     |   21 +++++++++++++++++++++
+ 3 files changed, 31 insertions(+), 2 deletions(-)
 
 Index: linux/mm/memory-failure.c
 ===================================================================
 --- linux.orig/mm/memory-failure.c
 +++ linux/mm/memory-failure.c
-@@ -401,14 +401,6 @@ static int me_unknown(struct page *p, un
- }
- 
- /*
-- * Free memory
-- */
--static int me_free(struct page *p, unsigned long pfn)
--{
--	return DELAYED;
--}
--
--/*
-  * Clean (or cleaned) page cache page.
-  */
- static int me_pagecache_clean(struct page *p, unsigned long pfn)
-@@ -604,7 +596,6 @@ static int me_huge_page(struct page *p,
- #define tail		(1UL << PG_tail)
- #define compound	(1UL << PG_compound)
- #define slab		(1UL << PG_slab)
--#define buddy		(1UL << PG_buddy)
- #define reserved	(1UL << PG_reserved)
- 
- static struct page_state {
-@@ -614,7 +605,10 @@ static struct page_state {
- 	int (*action)(struct page *p, unsigned long pfn);
- } error_states[] = {
- 	{ reserved,	reserved,	"reserved kernel",	me_ignore },
--	{ buddy,	buddy,		"free kernel",	me_free },
-+	/*
-+	 * free pages are specially detected outside this table:
-+	 * PG_buddy pages only make a small fraction of all free pages.
-+	 */
+@@ -809,8 +809,13 @@ int __memory_failure(unsigned long pfn,
+ 	 */
+ 	if (!(flags & MF_COUNT_INCREASED) &&
+ 		!get_page_unless_zero(compound_head(p))) {
+-		action_result(pfn, "free or high order kernel", IGNORED);
+-		return PageBuddy(compound_head(p)) ? 0 : -EBUSY;
++		if (is_free_buddy_page(p)) {
++			action_result(pfn, "free buddy", DELAYED);
++			return 0;
++		} else {
++			action_result(pfn, "high order kernel", IGNORED);
++			return -EBUSY;
++		}
+ 	}
  
  	/*
- 	 * Could in theory check if slab page is free or if we can drop
+Index: linux/mm/internal.h
+===================================================================
+--- linux.orig/mm/internal.h
++++ linux/mm/internal.h
+@@ -50,6 +50,9 @@ extern void putback_lru_page(struct page
+  */
+ extern void __free_pages_bootmem(struct page *page, unsigned int order);
+ extern void prep_compound_page(struct page *page, unsigned long order);
++#ifdef CONFIG_MEMORY_FAILURE
++extern bool is_free_buddy_page(struct page *page);
++#endif
+ 
+ 
+ /*
+Index: linux/mm/page_alloc.c
+===================================================================
+--- linux.orig/mm/page_alloc.c
++++ linux/mm/page_alloc.c
+@@ -5085,3 +5085,24 @@ __offline_isolated_pages(unsigned long s
+ 	spin_unlock_irqrestore(&zone->lock, flags);
+ }
+ #endif
++
++#ifdef CONFIG_MEMORY_FAILURE
++bool is_free_buddy_page(struct page *page)
++{
++	struct zone *zone = page_zone(page);
++	unsigned long pfn = page_to_pfn(page);
++	unsigned long flags;
++	int order;
++
++	spin_lock_irqsave(&zone->lock, flags);
++	for (order = 0; order < MAX_ORDER; order++) {
++		struct page *page_head = page - (pfn & ((1 << order) - 1));
++
++		if (PageBuddy(page_head) && page_order(page_head) >= order)
++			break;
++	}
++	spin_unlock_irqrestore(&zone->lock, flags);
++
++	return order < MAX_ORDER;
++}
++#endif
