@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966336AbZLHVRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966420AbZLHVUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966336AbZLHVRI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:17:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966303AbZLHVQi
+	id S966420AbZLHVUD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:20:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966415AbZLHVTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:16:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49541 "EHLO
+	Tue, 8 Dec 2009 16:19:51 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49544 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966280AbZLHVQ2 (ORCPT
+	with ESMTP id S966278AbZLHVQ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:16:28 -0500
+	Tue, 8 Dec 2009 16:16:29 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200912081016.198135742@firstfloor.org>
 In-Reply-To: <200912081016.198135742@firstfloor.org>
-To: fengguang.wu@intel.com, haicheng.li@intel.com, npiggin@suse.de,
-       fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [PATCH] [17/31] HWPOISON: add fs/device filters
-Message-Id: <20091208211633.71135B151F@basil.firstfloor.org>
-Date: Tue,  8 Dec 2009 22:16:33 +0100 (CET)
+To: fengguang.wu@intel.com, haicheng.li@intel.com, fengguang.wu@intel.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] [18/31] HWPOISON: limit hwpoison injector to known page types
+Message-Id: <20091208211634.76A09B151F@basil.firstfloor.org>
+Date: Tue,  8 Dec 2009 22:16:34 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,158 +25,119 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Wu Fengguang <fengguang.wu@intel.com>
 
-Filesystem data/metadata present the most tricky-to-isolate pages.
-It requires careful code review and stress testing to get them right.
+__memory_failure()'s workflow is
 
-The fs/device filter helps to target the stress tests to some specific
-filesystem pages. The filter condition is block device's major/minor
-numbers:
-        - corrupt-filter-dev-major
-        - corrupt-filter-dev-minor
-When specified (non -1), only page cache pages that belong to that
-device will be poisoned.
+	set PG_hwpoison
+	//...
+	unset PG_hwpoison if didn't pass hwpoison filter
 
-The filters are checked reliably on the locked and refcounted page.
+That could kill unrelated process if it happens to page fault on the
+page with the (temporary) PG_hwpoison. The race should be big enough to
+appear in stress tests.
 
-Haicheng: clear PG_hwpoison and drop bad page count if filter not OK
-AK: Add documentation
+Fix it by grabbing the page and checking filter at inject time.  This
+also avoids the very noisy "Injecting memory failure..." messages.
+
+- we don't touch madvise() based injection, because the filters are
+  generally not necessary for it.
+- if we want to apply the filters to h/w aided injection, we'd better to
+  rearrange the logic in __memory_failure() instead of this patch.
+
+AK: fix documentation, use drain all, cleanups
 
 CC: Haicheng Li <haicheng.li@intel.com>
-CC: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- Documentation/vm/hwpoison.txt |    7 +++++
- mm/hwpoison-inject.c          |   11 +++++++++
- mm/internal.h                 |    3 ++
- mm/memory-failure.c           |   51 ++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 72 insertions(+)
+ Documentation/vm/hwpoison.txt |    3 ++-
+ mm/hwpoison-inject.c          |   41 +++++++++++++++++++++++++++++++++++++++--
+ mm/internal.h                 |    2 ++
+ 3 files changed, 43 insertions(+), 3 deletions(-)
 
-Index: linux/mm/memory-failure.c
-===================================================================
---- linux.orig/mm/memory-failure.c
-+++ linux/mm/memory-failure.c
-@@ -48,6 +48,50 @@ int sysctl_memory_failure_recovery __rea
- 
- atomic_long_t mce_bad_pages __read_mostly = ATOMIC_LONG_INIT(0);
- 
-+u32 hwpoison_filter_dev_major = ~0U;
-+u32 hwpoison_filter_dev_minor = ~0U;
-+EXPORT_SYMBOL_GPL(hwpoison_filter_dev_major);
-+EXPORT_SYMBOL_GPL(hwpoison_filter_dev_minor);
-+
-+static int hwpoison_filter_dev(struct page *p)
-+{
-+	struct address_space *mapping;
-+	dev_t dev;
-+
-+	if (hwpoison_filter_dev_major == ~0U &&
-+	    hwpoison_filter_dev_minor == ~0U)
-+		return 0;
-+
-+	/*
-+	 * page_mapping() does not accept slab page
-+	 */
-+	if (PageSlab(p))
-+		return -EINVAL;
-+
-+	mapping = page_mapping(p);
-+	if (mapping == NULL || mapping->host == NULL)
-+		return -EINVAL;
-+
-+	dev = mapping->host->i_sb->s_dev;
-+	if (hwpoison_filter_dev_major != ~0U &&
-+	    hwpoison_filter_dev_major != MAJOR(dev))
-+		return -EINVAL;
-+	if (hwpoison_filter_dev_minor != ~0U &&
-+	    hwpoison_filter_dev_minor != MINOR(dev))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+int hwpoison_filter(struct page *p)
-+{
-+	if (hwpoison_filter_dev(p))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(hwpoison_filter);
-+
- /*
-  * Send all the processes who have the page mapped an ``action optional''
-  * signal.
-@@ -845,6 +889,13 @@ int __memory_failure(unsigned long pfn,
- 		res = 0;
- 		goto out;
- 	}
-+	if (hwpoison_filter(p)) {
-+		if (TestClearPageHWPoison(p))
-+			atomic_long_dec(&mce_bad_pages);
-+		unlock_page(p);
-+		put_page(p);
-+		return 0;
-+	}
- 
- 	wait_on_page_writeback(p);
- 
 Index: linux/mm/hwpoison-inject.c
 ===================================================================
 --- linux.orig/mm/hwpoison-inject.c
 +++ linux/mm/hwpoison-inject.c
-@@ -3,6 +3,7 @@
+@@ -3,16 +3,53 @@
  #include <linux/debugfs.h>
  #include <linux/kernel.h>
  #include <linux/mm.h>
-+#include "internal.h"
++#include <linux/swap.h>
++#include <linux/pagemap.h>
+ #include "internal.h"
  
  static struct dentry *hwpoison_dir;
  
-@@ -54,6 +55,16 @@ static int pfn_inject_init(void)
- 	if (!dentry)
- 		goto fail;
+ static int hwpoison_inject(void *data, u64 val)
+ {
++	unsigned long pfn = val;
++	struct page *p;
++	int err;
++
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+-	printk(KERN_INFO "Injecting memory failure at pfn %Lx\n", val);
+-	return __memory_failure(val, 18, 0);
++
++	if (!pfn_valid(pfn))
++		return -ENXIO;
++
++	p = pfn_to_page(pfn);
++	/*
++	 * This implies unable to support free buddy pages.
++	 */
++	if (!get_page_unless_zero(p))
++		return 0;
++
++	if (!PageLRU(p))
++		shake_page(p);
++	/*
++	 * This implies unable to support non-LRU pages.
++	 */
++	if (!PageLRU(p))
++		return 0;
++
++	/*
++	 * do a racy check with elevated page count, to make sure PG_hwpoison
++	 * will only be set for the targeted owner (or on a free page).
++	 * We temporarily take page lock for try_get_mem_cgroup_from_page().
++	 * __memory_failure() will redo the check reliably inside page lock.
++	 */
++	lock_page(p);
++	err = hwpoison_filter(p);
++	unlock_page(p);
++	if (err)
++		return 0;
++
++	printk(KERN_INFO "Injecting memory failure at pfn %lx\n", pfn);
++	return __memory_failure(pfn, 18, MF_COUNT_INCREASED);
+ }
  
-+	dentry = debugfs_create_u32("corrupt-filter-dev-major", 0600,
-+				    hwpoison_dir, &hwpoison_filter_dev_major);
-+	if (!dentry)
-+		goto fail;
-+
-+	dentry = debugfs_create_u32("corrupt-filter-dev-minor", 0600,
-+				    hwpoison_dir, &hwpoison_filter_dev_minor);
-+	if (!dentry)
-+		goto fail;
-+
- 	return 0;
- fail:
- 	pfn_inject_exit();
+ static int hwpoison_unpoison(void *data, u64 val)
 Index: linux/mm/internal.h
 ===================================================================
 --- linux.orig/mm/internal.h
 +++ linux/mm/internal.h
-@@ -263,3 +263,6 @@ int __get_user_pages(struct task_struct
- #define ZONE_RECLAIM_SOME	0
+@@ -264,5 +264,7 @@ int __get_user_pages(struct task_struct
  #define ZONE_RECLAIM_SUCCESS	1
  #endif
+ 
++extern int hwpoison_filter(struct page *p);
 +
-+extern u32 hwpoison_filter_dev_major;
-+extern u32 hwpoison_filter_dev_minor;
+ extern u32 hwpoison_filter_dev_major;
+ extern u32 hwpoison_filter_dev_minor;
 Index: linux/Documentation/vm/hwpoison.txt
 ===================================================================
 --- linux.orig/Documentation/vm/hwpoison.txt
 +++ linux/Documentation/vm/hwpoison.txt
-@@ -115,6 +115,13 @@ memory failures.
- Note these injection interfaces are not stable and might change between
- kernel versions
+@@ -103,7 +103,8 @@ hwpoison-inject module through debugfs
  
-+corrupt-filter-dev-major
-+corrupt-filter-dev-minor
-+
-+Only handle memory failures to pages associated with the file system defined
-+by block device major/minor.  -1U is the wildcard value.
-+This should be only used for testing with artificial injection.
-+
- Architecture specific MCE injector
+ corrupt-pfn
  
- x86 has mce-inject, mce-test
+-Inject hwpoison fault at PFN echoed into this file.
++Inject hwpoison fault at PFN echoed into this file. This does
++some early filtering to avoid corrupted unintended pages in test suites.
+ 
+ unpoison-pfn
+ 
