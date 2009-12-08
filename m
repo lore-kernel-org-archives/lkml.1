@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966040AbZLHUYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966068AbZLHUdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966040AbZLHUYh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 15:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966014AbZLHUYc
+	id S966068AbZLHUdF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 15:33:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936711AbZLHUdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 15:24:32 -0500
-Received: from www.tglx.de ([62.245.132.106]:45475 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965988AbZLHUYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 15:24:32 -0500
-Message-Id: <20091208202026.804386447@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Tue, 08 Dec 2009 20:24:22 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 2/2] sched: Protect sched_rr_get_param access to
-	task->sched_class
-Content-Disposition: inline; filename=sched-fix-sched-get-rr-param-race.patch
+	Tue, 8 Dec 2009 15:33:00 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:50237 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935789AbZLHUc6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 15:32:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hq/eAGA1HHQACy9WxvqA3gbmXyE5sH9YTPTCpR5qdxS9mACs0Zd/WXUs22N/IwKrAI
+         Do3qPfYMjeNumJxRfSqTizGNDK56qgilfiC4WjzX9UEuNCmtomcnz4zXggFpqEPdoMWQ
+         5CdLip2eE2RMF3spO4NditSENJuvalsFain4s=
+Date: Tue, 8 Dec 2009 21:25:41 +0100
+From: Richard Zidlicky <rz@linux-m68k.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.32 regression, hard lock
+Message-ID: <20091208202541.GB6322@linux-m68k.org>
+References: <20091206141419.GA6195@linux-m68k.org> <20091207143057.53c6a362.akpm@linux-foundation.org> <20091208002353.GA30011@linux-m68k.org> <20091207164826.eb2bbc48.akpm@linux-foundation.org> <s5hocm9som6.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hocm9som6.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched_rr_get_param calls task->sched_class->get_rr_interval(task)
-without protection against a concurrent sched_setscheduler() call
-which modifies task->sched_class.
+On Tue, Dec 08, 2009 at 12:15:45PM +0100, Takashi Iwai wrote:
 
-Serialize the access with task_rq_lock(task);
+> 
+> But, as Andrew pointed, this should be irrelevant with the IRQ
+> lockup.  At most it could be a dead-locking of PA and other
+> sound-related processes, but I've never heard the real issue.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/sched.c |    4 ++++
- 1 file changed, 4 insertions(+)
+indeed, had to kill and restart PA on a few occassions but no other
+ill effects so far.
 
-Index: linux-2.6-tip/kernel/sched.c
-===================================================================
---- linux-2.6-tip.orig/kernel/sched.c
-+++ linux-2.6-tip/kernel/sched.c
-@@ -6887,6 +6887,8 @@ SYSCALL_DEFINE2(sched_rr_get_interval, p
- {
- 	struct task_struct *p;
- 	unsigned int time_slice;
-+	unsigned long flags;
-+	struct rq *rq;
- 	int retval;
- 	struct timespec t;
- 
-@@ -6903,7 +6905,9 @@ SYSCALL_DEFINE2(sched_rr_get_interval, p
- 	if (retval)
- 		goto out_unlock;
- 
-+	rq = task_rq_lock(p, &flags);
- 	time_slice = p->sched_class->get_rr_interval(p);
-+	task_rq_unlock(rq, &flags);
- 
- 	read_unlock(&tasklist_lock);
- 	jiffies_to_timespec(time_slice, &t);
-
-
+Richard
