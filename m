@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751195AbZLHIxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751317AbZLHI5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751195AbZLHIxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 03:53:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbZLHIxq
+	id S1751317AbZLHI5Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 03:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbZLHI5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 03:53:46 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41817 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbZLHIxp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 03:53:45 -0500
-Date: Tue, 8 Dec 2009 09:53:43 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Walker <dwalker@codeaurora.org>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>,
-       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org
-Subject: Re: tree with htc dream support
-Message-ID: <20091208085342.GD12264@elf.ucw.cz>
-References: <20091205221100.GA32522@elf.ucw.cz>
- <1260054737.23633.35.camel@desktop>
- <20091206074120.GA1615@ucw.cz>
- <1260107487.23633.55.camel@desktop>
+	Tue, 8 Dec 2009 03:57:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58749 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750842AbZLHI5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 03:57:14 -0500
+Message-ID: <4B1E1513.3020000@kernel.org>
+Date: Tue, 08 Dec 2009 17:57:55 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260107487.23633.55.camel@desktop>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Jan Beulich <JBeulich@novell.com>
+CC: tony.luck@intel.com, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm/vmalloc: don't use vmalloc_end
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1E1B1B0200007800024345@vpn.id2.novell.com> <4B1E0E56.8020003@kernel.org> <4B1E1EE60200007800024364@vpn.id2.novell.com>
+In-Reply-To: <4B1E1EE60200007800024364@vpn.id2.novell.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-12-06 05:51:27, Daniel Walker wrote:
-> On Sun, 2009-12-06 at 08:41 +0100, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > Where is the tree with HTC Dream support? I thought it was 
-> > > > 
-> > > > http://git.kernel.org/?p=linux/kernel/git/dwalker/linux-msm.git;a=summary
-> > > > 
-> > > > but it does not seem to contain basic dream support (board file and
-> > > > serial console) and I thought that was going to linus for 2.6.33...?
-> > > 
-> > > It's here
-> > > 
-> > > git://codeaurora.org/quic/kernel/dwalker/linux-msm.git
-> > ...
-> > > It's been in Linux-next for maybe two weeks .. I've been trying to
-> > > decide if I should submit it for 2.6.33. I'm going to be adding boat
-> > > loads of additional msm code and doing a fairly large merge for
-> > > 2.6.34 .. So your code would get better testing if we wait for that.
-> > > 
-> > > However, If you really want it in 2.6.33 I'll try to accommodate you.
-> > 
-> > It would be good to get it in 2.6.33, so that we can build on it, and
-> > so that you are marked as official maintainer etc. I do not think that
-> > code would benefit from any additional delays...
-> 
-> Ok. Fine with me, unless someone else has a specific objection .
+Hello,
 
-Any news here?
-								Pavel
+On 12/08/2009 05:39 PM, Jan Beulich wrote:
+>>>> Tejun Heo <tj@kernel.org> 08.12.09 09:29 >>>
+>> Hmm... it shouldn't be building.
+> 
+> How can it not be building? It's in vmalloc.c (which must be built) and not
+> inside any conditional.
+
+Ah... yes, right.  Somehow I was thinking it lived in percpu.c.  Sorry
+about that.  Probably the right thing to do is to wrap the function
+inside CONFIG ifdef's.  I'll prep a patch.
+
+Thanks.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+tejun
