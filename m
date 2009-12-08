@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964904AbZLHABG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935714AbZLHAEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964904AbZLHABG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:01:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935305AbZLHABE
+	id S935714AbZLHAEh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935331AbZLHAEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:01:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58057 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 19:04:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47383 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935276AbZLHABD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:01:03 -0500
-Message-ID: <4B1D9714.5060000@redhat.com>
-Date: Mon, 07 Dec 2009 22:00:20 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S935305AbZLHAEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 19:04:36 -0500
+Message-ID: <4B1D988E.2000305@gmail.com>
+Date: Tue, 08 Dec 2009 01:06:38 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Gerd Hoffmann <kraxel@redhat.com>, Jarod Wilson <jarod@wilsonet.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jonsmirl@gmail.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com>	<4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com>	<A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com>	<4B17AA6A.9060702@redhat.com>	<20091203175531.GB776@core.coreip.homeip.net>	<20091203163328.613699e5@pedra>	<20091204100642.GD22570@core.coreip.homeip.net>	<20091204121234.5144836b@pedra>	<20091206070929.GB14651@core.coreip.homeip.net>	<4B1B8F83.5080009@redhat.com> <m31vj77t51.fsf@intrepid.localdomain>
-In-Reply-To: <m31vj77t51.fsf@intrepid.localdomain>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 28/31] Constify struct super_operations for 2.6.32 v1
+References: <b6fcc0a0912052114v790f04c9h9a7367ff74d12426@mail.gmail.com>	 <4B1BBE71.70305@gmail.com> <b6fcc0a0912071030y4ca0deabk1635ec2f3e7ffe26@mail.gmail.com>
+In-Reply-To: <b6fcc0a0912071030y4ca0deabk1635ec2f3e7ffe26@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+Alexey Dobriyan wrote:
+> On 12/6/09, Emese Revfy <re.emese@gmail.com> wrote:
+>> Alexey Dobriyan wrote:
+>>>> -   	struct inode *(*alloc_inode)(struct super_block *sb);
+>>>> +   	struct inode *(* const alloc_inode)(struct super_block *sb);
+>>> Good rule is if adding const doesn't move object from one section
+>>> to another, it isn't worth it.
+>>>
+>>> I suggest we stick to it or risk another wave of jumbo patches.
+>>>
+>> If all instances of a given ops structure are const and we would like to
+>> preserve this policy for the future as well, then  it is very useful
+>> to give future programmers a strong hint about this policy by making
+>> the compiler complain about any violation attempts. Otherwise they may
+>> very well write code that modifies such structures and we will have to
+>> work extra to undo that (or change the policy but in that case it is
+>> good to know why we have to do that).
 > 
-
->> struct input_keytable_entry {
->>  	u16	index;
->>  	u64	scancode;
->>  	u32	keycode;
->> } __attribute__ ((packed));
->>
->> (the attribute packed avoids needing a compat for 64 bits)
+> You may want to look what filesystems do with superblock operations.
+> And after super operations were made const writes to it will be caught
+> with readonly .rodata config option.
 > 
-> Maybe { u64 scancode; u32 keycode; u16 index; u16 reserved } would be a
-> bit better, no alignment problems and we could eventually change
-> "reserved" into something useful.
+> You're going too far with these modifiers.
 > 
-> But I think, if we are going to redesign it, we better use scancodes of
-> arbitrary length (e.g. protocol-dependent length). It should be opaque
-> except for the protocol handler.
+> Nothing will be caught.
 
-Yes, an opaque type for scancode at the userspace API can be better, but
-passing a pointer to kernel will require some compat32 logic (as pointer
-size is different on 32 and 64 bits).
-
-We may use something like an u8[] with an arbitrary large number of bytes.
-In this case, we need to take some care to avoid LSB/MSB troubles.
-
-Cheers,
-Mauro.
+DEBUG_RODATA catches the unwanted write attempt at runtime whereas
+my patch will catch it at compile time. I think it's better to detect
+an error as early as possible.
+--
+Emese
