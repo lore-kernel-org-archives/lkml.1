@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965449AbZLHCq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934660AbZLHDG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965449AbZLHCq2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 21:46:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965423AbZLHCq1
+	id S934660AbZLHDG3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 22:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934184AbZLHDG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 21:46:27 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:44541 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965404AbZLHCq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 21:46:26 -0500
-Date: Tue, 8 Dec 2009 13:46:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ben Dooks <ben@trinity.fluff.org>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: manual merge of the samsung tree
-Message-Id: <20091208134625.baef9cd7.sfr@canb.auug.org.au>
-In-Reply-To: <20091208013430.GH23152@trinity.fluff.org>
-References: <20091208111722.2e8d9527.sfr@canb.auug.org.au>
-	<20091208013430.GH23152@trinity.fluff.org>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__8_Dec_2009_13_46_25_+1100_HU3t09I61K+gRLKs"
+	Mon, 7 Dec 2009 22:06:28 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:33251 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934086AbZLHDG1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 22:06:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=FoMzF7iz3IiJont5MFSSuPYOnn1w/0hhOk9HmDJd+qcmBVDZc0e3OGF4earb6YXiMg
+         YWYnZcCqEJbP2sW1sHbh3zQ0ZjHU2GH+79T4/cnLo4f/7buk7jxzNdZq/WMDSomxxWC9
+         SpVESYuJyfQqrZPSnEaiIp6aIjKnI0nYCkD58=
+Message-ID: <4B1DC2B6.5080004@gmail.com>
+Date: Mon, 07 Dec 2009 21:06:30 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: "Jacques, Hugo" <Hugo.Jacques@verint.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Error in SEND(2) man page ?
+References: <579B119545DAEF4689C8FBEEFEC5793F01FA2F6FC6C8@ATLMBX.verint.corp.verintsystems.com>
+In-Reply-To: <579B119545DAEF4689C8FBEEFEC5793F01FA2F6FC6C8@ATLMBX.verint.corp.verintsystems.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__8_Dec_2009_13_46_25_+1100_HU3t09I61K+gRLKs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Ben,
-
-On Tue, 8 Dec 2009 01:34:30 +0000 Ben Dooks <ben@trinity.fluff.org> wrote:
+On 12/07/2009 12:43 PM, Jacques, Hugo wrote:
 >
-> I belive so, I've updated next-samsung from my for-rmk tree and added the
-> rebased new trees to it which should fix it.
+> Hi,
+>
+> I think I found a discrepancy between the man page of send()and the actual implementation.
+>
+> Man page mentions that:
+>
+> "[...] When the message does not fit into the send buffer of the socket, send() normally blocks, unless the socket has been placed in non-blocking I/O mode. In non-blocking mode it would fail with the error EAGAIN or EWOULDBLOCK in this case.  [...]"
+>
+> This tells me that if doing a send() on a tcp non-blocking socket whose send buffer is full, the call should return with -1 and errno=EAGAIN.
+>
+> But running a trivial test app (code below), send() will indicate (return value) that is sent some but not all of the data buffer when the socket's send buffer is full.
+>
+> Am I missing anything?
+> Is the man page or the code wrong?
 
-Thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__8_Dec_2009_13_46_25_+1100_HU3t09I61K+gRLKs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksdvgEACgkQjjKRsyhoI8zyCACeONsaTLk70V1X9nyC1KJHae2G
-v7MAnR4GT8RFn7SrqpRDYhOkMpgXbLqN
-=hxDq
------END PGP SIGNATURE-----
-
---Signature=_Tue__8_Dec_2009_13_46_25_+1100_HU3t09I61K+gRLKs--
+I think the man page would be right for a datagram (ex: UDP) socket, but 
+not for a stream (ex: TCP) socket, as a stream socket has no real 
+concept of "messages".
