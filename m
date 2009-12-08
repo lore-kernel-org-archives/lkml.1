@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966799AbZLHWeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966767AbZLHWZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966799AbZLHWeJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:34:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966784AbZLHWeA
+	id S966767AbZLHWZK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966760AbZLHWZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:34:00 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:49868 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966658AbZLHWd4 convert rfc822-to-8bit (ORCPT
+	Tue, 8 Dec 2009 17:25:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:18866 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966750AbZLHWZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:33:56 -0500
-Date: 08 Dec 2009 23:25:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: jonsmirl@gmail.com
-Cc: awalls@radix.net
-Cc: dmitry.torokhov@gmail.com
-Cc: hermann-pitton@arcor.de
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: jarod@wilsonet.com
-Cc: khc@pm.waw.pl
-Cc: kraxel@redhat.com
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: mchehab@redhat.com
-Cc: superm1@ubuntu.com
-Message-ID: <BEVhz2BHqgB@lirc>
-In-Reply-To: <9e4733910912080534m1fe8c5bakb9219c6a55f0bcaa@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+	Tue, 8 Dec 2009 17:25:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=EJxo7TIessNsjK1W57V5QJa7yY05Ns+ZSegYQLGJ59qAoFm84qL1vUsVX+ZLLQh84K
+         SmZlNeSsnYOxDn57j0FaGIeEIcDRCmtbpBnk8aMc8XHvKhbMaQHMwVAqmNRwhyizPVcx
+         fj6ahx6kwOrfJMPLs5ag79yuy5amv+eUxkSos=
+Message-ID: <4B1ED241.4090803@gmail.com>
+Date: Tue, 08 Dec 2009 23:25:05 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-9.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-Provags-ID: V01U2FsdGVkX1/VwpdMBne9iyrSstMkM40RukdVP7M3PLRqnDY
- 3fhgX0SJapG9XoqZQugPkPMW+nF9hV+XEqM3/xzMN7RuyErsmE
- Rp1GHU56flvKDMUhDq3FBzFFQ6GNYSI
+To: linux-kernel@vger.kernel.org
+CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       scameron@beardog.cce.hp.com, James.Bottomley@HansenPartnership.com,
+       achiang@hp.com, jens.axboe@oracle.com, mikem@beardog.cce.hp.com
+Subject: Re: + hpsa-use-msleep-instead-of-schedule_timeout.patch added to
+ -mm tree
+References: <200912082204.nB8M48oL027313@imap1.linux-foundation.org>
+In-Reply-To: <200912082204.nB8M48oL027313@imap1.linux-foundation.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jon,
+On 12/08/2009 11:04 PM, akpm@linux-foundation.org wrote:
+> Subject: hpsa: use msleep() instead of schedule_timeout
+> From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+> 
+> Use msleep() instead of schedule_timeout
 
-on 08 Dec 09 at 08:34, Jon Smirl wrote:
-[...]
-> The point of those design review questions was to illustrate that the
-> existing LIRC system is only partially designed. Subsystems need to be
-> fully designed before they get merged.
+The patch does more than that and moreover in a wrong manner, see below.
 
-I'd say that a system that has proven itself in real world applications  
-for >10 years, does not deserve to be called partially designed.
+> @@ -3262,8 +3262,8 @@ static int hpsa_pci_init(struct ctlr_inf
+>  		if (!(readl(h->vaddr + SA5_DOORBELL) & CFGTBL_ChangeReq))
+>  			break;
+>  		/* delay and try again */
+> -		set_current_state(TASK_INTERRUPTIBLE);
+> -		schedule_timeout(10);
+> +		set_current_state(TASK_UNINTERRUPTIBLE);
+> +		msleep(10);
 
-> For example 36-40K and 56K IR signals are both in use. It is a simple
-> matter to design a receiver (or buy two receivers)  that would support
-> both these frequencies. But the current LIRC model only supports  a
-> single IR receiver. Adjusting it to support two receivers is going to
-> break the ABI.
+Why do you change interruptible sleep to uninterruptible? And you
+intermix jiffies with msecs. Use schedule_timeout_interruptible(10).
 
-Really? When we added support for multiple transmitters, we somehow  
-managed to do without breaking the ABI. Do I miss something?
+> @@ -3302,7 +3302,8 @@ static int __devinit hpsa_init_one(struc
+>  
+>  		/* Some devices (notably the HP Smart Array 5i Controller)
+>  		   need a little pause here */
+> -		schedule_timeout_uninterruptible(HPSA_POST_RESET_PAUSE);
+> +		set_current_state(TASK_UNINTERRUPTIBLE);
+> +		msleep(HPSA_POST_RESET_PAUSE_MSECS);
 
-Your example could even now be solved by using the LIRC_SET_REC_CARRIER  
-ioctl. The driver would have to choose the receiver that best fits the  
-requested frequency.
+Hmm, setting the state is superfluous, as msleep does the job itself.
 
-[...]
-> We need to think about all of these use cases before designing the
-> ABI.  Only after we think we have a good ABI design should code start
-> being merged. Of course we may make mistakes and have to fix the ABI,
-> but there is nothing to be gained by merging the existing ABI if we
-> already know it has problems.
+> diff -puN drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout drivers/scsi/hpsa.h
+> --- a/drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout
+> +++ a/drivers/scsi/hpsa.h
+...
+> @@ -139,7 +139,7 @@ struct ctlr_info {
+>  #define HPSA_BOARD_READY_ITERATIONS \
+>  	((HPSA_BOARD_READY_WAIT_SECS * 1000) / \
+>  		HPSA_BOARD_READY_POLL_INTERVAL_MSECS)
+> -#define HPSA_POST_RESET_PAUSE (30 * HZ)
+> +#define HPSA_POST_RESET_PAUSE_MSECS (3000)
 
-The point is that we did not get up this morning and started to think  
-about how the LIRC interface should look like. That happened 10 years ago.
+Ehm?
 
-I'm not saying that the interface is the nicest thing ever invented, but  
-it works and is extendable. If you see that something is missing please  
-bring it up.
-
-Christoph
+-- 
+js
