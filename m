@@ -1,136 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZLHIdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbZLHIh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbZLHIdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 03:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbZLHIdV
+	id S1755607AbZLHIh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 03:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbZLHIhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 03:33:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56320 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752709AbZLHIdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 03:33:20 -0500
-Message-ID: <4B1E0F1B.7020305@cn.fujitsu.com>
-Date: Tue, 08 Dec 2009 16:32:27 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 8 Dec 2009 03:37:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38930 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754893AbZLHIhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 03:37:23 -0500
+Message-ID: <4B1E105E.7030208@kernel.org>
+Date: Tue, 08 Dec 2009 17:37:50 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] softirq,tracing: enable to trace softirq raise latency
-Content-Type: text/plain; charset=UTF-8
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: percpu/tip tree build failure
+References: <20091208182515.bb6dda4a.sfr@canb.auug.org.au> <20091208080509.GD4989@nowhere> <20091208082436.GA12761@elte.hu>
+In-Reply-To: <20091208082436.GA12761@elte.hu>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rebase it for the newly codes
-Collect Acks(Acked-by Mathieu Desnoyers and Frederic Weisbecker)
+Hello,
 
+On 12/08/2009 05:24 PM, Ingo Molnar wrote:
+>> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> 
+> I have applied it - but really, the new percpu namespace changes headed 
+> towards upstream are quite a nuisance IMO. The 3-4 (trivial to solve) 
+> breakages i've seen so far affecting code i maintain give us an 
+> estimation about the ongoing maintainence cost - which wont be high but 
+> not zero either.
+> 
+> The change that was forced here:
+> 
+>  -static DEFINE_PER_CPU(unsigned int, task_bp_pinned[HBP_NUM]);
+>  +static DEFINE_PER_CPU(unsigned int, nr_task_bp_pinned[HBP_NUM]);
+> 
+> Is it really an improvement to the old code?
+>
+> Dunno.
 
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
+In each specific conflict, I don't think it would be an apparent
+improvement but overall I do believe it's headed the right way.  Well,
+or, at the very least, I don't see any other viable solution and
+you're probably the most strongly affected by the change.  Sorry about
+the inconveniences.
 
-Add a tracepoint for tracing when softirq action is raised.
+I'm waiting for ack for a m68k change before pushing out percpu tree.
+I'm not completely determined but I think I'll keep dropping per_cpu__
+prefix and sparse annotation in linux-next for one more cycle as
+sparse annotation cleanup pass hasn't been done yet.  Once new devel
+cycle begins, it might be a good idea to pull in percpu changes into
+one of the tip trees so that these nuisances can be detected during
+development?
 
-It and the existed tracepoints complete softirq's tracepoints:
-softirq_raise, softirq_entry and softirq_exit.
+Thanks.
 
-And when this tracepoint is used in combination with
-the softirq_entry tracepoint we can determine
-the softirq raise latency.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
----
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 75f3f00..b368d5d 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -18,6 +18,7 @@
- #include <asm/atomic.h>
- #include <asm/ptrace.h>
- #include <asm/system.h>
-+#include <trace/events/irq.h>
- 
- /*
-  * These correspond to the IORESOURCE_IRQ_* defines in
-@@ -372,7 +373,13 @@ asmlinkage void do_softirq(void);
- asmlinkage void __do_softirq(void);
- extern void open_softirq(int nr, void (*action)(struct softirq_action *));
- extern void softirq_init(void);
--#define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
-+
-+static inline void __raise_softirq_irqoff(unsigned int nr)
-+{
-+	trace_softirq_raise(nr);
-+	or_softirq_pending(1UL << nr);
-+}
-+
- extern void raise_softirq_irqoff(unsigned int nr);
- extern void raise_softirq(unsigned int nr);
- extern void wakeup_softirqd(void);
-diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-index 0e4cfb6..7a21fe2 100644
---- a/include/trace/events/irq.h
-+++ b/include/trace/events/irq.h
-@@ -5,7 +5,9 @@
- #define _TRACE_IRQ_H
- 
- #include <linux/tracepoint.h>
--#include <linux/interrupt.h>
-+
-+struct irqaction;
-+struct softirq_action;
- 
- #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
- #define show_softirq_name(val)				\
-@@ -82,6 +84,32 @@ TRACE_EVENT(irq_handler_exit,
- 		  __entry->irq, __entry->ret ? "handled" : "unhandled")
- );
- 
-+/**
-+ * softirq_raise - called immediately when a softirq is raised
-+ * @nr: softirq vector number
-+ *
-+ * Tracepoint for tracing when softirq action is raised.
-+ * Also, when used in combination with the softirq_entry tracepoint
-+ * we can determine the softirq raise latency.
-+ */
-+TRACE_EVENT(softirq_raise,
-+
-+	TP_PROTO(unsigned int nr),
-+
-+	TP_ARGS(nr),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned int,	vec		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->vec	= nr;
-+	),
-+
-+	TP_printk("vec=%d [action=%s]", __entry->vec,
-+		  show_softirq_name(__entry->vec))
-+);
-+
- DECLARE_EVENT_CLASS(softirq,
- 
- 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-@@ -89,11 +117,11 @@ DECLARE_EVENT_CLASS(softirq,
- 	TP_ARGS(h, vec),
- 
- 	TP_STRUCT__entry(
--		__field(	int,	vec			)
-+		__field(	unsigned int,	vec		)
- 	),
- 
- 	TP_fast_assign(
--		__entry->vec = (int)(h - vec);
-+		__entry->vec = (unsigned int)(h - vec);
- 	),
- 
- 	TP_printk("vec=%d [action=%s]", __entry->vec,
+-- 
+tejun
