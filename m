@@ -1,216 +1,327 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932632AbZLHQwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbZLHQ6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932632AbZLHQwn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 11:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932094AbZLHQwn
+	id S1756103AbZLHQ6u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 11:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZLHQ6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 11:52:43 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42939 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756025AbZLHQwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 11:52:41 -0500
-Date: Tue, 8 Dec 2009 17:52:42 +0100
-From: Jan Kara <jack@suse.cz>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: Possible irq lock inversion dependency detected in JBD
-Message-ID: <20091208165241.GD4095@quack.suse.de>
-References: <4B0BD960.5040105@vlnb.net>
- <20091208151332.GA3141@atrey.karlin.mff.cuni.cz>
- <4B1E7233.1040904@vlnb.net>
+	Tue, 8 Dec 2009 11:58:49 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:50287 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756007AbZLHQ6s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 11:58:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=QO0ZaYHcqBAb71neiLsoHYbdgyfaDt2d4J5GGSSJjWjEENfmB9ZZxX6cZTRDWo5unV
+         yF09B/yi7cbNXCXaB+bbB5PBF6pwvbKDWf0QlzLvdkEw3DHF0OxHP9zfmQqWkc/m1NvQ
+         47bF/P7FirUqddRr53lMk4hSBbuytnmV1uzZU=
+Message-ID: <4B1E85A9.3030005@gmail.com>
+Date: Tue, 08 Dec 2009 17:58:17 +0100
+From: Jes Sorensen <jes.sorensen@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1E7233.1040904@vlnb.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Toshiba Bluetooth enabler (v2) (was: Re: [PATCH] Toshiba Bluetooth
+ enabler (rfkill))
+References: <4B192D08.9080608@gmail.com> <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com>
+In-Reply-To: <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------070606080301010101040708"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 08-12-09 18:35:15, Vladislav Bolkhovitin wrote:
-> Jan Kara, on 12/08/2009 06:13 PM wrote:
-> >   Hello,
-> > 
-> >> During testing I had the below trace from lockdep. After some googling seems
-> >> it wasn't reported. The complete trace attached, it's almost 800K uncompressed.
-> >>
-> >> =========================================================
-> >> [ INFO: possible irq lock inversion dependency detected ]
-> >> 2.6.31-scst-dbg #3
-> >> ---------------------------------------------------------
-> >> kswapd0/290 just changed the state of lock:
-> >>  (jbd_handle){+.+.-.}, at: [<7826a6fa>] journal_start+0xd4/0x13a
-> >> but this lock took another, RECLAIM_FS-unsafe lock in the past:
-> >>  (&type->s_lock_key){+.+.+.}
-> >>
-> >> and interrupts could create inverse lock ordering between them.
-> >>
-> >>
-> >> other info that might help us debug this:
-> >> no locks held by kswapd0/290.
-> >   Thanks for the report. If I'm reading the lockdep messages right, it
-> > complains that page reclaim can be run with sb->s_lock held but we also
-> > start a transaction in the page reclaim path and we take sb->s_lock after
-> > starting a transaction in some paths.
-> >   The warning seems to be false positive to me since we don't really
-> > acquire sb->s_lock in the reclaim path. It would be nice if we could
-> > get this sorted out but I don't see an easy way out of this...
-> 
-> In my experience lockdep has never complained about acquiring a lock, where
-> it had never been acquired, so I would rather take the complaint seriously.
-> However, a false possitive can be if the same lock acquired for another object.
-> I have swap as a file on a different ext3 partition.
-  Well, I take lockdep warning seriously. It's just that lockdep
-establishes following lock dependencies:
-1) transaction start -> lock_super
-  - happens only during unlink, truncate, filesystem resize, sys_write
-2) lock_super -> page reclaim
-  - happens during mount / remount
-3) page reclaim -> transaction start
+This is a multi-part message in MIME format.
+--------------070606080301010101040708
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-  and reports a possible problem. But it follows from the above that
-lock_super actually does not happen from the page reclaim path because
-there we just start a transaction to write inode or allocate blocks to a
-file. So I agree the locking is kind of convoluted but I see no real
-problem there...
-  
-> From other side, during further tests I yesterday had the following lockup.
-> It seems to be somehow related. 2.6.29 works just fine.
-  Looks like a bug in the scsi stack... adding linux-scsi to CC.
+On 12/08/2009 11:05 AM, Alan Jenkins wrote:
+> Cool.  This must be the shortest ACPI driver :-).
 
-									Honza
+Hi Alan,
 
-> [ 8298.566616] BUG: spinlock lockup on CPU#0, xfsbufd/2726, f6b52e58
-> [ 8298.566632] NMI backtrace for cpu 1
-> [ 8298.566632] ------------[ cut here ]------------
-> [ 8298.566632] WARNING: at kernel/sched.c:5175 add_preempt_count+0x82/0xdd()
-> [ 8298.566632] Hardware name: X5DPA
-> [ 8298.566632] Modules linked in: iscsi_scst scst_user scst_disk scst_vdisk scst libcrc32c cryptomgr aead pcompress crypto_blkcipher crc32c crypto_hash crypto_algapi tcp_highspeed scsi_debug w83627hf hwmon_vid adm1021 binfmt_misc xfs exportfs dm_mirror dm_region_hash dm_log dm_mod pci_slot floppy uhci_hcd sg e1000 ata_generic pcspkr i2c_i801 libata i2c_core e7xxx_edac parport_pc parport [last unloaded: scst]
-> [ 8298.566632] Pid: 14244, comm: vdisk_fileid2_7 Not tainted 2.6.31-scst-dbg #3
-> [ 8298.566632] Call Trace:
-> [ 8298.566632]  [<78497768>] ? printk+0x28/0x40
-> [ 8298.566632]  [<7849e2a5>] ? add_preempt_count+0x82/0xdd
-> [ 8298.566632]  [<78140225>] warn_slowpath_common+0x7e/0xda
-> [ 8298.566632]  [<7849e2a5>] ? add_preempt_count+0x82/0xdd
-> [ 8298.566632]  [<781402a7>] warn_slowpath_null+0x26/0x3c
-> [ 8298.566632]  [<7849e2a5>] add_preempt_count+0x82/0xdd
-> [ 8298.566632]  [<7849ae42>] _spin_lock_irqsave+0x2d/0x9a
-> [ 8298.566632]  [<78160551>] down_trylock+0x21/0x54
-> [ 8298.566632]  [<781407f5>] try_acquire_console_sem+0x20/0x6e
-> [ 8298.566632]  [<78140fe1>] vprintk+0x114/0x427
-> [ 8298.566632]  [<78497768>] printk+0x28/0x40
-> [ 8298.566632]  [<7849cef8>] nmi_watchdog_tick+0x1e3/0x20b
-> [ 8298.566632]  [<7849c03d>] do_nmi+0x18e/0x33a
-> [ 8298.566632]  [<7849bcc4>] nmi_stack_correct+0x2f/0x34
-> [ 8298.566632]  [<781700e0>] ? check_irq_usage+0x31/0xda
-> [ 8298.566632]  [<781586c6>] ? __kernel_text_address+0x21/0x80
-> [ 8298.566632]  [<781070c3>] print_context_stack+0x82/0x13f
-> [ 8298.566632]  [<78105e75>] dump_trace+0xa1/0xfb
-> [ 8298.566632]  [<7810e0e2>] save_stack_trace+0x3b/0x68
-> [ 8298.566632]  [<782c1fb9>] dma_entry_alloc+0x79/0xb7
-> [ 8298.566632]  [<782c33bb>] debug_dma_map_sg+0x4a/0x167
-> [ 8298.566632]  [<78357de5>] scsi_dma_map+0xc9/0x104
-> [ 8298.566632]  [<78372c98>] ahd_linux_queue+0x48/0x39a
-> [ 8298.566632]  [<7849ae94>] ? _spin_lock_irqsave+0x7f/0x9a
-> [ 8298.566632]  [<7834f218>] ? scsi_dispatch_cmd+0x106/0x275
-> [ 8298.566632]  [<7834f25d>] scsi_dispatch_cmd+0x14b/0x275
-> [ 8298.566632]  [<7849e1ea>] ? sub_preempt_count+0x9a/0xd3
-> [ 8298.566632]  [<78355e0a>] scsi_request_fn+0x398/0x4de
-> [ 8298.566632]  [<7828acc0>] __generic_unplug_device+0x3e/0x5b
-> [ 8298.566632]  [<7828343d>] elv_insert+0x208/0x272
-> [ 8298.566632]  [<781928b4>] ? __rcu_read_unlock+0x9b/0xac
-> [ 8298.566632]  [<78283520>] __elv_add_request+0x79/0xc7
-> [ 8298.566632]  [<7828f242>] __make_request+0x12d/0x412
-> [ 8298.566632]  [<7828e116>] generic_make_request+0x42c/0x5f8
-> [ 8298.566632]  [<7849e1ea>] ? sub_preempt_count+0x9a/0xd3
-> [ 8298.566632]  [<78170b60>] ? trace_hardirqs_on+0x19/0x2e
-> [ 8298.566632]  [<781c3db7>] ? mempool_alloc_slab+0x22/0x38
-> [ 8298.566632]  [<781c3db7>] ? mempool_alloc_slab+0x22/0x38
-> [ 8298.566632]  [<781c3db7>] ? mempool_alloc_slab+0x22/0x38
-> [ 8298.566632]  [<7828f9c6>] submit_bio+0x9b/0x155
-> [ 8298.566632]  [<78219f94>] submit_bh+0x106/0x14a
-> [ 8298.566632]  [<7821c0d8>] __block_write_full_page+0x222/0x394
-> [ 8298.566632]  [<7821c73d>] ? end_buffer_async_write+0x0/0x238
-> [ 8298.566632]  [<7821ce27>] block_write_full_page_endio+0x133/0x13d
-> [ 8298.566632]  [<7821c73d>] ? end_buffer_async_write+0x0/0x238
-> [ 8298.566632]  [<7821c73d>] ? end_buffer_async_write+0x0/0x238
-> [ 8298.566632]  [<7821ce55>] block_write_full_page+0x24/0x3c
-> [ 8298.566632]  [<7821c73d>] ? end_buffer_async_write+0x0/0x238
-> [ 8298.566632]  [<78257228>] ext3_writeback_writepage+0x109/0x13f
-> [ 8298.566632]  [<782565c6>] ? buffer_unmapped+0x0/0x34
-> [ 8298.566632]  [<781ce157>] shrink_page_list+0x64a/0x7cb
-> [ 8298.566632]  [<7849780b>] ? io_schedule_timeout+0x8b/0xc0
-> [ 8298.566632]  [<781d7d49>] ? congestion_wait+0x72/0x8d
-> [ 8298.566632]  [<781ced02>] shrink_zone+0xa2a/0xa6f
-> [ 8298.566632]  [<781cd56e>] ? shrink_slab+0x171/0x1b8
-> [ 8298.566632]  [<7815fe6f>] ? up_read+0x29/0x5a
-> [ 8298.566632]  [<781cf57e>] try_to_free_pages+0x212/0x364
-> [ 8298.566632]  [<781cc7ed>] ? isolate_pages_global+0x0/0x1fa
-> [ 8298.566632]  [<781c7acd>] __alloc_pages_nodemask+0x3bb/0x5db
-> [ 8298.566632]  [<781707fb>] ? mark_held_locks+0x6a/0x9a
-> [ 8298.566632]  [<781ee2c6>] __slab_alloc+0x1b9/0x5d3
-> [ 8298.566632]  [<783d6db9>] ? __alloc_skb+0x39/0x13b
-> [ 8298.566632]  [<781ee873>] kmem_cache_alloc+0x193/0x19f
-> [ 8298.566632]  [<783d6db9>] ? __alloc_skb+0x39/0x13b
-> [ 8298.566632]  [<783d6db9>] ? __alloc_skb+0x39/0x13b
-> [ 8298.566632]  [<783d6db9>] __alloc_skb+0x39/0x13b
-> [ 8298.566632]  [<783d2ec7>] ? lock_sock_nested+0xd5/0xee
-> [ 8298.566632]  [<784144d1>] sk_stream_alloc_skb+0x3f/0xf0
-> [ 8298.566632]  [<78417007>] tcp_sendmsg+0x402/0x99b
-> [ 8298.566632]  [<781099cf>] ? sched_clock+0x1e/0x80
-> [ 8298.566632]  [<7840dfef>] ? ip_finish_output+0x14c/0x310
-> [ 8298.566632]  [<783cf1f8>] sock_aio_write+0x10f/0x129
-> [ 8298.566632]  [<781099cf>] ? sched_clock+0x1e/0x80
-> [ 8298.566632]  [<783cf0e9>] ? sock_aio_write+0x0/0x129
-> [ 8298.566632]  [<781f46d8>] do_sync_readv_writev+0xdb/0x125
-> [ 8298.566632]  [<7815b03d>] ? autoremove_wake_function+0x0/0x5b
-> [ 8298.566632]  [<781f44ee>] ? rw_copy_check_uvector+0x80/0x12f
-> [ 8298.566632]  [<781f5692>] do_readv_writev+0xb8/0x229
-> [ 8298.566632]  [<783cf0e9>] ? sock_aio_write+0x0/0x129
-> [ 8298.566632]  [<7814811a>] ? local_bh_enable_ip+0x75/0xfb
-> [ 8298.566632]  [<78170af9>] ? trace_hardirqs_on_caller+0x13a/0x188
-> [ 8298.566632]  [<ffde4a78>] ? write_data+0xce/0xabf [iscsi_scst]
-> [ 8298.566632]  [<781f5862>] vfs_writev+0x5f/0x77
-> [ 8298.566632]  [<ffde4b48>] write_data+0x19e/0xabf [iscsi_scst]
-> [ 8298.566632]  [<7816ee05>] ? put_lock_stats+0x18/0x45
-> [ 8298.566632]  [<78170313>] ? lock_release_holdtime+0xaa/0x175
-> [ 8298.566632]  [<ffddd309>] ? cmnd_set_sn+0x6f/0xa6 [iscsi_scst]
-> [ 8298.566632]  [<ffde5b3f>] iscsi_do_send+0x2a/0x63 [iscsi_scst]
-> [ 8298.566632]  [<ffde5f2e>] iscsi_send+0x1ca/0x359 [iscsi_scst]
-> [ 8298.566632]  [<7814811a>] ? local_bh_enable_ip+0x75/0xfb
-> [ 8298.566632]  [<ffddd542>] iscsi_try_local_processing+0x15c/0x1bd [iscsi_scst]
-> [ 8298.566632]  [<ffde133f>] iscsi_xmit_response+0x197/0x328 [iscsi_scst]
-> [ 8298.566632]  [<7816ee05>] ? put_lock_stats+0x18/0x45
-> [ 8298.566632]  [<78170313>] ? lock_release_holdtime+0xaa/0x175
-> [ 8298.566632]  [<f90ef48c>] scst_xmit_response+0x139/0x4ab [scst]
-> [ 8298.566632]  [<f90f12e5>] ? scst_pre_xmit_response+0xb0/0x274 [scst]
-> [ 8298.566632]  [<78170b60>] ? trace_hardirqs_on+0x19/0x2e
-> [ 8298.566632]  [<f90f356a>] scst_process_active_cmd+0x176/0x536 [scst]
-> [ 8298.566632]  [<f90ed88d>] ? scst_cmd_atomic+0x62/0xa3 [scst]
-> [ 8298.566632]  [<f90f3fc5>] scst_process_redirect_cmd+0x1b0/0x298 [scst]
-> [ 8298.566632]  [<f90f42b8>] scst_cmd_done_local+0xff/0x257 [scst]
-> [ 8298.566632]  [<f8e3447e>] vdisk_do_job+0x1f9/0xae2 [scst_vdisk]
-> [ 8298.566632]  [<78133a93>] ? finish_task_switch+0x69/0x105
-> [ 8298.566632]  [<f90ed88d>] ? scst_cmd_atomic+0x62/0xa3 [scst]
-> [ 8298.566632]  [<f90f2a73>] scst_do_real_exec+0xbb/0x3fa [scst]
-> [ 8298.566632]  [<f90f2781>] ? scst_do_local_exec+0x143/0x23a [scst]
-> [ 8298.566632]  [<f90f2e82>] scst_exec+0xd0/0x25e [scst]
-> [ 8298.566632]  [<ffddd3a5>] ? scst_cmd_atomic+0x65/0xa6 [iscsi_scst]
-> [ 8298.566632]  [<f90f3150>] scst_send_for_exec+0x140/0x2a5 [scst]
-> [ 8298.566632]  [<f90ed67c>] ? scst_tgt_pre_exec+0x77/0x226 [scst]
-> [ 8298.566632]  [<f90f37a9>] scst_process_active_cmd+0x3b5/0x536 [scst]
-> [ 8298.566632]  [<7849e1ea>] ? sub_preempt_count+0x9a/0xd3
-> [ 8298.566632]  [<f90f39ba>] scst_do_job_active+0x90/0x158 [scst]
-> [ 8298.566632]  [<f90f3c22>] scst_cmd_thread+0xc1/0x279 [scst]
-> [ 8298.566632]  [<7849b855>] ? _spin_unlock_irqrestore+0x8b/0x90
-> [ 8298.566632]  [<7813b430>] ? default_wake_function+0x0/0x3d
-> [ 8298.566632]  [<f90f3b61>] ? scst_cmd_thread+0x0/0x279 [scst]
-> [ 8298.566632]  [<7815ac79>] kthread+0x84/0x8d
-> [ 8298.566632]  [<7815abf5>] ? kthread+0x0/0x8d
-> [ 8298.566632]  [<78103f57>] kernel_thread_helper+0x7/0x10
-> 
-> Thanks,
-> Vlad
-> 
+Here's an updated version that addresses most of your comments.
+
+> Try to send patches inline if possible, it makes them easier to review.
+
+Not possible with Thunderbug, sorry.
+
+>> +static int toshiba_bt_rfkill_add(struct acpi_device *device);
+>
+> I think it's simpler to avoid the need for forward declarations, e.g.
+> by putting the driver structure after the ops functions.  I suppose
+> it's a matter of taste though.
+
+I am going to keep it as is. I find it cleaner and it is more consistent
+with how other drivers are written IMHO.
+
+> Please also set
+> 	.owner = THIS_MODULE,
+
+Good point, thanks!
+
+>> +static int toshiba_bt_resume(struct acpi_device *device)
+>> +{
+>> +	return toshiba_bluetooth_enable(device->handle);
+>> +}
+>
+> Good to see you're handling resume, but what happens if the rfkill
+> switch is _not_ set to on?  It looks like resume will return an error,
+> which will produce a warning message in the kernel log.  I don't think
+> we want that.
+
+Fixed, this version only calls the enabler if the switch is at ON at
+resume time.
+
+>> +	status = acpi_evaluate_integer(device->handle, "_STA", NULL,
+>> +				&bt_present);
+>
+> I think this would benefit from an explanation.
+
+Comments added.
+
+>> +	result = acpi_bus_register_driver(&toshiba_bt_rfkill_driver);
+>> +	if (result<  0) {
+>> +		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
+>> +				  "Error registering driver\n"));
+>> +		return -ENODEV;
+>> +	}
+>
+> I would suggest you return result, instead of ignoring it and always
+> returning ENODEV.
+
+I agree, added.
+
+>
+>> +	depends on RFKILL
+>> +	depends on BT
+>
+> But you doesn't use either of these subsystems :-). The BT one
+> definitely seems bogus; please drop it.
+
+It seemed kinda silly to me to enable this driver on kernels with no
+BT subsystem, but it's not a biggie so I pulled it.
+
+Please find attached v2 of the patch.
+
+Cheers,
+Jes
+
+
+--------------070606080301010101040708
+Content-Type: text/plain;
+ name="0002-toshiba-bluetooth-v2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="0002-toshiba-bluetooth-v2.patch"
+
+Toshiba Bluetooth Enabling driver (RFKill handler)
+
+This patch adds support for the ACPI events generated by the RFKill
+switch on modern Toshiba laptops, and re-enables the Bluetooth USB
+device when the switch is flipped back to the 'on' position.
+
+The RFKill switch brute force pulls out the USB device when flipped to
+'off', but it doesn't automatically re-enable it. Without this driver,
+the Bluetooth is gone until after a reboot on my Portege R500.
+
+Signed-off-by: Jes Sorensen <Jes.Sorensen@gmail.com>
+---
+
+Index: linux-2.6.31.5/drivers/platform/x86/toshiba_bluetooth.c
+===================================================================
+--- /dev/null
++++ linux-2.6.31.5/drivers/platform/x86/toshiba_bluetooth.c
+@@ -0,0 +1,151 @@
++/*
++ * Toshiba Bluetooth Enable Driver
++ *
++ * Copyright (C) 2009 Jes Sorensen <Jes.Sorensen@gmail.com>
++ *
++ * Thanks to Matthew Garrett for background info on ACPI innards which
++ * normal people aren't meant to understand :-)
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Note the Toshiba Bluetooth RFKill switch seems to be a strange
++ * fish. It only provides a BT event when the switch is flipped to
++ * the 'on' position. When flipping it to 'off', the USB device is
++ * simply pulled away underneath us, without any BT event being
++ * delivered.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/types.h>
++#include <acpi/acpi_bus.h>
++#include <acpi/acpi_drivers.h>
++
++MODULE_AUTHOR("Jes Sorensen <Jes.Sorensen@gmail.com>");
++MODULE_DESCRIPTION("Toshiba Laptop ACPI Bluetooth Enable Driver");
++MODULE_LICENSE("GPL");
++
++
++static int toshiba_bt_rfkill_add(struct acpi_device *device);
++static int toshiba_bt_rfkill_remove(struct acpi_device *device, int type);
++static void toshiba_bt_rfkill_notify(struct acpi_device *device, u32 event);
++static int toshiba_bt_resume(struct acpi_device *device);
++
++static const struct acpi_device_id bt_device_ids[] = {
++	{ "TOS6205", 0},
++	{ "", 0},
++};
++MODULE_DEVICE_TABLE(acpi, bt_device_ids);
++
++static struct acpi_driver toshiba_bt_rfkill_driver = {
++	.name =		"Toshiba BT",
++	.class =	"Toshiba",
++	.ids =		bt_device_ids,
++	.ops =		{
++				.add =		toshiba_bt_rfkill_add,
++				.remove =	toshiba_bt_rfkill_remove,
++				.notify =	toshiba_bt_rfkill_notify,
++				.resume =	toshiba_bt_resume,
++			},
++	.owner = 	THIS_MODULE,
++};
++
++
++static int toshiba_bluetooth_enable(acpi_handle handle)
++{
++	acpi_status res1, res2;
++	acpi_integer result;
++
++	/* Query ACPI to verify RFKill switch is set to on */
++	res1 = acpi_evaluate_integer(handle, "BTST", NULL, &result);
++	if (ACPI_FAILURE(res1) || !(result & 0x01))
++		return -EBUSY;
++
++	printk(KERN_INFO "toshiba_bluetooth: Re-enabling Toshiba Bluetooth\n");
++	res1 = acpi_evaluate_object(handle, "AUSB", NULL, NULL);
++	res2 = acpi_evaluate_object(handle, "BTPO", NULL, NULL);
++	if (!ACPI_FAILURE(res1) || !ACPI_FAILURE(res2)) {
++		return 0;
++	}
++	printk(KERN_WARNING "toshiba_bluetooth: Failed to re-enable "
++	       "Toshiba Bluetooth\n");
++
++	return -ENODEV;
++}
++
++static void toshiba_bt_rfkill_notify(struct acpi_device *device, u32 event)
++{
++	toshiba_bluetooth_enable(device->handle);
++}
++
++static int toshiba_bt_resume(struct acpi_device *device)
++{
++	acpi_status res1;
++	acpi_integer result;
++
++	/*
++	 * Query ACPI to verify RFKill switch is set to on before trying
++	 * to re-enable the device or we will get back an error.
++	 */
++	res1 = acpi_evaluate_integer(device->handle, "BTST", NULL, &result);
++	if (ACPI_FAILURE(res1) || !(result & 0x01))
++		return 0;
++	return toshiba_bluetooth_enable(device->handle);
++}
++
++static int toshiba_bt_rfkill_add(struct acpi_device *device)
++{
++	acpi_status status;
++	acpi_integer bt_present;
++	int result = -ENODEV;
++
++	/*
++	 * Some Toshiba laptops may have a fake TOS6205 device in
++	 * their ACPI BIOS, so query the _STA method to see if there
++	 * is really anything there, before trying to enable it.
++	 */
++	status = acpi_evaluate_integer(device->handle, "_STA", NULL,
++				       &bt_present);
++
++	if (!ACPI_FAILURE(status) && bt_present) {
++		printk(KERN_INFO "Detected Toshiba ACPI Bluetooth device - "
++		      "installing RFKill handler\n");
++		result = toshiba_bluetooth_enable(device->handle);
++	}
++
++	return result;
++}
++
++static int __init toshiba_bt_rfkill_init(void)
++{
++	int result;
++
++	if (acpi_disabled)
++		return -ENODEV;
++
++	result = acpi_bus_register_driver(&toshiba_bt_rfkill_driver);
++	if (result < 0) {
++		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
++				  "Error registering driver\n"));
++		return result;
++	}
++
++	return 0;
++}
++
++static int toshiba_bt_rfkill_remove(struct acpi_device *device, int type)
++{
++	/* clean up */
++	return 0;
++}
++
++static void __exit toshiba_bt_rfkill_exit(void)
++{
++	acpi_bus_unregister_driver(&toshiba_bt_rfkill_driver);
++}
++
++module_init(toshiba_bt_rfkill_init);
++module_exit(toshiba_bt_rfkill_exit);
+Index: linux-2.6.31.5/drivers/platform/x86/Makefile
+===================================================================
+--- linux-2.6.31.5.orig/drivers/platform/x86/Makefile
++++ linux-2.6.31.5/drivers/platform/x86/Makefile
+@@ -20,3 +20,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
+ obj-$(CONFIG_ACPI_WMI)		+= wmi.o
+ obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
+ obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
++obj-$(CONFIG_TOSHIBA_BT_RFKILL)	+= toshiba_bluetooth.o
+Index: linux-2.6.31.5/drivers/platform/x86/Kconfig
+===================================================================
+--- linux-2.6.31.5.orig/drivers/platform/x86/Kconfig
++++ linux-2.6.31.5/drivers/platform/x86/Kconfig
+@@ -425,4 +425,20 @@ config ACPI_TOSHIBA
+ 
+ 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
+ 	  series), say Y.
++
++config TOSHIBA_BT_RFKILL
++	tristate "Toshiba Bluetooth RFKill switch support"
++	depends on ACPI
++	depends on RFKILL
++	---help---
++	  This driver adds support for Bluetooth events for the RFKill
++	  switch on modern Toshiba laptops with full ACPI support and
++	  an RFKill switch.
++
++	  This driver handles RFKill events for the TOS6205 Bluetooth,
++	  and re-enables it when the switch is set back to the 'on'
++	  position.
++
++	  If you have a modern Toshiba laptop with a Bluetooth and an
++	  RFKill switch (such as the Portege R500), say Y.
+ endif # X86_PLATFORM_DEVICES
+
+--------------070606080301010101040708--
