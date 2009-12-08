@@ -1,82 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZLHNav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZLHNdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbZLHNav (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 08:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZLHNau
+	id S1754904AbZLHNdI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 08:33:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZLHNdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 08:30:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24526 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754818AbZLHNas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 08:30:48 -0500
-Message-ID: <4B1E54FF.8060404@redhat.com>
-Date: Tue, 08 Dec 2009 11:30:39 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Tue, 8 Dec 2009 08:33:08 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:43011 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754587AbZLHNdG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 08:33:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=WDYWTmRe5IHjGg7ZZvb1LLX2P+KtLXSw3YPth+ECVe8wxvH5Esp+2rvHw6Gjr2LQ0x
+         UajzyMqCcBWiYQAYgh7lIepcH40dJEUmCvIH30O+pPIWzBNAByGKY2QeuMGAiljFc2oE
+         Z9tTmo5zc4XJkTztE4gMZ26j2mMubTUJUbAgI=
 MIME-Version: 1.0
-To: Andy Walls <awalls@radix.net>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph>	 <1259024037.3871.36.camel@palomino.walls.org>	 <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com>	 <1259264614.1781.47.camel@localhost>	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>	 <1260240142.3086.14.camel@palomino.walls.org>	 <20091208042210.GA11147@core.coreip.homeip.net> <1260275743.3094.6.camel@palomino.walls.org>
-In-Reply-To: <1260275743.3094.6.camel@palomino.walls.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091206111957.651783909@linutronix.de>
+References: <20091206110944.492100233@linutronix.de>
+	 <20091206111957.651783909@linutronix.de>
+Date: Tue, 8 Dec 2009 21:33:13 +0800
+Message-ID: <2674af740912080533o12878af5ve2fb88e5e1c0a286@mail.gmail.com>
+Subject: Re: [patch 09/23] locking: Implement new raw_spinlock
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Walls wrote:
-> On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
->> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
-> 
->>> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
->>> end of the month.
->>>
->>> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
->>> a common set of parameters, so I may be able to set up the decoders to
->>> handle decoding from two different remote types at once.  The HVR boards
->>> can ship with either type of remote AFAIK.
->>>
->>> I wonder if I can flip the keytables on the fly or if I have to create
->>> two different input devices?
->>>
->> Can you distinguish between the 2 remotes (not receivers)?
-> 
-> Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
-> (Honestly I could pile on more protocols that have similar pulse time
-> periods, but that's complexity for no good reason and I don't know of a
-> vendor that bundles 3 types of remotes per TV card.)
+On Mon, Dec 7, 2009 at 2:02 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Now that the raw_spin name space is freed up, we can implement
+> raw_spinlock and the related functions which are used to annotate the
+> locks which are not converted to sleeping spinlocks in preempt-rt.
+>
+> A side effect is that only such locks can be used with the low level
+> lock fsunctions which circumvent lockdep.
 
-You'll be distinguishing the protocol, not the remote. If I understood
-Dmitry's question, he is asking if you can distinguish between two different
-remotes that may, for example, be using both RC-5 or both RC-6 or one RC-5
-and another RC-6.
-
->>  Like I said,
->> I think the preferred way is to represent every remote that can be
->> distinguished from each other as a separate input device.
-> 
-> OK.  With RC-5, NEC, and RC-6 at least there is also an address or
-> system byte or word to distingish different remotes.  However creating
-> multiple input devices on the fly for detected remotes would be madness
-> - especially with a decoding error in the address bits.  
-> 
-> Any one vendor usually picks one address for their bundled remote.
-> Hauppaugue uses address 0x1e for it's RC-5 remotes AFAICT.
-
-The address field on RC-5 protocol is not meant to distinguish different
-vendors, but different "applications". It identifies that a code should
-be sent to a TV or a VCR, or a DVD or a SAT.
-
-In the case of bundled IR's, some vendors like Hauppauge opted to use a
-reserved address to avoid conflicts with other equipments. It happens that
-vendor's "reserved address" can be different between two different vendors,
-but is just an educated guess to say that an address equal to 0x1e is Hauppauge.
-
-Cheers,
-Mauro.
+s/fsunctions/functions
