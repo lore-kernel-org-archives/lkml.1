@@ -1,111 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbZLHHiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbZLHHjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbZLHHiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 02:38:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZLHHiN
+	id S1754216AbZLHHjI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 02:39:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZLHHjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 02:38:13 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:45089 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbZLHHiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 02:38:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=HcHCuBcZ8mqwcBBBmuc2SfMYayODGGU37ktjYxg4GDzxh5Eg4Vx3XTsqA2eIeepbu+
-         I0DSJXWm2L1+u/Eq/anQOaoC1aCKSAT/17JENtQksi7A9yyotKwrPqSdbVEea0kRMLHq
-         Yt14RsjzgQr41mG2ZvgsMwx+axyXlXu/uxFbI=
-Subject: Re: [PATCH v8 1/8] MIPS: add subdirectory for platform extension
- drivers
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: akpm@linux-foundation.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
-       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <d6bb11d33fe01abd6de945117ce647af73841f00.1260082252.git.wuzhangjin@gmail.com>
-References: <cover.1260082252.git.wuzhangjin@gmail.com>
-	 <d6bb11d33fe01abd6de945117ce647af73841f00.1260082252.git.wuzhangjin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 08 Dec 2009 15:37:45 +0800
-Message-ID: <1260257865.3315.79.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 8 Dec 2009 02:39:07 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53420 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753448AbZLHHjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 02:39:06 -0500
+Message-ID: <4B1E0283.70108@cn.fujitsu.com>
+Date: Tue, 08 Dec 2009 15:38:43 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Ben Blum <bblum@andrew.cmu.edu>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, menage@google.com
+Subject: Re: [RFC] [PATCH 1/5] cgroups: revamp subsys array
+References: <20091204085349.GA18867@andrew.cmu.edu> <20091204085508.GA18912@andrew.cmu.edu>
+In-Reply-To: <20091204085508.GA18912@andrew.cmu.edu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ralf
+> @@ -1291,6 +1324,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  	struct cgroupfs_root *new_root;
+>  
+>  	/* First find the desired set of subsystems */
+> +	down_read(&subsys_mutex);
 
-I plan to send a new revision of this patchset, Can I get your Acked-by:
-for patch 1-3/8?
+Hmm.. this can lead to deadlock. sget() returns success with sb->s_umount
+held, so here we have:
 
-Thanks!
-	Wu Zhangjin
+	down_read(&subsys_mutex);
 
-On Sun, 2009-12-06 at 15:01 +0800, Wu Zhangjin wrote:
-> From: Wu Zhangjin <wuzhangjin@gmail.com>
-> 
-> It is really hard to split the platform specific subdrivers into
-> different subsystems, which will generate lots of duplicated source
-> code, break the whole support into several pieces and also will make the
-> users be difficult to choose the suitable subdrivers in different
-> places.
-> 
-> So, I did like the forks have done under drivers/platform/x86, created
-> the drivers/platform/mips/ for putting the future MIPS netbook/laptop/pc
-> extension drivers in.
-> 
-> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> ---
->  drivers/platform/Kconfig      |    4 ++++
->  drivers/platform/mips/Kconfig |   18 ++++++++++++++++++
->  2 files changed, 22 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/platform/mips/Kconfig
-> 
-> diff --git a/drivers/platform/Kconfig b/drivers/platform/Kconfig
-> index 9652c3f..2319c0b 100644
-> --- a/drivers/platform/Kconfig
-> +++ b/drivers/platform/Kconfig
-> @@ -3,3 +3,7 @@
->  if X86
->  source "drivers/platform/x86/Kconfig"
->  endif
-> +
-> +if MIPS
-> +source "drivers/platform/mips/Kconfig"
-> +endif
-> diff --git a/drivers/platform/mips/Kconfig b/drivers/platform/mips/Kconfig
-> new file mode 100644
-> index 0000000..2f77693
-> --- /dev/null
-> +++ b/drivers/platform/mips/Kconfig
-> @@ -0,0 +1,18 @@
-> +#
-> +# MIPS Platform Specific Drivers
-> +#
-> +
-> +menuconfig MIPS_PLATFORM_DEVICES
-> +	bool "MIPS Platform Specific Device Drivers"
-> +	default y
-> +	help
-> +	  Say Y here to get to see options for device drivers of various
-> +	  MIPS platforms, including vendor-specific netbook/laptop/pc extension
-> +	  drivers.  This option alone does not add any kernel code.
-> +
-> +	  If you say N, all options in this submenu will be skipped and disabled.
-> +
-> +if MIPS_PLATFORM_DEVICES
-> +
-> +
-> +endif # MIPS_PLATFORM_DEVICES
+	down_write(&sb->s_umount);
+
+On the other hand, sb->s_umount is held before calling kill_sb(),
+so when umounting we have:
+
+	down_write(&sb->s_umount);
+
+	down_read(&subsys_mutex);
+
+>  	ret = parse_cgroupfs_options(data, &opts);
+>  	if (ret)
+>  		goto out_err;
+> @@ -1367,6 +1401,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  			free_cg_links(&tmp_cg_links);
+>  			goto drop_new_super;
+>  		}
+> +		/* done with subsys stuff and no other failure case */
+> +		up_read(&subsys_mutex);
+>  
+>  		/* EBUSY should be the only error here */
+>  		BUG_ON(ret);
+> @@ -1415,6 +1451,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>   drop_new_super:
+>  	deactivate_locked_super(sb);
+>   out_err:
+> +	up_read(&subsys_mutex);
+>  	kfree(opts.release_agent);
+>  	kfree(opts.name);
+>  
+> @@ -1434,10 +1471,12 @@ static void cgroup_kill_sb(struct super_block *sb) {
+>  	BUG_ON(!list_empty(&cgrp->children));
+>  	BUG_ON(!list_empty(&cgrp->sibling));
+>  
+> +	down_read(&subsys_mutex);
+>  	mutex_lock(&cgroup_mutex);
+>  
+>  	/* Rebind all subsystems back to the default hierarchy */
+>  	ret = rebind_subsystems(root, 0);
+> +	up_read(&subsys_mutex);
+>  	/* Shouldn't be able to fail ... */
+>  	BUG_ON(ret);
+>  
 
 
