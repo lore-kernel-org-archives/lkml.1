@@ -1,141 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965432AbZLHChB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965440AbZLHCok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965432AbZLHChB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 21:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965424AbZLHCg7
+	id S965440AbZLHCok (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 21:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965417AbZLHCoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 21:36:59 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:58376 "EHLO e2.ny.us.ibm.com"
+	Mon, 7 Dec 2009 21:44:39 -0500
+Received: from mail1.radix.net ([207.192.128.31]:45703 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965405AbZLHCg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 21:36:58 -0500
-Date: Mon, 7 Dec 2009 18:37:03 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [rfc] "fair" rw spinlocks
-Message-ID: <20091208023703.GY6808@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <alpine.LFD.2.00.0911301409560.2872@localhost.localdomain> <alpine.LFD.2.00.0911302328350.24119@localhost.localdomain> <alpine.LFD.2.00.0911301443110.2872@localhost.localdomain> <m1y6lg7q3n.fsf@fess.ebiederm.org> <20091207181816.GF6808@linux.vnet.ibm.com> <m1ocma1kz6.fsf@fess.ebiederm.org> <87ws0y76q7.fsf@basil.nowhere.org> <m1fx7m1ie8.fsf@fess.ebiederm.org> <20091208013900.GU6808@linux.vnet.ibm.com> <m1hbs2cize.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1hbs2cize.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S965413AbZLHCoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 21:44:37 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Andy Walls <awalls@radix.net>
+To: Jarod Wilson <jarod@wilsonet.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+In-Reply-To: <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
+References: <BDRae8rZjFB@christoph>
+	 <1259024037.3871.36.camel@palomino.walls.org>
+	 <m3k4xe7dtz.fsf@intrepid.localdomain>  <4B0E8B32.3020509@redhat.com>
+	 <1259264614.1781.47.camel@localhost>
+	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
+Content-Type: text/plain
+Date: Mon, 07 Dec 2009 21:42:22 -0500
+Message-Id: <1260240142.3086.14.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 06:11:49PM -0800, Eric W. Biederman wrote:
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+On Mon, 2009-12-07 at 13:19 -0500, Jarod Wilson wrote:
+> On Nov 26, 2009, at 2:43 PM, Andy Walls wrote:
 > 
-> > On Mon, Dec 07, 2009 at 03:19:59PM -0800, Eric W. Biederman wrote:
-> >> Andi Kleen <andi@firstfloor.org> writes:
+> > On Thu, 2009-11-26 at 12:05 -0200, Mauro Carvalho Chehab wrote:
+> >> Krzysztof Halasa wrote:
+> >>> Andy Walls <awalls@radix.net> writes:
+> >>> 
+> >>>> I would also note that RC-6 Mode 6A, used by most MCE remotes, was
+> >>>> developed by Philips, but Microsoft has some sort of licensing interest
+> >>>> in it and it is almost surely encumbered somwhow:
+> >>> 
+> >>> I don't know about legal problems in some countries but from the
+> >>> technical POV handling the protocol in the kernel is more efficient
+> >>> or (/and) simpler.
 > >> 
-> >> > ebiederm@xmission.com (Eric W. Biederman) writes:
-> >> >
-> >> >> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
-> >> >>>
-> >> >>> Is it required that all of the processes see the signal before the
-> >> >>> corresponding interrupt handler returns?  (My guess is "no", which
-> >> >>> enables a trick or two, but thought I should ask.)
-> >> >>
-> >> >> Not that I recall.  I think it is just an I/O completed signal.
-> >> >
-> >> > Wasn't there the sysrq SAK too? That one definitely would need
-> >> > to be careful about synchronicity.
+> >> A software licensing from Microsoft won't apply to Linux kernel, so I'm
+> >> assuming that you're referring to some patent that they could be filled
+> >> about RC6 mode 6A.
 > >> 
-> >> SAK from sysrq is done through schedule work, I seem to recall the
-> >> locking being impossible otherwise.  There is also send_sig_all and a
-> >> few others from sysrq.  I expect we could legitimately make them
-> >> schedule_work as well if needed.
-> >
-> > OK, I will chance it...  Here is one possible trick:
-> >
-> > o	Maintain a list of ongoing group-signal operations, protected
-> > 	by some suitable lock.  These could be in a per-chain-locked
-> > 	hash table, hashed by the signal target (e.g., pgrp).
-> >
-> > o	When a task is created, it scans the above list, committing
-> > 	suicide (or doing whatever the signal requires) if appropriate.
-> >
-> > o	When creating a child task, the parent holds an SRCU across
-> > 	creation.  It acquires SRCU before starting creation, and
-> > 	releases it when it knows that the child has completed
-> > 	scanning the above list.
-> >
-> > o	The updater does the following:
-> >
-> > 	o	Add its request to the above list.
-> >
-> > 	o	Wait for an SRCU grace period to elapse.
-> >
-> > 	o	Kill off everything currently in the task list,
-> > 		and then wait for each such task to get to a point
-> > 		where it can be guaranteed not to spawn additional
-> > 		tasks.  (This might be mediated via a reference
-> > 		count in the corresponding list element, or by
-> > 		rescanning the task list, or any of a number of
-> > 		similar tricks.)
-> >
-> > 		Of course, if the signal is non-fatal, then it is
-> > 		necessary only to wait until the child has taken
-> > 		the signal.
-> >
-> > 	o	If it is possible for a given task's children to
-> > 		outlive it, despite the fact that the children must
-> > 		commit suicide upon finding themselves indicated by the
-> > 		list, wait for another SRCU grace period to elapse.
-> > 		(This additional SRCU grace period would be required
-> > 		for a non-fatal pgrp signal, for example.)
-> >
-> > 	o	Remove the element from the list.
-> >
-> > Does this approach make sense, or am I misunderstanding the problem?
+> >> I don't know if is there any US patent pending about it (AFAIK, only US
+> >> accepts software patents), but there are some prior-art for IR key
+> >> decoding. So, I don't see what "innovation" RC6 would be adding. 
+> >> If it is some new way to transmit waves, the patent issues
+> >> aren't related to software, and the device manufacturer had already handled
+> >> it when they made their devices.
+> >> 
+> >> If it is just a new keytable, this issue 
+> >> could be easily solved by loading the keytable via userspace.
+> >> 
+> >> Also, assuming that you can use the driver only with a hardware that comes
+> >> with a licensed software, the user has already the license for using it.
+> >> 
+> >> Do you have any details on what patents they are claiming?
+> > 
+> > The US Philips RC-6 patent is US Patent 5,877,702
+> > 
+> > http://www.google.com/patents?vid=USPAT5877702
+> > 
+> > Click on download PDF to get a copy of the whole patent.
+> > 
+> > I am not a lawyer.  Philips claims' all appear to tie to a transmitter
+> > or receiver as part of a system, but most of the claims are about
+> > information and bit positions and lengths.
+> ...
+> > IMO, given
+> > 
+> > a. the dearth of public information about RC-6, indicating someone
+> > thinks it's their trade secret or intellectual property
+> > 
+> > b. Microsoft claiming to license something related to the MCE remote
+> > protocols (which are obviously RC-6 Mode 6A),
+> > 
+> > c. my inability to draw a "clear, bright line" that RC-6 Mode 6A
+> > encoding and decoding, as needed by MCE remotes, implemented in software
+> > doesn't violate anyone's government granted rights to exclusivity.
+> > 
+> > I think it's much better to implement software RC-6 Mode 6A encoding and
+> > decoding in user space, doing only the minimum needed to get the
+> > hardware setup and going in the kernel.  
+> > 
+> > Encoding/decoding of RC-6 by microcontrollers with firmware doesn't
+> > worry me. 
+> > 
+> > 
+> > Maybe I'm being too conservative here, but I have a personal interest in
+> > keeping Linux free and unencumbered even in the US which, I cannot deny,
+> > has a patent system that is screwed up.
 > 
-> I think that is about right.  I played with that idea a little bit.
-> I was thinking of simply having new children return -ERESTARTSYS, and
-> retry the fork.  I put it down because I decided that seems like a
-> very twisted implementation of a read/write lock.
-> 
-> If we can scale noticeably better a than tasklist_lock it is
-> definitely worth doing.  I think it is really easy to tie yourself up
-> in pretzels thinking about this.
+> So I had one of the people who does all the license and patent audits
+> for Fedora packages look at the Philips patent on RC-6. He's 100%
+> positive that the patent *only* covers hardware, there should be no
+> problem whatsoever writing a software decoder for RC-6.
 
-No argument here!!!
+OK.  Thanks for having some professionals take a look.  (I'm assuming
+that's the only patent.)
 
-> An srcu in the pid structure that we hold while signaling tasks.
-> Interesting.
+So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+end of the month.
 
-;-)
+I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+a common set of parameters, so I may be able to set up the decoders to
+handle decoding from two different remote types at once.  The HVR boards
+can ship with either type of remote AFAIK.
 
-> > Either way, one additional question...  It seems to me that non-fatal
-> > signals really don't require the above mechanism, because if a task
-> > handles the signal, and then spawns a child, one can argue that the
-> > child came after the signal and should thus be unaffected.  Right?
-> > Or more confusion on my part?
-> 
-> SIGSTOP also seems pretty important not to escape.  I'm not certain of
-> the others.  I think I would get a bit upset if job control signals in
-> the shell stopped working properly.  I think asking the question did
-> that app do something wrong with SIGTERM or did the kernel drop it
-> would drive me a bit batty.
+I wonder if I can flip the keytables on the fly or if I have to create
+two different input devices?
 
-Good point!!!  It does indeed seem to me that SIGSTOP needs to be
-handled as carefully as does a fatal signal.  I guess that SIGCONT
-is easier, at least unless there is some tricky way that a stopped
-task can nevertheless spawn a new task.  ;-)
+Regards,
+Andy
 
-> It is hard to tell what breaks because most buggy implementations will
-> work correctly most of the time.
-
-Indeed you are quite right, and it is thus worthwhile burning a few
-extra CPU cycles to faithfully emulate the old behavior.
-
-							Thanx, Paul
