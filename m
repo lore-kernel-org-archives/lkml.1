@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937904AbZLHUoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937876AbZLHUpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937904AbZLHUoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 15:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937889AbZLHUn4
+	id S937876AbZLHUpV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 15:45:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbZLHUpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 15:43:56 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:34571 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S936949AbZLHUnz (ORCPT
+	Tue, 8 Dec 2009 15:45:19 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:25692 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754274AbZLHUpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 15:43:55 -0500
-Date: Tue, 8 Dec 2009 15:44:00 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <200912082130.14634.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912081542350.3046-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 Dec 2009 15:45:18 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5826"; a="29396842"
+Subject: Re: HTC Dream: mmc compilation fixes
+From: Daniel Walker <dwalker@codeaurora.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Iliyan Malchev <malchev@google.com>
+In-Reply-To: <20091206195953.GA26863@elf.ucw.cz>
+References: <20091206195953.GA26863@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Dec 2009 12:45:22 -0800
+Message-ID: <1260305123.11826.25.camel@c-dwalke-linux.qualcomm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+On Sun, 2009-12-06 at 20:59 +0100, Pavel Machek wrote:
+> +
+> +struct embedded_sdio_data {
+> +        struct sdio_cis cis;
+> +        struct sdio_cccr cccr;
+> +        struct sdio_embedded_func *funcs;
+> +        int num_funcs;
+> +};
 
-> > This is a little more awkward because it requires the parent to iterate 
-> > through its children.
-> 
-> I can live with that.
-> 
-> > But it does solve the off-tree dependency  problem for suspends.
-> 
-> That's a plus, but I still think we're trying to create a barrier-alike
-> mechanism using lock.
-> 
-> There's one more possibility to consider, though.  What if we use a completion
-> instead of the flag + wait queue?  It surely is a standard synchronization
-> mechanism and it seems it might work here.
 
-You're right.  I should have thought of that.  Linus's original
-approach couldn't use a completion because during suspend it needed to
-make one task (the parent) wait for a bunch of others (the children).
-But if you iterate through the children by hand, that objection no
-longer applies.
+There's some indentation problems in this block, I'll fix it prior to
+merging it..
 
-Alan Stern
+Daniel
 
