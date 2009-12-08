@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZLHLnC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZLHLnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbZLHLnC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 06:43:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZLHLnA
+	id S1754254AbZLHLnv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 06:43:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbZLHLnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 06:43:00 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:58763 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753918AbZLHLm7 (ORCPT
+	Tue, 8 Dec 2009 06:43:50 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:44171 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754053AbZLHLnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 06:42:59 -0500
-X-Trace: 303358016/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.111.197
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AicBAArLHUtQKW/F/2dsb2JhbAAI11uEMgQ
-X-IronPort-AV: E=Sophos;i="4.47,361,1257120000"; 
-   d="scan'208";a="303358016"
-Date: Tue, 8 Dec 2009 11:42:55 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Al Viro <viro@ftp.linux.org.uk>, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCHSET] mremap/mmap mess
-In-Reply-To: <20091208060701.GM14381@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0912081142280.31223@sister.anvils>
-References: <E1NGzzu-0008RH-T2@ZenIV.linux.org.uk> <20091207035857.GF14381@ZenIV.linux.org.uk>
- <Pine.LNX.4.64.0912071710540.14445@sister.anvils> <20091207193048.GI14381@ZenIV.linux.org.uk>
- <Pine.LNX.4.64.0912071953490.24794@sister.anvils> <20091208060701.GM14381@ZenIV.linux.org.uk>
+	Tue, 8 Dec 2009 06:43:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AzRylsY2KFN4edJbHzperUPkoRJFATxdYR39sKXsPwclzLCMm9yKUGh8bEHi/i28fK
+         SrH1gunTbV7ZA7UGrcEmU3lMffmI2zqiiz8h3KWDtGeX2apyEgQiBxyPe0b1hvZ08+GH
+         mVoMMKhRKoRjEZ8RwWqB3tvhdTDcS634oqfM4=
+Date: Tue, 8 Dec 2009 12:43:52 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 05/13] ftrace: Call trace_parser_clear() properly
+Message-ID: <20091208114350.GA5016@nowhere>
+References: <4B1DC476.3030700@cn.fujitsu.com> <4B1DC4D2.3000406@cn.fujitsu.com> <20091208094825.GA5035@nowhere> <4B1E2482.8040203@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1E2482.8040203@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Dec 2009, Al Viro wrote:
+On Tue, Dec 08, 2009 at 06:03:46PM +0800, Li Zefan wrote:
+> Frederic Weisbecker wrote:
+> > I'm missing something. How that can happen. Anytime we reopen
+> > the file, the parser is re-allocated.
+> > 
 > 
-> Why do we want user_get_pages(), anyway?  It's not that we lacked an
-> easy way to do large arrays, especially since the use is purely sequential.
-> Even a linked list of vmalloc'ed pages would do just fine (i.e. start with
-> static array in bprm, keep the pointer to last filled entry + number of
-> entries left before the next allocation; use the last pointer in array
-> for finding the next page-sized chunk).
+> It happened at file closing..
 > 
-> What do we lose if we go that way?  Inserting all these pages into mm
-> at once shouldn't be slower.  Memory overhead is not really an issue
-> (one page per 511 or 1023 pages of argv).  Am I missing something?
+> static int
+> ftrace_regex_release(struct inode *inode, struct file *file, int enable)
+> {
+> 	...
+>         parser = &iter->parser;
+>         if (trace_parser_loaded(parser)) {
+>                 parser->buffer[parser->idx] = 0;
+> 		/* here ! */
+>                 ftrace_match_records(parser->buffer, parser->idx, enable);
+>         }
+> 	...
+> }
 
-I think what you lose that way is swappability.
 
-Since we're supporting unlimited args and env here, it is important
-that those pages can belong to an mm, be discoverable by rmap, and
-be swapped out if really necessary.  Whereas I think you're proposing
-an internal list of those pages, unknown to rmap, unswappable.
+Aah, ok.
 
-Of course, a page is pinned in core between get_user_pages() and
-put_page(), but unless I've got it wrong, get_user_pages() is being
-applied one by one to these pages, each unpinned as the next is pinned.
-
-It is conceivable that it actually doesn't work in the way I'm
-expecting: that although it's all designed to leave those pages
-swappable, some mod here or there has interfered with that.  But if
-so, that would be a bug: the intention, and I believe it's important,
-is that those pages are swappable.
-
-I have a different reason for wanting to change how it's done:
-it's the major user of non-atomic kmap() and its global kmap_lock,
-and rather swamps other uses of kmap() (which have better use for
-the cached virtual address).  So I'd be happy with a better way
-of doing it, but not at the cost of losing swappability.
-
-Hugh
-
+ 
+> > I guess that happens if you open in rw mode? But not using the
+> > example in the changelog?
 > 
-> The benefit, AFAICS, is that we get rid of the mess with forced high
-> address use, get *sane* get_user_pages() (we always have matching
-> task_struct with the right personality, so we can avoid massive PITA
-> for doing checks right) and we get unified mmu/nommu code in fs/exec.c
-> out of that.
-> 
-> If you see serious problems I've missed, please tell.  Otherwise I'm
-> going to hack up a prototype and post it here...
+> I've confirmed that example I was using can reveal this bug.
+
+Yeah indeed.
+
