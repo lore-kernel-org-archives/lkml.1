@@ -1,138 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934754AbZLHDQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935755AbZLHDQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934754AbZLHDQY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 22:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934700AbZLHDQV
+	id S935755AbZLHDQK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 22:16:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934534AbZLHDQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 22:16:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58805 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S934741AbZLHDQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 22:16:18 -0500
-Message-ID: <4B1DC4EF.3090106@cn.fujitsu.com>
-Date: Tue, 08 Dec 2009 11:15:59 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 7 Dec 2009 22:16:05 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:59144 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934700AbZLHDQB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 22:16:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=IPFmWPZLl/38X5xM+N19xPiIv1YQoGW7qN3riKuqU2MQOQxeK/XYQaG8w5i4U9EU48
+         SUyiTKctDQOgZAcKcrpYO+kZ9S2NjyPmBxFgWiFaEtjUwm9hdKZL4rcKY2i5XkxZVVEN
+         MaVbGowO0rFoOk1Zqj62p57IA4FFtPxf6bKkM=
+Message-ID: <4B1DC4F0.9050708@gmail.com>
+Date: Mon, 07 Dec 2009 21:16:00 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 07/13] tracing: Use seq file for trace_options
-References: <4B1DC476.3030700@cn.fujitsu.com>
-In-Reply-To: <4B1DC476.3030700@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+To: Andy Isaacson <adi@hexapodia.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Zidlicky <rz@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.32 regression, hard lock
+References: <20091206141419.GA6195@linux-m68k.org> <20091207143057.53c6a362.akpm@linux-foundation.org> <20091208004221.GA15968@hexapodia.org>
+In-Reply-To: <20091208004221.GA15968@hexapodia.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Code simplification for reading trace_options.
+On 12/07/2009 06:42 PM, Andy Isaacson wrote:
+> On Mon, Dec 07, 2009 at 02:30:57PM -0800, Andrew Morton wrote:
+>> btw, why does your kernel say "To Be Filled By O.E.M." in the traces?
+>> The kernel.org kernel doesn't do that.  Is that kernel patched at all?
+>
+> That's traditional for DMI_PRODUCT_NAME in dodgy vendor BIOSes.  I
+> routinely see it on Intel evaluation boards and less frequently on
+> Taiwanese Brand X boards.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace.c |   60 ++++++++++++++-----------------------------------
- 1 files changed, 17 insertions(+), 43 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 874f289..e989fc9 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2291,67 +2291,32 @@ static const struct file_operations tracing_cpumask_fops = {
- 	.write		= tracing_cpumask_write,
- };
- 
--static ssize_t
--tracing_trace_options_read(struct file *filp, char __user *ubuf,
--		       size_t cnt, loff_t *ppos)
-+static int tracing_trace_options_show(struct seq_file *m, void *v)
- {
- 	struct tracer_opt *trace_opts;
- 	u32 tracer_flags;
--	int len = 0;
--	char *buf;
--	int r = 0;
- 	int i;
- 
--
--	/* calculate max size */
--	for (i = 0; trace_options[i]; i++) {
--		len += strlen(trace_options[i]);
--		len += 3; /* "no" and newline */
--	}
--
- 	mutex_lock(&trace_types_lock);
- 	tracer_flags = current_trace->flags->val;
- 	trace_opts = current_trace->flags->opts;
- 
--	/*
--	 * Increase the size with names of options specific
--	 * of the current tracer.
--	 */
--	for (i = 0; trace_opts[i].name; i++) {
--		len += strlen(trace_opts[i].name);
--		len += 3; /* "no" and newline */
--	}
--
--	/* +1 for \0 */
--	buf = kmalloc(len + 1, GFP_KERNEL);
--	if (!buf) {
--		mutex_unlock(&trace_types_lock);
--		return -ENOMEM;
--	}
--
- 	for (i = 0; trace_options[i]; i++) {
- 		if (trace_flags & (1 << i))
--			r += sprintf(buf + r, "%s\n", trace_options[i]);
-+			seq_printf(m, "%s\n", trace_options[i]);
- 		else
--			r += sprintf(buf + r, "no%s\n", trace_options[i]);
-+			seq_printf(m, "no%s\n", trace_options[i]);
- 	}
- 
- 	for (i = 0; trace_opts[i].name; i++) {
- 		if (tracer_flags & trace_opts[i].bit)
--			r += sprintf(buf + r, "%s\n",
--				trace_opts[i].name);
-+			seq_printf(m, "%s\n", trace_opts[i].name);
- 		else
--			r += sprintf(buf + r, "no%s\n",
--				trace_opts[i].name);
-+			seq_printf(m, "no%s\n", trace_opts[i].name);
- 	}
- 	mutex_unlock(&trace_types_lock);
- 
--	WARN_ON(r >= len + 1);
--
--	r = simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
--
--	kfree(buf);
--	return r;
-+	return 0;
- }
- 
- /* Try to assign a tracer specific option */
-@@ -2446,9 +2411,18 @@ tracing_trace_options_write(struct file *filp, const char __user *ubuf,
- 	return cnt;
- }
- 
-+static int tracing_trace_options_open(struct inode *inode, struct file *file)
-+{
-+	if (tracing_disabled)
-+		return -ENODEV;
-+	return single_open(file, tracing_trace_options_show, NULL);
-+}
-+
- static const struct file_operations tracing_iter_fops = {
--	.open		= tracing_open_generic,
--	.read		= tracing_trace_options_read,
-+	.open		= tracing_trace_options_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
- 	.write		= tracing_trace_options_write,
- };
- 
--- 
-1.6.3
-
+It seems like the DMI board product name would be more useful than the 
+system product name to print out in those messages (for kerneloops.org 
+use, etc) as the system name is so frequently populated with such dummy 
+values. My Asus P7P55D has the product name set to "System Product Name" 
+which obviously isn't very unique or useful. Most likely only big-name 
+manufactured systems would have a chance of filling that in properly.
