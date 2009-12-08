@@ -1,47 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZLHNdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754973AbZLHNeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZLHNdI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 08:33:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZLHNdI
+	id S1754973AbZLHNeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 08:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZLHNeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 08:33:08 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:43011 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754587AbZLHNdG (ORCPT
+	Tue, 8 Dec 2009 08:34:23 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:46828 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754818AbZLHNeW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 08:33:06 -0500
+	Tue, 8 Dec 2009 08:34:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=WDYWTmRe5IHjGg7ZZvb1LLX2P+KtLXSw3YPth+ECVe8wxvH5Esp+2rvHw6Gjr2LQ0x
-         UajzyMqCcBWiYQAYgh7lIepcH40dJEUmCvIH30O+pPIWzBNAByGKY2QeuMGAiljFc2oE
-         Z9tTmo5zc4XJkTztE4gMZ26j2mMubTUJUbAgI=
+         :cc:content-type:content-transfer-encoding;
+        b=G/J/jncn8gEBa2Z3v1zq+1eLhB9vIKb7p2y9GoqsPvwEGXh51chhuH9dt6Q6Mv76lY
+         FpvP2aU+XGZsBXozByK/WUlKgh6a03KplJQ6YXVFF3JUS0QMVimILl6IBYI7Pf2jaIJT
+         fDJ0QZuHEz+UGYNWJMq/+3/EjBCpZkj/0tmi4=
 MIME-Version: 1.0
-In-Reply-To: <20091206111957.651783909@linutronix.de>
-References: <20091206110944.492100233@linutronix.de>
-	 <20091206111957.651783909@linutronix.de>
-Date: Tue, 8 Dec 2009 21:33:13 +0800
-Message-ID: <2674af740912080533o12878af5ve2fb88e5e1c0a286@mail.gmail.com>
-Subject: Re: [patch 09/23] locking: Implement new raw_spinlock
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linux-Arch <linux-arch@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <4B1E35D6.6000602@redhat.com>
+References: <20091204220708.GD25669@core.coreip.homeip.net>
+	 <20091206065512.GA14651@core.coreip.homeip.net>
+	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
+	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	 <m3skbn6dv1.fsf@intrepid.localdomain>
+	 <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
+	 <4B1D934E.7030103@redhat.com>
+	 <9e4733910912071628x3f3eba82r4c964982f9d8c5a4@mail.gmail.com>
+	 <4B1E35D6.6000602@redhat.com>
+Date: Tue, 8 Dec 2009 08:34:26 -0500
+Message-ID: <9e4733910912080534m1fe8c5bakb9219c6a55f0bcaa@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 7, 2009 at 2:02 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Now that the raw_spin name space is freed up, we can implement
-> raw_spinlock and the related functions which are used to annotate the
-> locks which are not converted to sleeping spinlocks in preempt-rt.
+On Tue, Dec 8, 2009 at 6:17 AM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+> Jon Smirl wrote:
+>> On Mon, Dec 7, 2009 at 6:44 PM, Mauro Carvalho Chehab
+>> <mchehab@redhat.com> wrote:
 >
-> A side effect is that only such locks can be used with the low level
-> lock fsunctions which circumvent lockdep.
+>>>> Where is the documentation for the protocol?
+>>> I'm not sure what you're meaning here. I've started a doc about IR at the media
+>>
+>> What is the format of the pulse stream data coming out of the lirc device?
+>
+> AFAIK, it is at:
+>        http://www.lirc.org/html/index.html
+>
+> It would be nice to to add it to DocBook after integrating the API in kernel.
+>
 
-s/fsunctions/functions
+The point of those design review questions was to illustrate that the
+existing LIRC system is only partially designed. Subsystems need to be
+fully designed before they get merged.
+
+For example 36-40K and 56K IR signals are both in use. It is a simple
+matter to design a receiver (or buy two receivers)  that would support
+both these frequencies. But the current LIRC model only supports  a
+single IR receiver. Adjusting it to support two receivers is going to
+break the ABI.
+
+My choice would be to just tell the person with the 56K remote to just
+buy a new 38K remote, but other people are against that choice. That
+forces us into designing a system that can handle multiple receivers.
+There is a parallel problem with baseband encoded IR signals.
+
+We need to think about all of these use cases before designing the
+ABI.  Only after we think we have a good ABI design should code start
+being merged. Of course we may make mistakes and have to fix the ABI,
+but there is nothing to be gained by merging the existing ABI if we
+already know it has problems.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
