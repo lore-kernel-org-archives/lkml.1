@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966186AbZLHVNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966207AbZLHVOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966186AbZLHVNz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965987AbZLHVNv
+	id S966207AbZLHVOV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965987AbZLHVOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:13:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60079 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965936AbZLHVNu (ORCPT
+	Tue, 8 Dec 2009 16:14:20 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:52219 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965969AbZLHVOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:13:50 -0500
-Date: Tue, 8 Dec 2009 13:13:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <alpine.LFD.2.00.0912081304070.3560@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0912081309370.3560@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912081508220.3046-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912081304070.3560@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 8 Dec 2009 16:14:19 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: spi-devel-general@lists.sourceforge.net
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Daniel Mack <daniel@caiaq.de>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH 1/5] spi-imx: use platform_driver_probe as probe lives in .init.text
+Date: Tue,  8 Dec 2009 22:14:06 +0100
+Message-Id: <1260306850-14945-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <20091208211258.GA13706@pengutronix.de>
+References: <20091208211258.GA13706@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Using platform_driver_register with a probe function defined using
+__init is wrong.
 
+This fixes an oops after:
 
-On Tue, 8 Dec 2009, Linus Torvalds wrote:
-> On Tue, 8 Dec 2009, Alan Stern wrote:
-> > 
-> > That's not the way it should be done.  Linus had children taking their
-> > parents' locks during suspend, which is simple but leads to
-> > difficulties.
-> 
-> No it doesn't. Name them.
+	cd /sys/bus/platform/drivers/spi_imx
+	echo -n spi_imx.0 > unbind
+	echo -n spi_imx.0 > bind
 
-Really. 
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/spi/spi_imx.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Let me put this simply: I've told you guys how to do it simply, with 
-_zero_ crap. No "iterating over children". No games. No data structures. 
-No new infrastructure. Just a single new rwlock per device, and _trivial_ 
-code.
+diff --git a/drivers/spi/spi_imx.c b/drivers/spi/spi_imx.c
+index 1b17f44..c83ca05 100644
+--- a/drivers/spi/spi_imx.c
++++ b/drivers/spi/spi_imx.c
+@@ -666,13 +666,12 @@ static struct platform_driver spi_imx_driver = {
+ 		   .name = DRIVER_NAME,
+ 		   .owner = THIS_MODULE,
+ 		   },
+-	.probe = spi_imx_probe,
+ 	.remove = __exit_p(spi_imx_remove),
+ };
+ 
+ static int __init spi_imx_init(void)
+ {
+-	return platform_driver_register(&spi_imx_driver);
++	return platform_driver_probe(&spi_imx_driver, spi_imx_probe);
+ }
+ 
+ static void __exit spi_imx_exit(void)
+-- 
+1.6.5.2
 
-So here's the challenge: try it my simple way first. I've quoted the code 
-about five million times already. If you _actually_ see some problems, 
-explain them. Don't make up stupid "iterate over each child" things. Don't 
-claim totally made-up "leads to difficulties". Don't make it any more 
-complicated than it needs to be.
-
-Keep it simple. And once you have tried that simple approach, and you 
-really can show why it doesn't work, THEN you can try something else.
-
-But before you try the simple approach and explain why it wouldn't work, I 
-simply will not pull anything more complex. Understood and agreed?
-
-			Linus
