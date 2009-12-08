@@ -1,34 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbZLHP2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZLHP33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932132AbZLHP2a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbZLHP23
+	id S1756044AbZLHP33 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZLHP32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:28:29 -0500
-Received: from web81601.mail.mud.yahoo.com ([68.142.199.153]:39476 "HELO
-	web81601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756014AbZLHP22 (ORCPT
+	Tue, 8 Dec 2009 10:29:28 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37625 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755787AbZLHP32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:28:28 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
-  b=pXGZKL4Lb9bHovvE5oV7gGShWS/+8lrWIt7yV9yn2cDa24wSapB5ygCihaTaxeThz3XBaOERO/aYRieMF6LD0tigUJYoGK34iPbFzrkKJFyR62YSUtANJT4MxtnqPHd0uIhLR8qcZPfzbEhjngoVYDUEi83luUpkDNHQTNjPajU=;
-Message-ID: <147900.99565.qm@web81601.mail.mud.yahoo.com>
-X-YMail-OSG: UxXdQBsVM1lAz4QndqIA9IQjFBxes2gDN0Esbkp3js_v3pWnesfSXMULsSVxeIpCssGj73Bsj2nsQ5HdRbR2Bixi4GFLji1LUWqH7pBp99kqoHA_OiMUJfyLR2znJCwSaeZ0FVHmg4T8.bvpgbepiztC0I8B8F80.snkE2ZD5pDDJMavs4rhHqNzPVnUUFux50_7O_waSWBqAFF2CSkcYhzOV4sY7g2EWhtz8RL3ozG5mjWX_i7z5v2aHxhc7C_sHUVDHZ59Zh30
-X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
-Date: Tue, 8 Dec 2009 07:28:33 -0800 (PST)
-From: official information <don-wilson@sbcglobal.net>
-Reply-To: toyota5@hawamail.com
-Subject: This is to inform you that your Email ID has been awarded the sum of 750.000.00 GBP in our Toyota Xmas Splash send your data:
-To: undisclosed recipients:;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 8 Dec 2009 10:29:28 -0500
+Subject: Re: [RFC,PATCH 14/14] utrace core
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+In-Reply-To: <20091208150417.GA11883@redhat.com>
+References: <20091124200220.GA5828@redhat.com>
+	 <1259697242.1697.1075.camel@laptop> <20091201220847.GA25400@redhat.com>
+	 <1260210877.3935.594.camel@laptop>  <20091208150417.GA11883@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Dec 2009 16:29:23 +0100
+Message-ID: <1260286163.3935.1497.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-12-08 at 16:04 +0100, Oleg Nesterov wrote:
+> > > > > +       /*
+> > > > > +        * In theory spin_lock() doesn't imply rcu_read_lock().
+> > > > > +        * Once we clear ->utrace_flags this task_struct can go away
+> > > > > +        * because tracehook_prepare_release_task() path does not take
+> > > > > +        * utrace->lock when ->utrace_flags == 0.
+> > > > > +        */
+> > > > > +       rcu_read_lock();
+> > > > > +       task->utrace_flags = flags;
+> > > > > +       spin_unlock(&utrace->lock);
+> > > > > +       rcu_read_unlock();
+> > > >
+> > > > yuck!
+> > > >
+> > > > why not simply keep a task reference over the utrace_reset call?
+> > >
+> > > Yes, we could use get_task_struct() instead. Not sure this would
+> > > be more clean, though.
+> >
+> > For one it would allow getting rid of that insane assymetric locking.
+> 
+> Well, this is subjective, but I don't agree that
+> 
+>         get_task_struct(task);
+>         task->utrace_flags = flags;
+>         spin_unlock(&utrace->lock);
+>         put_task_struct(task);
+> 
+> looks better. 
 
-Name
-Address 
-Phone Number
+No, what I mean by assymetric locking is that utrace_reset() and
+utrace_reap() drop the utrace->lock where their caller acquired it,
+resulting in non-obvious like:
+
+utrace_control()
+{
+
+  ...
+  spin_lock(&utrace->lock);
+
+  ...
+
+  if (reset)
+    utrace_reset(utrace);
+  else
+    spin_unlock(&utrace->lock);
+}
+
+If you take a task ref you can write the much saner:
+
+utrace_control()
+{
+  ...
+  spin_lock(&utrace->lock);
+  ...
+  if (reset)
+    utrace_reset(utrace);
+
+  spin_unlock(&utrace->lock);
+}
+
+
+
