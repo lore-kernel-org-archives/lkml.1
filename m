@@ -1,81 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbZLHNbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZLHNaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbZLHNbm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 08:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbZLHNbm
+	id S1754930AbZLHNaz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 08:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZLHNay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 08:31:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:46735 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754822AbZLHNbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 08:31:41 -0500
-X-Authority-Analysis: v=1.0 c=1 a=kd4J5hv4N5wA:10 a=u8Wft6Q5H0WCc344sdEA:9 a=R-Q5XAHlOOdCOcxMdbNYVDgEgpcA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 00/13] tracing: various cleanups and small fixes
- (updated)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091208122255.GB5016@nowhere>
-References: <4B1DC476.3030700@cn.fujitsu.com>
-	 <20091208122255.GB5016@nowhere>
-Content-Type: text/plain
-Date: Tue, 08 Dec 2009 08:29:40 -0500
-Message-Id: <1260278980.2165.21.camel@frodo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 08:30:54 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33359 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754822AbZLHNat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 08:30:49 -0500
+Date: Tue, 8 Dec 2009 14:30:04 +0100
+From: Michal Marek <mmarek@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] kbuild updates for 2.6.33
+Message-ID: <20091208133004.GA22750@sepie.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 13:23 +0100, Frederic Weisbecker wrote:
-> On Tue, Dec 08, 2009 at 11:13:58AM +0800, Li Zefan wrote:
-> > Updates:
-> > 
-> > - took a further step to save more spaces (01/13)
-> > - fixed a mistake in (03/13)
-> > - collected some ACKs
-> > 
-> > 
-> > Here are some patches that I've collected. All are cleanups and
-> > small fixes, no change in functionality.
-> > 
-> > As a result, 24K bytes are saved, and 87 lines of code are
-> > reduced:
-> > 
-> >    text    data     bss     dec     hex filename
-> > 5355293 1961928 7103260 14420481         dc0a01 vmlinux.o.old
-> > 5331208 1961864 7103260 14396332         dbabac vmlinux.o
-> > 
-> > ---
-> >  include/linux/ftrace_event.h       |    4 +-
-> >  include/linux/syscalls.h           |    6 +-
-> >  include/trace/ftrace.h             |   56 ++-----------
-> >  kernel/trace/ftrace.c              |   30 ++++---
-> >  kernel/trace/power-traces.c        |    2 -
-> >  kernel/trace/trace.c               |  166 +++++++++++++-----------------------
-> >  kernel/trace/trace.h               |   23 +++---
-> >  kernel/trace/trace_event_profile.c |    6 +-
-> >  kernel/trace/trace_events.c        |   38 +++++++--
-> >  kernel/trace/trace_export.c        |    4 -
-> >  kernel/trace/trace_kprobe.c        |    9 --
-> >  kernel/trace/trace_ksym.c          |   13 ++--
-> >  kernel/trace/trace_syscalls.c      |   18 +----
-> >  13 files changed, 144 insertions(+), 231 deletions(-)
-> 
-> 
-> I'm queuing these patches.
+Hi Linus,
 
-I don't mind you queing them, but I still want to have a deeper look.
-Could you hold on a bit. I'll look at them today, and give an ack, or
-comments later on.
+these are the kbuild patches I collected for 2.6.33. There might be a few
+more later, but this is the main part.
 
 Thanks,
+Michal
 
--- Steve
+The following changes since commit 6ec22f9b037fc0c2e00ddb7023fad279c365324d:
+  Linus Torvalds (1):
+        Merge branch 'x86-debug-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
+are available in the git repository at:
 
+  git://repo.or.cz/linux-kbuild.git for-next
+
+Daniel Vetter (1):
+      kbuild: specify absolute paths for cscope
+
+Jan Beulich (1):
+      genksyms: properly consider  EXPORT_UNUSED_SYMBOL{,_GPL}()
+
+Jie Zhang (1):
+      net: add net_tstamp.h to headers_install
+
+Jonathan Nieder (2):
+      scripts/package: add KBUILD_PKG_ROOTCMD variable
+      scripts/package: deb-pkg: use fakeroot if available
+
+Michael Tokarev (1):
+      kbuild: fix bzImage build for x86
+
+Michal Marek (4):
+      scripts/package: tar-pkg: use tar --owner=root
+      kbuild: create include/generated in silentoldconfig
+      score: add asm/asm-offsets.h wrapper
+      kbuild: generate modules.builtin
+
+Sam Ravnborg (14):
+      kbuild: search arch/$ARCH/include before include/
+      dontdiff: add generated
+      kbuild: move bounds.h to include/generated
+      kbuild: move asm-offsets.h to include/generated
+      ia64: move nr-irqs.h to include/generated
+      arm: move mach-types to include/generated
+      sh: move machtypes.h to include/generated
+      kbuild: drop include2/ used for O=... builds
+      kbuild: do not check for include/asm-$ARCH
+      kbuild: drop include/asm
+      kbuild: move compile.h to include/generated
+      drop explicit include of autoconf.h
+      kbuild: move autoconf.h to include/generated
+      kbuild: move utsrelease.h to include/generated
+
+Tony Finch (1):
+      unifdef: update to upstream revision 1.190
+
+Wenji Huang (1):
+      Kbuild: clean up marker
+
+ .gitignore                                      |    7 +-
+ Documentation/dontdiff                          |    1 +
+ Documentation/kbuild/kbuild.txt                 |   14 +
+ Documentation/kbuild/kconfig.txt                |    8 +-
+ Kbuild                                          |    4 +-
+ MAINTAINERS                                     |    6 +
+ Makefile                                        |   96 ++-----
+ arch/alpha/boot/bootp.c                         |    2 +-
+ arch/alpha/boot/bootpz.c                        |    2 +-
+ arch/alpha/boot/main.c                          |    2 +-
+ arch/alpha/include/asm/asm-offsets.h            |    1 +
+ arch/arm/Makefile                               |   14 +-
+ arch/arm/include/asm/asm-offsets.h              |    1 +
+ arch/arm/include/asm/mach-types.h               |    1 +
+ arch/arm/tools/Makefile                         |    2 +-
+ arch/arm/tools/gen-mach-types                   |    2 +-
+ arch/avr32/include/asm/asm-offsets.h            |    1 +
+ arch/blackfin/include/asm/asm-offsets.h         |    1 +
+ arch/cris/arch-v32/kernel/head.S                |    1 -
+ arch/cris/include/asm/asm-offsets.h             |    1 +
+ arch/cris/kernel/asm-offsets.c                  |    1 -
+ arch/cris/kernel/vmlinux.lds.S                  |    1 -
+ arch/frv/include/asm/asm-offsets.h              |    1 +
+ arch/frv/kernel/setup.c                         |    2 +-
+ arch/h8300/include/asm/asm-offsets.h            |    1 +
+ arch/ia64/Makefile                              |    2 +-
+ arch/ia64/include/asm/asm-offsets.h             |    1 +
+ arch/ia64/include/asm/irq.h                     |    2 +-
+ arch/ia64/kernel/Makefile                       |    7 +-
+ arch/ia64/kvm/asm-offsets.c                     |    1 -
+ arch/m68k/include/asm/asm-offsets.h             |    1 +
+ arch/m68k/kernel/head.S                         |    2 +-
+ arch/microblaze/include/asm/asm-offsets.h       |    1 +
+ arch/mips/include/asm/asm-offsets.h             |    1 +
+ arch/mn10300/include/asm/asm-offsets.h          |    1 +
+ arch/parisc/include/asm/asm-offsets.h           |    1 +
+ arch/powerpc/include/asm/asm-offsets.h          |    1 +
+ arch/powerpc/platforms/52xx/efika.c             |    2 +-
+ arch/powerpc/platforms/amigaone/setup.c         |    2 +-
+ arch/powerpc/platforms/cell/spufs/Makefile      |    6 +-
+ arch/powerpc/platforms/chrp/setup.c             |    2 +-
+ arch/powerpc/platforms/powermac/bootx_init.c    |    2 +-
+ arch/s390/include/asm/asm-offsets.h             |    1 +
+ arch/score/include/asm/asm-offsets.h            |    1 +
+ arch/sh/Makefile                                |   10 +-
+ arch/sh/drivers/pci/fixups-rts7751r2d.c         |    2 +-
+ arch/sh/include/asm/.gitignore                  |    1 -
+ arch/sh/include/asm/asm-offsets.h               |    1 +
+ arch/sh/include/asm/machvec.h                   |    2 +-
+ arch/sh/tools/Makefile                          |    4 +-
+ arch/sh/tools/gen-mach-types                    |    2 +-
+ arch/sparc/include/asm/asm-offsets.h            |    1 +
+ arch/um/Makefile                                |    2 +-
+ arch/um/include/asm/asm-offsets.h               |    1 +
+ arch/x86/boot/header.S                          |    2 +-
+ arch/x86/boot/version.c                         |    4 +-
+ arch/x86/include/asm/asm-offsets.h              |    1 +
+ arch/xtensa/include/asm/asm-offsets.h           |    1 +
+ drivers/accessibility/braille/braille_console.c |    1 -
+ drivers/hid/hid-lg.h                            |    2 -
+ drivers/platform/x86/compal-laptop.c            |    1 -
+ drivers/staging/iio/ring_sw.h                   |    1 -
+ drivers/staging/panel/panel.c                   |    2 +-
+ include/linux/Kbuild                            |    1 +
+ include/linux/mmdebug.h                         |    2 -
+ include/linux/mmzone.h                          |    2 +-
+ include/linux/page-flags.h                      |    2 +-
+ include/linux/vermagic.h                        |    2 +-
+ init/Makefile                                   |    8 +-
+ init/version.c                                  |    4 +-
+ kernel/bounds.c                                 |    2 +-
+ kernel/kexec.c                                  |    2 +-
+ kernel/trace/trace.c                            |    2 +-
+ scripts/Kbuild.include                          |    6 +
+ scripts/Makefile.lib                            |    2 +-
+ scripts/Makefile.modbuiltin                     |   55 ++++
+ scripts/basic/fixdep.c                          |   10 +-
+ scripts/genksyms/keywords.c_shipped             |  191 +++++++------
+ scripts/genksyms/keywords.gperf                 |    2 +
+ scripts/headers.sh                              |    2 -
+ scripts/kconfig/Makefile                        |    1 +
+ scripts/kconfig/confdata.c                      |   24 ++-
+ scripts/mkcompile_h                             |    2 +-
+ scripts/package/Makefile                        |   20 ++-
+ scripts/package/buildtar                        |    6 +-
+ scripts/tags.sh                                 |    8 +-
+ scripts/unifdef.c                               |  343 ++++++++++++++---------
+ 87 files changed, 551 insertions(+), 399 deletions(-)
+ create mode 100644 arch/alpha/include/asm/asm-offsets.h
+ create mode 100644 arch/arm/include/asm/asm-offsets.h
+ create mode 100644 arch/arm/include/asm/mach-types.h
+ create mode 100644 arch/avr32/include/asm/asm-offsets.h
+ create mode 100644 arch/blackfin/include/asm/asm-offsets.h
+ create mode 100644 arch/cris/include/asm/asm-offsets.h
+ create mode 100644 arch/frv/include/asm/asm-offsets.h
+ create mode 100644 arch/h8300/include/asm/asm-offsets.h
+ create mode 100644 arch/ia64/include/asm/asm-offsets.h
+ create mode 100644 arch/m68k/include/asm/asm-offsets.h
+ create mode 100644 arch/microblaze/include/asm/asm-offsets.h
+ create mode 100644 arch/mips/include/asm/asm-offsets.h
+ create mode 100644 arch/mn10300/include/asm/asm-offsets.h
+ create mode 100644 arch/parisc/include/asm/asm-offsets.h
+ create mode 100644 arch/powerpc/include/asm/asm-offsets.h
+ create mode 100644 arch/s390/include/asm/asm-offsets.h
+ create mode 100644 arch/score/include/asm/asm-offsets.h
+ delete mode 100644 arch/sh/include/asm/.gitignore
+ create mode 100644 arch/sh/include/asm/asm-offsets.h
+ create mode 100644 arch/sparc/include/asm/asm-offsets.h
+ create mode 100644 arch/um/include/asm/asm-offsets.h
+ create mode 100644 arch/x86/include/asm/asm-offsets.h
+ create mode 100644 arch/xtensa/include/asm/asm-offsets.h
+ create mode 100644 scripts/Makefile.modbuiltin
