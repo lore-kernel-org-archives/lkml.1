@@ -1,116 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbZLHP4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbZLHPy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932388AbZLHP4A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932363AbZLHPz6
+	id S932288AbZLHPy4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:54:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932135AbZLHPy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:55:58 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:36980 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932161AbZLHPzz (ORCPT
+	Tue, 8 Dec 2009 10:54:56 -0500
+Received: from mtagate3.de.ibm.com ([195.212.17.163]:45655 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932117AbZLHPyz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:55:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:user-agent:date:from:to:cc:subject:references
-         :content-disposition;
-        b=cAGPe2Gt1p3cST7754Hi6XmnORDvp6T+Iv+q5rDVY5Cpa5KLClwqKqvs2IpkCtpFDt
-         +K2xN5GdhA37DLCcRnmxQ4HR9hbBBn6Q7L96LKrJIB2wI1kHLm3Jxff6pL6kRCihTypp
-         dCgbdtmGJDewdlE1MRip/DcdNX2lmxlQO9M+4=
-Message-Id: <20091208155557.326359748@openvz.org>
-User-Agent: quilt/0.47-1
-Date: Tue, 08 Dec 2009 18:53:18 +0300
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: tglx@linutronix.de, mingo@elte.hu, hpa@zytor.com
-Cc: macro@linux-mips.org, yinghai@kernel.org, linux-kernel@vger.kernel.org,
-       Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: [patch 2/2] x86,apic: Use logical OR in noop-write operation
-References: <20091208155316.561853924@openvz.org>
-Content-Disposition: inline; filename=x86-apic-noop-read-write
+	Tue, 8 Dec 2009 10:54:55 -0500
+Message-ID: <4B1E76C9.50901@linux.vnet.ibm.com>
+Date: Tue, 08 Dec 2009 16:54:49 +0100
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Elladan <elladan@eskimo.com>, Peter Zijlstra <peterz@infradead.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, epasch@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: Increased Buffers due to patch 56e49d (vmscan: evict use-once
+ pages first), but why exactly?
+References: <4B1D12E7.4070701@linux.vnet.ibm.com> <4B1D46C0.4040503@redhat.com> <20091208093533.B57B.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091208093533.B57B.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For apic noop'ified we have to use logical OR statement,
-otherwise any write on systems shipped with 82489DX
-(where apic presence bit can't be retrieved via cpuid)
-will not trigger the warning which is not desired.
+KOSAKI Motohiro wrote:
+>> On 12/07/2009 09:36 AM, Christian Ehrhardt wrote:
+>>     
+>>> Hi,
+>>> commit 56e49d - "vmscan: evict use-once pages first" changed behavior of
+>>> memory management quite a bit which should be fine.
+>>> But while tracking down a performance regression I was on the wrong path
+>>> for a while suspecting this patch is causing the regression.
+>>> Fortunately this was not the case, but I got some interesting data which
+>>> I couldn't explain completely and I thought maybe its worth to get it
+>>> clarified publicly in case someone else looks at similar data again :-)
+>>>
+>>> All is about the increased amount of "Buffers" accounted as active while
+>>> loosing the same portion from "Cache" accounted as inactive in
+>>> /proc/meminfo.
+>>> I understand that with the patch applied there will be some more
+>>> pressure to file pages until the balance of active/inactive file pages
+>>> is reached.
+>>> But I didn't get how this prefers buffers compared to cache pages (I
+>>> assume dropping inactive before active was the case all the time so that
+>>> can't be the only difference between buffers/cache).
+>>>       
+>> Well, "Buffers" is the same kind of memory as "Cached", with
+>> the only difference being that "Cached" is associated with
+>> files, while "Buffers" is associated with a block device.
+>>
+>> This means that "Buffers" is more likely to contain filesystem
+>> metadata, while "Cached" is more likely to contain file data.
+>>
+>> Not putting pressure on the active file list if there are a
+>> large number of inactive file pages means that pages which were
+>> accessed more than once get protected more from pages that were
+>> only accessed once.
+>>
+>> My guess is that "Buffers" is larger because the VM now caches
+>> more (frequently used) filesystem metadata, at the expense of
+>> caching less (used once) file data.
+>>
+>>     
+>>> The scenario I'm running is a low memory system (256M total), that does
+>>> sequential I/O with parallel iozone processes.
+>>>       
+>> This indeed sounds like the kind of workload that would only
+>> access the file data very infrequently, while accessing the
+>> filesystem metadata all the time.
+>>
+>>     
+>>> But I can't really see in the code where buffers are favored in
+>>> comparison to cached pages - (it very probably makes sense to do so, as
+>>> they might contain e.g. the inode data about the files in cache).
+>>>       
+>> You are right that the code does not favor Buffers or Cache
+>> over the other, but treats both kinds of pages the same.
+>>
+>> I believe that you are just seeing the effect of code that
+>> better protects the frequently accessed metadata from the
+>> infrequently accessed data.
+>>     
+>
+> I try to explain the same thing as another word. if active list have
+> lots unimportant pages, the patch makes to gurard unimportant pages.
+> it might makes stream I/O benchmark score a bit because such workload
+> doesn't have the pages theat should be protected. iow, it only reduce
+> memory for cache.
+>
+> The patch's intention is to improve real workload (i.e. stream/random I/O mixed workload).
+> not improve benchmark score. So, I'm interest how much decrease your
+> benchmark score.
+>   
+As mentioned initially it doesn't have any benchmark score impact at all 
+(neither positive nor negative). I expect it might be beneficial for 
+scores in e.g. reread scenarios.
+It was just wondering about the buffers vs cached pages preference, 
+which as I stated and also Rik confirmed is meta data and therefore wise 
+to keep in comparison to less used data.
 
-In turn noop'ified read operation remains using logical
-AND statement. This will catch _only_ future code bugs
-since:
+btw thanks for the explanation Rik, the file/blockdev association was 
+exactly what I was missing in my thoughts.
+While my question was more intended to ask where in code these 
+differentiation is made I'm perfectly fine with having it just working 
+knowing that file/blockdev association is the key.
 
-1) The old 32bit systems without apic presence bit use
-   disable_apic only as a flag that chip was turned off
-   via boot option but not due to MP-table (BIOS) bug where
-   we may try to re-enable apic via MSR registers. The further
-   SMP setup code already prepared for a such situation
-   (ie it disables SMP support) and do not issue write
-   operations but still needs to issue apic_read. So instead
-   of deforming code with "if" we just allow reads until
-   SMP support gets disabled. But even then we still need
-   apic_read issued on a such machine at shutdown procedure.
 
-2) x86-64 at moment properly uses cpu_has_apic and turn
-   this feature off as only chip is disabled together
-   with disable_apic flag.
+-- 
 
-CC: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
-
-Please review, I hope this explanation is more or less good
-though I would be glad to hear complains a well :)
-
- arch/x86/kernel/apic/apic_noop.c |   30 ++++++++++++++++++++++++++++--
- 1 file changed, 28 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/apic_noop.c
-+++ linux-2.6.git/arch/x86/kernel/apic/apic_noop.c
-@@ -119,15 +119,41 @@ int noop_apicid_to_node(int logical_apic
- 	return 0;
- }
- 
-+/*
-+ * we use logical AND here just to suppress a
-+ * number of WARNs which would take place all
-+ * over the code if the kernel is SMP compatible
-+ * and we would need to deform code with a lot
-+ * of "if" statements then (especially on x86-32
-+ * with discrete apic chip)
-+ *
-+ * note that even if apic was not disabled via
-+ * boot option we still may have apic broken
-+ * due to buggy BIOS/MP-table/ACPI so we allow
-+ * any read operation on a such systems in a sake
-+ * of callers code simplicity
-+ */
- static u32 noop_apic_read(u32 reg)
- {
--	WARN_ON_ONCE((cpu_has_apic && !disable_apic));
-+	WARN_ON_ONCE(cpu_has_apic && !disable_apic);
- 	return 0;
- }
- 
-+/*
-+ * we don't use logical AND here because otherwise
-+ * any writes on 486DXSL (which has no apic presence
-+ * bit retrieved via cpuid) will never trigger
-+ * this WARN allowing a (possible buggy) code to
-+ * continue executing, so consider this WARN as
-+ * a strict guard against unpredicted/inaccurate
-+ * apic code modifications or/and buggy callers
-+ *
-+ * in short -- warn every write on enabled apic
-+ * (both 82489DX and integrated LAPICs)
-+ */
- static void noop_apic_write(u32 reg, u32 v)
- {
--	WARN_ON_ONCE(cpu_has_apic && !disable_apic);
-+	WARN_ON_ONCE(cpu_has_apic || !disable_apic);
- }
- 
- struct apic apic_noop = {
+Grüsse / regards, Christian Ehrhardt
+IBM Linux Technology Center, Open Virtualization 
 
