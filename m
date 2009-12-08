@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbZLHHjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZLHHnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbZLHHjI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 02:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZLHHjH
+	id S1754025AbZLHHnJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 02:43:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZLHHnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 02:39:07 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53420 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbZLHHjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 02:39:06 -0500
-Message-ID: <4B1E0283.70108@cn.fujitsu.com>
-Date: Tue, 08 Dec 2009 15:38:43 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 8 Dec 2009 02:43:08 -0500
+Received: from mail-vw0-f197.google.com ([209.85.212.197]:46974 "EHLO
+	mail-vw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbZLHHnI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 02:43:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=uINiiJwVOUkeJU++7XZr6QyleakYar//+6bZYEblZ7Zn0CzcubGjcklDbgNXMDN40J
+         CLYCzn3QJPzbPMH3MArAGivVjqniLU4aiggQIFObt5PsYHcQKnVlljcJ0ul61HfbqyG0
+         3XHd2bfbN/+4xzICzgHWWnJLo3iBjJzgzw8Iw=
 MIME-Version: 1.0
-To: Ben Blum <bblum@andrew.cmu.edu>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, menage@google.com
-Subject: Re: [RFC] [PATCH 1/5] cgroups: revamp subsys array
-References: <20091204085349.GA18867@andrew.cmu.edu> <20091204085508.GA18912@andrew.cmu.edu>
-In-Reply-To: <20091204085508.GA18912@andrew.cmu.edu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
+References: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
+Date: Tue, 8 Dec 2009 08:43:13 +0100
+Message-ID: <71cd59b00912072343g2fe258b6sc495337cdccd169e@mail.gmail.com>
+Subject: Re: [Resend] [PATCH] asus-laptop: add Lenovo SL LenovoCare LED 
+	support
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Ike Panhc <ike.pan@canonical.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       acpi4asus-user@lists.sourceforge.net,
+       Alexandre Rostovtsev <tetromino@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -1291,6 +1324,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->  	struct cgroupfs_root *new_root;
->  
->  	/* First find the desired set of subsystems */
-> +	down_read(&subsys_mutex);
+On Tue, Dec 8, 2009 at 8:37 AM, Ike Panhc <ike.pan@canonical.com> wrote:
+> Resend because the email address of signed-off is wrong in prior mail
+>
+> This patch is to enable the LenovoCare LED support on Lenovo SL laptop. Based
+> on the found of the control interface by Alexandre Rostovtsev
+>
+> Turn on the LenovoCare LED:
+>  (As root privileges) echo 1 > /sys/class/leds/asus\:\:LenovoCare/brightness
+> Trun off the LenovoCare LED:
+>  (As root privileges) echo 0 > /sys/class/leds/asus\:\:LenovoCare/brightness
+>
+> The patch against current checkout of acpi4asus is below.
+>
+> Signed-off-by: Ike Panhc <ike.pan@canonical.com>
 
-Hmm.. this can lead to deadlock. sget() returns success with sb->s_umount
-held, so here we have:
-
-	down_read(&subsys_mutex);
-
-	down_write(&sb->s_umount);
-
-On the other hand, sb->s_umount is held before calling kill_sb(),
-so when umounting we have:
-
-	down_write(&sb->s_umount);
-
-	down_read(&subsys_mutex);
-
->  	ret = parse_cgroupfs_options(data, &opts);
->  	if (ret)
->  		goto out_err;
-> @@ -1367,6 +1401,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->  			free_cg_links(&tmp_cg_links);
->  			goto drop_new_super;
->  		}
-> +		/* done with subsys stuff and no other failure case */
-> +		up_read(&subsys_mutex);
->  
->  		/* EBUSY should be the only error here */
->  		BUG_ON(ret);
-> @@ -1415,6 +1451,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->   drop_new_super:
->  	deactivate_locked_super(sb);
->   out_err:
-> +	up_read(&subsys_mutex);
->  	kfree(opts.release_agent);
->  	kfree(opts.name);
->  
-> @@ -1434,10 +1471,12 @@ static void cgroup_kill_sb(struct super_block *sb) {
->  	BUG_ON(!list_empty(&cgrp->children));
->  	BUG_ON(!list_empty(&cgrp->sibling));
->  
-> +	down_read(&subsys_mutex);
->  	mutex_lock(&cgroup_mutex);
->  
->  	/* Rebind all subsystems back to the default hierarchy */
->  	ret = rebind_subsystems(root, 0);
-> +	up_read(&subsys_mutex);
->  	/* Shouldn't be able to fail ... */
->  	BUG_ON(ret);
->  
+Hi,
+Is there another method to control that led in _SB.ATKD ?
+Could you re-send me some Leveno dsdt (if possible, more than one) ?
+Thanks,
 
 
+-- 
+Corentin Chary
+http://xf.iksaif.net
