@@ -1,56 +1,399 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966637AbZLHWGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966301AbZLHV0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966637AbZLHWGj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966598AbZLHWGe
+	id S966301AbZLHV0k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965545AbZLHV0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:06:34 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45809 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966623AbZLHWGd (ORCPT
+	Tue, 8 Dec 2009 16:26:39 -0500
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:48334
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966211AbZLHV0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:06:33 -0500
-Date: Tue, 8 Dec 2009 22:06:38 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: hugh.dickins@tiscali.co.uk, viro@ftp.linux.org.uk,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCHSET] mremap/mmap mess
-Message-ID: <20091208220638.GN14381@ZenIV.linux.org.uk>
-References: <20091208060701.GM14381@ZenIV.linux.org.uk> <Pine.LNX.4.64.0912081142280.31223@sister.anvils> <Pine.LNX.4.64.0912081254500.3365@sister.anvils> <20091208.130802.25121122.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091208.130802.25121122.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 8 Dec 2009 16:26:38 -0500
+X-Greylist: delayed 1185 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Dec 2009 16:26:37 EST
+Subject: [PATCH] synclink_gt dropped transmit data bugfix
+From: Paul Fulghum <paulkf@microgate.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 08 Dec 2009 16:06:50 -0600
+Message-Id: <1260310010.3764.49.camel@x2.microgate.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 01:08:02PM -0800, David Miller wrote:
-> From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Date: Tue, 8 Dec 2009 13:03:30 +0000 (GMT)
-> 
-> > That would impose some (unacceptable?) limits, and require some funny
-> > code to migrate the pages over to the new mm later (instead of
-> > relocating within the new mm as we do now).
-> 
-> I think this approach would create new failure cases that don't exist
-> now.  Whether that's acceptable or not is another issue.
-> 
-> The forced page table move, and TLB+cache flush that goes along with
-> that, for every single compat task we get now on the other hand is not
-> acceptable :-)
-> 
-> I also think this page table move overhead is worse than the
-> non-swapability added by Al's approach.
+Fix transmit bug that could drop send data if write() called close
+to serial transmitter going idle after sending previous data. Bug is
+caused by incorrect use of device information member tx_count.
 
-We should be able to make them swappable - embed an inode into bprm, use
-a _very_ trimmed-down analog of shmem.c to handle it, then, after switch
-to new VM, swap what's needed in, steal it from that inode and shove resulting
-anon pages into freshly created stack vma.  At least assuming that I haven't
-completely misunderstood Rik's answers to my questions, which is admittedly
-quite possible ;-)
+Driver originally processed one data block (write call) at a time,
+waiting for transmit idle before sending more.
+tx_count recorded how much data was loaded in DMA buffers on write(),
+and was cleared on send completion. tx_count use was overloaded to record
+accumulated data from put_char() callback when transmitter was idle.
 
-I'll try to do it that way and see what falls out...
+A bug was introduced when transmit code was reworked to allow multiple
+blocks of data in the tx DMA buffers which keeps transmitter from going idle
+between blocks. tx_count was set to size of last block loaded, cleared
+when tx went idle, and monitored to know when to restart transmitter
+without proper synchronization. tx_count could be cleared when unsent data
+remained in DMA buffers and transmitter required restarting, effectively
+dropping unsent data.
+
+Solution:
+1. tx_count now used only to track accumulated data from put_char
+2. DMA buffer state tracked by direct inspection of descriptors
+   with spinlock synchronization
+3. consolidate these tasks in tx_load() :
+   a. check for available buffer space
+   b. load buffers
+   c. restart DMA and or serial transmitter as needed
+   These steps were previously duplicated in multiple places,
+   sometimes incompletely.
+4. fix use of tx_count as active transmit indicator,
+   instead using tx_active which is meant for that purpose
+
+Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+
+--- a/drivers/char/synclink_gt.c	2009-12-02 21:51:21.000000000 -0600
++++ b/drivers/char/synclink_gt.c	2009-12-08 12:49:26.000000000 -0600
+@@ -468,7 +468,7 @@ static unsigned int free_tbuf_count(stru
+ static unsigned int tbuf_bytes(struct slgt_info *info);
+ static void reset_tbufs(struct slgt_info *info);
+ static void tdma_reset(struct slgt_info *info);
+-static void tx_load(struct slgt_info *info, const char *buf, unsigned int count);
++static bool tx_load(struct slgt_info *info, const char *buf, unsigned int count);
+ 
+ static void get_signals(struct slgt_info *info);
+ static void set_signals(struct slgt_info *info);
+@@ -813,59 +813,32 @@ static int write(struct tty_struct *tty,
+ 	int ret = 0;
+ 	struct slgt_info *info = tty->driver_data;
+ 	unsigned long flags;
+-	unsigned int bufs_needed;
+ 
+ 	if (sanity_check(info, tty->name, "write"))
+-		goto cleanup;
++		return -EIO;
++
+ 	DBGINFO(("%s write count=%d\n", info->device_name, count));
+ 
+-	if (!info->tx_buf)
+-		goto cleanup;
++	if (!info->tx_buf || (count > info->max_frame_size))
++		return -EIO;
+ 
+-	if (count > info->max_frame_size) {
+-		ret = -EIO;
+-		goto cleanup;
+-	}
++	if (!count || tty->stopped || tty->hw_stopped)
++		return 0;
+ 
+-	if (!count)
+-		goto cleanup;
++	spin_lock_irqsave(&info->lock, flags);
+ 
+-	if (!info->tx_active && info->tx_count) {
++	if (info->tx_count) {
+ 		/* send accumulated data from send_char() */
+-		tx_load(info, info->tx_buf, info->tx_count);
+-		goto start;
++		if (!tx_load(info, info->tx_buf, info->tx_count))
++			goto cleanup;
++		info->tx_count = 0;
+ 	}
+-	bufs_needed = (count/DMABUFSIZE);
+-	if (count % DMABUFSIZE)
+-		++bufs_needed;
+-	if (bufs_needed > free_tbuf_count(info))
+-		goto cleanup;
+-
+-	ret = info->tx_count = count;
+-	tx_load(info, buf, count);
+-	goto start;
+ 
+-start:
+- 	if (info->tx_count && !tty->stopped && !tty->hw_stopped) {
+-		spin_lock_irqsave(&info->lock,flags);
+-		if (!info->tx_active)
+-		 	tx_start(info);
+-		else if (!(rd_reg32(info, TDCSR) & BIT0)) {
+-			/* transmit still active but transmit DMA stopped */
+-			unsigned int i = info->tbuf_current;
+-			if (!i)
+-				i = info->tbuf_count;
+-			i--;
+-			/* if DMA buf unsent must try later after tx idle */
+-			if (desc_count(info->tbufs[i]))
+-				ret = 0;
+-		}
+-		if (ret > 0)
+-			update_tx_timer(info);
+-		spin_unlock_irqrestore(&info->lock,flags);
+- 	}
++	if (tx_load(info, buf, count))
++		ret = count;
+ 
+ cleanup:
++	spin_unlock_irqrestore(&info->lock, flags);
+ 	DBGINFO(("%s write rc=%d\n", info->device_name, ret));
+ 	return ret;
+ }
+@@ -882,7 +855,7 @@ static int put_char(struct tty_struct *t
+ 	if (!info->tx_buf)
+ 		return 0;
+ 	spin_lock_irqsave(&info->lock,flags);
+-	if (!info->tx_active && (info->tx_count < info->max_frame_size)) {
++	if (info->tx_count < info->max_frame_size) {
+ 		info->tx_buf[info->tx_count++] = ch;
+ 		ret = 1;
+ 	}
+@@ -981,10 +954,8 @@ static void flush_chars(struct tty_struc
+ 	DBGINFO(("%s flush_chars start transmit\n", info->device_name));
+ 
+ 	spin_lock_irqsave(&info->lock,flags);
+-	if (!info->tx_active && info->tx_count) {
+-		tx_load(info, info->tx_buf,info->tx_count);
+-	 	tx_start(info);
+-	}
++	if (info->tx_count && tx_load(info, info->tx_buf, info->tx_count))
++		info->tx_count = 0;
+ 	spin_unlock_irqrestore(&info->lock,flags);
+ }
+ 
+@@ -997,10 +968,9 @@ static void flush_buffer(struct tty_stru
+ 		return;
+ 	DBGINFO(("%s flush_buffer\n", info->device_name));
+ 
+-	spin_lock_irqsave(&info->lock,flags);
+-	if (!info->tx_active)
+-		info->tx_count = 0;
+-	spin_unlock_irqrestore(&info->lock,flags);
++	spin_lock_irqsave(&info->lock, flags);
++	info->tx_count = 0;
++	spin_unlock_irqrestore(&info->lock, flags);
+ 
+ 	tty_wakeup(tty);
+ }
+@@ -1033,12 +1003,10 @@ static void tx_release(struct tty_struct
+ 	if (sanity_check(info, tty->name, "tx_release"))
+ 		return;
+ 	DBGINFO(("%s tx_release\n", info->device_name));
+-	spin_lock_irqsave(&info->lock,flags);
+-	if (!info->tx_active && info->tx_count) {
+-		tx_load(info, info->tx_buf, info->tx_count);
+-	 	tx_start(info);
+-	}
+-	spin_unlock_irqrestore(&info->lock,flags);
++	spin_lock_irqsave(&info->lock, flags);
++	if (info->tx_count && tx_load(info, info->tx_buf, info->tx_count))
++		info->tx_count = 0;
++	spin_unlock_irqrestore(&info->lock, flags);
+ }
+ 
+ /*
+@@ -1506,27 +1474,25 @@ static netdev_tx_t hdlcdev_xmit(struct s
+ 
+ 	DBGINFO(("%s hdlc_xmit\n", dev->name));
+ 
++	if (!skb->len)
++		return NETDEV_TX_OK;
++
+ 	/* stop sending until this frame completes */
+ 	netif_stop_queue(dev);
+ 
+-	/* copy data to device buffers */
+-	info->tx_count = skb->len;
+-	tx_load(info, skb->data, skb->len);
+-
+ 	/* update network statistics */
+ 	dev->stats.tx_packets++;
+ 	dev->stats.tx_bytes += skb->len;
+ 
+-	/* done with socket buffer, so free it */
+-	dev_kfree_skb(skb);
+-
+ 	/* save start time for transmit timeout detection */
+ 	dev->trans_start = jiffies;
+ 
+-	spin_lock_irqsave(&info->lock,flags);
+-	tx_start(info);
+-	update_tx_timer(info);
+-	spin_unlock_irqrestore(&info->lock,flags);
++	spin_lock_irqsave(&info->lock, flags);
++	tx_load(info, skb->data, skb->len);
++	spin_unlock_irqrestore(&info->lock, flags);
++
++	/* done with socket buffer, so free it */
++	dev_kfree_skb(skb);
+ 
+ 	return NETDEV_TX_OK;
+ }
+@@ -2180,7 +2146,7 @@ static void isr_serial(struct slgt_info 
+ 
+ 	if (info->params.mode == MGSL_MODE_ASYNC) {
+ 		if (status & IRQ_TXIDLE) {
+-			if (info->tx_count)
++			if (info->tx_active)
+ 				isr_txeom(info, status);
+ 		}
+ 		if (info->rx_pio && (status & IRQ_RXDATA))
+@@ -2276,13 +2242,42 @@ static void isr_tdma(struct slgt_info *i
+ 	}
+ }
+ 
++/*
++ * return true if there are unsent tx DMA buffers, otherwise false
++ *
++ * if there are unsent buffers then info->tbuf_start
++ * is set to index of first unsent buffer
++ */
++static bool unsent_tbufs(struct slgt_info *info)
++{
++	unsigned int i = info->tbuf_current;
++	bool rc = false;
++
++	/*
++	 * search backwards from last loaded buffer (precedes tbuf_current)
++	 * for first unsent buffer (desc_count > 0)
++	 */
++
++	do {
++		if (i)
++			i--;
++		else
++			i = info->tbuf_count - 1;
++		if (!desc_count(info->tbufs[i]))
++			break;
++		info->tbuf_start = i;
++		rc = true;
++	} while (i != info->tbuf_current);
++
++	return rc;
++}
++
+ static void isr_txeom(struct slgt_info *info, unsigned short status)
+ {
+ 	DBGISR(("%s txeom status=%04x\n", info->device_name, status));
+ 
+ 	slgt_irq_off(info, IRQ_TXDATA + IRQ_TXIDLE + IRQ_TXUNDER);
+ 	tdma_reset(info);
+-	reset_tbufs(info);
+ 	if (status & IRQ_TXUNDER) {
+ 		unsigned short val = rd_reg16(info, TCR);
+ 		wr_reg16(info, TCR, (unsigned short)(val | BIT2)); /* set reset bit */
+@@ -2297,8 +2292,12 @@ static void isr_txeom(struct slgt_info *
+ 				info->icount.txok++;
+ 		}
+ 
++		if (unsent_tbufs(info)) {
++			tx_start(info);
++			update_tx_timer(info);
++			return;
++		}
+ 		info->tx_active = false;
+-		info->tx_count = 0;
+ 
+ 		del_timer(&info->tx_timer);
+ 
+@@ -3949,7 +3948,7 @@ static void tx_start(struct slgt_info *i
+ 		info->tx_enabled = true;
+ 	}
+ 
+-	if (info->tx_count) {
++	if (desc_count(info->tbufs[info->tbuf_start])) {
+ 		info->drop_rts_on_tx_done = false;
+ 
+ 		if (info->params.mode != MGSL_MODE_ASYNC) {
+@@ -4772,25 +4771,40 @@ static unsigned int tbuf_bytes(struct sl
+ }
+ 
+ /*
+- * load transmit DMA buffer(s) with data
++ * load data into transmit DMA buffer ring and start transmitter if needed
++ * return true if data accepted, otherwise false (buffers full)
+  */
+-static void tx_load(struct slgt_info *info, const char *buf, unsigned int size)
++static bool tx_load(struct slgt_info *info, const char *buf, unsigned int size)
+ {
+ 	unsigned short count;
+ 	unsigned int i;
+ 	struct slgt_desc *d;
++	unsigned int bufs_needed;
+ 
+-	if (size == 0)
+-		return;
++	/* check required buffer space */
++	bufs_needed = (size/DMABUFSIZE);
++	if (size % DMABUFSIZE)
++		++bufs_needed;
++	if (bufs_needed > free_tbuf_count(info))
++		return false;
+ 
+ 	DBGDATA(info, buf, size, "tx");
+ 
++	/*
++	 * copy data to one or more DMA buffers in circular ring
++	 * tbuf_start   = first buffer for this data
++	 * tbuf_current = next free buffer
++	 *
++	 * Copy all data before making data visible to DMA controller by
++	 * setting descriptor count of the first buffer.
++	 * This prevents an active DMA controller from reading the first DMA
++	 * buffers of a frame and stopping before the final buffers are filled.
++	 */
++
+ 	info->tbuf_start = i = info->tbuf_current;
+ 
+ 	while (size) {
+ 		d = &info->tbufs[i];
+-		if (++i == info->tbuf_count)
+-			i = 0;
+ 
+ 		count = (unsigned short)((size > DMABUFSIZE) ? DMABUFSIZE : size);
+ 		memcpy(d->buf, buf, count);
+@@ -4808,11 +4822,27 @@ static void tx_load(struct slgt_info *in
+ 		else
+ 			set_desc_eof(*d, 0);
+ 
+-		set_desc_count(*d, count);
++		/* set descriptor count for all but first buffer */
++		if (i != info->tbuf_start)
++			set_desc_count(*d, count);
+ 		d->buf_count = count;
++
++		if (++i == info->tbuf_count)
++			i = 0;
+ 	}
+ 
+ 	info->tbuf_current = i;
++
++	/* set first buffer count to make new data visible to DMA controller */
++	d = &info->tbufs[info->tbuf_start];
++	set_desc_count(*d, d->buf_count);
++
++	/* start transmitter if needed and update transmit timeout */
++	if (!info->tx_active)
++		tx_start(info);
++	update_tx_timer(info);
++
++	return true;
+ }
+ 
+ static int register_test(struct slgt_info *info)
+@@ -4934,9 +4964,7 @@ static int loopback_test(struct slgt_inf
+ 	spin_lock_irqsave(&info->lock,flags);
+ 	async_mode(info);
+ 	rx_start(info);
+-	info->tx_count = count;
+ 	tx_load(info, buf, count);
+-	tx_start(info);
+ 	spin_unlock_irqrestore(&info->lock, flags);
+ 
+ 	/* wait for receive complete */
+
+
