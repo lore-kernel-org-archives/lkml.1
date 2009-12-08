@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZLHN5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbZLHOAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbZLHN5R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 08:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbZLHN5Q
+	id S1755358AbZLHOAU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZLHOAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 08:57:16 -0500
-Received: from khc.piap.pl ([195.187.100.11]:49592 "EHLO khc.piap.pl"
+	Tue, 8 Dec 2009 09:00:18 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28949 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755180AbZLHN5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 08:57:15 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+	id S1755329AbZLHOAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:00:14 -0500
+Message-ID: <4B1E5BDF.7010202@redhat.com>
+Date: Tue, 08 Dec 2009 11:59:59 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Andy Walls <awalls@radix.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <BEJgSGGXqgB@lirc>
-	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	<1260070593.3236.6.camel@pc07.localdom.local>
-	<20091206065512.GA14651@core.coreip.homeip.net>
-	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	<m3skbn6dv1.fsf@intrepid.localdomain>
-	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-	<4B1D934E.7030103@redhat.com>
-	<20091208042340.GC11147@core.coreip.homeip.net>
-Date: Tue, 08 Dec 2009 14:57:15 +0100
-In-Reply-To: <20091208042340.GC11147@core.coreip.homeip.net> (Dmitry
-	Torokhov's message of "Mon, 7 Dec 2009 20:23:40 -0800")
-Message-ID: <m38wddva9w.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ 	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph>	 <1259024037.3871.36.camel@palomino.walls.org>	 <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com>	 <1259264614.1781.47.camel@localhost>	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>	 <1260240142.3086.14.camel@palomino.walls.org>	 <20091208042210.GA11147@core.coreip.homeip.net>	 <1260275743.3094.6.camel@palomino.walls.org>	 <4B1E54FF.8060404@redhat.com> <9e4733910912080547j75c2c885o29664470ff5e2c6a@mail.gmail.com>
+In-Reply-To: <9e4733910912080547j75c2c885o29664470ff5e2c6a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
+Jon Smirl wrote:
+> On Tue, Dec 8, 2009 at 8:30 AM, Mauro Carvalho Chehab
+> <mchehab@redhat.com> wrote:
+>> Andy Walls wrote:
+>>> On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
+>>>> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
+>>>>> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+>>>>> end of the month.
+>>>>>
+>>>>> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+>>>>> a common set of parameters, so I may be able to set up the decoders to
+>>>>> handle decoding from two different remote types at once.  The HVR boards
+>>>>> can ship with either type of remote AFAIK.
+>>>>>
+>>>>> I wonder if I can flip the keytables on the fly or if I have to create
+>>>>> two different input devices?
+>>>>>
+>>>> Can you distinguish between the 2 remotes (not receivers)?
+>>> Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
+>>> (Honestly I could pile on more protocols that have similar pulse time
+>>> periods, but that's complexity for no good reason and I don't know of a
+>>> vendor that bundles 3 types of remotes per TV card.)
+>> You'll be distinguishing the protocol, not the remote. If I understood
+>> Dmitry's question, he is asking if you can distinguish between two different
+>> remotes that may, for example, be using both RC-5 or both RC-6 or one RC-5
+>> and another RC-6.
+> 
+> RC-5 and RC-6 both contain an address field.  My opinion is that
+> different addresses represent different devices and in general they
+> should appear on an input devices per address.
 
-> Why woudl we want to do this? Quite often there is a need for "observer"
-> that maybe does not act on data but allows capturing it. Single-user
-> inetrfaces are PITA.
+The same IR can produce two different addresses. The IR bundled with my satellite
+STB produces two different codes, depending if you previously pressed <TV> or <SAT>
+key (in fact, I think it can even produce different protocols for TV, as it can
+be configured to work with different TV sets).
 
-Lircd can work as a multiplexer. IMHO single-open lirc interface is ok,
-though we obviously need simultaneous operation of in-kernel decoders.
--- 
-Krzysztof Halasa
+> However, I prefer a different scheme for splitting the signals apart.
+> Load separate maps containing scancodes for each address. When the IR
+> signals come in they are matched against the maps and a keycode is
+> generated when a match is found. Now there is no need to distinguish
+> between the remotes. It doesn't matter which remote generated the
+> signal.
+> 
+> scancode RC5/12/1 - protocol, address, command tuplet. Map this to
+> KP_1 on interface 1.
+> scancode RC5/7/1 - protocol, address, command tuplet. Map this to KP_1
+> on interface 2.
+> 
+> Using the maps to split the commands out also fixes the problem with
+> Sony remotes which use multiple protocols to control a single device.
+> scancode Sony12/12/1 - protocol, address, command tuplet. Map this to
+> power_on on interface 1.
+> scancode Sony15/12/1 - protocol, address, command tuplet. Map this to
+> KP_1 on interface 1.
+> 
+
+I agree.
+
+Cheers,
+Mauro.
