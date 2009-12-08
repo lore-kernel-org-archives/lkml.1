@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbZLHOvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbZLHPAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755762AbZLHOvQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZLHOvP
+	id S1755855AbZLHPAM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:00:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZLHPAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:51:15 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:56162 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755364AbZLHOvO convert rfc822-to-8bit (ORCPT
+	Tue, 8 Dec 2009 10:00:11 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:47257 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754829AbZLHPAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:51:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LUUbO5BTnpR5Fc0wwJjDqwlRlyNe2oMlLVaAyWZLiJmGA+5VdE3Ls7ySIEKne9gplS
-         ejl/spvJPUYPuKKXFBQ7i/uKzxf1Rfp1fsuDEOWtFm32c7wuE3uJlyrxkwfBs7DHN+Mv
-         uwNh467zPsI1duzum0QJw5tIUOp+ruEbKTSoQ=
+	Tue, 8 Dec 2009 10:00:10 -0500
+Date: Tue, 8 Dec 2009 09:54:35 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Michal Marek <mmarek@suse.cz>, reinette chatre <reinette.chatre@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: net/kbuild trees build failure
+Message-ID: <20091208145435.GE15172@tuxdriver.com>
+References: <20091207200317.57820f0a.sfr@canb.auug.org.au> <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz> <20091207160903.GB18939@tuxdriver.com> <1260209537.4653.778.camel@rc-desk> <4B1D76B1.6070601@suse.cz> <20091207222853.GE18939@tuxdriver.com> <20091208053819.GA4604@merkur.ravnborg.org>
 MIME-Version: 1.0
-In-Reply-To: <4B1E5DA3.7000206@redhat.com>
-References: <20091204220708.GD25669@core.coreip.homeip.net>
-	 <20091206065512.GA14651@core.coreip.homeip.net>
-	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	 <m3skbn6dv1.fsf@intrepid.localdomain>
-	 <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-	 <4B1D934E.7030103@redhat.com> <m3hbs1vain.fsf@intrepid.localdomain>
-	 <4B1E5DA3.7000206@redhat.com>
-Date: Tue, 8 Dec 2009 09:51:20 -0500
-Message-ID: <9e4733910912080651s30d600aay4c37f59e60e9c697@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091208053819.GA4604@merkur.ravnborg.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 9:07 AM, Mauro Carvalho Chehab
-<mchehab@redhat.com> wrote:
-> Krzysztof Halasa wrote:
->> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
->>
->>>> What is the interface for attaching an in-kernel decoder?
->>> IMO, it should use the kfifo for it. However, if we allow both raw data and
->>> in-kernel decoders to read data there, we'll need a spinlock to protect the
->>> kfifo.
->>
->> This may be an option, but I think we should be able to attach protocol
->> decoders in parallel, directly to the IRQ handler. At least with RC-5
->> (that's what I personally use) it means reliable decoding, no need for
->> any timeouts, the code is clean, fast (can be a part of hard IRQ
->> handler) and simple.
->>
->> The decoder needs something like
->>       rc5_signal_change(ptr, space_or_mark, microseconds).
->>
->> At least mark->space or space->mark events must be reported. For better
->> reliability, both of them.
->
-> If you use a kfifo to store the event (space_or_mark, timestamp),
-> the IRQ handler can return immediately, and a separate kernel thread
-> can do the decode without needing to touch at the IRQ. It also helps to
-> have a decoder independent of the kernel driver.
+On Tue, Dec 08, 2009 at 06:38:19AM +0100, Sam Ravnborg wrote:
+> On Mon, Dec 07, 2009 at 05:28:53PM -0500, John W. Linville wrote:
+> > On Mon, Dec 07, 2009 at 10:42:09PM +0100, Michal Marek wrote:
+> > > reinette chatre napsal(a):
+> > 
+> > > > Right - could we please use the solution that works at compile time? I
+> > > > used UTS_RELEASE after learning about its use in init/version.c, would
+> > > > that not make it an approved solution?
+> > > 
+> > > It seems there is some misunderstanding.
+> > 
+> > Alright, if Stephen's fix is acceptable then your suggestion is fine.
+> > Sam seemed to suggest that Stephen's fix was a stop-gap.
+> 
+> The need to use utsrelease seems very prominent in external drivers.
+> But a quick grep turned up only a single staging driver in-tree that
+> include utsrelease.
+> So whatever problem this driver solves using utsrelease it is not shared
+> with the rest of the in-tree drivers.
+> 
+> So no - it is not a stop-gap. It is more a "is it really needed?".
 
-The first version of my code ran the decoders from the IRQ. That
-wasn't a good model for sharing decoders between drivers. So I
-switched to using a kernel thread. There is also the problem of
-handing decoded events off up the chain. You can't do that from IRQ
-context.
+What problem are you trying to solve by eliminating it?
 
-If I remember correctly the kernel thread would run approximately two
-times per IR message received. But sometimes it would only run once.
-It's a random function of the load on the system. The kernel thread
-empties the FIFO and sends the pulses in parallel to the decoders.
+The iwlwifi team was trying to eliminate the nearly-useless version
+number currently used in MODULE_VERSION.  As I said, I would prefer
+to simply eliminate the MODULE_VERSION clause.  But the iwlwifi
+team likes having something there, and UTS_RELEASE seems at least as
+informative as what they had before.
 
-Code for doing this is in the patches I posted. I wasn't aware of
-kfifo when I wrote them so I coded my own fifo.
+So, the options are a) leave the useless version string as-is; b)
+require the version string to get bumped on every update; c) use
+UTS_RELEASE as a version string; or d) forcibly remove MODULE_VERSION
+from the iwlwifi drivers.  Which would you advocate?
 
+John
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
