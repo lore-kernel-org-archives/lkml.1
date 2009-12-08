@@ -1,55 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZLHOau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbZLHOb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753684AbZLHOau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZLHOat
+	id S1755486AbZLHOb4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZLHOby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:30:49 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:50071 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751389AbZLHOas (ORCPT
+	Tue, 8 Dec 2009 09:31:54 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:58109 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbZLHObw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:30:48 -0500
-X-IronPort-AV: E=Sophos;i="4.47,362,1257138000"; 
-   d="scan'208";a="8527542"
-Message-ID: <4B1E62ED.1060304@analog.com>
-Date: Tue, 8 Dec 2009 22:30:05 +0800
-From: Jie Zhang <jie.zhang@analog.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Lightning/1.0pre Shredder/3.0
+	Tue, 8 Dec 2009 09:31:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JXyDk/kKGQzpEi7TV2hzIxHNlzUtuCOMtxXd6lVcPVbZsK8f0LLcmG5eS9bXwqe1Lv
+         cvNBedxPUd24+eT8d3lnypjYu2ljHIGLI7oUiEbo6WmwkyKF1qLwgJ7CufJwNdtP0i2M
+         dMfQCETCW7W+JjrhwdddMPUtpgALE1Y4xOllw=
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: Mike Frysinger <vapier@gentoo.org>, uclinux-dev@uclinux.org,
-       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
-References: <4B1E568A.4020005@analog.com> <1259128503-28276-1-git-send-email-vapier@gentoo.org> <7253.1260269873@redhat.com> <9984.1260281967@redhat.com>
-In-Reply-To: <9984.1260281967@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Dec 2009 14:30:50.0267 (UTC) FILETIME=[0A1A06B0:01CA7813]
+In-Reply-To: <4B1E5FAF.40201@redhat.com>
+References: <BDRae8rZjFB@christoph> <1259264614.1781.47.camel@localhost>
+	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
+	 <1260240142.3086.14.camel@palomino.walls.org>
+	 <20091208042210.GA11147@core.coreip.homeip.net>
+	 <1260275743.3094.6.camel@palomino.walls.org>
+	 <9e4733910912080452p42efa794mb7fd608fa4fbad7c@mail.gmail.com>
+	 <4B1E5746.7010305@redhat.com>
+	 <9e4733910912080601s1a814720qd909e47ac09f91fc@mail.gmail.com>
+	 <4B1E5FAF.40201@redhat.com>
+Date: Tue, 8 Dec 2009 09:31:57 -0500
+Message-ID: <9e4733910912080631r6fd306c5tdfd56482583b9bf5@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Andy Walls <awalls@radix.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/08/2009 10:19 PM, David Howells wrote:
-> Jie Zhang<jie.zhang@analog.com>  wrote:
+On Tue, Dec 8, 2009 at 9:16 AM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+> Jon Smirl wrote:
+>> On Tue, Dec 8, 2009 at 8:40 AM, Mauro Carvalho Chehab
+>> <mchehab@redhat.com> wrote:
+>>> Jon Smirl wrote:
+>>>> On Tue, Dec 8, 2009 at 7:35 AM, Andy Walls <awalls@radix.net> wrote:
+>>>>> On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
+>>>>>> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
+>>>>>>> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+>>>>>>> end of the month.
+>>>>>>>
+>>>>>>> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+>>>>>>> a common set of parameters, so I may be able to set up the decoders to
+>>>>>>> handle decoding from two different remote types at once.  The HVR boards
+>>>>>>> can ship with either type of remote AFAIK.
+>>>>>>>
+>>>>>>> I wonder if I can flip the keytables on the fly or if I have to create
+>>>>>>> two different input devices?
+>>>>>>>
+>>>>>> Can you distinguish between the 2 remotes (not receivers)?
+>>>>> Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
+>>>>> (Honestly I could pile on more protocols that have similar pulse time
+>>>>> periods, but that's complexity for no good reason and I don't know of a
+>>>>> vendor that bundles 3 types of remotes per TV card.)
+>>>>>
+>>>>>
+>>>>>>  Like I said,
+>>>>>> I think the preferred way is to represent every remote that can be
+>>>>>> distinguished from each other as a separate input device.
+>>>>> OK.  With RC-5, NEC, and RC-6 at least there is also an address or
+>>>>> system byte or word to distingish different remotes.  However creating
+>>>>> multiple input devices on the fly for detected remotes would be madness
+>>>>> - especially with a decoding error in the address bits.
+>>>> I agree that creating devices on the fly has problems. Another
+>>>> solution is to create one device for each map that is loaded. There
+>>>> would be a couple built-in maps for bundled remotes - each would
+>>>> create a device. Then the user could load more maps with each map
+>>>> creating a device.
+>>> No, please. We currently have already 89 different keymaps in-kernel. Creating
+>>> 89 different interfaces per IR receiver is not useful at all.
+>>>
+>>> IMO, the interfaces should be created as the keymaps are associated
+>>> to an specific IR receiver.
+>>
+>> Each IR receiver device driver would have a built-in keymap for the
+>> remote bundled with it. When you load the driver it will poke the
+>> input system and install the map. Any additional keymaps would get
+>> loaded from user space. You would load one keymap per input device.
+>>
+>> You might have 89 maps in the kernel with each map being built into
+>> the device driver for those 89 IR receivers. But you'll only own one
+>> or two of those devices so only one or two of the 89 maps will load.
+>> Building the map for the bundled receiver into the device driver is an
+>> important part of achieving "just works".
+>>
+>> I suspect we'll have a 1,000 maps defined after ten years, most of
+>> these maps will be loaded from user space. But you'll only have two or
+>> three loaded at any one time into your kernel. You need one map per
+>> input device created. These maps are tiny, less than 1KB.
+>>
+>> Having all of these maps is the price of allowing everyone to use any
+>> more that they please. If you force the use of universal remotes most
+>> of the maps can be eliminated.
 >
->> I agree on using 0 instead of NULL. But for !MMU, I think, vaddr is always as
->> same as addr. So we don't need to pass it?
+> Makes sense. Yet, I would add an option at Kbuild to create a module or not
+> with the bundled IR keymaps.
 >
-> FRV flushes the vaddr because in MMU mode the cache flush instructions take
-> virtual addresses, so if we pass addr as vaddr, I can use the same cache flush
-> code for both modes.  I suspect it makes little difference to the amount of
-> code if we pass that rather than 0, as the value is already computed, and
-> either way, it's going to take one instruction to set up the argument.
+> So, it should be possible to have all of them completely on userspace or
+> having them at kernelspace.
+
+Removing the maps for the bundled remotes from the receiver device
+drivers will break "just works". The map will be in an __init section
+of the IR device driver. When it is fed into the input system a RAM
+based structure will be created. If you really want the 1KB memory
+back, use sysfs to remove the default map.  An embedded system will
+have a bundled remote so it is going to want the map. If you want to
+change the default map loading a new map will release the memory from
+the previous map.
+
 >
-> Note that Blackfin assumes that it may use the dst address for flushing - an
-> assumption that isn't valid in MMU mode with a VIVT cache (which I presume
-> Blackfin isn't, but other CPUs are).
+> Cheers,
+> Mauro.
 >
-Thanks for your explanation. Now I understand why passing add as vaddr 
-is better.
 
 
-Jie
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
