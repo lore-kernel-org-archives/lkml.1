@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965802AbZLHTJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965815AbZLHTKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965802AbZLHTJp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 14:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965789AbZLHTJm
+	id S965815AbZLHTKO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 14:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965793AbZLHTKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 14:09:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51134 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965788AbZLHTJl (ORCPT
+	Tue, 8 Dec 2009 14:10:13 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38532 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965789AbZLHTKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 14:09:41 -0500
-Date: Tue, 8 Dec 2009 11:09:16 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Robert Olsson <robert.olsson@its.uu.se>,
-       Jens Laas <jens.laas@data.slu.se>, Hans Liss <hans.liss@its.uu.se>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fib-trie: code cleanup
-Message-ID: <20091208110916.386d8367@nehalam>
-In-Reply-To: <20091208184839.GA31383@Krystal>
-References: <20091208184839.GA31383@Krystal>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 14:10:12 -0500
+Date: Tue, 8 Dec 2009 19:10:18 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: Update file patterns for WOLFSON
+	MICROELECTRONICS PMIC DRIVERS
+Message-ID: <20091208191018.GB2590@opensource.wolfsonmicro.com>
+References: <1260298117.27677.61.camel@Joe-Laptop.home> <20091208185132.GA2590@opensource.wolfsonmicro.com> <1260298457.27677.63.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260298457.27677.63.camel@Joe-Laptop.home>
+X-Cookie: You will inherit millions of dollars.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Dec 2009 13:48:39 -0500
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On Tue, Dec 08, 2009 at 10:54:17AM -0800, Joe Perches wrote:
+> On Tue, 2009-12-08 at 18:51 +0000, Mark Brown wrote:
 
->  	/* use cache location of last found key */
-> -	if (iter->pos > 0 && pos >= iter->pos && (l = fib_find_node(t, iter->key)))
-> -		pos -= iter->pos;
-> +	if (iter->pos > 0 && pos >= iter->pos)
-> +		l = fib_find_node(t, iter->key);
-> +		if (l)
-> +			pos -= iter->pos;
->  	else {
+> > Why not Documentation/hwmon/wm831x?
 
-Missing bracket's here change the semantics.  
+> Beats me, it's your entry, add all the appropriate ones.
+
+It wasn't clear why you were adding one and not the other.
+
+> Maybe:
+
+> F:	Documentation/hwmon/wm8*
+
+That is possibly too general - the names are already very close to the
+Winbond ones as it is, wm83?? might be safer.
