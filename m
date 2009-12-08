@@ -1,128 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936046AbZLHRES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936488AbZLHRGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936046AbZLHRES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 12:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936056AbZLHREN
+	id S936488AbZLHRGs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 12:06:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936459AbZLHRGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 12:04:13 -0500
-Received: from mail-px0-f189.google.com ([209.85.216.189]:43427 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936046AbZLHREL (ORCPT
+	Tue, 8 Dec 2009 12:06:43 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:64888 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936450AbZLHRGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 12:04:11 -0500
-X-Greylist: delayed 45632 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Dec 2009 12:04:11 EST
+	Tue, 8 Dec 2009 12:06:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=AaPcByBNccPplL7XgMP/R1Okpna81u6qAZVi32TRALLGQIh5ErahrnyxwYTL8DIRjH
-         cBqkxNbQax61VcPWCaK8deknMKRpcJ239/4zQU0A2OFoai1wOCEie7zSXTB8hL6ZhudR
-         u3sHHMXLdVus1VnAE6qlKzIrs3YzRnnRn+O/E=
-Date: Tue, 8 Dec 2009 09:04:12 -0800
+        b=t232At+4uvlLDs5gbTKOPGEod4gH10YActGpYPBOQSCwAEOl07UNyMpwcv/IX/97+9
+         gRdeXh8us3jxajb/uLX1JU/ynKvBaXp5uymqbO4zmEwMC7Qnz6jlmhVRsYpFXBOGDjEP
+         FVoI8GMu5MFkszzOn/8fZ48kFDj56GFylN2Cc=
+Date: Tue, 8 Dec 2009 09:06:40 -0800
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+Cc: Andy Walls <awalls@radix.net>, Jarod Wilson <jarod@wilsonet.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
-	IR  system?
-Message-ID: <20091208170412.GA14143@core.coreip.homeip.net>
-References: <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain> <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com> <4B1D934E.7030103@redhat.com> <9e4733910912071628x3f3eba82r4c964982f9d8c5a4@mail.gmail.com> <4B1E35D6.6000602@redhat.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+Message-ID: <20091208170640.GB14143@core.coreip.homeip.net>
+References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com> <1259264614.1781.47.camel@localhost> <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com> <1260240142.3086.14.camel@palomino.walls.org> <20091208042210.GA11147@core.coreip.homeip.net> <4B1E3C1D.7070704@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B1E35D6.6000602@redhat.com>
+In-Reply-To: <4B1E3C1D.7070704@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 09:17:42AM -0200, Mauro Carvalho Chehab wrote:
-> Jon Smirl wrote:
-> > On Mon, Dec 7, 2009 at 6:44 PM, Mauro Carvalho Chehab
-> > <mchehab@redhat.com> wrote:
-> 
-> >>> Where is the documentation for the protocol?
-> >> I'm not sure what you're meaning here. I've started a doc about IR at the media
+On Tue, Dec 08, 2009 at 09:44:29AM -0200, Mauro Carvalho Chehab wrote:
+> Dmitry Torokhov wrote:
+> > On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
+> >> On Mon, 2009-12-07 at 13:19 -0500, Jarod Wilson wrote:
+> >>> On Nov 26, 2009, at 2:43 PM, Andy Walls wrote:
+> >>>
+> >>>> On Thu, 2009-11-26 at 12:05 -0200, Mauro Carvalho Chehab wrote:
+> >>>>> Krzysztof Halasa wrote:
+> >>>>>> Andy Walls <awalls@radix.net> writes:
+> >>>>>>
+> >>>>>>> I would also note that RC-6 Mode 6A, used by most MCE remotes, was
+> >>>>>>> developed by Philips, but Microsoft has some sort of licensing interest
+> >>>>>>> in it and it is almost surely encumbered somwhow:
+> >>>>>> I don't know about legal problems in some countries but from the
+> >>>>>> technical POV handling the protocol in the kernel is more efficient
+> >>>>>> or (/and) simpler.
+> >>>>> A software licensing from Microsoft won't apply to Linux kernel, so I'm
+> >>>>> assuming that you're referring to some patent that they could be filled
+> >>>>> about RC6 mode 6A.
+> >>>>>
+> >>>>> I don't know if is there any US patent pending about it (AFAIK, only US
+> >>>>> accepts software patents), but there are some prior-art for IR key
+> >>>>> decoding. So, I don't see what "innovation" RC6 would be adding. 
+> >>>>> If it is some new way to transmit waves, the patent issues
+> >>>>> aren't related to software, and the device manufacturer had already handled
+> >>>>> it when they made their devices.
+> >>>>>
+> >>>>> If it is just a new keytable, this issue 
+> >>>>> could be easily solved by loading the keytable via userspace.
+> >>>>>
+> >>>>> Also, assuming that you can use the driver only with a hardware that comes
+> >>>>> with a licensed software, the user has already the license for using it.
+> >>>>>
+> >>>>> Do you have any details on what patents they are claiming?
+> >>>> The US Philips RC-6 patent is US Patent 5,877,702
+> >>>>
+> >>>> http://www.google.com/patents?vid=USPAT5877702
+> >>>>
+> >>>> Click on download PDF to get a copy of the whole patent.
+> >>>>
+> >>>> I am not a lawyer.  Philips claims' all appear to tie to a transmitter
+> >>>> or receiver as part of a system, but most of the claims are about
+> >>>> information and bit positions and lengths.
+> >>> ...
+> >>>> IMO, given
+> >>>>
+> >>>> a. the dearth of public information about RC-6, indicating someone
+> >>>> thinks it's their trade secret or intellectual property
+> >>>>
+> >>>> b. Microsoft claiming to license something related to the MCE remote
+> >>>> protocols (which are obviously RC-6 Mode 6A),
+> >>>>
+> >>>> c. my inability to draw a "clear, bright line" that RC-6 Mode 6A
+> >>>> encoding and decoding, as needed by MCE remotes, implemented in software
+> >>>> doesn't violate anyone's government granted rights to exclusivity.
+> >>>>
+> >>>> I think it's much better to implement software RC-6 Mode 6A encoding and
+> >>>> decoding in user space, doing only the minimum needed to get the
+> >>>> hardware setup and going in the kernel.  
+> >>>>
+> >>>> Encoding/decoding of RC-6 by microcontrollers with firmware doesn't
+> >>>> worry me. 
+> >>>>
+> >>>>
+> >>>> Maybe I'm being too conservative here, but I have a personal interest in
+> >>>> keeping Linux free and unencumbered even in the US which, I cannot deny,
+> >>>> has a patent system that is screwed up.
+> >>> So I had one of the people who does all the license and patent audits
+> >>> for Fedora packages look at the Philips patent on RC-6. He's 100%
+> >>> positive that the patent *only* covers hardware, there should be no
+> >>> problem whatsoever writing a software decoder for RC-6.
+> >> OK.  Thanks for having some professionals take a look.  (I'm assuming
+> >> that's the only patent.)
+> >>
+> >> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+> >> end of the month.
+> >>
+> >> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+> >> a common set of parameters, so I may be able to set up the decoders to
+> >> handle decoding from two different remote types at once.  The HVR boards
+> >> can ship with either type of remote AFAIK.
+> >>
+> >> I wonder if I can flip the keytables on the fly or if I have to create
+> >> two different input devices?
+> >>
 > > 
-> > What is the format of the pulse stream data coming out of the lirc device?
-> 
-> AFAIK, it is at:
-> 	http://www.lirc.org/html/index.html
-> 
-> It would be nice to to add it to DocBook after integrating the API in kernel.
-> 
-> >> docbook. This is currently inside the kernel Documents/DocBook. If you want
-> >> to browse, it is also available as:
-> >>
-> >>        http://linuxtv.org/downloads/v4l-dvb-apis/ch17.html
-> >>
-> >> For sure we need to better document the IR's, and explain the API's there.
-> >>
-> >>> Is it a device interface or something else?
-> >> lirc_dev should create a device interface.
-> >>
-> >>> What about capabilities of the receiver, what frequencies?
-> >>> If a receiver has multiple frequencies, how do you report what
-> >>> frequency the data came in on?
-> >> IMO, via sysfs.
+> > Can you distinguish between the 2 remotes (not receivers)? Like I said,
+> > I think the preferred way is to represent every remote that can be
+> > distinguished from each other as a separate input device. Applications
+> > expect to query device capabilities and expect them to stay somewhat
+> > stable (we do support keymap change but I don't think anyone expectes
+> > flip-flopping).
 > > 
-> > Say you have a hardware device with two IR diodes, one at 38K and one
-> > at 56K. Both of these receivers can get pulses. How do we tell the
-> > user space app which frequency the pulses were received on? Seems to
-> > me like there has to be a header on the pulse data indicating the
-> > received carrier frequency. There is also baseband signaling. sysfs
-> > won't work for this because of the queuing latency.
+> With RC-5, you have no fields describing the remote. So, all the driver could
+> do is an educated guess.
 > 
-> Simply create two interfaces. One for each IR receiver. At sysfs, you'll
-> have /sys/class/irrcv/irrcv0 for the first one and /sys/class/irrcv/irrcv1.
-
-Yes, please. Distinct hardware - distinct representation in the kernel.
-This is the most sane way.
-
-...
-> >>
-> >>> What is the interface for attaching an in-kernel decoder?
-> >> IMO, it should use the kfifo for it. However, if we allow both raw data and
-> >> in-kernel decoders to read data there, we'll need a spinlock to protect the
-> >> kfifo.
-
-Probably we should do what input layer does - the data is pushed into
-all handlers that are signed up for it and they can deal with it at
-their leisure.
-
-> >>
-> >>> If there is an in-kernel decoder should the pulse data stop being
-> >>> reported, partially stopped, something else?
-> >> I don't have a strong opinion here, but, from the previous discussions, it
-> >> seems that people want it to be double-reported by default. If so, I think
-> >> we need to implement a command at the raw interface to allow disabling the
-> >> in-kernel decoder, while the raw interface is kept open.
-> > 
-> > Data could be sent to the in-kernel decoders first and then if they
-> > don't handle it, send it to user space.
-
-You do not know what userspace wants to do with the data. They may want
-to simply observe it, store or do something else. Since we do provide
-interface for such raw[ish] data we just need to transmit it to
-userpsace as long as there are users (i.e. interface is open).
-
+> From a quick look I did at the RC-6 Mode 6A docs I found, I suspect that
+> you can distinguish two different remotes when someone press a key there.
 > 
-> Hmm... like adding a delay if the raw userspace is open and, if the raw userspace
-> doesn't read all pulse data, it will send via in-kernel decoder instead? This can
-> work, but I'm not sure if this is the better way, and will require some logic to
-> synchronize lirc_dev and IR core modules. Also, doing it key by key will introduce
-> some delay.
+> However, I don't think it is a good idea to automatically create a new interface
+> every time a different vendor is detected. Maybe the user simply have a
+> RC-6 IR to control his TV and doesn't have any intention on using that
+> device on his computer.
 > 
-> If you're afraid of having the userspace app hanged and having no IR output, 
-> it would be simpler to just close the raw interface if an available data won't be
-> read after a bigger timeout (3 seconds? 5 seconds?).
+> IMO, the better is to have an API to allow creation of multiple interfaces
+> per IR receiver, based on some scancode matching table and/or on some
+> matching mask.
+> 
+> It should be possible to use the filter API to match different IR's by
+> vendor/product on protocols that supports it, or to match address/command
+> tuples on protocols where you just have those fields.
+> 
 
-We can not foresee all use cases. Just let all parties signed up for the
-data get and process it, do not burden the core with heuristics.
+OK, fair enough.
 
 -- 
 Dmitry
