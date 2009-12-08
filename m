@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966648AbZLHWHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966375AbZLHVmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966648AbZLHWHE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:07:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966598AbZLHWG5
+	id S966375AbZLHVmq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbZLHVmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:06:57 -0500
-Received: from mail.hq.newdream.net ([66.33.206.127]:47036 "EHLO
-	mail.hq.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966517AbZLHWG5 (ORCPT
+	Tue, 8 Dec 2009 16:42:43 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43307 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756315AbZLHVmm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:06:57 -0500
-X-Greylist: delayed 1570 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Dec 2009 17:06:56 EST
-From: Yehuda Sadeh <yehuda@hq.newdream.net>
-To: linux-mm@kvack.org
-Cc: Yehuda Sadeh <yehuda@hq.newdream.net>, linux-kernel@vger.kernel.org,
-       sage@newdream.net
-Subject: [PATCH] mm/page-writeback: export account_page_dirtied()
-Date: Tue,  8 Dec 2009 13:41:59 -0800
-Message-Id: <1260308519-16899-1-git-send-email-yehuda@hq.newdream.net>
-X-Mailer: git-send-email 1.5.6.5
+	Tue, 8 Dec 2009 16:42:42 -0500
+Date: Tue, 8 Dec 2009 22:42:41 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Walker <dwalker@codeaurora.org>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Iliyan Malchev <malchev@google.com>
+Subject: Re: HTC Dream: mmc compilation fixes
+Message-ID: <20091208214241.GB4164@elf.ucw.cz>
+References: <20091206195953.GA26863@elf.ucw.cz>
+ <1260305123.11826.25.camel@c-dwalke-linux.qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260305123.11826.25.camel@c-dwalke-linux.qualcomm.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ceph filesystem implementation of set_page_dirty is based on
-__set_page_dirty_nobuffers(), and needs to use account_page_dirtied(). It
-uses its own implementation as it needs to set the page private bit and
-value under the tree lock. This exports it using EXPORT_SYMBOL_GPL.
+On Tue 2009-12-08 12:45:22, Daniel Walker wrote:
+> On Sun, 2009-12-06 at 20:59 +0100, Pavel Machek wrote:
+> > +
+> > +struct embedded_sdio_data {
+> > +        struct sdio_cis cis;
+> > +        struct sdio_cccr cccr;
+> > +        struct sdio_embedded_func *funcs;
+> > +        int num_funcs;
+> > +};
+> 
+> 
+> There's some indentation problems in this block, I'll fix it prior to
+> merging it..
 
-Signed-off-by: Yehuda Sadeh <yehuda@hq.newdream.net>
----
- mm/page-writeback.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index a3b1409..4f8412a 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -1095,6 +1095,7 @@ void account_page_dirtied(struct page *page, struct address_space *mapping)
- 		task_io_account_write(PAGE_CACHE_SIZE);
- 	}
- }
-+EXPORT_SYMBOL_GPL(account_page_dirtied);
- 
- /*
-  * For address_spaces which do not use buffers.  Just tag the page as dirty in
+Thanks!
+									Pavel
 -- 
-1.5.6.5
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
