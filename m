@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966499AbZLHVrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966495AbZLHVtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966499AbZLHVrh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:47:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966493AbZLHVrb
+	id S966495AbZLHVtQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:49:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966245AbZLHVtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:47:31 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49436 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966245AbZLHVra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:47:30 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>
-Subject: spinlock in completion_done() (was: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33))
-Date: Tue, 8 Dec 2009 22:48:14 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0912081633540.3046-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912081633540.3046-100000@iolanthe.rowland.org>
+	Tue, 8 Dec 2009 16:49:10 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:34738 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965739AbZLHVtK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 16:49:10 -0500
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912082248.14138.rjw@sisk.pl>
+In-Reply-To: <20091208214246.GA21857@kroah.com>
+References: <20091208214246.GA21857@kroah.com>
+Date: Tue, 8 Dec 2009 16:49:14 -0500
+Message-ID: <829197380912081349q32b554acob7055431d65fc26f@mail.gmail.com>
+Subject: Re: 2.6.27.40 build error
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
+To: Greg KH <greg@kroah.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Michael Krufky <mkrufky@kernellabs.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 December 2009, Alan Stern wrote:
-> On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
-> 
-> > BTW, is there a good reason why completion_done() doesn't use spin_lock_irqsave
-> > and spin_unlock_irqrestore?  complete() and complete_all() use them, so why not
-> > here?
-> 
-> And likewise in try_wait_for_completion().  It looks like a bug.  Maybe 
-> these routines were not intended to be called with interrupts disabled, 
-> but that requirement doesn't seem to be documented.  And it isn't a 
-> natural requirement anyway.
+On Tue, Dec 8, 2009 at 4:42 PM, Greg KH <greg@kroah.com> wrote:
+> It turns out that the patch below causes a build failure on the
+> 2.6.27.40 kernel.
+>
+> Michael, should I just drop it, or should I take out the line with the
+> "capture_transfer_done" in it, as that member is not in the structure in
+> this kernel version.
+>
+> thanks,
+>
+> greg k-h
 
-OK, let's ask Ingo about that.
+There were several different leaks and crash conditions addressed
+since 2.6.27, and it is entirely possible that just removing the line
+is not the correct course of action.
 
-Ingo, is there any particular reason why completion_done() and
-try_wait_for_completion() don't use spin_lock_irqsave() and
-spin_unlock_irqrestore()?
+I would propose just dropping the patch for 2.6.27, as we would have
+to rework it taking into consideration the other fixes which were done
+since then.
 
-Rafael
+Devin
+
+-- 
+Devin J. Heitmueller - Kernel Labs
+http://www.kernellabs.com
