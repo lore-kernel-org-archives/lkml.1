@@ -1,36 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZLHSv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965770AbZLHSvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbZLHSv3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 13:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756153AbZLHSv2
+	id S965770AbZLHSvm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 13:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbZLHSvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 13:51:28 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36931 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756097AbZLHSv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 13:51:27 -0500
-Date: Tue, 8 Dec 2009 18:51:33 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: Update file patterns for WOLFSON
-	MICROELECTRONICS PMIC DRIVERS
-Message-ID: <20091208185132.GA2590@opensource.wolfsonmicro.com>
-References: <1260298117.27677.61.camel@Joe-Laptop.home>
+	Tue, 8 Dec 2009 13:51:32 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34990 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756166AbZLHSv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 13:51:29 -0500
+Date: Tue, 8 Dec 2009 19:51:34 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: isdn@linux-pingi.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/isdn: eliminate duplicated test
+Message-ID: <Pine.LNX.4.64.0912081951140.28834@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260298117.27677.61.camel@Joe-Laptop.home>
-X-Cookie: You will inherit millions of dollars.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 10:48:37AM -0800, Joe Perches wrote:
-> One of the includes pointed to a non-existent directory
-> Add Documentation/hwmon/wm8350
+From: Julia Lawall <julia@diku.dk>
 
-Why not Documentation/hwmon/wm831x?
+The code checked slot_rx twice.  Check slot_tx by analogy with the bank
+case.
+
+The semantic match that finds this problem is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@@
+expression E;
+@@
+
+(
+*E && E
+|
+*E || E
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/isdn/hardware/mISDN/hfcmulti.c         |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
+index a6624ad..1a1420d 100644
+--- a/drivers/isdn/hardware/mISDN/hfcmulti.c
++++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
+@@ -3152,7 +3152,7 @@ static void
+ hfcmulti_pcm(struct hfc_multi *hc, int ch, int slot_tx, int bank_tx,
+     int slot_rx, int bank_rx)
+ {
+-	if (slot_rx < 0 || slot_rx < 0 || bank_tx < 0 || bank_rx < 0) {
++	if (slot_tx < 0 || slot_rx < 0 || bank_tx < 0 || bank_rx < 0) {
+ 		/* disable PCM */
+ 		mode_hfcmulti(hc, ch, hc->chan[ch].protocol, -1, 0, -1, 0);
+ 		return;
