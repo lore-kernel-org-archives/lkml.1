@@ -1,76 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbZLHHer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbZLHHhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbZLHHer (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 02:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZLHHeq
+	id S1753881AbZLHHhL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 02:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZLHHhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 02:34:46 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:35617 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753141AbZLHHep (ORCPT
+	Tue, 8 Dec 2009 02:37:10 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:35786 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752742AbZLHHhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 02:34:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=JKWywRXUaYGSyMmbHPVUO6Yo4g0/WgwGcJQMk0C1buvRxzrVxcQbDp/Yzgjsgi+98H
-         Tc+0GYeKbYwwLwAKwUd6hQUgwn9JubKwgnbIl7kNSf29BdLEvrnHNZF4NRqSrwc09pHj
-         ojjDZUFv3qbrcgn4aO2cGkZtGhX5s8NE/Wi2o=
-Subject: Re: [PATCH v8 8/8] Loongson: YeeLoong: add input/hotkey driver
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
-       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <20091208072347.GH11147@core.coreip.homeip.net>
-References: <cover.1260082252.git.wuzhangjin@gmail.com>
-	 <b164d5bb79963a57621d024c22e5664de0ff8662.1260082252.git.wuzhangjin@gmail.com>
-	 <20091207064857.GG21451@core.coreip.homeip.net>
-	 <1260255131.3315.25.camel@falcon.domain.org>
-	 <20091208072347.GH11147@core.coreip.homeip.net>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 08 Dec 2009 15:34:18 +0800
-Message-ID: <1260257658.3315.74.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 02:37:09 -0500
+From: Ike Panhc <ike.pan@canonical.com>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       acpi4asus-user@lists.sourceforge.net
+Cc: Corentin Chary <corentin.chary@gmail.com>,
+       Alexandre Rostovtsev <tetromino@gmail.com>
+Subject: [Resend] [PATCH] asus-laptop: add Lenovo SL LenovoCare LED support
+Date: Tue,  8 Dec 2009 15:37:09 +0800
+Message-Id: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 23:23 -0800, Dmitry Torokhov wrote:
-> On Tue, Dec 08, 2009 at 02:52:11PM +0800, Wu Zhangjin wrote:
-> > Hi, Dmitry Torokhov
-> > 
-> > I plan to send another revision of this patchset, Can I get your
-> > Acked-by: for this patch?
-> > 
-> 
-> Yes, as far as the input code goes:
-> 
-> 	Acked-by: Dmitry Torokhov <dtor@mail.ru>
+Resend because the email address of signed-off is wrong in prior mail
 
-Added, thanks!
+This patch is to enable the LenovoCare LED support on Lenovo SL laptop. Based
+on the found of the control interface by Alexandre Rostovtsev
 
-To Ralf:
+Turn on the LenovoCare LED:
+ (As root privileges) echo 1 > /sys/class/leds/asus\:\:LenovoCare/brightness
+Trun off the LenovoCare LED:
+ (As root privileges) echo 0 > /sys/class/leds/asus\:\:LenovoCare/brightness
 
-This patch is based on the sparse keymap library in:
+The patch against current checkout of acpi4asus is below.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input next
+Signed-off-by: Ike Panhc <ike.pan@canonical.com>
+---
+ drivers/platform/x86/asus-laptop.c |   21 ++++++++++++++++++---
+ 1 files changed, 18 insertions(+), 3 deletions(-)
 
-from Dmitry Torokhov. that sparse keymap support is also queued for
-2.6.33.
-
-Before that support going into mainline, this patch can not be compiled,
-so, Ralf, this patch is not appliable before Dmitry's next branch is
-pulled by linus.
-
-Thanks!
-	Wu Zhangjin
+diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
+index 3348cc6..f3c52b6 100644
+--- a/drivers/platform/x86/asus-laptop.c
++++ b/drivers/platform/x86/asus-laptop.c
+@@ -87,6 +87,7 @@
+ #define LCD_ON      0x80	/* LCD backlight */
+ #define GPS_ON      0x100	/* GPS */
+ #define KEY_ON      0x200	/* Keyboard backlight */
++#define LLED_ON     0x400	/* Lenovo SL: LenovoCare LED */
+ 
+ #define ASUS_LOG    ASUS_HOTK_FILE ": "
+ #define ASUS_ERR    KERN_ERR    ASUS_LOG
+@@ -123,6 +124,7 @@ ASUS_HANDLE(tled_set, ASUS_HOTK_PREFIX "TLED");
+ ASUS_HANDLE(rled_set, ASUS_HOTK_PREFIX "RLED");	/* W1JC */
+ ASUS_HANDLE(pled_set, ASUS_HOTK_PREFIX "PLED");	/* A7J */
+ ASUS_HANDLE(gled_set, ASUS_HOTK_PREFIX "GLED");	/* G1, G2 (probably) */
++ASUS_HANDLE(lled_set, "\\_SB_.PCI0.SBRG.EC0_.HKEY.TVLS"); /* LenovoCare */
+ 
+ /* LEDD */
+ ASUS_HANDLE(ledd_set, ASUS_HOTK_PREFIX "SLCM");
+@@ -285,6 +287,7 @@ ASUS_LED(rled, "record", 1);
+ ASUS_LED(pled, "phone", 1);
+ ASUS_LED(gled, "gaming", 1);
+ ASUS_LED(kled, "kbd_backlight", 3);
++ASUS_LED(lled, "LenovoCare", 1);
+ 
+ struct key_entry {
+ 	char type;
+@@ -419,6 +422,9 @@ static void write_status(acpi_handle handle, int out, int mask)
+ 		handle = (out) ? gps_on_handle : gps_off_handle;
+ 		out = 0x02;
+ 		break;
++	case LLED_ON:
++		out = (out & 0x1) * 0xFF;
++		break;
+ 	default:
+ 		out &= 0x1;
+ 		break;
+@@ -452,6 +458,7 @@ ASUS_LED_HANDLER(pled, PLED_ON);
+ ASUS_LED_HANDLER(rled, RLED_ON);
+ ASUS_LED_HANDLER(tled, TLED_ON);
+ ASUS_LED_HANDLER(gled, GLED_ON);
++ASUS_LED_HANDLER(lled, LLED_ON);
+ 
+ /*
+  * Keyboard backlight
+@@ -1146,6 +1153,7 @@ static int asus_hotk_get_info(void)
+ 	ASUS_HANDLE_INIT(rled_set);
+ 	ASUS_HANDLE_INIT(pled_set);
+ 	ASUS_HANDLE_INIT(gled_set);
++	ASUS_HANDLE_INIT(lled_set);
+ 
+ 	ASUS_HANDLE_INIT(ledd_set);
+ 
+@@ -1338,6 +1346,7 @@ static void asus_led_exit(void)
+ 	ASUS_LED_UNREGISTER(rled);
+ 	ASUS_LED_UNREGISTER(gled);
+ 	ASUS_LED_UNREGISTER(kled);
++	ASUS_LED_UNREGISTER(lled);
+ }
+ 
+ static void asus_input_exit(void)
+@@ -1417,19 +1426,25 @@ static int asus_led_init(struct device *dev)
+ 	if (rv)
+ 		goto out4;
+ 
++	rv = ASUS_LED_REGISTER(lled, dev);
++	if (rv)
++		goto out5;
++
+ 	if (kled_set_handle && kled_get_handle)
+ 		rv = ASUS_LED_REGISTER(kled, dev);
+ 	if (rv)
+-		goto out5;
++		goto out6;
+ 
+ 	led_workqueue = create_singlethread_workqueue("led_workqueue");
+ 	if (!led_workqueue)
+-		goto out6;
++		goto out7;
+ 
+ 	return 0;
+-out6:
++out7:
+ 	rv = -ENOMEM;
+ 	ASUS_LED_UNREGISTER(kled);
++out6:
++	ASUS_LED_UNREGISTER(lled);
+ out5:
+ 	ASUS_LED_UNREGISTER(gled);
+ out4:
+-- 
+1.6.3.3
 
