@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZLHOEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZLHOGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbZLHOEQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbZLHOEP
+	id S1755405AbZLHOGa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:06:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbZLHOG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:04:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54548 "EHLO hera.kernel.org"
+	Tue, 8 Dec 2009 09:06:29 -0500
+Received: from khc.piap.pl ([195.187.100.11]:55366 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755280AbZLHOEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:04:14 -0500
-Date: Tue, 8 Dec 2009 14:03:32 GMT
-From: tip-bot for Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, akpm@linuxfoundation.org,
-       hpa@zytor.com, mingo@redhat.com, andi@firstfloor.org,
-       peterz@infradead.org, npiggin@suse.de, ak@linux.intel.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, akpm@linuxfoundation.org,
-       dvhltc@us.ibm.com, linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       peterz@infradead.org, npiggin@suse.de, ak@linux.intel.com,
-       tglx@linutronix.de
-In-Reply-To: <20091208121942.GA21298@basil.fritz.box>
-References: <20091208121942.GA21298@basil.fritz.box>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] futex: Take mmap_sem for get_user_pages in fault_in_user_writeable
-Message-ID: <tip-722d0172377a5697919b9f7e5beb95165b1dec4e@git.kernel.org>
-Git-Commit-ID: 722d0172377a5697919b9f7e5beb95165b1dec4e
-X-Mailer: tip-git-log-daemon
+	id S1755342AbZLHOG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:06:28 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Gerd Hoffmann <kraxel@redhat.com>, Jarod Wilson <jarod@wilsonet.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jonsmirl@gmail.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <BDodf9W1qgB@lirc> <4B14EDE3.5050201@redhat.com>
+	<4B1524DD.3080708@redhat.com> <4B153617.8070608@redhat.com>
+	<A6D5FF84-2DB8-4543-ACCB-287305CA0739@wilsonet.com>
+	<4B17AA6A.9060702@redhat.com>
+	<20091203175531.GB776@core.coreip.homeip.net>
+	<20091203163328.613699e5@pedra>
+	<20091204100642.GD22570@core.coreip.homeip.net>
+	<20091204121234.5144836b@pedra>
+	<20091206070929.GB14651@core.coreip.homeip.net>
+	<4B1B8F83.5080009@redhat.com> <m31vj77t51.fsf@intrepid.localdomain>
+	<4B1D9714.5060000@redhat.com>
+Date: Tue, 08 Dec 2009 15:06:31 +0100
+In-Reply-To: <4B1D9714.5060000@redhat.com> (Mauro Carvalho Chehab's message of
+	"Mon, 07 Dec 2009 22:00:20 -0200")
+Message-ID: <m3zl5ttva0.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  722d0172377a5697919b9f7e5beb95165b1dec4e
-Gitweb:     http://git.kernel.org/tip/722d0172377a5697919b9f7e5beb95165b1dec4e
-Author:     Andi Kleen <andi@firstfloor.org>
-AuthorDate: Tue, 8 Dec 2009 13:19:42 +0100
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Tue, 8 Dec 2009 14:59:36 +0100
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-futex: Take mmap_sem for get_user_pages in fault_in_user_writeable
+> Yes, an opaque type for scancode at the userspace API can be better, but
+> passing a pointer to kernel will require some compat32 logic (as pointer
+> size is different on 32 and 64 bits).
 
-get_user_pages() must be called with mmap_sem held.
+Yes. I think we can't avoid that, but it's a single compat handler,
+I wouldn't worry about it too much. We don't need it in every driver
+fortunately.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Cc: stable@kernel.org
-Cc: Andrew Morton <akpm@linuxfoundation.org>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Darren Hart <dvhltc@us.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <20091208121942.GA21298@basil.fritz.box>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> We may use something like an u8[] with an arbitrary large number of
+> bytes.
 
----
- kernel/futex.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+Yes. All of this pointed to by the pointer.
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index fb65e82..d73ef1f 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -304,8 +304,14 @@ void put_futex_key(int fshared, union futex_key *key)
-  */
- static int fault_in_user_writeable(u32 __user *uaddr)
- {
--	int ret = get_user_pages(current, current->mm, (unsigned long)uaddr,
--				 1, 1, 0, NULL, NULL);
-+	struct mm_struct *mm = current->mm;
-+	int ret;
-+
-+	down_read(&mm->mmap_sem);
-+	ret = get_user_pages(current, mm, (unsigned long)uaddr,
-+			     1, 1, 0, NULL, NULL);
-+	up_read(&mm->mmap_sem);
-+
- 	return ret < 0 ? ret : 0;
- }
- 
+> In this case, we need to take some care to avoid LSB/MSB troubles.
+
+Sure.
+-- 
+Krzysztof Halasa
