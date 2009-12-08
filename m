@@ -1,59 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965185AbZLHA0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965205AbZLHA2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965185AbZLHA0L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935725AbZLHA0L
+	id S965205AbZLHA2M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964961AbZLHA2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:26:11 -0500
-Received: from sh.osrg.net ([192.16.179.4]:41752 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935718AbZLHA0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:26:10 -0500
-Date: Tue, 8 Dec 2009 09:24:47 +0900
-To: yinghai@kernel.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: fix iommu=soft boot option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091202170715K.fujita.tomonori@lab.ntt.co.jp>
-References: <20091202162510Q.fujita.tomonori@lab.ntt.co.jp>
-	<4B161D70.3030301@kernel.org>
-	<20091202170715K.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20091208092438Z.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 08 Dec 2009 09:24:48 +0900 (JST)
+	Mon, 7 Dec 2009 19:28:10 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:64480 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964883AbZLHA2I convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 19:28:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kQeppyuzqTXbleheISVSr3q1u9XGTwwK0IxnfVwXz6pV9pCpVEPYwbZ9cJV5jLE6rl
+         u9568ePL1K303IeL9QTh9kItNBKthIU+jPZ08wSA+o5fWKoh1shyr0QpiMcFZYtVXmUy
+         WyjQfqfpqYvNmiUkMwN9TiLJA4T0aVMmpeS48=
+MIME-Version: 1.0
+In-Reply-To: <4B1D934E.7030103@redhat.com>
+References: <20091204220708.GD25669@core.coreip.homeip.net>
+	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	 <1260070593.3236.6.camel@pc07.localdom.local>
+	 <20091206065512.GA14651@core.coreip.homeip.net>
+	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
+	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	 <m3skbn6dv1.fsf@intrepid.localdomain>
+	 <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
+	 <4B1D934E.7030103@redhat.com>
+Date: Mon, 7 Dec 2009 19:28:13 -0500
+Message-ID: <9e4733910912071628x3f3eba82r4c964982f9d8c5a4@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Dec 2009 17:07:24 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+On Mon, Dec 7, 2009 at 6:44 PM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+> Let me add my view for those questions.
+>
+> Jon Smirl wrote:
+>> On Sun, Dec 6, 2009 at 3:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
+>>> Jon Smirl <jonsmirl@gmail.com> writes:
+>>>
+>>>>> Once again: how about agreement about the LIRC interface
+>>>>> (kernel-userspace) and merging the actual LIRC code first? In-kernel
+>>>>> decoding can wait a bit, it doesn't change any kernel-user interface.
+>>>> I'd like to see a semi-complete design for an in-kernel IR system
+>>>> before anything is merged from any source.
+>>> This is a way to nowhere, there is no logical dependency between LIRC
+>>> and input layer IR.
+>>>
+>>> There is only one thing which needs attention before/when merging LIRC:
+>>> the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
+>>> actually, making a correct IR core design without the LIRC merged can be
+>>> only harder.
+>>
+>> Here's a few design review questions on the LIRC drivers that were posted....
+>>
+>> How is the pulse data going to be communicated to user space?
+>
+> lirc_dev will implement a revised version of the lirc API. I'm assuming that
+> Jarod and Christoph will do this review, in order to be sure that it is stable
+> enough for kernel inclusion (as proposed by Gerd).
+>
+>> Can the pulse data be reported via an existing interface without
+>> creating a new one?
+>
+> Raw pulse data should be reported only via lirc_dev, but it can be converted
+> into a keycode and reported via evdev as well, via an existing interface.
+>
+>> Where is the documentation for the protocol?
+>
+> I'm not sure what you're meaning here. I've started a doc about IR at the media
 
-> On Tue, 01 Dec 2009 23:55:28 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
-> > >>>> amd 64 systems that
-> > >>>> 1. do not have  AGP
-> > >>>> 2. do not have IOMMU
-> > >>>> 3. mem > 4g
-> > >>>> 4. BIOS do not allocate  correct gart in NB.
-> > >>>> will leave them to use SWIOTLB forcely.
-> > >>> As I asked earlier, can you tell me what dma ops such system is
-> > >>> supposed to use?
-> > >> gart_dma_ops
-> > > 
-> > > How does gart_dma_ops work on systems without IOMMU?
-> > 
-> > ?
-> 
-> If a system doesn't have IOMMU, what does gart_dma_ops do?
+What is the format of the pulse stream data coming out of the lirc device?
 
-Ping?
+> docbook. This is currently inside the kernel Documents/DocBook. If you want
+> to browse, it is also available as:
+>
+>        http://linuxtv.org/downloads/v4l-dvb-apis/ch17.html
+>
+> For sure we need to better document the IR's, and explain the API's there.
+>
+>> Is it a device interface or something else?
+>
+> lirc_dev should create a device interface.
+>
+>> What about capabilities of the receiver, what frequencies?
+>> If a receiver has multiple frequencies, how do you report what
+>> frequency the data came in on?
+>
+> IMO, via sysfs.
 
-I don't understand the above but the patch is fine about fixing two
-things:
+Say you have a hardware device with two IR diodes, one at 38K and one
+at 56K. Both of these receivers can get pulses. How do we tell the
+user space app which frequency the pulses were received on? Seems to
+me like there has to be a header on the pulse data indicating the
+received carrier frequency. There is also baseband signaling. sysfs
+won't work for this because of the queuing latency.
 
-- swiotlb wrongly steals the preallocate memory for broken gart.
+How is over-run signaled to the app? You'd get an over-run if the app
+is too slow at reading the data out of the FIFO. If you ignore
+over-run you'll be processing bad data because part of the message was
+lost. An over-run signal tell the abort to abort the signal and start
+over.
 
-- a system without agp should disable gart on shutdown.
+>> What about multiple apps simultaneously using the pulse data?
+>
+> IMO, the better is to limit the raw interface to just one open.
+>
+>> How big is the receive queue?
+>
+> It should be big enough to receive at least one keycode event. Considering that
+> the driver will use kfifo (IMO, it is a good strategy, especially since you
+> won't need any lock if just one open is allowed), it will require a power of two size.
+
+How is end of a pulse train detected? timeout? without decoding the
+protocol there is no way to tell the end of signal other than timeout.
+
+>
+>> How does access work, root only or any user?
+>
+> IMO, it should be the same requirement as used by an input interface.
+>
+>> How are capabilities exposed, sysfs, etc?
+>
+> IMO, sysfs.
+>
+>> What is the interface for attaching an in-kernel decoder?
+>
+> IMO, it should use the kfifo for it. However, if we allow both raw data and
+> in-kernel decoders to read data there, we'll need a spinlock to protect the
+> kfifo.
+>
+>> If there is an in-kernel decoder should the pulse data stop being
+>> reported, partially stopped, something else?
+>
+> I don't have a strong opinion here, but, from the previous discussions, it
+> seems that people want it to be double-reported by default. If so, I think
+> we need to implement a command at the raw interface to allow disabling the
+> in-kernel decoder, while the raw interface is kept open.
+
+Data could be sent to the in-kernel decoders first and then if they
+don't handle it, send it to user space.
+
+
+>
+>> What is the mechanism to make sure both system don't process the same pulses?
+>
+> I don't see a good way to avoid it.
+>
+>> Does it work with poll, epoll, etc?
+>> What is the time standard for the data, where does it come from?
+>> How do you define the start and stop of sequences?
+>> Is receiving synchronous or queued?
+>> What about transmit, how do you get pulse data into the device?
+>> Transmitter frequencies?
+>> Multiple transmitters?
+>> Is transmitting synchronous or queued?
+>> How big is the transmit queue?
+>
+> I don't have a clear answer for those. I'll let those to LIRC developers to answer.
+>
+>
+> Cheers,
+> Mauro
+>
+>
+>
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
