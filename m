@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZLHONd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZLHONp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbZLHONd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbZLHONa
+	id S1755439AbZLHONp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbZLHONo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:13:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:14752 "EHLO mx1.redhat.com"
+	Tue, 8 Dec 2009 09:13:44 -0500
+Received: from khc.piap.pl ([195.187.100.11]:47685 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755209AbZLHON3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:13:29 -0500
-Message-ID: <4B1E5EFA.4020801@redhat.com>
-Date: Tue, 08 Dec 2009 12:13:14 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+	id S1754966AbZLHONl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:13:41 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andy Walls <awalls@radix.net>,
+       Jarod Wilson <jarod@wilsonet.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <BEJgSGGXqgB@lirc>	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>	<1260070593.3236.6.camel@pc07.localdom.local>	<20091206065512.GA14651@core.coreip.homeip.net>	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>	<m3skbn6dv1.fsf@intrepid.localdomain>	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>	<4B1D934E.7030103@redhat.com>	<20091208042340.GC11147@core.coreip.homeip.net>	<4B1E3F7D.9070806@redhat.com> <m34oo1va2y.fsf@intrepid.localdomain>
-In-Reply-To: <m34oo1va2y.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph>
+	<1259024037.3871.36.camel@palomino.walls.org>
+	<m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com>
+	<1259264614.1781.47.camel@localhost>
+	<6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
+	<1260240142.3086.14.camel@palomino.walls.org>
+	<20091208042210.GA11147@core.coreip.homeip.net>
+	<4B1E3C1D.7070704@redhat.com>
+Date: Tue, 08 Dec 2009 15:13:42 +0100
+In-Reply-To: <4B1E3C1D.7070704@redhat.com> (Mauro Carvalho Chehab's message of
+	"Tue, 08 Dec 2009 09:44:29 -0200")
+Message-ID: <m3vdghtuy1.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
-> 
->> I don't think we need an userspace interface for the in-kernel
->> decoders.
-> 
-> Of course we need it, to set (and probably retrieve) scancode-keycode
-> mappings. This could probably be, ATM, the existing input layer channel.
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-This is the standard/extended evdev interface already discussed.
-> 
->> All
->> it needs is to enable/disable the protocol decoders, imo via sysfs interface.
-> 
-> This isn't IMHO needed at all. The protocol is enabled when at least one
-> key using it is configured, otherwise it's disabled. We probably need
-> some "wildcard" as well, to capture decoded scancodes (through the input
-> layer).
-> This is BTW pure optimization, the protocol could stay enabled all the
-> time, only wasting the cycles.
+> With RC-5, you have no fields describing the remote. So, all the driver could
+> do is an educated guess.
 
-The enable/disable protocol decoder enable/disable interface is needed anyway,
-due to the needs for the hardware IR decoders (and the legacy IR decoders,
-while we don't convert all of them to the generic ones).
+It can't even do that, e.g. single remotes (even the dumb ones) can send
+different code groups (addresses) for different keys.
 
-So, IMO, the interface will be cleaner if we use it also for the generic
-IR decoders.
+> IMO, the better is to have an API to allow creation of multiple interfaces
+> per IR receiver, based on some scancode matching table and/or on some
+> matching mask.
 
-Cheers,
-Mauro.
+I think setting the keytables for each logical device would do.
+
+I.e. just have a way to create additional logical devices. Each can have
+its own keytable. The decoders would send their output to all logical
+remotes, trying to match the tables etc.
+
+> It should be possible to use the filter API to match different IR's by
+> vendor/product on protocols that supports it,
+
+That would mean unnecessary limiting.
+
+> or to match address/command
+> tuples on protocols where you just have those fields.
+
+Precisely.
+-- 
+Krzysztof Halasa
