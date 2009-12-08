@@ -1,126 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935742AbZLHAH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935753AbZLHAIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935742AbZLHAH6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935551AbZLHAH4
+	id S935753AbZLHAIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935730AbZLHAIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:07:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35509 "EHLO mx1.redhat.com"
+	Mon, 7 Dec 2009 19:08:18 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:57753 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935337AbZLHAHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:07:51 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
-References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
-	<4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
-	<4e5e476b0912060245x4d64300hb9689243bd712f2c@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 07 Dec 2009 19:07:51 -0500
-In-Reply-To: <4e5e476b0912060245x4d64300hb9689243bd712f2c@mail.gmail.com>
-	(Corrado Zoccolo's message of "Sun, 6 Dec 2009 11:45:16 +0100")
-Message-ID: <x49ein6nx9k.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	id S935551AbZLHAIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 19:08:16 -0500
+Date: Mon, 7 Dec 2009 16:08:19 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: kordex - <kordex@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Badness at kernel/rcutree.c:1228
+Message-ID: <20091208000819.GA18291@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <8b8dd87a0912071058p1ab9ba20y931baa576d370f43@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8b8dd87a0912071058p1ab9ba20y931baa576d370f43@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+On Mon, Dec 07, 2009 at 08:58:35PM +0200, kordex - wrote:
+> Hello,
+> 
+> I encountered this and I am able to reproduce, unfortunately. I was
+> syncing files from two large HDD drives and I saw difference between
+> cksum so I first suspected faulty filesystem but it was not that. Then
+> I ran couple of Seagate Seatools tests on these disks of mine, still
+> nothing. I suspected there was something bad in rsync(1) code but
+> still negative as tar worked in the same way. Ofcourse I did the dmesg
+> checking but after reboot after checking the disks were fine.  It
+> showed up clean. So I went there and tried to resync my non raid disk
+> with raid0 disk. Still same problem, data mismatch. I read something
+> from google when installing new sata controller about lib_sata an sil
+> 3114 and seagates disks not working so this time i though of checking
+> dmesg. And there it was nice little surprise:
+> 
+> ------------[ cut here ]------------
+> Badness at kernel/rcutree.c:1228
+> NIP: c004ecbc LR: c004f14c CTR: c007bd70
+> REGS: df34dde0 TRAP: 0700   Not tainted  (2.6.32)
+> MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24024482  XER: 20000000
+> TASK = d12c2d10[2734] 'buffer' THREAD: df34c000
+> GPR00: 00000001 df34de90 d12c2d10 c0746498 c07465a0 00b1ed55 00000001 00138c4a
+> GPR08: 00001032 c07b0000 00009032 00000008 44024488 1001c6ac 1002efd8 1002f064
+> GPR16: 10060000 10070000 10070000 c073a590 c073a710 c0685204 00000000 c07a5520
+> GPR24: c07a5520 0000000a df34c000 c0746498 c0746420 c0746528 00000009 c07465a0
+> NIP [c004ecbc] __rcu_process_callbacks+0x34/0x48c
+> LR [c004f14c] rcu_process_callbacks+0x38/0x4c
+> Call Trace:
+> [df34de90] [c004efec] __rcu_process_callbacks+0x364/0x48c (unreliable)
+> [df34deb0] [c004f14c] rcu_process_callbacks+0x38/0x4c
+> [df34ded0] [c0028e8c] __do_softirq+0xa4/0x120
+> [df34df10] [c0006a0c] do_softirq+0x40/0x58
+> [df34df20] [c0028c8c] irq_exit+0x38/0x80
+> [df34df30] [c0010d28] timer_interrupt+0x11c/0x138
+> [df34df40] [c00143a0] ret_from_except+0x0/0x14
+> --- Exception: 901 at 0x10002ddc
+>     LR = 0x10002d80
+> Instruction dump:
+> 7c0802a6 bf410008 7c9f2378 7c7b1b78 90010024 8804000e 2f800000 40be002c
+> 3d20c07b 8009a334 7c000034 5400d97e <0f000000> 2f800000 41be0010 38000001
+> munin-update: page allocation failure. order:1, mode:0x20
+> Call Trace:
+> [c59bfa30] [c0008a24] show_stack+0x4c/0x14c (unreliable)
+> [c59bfa70] [c0058154] __alloc_pages_nodemask+0x468/0x4b8
+> [c59bfb00] [c0077448] cache_alloc_refill+0x2d8/0x55c
+> [c59bfb50] [c0077830] kmem_cache_alloc+0x64/0xb0
+> [c59bfb70] [c04862fc] sk_prot_alloc+0x2c/0x78
+> [c59bfb90] [c04863e0] sk_clone+0x20/0x1b0
+> [c59bfbb0] [c04bca70] inet_csk_clone+0x1c/0x8c
+> [c59bfbc0] [c04d1358] tcp_create_openreq_child+0x20/0x2c4
+> [c59bfbe0] [c04d00a0] tcp_v4_syn_recv_sock+0x58/0x17c
+> [c59bfc00] [c04d11c4] tcp_check_req+0x268/0x3dc
+> [c59bfc40] [c04cf87c] tcp_v4_do_rcv+0xa0/0x198
+> [c59bfc70] [c04cfdb8] tcp_v4_rcv+0x444/0x6d4
+> [c59bfca0] [c04b450c] ip_local_deliver+0x104/0x1d8
+> [c59bfcc0] [c04b43d0] ip_rcv+0x508/0x540
+> [c59bfcf0] [c049227c] netif_receive_skb+0x390/0x3bc
+> [c59bfd20] [c0492344] process_backlog+0x9c/0x134
+> [c59bfd50] [c0492b44] net_rx_action+0x80/0x190
+> [c59bfd80] [c0028e8c] __do_softirq+0xa4/0x120
+> [c59bfdc0] [c0006a0c] do_softirq+0x40/0x58
+> [c59bfdd0] [c0028db4] local_bh_enable+0x7c/0x9c
+> [c59bfde0] [c04852c8] release_sock+0x94/0xa8
+> [c59bfe00] [c04dcd48] inet_stream_connect+0x224/0x29c
+> [c59bfe50] [c0482a54] sys_connect+0x78/0xa8
+> [c59bff00] [c0484088] sys_socketcall+0xf0/0x240
+> [c59bff40] [c0013cf4] ret_from_syscall+0x0/0x38
+> --- Exception: c01 at 0xfd51434
+>     LR = 0xff66550
+> Mem-Info:
+> DMA per-cpu:
+> CPU    0: hi:  186, btch:  31 usd:  87
+> active_anon:6308 inactive_anon:8347 isolated_anon:0
+>  active_file:52970 inactive_file:53351 isolated_file:0
+>  unevictable:0 dirty:12753 writeback:0 unstable:0
+>  free:1728 slab_reclaimable:2017 slab_unreclaimable:1020
+>  mapped:2045 shmem:410 pagetables:431 bounce:0
+> DMA free:6912kB min:2884kB low:3604kB high:4324kB active_anon:25232kB
+> inactive_anon:33388kB active_file:211880kB inactive_file:213404kB
+> unevictable:0kB isolated(anon):0kB isolated(file):0kB present:520192kB
+> mlocked:0kB dirty:51012kB writeback:0kB mapped:8180kB shmem:1640kB
+> slab_reclaimable:8068kB slab_unreclaimable:4080kB kernel_stack:992kB
+> pagetables:1724kB unstable:0kB bounce:0kB writeback_tmp:0kB
+> pages_scanned:0 all_unreclaimable? no
+> lowmem_reserve[]: 0 0 0 0
+> DMA: 1728*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB
+> 0*1024kB 0*2048kB 0*4096kB = 6912kB
+> 106743 total pagecache pages
+> 0 pages in swap cache
+> Swap cache stats: add 0, delete 0, find 0/0
+> Free swap  = 779144kB
+> Total swap = 779144kB
+> 131072 pages RAM
+> 0 pages HighMem
+> 3391 pages reserved
+> 14583 pages shared
+> 121040 pages non-shared
+> 
+> ...
+> 
+> Full dmesg: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.dmesg.txt
+> Kernel config: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.config.txt
 
-> Hi Jeff, I remember you saw large performance drop on your SAN for
-> sequential writes with low_latency=1.  Can you test if Shaohua's and
-> this patch fix allow to recover some bandwidth?  I think that enabling
-> the queue depth ramp up only if a sync request was delayed should
-> disable it for fast hardware like yours, so you should not be seeing
-> the slowdown any more.
+Interesting!  You appear to be running a UP build on a 32-bit PowerPC
+platform, which presumably disables CPU hotplug.  You are also running
+CONFIG_TREE_RCU, which does require initialization.  Your dmesg snippet
+seems to start after RCU initialized itself, as it would normally print:
 
-Average of 10 runs.  Low latency set to 0:
+	Hierarchical RCU implementation.
 
-Unit information
-================
-File size = megabytes
-Blk Size  = bytes
-Rate      = megabytes per second
-CPU%      = percentage of CPU used during the test
-Latency   = milliseconds
-Lat%      = percent of requests that took longer than X seconds
-CPU Eff   = Rate divided by CPU% - throughput per cpu load
+Are you able to capture console output that early?  If so, could you
+please try the attached patch?
 
-Sequential Reads
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.32                        8192  65536   8   90.08 94.51%    51.316    10268.25   0.00000  0.00000    95
-2.6.32                        8192  65536  16   99.36 199.8%    89.248    13883.81   0.00000  0.00000    50
+The behavior is consistent with the boot CPU thinking that it is not
+online, which would indeed be strange.  The patch checks on this and
+also prints out at the point that ->beenonline should be initialized.
 
-Random Reads
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.32                        8192  65536   8   81.16 85.90%    45.672     5963.19   0.00000  0.00000    94
-2.6.32                        8192  65536  16  116.32 230.3%    58.371     6098.36   0.00000  0.00000    51
+> uname -a: Linux navi 2.6.32 #2 Mon Dec 7 13:35:57 EET 2009 ppc GNU/Linux
+> 
+> And no I am not running any patches on this. Same occurred with
+> 2.6.31.6 which I had patched with Con Kolivas' BFS so I upgraded to
+> latest stable vanilla without any patches and still there it is. You
+> know, it ain't too interesting to sync 1TB disks 5 times (yea I needed
+> to do some testing for rsync) with slow controllers like these.
 
-Sequential Writes
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.32                        8192  65536   8  112.17 1085.%    42.623    17114.54   0.00152  0.00000    10
-2.6.32                        8192  65536  16  111.26 2117.%    84.964    26480.60   0.03202  0.00000     5
+You also have quite a few occurrences of the following splat in your
+dmesg, which might well explain your sync-ing woes:
 
-Random Writes
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.32                        8192  65536   8  162.48 887.1%     6.106      313.54   0.00000  0.00000    18
-2.6.32                        8192  65536  16  156.38 1767.%    14.077     1254.62   0.00000  0.00000     9
+	Mem-Info:
+	DMA per-cpu:
+	CPU    0: hi:  186, btch:  31 usd: 153
+	active_anon:8938 inactive_anon:9432 isolated_anon:0
+	 active_file:11943 inactive_file:91997 isolated_file:0
+	 unevictable:0 dirty:4317 writeback:3464 unstable:0
+	 free:1044 slab_reclaimable:1160 slab_unreclaimable:1123
+	 mapped:3207 shmem:411 pagetables:471 bounce:0
+	DMA free:4176kB min:2884kB low:3604kB high:4324kB active_anon:35752kB
+	inactive_anon:37728kB active_file:47772kB inactive_file:367988kB
+	unevictable:0kB isolated(anon):0kB isolated(file):0kB present:520192kB
+	mlocked:0kB dirty:17268kB writeback:13856kB mapped:12828kB shmem:1644kB
+	slab_reclaimable:4640kB slab_unreclaimable:4492kB kernel_stack:1040kB
+	pagetables:1884kB unstable:0kB bounce:0kB writeback_tmp:0kB
+	pages_scanned:0 all_unreclaimable? no
+	lowmem_reserve[]: 0 0 0 0
+	DMA: 1034*4kB 5*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB
+	0*1024kB 0*2048kB 0*4096kB = 4176kB
+	104353 total pagecache pages
+	0 pages in swap cache
+	Swap cache stats: add 0, delete 0, find 0/0
+	Free swap  = 779144kB
+	Total swap = 779144kB
+	131072 pages RAM
+	0 pages HighMem
+	3391 pages reserved
+	14353 pages shared
+	120982 pages non-shared
+	mconf: page allocation failure. order:1, mode:0x20
+	Call Trace:
+	[d1197cb0] [c0008a24] show_stack+0x4c/0x14c (unreliable)
+	[d1197cf0] [c0058154] __alloc_pages_nodemask+0x468/0x4b8
+	[d1197d80] [c0077448] cache_alloc_refill+0x2d8/0x55c
+	[d1197dd0] [c0077780] __kmalloc+0xb4/0x100
+	[d1197df0] [c02aa6bc] tty_buffer_request_room+0xcc/0x148
+	[d1197e10] [c02aa8f4] tty_insert_flip_string+0x2c/0xa0
+	[d1197e30] [c02ab678] pty_write+0x40/0x70
+	[d1197e50] [c02a6244] n_tty_write+0x260/0x3bc
+	[d1197eb0] [c02a3780] tty_write+0x1bc/0x260
+	[d1197ef0] [c007b4d4] vfs_write+0xb8/0x180
+	[d1197f10] [c007b67c] sys_write+0x4c/0x8c
+	[d1197f40] [c0013cf4] ret_from_syscall+0x0/0x38
+	--- Exception: c01 at 0xfef4034
+	    LR = 0xfe97624
+	Mem-Info:
+	DMA per-cpu:
+	CPU    0: hi:  186, btch:  31 usd: 153
+	active_anon:8938 inactive_anon:9432 isolated_anon:0
+	 active_file:11943 inactive_file:91997 isolated_file:0
+	 unevictable:0 dirty:4317 writeback:3336 unstable:0
+	 free:1044 slab_reclaimable:1160 slab_unreclaimable:1123
+	 mapped:3207 shmem:411 pagetables:471 bounce:0
+	DMA free:4176kB min:2884kB low:3604kB high:4324kB active_anon:35752kB
+	inactive_anon:37728kB active_file:47772kB inactive_file:367988kB
+	unevictable:0kB isolated(anon):0kB isolated(file):0kB present:520192kB
+	mlocked:0kB dirty:17268kB writeback:13344kB mapped:12828kB shmem:1644kB
+	slab_reclaimable:4640kB slab_unreclaimable:4492kB kernel_stack:1040kB
+	pagetables:1884kB unstable:0kB bounce:0kB writeback_tmp:0kB
+	pages_scanned:0 all_unreclaimable? no
+	lowmem_reserve[]: 0 0 0 0
+	DMA: 1034*4kB 5*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB
+	0*1024kB 0*2048kB 0*4096kB = 4176kB
+	104353 total pagecache pages
+	0 pages in swap cache
+	Swap cache stats: add 0, delete 0, find 0/0
+	Free swap  = 779144kB
+	Total swap = 779144kB
+	131072 pages RAM
+	0 pages HighMem
+	3391 pages reserved
+	14353 pages shared
+	120982 pages non-shared
+	mconf: page allocation failure. order:1, mode:0x20
+	Call Trace:
+	[d1197cb0] [c0008a24] show_stack+0x4c/0x14c (unreliable)
+	[d1197cf0] [c0058154] __alloc_pages_nodemask+0x468/0x4b8
+	[d1197d80] [c0077448] cache_alloc_refill+0x2d8/0x55c
+	[d1197dd0] [c0077780] __kmalloc+0xb4/0x100
+	[d1197df0] [c02aa6bc] tty_buffer_request_room+0xcc/0x148
+	[d1197e10] [c02aa8f4] tty_insert_flip_string+0x2c/0xa0
+	[d1197e30] [c02ab678] pty_write+0x40/0x70
+	[d1197e50] [c02a6244] n_tty_write+0x260/0x3bc
+	[d1197eb0] [c02a3780] tty_write+0x1bc/0x260
+	[d1197ef0] [c007b4d4] vfs_write+0xb8/0x180
+	[d1197f10] [c007b67c] sys_write+0x4c/0x8c
+	[d1197f40] [c0013cf4] ret_from_syscall+0x0/0x38
+	--- Exception: c01 at 0xfef4034
 
+							Thanx, Paul
 
-Average of 10 runs.  Low latency set to 1:
+------------------------------------------------------------------------
 
-Unit information
-================
-File size = megabytes
-Blk Size  = bytes
-Rate      = megabytes per second
-CPU%      = percentage of CPU used during the test
-Latency   = milliseconds
-Lat%      = percent of requests that took longer than X seconds
-CPU Eff   = Rate divided by CPU% - throughput per cpu load
+rcu: diagnostic patch for kordex
 
-Sequential Reads
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.32                        8192  65536   8   92.23 100.1%    52.119     6920.18   0.00000  0.00000    92
-2.6.32                        8192  65536  16   97.88 217.0%    99.691     7453.18   0.00000  0.00000    45
+Make sure that the boot CPU has marked itself as online, print out
+the running CPU's ID, and print a message from within rcu_init_percpu_data()
+that includes the currently running CPU.
 
-Random Reads
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.32                        8192  65536   8   98.70 107.5%    42.994     3409.08   0.00000  0.00000    92
-2.6.32                        8192  65536  16  140.41 323.9%    59.616     4525.46   0.00000  0.00000    43
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com> not for inclusion
+---
 
-Sequential Writes
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.32                        8192  65536   8  112.33 1076.%    42.617    17072.28   0.00076  0.00000    10
-2.6.32                        8192  65536  16  111.84 2097.%    85.156    28221.77   0.02976  0.00000     5
-
-Random Writes
-                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
-Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
----------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
-2.6.32                        8192  65536   8  159.33 870.5%     6.469      765.50   0.00000  0.00000    18
-2.6.32                        8192  65536  16  141.60 1632.%    15.364     2337.57   0.00000  0.00000     9
-
-
-Cheers,
-Jeff
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index 4001833..4f357c4 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -175,6 +175,8 @@ void __init rcu_init(void)
+ 	 * this is called early in boot, before either interrupts
+ 	 * or the scheduler are operational.
+ 	 */
++	WARN_ON_ONCE(!cpu_online(smp_processor_id()));
++	printk(KERN_ALERT "rcu_init() smp_processor_id() = %d\n", smp_processor_id());
+ 	for_each_online_cpu(i)
+ 		rcu_barrier_cpu_hotplug(NULL, CPU_UP_PREPARE, (void *)(long)i);
+ }
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index f3077c0..207125b 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1557,6 +1557,7 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
+ 	rdp->passed_quiesc = 0;  /* We could be racing with new GP, */
+ 	rdp->qs_pending = 1;	 /*  so set up to respond to current GP. */
+ 	rdp->beenonline = 1;	 /* We have now been online. */
++	printk(KERN_ALERT "rcu_init_percpu_data(%d) called\n", cpu);
+ 	rdp->preemptable = preemptable;
+ 	rdp->passed_quiesc_completed = lastcomp - 1;
+ 	rdp->qlen_last_fqs_check = 0;
