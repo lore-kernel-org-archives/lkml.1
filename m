@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965770AbZLHSvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZLHSwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965770AbZLHSvm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 13:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbZLHSvc
+	id S1756205AbZLHSwa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 13:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbZLHSwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 13:51:32 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:34990 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756166AbZLHSv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 13:51:29 -0500
-Date: Tue, 8 Dec 2009 19:51:34 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: isdn@linux-pingi.de, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/isdn: eliminate duplicated test
-Message-ID: <Pine.LNX.4.64.0912081951140.28834@ask.diku.dk>
+	Tue, 8 Dec 2009 13:52:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60948 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756141AbZLHSwY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 13:52:24 -0500
+Date: Tue, 8 Dec 2009 10:52:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+In-Reply-To: <alpine.LFD.2.00.0912081024530.3560@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0912081043280.3560@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912081234030.3046-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912081024530.3560@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-The code checked slot_rx twice.  Check slot_tx by analogy with the bank
-case.
 
-The semantic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
+On Tue, 8 Dec 2009, Linus Torvalds wrote:
+> 
+> [ Hint: you need a smp_mb() *before* the atomic_dec() in wait-unlock, so 
+>   that anybody else who sees the new value will be guaranteed to have seen 
+>   anything else the unlocker did.
+> 
+>   You also need a smp_mb() in the wait_for_lock(), not a smp_rmb(). Can't 
+>   allow writes to migrate up either.  'atomic_read()' does not imply any
+>   barriers.
+> 
+>   But most architectures can optimize these things for their particular 
+>   memory ordering model, and do so in their rwsem implementation. ]
 
-// <smpl>
-@@
-expression E;
-@@
+Side note: if this was a real lock, you'd also needed an smp_wmb() in the 
+'wait_lock()' path after the atomic_inc(), to make sure that others see 
+the atomic lock was seen by other people before the suspend started. 
 
-(
-*E && E
-|
-*E || E
-)
-// </smpl>
+In your usage scenario, I don't think it would ever be noticeable, since 
+the other users are always going to start running from the same thread 
+that did the wait_lock(), so even if they run on other CPU's, we'll have 
+scheduled _to_ those other CPU's and done enough memory ordering to 
+guarantee that they will see the thing.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+So it would be ok in this situation, simply because it acts as an 
+initializer and never sees any real SMP issues.
 
----
- drivers/isdn/hardware/mISDN/hfcmulti.c         |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+But it's an example of how you now don't just depend on the locking 
+primitives themselves doing the right thing, you end up depending very 
+subtly on exactly how the lock is used.  The standard locks do have the 
+same kind of issue for initializers, but we avoid it elsewhere because 
+it's so risky.
 
-diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
-index a6624ad..1a1420d 100644
---- a/drivers/isdn/hardware/mISDN/hfcmulti.c
-+++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
-@@ -3152,7 +3152,7 @@ static void
- hfcmulti_pcm(struct hfc_multi *hc, int ch, int slot_tx, int bank_tx,
-     int slot_rx, int bank_rx)
- {
--	if (slot_rx < 0 || slot_rx < 0 || bank_tx < 0 || bank_rx < 0) {
-+	if (slot_tx < 0 || slot_rx < 0 || bank_tx < 0 || bank_rx < 0) {
- 		/* disable PCM */
- 		mode_hfcmulti(hc, ch, hc->chan[ch].protocol, -1, 0, -1, 0);
- 		return;
+				Linus
