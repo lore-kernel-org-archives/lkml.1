@@ -1,135 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965212AbZLHAa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965263AbZLHAjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965212AbZLHAa2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965161AbZLHAa0
+	id S965263AbZLHAjf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965245AbZLHAje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:30:26 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:44435 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964961AbZLHAaZ (ORCPT
+	Mon, 7 Dec 2009 19:39:34 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:61667 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965220AbZLHAjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:30:25 -0500
-Subject: RE: timer interrupt stucks using tickless kernel
-From: john stultz <johnstul@us.ibm.com>
-To: Ioannis Kyriakopoulos <johnkyr83@hotmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <SNT111-DS1740657A3615A93A6C0EDFA78F0@phx.gbl>
-References: <Acp3UXhD1R6mbV5yTGykTs+HAU6bQg==>
-	 <SNT111-DS1957B574BA05A48FEDBFF0A7900@phx.gbl>
-	 <1f1b08da0912071330i35808790r554f7a3a8d712ca7@mail.gmail.com>
-	 <SNT111-DS1740657A3615A93A6C0EDFA78F0@phx.gbl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 07 Dec 2009 16:30:12 -0800
-Message-ID: <1260232212.6255.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 7 Dec 2009 19:39:33 -0500
+Message-ID: <4B1D9EAF.90906@ct.jp.nec.com>
+Date: Tue, 08 Dec 2009 09:32:47 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, chris.mason@oracle.com, swhiteho@redhat.com,
+       tytso@mit.edu
+Subject: Re: + task_struct-make-journal_info-conditional.patch added to -mm
+ tree
+References: <4B1C6856.4060207@ct.jp.nec.com> <200912070929.AA01196@capsicum.lab.ntt.co.jp>
+In-Reply-To: <200912070929.AA01196@capsicum.lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 00:18 +0000, Ioannis Kyriakopoulos wrote:
-> >> I have configured my kernel (2.6.31.6) so that I get periodic ticks from
-> >> the timer interrupt (i.e. tickless is not configured) with a rate
-> determined
-> >> by the HZ value. I've also checked the "high resolution timer support"
-> >> and also SMP support. The posblem is that the timer is getting
-> incremented
-> >> very slowly (way slower than the HZ value), just like it would be if the
-> >> kernel was tickless. Is there an explanation for that? How can I get
-> >> periodic
-> >> timer ticks?
-> >>
-> >> AFAI understand, the HPET timer is used through the IO-APIC controller to
-> >> trigger the processors (N.B. if the "High Resolution Timer Support"
-> option
-> >> wasn't checked, the timer used would  be PIT, right?) and each
-> processor's
-> >> LAPIC timer is used for time keeping. Please correct me if I am wrong.
-> >
-> >Not quite, if High Resolution Timers support was disabled, you would
-> >still use the HPET hardware instead of the pit, but you'd stay in
-> >periodic mode. However, since you have Highres Timers on, the system
-> >is using oneshot mode (which is necessary to trigger interrupts faster
-> >then HZ), and likely has chosen the LAPIC timer as the interrupt
-> >source.
-> >
-> >In this case, the timer tick becomes an hrt event, that triggers every
-> >HZ, instead of being caused by a periodic interrupt.
+Ryusuke Konishi wrote:
+>> Alexey Dobriyan wrote:
+>>> On Fri, Dec 04, 2009 at 12:58:06PM +0900, Hiroshi Shimamoto wrote:
+>>>> Alexey Dobriyan wrote:
+>>>>> On Thu, Dec 03, 2009 at 02:40:57PM -0800, akpm@linux-foundation.org wrote:
+>>>>>> --- a/include/linux/sched.h~task_struct-make-journal_info-conditional
+>>>>>> +++ a/include/linux/sched.h
+>>>>>> @@ -1452,8 +1452,10 @@ struct task_struct {
+>>>>>>  	gfp_t lockdep_reclaim_gfp;
+>>>>>>  #endif
+>>>>>>  
+>>>>>> +#ifdef CONFIG_FS_JOURNAL_INFO
+>>>>>>  /* journalling filesystem info */
+>>>>>>  	void *journal_info;
+>>>>>> +#endif
+>>>>> This will prevent using e.g. ext3 on CONFIG_EXT3_FS=n kernels.
+>>>> I'm sorry, I'm not sure what you're mentioning.
+>>> With this patch admin must decide in advance if he will ever use ext3.
+>>> EXT3_FS=n kernels won't be able to get ext3 support without reboot
+>>> even as module, because task_struct will be different.
+>> I see, you want to keep this field for future use even if EXT3_FS=n.
+>> I think, however, there might be a need to remove this because the user
+>> never enable any journaling filesystem.
 > 
-> OK, so I configured the kernel as follows, expecting to have periodic 
-> interrupts by the HPET timer using the PIC controller using only a single
-> processor (UP configuration). 
-> 
-> Unselected: 
-> Tickless System (Dynamic Ticks)
-> High Resolution Timer Support  
-> Symmetric multi-processing support 
-> IO-APIC support on uniprocessors (NEW)
-> 
-> Selected: 
-> Local APIC support on uniprocessors
-> HPET timer support
->  
-> However, when I ran /proc/interrupts, I noticed many weird things:
-> 1.	The timer is still not getting incremented at a rate determined by
-> HZ.
+> Do you have some background to remove the "void *" from task_struct?
+> You need it for embedded purpose?
 
-Right, the system has switched to using the local apic instead of the
-PIT or HPET (connected to irq0).
+Yeah, it's for embedded. I think it's good if there is a option to make
+memory usage small.
 
-
-> 2.	When performing cat proc/interrupts, I see that:
->           0:        157   IO-APIC-edge      timer
-> 	How the system timer is attached on IO-APIC at the time that the
-> IO-APIC 
->       is disabled on kernel configurations? Basically, the timer is not the
-> only
->       peripheral attached to IO-APIC as can be seen by /proc/interrupts.
-> 
-> Here is the output of /proc/interrupts :
-> 
->            CPU0
->   0:        157   IO-APIC-edge      timer
->   1:          2   IO-APIC-edge      i8042
->   4:        544   IO-APIC-edge      serial
->   8:          1   IO-APIC-edge      rtc0
->   9:          0   IO-APIC-fasteoi   acpi
->  12:          4   IO-APIC-edge      i8042
->  14:          4   IO-APIC-edge      ata_piix
->  15:          0   IO-APIC-edge      ata_piix
->  16:          0   IO-APIC-fasteoi   uhci_hcd:usb5
->  18:          0   IO-APIC-fasteoi   uhci_hcd:usb4
->  19:         45   IO-APIC-fasteoi   ata_piix, uhci_hcd:usb3
->  22:        149   IO-APIC-fasteoi   HDA Intel
->  23:         72   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
->  27:          0   PCI-MSI-edge      eth0
-> NMI:          0   Non-maskable interrupts
-> LOC:    1865130   Local timer interrupts
-            ^^^
-This value should be incrementing at HZ freq.
-
-
-> SPU:          0   Spurious interrupts
-> CNT:          0   Performance counter interrupts
-> PND:          0   Performance pending work
-> TRM:          0   Thermal event interrupts
-> THR:          0   Threshold APIC interrupts
-> MCE:          0   Machine check exceptions
-> MCP:          7   Machine check polls
-> ERR:          0
-> MIS:          0
-> 
-> Is it that difficult to have periodic timer interrupts using HZ rate?
-
-I suspect you already do. If you really want the interrupts to be coming
-in via irq0, try booting w/ nolapic.
-
-Is there something your actually having problems with here? Ignoring
-which interrupt line is used for the timer event, the system is
-functioning properly, right?
-
-thanks
--john
+Thanks,
+Hiroshi
 
