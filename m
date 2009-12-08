@@ -1,88 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZLHMYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbZLHMW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbZLHMYS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 07:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbZLHMYR
+	id S1754429AbZLHMW7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 07:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbZLHMW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 07:24:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9082 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754290AbZLHMYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 07:24:16 -0500
-Date: Tue, 8 Dec 2009 14:21:34 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Shirley Ma <mashirle@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       netdev@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [PATCH 0/1] Defer skb allocation for both mergeable buffers
-	and big packets in virtio_net
-Message-ID: <20091208122134.GA17286@redhat.com>
-References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au>
+	Tue, 8 Dec 2009 07:22:58 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:7871 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754247AbZLHMW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 07:22:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=jviMKC9EMVxNKNsE5ZQDWm1/0hKwQ4cF39awYF05yQsP7N+VTBYYq+43Ddns6/KZXE
+         v/G1OjZJ9njLmbpdW2r1sutRv4e9DB7khhOZlpstHx3EmbHiYsFONj9AzW9o82V44RNG
+         /ikvYeyddOLgqlf0gOwBFCjrXtPupnYyRKadw=
+Date: Tue, 8 Dec 2009 13:23:00 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/13] tracing: various cleanups and small fixes
+	(updated)
+Message-ID: <20091208122255.GB5016@nowhere>
+References: <4B1DC476.3030700@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200911231123.18898.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4B1DC476.3030700@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 23, 2009 at 11:23:18AM +1030, Rusty Russell wrote:
-> On Fri, 20 Nov 2009 04:39:19 pm Shirley Ma wrote:
-> > Guest virtio_net receives packets from its pre-allocated vring 
-> > buffers, then it delivers these packets to upper layer protocols
-> > as skb buffs. So it's not necessary to pre-allocate skb for each
-> > mergable buffer, then frees it when it's useless. 
-> > 
-> > This patch has deferred skb allocation when receiving packets for
-> > both big packets and mergeable buffers. It reduces skb pre-allocations 
-> > and skb_frees.
-> > 
-> > Based on Mickael & Avi's suggestion. A destroy function has been created
-> > to push virtio free buffs to vring for unused pages, and used page private
-> > to maintain page list.
-> > 
-> > I didn't touch small packet skb allocation to avoid extra copies for small
-> > packets.
-> > 
-> > This patch has tested and measured against 2.6.32-rc5 git. It is built again
-> >  2.6.32-rc7 kernel. Tests have been done for small packets, big packets and
-> > mergeable buffers.
-> > 
-> > The single netperf TCP_STREAM performance improved for host to guest. 
-> > It also reduces UDP packets drop rate.
-> > 
-> > The netperf laptop results were:
-> > 
-> > mtu=1500
-> > netperf -H xxx -l 120
-> > 
-> > 		w/o patch	w/i patch (two runs)	
-> > guest to host:  3336.84Mb/s   3730.14Mb/s ~ 3582.88Mb/s
-> > 
-> > host to guest:  3165.10Mb/s   3370.39Mb/s ~ 3407.96Mb/s
+On Tue, Dec 08, 2009 at 11:13:58AM +0800, Li Zefan wrote:
+> Updates:
 > 
-> Nice!
+> - took a further step to save more spaces (01/13)
+> - fixed a mistake in (03/13)
+> - collected some ACKs
 > 
-> Is this using mergeable_rx_bufs?  Or just big_packets?
 > 
-> I'd like to drop big packet support from our driver, but I don't know
-> how many kvm hosts will not offer mergable rx bufs yet.
+> Here are some patches that I've collected. All are cleanups and
+> small fixes, no change in functionality.
+> 
+> As a result, 24K bytes are saved, and 87 lines of code are
+> reduced:
+> 
+>    text    data     bss     dec     hex filename
+> 5355293 1961928 7103260 14420481         dc0a01 vmlinux.o.old
+> 5331208 1961864 7103260 14396332         dbabac vmlinux.o
+> 
+> ---
+>  include/linux/ftrace_event.h       |    4 +-
+>  include/linux/syscalls.h           |    6 +-
+>  include/trace/ftrace.h             |   56 ++-----------
+>  kernel/trace/ftrace.c              |   30 ++++---
+>  kernel/trace/power-traces.c        |    2 -
+>  kernel/trace/trace.c               |  166 +++++++++++++-----------------------
+>  kernel/trace/trace.h               |   23 +++---
+>  kernel/trace/trace_event_profile.c |    6 +-
+>  kernel/trace/trace_events.c        |   38 +++++++--
+>  kernel/trace/trace_export.c        |    4 -
+>  kernel/trace/trace_kprobe.c        |    9 --
+>  kernel/trace/trace_ksym.c          |   13 ++--
+>  kernel/trace/trace_syscalls.c      |   18 +----
+>  13 files changed, 144 insertions(+), 231 deletions(-)
 
 
-One issue with mergeable buffers is that they can work well with zero
-copy RX, but only if hardware merges RX buffers in the same way virtio
-does.
+I'm queuing these patches.
 
-However, I suspect that most hardware can not do this, and simply
-scatters data to a buffer you give it and then reports completion.
-For such simple hardware, RX can work without extra data copies when guest
-uses big packets (just scatter data into guest buffers), but when guest
-tries to use mergeable buffers, host will have to merge them and post a
-single big packet to hardware.  Thus host will be able to only post
-about 16 buffers to hardware, and performance will suffer.
+Thanks.
 
-
--- 
-MST
