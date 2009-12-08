@@ -1,105 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965369AbZLHBjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935757AbZLHBjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965369AbZLHBjB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 20:39:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935228AbZLHBi7
+	id S935757AbZLHBjx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 20:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935734AbZLHBjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 20:38:59 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56197 "EHLO e4.ny.us.ibm.com"
+	Mon, 7 Dec 2009 20:39:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:36809 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935177AbZLHBi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 20:38:58 -0500
-Date: Mon, 7 Dec 2009 17:39:00 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [rfc] "fair" rw spinlocks
-Message-ID: <20091208013900.GU6808@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1259616429.26472.499.camel@laptop> <alpine.LFD.2.00.0911302300550.24119@localhost.localdomain> <alpine.LFD.2.00.0911301409560.2872@localhost.localdomain> <alpine.LFD.2.00.0911302328350.24119@localhost.localdomain> <alpine.LFD.2.00.0911301443110.2872@localhost.localdomain> <m1y6lg7q3n.fsf@fess.ebiederm.org> <20091207181816.GF6808@linux.vnet.ibm.com> <m1ocma1kz6.fsf@fess.ebiederm.org> <87ws0y76q7.fsf@basil.nowhere.org> <m1fx7m1ie8.fsf@fess.ebiederm.org>
+	id S935443AbZLHBjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 20:39:52 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [080/119] sched: Fix boot crash by zalloc()ing most of the cpu masks
+Date: Tue, 8 Dec 2009 12:09:51 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Blanchard <anton@samba.org>
+References: <20091206235936.208334321@mini.kroah.org> <20091207000654.821385285@mini.kroah.org>
+In-Reply-To: <20091207000654.821385285@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1fx7m1ie8.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912081209.51984.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 03:19:59PM -0800, Eric W. Biederman wrote:
-> Andi Kleen <andi@firstfloor.org> writes:
+On Mon, 7 Dec 2009 10:30:56 am Greg KH wrote:
+> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 > 
-> > ebiederm@xmission.com (Eric W. Biederman) writes:
-> >
-> >> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
-> >>>
-> >>> Is it required that all of the processes see the signal before the
-> >>> corresponding interrupt handler returns?  (My guess is "no", which
-> >>> enables a trick or two, but thought I should ask.)
-> >>
-> >> Not that I recall.  I think it is just an I/O completed signal.
-> >
-> > Wasn't there the sysrq SAK too? That one definitely would need
-> > to be careful about synchronicity.
+> ------------------
+> From: Rusty Russell <rusty@rustcorp.com.au>
 > 
-> SAK from sysrq is done through schedule work, I seem to recall the
-> locking being impossible otherwise.  There is also send_sig_all and a
-> few others from sysrq.  I expect we could legitimately make them
-> schedule_work as well if needed.
+> commit 49557e620339cb134127b5bfbcfecc06b77d0232 upstream.
+> 
+> I got a boot crash when forcing cpumasks offstack on 32 bit,
+> because find_new_ilb() returned 3 on my UP system (nohz.cpu_mask
+> wasn't zeroed).
 
-OK, I will chance it...  Here is one possible trick:
+Please also include "bdddd2963c0264c56f18043f6fa829d3c1d3d1c0"
+(sched: Fix isolcpus boot option) from Linus' tree which fixes
+a regression this introduces.
 
-o	Maintain a list of ongoing group-signal operations, protected
-	by some suitable lock.  These could be in a per-chain-locked
-	hash table, hashed by the signal target (e.g., pgrp).
-
-o	When a task is created, it scans the above list, committing
-	suicide (or doing whatever the signal requires) if appropriate.
-
-o	When creating a child task, the parent holds an SRCU across
-	creation.  It acquires SRCU before starting creation, and
-	releases it when it knows that the child has completed
-	scanning the above list.
-
-o	The updater does the following:
-
-	o	Add its request to the above list.
-
-	o	Wait for an SRCU grace period to elapse.
-
-	o	Kill off everything currently in the task list,
-		and then wait for each such task to get to a point
-		where it can be guaranteed not to spawn additional
-		tasks.  (This might be mediated via a reference
-		count in the corresponding list element, or by
-		rescanning the task list, or any of a number of
-		similar tricks.)
-
-		Of course, if the signal is non-fatal, then it is
-		necessary only to wait until the child has taken
-		the signal.
-
-	o	If it is possible for a given task's children to
-		outlive it, despite the fact that the children must
-		commit suicide upon finding themselves indicated by the
-		list, wait for another SRCU grace period to elapse.
-		(This additional SRCU grace period would be required
-		for a non-fatal pgrp signal, for example.)
-
-	o	Remove the element from the list.
-
-Does this approach make sense, or am I misunderstanding the problem?
-
-Either way, one additional question...  It seems to me that non-fatal
-signals really don't require the above mechanism, because if a task
-handles the signal, and then spawns a child, one can argue that the
-child came after the signal and should thus be unaffected.  Right?
-Or more confusion on my part?
-
-							Thanx, Paul
+Thanks,
+Rusty.
