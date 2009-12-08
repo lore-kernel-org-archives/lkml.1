@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbZLHPYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbZLHP0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932105AbZLHPYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbZLHPYi
+	id S932123AbZLHP0y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:26:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbZLHP0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:24:38 -0500
-Received: from khc.piap.pl ([195.187.100.11]:57411 "EHLO khc.piap.pl"
+	Tue, 8 Dec 2009 10:26:54 -0500
+Received: from khc.piap.pl ([195.187.100.11]:45528 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756013AbZLHPYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:24:37 -0500
+	id S1756013AbZLHP0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 10:26:53 -0500
 From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
        hermann pitton <hermann-pitton@arcor.de>,
        Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
        jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
@@ -25,50 +26,27 @@ References: <BEJgSGGXqgB@lirc>
 	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
 	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
 	<m3skbn6dv1.fsf@intrepid.localdomain>
-	<20091207184153.GD998@core.coreip.homeip.net>
-	<m3my1u35t2.fsf@intrepid.localdomain>
-	<20091207213811.GE998@core.coreip.homeip.net>
-Date: Tue, 08 Dec 2009 16:24:40 +0100
-In-Reply-To: <20091207213811.GE998@core.coreip.homeip.net> (Dmitry Torokhov's
-	message of "Mon, 7 Dec 2009 13:38:11 -0800")
-Message-ID: <m37hsxtrnr.fsf@intrepid.localdomain>
+	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
+	<4B1D934E.7030103@redhat.com>
+	<20091208042340.GC11147@core.coreip.homeip.net>
+	<4B1E3F7D.9070806@redhat.com> <m34oo1va2y.fsf@intrepid.localdomain>
+	<4B1E5EFA.4020801@redhat.com>
+Date: Tue, 08 Dec 2009 16:26:56 +0100
+In-Reply-To: <4B1E5EFA.4020801@redhat.com> (Mauro Carvalho Chehab's message of
+	"Tue, 08 Dec 2009 12:13:14 -0200")
+Message-ID: <m33a3ltrjz.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-> No, the IR core responsible for registering receivers and decoders.
+> The enable/disable protocol decoder enable/disable interface is needed anyway,
+> due to the needs for the hardware IR decoders
 
-Well. This makes me think now that LIRC can be just "another decoder".
-
->> Those are simple things. The only part which needs to be stable is the
->> (in this case LIRC) kernel-user interface.
->
-> For which some questions are still open. I believe Jon just oulined some
-> of them.
-
-Those are rather "how does it work", not "let's change something because
-it's not optimal".
-
-> No we do not. We do not merge something that we expect to rework almost
-> completely (no, not the lirc-style device userspace inetrface, although
-> even it is not completely finalized I believe, but the rest of the
-> subsystem).
-
-I don't think we need to rework it almost completely. Perhaps we need to
-change a hook here or there.
-
-> No, not at all. You merge core subsystem code, then start addig
-> decoders...
-
-You must have at least one common decoder merged with the core code,
-otherwise you don't know if the core is adequate. And you have to have
-at least one common input device.
-
-But perhaps it is a workable idea after all, given the "another
-decoder".
+Why do they need it exactly?
+The key tables say all they need I hope?
 -- 
 Krzysztof Halasa
