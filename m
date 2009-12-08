@@ -1,130 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbZLHHZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZLHH0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753779AbZLHHZR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 02:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZLHHZQ
+	id S1754110AbZLHH0P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 02:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZLHH0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 02:25:16 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58319 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbZLHHZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 02:25:15 -0500
-Date: Tue, 8 Dec 2009 18:25:15 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: linux-next: percpu/tip tree build failure
-Message-Id: <20091208182515.bb6dda4a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 02:26:11 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:34704 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbZLHH0J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 02:26:09 -0500
+From: Ike Panhc <ike.pan@canonical.com>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       acpi4asus-user@lists.sourceforge.net
+Cc: Corentin Chary <corentin.chary@gmail.com>,
+       Alexandre Rostovtsev <tetromino@gmail.com>
+Subject: [PATCH] asus-laptop: add Lenovo SL LenovoCare LED support
+Date: Tue,  8 Dec 2009 15:26:09 +0800
+Message-Id: <1260257169-7227-1-git-send-email-ike.pan@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+From: Ike Panhc <ikepanhc@canonical.com>
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+This patch is to enable the LenovoCare LED support on Lenovo SL laptop. Based
+on the found of the control interface by Alexandre Rostovtsev
 
-kernel/hw_breakpoint.c:86: error: 'task_bp_pinned' redeclared as different kind of symbol
-kernel/hw_breakpoint.c:55: note: previous declaration of 'task_bp_pinned' was here
-kernel/hw_breakpoint.c: In function 'toggle_bp_task_slot':
-kernel/hw_breakpoint.c:165: warning: assignment from incompatible pointer type
+Turn on the LenovoCare LED:
+ (As root privileges) echo 1 > /sys/class/leds/asus\:\:LenovoCare/brightness
+Trun off the LenovoCare LED:
+ (As root privileges) echo 0 > /sys/class/leds/asus\:\:LenovoCare/brightness
 
-Caused by commit dd17c8f72993f9461e9c19250e3f155d6d99df22 ("percpu:
-remove per_cpu__ prefix") from the percpu tree interacting with commit
-56053170ea2a2c0dc17420e9b94aa3ca51d80408 ("hw-breakpoints: Fix task-bound
-breakpoint slot allocation") from the tip tree.
+The patch against current checkout of acpi4asus is below.
 
-I have applied the following patch for today (and can carry it as
-necessary:
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 8 Dec 2009 18:19:48 +1100
-Subject: [PATCH] percpu: make per_cpu variable name unique in hw_breakpoint.c
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Ike Panhc <ikepanhc@canonical.com>
 ---
- kernel/hw_breakpoint.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/platform/x86/asus-laptop.c |   21 ++++++++++++++++++---
+ 1 files changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index 02b4925..03a0773 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -52,7 +52,7 @@
- static DEFINE_PER_CPU(unsigned int, nr_cpu_bp_pinned);
+diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
+index 3348cc6..f3c52b6 100644
+--- a/drivers/platform/x86/asus-laptop.c
++++ b/drivers/platform/x86/asus-laptop.c
+@@ -87,6 +87,7 @@
+ #define LCD_ON      0x80	/* LCD backlight */
+ #define GPS_ON      0x100	/* GPS */
+ #define KEY_ON      0x200	/* Keyboard backlight */
++#define LLED_ON     0x400	/* Lenovo SL: LenovoCare LED */
  
- /* Number of pinned task breakpoints in a cpu */
--static DEFINE_PER_CPU(unsigned int, task_bp_pinned[HBP_NUM]);
-+static DEFINE_PER_CPU(unsigned int, nr_task_bp_pinned[HBP_NUM]);
+ #define ASUS_LOG    ASUS_HOTK_FILE ": "
+ #define ASUS_ERR    KERN_ERR    ASUS_LOG
+@@ -123,6 +124,7 @@ ASUS_HANDLE(tled_set, ASUS_HOTK_PREFIX "TLED");
+ ASUS_HANDLE(rled_set, ASUS_HOTK_PREFIX "RLED");	/* W1JC */
+ ASUS_HANDLE(pled_set, ASUS_HOTK_PREFIX "PLED");	/* A7J */
+ ASUS_HANDLE(gled_set, ASUS_HOTK_PREFIX "GLED");	/* G1, G2 (probably) */
++ASUS_HANDLE(lled_set, "\\_SB_.PCI0.SBRG.EC0_.HKEY.TVLS"); /* LenovoCare */
  
- /* Number of non-pinned cpu/task breakpoints in a cpu */
- static DEFINE_PER_CPU(unsigned int, nr_bp_flexible);
-@@ -73,7 +73,7 @@ static DEFINE_MUTEX(nr_bp_mutex);
- static unsigned int max_task_bp_pinned(int cpu)
- {
- 	int i;
--	unsigned int *tsk_pinned = per_cpu(task_bp_pinned, cpu);
-+	unsigned int *tsk_pinned = per_cpu(nr_task_bp_pinned, cpu);
+ /* LEDD */
+ ASUS_HANDLE(ledd_set, ASUS_HOTK_PREFIX "SLCM");
+@@ -285,6 +287,7 @@ ASUS_LED(rled, "record", 1);
+ ASUS_LED(pled, "phone", 1);
+ ASUS_LED(gled, "gaming", 1);
+ ASUS_LED(kled, "kbd_backlight", 3);
++ASUS_LED(lled, "LenovoCare", 1);
  
- 	for (i = HBP_NUM -1; i >= 0; i--) {
- 		if (tsk_pinned[i] > 0)
-@@ -162,7 +162,7 @@ static void toggle_bp_task_slot(struct task_struct *tsk, int cpu, bool enable)
+ struct key_entry {
+ 	char type;
+@@ -419,6 +422,9 @@ static void write_status(acpi_handle handle, int out, int mask)
+ 		handle = (out) ? gps_on_handle : gps_off_handle;
+ 		out = 0x02;
+ 		break;
++	case LLED_ON:
++		out = (out & 0x1) * 0xFF;
++		break;
+ 	default:
+ 		out &= 0x1;
+ 		break;
+@@ -452,6 +458,7 @@ ASUS_LED_HANDLER(pled, PLED_ON);
+ ASUS_LED_HANDLER(rled, RLED_ON);
+ ASUS_LED_HANDLER(tled, TLED_ON);
+ ASUS_LED_HANDLER(gled, GLED_ON);
++ASUS_LED_HANDLER(lled, LLED_ON);
  
- 	count = task_bp_pinned(tsk);
+ /*
+  * Keyboard backlight
+@@ -1146,6 +1153,7 @@ static int asus_hotk_get_info(void)
+ 	ASUS_HANDLE_INIT(rled_set);
+ 	ASUS_HANDLE_INIT(pled_set);
+ 	ASUS_HANDLE_INIT(gled_set);
++	ASUS_HANDLE_INIT(lled_set);
  
--	tsk_pinned = per_cpu(task_bp_pinned, cpu);
-+	tsk_pinned = per_cpu(nr_task_bp_pinned, cpu);
- 	if (enable) {
- 		tsk_pinned[count]++;
- 		if (count > 0)
-@@ -209,7 +209,7 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
-  *   - If attached to a single cpu, check:
-  *
-  *       (per_cpu(nr_bp_flexible, cpu) || (per_cpu(nr_cpu_bp_pinned, cpu)
-- *           + max(per_cpu(task_bp_pinned, cpu)))) < HBP_NUM
-+ *           + max(per_cpu(nr_task_bp_pinned, cpu)))) < HBP_NUM
-  *
-  *       -> If there are already non-pinned counters in this cpu, it means
-  *          there is already a free slot for them.
-@@ -220,7 +220,7 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
-  *   - If attached to every cpus, check:
-  *
-  *       (per_cpu(nr_bp_flexible, *) || (max(per_cpu(nr_cpu_bp_pinned, *))
-- *           + max(per_cpu(task_bp_pinned, *)))) < HBP_NUM
-+ *           + max(per_cpu(nr_task_bp_pinned, *)))) < HBP_NUM
-  *
-  *       -> This is roughly the same, except we check the number of per cpu
-  *          bp for every cpu and we keep the max one. Same for the per tasks
-@@ -232,7 +232,7 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
-  *   - If attached to a single cpu, check:
-  *
-  *       ((per_cpu(nr_bp_flexible, cpu) > 1) + per_cpu(nr_cpu_bp_pinned, cpu)
-- *            + max(per_cpu(task_bp_pinned, cpu))) < HBP_NUM
-+ *            + max(per_cpu(nr_task_bp_pinned, cpu))) < HBP_NUM
-  *
-  *       -> Same checks as before. But now the nr_bp_flexible, if any, must keep
-  *          one register at least (or they will never be fed).
-@@ -240,7 +240,7 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
-  *   - If attached to every cpus, check:
-  *
-  *       ((per_cpu(nr_bp_flexible, *) > 1) + max(per_cpu(nr_cpu_bp_pinned, *))
-- *            + max(per_cpu(task_bp_pinned, *))) < HBP_NUM
-+ *            + max(per_cpu(nr_task_bp_pinned, *))) < HBP_NUM
-  */
- int reserve_bp_slot(struct perf_event *bp)
- {
+ 	ASUS_HANDLE_INIT(ledd_set);
+ 
+@@ -1338,6 +1346,7 @@ static void asus_led_exit(void)
+ 	ASUS_LED_UNREGISTER(rled);
+ 	ASUS_LED_UNREGISTER(gled);
+ 	ASUS_LED_UNREGISTER(kled);
++	ASUS_LED_UNREGISTER(lled);
+ }
+ 
+ static void asus_input_exit(void)
+@@ -1417,19 +1426,25 @@ static int asus_led_init(struct device *dev)
+ 	if (rv)
+ 		goto out4;
+ 
++	rv = ASUS_LED_REGISTER(lled, dev);
++	if (rv)
++		goto out5;
++
+ 	if (kled_set_handle && kled_get_handle)
+ 		rv = ASUS_LED_REGISTER(kled, dev);
+ 	if (rv)
+-		goto out5;
++		goto out6;
+ 
+ 	led_workqueue = create_singlethread_workqueue("led_workqueue");
+ 	if (!led_workqueue)
+-		goto out6;
++		goto out7;
+ 
+ 	return 0;
+-out6:
++out7:
+ 	rv = -ENOMEM;
+ 	ASUS_LED_UNREGISTER(kled);
++out6:
++	ASUS_LED_UNREGISTER(lled);
+ out5:
+ 	ASUS_LED_UNREGISTER(gled);
+ out4:
 -- 
-1.6.5.3
+1.6.3.3
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
