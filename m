@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZLHPN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbZLHPPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbZLHPN1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:13:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZLHPN1
+	id S932067AbZLHPPH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbZLHPPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:13:27 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33505 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754148AbZLHPN0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:13:26 -0500
-Date: Tue, 8 Dec 2009 16:13:32 +0100
-From: Jan Kara <jack@suse.cz>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Possible irq lock inversion dependency detected in JBD
-Message-ID: <20091208151332.GA3141@atrey.karlin.mff.cuni.cz>
-References: <4B0BD960.5040105@vlnb.net>
+	Tue, 8 Dec 2009 10:15:04 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38063 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755759AbZLHPPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 10:15:03 -0500
+Date: Tue, 8 Dec 2009 16:14:16 +0100
+From: Michal Marek <mmarek@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] kbuild updates for 2.6.33
+Message-ID: <20091208151416.GA13535@sepie.suse.cz>
+References: <20091208133004.GA22750@sepie.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B0BD960.5040105@vlnb.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20091208133004.GA22750@sepie.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+On Tue, Dec 08, 2009 at 02:30:04PM +0100, Michal Marek wrote:
+> Hi Linus,
+> 
+> these are the kbuild patches I collected for 2.6.33. There might be a few
+> more later, but this is the main part.
+> 
+> Thanks,
+> Michal
+> 
+> The following changes since commit 6ec22f9b037fc0c2e00ddb7023fad279c365324d:
+>   Linus Torvalds (1):
+>         Merge branch 'x86-debug-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+> 
+> are available in the git repository at:
+> 
+>   git://repo.or.cz/linux-kbuild.git for-next
+> 
+...
+> Michal Marek (4):
+>       kbuild: generate modules.builtin
 
-> During testing I had the below trace from lockdep. After some googling seems
-> it wasn't reported. The complete trace attached, it's almost 800K uncompressed.
-> 
-> =========================================================
-> [ INFO: possible irq lock inversion dependency detected ]
-> 2.6.31-scst-dbg #3
-> ---------------------------------------------------------
-> kswapd0/290 just changed the state of lock:
->  (jbd_handle){+.+.-.}, at: [<7826a6fa>] journal_start+0xd4/0x13a
-> but this lock took another, RECLAIM_FS-unsafe lock in the past:
->  (&type->s_lock_key){+.+.+.}
-> 
-> and interrupts could create inverse lock ordering between them.
-> 
-> 
-> other info that might help us debug this:
-> no locks held by kswapd0/290.
-  Thanks for the report. If I'm reading the lockdep messages right, it
-complains that page reclaim can be run with sb->s_lock held but we also
-start a transaction in the page reclaim path and we take sb->s_lock after
-starting a transaction in some paths.
-  The warning seems to be false positive to me since we don't really
-acquire sb->s_lock in the reclaim path. It would be nice if we could
-get this sorted out but I don't see an easy way out of this...
+This patch broke make clean unfortunatelly. The for-next branch already
+has a fix (commit e1cf87b), please, if you already fetched the branch,
+fetch again. I'm attaching the fix for reference.
 
-								Honza
+Michal
 
+
+---
+
+From: Michal Marek <mmarek@suse.cz>
+Subject: [PATCH] kbuild: fix make clean after mismerge
+
+Fix typo / thinko in commit 698699f.
+
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+---
+ Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 391fcb3..8491b21 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1174,7 +1174,7 @@ clean: archclean $(clean-dirs)
+ 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+ 		-o -name '*.symtypes' -o -name 'modules.order' \
+-		-o modules.order -o -name '.tmp_*.o.*' \
++		-o -name modules.builtin -o -name '.tmp_*.o.*' \
+ 		-o -name '*.gcno' \) -type f -print | xargs rm -f
+ 
+ # mrproper - Delete all generated files, including .config
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+1.6.5.3
+
