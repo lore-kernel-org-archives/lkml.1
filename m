@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937332AbZLHRhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965715AbZLHR5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937332AbZLHRhI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 12:37:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937316AbZLHRhD
+	id S965715AbZLHR5K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 12:57:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965706AbZLHR5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 12:37:03 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44901 "EHLO mx1.suse.de"
+	Tue, 8 Dec 2009 12:57:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16492 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935972AbZLHRhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 12:37:01 -0500
-Date: Tue, 8 Dec 2009 09:34:16 -0800
-From: Greg KH <gregkh@suse.de>
-To: Erez Shitrit <erezsh@mellanox.co.il>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: SR-IOV enabling process failed in kernel 2.6.32
-Message-ID: <20091208173416.GA25957@suse.de>
-References: <2ED289D4E09FBD4D92D911E869B97FDD01E6E538@mtlexch01.mtl.com>
+	id S965695AbZLHR5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 12:57:07 -0500
+Date: Tue, 8 Dec 2009 18:51:10 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       utrace-devel@redhat.com
+Subject: Re: [RFC,PATCH 14/14] utrace core
+Message-ID: <20091208175110.GB14815@redhat.com>
+References: <20091124200220.GA5828@redhat.com> <1259697242.1697.1075.camel@laptop> <20091201220847.GA25400@redhat.com> <1260210877.3935.594.camel@laptop> <20091208150417.GA11883@redhat.com> <1260286534.3935.1511.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2ED289D4E09FBD4D92D911E869B97FDD01E6E538@mtlexch01.mtl.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1260286534.3935.1511.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 11:02:22AM +0200, Erez Shitrit wrote:
-> Hi Greg,
->  
-> We are working on InfiniBand device that supports SR-IOV.
-> and lately (from version 2.6.32 ) we faced a problem:
-> When the driver tried to enable SR-IOV it failed to allocate resources
-> for the 2 BARS the device needs.
+On 12/08, Peter Zijlstra wrote:
+>
+> On Tue, 2009-12-08 at 16:04 +0100, Oleg Nesterov wrote:
+> > The
+> > problem is, this code was developed out-of-tree. That is why we would
+> > like to merge it asap, then do other changes which could be easily
+> > reviewed.
+> >
+> > Now, do you really mean we should throw out the working code, rewrite
+> > it avoiding these barriers, and resubmit? Sure, everything is possible.
+> > But this means another round of out-of-tree development with unclear
+> > results.
+>
+> Out-of-tree development is bad, it having taken lot of effort is no
+> excuse for merging ugly.
+>
+> Now, I'm not against barriers at all, but code that is as barrier heavy
+> as this, with such bad comments and no clear indication it was actually
+> worth using so many barriers make me wonder.
 
-Hm, you do realize I'm no longer the PCI maintainer, and havn't been for
-about 1 1/2 years, right?  :)
+Well. First of all, I agree at least partly. If you ask me, I feel
+that in any case utrace needs more cleanups (in fact, like almost
+any code in kernel) even if we forget about the barriers. In no
+way utrace is finished or perfect. I think that Roland won't argue ;)
 
-> The situation is when there are 2 BARS, the first asks for little amount
-> of memory and the second asks for much larger memory requirements.
-> I saw in the code (drivers/pci/iov.c) that the order of the allocation
-> starts from the first BAR to the last
-> The code:
-> for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->   res = iov->res + i;
->   if (!res->flags)
->       continue;
->   rc = pci_assign_resource(dev, i + PCI_IOV_RESOURCES);
-> 
-> This process failed for the second BAR (The big one). (in the log: "not
-> enough MMIO resources for SR-IOV")
->  
-> I think (IMHO) it because the allocation of the first BAR (the little)
-> one was from the allocated slot of the big one (the allocation from the
-> sriov_init function)
-> and when the kernel tries to allocate the slot for he second BAR (the
-> big one) in the place of the little one it failed.
->  
-> when I changed the code to start the allocation from the last to the
-> first: for (i = PCI_SRIOV_NUM_BARS; i >= 0; i--) 
-> It works fine.
->  
-> Is it a bug ? 
+But. It would be much easier to do the futher development step by
+step, patch by patch, which the changelogs, with the possibilty to
+have the review. And it is much easier to change the code which is
+already used by people. And, cleanups/simplifications are the most
+hard part of the development.
 
-I don't know, care to make a patch that shows your exact change?
+However, of course I can't "prove" that the current code is "good
+enough" for merging.
 
-thanks,
+> Barriers aren't free either, and having multiple such things in quick
+> succession isn't nessecarily faster than a lock, but much less obvious.
 
-greg k-h
+It is hardly possible to argue.
+
+Oleg.
+
