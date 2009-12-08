@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbZLHPLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZLHPN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755919AbZLHPLM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:11:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbZLHPLL
+	id S1755915AbZLHPN1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZLHPN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:11:11 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:60250 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755748AbZLHPLK convert rfc822-to-8bit (ORCPT
+	Tue, 8 Dec 2009 10:13:27 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33505 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754148AbZLHPN0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:11:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=mAEMEWDkq35gMTwf0M6WvD6VEIj57yeARAKQY+ZFzAjkLfN6uvKEM3ZyiIZGOusJ3G
-         AgbNIRu+ztpH+/BFmmytUP5hatn1jgdwFA74c+/6/Lj/hQ/qoK/OaUbS7B6oWqWU/c6L
-         LrP3b7LCtg3o6N3NDM0CXXT3XciNSey/vl7NE=
-From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: new kbuild maintainer
-Date: Tue, 8 Dec 2009 16:11:12 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.32-00908-g6ec22f9; KDE/4.3.4; x86_64; ; )
-Cc: Michal Marek <mmarek@suse.cz>
-References: <1260276751-19501-1-git-send-email-mmarek@suse.cz> <20091208131829.GA5195@merkur.ravnborg.org>
-In-Reply-To: <20091208131829.GA5195@merkur.ravnborg.org>
+	Tue, 8 Dec 2009 10:13:26 -0500
+Date: Tue, 8 Dec 2009 16:13:32 +0100
+From: Jan Kara <jack@suse.cz>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Possible irq lock inversion dependency detected in JBD
+Message-ID: <20091208151332.GA3141@atrey.karlin.mff.cuni.cz>
+References: <4B0BD960.5040105@vlnb.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200912081611.12625.a.miskiewicz@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B0BD960.5040105@vlnb.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 of December 2009, Sam Ravnborg wrote:
-> On Tue, Dec 08, 2009 at 01:52:31PM +0100, Michal Marek wrote:
-> > Sam was fine with handing over kbuild maintainership to me. The git
-> > trees are already in linux-next, a merge request will follow shortly.
-> 
-> Yep - thanks for taken over this. Glad to see this is maintained properly.
+  Hello,
 
-Maybe we can get colors back in menuconfig then? ;-)
-http://bugzilla.kernel.org/show_bug.cgi?id=13677
+> During testing I had the below trace from lockdep. After some googling seems
+> it wasn't reported. The complete trace attached, it's almost 800K uncompressed.
+> 
+> =========================================================
+> [ INFO: possible irq lock inversion dependency detected ]
+> 2.6.31-scst-dbg #3
+> ---------------------------------------------------------
+> kswapd0/290 just changed the state of lock:
+>  (jbd_handle){+.+.-.}, at: [<7826a6fa>] journal_start+0xd4/0x13a
+> but this lock took another, RECLAIM_FS-unsafe lock in the past:
+>  (&type->s_lock_key){+.+.+.}
+> 
+> and interrupts could create inverse lock ordering between them.
+> 
+> 
+> other info that might help us debug this:
+> no locks held by kswapd0/290.
+  Thanks for the report. If I'm reading the lockdep messages right, it
+complains that page reclaim can be run with sb->s_lock held but we also
+start a transaction in the page reclaim path and we take sb->s_lock after
+starting a transaction in some paths.
+  The warning seems to be false positive to me since we don't really
+acquire sb->s_lock in the reclaim path. It would be nice if we could
+get this sorted out but I don't see an easy way out of this...
+
+								Honza
 
 -- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
