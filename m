@@ -1,157 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936488AbZLHRGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965829AbZLHTQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936488AbZLHRGs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 12:06:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936459AbZLHRGn
+	id S965829AbZLHTQU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 14:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965800AbZLHTQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 12:06:43 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:64888 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936450AbZLHRGk (ORCPT
+	Tue, 8 Dec 2009 14:16:15 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:6762 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965819AbZLHTQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 12:06:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=t232At+4uvlLDs5gbTKOPGEod4gH10YActGpYPBOQSCwAEOl07UNyMpwcv/IX/97+9
-         gRdeXh8us3jxajb/uLX1JU/ynKvBaXp5uymqbO4zmEwMC7Qnz6jlmhVRsYpFXBOGDjEP
-         FVoI8GMu5MFkszzOn/8fZ48kFDj56GFylN2Cc=
-Date: Tue, 8 Dec 2009 09:06:40 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Andy Walls <awalls@radix.net>, Jarod Wilson <jarod@wilsonet.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091208170640.GB14143@core.coreip.homeip.net>
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com> <1259264614.1781.47.camel@localhost> <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com> <1260240142.3086.14.camel@palomino.walls.org> <20091208042210.GA11147@core.coreip.homeip.net> <4B1E3C1D.7070704@redhat.com>
+	Tue, 8 Dec 2009 14:16:14 -0500
+Message-ID: <4B1E87DB.5060905@caviumnetworks.com>
+Date: Tue, 08 Dec 2009 09:07:39 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1E3C1D.7070704@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<u.kleine-koenig@pengutronix.de>
+CC: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ARM: Convert BUG() to use unreachable()
+References: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1260266138-17684-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 08 Dec 2009 17:07:39.0802 (UTC) FILETIME=[F29F1FA0:01CA7828]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 09:44:29AM -0200, Mauro Carvalho Chehab wrote:
-> Dmitry Torokhov wrote:
-> > On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
-> >> On Mon, 2009-12-07 at 13:19 -0500, Jarod Wilson wrote:
-> >>> On Nov 26, 2009, at 2:43 PM, Andy Walls wrote:
-> >>>
-> >>>> On Thu, 2009-11-26 at 12:05 -0200, Mauro Carvalho Chehab wrote:
-> >>>>> Krzysztof Halasa wrote:
-> >>>>>> Andy Walls <awalls@radix.net> writes:
-> >>>>>>
-> >>>>>>> I would also note that RC-6 Mode 6A, used by most MCE remotes, was
-> >>>>>>> developed by Philips, but Microsoft has some sort of licensing interest
-> >>>>>>> in it and it is almost surely encumbered somwhow:
-> >>>>>> I don't know about legal problems in some countries but from the
-> >>>>>> technical POV handling the protocol in the kernel is more efficient
-> >>>>>> or (/and) simpler.
-> >>>>> A software licensing from Microsoft won't apply to Linux kernel, so I'm
-> >>>>> assuming that you're referring to some patent that they could be filled
-> >>>>> about RC6 mode 6A.
-> >>>>>
-> >>>>> I don't know if is there any US patent pending about it (AFAIK, only US
-> >>>>> accepts software patents), but there are some prior-art for IR key
-> >>>>> decoding. So, I don't see what "innovation" RC6 would be adding. 
-> >>>>> If it is some new way to transmit waves, the patent issues
-> >>>>> aren't related to software, and the device manufacturer had already handled
-> >>>>> it when they made their devices.
-> >>>>>
-> >>>>> If it is just a new keytable, this issue 
-> >>>>> could be easily solved by loading the keytable via userspace.
-> >>>>>
-> >>>>> Also, assuming that you can use the driver only with a hardware that comes
-> >>>>> with a licensed software, the user has already the license for using it.
-> >>>>>
-> >>>>> Do you have any details on what patents they are claiming?
-> >>>> The US Philips RC-6 patent is US Patent 5,877,702
-> >>>>
-> >>>> http://www.google.com/patents?vid=USPAT5877702
-> >>>>
-> >>>> Click on download PDF to get a copy of the whole patent.
-> >>>>
-> >>>> I am not a lawyer.  Philips claims' all appear to tie to a transmitter
-> >>>> or receiver as part of a system, but most of the claims are about
-> >>>> information and bit positions and lengths.
-> >>> ...
-> >>>> IMO, given
-> >>>>
-> >>>> a. the dearth of public information about RC-6, indicating someone
-> >>>> thinks it's their trade secret or intellectual property
-> >>>>
-> >>>> b. Microsoft claiming to license something related to the MCE remote
-> >>>> protocols (which are obviously RC-6 Mode 6A),
-> >>>>
-> >>>> c. my inability to draw a "clear, bright line" that RC-6 Mode 6A
-> >>>> encoding and decoding, as needed by MCE remotes, implemented in software
-> >>>> doesn't violate anyone's government granted rights to exclusivity.
-> >>>>
-> >>>> I think it's much better to implement software RC-6 Mode 6A encoding and
-> >>>> decoding in user space, doing only the minimum needed to get the
-> >>>> hardware setup and going in the kernel.  
-> >>>>
-> >>>> Encoding/decoding of RC-6 by microcontrollers with firmware doesn't
-> >>>> worry me. 
-> >>>>
-> >>>>
-> >>>> Maybe I'm being too conservative here, but I have a personal interest in
-> >>>> keeping Linux free and unencumbered even in the US which, I cannot deny,
-> >>>> has a patent system that is screwed up.
-> >>> So I had one of the people who does all the license and patent audits
-> >>> for Fedora packages look at the Philips patent on RC-6. He's 100%
-> >>> positive that the patent *only* covers hardware, there should be no
-> >>> problem whatsoever writing a software decoder for RC-6.
-> >> OK.  Thanks for having some professionals take a look.  (I'm assuming
-> >> that's the only patent.)
-> >>
-> >> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
-> >> end of the month.
-> >>
-> >> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
-> >> a common set of parameters, so I may be able to set up the decoders to
-> >> handle decoding from two different remote types at once.  The HVR boards
-> >> can ship with either type of remote AFAIK.
-> >>
-> >> I wonder if I can flip the keytables on the fly or if I have to create
-> >> two different input devices?
-> >>
-> > 
-> > Can you distinguish between the 2 remotes (not receivers)? Like I said,
-> > I think the preferred way is to represent every remote that can be
-> > distinguished from each other as a separate input device. Applications
-> > expect to query device capabilities and expect them to stay somewhat
-> > stable (we do support keymap change but I don't think anyone expectes
-> > flip-flopping).
-> > 
-> With RC-5, you have no fields describing the remote. So, all the driver could
-> do is an educated guess.
+Uwe Kleine-König wrote:
+> Use the new unreachable() macro instead of for(;;);
 > 
-> From a quick look I did at the RC-6 Mode 6A docs I found, I suspect that
-> you can distinguish two different remotes when someone press a key there.
-> 
-> However, I don't think it is a good idea to automatically create a new interface
-> every time a different vendor is detected. Maybe the user simply have a
-> RC-6 IR to control his TV and doesn't have any intention on using that
-> device on his computer.
-> 
-> IMO, the better is to have an API to allow creation of multiple interfaces
-> per IR receiver, based on some scancode matching table and/or on some
-> matching mask.
-> 
-> It should be possible to use the filter API to match different IR's by
-> vendor/product on protocols that supports it, or to match address/command
-> tuples on protocols where you just have those fields.
-> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: David Daney <ddaney@caviumnetworks.com>
 
-OK, fair enough.
+This looks fine to me.  The comment is somewhat redundant now, but still 
+accurate.
 
--- 
-Dmitry
+Reviewed-by: David Daney <ddaney@caviumnetworks.com>
+
+
+> ---
+>  arch/arm/kernel/traps.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
+> index 3f361a7..25b50c4 100644
+> --- a/arch/arm/kernel/traps.c
+> +++ b/arch/arm/kernel/traps.c
+> @@ -681,7 +681,7 @@ void __attribute__((noreturn)) __bug(const char *file, int line)
+>  	*(int *)0 = 0;
+>  
+>  	/* Avoid "noreturn function does return" */
+> -	for (;;);
+> +	unreachable();
+>  }
+>  EXPORT_SYMBOL(__bug);
+>  
+
