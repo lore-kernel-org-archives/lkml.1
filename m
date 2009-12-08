@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934822AbZLHGwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934454AbZLHGxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934822AbZLHGwv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 01:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbZLHGwr
+	id S934454AbZLHGxg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 01:53:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932110AbZLHGxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 01:52:47 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:49001 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbZLHGwq (ORCPT
+	Tue, 8 Dec 2009 01:53:35 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38798 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751644AbZLHGxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 01:52:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=EfxRhkYH9GtE2DXw82g+dGfkHQqt2wrjk60EmytRA91YE1JJQ9QFh3Olil9j8UF6BI
-         bkjDBDna0OZZzSJNX8r+gRXc0cEoz/ErFQruwJCs/j0FXajC3YUlgiK7cMoiM1GVOCqx
-         5Cfbw1ixlgimuaW7YzH/l4YsY5eBvgyx4hBV0=
-Subject: Re: [PATCH v8 8/8] Loongson: YeeLoong: add input/hotkey driver
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
-       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <20091207064857.GG21451@core.coreip.homeip.net>
-References: <cover.1260082252.git.wuzhangjin@gmail.com>
-	 <b164d5bb79963a57621d024c22e5664de0ff8662.1260082252.git.wuzhangjin@gmail.com>
-	 <20091207064857.GG21451@core.coreip.homeip.net>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 08 Dec 2009 14:52:11 +0800
-Message-ID: <1260255131.3315.25.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 8 Dec 2009 01:53:34 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v6] Added PR_SET_PROCTITLE_AREA option for prctl()
+Cc: kosaki.motohiro@jp.fujitsu.com, Bryan Donlan <bdonlan@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>, Timo Sirainen <tss@iki.fi>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091208144004.B5AB.A69D9226@jp.fujitsu.com>
+References: <20091208053851.GA12383@elte.hu> <20091208144004.B5AB.A69D9226@jp.fujitsu.com>
+Message-Id: <20091208155202.B5B7.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  8 Dec 2009 15:53:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Dmitry Torokhov
+> > 
+> > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > 
+> > > > The feature looks useful, but the choice of a prctl as an API is strange 
+> > > > - it limits us to the current task only - while the ability to set 
+> > > > arguments for another task looks a more generic (and potentially more 
+> > > > useful) solution.
+> > > 
+> > > No. It's impossible.
+> > > /proc/{pid}/cmdline read user process's memory. iow, this prctl() don't
+> > > receive string, it receive virtual address itself. [...]
+> > 
+> > it's not 'impossible' at all, you yourself mention ptrace:
+> 
+> Ah yes, 'impossible' was wrong word. but it doesn't works intentionally.
+> 
+> 1. setproctitle() unaware application continue to see argv[0] directly.
+>   it makes some inconsistent behavior. 
+> 2. proc title (i.e. string) injection need to map new page as process title area.
+>    implicit mapping increasing makes new trouble
+>    - mihgt cause to exceed max_map_count awhile after.
+>    - might cause leak proc title area (who know when it should be freed?)
+> 
+> I think reasonable way is 1. send signal (or use another inter process
+> communication way) to target process 2. target process change own proc title
+> themself.
+> 
+> Plus, I haven't seen the use-case of changin another task. iow I doubt
+> it's worth to change lots code.
 
-I plan to send another revision of this patchset, Can I get your
-Acked-by: for this patch?
-
-Thanks!
-	Wu Zhangjin
-
-On Sun, 2009-12-06 at 22:48 -0800, Dmitry Torokhov wrote:
-> Hi Wu,
-> 
-> On Sun, Dec 06, 2009 at 03:01:48PM +0800, Wu Zhangjin wrote:
-> > +
-> > +#define EC_VER_LEN 64
-> > +
-> > +static int black_screen_handler(int status)
-> > +{
-> > +	char *p, ec_ver[EC_VER_LEN];
-> > +
-> > +	p = strstr(loongson_cmdline, "EC_VER=");
-> > +	if (!p)
-> > +		memset(ec_ver, 0, EC_VER_LEN);
-> > +	else {
-> > +		strncpy(ec_ver, p, EC_VER_LEN);
-> > +		p = strstr(ec_ver, " ");
-> > +		if (p)
-> > +			*p = '\0';
-> > +	}
-> > +
-> 
-> Hmm, why do you copy and parse command lineinstead of using module
-> param and also doing it just once?
-> 
-> > +	/* Seems EC(>=PQ1D26) does this job for us, we can not do it again,
-> > +	 * otherwise, the brightness will not resume to the normal level! */
-> > +	if (strncasecmp(ec_ver, "EC_VER=PQ1D26", 64) < 0)
-> > +		yeeloong_lcd_vo_set(status);
-> > +
-> > +	return status;
-> > +}
-> 
-> Thanks.
-> 
+if your mention is strongly, can you please explain your expected use case?
 
 
