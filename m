@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZLHKXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbZLHKYC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753617AbZLHKXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 05:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZLHKXv
+	id S1753707AbZLHKYC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 05:24:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbZLHKYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 05:23:51 -0500
-Received: from cantor.suse.de ([195.135.220.2]:52760 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753126AbZLHKXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 05:23:51 -0500
-Message-ID: <4B1E290A.8040005@suse.cz>
-Date: Tue, 08 Dec 2009 11:23:06 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.9 Thunderbird/3.0b4
+	Tue, 8 Dec 2009 05:24:01 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40426 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753550AbZLHKXx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 05:23:53 -0500
+Date: Tue, 8 Dec 2009 11:23:51 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>, Brian Swetland <swetland@google.com>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: dream: glue for mmc controller
+Message-ID: <20091208102351.GG12264@elf.ucw.cz>
+References: <20091103105319.GA2492@elf.ucw.cz>
+ <20091103105737.GE20341@fluff.org.uk>
+ <20091108081314.GA16482@elf.ucw.cz>
+ <20091108091009.GB20529@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH 0/3] clean out Perl from build system.
-References: <200912080317.08254.rob@landley.net>
-In-Reply-To: <200912080317.08254.rob@landley.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091108091009.GB20529@n2100.arm.linux.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8.12.2009 10:17, Rob Landley wrote:
-> Perl was introduced as a build dependency in 2.6.25.  My cross-compile 
-> environment does not use perl, so ever since then I've patched it back out.
+On Sun 2009-11-08 09:10:10, Russell King - ARM Linux wrote:
+> On Sun, Nov 08, 2009 at 09:13:14AM +0100, Pavel Machek wrote:
+> > > > +#include <asm/io.h>
+> > > > +#include <asm/gpio.h>
+> > > linux/gpio.h
+> > > linux/io.h
+> > 
+> > I got compile errors when trying to use linux/gpio.h:
+> > 
+> > arch/arm/mach-msm/board-dream-gpio.c: In function
+> > 'dream_gpio_configure':
+> > arch/arm/mach-msm/board-dream-gpio.c:109: error: 'GPIOF_OUTPUT_LOW'
+> > undeclared (first use in this function)
 > 
-> With these patches I've personally built kernels for x86, x86_64, arm, mips, 
-> powerpc, sparc, sh4, and m68k.
+> This means it's abusing the gpio header files - which are intended for
+> the generic GPIO support, but are being used for this platforms private
+> non-generic GPIO based stuff.
 
-Hi Rob,
-
-you should CC linux-kbuild@ on patches like this (added now, the whole
-series is at http://lkml.org/lkml/2009/12/8/93).
-
-Michal
+Ok, will fix.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
