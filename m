@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbZLHPlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932272AbZLHPmC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbZLHPlu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:41:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbZLHPlt
+	id S932272AbZLHPmC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:42:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932201AbZLHPmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:41:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2829 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932119AbZLHPls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:41:48 -0500
-Message-ID: <4B1E73A5.2040006@redhat.com>
-Date: Tue, 08 Dec 2009 13:41:25 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Tue, 8 Dec 2009 10:42:01 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:39630 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932208AbZLHPl6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 10:41:58 -0500
+Date: Tue, 8 Dec 2009 15:41:54 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ike Panhc <ike.pan@canonical.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       acpi4asus-user@lists.sourceforge.net,
+       Corentin Chary <corentin.chary@gmail.com>,
+       Alexandre Rostovtsev <tetromino@gmail.com>
+Subject: Re: [Resend] [PATCH] asus-laptop: add Lenovo SL LenovoCare LED
+	support
+Message-ID: <20091208154154.GA26435@srcf.ucam.org>
+References: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <BEJgSGGXqgB@lirc>	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>	<1260070593.3236.6.camel@pc07.localdom.local>	<20091206065512.GA14651@core.coreip.homeip.net>	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>	<m3skbn6dv1.fsf@intrepid.localdomain>	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>	<4B1D934E.7030103@redhat.com>	<20091208042340.GC11147@core.coreip.homeip.net>	<4B1E3F7D.9070806@redhat.com> <m34oo1va2y.fsf@intrepid.localdomain>	<4B1E5EFA.4020801@redhat.com> <m33a3ltrjz.fsf@intrepid.localdomain>
-In-Reply-To: <m33a3ltrjz.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Mauro Carvalho Chehab <mchehab@redhat.com> writes:
-> 
->> The enable/disable protocol decoder enable/disable interface is needed anyway,
->> due to the needs for the hardware IR decoders
-> 
-> Why do they need it exactly?
-> The key tables say all they need I hope?
+On Tue, Dec 08, 2009 at 03:37:09PM +0800, Ike Panhc wrote:
 
-You can't upload a key for an unsupported protocol. Also, provided
-that hardware decoders in general don't support decoding multiple
-protocols at the same time, it is needed to select what protocol it
-will be decoding.
+>  ASUS_HANDLE(rled_set, ASUS_HOTK_PREFIX "RLED");	/* W1JC */
+>  ASUS_HANDLE(pled_set, ASUS_HOTK_PREFIX "PLED");	/* A7J */
+>  ASUS_HANDLE(gled_set, ASUS_HOTK_PREFIX "GLED");	/* G1, G2 (probably) */
 
-So, userspace needs to:
-	- retrieve the list of the supported protocols;
-	- identify if a given IR is capable of multiple protocols;
-	- be able to select what protocol(s) decoder(s) will be enabled.
+The driver is controlling the ATKD device, which has a HID of ATK0101. 
+These devices are all underneath it...
 
-Cheers,
-Mauro.
+> +ASUS_HANDLE(lled_set, "\\_SB_.PCI0.SBRG.EC0_.HKEY.TVLS"); /* LenovoCare */
+
+And this one isn't, which is a bit jarring. Looking closer, it's under 
+the LEN0014 device, which means that you're trying to touch a method 
+that belongs to a device other than the one this driver is bound to. 
+That's wrong. You want a separate ACPI driver for the LEN0014 device, 
+and this should be called for there. Looking at it, you seem to get 
+rfkill as well (the GWAN/SWAN, GBDC/SBDF and GUWB/SUWB methods) and 
+maybe some other stuff.
+
+So this shouldn't go in asus-laptop. You'll need to add another separate 
+driver for the SL-specific functionality.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
