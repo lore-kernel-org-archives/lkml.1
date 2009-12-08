@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbZLHOH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZLHONd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbZLHOH7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbZLHOH7
+	id S1755417AbZLHONd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbZLHONa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:07:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7667 "EHLO mx1.redhat.com"
+	Tue, 8 Dec 2009 09:13:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14752 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755364AbZLHOH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:07:58 -0500
-Message-ID: <4B1E5DA3.7000206@redhat.com>
-Date: Tue, 08 Dec 2009 12:07:31 -0200
+	id S1755209AbZLHON3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:13:29 -0500
+Message-ID: <4B1E5EFA.4020801@redhat.com>
+Date: Tue, 08 Dec 2009 12:13:14 -0200
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
 User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
 To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Jon Smirl <jonsmirl@gmail.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
        hermann pitton <hermann-pitton@arcor.de>,
        Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
        jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, superm1@ubuntu.com
 Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR 	system?
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>	<1260070593.3236.6.camel@pc07.localdom.local>	<20091206065512.GA14651@core.coreip.homeip.net>	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>	<m3skbn6dv1.fsf@intrepid.localdomain>	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>	<4B1D934E.7030103@redhat.com> <m3hbs1vain.fsf@intrepid.localdomain>
-In-Reply-To: <m3hbs1vain.fsf@intrepid.localdomain>
+ IR  system?
+References: <BEJgSGGXqgB@lirc>	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>	<1260070593.3236.6.camel@pc07.localdom.local>	<20091206065512.GA14651@core.coreip.homeip.net>	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>	<m3skbn6dv1.fsf@intrepid.localdomain>	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>	<4B1D934E.7030103@redhat.com>	<20091208042340.GC11147@core.coreip.homeip.net>	<4B1E3F7D.9070806@redhat.com> <m34oo1va2y.fsf@intrepid.localdomain>
+In-Reply-To: <m34oo1va2y.fsf@intrepid.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,27 +35,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Krzysztof Halasa wrote:
 > Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 > 
->>> What is the interface for attaching an in-kernel decoder?
->> IMO, it should use the kfifo for it. However, if we allow both raw data and
->> in-kernel decoders to read data there, we'll need a spinlock to protect the
->> kfifo.
+>> I don't think we need an userspace interface for the in-kernel
+>> decoders.
 > 
-> This may be an option, but I think we should be able to attach protocol
-> decoders in parallel, directly to the IRQ handler. At least with RC-5
-> (that's what I personally use) it means reliable decoding, no need for
-> any timeouts, the code is clean, fast (can be a part of hard IRQ
-> handler) and simple.
-> 
-> The decoder needs something like
-> 	rc5_signal_change(ptr, space_or_mark, microseconds).
-> 
-> At least mark->space or space->mark events must be reported. For better
-> reliability, both of them.
+> Of course we need it, to set (and probably retrieve) scancode-keycode
+> mappings. This could probably be, ATM, the existing input layer channel.
 
-If you use a kfifo to store the event (space_or_mark, timestamp), 
-the IRQ handler can return immediately, and a separate kernel thread 
-can do the decode without needing to touch at the IRQ. It also helps to
-have a decoder independent of the kernel driver.
+This is the standard/extended evdev interface already discussed.
+> 
+>> All
+>> it needs is to enable/disable the protocol decoders, imo via sysfs interface.
+> 
+> This isn't IMHO needed at all. The protocol is enabled when at least one
+> key using it is configured, otherwise it's disabled. We probably need
+> some "wildcard" as well, to capture decoded scancodes (through the input
+> layer).
+> This is BTW pure optimization, the protocol could stay enabled all the
+> time, only wasting the cycles.
+
+The enable/disable protocol decoder enable/disable interface is needed anyway,
+due to the needs for the hardware IR decoders (and the legacy IR decoders,
+while we don't convert all of them to the generic ones).
+
+So, IMO, the interface will be cleaner if we use it also for the generic
+IR decoders.
 
 Cheers,
 Mauro.
