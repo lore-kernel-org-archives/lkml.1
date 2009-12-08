@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbZLHNyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZLHN5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbZLHNyF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 08:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZLHNyD
+	id S1755319AbZLHN5R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 08:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbZLHN5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 08:54:03 -0500
-Received: from khc.piap.pl ([195.187.100.11]:51895 "EHLO khc.piap.pl"
+	Tue, 8 Dec 2009 08:57:16 -0500
+Received: from khc.piap.pl ([195.187.100.11]:49592 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755137AbZLHNyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 08:54:01 -0500
+	id S1755180AbZLHN5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 08:57:15 -0500
 From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
        hermann pitton <hermann-pitton@arcor.de>,
        Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
        jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, superm1@ubuntu.com
 Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <20091204220708.GD25669@core.coreip.homeip.net>
+References: <BEJgSGGXqgB@lirc>
 	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
 	<1260070593.3236.6.camel@pc07.localdom.local>
 	<20091206065512.GA14651@core.coreip.homeip.net>
@@ -28,22 +27,24 @@ References: <20091204220708.GD25669@core.coreip.homeip.net>
 	<m3skbn6dv1.fsf@intrepid.localdomain>
 	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
 	<4B1D934E.7030103@redhat.com>
-	<9e4733910912071628x3f3eba82r4c964982f9d8c5a4@mail.gmail.com>
-Date: Tue, 08 Dec 2009 14:54:03 +0100
-In-Reply-To: <9e4733910912071628x3f3eba82r4c964982f9d8c5a4@mail.gmail.com>
-	(Jon Smirl's message of "Mon, 7 Dec 2009 19:28:13 -0500")
-Message-ID: <m3d42pvaf8.fsf@intrepid.localdomain>
+	<20091208042340.GC11147@core.coreip.homeip.net>
+Date: Tue, 08 Dec 2009 14:57:15 +0100
+In-Reply-To: <20091208042340.GC11147@core.coreip.homeip.net> (Dmitry
+	Torokhov's message of "Mon, 7 Dec 2009 20:23:40 -0800")
+Message-ID: <m38wddva9w.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl <jonsmirl@gmail.com> writes:
+Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
 
-> Data could be sent to the in-kernel decoders first and then if they
-> don't handle it, send it to user space.
+> Why woudl we want to do this? Quite often there is a need for "observer"
+> that maybe does not act on data but allows capturing it. Single-user
+> inetrfaces are PITA.
 
-Nope. It should be sent to all of them, they aren't dependent.
+Lircd can work as a multiplexer. IMHO single-open lirc interface is ok,
+though we obviously need simultaneous operation of in-kernel decoders.
 -- 
 Krzysztof Halasa
