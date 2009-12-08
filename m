@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935803AbZLHDQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935805AbZLHDQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935803AbZLHDQg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 22:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934700AbZLHDQd
+	id S935805AbZLHDQu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 22:16:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934534AbZLHDQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 22:16:33 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55074 "EHLO song.cn.fujitsu.com"
+	Mon, 7 Dec 2009 22:16:48 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50082 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S934801AbZLHDQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 22:16:29 -0500
-Message-ID: <4B1DC4FB.5030407@cn.fujitsu.com>
-Date: Tue, 08 Dec 2009 11:16:11 +0800
+	id S935085AbZLHDQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 22:16:45 -0500
+Message-ID: <4B1DC50A.7040402@cn.fujitsu.com>
+Date: Tue, 08 Dec 2009 11:16:26 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -18,7 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 08/13] tracing: Use seq file for trace_clock
+Subject: [PATCH 09/13] tracing: Remove useless trace option
 References: <4B1DC476.3030700@cn.fujitsu.com>
 In-Reply-To: <4B1DC476.3030700@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -27,71 +27,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The buffer for the output is as small as 64 bytes, so it'll
-overflow if we add more clock type. Use seq file instead.
+Since commit 4d9493c90f8e6e1b164aede3814010a290161abb
+("ftrace: remove add-hoc code"), option "sched-tree"
+has become useless.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/trace.c |   24 +++++++++++++++---------
- 1 files changed, 15 insertions(+), 9 deletions(-)
+ kernel/trace/trace.c |    1 -
+ kernel/trace/trace.h |   23 +++++++++++------------
+ 2 files changed, 11 insertions(+), 13 deletions(-)
 
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index e989fc9..75871e5 100644
+index 75871e5..2801b0b 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -3327,21 +3327,18 @@ tracing_mark_write(struct file *filp, const char __user *ubuf,
- 	return cnt;
- }
- 
--static ssize_t tracing_clock_read(struct file *filp, char __user *ubuf,
--				  size_t cnt, loff_t *ppos)
-+static int tracing_clock_show(struct seq_file *m, void *v)
- {
--	char buf[64];
--	int bufiter = 0;
- 	int i;
- 
- 	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++)
--		bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter,
-+		seq_printf(m,
- 			"%s%s%s%s", i ? " " : "",
- 			i == trace_clock_id ? "[" : "", trace_clocks[i].name,
- 			i == trace_clock_id ? "]" : "");
--	bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter, "\n");
-+	seq_putc(m, '\n');
- 
--	return simple_read_from_buffer(ubuf, cnt, ppos, buf, bufiter);
-+	return 0;
- }
- 
- static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
-@@ -3383,6 +3380,13 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
- 	return cnt;
- }
- 
-+static int tracing_clock_open(struct inode *inode, struct file *file)
-+{
-+	if (tracing_disabled)
-+		return -ENODEV;
-+	return single_open(file, tracing_clock_show, NULL);
-+}
-+
- static const struct file_operations tracing_max_lat_fops = {
- 	.open		= tracing_open_generic,
- 	.read		= tracing_max_lat_read,
-@@ -3421,8 +3425,10 @@ static const struct file_operations tracing_mark_fops = {
+@@ -313,7 +313,6 @@ static const char *trace_options[] = {
+ 	"bin",
+ 	"block",
+ 	"stacktrace",
+-	"sched-tree",
+ 	"trace_printk",
+ 	"ftrace_preempt",
+ 	"branch",
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index ea5dda4..60f9471 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -597,18 +597,17 @@ enum trace_iterator_flags {
+ 	TRACE_ITER_BIN			= 0x40,
+ 	TRACE_ITER_BLOCK		= 0x80,
+ 	TRACE_ITER_STACKTRACE		= 0x100,
+-	TRACE_ITER_SCHED_TREE		= 0x200,
+-	TRACE_ITER_PRINTK		= 0x400,
+-	TRACE_ITER_PREEMPTONLY		= 0x800,
+-	TRACE_ITER_BRANCH		= 0x1000,
+-	TRACE_ITER_ANNOTATE		= 0x2000,
+-	TRACE_ITER_USERSTACKTRACE       = 0x4000,
+-	TRACE_ITER_SYM_USEROBJ          = 0x8000,
+-	TRACE_ITER_PRINTK_MSGONLY	= 0x10000,
+-	TRACE_ITER_CONTEXT_INFO		= 0x20000, /* Print pid/cpu/time */
+-	TRACE_ITER_LATENCY_FMT		= 0x40000,
+-	TRACE_ITER_SLEEP_TIME		= 0x80000,
+-	TRACE_ITER_GRAPH_TIME		= 0x100000,
++	TRACE_ITER_PRINTK		= 0x200,
++	TRACE_ITER_PREEMPTONLY		= 0x400,
++	TRACE_ITER_BRANCH		= 0x800,
++	TRACE_ITER_ANNOTATE		= 0x1000,
++	TRACE_ITER_USERSTACKTRACE       = 0x2000,
++	TRACE_ITER_SYM_USEROBJ          = 0x4000,
++	TRACE_ITER_PRINTK_MSGONLY	= 0x8000,
++	TRACE_ITER_CONTEXT_INFO		= 0x10000, /* Print pid/cpu/time */
++	TRACE_ITER_LATENCY_FMT		= 0x20000,
++	TRACE_ITER_SLEEP_TIME		= 0x40000,
++	TRACE_ITER_GRAPH_TIME		= 0x80000,
  };
  
- static const struct file_operations trace_clock_fops = {
--	.open		= tracing_open_generic,
--	.read		= tracing_clock_read,
-+	.open		= tracing_clock_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
- 	.write		= tracing_clock_write,
- };
- 
+ /*
 -- 
 1.6.3
 
