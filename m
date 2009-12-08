@@ -1,168 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZLHJbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbZLHJVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbZLHJbi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 04:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZLHJbh
+	id S1752324AbZLHJVW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 04:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbZLHJVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 04:31:37 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:58971
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbZLHJbg (ORCPT
+	Tue, 8 Dec 2009 04:21:19 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45334 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039AbZLHJVR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 04:31:36 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] Remove perl from make headers_install
-Date: Tue, 8 Dec 2009 03:21:15 -0600
-User-Agent: KMail/1.11.2 (Linux/2.6.28-16-generic; KDE/4.2.2; x86_64; ; )
-References: <200912080317.08254.rob@landley.net>
-In-Reply-To: <200912080317.08254.rob@landley.net>
+	Tue, 8 Dec 2009 04:21:17 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Cong Wang <amwang@redhat.com>
+Subject: Re: [RFC Patch] getrusage: fill ru_ixrss, ru_idrss and ru_isrss fields
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Jiri Pirko <jpirko@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Oleg Nesterov <oleg@redhat.com>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4B1E13C8.70704@redhat.com>
+References: <20091208173730.B5C3.A69D9226@jp.fujitsu.com> <4B1E13C8.70704@redhat.com>
+Message-Id: <20091208181117.B5C9.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912080321.16063.rob@landley.net>
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  8 Dec 2009 18:21:19 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+> KOSAKI Motohiro wrote:
+> > 	The next three fields, the subject of this patch, are named ru_XXrss:
+> > 	though the 80-column comment omits to say "resident set" before "size",
+> > 	I believe they'd be expected to account (subdivided) resident set sizes?
+> > 
+> > 
+> > your calculation is not rss nor not integral.
+> > 
+> 
+> Hmm, I misunderstood rss here. Does it mean the memory stayed in
+> physical mem? i.e. not swapped out.
 
-Remove perl from make headers_install by replacing a perl script (doing
-a simple regex search and replace) with a smaller and faster shell script
-implementation.  The new shell script is a single for loop calling sed and
-piping its output through unifdef to produce the target file.
+Yes.
 
-Signed-off-by: Rob Landley <rob@landley.net>
----
+Plus, 'integral' mean "tick * rss". but in dyntick environment, per tick statistics is not
+so easy nor low cost.
 
- scripts/Makefile.headersinst |    6 ++--
- scripts/headers_install.pl   |   49 ---------------------------------
- scripts/headers_install.sh   |   39 ++++++++++++++++++++++++++
- 3 files changed, 42 insertions(+), 52 deletions(-)
+> So, if I want to get those rss statistics, I have to add some more
+> mm_counter by myself? I only find file_rss and anon_rss in mm_struct.
 
-diff -ruN linux-2.6.30.old/scripts/headers_install.pl linux-2.6.30/scripts/headers_install.pl
---- linux-2.6.30.old/scripts/headers_install.pl	2009-06-09 22:05:27.000000000 -0500
-+++ linux-2.6.30/scripts/headers_install.pl	1969-12-31 18:00:00.000000000 -0600
-@@ -1,49 +0,0 @@
--#!/usr/bin/perl -w
--#
--# headers_install prepare the listed header files for use in
--# user space and copy the files to their destination.
--#
--# Usage: headers_install.pl readdir installdir arch [files...]
--# readdir:    dir to open files
--# installdir: dir to install the files
--# arch:       current architecture
--#             arch is used to force a reinstallation when the arch
--#             changes because kbuild then detect a command line change.
--# files:      list of files to check
--#
--# Step in preparation for users space:
--# 1) Drop all use of compiler.h definitions
--# 2) Drop include of compiler.h
--# 3) Drop all sections defined out by __KERNEL__ (using unifdef)
--
--use strict;
--
--my ($readdir, $installdir, $arch, @files) = @ARGV;
--
--my $unifdef = "scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__";
--
--foreach my $file (@files) {
--	local *INFILE;
--	local *OUTFILE;
--	my $tmpfile = "$installdir/$file.tmp";
--	open(INFILE, "<$readdir/$file")
--		or die "$readdir/$file: $!\n";
--	open(OUTFILE, ">$tmpfile") or die "$tmpfile: $!\n";
--	while (my $line = <INFILE>) {
--		$line =~ s/([\s(])__user\s/$1/g;
--		$line =~ s/([\s(])__force\s/$1/g;
--		$line =~ s/([\s(])__iomem\s/$1/g;
--		$line =~ s/\s__attribute_const__\s/ /g;
--		$line =~ s/\s__attribute_const__$//g;
--		$line =~ s/^#include <linux\/compiler.h>//;
--		$line =~ s/(^|\s)(inline)\b/$1__$2__/g;
--		$line =~ s/(^|\s)(asm)\b(\s|[(]|$)/$1__$2__$3/g;
--		$line =~ s/(^|\s|[(])(volatile)\b(\s|[(]|$)/$1__$2__$3/g;
--		printf OUTFILE "%s", $line;
--	}
--	close OUTFILE;
--	close INFILE;
--	system $unifdef . " $tmpfile > $installdir/$file";
--	unlink $tmpfile;
--}
--exit 0;
-diff -ruN linux-2.6.30.old/scripts/headers_install.sh linux-2.6.30/scripts/headers_install.sh
---- linux-2.6.30.old/scripts/headers_install.sh	1969-12-31 18:00:00.000000000 -0600
-+++ linux-2.6.30/scripts/headers_install.sh	2009-06-22 16:21:23.000000000 -0500
-@@ -0,0 +1,39 @@
-+#!/bin/sh
-+
-+if [ $# -lt 2 ]
-+then
-+	echo "Usage: headers_install.sh INDIR OUTDIR [FILES...]
-+	echo
-+	echo "Prepares kernel header files for use by user space, by removing"
-+	echo "all compiler.h definitions and #includes, removing any"
-+	echo "#ifdef __KERNEL__ sections, and putting __underscores__ around"
-+	echo "asm/inline/volatile keywords."
-+	echo
-+	echo "INDIR:  directory to read each kernel header FILE from."
-+	echo "OUTDIR: directory to write each userspace header FILE to."
-+	echo "FILES:  list of header files to operate on."
-+
-+	exit 1
-+fi
-+
-+# Grab arguments
-+
-+INDIR="$1"
-+shift
-+OUTDIR="$1"
-+shift
-+
-+# Iterate through files listed on command line
-+
-+for i in "$@"
-+do
-+	sed -r \
-+		-e 's/([ \t(])(__user|__force|__iomem)[ \t]/\1/g' \
-+		-e 's/__attribute_const__([ \t]|$)/\1/g' \
-+		-e 's@^#include <linux/compiler.h>@@' \
-+		-e 's/(^|[ \t])(inline|asm|volatile)([ \t(]|$)/\1__\2__\3/g' \
-+		"$INDIR/$i" |
-+	scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ - > "$OUTDIR/$i"
-+done
-+
-+exit 0
-diff -ruN linux-2.6.30.old/scripts/Makefile.headersinst linux-2.6.30/scripts/Makefile.headersinst
---- linux-2.6.30.old/scripts/Makefile.headersinst	2009-06-09 22:05:27.000000000 -0500
-+++ linux-2.6.30/scripts/Makefile.headersinst	2009-06-22 16:21:23.000000000 -0500
-@@ -46,8 +46,8 @@
- quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
-                             file$(if $(word 2, $(all-files)),s))
-       cmd_install = \
--        $(PERL) $< $(srctree)/$(obj) $(install) $(SRCARCH) $(header-y); \
--        $(PERL) $< $(objtree)/$(obj) $(install) $(SRCARCH) $(objhdr-y); \
-+      $(CONFIG_SHELL) $< $(srctree)/$(obj) $(install) $(header-y); \
-+      $(CONFIG_SHELL) $< $(objtree)/$(obj) $(install) $(objhdr-y); \
-         touch $@
- 
- quiet_cmd_remove = REMOVE  $(unwanted)
-@@ -70,7 +70,7 @@
- 	@:
- 
- targets += $(install-file)
--$(install-file): scripts/headers_install.pl $(input-files) FORCE
-+$(install-file): scripts/headers_install.sh $(input-files) FORCE
- 	$(if $(unwanted),$(call cmd,remove),)
- 	$(if $(wildcard $(dir $@)),,$(shell mkdir -p $(dir $@)))
- 	$(call if_changed,install)
+Hmm..
+I doubt nobody use such statistics. if nobody explain real world usage, I oppose to add
+new counter overhead.
 
 
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+
