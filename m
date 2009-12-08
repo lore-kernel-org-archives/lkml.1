@@ -1,327 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbZLHQ6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936046AbZLHRES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbZLHQ6u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 11:58:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZLHQ6t
+	id S936046AbZLHRES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 12:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936056AbZLHREN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 11:58:49 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:50287 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756007AbZLHQ6s (ORCPT
+	Tue, 8 Dec 2009 12:04:13 -0500
+Received: from mail-px0-f189.google.com ([209.85.216.189]:43427 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936046AbZLHREL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 11:58:48 -0500
+	Tue, 8 Dec 2009 12:04:11 -0500
+X-Greylist: delayed 45632 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Dec 2009 12:04:11 EST
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=QO0ZaYHcqBAb71neiLsoHYbdgyfaDt2d4J5GGSSJjWjEENfmB9ZZxX6cZTRDWo5unV
-         yF09B/yi7cbNXCXaB+bbB5PBF6pwvbKDWf0QlzLvdkEw3DHF0OxHP9zfmQqWkc/m1NvQ
-         47bF/P7FirUqddRr53lMk4hSBbuytnmV1uzZU=
-Message-ID: <4B1E85A9.3030005@gmail.com>
-Date: Tue, 08 Dec 2009 17:58:17 +0100
-From: Jes Sorensen <jes.sorensen@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AaPcByBNccPplL7XgMP/R1Okpna81u6qAZVi32TRALLGQIh5ErahrnyxwYTL8DIRjH
+         cBqkxNbQax61VcPWCaK8deknMKRpcJ239/4zQU0A2OFoai1wOCEie7zSXTB8hL6ZhudR
+         u3sHHMXLdVus1VnAE6qlKzIrs3YzRnnRn+O/E=
+Date: Tue, 8 Dec 2009 09:04:12 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+Message-ID: <20091208170412.GA14143@core.coreip.homeip.net>
+References: <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain> <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com> <4B1D934E.7030103@redhat.com> <9e4733910912071628x3f3eba82r4c964982f9d8c5a4@mail.gmail.com> <4B1E35D6.6000602@redhat.com>
 MIME-Version: 1.0
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Toshiba Bluetooth enabler (v2) (was: Re: [PATCH] Toshiba Bluetooth
- enabler (rfkill))
-References: <4B192D08.9080608@gmail.com> <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com>
-In-Reply-To: <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------070606080301010101040708"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1E35D6.6000602@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070606080301010101040708
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Dec 08, 2009 at 09:17:42AM -0200, Mauro Carvalho Chehab wrote:
+> Jon Smirl wrote:
+> > On Mon, Dec 7, 2009 at 6:44 PM, Mauro Carvalho Chehab
+> > <mchehab@redhat.com> wrote:
+> 
+> >>> Where is the documentation for the protocol?
+> >> I'm not sure what you're meaning here. I've started a doc about IR at the media
+> > 
+> > What is the format of the pulse stream data coming out of the lirc device?
+> 
+> AFAIK, it is at:
+> 	http://www.lirc.org/html/index.html
+> 
+> It would be nice to to add it to DocBook after integrating the API in kernel.
+> 
+> >> docbook. This is currently inside the kernel Documents/DocBook. If you want
+> >> to browse, it is also available as:
+> >>
+> >>        http://linuxtv.org/downloads/v4l-dvb-apis/ch17.html
+> >>
+> >> For sure we need to better document the IR's, and explain the API's there.
+> >>
+> >>> Is it a device interface or something else?
+> >> lirc_dev should create a device interface.
+> >>
+> >>> What about capabilities of the receiver, what frequencies?
+> >>> If a receiver has multiple frequencies, how do you report what
+> >>> frequency the data came in on?
+> >> IMO, via sysfs.
+> > 
+> > Say you have a hardware device with two IR diodes, one at 38K and one
+> > at 56K. Both of these receivers can get pulses. How do we tell the
+> > user space app which frequency the pulses were received on? Seems to
+> > me like there has to be a header on the pulse data indicating the
+> > received carrier frequency. There is also baseband signaling. sysfs
+> > won't work for this because of the queuing latency.
+> 
+> Simply create two interfaces. One for each IR receiver. At sysfs, you'll
+> have /sys/class/irrcv/irrcv0 for the first one and /sys/class/irrcv/irrcv1.
 
-On 12/08/2009 11:05 AM, Alan Jenkins wrote:
-> Cool.  This must be the shortest ACPI driver :-).
+Yes, please. Distinct hardware - distinct representation in the kernel.
+This is the most sane way.
 
-Hi Alan,
+...
+> >>
+> >>> What is the interface for attaching an in-kernel decoder?
+> >> IMO, it should use the kfifo for it. However, if we allow both raw data and
+> >> in-kernel decoders to read data there, we'll need a spinlock to protect the
+> >> kfifo.
 
-Here's an updated version that addresses most of your comments.
+Probably we should do what input layer does - the data is pushed into
+all handlers that are signed up for it and they can deal with it at
+their leisure.
 
-> Try to send patches inline if possible, it makes them easier to review.
+> >>
+> >>> If there is an in-kernel decoder should the pulse data stop being
+> >>> reported, partially stopped, something else?
+> >> I don't have a strong opinion here, but, from the previous discussions, it
+> >> seems that people want it to be double-reported by default. If so, I think
+> >> we need to implement a command at the raw interface to allow disabling the
+> >> in-kernel decoder, while the raw interface is kept open.
+> > 
+> > Data could be sent to the in-kernel decoders first and then if they
+> > don't handle it, send it to user space.
 
-Not possible with Thunderbug, sorry.
+You do not know what userspace wants to do with the data. They may want
+to simply observe it, store or do something else. Since we do provide
+interface for such raw[ish] data we just need to transmit it to
+userpsace as long as there are users (i.e. interface is open).
 
->> +static int toshiba_bt_rfkill_add(struct acpi_device *device);
->
-> I think it's simpler to avoid the need for forward declarations, e.g.
-> by putting the driver structure after the ops functions.  I suppose
-> it's a matter of taste though.
+> 
+> Hmm... like adding a delay if the raw userspace is open and, if the raw userspace
+> doesn't read all pulse data, it will send via in-kernel decoder instead? This can
+> work, but I'm not sure if this is the better way, and will require some logic to
+> synchronize lirc_dev and IR core modules. Also, doing it key by key will introduce
+> some delay.
+> 
+> If you're afraid of having the userspace app hanged and having no IR output, 
+> it would be simpler to just close the raw interface if an available data won't be
+> read after a bigger timeout (3 seconds? 5 seconds?).
 
-I am going to keep it as is. I find it cleaner and it is more consistent
-with how other drivers are written IMHO.
+We can not foresee all use cases. Just let all parties signed up for the
+data get and process it, do not burden the core with heuristics.
 
-> Please also set
-> 	.owner = THIS_MODULE,
-
-Good point, thanks!
-
->> +static int toshiba_bt_resume(struct acpi_device *device)
->> +{
->> +	return toshiba_bluetooth_enable(device->handle);
->> +}
->
-> Good to see you're handling resume, but what happens if the rfkill
-> switch is _not_ set to on?  It looks like resume will return an error,
-> which will produce a warning message in the kernel log.  I don't think
-> we want that.
-
-Fixed, this version only calls the enabler if the switch is at ON at
-resume time.
-
->> +	status = acpi_evaluate_integer(device->handle, "_STA", NULL,
->> +				&bt_present);
->
-> I think this would benefit from an explanation.
-
-Comments added.
-
->> +	result = acpi_bus_register_driver(&toshiba_bt_rfkill_driver);
->> +	if (result<  0) {
->> +		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
->> +				  "Error registering driver\n"));
->> +		return -ENODEV;
->> +	}
->
-> I would suggest you return result, instead of ignoring it and always
-> returning ENODEV.
-
-I agree, added.
-
->
->> +	depends on RFKILL
->> +	depends on BT
->
-> But you doesn't use either of these subsystems :-). The BT one
-> definitely seems bogus; please drop it.
-
-It seemed kinda silly to me to enable this driver on kernels with no
-BT subsystem, but it's not a biggie so I pulled it.
-
-Please find attached v2 of the patch.
-
-Cheers,
-Jes
-
-
---------------070606080301010101040708
-Content-Type: text/plain;
- name="0002-toshiba-bluetooth-v2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="0002-toshiba-bluetooth-v2.patch"
-
-Toshiba Bluetooth Enabling driver (RFKill handler)
-
-This patch adds support for the ACPI events generated by the RFKill
-switch on modern Toshiba laptops, and re-enables the Bluetooth USB
-device when the switch is flipped back to the 'on' position.
-
-The RFKill switch brute force pulls out the USB device when flipped to
-'off', but it doesn't automatically re-enable it. Without this driver,
-the Bluetooth is gone until after a reboot on my Portege R500.
-
-Signed-off-by: Jes Sorensen <Jes.Sorensen@gmail.com>
----
-
-Index: linux-2.6.31.5/drivers/platform/x86/toshiba_bluetooth.c
-===================================================================
---- /dev/null
-+++ linux-2.6.31.5/drivers/platform/x86/toshiba_bluetooth.c
-@@ -0,0 +1,151 @@
-+/*
-+ * Toshiba Bluetooth Enable Driver
-+ *
-+ * Copyright (C) 2009 Jes Sorensen <Jes.Sorensen@gmail.com>
-+ *
-+ * Thanks to Matthew Garrett for background info on ACPI innards which
-+ * normal people aren't meant to understand :-)
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Note the Toshiba Bluetooth RFKill switch seems to be a strange
-+ * fish. It only provides a BT event when the switch is flipped to
-+ * the 'on' position. When flipping it to 'off', the USB device is
-+ * simply pulled away underneath us, without any BT event being
-+ * delivered.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <acpi/acpi_bus.h>
-+#include <acpi/acpi_drivers.h>
-+
-+MODULE_AUTHOR("Jes Sorensen <Jes.Sorensen@gmail.com>");
-+MODULE_DESCRIPTION("Toshiba Laptop ACPI Bluetooth Enable Driver");
-+MODULE_LICENSE("GPL");
-+
-+
-+static int toshiba_bt_rfkill_add(struct acpi_device *device);
-+static int toshiba_bt_rfkill_remove(struct acpi_device *device, int type);
-+static void toshiba_bt_rfkill_notify(struct acpi_device *device, u32 event);
-+static int toshiba_bt_resume(struct acpi_device *device);
-+
-+static const struct acpi_device_id bt_device_ids[] = {
-+	{ "TOS6205", 0},
-+	{ "", 0},
-+};
-+MODULE_DEVICE_TABLE(acpi, bt_device_ids);
-+
-+static struct acpi_driver toshiba_bt_rfkill_driver = {
-+	.name =		"Toshiba BT",
-+	.class =	"Toshiba",
-+	.ids =		bt_device_ids,
-+	.ops =		{
-+				.add =		toshiba_bt_rfkill_add,
-+				.remove =	toshiba_bt_rfkill_remove,
-+				.notify =	toshiba_bt_rfkill_notify,
-+				.resume =	toshiba_bt_resume,
-+			},
-+	.owner = 	THIS_MODULE,
-+};
-+
-+
-+static int toshiba_bluetooth_enable(acpi_handle handle)
-+{
-+	acpi_status res1, res2;
-+	acpi_integer result;
-+
-+	/* Query ACPI to verify RFKill switch is set to on */
-+	res1 = acpi_evaluate_integer(handle, "BTST", NULL, &result);
-+	if (ACPI_FAILURE(res1) || !(result & 0x01))
-+		return -EBUSY;
-+
-+	printk(KERN_INFO "toshiba_bluetooth: Re-enabling Toshiba Bluetooth\n");
-+	res1 = acpi_evaluate_object(handle, "AUSB", NULL, NULL);
-+	res2 = acpi_evaluate_object(handle, "BTPO", NULL, NULL);
-+	if (!ACPI_FAILURE(res1) || !ACPI_FAILURE(res2)) {
-+		return 0;
-+	}
-+	printk(KERN_WARNING "toshiba_bluetooth: Failed to re-enable "
-+	       "Toshiba Bluetooth\n");
-+
-+	return -ENODEV;
-+}
-+
-+static void toshiba_bt_rfkill_notify(struct acpi_device *device, u32 event)
-+{
-+	toshiba_bluetooth_enable(device->handle);
-+}
-+
-+static int toshiba_bt_resume(struct acpi_device *device)
-+{
-+	acpi_status res1;
-+	acpi_integer result;
-+
-+	/*
-+	 * Query ACPI to verify RFKill switch is set to on before trying
-+	 * to re-enable the device or we will get back an error.
-+	 */
-+	res1 = acpi_evaluate_integer(device->handle, "BTST", NULL, &result);
-+	if (ACPI_FAILURE(res1) || !(result & 0x01))
-+		return 0;
-+	return toshiba_bluetooth_enable(device->handle);
-+}
-+
-+static int toshiba_bt_rfkill_add(struct acpi_device *device)
-+{
-+	acpi_status status;
-+	acpi_integer bt_present;
-+	int result = -ENODEV;
-+
-+	/*
-+	 * Some Toshiba laptops may have a fake TOS6205 device in
-+	 * their ACPI BIOS, so query the _STA method to see if there
-+	 * is really anything there, before trying to enable it.
-+	 */
-+	status = acpi_evaluate_integer(device->handle, "_STA", NULL,
-+				       &bt_present);
-+
-+	if (!ACPI_FAILURE(status) && bt_present) {
-+		printk(KERN_INFO "Detected Toshiba ACPI Bluetooth device - "
-+		      "installing RFKill handler\n");
-+		result = toshiba_bluetooth_enable(device->handle);
-+	}
-+
-+	return result;
-+}
-+
-+static int __init toshiba_bt_rfkill_init(void)
-+{
-+	int result;
-+
-+	if (acpi_disabled)
-+		return -ENODEV;
-+
-+	result = acpi_bus_register_driver(&toshiba_bt_rfkill_driver);
-+	if (result < 0) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
-+				  "Error registering driver\n"));
-+		return result;
-+	}
-+
-+	return 0;
-+}
-+
-+static int toshiba_bt_rfkill_remove(struct acpi_device *device, int type)
-+{
-+	/* clean up */
-+	return 0;
-+}
-+
-+static void __exit toshiba_bt_rfkill_exit(void)
-+{
-+	acpi_bus_unregister_driver(&toshiba_bt_rfkill_driver);
-+}
-+
-+module_init(toshiba_bt_rfkill_init);
-+module_exit(toshiba_bt_rfkill_exit);
-Index: linux-2.6.31.5/drivers/platform/x86/Makefile
-===================================================================
---- linux-2.6.31.5.orig/drivers/platform/x86/Makefile
-+++ linux-2.6.31.5/drivers/platform/x86/Makefile
-@@ -20,3 +20,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
- obj-$(CONFIG_ACPI_WMI)		+= wmi.o
- obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
- obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
-+obj-$(CONFIG_TOSHIBA_BT_RFKILL)	+= toshiba_bluetooth.o
-Index: linux-2.6.31.5/drivers/platform/x86/Kconfig
-===================================================================
---- linux-2.6.31.5.orig/drivers/platform/x86/Kconfig
-+++ linux-2.6.31.5/drivers/platform/x86/Kconfig
-@@ -425,4 +425,20 @@ config ACPI_TOSHIBA
- 
- 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
- 	  series), say Y.
-+
-+config TOSHIBA_BT_RFKILL
-+	tristate "Toshiba Bluetooth RFKill switch support"
-+	depends on ACPI
-+	depends on RFKILL
-+	---help---
-+	  This driver adds support for Bluetooth events for the RFKill
-+	  switch on modern Toshiba laptops with full ACPI support and
-+	  an RFKill switch.
-+
-+	  This driver handles RFKill events for the TOS6205 Bluetooth,
-+	  and re-enables it when the switch is set back to the 'on'
-+	  position.
-+
-+	  If you have a modern Toshiba laptop with a Bluetooth and an
-+	  RFKill switch (such as the Portege R500), say Y.
- endif # X86_PLATFORM_DEVICES
-
---------------070606080301010101040708--
+-- 
+Dmitry
