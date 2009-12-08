@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966768AbZLHW0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966779AbZLHWd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966768AbZLHW0Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966683AbZLHW0W
+	id S966779AbZLHWd6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:33:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966742AbZLHWd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:26:22 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:54939 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966651AbZLHW0V (ORCPT
+	Tue, 8 Dec 2009 17:33:56 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:50844 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966628AbZLHWdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:26:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=GGWpIoUD4aknvW7W9mUHJ+eXCEul0jwlMnMpA2s4XLCGkgnneQKYGdEy/0DlNicPOU
-         LnUTxUhmcYzLpk2TqE4feMGAmDTO40A0zE515hKzZ5suQGN67iAtQLyfW/gBskg3Hqgy
-         84OIS1a9VWJZsstF5M/LwDC9+Hx1+idLgIho4=
-Message-ID: <4B1ED291.60902@gmail.com>
-Date: Tue, 08 Dec 2009 23:26:25 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-9.1 Thunderbird/3.0
+	Tue, 8 Dec 2009 17:33:55 -0500
+Date: 08 Dec 2009 23:27:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: dmitry.torokhov@gmail.com
+Cc: awalls@radix.net
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: jarod@wilsonet.com
+Cc: jonsmirl@gmail.com
+Cc: khc@pm.waw.pl
+Cc: kraxel@redhat.com
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: mchehab@redhat.com
+Cc: superm1@ubuntu.com
+Message-ID: <BEVi1jXHqgB@lirc>
+In-Reply-To: <20091207075100.GB24958@core.coreip.homeip.net>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       scameron@beardog.cce.hp.com, James.Bottomley@HansenPartnership.com,
-       achiang@hp.com, jens.axboe@oracle.com, mikem@beardog.cce.hp.com
-Subject: Re: + hpsa-use-msleep-instead-of-schedule_timeout.patch added to
- -mm tree
-References: <200912082204.nB8M48oL027313@imap1.linux-foundation.org> <4B1ED241.4090803@gmail.com>
-In-Reply-To: <4B1ED241.4090803@gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1+bbPodU5R+ec0BmRuSds4sj+gPWJWk3oNnlQm
+ 0vbU4OiO8Fvph7S/fVxi40wCAFBEBNNT/fWhb+FRUgYtvdH/oG
+ eD2/OfKiwYOFxOolUXOdlHkmBnXNHA+
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/08/2009 11:25 PM, Jiri Slaby wrote:
->> @@ -3302,7 +3302,8 @@ static int __devinit hpsa_init_one(struc
->>  
->>  		/* Some devices (notably the HP Smart Array 5i Controller)
->>  		   need a little pause here */
->> -		schedule_timeout_uninterruptible(HPSA_POST_RESET_PAUSE);
->> +		set_current_state(TASK_UNINTERRUPTIBLE);
->> +		msleep(HPSA_POST_RESET_PAUSE_MSECS);
-> 
-> Hmm, setting the state is superfluous, as msleep does the job itself.
+Hi Dmitry,
 
-(FWIW addressed by Andrew already.)
+on 06 Dec 09 at 23:51, Dmitry Torokhov wrote:
+[...]
+>>> I suppose we could add MSC_SCAN_END event so that we can transmit
+>>> "scancodes" of arbitrary length. You'd get several MSC_SCAN followed by
+>>> MSC_SCAN_END marker. If you don't get MSC_SCAN_END assume the code is 32
+>>> bit.
+>>
+>> And I set a timeout to know that no MSC_SCAN_END will arrive? This is
+>> broken design IMHO.
+>>
 
--- 
-js
+> EV_SYN signals the end of state transmission.
+
+>> Furthermore lircd needs to know the length of the scan code in bits, not
+>> as a multiple of 32.
+
+> I really do not think that LIRCD is the type of application that should
+> be using evdev interface, but rather other way around.
+
+Well, all I'm asking is that lircd can keep using the LIRC interface for  
+getting the scan codes. ;-)
+
+Christoph
