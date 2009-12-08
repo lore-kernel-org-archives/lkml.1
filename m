@@ -1,98 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZLHP33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZLHP3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbZLHP33 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZLHP32
+	id S1756074AbZLHP3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZLHP3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:29:28 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37625 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755787AbZLHP32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:29:28 -0500
-Subject: Re: [RFC,PATCH 14/14] utrace core
-From: Peter Zijlstra <peterz@infradead.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Ananth Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       utrace-devel@redhat.com
-In-Reply-To: <20091208150417.GA11883@redhat.com>
-References: <20091124200220.GA5828@redhat.com>
-	 <1259697242.1697.1075.camel@laptop> <20091201220847.GA25400@redhat.com>
-	 <1260210877.3935.594.camel@laptop>  <20091208150417.GA11883@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 16:29:23 +0100
-Message-ID: <1260286163.3935.1497.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 10:29:44 -0500
+Received: from khc.piap.pl ([195.187.100.11]:36444 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756050AbZLHP3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 10:29:43 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 	system?
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
+	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	<1260070593.3236.6.camel@pc07.localdom.local>
+	<20091206065512.GA14651@core.coreip.homeip.net>
+	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
+	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	<m3skbn6dv1.fsf@intrepid.localdomain>
+	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
+	<4B1D934E.7030103@redhat.com> <m3hbs1vain.fsf@intrepid.localdomain>
+	<4B1E5DA3.7000206@redhat.com>
+Date: Tue, 08 Dec 2009 16:29:46 +0100
+In-Reply-To: <4B1E5DA3.7000206@redhat.com> (Mauro Carvalho Chehab's message of
+	"Tue, 08 Dec 2009 12:07:31 -0200")
+Message-ID: <m3y6ldscut.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 16:04 +0100, Oleg Nesterov wrote:
-> > > > > +       /*
-> > > > > +        * In theory spin_lock() doesn't imply rcu_read_lock().
-> > > > > +        * Once we clear ->utrace_flags this task_struct can go away
-> > > > > +        * because tracehook_prepare_release_task() path does not take
-> > > > > +        * utrace->lock when ->utrace_flags == 0.
-> > > > > +        */
-> > > > > +       rcu_read_lock();
-> > > > > +       task->utrace_flags = flags;
-> > > > > +       spin_unlock(&utrace->lock);
-> > > > > +       rcu_read_unlock();
-> > > >
-> > > > yuck!
-> > > >
-> > > > why not simply keep a task reference over the utrace_reset call?
-> > >
-> > > Yes, we could use get_task_struct() instead. Not sure this would
-> > > be more clean, though.
-> >
-> > For one it would allow getting rid of that insane assymetric locking.
-> 
-> Well, this is subjective, but I don't agree that
-> 
->         get_task_struct(task);
->         task->utrace_flags = flags;
->         spin_unlock(&utrace->lock);
->         put_task_struct(task);
-> 
-> looks better. 
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-No, what I mean by assymetric locking is that utrace_reset() and
-utrace_reap() drop the utrace->lock where their caller acquired it,
-resulting in non-obvious like:
+> If you use a kfifo to store the event (space_or_mark, timestamp), 
+> the IRQ handler can return immediately, and a separate kernel thread 
+> can do the decode without needing to touch at the IRQ.
 
-utrace_control()
-{
+But the decoding itself is a really simple thing, why complicate it?
+There is no need for the kernel thread if the handler is fast (and it
+is).
 
-  ...
-  spin_lock(&utrace->lock);
-
-  ...
-
-  if (reset)
-    utrace_reset(utrace);
-  else
-    spin_unlock(&utrace->lock);
-}
-
-If you take a task ref you can write the much saner:
-
-utrace_control()
-{
-  ...
-  spin_lock(&utrace->lock);
-  ...
-  if (reset)
-    utrace_reset(utrace);
-
-  spin_unlock(&utrace->lock);
-}
-
-
-
+Userspace is obviously different.
+-- 
+Krzysztof Halasa
