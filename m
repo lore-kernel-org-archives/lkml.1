@@ -1,99 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966293AbZLHVTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966386AbZLHVSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966293AbZLHVTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966353AbZLHVSu
+	id S966386AbZLHVSw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966331AbZLHVSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:18:50 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49583 "EHLO
+	Tue, 8 Dec 2009 16:18:47 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49562 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966239AbZLHVQe (ORCPT
+	with ESMTP id S966293AbZLHVQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:16:34 -0500
+	Tue, 8 Dec 2009 16:16:35 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200912081016.198135742@firstfloor.org>
 In-Reply-To: <200912081016.198135742@firstfloor.org>
-To: haicheng.li@linux.intel.com, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] [24/31] HWPOISON: add an interface to switch off/on all the page filters
-Message-Id: <20091208211640.8767AB151F@basil.firstfloor.org>
-Date: Tue,  8 Dec 2009 22:16:40 +0100 (CET)
+To: fengguang.wu@intel.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] [25/31] HWPOISON: Don't do early filtering if filter is disabled
+Message-Id: <20091208211641.8A2FBB151F@basil.firstfloor.org>
+Date: Tue,  8 Dec 2009 22:16:41 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Haicheng Li <haicheng.li@linux.intel.com>
-
-In some use cases, user doesn't need extra filtering. E.g. user program
-can inject errors through madvise syscall to its own pages, however it
-might not know what the page state exactly is or which inode the page
-belongs to.
-
-So introduce an one-off interface "corrupt-filter-enable".
-
-Echo 0 to switch off page filters, and echo 1 to switch on the filters.
-[AK: changed default to 0]
-
-Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/hwpoison-inject.c |    5 +++++
- mm/internal.h        |    1 +
- mm/memory-failure.c  |    5 +++++
- 3 files changed, 11 insertions(+)
+ mm/hwpoison-inject.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
 Index: linux/mm/hwpoison-inject.c
 ===================================================================
 --- linux.orig/mm/hwpoison-inject.c
 +++ linux/mm/hwpoison-inject.c
-@@ -92,6 +92,11 @@ static int pfn_inject_init(void)
- 	if (!dentry)
- 		goto fail;
+@@ -18,6 +18,8 @@ static int hwpoison_inject(void *data, u
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
  
-+	dentry = debugfs_create_u32("corrupt-filter-enable", 0600,
-+				    hwpoison_dir, &hwpoison_filter_enable);
-+	if (!dentry)
-+		goto fail;
-+
- 	dentry = debugfs_create_u32("corrupt-filter-dev-major", 0600,
- 				    hwpoison_dir, &hwpoison_filter_dev_major);
- 	if (!dentry)
-Index: linux/mm/internal.h
-===================================================================
---- linux.orig/mm/internal.h
-+++ linux/mm/internal.h
-@@ -271,3 +271,4 @@ extern u32 hwpoison_filter_dev_minor;
- extern u64 hwpoison_filter_flags_mask;
- extern u64 hwpoison_filter_flags_value;
- extern u64 hwpoison_filter_memcg;
-+extern u32 hwpoison_filter_enable;
-Index: linux/mm/memory-failure.c
-===================================================================
---- linux.orig/mm/memory-failure.c
-+++ linux/mm/memory-failure.c
-@@ -49,10 +49,12 @@ int sysctl_memory_failure_recovery __rea
- 
- atomic_long_t mce_bad_pages __read_mostly = ATOMIC_LONG_INIT(0);
- 
-+u32 hwpoison_filter_enable = 0;
- u32 hwpoison_filter_dev_major = ~0U;
- u32 hwpoison_filter_dev_minor = ~0U;
- u64 hwpoison_filter_flags_mask;
- u64 hwpoison_filter_flags_value;
-+EXPORT_SYMBOL_GPL(hwpoison_filter_enable);
- EXPORT_SYMBOL_GPL(hwpoison_filter_dev_major);
- EXPORT_SYMBOL_GPL(hwpoison_filter_dev_minor);
- EXPORT_SYMBOL_GPL(hwpoison_filter_flags_mask);
-@@ -141,6 +143,9 @@ static int hwpoison_filter_task(struct p
- 
- int hwpoison_filter(struct page *p)
- {
 +	if (!hwpoison_filter_enable)
-+		return 0;
-+
- 	if (hwpoison_filter_dev(p))
- 		return -EINVAL;
++		goto inject;
+ 	if (!pfn_valid(pfn))
+ 		return -ENXIO;
  
+@@ -48,6 +50,7 @@ static int hwpoison_inject(void *data, u
+ 	if (err)
+ 		return 0;
+ 
++inject:
+ 	printk(KERN_INFO "Injecting memory failure at pfn %lx\n", pfn);
+ 	return __memory_failure(pfn, 18, MF_COUNT_INCREASED);
+ }
