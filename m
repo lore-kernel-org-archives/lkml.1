@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965277AbZLHBFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965349AbZLHBJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965277AbZLHBFG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 20:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935734AbZLHBFD
+	id S965349AbZLHBJd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 20:09:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbZLHBJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 20:05:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54000 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935733AbZLHBFB (ORCPT
+	Mon, 7 Dec 2009 20:09:32 -0500
+Received: from mail-vw0-f197.google.com ([209.85.212.197]:34101 "EHLO
+	mail-vw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965270AbZLHBJb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 20:05:01 -0500
-Date: Mon, 7 Dec 2009 17:03:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Jan Beulich <JBeulich@novell.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, tj@kernel.org, linux-mm@kvack.org,
-       linux-ia64@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] mm/vmalloc: don't use vmalloc_end
-Message-Id: <20091207170358.eb18df96.akpm@linux-foundation.org>
-In-Reply-To: <20091208005028.GF9482@parisc-linux.org>
-References: <4B1D3A3302000078000241CD@vpn.id2.novell.com>
-	<20091207153552.0fadf335.akpm@linux-foundation.org>
-	<20091208005028.GF9482@parisc-linux.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Dec 2009 20:09:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=u0v0Wz8J9CO+O5knKmkzj0i9u05Yw72HY65eKGAXfx9OcPLUlG+jKVZsURjp1Gol9b
+         +YYTR2yXmRrcNm2tDbknCv/auTVdJwdSyXTYL7onP+KFhpcU+1JAsVrDSS32jC+vUXib
+         O6wBKqVf1zTL3EyOtzXbbbY6zxbC90X3up4Lo=
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.64.0912041936541.3981@axis700.grange>
+References: <Pine.LNX.4.64.0912041936541.3981@axis700.grange>
+Date: Mon, 7 Dec 2009 18:09:37 -0700
+X-Google-Sender-Auth: 1c3bde5dd0f663fe
+Message-ID: <e9c3a7c20912071709s200074bbhe6ce07c22fcdbb55@mail.gmail.com>
+Subject: Re: [PATCH 0/5] sh: fix the shdma driver, improve dmatest, support 
+	sh7724
+From: Dan Williams <dan.j.williams@intel.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+       Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Dec 2009 17:50:29 -0700
-Matthew Wilcox <matthew@wil.cx> wrote:
+On Fri, Dec 4, 2009 at 11:44 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> Hi
+>
+> Not all of these patches are connected, only the ones, affecting the same
+> file should be applied in a specific order, otherwise the patches are
+> independent and can be applied separately.
 
-> On Mon, Dec 07, 2009 at 03:35:52PM -0800, Andrew Morton wrote:
-> > erk.  So does 2.6.32's vmalloc() actually work correctly on ia64?
-> > 
-> > Perhaps vmalloc_end wasn't a well chosen name for an arch-specific
-> > global variable.
-> 
-> Can we enable -Wshadow now?  Please?
-> 
+I'll take 1 and 2 straight away, 4 with the bool fixup and a changelog
+explaing the dmae_is_idle() change, and 3 after an ack from Nobuhiro
+(or when I get a chance to look at it a bit deeper).
 
-That would be good.  How much mess would it make?
-
+Thanks,
+Dan
