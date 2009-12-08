@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935814AbZLHD14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964959AbZLHDeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935814AbZLHD14 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 22:27:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935761AbZLHD1x
+	id S964959AbZLHDeR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 22:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934925AbZLHDeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 22:27:53 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:39000 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S935161AbZLHD1x (ORCPT
+	Mon, 7 Dec 2009 22:34:16 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37014 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934690AbZLHDeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 22:27:53 -0500
-Date: Mon, 7 Dec 2009 22:27:58 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-In-Reply-To: <200912080051.13061.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912072225390.4179-100000@netrider.rowland.org>
+	Mon, 7 Dec 2009 22:34:15 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B1DC921.9090203@jp.fujitsu.com>
+Date: Tue, 08 Dec 2009 12:33:53 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jan Beulich <JBeulich@novell.com>, tglx@linutronix.de, hpa@zytor.com,
+       stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86/mce: timer must be setup unconditionally
+References: <4B162A3C0200007800022F98@vpn.id2.novell.com> <4B1DB831.2030801@jp.fujitsu.com> <20091208031442.GA17602@elte.hu>
+In-Reply-To: <20091208031442.GA17602@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
-
-> However, the parent can be on a different bus type than the children, so it
-> looks like we can only start the asynchronous path at the core level.
-
-Agreed.
-
-> > Unless you want to do _all_ of the async logic in generic code and 
-> > re-introduce the "dev->async_suspend" flag.
+Ingo Molnar wrote:
+> * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
 > 
-> Quite frankly, I would like to.
+>> Ingo, Peter,
+>>
+>> Could you pick his patch up?
+>> I confirmed that now it can be applied on Linus's tree and
+>> also tip:x86/urgent.
 > 
-> > I would be ok with that now that the infrastructure seems so simple.
-> 
-> Well, perhaps I should dig out my original async suspend/resume patches
-> that didn't contain all of the non-essential stuff and post them here for
-> discussion, after all ...
+> Sure. Can i add your signoff too?
 
-That seems like a very good idea.  IIRC they were quite similar to what 
-we have been discussing.
+Of course yes.
 
-Alan Stern
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+
+
+Thanks,
+H.Seto
 
