@@ -1,34 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966782AbZLHWn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966797AbZLHWo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966782AbZLHWn1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966427AbZLHWnW
+	id S966797AbZLHWo2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966658AbZLHWo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:43:22 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:15346 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756319AbZLHWnV (ORCPT
+	Tue, 8 Dec 2009 17:44:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34795 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966589AbZLHWo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:43:21 -0500
-Date: Tue, 8 Dec 2009 16:43:50 -0600
-From: scameron@beardog.cce.hp.com
+	Tue, 8 Dec 2009 17:44:26 -0500
+Date: Tue, 8 Dec 2009 14:44:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       achiang@hp.com, jens.axboe@oracle.com, mikem@beardog.cce.hp.com
-Subject: Re: + hpsa-use-msleep-instead-of-schedule_timeout.patch added to -mm tree
-Message-ID: <20091208224350.GE6940@beardog.cce.hp.com>
-References: <200912082204.nB8M48oL027313@imap1.linux-foundation.org> <4B1ED241.4090803@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Cc: linux-kernel@vger.kernel.org, scameron@beardog.cce.hp.com,
+       James.Bottomley@HansenPartnership.com, achiang@hp.com,
+       jens.axboe@oracle.com, mikem@beardog.cce.hp.com
+Subject: Re: + hpsa-use-msleep-instead-of-schedule_timeout.patch added to
+ -mm tree
+Message-Id: <20091208144419.af6298ba.akpm@linux-foundation.org>
 In-Reply-To: <4B1ED241.4090803@gmail.com>
-User-Agent: Mutt/1.4.2.2i
+References: <200912082204.nB8M48oL027313@imap1.linux-foundation.org>
+	<4B1ED241.4090803@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 11:25:05PM +0100, Jiri Slaby wrote:
+On Tue, 08 Dec 2009 23:25:05 +0100
+Jiri Slaby <jirislaby@gmail.com> wrote:
+
 > On 12/08/2009 11:04 PM, akpm@linux-foundation.org wrote:
 > > Subject: hpsa: use msleep() instead of schedule_timeout
 > > From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
@@ -46,25 +50,16 @@ On Tue, Dec 08, 2009 at 11:25:05PM +0100, Jiri Slaby wrote:
 > > +		set_current_state(TASK_UNINTERRUPTIBLE);
 > > +		msleep(10);
 > 
-> Why do you change interruptible sleep to uninterruptible? And you
+> Why do you change interruptible sleep to uninterruptible?
 
-Because the I think the interruptible was wrong, we aren't interested
-in signals at this point.
+Stealth bugfix ;)
 
+If the calling process (called "modprobe") has signal_pending()
+(someone ^C'ed it) then the TASK_INTERRUPTIBLE sleep will be a no-op
+and the driver will probably go and screw things up.
+
+> And you
 > intermix jiffies with msecs. Use schedule_timeout_interruptible(10).
-
-Probably it should have been msecs all along, not jiffies.  Looking at that particular
-part of the code, it's very old, and might even be superflous given the controllers
-this driver supports (and those it does not support.)  I'm thinking that
-schedule_timeout(10) was written back when HZ was commonly 100, so that would
-have been 100 msecs, not 10.  Considering the comment above this code describing
-the circumstances that this is for, I doubt that code has ever run, actually.
-You have to replace a failed drive just as driver is loading.
-
-I will talk to the firmware guys and see if I can figure out what the original
-case that lead to this code being put in is still relevant.  We might be
-able to get rid of this section altogether.
-
 > 
 > > @@ -3302,7 +3302,8 @@ static int __devinit hpsa_init_one(struc
 > >  
@@ -76,9 +71,8 @@ able to get rid of this section altogether.
 > 
 > Hmm, setting the state is superfluous, as msleep does the job itself.
 
-Yeah, Andrew pointed that out and sent me a patch.  Thanks.
+yup, I fixed those.
 
-> 
 > > diff -puN drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout drivers/scsi/hpsa.h
 > > --- a/drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout
 > > +++ a/drivers/scsi/hpsa.h
@@ -92,8 +86,4 @@ Yeah, Andrew pointed that out and sent me a patch.  Thanks.
 > 
 > Ehm?
 
-Jeez, you'd think I could multiply by 1000 without screwing up.  Guess not.
-
-> 
-> -- 
-> js
+30 seconds would have sucked anyway ;)
