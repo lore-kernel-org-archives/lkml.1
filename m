@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966537AbZLHV6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966571AbZLHV7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966537AbZLHV6n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966254AbZLHV6l
+	id S966571AbZLHV7D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:59:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966554AbZLHV64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:58:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25412 "EHLO mx1.redhat.com"
+	Tue, 8 Dec 2009 16:58:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11868 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965722AbZLHV6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:58:41 -0500
+	id S966552AbZLHV6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 16:58:46 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 0/8] perf-probe updates
+Subject: [PATCH -tip 1/8] perf probe: Change event list format
 To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
@@ -25,8 +25,10 @@ Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Tue, 08 Dec 2009 17:02:32 -0500
-Message-ID: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Tue, 08 Dec 2009 17:02:40 -0500
+Message-ID: <20091208220240.10142.42916.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -35,65 +37,87 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Change event list format for user readability. perf probe --list
+shows event list in "[GROUP:EVENT] EVENT-DEFINITION" format, but
+this format is different from the output of perf-list, and
+EVENT-DEFINITION is a bit blunt. This patch changes the
+format to more user friendly one.
 
-I made several usability updates and added --del option
-for perf-probe. I think most of basic functions are implemented.
-I'm planning to support checking build-id next, because it
-can prevent users to use old vmlinux for debuginfo analysis.
+Before:
+[probe:shedule_0]	schedule+10 prev cpu
 
-Here are the todo list I have (most of them had been requested
-on LKML). I'd like to share this list with other developers
-who are interested in.
+After:
+  probe:schedule_0                         (on schedule+10 with prev cpu)
 
-Short-term TODOs:
-  - Support checking kernel Build-ID
-
-Long-term TODOs (future features):
-  - Support --line option to show which lines user can probe
-  - Support lazy string matching(glob?) for selecting probing
-    line
-  - Support sys_perf_counter_open (for non-root users)
-  - Support tracing static variables (non global)
-  - Support variable types from debuginfo (e.g. char, int, ...)
-  - Support fields of data structures (var->field)
-  - Support array (var[N])
-  - Support dynamic array-indexing (var[var2])
-  - Support string/dynamic arrays (*var, var[N..M])
-  - Support force type-casting ((type)var)
-  - Support the type of return value
-
-Miscs:
-  - Support glob expression with --del option (like --del "*")
-  - Support event/group name specifying for new events
-  - Better support for probes on modules
-  - Symbol search by libelf/kallsyms
-  - Move onto libdw/libdwfl
-  - Storing file name/line number information in the
-    kernel for listing events
-  
-
-Thank you,
-
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Frank Ch. Eigler <fche@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
 
-Masami Hiramatsu (8):
-      perf probe: Update perf-probe document
-      perf probe: Support --del option
-      trace-kprobe: Support delete probe syntax
-      perf probe: Support vmlinux on cwd by default
-      perf probe: Remove event suffix number _0
-      perf probe: Fix add-probe command syntax without --add option
-      perf probe: Change probe-added message more user-friendly
-      perf probe: Change event list format
+ tools/perf/util/probe-event.c |   27 +++++++++++++++++++++++++--
+ 1 files changed, 25 insertions(+), 2 deletions(-)
 
+diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+index 88e1804..a20e382 100644
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -379,11 +379,29 @@ static void clear_probe_point(struct probe_point *pp)
+ 	memset(pp, 0, sizeof(pp));
+ }
+ 
++/* Show an event */
++static void show_perf_probe_event(const char *group, const char *event,
++				  const char *place, struct probe_point *pp)
++{
++	int i;
++	char buf[128];
++
++	e_snprintf(buf, 128, "%s:%s", group, event);
++	printf("  %-40s (on %s", buf, place);
++
++	if (pp->nr_args > 0) {
++		printf(" with");
++		for (i = 0; i < pp->nr_args; i++)
++			printf(" %s", pp->args[i]);
++	}
++	printf(")\n");
++}
++
+ /* List up current perf-probe events */
+ void show_perf_probe_events(void)
+ {
+ 	unsigned int i;
+-	int fd;
++	int fd, nr;
+ 	char *group, *event;
+ 	struct probe_point pp;
+ 	struct strlist *rawlist;
+@@ -396,8 +414,13 @@ void show_perf_probe_events(void)
+ 	for (i = 0; i < strlist__nr_entries(rawlist); i++) {
+ 		ent = strlist__entry(rawlist, i);
+ 		parse_trace_kprobe_event(ent->s, &group, &event, &pp);
++		/* Synthesize only event probe point */
++		nr = pp.nr_args;
++		pp.nr_args = 0;
+ 		synthesize_perf_probe_event(&pp);
+-		printf("[%s:%s]\t%s\n", group, event, pp.probes[0]);
++		pp.nr_args = nr;
++		/* Show an event */
++		show_perf_probe_event(group, event, pp.probes[0], &pp);
+ 		free(group);
+ 		free(event);
+ 		clear_probe_point(&pp);
 
- kernel/trace/trace_kprobe.c             |   37 +++++++--
- tools/perf/Documentation/perf-probe.txt |   21 ++++-
- tools/perf/builtin-probe.c              |   76 ++++++++++++++++---
- tools/perf/util/probe-event.c           |  122 ++++++++++++++++++++++++++++---
- tools/perf/util/probe-event.h           |    1 
- 5 files changed, 217 insertions(+), 40 deletions(-)
 
 -- 
 Masami Hiramatsu
@@ -101,4 +125,5 @@ Masami Hiramatsu
 Software Engineer
 Hitachi Computer Products (America), Inc.
 Software Solutions Division
+
 e-mail: mhiramat@redhat.com
