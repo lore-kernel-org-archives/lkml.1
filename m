@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966313AbZLHVQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966259AbZLHVQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966313AbZLHVQm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:16:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966242AbZLHVQ0
+	id S966259AbZLHVQW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966200AbZLHVQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:16:26 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49510 "EHLO
+	Tue, 8 Dec 2009 16:16:16 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49506 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966223AbZLHVQN (ORCPT
+	with ESMTP id S966225AbZLHVQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:16:13 -0500
+	Tue, 8 Dec 2009 16:16:14 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200912081016.198135742@firstfloor.org>
 In-Reply-To: <200912081016.198135742@firstfloor.org>
 To: fengguang.wu@intel.com, fengguang.wu@intel.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] [3/31] page-types: add standard GPL license header
-Message-Id: <20091208211619.4B065B151F@basil.firstfloor.org>
-Date: Tue,  8 Dec 2009 22:16:19 +0100 (CET)
+Subject: [PATCH] [4/31] HWPOISON: remove the anonymous entry
+Message-Id: <20091208211620.4DAC1B151F@basil.firstfloor.org>
+Date: Tue,  8 Dec 2009 22:16:20 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,39 +25,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Wu Fengguang <fengguang.wu@intel.com>
 
+(PG_swapbacked && !PG_lru) pages should not happen.
+Better to treat them as unknown pages.
+
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- Documentation/vm/page-types.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ mm/memory-failure.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Index: linux/Documentation/vm/page-types.c
+Index: linux/mm/memory-failure.c
 ===================================================================
---- linux.orig/Documentation/vm/page-types.c
-+++ linux/Documentation/vm/page-types.c
-@@ -1,11 +1,22 @@
- /*
-  * page-types: Tool for querying page flags
-  *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; version 2.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should find a copy of v2 of the GNU General Public License somewhere on
-+ * your Linux system; if not, write to the Free Software Foundation, Inc., 59
-+ * Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-  * Copyright (C) 2009 Intel corporation
-  *
-  * Authors: Wu Fengguang <fengguang.wu@intel.com>
-- *
-- * Released under the General Public License (GPL).
-  */
+--- linux.orig/mm/memory-failure.c
++++ linux/mm/memory-failure.c
+@@ -611,7 +611,6 @@ static struct page_state {
  
- #define _LARGEFILE64_SOURCE
+ 	{ lru|dirty,	lru|dirty,	"LRU",		me_pagecache_dirty },
+ 	{ lru|dirty,	lru,		"clean LRU",	me_pagecache_clean },
+-	{ swapbacked,	swapbacked,	"anonymous",	me_pagecache_clean },
+ 
+ 	/*
+ 	 * Catchall entry: must be at end.
