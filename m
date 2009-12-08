@@ -1,101 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZLHNkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbZLHNl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbZLHNkm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 08:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbZLHNkk
+	id S1755127AbZLHNl3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 08:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZLHNl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 08:40:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44871 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755059AbZLHNkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 08:40:39 -0500
-Message-ID: <4B1E5746.7010305@redhat.com>
-Date: Tue, 08 Dec 2009 11:40:22 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Tue, 8 Dec 2009 08:41:28 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:50329 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754927AbZLHNl2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 08:41:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TmIL4aii4WFA4VDHMezO755Gffch2H95hNQSgkjLXPtvEXksrLdyvtjSDZBv13F20J
+         E1CjYQ35aDMD5GOhGvh18bdrKxk/adpFqKXtD1ILi29b7t/eUT1NRMBxpUa2EGZpmJ+k
+         O3nfQHyHuFbw47cA/b4K2P0zUYdmSJw8sTpV8=
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Andy Walls <awalls@radix.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- 	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph>	 <1259024037.3871.36.camel@palomino.walls.org>	 <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com>	 <1259264614.1781.47.camel@localhost>	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>	 <1260240142.3086.14.camel@palomino.walls.org>	 <20091208042210.GA11147@core.coreip.homeip.net>	 <1260275743.3094.6.camel@palomino.walls.org> <9e4733910912080452p42efa794mb7fd608fa4fbad7c@mail.gmail.com>
-In-Reply-To: <9e4733910912080452p42efa794mb7fd608fa4fbad7c@mail.gmail.com>
+In-Reply-To: <1260278980.2165.21.camel@frodo>
+References: <4B1DC476.3030700@cn.fujitsu.com> <20091208122255.GB5016@nowhere>
+	 <1260278980.2165.21.camel@frodo>
+Date: Tue, 8 Dec 2009 14:41:33 +0100
+Message-ID: <c62985530912080541i424bed19j3e3795cdc9d5d66c@mail.gmail.com>
+Subject: Re: [PATCH 00/13] tracing: various cleanups and small fixes (updated)
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
-> On Tue, Dec 8, 2009 at 7:35 AM, Andy Walls <awalls@radix.net> wrote:
->> On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
->>> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
->>>> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
->>>> end of the month.
->>>>
->>>> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
->>>> a common set of parameters, so I may be able to set up the decoders to
->>>> handle decoding from two different remote types at once.  The HVR boards
->>>> can ship with either type of remote AFAIK.
->>>>
->>>> I wonder if I can flip the keytables on the fly or if I have to create
->>>> two different input devices?
->>>>
->>> Can you distinguish between the 2 remotes (not receivers)?
->> Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
->> (Honestly I could pile on more protocols that have similar pulse time
->> periods, but that's complexity for no good reason and I don't know of a
->> vendor that bundles 3 types of remotes per TV card.)
+2009/12/8 Steven Rostedt <rostedt@goodmis.org>:
+> On Tue, 2009-12-08 at 13:23 +0100, Frederic Weisbecker wrote:
+>> On Tue, Dec 08, 2009 at 11:13:58AM +0800, Li Zefan wrote:
+>> > Updates:
+>> >
+>> > - took a further step to save more spaces (01/13)
+>> > - fixed a mistake in (03/13)
+>> > - collected some ACKs
+>> >
+>> >
+>> > Here are some patches that I've collected. All are cleanups and
+>> > small fixes, no change in functionality.
+>> >
+>> > As a result, 24K bytes are saved, and 87 lines of code are
+>> > reduced:
+>> >
+>> >    text    data     bss     dec     hex filename
+>> > 5355293 1961928 7103260 14420481         dc0a01 vmlinux.o.old
+>> > 5331208 1961864 7103260 14396332         dbabac vmlinux.o
+>> >
+>> > ---
+>> >  include/linux/ftrace_event.h       |    4 +-
+>> >  include/linux/syscalls.h           |    6 +-
+>> >  include/trace/ftrace.h             |   56 ++-----------
+>> >  kernel/trace/ftrace.c              |   30 ++++---
+>> >  kernel/trace/power-traces.c        |    2 -
+>> >  kernel/trace/trace.c               |  166 +++++++++++++-----------------------
+>> >  kernel/trace/trace.h               |   23 +++---
+>> >  kernel/trace/trace_event_profile.c |    6 +-
+>> >  kernel/trace/trace_events.c        |   38 +++++++--
+>> >  kernel/trace/trace_export.c        |    4 -
+>> >  kernel/trace/trace_kprobe.c        |    9 --
+>> >  kernel/trace/trace_ksym.c          |   13 ++--
+>> >  kernel/trace/trace_syscalls.c      |   18 +----
+>> >  13 files changed, 144 insertions(+), 231 deletions(-)
 >>
 >>
->>>  Like I said,
->>> I think the preferred way is to represent every remote that can be
->>> distinguished from each other as a separate input device.
->> OK.  With RC-5, NEC, and RC-6 at least there is also an address or
->> system byte or word to distingish different remotes.  However creating
->> multiple input devices on the fly for detected remotes would be madness
->> - especially with a decoding error in the address bits.
-> 
-> I agree that creating devices on the fly has problems. Another
-> solution is to create one device for each map that is loaded. There
-> would be a couple built-in maps for bundled remotes - each would
-> create a device. Then the user could load more maps with each map
-> creating a device.
+>> I'm queuing these patches.
+>
+> I don't mind you queing them, but I still want to have a deeper look.
+> Could you hold on a bit. I'll look at them today, and give an ack, or
+> comments later on.
+>
+> Thanks,
 
-No, please. We currently have already 89 different keymaps in-kernel. Creating
-89 different interfaces per IR receiver is not useful at all.
 
-IMO, the interfaces should be created as the keymaps are associated
-to an specific IR receiver.
-
-> Incoming scancodes are matched against all of the loaded maps and a
-> keycode event is generated if a match occurs.
-
-s/all of the loaded maps/all of the loaded maps per device/
-
-You may have more than one IR receiver on a given machine.
-
-IMO, we may have a mask filter matching also, associated with each keycode
-table, to minimize the keycode seek time. Something like:
-
-	if (scancode & scancode_mask)
-		check_scancode()
-
-> This illustrates why there should an EV_IR event which communicates
-> scancodes, without this event you can't see the scancodes that don't
-> match a map entry. A scancode would be first matched against the map,
-> then if there as no match an EV_IR event would be reported.
-
-There's nothing wrong on receiving a scancode that won't map. This can
-simply be an event that you don't want to handle (for example, an IR
-code sent to user's TV set).
-
-IMO, the better is to provide this scancode at KERN_DEBUG (if debug is
-enabled), and via an "observer" program.
-
-Cheers,
-Mauro.
+Sure.
