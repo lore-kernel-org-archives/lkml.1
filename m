@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZLHKQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZLHKXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbZLHKQF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 05:16:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbZLHKQE
+	id S1753617AbZLHKXy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 05:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZLHKXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 05:16:04 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51945 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753479AbZLHKQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 05:16:04 -0500
-Date: Tue, 8 Dec 2009 11:16:00 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Greg KH <greg@kroah.com>, Brian Swetland <swetland@google.com>,
-       Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 2/3] staging/dream: add missing include files
-Message-ID: <20091208101559.GF12264@elf.ucw.cz>
-References: <20091101222717.GB20740@elf.ucw.cz>
- <20091119225602.GC18710@kroah.com>
- <20091120105726.GH11212@elf.ucw.cz>
- <20091120110728.GB10644@n2100.arm.linux.org.uk>
+	Tue, 8 Dec 2009 05:23:51 -0500
+Received: from cantor.suse.de ([195.135.220.2]:52760 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753126AbZLHKXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 05:23:51 -0500
+Message-ID: <4B1E290A.8040005@suse.cz>
+Date: Tue, 08 Dec 2009 11:23:06 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.9 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091120110728.GB10644@n2100.arm.linux.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH 0/3] clean out Perl from build system.
+References: <200912080317.08254.rob@landley.net>
+In-Reply-To: <200912080317.08254.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-11-20 11:07:28, Russell King - ARM Linux wrote:
-> On Fri, Nov 20, 2009 at 11:57:26AM +0100, Pavel Machek wrote:
-> > On Thu 2009-11-19 14:56:02, Greg KH wrote:
-> > > On Sun, Nov 01, 2009 at 11:27:17PM +0100, Pavel Machek wrote:
-> > > > +config GENERIC_GPIO
-> > > > +	bool
-> > > > +	default y
-> > > 
-> > > Which breaks the i386 build.  Don't force on a general config option
-> > > like this, that's not nice at all :(
-> > 
-> > Ok, I should figure out how to limit it to arch-msm.
+On 8.12.2009 10:17, Rob Landley wrote:
+> Perl was introduced as a build dependency in 2.6.25.  My cross-compile 
+> environment does not use perl, so ever since then I've patched it back out.
 > 
-> You do it by 'select'ing the symbol in arch/arm/Kconfig.  See the many
-> other examples therein of how to do it.
+> With these patches I've personally built kernels for x86, x86_64, arm, mips, 
+> powerpc, sparc, sh4, and m68k.
 
-Thanks.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hi Rob,
+
+you should CC linux-kbuild@ on patches like this (added now, the whole
+series is at http://lkml.org/lkml/2009/12/8/93).
+
+Michal
