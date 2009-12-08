@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZLHHTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbZLHHXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752883AbZLHHTg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 02:19:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZLHHTe
+	id S1753889AbZLHHXt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 02:23:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZLHHXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 02:19:34 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46700 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbZLHHTe (ORCPT
+	Tue, 8 Dec 2009 02:23:48 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:39019 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbZLHHXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 02:19:34 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v6] Added PR_SET_PROCTITLE_AREA option for prctl()
-Cc: kosaki.motohiro@jp.fujitsu.com, Bryan Donlan <bdonlan@gmail.com>,
-       Ulrich Drepper <drepper@redhat.com>, Timo Sirainen <tss@iki.fi>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20091208065725.GA21340@elte.hu>
-References: <3e8340490912072228m70368001v2487bd745ff208b3@mail.gmail.com> <20091208065725.GA21340@elte.hu>
-Message-Id: <20091208161838.B5BD.A69D9226@jp.fujitsu.com>
+	Tue, 8 Dec 2009 02:23:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TRuO+TsH5dThIkZWPiy+sdlAEU/lkKd//0W6OS1G8S7B3Jv72P7mWR+LF4SZFXNbnk
+         Uj4k5VJ9coCp191TOHwE/KJ54dBq60+WS86zMU/K060MxHahcR1Cuy/TN6AMjg8UNwZL
+         csDz5rf/4Q/DKQoHvbK4B6ijecNFtggIgeU0E=
+Date: Mon, 7 Dec 2009 23:23:47 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v8 8/8] Loongson: YeeLoong: add input/hotkey driver
+Message-ID: <20091208072347.GH11147@core.coreip.homeip.net>
+References: <cover.1260082252.git.wuzhangjin@gmail.com> <b164d5bb79963a57621d024c22e5664de0ff8662.1260082252.git.wuzhangjin@gmail.com> <20091207064857.GG21451@core.coreip.homeip.net> <1260255131.3315.25.camel@falcon.domain.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  8 Dec 2009 16:19:37 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260255131.3315.25.camel@falcon.domain.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 08, 2009 at 02:52:11PM +0800, Wu Zhangjin wrote:
+> Hi, Dmitry Torokhov
 > 
-> * Bryan Donlan <bdonlan@gmail.com> wrote:
+> I plan to send another revision of this patchset, Can I get your
+> Acked-by: for this patch?
 > 
-> > On Tue, Dec 8, 2009 at 12:38 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > >
-> > >> > The feature looks useful, but the choice of a prctl as an API is strange
-> > >> > - it limits us to the current task only - while the ability to set
-> > >> > arguments for another task looks a more generic (and potentially more
-> > >> > useful) solution.
-> > >>
-> > >> No. It's impossible.
-> > >> /proc/{pid}/cmdline read user process's memory. iow, this prctl() don't
-> > >> receive string, it receive virtual address itself. [...]
-> > >
-> > > it's not 'impossible' at all, you yourself mention ptrace:
-> > 
-> > If another process is going to use ptrace to inject the cmdline string 
-> > into the victim's address space, it can also temporarily hijack a 
-> > thread to run prctl() on its behalf...
-> 
-> That's exactly the point i made. There's no reason not to offer the API 
-> i suggested as long as permissions are checked (as usual) - because 
-> ptrace already allows this (and more).
 
-Confused.
+Yes, as far as the input code goes:
 
-I think ptrace don't solve the issue of explained my patch description.
-currently, proc title pointer is held by mm_struct (i.e. kernel), but string
-isself is in userland.
-then, if we want to use long proc tile, we need following three steps.
-  1. make new userland space
-  2. write proc title to it
-  3. change proc title pointer in kernel
+	Acked-by: Dmitry Torokhov <dtor@mail.ru>
 
-ptrace can only change exist userland memory. iow, it can only 
-write same length string.
-To expand another task's virtual address space makes lots trouble rather than
-solving issue.
+Thanks.
 
-argv[0] and /proc/pid/cmdline are already special. generic api don't fit it, I think.
-
-
+-- 
+Dmitry
