@@ -1,285 +1,500 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965335AbZLHA51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965345AbZLHA6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965335AbZLHA51 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:57:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbZLHA50
+	id S965345AbZLHA6A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbZLHA57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:57:26 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:49906 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965259AbZLHA5Z convert rfc822-to-8bit (ORCPT
+	Mon, 7 Dec 2009 19:57:59 -0500
+Received: from mail-vw0-f197.google.com ([209.85.212.197]:46360 "EHLO
+	mail-vw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965271AbZLHA55 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:57:25 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Subject: Re: [PATCH] NTFS: Change string pointers to string constants.
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-In-Reply-To: <1259808806-27279-1-git-send-email-daikerjohn@gmail.com>
-Date: Tue, 8 Dec 2009 00:57:27 +0000
-Cc: kernel-janitors@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net,
-       aia21@cantab.net, linux-kernel@vger.kernel.org
+	Mon, 7 Dec 2009 19:57:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=S6p/TNuM0D6hjH0q5gIDak6SAVvgxVocEJnzl2rumzT05MezSoZsK02brL3lbDnFBm
+         fYMAHUR9tfzIdzp/rJMspWE9qSI9nlcrguK55M/1HTPkuD+2IGJVa9QYwWzmhwEchkUn
+         fyQFv0EBWECeePpUbc3r9y2LloMbEBkfsvl3o=
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.64.0912041941290.3981@axis700.grange>
+References: <Pine.LNX.4.64.0912041936541.3981@axis700.grange>
+	 <Pine.LNX.4.64.0912041941290.3981@axis700.grange>
+Date: Mon, 7 Dec 2009 17:58:02 -0700
+X-Google-Sender-Auth: c50e7cb2d125fef4
+Message-ID: <e9c3a7c20912071658n6ccf5a44pf0bb028adbe3f0a4@mail.gmail.com>
+Subject: Re: [PATCH 3/5] sh: fix DMA driver's descriptor chaining and cookie 
+	assignment
+From: Dan Williams <dan.j.williams@intel.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+       Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Message-Id: <C1806924-DE57-4FBA-A67C-85C618FE6639@cam.ac.uk>
-References: <1259808806-27279-1-git-send-email-daikerjohn@gmail.com>
-To: John Daiker <daikerjohn@gmail.com>
-X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I would like an acked-by from Nobuhiro  on this one.
 
-On 3 Dec 2009, at 02:53, John Daiker wrote:
-> As per the KernelJanitors ToDo list, change the following:
-> char *foo = "bar";   =>   char foo[] = "bar";
+[ full patch quoted below ]
 
-Can you please explain the rational for making this change?  Visually it uses an extra character so I prefer the *string notation rather than the string[] notation.  If there is some actual functional difference then I would like to know what the difference is.
+Thanks,
+Dan
 
-If it is explained in the ToDo list you mention, feel free to post a link to that instead of explaining.
-
-Thanks a lot in advance!
-
-Best regards,
-
-	Anton
-
-> Signed-off-by: John Daiker <daikerjohn@gmail.com>
+On Fri, Dec 4, 2009 at 11:44 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> The SH DMA driver wrongly assigns negative cookies to transfer descriptors,
+> also, its chaining of partial descriptors is broken. The latter problem is
+> usually invisible, because maximum transfer size per chunk is 16M, but if you
+> artificially set this limit lower, the driver fails. Since cookies are also
+> used in chunk management, both these problems are fixed in one patch.
+>
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 > ---
-> fs/ntfs/attrib.c |    2 +-
-> fs/ntfs/inode.c  |    6 ++--
-> fs/ntfs/mft.c    |    4 +-
-> fs/ntfs/super.c  |   60 +++++++++++++++++++++++++++---------------------------
-> 4 files changed, 36 insertions(+), 36 deletions(-)
-> 
-> diff --git a/fs/ntfs/attrib.c b/fs/ntfs/attrib.c
-> index 50d3b0c..a8aaa48 100644
-> --- a/fs/ntfs/attrib.c
-> +++ b/fs/ntfs/attrib.c
-> @@ -866,7 +866,7 @@ static int ntfs_external_attr_find(const ATTR_TYPE type,
-> 	ntfschar *al_name;
-> 	u32 al_name_len;
-> 	int err = 0;
-> -	static const char *es = " Unmount and run chkdsk.";
-> +	static const char es[] = " Unmount and run chkdsk.";
-> 
-> 	ni = ctx->ntfs_ino;
-> 	base_ni = ctx->base_ntfs_ino;
-> diff --git a/fs/ntfs/inode.c b/fs/ntfs/inode.c
-> index 9938034..e22aa8c 100644
-> --- a/fs/ntfs/inode.c
-> +++ b/fs/ntfs/inode.c
-> @@ -1867,7 +1867,7 @@ int ntfs_read_inode_mount(struct inode *vi)
-> 	} else /* if (!err) */ {
-> 		ATTR_LIST_ENTRY *al_entry, *next_al_entry;
-> 		u8 *al_end;
-> -		static const char *es = "  Not allowed.  $MFT is corrupt.  "
-> +		static const char es[] = "  Not allowed.  $MFT is corrupt.  "
-> 				"You should run chkdsk.";
-> 
-> 		ntfs_debug("Attribute list attribute found in $MFT.");
-> @@ -2328,7 +2328,7 @@ int ntfs_show_options(struct seq_file *sf, struct vfsmount *mnt)
-> 
-> #ifdef NTFS_RW
-> 
-> -static const char *es = "  Leaving inconsistent metadata.  Unmount and run "
-> +static const char es[] = "  Leaving inconsistent metadata.  Unmount and run "
-> 		"chkdsk.";
-> 
-> /**
-> @@ -2364,7 +2364,7 @@ int ntfs_truncate(struct inode *vi)
-> 	ntfs_attr_search_ctx *ctx;
-> 	MFT_RECORD *m;
-> 	ATTR_RECORD *a;
-> -	const char *te = "  Leaving file length out of sync with i_size.";
-> +	const char te[] = "  Leaving file length out of sync with i_size.";
-> 	int err, mp_size, size_change, alloc_change;
-> 	u32 attr_len;
-> 
-> diff --git a/fs/ntfs/mft.c b/fs/ntfs/mft.c
-> index 1caa0ef..261a107 100644
-> --- a/fs/ntfs/mft.c
-> +++ b/fs/ntfs/mft.c
-> @@ -408,7 +408,7 @@ void __mark_mft_record_dirty(ntfs_inode *ni)
-> 	__mark_inode_dirty(VFS_I(base_ni), I_DIRTY_SYNC | I_DIRTY_DATASYNC);
-> }
-> 
-> -static const char *ntfs_please_email = "Please email "
-> +static const char ntfs_please_email[] = "Please email "
-> 		"linux-ntfs-dev@lists.sourceforge.net and say that you saw "
-> 		"this message.  Thank you.";
-> 
-> @@ -1105,7 +1105,7 @@ bool ntfs_may_write_mft_record(ntfs_volume *vol, const unsigned long mft_no,
-> 	return true;
-> }
-> 
-> -static const char *es = "  Leaving inconsistent metadata.  Unmount and run "
-> +static const char es[] = "  Leaving inconsistent metadata.  Unmount and run "
-> 		"chkdsk.";
-> 
-> /**
-> diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
-> index 80b0477..e6dcd71 100644
-> --- a/fs/ntfs/super.c
-> +++ b/fs/ntfs/super.c
-> @@ -461,7 +461,7 @@ static int ntfs_remount(struct super_block *sb, int *flags, char *opt)
-> 	 * have occured.
-> 	 */
-> 	if ((sb->s_flags & MS_RDONLY) && !(*flags & MS_RDONLY)) {
-> -		static const char *es = ".  Cannot remount read-write.";
-> +		static const char es[] = ".  Cannot remount read-write.";
-> 
-> 		/* Remounting read-write. */
-> 		if (NVolErrors(vol)) {
-> @@ -659,7 +659,7 @@ not_ntfs:
-> static struct buffer_head *read_ntfs_boot_sector(struct super_block *sb,
-> 		const int silent)
-> {
-> -	const char *read_err_str = "Unable to read %s boot sector.";
-> +	const char read_err_str[] = "Unable to read %s boot sector.";
-> 	struct buffer_head *bh_primary, *bh_backup;
-> 	sector_t nr_blocks = NTFS_SB(sb)->nr_blocks;
-> 
-> @@ -1768,9 +1768,9 @@ static bool load_system_files(ntfs_volume *vol)
-> #ifdef NTFS_RW
-> 	/* Get mft mirror inode compare the contents of $MFT and $MFTMirr. */
-> 	if (!load_and_init_mft_mirror(vol) || !check_mft_mirror(vol)) {
-> -		static const char *es1 = "Failed to load $MFTMirr";
-> -		static const char *es2 = "$MFTMirr does not match $MFT";
-> -		static const char *es3 = ".  Run ntfsfix and/or chkdsk.";
-> +		static const char es1[] = "Failed to load $MFTMirr";
-> +		static const char es2[] = "$MFTMirr does not match $MFT";
-> +		static const char es3[] = ".  Run ntfsfix and/or chkdsk.";
-> 
-> 		/* If a read-write mount, convert it to a read-only mount. */
-> 		if (!(sb->s_flags & MS_RDONLY)) {
-> @@ -1892,11 +1892,11 @@ get_ctx_vol_failed:
-> #ifdef NTFS_RW
-> 	/* Make sure that no unsupported volume flags are set. */
-> 	if (vol->vol_flags & VOLUME_MUST_MOUNT_RO_MASK) {
-> -		static const char *es1a = "Volume is dirty";
-> -		static const char *es1b = "Volume has been modified by chkdsk";
-> -		static const char *es1c = "Volume has unsupported flags set";
-> -		static const char *es2a = ".  Run chkdsk and mount in Windows.";
-> -		static const char *es2b = ".  Mount in Windows.";
-> +		static const char es1a[] = "Volume is dirty";
-> +		static const char es1b[] = "Volume has been modified by chkdsk";
-> +		static const char es1c[] = "Volume has unsupported flags set";
-> +		static const char es2a[] = ".  Run chkdsk and mount in Windows.";
-> +		static const char es2b[] = ".  Mount in Windows.";
-> 		const char *es1, *es2;
-> 
-> 		es2 = es2a;
-> @@ -1938,9 +1938,9 @@ get_ctx_vol_failed:
-> 	rp = NULL;
-> 	if (!load_and_check_logfile(vol, &rp) ||
-> 			!ntfs_is_logfile_clean(vol->logfile_ino, rp)) {
-> -		static const char *es1a = "Failed to load $LogFile";
-> -		static const char *es1b = "$LogFile is not clean";
-> -		static const char *es2 = ".  Mount in Windows.";
-> +		static const char es1a[] = "Failed to load $LogFile";
-> +		static const char es1b[] = "$LogFile is not clean";
-> +		static const char es2[] = ".  Mount in Windows.";
-> 		const char *es1;
-> 
-> 		es1 = !vol->logfile_ino ? es1a : es1b;
-> @@ -1986,10 +1986,10 @@ get_ctx_vol_failed:
-> 	 */
-> 	err = check_windows_hibernation_status(vol);
-> 	if (unlikely(err)) {
-> -		static const char *es1a = "Failed to determine if Windows is "
-> +		static const char es1a[] = "Failed to determine if Windows is "
-> 				"hibernated";
-> -		static const char *es1b = "Windows is hibernated";
-> -		static const char *es2 = ".  Run chkdsk.";
-> +		static const char es1b[] = "Windows is hibernated";
-> +		static const char es2[] = ".  Run chkdsk.";
-> 		const char *es1;
-> 
-> 		es1 = err < 0 ? es1a : es1b;
-> @@ -2014,9 +2014,9 @@ get_ctx_vol_failed:
-> 	/* If (still) a read-write mount, mark the volume dirty. */
-> 	if (!(sb->s_flags & MS_RDONLY) &&
-> 			ntfs_set_volume_flags(vol, VOLUME_IS_DIRTY)) {
-> -		static const char *es1 = "Failed to set dirty bit in volume "
-> +		static const char es1[] = "Failed to set dirty bit in volume "
-> 				"information flags";
-> -		static const char *es2 = ".  Run chkdsk.";
-> +		static const char es2[] = ".  Run chkdsk.";
-> 
-> 		/* Convert to a read-only mount. */
-> 		if (!(vol->on_errors & (ON_ERRORS_REMOUNT_RO |
-> @@ -2042,8 +2042,8 @@ get_ctx_vol_failed:
-> 	 */
-> 	if (!(sb->s_flags & MS_RDONLY) && (vol->major_ver > 1) &&
-> 			ntfs_set_volume_flags(vol, VOLUME_MOUNTED_ON_NT4)) {
-> -		static const char *es1 = "Failed to set NT4 compatibility flag";
-> -		static const char *es2 = ".  Run chkdsk.";
-> +		static const char es1[] = "Failed to set NT4 compatibility flag";
-> +		static const char es2[] = ".  Run chkdsk.";
-> 
-> 		/* Convert to a read-only mount. */
-> 		if (!(vol->on_errors & (ON_ERRORS_REMOUNT_RO |
-> @@ -2061,8 +2061,8 @@ get_ctx_vol_failed:
-> 	/* If (still) a read-write mount, empty the logfile. */
-> 	if (!(sb->s_flags & MS_RDONLY) &&
-> 			!ntfs_empty_logfile(vol->logfile_ino)) {
-> -		static const char *es1 = "Failed to empty $LogFile";
-> -		static const char *es2 = ".  Mount in Windows.";
-> +		static const char es1[] = "Failed to empty $LogFile";
-> +		static const char es2[] = ".  Mount in Windows.";
-> 
-> 		/* Convert to a read-only mount. */
-> 		if (!(vol->on_errors & (ON_ERRORS_REMOUNT_RO |
-> @@ -2101,8 +2101,8 @@ get_ctx_vol_failed:
-> #ifdef NTFS_RW
-> 	/* Find the quota file, load it if present, and set it up. */
-> 	if (!load_and_init_quota(vol)) {
-> -		static const char *es1 = "Failed to load $Quota";
-> -		static const char *es2 = ".  Run chkdsk.";
-> +		static const char es1[] = "Failed to load $Quota";
-> +		static const char es2[] = ".  Run chkdsk.";
-> 
-> 		/* If a read-write mount, convert it to a read-only mount. */
-> 		if (!(sb->s_flags & MS_RDONLY)) {
-> @@ -2125,8 +2125,8 @@ get_ctx_vol_failed:
-> 	/* If (still) a read-write mount, mark the quotas out of date. */
-> 	if (!(sb->s_flags & MS_RDONLY) &&
-> 			!ntfs_mark_quotas_out_of_date(vol)) {
-> -		static const char *es1 = "Failed to mark quotas out of date";
-> -		static const char *es2 = ".  Run chkdsk.";
-> +		static const char es1[] = "Failed to mark quotas out of date";
-> +		static const char es2[] = ".  Run chkdsk.";
-> 
-> 		/* Convert to a read-only mount. */
-> 		if (!(vol->on_errors & (ON_ERRORS_REMOUNT_RO |
-> @@ -2145,8 +2145,8 @@ get_ctx_vol_failed:
-> 	 * it, and set it up.
-> 	 */
-> 	if (!load_and_init_usnjrnl(vol)) {
-> -		static const char *es1 = "Failed to load $UsnJrnl";
-> -		static const char *es2 = ".  Run chkdsk.";
-> +		static const char es1[] = "Failed to load $UsnJrnl";
-> +		static const char es2[] = ".  Run chkdsk.";
-> 
-> 		/* If a read-write mount, convert it to a read-only mount. */
-> 		if (!(sb->s_flags & MS_RDONLY)) {
-> @@ -2168,9 +2168,9 @@ get_ctx_vol_failed:
-> 	}
-> 	/* If (still) a read-write mount, stamp the transaction log. */
-> 	if (!(sb->s_flags & MS_RDONLY) && !ntfs_stamp_usnjrnl(vol)) {
-> -		static const char *es1 = "Failed to stamp transaction log "
-> +		static const char es1[] = "Failed to stamp transaction log "
-> 				"($UsnJrnl)";
-> -		static const char *es2 = ".  Run chkdsk.";
-> +		static const char es2[] = ".  Run chkdsk.";
-> 
-> 		/* Convert to a read-only mount. */
-> 		if (!(vol->on_errors & (ON_ERRORS_REMOUNT_RO |
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
+>  drivers/dma/shdma.c |  246 ++++++++++++++++++++++++++++++++-------------------
+>  drivers/dma/shdma.h |    1 -
+>  2 files changed, 153 insertions(+), 94 deletions(-)
+>
+> diff --git a/drivers/dma/shdma.c b/drivers/dma/shdma.c
+> index f5fae12..aac8f78 100644
+> --- a/drivers/dma/shdma.c
+> +++ b/drivers/dma/shdma.c
+> @@ -30,9 +30,12 @@
+>  #include "shdma.h"
+>
+>  /* DMA descriptor control */
+> -#define DESC_LAST      (-1)
+> -#define DESC_COMP      (1)
+> -#define DESC_NCOMP     (0)
+> +enum sh_dmae_desc_status {
+> +       DESC_PREPARED,
+> +       DESC_SUBMITTED,
+> +       DESC_COMPLETED, /* completed, have to call callback */
+> +       DESC_WAITING,   /* callback called, waiting for ack / re-submit */
+> +};
+>
+>  #define NR_DESCS_PER_CHANNEL 32
+>  /*
+> @@ -45,6 +48,8 @@
+>  */
+>  #define RS_DEFAULT  (RS_DUAL)
+>
+> +static void sh_dmae_chan_ld_cleanup(struct sh_dmae_chan *sh_chan, bool all);
+> +
+>  #define SH_DMAC_CHAN_BASE(id) (dma_base_addr[id])
+>  static void sh_dmae_writel(struct sh_dmae_chan *sh_dc, u32 data, u32 reg)
+>  {
+> @@ -185,7 +190,7 @@ static int dmae_set_dmars(struct sh_dmae_chan *sh_chan, u16 val)
+>
+>  static dma_cookie_t sh_dmae_tx_submit(struct dma_async_tx_descriptor *tx)
+>  {
+> -       struct sh_desc *desc = tx_to_sh_desc(tx);
+> +       struct sh_desc *desc = tx_to_sh_desc(tx), *chunk;
+>        struct sh_dmae_chan *sh_chan = to_sh_chan(tx->chan);
+>        dma_cookie_t cookie;
+>
+> @@ -196,45 +201,40 @@ static dma_cookie_t sh_dmae_tx_submit(struct dma_async_tx_descriptor *tx)
+>        if (cookie < 0)
+>                cookie = 1;
+>
+> -       /* If desc only in the case of 1 */
+> -       if (desc->async_tx.cookie != -EBUSY)
+> -               desc->async_tx.cookie = cookie;
+> -       sh_chan->common.cookie = desc->async_tx.cookie;
+> -
+> -       list_splice_init(&desc->tx_list, sh_chan->ld_queue.prev);
+> +       tx->cookie = cookie;
+> +       dev_dbg(sh_chan->dev, "submit %p #%d start %u\n",
+> +               tx, tx->cookie, desc->hw.sar);
+> +       sh_chan->common.cookie = tx->cookie;
+> +
+> +       /* Mark all chunks of this descriptor as submitted */
+> +       list_for_each_entry(chunk, desc->node.prev, node) {
+> +               /*
+> +                * All chunks are on the global ld_queue, so, we have to find
+> +                * the end of the chain ourselves
+> +                */
+> +               if (chunk != desc && (chunk->async_tx.cookie > 0 ||
+> +                                     chunk->async_tx.cookie == -EBUSY))
+> +                       break;
+> +               chunk->mark = DESC_SUBMITTED;
+> +       }
+>
+>        spin_unlock_bh(&sh_chan->desc_lock);
+>
+>        return cookie;
+>  }
+>
+> +/* Called with desc_lock held */
+>  static struct sh_desc *sh_dmae_get_desc(struct sh_dmae_chan *sh_chan)
+>  {
+> -       struct sh_desc *desc, *_desc, *ret = NULL;
+> -
+> -       spin_lock_bh(&sh_chan->desc_lock);
+> -       list_for_each_entry_safe(desc, _desc, &sh_chan->ld_free, node) {
+> -               if (async_tx_test_ack(&desc->async_tx)) {
+> -                       list_del(&desc->node);
+> -                       ret = desc;
+> -                       break;
+> -               }
+> -       }
+> -       spin_unlock_bh(&sh_chan->desc_lock);
+> -
+> -       return ret;
+> -}
+> +       struct sh_desc *desc;
+>
+> -static void sh_dmae_put_desc(struct sh_dmae_chan *sh_chan, struct sh_desc *desc)
+> -{
+> -       if (desc) {
+> -               spin_lock_bh(&sh_chan->desc_lock);
+> +       if (list_empty(&sh_chan->ld_free))
+> +               return NULL;
+>
+> -               list_splice_init(&desc->tx_list, &sh_chan->ld_free);
+> -               list_add(&desc->node, &sh_chan->ld_free);
+> +       desc = list_entry(sh_chan->ld_free.next, struct sh_desc, node);
+> +       list_del(&desc->node);
+>
+> -               spin_unlock_bh(&sh_chan->desc_lock);
+> -       }
+> +       return desc;
+>  }
+>
+>  static int sh_dmae_alloc_chan_resources(struct dma_chan *chan)
+> @@ -254,10 +254,9 @@ static int sh_dmae_alloc_chan_resources(struct dma_chan *chan)
+>                                        &sh_chan->common);
+>                desc->async_tx.tx_submit = sh_dmae_tx_submit;
+>                desc->async_tx.flags = DMA_CTRL_ACK;
+> -               INIT_LIST_HEAD(&desc->tx_list);
+> -               sh_dmae_put_desc(sh_chan, desc);
+>
+>                spin_lock_bh(&sh_chan->desc_lock);
+> +               list_add(&desc->node, &sh_chan->ld_free);
+>                sh_chan->descs_allocated++;
+>        }
+>        spin_unlock_bh(&sh_chan->desc_lock);
+> @@ -274,7 +273,10 @@ static void sh_dmae_free_chan_resources(struct dma_chan *chan)
+>        struct sh_desc *desc, *_desc;
+>        LIST_HEAD(list);
+>
+> -       BUG_ON(!list_empty(&sh_chan->ld_queue));
+> +       /* Prepared and not submitted descriptors can still be on the queue */
+> +       if (!list_empty(&sh_chan->ld_queue))
+> +               sh_dmae_chan_ld_cleanup(sh_chan, true);
+> +
+>        spin_lock_bh(&sh_chan->desc_lock);
+>
+>        list_splice_init(&sh_chan->ld_free, &list);
+> @@ -293,6 +295,7 @@ static struct dma_async_tx_descriptor *sh_dmae_prep_memcpy(
+>        struct sh_dmae_chan *sh_chan;
+>        struct sh_desc *first = NULL, *prev = NULL, *new;
+>        size_t copy_size;
+> +       LIST_HEAD(tx_list);
+>
+>        if (!chan)
+>                return NULL;
+> @@ -302,43 +305,70 @@ static struct dma_async_tx_descriptor *sh_dmae_prep_memcpy(
+>
+>        sh_chan = to_sh_chan(chan);
+>
+> +       /* Have to lock the whole loop to protect against concurrent release */
+> +       spin_lock_bh(&sh_chan->desc_lock);
+> +
+> +       /*
+> +        * Chaining:
+> +        * first descriptor is what user is dealing with in all API calls, its
+> +        *      cookie is at first set to -EBUSY, at tx-submit to a positive
+> +        *      number
+> +        * if more than one chunk is needed further chunks have cookie = -EINVAL
+> +        * the last chunk, if not equal to the first, has cookie = -ENOSPC
+> +        * all chunks are linked onto the tx_list head with their .node heads
+> +        *      only during this function, then they are immediately spliced
+> +        *      onto the queue
+> +        */
+>        do {
+>                /* Allocate the link descriptor from DMA pool */
+>                new = sh_dmae_get_desc(sh_chan);
+>                if (!new) {
+>                        dev_err(sh_chan->dev,
+>                                        "No free memory for link descriptor\n");
+> -                       goto err_get_desc;
+> +                       list_splice(&tx_list, &sh_chan->ld_free);
+> +                       spin_unlock_bh(&sh_chan->desc_lock);
+> +                       return NULL;
+>                }
+>
+> -               copy_size = min(len, (size_t)SH_DMA_TCR_MAX);
+> +               copy_size = min(len, (size_t)SH_DMA_TCR_MAX + 1);
+>
+>                new->hw.sar = dma_src;
+>                new->hw.dar = dma_dest;
+>                new->hw.tcr = copy_size;
+> -               if (!first)
+> +               if (!first) {
+> +                       /* First desc */
+> +                       new->async_tx.cookie = -EBUSY;
+>                        first = new;
+> +               } else {
+> +                       /* Other desc - invisible to the user */
+> +                       new->async_tx.cookie = -EINVAL;
+> +               }
+> +
+> +               dev_dbg(sh_chan->dev,
+> +                       "chaining %u of %u with %p, start %u, cookie %d\n",
+> +                       copy_size, len, &new->async_tx, dma_src,
+> +                       new->async_tx.cookie);
+>
+> -               new->mark = DESC_NCOMP;
+> -               async_tx_ack(&new->async_tx);
+> +               new->mark = DESC_PREPARED;
+> +               new->async_tx.flags = flags;
+>
+>                prev = new;
+>                len -= copy_size;
+>                dma_src += copy_size;
+>                dma_dest += copy_size;
+>                /* Insert the link descriptor to the LD ring */
+> -               list_add_tail(&new->node, &first->tx_list);
+> +               list_add_tail(&new->node, &tx_list);
+>        } while (len);
+>
+> -       new->async_tx.flags = flags; /* client is in control of this ack */
+> -       new->async_tx.cookie = -EBUSY; /* Last desc */
+> +       if (new != first)
+> +               new->async_tx.cookie = -ENOSPC;
+>
+> -       return &first->async_tx;
+> +       /* Put them immediately on the queue, so, they don't get lost */
+> +       list_splice_tail(&tx_list, sh_chan->ld_queue.prev);
+>
+> -err_get_desc:
+> -       sh_dmae_put_desc(sh_chan, first);
+> -       return NULL;
+> +       spin_unlock_bh(&sh_chan->desc_lock);
+>
+> +       return &first->async_tx;
+>  }
+>
+>  /*
+> @@ -346,64 +376,87 @@ err_get_desc:
+>  *
+>  * This function clean up the ld_queue of DMA channel.
+>  */
+> -static void sh_dmae_chan_ld_cleanup(struct sh_dmae_chan *sh_chan)
+> +static void sh_dmae_chan_ld_cleanup(struct sh_dmae_chan *sh_chan, bool all)
+>  {
+>        struct sh_desc *desc, *_desc;
+>
+>        spin_lock_bh(&sh_chan->desc_lock);
+>        list_for_each_entry_safe(desc, _desc, &sh_chan->ld_queue, node) {
+> -               dma_async_tx_callback callback;
+> -               void *callback_param;
+> +               struct dma_async_tx_descriptor *tx = &desc->async_tx;
+>
+> -               /* non send data */
+> -               if (desc->mark == DESC_NCOMP)
+> +               /* unsent data */
+> +               if (desc->mark == DESC_SUBMITTED && !all)
+>                        break;
+>
+> -               /* send data sesc */
+> -               callback = desc->async_tx.callback;
+> -               callback_param = desc->async_tx.callback_param;
+> +               if (desc->mark == DESC_PREPARED && !all)
+> +                       continue;
+> +
+> +               /* Call callback on the "exposed" descriptor (cookie > 0) */
+> +               if (tx->cookie > 0 && (desc->mark == DESC_COMPLETED ||
+> +                                      desc->mark == DESC_WAITING)) {
+> +                       struct sh_desc *chunk;
+> +                       bool head_acked = async_tx_test_ack(tx);
+> +                       /* sent data desc */
+> +                       dma_async_tx_callback callback = tx->callback;
+> +
+> +                       /* Run the link descriptor callback function */
+> +                       if (callback && desc->mark == DESC_COMPLETED) {
+> +                               spin_unlock_bh(&sh_chan->desc_lock);
+> +                               dev_dbg(sh_chan->dev,
+> +                                       "descriptor %p callback\n", tx);
+> +                               callback(tx->callback_param);
+> +                               spin_lock_bh(&sh_chan->desc_lock);
+> +                       }
+>
+> -               /* Remove from ld_queue list */
+> -               list_splice_init(&desc->tx_list, &sh_chan->ld_free);
+> +                       list_for_each_entry(chunk, desc->node.prev, node) {
+> +                               /*
+> +                                * All chunks are on the global ld_queue, so, we
+> +                                * have to find the end of the chain ourselves
+> +                                */
+> +                               if (chunk != desc &&
+> +                                   (chunk->async_tx.cookie > 0 ||
+> +                                    chunk->async_tx.cookie == -EBUSY))
+> +                                       break;
+> +
+> +                               if (head_acked)
+> +                                       async_tx_ack(&chunk->async_tx);
+> +                               else
+> +                                       chunk->mark = DESC_WAITING;
+> +                       }
+> +               }
+>
+> -               dev_dbg(sh_chan->dev, "link descriptor %p will be recycle.\n",
+> -                               desc);
+> +               dev_dbg(sh_chan->dev, "descriptor %p #%d completed.\n",
+> +                       tx, tx->cookie);
+>
+> -               list_move(&desc->node, &sh_chan->ld_free);
+> -               /* Run the link descriptor callback function */
+> -               if (callback) {
+> -                       spin_unlock_bh(&sh_chan->desc_lock);
+> -                       dev_dbg(sh_chan->dev, "link descriptor %p callback\n",
+> -                                       desc);
+> -                       callback(callback_param);
+> -                       spin_lock_bh(&sh_chan->desc_lock);
+> -               }
+> +               if (((desc->mark == DESC_COMPLETED ||
+> +                     desc->mark == DESC_WAITING) &&
+> +                    async_tx_test_ack(&desc->async_tx)) || all)
+> +                       /* Remove from ld_queue list */
+> +                       list_move(&desc->node, &sh_chan->ld_free);
+>        }
+>        spin_unlock_bh(&sh_chan->desc_lock);
+>  }
+>
+>  static void sh_chan_xfer_ld_queue(struct sh_dmae_chan *sh_chan)
+>  {
+> -       struct list_head *ld_node;
+>        struct sh_dmae_regs hw;
+> +       struct sh_desc *sd;
+>
+>        /* DMA work check */
+>        if (dmae_is_idle(sh_chan))
+>                return;
+>
+> +       spin_lock_bh(&sh_chan->desc_lock);
+>        /* Find the first un-transfer desciptor */
+> -       for (ld_node = sh_chan->ld_queue.next;
+> -               (ld_node != &sh_chan->ld_queue)
+> -                       && (to_sh_desc(ld_node)->mark == DESC_COMP);
+> -               ld_node = ld_node->next)
+> -               cpu_relax();
+> -
+> -       if (ld_node != &sh_chan->ld_queue) {
+> -               /* Get the ld start address from ld_queue */
+> -               hw = to_sh_desc(ld_node)->hw;
+> -               dmae_set_reg(sh_chan, hw);
+> -               dmae_start(sh_chan);
+> -       }
+> +       list_for_each_entry(sd, &sh_chan->ld_queue, node)
+> +               if (sd->mark == DESC_SUBMITTED) {
+> +                       /* Get the ld start address from ld_queue */
+> +                       hw = sd->hw;
+> +                       dmae_set_reg(sh_chan, hw);
+> +                       dmae_start(sh_chan);
+> +                       break;
+> +               }
+> +       spin_unlock_bh(&sh_chan->desc_lock);
+>  }
+>
+>  static void sh_dmae_memcpy_issue_pending(struct dma_chan *chan)
+> @@ -421,12 +474,11 @@ static enum dma_status sh_dmae_is_complete(struct dma_chan *chan,
+>        dma_cookie_t last_used;
+>        dma_cookie_t last_complete;
+>
+> -       sh_dmae_chan_ld_cleanup(sh_chan);
+> +       sh_dmae_chan_ld_cleanup(sh_chan, false);
+>
+>        last_used = chan->cookie;
+>        last_complete = sh_chan->completed_cookie;
+> -       if (last_complete == -EBUSY)
+> -               last_complete = last_used;
+> +       BUG_ON(last_complete < 0);
+>
+>        if (done)
+>                *done = last_complete;
+> @@ -481,11 +533,13 @@ static irqreturn_t sh_dmae_err(int irq, void *data)
+>                err = sh_dmae_rst(0);
+>                if (err)
+>                        return err;
+> +#ifdef SH_DMAC_BASE1
+>                if (shdev->pdata.mode & SHDMA_DMAOR1) {
+>                        err = sh_dmae_rst(1);
+>                        if (err)
+>                                return err;
+>                }
+> +#endif
+>                disable_irq(irq);
+>                return IRQ_HANDLED;
+>        }
+> @@ -499,30 +553,36 @@ static void dmae_do_tasklet(unsigned long data)
+>        u32 sar_buf = sh_dmae_readl(sh_chan, SAR);
+>        list_for_each_entry_safe(desc, _desc,
+>                                        &sh_chan->ld_queue, node) {
+> -               if ((desc->hw.sar + desc->hw.tcr) == sar_buf) {
+> +               if ((desc->hw.sar + desc->hw.tcr) == sar_buf &&
+> +                   desc->mark == DESC_SUBMITTED) {
+>                        cur_desc = desc;
+>                        break;
+>                }
+>        }
+>
+>        if (cur_desc) {
+> +               dev_dbg(sh_chan->dev, "done %p #%d start %u\n",
+> +                       &cur_desc->async_tx, cur_desc->async_tx.cookie,
+> +                       cur_desc->hw.sar);
+> +
+>                switch (cur_desc->async_tx.cookie) {
+> -               case 0: /* other desc data */
+> +               case -EINVAL:
+> +               case -ENOSPC:
+> +                       /* other desc data */
+>                        break;
+> -               case -EBUSY: /* last desc */
+> -               sh_chan->completed_cookie =
+> -                               cur_desc->async_tx.cookie;
+> +               case -EBUSY: /* Cannot be */
+> +                       BUG_ON(1);
+>                        break;
+> -               default: /* first desc ( 0 < )*/
+> +               default: /* first desc: cookie > 0 */
+>                        sh_chan->completed_cookie =
+> -                               cur_desc->async_tx.cookie - 1;
+> +                               cur_desc->async_tx.cookie;
+>                        break;
+>                }
+> -               cur_desc->mark = DESC_COMP;
+> +               cur_desc->mark = DESC_COMPLETED;
+>        }
+>        /* Next desc */
+>        sh_chan_xfer_ld_queue(sh_chan);
+> -       sh_dmae_chan_ld_cleanup(sh_chan);
+> +       sh_dmae_chan_ld_cleanup(sh_chan, false);
+>  }
+>
+>  static unsigned int get_dmae_irq(unsigned int id)
+> diff --git a/drivers/dma/shdma.h b/drivers/dma/shdma.h
+> index 2b4bc15..c93555c 100644
+> --- a/drivers/dma/shdma.h
+> +++ b/drivers/dma/shdma.h
+> @@ -26,7 +26,6 @@ struct sh_dmae_regs {
+>  };
+>
+>  struct sh_desc {
+> -       struct list_head tx_list;
+>        struct sh_dmae_regs hw;
+>        struct list_head node;
+>        struct dma_async_tx_descriptor async_tx;
+> --
+> 1.6.2.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
