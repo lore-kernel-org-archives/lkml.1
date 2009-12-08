@@ -1,62 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966614AbZLHWAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966537AbZLHV6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966614AbZLHWAa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966512AbZLHWAZ
+	id S966537AbZLHV6n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966254AbZLHV6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:00:25 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:49674 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966618AbZLHWAT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:00:19 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dave Airlie <airlied@redhat.com>
-Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes when ..."
-Date: Tue, 8 Dec 2009 22:59:48 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net
-References: <200912071830.14697.arnd@arndb.de>
-In-Reply-To: <200912071830.14697.arnd@arndb.de>
+	Tue, 8 Dec 2009 16:58:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:25412 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965722AbZLHV6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 16:58:41 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip 0/8] perf-probe updates
+To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Tue, 08 Dec 2009 17:02:32 -0500
+Message-ID: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912082259.48715.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18Jmpi03oppRsclMPN/gZ0fa6axmXZYdtexYNH
- uxiNxhr2a2ctLv8V+GFRhz1MhP/w7+QyfWb/+naCjVSRhsr+1o
- v4yqwI6flKjPZXVgS/XkQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 December 2009, Arnd Bergmann wrote:
-> After upgrading one of my machines to 2.6.32, I saw hangs after one to thirty minutes after
-> booting, with random data written to parts of the frame buffer. I've bisected it down
-> to 620f37811d "drm: prune modes when output is disconnected.", which was merged
-> in 2.6.32-rc1. Connecting a serial console does not reveal any output at the time of
-> the crash.
-> 
-> The machine uses an Intel G45 chipset with the i915 kernel mode setting enabled.
-> 
-> I have no clue what that patch does or why reverting it fixes the problem but 2.6.32
-> with this revert applied has not shown these hangs yet.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Hi Ingo,
 
-Scratch this, the machine crashed again in the same way, but only after
-a some hours of uptime (normally it took a few minutes). It still looks like
- this commit makes the bug much more likely, but it could also be
-attributed to complete coincedence and bad timing. 2.6.31 certainly never
-showed the problem and the bisection clearly pointed in the general direction
-of i915.
+I made several usability updates and added --del option
+for perf-probe. I think most of basic functions are implemented.
+I'm planning to support checking build-id next, because it
+can prevent users to use old vmlinux for debuginfo analysis.
 
-I hate debugging sporadic hangs...
+Here are the todo list I have (most of them had been requested
+on LKML). I'd like to share this list with other developers
+who are interested in.
 
-Sorry for blaming the wrong patch, especially if it already caused a lot 
-of work. I'll try blaming ec2a4c3fdc8 "drm/i915: get the bridge device
-once" now, that is the next-best candidate that my bisection pointed to,
-but I'll do more rigorous testing.
+Short-term TODOs:
+  - Support checking kernel Build-ID
 
-	Arnd
+Long-term TODOs (future features):
+  - Support --line option to show which lines user can probe
+  - Support lazy string matching(glob?) for selecting probing
+    line
+  - Support sys_perf_counter_open (for non-root users)
+  - Support tracing static variables (non global)
+  - Support variable types from debuginfo (e.g. char, int, ...)
+  - Support fields of data structures (var->field)
+  - Support array (var[N])
+  - Support dynamic array-indexing (var[var2])
+  - Support string/dynamic arrays (*var, var[N..M])
+  - Support force type-casting ((type)var)
+  - Support the type of return value
+
+Miscs:
+  - Support glob expression with --del option (like --del "*")
+  - Support event/group name specifying for new events
+  - Better support for probes on modules
+  - Symbol search by libelf/kallsyms
+  - Move onto libdw/libdwfl
+  - Storing file name/line number information in the
+    kernel for listing events
+  
+
+Thank you,
+
+---
+
+Masami Hiramatsu (8):
+      perf probe: Update perf-probe document
+      perf probe: Support --del option
+      trace-kprobe: Support delete probe syntax
+      perf probe: Support vmlinux on cwd by default
+      perf probe: Remove event suffix number _0
+      perf probe: Fix add-probe command syntax without --add option
+      perf probe: Change probe-added message more user-friendly
+      perf probe: Change event list format
+
+
+ kernel/trace/trace_kprobe.c             |   37 +++++++--
+ tools/perf/Documentation/perf-probe.txt |   21 ++++-
+ tools/perf/builtin-probe.c              |   76 ++++++++++++++++---
+ tools/perf/util/probe-event.c           |  122 ++++++++++++++++++++++++++++---
+ tools/perf/util/probe-event.h           |    1 
+ 5 files changed, 217 insertions(+), 40 deletions(-)
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+e-mail: mhiramat@redhat.com
