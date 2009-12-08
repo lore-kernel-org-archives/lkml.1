@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZLHPZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbZLHPYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbZLHPZW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbZLHPZV
+	id S932105AbZLHPYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbZLHPYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:25:21 -0500
-Received: from www.tglx.de ([62.245.132.106]:52990 "EHLO www.tglx.de"
+	Tue, 8 Dec 2009 10:24:38 -0500
+Received: from khc.piap.pl ([195.187.100.11]:57411 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755998AbZLHPZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:25:20 -0500
-To: Eric Paris <eparis@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       viro@zeniv.linux.org.uk, arjan@infradead.org, greg@kroah.com,
-       tytso@mit.edu, akpm@linux-foundation.org
-Subject: Re: [PATCH =-v3 07/21] fanotify: fastpath to ignore certain in core inodes
-From: John Ogness <dazukocode@ogness.net>
-References: <20081112161002.25434.82358.stgit@paris.rdu.redhat.com>
-	<20081112161103.25434.30104.stgit@paris.rdu.redhat.com>
-	<20081112165055.GB19669@infradead.org>
-	<20081112165638.54c38c5c@lxorguk.ukuu.org.uk>
-	<20081112165820.GA26217@infradead.org>
-	<1226523149.3353.23.camel@localhost.localdomain>
-Date: Tue, 08 Dec 2009 16:22:42 +0100
-In-Reply-To: <1226523149.3353.23.camel@localhost.localdomain> (Eric Paris's message of "Wed\, 12 Nov 2008 15\:52\:29 -0500")
-Message-ID: <80skblmqwt.fsf@merkur.tec.linutronix.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	id S1756013AbZLHPYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 10:24:37 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <BEJgSGGXqgB@lirc>
+	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	<1260070593.3236.6.camel@pc07.localdom.local>
+	<20091206065512.GA14651@core.coreip.homeip.net>
+	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
+	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	<m3skbn6dv1.fsf@intrepid.localdomain>
+	<20091207184153.GD998@core.coreip.homeip.net>
+	<m3my1u35t2.fsf@intrepid.localdomain>
+	<20091207213811.GE998@core.coreip.homeip.net>
+Date: Tue, 08 Dec 2009 16:24:40 +0100
+In-Reply-To: <20091207213811.GE998@core.coreip.homeip.net> (Dmitry Torokhov's
+	message of "Mon, 7 Dec 2009 13:38:11 -0800")
+Message-ID: <m37hsxtrnr.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-11-12, Eric Paris <eparis@redhat.com> wrote:
-> Kernel Build on a 32 way machine:
-> Stock kernel: 9 minutes 12 seconds
-> fanotify no in kernel fastpath: 95 minutes 12 seconds
-> Only events AV wants with in kernel fastpath: 10 minutes 35 seconds
+Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
 
-Can you provide the number of calls into the listeners for each type of
-fanotify event? It would provide a better picture of the scope of the
-issue.
+> No, the IR core responsible for registering receivers and decoders.
 
-I find your non-fastpath numbers quite alarming.
+Well. This makes me think now that LIRC can be just "another decoder".
 
-The DazukoFS stackable filesystem can also be used for userspace
-listeners to acknowledge/handle filesystem events. (I only mention
-DazukoFS here so that there is some kind of metric comparison that can
-be used.) I find a 15% overhead in communication to be too
-expensive. And a 934.7% performance hit is... well...
+>> Those are simple things. The only part which needs to be stable is the
+>> (in this case LIRC) kernel-user interface.
+>
+> For which some questions are still open. I believe Jon just oulined some
+> of them.
 
-The DazukoFS stackable filesystem only provides file open events, but
-its numbers may still be of interest here:
+Those are rather "how does it work", not "let's change something because
+it's not optimal".
 
-kernel build on tmpfs:          72m36.884s
-kernel build on tmpfs+DazukoFS: 75m30.569s
+> No we do not. We do not merge something that we expect to rework almost
+> completely (no, not the lirc-style device userspace inetrface, although
+> even it is not completely finalized I believe, but the rest of the
+> subsystem).
 
-That is an overhead of 4%. Your results show that fanotify (with
-fastpaths!) has an overhead of 15%.
+I don't think we need to rework it almost completely. Perhaps we need to
+change a hook here or there.
 
-My test was done using Linux 2.6.32 and DazukoFS 3.1.2. The Linux source
-and build were located on tmpfs to minimize hard drive hits. The machine
-was a 600MHz PowerPC, which is why the build times were so long.
+> No, not at all. You merge core subsystem code, then start addig
+> decoders...
 
-During the test, the DazukoFS listeners recorded a total of 991,907 file
-open events.
+You must have at least one common decoder merged with the core code,
+otherwise you don't know if the core is adequate. And you have to have
+at least one common input device.
 
-IMHO event filtering should happen in userspace. My experience is that
-the context switches can be quite cheap. Perhaps if we know which
-fanotify events (and how many) occur within your test, we can begin to
-understand why your results are what they are.
-
-John Ogness
+But perhaps it is a workable idea after all, given the "another
+decoder".
+-- 
+Krzysztof Halasa
