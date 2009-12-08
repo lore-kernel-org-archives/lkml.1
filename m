@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936874AbZLHXLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936970AbZLHXO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936874AbZLHXLl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 18:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936980AbZLHXLc
+	id S936970AbZLHXO0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 18:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbZLHXOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 18:11:32 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:42666 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936970AbZLHXL2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 18:11:28 -0500
+	Tue, 8 Dec 2009 18:14:22 -0500
+Received: from kroah.org ([198.145.64.141]:55403 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756372AbZLHXOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 18:14:21 -0500
+Date: Tue, 8 Dec 2009 15:14:06 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Cc: lwn@lwn.net
+Subject: Linux 2.6.27.41
+Message-ID: <20091208231406.GA14205@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <37219a840912081502v3fdf1879xdb28e867eb82884c@mail.gmail.com>
-References: <20091208214246.GA21857@kroah.com>
-	 <829197380912081349q32b554acob7055431d65fc26f@mail.gmail.com>
-	 <37219a840912081502v3fdf1879xdb28e867eb82884c@mail.gmail.com>
-Date: Tue, 8 Dec 2009 18:11:33 -0500
-Message-ID: <829197380912081511k2ad53053t1a1f73b6e8571f75@mail.gmail.com>
-Subject: Re: 2.6.27.40 build error
-From: Devin Heitmueller <dheitmueller@kernellabs.com>
-To: Michael Krufky <mkrufky@kernellabs.com>
-Cc: Greg KH <greg@kroah.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 6:02 PM, Michael Krufky <mkrufky@kernellabs.com> wrote:
-> Yes -- please drop it for now.  I didn't actually send this for
-> 2.6.27.y anyway -- it must have gotten to you some other way.
->
-> Devin, if 2.6.27.y needs this fix, can you please generate the
-> appropriate backport and test it before we resubmit?
+I'm announcing the release of the 2.6.27.41 kernel.
 
-We would have to decide whether it's worth the effort to get a 2.6.27
-environment setup to do the necessary regression testing.  At this
-point, I would argue that driver was screwed up enough in 2.6.27 that
-I wouldn't be inclined to tell users it worked even with this one fix.
+There was a build error in the 2.6.27.40 kernel in the emc28xx driver.
+This release just reverts the problem patch, if you are using .40 just
+fine, no need to upgrade.
 
-Devin
+The updated 2.6.27.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
 
--- 
-Devin J. Heitmueller - Kernel Labs
-http://www.kernellabs.com
+thanks,
+
+greg k-h
+
+------------
+
+ Makefile                                  |    2 +-
+ drivers/media/video/em28xx/em28xx-audio.c |    5 -----
+ 2 files changed, 1 insertion(+), 6 deletions(-)
+
+Greg Kroah-Hartman (2):
+      Revert "V4L/DVB (13190): em28xx: fix panic that can occur when starting audio streaming"
+      Linux 2.6.27.41
+
