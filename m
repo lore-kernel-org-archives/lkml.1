@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937891AbZLHUnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937904AbZLHUoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937891AbZLHUnF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 15:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936711AbZLHUnA
+	id S937904AbZLHUoA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 15:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937889AbZLHUn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 15:43:00 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:34731 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936476AbZLHUm7 (ORCPT
+	Tue, 8 Dec 2009 15:43:56 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:34571 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S936949AbZLHUnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 15:42:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=W4l0t9RjI3ZW0luRg8SpVfjReQwWSwknPZ4D4QNuwPcBeHtDXkpYnFGmcKt8PX2D12
-         G6coTMSyNiY4FxINRYOE912VcPxRGsrR3mAjyNzQufbD+TbXwEhPFoxrYV84cA/salp2
-         17Y0aWYAmDm6nuvtBY8LlocUY//SB6Pzyl1mE=
+	Tue, 8 Dec 2009 15:43:55 -0500
+Date: Tue, 8 Dec 2009 15:44:00 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+In-Reply-To: <200912082130.14634.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0912081542350.3046-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <x49ein6nx9k.fsf@segfault.boston.devel.redhat.com>
-References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
-	 <4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
-	 <4e5e476b0912060245x4d64300hb9689243bd712f2c@mail.gmail.com>
-	 <x49ein6nx9k.fsf@segfault.boston.devel.redhat.com>
-Date: Tue, 8 Dec 2009 21:43:05 +0100
-Message-ID: <4e5e476b0912081243ra071947if9a3edae77fb3861@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id nB8KhU16031103
 
-On Tue, Dec 8, 2009 at 1:07 AM, Jeff Moyer <jmoyer@redhat.com> wrote:> Corrado Zoccolo <czoccolo@gmail.com> writes:>>> Hi Jeff, I remember you saw large performance drop on your SAN for>> sequential writes with low_latency=1.  Can you test if Shaohua's and>> this patch fix allow to recover some bandwidth?  I think that enabling>> the queue depth ramp up only if a sync request was delayed should>> disable it for fast hardware like yours, so you should not be seeing>> the slowdown any more.>> Average of 10 runs.  Low latency set to 0:>> Unit information> ================> File size = megabytes> Blk Size  = bytes> Rate      = megabytes per second> CPU%      = percentage of CPU used during the test> Latency   = milliseconds> Lat%      = percent of requests that took longer than X seconds> CPU Eff   = Rate divided by CPU% - throughput per cpu load>> Sequential Reads>                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----> 2.6.32                        8192  65536   8   90.08 94.51%    51.316    10268.25   0.00000  0.00000    95> 2.6.32                        8192  65536  16   99.36 199.8%    89.248    13883.81   0.00000  0.00000    50>> Random Reads>                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----> 2.6.32                        8192  65536   8   81.16 85.90%    45.672     5963.19   0.00000  0.00000    94> 2.6.32                        8192  65536  16  116.32 230.3%    58.371     6098.36   0.00000  0.00000    51>> Sequential Writes>                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----> 2.6.32                        8192  65536   8  112.17 1085.%    42.623    17114.54   0.00152  0.00000    10> 2.6.32                        8192  65536  16  111.26 2117.%    84.964    26480.60   0.03202  0.00000     5>> Random Writes>                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----> 2.6.32                        8192  65536   8  162.48 887.1%     6.106      313.54   0.00000  0.00000    18> 2.6.32                        8192  65536  16  156.38 1767.%    14.077     1254.62   0.00000  0.00000     9>>> Average of 10 runs.  Low latency set to 1:>> Unit information> ================> File size = megabytes> Blk Size  = bytes> Rate      = megabytes per second> CPU%      = percentage of CPU used during the test> Latency   = milliseconds> Lat%      = percent of requests that took longer than X seconds> CPU Eff   = Rate divided by CPU% - throughput per cpu load>> Sequential Reads>                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----> 2.6.32                        8192  65536   8   92.23 100.1%    52.119     6920.18   0.00000  0.00000    92> 2.6.32                        8192  65536  16   97.88 217.0%    99.691     7453.18   0.00000  0.00000    45>> Random Reads>                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----> 2.6.32                        8192  65536   8   98.70 107.5%    42.994     3409.08   0.00000  0.00000    92> 2.6.32                        8192  65536  16  140.41 323.9%    59.616     4525.46   0.00000  0.00000    43>> Sequential Writes>                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----> 2.6.32                        8192  65536   8  112.33 1076.%    42.617    17072.28   0.00076  0.00000    10> 2.6.32                        8192  65536  16  111.84 2097.%    85.156    28221.77   0.02976  0.00000     5>> Random Writes>                              File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----> 2.6.32                        8192  65536   8  159.33 870.5%     6.469      765.50   0.00000  0.00000    18> 2.6.32                        8192  65536  16  141.60 1632.%    15.364     2337.57   0.00000  0.00000     9>>> Cheers,> Jeff>
-The numbers look good. Now, there is no penalty in having low_latencyset for sequential writes, and just a small penalty for random ones.The fact that random reads are faster with low_latency set is interesting.Is the test is running with your patched tiobench (so that the numberof random operations is comparable with sequential ones)?
-Thanks,Corrado
--- __________________________________________________________________________
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.comPhD - Department of Computer Science - University of Pisa, Italy--------------------------------------------------------------------------The self-confidence of a warrior is not the self-confidence of the averageman. The average man seeks certainty in the eyes of the onlooker and callsthat self-confidence. The warrior seeks impeccability in his own eyes andcalls that humbleness.                               Tales of Power - C. Castaneda���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+
+> > This is a little more awkward because it requires the parent to iterate 
+> > through its children.
+> 
+> I can live with that.
+> 
+> > But it does solve the off-tree dependency  problem for suspends.
+> 
+> That's a plus, but I still think we're trying to create a barrier-alike
+> mechanism using lock.
+> 
+> There's one more possibility to consider, though.  What if we use a completion
+> instead of the flag + wait queue?  It surely is a standard synchronization
+> mechanism and it seems it might work here.
+
+You're right.  I should have thought of that.  Linus's original
+approach couldn't use a completion because during suspend it needed to
+make one task (the parent) wait for a bunch of others (the children).
+But if you iterate through the children by hand, that objection no
+longer applies.
+
+Alan Stern
+
