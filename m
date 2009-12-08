@@ -1,96 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932466AbZLHG4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZLHG5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932466AbZLHG4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 01:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZLHG4S
+	id S1753304AbZLHG5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 01:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZLHG5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 01:56:18 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48882 "EHLO mx2.suse.de"
+	Tue, 8 Dec 2009 01:57:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59253 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752983AbZLHG4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 01:56:17 -0500
-Message-ID: <4B1DF8D4.2010202@novell.com>
-Date: Tue, 08 Dec 2009 15:57:24 +0900
-From: Tejun Heo <teheo@novell.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1751618AbZLHG5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 01:57:37 -0500
+Date: Tue, 8 Dec 2009 07:57:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ulrich Drepper <drepper@redhat.com>, Timo Sirainen <tss@iki.fi>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v6] Added PR_SET_PROCTITLE_AREA option for prctl()
+Message-ID: <20091208065725.GA21340@elte.hu>
+References: <20091208121145.B58D.A69D9226@jp.fujitsu.com>
+ <20091208044605.GA32669@elte.hu>
+ <20091208135010.B5A8.A69D9226@jp.fujitsu.com>
+ <20091208053851.GA12383@elte.hu>
+ <3e8340490912072228m70368001v2487bd745ff208b3@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Beulich <JBeulich@novell.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-mm@kvack.org, linux-ia64@vger.kernel.org,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [PATCH] m68k: don't alias VMALLOC_END to vmalloc_end
-References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1DA06A.1050004@kernel.org>
-In-Reply-To: <4B1DA06A.1050004@kernel.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3e8340490912072228m70368001v2487bd745ff208b3@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On SUN3, m68k defines macro VMALLOC_END as unsigned long variable
-vmalloc_end which is adjusted from mmu_emu_init().  This becomes
-problematic if a local variables vmalloc_end is defined in some
-function (not very unlikely) and VMALLOC_END is used in the function -
-the function thinks its referencing the global VMALLOC_END value but
-would be referencing its own local vmalloc_end variable.
 
-There's no reason VMALLOC_END should be a macro.  Just define it as an
-unsigned long variable to avoid nasty surprises.
+* Bryan Donlan <bdonlan@gmail.com> wrote:
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>
----
-Okay, here it is.  Compile tested.  Geert, Roman, if you guys don't
-object, I'd like to push it with the rest of percpu changes to Linus.
-What do you think?
+> On Tue, Dec 8, 2009 at 12:38 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> >
+> >> > The feature looks useful, but the choice of a prctl as an API is strange
+> >> > - it limits us to the current task only - while the ability to set
+> >> > arguments for another task looks a more generic (and potentially more
+> >> > useful) solution.
+> >>
+> >> No. It's impossible.
+> >> /proc/{pid}/cmdline read user process's memory. iow, this prctl() don't
+> >> receive string, it receive virtual address itself. [...]
+> >
+> > it's not 'impossible' at all, you yourself mention ptrace:
+> 
+> If another process is going to use ptrace to inject the cmdline string 
+> into the victim's address space, it can also temporarily hijack a 
+> thread to run prctl() on its behalf...
 
-Thanks.
+That's exactly the point i made. There's no reason not to offer the API 
+i suggested as long as permissions are checked (as usual) - because 
+ptrace already allows this (and more).
 
- arch/m68k/include/asm/pgtable_mm.h |    3 +--
- arch/m68k/sun3/mmu_emu.c           |    8 ++++----
- 2 files changed, 5 insertions(+), 6 deletions(-)
+Thanks,
 
-diff --git a/arch/m68k/include/asm/pgtable_mm.h b/arch/m68k/include/asm/pgtable_mm.h
-index fe60e1a..0ea9f09 100644
---- a/arch/m68k/include/asm/pgtable_mm.h
-+++ b/arch/m68k/include/asm/pgtable_mm.h
-@@ -83,9 +83,8 @@
- #define VMALLOC_START (((unsigned long) high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
- #define VMALLOC_END KMAP_START
- #else
--extern unsigned long vmalloc_end;
- #define VMALLOC_START 0x0f800000
--#define VMALLOC_END vmalloc_end
-+extern unsigned long VMALLOC_END;
- #endif /* CONFIG_SUN3 */
- 
- /* zero page used for uninitialized stuff */
-diff --git a/arch/m68k/sun3/mmu_emu.c b/arch/m68k/sun3/mmu_emu.c
-index 3cd1939..25e2b14 100644
---- a/arch/m68k/sun3/mmu_emu.c
-+++ b/arch/m68k/sun3/mmu_emu.c
-@@ -45,8 +45,8 @@
- ** Globals
- */
- 
--unsigned long vmalloc_end;
--EXPORT_SYMBOL(vmalloc_end);
-+unsigned long VMALLOC_END;
-+EXPORT_SYMBOL(VMALLOC_END);
- 
- unsigned long pmeg_vaddr[PMEGS_NUM];
- unsigned char pmeg_alloc[PMEGS_NUM];
-@@ -172,8 +172,8 @@ void mmu_emu_init(unsigned long bootmem_end)
- #endif
- 			// the lowest mapping here is the end of our
- 			// vmalloc region
--			if(!vmalloc_end)
--				vmalloc_end = seg;
-+			if (!VMALLOC_END)
-+				VMALLOC_END = seg;
- 
- 			// mark the segmap alloc'd, and reserve any
- 			// of the first 0xbff pages the hardware is
+	Ingo
