@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbZLHMiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbZLHMs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754639AbZLHMiK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 07:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbZLHMiJ
+	id S1754648AbZLHMs6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 07:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZLHMsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 07:38:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44130 "EHLO mx1.redhat.com"
+	Tue, 8 Dec 2009 07:48:55 -0500
+Received: from mail1.radix.net ([207.192.128.31]:55285 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754447AbZLHMiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 07:38:08 -0500
-Date: Tue, 8 Dec 2009 13:37:05 +0100
-From: Veaceslav Falico <vfalico@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, Al Viro <viro@zeniv.linux.org.uk>,
-       Miloslav Trmac <mitr@redhat.com>, James Morris <jmorris@namei.org>,
-       Alan Cox <alan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Renaud Lottiaux <renaud.lottiaux@kerlabs.com>,
-       Louis Rilling <louis.rilling@kerlabs.com>,
-       David Howells <dhowells@redhat.com>,
-       Stanislaw Gruszka <sgruszka@redhat.com>
-Subject: Re: [PATCH v2 1/4] copy_signal cleanup: use zalloc and remove
-	initializations
-Message-ID: <20091208123705.GB28338@darkmag.usersys.redhat.com>
-References: <20091201221036.GA10052@darkmag.usersys.redhat.com> <20091202135759.GA791@redhat.com> <20091204142814.GH10052@darkmag.usersys.redhat.com> <20091207123615.fc841a83.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091207123615.fc841a83.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754498AbZLHMsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 07:48:54 -0500
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Andy Walls <awalls@radix.net>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+In-Reply-To: <4B1E394A.1090807@redhat.com>
+References: <BDRae8rZjFB@christoph>
+	 <1259024037.3871.36.camel@palomino.walls.org>
+	 <m3k4xe7dtz.fsf@intrepid.localdomain>  <4B0E8B32.3020509@redhat.com>
+	 <1259264614.1781.47.camel@localhost>
+	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
+	 <1260240142.3086.14.camel@palomino.walls.org> <4B1E394A.1090807@redhat.com>
+Content-Type: text/plain
+Date: Tue, 08 Dec 2009 07:46:52 -0500
+Message-Id: <1260276412.3094.17.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 12:36:15PM -0800, Andrew Morton wrote:
+On Tue, 2009-12-08 at 09:32 -0200, Mauro Carvalho Chehab wrote:
+> Andy Walls wrote:
+> > On Mon, 2009-12-07 at 13:19 -0500, Jarod Wilson wrote:
+
+> > So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+> > end of the month.
 > 
-> For some reason this patch is missing its headers and doesn't apply.
+> Good! Please, try to design the decoder as an independent module that gets
+> data from a kfifo and generate scancodes for the input API.
+
+Hmmm.  Let me see how the protoype turns out keeping that design
+objective in mind.  I've already got the current RC-5 and NEC decoding
+state machines in cx23885-input a bit layered, but they are taking
+advantage of specific events signaled by my v4l2_subdev implementation.
+
+Strictly speaking the state machines don't have to.  All of the remote
+protocols I have played with make framing pretty easy.
+
+
+
+> > I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+> > a common set of parameters, so I may be able to set up the decoders to
+> > handle decoding from two different remote types at once.  The HVR boards
+> > can ship with either type of remote AFAIK.
+> > 
+> > I wonder if I can flip the keytables on the fly or if I have to create
+> > two different input devices?
 > 
+> IMO, the better is, by default, to open just one input device per IR receiver.
+> >From what I understand from our discussions, if the user wants to filter IR
+> commands into several input interfaces, some userspace interface will be 
+> provided to allow the creation of other input interfaces for that purpose.
 
-I'm really sorry, but I don't really understand what is wrong with them
-and why they don't apply :(. Could you please help me with that?
+Hmm. That's not what I just thought I read from Dmitry....
 
->
-> I fixed that up and it still doesn't apply, because there are pending
-> changes in this area in -mm.
-> 
-> Normally I'd fix that up, but this one is looking a bit non-trivial, so
-> I'm afraid I'm going to ask you to redo the patches against
-> http://userweb.kernel.org/~akpm/mmotm/
->
+Oh well.  If I don'y get it done by 24 Dec, it'll be in the new year.
 
-Thank you, will redo the patchset against -mm shortly.
 
---
-Veaceslav 
+Regards,
+Andy
+
+
+
