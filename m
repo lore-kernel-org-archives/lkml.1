@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZLHSyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbZLHS4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZLHSyN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 13:54:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZLHSyM
+	id S1756215AbZLHS4F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 13:56:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbZLHS4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 13:54:12 -0500
-Received: from mail.perches.com ([173.55.12.10]:1080 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756155AbZLHSyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 13:54:11 -0500
-Subject: Re: [PATCH] MAINTAINERS: Update file patterns for WOLFSON
- MICROELECTRONICS PMIC DRIVERS
-From: Joe Perches <joe@perches.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091208185132.GA2590@opensource.wolfsonmicro.com>
-References: <1260298117.27677.61.camel@Joe-Laptop.home>
-	 <20091208185132.GA2590@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 10:54:17 -0800
-Message-ID: <1260298457.27677.63.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 13:56:03 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:44428 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756157AbZLHS4D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 13:56:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=CKWWoMsowQyAzueQibwiop7bsTdLgWSK/4jwieFCt3rfBzmZEnNH2TP8KMmE17o0R6
+         rA4l3TYyNURU2nsb6/nCBvPZvI4QuWCNfnISzsBGOoRyXjputKuyA1kIccASz/USmmdv
+         RgPyVW1GpFxB7CsUMvKML5yN/5aL0gIen7qrA=
+Message-ID: <4B1EA146.6040504@lwfinger.net>
+Date: Tue, 08 Dec 2009 12:56:06 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Build failure with 2.6.32-3931-g6035ccd
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 18:51 +0000, Mark Brown wrote:
-> On Tue, Dec 08, 2009 at 10:48:37AM -0800, Joe Perches wrote:
-> > One of the includes pointed to a non-existent directory
-> > Add Documentation/hwmon/wm8350
-> Why not Documentation/hwmon/wm831x?
+Building v2.6.32-3931-g6035ccd results in the following error:
 
-Beats me, it's your entry, add all the appropriate ones.
-Maybe:
+net/sctp/sysctl.c:251: error: unknown field ‘strategy’ specified in
+initializer
+net/sctp/sysctl.c:251: error: ‘sysctl_intvec’ undeclared here (not in
+a function)
 
-F:	Documentation/hwmon/wm8*
+The faulty commit is:
 
+===============================
+commit d7fc02c7bae7b1cf69269992cf880a43a350cdaa
+Merge: ee1262d 28b4d5c
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Tue Dec 8 07:55:01 2009 -0800
+
+-- snip --
+      ...
+
+    Fix up conflicts due to sysctl cleanups (dead sysctl_check code and
+    CTL_UNNUMBERED removed) in
+        kernel/sysctl_check.c
+        net/ipv4/sysctl_net_ipv4.c
+        net/ipv6/addrconf.c
+        net/sctp/sysctl.c
+===========================
+
+The error comes from the "Fix up conflicts due to sysctl cleanups".
+
+If you need my .config, I will be happy to post it.
+
+Larry
 
