@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbZLHPAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZLHO5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbZLHPAM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZLHPAL
+	id S1755837AbZLHO5d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:57:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbZLHO5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:00:11 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:47257 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754829AbZLHPAK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:00:10 -0500
-Date: Tue, 8 Dec 2009 09:54:35 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Michal Marek <mmarek@suse.cz>, reinette chatre <reinette.chatre@intel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Miller <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: net/kbuild trees build failure
-Message-ID: <20091208145435.GE15172@tuxdriver.com>
-References: <20091207200317.57820f0a.sfr@canb.auug.org.au> <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz> <20091207160903.GB18939@tuxdriver.com> <1260209537.4653.778.camel@rc-desk> <4B1D76B1.6070601@suse.cz> <20091207222853.GE18939@tuxdriver.com> <20091208053819.GA4604@merkur.ravnborg.org>
+	Tue, 8 Dec 2009 09:57:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36501 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755449AbZLHO5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:57:31 -0500
+Message-ID: <4B1E6935.207@redhat.com>
+Date: Tue, 08 Dec 2009 12:56:53 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091208053819.GA4604@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Krzysztof Halasa <khc@pm.waw.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR 	system?
+References: <20091204220708.GD25669@core.coreip.homeip.net>	 <20091206065512.GA14651@core.coreip.homeip.net>	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>	 <m3skbn6dv1.fsf@intrepid.localdomain>	 <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>	 <4B1D934E.7030103@redhat.com>	 <9e4733910912071628x3f3eba82r4c964982f9d8c5a4@mail.gmail.com>	 <4B1E35D6.6000602@redhat.com> <9e4733910912080534m1fe8c5bakb9219c6a55f0bcaa@mail.gmail.com>
+In-Reply-To: <9e4733910912080534m1fe8c5bakb9219c6a55f0bcaa@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 06:38:19AM +0100, Sam Ravnborg wrote:
-> On Mon, Dec 07, 2009 at 05:28:53PM -0500, John W. Linville wrote:
-> > On Mon, Dec 07, 2009 at 10:42:09PM +0100, Michal Marek wrote:
-> > > reinette chatre napsal(a):
-> > 
-> > > > Right - could we please use the solution that works at compile time? I
-> > > > used UTS_RELEASE after learning about its use in init/version.c, would
-> > > > that not make it an approved solution?
-> > > 
-> > > It seems there is some misunderstanding.
-> > 
-> > Alright, if Stephen's fix is acceptable then your suggestion is fine.
-> > Sam seemed to suggest that Stephen's fix was a stop-gap.
+Jon Smirl wrote:
+> On Tue, Dec 8, 2009 at 6:17 AM, Mauro Carvalho Chehab
+> <mchehab@redhat.com> wrote:
+>> Jon Smirl wrote:
+>>> On Mon, Dec 7, 2009 at 6:44 PM, Mauro Carvalho Chehab
+>>> <mchehab@redhat.com> wrote:
+>>>>> Where is the documentation for the protocol?
+>>>> I'm not sure what you're meaning here. I've started a doc about IR at the media
+>>> What is the format of the pulse stream data coming out of the lirc device?
+>> AFAIK, it is at:
+>>        http://www.lirc.org/html/index.html
+>>
+>> It would be nice to to add it to DocBook after integrating the API in kernel.
+>>
 > 
-> The need to use utsrelease seems very prominent in external drivers.
-> But a quick grep turned up only a single staging driver in-tree that
-> include utsrelease.
-> So whatever problem this driver solves using utsrelease it is not shared
-> with the rest of the in-tree drivers.
+> The point of those design review questions was to illustrate that the
+> existing LIRC system is only partially designed. 
+
+Ah, ok.
+
+> Subsystems need to be
+> fully designed before they get merged.
+
+True.
+ 
+> For example 36-40K and 56K IR signals are both in use. It is a simple
+> matter to design a receiver (or buy two receivers)  that would support
+> both these frequencies. But the current LIRC model only supports  a
+> single IR receiver. Adjusting it to support two receivers is going to
+> break the ABI.
 > 
-> So no - it is not a stop-gap. It is more a "is it really needed?".
+> My choice would be to just tell the person with the 56K remote to just
+> buy a new 38K remote, but other people are against that choice. That
+> forces us into designing a system that can handle multiple receivers.
+> There is a parallel problem with baseband encoded IR signals.
+> 
+> We need to think about all of these use cases before designing the
+> ABI.  Only after we think we have a good ABI design should code start
+> being merged. Of course we may make mistakes and have to fix the ABI,
+> but there is nothing to be gained by merging the existing ABI if we
+> already know it has problems.
 
-What problem are you trying to solve by eliminating it?
+I have here machines with 3 or 4 IR receivers (well, in a matter of fact,
+I don't use all of them at the same time). Nothing stops someone to
+use all IR receivers at the same. 
 
-The iwlwifi team was trying to eliminate the nearly-useless version
-number currently used in MODULE_VERSION.  As I said, I would prefer
-to simply eliminate the MODULE_VERSION clause.  But the iwlwifi
-team likes having something there, and UTS_RELEASE seems at least as
-informative as what they had before.
+I've seen some interesting applications developed for students, where just
+one computer running Linux is splitted into 4 different consoles. Nothing
+stops that, on such usages, you may have 4 different IR transceivers working
+at the same time.
 
-So, the options are a) leave the useless version string as-is; b)
-require the version string to get bumped on every update; c) use
-UTS_RELEASE as a version string; or d) forcibly remove MODULE_VERSION
-from the iwlwifi drivers.  Which would you advocate?
+In order to keep supporting the in-kernel drivers, we should create one lirc
+device per each IR transceiver.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Cheers,
+Mauro.
+
