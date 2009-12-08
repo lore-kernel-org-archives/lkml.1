@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZLHJ0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZLHJbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbZLHJ0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 04:26:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbZLHJ0u
+	id S1752600AbZLHJbi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 04:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZLHJbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 04:26:50 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57738
+	Tue, 8 Dec 2009 04:31:37 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:58971
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbZLHJ0g (ORCPT
+	with ESMTP id S1751637AbZLHJbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 04:26:36 -0500
+	Tue, 8 Dec 2009 04:31:36 -0500
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] Replace kernel/timeconst.pl with kernel/timeconst.sh
-Date: Tue, 8 Dec 2009 03:19:30 -0600
+Subject: [PATCH 2/3] Remove perl from make headers_install
+Date: Tue, 8 Dec 2009 03:21:15 -0600
 User-Agent: KMail/1.11.2 (Linux/2.6.28-16-generic; KDE/4.2.2; x86_64; ; )
 References: <200912080317.08254.rob@landley.net>
 In-Reply-To: <200912080317.08254.rob@landley.net>
@@ -23,571 +23,146 @@ Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200912080319.30679.rob@landley.net>
+Message-Id: <200912080321.16063.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rob Landley <rob@landley.net>
 
-Replace kernel/timeconst.pl with kernel/timeconst.sh. The new shell script
-is much simpler, about 1/4 the size, and runs on Red Hat 9 from 2003.
+Remove perl from make headers_install by replacing a perl script (doing
+a simple regex search and replace) with a smaller and faster shell script
+implementation.  The new shell script is a single for loop calling sed and
+piping its output through unifdef to produce the target file.
 
 Signed-off-by: Rob Landley <rob@landley.net>
---
+---
 
-kernel/Makefile | 4
-kernel/timeconst.pl | 378 ------------------------------------------
-kernel/timeconst.sh | 91 ++++++++++
-3 files changed, 93 insertions(+), 380 deletions(-)
+ scripts/Makefile.headersinst |    6 ++--
+ scripts/headers_install.pl   |   49 ---------------------------------
+ scripts/headers_install.sh   |   39 ++++++++++++++++++++++++++
+ 3 files changed, 42 insertions(+), 52 deletions(-)
 
-diff -ruN linux-2.6.30/kernel/Makefile linux-2.6.30.new/kernel/Makefile
---- linux-2.6.30/kernel/Makefile	2009-06-09 22:05:27.000000000 -0500
-+++ linux-2.6.30.new/kernel/Makefile	2009-06-22 14:29:16.000000000 -0500
-@@ -123,7 +123,7 @@
- $(obj)/time.o: $(obj)/timeconst.h
- 
- quiet_cmd_timeconst  = TIMEC   $@
--      cmd_timeconst  = $(PERL) $< $(CONFIG_HZ) > $@
-+      cmd_timeconst  = $(CONFIG_SHELL) $< $(CONFIG_HZ) $@
- targets += timeconst.h
--$(obj)/timeconst.h: $(src)/timeconst.pl FORCE
-+$(obj)/timeconst.h: $(src)/timeconst.sh FORCE
- 	$(call if_changed,timeconst)
-diff -ruN linux-2.6.30/kernel/timeconst.pl linux-2.6.30.new/kernel/timeconst.pl
---- linux-2.6.30/kernel/timeconst.pl	2009-06-09 22:05:27.000000000 -0500
-+++ linux-2.6.30.new/kernel/timeconst.pl	1969-12-31 18:00:00.000000000 -0600
-@@ -1,378 +0,0 @@
--#!/usr/bin/perl
--# -----------------------------------------------------------------------
+diff -ruN linux-2.6.30.old/scripts/headers_install.pl linux-2.6.30/scripts/headers_install.pl
+--- linux-2.6.30.old/scripts/headers_install.pl	2009-06-09 22:05:27.000000000 -0500
++++ linux-2.6.30/scripts/headers_install.pl	1969-12-31 18:00:00.000000000 -0600
+@@ -1,49 +0,0 @@
+-#!/usr/bin/perl -w
 -#
--#   Copyright 2007-2008 rPath, Inc. - All Rights Reserved
+-# headers_install prepare the listed header files for use in
+-# user space and copy the files to their destination.
 -#
--#   This file is part of the Linux kernel, and is made available under
--#   the terms of the GNU General Public License version 2 or (at your
--#   option) any later version; incorporated herein by reference.
+-# Usage: headers_install.pl readdir installdir arch [files...]
+-# readdir:    dir to open files
+-# installdir: dir to install the files
+-# arch:       current architecture
+-#             arch is used to force a reinstallation when the arch
+-#             changes because kbuild then detect a command line change.
+-# files:      list of files to check
 -#
--# -----------------------------------------------------------------------
--#
+-# Step in preparation for users space:
+-# 1) Drop all use of compiler.h definitions
+-# 2) Drop include of compiler.h
+-# 3) Drop all sections defined out by __KERNEL__ (using unifdef)
 -
--#
--# Usage: timeconst.pl HZ > timeconst.h
--#
+-use strict;
 -
--# Precomputed values for systems without Math::BigInt
--# Generated by:
--# timeconst.pl --can 24 32 48 64 100 122 128 200 250 256 300 512 1000 1024 1200
--%canned_values = (
--	24 => [
--		'0xa6aaaaab','0x2aaaaaa',26,
--		125,3,
--		'0xc49ba5e4','0x1fbe76c8b4',37,
--		3,125,
--		'0xa2c2aaab','0xaaaa',16,
--		125000,3,
--		'0xc9539b89','0x7fffbce4217d',47,
--		3,125000,
--	], 32 => [
--		'0xfa000000','0x6000000',27,
--		125,4,
--		'0x83126e98','0xfdf3b645a',36,
--		4,125,
--		'0xf4240000','0x0',17,
--		31250,1,
--		'0x8637bd06','0x3fff79c842fa',46,
--		1,31250,
--	], 48 => [
--		'0xa6aaaaab','0x6aaaaaa',27,
--		125,6,
--		'0xc49ba5e4','0xfdf3b645a',36,
--		6,125,
--		'0xa2c2aaab','0x15555',17,
--		62500,3,
--		'0xc9539b89','0x3fffbce4217d',46,
--		3,62500,
--	], 64 => [
--		'0xfa000000','0xe000000',28,
--		125,8,
--		'0x83126e98','0x7ef9db22d',35,
--		8,125,
--		'0xf4240000','0x0',18,
--		15625,1,
--		'0x8637bd06','0x1fff79c842fa',45,
--		1,15625,
--	], 100 => [
--		'0xa0000000','0x0',28,
--		10,1,
--		'0xcccccccd','0x733333333',35,
--		1,10,
--		'0x9c400000','0x0',18,
--		10000,1,
--		'0xd1b71759','0x1fff2e48e8a7',45,
--		1,10000,
--	], 122 => [
--		'0x8325c53f','0xfbcda3a',28,
--		500,61,
--		'0xf9db22d1','0x7fbe76c8b',35,
--		61,500,
--		'0x8012e2a0','0x3ef36',18,
--		500000,61,
--		'0xffda4053','0x1ffffbce4217',45,
--		61,500000,
--	], 128 => [
--		'0xfa000000','0x1e000000',29,
--		125,16,
--		'0x83126e98','0x3f7ced916',34,
--		16,125,
--		'0xf4240000','0x40000',19,
--		15625,2,
--		'0x8637bd06','0xfffbce4217d',44,
--		2,15625,
--	], 200 => [
--		'0xa0000000','0x0',29,
--		5,1,
--		'0xcccccccd','0x333333333',34,
--		1,5,
--		'0x9c400000','0x0',19,
--		5000,1,
--		'0xd1b71759','0xfff2e48e8a7',44,
--		1,5000,
--	], 250 => [
--		'0x80000000','0x0',29,
--		4,1,
--		'0x80000000','0x180000000',33,
--		1,4,
--		'0xfa000000','0x0',20,
--		4000,1,
--		'0x83126e98','0x7ff7ced9168',43,
--		1,4000,
--	], 256 => [
--		'0xfa000000','0x3e000000',30,
--		125,32,
--		'0x83126e98','0x1fbe76c8b',33,
--		32,125,
--		'0xf4240000','0xc0000',20,
--		15625,4,
--		'0x8637bd06','0x7ffde7210be',43,
--		4,15625,
--	], 300 => [
--		'0xd5555556','0x2aaaaaaa',30,
--		10,3,
--		'0x9999999a','0x1cccccccc',33,
--		3,10,
--		'0xd0555556','0xaaaaa',20,
--		10000,3,
--		'0x9d495183','0x7ffcb923a29',43,
--		3,10000,
--	], 512 => [
--		'0xfa000000','0x7e000000',31,
--		125,64,
--		'0x83126e98','0xfdf3b645',32,
--		64,125,
--		'0xf4240000','0x1c0000',21,
--		15625,8,
--		'0x8637bd06','0x3ffef39085f',42,
--		8,15625,
--	], 1000 => [
--		'0x80000000','0x0',31,
--		1,1,
--		'0x80000000','0x0',31,
--		1,1,
--		'0xfa000000','0x0',22,
--		1000,1,
--		'0x83126e98','0x1ff7ced9168',41,
--		1,1000,
--	], 1024 => [
--		'0xfa000000','0xfe000000',32,
--		125,128,
--		'0x83126e98','0x7ef9db22',31,
--		128,125,
--		'0xf4240000','0x3c0000',22,
--		15625,16,
--		'0x8637bd06','0x1fff79c842f',41,
--		16,15625,
--	], 1200 => [
--		'0xd5555556','0xd5555555',32,
--		5,6,
--		'0x9999999a','0x66666666',31,
--		6,5,
--		'0xd0555556','0x2aaaaa',22,
--		2500,3,
--		'0x9d495183','0x1ffcb923a29',41,
--		3,2500,
--	]
--);
+-my ($readdir, $installdir, $arch, @files) = @ARGV;
 -
--$has_bigint = eval 'use Math::BigInt qw(bgcd); 1;';
+-my $unifdef = "scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__";
 -
--sub bint($)
--{
--	my($x) = @_;
--	return Math::BigInt->new($x);
--}
--
--#
--# Constants for division by reciprocal multiplication.
--# (bits, numerator, denominator)
--#
--sub fmul($$$)
--{
--	my ($b,$n,$d) = @_;
--
--	$n = bint($n);
--	$d = bint($d);
--
--	return scalar (($n << $b)+$d-bint(1))/$d;
--}
--
--sub fadj($$$)
--{
--	my($b,$n,$d) = @_;
--
--	$n = bint($n);
--	$d = bint($d);
--
--	$d = $d/bgcd($n, $d);
--	return scalar (($d-bint(1)) << $b)/$d;
--}
--
--sub fmuls($$$) {
--	my($b,$n,$d) = @_;
--	my($s,$m);
--	my($thres) = bint(1) << ($b-1);
--
--	$n = bint($n);
--	$d = bint($d);
--
--	for ($s = 0; 1; $s++) {
--		$m = fmul($s,$n,$d);
--		return $s if ($m >= $thres);
+-foreach my $file (@files) {
+-	local *INFILE;
+-	local *OUTFILE;
+-	my $tmpfile = "$installdir/$file.tmp";
+-	open(INFILE, "<$readdir/$file")
+-		or die "$readdir/$file: $!\n";
+-	open(OUTFILE, ">$tmpfile") or die "$tmpfile: $!\n";
+-	while (my $line = <INFILE>) {
+-		$line =~ s/([\s(])__user\s/$1/g;
+-		$line =~ s/([\s(])__force\s/$1/g;
+-		$line =~ s/([\s(])__iomem\s/$1/g;
+-		$line =~ s/\s__attribute_const__\s/ /g;
+-		$line =~ s/\s__attribute_const__$//g;
+-		$line =~ s/^#include <linux\/compiler.h>//;
+-		$line =~ s/(^|\s)(inline)\b/$1__$2__/g;
+-		$line =~ s/(^|\s)(asm)\b(\s|[(]|$)/$1__$2__$3/g;
+-		$line =~ s/(^|\s|[(])(volatile)\b(\s|[(]|$)/$1__$2__$3/g;
+-		printf OUTFILE "%s", $line;
 -	}
--	return 0;
--}
--
--# Generate a hex value if the result fits in 64 bits;
--# otherwise skip.
--sub bignum_hex($) {
--	my($x) = @_;
--	my $s = $x->as_hex();
--
--	return (length($s) > 18) ? undef : $s;
--}
--
--# Provides mul, adj, and shr factors for a specific
--# (bit, time, hz) combination
--sub muladj($$$) {
--	my($b, $t, $hz) = @_;
--	my $s = fmuls($b, $t, $hz);
--	my $m = fmul($s, $t, $hz);
--	my $a = fadj($s, $t, $hz);
--	return (bignum_hex($m), bignum_hex($a), $s);
--}
--
--# Provides numerator, denominator values
--sub numden($$) {
--	my($n, $d) = @_;
--	my $g = bgcd($n, $d);
--	return ($n/$g, $d/$g);
--}
--
--# All values for a specific (time, hz) combo
--sub conversions($$) {
--	my ($t, $hz) = @_;
--	my @val = ();
--
--	# HZ_TO_xx
--	push(@val, muladj(32, $t, $hz));
--	push(@val, numden($t, $hz));
--
--	# xx_TO_HZ
--	push(@val, muladj(32, $hz, $t));
--	push(@val, numden($hz, $t));
--
--	return @val;
--}
--
--sub compute_values($) {
--	my($hz) = @_;
--	my @val = ();
--	my $s, $m, $a, $g;
--
--	if (!$has_bigint) {
--		die "$0: HZ == $hz not canned and ".
--		    "Math::BigInt not available\n";
--	}
--
--	# MSEC conversions
--	push(@val, conversions(1000, $hz));
--
--	# USEC conversions
--	push(@val, conversions(1000000, $hz));
--
--	return @val;
--}
--
--sub outputval($$)
--{
--	my($name, $val) = @_;
--	my $csuf;
--
--	if (defined($val)) {
--	    if ($name !~ /SHR/) {
--		$val = "U64_C($val)";
--	    }
--	    printf "#define %-23s %s\n", $name.$csuf, $val.$csuf;
--	}
--}
--
--sub output($@)
--{
--	my($hz, @val) = @_;
--	my $pfx, $bit, $suf, $s, $m, $a;
--
--	print "/* Automatically generated by kernel/timeconst.pl */\n";
--	print "/* Conversion constants for HZ == $hz */\n";
--	print "\n";
--	print "#ifndef KERNEL_TIMECONST_H\n";
--	print "#define KERNEL_TIMECONST_H\n";
--	print "\n";
--
--	print "#include <linux/param.h>\n";
--	print "#include <linux/types.h>\n";
--
--	print "\n";
--	print "#if HZ != $hz\n";
--	print "#error \"kernel/timeconst.h has the wrong HZ value!\"\n";
--	print "#endif\n";
--	print "\n";
--
--	foreach $pfx ('HZ_TO_MSEC','MSEC_TO_HZ',
--		      'HZ_TO_USEC','USEC_TO_HZ') {
--		foreach $bit (32) {
--			foreach $suf ('MUL', 'ADJ', 'SHR') {
--				outputval("${pfx}_$suf$bit", shift(@val));
--			}
--		}
--		foreach $suf ('NUM', 'DEN') {
--			outputval("${pfx}_$suf", shift(@val));
--		}
--	}
--
--	print "\n";
--	print "#endif /* KERNEL_TIMECONST_H */\n";
--}
--
--# Pretty-print Perl values
--sub perlvals(@) {
--	my $v;
--	my @l = ();
--
--	foreach $v (@_) {
--		if (!defined($v)) {
--			push(@l, 'undef');
--		} elsif ($v =~ /^0x/) {
--			push(@l, "\'".$v."\'");
--		} else {
--			push(@l, $v.'');
--		}
--	}
--	return join(',', @l);
--}
--
--($hz) = @ARGV;
--
--# Use this to generate the %canned_values structure
--if ($hz eq '--can') {
--	shift(@ARGV);
--	@hzlist = sort {$a <=> $b} (@ARGV);
--
--	print "# Precomputed values for systems without Math::BigInt\n";
--	print "# Generated by:\n";
--	print "# timeconst.pl --can ", join(' ', @hzlist), "\n";
--	print "\%canned_values = (\n";
--	my $pf = "\t";
--	foreach $hz (@hzlist) {
--		my @values = compute_values($hz);
--		print "$pf$hz => [\n";
--		while (scalar(@values)) {
--			my $bit;
--			foreach $bit (32) {
--				my $m = shift(@values);
--				my $a = shift(@values);
--				my $s = shift(@values);
--				print "\t\t", perlvals($m,$a,$s), ",\n";
--			}
--			my $n = shift(@values);
--			my $d = shift(@values);
--			print "\t\t", perlvals($n,$d), ",\n";
--		}
--		print "\t]";
--		$pf = ', ';
--	}
--	print "\n);\n";
--} else {
--	$hz += 0;			# Force to number
--	if ($hz < 1) {
--		die "Usage: $0 HZ\n";
--	}
--
--	@val = @{$canned_values{$hz}};
--	if (!defined(@val)) {
--		@val = compute_values($hz);
--	}
--	output($hz, @val);
+-	close OUTFILE;
+-	close INFILE;
+-	system $unifdef . " $tmpfile > $installdir/$file";
+-	unlink $tmpfile;
 -}
 -exit 0;
-diff -ruN linux-2.6.30/kernel/timeconst.sh linux-2.6.30.new/kernel/timeconst.sh
---- linux-2.6.30/kernel/timeconst.sh	1969-12-31 18:00:00.000000000 -0600
-+++ linux-2.6.30.new/kernel/timeconst.sh	2009-06-22 14:29:16.000000000 -0500
-@@ -0,0 +1,148 @@
+diff -ruN linux-2.6.30.old/scripts/headers_install.sh linux-2.6.30/scripts/headers_install.sh
+--- linux-2.6.30.old/scripts/headers_install.sh	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.30/scripts/headers_install.sh	2009-06-22 16:21:23.000000000 -0500
+@@ -0,0 +1,39 @@
 +#!/bin/sh
 +
-+if [ $# -ne 2 ]
++if [ $# -lt 2 ]
 +then
-+	echo "Usage: timeconst.sh HZ FILENAME"
++	echo "Usage: headers_install.sh INDIR OUTDIR [FILES...]
 +	echo
-+	echo "Generate a header file with constants for coverting between"
-+	echo "decimal HZ timer ticks and milisecond or microsecond delays."
++	echo "Prepares kernel header files for use by user space, by removing"
++	echo "all compiler.h definitions and #includes, removing any"
++	echo "#ifdef __KERNEL__ sections, and putting __underscores__ around"
++	echo "asm/inline/volatile keywords."
 +	echo
++	echo "INDIR:  directory to read each kernel header FILE from."
++	echo "OUTDIR: directory to write each userspace header FILE to."
++	echo "FILES:  list of header files to operate on."
++
 +	exit 1
 +fi
 +
-+HZ=$1
++# Grab arguments
++
++INDIR="$1"
 +shift
-+FILENAME=$1
++OUTDIR="$1"
++shift
 +
-+# Sanity test: even the shell in Red Hat 9 (circa 2003) supported 64 bit math.
++# Iterate through files listed on command line
 +
-+if [ $((1 << 32)) -lt 0 ]
-+then
-+	echo "timeconst.sh needs a shell with 64 bit math, such as bash,"
-+	echo "busybox ash, or dash running on a 64 bit host."
-+	exit 1
-+fi
-+
-+# If this script exits for any reason before this trap is removed,
-+# delete the output file so a partial file won't confuse the build.
-+
-+trap "rm $FILENAME" EXIT
-+
-+# Output start of header file
-+
-+cat > $FILENAME << EOF || exit 1
-+/* Automatically generated by kernel/timeconst.sh */
-+/* Conversion constants for HZ == $HZ */
-+
-+#ifndef __KERNEL_TIMECONST_H
-+#define __KERNEL_TIMECONST_H
-+
-+#include <linux/param.h>
-+#include <linux/types.h>
-+
-+#if HZ != $HZ
-+#error "kernel/timeconst.h has the wrong HZ value!"
-+#endif
-+
-+EOF
-+
-+# For both Milliseconds and Microseconds
-+
-+cat << EOF |
-+MSEC 1000
-+USEC 1000000
-+EOF
-+while read NAME PERIOD
++for i in "$@"
 +do
-+	# Find greatest common denominator (using Euclid's algorithm)
-+
-+	A=$HZ
-+	B=$PERIOD
-+
-+	while [ $B -ne 0 ]
-+	do
-+		C=$(( $A % $B ))
-+		A=$B
-+		B=$C
-+	done
-+
-+	GCD=$A
-+
-+	# Do this for each direction (HZ_TO_PERIOD and PERIOD_TO_HZ)
-+
-+	for DIRECTION in 0 1
-+	do
-+		if [ $DIRECTION -eq 0 ]
-+		then
-+			CONVERT="HZ_TO_${NAME}"
-+			FROM=$HZ
-+			TO=$PERIOD
-+		else
-+			CONVERT="${NAME}_TO_HZ"
-+			FROM=$PERIOD
-+			TO=$HZ
-+		fi
-+
-+		# Calculate 32 significant bits of MUL32 data.
-+
-+		SHIFT=0
-+		while true
-+		do
-+			# This can't overflow 64 bit math.  Pathological case
-+			# (TO=1, FROM=1000000) uses around 32+20=52 bits.
-+
-+			MUL32=$(( ( ( $TO << $SHIFT ) + $FROM - 1 ) / $FROM ))
-+
-+			# Keep increasing $SHIFT until we've got 32 bits.
-+
-+			[ $MUL32 -gt $(( 1 << 31 )) ] && break
-+			SHIFT=$(( $SHIFT + 1 ))
-+		done
-+		MUL32=$( printf %x $MUL32 )
-+
-+		# ADJ32 is just (((FROM/GCD)-1)<<SHIFT)/(FROM/GCD) but this
-+		# can overflow 64 bit math (examples, HZ=24 or HZ=122).
-+		# Pathological case could use 32+20+20=72 bits.  (And this is
-+		# the pathological case because a larger $HZ results in a
-+		# smaller $SHIFT, so even insane HZ>USEC cases should be ok.)
-+
-+		# To get around this, we chop the bottom 32 bits off the
-+		# calculation and then reassemble it to avoid overflow:
-+		# 32+64=96, which is > 72.
-+
-+		ADJ32=$(( $FROM / $GCD ))
-+		if [ $SHIFT -gt 32 ]
-+		then
-+			UPPER=$(( ( $ADJ32 - 1 ) << ( $SHIFT - 32 ) ))
-+			LOWER=$(( ( $UPPER % $ADJ32 ) << 32 ))
-+			ADJ32=$(( ( ( $UPPER / $ADJ32 ) << 32 ) + ( $LOWER / $ADJ32 )))
-+		else
-+			ADJ32=$(( ( ( $ADJ32 - 1 ) << $SHIFT) / $ADJ32 ))
-+		fi
-+		ADJ32=$( printf %x $ADJ32 )
-+
-+		NUM=$(( $TO / $GCD ))
-+		DEN=$(( $FROM / $GCD ))
-+
-+		# Output next chunk of header data to file
-+
-+		(
-+			echo "#define ${CONVERT}_MUL32	U64_C(0x$MUL32)" &&
-+			echo "#define ${CONVERT}_ADJ32	U64_C(0x$ADJ32)" &&
-+			echo "#define ${CONVERT}_SHR32	$SHIFT" &&
-+			echo "#define ${CONVERT}_NUM		U64_C($NUM)" &&
-+			echo "#define ${CONVERT}_DEN		U64_C($DEN)"
-+		) >> $FILENAME || exit 1
-+	done
++	sed -r \
++		-e 's/([ \t(])(__user|__force|__iomem)[ \t]/\1/g' \
++		-e 's/__attribute_const__([ \t]|$)/\1/g' \
++		-e 's@^#include <linux/compiler.h>@@' \
++		-e 's/(^|[ \t])(inline|asm|volatile)([ \t(]|$)/\1__\2__\3/g' \
++		"$INDIR/$i" |
++	scripts/unifdef -U__KERNEL__ -D__EXPORTED_HEADERS__ - > "$OUTDIR/$i"
 +done
 +
-+(
-+	echo
-+	echo "#endif /* __KERNEL_TIMECHONST_H */"
-+) >> $FILENAME || exit 1
-+
-+# Don't rm $FILENAME on exit anymore.
-+
-+trap "" EXIT
-+
 +exit 0
+diff -ruN linux-2.6.30.old/scripts/Makefile.headersinst linux-2.6.30/scripts/Makefile.headersinst
+--- linux-2.6.30.old/scripts/Makefile.headersinst	2009-06-09 22:05:27.000000000 -0500
++++ linux-2.6.30/scripts/Makefile.headersinst	2009-06-22 16:21:23.000000000 -0500
+@@ -46,8 +46,8 @@
+ quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
+                             file$(if $(word 2, $(all-files)),s))
+       cmd_install = \
+-        $(PERL) $< $(srctree)/$(obj) $(install) $(SRCARCH) $(header-y); \
+-        $(PERL) $< $(objtree)/$(obj) $(install) $(SRCARCH) $(objhdr-y); \
++      $(CONFIG_SHELL) $< $(srctree)/$(obj) $(install) $(header-y); \
++      $(CONFIG_SHELL) $< $(objtree)/$(obj) $(install) $(objhdr-y); \
+         touch $@
+ 
+ quiet_cmd_remove = REMOVE  $(unwanted)
+@@ -70,7 +70,7 @@
+ 	@:
+ 
+ targets += $(install-file)
+-$(install-file): scripts/headers_install.pl $(input-files) FORCE
++$(install-file): scripts/headers_install.sh $(input-files) FORCE
+ 	$(if $(unwanted),$(call cmd,remove),)
+ 	$(if $(wildcard $(dir $@)),,$(shell mkdir -p $(dir $@)))
+ 	$(call if_changed,install)
+
 
 -- 
 Latency is more important than throughput. It's that simple. - Linus Torvalds
