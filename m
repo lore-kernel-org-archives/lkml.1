@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZLHQXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932474AbZLHQWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932545AbZLHQXL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 11:23:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033AbZLHQXK
+	id S932474AbZLHQWc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 11:22:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932260AbZLHQWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 11:23:10 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:38894 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756007AbZLHQXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 11:23:08 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Andy Walls <awalls@radix.net>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph> <4B0E8B32.3020509@redhat.com>
-	<1259264614.1781.47.camel@localhost>
-	<6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
-	<1260240142.3086.14.camel@palomino.walls.org>
-	<20091208042210.GA11147@core.coreip.homeip.net>
-	<1260275743.3094.6.camel@palomino.walls.org>
-	<4B1E54FF.8060404@redhat.com>
-	<9e4733910912080547j75c2c885o29664470ff5e2c6a@mail.gmail.com>
-	<4B1E5BDF.7010202@redhat.com>
-	<9e4733910912080619t36089c9bg5e54114844b9694a@mail.gmail.com>
-	<4B1E640B.6030705@redhat.com>
-Date: Tue, 08 Dec 2009 17:22:49 +0100
-In-Reply-To: <4B1E640B.6030705@redhat.com> (Mauro Carvalho Chehab's message of
-	"Tue, 08 Dec 2009 12:34:51 -0200")
-Message-ID: <87ocm9wi3q.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Tue, 8 Dec 2009 11:22:31 -0500
+Received: from mx03.syneticon.net ([78.111.66.105]:38337 "EHLO
+	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932119AbZLHQWa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 11:22:30 -0500
+Message-ID: <4B1E7DA4.8090801@wpkg.org>
+Date: Tue, 08 Dec 2009 17:24:04 +0100
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.32: WARNING: at fs/notify/inotify/inotify_user.c:398 
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+I got this warning when updating packages on a system using ext4 fs as / and btrfs as /home.
 
-> Jon Smirl wrote:
->
->> This model is complicated by the fact that some remotes that look
->> like multi-function remotes aren't really multifunction. The remote
->> bundled with the MS MCE receiver is one. That remote is a single
->> function device even though it has function buttons for TV, Music,
->> Pictures, etc.
->
-> An unsolved question on my mind is how should we map such IR's? Should
-> we provide a way for them to emulate a multifunction IR (for example,
-> after pressing TV key, subsequent keystrokes would be directed to the
-> TV evdev device?), or should we let this up to some userspace app to
-> handle this case?
+Not sure exactly how it happened, or how to reproduce it.
 
-This case feels similar to that of Caps Lock, Num Lock and Scrool Lock,
-but I don't know if that scheme could be applied here.
+
+------------[ cut here ]------------
+WARNING: at fs/notify/inotify/inotify_user.c:398 inotify_remove_from_idr+0x81/0x90()
+Hardware name: SCENIC EDITION
+Modules linked in: loop af_packet 8021q garp stp ipv6 snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_pcm snd_timer snd_mixer_oss snd sr_mod soundcore tulip shpchp snd_page_alloc sg pci_hotplug binfmt_misc btrfs zlib_deflate crc32c libcrc32c cpufreq_ondemand cpufreq_conservative cpufreq_powersave p4_clockmod freq_table speedstep_lib usbhid hid fuse pcspkr floppy ppdev parport_pc parport container ehci_hcd ohci_hcd evdev thermal processor button usbcore ide_generic ata_generic ide_pci_generic pata_acpi sis5513 ide_gd_mod ide_core pata_sis libata sd_mod scsi_mod crc_t10dif ext4 jbd2 crc16
+Pid: 1978, comm: kded4 Not tainted 2.6.32-1mdv #1
+Call Trace:
+ [<c01450f2>] warn_slowpath_common+0x72/0xa0
+ [<c0230d41>] ? inotify_remove_from_idr+0x81/0x90
+ [<c0230d41>] ? inotify_remove_from_idr+0x81/0x90
+ [<c014513a>] warn_slowpath_null+0x1a/0x20
+ [<c0230d41>] inotify_remove_from_idr+0x81/0x90
+ [<c023127c>] inotify_ignored_and_remove_idr+0x8c/0xb0
+ [<c023007d>] inotify_freeing_mark+0xd/0x10
+ [<c022ead1>] fsnotify_destroy_mark_by_entry+0x101/0x140
+ [<c0230c5c>] sys_inotify_rm_watch+0x5c/0xa0
+ [<c0103ca3>] sysenter_do_call+0x12/0x28
+---[ end trace 7fe07e3e7e72d52d ]---
+
+
 -- 
-Regards,
-Feri.
+Tomasz Chmielewski
+http://wpkg.org
