@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966450AbZLHVxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966541AbZLHV4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966450AbZLHVxh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:53:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966381AbZLHVxc
+	id S966541AbZLHV4M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966530AbZLHV4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:53:32 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58023 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756293AbZLHVxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:53:31 -0500
-Subject: Re: [PATCH 1/5] Use msleep() instead of schedule_timeout
-From: James Bottomley <James.Bottomley@suse.de>
-To: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mikem@beardog.cce.hp.com, linux-scsi@vger.kernel.org,
-       smcameron@yahoo.com
-In-Reply-To: <20091208213812.23493.20587.stgit@beardog.cce.hp.com>
-References: <20091208213514.23493.86458.stgit@beardog.cce.hp.com>
-	 <20091208213812.23493.20587.stgit@beardog.cce.hp.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 15:53:29 -0600
-Message-Id: <1260309210.4147.46.camel@mulgrave.site>
+	Tue, 8 Dec 2009 16:56:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37407 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966532AbZLHV4E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 16:56:04 -0500
+Date: Tue, 8 Dec 2009 13:55:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Fulghum <paulkf@microgate.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] synclink_gt dropped transmit data bugfix
+Message-Id: <20091208135510.ffd75637.akpm@linux-foundation.org>
+In-Reply-To: <1260310010.3764.49.camel@x2.microgate.com>
+References: <1260310010.3764.49.camel@x2.microgate.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 15:38 -0600, Stephen M. Cameron wrote:
-> From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
-> 
-> Use msleep() instead of schedule_timeout
-> 
-> Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+On Tue, 08 Dec 2009 16:06:50 -0600
+Paul Fulghum <paulkf@microgate.com> wrote:
 
-This looks great.
+> +	/* check required buffer space */
+> +	bufs_needed = (size/DMABUFSIZE);
+> +	if (size % DMABUFSIZE)
+> +		++bufs_needed;
 
-However, to push it as part of SCSI I now need a from scratch patch to
-add to scsi-misc, please ...
+	bufs_needed = DIV_ROUND_UP(size, DMABUFSIZE);
 
-James
+?
 
 
+That unsent_tbufs() call looks like it might be expensive.
