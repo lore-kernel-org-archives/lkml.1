@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965773AbZLHSCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965766AbZLHSBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965773AbZLHSCW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 13:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936856AbZLHSCT
+	id S965766AbZLHSBY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 13:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965755AbZLHSBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 13:02:19 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45839 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936848AbZLHSCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 13:02:18 -0500
-Date: Tue, 8 Dec 2009 09:54:10 -0800
-From: Greg KH <gregkh@suse.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Anton Blanchard <anton@samba.org>
-Subject: Re: [080/119] sched: Fix boot crash by zalloc()ing most of the cpu
- masks
-Message-ID: <20091208175410.GA27061@suse.de>
-References: <20091206235936.208334321@mini.kroah.org>
- <20091207000654.821385285@mini.kroah.org>
- <200912081209.51984.rusty@rustcorp.com.au>
+	Tue, 8 Dec 2009 13:01:19 -0500
+Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:56240 "EHLO
+	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965752AbZLHSBS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 13:01:18 -0500
+Message-ID: <4B1E93E5.8090104@lougher.demon.co.uk>
+Date: Tue, 08 Dec 2009 17:59:01 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912081209.51984.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Peter Korsgaard <jacmet@sunsite.dk>
+CC: linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, phillip.lougher@gmail.com,
+       tim.bird@am.sony.com
+Subject: Re: [PATCH 0/9] Squashfs: Add support for LZMA compressed filesystems
+References: <E1NHYun-000287-Vq@dylan.lougher.demon.co.uk> <87tyw3p3vu.fsf@macbook.be.48ers.dk>
+In-Reply-To: <87tyw3p3vu.fsf@macbook.be.48ers.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 12:09:51PM +1030, Rusty Russell wrote:
-> On Mon, 7 Dec 2009 10:30:56 am Greg KH wrote:
-> > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > From: Rusty Russell <rusty@rustcorp.com.au>
-> > 
-> > commit 49557e620339cb134127b5bfbcfecc06b77d0232 upstream.
-> > 
-> > I got a boot crash when forcing cpumasks offstack on 32 bit,
-> > because find_new_ilb() returned 3 on my UP system (nohz.cpu_mask
-> > wasn't zeroed).
+Peter Korsgaard wrote:
+>>>>>> "root" == root  <root@lougher.demon.co.uk> writes:
 > 
-> Please also include "bdddd2963c0264c56f18043f6fa829d3c1d3d1c0"
-> (sched: Fix isolcpus boot option) from Linus' tree which fixes
-> a regression this introduces.
+>  root> Hi,
+>  root> The following patches add LZMA decompression support to Squashfs, using the
+>  root> in-kernel LZMA decompression library.
+> 
+>  root> The patches also add a decompression framework to Squashfs.
+>  root> This allows LZMA decompression to be added cleanly, and it allows
+>  root> additional decompressors to be easily added in the future.
+> 
+>  root> To enable the in-kernel LZMA decompression code to be used by Squashfs,
+>  root> there are two patches to the lzma code itself: one to make lzma available
+>  root> to non-init code, and one to make lzma reentrant.  These are obviously
+>  root> not restricted to Squashfs, but are needed by any non-init code that
+>  root> may wish to use lzma compression.
+> 
+> Nice, do you also have an mksquashfs with lzma support?
+> 
 
-Now queued up.
+Yes, in Squashfs CVS (http://sourceforge.net/projects/squashfs/develop).
+You'll need to edit the squashfs-tools Makefile to enable LZMA support.
+The comments in the Makefile should, hopefully, explain how to
+build LZMA support into Mksquashfs/Unsquashfs.
 
-thanks,
+Once built-in, LZMA support can be specified using the -comp lzma option, i.e.
 
-greg k-h
+mksquashfs dir dir.img -comp lzma
+
+Unsquashfs doesn't need any extra options, it automatically detects which
+compression has been used.
+
+You can tell which compression algorithms Mksquashfs/Unsquashfs support by
+just typing the command on its own (i.e. mksquashfs, or unsquashfs).  The
+(de-)compressors available are displayed at the end of the output.
+
+Phillip
+
+
+
+
+
+
