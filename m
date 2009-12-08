@@ -1,137 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZLHLcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZLHLdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbZLHLcA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 06:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZLHLb7
+	id S1754188AbZLHLdK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 06:33:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZLHLdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 06:31:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36050 "EHLO hera.kernel.org"
+	Tue, 8 Dec 2009 06:33:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15238 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753848AbZLHLb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 06:31:58 -0500
-Date: Tue, 8 Dec 2009 11:31:16 GMT
-From: tip-bot for Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, rusty@rustcorp.com.au,
-       peterz@infradead.org, fweisbec@gmail.com, akpm@linux-foundation.org,
-       tj@kernel.org, tglx@linutronix.de, sfr@canb.auug.org.au, mingo@elte.hu,
-       cl@linux-foundation.org
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, torvalds@linux-foundation.org,
-       peterz@infradead.org, fweisbec@gmail.com, akpm@linux-foundation.org,
-       tj@kernel.org, sfr@canb.auug.org.au, tglx@linutronix.de,
-       cl@linux-foundation.org, mingo@elte.hu
-In-Reply-To: <20091208182515.bb6dda4a.sfr@canb.auug.org.au>
-References: <20091208182515.bb6dda4a.sfr@canb.auug.org.au>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf: hw_breakpoints: Fix percpu namespace clash
-Message-ID: <tip-6ab8886326a1b9a3a8d164d8174e3c20703a03a2@git.kernel.org>
-Git-Commit-ID: 6ab8886326a1b9a3a8d164d8174e3c20703a03a2
-X-Mailer: tip-git-log-daemon
+	id S1753890AbZLHLdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 06:33:07 -0500
+Message-ID: <4B1E394A.1090807@redhat.com>
+Date: Tue, 08 Dec 2009 09:32:26 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Andy Walls <awalls@radix.net>
+CC: Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, dmitry.torokhov@gmail.com,
+       j@jannau.net, jarod@redhat.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph>	 <1259024037.3871.36.camel@palomino.walls.org>	 <m3k4xe7dtz.fsf@intrepid.localdomain>  <4B0E8B32.3020509@redhat.com>	 <1259264614.1781.47.camel@localhost>	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com> <1260240142.3086.14.camel@palomino.walls.org>
+In-Reply-To: <1260240142.3086.14.camel@palomino.walls.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6ab8886326a1b9a3a8d164d8174e3c20703a03a2
-Gitweb:     http://git.kernel.org/tip/6ab8886326a1b9a3a8d164d8174e3c20703a03a2
-Author:     Stephen Rothwell <sfr@canb.auug.org.au>
-AuthorDate: Tue, 8 Dec 2009 18:25:15 +1100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 8 Dec 2009 09:34:43 +0100
+Andy Walls wrote:
+> On Mon, 2009-12-07 at 13:19 -0500, Jarod Wilson wrote:
+>> On Nov 26, 2009, at 2:43 PM, Andy Walls wrote:
+>>
+>>> On Thu, 2009-11-26 at 12:05 -0200, Mauro Carvalho Chehab wrote:
+>>>> Krzysztof Halasa wrote:
+>>>>> Andy Walls <awalls@radix.net> writes:
+>>>>>
+>>>>>> I would also note that RC-6 Mode 6A, used by most MCE remotes, was
+>>>>>> developed by Philips, but Microsoft has some sort of licensing interest
+>>>>>> in it and it is almost surely encumbered somwhow:
+>>>>> I don't know about legal problems in some countries but from the
+>>>>> technical POV handling the protocol in the kernel is more efficient
+>>>>> or (/and) simpler.
+>>>> A software licensing from Microsoft won't apply to Linux kernel, so I'm
+>>>> assuming that you're referring to some patent that they could be filled
+>>>> about RC6 mode 6A.
+>>>>
+>>>> I don't know if is there any US patent pending about it (AFAIK, only US
+>>>> accepts software patents), but there are some prior-art for IR key
+>>>> decoding. So, I don't see what "innovation" RC6 would be adding. 
+>>>> If it is some new way to transmit waves, the patent issues
+>>>> aren't related to software, and the device manufacturer had already handled
+>>>> it when they made their devices.
+>>>>
+>>>> If it is just a new keytable, this issue 
+>>>> could be easily solved by loading the keytable via userspace.
+>>>>
+>>>> Also, assuming that you can use the driver only with a hardware that comes
+>>>> with a licensed software, the user has already the license for using it.
+>>>>
+>>>> Do you have any details on what patents they are claiming?
+>>> The US Philips RC-6 patent is US Patent 5,877,702
+>>>
+>>> http://www.google.com/patents?vid=USPAT5877702
+>>>
+>>> Click on download PDF to get a copy of the whole patent.
+>>>
+>>> I am not a lawyer.  Philips claims' all appear to tie to a transmitter
+>>> or receiver as part of a system, but most of the claims are about
+>>> information and bit positions and lengths.
+>> ...
+>>> IMO, given
+>>>
+>>> a. the dearth of public information about RC-6, indicating someone
+>>> thinks it's their trade secret or intellectual property
+>>>
+>>> b. Microsoft claiming to license something related to the MCE remote
+>>> protocols (which are obviously RC-6 Mode 6A),
+>>>
+>>> c. my inability to draw a "clear, bright line" that RC-6 Mode 6A
+>>> encoding and decoding, as needed by MCE remotes, implemented in software
+>>> doesn't violate anyone's government granted rights to exclusivity.
+>>>
+>>> I think it's much better to implement software RC-6 Mode 6A encoding and
+>>> decoding in user space, doing only the minimum needed to get the
+>>> hardware setup and going in the kernel.  
+>>>
+>>> Encoding/decoding of RC-6 by microcontrollers with firmware doesn't
+>>> worry me. 
+>>>
+>>>
+>>> Maybe I'm being too conservative here, but I have a personal interest in
+>>> keeping Linux free and unencumbered even in the US which, I cannot deny,
+>>> has a patent system that is screwed up.
+>> So I had one of the people who does all the license and patent audits
+>> for Fedora packages look at the Philips patent on RC-6. He's 100%
+>> positive that the patent *only* covers hardware, there should be no
+>> problem whatsoever writing a software decoder for RC-6.
+> 
+> OK.  Thanks for having some professionals take a look.  (I'm assuming
+> that's the only patent.)
+> 
+> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+> end of the month.
 
-perf: hw_breakpoints: Fix percpu namespace clash
-
-Today's linux-next build failed with:
-
-  kernel/hw_breakpoint.c:86: error: 'task_bp_pinned' redeclared as different kind of symbol
-  ...
-
-Caused by commit dd17c8f72993f9461e9c19250e3f155d6d99df22 ("percpu:
-remove per_cpu__ prefix") from the percpu tree interacting with
-commit 56053170ea2a2c0dc17420e9b94aa3ca51d80408 ("hw-breakpoints:
-Fix task-bound breakpoint slot allocation") from the tip tree.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <20091208182515.bb6dda4a.sfr@canb.auug.org.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/hw_breakpoint.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index 02b4925..03a0773 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -52,7 +52,7 @@
- static DEFINE_PER_CPU(unsigned int, nr_cpu_bp_pinned);
+Good! Please, try to design the decoder as an independent module that gets
+data from a kfifo and generate scancodes for the input API.
  
- /* Number of pinned task breakpoints in a cpu */
--static DEFINE_PER_CPU(unsigned int, task_bp_pinned[HBP_NUM]);
-+static DEFINE_PER_CPU(unsigned int, nr_task_bp_pinned[HBP_NUM]);
- 
- /* Number of non-pinned cpu/task breakpoints in a cpu */
- static DEFINE_PER_CPU(unsigned int, nr_bp_flexible);
-@@ -73,7 +73,7 @@ static DEFINE_MUTEX(nr_bp_mutex);
- static unsigned int max_task_bp_pinned(int cpu)
- {
- 	int i;
--	unsigned int *tsk_pinned = per_cpu(task_bp_pinned, cpu);
-+	unsigned int *tsk_pinned = per_cpu(nr_task_bp_pinned, cpu);
- 
- 	for (i = HBP_NUM -1; i >= 0; i--) {
- 		if (tsk_pinned[i] > 0)
-@@ -162,7 +162,7 @@ static void toggle_bp_task_slot(struct task_struct *tsk, int cpu, bool enable)
- 
- 	count = task_bp_pinned(tsk);
- 
--	tsk_pinned = per_cpu(task_bp_pinned, cpu);
-+	tsk_pinned = per_cpu(nr_task_bp_pinned, cpu);
- 	if (enable) {
- 		tsk_pinned[count]++;
- 		if (count > 0)
-@@ -209,7 +209,7 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
-  *   - If attached to a single cpu, check:
-  *
-  *       (per_cpu(nr_bp_flexible, cpu) || (per_cpu(nr_cpu_bp_pinned, cpu)
-- *           + max(per_cpu(task_bp_pinned, cpu)))) < HBP_NUM
-+ *           + max(per_cpu(nr_task_bp_pinned, cpu)))) < HBP_NUM
-  *
-  *       -> If there are already non-pinned counters in this cpu, it means
-  *          there is already a free slot for them.
-@@ -220,7 +220,7 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
-  *   - If attached to every cpus, check:
-  *
-  *       (per_cpu(nr_bp_flexible, *) || (max(per_cpu(nr_cpu_bp_pinned, *))
-- *           + max(per_cpu(task_bp_pinned, *)))) < HBP_NUM
-+ *           + max(per_cpu(nr_task_bp_pinned, *)))) < HBP_NUM
-  *
-  *       -> This is roughly the same, except we check the number of per cpu
-  *          bp for every cpu and we keep the max one. Same for the per tasks
-@@ -232,7 +232,7 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
-  *   - If attached to a single cpu, check:
-  *
-  *       ((per_cpu(nr_bp_flexible, cpu) > 1) + per_cpu(nr_cpu_bp_pinned, cpu)
-- *            + max(per_cpu(task_bp_pinned, cpu))) < HBP_NUM
-+ *            + max(per_cpu(nr_task_bp_pinned, cpu))) < HBP_NUM
-  *
-  *       -> Same checks as before. But now the nr_bp_flexible, if any, must keep
-  *          one register at least (or they will never be fed).
-@@ -240,7 +240,7 @@ static void toggle_bp_slot(struct perf_event *bp, bool enable)
-  *   - If attached to every cpus, check:
-  *
-  *       ((per_cpu(nr_bp_flexible, *) > 1) + max(per_cpu(nr_cpu_bp_pinned, *))
-- *            + max(per_cpu(task_bp_pinned, *))) < HBP_NUM
-+ *            + max(per_cpu(nr_task_bp_pinned, *))) < HBP_NUM
-  */
- int reserve_bp_slot(struct perf_event *bp)
- {
+> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+> a common set of parameters, so I may be able to set up the decoders to
+> handle decoding from two different remote types at once.  The HVR boards
+> can ship with either type of remote AFAIK.
+> 
+> I wonder if I can flip the keytables on the fly or if I have to create
+> two different input devices?
+
+IMO, the better is, by default, to open just one input device per IR receiver.
+>From what I understand from our discussions, if the user wants to filter IR
+commands into several input interfaces, some userspace interface will be 
+provided to allow the creation of other input interfaces for that purpose.
+
+Cheers,
+Mauro.
