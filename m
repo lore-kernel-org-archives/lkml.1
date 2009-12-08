@@ -1,63 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751490AbZLHFHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935610AbZLHFKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751490AbZLHFHK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 00:07:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZLHFHJ
+	id S935610AbZLHFKU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 00:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZLHFKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 00:07:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44168 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbZLHFHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 00:07:08 -0500
-Subject: Re: [BISECTED] 33 second boot delay (caused by Radeon KMS) on
- 2.6.32
-From: Dave Airlie <airlied@redhat.com>
-To: Steven Noonan <steven@uplinklabs.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jerome Glisse <jglisse@redhat.com>
-In-Reply-To: <f488382f0912072101j79c8393exf2e671954ef153f9@mail.gmail.com>
-References: <f488382f0912072101j79c8393exf2e671954ef153f9@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 15:05:41 +1000
-Message-Id: <1260248741.3400.0.camel@localhost>
-Mime-Version: 1.0
+	Tue, 8 Dec 2009 00:10:18 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41006 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbZLHFKR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 00:10:17 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v6] Added PR_SET_PROCTITLE_AREA option for prctl()
+Cc: kosaki.motohiro@jp.fujitsu.com, Bryan Donlan <bdonlan@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>, Timo Sirainen <tss@iki.fi>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091208044605.GA32669@elte.hu>
+References: <20091208121145.B58D.A69D9226@jp.fujitsu.com> <20091208044605.GA32669@elte.hu>
+Message-Id: <20091208135010.B5A8.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  8 Dec 2009 14:10:19 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-12-07 at 21:01 -0800, Steven Noonan wrote:
-> Hi,
 > 
-> I finally got around to compiling 2.6.32 for my primary machine, and
-> with radeon.modeset=1, the machine has a horrifying 33 second boot
-> delay (it stays at a black screen for the duration).
+> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
-> I figured a 'git bisect v2.6.32 v2.6.31 -- drivers/gpu/drm' would
-> catch it. Hopefully this bisection helps pin down the underlying
-> problem:
->  # bad:  [22763c5c] Linux 2.6.32
->  # good: [74fca6a4] Linux 2.6.31
->  # bad:  [df748b02] drm/ttm: fix refcounting in ttm global code.
->  # good: [a513c184] drm/radeon/kms: Don't try to process irq when we a
->  # good: [aadd4e17] drm/radeon: some r420s have a CP race with the DMA
->  # good: [74bf2ad5] drm/kms: make fb helper work for all drivers.
->  # bad:  [62a8ea3f] drm/radeon/kms: Remove old init path as no hw use
->  # good: [f0ed1f65] drm/radeon/kms: Convert R520 to new init path and
->  # skip: [d4550907] drm/radeon/kms: Convert R100 to new init path (V2)
->  # good: [3bc68535] drm/radeon/kms: Convert RS690/RS740 to new init pa
->  # bad:  [c010f800] drm/radeon/kms: Convert RS600 to new init path
+> > +	/*
+> > +	 * If argv and environ aren't continuous (i.e. the process used
+> > +	 * prctl(PR_SET_PROCTITLE_AREA)), we don't care environ override.
 > 
-> Any ideas why c010f800 would cause this?
-> 
+> s/dont't care environ override/don't care about the evironment override/
 
-Wierd, it seems an unlikely change to affect this, can you boot with
-drm.debug=15 on the command line and see if we can glean anymore info
-about where its hanging.
+Thanks. I'll fix.
 
-It might be good to open a bug either on kernel.org or freedesktop.org
-(against Xorg radeon driver - since we mostly hang out there).
+> 
+> > +		case PR_SET_PROCTITLE_AREA: {
+> > +			struct mm_struct *mm = current->mm;
+> > +			unsigned long addr = arg2;
+> > +			unsigned long len = arg3;
+> > +			unsigned long end = arg2 + arg3;
+> 
+> would be cleaner to write the latter as 'addr + len'.
 
-Dave.
+Will fix.
+
+> 
+> > +			if (len > PAGE_SIZE)
+> > +				return -EINVAL;
+> > +
+> > +			if (addr >= end)
+> > +				return -EINVAL;
+> > +
+> > +			/*
+> > +			 * If the process pass broken pointer, EFAULT is might better
+> > +			 * than ps output zero-length proctitle. Plus if
+> > +			 * the process pass kernel address (or something-else),
+> > +			 * We have to block it. Oherwise, strange exploit
+> > +			 * chance is there.
+> > +			 */
+> > +			if (!access_ok(VERIFY_READ, addr, len))
+> > +				return -EFAULT;
+> 
+> the addr >= end check looks (partly) duplicative of the access_ok() 
+> check.
+
+ok.
+
+> > +
+> > +			down_write(&mm->mmap_sem);
+> > +			mm->arg_start = addr;
+> > +			mm->arg_end = end;
+> > +			up_write(&mm->mmap_sem);
+> 
+> well we might as well name 'addr' as 'start' and have a match then here 
+> too.
+
+I'll do.
+
+
+> The feature looks useful, but the choice of a prctl as an API is strange 
+> - it limits us to the current task only - while the ability to set 
+> arguments for another task looks a more generic (and potentially more 
+> useful) solution.
+
+No. It's impossible.
+/proc/{pid}/cmdline read user process's memory. iow, this prctl() don't
+receive string, it receive virtual address itself. I don't want any task
+allow to change another task's memory except ptrace.
+
+Plus, glibc don't need such capability. setproctitle() can only cahnge
+own task's title.
+
+Of cource, we can change argv is held in kernel structure (e.g. task_struct or
+mm_struct). but it increase kernel memory footprint and I'm not sure its worth.
+
 
 
