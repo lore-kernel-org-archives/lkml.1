@@ -1,56 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbZLHG3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933579AbZLHGvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752846AbZLHG3B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 01:29:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZLHG3A
+	id S933579AbZLHGvZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 01:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZLHGvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 01:29:00 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:24669 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbZLHG27 (ORCPT
+	Tue, 8 Dec 2009 01:51:23 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:39352 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752699AbZLHGvW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 01:28:59 -0500
+	Tue, 8 Dec 2009 01:51:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=f6AAiIPWVtlp7aBczB3v60pciDxk+8no3ZsmY17rBtzykFvD4zHw2CpB1NFriXyAvw
-         SKHso6iH2Ump4YALpw2o/LtL+HqVh7d+WHI3s9jHgqt/aKAUiijdnFmK2PwCETI6jpwP
-         hmo6ClOBPXF//6b0A6wFnApZZPnkJ8K8uEKqQ=
-MIME-Version: 1.0
-In-Reply-To: <20091208053851.GA12383@elte.hu>
-References: <20091208121145.B58D.A69D9226@jp.fujitsu.com> <20091208044605.GA32669@elte.hu> 
-	<20091208135010.B5A8.A69D9226@jp.fujitsu.com> <20091208053851.GA12383@elte.hu>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Tue, 8 Dec 2009 01:28:45 -0500
-Message-ID: <3e8340490912072228m70368001v2487bd745ff208b3@mail.gmail.com>
-Subject: Re: [PATCH v6] Added PR_SET_PROCTITLE_AREA option for prctl()
-To: Ingo Molnar <mingo@elte.hu>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ulrich Drepper <drepper@redhat.com>, Timo Sirainen <tss@iki.fi>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=AJUjP9wk8l+WV3InT9Sq1jIkMlUA3zdhN73j/lys+IPlbdhYJJQIeu71PTGBlyVEMB
+         wBSttF5g18OHlu0q49E/fuMVesQYT7dDahjy4c9Fzg0/a6oSgugouM7YY3CCPCyz3bGd
+         gL1RzLyX1HgAexVC1C5dlUbfHyAO32l45lRS0=
+Subject: Re: [PATCH v8 5/8] Loongson: YeeLoong: add hardware monitoring
+ driver
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ralf Baechle <ralf@linux-mips.org>, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
+       linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20091207094909.GD23088@elf.ucw.cz>
+References: <cover.1260082252.git.wuzhangjin@gmail.com>
+	 <d8789fa7e97d8a170c4e2516d7ef2d2fbbe42cc6.1260082252.git.wuzhangjin@gmail.com>
+	 <20091206084717.GD2766@ucw.cz> <1260147298.3126.2.camel@falcon.domain.org>
+	 <20091207080446.GB23088@elf.ucw.cz>
+	 <1260178870.9092.34.camel@falcon.domain.org>
+	 <20091207094909.GD23088@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Organization: DSLab, Lanzhou University, China
+Date: Tue, 08 Dec 2009 14:50:56 +0800
+Message-ID: <1260255056.3315.23.camel@falcon.domain.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 12:38 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->
->> > The feature looks useful, but the choice of a prctl as an API is strange
->> > - it limits us to the current task only - while the ability to set
->> > arguments for another task looks a more generic (and potentially more
->> > useful) solution.
->>
->> No. It's impossible.
->> /proc/{pid}/cmdline read user process's memory. iow, this prctl() don't
->> receive string, it receive virtual address itself. [...]
->
-> it's not 'impossible' at all, you yourself mention ptrace:
+Hi, Pavel Machek
 
-If another process is going to use ptrace to inject the cmdline string
-into the victim's address space, it can also temporarily hijack a
-thread to run prctl() on its behalf...
+After fixing the get_battery_current(), can I get your Acked-by: for the
+next revision of this patch?
+
+Thanks!
+	Wu Zhangjin
+
+On Mon, 2009-12-07 at 10:49 +0100, Pavel Machek wrote:
+> On Mon 2009-12-07 17:41:10, Wu Zhangjin wrote:
+> > On Mon, 2009-12-07 at 09:04 +0100, Pavel Machek wrote:
+> > > > > What is going on here? I thought the value is already in two's
+> > > > > complement... Is the above equivalent of
+> > > > > 
+> > > > > 	      if (value < 0)
+> > > > > 	      	 value = -value; 
+> > > > > 
+> > > > > ? If so, why? If not, can you add a comment?
+> > > > 
+> > > > Right, then, will use this instead:
+> > > > 
+> > > > static int get_battery_current(void)
+> > > > { 
+> > > > 	s16 value;
+> > > > 
+> > > > 	value = (ec_read(REG_BAT_CURRENT_HIGH) << 8) |
+> > > > 		(ec_read(REG_BAT_CURRENT_LOW));
+> > > > 
+> > > > 	return abs(value);
+> > > > }
+> > > 
+> > > That's certainly better. But... why not return signed value? Current
+> > > flowing from the battery is certainly very different from current
+> > > flowing into it...
+> > 
+> > You are totally right ;)
+> > 
+> > Just test it, when flowing from the battery, the value is negative, and
+> > when flowing into the battery, the value is positive, so, no abs()
+> > needed. thanks!
+> 
+> Make it return -value, then. I believe other code uses >0 values for
+> discharge.
+> 									Pavel
+> 
+
+
