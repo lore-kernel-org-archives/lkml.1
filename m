@@ -1,135 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966684AbZLHWKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966722AbZLHWPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966684AbZLHWKY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966558AbZLHWKU
+	id S966722AbZLHWPZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:15:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966578AbZLHWPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:10:20 -0500
-Received: from mail.bluewatersys.com ([202.124.120.130]:37390 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966535AbZLHWKU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:10:20 -0500
-Message-ID: <4B1ECEEE.3000209@bluewatersys.com>
-Date: Wed, 09 Dec 2009 11:10:54 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>
-Subject: Re: GPIO support for HTC Dream
-References: <20091208102842.GH12264@elf.ucw.cz> <4B1EB57D.6070408@bluewatersys.com> <20091208214658.GC4164@elf.ucw.cz>
-In-Reply-To: <20091208214658.GC4164@elf.ucw.cz>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Dec 2009 17:15:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36058 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966711AbZLHWPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 17:15:19 -0500
+Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes
+ when ..."
+From: Dave Airlie <airlied@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net
+In-Reply-To: <200912082259.48715.arnd@arndb.de>
+References: <200912071830.14697.arnd@arndb.de>
+	 <200912082259.48715.arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Dec 2009 08:13:52 +1000
+Message-Id: <1260310432.12969.0.camel@t60prh>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Add GPIO support for HTC Dream.
+On Tue, 2009-12-08 at 22:59 +0100, Arnd Bergmann wrote:
+> On Monday 07 December 2009, Arnd Bergmann wrote:
+> > After upgrading one of my machines to 2.6.32, I saw hangs after one to thirty minutes after
+> > booting, with random data written to parts of the frame buffer. I've bisected it down
+> > to 620f37811d "drm: prune modes when output is disconnected.", which was merged
+> > in 2.6.32-rc1. Connecting a serial console does not reveal any output at the time of
+> > the crash.
+> > 
+> > The machine uses an Intel G45 chipset with the i915 kernel mode setting enabled.
+> > 
+> > I have no clue what that patch does or why reverting it fixes the problem but 2.6.32
+> > with this revert applied has not shown these hangs yet.
+> > 
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > 
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> Scratch this, the machine crashed again in the same way, but only after
+> a some hours of uptime (normally it took a few minutes). It still looks like
+>  this commit makes the bug much more likely, but it could also be
+> attributed to complete coincedence and bad timing. 2.6.31 certainly never
+> showed the problem and the bisection clearly pointed in the general direction
+> of i915.
 > 
-> +int register_gpio_chip(struct gpio_chip *new_gpio_chip)
-> +{
-> +	int err = 0;
-> +	struct gpio_chip *gpio_chip;
-> +	int i;
-> +	unsigned long irq_flags;
-> +	/* Start/end indexes into chip array */
-> +	unsigned int start, end;
-> +	int size = (new_gpio_chip->end + 1 - new_gpio_chip->start) *
-> +		   sizeof(new_gpio_chip->state[0]);
-> +
-> +	new_gpio_chip->state = kzalloc(size, GFP_KERNEL);
-> +	if (new_gpio_chip->state == NULL) {
-> +		printk(KERN_ERR "register_gpio_chip: failed to allocate state\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	spin_lock_irqsave(&gpio_chips_lock, irq_flags);
-> +	start = GPIO_NUM_TO_CHIP_INDEX(new_gpio_chip->start);
-> +	end = GPIO_NUM_TO_CHIP_INDEX(new_gpio_chip->end);
-> +
-> +	if (end >= gpio_chip_array_size) {
-> +		/* New gpio chip array */
-> +		struct gpio_chip **new_array;
-> +		/* Size of gpio chip array */
-> +		unsigned long array_size = end + 1;
-> +
-> +		new_array = kmalloc(array_size * sizeof(new_array[0]), GFP_ATOMIC);
-> +		if (!new_array) {
-> +			printk(KERN_ERR "register_gpio_chip: failed to allocate array\n");
-> +			err = -ENOMEM;
-> +			goto failed;
-> +		}
-> +		for (i = 0; i < gpio_chip_array_size; i++)
-> +			new_array[i] = gpio_chip_array[i];
-> +		for (i = gpio_chip_array_size; i < array_size; i++)
-> +			new_array[i] = NULL;
-> +		gpio_chip_array = new_array;
-> +		gpio_chip_array_size = array_size;
-> +	}
-> +
-> +	list_for_each_entry(gpio_chip, &gpio_chip_list, list) {
-> +		if (gpio_chip->start > new_gpio_chip->end) {
-> +			list_add_tail(&new_gpio_chip->list, &gpio_chip->list);
-> +			goto added;
-> +		}
-> +		if (gpio_chip->end >= new_gpio_chip->start) {
-> +			printk(KERN_ERR "register_gpio_source %u-%u overlaps with %u-%u\n",
-> +			       new_gpio_chip->start, new_gpio_chip->end,
-> +			       gpio_chip->start, gpio_chip->end);
-> +			err = -EBUSY;
-> +			goto failed;
-> +		}
-> +	}
-> +
-> +	list_add_tail(&new_gpio_chip->list, &gpio_chip_list);
-> +added:
-> +	for (i = start; i <= end; i++) {
-> +		if ((!gpio_chip_array[i]) || gpio_chip_array[i]->start > new_gpio_chip->start)
-> +			gpio_chip_array[i] = new_gpio_chip;
-> +	}
-> +failed:
-> +	spin_unlock_irqrestore(&gpio_chips_lock, irq_flags);
-> +	if (err)
-> +		kfree(new_gpio_chip->state);
-> +	return err;
-> +}
+> I hate debugging sporadic hangs...
+> 
+> Sorry for blaming the wrong patch, especially if it already caused a lot 
+> of work. I'll try blaming ec2a4c3fdc8 "drm/i915: get the bridge device
+> once" now, that is the next-best candidate that my bisection pointed to,
+> but I'll do more rigorous testing.
+> 
 
-This is still really screwy. Why are you creating your own version of
-struct gpio_chip in addition to the one in include/asm-generic/gpio.h
-(which you also appear to include in some places). It makes the code
-extremely confusing. Other architectures use wrapper structures. Can you
-have something like this instead:
+Btw is this just a laptop with no monitor plugged in?
 
-	struct dream_gpio_chip {
-		struct gpio_chip chip;
+just want to rule out the patch you mentioned for any sort of memory
+corruption.
 
-		/* Dream specific bits */
-	};
+Dave.
 
-The name of this function also needs to be changed to something less
-generic since it is being exported globally.
 
-I also think this function is doing way to much work for what it is.
-Does it really need to be this complicated?
-
-~Ryan
-
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
-
-Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
-ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
-http://www.bluewatersys.com	New Zealand
-Phone: +64 3 3779127		Freecall: Australia 1800 148 751
-Fax:   +64 3 3779135			  USA 1800 261 2934
