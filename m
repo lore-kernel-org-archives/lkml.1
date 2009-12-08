@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966779AbZLHWd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936961AbZLHXKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966779AbZLHWd6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966742AbZLHWd4
+	id S936961AbZLHXKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 18:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936463AbZLHXKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:33:56 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:50844 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966628AbZLHWdz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:33:55 -0500
-Date: 08 Dec 2009 23:27:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: dmitry.torokhov@gmail.com
-Cc: awalls@radix.net
-Cc: j@jannau.net
-Cc: jarod@redhat.com
-Cc: jarod@wilsonet.com
-Cc: jonsmirl@gmail.com
-Cc: khc@pm.waw.pl
-Cc: kraxel@redhat.com
-Cc: linux-input@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: mchehab@redhat.com
-Cc: superm1@ubuntu.com
-Message-ID: <BEVi1jXHqgB@lirc>
-In-Reply-To: <20091207075100.GB24958@core.coreip.homeip.net>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+bbPodU5R+ec0BmRuSds4sj+gPWJWk3oNnlQm
- 0vbU4OiO8Fvph7S/fVxi40wCAFBEBNNT/fWhb+FRUgYtvdH/oG
- eD2/OfKiwYOFxOolUXOdlHkmBnXNHA+
+	Tue, 8 Dec 2009 18:10:20 -0500
+Received: from waste.org ([173.11.57.241]:55739 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935891AbZLHXKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 18:10:20 -0500
+Subject: Re: [PATCH] [19/31] mm: export stable page flags
+From: Matt Mackall <mpm@selenic.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: fengguang.wu@intel.com, npiggin@suse.de, cl@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20091208211635.7965AB151F@basil.firstfloor.org>
+References: <200912081016.198135742@firstfloor.org>
+	 <20091208211635.7965AB151F@basil.firstfloor.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Dec 2009 16:27:31 -0600
+Message-ID: <1260311251.31323.129.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+On Tue, 2009-12-08 at 22:16 +0100, Andi Kleen wrote:
+> From: Wu Fengguang <fengguang.wu@intel.com>
+> 
+> Rename get_uflags() to stable_page_flags() and make it a global function
+> for use in the hwpoison page flags filter, which need to compare user
+> page flags with the value provided by user space.
+> 
+> Also move KPF_* to kernel-page-flags.h for use by user space tools.
+> 
+> CC: Matt Mackall <mpm@selenic.com>
+> CC: Nick Piggin <npiggin@suse.de>
+> CC: Christoph Lameter <cl@linux-foundation.org>
+> CC: Andi Kleen <andi@firstfloor.org>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-on 06 Dec 09 at 23:51, Dmitry Torokhov wrote:
-[...]
->>> I suppose we could add MSC_SCAN_END event so that we can transmit
->>> "scancodes" of arbitrary length. You'd get several MSC_SCAN followed by
->>> MSC_SCAN_END marker. If you don't get MSC_SCAN_END assume the code is 32
->>> bit.
->>
->> And I set a timeout to know that no MSC_SCAN_END will arrive? This is
->> broken design IMHO.
->>
+Acked-by: Matt Mackall <mpm@selenic.com>
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-> EV_SYN signals the end of state transmission.
 
->> Furthermore lircd needs to know the length of the scan code in bits, not
->> as a multiple of 32.
-
-> I really do not think that LIRCD is the type of application that should
-> be using evdev interface, but rather other way around.
-
-Well, all I'm asking is that lircd can keep using the LIRC interface for  
-getting the scan codes. ;-)
-
-Christoph
