@@ -1,109 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbZLHL7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZLHMLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754352AbZLHL7N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 06:59:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZLHL7L
+	id S1754348AbZLHMLK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 07:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZLHMLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 06:59:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:14081 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754148AbZLHL7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 06:59:09 -0500
-Message-ID: <4B1E3F7D.9070806@redhat.com>
-Date: Tue, 08 Dec 2009 09:58:53 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Jon Smirl <jonsmirl@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-References: <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain> <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com> <4B1D934E.7030103@redhat.com> <20091208042340.GC11147@core.coreip.homeip.net>
-In-Reply-To: <20091208042340.GC11147@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Dec 2009 07:11:07 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44049 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753918AbZLHMLG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 07:11:06 -0500
+Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <4B1E3EE0.7030001@kernel.org>
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>
+	 <1259726212-30259-5-git-send-email-tj@kernel.org>
+	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>
+	 <4B1C85D3.3080401@kernel.org> <1260174900.8223.1159.camel@laptop>
+	 <4B1CDA1C.3000802@kernel.org> <1260183278.8223.1500.camel@laptop>
+	 <4B1CE1E8.2070803@kernel.org>  <4B1E1130.9050108@kernel.org>
+	 <1260262963.3935.1002.camel@laptop>  <4B1E189B.1070204@kernel.org>
+	 <1260268453.3935.1106.camel@laptop>  <4B1E378A.5050101@kernel.org>
+	 <1260272885.3935.1189.camel@laptop>  <4B1E3EE0.7030001@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Dec 2009 13:10:32 +0100
+Message-ID: <1260274232.3935.1223.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Mon, Dec 07, 2009 at 09:44:14PM -0200, Mauro Carvalho Chehab wrote:
-
->>> What about capabilities of the receiver, what frequencies?
->>> If a receiver has multiple frequencies, how do you report what
->>> frequency the data came in on?
->> IMO, via sysfs.
+On Tue, 2009-12-08 at 20:56 +0900, Tejun Heo wrote:
+> Hello,
 > 
-> We probably need to think what exactly we report through sysfs siunce it
-> is ABI of sorts.
-
-Yes, sure.
-
-Probably, the exact needs will popup only when we start to actually writing that
-part of the core.
-
-My intention for now is to just create a /sys/class/irrcv, with one node
-per each IR receiver and adding a protocol enumeration/selection node
-there, and add some capabilities for the in-kernel decoders and lirc_dev
-to create new nodes under that class.
-
-When the decoders/lirc_dev patches popup, we'll need to review those sysfs
-API's.
- 
->>> What about multiple apps simultaneously using the pulse data?
->> IMO, the better is to limit the raw interface to just one open.
->>
+> On 12/08/2009 08:48 PM, Peter Zijlstra wrote:
+> > Why bother with that?
+> > 
+> > workqueue's CPU_POST_DEAD will flush the workqueue and destroy all
+> > threads under cpu_add_remove_lock, which excludes the cpu from coming
+> > back up before its fully destroyed.
+> > 
+> > So there's no remaining tasks to be migrated back.
+> > 
+> > Changing that semantics is not worthwhile.
 > 
-> Why woudl we want to do this? Quite often there is a need for "observer"
-> that maybe does not act on data but allows capturing it. Single-user
-> inetrfaces are PITA. 
+> It is worthwhile because the goal is to unify all worker pool
+> mechanisms.  So, slow_work or whatnot (scsi EHs, FS specific worker
+> pools, async workers used for parallel probing) will all be converted
+> to use workqueue instead and with that we can't afford to wait for all
+> works to flush to down a cpu.  All that's necessary to implement that
+> is migrating back the unbound workers which can be implemented as a
+> separate piece of code apart from regular operation.  It would even
+> benefit the current implementation as it makes cpu up/down operations
+> much more deterministic.
 
-That should work fine as well, but I'm not sure how we'll detect overrun with
-several kfifo readers.
+Hotplug and deterministic are not to be used in the same sentence, its
+an utter slow path and I'd much rather have simple code than clever code
+there -- there's been way too many 'interesting' hotplug problems.
 
->>> How big is the receive queue?
->> It should be big enough to receive at least one keycode event. Considering that
->> the driver will use kfifo (IMO, it is a good strategy, especially since you
->> won't need any lock if just one open is allowed), it will require a power of two size.
->>
-> 
-> Would not it be wither driver- or protocol-specific?
+If there is work being enqueued that takes more than a few seconds to
+complete then I'm thinking there's something seriously wrong and up to
+that point its perfectly fine to simply wait for it.
 
-Probably.
+Furthermore if it's objective is to cater to generic thread pools then I
+think its an utter fail simply because it mandates strict cpu affinity,
+that basically requires you to write a work scheduler to balance work
+load etc.. Much easier is a simple unbounded thread pool that gets
+balanced by the regular scheduler.
 
-> 
->>> How does access work, root only or any user?
->> IMO, it should be the same requirement as used by an input interface.
->>
->>> How are capabilities exposed, sysfs, etc?
->> IMO, sysfs.
->>
->>> What is the interface for attaching an in-kernel decoder?
->> IMO, it should use the kfifo for it. However, if we allow both raw data and
->> in-kernel decoders to read data there, we'll need a spinlock to protect the
->> kfifo.
->>
-> 
-> I think Jon meant userspace interface for attaching particular decoder.
+/me liking this stuff less and less :/
 
-I don't think we need an userspace interface for the in-kernel decoders. All
-it needs is to enable/disable the protocol decoders, imo via sysfs interface.
-
->>> If there is an in-kernel decoder should the pulse data stop being
->>> reported, partially stopped, something else?
->> I don't have a strong opinion here, but, from the previous discussions, it
->> seems that people want it to be double-reported by default. If so, I think
->> we need to implement a command at the raw interface to allow disabling the
->> in-kernel decoder, while the raw interface is kept open.
-> 
-> Why don't you simply let consumers decide where they will get their data?
-
-How?
-
-Cheers,
-Mauro.
