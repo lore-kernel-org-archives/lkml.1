@@ -1,101 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965281AbZLHAoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965294AbZLHAoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965281AbZLHAoD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:44:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965258AbZLHAoD
+	id S965294AbZLHAoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965284AbZLHAoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:44:03 -0500
-Received: from web50102.mail.re2.yahoo.com ([206.190.38.30]:24447 "HELO
-	web50102.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965254AbZLHAoC convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:44:02 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=NgptqFcponGkNYPmwfJCTHS7z/A7/4iDzc+sCv4zVGmV2DIrBrfk214LfAxyQ/jXhWhI0v7ACSS9GD+Qq9QNeTBNlUtp2ubDZYeQ9Pg941xpoVcHqlLnWvr5auYs9mHehJxnHemzvwGrJzml3mOIaf/y/2Nc2OQ0NSXHe7GvUGE=;
-Message-ID: <979363.29471.qm@web50102.mail.re2.yahoo.com>
-X-YMail-OSG: SD_o7ZIVM1kc918lKhYZo4oiqzGAgpzMNKXhpUSebwHtSlUzsXPE6GRiDmj8RHrBLIBpj6.k1KRLdcWPNOtSqL97MGF54C.c9bbAhcB_A1ed0EdpbyXCSQ6oaIsu62t4ljsazKUkenNdMWfCoSV859sHwoyMolBSXItd7lezZ2DixCDKOWcD.PsNrB4D58Sg1ZJaGLaAqtATNnwncaqxu4yE0Nthpsjlg8g38h8LP1NmH1K4N5CMtCP8XucCQAX8HTh9aBwMTXMHiPiZZpqM95DmjpTgobmJC96Q5EMIyNtbkysrdxcz2JaBIoOdmXnNVuJgYpNNdeauI5I0QWAWQLglSUCmgyMe.PRugapah4ZIhImKQhyS3got1sywgSvRb9M-
-X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.8.100.260964
-Date: Mon, 7 Dec 2009 16:44:06 -0800 (PST)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH 1/2] EDAC: add __init to i7core_xeon_pci_fixup
-To: Jiri Slaby <jslaby@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-In-Reply-To: <20091204155428.307e612d@jbarnes-piketon>
+	Mon, 7 Dec 2009 19:44:17 -0500
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:57013 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965258AbZLHAoO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 19:44:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=kNYNEMNaLlRy8iJy3A55a+NBxxotmZ7kc2YSRM8Hz6QI/tIhZgbg2CeD8zdoWnLTur
+         sDG3WJWsNpI60X/NSjDafu+eaGYuhy3TsTQet+mYKFOck9XHwupitAnqtASzdudBEXQp
+         X/qpZ7/0EuO4PtbWnTO11Yv+8xWNmWA+O4yx8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20091207184153.GD998@core.coreip.homeip.net>
+References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
+	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	 <1260070593.3236.6.camel@pc07.localdom.local>
+	 <20091206065512.GA14651@core.coreip.homeip.net>
+	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
+	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	 <m3skbn6dv1.fsf@intrepid.localdomain>
+	 <20091207184153.GD998@core.coreip.homeip.net>
+Date: Mon, 7 Dec 2009 19:44:20 -0500
+Message-ID: <9e4733910912071644y234beebepd426f9f5760507ce@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
+	system?
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 7, 2009 at 1:41 PM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
+> That is why I think we should go the other way around - introduce the
+> core which receivers could plug into and decoder framework and once it
+> is ready register lirc-dev as one of the available decoders.
 
+The core needs to allow for RF remotes too.
 
---- On Fri, 12/4/09, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+-Bluetooth remotes are already in kernel somehow, I don't know how they work,
+-RF4CE, the 802.15.4 stack has been recently merged, the remotes use a
+protocol on top of that. These remotes will hit the consumer market
+next year. Sony, Panasonic and other big names are behind this.
+-Zwave, the Harmony remotes use Zwave. There is no Zwave support in
+the kernel that I am aware of. Zwave is proprietary.
 
-> From: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Subject: Re: [PATCH 1/2] EDAC: add __init to i7core_xeon_pci_fixup
-> To: "Jiri Slaby" <jslaby@suse.cz>
-> Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org, "Mauro Carvalho Chehab" <mchehab@redhat.com>
-> Date: Friday, December 4, 2009, 4:54 PM
-> On Mon, 30 Nov 2009 21:19:41 +0100
-> Jiri Slaby <jslaby@suse.cz>
-> wrote:
-> 
-> > It's called only from an __init function and is the
-> only user
-> > of pcibios_scan_specific_bus which will be marked as
-> __devinit in
-> > the next patch.
-> > 
-> > Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> > Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-> > ---
-> >  drivers/edac/i7core_edac.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1
-> deletions(-)
-> > 
-> > diff --git a/drivers/edac/i7core_edac.c
-> b/drivers/edac/i7core_edac.c
-> > index 4de5a18..c7fc0d5 100644
-> > --- a/drivers/edac/i7core_edac.c
-> > +++ b/drivers/edac/i7core_edac.c
-> > @@ -1141,7 +1141,7 @@ static void
-> i7core_put_all_devices(void)
-> >         
-> i7core_put_devices(i7core_dev);
-> >  }
-> >  
-> > -static void i7core_xeon_pci_fixup(int dev_id)
-> > +static void __init i7core_xeon_pci_fixup(int dev_id)
-> >  {
-> >      struct pci_dev *pdev = NULL;
-> >      int i;
-> 
-> I don't know who handles EDAC patches, but I'm pretty sure
-> it's not
-> me. :)  
+After these protocols are decoded you end up with scancodes. The
+scancodes need to get injected into input somehow and then flow
+through the mapping process. Decoding down to the scancodes probably
+happens over in the networking code.
 
-Maruo has the i7core tree that he is building on for i7 stuff
-boris from AMD has the amd64 tree
-I handle the others and send to Andrew Morton
+After an in-kernel IR decoder runs it needs to hand off the scancodes
+into the input subsystem. This same API can be used by the networking
+code to hand off RF scancodes.
 
-doug thompson
-
-
-> It doesn't apply to my tree anyway, so it
-> probably needs a
-> refresh.
-> 
-> Thanks,
-> -- 
-> Jesse Barnes, Intel Open Source Technology Center
-> --
-> To unsubscribe from this list: send the line "unsubscribe
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-- 
+Jon Smirl
+jonsmirl@gmail.com
