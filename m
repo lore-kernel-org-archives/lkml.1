@@ -1,74 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965294AbZLHAoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbZLHAtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965294AbZLHAoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965284AbZLHAoR
+	id S965292AbZLHAtM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965258AbZLHAtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:44:17 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:57013 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965258AbZLHAoO (ORCPT
+	Mon, 7 Dec 2009 19:49:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37569 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965245AbZLHAtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:44:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=kNYNEMNaLlRy8iJy3A55a+NBxxotmZ7kc2YSRM8Hz6QI/tIhZgbg2CeD8zdoWnLTur
-         sDG3WJWsNpI60X/NSjDafu+eaGYuhy3TsTQet+mYKFOck9XHwupitAnqtASzdudBEXQp
-         X/qpZ7/0EuO4PtbWnTO11Yv+8xWNmWA+O4yx8=
-MIME-Version: 1.0
-In-Reply-To: <20091207184153.GD998@core.coreip.homeip.net>
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
-	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	 <1260070593.3236.6.camel@pc07.localdom.local>
-	 <20091206065512.GA14651@core.coreip.homeip.net>
-	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	 <m3skbn6dv1.fsf@intrepid.localdomain>
-	 <20091207184153.GD998@core.coreip.homeip.net>
-Date: Mon, 7 Dec 2009 19:44:20 -0500
-Message-ID: <9e4733910912071644y234beebepd426f9f5760507ce@mail.gmail.com>
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 
-	system?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 7 Dec 2009 19:49:08 -0500
+Date: Mon, 7 Dec 2009 16:48:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Richard Zidlicky <rz@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: 2.6.32 regression, hard lock
+Message-Id: <20091207164826.eb2bbc48.akpm@linux-foundation.org>
+In-Reply-To: <20091208002353.GA30011@linux-m68k.org>
+References: <20091206141419.GA6195@linux-m68k.org>
+	<20091207143057.53c6a362.akpm@linux-foundation.org>
+	<20091208002353.GA30011@linux-m68k.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 7, 2009 at 1:41 PM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> That is why I think we should go the other way around - introduce the
-> core which receivers could plug into and decoder framework and once it
-> is ready register lirc-dev as one of the available decoders.
+On Tue, 8 Dec 2009 01:23:53 +0100
+Richard Zidlicky <rz@linux-m68k.org> wrote:
 
-The core needs to allow for RF remotes too.
+> 
+> > > first visible symptom is that ppp over UMTS connection "stops working", connection
+> > > did not die. Trying to restart the connection fails and the related processes hang.
+> > > 
+> > > After that one after another everything stops working, "telinit 6" does not do its
+> > > job and SysRQ sync-umount-reboot is logged in messages but has no visible effect.
+> > > 
+> > > Attaching messages and .config.
+> > > 
+> > 
+> > I uploaded your dmesg output to
+> > http://userweb.kernel.org/~akpm/stuff/messages.txt
+> 
+> > 
+> > I'm looking at those traces and am not able to develop a theory to
+> > explain it :(
+> 
+> thanks for looking at it. 
+> 
+> I did revert to 2.31.5 and to my big surprise found a similar thing happened
+> so it is not a regression, at least not from 2.6.31.
 
--Bluetooth remotes are already in kernel somehow, I don't know how they work,
--RF4CE, the 802.15.4 stack has been recently merged, the remotes use a
-protocol on top of that. These remotes will hit the consumer market
-next year. Sony, Panasonic and other big names are behind this.
--Zwave, the Harmony remotes use Zwave. There is no Zwave support in
-the kernel that I am aware of. Zwave is proprietary.
+This trace is different.  It's a lock ranking warning and is surely
+unrelated to the IRQs-off lockup which you earlier experienced.
 
-After these protocols are decoded you end up with scancodes. The
-scancodes need to get injected into input somehow and then flow
-through the mapping process. Decoding down to the scancodes probably
-happens over in the networking code.
+> No idea why it did not occur anytime sooner while running earlier kernels, however
+> the most recently plugged in device is an USB webcam with micro which I am suspecting
+> to play a role in this message (posted more details about it earlier):
+> 
+> Dec  6 10:31:39 localhost kernel: [  162.087836] =======================================================
+> Dec  6 10:31:39 localhost kernel: [  162.087839] [ INFO: possible circular locking dependency detected ]
+> Dec  6 10:31:39 localhost kernel: [  162.087842] 2.6.32v0 #1
+> Dec  6 10:31:39 localhost kernel: [  162.087844] -------------------------------------------------------
+> Dec  6 10:31:39 localhost kernel: [  162.087846] pulseaudio/4506 is trying to acquire lock:
+> Dec  6 10:31:39 localhost kernel: [  162.087848]  (sysfs_mutex){+.+.+.}, at: [<c050c99d>] sysfs_get_dirent+0x15/0x35
+> Dec  6 10:31:39 localhost kernel: [  162.087857]
+> Dec  6 10:31:39 localhost kernel: [  162.087858] but task is already holding lock:
+> Dec  6 10:31:39 localhost kernel: [  162.087860]  (&pcm->open_mutex){+.+.+.}, at: [<f80f4b2a>] snd_pcm_release+0x55/0x9e [snd_pcm]
+> Dec  6 10:31:39 localhost kernel: [  162.087873]
+> Dec  6 10:31:39 localhost kernel: [  162.087874] which lock already depends on the new lock.
+> Dec  6 10:31:39 localhost kernel: [  162.087875]
+> Dec  6 10:31:39 localhost kernel: [  162.087876]
+> Dec  6 10:31:39 localhost kernel: [  162.087877] the existing dependency chain (in reverse order) is:
+> Dec  6 10:31:39 localhost kernel: [  162.087879]
+> Dec  6 10:31:39 localhost kernel: [  162.087880] -> #2 (&pcm->open_mutex){+.+.+.}:
+> Dec  6 10:31:39 localhost kernel: [  162.087884]        [<c045a703>] __lock_acquire+0xa2a/0xbb5
+> 
+> Dec  6 10:31:39 localhost kernel: [  162.087890]        [<c045a922>] lock_acquire+0x94/0xb1
+> Dec  6 10:31:39 localhost kernel: [  162.087893]        [<c07324a6>] __mutex_lock_common+0x35/0x2dc
+> Dec  6 10:31:39 localhost kernel: [  162.087898]        [<c07327eb>] mutex_lock_nested+0x30/0x38
+> Dec  6 10:31:39 localhost kernel: [  162.087901]        [<f80f4b2a>] snd_pcm_release+0x55/0x9e [snd_pcm]
+> Dec  6 10:31:39 localhost kernel: [  162.087913]        [<c04ca0b5>] __fput+0xf0/0x187
+> Dec  6 10:31:39 localhost kernel: [  162.087918]        [<c04ca165>] fput+0x19/0x1b
+> Dec  6 10:31:39 localhost kernel: [  162.087921]        [<c04b0d6b>] remove_vma+0x3e/0x5d
+> Dec  6 10:31:39 localhost kernel: [  162.087926]        [<c04b19f0>] do_munmap+0x21c/0x237
+> Dec  6 10:31:39 localhost kernel: [  162.087929]        [<c04b1a3b>] sys_munmap+0x30/0x3f
+> Dec  6 10:31:39 localhost kernel: [  162.087932]        [<c040321d>] syscall_call+0x7/0xb
+> Dec  6 10:31:39 localhost kernel: [  162.087937]
+> Dec  6 10:31:39 localhost kernel: [  162.087938] -> #1 (&mm->mmap_sem){++++++}:
+> Dec  6 10:31:39 localhost kernel: [  162.087942]        [<c045a703>] __lock_acquire+0xa2a/0xbb5
+> Dec  6 10:31:39 localhost kernel: [  162.087946]        [<c045a922>] lock_acquire+0x94/0xb1
+> Dec  6 10:31:39 localhost kernel: [  162.087949]        [<c04aba42>] might_fault+0x64/0x81
+> Dec  6 10:31:39 localhost kernel: [  162.087952]        [<c05b34cc>] copy_to_user+0x2c/0xfc
+> Dec  6 10:31:39 localhost kernel: [  162.087957]        [<c04d4879>] filldir+0x78/0xb7
+> Dec  6 10:31:39 localhost kernel: [  162.087961]        [<c050c88d>] sysfs_readdir+0x117/0x14b
+> Dec  6 10:31:39 localhost kernel: [  162.087964]        [<c04d49dd>] vfs_readdir+0x68/0x94
+> Dec  6 10:31:39 localhost kernel: [  162.087968]        [<c04d4b0b>] sys_getdents+0x62/0xa1
+> Dec  6 10:31:39 localhost kernel: [  162.087971]        [<c040321d>] syscall_call+0x7/0xb
+> Dec  6 10:31:39 localhost kernel: [  162.087975]
+> Dec  6 10:31:39 localhost kernel: [  162.087975] -> #0 (sysfs_mutex){+.+.+.}:
+> Dec  6 10:31:39 localhost kernel: [  162.087979]        [<c045a610>] __lock_acquire+0x937/0xbb5
+> Dec  6 10:31:39 localhost kernel: [  162.087983]        [<c045a922>] lock_acquire+0x94/0xb1
+> Dec  6 10:31:39 localhost kernel: [  162.087986]        [<c07324a6>] __mutex_lock_common+0x35/0x2dc
+> Dec  6 10:31:39 localhost kernel: [  162.087990]        [<c07327eb>] mutex_lock_nested+0x30/0x38
+> Dec  6 10:31:39 localhost kernel: [  162.087993]        [<c050c99d>] sysfs_get_dirent+0x15/0x35
+> Dec  6 10:31:39 localhost kernel: [  162.087996]        [<c050e03e>] sysfs_remove_group+0x1e/0xa3
+> Dec  6 10:31:39 localhost kernel: [  162.088000]        [<c062bf50>] dpm_sysfs_remove+0x10/0x12
+> Dec  6 10:31:39 localhost kernel: [  162.088006]        [<c0627108>] device_del+0x33/0x154
+> Dec  6 10:31:39 localhost kernel: [  162.088010]        [<c0627251>] device_unregister+0x28/0x4b
+> Dec  6 10:31:39 localhost kernel: [  162.088014]        [<c0678499>] usb_remove_ep_devs+0x15/0x1f
+> Dec  6 10:31:39 localhost kernel: [  162.088018]        [<c0672ba2>] remove_intf_ep_devs+0x21/0x32
+> Dec  6 10:31:39 localhost kernel: [  162.088023]        [<c0673b3a>] usb_set_interface+0x10c/0x19f
+> Dec  6 10:31:39 localhost kernel: [  162.088027]        [<f832dce6>] snd_usb_capture_close+0x1e/0x37 [snd_usb_audio]
+> Dec  6 10:31:39 localhost kernel: [  162.088040]        [<f80f4aac>] snd_pcm_release_substream+0x3d/0x66 [snd_pcm]
+> Dec  6 10:31:39 localhost kernel: [  162.088050]        [<f80f4b31>] snd_pcm_release+0x5c/0x9e [snd_pcm]
+> Dec  6 10:31:39 localhost kernel: [  162.088058]        [<c04ca0b5>] __fput+0xf0/0x187
+> Dec  6 10:31:39 localhost kernel: [  162.088062]        [<c04ca165>] fput+0x19/0x1b
+> Dec  6 10:31:39 localhost kernel: [  162.088065]        [<c04b0d6b>] remove_vma+0x3e/0x5d
+> Dec  6 10:31:39 localhost kernel: [  162.088069]        [<c04b19f0>] do_munmap+0x21c/0x237
+> Dec  6 10:31:39 localhost kernel: [  162.088072]        [<c04b1a3b>] sys_munmap+0x30/0x3f
+> Dec  6 10:31:39 localhost kernel: [  162.088076]        [<c040321d>] syscall_call+0x7/0xb
+> Dec  6 10:31:39 localhost kernel: [  162.088079]
+> Dec  6 10:31:39 localhost kernel: [  162.088080] other info that might help us debug this:
+> Dec  6 10:31:39 localhost kernel: [  162.088080]
+> Dec  6 10:31:39 localhost kernel: [  162.088083] 2 locks held by pulseaudio/4506:
+> Dec  6 10:31:39 localhost kernel: [  162.088085]  #0:  (&mm->mmap_sem){++++++}, at: [<c04b1a2e>] sys_munmap+0x23/0x3f
+> Dec  6 10:31:39 localhost kernel: [  162.088090]  #1:  (&pcm->open_mutex){+.+.+.}, at: [<f80f4b2a>] snd_pcm_release+0x55/0x9e [snd_pcm]
+> Dec  6 10:31:39 localhost kernel: [  162.088104]
+> Dec  6 10:31:39 localhost kernel: [  162.088105] stack backtrace:
+> Dec  6 10:31:39 localhost kernel: [  162.088108] Pid: 4506, comm: pulseaudio Not tainted 2.6.32v0 #1
+> Dec  6 10:31:39 localhost kernel: [  162.088110] Call Trace:
+> Dec  6 10:31:39 localhost kernel: [  162.088113]  [<c07312cc>] ? printk+0xf/0x13
+> Dec  6 10:31:39 localhost kernel: [  162.088117]  [<c045999b>] print_circular_bug+0x91/0x9d
+> Dec  6 10:31:39 localhost kernel: [  162.088121]  [<c045a610>] __lock_acquire+0x937/0xbb5
+> Dec  6 10:31:39 localhost kernel: [  162.088124]  [<c04584f5>] ? save_trace+0x37/0xa3
+> Dec  6 10:31:39 localhost kernel: [  162.088128]  [<c045a922>] lock_acquire+0x94/0xb1
+> Dec  6 10:31:39 localhost kernel: [  162.088131]  [<c050c99d>] ? sysfs_get_dirent+0x15/0x35
+> Dec  6 10:31:39 localhost kernel: [  162.088135]  [<c07324a6>] __mutex_lock_common+0x35/0x2dc
+> Dec  6 10:31:39 localhost kernel: [  162.088138]  [<c050c99d>] ? sysfs_get_dirent+0x15/0x35
+> Dec  6 10:31:39 localhost kernel: [  162.088141]  [<c0458f23>] ? mark_held_locks+0x43/0x5b
+> Dec  6 10:31:39 localhost kernel: [  162.088145]  [<c04591bf>] ? trace_hardirqs_on+0xb/0xd
+> Dec  6 10:31:39 localhost kernel: [  162.088148]  [<c07327eb>] mutex_lock_nested+0x30/0x38
+> Dec  6 10:31:39 localhost kernel: [  162.088151]  [<c050c99d>] ? sysfs_get_dirent+0x15/0x35
+> Dec  6 10:31:39 localhost kernel: [  162.088154]  [<c050c99d>] sysfs_get_dirent+0x15/0x35
+> Dec  6 10:31:39 localhost kernel: [  162.088157]  [<c050e03e>] sysfs_remove_group+0x1e/0xa3
+> Dec  6 10:31:39 localhost kernel: [  162.088161]  [<c062bf50>] dpm_sysfs_remove+0x10/0x12
+> Dec  6 10:31:39 localhost kernel: [  162.088164]  [<c0627108>] device_del+0x33/0x154
+> Dec  6 10:31:39 localhost kernel: [  162.088168]  [<c0627251>] device_unregister+0x28/0x4b
+> Dec  6 10:31:39 localhost kernel: [  162.088171]  [<c0678499>] usb_remove_ep_devs+0x15/0x1f
+> Dec  6 10:31:39 localhost kernel: [  162.088174]  [<c0672ba2>] remove_intf_ep_devs+0x21/0x32
+> Dec  6 10:31:39 localhost kernel: [  162.088178]  [<c0673b3a>] usb_set_interface+0x10c/0x19f
+> Dec  6 10:31:39 localhost kernel: [  162.088190]  [<f832dce6>] snd_usb_capture_close+0x1e/0x37 [snd_usb_audio]
+> Dec  6 10:31:39 localhost kernel: [  162.088199]  [<f80f4aac>] snd_pcm_release_substream+0x3d/0x66 [snd_pcm]
+> Dec  6 10:31:39 localhost kernel: [  162.088208]  [<f80f4b31>] snd_pcm_release+0x5c/0x9e [snd_pcm]
+> Dec  6 10:31:39 localhost kernel: [  162.088211]  [<c04ca0b5>] __fput+0xf0/0x187
+> Dec  6 10:31:39 localhost kernel: [  162.088215]  [<c04ca165>] fput+0x19/0x1b
+> Dec  6 10:31:39 localhost kernel: [  162.088218]  [<c04b0d6b>] remove_vma+0x3e/0x5d
+> Dec  6 10:31:39 localhost kernel: [  162.088221]  [<c04b19f0>] do_munmap+0x21c/0x237
+> Dec  6 10:31:39 localhost kernel: [  162.088225]  [<c04b1a3b>] sys_munmap+0x30/0x3f
+> Dec  6 10:31:39 localhost kernel: [  162.088228]  [<c040321d>] syscall_call+0x7/0xb
 
-After an in-kernel IR decoder runs it needs to hand off the scancodes
-into the input subsystem. This same API can be used by the networking
-code to hand off RF scancodes.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+And fortunately I know who to cc on this one ;)
