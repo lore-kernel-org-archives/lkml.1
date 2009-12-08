@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbZLHGLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933003AbZLHGRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932748AbZLHGLl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 01:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932242AbZLHGLk
+	id S933003AbZLHGRq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 01:17:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932415AbZLHGRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 01:11:40 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60574 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932166AbZLHGLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 01:11:39 -0500
-Message-ID: <4B1DEE09.4010508@cn.fujitsu.com>
-Date: Tue, 08 Dec 2009 14:11:21 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, menage@google.com
-Subject: Re: [RFC] [PATCH 5/5] cgroups: subsystem dependencies
-References: <20091204085349.GA18867@andrew.cmu.edu> <20091204085854.GE18912@andrew.cmu.edu>
-In-Reply-To: <20091204085854.GE18912@andrew.cmu.edu>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 8 Dec 2009 01:17:46 -0500
+Received: from gate.crashing.org ([63.228.1.57]:48454 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932242AbZLHGRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 01:17:45 -0500
+Subject: Re: [PATCH v6 0/2] pseries: Add cede support for cpu-offline
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Nathan Fontenot <nfont@austin.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091126195121.29159.66098.stgit@drishya>
+References: <20091126195121.29159.66098.stgit@drishya>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Dec 2009 17:14:53 +1100
+Message-ID: <1260252893.16132.2.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch adds a mechanism with which a subsystem can specify dependencies on
-> other subsystems. Since subsystems can come and go, it would not be useful to
-> refer to a depended-upon subsystem by subsys_id, so instead a NULL-terminated
-> array of strings must be specified. Validation is done by scanning for each
-> potential subsystem its list of subsystem names with strcmp at the end of
-> parse_cgroupfs_options.
+Some of these patches (Gautham or Nathan, I haven't bisected) break 
+pseries build without CONFIG_SMP. I'll apply them anyways for now
+to next and push them out today since nobody ever builds pseries without
+CONFIG_SMP but I would appreciate if you could send a fix regardless.
 
-I once posted a patch to implement this feature, but it was
-rejected by Andrew, because there was no user using it.
-
-And still there is no user, right?
+Cheers,
+Ben.
 
 
