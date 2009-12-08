@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966031AbZLHUYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966049AbZLHUYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966031AbZLHUYB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 15:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965996AbZLHUX4
+	id S966049AbZLHUYr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 15:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966026AbZLHUYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 15:23:56 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55240 "EHLO mx2.suse.de"
+	Tue, 8 Dec 2009 15:24:34 -0500
+Received: from www.tglx.de ([62.245.132.106]:45476 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965979AbZLHUX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 15:23:56 -0500
-Message-ID: <4B1EB5E9.3010506@suse.cz>
-Date: Tue, 08 Dec 2009 21:24:09 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
-       Nir Tzachar <nir.tzachar@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: new kbuild maintainer
-References: <1260276751-19501-1-git-send-email-mmarek@suse.cz> <200912081611.12625.a.miskiewicz@gmail.com> <4B1EAF69.5090609@suse.cz> <200912082107.19192.a.miskiewicz@gmail.com>
-In-Reply-To: <200912082107.19192.a.miskiewicz@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S965996AbZLHUYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 15:24:32 -0500
+Message-Id: <20091208202026.769251187@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Tue, 08 Dec 2009 20:24:16 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+Subject: [patch 1/2] sched: Protect task->cpus_allowed access in
+	sched_getaffinity()
+Content-Disposition: inline;
+	filename=sched-fix-sched-get-affinity-racy-access.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arkadiusz Miskiewicz napsal(a):
-> On Tuesday 08 of December 2009, Michal Marek wrote:
->> Arkadiusz Miskiewicz napsal(a):
->>> Maybe we can get colors back in menuconfig then? ;-)
->>> http://bugzilla.kernel.org/show_bug.cgi?id=13677
->> Does it also happen with Nir's nconfig
->> (http://lkml.org/lkml/2009/11/25/119)?
-> 
-> Yes, it does happen, I have non-color menus. That's because nconfig also mixes 
-> wide ncurses library with non wide ncurses headers.
-> 
->   gcc -Wp,-MD,scripts/kconfig/.nconf.o.d -Wall -Wmissing-prototypes -Wstrict-
-> prototypes -O2 -fomit-frame-pointer   -I/usr/include/ncurses -
-> DCURSES_LOC="<ncurses.h>" -DLOCALE   -c -o scripts/kconfig/nconf.o 
-> scripts/kconfig/nconf.c
-> 
-> /usr/include/ncurses is non wide version of ncurses headers (but on other 
-> distros it could be done differently aka /usr/include/ncures being wide 
-> version)
-> 
->   gcc  -o scripts/kconfig/nconf scripts/kconfig/nconf.o 
-> scripts/kconfig/zconf.tab.o scripts/kconfig/nconf.gui.o -lncursesw -lmenu -
-> lpanel -lncurses
-> 
-> and here it's linked to non wide version of library (also to wide, too due to 
-> scripts/kconfig/lxdialog/check-lxdialog.sh putting it here)
-> 
-> Anyway way to solve this is:
-> - detect if ncurses header is wide or non-wide
-> - link with proper ncurses library based on detected header
+sched_getaffinity() is not protected against a concurrent modification
+of the tasks affinity.
 
-Nir, you surely know ncurses better than me :). Could you look into
-this?   Arkadiusz, which distribution are you using?
+Serialize the access with task_rq_lock(task).
 
-Michal
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/sched.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+Index: linux-2.6-tip/kernel/sched.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched.c
++++ linux-2.6-tip/kernel/sched.c
+@@ -6631,6 +6631,8 @@ SYSCALL_DEFINE3(sched_setaffinity, pid_t
+ long sched_getaffinity(pid_t pid, struct cpumask *mask)
+ {
+ 	struct task_struct *p;
++	unsigned long flags;
++	struct rq *rq;
+ 	int retval;
+ 
+ 	get_online_cpus();
+@@ -6645,7 +6647,9 @@ long sched_getaffinity(pid_t pid, struct
+ 	if (retval)
+ 		goto out_unlock;
+ 
++	rq = task_rq_lock(p, &flags);
+ 	cpumask_and(mask, &p->cpus_allowed, cpu_online_mask);
++	task_rq_unlock(rq, &flags);
+ 
+ out_unlock:
+ 	read_unlock(&tasklist_lock);
+
+
