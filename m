@@ -1,123 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966655AbZLHWHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966684AbZLHWKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966655AbZLHWHg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966635AbZLHWH3
+	id S966684AbZLHWKY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966558AbZLHWKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:07:29 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:56635 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S966625AbZLHWH0 (ORCPT
+	Tue, 8 Dec 2009 17:10:20 -0500
+Received: from mail.bluewatersys.com ([202.124.120.130]:37390 "EHLO
+	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966535AbZLHWKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:07:26 -0500
-Date: Tue, 8 Dec 2009 17:07:32 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <alpine.LFD.2.00.0912081304070.3560@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0912081643290.3046-100000@iolanthe.rowland.org>
+	Tue, 8 Dec 2009 17:10:20 -0500
+Message-ID: <4B1ECEEE.3000209@bluewatersys.com>
+Date: Wed, 09 Dec 2009 11:10:54 +1300
+From: Ryan Mallon <ryan@bluewatersys.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@ucw.cz>
+CC: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Iliyan Malchev <malchev@google.com>
+Subject: Re: GPIO support for HTC Dream
+References: <20091208102842.GH12264@elf.ucw.cz> <4B1EB57D.6070408@bluewatersys.com> <20091208214658.GC4164@elf.ucw.cz>
+In-Reply-To: <20091208214658.GC4164@elf.ucw.cz>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Dec 2009, Linus Torvalds wrote:
-
-> On Tue, 8 Dec 2009, Alan Stern wrote:
-> > 
-> > That's not the way it should be done.  Linus had children taking their
-> > parents' locks during suspend, which is simple but leads to
-> > difficulties.
+Pavel Machek wrote:
+> Add GPIO support for HTC Dream.
 > 
-> No it doesn't. Name them.
-
-Well, one difficulty.  It arises only because we are contemplating
-having the PM core fire up the async tasks, rather than having the
-drivers' suspend routines launch them (the way your original proposal
-did -- the difficulty does not arise there).
-
-Suppose A and B are unrelated devices and we need to impose the
-off-tree constraint that A suspends after B.  With children taking
-their parent's lock, the way to prevent A from suspending too soon is
-by having B's suspend routine acquire A's lock.
-
-But B's suspend routine runs entirely in an async task, because that
-task is started by the PM core and it does the method call.  Hence by
-the time B's suspend routine is called, A may already have begun
-suspending -- it's too late to take A's lock.  To make the locking
-work, B would have to acquire A's lock _before_ B's async task starts.  
-Since the PM core is unaware of the off-tree dependency, there's no
-simple way to make it work.
-
-> > Instead, the PM core should do a down_write() on each device before
-> > starting the device's async suspend routine, and an up_write() when the
-> > routine finishes.
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
 > 
-> No you should NOT do that. If you do that, you serialize the suspend 
-> incorrectly and much too early. IOW, think a topology like this:
-> 
-> 	a -> b -> c
-> 	  \
-> 	   > d -> e
-> 
-> where you'd want to suspend 'c' and 'e' asynchronously.  If we do a 
-> 'down-write()' on b, then we'll delay until 'c' has suspended, an if we 
-> have ordered the nodes in the obvious depth-first order, we'll walk the PM 
-> device list in the order:
-> 
-> 	c b e d a
-> 
-> and now we'll serialize on 'b', waiting for 'c' to suspend. Which we do 
-> _not_ want to do, because the whole point was to suspend 'c' and 'e' 
-> together.
+> +int register_gpio_chip(struct gpio_chip *new_gpio_chip)
+> +{
+> +	int err = 0;
+> +	struct gpio_chip *gpio_chip;
+> +	int i;
+> +	unsigned long irq_flags;
+> +	/* Start/end indexes into chip array */
+> +	unsigned int start, end;
+> +	int size = (new_gpio_chip->end + 1 - new_gpio_chip->start) *
+> +		   sizeof(new_gpio_chip->state[0]);
+> +
+> +	new_gpio_chip->state = kzalloc(size, GFP_KERNEL);
+> +	if (new_gpio_chip->state == NULL) {
+> +		printk(KERN_ERR "register_gpio_chip: failed to allocate state\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	spin_lock_irqsave(&gpio_chips_lock, irq_flags);
+> +	start = GPIO_NUM_TO_CHIP_INDEX(new_gpio_chip->start);
+> +	end = GPIO_NUM_TO_CHIP_INDEX(new_gpio_chip->end);
+> +
+> +	if (end >= gpio_chip_array_size) {
+> +		/* New gpio chip array */
+> +		struct gpio_chip **new_array;
+> +		/* Size of gpio chip array */
+> +		unsigned long array_size = end + 1;
+> +
+> +		new_array = kmalloc(array_size * sizeof(new_array[0]), GFP_ATOMIC);
+> +		if (!new_array) {
+> +			printk(KERN_ERR "register_gpio_chip: failed to allocate array\n");
+> +			err = -ENOMEM;
+> +			goto failed;
+> +		}
+> +		for (i = 0; i < gpio_chip_array_size; i++)
+> +			new_array[i] = gpio_chip_array[i];
+> +		for (i = gpio_chip_array_size; i < array_size; i++)
+> +			new_array[i] = NULL;
+> +		gpio_chip_array = new_array;
+> +		gpio_chip_array_size = array_size;
+> +	}
+> +
+> +	list_for_each_entry(gpio_chip, &gpio_chip_list, list) {
+> +		if (gpio_chip->start > new_gpio_chip->end) {
+> +			list_add_tail(&new_gpio_chip->list, &gpio_chip->list);
+> +			goto added;
+> +		}
+> +		if (gpio_chip->end >= new_gpio_chip->start) {
+> +			printk(KERN_ERR "register_gpio_source %u-%u overlaps with %u-%u\n",
+> +			       new_gpio_chip->start, new_gpio_chip->end,
+> +			       gpio_chip->start, gpio_chip->end);
+> +			err = -EBUSY;
+> +			goto failed;
+> +		}
+> +	}
+> +
+> +	list_add_tail(&new_gpio_chip->list, &gpio_chip_list);
+> +added:
+> +	for (i = start; i <= end; i++) {
+> +		if ((!gpio_chip_array[i]) || gpio_chip_array[i]->start > new_gpio_chip->start)
+> +			gpio_chip_array[i] = new_gpio_chip;
+> +	}
+> +failed:
+> +	spin_unlock_irqrestore(&gpio_chips_lock, irq_flags);
+> +	if (err)
+> +		kfree(new_gpio_chip->state);
+> +	return err;
+> +}
 
-You misunderstand.  The suspend algorithm will look like this:
+This is still really screwy. Why are you creating your own version of
+struct gpio_chip in addition to the one in include/asm-generic/gpio.h
+(which you also appear to include in some places). It makes the code
+extremely confusing. Other architectures use wrapper structures. Can you
+have something like this instead:
 
-	dpm_suspend()
-	{
-		list_for_each_entry_reverse(dpm_list, dev) {
-			down_write(dev->lock);
-			async_schedule(device_suspend, dev);
-		}
-	}
+	struct dream_gpio_chip {
+		struct gpio_chip chip;
 
-	device_suspend(dev)
-	{
-		device_for_each_child(dev, child) {
-			down_read(child->lock);
-			up_read(child->lock);
-		}
-		dev->suspend(dev);	/* May do off-tree down+up pairs */
-		up_write(dev->lock);
-	}
+		/* Dream specific bits */
+	};
 
-With completions instead of rwsems, the down_write() changes to
-init_completion(), the up_write() changes to complete_all(), and the
-down_read()+up_read() pairs change to wait_for_completion().
+The name of this function also needs to be changed to something less
+generic since it is being exported globally.
 
-So 'b' will wait for 'c' to suspend, as it must, but 'e' won't wait for 
-anything.
+I also think this function is doing way to much work for what it is.
+Does it really need to be this complicated?
 
-> > Parents should, at the start of their async routine,
-> > do down_read() on each of their children plus whatever other devices
-> > they need to wait for.  The core can do the waiting for children part 
-> > and the driver's suspend routine can handle any other waiting.
-> 
-> Why?
-> 
-> That just complicates things. Compare to my simple locking scheme I've 
-> quoted several times. 
+~Ryan
 
-It is a little more complicated in that it involves explicitly 
-iterating over children.  But it is simpler in that it can use 
-completions instead of rwsems and it avoids the off-tree dependency 
-problem described above.
+-- 
+Bluewater Systems Ltd - ARM Technology Solution Centre
 
-Alan Stern
-
+Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
+ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
+http://www.bluewatersys.com	New Zealand
+Phone: +64 3 3779127		Freecall: Australia 1800 148 751
+Fax:   +64 3 3779135			  USA 1800 261 2934
