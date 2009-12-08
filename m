@@ -1,86 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbZLHKEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZLHKFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbZLHKEH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 05:04:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZLHKEG
+	id S1753343AbZLHKFR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 05:05:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZLHKFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 05:04:06 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61566 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751093AbZLHKEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 05:04:05 -0500
-Message-ID: <4B1E2482.8040203@cn.fujitsu.com>
-Date: Tue, 08 Dec 2009 18:03:46 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 8 Dec 2009 05:05:16 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:53963 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751412AbZLHKFO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 05:05:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=AOS4mFurAh1QyVJeYBOhmd0hfwh/wmx9UE0K5kJWm8l3H+Dj8L5gB5h9gyouvDpmEg
+         eGChnf4zuZhRJR4ilQZ1xwnvrH1Jefclx1957R/ycEN8K3+mYJawxCwC8/bybnGeJEOt
+         vxqqo5LkrBSZPizNFTmpYyefDjOcYrbG+oHTE=
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 05/13] ftrace: Call trace_parser_clear() properly
-References: <4B1DC476.3030700@cn.fujitsu.com> <4B1DC4D2.3000406@cn.fujitsu.com> <20091208094825.GA5035@nowhere>
-In-Reply-To: <20091208094825.GA5035@nowhere>
+In-Reply-To: <4B192D08.9080608@gmail.com>
+References: <4B192D08.9080608@gmail.com>
+Date: Tue, 8 Dec 2009 10:05:19 +0000
+Message-ID: <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com>
+Subject: Re: [PATCH] Toshiba Bluetooth enabler (rfkill)
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Jes Sorensen <jes.sorensen@gmail.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Dec 08, 2009 at 11:15:30AM +0800, Li Zefan wrote:
->> I found a weird behavior:
->>
->>   # echo 'fuse:*' > set_ftrace_filter
->>   bash: echo: write error: Invalid argument
->>   # cat set_ftrace_filter
->>   fuse_dev_fasync
->>   fuse_dev_poll
->>   fuse_copy_do
->>
->> We should call trace_parser_clear() no matter ftrace_process_regex()
->> returns 0 or -errno.
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->> ---
->>  kernel/trace/ftrace.c |    3 +--
->>  1 files changed, 1 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> index 08a3fb5..ff8aecd 100644
->> --- a/kernel/trace/ftrace.c
->> +++ b/kernel/trace/ftrace.c
->> @@ -2208,10 +2208,9 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
->>  	    !trace_parser_cont(parser)) {
->>  		ret = ftrace_process_regex(parser->buffer,
->>  					   parser->idx, enable);
->> +		trace_parser_clear(parser);
->>  		if (ret)
->>  			goto out_unlock;
->> -
->> -		trace_parser_clear(parser);
->>  	}
-> 
-> 
-> I'm missing something. How that can happen. Anytime we reopen
-> the file, the parser is re-allocated.
-> 
+On 12/4/09, Jes Sorensen <jes.sorensen@gmail.com> wrote:
+> Hi,
+>
+> This patch adds a new driver to catch RFKill events to the Bluetooth
+> device on modern Toshiba laptops. Without it, the Bluetooth device is
+> simply lost on my Portege R500 when the RFKill switch is flipped, and
+> doesn't come back until after a reboot.
+>
+> It binds to the TOS6205 ACPI device and doesn't touch any existing
+> code.
+>
+> Cheers,
+> Jes
 
-It happened at file closing..
+Cool.  This must be the shortest ACPI driver :-).
 
-static int
-ftrace_regex_release(struct inode *inode, struct file *file, int enable)
-{
-	...
-        parser = &iter->parser;
-        if (trace_parser_loaded(parser)) {
-                parser->buffer[parser->idx] = 0;
-		/* here ! */
-                ftrace_match_records(parser->buffer, parser->idx, enable);
-        }
-	...
-}
+Try to send patches inline if possible, it makes them easier to review.
 
-> I guess that happens if you open in rw mode? But not using the
-> example in the changelog?
 
-I've confirmed that example I was using can reveal this bug.
+>
+> +static int toshiba_bt_rfkill_add(struct acpi_device *device);
+>
+
+I think it's simpler to avoid the need for forward declarations, e.g.
+by putting the driver structure after the ops functions.  I suppose
+it's a matter of taste though.
+
+>
+> +static struct acpi_driver toshiba_bt_rfkill_driver = {
+> +	.name =		"Toshiba BT",
+> +	.class =	"Toshiba",
+> +	.ids =		bt_device_ids,
+> +	.ops =		{
+>
+
+Please also set
+
+	.owner = THIS_MODULE,
+
+in order to provide the correct information under
+/sys/module/x/drivers and /sys/bus/acpi/drivers/x/module
+
+>
+> +static int toshiba_bluetooth_enable(acpi_handle handle)
+> +{
+> +	acpi_status res1, res2;
+> +	acpi_integer result;
+> +
+> +	/* Query ACPI to verify RFKill switch is set to on */
+> +	res1 = acpi_evaluate_integer(handle, "BTST", NULL, &result);
+> +	if (ACPI_FAILURE(res1) || !(result & 0x01))
+> +		return -EBUSY;
+...
+> +static int toshiba_bt_resume(struct acpi_device *device)
+> +{
+> +	return toshiba_bluetooth_enable(device->handle);
+> +}
+>
+
+Good to see you're handling resume, but what happens if the rfkill
+switch is _not_ set to on?  It looks like resume will return an error,
+which will produce a warning message in the kernel log.  I don't think
+we want that.
+
+> +static int toshiba_bt_rfkill_add(struct acpi_device *device)
+> +{
+> +	acpi_status status;
+> +	acpi_integer bt_present;
+> +	int result = -ENODEV;
+> +
+> +	status = acpi_evaluate_integer(device->handle, "_STA", NULL,
+> +				       &bt_present);
+
+I think this would benefit from an explanation.
+
+
+/* Some models include a placeholder for the TOS6205 device, but don't
+use it */ ?
+
+/* May be disabled in BIOS */ ?
+
+/* This device has _STA, not sure why, but let's honour it if disabled */ ?
+
+
+That might give us an idea of what to do if we find a model which
+doesn't have _STA :-).
+
+Personally I'd err on the side of allowing for models without _STA.
+You could handle that by checking that it exists before trying to
+evaluate it.  If there's some reason for not doing this, I think it
+should also be mentioned in a comment.
+
+>
+> +	result = acpi_bus_register_driver(&toshiba_bt_rfkill_driver);
+> +	if (result < 0) {
+> +		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
+> +				  "Error registering driver\n"));
+> +		return -ENODEV;
+> +	}
+
+I would suggest you return result, instead of ignoring it and always
+returning ENODEV.
+
+> +	depends on RFKILL
+> +	depends on BT
+
+But you doesn't use either of these subsystems :-). The BT one
+definitely seems bogus; please drop it.
+
+I think you _could_ export an rfkill device.  It would at least be
+useful for trouble-shooting, because it lets userspace read the
+current state in a generic way.  So I would recommend doing so in the
+future, even though most current userspaces won't do anything
+interesting with it.  Given that the BIOS sets the state when the
+switch is turned off, I would recommend you expose it as a "hard"
+block - so you don't let userspace change the state.
+
+But I wouldn't let that hold the driver up, since it serves an
+important purpose  even without creating an rfkill device.
+
+Regards
+Alan
