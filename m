@@ -1,61 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZLHOB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbZLHOBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbZLHOB0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbZLHOBW
+	id S1755285AbZLHOBq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbZLHOBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:01:22 -0500
-Received: from khc.piap.pl ([195.187.100.11]:55200 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755243AbZLHOBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:01:21 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
+	Tue, 8 Dec 2009 09:01:43 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:53278 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755244AbZLHOBl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:01:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TV7bQx/0JSKZjNh8gvaLG4vBEQVn8iOFR651FbXGTm+DXkHj+SAUBZ7xQK3AA/it7V
+         Qd12Wh7U9IKBeq1OLVE0K2o6CL8NA364+Mu7tYKUNSdbzqeC9ByyNKXqpHx1By/eVtQj
+         31+dedC3fN8Plqtj7vKYn6ewqVPXg59A+JPng=
+MIME-Version: 1.0
+In-Reply-To: <4B1E5746.7010305@redhat.com>
+References: <BDRae8rZjFB@christoph> <m3k4xe7dtz.fsf@intrepid.localdomain>
+	 <4B0E8B32.3020509@redhat.com> <1259264614.1781.47.camel@localhost>
+	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
+	 <1260240142.3086.14.camel@palomino.walls.org>
+	 <20091208042210.GA11147@core.coreip.homeip.net>
+	 <1260275743.3094.6.camel@palomino.walls.org>
+	 <9e4733910912080452p42efa794mb7fd608fa4fbad7c@mail.gmail.com>
+	 <4B1E5746.7010305@redhat.com>
+Date: Tue, 8 Dec 2009 09:01:48 -0500
+Message-ID: <9e4733910912080601s1a814720qd909e47ac09f91fc@mail.gmail.com>
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+From: Jon Smirl <jonsmirl@gmail.com>
 To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+Cc: Andy Walls <awalls@radix.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <BEJgSGGXqgB@lirc>
-	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	<1260070593.3236.6.camel@pc07.localdom.local>
-	<20091206065512.GA14651@core.coreip.homeip.net>
-	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	<m3skbn6dv1.fsf@intrepid.localdomain>
-	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-	<4B1D934E.7030103@redhat.com>
-	<20091208042340.GC11147@core.coreip.homeip.net>
-	<4B1E3F7D.9070806@redhat.com>
-Date: Tue, 08 Dec 2009 15:01:25 +0100
-In-Reply-To: <4B1E3F7D.9070806@redhat.com> (Mauro Carvalho Chehab's message of
-	"Tue, 08 Dec 2009 09:58:53 -0200")
-Message-ID: <m34oo1va2y.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+On Tue, Dec 8, 2009 at 8:40 AM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+> Jon Smirl wrote:
+>> On Tue, Dec 8, 2009 at 7:35 AM, Andy Walls <awalls@radix.net> wrote:
+>>> On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
+>>>> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
+>>>>> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+>>>>> end of the month.
+>>>>>
+>>>>> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+>>>>> a common set of parameters, so I may be able to set up the decoders to
+>>>>> handle decoding from two different remote types at once.  The HVR boards
+>>>>> can ship with either type of remote AFAIK.
+>>>>>
+>>>>> I wonder if I can flip the keytables on the fly or if I have to create
+>>>>> two different input devices?
+>>>>>
+>>>> Can you distinguish between the 2 remotes (not receivers)?
+>>> Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
+>>> (Honestly I could pile on more protocols that have similar pulse time
+>>> periods, but that's complexity for no good reason and I don't know of a
+>>> vendor that bundles 3 types of remotes per TV card.)
+>>>
+>>>
+>>>>  Like I said,
+>>>> I think the preferred way is to represent every remote that can be
+>>>> distinguished from each other as a separate input device.
+>>> OK.  With RC-5, NEC, and RC-6 at least there is also an address or
+>>> system byte or word to distingish different remotes.  However creating
+>>> multiple input devices on the fly for detected remotes would be madness
+>>> - especially with a decoding error in the address bits.
+>>
+>> I agree that creating devices on the fly has problems. Another
+>> solution is to create one device for each map that is loaded. There
+>> would be a couple built-in maps for bundled remotes - each would
+>> create a device. Then the user could load more maps with each map
+>> creating a device.
+>
+> No, please. We currently have already 89 different keymaps in-kernel. Creating
+> 89 different interfaces per IR receiver is not useful at all.
+>
+> IMO, the interfaces should be created as the keymaps are associated
+> to an specific IR receiver.
 
-> I don't think we need an userspace interface for the in-kernel
-> decoders.
+Each IR receiver device driver would have a built-in keymap for the
+remote bundled with it. When you load the driver it will poke the
+input system and install the map. Any additional keymaps would get
+loaded from user space. You would load one keymap per input device.
 
-Of course we need it, to set (and probably retrieve) scancode-keycode
-mappings. This could probably be, ATM, the existing input layer channel.
+You might have 89 maps in the kernel with each map being built into
+the device driver for those 89 IR receivers. But you'll only own one
+or two of those devices so only one or two of the 89 maps will load.
+Building the map for the bundled receiver into the device driver is an
+important part of achieving "just works".
 
-> All
-> it needs is to enable/disable the protocol decoders, imo via sysfs interface.
+I suspect we'll have a 1,000 maps defined after ten years, most of
+these maps will be loaded from user space. But you'll only have two or
+three loaded at any one time into your kernel. You need one map per
+input device created. These maps are tiny, less than 1KB.
 
-This isn't IMHO needed at all. The protocol is enabled when at least one
-key using it is configured, otherwise it's disabled. We probably need
-some "wildcard" as well, to capture decoded scancodes (through the input
-layer).
-This is BTW pure optimization, the protocol could stay enabled all the
-time, only wasting the cycles.
+Having all of these maps is the price of allowing everyone to use any
+more that they please. If you force the use of universal remotes most
+of the maps can be eliminated.
+
+
+
+>
+>> Incoming scancodes are matched against all of the loaded maps and a
+>> keycode event is generated if a match occurs.
+>
+> s/all of the loaded maps/all of the loaded maps per device/
+>
+> You may have more than one IR receiver on a given machine.
+>
+> IMO, we may have a mask filter matching also, associated with each keycode
+> table, to minimize the keycode seek time. Something like:
+>
+>        if (scancode & scancode_mask)
+>                check_scancode()
+>
+>> This illustrates why there should an EV_IR event which communicates
+>> scancodes, without this event you can't see the scancodes that don't
+>> match a map entry. A scancode would be first matched against the map,
+>> then if there as no match an EV_IR event would be reported.
+>
+> There's nothing wrong on receiving a scancode that won't map. This can
+> simply be an event that you don't want to handle (for example, an IR
+> code sent to user's TV set).
+>
+> IMO, the better is to provide this scancode at KERN_DEBUG (if debug is
+> enabled), and via an "observer" program.
+>
+> Cheers,
+> Mauro.
+>
+
+
+
 -- 
-Krzysztof Halasa
+Jon Smirl
+jonsmirl@gmail.com
