@@ -1,116 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbZLHLza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbZLHL7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbZLHLza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 06:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZLHLz3
+	id S1754352AbZLHL7N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 06:59:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZLHL7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 06:55:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16752 "EHLO mx1.redhat.com"
+	Tue, 8 Dec 2009 06:59:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14081 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754098AbZLHLz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 06:55:29 -0500
-Message-ID: <4B1E3F33.2090004@redhat.com>
-Date: Tue, 08 Dec 2009 06:57:39 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
+	id S1754148AbZLHL7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 06:59:09 -0500
+Message-ID: <4B1E3F7D.9070806@redhat.com>
+Date: Tue, 08 Dec 2009 09:58:53 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL] tracing/kprobes: Fix field creation's bad error handling
-References: <1260263815-5167-1-git-send-regression-fweisbec@gmail.com>
-In-Reply-To: <1260263815-5167-1-git-send-regression-fweisbec@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Jon Smirl <jonsmirl@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+ IR  system?
+References: <BEJgSGGXqgB@lirc> <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com> <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain> <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com> <4B1D934E.7030103@redhat.com> <20091208042340.GC11147@core.coreip.homeip.net>
+In-Reply-To: <20091208042340.GC11147@core.coreip.homeip.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> Ingo,
-> 
-> Please pull the tracing/fixes branch that can be found at:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	tracing/fixes
-> 
-> Thanks,
-> 	Frederic
-> ---
-> 
-> Frederic Weisbecker (1):
->       tracing/kprobes: Fix field creation's bad error handling
-> 
-> 
->  kernel/trace/trace_kprobe.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> ---
-> From 12e22dfaaee46f70762beb1982a7b86a68317b11 Mon Sep 17 00:00:00 2001
-> From: Frederic Weisbecker <fweisbec@gmail.com>
-> Date: Tue, 8 Dec 2009 10:00:04 +0100
-> Subject: [PATCH] tracing/kprobes: Fix field creation's bad error handling
-> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>
-> 
-> When we define the common event fields in kprobe, we invert the error
-> handling and return immediately in case of success. Then we omit
-> to define specific kprobes fields (ip and nargs), and specific
-> kretprobes fields (func, ret_ip, nargs). And we only define them
-> when we fail to create common fields.
-> 
-> The most visible consequence is that we can't create filter for
-> k(ret)probes specific fields.
-> 
-> This patch re-invert the success/error handling to fix it.
-> 
-> Reported-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
+Dmitry Torokhov wrote:
+> On Mon, Dec 07, 2009 at 09:44:14PM -0200, Mauro Carvalho Chehab wrote:
 
-Thanks for fix that.
-
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-
-
-Ingo, I think this should go to tip:urgent.
-
-Thank you,
-
-> ---
->  kernel/trace/trace_kprobe.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>>> What about capabilities of the receiver, what frequencies?
+>>> If a receiver has multiple frequencies, how do you report what
+>>> frequency the data came in on?
+>> IMO, via sysfs.
 > 
-> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-> index aff5f80..ca04523 100644
-> --- a/kernel/trace/trace_kprobe.c
-> +++ b/kernel/trace/trace_kprobe.c
-> @@ -1114,7 +1114,7 @@ static int kprobe_event_define_fields(struct ftrace_event_call *event_call)
->  	struct trace_probe *tp = (struct trace_probe *)event_call->data;
->  
->  	ret = trace_define_common_fields(event_call);
-> -	if (!ret)
-> +	if (ret)
->  		return ret;
->  
->  	DEFINE_FIELD(unsigned long, ip, FIELD_STRING_IP, 0);
-> @@ -1132,7 +1132,7 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
->  	struct trace_probe *tp = (struct trace_probe *)event_call->data;
->  
->  	ret = trace_define_common_fields(event_call);
-> -	if (!ret)
-> +	if (ret)
->  		return ret;
->  
->  	DEFINE_FIELD(unsigned long, func, FIELD_STRING_FUNC, 0);
+> We probably need to think what exactly we report through sysfs siunce it
+> is ABI of sorts.
 
--- 
-Masami Hiramatsu
+Yes, sure.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Probably, the exact needs will popup only when we start to actually writing that
+part of the core.
 
-e-mail: mhiramat@redhat.com
+My intention for now is to just create a /sys/class/irrcv, with one node
+per each IR receiver and adding a protocol enumeration/selection node
+there, and add some capabilities for the in-kernel decoders and lirc_dev
+to create new nodes under that class.
 
+When the decoders/lirc_dev patches popup, we'll need to review those sysfs
+API's.
+ 
+>>> What about multiple apps simultaneously using the pulse data?
+>> IMO, the better is to limit the raw interface to just one open.
+>>
+> 
+> Why woudl we want to do this? Quite often there is a need for "observer"
+> that maybe does not act on data but allows capturing it. Single-user
+> inetrfaces are PITA. 
+
+That should work fine as well, but I'm not sure how we'll detect overrun with
+several kfifo readers.
+
+>>> How big is the receive queue?
+>> It should be big enough to receive at least one keycode event. Considering that
+>> the driver will use kfifo (IMO, it is a good strategy, especially since you
+>> won't need any lock if just one open is allowed), it will require a power of two size.
+>>
+> 
+> Would not it be wither driver- or protocol-specific?
+
+Probably.
+
+> 
+>>> How does access work, root only or any user?
+>> IMO, it should be the same requirement as used by an input interface.
+>>
+>>> How are capabilities exposed, sysfs, etc?
+>> IMO, sysfs.
+>>
+>>> What is the interface for attaching an in-kernel decoder?
+>> IMO, it should use the kfifo for it. However, if we allow both raw data and
+>> in-kernel decoders to read data there, we'll need a spinlock to protect the
+>> kfifo.
+>>
+> 
+> I think Jon meant userspace interface for attaching particular decoder.
+
+I don't think we need an userspace interface for the in-kernel decoders. All
+it needs is to enable/disable the protocol decoders, imo via sysfs interface.
+
+>>> If there is an in-kernel decoder should the pulse data stop being
+>>> reported, partially stopped, something else?
+>> I don't have a strong opinion here, but, from the previous discussions, it
+>> seems that people want it to be double-reported by default. If so, I think
+>> we need to implement a command at the raw interface to allow disabling the
+>> in-kernel decoder, while the raw interface is kept open.
+> 
+> Why don't you simply let consumers decide where they will get their data?
+
+How?
+
+Cheers,
+Mauro.
