@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965839AbZLHTWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965849AbZLHTWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965839AbZLHTWH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 14:22:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965825AbZLHTWF
+	id S965849AbZLHTWb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 14:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965847AbZLHTW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 14:22:05 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:44303 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965822AbZLHTWE (ORCPT
+	Tue, 8 Dec 2009 14:22:27 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:43964 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965845AbZLHTW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 14:22:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=rrqYLTy5mfX1TKWEInkiZGRUG6JWf6lQiO+5aiRonqNrdkkuM4mXBl0NyFNq6xr4z5
-         TrkmejX2es13sgcCiCkAzIEFfJngzo5mqoDN5XaI52b0sUJUnIDKDqW2rg5ZCv/2e9BX
-         lB3Hx+31D0JFlaeMerhK623tj9APFpBkWrN84=
-Message-ID: <4B1EA61A.2000804@gmail.com>
-Date: Tue, 08 Dec 2009 11:16:42 -0800
-From: John Daiker <daikerjohn@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1.5) Gecko/20091204 Lightning/1.0pre Shredder/3.0.1pre
-MIME-Version: 1.0
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-CC: Joe Perches <joe@perches.com>, kernel-janitors@vger.kernel.org,
-       aia21@cantab.net, linux-ntfs-dev@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] NTFS: Change string pointers to string constants.
-References: <1259808806-27279-1-git-send-email-daikerjohn@gmail.com>	 <C1806924-DE57-4FBA-A67C-85C618FE6639@cam.ac.uk> <1260236833.3215.237.camel@Joe-Laptop.home>
-In-Reply-To: <1260236833.3215.237.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 8 Dec 2009 14:22:26 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao4FAKMyHkuuWOw8/2dsb2JhbACBTNd1hDIE
+Date: Tue, 8 Dec 2009 14:17:31 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Robert Olsson <robert.olsson@its.uu.se>,
+       Jens Laas <jens.laas@data.slu.se>, Hans Liss <hans.liss@its.uu.se>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fib-trie: code cleanup
+Message-ID: <20091208191731.GB1653@Krystal>
+References: <20091208184839.GA31383@Krystal> <20091208110539.2b46e64b@nehalam>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091208110539.2b46e64b@nehalam>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 14:17:18 up 6 days, 10:07,  4 users,  load average: 0.28, 0.15,
+	0.10
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/07/2009 05:47 PM, Joe Perches wrote:
-> On Tue, 2009-12-08 at 00:57 +0000, Anton Altaparmakov wrote:
->> Can you please explain the rational for making this change?
->
-> Perhaps it's not worth much, but it saves a pointer reference.
->
-> $ cat pointer.c
-> #include<string.h>
-> #include<stdio.h>
->
-> int main (int argc, char** argv)
-> {
-> 	static const char *foo = "abcdefg";
-> 	printf("%s\n", foo);
-> 	return 0;
-> }
->
-> $ gcc -c pointer.c
-> $ size pointer.o
->     text	   data	    bss	    dec	    hex	filename
->       37	      4	      0	     41	     29	pointer.o
->
-> $ cat reference.c
-> #include<string.h>
-> #include<stdio.h>
->
-> int main (int argc, char** argv)
-> {
-> static const char foo[] = "abcdefg";
-> printf("%s\n", foo);
-> return 0;
-> }
->
-> $ gcc -c reference.c
-> $ size reference.o
->     text    data     bss     dec     hex filename
->       36       0       0      36      24 reference.o
->
->
->
+* Stephen Hemminger (shemminger@linux-foundation.org) wrote:
+> On Tue, 8 Dec 2009 13:48:39 -0500
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > - I moved static const that were hidden in the middle of the file to defines on
+> >   top.
+> 
+> Keep them as static const, makeing them #define's doesn't help anything
+> 
 
-As Joe mentioned above (thanks Joe!) it saves a pointer reference.
+OK, but can we move them to the top of the file ?
 
-It is also listed as a KernelJanitors ToDo item (about 2/3 of the way 
-down the page).  Searching for 'From: Jeff Garzik' should find it.
-
-John
-
-[1] http://kernelnewbies.org/KernelJanitors/Todo
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
