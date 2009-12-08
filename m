@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbZLHOAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZLHOB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755315AbZLHOAL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:00:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZLHOAJ
+	id S1755374AbZLHOB0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:01:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbZLHOBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:00:09 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:41312 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbZLHOAH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:00:07 -0500
-Date: Tue, 8 Dec 2009 16:00:05 +0200
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-To: rui.zhang@intel.com
-Cc: List Linux Kernel <linux-kernel@vger.kernel.org>, jic23@cam.ac.uk,
-       alan@linux.intel.com, linux-acpi@vger.kernel.org, gregkh@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCHv2 0/2] Introducing the Ambient Light Sensor (ALS) class
-Message-ID: <20091208140005.GA3125@everest.lan>
-Mail-Followup-To: rui.zhang@intel.com,
-	List Linux Kernel <linux-kernel@vger.kernel.org>, jic23@cam.ac.uk,
-	alan@linux.intel.com, linux-acpi@vger.kernel.org, gregkh@suse.de,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jean Delvare <khali@linux-fr.org>
-References: <1259581514-15356-1-git-send-email-amit.kucheria@verdurent.com>
- <37786d4b0912070650g7ba7604bv63365a21f980501d@mail.gmail.com>
- <20091207160432.3108e17b@hyperion.delvare>
+	Tue, 8 Dec 2009 09:01:22 -0500
+Received: from khc.piap.pl ([195.187.100.11]:55200 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755243AbZLHOBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:01:21 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jon Smirl <jonsmirl@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+References: <BEJgSGGXqgB@lirc>
+	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
+	<1260070593.3236.6.camel@pc07.localdom.local>
+	<20091206065512.GA14651@core.coreip.homeip.net>
+	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
+	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
+	<m3skbn6dv1.fsf@intrepid.localdomain>
+	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
+	<4B1D934E.7030103@redhat.com>
+	<20091208042340.GC11147@core.coreip.homeip.net>
+	<4B1E3F7D.9070806@redhat.com>
+Date: Tue, 08 Dec 2009 15:01:25 +0100
+In-Reply-To: <4B1E3F7D.9070806@redhat.com> (Mauro Carvalho Chehab's message of
+	"Tue, 08 Dec 2009 09:58:53 -0200")
+Message-ID: <m34oo1va2y.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091207160432.3108e17b@hyperion.delvare>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 7, 2009 at 5:04 PM, Jean Delvare <khali@linux-fr.org> wrote:
-> On Mon, 7 Dec 2009 16:50:23 +0200, Amit Kucheria wrote:
->> On Mon, Nov 30, 2009 at 1:45 PM, Amit Kucheria
->> <amit.kucheria@verdurent.com> wrote:
->> > Introduce a new class of devices to handle ambient light sensors. Currently
->> > only one sysfs inteface, 'illuminance' is introduced. More will be added as
->> > drivers are ported to use this new class.
->> >
->> > Amit Kucheria (1):
->> >  als: add unique device-ids to the als device class
->> >
->> > Zhang Rui (1):
->> >  introduce ALS sysfs class
->> >
->> >  Documentation/ABI/testing/sysfs-class-als |    9 ++
->> >  MAINTAINERS                               |    6 ++
->> >  drivers/Kconfig                           |    2 +
->> >  drivers/Makefile                          |    1 +
->> >  drivers/als/Kconfig                       |   10 +++
->> >  drivers/als/Makefile                      |    5 +
->> >  drivers/als/als_sys.c                     |  116 +++++++++++++++++++++++++++++
->> >  include/linux/als_sys.h                   |   35 +++++++++
->> >  8 files changed, 184 insertions(+), 0 deletions(-)
->> >  create mode 100644 Documentation/ABI/testing/sysfs-class-als
->> >  create mode 100644 drivers/als/Kconfig
->> >  create mode 100644 drivers/als/Makefile
->> >  create mode 100644 drivers/als/als_sys.c
->> >  create mode 100644 include/linux/als_sys.h
->> >
->>
->> (Bump)
->>
->> Is there any blocker to adding this for 2.6.33?
->
-> As far as I am concerned, it's ready to go. And I would love to see it
-> in 2.6.33.
->
->> Which maintainer will pick up the ALS framework?
->
-> As Rui volunteered to be the maintainer of this new subsystem, it would
-> seem fair that he takes care of the initial push as well.
+Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-Rui,
+> I don't think we need an userspace interface for the in-kernel
+> decoders.
 
-Not sure about the LKML netiquette here, but I could track this patchset to
-get it merged. Let me know.
+Of course we need it, to set (and probably retrieve) scancode-keycode
+mappings. This could probably be, ATM, the existing input layer channel.
 
-Regards,
-Amit
+> All
+> it needs is to enable/disable the protocol decoders, imo via sysfs interface.
+
+This isn't IMHO needed at all. The protocol is enabled when at least one
+key using it is configured, otherwise it's disabled. We probably need
+some "wildcard" as well, to capture decoded scancodes (through the input
+layer).
+This is BTW pure optimization, the protocol could stay enabled all the
+time, only wasting the cycles.
+-- 
+Krzysztof Halasa
