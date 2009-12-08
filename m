@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966054AbZLHUql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966084AbZLHUsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966054AbZLHUql (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 15:46:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbZLHUqf
+	id S966084AbZLHUsq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 15:48:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966075AbZLHUsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 15:46:35 -0500
-Received: from mail-yw0-f196.google.com ([209.85.211.196]:64865 "EHLO
-	mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285AbZLHUqe convert rfc822-to-8bit (ORCPT
+	Tue, 8 Dec 2009 15:48:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49291 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966011AbZLHUsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 15:46:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=c9U1EL08dip0JgknZkJHtrMrFT4sHxo2Mmbrn83xAu11g+uJN1yk7sDXza8+vEjgl/
-         aDUxMRSPjNt/iGZWfvzYrG6OMp5KLIHn5g6Q9z6tyUkDjS309WbhuG1KeczvOhqS6BOF
-         J6j7Nv5N0zwKFrMaVbxbfDcRFZSU1Xe7yKsIo=
+	Tue, 8 Dec 2009 15:48:38 -0500
+Date: Tue, 8 Dec 2009 12:48:24 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+In-Reply-To: <Pine.LNX.4.44L0.0912081412450.3046-100000@iolanthe.rowland.org>
+Message-ID: <alpine.LFD.2.00.0912081242550.3560@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912081412450.3046-100000@iolanthe.rowland.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <x49hbs1fir5.fsf@segfault.boston.devel.redhat.com>
-References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
-	 <x49hbs1fir5.fsf@segfault.boston.devel.redhat.com>
-Date: Tue, 8 Dec 2009 21:46:39 +0100
-Message-ID: <4e5e476b0912081246w32a9ae1bw7d49b0285719b22e@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
-On Tue, Dec 8, 2009 at 7:00 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
-> Corrado Zoccolo <czoccolo@gmail.com> writes:
->
->> The introduction of ramp-up formula for async queue depths has
->> slowed down dirty page reclaim, by reducing async write performance.
->> This patch makes sure the formula kicks in only when sync request
->> was recently delayed.
->> @@ -3706,7 +3707,7 @@ static void *cfq_init_queue(struct request_queue *q)
->>       cfqd->cfq_latency = 1;
->>       cfqd->cfq_group_isolation = 0;
->>       cfqd->hw_tag = -1;
->> -     cfqd->last_end_sync_rq = jiffies;
->> +     cfqd->last_delayed_sync = jiffies - HZ;
->
-> So, umm, what's that about?
-
-Previously, when cfq started, it started in a state where writes were
-completely throttled. Now, we optimistically prefer to start with a
-reasonable max depth (10)
-
-Thanks
-Corrado
-
-> Cheers,
-> Jeff
->
 
 
+On Tue, 8 Dec 2009, Alan Stern wrote:
+> 
+> >   You also need a smp_mb() in the wait_for_lock(), not a smp_rmb(). Can't 
+> >   allow writes to migrate up either.  'atomic_read()' does not imply any
+> >   barriers.
+> 
+> No, that's not needed.  Unlike reads, writes can't move in front of
+> data or control dependencies.  Or so I've been lead to believe...
 
--- 
-__________________________________________________________________________
+Sure they can. Control dependencies are trivial - it's called "branch 
+prediction", and everybody does it, and data dependencies don't exist on 
+many CPU architectures (even to the point of reading through a pointer 
+that you loaded).
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-The self-confidence of a warrior is not the self-confidence of the average
-man. The average man seeks certainty in the eyes of the onlooker and calls
-that self-confidence. The warrior seeks impeccability in his own eyes and
-calls that humbleness.
-                               Tales of Power - C. Castaneda
+But yes, on x86, stores only move down. But that's an x86-specific thing.
+
+[ Not that it's also not very common - write buffering is easy and matters 
+  for performance, so any in-order implementation will generally do it. In 
+  contrast, writes moving up doesn't really help peformance and is harder 
+  to do, but can happen with a weakly ordered memory subsystem especially 
+  if you have multi-way caches where some ways are busy and end up being 
+  congested.
+
+  So the _common_ case is definitely about delaying writes and doing reads 
+  early if possible. But it's not necessarily at all guaranteed in 
+  general. ]
+
+> > That "wait_for_lock()" is equivalent to a 'read_lock()+read_unlock()'.
+> 
+> Not really.  It also corresponds to a 'write_lock()+write_unlock()' (in
+> the suspend routine).  Are you claiming these two compound operations
+> are equivalent?
+
+They have separate semantics, and you just want to pick the one that suits 
+you. Your counting lock doesn't have the "read_lock+read_unlock" version, 
+it only has the write_lock/unlock one (ie it requires totally unlocked 
+thing).
+
+The point being, rwsem's can do everything your counting lock does. And 
+they already exist. And they already know about all the subtleties of 
+architecture-specific memory ordering etc.
+
+				Linus
