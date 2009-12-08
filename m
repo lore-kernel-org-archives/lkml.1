@@ -1,284 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbZLHELq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935180AbZLHEWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794AbZLHELq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 23:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934433AbZLHELp
+	id S935180AbZLHEWO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 23:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934855AbZLHEWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 23:11:45 -0500
-Received: from mail1.radix.net ([207.192.128.31]:46930 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757123AbZLHELo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 23:11:44 -0500
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-From: Andy Walls <awalls@radix.net>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+	Mon, 7 Dec 2009 23:22:12 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:63199 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934543AbZLHEWK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 23:22:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WoKTwmyq9esjAp6tnBA0sp1Kc2frRViJhL23rBtFVA5Hjb78EKk+OMndbhEpw6MbDh
+         bDqECM05MLiDtySyxX2kW3z9nLFXhSyonEnW9qJiFN+tLtofn7SQ64bo7M3vCReKMp3s
+         99rsoLdzEYiw7BVpIVA2F3s6/ZBrByeKlBEtA=
+Date: Mon, 7 Dec 2009 20:22:10 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andy Walls <awalls@radix.net>
+Cc: Jarod Wilson <jarod@wilsonet.com>,
        Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
        Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
-       jarod@wilsonet.com, kraxel@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       superm1@ubuntu.com
-In-Reply-To: <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-References: <20091204220708.GD25669@core.coreip.homeip.net>
-	 <BEJgSGGXqgB@lirc>
-	 <9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	 <1260070593.3236.6.camel@pc07.localdom.local>
-	 <20091206065512.GA14651@core.coreip.homeip.net>
-	 <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	 <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	 <m3skbn6dv1.fsf@intrepid.localdomain>
-	 <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 07 Dec 2009 23:10:56 -0500
-Message-Id: <1260245456.3086.91.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+Message-ID: <20091208042210.GA11147@core.coreip.homeip.net>
+References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com> <1259264614.1781.47.camel@localhost> <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com> <1260240142.3086.14.camel@palomino.walls.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260240142.3086.14.camel@palomino.walls.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-06 at 16:23 -0500, Jon Smirl wrote:
-> On Sun, Dec 6, 2009 at 3:34 PM, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> > Jon Smirl <jonsmirl@gmail.com> writes:
-> >
-> >>> Once again: how about agreement about the LIRC interface
-> >>> (kernel-userspace) and merging the actual LIRC code first? In-kernel
-> >>> decoding can wait a bit, it doesn't change any kernel-user interface.
-> >>
-> >> I'd like to see a semi-complete design for an in-kernel IR system
-> >> before anything is merged from any source.
-> >
-> > This is a way to nowhere, there is no logical dependency between LIRC
-> > and input layer IR.
-> >
-> > There is only one thing which needs attention before/when merging LIRC:
-> > the LIRC user-kernel interface. In-kernel "IR system" is irrelevant and,
-> > actually, making a correct IR core design without the LIRC merged can be
-> > only harder.
+On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
+> On Mon, 2009-12-07 at 13:19 -0500, Jarod Wilson wrote:
+> > On Nov 26, 2009, at 2:43 PM, Andy Walls wrote:
+> > 
+> > > On Thu, 2009-11-26 at 12:05 -0200, Mauro Carvalho Chehab wrote:
+> > >> Krzysztof Halasa wrote:
+> > >>> Andy Walls <awalls@radix.net> writes:
+> > >>> 
+> > >>>> I would also note that RC-6 Mode 6A, used by most MCE remotes, was
+> > >>>> developed by Philips, but Microsoft has some sort of licensing interest
+> > >>>> in it and it is almost surely encumbered somwhow:
+> > >>> 
+> > >>> I don't know about legal problems in some countries but from the
+> > >>> technical POV handling the protocol in the kernel is more efficient
+> > >>> or (/and) simpler.
+> > >> 
+> > >> A software licensing from Microsoft won't apply to Linux kernel, so I'm
+> > >> assuming that you're referring to some patent that they could be filled
+> > >> about RC6 mode 6A.
+> > >> 
+> > >> I don't know if is there any US patent pending about it (AFAIK, only US
+> > >> accepts software patents), but there are some prior-art for IR key
+> > >> decoding. So, I don't see what "innovation" RC6 would be adding. 
+> > >> If it is some new way to transmit waves, the patent issues
+> > >> aren't related to software, and the device manufacturer had already handled
+> > >> it when they made their devices.
+> > >> 
+> > >> If it is just a new keytable, this issue 
+> > >> could be easily solved by loading the keytable via userspace.
+> > >> 
+> > >> Also, assuming that you can use the driver only with a hardware that comes
+> > >> with a licensed software, the user has already the license for using it.
+> > >> 
+> > >> Do you have any details on what patents they are claiming?
+> > > 
+> > > The US Philips RC-6 patent is US Patent 5,877,702
+> > > 
+> > > http://www.google.com/patents?vid=USPAT5877702
+> > > 
+> > > Click on download PDF to get a copy of the whole patent.
+> > > 
+> > > I am not a lawyer.  Philips claims' all appear to tie to a transmitter
+> > > or receiver as part of a system, but most of the claims are about
+> > > information and bit positions and lengths.
+> > ...
+> > > IMO, given
+> > > 
+> > > a. the dearth of public information about RC-6, indicating someone
+> > > thinks it's their trade secret or intellectual property
+> > > 
+> > > b. Microsoft claiming to license something related to the MCE remote
+> > > protocols (which are obviously RC-6 Mode 6A),
+> > > 
+> > > c. my inability to draw a "clear, bright line" that RC-6 Mode 6A
+> > > encoding and decoding, as needed by MCE remotes, implemented in software
+> > > doesn't violate anyone's government granted rights to exclusivity.
+> > > 
+> > > I think it's much better to implement software RC-6 Mode 6A encoding and
+> > > decoding in user space, doing only the minimum needed to get the
+> > > hardware setup and going in the kernel.  
+> > > 
+> > > Encoding/decoding of RC-6 by microcontrollers with firmware doesn't
+> > > worry me. 
+> > > 
+> > > 
+> > > Maybe I'm being too conservative here, but I have a personal interest in
+> > > keeping Linux free and unencumbered even in the US which, I cannot deny,
+> > > has a patent system that is screwed up.
+> > 
+> > So I had one of the people who does all the license and patent audits
+> > for Fedora packages look at the Philips patent on RC-6. He's 100%
+> > positive that the patent *only* covers hardware, there should be no
+> > problem whatsoever writing a software decoder for RC-6.
 > 
-> Here's a few design review questions on the LIRC drivers that were posted....
-
-I will answer based on my understanding of LIRC as it exists today, but
-I'm tired and am not going to dig into too many details I can't find
-easily.
-
-(Christoph can correct me if I get anything wrong.)
-
-
-An architecture drawing can be found here:
-
-http://www.lirc.org/html/technical.html
-
-> How is the pulse data going to be communicated to user space?
-
-Currently that is via lirc_dev which shows up as /dev/lircN (IIRC) in
-userspace.
-
-"The lirc_dev module is a helper and abstraction layer for other
-modules. It registers /dev/lirc device in a system (including support
-for devfs) and waits for plugin registration. After that it serves
-device requests (open, read, poll, ioctl, close) and if needed calls
-callback functions from plugin(s) to communicate with the physical
-device."
-
-The function call for hardware drivers to register with lirc_dev from
-within kernel space is lirc_register_driver() which requires a structure
-with points to hardware specifi operations, IIRC.
-
-
-> Can the pulse data be reported via an existing interface without
-> creating a new one?
-
-Yes.
-
-
-> Where is the documentation for the protocol?
-
-http://www.lirc.org/html/technical.html
-
-
-> Is it a device interface or something else?
-
-Device for a kernelspace driver/plugin registering with lirc_dev.
-
-
-> Does it work with poll, epoll, etc?
-
-lirc_dev has an function irctl_poll() that will call a hardware specifi
-poll operation if it exists, otherwise it has default poll logic.
-
-
-> What is the time standard for the data, where does it come from?
-
-I think it is usec, IIRC.
-
-I know that the hardware I work with has sub 100 ns resolution, so
-that's what is used as the basis for v4l2_subdev_ir_ops time values in
-kernel.  The conversion to usec is rather trivial.
-
-The hardware I work with is very configurable, but I always use the
-BT.656 video pixel clock of of 13.5 MHz * 8 = 108 MHz as the master
-frequency reference for all the pulse width measurement circuitry.
-
-
-> How do you define the start and stop of sequences?
-
-For the end of Rx signalling:
-
-Well with the Conexant hardware I can set a maximum pulse (mark or
-space) width, and the hardware will generate an Rx Timeout interrupt to
-signal the end of Rx when a space ends up longer than that max pulse
-width.  The hardware also puts a special marker in the hardware pulse
-widht measurement FIFO (in band signalling essentially).
-
-I'm not sure anything like that gets communicated to userspace via
-lirc_dev, and I'm too tired to doublecheck right now.
-
-If you have determined the protocol you are after, it's easy to know
-what the pulse count should be and what the max pulse width should be (+
-slop for crappy hardware) so finding the end of an Rx isn't hard.  The
-button repeats intervals are *very* large.  I've never seen a remote
-rapid fire codes back to back.
-
-
-For the start of a sequence:
-
-Easy, the first mark after a *very* long (10's of msec) space.
-You could also look for very long mark header which many protocols (NEC,
-RC-6, ...) have to help the IR hardware's AGC get set.
-
-
-> What about capabilities of the receiver, what frequencies?
-
-LIRC's API has a LIRC_GET_FEATURES ioctl().
-
-
-> If a receiver has multiple frequencies, how do you report what
-> frequency the data came in on?
-
-I'm not sure most hardware can pick up a pulse on an arbitrary freq.
-Usually you set a desired carrier and a window.  The windows can be very
-generous on some hardware: Fc * 16/20 to Fc * 16/12 (e.g. for 38 kHz
-that's 30.4 kHz to 50.667 kHz). 
-
-Hardware can have a special "learn mode" to really make fine
-measurements about the waveform without a specified carrier, but usually
-requires some special setup and the user being prompted to take action
-to get a good measurement.
-
-
-> What about multiple apps simultaneously using the pulse data?
-
-LIRC multiplexes a single device node with a daemon in userspace.
-
-
-> Is receiving synchronous or queued?
-
-kfifo's in lirc_dev IIRC.
-
-
-> How big is the receive queue?
-
-Device HW FIFO's can have a depth of 1 to 16.
-
-My software queues for CX2388[58] devices are 512 pulse measurments deep
---  overkill except for maybe a protocol with a 256 bit manchester
-encoded payload.
-
-IIRC the lirc_dev per device buffers (on top of things that I just
-mentioned) are at a size requested of lirc_dev by the underlying
-hardware driver/plugin.
-
-
-
-> How does access work, root only or any user?
-
-Depends on udev rules.  *NIX systems by default should be doing mknod()
-such that root only has access unless otherwise specified.
-
-Connecting to the LIRC daemon is via socket interface.
-
-
-> What about transmit, how do you get pulse data into the device?
-
-With the LIRC daemon which uses, in this example, the /dev/lircN device
-node.
-
-
-> Transmitter frequencies?
-
-Config file.
-
-Also with the LIRC_SET_SEND_CARRIER and LIRC_SET_SEND_DUTY_CYCLE
-ioctl()s.
-
-
-> Multiple transmitters?
-
-LIRC_SET_TRANSMITTER_MASK ioctl() for multiple Tx diodes on one IR
-controller.
-
-Multiple /dev/lircN nodes for multiple independent controllers.
-
-
-> Is transmitting synchronous or queued?
-
-kfifo's IIRC.
-
-
-> How big is the transmit queue?
-
-Likely variable again requested by the underling driver/plugin of
-lirc_dev.
-
-
-
-There are really 3 files I think you should look at for in kernel LIRC
-drivers which may have answered many of those questions you had:
-
-lirc-0.8.5/drivers/lirc.h
-lirc-0.8.5/drivers/lirc_dev/lirc_dev.h
-lirc-0.8.5/drivers/lirc_dev/lirc_dev.c
-
-and IIRC you said you had an MCE USB device, so maybe
-
-lirc-0.8.5/drivers/lirc_mceusb*/*[ch]
-
-would interest you as well.
-
-
-My particular gripes about the current LIRC interface:
-
-1. The one thing that I wish were documented better were the distinction
-between LIRC_MODE_PULSE, LIRC_MODE_RAW, and LIRC_MODE2 modes of
-operation.  I think I've figured it out, but I had to look at a lot of
-LIRC drivers to do so.
-
-2. I have hardware where I can set max_pulse_width so I can optimize
-pulse timer resolution and have the hardware time out rapidly on end of
-RX.  I also have hardware where I can set a min_pulse_width to set a
-hardware low-pass/glitch filter.  Currently LIRC doesn't have any way to
-set these, but it would be nice to have.  In band signalling of a
-hardware detected "end of Rx" may also make sense then too.
-
-3. As I mentioned before, it would be nice if LIRC could set a batch of
-parameters atomically somehow, instead of with a series of ioctl()s.  I
-can work around this in kernel though.
-
-
-> How are capabilities exposed, sysfs, etc?
-> What is the interface for attaching an in-kernel decoder?
-> If there is an in-kernel decoder should the pulse data stop being
-> reported, partially stopped, something else?
-> What is the mechanism to make sure both system don't process the same pulses?
-
-Mauro and Dmitiri probably have better answers.
-
-Regards,
-Andy
-
-
+> OK.  Thanks for having some professionals take a look.  (I'm assuming
+> that's the only patent.)
+> 
+> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+> end of the month.
+> 
+> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+> a common set of parameters, so I may be able to set up the decoders to
+> handle decoding from two different remote types at once.  The HVR boards
+> can ship with either type of remote AFAIK.
+> 
+> I wonder if I can flip the keytables on the fly or if I have to create
+> two different input devices?
+> 
+
+Can you distinguish between the 2 remotes (not receivers)? Like I said,
+I think the preferred way is to represent every remote that can be
+distinguished from each other as a separate input device. Applications
+expect to query device capabilities and expect them to stay somewhat
+stable (we do support keymap change but I don't think anyone expectes
+flip-flopping).
+
+-- 
+Dmitry
