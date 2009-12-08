@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932272AbZLHPmC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbZLHPpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932272AbZLHPmC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:42:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932201AbZLHPmB
+	id S932173AbZLHPpO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:45:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbZLHPpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:42:01 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:39630 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932208AbZLHPl6 (ORCPT
+	Tue, 8 Dec 2009 10:45:11 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:38666 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756007AbZLHPpK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:41:58 -0500
-Date: Tue, 8 Dec 2009 15:41:54 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Ike Panhc <ike.pan@canonical.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       acpi4asus-user@lists.sourceforge.net,
-       Corentin Chary <corentin.chary@gmail.com>,
-       Alexandre Rostovtsev <tetromino@gmail.com>
-Subject: Re: [Resend] [PATCH] asus-laptop: add Lenovo SL LenovoCare LED
-	support
-Message-ID: <20091208154154.GA26435@srcf.ucam.org>
-References: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
+	Tue, 8 Dec 2009 10:45:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=M6LmS5dythOpkmMtBo5h9Mzc4TKacAn+AeWi1WxopkTtzClRJL5jfMzs8SLqcXl1/w
+         RSajUN0o6KV5Gaf0yRFcRdbMzhqEh2mrYE6Y1v6BYR+NKyWD+oNRXH1NhiTq8ltVST9+
+         /DXSUUOhB4Qent1FGLdKK+ghs8CbAFUAyCajY=
+Message-ID: <4B1E7481.6020902@gmail.com>
+Date: Tue, 08 Dec 2009 16:45:05 +0100
+From: Jes Sorensen <jes.sorensen@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20091014 Fedora/3.0-2.8.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Alan Jenkins <sourcejedi.lkml@googlemail.com>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lenb@kernel.org
+Subject: Re: [PATCH] Toshiba Bluetooth enabler (rfkill)
+References: <4B192D08.9080608@gmail.com> <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com> <20091208125530.GA23520@srcf.ucam.org>
+In-Reply-To: <20091208125530.GA23520@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 03:37:09PM +0800, Ike Panhc wrote:
+On 12/08/09 13:55, Matthew Garrett wrote:
+> The problem with that is that there's no event to indicate that the
+> switch has been turned back on, so there's no way to update the rfkill
+> core appropriately. Giving userspace potentially stale information
+> doesn't seem helpful.
 
->  ASUS_HANDLE(rled_set, ASUS_HOTK_PREFIX "RLED");	/* W1JC */
->  ASUS_HANDLE(pled_set, ASUS_HOTK_PREFIX "PLED");	/* A7J */
->  ASUS_HANDLE(gled_set, ASUS_HOTK_PREFIX "GLED");	/* G1, G2 (probably) */
+I believe I can call into BTST and determine whether the switch is set
+to on or not. It's quite easy to add this to the resume handler and only
+call if it's set to on.
 
-The driver is controlling the ATKD device, which has a HID of ATK0101. 
-These devices are all underneath it...
-
-> +ASUS_HANDLE(lled_set, "\\_SB_.PCI0.SBRG.EC0_.HKEY.TVLS"); /* LenovoCare */
-
-And this one isn't, which is a bit jarring. Looking closer, it's under 
-the LEN0014 device, which means that you're trying to touch a method 
-that belongs to a device other than the one this driver is bound to. 
-That's wrong. You want a separate ACPI driver for the LEN0014 device, 
-and this should be called for there. Looking at it, you seem to get 
-rfkill as well (the GWAN/SWAN, GBDC/SBDF and GUWB/SUWB methods) and 
-maybe some other stuff.
-
-So this shouldn't go in asus-laptop. You'll need to add another separate 
-driver for the SL-specific functionality.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Cheers,
+Jes
