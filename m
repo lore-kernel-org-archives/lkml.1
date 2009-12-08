@@ -1,52 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbZLHP0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbZLHP2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932123AbZLHP0y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbZLHP0y
+	id S932132AbZLHP2a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbZLHP23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:26:54 -0500
-Received: from khc.piap.pl ([195.187.100.11]:45528 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756013AbZLHP0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:26:53 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jon Smirl <jonsmirl@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
-References: <BEJgSGGXqgB@lirc>
-	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	<1260070593.3236.6.camel@pc07.localdom.local>
-	<20091206065512.GA14651@core.coreip.homeip.net>
-	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	<m3skbn6dv1.fsf@intrepid.localdomain>
-	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-	<4B1D934E.7030103@redhat.com>
-	<20091208042340.GC11147@core.coreip.homeip.net>
-	<4B1E3F7D.9070806@redhat.com> <m34oo1va2y.fsf@intrepid.localdomain>
-	<4B1E5EFA.4020801@redhat.com>
-Date: Tue, 08 Dec 2009 16:26:56 +0100
-In-Reply-To: <4B1E5EFA.4020801@redhat.com> (Mauro Carvalho Chehab's message of
-	"Tue, 08 Dec 2009 12:13:14 -0200")
-Message-ID: <m33a3ltrjz.fsf@intrepid.localdomain>
+	Tue, 8 Dec 2009 10:28:29 -0500
+Received: from web81601.mail.mud.yahoo.com ([68.142.199.153]:39476 "HELO
+	web81601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756014AbZLHP22 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 10:28:28 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
+  b=pXGZKL4Lb9bHovvE5oV7gGShWS/+8lrWIt7yV9yn2cDa24wSapB5ygCihaTaxeThz3XBaOERO/aYRieMF6LD0tigUJYoGK34iPbFzrkKJFyR62YSUtANJT4MxtnqPHd0uIhLR8qcZPfzbEhjngoVYDUEi83luUpkDNHQTNjPajU=;
+Message-ID: <147900.99565.qm@web81601.mail.mud.yahoo.com>
+X-YMail-OSG: UxXdQBsVM1lAz4QndqIA9IQjFBxes2gDN0Esbkp3js_v3pWnesfSXMULsSVxeIpCssGj73Bsj2nsQ5HdRbR2Bixi4GFLji1LUWqH7pBp99kqoHA_OiMUJfyLR2znJCwSaeZ0FVHmg4T8.bvpgbepiztC0I8B8F80.snkE2ZD5pDDJMavs4rhHqNzPVnUUFux50_7O_waSWBqAFF2CSkcYhzOV4sY7g2EWhtz8RL3ozG5mjWX_i7z5v2aHxhc7C_sHUVDHZ59Zh30
+X-Mailer: YahooMailClassic/8.1.6 YahooMailWebService/0.8.100.260964
+Date: Tue, 8 Dec 2009 07:28:33 -0800 (PST)
+From: official information <don-wilson@sbcglobal.net>
+Reply-To: toyota5@hawamail.com
+Subject: This is to inform you that your Email ID has been awarded the sum of 750.000.00 GBP in our Toyota Xmas Splash send your data:
+To: undisclosed recipients:;
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
 
-> The enable/disable protocol decoder enable/disable interface is needed anyway,
-> due to the needs for the hardware IR decoders
-
-Why do they need it exactly?
-The key tables say all they need I hope?
--- 
-Krzysztof Halasa
+Name
+Address 
+Phone Number
