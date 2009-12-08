@@ -1,89 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966797AbZLHWo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966818AbZLHWqC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966797AbZLHWo2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966658AbZLHWo1
+	id S966818AbZLHWqC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:46:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966765AbZLHWp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:44:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34795 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966589AbZLHWo0 (ORCPT
+	Tue, 8 Dec 2009 17:45:58 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56654 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966671AbZLHWp5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:44:26 -0500
-Date: Tue, 8 Dec 2009 14:44:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, scameron@beardog.cce.hp.com,
-       James.Bottomley@HansenPartnership.com, achiang@hp.com,
-       jens.axboe@oracle.com, mikem@beardog.cce.hp.com
-Subject: Re: + hpsa-use-msleep-instead-of-schedule_timeout.patch added to
- -mm tree
-Message-Id: <20091208144419.af6298ba.akpm@linux-foundation.org>
-In-Reply-To: <4B1ED241.4090803@gmail.com>
-References: <200912082204.nB8M48oL027313@imap1.linux-foundation.org>
-	<4B1ED241.4090803@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 17:45:57 -0500
+Date: Tue, 8 Dec 2009 22:45:50 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Iliyan Malchev <malchev@google.com>
+Subject: Re: GPIO support for HTC Dream
+Message-ID: <20091208224550.GA26915@n2100.arm.linux.org.uk>
+References: <20091208102842.GH12264@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091208102842.GH12264@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 Dec 2009 23:25:05 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 12/08/2009 11:04 PM, akpm@linux-foundation.org wrote:
-> > Subject: hpsa: use msleep() instead of schedule_timeout
-> > From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
-> > 
-> > Use msleep() instead of schedule_timeout
+On Tue, Dec 08, 2009 at 11:28:43AM +0100, Pavel Machek wrote:
+> Add GPIO support for HTC Dream.
+>     
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
 > 
-> The patch does more than that and moreover in a wrong manner, see below.
-> 
-> > @@ -3262,8 +3262,8 @@ static int hpsa_pci_init(struct ctlr_inf
-> >  		if (!(readl(h->vaddr + SA5_DOORBELL) & CFGTBL_ChangeReq))
-> >  			break;
-> >  		/* delay and try again */
-> > -		set_current_state(TASK_INTERRUPTIBLE);
-> > -		schedule_timeout(10);
-> > +		set_current_state(TASK_UNINTERRUPTIBLE);
-> > +		msleep(10);
-> 
-> Why do you change interruptible sleep to uninterruptible?
+> diff --git a/arch/arm/mach-msm/Kconfig b/arch/arm/mach-msm/Kconfig
+> index f780086..774c50e 100644
+> --- a/arch/arm/mach-msm/Kconfig
+> +++ b/arch/arm/mach-msm/Kconfig
+> @@ -40,4 +40,8 @@ config MACH_TROUT
+>  	help
+>  	  Support for the HTC Dream, T-Mobile G1, Android ADP1 devices.
+>  
+> +config GENERIC_GPIO
+> +	bool
+> +	default y
 
-Stealth bugfix ;)
+Please arrange for this to be handled just like every other ARM
+platform via a 'select' statement - eg:
 
-If the calling process (called "modprobe") has signal_pending()
-(someone ^C'ed it) then the TASK_INTERRUPTIBLE sleep will be a no-op
-and the driver will probably go and screw things up.
+config ARCH_AT91
+        bool "Atmel AT91"
+        select GENERIC_GPIO
+        select ARCH_REQUIRE_GPIOLIB
+        select HAVE_CLK
 
-> And you
-> intermix jiffies with msecs. Use schedule_timeout_interruptible(10).
-> 
-> > @@ -3302,7 +3302,8 @@ static int __devinit hpsa_init_one(struc
-> >  
-> >  		/* Some devices (notably the HP Smart Array 5i Controller)
-> >  		   need a little pause here */
-> > -		schedule_timeout_uninterruptible(HPSA_POST_RESET_PAUSE);
-> > +		set_current_state(TASK_UNINTERRUPTIBLE);
-> > +		msleep(HPSA_POST_RESET_PAUSE_MSECS);
-> 
-> Hmm, setting the state is superfluous, as msleep does the job itself.
+It is not nice to have multiple definitions of the same symbol scattered
+throughout the Kconfig files.
 
-yup, I fixed those.
+> +
+>  endif
+> diff --git a/arch/arm/mach-msm/Makefile b/arch/arm/mach-msm/Makefile
+> index 91e6f5c..4c2567e 100644
+> --- a/arch/arm/mach-msm/Makefile
+> +++ b/arch/arm/mach-msm/Makefile
+> @@ -6,4 +6,4 @@ obj-y += clock.o clock-7x01a.o
+>  
+>  obj-$(CONFIG_MACH_HALIBUT) += board-halibut.o
+>  
+> -obj-$(CONFIG_MACH_TROUT) += board-dream.o
+> +obj-$(CONFIG_MACH_TROUT) += board-dream.o board-dream-gpio.o generic_gpio.o 
+> diff --git a/arch/arm/mach-msm/board-dream-gpio.c b/arch/arm/mach-msm/board-dream-gpio.c
+> new file mode 100644
+> index 0000000..1b23a84
+> --- /dev/null
+> +++ b/arch/arm/mach-msm/board-dream-gpio.c
+> @@ -0,0 +1,301 @@
+> +/* arch/arm/mach-msm/board-dream-gpio.c
+> + *
+> + * Copyright (C) 2008 Google, Inc.
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/errno.h>
+> +#include <linux/irq.h>
+> +#include <linux/pm.h>
+> +#include <linux/sysdev.h>
+> +#include <linux/io.h> 
+> +
+> +#include <asm/gpio.h>
 
-> > diff -puN drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout drivers/scsi/hpsa.h
-> > --- a/drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout
-> > +++ a/drivers/scsi/hpsa.h
-> ...
-> > @@ -139,7 +139,7 @@ struct ctlr_info {
-> >  #define HPSA_BOARD_READY_ITERATIONS \
-> >  	((HPSA_BOARD_READY_WAIT_SECS * 1000) / \
-> >  		HPSA_BOARD_READY_POLL_INTERVAL_MSECS)
-> > -#define HPSA_POST_RESET_PAUSE (30 * HZ)
-> > +#define HPSA_POST_RESET_PAUSE_MSECS (3000)
-> 
-> Ehm?
+linux/gpio.h is preferred over asm/gpio.h
 
-30 seconds would have sucked anyway ;)
+> diff --git a/arch/arm/mach-msm/board-dream.c b/arch/arm/mach-msm/board-dream.c
+> index d238e2c..4758957 100644
+> --- a/arch/arm/mach-msm/board-dream.c
+> +++ b/arch/arm/mach-msm/board-dream.c
+> @@ -18,11 +18,13 @@
+>  #include <linux/kernel.h>
+>  #include <linux/init.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/delay.h>
+>  
+>  #include <asm/mach-types.h>
+>  #include <asm/mach/arch.h>
+>  #include <asm/mach/map.h>
+>  #include <asm/setup.h>
+> +#include <asm/gpio.h>
+
+ditto.
+
+> diff --git a/arch/arm/mach-msm/generic_gpio.c b/arch/arm/mach-msm/generic_gpio.c
+> new file mode 100644
+> index 0000000..fe24d38
+> --- /dev/null
+> +++ b/arch/arm/mach-msm/generic_gpio.c
+> @@ -0,0 +1,274 @@
+> +/* arch/arm/mach-msm/generic_gpio.c
+> + *
+> + * Copyright (C) 2007 Google, Inc.
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/errno.h>
+> +#include <linux/slab.h>
+> +#include <linux/spinlock.h>
+> +#include <asm/gpio.h>
+
+ditto.
