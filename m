@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZLHJdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbZLHJbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbZLHJdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 04:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbZLHJde
+	id S1752876AbZLHJbu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 04:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZLHJbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 04:33:34 -0500
-Received: from thsmsgxrt13p.thalesgroup.com ([192.54.144.136]:59471 "EHLO
-	thsmsgxrt13p.thalesgroup.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751934AbZLHJdd convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 04:33:33 -0500
-Message-ID: <4B1E1CEF.7050706@thalesgroup.com>
-Date: Tue, 08 Dec 2009 10:31:27 +0100
-From: =?ISO-8859-1?Q?Emmanuel_Fust=E9?= <emmanuel.fuste@thalesgroup.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 8 Dec 2009 04:31:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28337 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752659AbZLHJbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 04:31:47 -0500
+Message-ID: <4B1E1D96.1020304@redhat.com>
+Date: Tue, 08 Dec 2009 17:34:14 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR system?
-References: <4B1D415F.5090308@thalesgroup.com> <20091207182438.GB998@core.coreip.homeip.net>
-In-Reply-To: <20091207182438.GB998@core.coreip.homeip.net>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: linux-kernel@vger.kernel.org, Jiri Pirko <jpirko@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Oleg Nesterov <oleg@redhat.com>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC Patch] getrusage: fill ru_ixrss, ru_idrss and ru_isrss fields
+References: <20091208173730.B5C3.A69D9226@jp.fujitsu.com> <4B1E13C8.70704@redhat.com> <20091208181117.B5C9.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091208181117.B5C9.A69D9226@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov a écrit :
-> On Mon, Dec 07, 2009 at 06:54:39PM +0100, Emmanuel Fusté wrote:
->   
->> Mauro Carvalho Chehab wrote:
->>
->>     
->>> In summary,
->>>
->>> While the current EVIO[G|S]KEYCODE works sub-optimally for scancodes up 
->>> to 16 bytes
->>> (since a read loop for 2^16 is not that expensive), the current approach
->>> won't scale with bigger scancode spaces. So, it is needed expand it
->>> to work with bigger scancode spaces, used by more recent IR protocols.
->>>
->>> I'm afraid that any tricks we may try to go around the current limits to still
->>> keep using the same ioctl definition will sooner or later cause big headaches.
->>> The better is to redesign it to allow using different scancode spaces.
+KOSAKI Motohiro wrote:
+>> KOSAKI Motohiro wrote:
+>>> 	The next three fields, the subject of this patch, are named ru_XXrss:
+>>> 	though the 80-column comment omits to say "resident set" before "size",
+>>> 	I believe they'd be expected to account (subdivided) resident set sizes?
 >>>
 >>>
->>>   
->>>       
->> I second you: input layer events from drivers should be augmented with a
->> protocol member, allowing us to define new ioctl and new ways to
->> efficiently store and manage sparse scancode spaces (tree, hashtable
->> ....).
->>     
->
-> Userspace has no business knowing how driver maps hardware data stream
-> into a keycode, only what is being mapped to what. The way is is done
-> can change from driver-to-driver, from release to release. If I come up
-> with an super-smart or super-stupid way of storing key mapping I won't
-> want to modify userpsace tools to support it.
->
->   
-But this is the point for IR. Userspace need a stable and "universal" 
-driver to driver way to represent the hardware data stream. This is 
-needed for only one but very important application: creating and 
-modifying exchangeable remote mappings.
-The way of storing in kernel key mapping should not have any impacts on 
-usersapce tools. If this is the case, this is because the actual ioctl 
-is too tied to the way these mapping are stored. These need to changed 
-or be expanded for IR.
->> It will allow us to abstract the scancode value and to use
->> variable length scancode depending on the used protocol, and using the
->> most appropriate scheme to store the scancode/keycode mapping per protocol.
->> The today scancode space will be the legacy one, the default if not
->> specified "protocol". It will permit to progressively clean up the
->> actual acceptable mess in the input layer and finally using real
->> scancode -> keycode mappings everywhere if it is cleaner/convenient.
->>
->>     
->
-> I am unable to parse this part, sorry.
->
->   
-My bad, my English is awful, sorry. :-(
+>>> your calculation is not rss nor not integral.
+>>>
+>> Hmm, I misunderstood rss here. Does it mean the memory stayed in
+>> physical mem? i.e. not swapped out.
+> 
+> Yes.
+> 
+> Plus, 'integral' mean "tick * rss". but in dyntick environment, per tick statistics is not
+> so easy nor low cost.
 
-Best regards,
-Emmanuel.
+Thanks for explanation!
+
+> 
+>> So, if I want to get those rss statistics, I have to add some more
+>> mm_counter by myself? I only find file_rss and anon_rss in mm_struct.
+> 
+> Hmm..
+> I doubt nobody use such statistics. if nobody explain real world usage, I oppose to add
+> new counter overhead.
+
+Well, this is one of the usages. :)
+
+I just checked more, I found it's not easy to add rss statistics for
+stack, executable, etc... the reason is that we don't have a page flag
+to mark a page as used for stack etc.
+
+
