@@ -1,50 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936961AbZLHXKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966812AbZLHWeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936961AbZLHXKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 18:10:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936463AbZLHXKU
+	id S966812AbZLHWeO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:34:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966798AbZLHWeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 18:10:20 -0500
-Received: from waste.org ([173.11.57.241]:55739 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935891AbZLHXKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 18:10:20 -0500
-Subject: Re: [PATCH] [19/31] mm: export stable page flags
-From: Matt Mackall <mpm@selenic.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: fengguang.wu@intel.com, npiggin@suse.de, cl@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20091208211635.7965AB151F@basil.firstfloor.org>
-References: <200912081016.198135742@firstfloor.org>
-	 <20091208211635.7965AB151F@basil.firstfloor.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 16:27:31 -0600
-Message-ID: <1260311251.31323.129.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 17:34:10 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:65357 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966742AbZLHWd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 17:33:59 -0500
+Date: 08 Dec 2009 23:30:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: awalls@radix.net
+Cc: dmitry.torokhov@gmail.com
+Cc: hermann-pitton@arcor.de
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: jarod@wilsonet.com
+Cc: jonsmirl@gmail.com
+Cc: khc@pm.waw.pl
+Cc: kraxel@redhat.com
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: mchehab@redhat.com
+Cc: superm1@ubuntu.com
+Message-ID: <BEVi56a1qgB@lirc>
+In-Reply-To: <1260245456.3086.91.camel@palomino.walls.org>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1/vRlDWCxzXmp3bAiszUUnlZjrRaFdxLIKmU1r
+ AyZfjOYS450W5qZOJFaFCIJCvQHH87Av41xxTsvVnSdXTJORQv
+ NCdYECT5TC3G1nDJ3yNpNj5gsfVvZ6Z
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 22:16 +0100, Andi Kleen wrote:
-> From: Wu Fengguang <fengguang.wu@intel.com>
-> 
-> Rename get_uflags() to stable_page_flags() and make it a global function
-> for use in the hwpoison page flags filter, which need to compare user
-> page flags with the value provided by user space.
-> 
-> Also move KPF_* to kernel-page-flags.h for use by user space tools.
-> 
-> CC: Matt Mackall <mpm@selenic.com>
-> CC: Nick Piggin <npiggin@suse.de>
-> CC: Christoph Lameter <cl@linux-foundation.org>
-> CC: Andi Kleen <andi@firstfloor.org>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Hi Andy,
 
-Acked-by: Matt Mackall <mpm@selenic.com>
--- 
-http://selenic.com : development and support for Mercurial and Linux
+on 07 Dec 09 at 23:10, Andy Walls wrote:
+[...]
+> (Christoph can correct me if I get anything wrong.)
 
+Just a few additions.
 
+[...]
+>> What is the time standard for the data, where does it come from?
+
+> I think it is usec, IIRC.
+
+Yes, it is.
+
+> I know that the hardware I work with has sub 100 ns resolution,
+
+Highest IR carrier frequency I know is 500kHz. usec resolution is enough  
+even for raw modulated IR pulses. But you only look at the signal after it  
+has been demodulated by the IR chip, so higher resolution would be  
+overkill.
+
+[...]
+>> How do you define the start and stop of sequences?
+
+> For the end of Rx signalling:
+>
+> Well with the Conexant hardware I can set a maximum pulse (mark or
+> space) width, and the hardware will generate an Rx Timeout interrupt to
+> signal the end of Rx when a space ends up longer than that max pulse
+> width.  The hardware also puts a special marker in the hardware pulse
+> widht measurement FIFO (in band signalling essentially).
+>
+> I'm not sure anything like that gets communicated to userspace via
+> lirc_dev, and I'm too tired to doublecheck right now.
+
+There is no such thing in the protocol. Some devices cannot provide any  
+end of signal marker, so lircd handles this using timers.
+
+If there is some interest, the MODE2 protocol can be extended. We still  
+have 7 bits unused...
+
+> If you have determined the protocol you are after, it's easy to know
+> what the pulse count should be and what the max pulse width should be (+
+> slop for crappy hardware) so finding the end of an Rx isn't hard.  The
+> button repeats intervals are *very* large.  I've never seen a remote
+> rapid fire codes back to back.
+
+I did. There are some protocols that have a gap of only 6000 us between  
+signals. And the settop boxes are very picky about this. If you make it  
+too long, they won't accept the command.
+
+[...]
+>> Is transmitting synchronous or queued?
+
+> kfifo's IIRC.
+
+No, it's synchronous.
+
+>> How big is the transmit queue?
+
+No queue.
+
+[...]
+> My particular gripes about the current LIRC interface:
+>
+> 1. The one thing that I wish were documented better were the distinction
+> between LIRC_MODE_PULSE, LIRC_MODE_RAW, and LIRC_MODE2 modes of
+> operation.  I think I've figured it out, but I had to look at a lot of
+> LIRC drivers to do so.
+
+No driver uses RAW until now and lircd does not support it.
+PULSE is used on the transmit path, MODE2 on the receive path.
+There is no special reasoning for that, it's rather historic.
+MODE2 makes sense on the receive path because you can easily distinguish  
+between pulse/space.
+
+> 2. I have hardware where I can set max_pulse_width so I can optimize
+> pulse timer resolution and have the hardware time out rapidly on end of
+> RX.  I also have hardware where I can set a min_pulse_width to set a
+> hardware low-pass/glitch filter.  Currently LIRC doesn't have any way to
+> set these, but it would be nice to have.
+
+Should be really easy to add these. The actual values could be derived  
+from the config files easily.
+
+> In band signalling of a
+> hardware detected "end of Rx" may also make sense then too.
+
+See above.
+
+> 3. As I mentioned before, it would be nice if LIRC could set a batch of
+> parameters atomically somehow, instead of with a series of ioctl()s.  I
+> can work around this in kernel though.
+
+Is there any particular sequence that you are concerned about?
+Setting carrier frequency and then duty cycle is a bit problematic.
+Currently it's solved by resetting the duty cycle to 50% each time you  
+change the carrier frequency.
+But as the LIRC interface is "one user only", I don't see a real problem.
+
+Christoph
