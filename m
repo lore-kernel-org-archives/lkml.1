@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965381AbZLHBd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935749AbZLHBe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965381AbZLHBd2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 20:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965369AbZLHBd0
+	id S935749AbZLHBe1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 20:34:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935177AbZLHBeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 20:33:26 -0500
-Received: from snt0-omc4-s7.snt0.hotmail.com ([65.55.90.210]:27942 "EHLO
-	snt0-omc4-s7.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965298AbZLHBdP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 20:33:15 -0500
-X-Originating-IP: [94.195.177.167]
-X-Originating-Email: [johnkyr83@hotmail.com]
-Message-ID: <SNT111-DS236E5F267E98707B3AFB0AA78F0@phx.gbl>
-From: "Ioannis Kyriakopoulos" <johnkyr83@hotmail.com>
-To: "'john stultz'" <johnstul@us.ibm.com>
-CC: <linux-kernel@vger.kernel.org>
-References: <Acp3UXhD1R6mbV5yTGykTs+HAU6bQg==>	 <SNT111-DS1957B574BA05A48FEDBFF0A7900@phx.gbl>	 <1f1b08da0912071330i35808790r554f7a3a8d712ca7@mail.gmail.com>	 <SNT111-DS1740657A3615A93A6C0EDFA78F0@phx.gbl> <1260232212.6255.33.camel@localhost.localdomain>
-In-Reply-To: <1260232212.6255.33.camel@localhost.localdomain>
-Subject: RE: timer interrupt stucks using tickless kernel
-Date: Tue, 8 Dec 2009 01:33:12 +0000
+	Mon, 7 Dec 2009 20:34:25 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:49404 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935163AbZLHBeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 20:34:25 -0500
+Date: Tue, 8 Dec 2009 01:34:30 +0000
+From: Ben Dooks <ben@trinity.fluff.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: manual merge of the samsung tree
+Message-ID: <20091208013430.GH23152@trinity.fluff.org>
+References: <20091208111722.2e8d9527.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acp3na2gEzP7hzANRLKddG1CDKaGawAAb2EA
-Content-Language: en-gb
-X-OriginalArrivalTime: 08 Dec 2009 01:33:22.0233 (UTC) FILETIME=[6DB4EA90:01CA77A6]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091208111722.2e8d9527.sfr@canb.auug.org.au>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the valuable help so far.
+On Tue, Dec 08, 2009 at 11:17:22AM +1100, Stephen Rothwell wrote:
+> Hi Ben,
+> 
+> In today's linux-next merge of the samsung tree I noticed that the file
+> arch/arm/plat-s3c/dev-hsmmc2.c actually has some merge conflict artifacts
+> in it.
+> 
+> I fixed them up (just by using the version from the arm tree) but it
+> would be good if this could be fixed in your tree as well (I notice that
+> Russell has already merged a (presumable) correct version of these files).
 
->> 2.	When performing cat proc/interrupts, I see that:
->>           0:        157   IO-APIC-edge      timer
->> 	How the system timer is attached on IO-APIC at the time that the
->> IO-APIC 
->>       is disabled on kernel configurations? Basically, the timer is not the
->> only
->>       peripheral attached to IO-APIC as can be seen by /proc/interrupts.
->> 
->> Here is the output of /proc/interrupts :
->> 
->>            CPU0
->>   0:        157   IO-APIC-edge      timer
->>   1:          2   IO-APIC-edge      i8042
->>   4:        544   IO-APIC-edge      serial
->>   8:          1   IO-APIC-edge      rtc0
->>   9:          0   IO-APIC-fasteoi   acpi
->>  12:          4   IO-APIC-edge      i8042
->>  14:          4   IO-APIC-edge      ata_piix
->>  15:          0   IO-APIC-edge      ata_piix
->>  16:          0   IO-APIC-fasteoi   uhci_hcd:usb5
->>  18:          0   IO-APIC-fasteoi   uhci_hcd:usb4
->>  19:         45   IO-APIC-fasteoi   ata_piix, uhci_hcd:usb3
->>  22:        149   IO-APIC-fasteoi   HDA Intel
->>  23:         72   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
->>  27:          0   PCI-MSI-edge      eth0
->> NMI:          0   Non-maskable interrupts
->> LOC:    1865130   Local timer interrupts
->            ^^^
->This value should be incrementing at HZ freq.
+I belive so, I've updated next-samsung from my for-rmk tree and added the
+rebased new trees to it which should fix it.
 
-Are you sure about that? ASAIK the Local timer interrupts (generated 
-by the LAPIC timer) are only used for timekeeping. The system tick is 
-generated by IRQ0 which in my second configuration should be triggered 
-by HPET (because I have enabled the HPET timer support). Also, if the 
-interrupts generated by LAPIC are incremented at HZ freq, why the 
-interrupts generated by the timer (IRQ0) not happen at the same frequency
- as well? 
+-- 
+Ben
 
-Furthermore, we don't have an answer on why IO-APIC is used at the time
-that it is disabled on kernel configurations. The fact that I have enabled
-LAPIC timer support doesn't justify the use of the IO-APIC controller 
-by each own.
-
->Is there something your actually having problems with here? Ignoring
->which interrupt line is used for the timer event, the system is
->functioning properly, right?
-
-Yes, apart from that, everything is working OK but it's really important
-for me to get an answer on these issues.
-
-Kind Regards,
-
-John K.
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
