@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZLHLcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZLHLbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbZLHLcH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 06:32:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZLHLcF
+	id S1754002AbZLHLbp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 06:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZLHLbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 06:32:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36052 "EHLO hera.kernel.org"
+	Tue, 8 Dec 2009 06:31:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36032 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753908AbZLHLcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 06:32:00 -0500
-Date: Tue, 8 Dec 2009 11:30:47 GMT
-From: tip-bot for Arnd Bergmann <arnd@arndb.de>
+	id S1753794AbZLHLbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 06:31:42 -0500
+Date: Tue, 8 Dec 2009 11:31:02 GMT
+From: tip-bot for Jan Beulich <jbeulich@novell.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       stern@rowland.harvard.edu, arnd@arndb.de, geert@linux-m68k.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu,
-       prasad@linux.vnet.ibm.com
+       seto.hidetoshi@jp.fujitsu.com, jbeulich@novell.com, stable@kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       stern@rowland.harvard.edu, arnd@arndb.de, geert@linux-m68k.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu,
-       prasad@linux.vnet.ibm.com
-In-Reply-To: <200912071712.58650.arnd@arndb.de>
-References: <200912071712.58650.arnd@arndb.de>
+       jbeulich@novell.com, seto.hidetoshi@jp.fujitsu.com, stable@kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4B1DB831.2030801@jp.fujitsu.com>
+References: <4B1DB831.2030801@jp.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf events: hw_breakpoints: Don't include asm/hw_breakpoint.h in user space
-Message-ID: <tip-2ff6cfd70720780234fdfea636218c2a62b31287@git.kernel.org>
-Git-Commit-ID: 2ff6cfd70720780234fdfea636218c2a62b31287
+Subject: [tip:x86/urgent] x86/mce: Set up timer unconditionally
+Message-ID: <tip-bc09effabf0c5c6c7021e5ef9af15a23579b32a8@git.kernel.org>
+Git-Commit-ID: bc09effabf0c5c6c7021e5ef9af15a23579b32a8
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,52 +31,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2ff6cfd70720780234fdfea636218c2a62b31287
-Gitweb:     http://git.kernel.org/tip/2ff6cfd70720780234fdfea636218c2a62b31287
-Author:     Arnd Bergmann <arnd@arndb.de>
-AuthorDate: Mon, 7 Dec 2009 17:12:58 +0100
+Commit-ID:  bc09effabf0c5c6c7021e5ef9af15a23579b32a8
+Gitweb:     http://git.kernel.org/tip/bc09effabf0c5c6c7021e5ef9af15a23579b32a8
+Author:     Jan Beulich <jbeulich@novell.com>
+AuthorDate: Tue, 8 Dec 2009 11:21:37 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 8 Dec 2009 02:58:40 +0100
+CommitDate: Tue, 8 Dec 2009 05:34:39 +0100
 
-perf events: hw_breakpoints: Don't include asm/hw_breakpoint.h in user space
+x86/mce: Set up timer unconditionally
 
-asm/hw_breakpoint.h is evidently a kernel internal file and
-should not be included globally, not even under an #ifdef.
+mce_timer must be passed to setup_timer() in all cases, no
+matter whether it is going to be actually used. Otherwise, when
+the CPU gets brought down, its call to del_timer_sync() will
+never return, as the timer won't have a base associated, and
+hence lock_timer_base() will loop infinitely.
 
-Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-LKML-Reference: <200912071712.58650.arnd@arndb.de>
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <4B1DB831.2030801@jp.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/perf_event.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index 89098e3..bf33294 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -18,10 +18,6 @@
- #include <linux/ioctl.h>
- #include <asm/byteorder.h>
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index d7ebf25..a96e5cd 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1388,13 +1388,14 @@ static void __mcheck_cpu_init_timer(void)
+ 	struct timer_list *t = &__get_cpu_var(mce_timer);
+ 	int *n = &__get_cpu_var(mce_next_interval);
  
--#ifdef CONFIG_HAVE_HW_BREAKPOINT
--#include <asm/hw_breakpoint.h>
--#endif
--
- /*
-  * User-space ABI bits:
-  */
-@@ -451,6 +447,10 @@ enum perf_callchain_context {
- # include <asm/perf_event.h>
- #endif
- 
-+#ifdef CONFIG_HAVE_HW_BREAKPOINT
-+#include <asm/hw_breakpoint.h>
-+#endif
++	setup_timer(t, mce_start_timer, smp_processor_id());
 +
- #include <linux/list.h>
- #include <linux/mutex.h>
- #include <linux/rculist.h>
+ 	if (mce_ignore_ce)
+ 		return;
+ 
+ 	*n = check_interval * HZ;
+ 	if (!*n)
+ 		return;
+-	setup_timer(t, mce_start_timer, smp_processor_id());
+ 	t->expires = round_jiffies(jiffies + *n);
+ 	add_timer_on(t, smp_processor_id());
+ }
