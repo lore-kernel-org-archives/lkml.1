@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbZLHIQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZLHIUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbZLHIQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 03:16:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZLHIQ4
+	id S1753872AbZLHIUf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 03:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbZLHIUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 03:16:56 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:47170 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752364AbZLHIQz (ORCPT
+	Tue, 8 Dec 2009 03:20:34 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46276 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753194AbZLHIUd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 03:16:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iX8JYQjPNJwMQO+FkIoOUGLC6Rz0COvybCfrdPzWJwg3IgynED5rBnHoh4Mgkw8QHZ
-         Yo3771vgQAEiHC0+GeHE22qLO3TFVJXssKJcMGto6XC0Jmi3qt7hIacsSi+d78OFkCT7
-         FzhBAhn077pg0J9mOnDlMVfvUmSVZpN/kdiiE=
-Date: Tue, 8 Dec 2009 09:16:58 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 02/13] tracing: Extract calls to
-	trace_define_common_fields()
-Message-ID: <20091208081657.GG4989@nowhere>
-References: <4B1DC476.3030700@cn.fujitsu.com> <4B1DC49C.8000107@cn.fujitsu.com> <4B1DE5D4.4070805@cn.fujitsu.com> <20091208075731.GC4989@nowhere> <4B1E086E.7040001@cn.fujitsu.com>
+	Tue, 8 Dec 2009 03:20:33 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19QGhRBrQhQ2q27lwyedszrG2lmNBx9MfLj5wFwhz
+	bWXmB8hGOwoEyN
+Date: Tue, 8 Dec 2009 09:20:44 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Dan Williams <dan.j.williams@intel.com>
+cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
+       Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Subject: Re: [PATCH 4/5] sh: stylistic improvements for the DMA driver
+In-Reply-To: <e9c3a7c20912071654y19313fd5j6d9ff5a62cde028e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0912080916300.4948@axis700.grange>
+References: <Pine.LNX.4.64.0912041936541.3981@axis700.grange> 
+ <Pine.LNX.4.64.0912041942040.3981@axis700.grange>
+ <e9c3a7c20912071654y19313fd5j6d9ff5a62cde028e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1E086E.7040001@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 04:03:58PM +0800, Li Zefan wrote:
-> >>> --- a/kernel/trace/trace_kprobe.c
-> >>> +++ b/kernel/trace/trace_kprobe.c
-> >>> @@ -1113,10 +1113,6 @@ static int kprobe_event_define_fields(struct ftrace_event_call *event_call)
-> >>>  	struct kprobe_trace_entry field;
-> >>>  	struct trace_probe *tp = (struct trace_probe *)event_call->data;
-> >>>  
-> >>> -	ret = trace_define_common_fields(event_call);
-> >>> -	if (!ret)
-> >>> -		return ret;
-> >>> -
-> >>>  	DEFINE_FIELD(unsigned long, ip, FIELD_STRING_IP, 0);
-> >>>  	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
-> >>>  	/* Set argument names as fields */
-> >>> @@ -1131,10 +1127,6 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
-> >>>  	struct kretprobe_trace_entry field;
-> >>>  	struct trace_probe *tp = (struct trace_probe *)event_call->data;
-> >>>  
-> >>> -	ret = trace_define_common_fields(event_call);
-> >>> -	if (!ret)
-> >>> -		return ret;
-> >>> -
-> >>>  	DEFINE_FIELD(unsigned long, func, FIELD_STRING_FUNC, 0);
-> >>>  	DEFINE_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP, 0);
-> >>>  	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
-> >> "if (!ret)" is wrong. trace_define_common_fields() returns zero when success.
-> >> So "unsigned long, func", "unsigned long, ret_ip" ...etc are NOT "defined"
-> >> and filters can not be applied for trace_kprobe.
-> >>
-> >> Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> >>
-> > 
-> > Oh right!
-> > 
-> > Ok, I'm queueing this one for the tracing fixes.
-> > Thanks!
-> > 
+On Mon, 7 Dec 2009, Dan Williams wrote:
+
+> On Fri, Dec 4, 2009 at 11:45 AM, Guennadi Liakhovetski
+> <g.liakhovetski@gmx.de> wrote:
+> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> > ---
+> >  drivers/dma/shdma.c |   34 +++++++++++++++++-----------------
+> >  drivers/dma/shdma.h |   14 +++++++-------
+> >  2 files changed, 24 insertions(+), 24 deletions(-)
+> >
+> [..]
+> > -static int dmae_is_idle(struct sh_dmae_chan *sh_chan)
+> > +static int dmae_is_busy(struct sh_dmae_chan *sh_chan)
 > 
-> This patch has dependency on the previous patch..So can you queue
-> all other patches and send a pull request to Ingo? We're still
-> in the early merge window, so those patches should be fine for
-> .33.
-> 
-> And as this patch fixes a bug "acidentally", the changelog
-> needs a bit revision.
+> This one isn't purely style, I agree with it, but think it would be a
+> bit cleaner to return a bool rather than an error code.
 
+Yes, I also thought about it, but I wasn't sure whether the author had 
+some special considerations, why he has chosen to return an error code. 
+Besides, that return code is also used in functions dmae_set_chcr() and 
+dmae_set_dmars() as their return value. So, you'd have to change those two 
+to something like
 
-The problem is that we can't know in advance Linus will take
-a second round of tracing features in this merge window.
+	if (dmae_is_busy(sh_chan))
+		return -EBUSY;
 
-I'd rather be careful and keep separating tracing fixes and
-tracing features.
-
-I'm preparing a separate fix.
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
