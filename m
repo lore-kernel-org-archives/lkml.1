@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbZLHL0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZLHLcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754143AbZLHL0O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 06:26:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbZLHL0M
+	id S1754196AbZLHLcH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 06:32:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZLHLcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 06:26:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49137 "EHLO hera.kernel.org"
+	Tue, 8 Dec 2009 06:32:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36052 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754056AbZLHL0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 06:26:12 -0500
-Message-ID: <4B1E37F5.7060002@kernel.org>
-Date: Tue, 08 Dec 2009 20:26:45 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1753908AbZLHLcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 06:32:00 -0500
+Date: Tue, 8 Dec 2009 11:30:47 GMT
+From: tip-bot for Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       stern@rowland.harvard.edu, arnd@arndb.de, geert@linux-m68k.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu,
+       prasad@linux.vnet.ibm.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       stern@rowland.harvard.edu, arnd@arndb.de, geert@linux-m68k.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu,
+       prasad@linux.vnet.ibm.com
+In-Reply-To: <200912071712.58650.arnd@arndb.de>
+References: <200912071712.58650.arnd@arndb.de>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf events: hw_breakpoints: Don't include asm/hw_breakpoint.h in user space
+Message-ID: <tip-2ff6cfd70720780234fdfea636218c2a62b31287@git.kernel.org>
+Git-Commit-ID: 2ff6cfd70720780234fdfea636218c2a62b31287
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>	 <1259726212-30259-5-git-send-email-tj@kernel.org>	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>	 <4B1C85D3.3080401@kernel.org> <1260174900.8223.1159.camel@laptop>	 <4B1CDA1C.3000802@kernel.org> <1260183278.8223.1500.camel@laptop>	 <4B1CE1E8.2070803@kernel.org>  <4B1E1130.9050108@kernel.org>	 <1260262963.3935.1002.camel@laptop>  <4B1E189B.1070204@kernel.org>	 <1260268453.3935.1106.camel@laptop> <1260268739.3935.1113.camel@laptop>
-In-Reply-To: <1260268739.3935.1113.camel@laptop>
-X-Enigmail-Version: 0.97a
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Commit-ID:  2ff6cfd70720780234fdfea636218c2a62b31287
+Gitweb:     http://git.kernel.org/tip/2ff6cfd70720780234fdfea636218c2a62b31287
+Author:     Arnd Bergmann <arnd@arndb.de>
+AuthorDate: Mon, 7 Dec 2009 17:12:58 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 8 Dec 2009 02:58:40 +0100
 
-On 12/08/2009 07:38 PM, Peter Zijlstra wrote:
-> More confusion, kthread_bind() doesn't even use set_cpus_allowed() so it
-> wouldn't have hit any of that crap.
+perf events: hw_breakpoints: Don't include asm/hw_breakpoint.h in user space
 
-kthread_bind() can't be used safely unless cpu up/down is synchronized
-out some way.
+asm/hw_breakpoint.h is evidently a kernel internal file and
+should not be included globally, not even under an #ifdef.
 
-Thanks.
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+LKML-Reference: <200912071712.58650.arnd@arndb.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/perf_event.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
--- 
-tejun
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 89098e3..bf33294 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -18,10 +18,6 @@
+ #include <linux/ioctl.h>
+ #include <asm/byteorder.h>
+ 
+-#ifdef CONFIG_HAVE_HW_BREAKPOINT
+-#include <asm/hw_breakpoint.h>
+-#endif
+-
+ /*
+  * User-space ABI bits:
+  */
+@@ -451,6 +447,10 @@ enum perf_callchain_context {
+ # include <asm/perf_event.h>
+ #endif
+ 
++#ifdef CONFIG_HAVE_HW_BREAKPOINT
++#include <asm/hw_breakpoint.h>
++#endif
++
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ #include <linux/rculist.h>
