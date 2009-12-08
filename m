@@ -1,173 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbZLHP4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932399AbZLHQAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932456AbZLHP4X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932427AbZLHP4U
+	id S932399AbZLHQAt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 11:00:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932352AbZLHQAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:56:20 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:42000 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932409AbZLHP4P convert rfc822-to-8bit (ORCPT
+	Tue, 8 Dec 2009 11:00:47 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:34818 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932328AbZLHQAq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:56:15 -0500
+	Tue, 8 Dec 2009 11:00:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=C8RXW5AanfKsMQWEdl2IZwnU47c0jtfaauph11ygXxlJjRA0zX4LDN/fXAuD7rD3K2
-         SQ+QXGNt3mg5dRJlnikZMxn0D8VedzIRByrw5XUuiipZ+lN35c1xCBFSrJ/Ns77WJx+Q
-         GXHG1hEoleU4Sex/Qq1N94hOufZGoa/ZZJkOU=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:openpgp:content-type
+         :content-transfer-encoding;
+        b=Ly+mMORnEy/4qkahAbYkd21yfZpPRXy8qjqh391N5WC8D4QqHpylJsiPtK373FG4SZ
+         yZiSA+nAfcVO9tSflEAfIxAFEgTEtypX0CZziCAJwb6AXfN7653NzpTpuQFiRoX4iViS
+         jvvkgnjcCaoOpPXl7FQM0AU1+21bNF69RCUTk=
+Message-ID: <4B1E782D.3000102@gmail.com>
+Date: Tue, 08 Dec 2009 21:00:45 +0500
+From: "Andrey A. Porodko" <andrey.porodko@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-In-Reply-To: <4B1E640B.6030705@redhat.com>
-References: <BDRae8rZjFB@christoph>
-	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
-	 <1260240142.3086.14.camel@palomino.walls.org>
-	 <20091208042210.GA11147@core.coreip.homeip.net>
-	 <1260275743.3094.6.camel@palomino.walls.org>
-	 <4B1E54FF.8060404@redhat.com>
-	 <9e4733910912080547j75c2c885o29664470ff5e2c6a@mail.gmail.com>
-	 <4B1E5BDF.7010202@redhat.com>
-	 <9e4733910912080619t36089c9bg5e54114844b9694a@mail.gmail.com>
-	 <4B1E640B.6030705@redhat.com>
-Date: Tue, 8 Dec 2009 10:56:21 -0500
-Message-ID: <9e4733910912080756j7e1fac32qc552c6514a307b7d@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Andy Walls <awalls@radix.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: "A. Porodko" <panda@chelcom.ru>
+CC: Kevin Hilman <davinci-linux-open-source@linux.davincidsp.com>,
+       Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: Patch for MSP430 and SOC audio support for Neuros OSD2 platform
+ code.
+References: <4B1BC0E7.1010403@chelcom.ru>
+In-Reply-To: <4B1BC0E7.1010403@chelcom.ru>
+X-Enigmail-Version: 0.96.0
+OpenPGP: id=9E6A5CCE
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 9:34 AM, Mauro Carvalho Chehab
-<mchehab@redhat.com> wrote:
-> Jon Smirl wrote:
->> On Tue, Dec 8, 2009 at 8:59 AM, Mauro Carvalho Chehab
->> <mchehab@redhat.com> wrote:
->>> Jon Smirl wrote:
->>>> On Tue, Dec 8, 2009 at 8:30 AM, Mauro Carvalho Chehab
->>>> <mchehab@redhat.com> wrote:
->>>>> Andy Walls wrote:
->>>>>> On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
->>>>>>> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
->>>>>>>> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
->>>>>>>> end of the month.
->>>>>>>>
->>>>>>>> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
->>>>>>>> a common set of parameters, so I may be able to set up the decoders to
->>>>>>>> handle decoding from two different remote types at once.  The HVR boards
->>>>>>>> can ship with either type of remote AFAIK.
->>>>>>>>
->>>>>>>> I wonder if I can flip the keytables on the fly or if I have to create
->>>>>>>> two different input devices?
->>>>>>>>
->>>>>>> Can you distinguish between the 2 remotes (not receivers)?
->>>>>> Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
->>>>>> (Honestly I could pile on more protocols that have similar pulse time
->>>>>> periods, but that's complexity for no good reason and I don't know of a
->>>>>> vendor that bundles 3 types of remotes per TV card.)
->>>>> You'll be distinguishing the protocol, not the remote. If I understood
->>>>> Dmitry's question, he is asking if you can distinguish between two different
->>>>> remotes that may, for example, be using both RC-5 or both RC-6 or one RC-5
->>>>> and another RC-6.
->>>> RC-5 and RC-6 both contain an address field.  My opinion is that
->>>> different addresses represent different devices and in general they
->>>> should appear on an input devices per address.
->>> The same IR can produce two different addresses. The IR bundled with my satellite
->>> STB produces two different codes, depending if you previously pressed <TV> or <SAT>
->>> key (in fact, I think it can even produce different protocols for TV, as it can
->>> be configured to work with different TV sets).
->>
->> You have a multi-function remote.
->
-> Yes.
->
->> That's why those keys don't send codes. When writing code you should
->> think of this remote as being two indpendent virtual remotes, not a
->> single one.
->
-> Not really. I may think on it as a single device and use the two groups
-> of functions to control two aspects at the same application.
->
-> For example, I may map the <TV> group on kaffeine for DVB reception and the
-> <SAT> group for DVD (well, probably, in this case, I'll use an IR with
-> <TV> and <DVD> keys, instead ;) ).
->
->> By using maps containing the two different addresses for <TV> and
->> <SAT> you can split these commands onto two different evdev devices.
->
-> True. I can do it, but I can opt to have both mapped as one evdev device as well.
-> This will basically depend on how I want to mount my environment.
->
->> This model is complicated by the fact that some remotes that look like
->> multi-function remotes aren't really multifunction. The remote bundled
->> with the MS MCE receiver is one. That remote is a single function
->> device even though it has function buttons for TV, Music, Pictures,
->> etc.
->
-> It is very common to have such remotes bundled with multimedia devices.
->
-> An unsolved question on my mind is how should we map such IR's? Should we
-> provide a way for them to emulate a multifunction IR (for example, after pressing
-> TV key, subsequent keystrokes would be directed to the TV evdev device?), or
-> should we let this up to some userspace app to handle this case?
 
-Splitting them into multiple devices requires remembering state and
-scripting so it needs to be done in user space. If the user wants to
-control a radio app and a home automation app they need to choose.
-Keep the bundled remote and do some non-trivial scripting or buy a
-universal remote.
+Hello,
 
-Universal remotes make it much easier to achieve "just works".
+Please, consider this patch for Neuros OSD2 platform code. Particular
+drivers code have been sent to consideration of respective maintainers.
 
-The IR core can contain default universal profiles for various classes
-of devices. Say Morotola_DVR and SciAtlanta_DVR. The core would check
-if the receiver is cable of receiving these profiles before loading
-them. There would be ten of these default universal profiles at most
-and you can unload them from RAM if they aren't needed.
+Thank you.
 
-Now Myth can have a menu with three remote choices:
- Universal Morotola_DVR
- Universal SciAtlanta_DVR
- Bundled
+P.S. Change log added.
 
-The Bundled choice came from the map built into the IR receiver's device driver.
-The other two choices were loaded by the IR core after ensuring that
-the hardware could receive from a universal remote.
+-------------------------------------------------------------------------
+>From e5aef120a1a4af6b678b8ffe6d9be1d065cb305e Mon Sep 17 00:00:00 2001
+From: Andrey Porodko <panda@chelcom.ru>
+Date: Sat, 5 Dec 2009 15:54:42 +0500
+Subject: [PATCH] Neuros OSD2 board platform code patch for supporting msp430
+ microcontroller and sound soc.
 
-The core would also load a couple of default radio profiles
- Univeral SonyDR112_RADIO
- Univeral OnkyoTX8255_RADIO
-Same for automation and mouse/keyboard emulation.
+Initial release. Neuros OSD2 board i2c platform data description for MSP430
+microprocessor and Audio SOC support. MSP430 firmware perform various operations.
+Such as IR remote, RTC timer and etc. Audio SOC is very similar to DM6446EVM
+board, the only difference here is i2c port address.
 
-Myth looks in sysfs and builds a menu containing DVR devices and all
-bundled entries. First app to open the "Bundled" device gets to keep
-it.
+Signed-off-by: Andrey Porodko <panda@chelcom.ru>
+---
+ arch/arm/mach-davinci/board-neuros-osd2.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-These apps could take "just works" even farther. When they start up
-they could listen on all three evdev devices:  Morotola_DVR,
-SciAtlanta_DVR,   Bundled. And then if you find Myth responding to
-unwanted commands you could disable the unwanted profiles by
-deselecting them in the Myth UI.
+diff --git a/arch/arm/mach-davinci/board-neuros-osd2.c b/arch/arm/mach-davinci/board-neuros-osd2.c
+index bd9ca07..28b3d67 100644
+--- a/arch/arm/mach-davinci/board-neuros-osd2.c
++++ b/arch/arm/mach-davinci/board-neuros-osd2.c
+@@ -202,6 +202,12 @@ static struct davinci_i2c_platform_data ntosd2_i2c_pdata = {
+ };
+ 
+ static struct i2c_board_info __initdata ntosd2_i2c_info[] =  {
++	{					/* MSP430 interface	*/
++		I2C_BOARD_INFO("davinci_msp", NTOSD2_MSP430_I2C_ADDR),
++	},
++	{
++		I2C_BOARD_INFO("tlv320aic3x", NTOSD2_AUDIOSOC_I2C_ADDR),
++	},
+ };
+ 
+ static	int ntosd2_init_i2c(void)
+-- 
+1.5.6.5
 
-All of this may seem complicated to build, but the purpose is to
-create an environment where a non-technical user can get an IR remote
-working without needing detailed knowledge about how IR protocols
-work.
-
-
-
-
-
+-------------------------------------------------------------------------
 
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Best regards
+Andrey A. Porodko
+ 
+
