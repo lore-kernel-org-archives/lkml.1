@@ -1,42 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937768AbZLHROj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938127AbZLHRQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937768AbZLHROj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 12:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937435AbZLHROh
+	id S938127AbZLHRQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 12:16:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938111AbZLHRQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 12:14:37 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:60260 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936085AbZLHROf (ORCPT
+	Tue, 8 Dec 2009 12:16:54 -0500
+Received: from mail-px0-f189.google.com ([209.85.216.189]:60334 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938105AbZLHRQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 12:14:35 -0500
+	Tue, 8 Dec 2009 12:16:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=A8Y6N1agJYHRe1mRiuBwro9zQWEPYhqyWZ25kt6ObHVs2Lam56Jgw+hF6TXwjku8LG
-         JINflo1vP04X07H4u7fWcadiS7I6/5/iMZHp7Rixgq3yvymdptx0IHZ21MLKjQfd+B09
-         rpLlX4heFnieEhwciIbks9qGwUw2JpI1sxnQE=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=oG1mwLbtS/Fp7+Pp63K31haa+sdt9Zelbkm7gijbbi1RDkadeIPB/Js3mC7YpQmYd8
+         /Z8yoDfz+SoPVs9D8V5IhQraMknWwegqzHw6+oqItaY5ILIDCgtcmRWoI+VnOJwKdh+1
+         oC45cWH3oRLQED0Yr4GhJ0ULtax+aNkF+PLUg=
+Date: Tue, 8 Dec 2009 09:16:52 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Andy Walls <awalls@radix.net>, Jarod Wilson <jarod@wilsonet.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+Message-ID: <20091208171651.GD14143@core.coreip.homeip.net>
+References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com> <1259264614.1781.47.camel@localhost> <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com> <1260240142.3086.14.camel@palomino.walls.org> <20091208042210.GA11147@core.coreip.homeip.net> <1260275743.3094.6.camel@palomino.walls.org> <9e4733910912080452p42efa794mb7fd608fa4fbad7c@mail.gmail.com>
 MIME-Version: 1.0
-Date: Tue, 8 Dec 2009 19:14:39 +0200
-Message-ID: <8b8dd87a0912080914h3d71ea6x3052582b662d5f73@mail.gmail.com>
-Subject: Badness at arch/powerpc/mm/pgtable.c:286
-From: kordex - <kordex@gmail.com>
-To: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <9e4733910912080452p42efa794mb7fd608fa4fbad7c@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Dec 08, 2009 at 07:52:02AM -0500, Jon Smirl wrote:
+> On Tue, Dec 8, 2009 at 7:35 AM, Andy Walls <awalls@radix.net> wrote:
+> > On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
+> >> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
+> >
+> >> > So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
+> >> > end of the month.
+> >> >
+> >> > I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
+> >> > a common set of parameters, so I may be able to set up the decoders to
+> >> > handle decoding from two different remote types at once.  The HVR boards
+> >> > can ship with either type of remote AFAIK.
+> >> >
+> >> > I wonder if I can flip the keytables on the fly or if I have to create
+> >> > two different input devices?
+> >> >
+> >>
+> >> Can you distinguish between the 2 remotes (not receivers)?
+> >
+> > Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
+> > (Honestly I could pile on more protocols that have similar pulse time
+> > periods, but that's complexity for no good reason and I don't know of a
+> > vendor that bundles 3 types of remotes per TV card.)
+> >
+> >
+> >>  Like I said,
+> >> I think the preferred way is to represent every remote that can be
+> >> distinguished from each other as a separate input device.
+> >
+> > OK.  With RC-5, NEC, and RC-6 at least there is also an address or
+> > system byte or word to distingish different remotes.  However creating
+> > multiple input devices on the fly for detected remotes would be madness
+> > - especially with a decoding error in the address bits.
+> 
+> I agree that creating devices on the fly has problems. Another
+> solution is to create one device for each map that is loaded. There
+> would be a couple built-in maps for bundled remotes - each would
+> create a device. Then the user could load more maps with each map
+> creating a device.
+> 
+> Incoming scancodes are matched against all of the loaded maps and a
+> keycode event is generated if a match occurs.
+> 
 
-I turned some debuging options in order to trace rcutree problems but
-after turning debugging on it began just to loop on this:
+How many sancodes do we need to reliably recognize the device though? I
+am not sure users would want to press 5 random buttons in order to start
+using the remote, unless it happens exactly once and then we manage to
+store the data somewhere.
 
-http://xnet.fi/opt/pics/pgtable_badness.jpg
-1.5M   pgtable_badness.jpg
+> This illustrates why there should an EV_IR event which communicates
+> scancodes, without this event you can't see the scancodes that don't
+> match a map entry. A scancode would be first matched against the map,
+> then if there as no match an EV_IR event would be reported.
 
-I am sorry that I could not produce full dmesg.
+Just report MSC_SCAN always. As I said elsewhere we can extend it to be
+multi-dword if needed (just need to agree on endianness).
 
-Kernel config: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.debug.config.txt
-
---Mikko Kortelainen
+-- 
+Dmitry
