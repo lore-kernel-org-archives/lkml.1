@@ -1,95 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbZLHIZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbZLHI2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298AbZLHIZi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 03:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZLHIZh
+	id S1754579AbZLHI2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 03:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZLHI2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 03:25:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55812 "EHLO mx3.mail.elte.hu"
+	Tue, 8 Dec 2009 03:28:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57206 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753605AbZLHIZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 03:25:36 -0500
-Date: Tue, 8 Dec 2009 09:24:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <tj@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: percpu/tip tree build failure
-Message-ID: <20091208082436.GA12761@elte.hu>
-References: <20091208182515.bb6dda4a.sfr@canb.auug.org.au>
- <20091208080509.GD4989@nowhere>
+	id S1753323AbZLHI2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 03:28:49 -0500
+Message-ID: <4B1E0E56.8020003@kernel.org>
+Date: Tue, 08 Dec 2009 17:29:10 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091208080509.GD4989@nowhere>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jan Beulich <JBeulich@novell.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, tony.luck@intel.com,
+       linux-mm@kvack.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm/vmalloc: don't use vmalloc_end
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1E1B1B0200007800024345@vpn.id2.novell.com>
+In-Reply-To: <4B1E1B1B0200007800024345@vpn.id2.novell.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Tue, Dec 08, 2009 at 06:25:15PM +1100, Stephen Rothwell wrote:
-> > Hi all,
-> > 
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> > 
-> > kernel/hw_breakpoint.c:86: error: 'task_bp_pinned' redeclared as different kind of symbol
-> > kernel/hw_breakpoint.c:55: note: previous declaration of 'task_bp_pinned' was here
-> > kernel/hw_breakpoint.c: In function 'toggle_bp_task_slot':
-> > kernel/hw_breakpoint.c:165: warning: assignment from incompatible pointer type
-> > 
-> > Caused by commit dd17c8f72993f9461e9c19250e3f155d6d99df22 ("percpu:
-> > remove per_cpu__ prefix") from the percpu tree interacting with commit
-> > 56053170ea2a2c0dc17420e9b94aa3ca51d80408 ("hw-breakpoints: Fix task-bound
-> > breakpoint slot allocation") from the tip tree.
-> > 
-> > I have applied the following patch for today (and can carry it as
-> > necessary:
-> > 
-> > From: Stephen Rothwell <sfr@canb.auug.org.au>
-> > Date: Tue, 8 Dec 2009 18:19:48 +1100
-> > Subject: [PATCH] percpu: make per_cpu variable name unique in hw_breakpoint.c
-> > 
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+On 12/08/2009 05:23 PM, Jan Beulich wrote:
+> According to Tejun the problem is just cosmetic (i.e. causes build
+> warnings), since the functions affected aren't being used (yet) on
+> ia64. So feel free to drop the patch again, given that he has a patch
+> queued to address the issue by renaming the arch variable.
 > 
-> 
-> Doh!
-> 
-> Thanks Stephen.
-> 
-> Ingo, can you queue up this patch?
-> 
-> Thanks.
-> 
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> I wonder though why that code is being built on ia64 at all if it's not
+> being used (i.e. why it doesn't depend on a CONFIG_*, HAVE_*, or
+> NEED_* manifest constant).
 
-I have applied it - but really, the new percpu namespace changes headed 
-towards upstream are quite a nuisance IMO. The 3-4 (trivial to solve) 
-breakages i've seen so far affecting code i maintain give us an 
-estimation about the ongoing maintainence cost - which wont be high but 
-not zero either.
+Hmm... it shouldn't be building.  Can you please attach .config?
 
-The change that was forced here:
+Thanks.
 
- -static DEFINE_PER_CPU(unsigned int, task_bp_pinned[HBP_NUM]);
- +static DEFINE_PER_CPU(unsigned int, nr_task_bp_pinned[HBP_NUM]);
-
-Is it really an improvement to the old code?
-
-Dunno.
-
-	Ingo
+-- 
+tejun
