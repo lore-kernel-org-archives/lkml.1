@@ -1,143 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZLHOTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZLHOT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbZLHOTF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:19:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbZLHOTE
+	id S1755555AbZLHOT5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbZLHOT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:19:04 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:59076 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754587AbZLHOTB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:19:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ocCR2Q7WZNsfKQNXd9WfQG5Iz4RrCkjXy6ZXp8FjEQRdKHGR1+87B7vmLBk/J2Bm9A
-         LZOgQJ3u27EjcPrcPqyxnH1P7CES4wI3nJ3zSVXNe34xN/S1PJgI8ykWdgv0sasYDNBb
-         2o7AQDRnyQxPJaS9IZwNG2YNH6F+2G/nzo23Y=
-MIME-Version: 1.0
-In-Reply-To: <4B1E5BDF.7010202@redhat.com>
-References: <BDRae8rZjFB@christoph> <4B0E8B32.3020509@redhat.com>
-	 <1259264614.1781.47.camel@localhost>
-	 <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com>
-	 <1260240142.3086.14.camel@palomino.walls.org>
-	 <20091208042210.GA11147@core.coreip.homeip.net>
-	 <1260275743.3094.6.camel@palomino.walls.org>
-	 <4B1E54FF.8060404@redhat.com>
-	 <9e4733910912080547j75c2c885o29664470ff5e2c6a@mail.gmail.com>
-	 <4B1E5BDF.7010202@redhat.com>
-Date: Tue, 8 Dec 2009 09:19:07 -0500
-Message-ID: <9e4733910912080619t36089c9bg5e54114844b9694a@mail.gmail.com>
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was: 
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Andy Walls <awalls@radix.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 8 Dec 2009 09:19:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35892 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755168AbZLHOT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 09:19:56 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <4B1E568A.4020005@analog.com>
+References: <4B1E568A.4020005@analog.com> <1259128503-28276-1-git-send-email-vapier@gentoo.org> <7253.1260269873@redhat.com>
+To: Jie Zhang <jie.zhang@analog.com>
+Cc: dhowells@redhat.com, Mike Frysinger <vapier@gentoo.org>,
+       uclinux-dev@uclinux.org, David McCullough <davidm@snapgear.com>,
+       Greg Ungerer <gerg@uclinux.org>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
+Date: Tue, 08 Dec 2009 14:19:27 +0000
+Message-ID: <9984.1260281967@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 8:59 AM, Mauro Carvalho Chehab
-<mchehab@redhat.com> wrote:
-> Jon Smirl wrote:
->> On Tue, Dec 8, 2009 at 8:30 AM, Mauro Carvalho Chehab
->> <mchehab@redhat.com> wrote:
->>> Andy Walls wrote:
->>>> On Mon, 2009-12-07 at 20:22 -0800, Dmitry Torokhov wrote:
->>>>> On Mon, Dec 07, 2009 at 09:42:22PM -0500, Andy Walls wrote:
->>>>>> So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
->>>>>> end of the month.
->>>>>>
->>>>>> I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
->>>>>> a common set of parameters, so I may be able to set up the decoders to
->>>>>> handle decoding from two different remote types at once.  The HVR boards
->>>>>> can ship with either type of remote AFAIK.
->>>>>>
->>>>>> I wonder if I can flip the keytables on the fly or if I have to create
->>>>>> two different input devices?
->>>>>>
->>>>> Can you distinguish between the 2 remotes (not receivers)?
->>>> Yes.  RC-6 and RC-5 are different enough to distinguish between the two.
->>>> (Honestly I could pile on more protocols that have similar pulse time
->>>> periods, but that's complexity for no good reason and I don't know of a
->>>> vendor that bundles 3 types of remotes per TV card.)
->>> You'll be distinguishing the protocol, not the remote. If I understood
->>> Dmitry's question, he is asking if you can distinguish between two different
->>> remotes that may, for example, be using both RC-5 or both RC-6 or one RC-5
->>> and another RC-6.
->>
->> RC-5 and RC-6 both contain an address field.  My opinion is that
->> different addresses represent different devices and in general they
->> should appear on an input devices per address.
->
-> The same IR can produce two different addresses. The IR bundled with my satellite
-> STB produces two different codes, depending if you previously pressed <TV> or <SAT>
-> key (in fact, I think it can even produce different protocols for TV, as it can
-> be configured to work with different TV sets).
+Jie Zhang <jie.zhang@analog.com> wrote:
 
-You have a multi-function remote. Multi-function remotes combine
-multiple single function remotes into a single device. All universal
-remotes I have seen are multi-function. They usually combine three to
-five single function remotes.
+> I agree on using 0 instead of NULL. But for !MMU, I think, vaddr is always as
+> same as addr. So we don't need to pass it?
 
-Yours is a two function remote <TV> and <SAT>. When you push <TV> and
-<SAT> you are changing which single function remote is being emulated.
-That's why those keys don't send codes. When writing code you should
-think of this remote as being two indpendent virtual remotes, not a
-single one.
+FRV flushes the vaddr because in MMU mode the cache flush instructions take
+virtual addresses, so if we pass addr as vaddr, I can use the same cache flush
+code for both modes.  I suspect it makes little difference to the amount of
+code if we pass that rather than 0, as the value is already computed, and
+either way, it's going to take one instruction to set up the argument.
 
-Note that it is common for multfunction remotes to completely change
-IR protocol families when you switch which single function remote you
-are emulating. I have my universal set for a Sony TV , JVC DVD player
-and a Comcast STB. All three of those use different IR protocols.
+Note that Blackfin assumes that it may use the dst address for flushing - an
+assumption that isn't valid in MMU mode with a VIVT cache (which I presume
+Blackfin isn't, but other CPUs are).
 
-By using maps containing the two different addresses for <TV> and
-<SAT> you can split these commands onto two different evdev devices.
-
-This model is complicated by the fact that some remotes that look like
-multi-function remotes aren't really multifunction. The remote bundled
-with the MS MCE receiver is one. That remote is a single function
-device even though it has function buttons for TV, Music, Pictures,
-etc.
-
-
->
->> However, I prefer a different scheme for splitting the signals apart.
->> Load separate maps containing scancodes for each address. When the IR
->> signals come in they are matched against the maps and a keycode is
->> generated when a match is found. Now there is no need to distinguish
->> between the remotes. It doesn't matter which remote generated the
->> signal.
->>
->> scancode RC5/12/1 - protocol, address, command tuplet. Map this to
->> KP_1 on interface 1.
->> scancode RC5/7/1 - protocol, address, command tuplet. Map this to KP_1
->> on interface 2.
->>
->> Using the maps to split the commands out also fixes the problem with
->> Sony remotes which use multiple protocols to control a single device.
->> scancode Sony12/12/1 - protocol, address, command tuplet. Map this to
->> power_on on interface 1.
->> scancode Sony15/12/1 - protocol, address, command tuplet. Map this to
->> KP_1 on interface 1.
->>
->
-> I agree.
->
-> Cheers,
-> Mauro.
->
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+David
