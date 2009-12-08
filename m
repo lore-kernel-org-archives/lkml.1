@@ -1,54 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZLHP3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZLHPf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbZLHP3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 10:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZLHP3o
+	id S1756058AbZLHPf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 10:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZLHPfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 10:29:44 -0500
-Received: from khc.piap.pl ([195.187.100.11]:36444 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756050AbZLHP3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 10:29:43 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       hermann pitton <hermann-pitton@arcor.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR 	system?
-References: <20091204220708.GD25669@core.coreip.homeip.net> <BEJgSGGXqgB@lirc>
-	<9e4733910912041628g5bedc9d2jbee3b0861aeb5511@mail.gmail.com>
-	<1260070593.3236.6.camel@pc07.localdom.local>
-	<20091206065512.GA14651@core.coreip.homeip.net>
-	<4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain>
-	<9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com>
-	<m3skbn6dv1.fsf@intrepid.localdomain>
-	<9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com>
-	<4B1D934E.7030103@redhat.com> <m3hbs1vain.fsf@intrepid.localdomain>
-	<4B1E5DA3.7000206@redhat.com>
-Date: Tue, 08 Dec 2009 16:29:46 +0100
-In-Reply-To: <4B1E5DA3.7000206@redhat.com> (Mauro Carvalho Chehab's message of
-	"Tue, 08 Dec 2009 12:07:31 -0200")
-Message-ID: <m3y6ldscut.fsf@intrepid.localdomain>
+	Tue, 8 Dec 2009 10:35:25 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:54153 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755955AbZLHPfY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 10:35:24 -0500
+Message-ID: <4B1E7233.1040904@vlnb.net>
+Date: Tue, 08 Dec 2009 18:35:15 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
+To: Jan Kara <jack@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Possible irq lock inversion dependency detected in JBD
+References: <4B0BD960.5040105@vlnb.net> <20091208151332.GA3141@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20091208151332.GA3141@atrey.karlin.mff.cuni.cz>
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/0rq8uIVZnh0McSlqSGQUcNCKGN/K+3SWda48
+ yfquCu6PYeUlye6T/HkF4AxRV4J2JjR9iIP+g2iSXhY/yLQaP/
+ 9n/DHuJFtfk6/hFzD687Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@redhat.com> writes:
+Jan Kara, on 12/08/2009 06:13 PM wrote:
+>   Hello,
+> 
+>> During testing I had the below trace from lockdep. After some googling seems
+>> it wasn't reported. The complete trace attached, it's almost 800K uncompressed.
+>>
+>> =========================================================
+>> [ INFO: possible irq lock inversion dependency detected ]
+>> 2.6.31-scst-dbg #3
+>> ---------------------------------------------------------
+>> kswapd0/290 just changed the state of lock:
+>>  (jbd_handle){+.+.-.}, at: [<7826a6fa>] journal_start+0xd4/0x13a
+>> but this lock took another, RECLAIM_FS-unsafe lock in the past:
+>>  (&type->s_lock_key){+.+.+.}
+>>
+>> and interrupts could create inverse lock ordering between them.
+>>
+>>
+>> other info that might help us debug this:
+>> no locks held by kswapd0/290.
+>   Thanks for the report. If I'm reading the lockdep messages right, it
+> complains that page reclaim can be run with sb->s_lock held but we also
+> start a transaction in the page reclaim path and we take sb->s_lock after
+> starting a transaction in some paths.
+>   The warning seems to be false positive to me since we don't really
+> acquire sb->s_lock in the reclaim path. It would be nice if we could
+> get this sorted out but I don't see an easy way out of this...
 
-> If you use a kfifo to store the event (space_or_mark, timestamp), 
-> the IRQ handler can return immediately, and a separate kernel thread 
-> can do the decode without needing to touch at the IRQ.
+In my experience lockdep has never complained about acquiring a lock, where
+it had never been acquired, so I would rather take the complaint seriously.
+However, a false possitive can be if the same lock acquired for another object.
+I have swap as a file on a different ext3 partition.
 
-But the decoding itself is a really simple thing, why complicate it?
-There is no need for the kernel thread if the handler is fast (and it
-is).
+>From other side, during further tests I yesterday had the following lockup.
+It seems to be somehow related. 2.6.29 works just fine.
 
-Userspace is obviously different.
--- 
-Krzysztof Halasa
+[ 8298.566616] BUG: spinlock lockup on CPU#0, xfsbufd/2726, f6b52e58
+[ 8298.566632] NMI backtrace for cpu 1
+[ 8298.566632] ------------[ cut here ]------------
+[ 8298.566632] WARNING: at kernel/sched.c:5175 add_preempt_count+0x82/0xdd()
+[ 8298.566632] Hardware name: X5DPA
+[ 8298.566632] Modules linked in: iscsi_scst scst_user scst_disk scst_vdisk scst libcrc32c cryptomgr aead pcompress crypto_blkcipher crc32c crypto_hash crypto_algapi tcp_highspeed scsi_debug w83627hf hwmon_vid adm1021 binfmt_misc xfs exportfs dm_mirror dm_region_hash dm_log dm_mod pci_slot floppy uhci_hcd sg e1000 ata_generic pcspkr i2c_i801 libata i2c_core e7xxx_edac parport_pc parport [last unloaded: scst]
+[ 8298.566632] Pid: 14244, comm: vdisk_fileid2_7 Not tainted 2.6.31-scst-dbg #3
+[ 8298.566632] Call Trace:
+[ 8298.566632]  [<78497768>] ? printk+0x28/0x40
+[ 8298.566632]  [<7849e2a5>] ? add_preempt_count+0x82/0xdd
+[ 8298.566632]  [<78140225>] warn_slowpath_common+0x7e/0xda
+[ 8298.566632]  [<7849e2a5>] ? add_preempt_count+0x82/0xdd
+[ 8298.566632]  [<781402a7>] warn_slowpath_null+0x26/0x3c
+[ 8298.566632]  [<7849e2a5>] add_preempt_count+0x82/0xdd
+[ 8298.566632]  [<7849ae42>] _spin_lock_irqsave+0x2d/0x9a
+[ 8298.566632]  [<78160551>] down_trylock+0x21/0x54
+[ 8298.566632]  [<781407f5>] try_acquire_console_sem+0x20/0x6e
+[ 8298.566632]  [<78140fe1>] vprintk+0x114/0x427
+[ 8298.566632]  [<78497768>] printk+0x28/0x40
+[ 8298.566632]  [<7849cef8>] nmi_watchdog_tick+0x1e3/0x20b
+[ 8298.566632]  [<7849c03d>] do_nmi+0x18e/0x33a
+[ 8298.566632]  [<7849bcc4>] nmi_stack_correct+0x2f/0x34
+[ 8298.566632]  [<781700e0>] ? check_irq_usage+0x31/0xda
+[ 8298.566632]  [<781586c6>] ? __kernel_text_address+0x21/0x80
+[ 8298.566632]  [<781070c3>] print_context_stack+0x82/0x13f
+[ 8298.566632]  [<78105e75>] dump_trace+0xa1/0xfb
+[ 8298.566632]  [<7810e0e2>] save_stack_trace+0x3b/0x68
+[ 8298.566632]  [<782c1fb9>] dma_entry_alloc+0x79/0xb7
+[ 8298.566632]  [<782c33bb>] debug_dma_map_sg+0x4a/0x167
+[ 8298.566632]  [<78357de5>] scsi_dma_map+0xc9/0x104
+[ 8298.566632]  [<78372c98>] ahd_linux_queue+0x48/0x39a
+[ 8298.566632]  [<7849ae94>] ? _spin_lock_irqsave+0x7f/0x9a
+[ 8298.566632]  [<7834f218>] ? scsi_dispatch_cmd+0x106/0x275
+[ 8298.566632]  [<7834f25d>] scsi_dispatch_cmd+0x14b/0x275
+[ 8298.566632]  [<7849e1ea>] ? sub_preempt_count+0x9a/0xd3
+[ 8298.566632]  [<78355e0a>] scsi_request_fn+0x398/0x4de
+[ 8298.566632]  [<7828acc0>] __generic_unplug_device+0x3e/0x5b
+[ 8298.566632]  [<7828343d>] elv_insert+0x208/0x272
+[ 8298.566632]  [<781928b4>] ? __rcu_read_unlock+0x9b/0xac
+[ 8298.566632]  [<78283520>] __elv_add_request+0x79/0xc7
+[ 8298.566632]  [<7828f242>] __make_request+0x12d/0x412
+[ 8298.566632]  [<7828e116>] generic_make_request+0x42c/0x5f8
+[ 8298.566632]  [<7849e1ea>] ? sub_preempt_count+0x9a/0xd3
+[ 8298.566632]  [<78170b60>] ? trace_hardirqs_on+0x19/0x2e
+[ 8298.566632]  [<781c3db7>] ? mempool_alloc_slab+0x22/0x38
+[ 8298.566632]  [<781c3db7>] ? mempool_alloc_slab+0x22/0x38
+[ 8298.566632]  [<781c3db7>] ? mempool_alloc_slab+0x22/0x38
+[ 8298.566632]  [<7828f9c6>] submit_bio+0x9b/0x155
+[ 8298.566632]  [<78219f94>] submit_bh+0x106/0x14a
+[ 8298.566632]  [<7821c0d8>] __block_write_full_page+0x222/0x394
+[ 8298.566632]  [<7821c73d>] ? end_buffer_async_write+0x0/0x238
+[ 8298.566632]  [<7821ce27>] block_write_full_page_endio+0x133/0x13d
+[ 8298.566632]  [<7821c73d>] ? end_buffer_async_write+0x0/0x238
+[ 8298.566632]  [<7821c73d>] ? end_buffer_async_write+0x0/0x238
+[ 8298.566632]  [<7821ce55>] block_write_full_page+0x24/0x3c
+[ 8298.566632]  [<7821c73d>] ? end_buffer_async_write+0x0/0x238
+[ 8298.566632]  [<78257228>] ext3_writeback_writepage+0x109/0x13f
+[ 8298.566632]  [<782565c6>] ? buffer_unmapped+0x0/0x34
+[ 8298.566632]  [<781ce157>] shrink_page_list+0x64a/0x7cb
+[ 8298.566632]  [<7849780b>] ? io_schedule_timeout+0x8b/0xc0
+[ 8298.566632]  [<781d7d49>] ? congestion_wait+0x72/0x8d
+[ 8298.566632]  [<781ced02>] shrink_zone+0xa2a/0xa6f
+[ 8298.566632]  [<781cd56e>] ? shrink_slab+0x171/0x1b8
+[ 8298.566632]  [<7815fe6f>] ? up_read+0x29/0x5a
+[ 8298.566632]  [<781cf57e>] try_to_free_pages+0x212/0x364
+[ 8298.566632]  [<781cc7ed>] ? isolate_pages_global+0x0/0x1fa
+[ 8298.566632]  [<781c7acd>] __alloc_pages_nodemask+0x3bb/0x5db
+[ 8298.566632]  [<781707fb>] ? mark_held_locks+0x6a/0x9a
+[ 8298.566632]  [<781ee2c6>] __slab_alloc+0x1b9/0x5d3
+[ 8298.566632]  [<783d6db9>] ? __alloc_skb+0x39/0x13b
+[ 8298.566632]  [<781ee873>] kmem_cache_alloc+0x193/0x19f
+[ 8298.566632]  [<783d6db9>] ? __alloc_skb+0x39/0x13b
+[ 8298.566632]  [<783d6db9>] ? __alloc_skb+0x39/0x13b
+[ 8298.566632]  [<783d6db9>] __alloc_skb+0x39/0x13b
+[ 8298.566632]  [<783d2ec7>] ? lock_sock_nested+0xd5/0xee
+[ 8298.566632]  [<784144d1>] sk_stream_alloc_skb+0x3f/0xf0
+[ 8298.566632]  [<78417007>] tcp_sendmsg+0x402/0x99b
+[ 8298.566632]  [<781099cf>] ? sched_clock+0x1e/0x80
+[ 8298.566632]  [<7840dfef>] ? ip_finish_output+0x14c/0x310
+[ 8298.566632]  [<783cf1f8>] sock_aio_write+0x10f/0x129
+[ 8298.566632]  [<781099cf>] ? sched_clock+0x1e/0x80
+[ 8298.566632]  [<783cf0e9>] ? sock_aio_write+0x0/0x129
+[ 8298.566632]  [<781f46d8>] do_sync_readv_writev+0xdb/0x125
+[ 8298.566632]  [<7815b03d>] ? autoremove_wake_function+0x0/0x5b
+[ 8298.566632]  [<781f44ee>] ? rw_copy_check_uvector+0x80/0x12f
+[ 8298.566632]  [<781f5692>] do_readv_writev+0xb8/0x229
+[ 8298.566632]  [<783cf0e9>] ? sock_aio_write+0x0/0x129
+[ 8298.566632]  [<7814811a>] ? local_bh_enable_ip+0x75/0xfb
+[ 8298.566632]  [<78170af9>] ? trace_hardirqs_on_caller+0x13a/0x188
+[ 8298.566632]  [<ffde4a78>] ? write_data+0xce/0xabf [iscsi_scst]
+[ 8298.566632]  [<781f5862>] vfs_writev+0x5f/0x77
+[ 8298.566632]  [<ffde4b48>] write_data+0x19e/0xabf [iscsi_scst]
+[ 8298.566632]  [<7816ee05>] ? put_lock_stats+0x18/0x45
+[ 8298.566632]  [<78170313>] ? lock_release_holdtime+0xaa/0x175
+[ 8298.566632]  [<ffddd309>] ? cmnd_set_sn+0x6f/0xa6 [iscsi_scst]
+[ 8298.566632]  [<ffde5b3f>] iscsi_do_send+0x2a/0x63 [iscsi_scst]
+[ 8298.566632]  [<ffde5f2e>] iscsi_send+0x1ca/0x359 [iscsi_scst]
+[ 8298.566632]  [<7814811a>] ? local_bh_enable_ip+0x75/0xfb
+[ 8298.566632]  [<ffddd542>] iscsi_try_local_processing+0x15c/0x1bd [iscsi_scst]
+[ 8298.566632]  [<ffde133f>] iscsi_xmit_response+0x197/0x328 [iscsi_scst]
+[ 8298.566632]  [<7816ee05>] ? put_lock_stats+0x18/0x45
+[ 8298.566632]  [<78170313>] ? lock_release_holdtime+0xaa/0x175
+[ 8298.566632]  [<f90ef48c>] scst_xmit_response+0x139/0x4ab [scst]
+[ 8298.566632]  [<f90f12e5>] ? scst_pre_xmit_response+0xb0/0x274 [scst]
+[ 8298.566632]  [<78170b60>] ? trace_hardirqs_on+0x19/0x2e
+[ 8298.566632]  [<f90f356a>] scst_process_active_cmd+0x176/0x536 [scst]
+[ 8298.566632]  [<f90ed88d>] ? scst_cmd_atomic+0x62/0xa3 [scst]
+[ 8298.566632]  [<f90f3fc5>] scst_process_redirect_cmd+0x1b0/0x298 [scst]
+[ 8298.566632]  [<f90f42b8>] scst_cmd_done_local+0xff/0x257 [scst]
+[ 8298.566632]  [<f8e3447e>] vdisk_do_job+0x1f9/0xae2 [scst_vdisk]
+[ 8298.566632]  [<78133a93>] ? finish_task_switch+0x69/0x105
+[ 8298.566632]  [<f90ed88d>] ? scst_cmd_atomic+0x62/0xa3 [scst]
+[ 8298.566632]  [<f90f2a73>] scst_do_real_exec+0xbb/0x3fa [scst]
+[ 8298.566632]  [<f90f2781>] ? scst_do_local_exec+0x143/0x23a [scst]
+[ 8298.566632]  [<f90f2e82>] scst_exec+0xd0/0x25e [scst]
+[ 8298.566632]  [<ffddd3a5>] ? scst_cmd_atomic+0x65/0xa6 [iscsi_scst]
+[ 8298.566632]  [<f90f3150>] scst_send_for_exec+0x140/0x2a5 [scst]
+[ 8298.566632]  [<f90ed67c>] ? scst_tgt_pre_exec+0x77/0x226 [scst]
+[ 8298.566632]  [<f90f37a9>] scst_process_active_cmd+0x3b5/0x536 [scst]
+[ 8298.566632]  [<7849e1ea>] ? sub_preempt_count+0x9a/0xd3
+[ 8298.566632]  [<f90f39ba>] scst_do_job_active+0x90/0x158 [scst]
+[ 8298.566632]  [<f90f3c22>] scst_cmd_thread+0xc1/0x279 [scst]
+[ 8298.566632]  [<7849b855>] ? _spin_unlock_irqrestore+0x8b/0x90
+[ 8298.566632]  [<7813b430>] ? default_wake_function+0x0/0x3d
+[ 8298.566632]  [<f90f3b61>] ? scst_cmd_thread+0x0/0x279 [scst]
+[ 8298.566632]  [<7815ac79>] kthread+0x84/0x8d
+[ 8298.566632]  [<7815abf5>] ? kthread+0x0/0x8d
+[ 8298.566632]  [<78103f57>] kernel_thread_helper+0x7/0x10
+
+Thanks,
+Vlad
+
