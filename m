@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936970AbZLHXO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936990AbZLHXOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936970AbZLHXO0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 18:14:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbZLHXOW
+	id S936990AbZLHXOb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 18:14:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbZLHXOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 18:14:22 -0500
-Received: from kroah.org ([198.145.64.141]:55403 "EHLO coco.kroah.org"
+	Tue, 8 Dec 2009 18:14:23 -0500
+Received: from kroah.org ([198.145.64.141]:55407 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756372AbZLHXOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 18:14:21 -0500
-Date: Tue, 8 Dec 2009 15:14:06 -0800
+	id S1756382AbZLHXOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 18:14:22 -0500
+Date: Tue, 8 Dec 2009 15:14:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Cc: lwn@lwn.net
-Subject: Linux 2.6.27.41
-Message-ID: <20091208231406.GA14205@kroah.com>
+       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
+Subject: Re: Linux 2.6.27.41
+Message-ID: <20091208231418.GB14205@kroah.com>
+References: <20091208231406.GA14205@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091208231406.GA14205@kroah.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm announcing the release of the 2.6.27.41 kernel.
-
-There was a build error in the 2.6.27.40 kernel in the emc28xx driver.
-This release just reverts the problem patch, if you are using .40 just
-fine, no need to upgrade.
-
-The updated 2.6.27.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
-
-thanks,
-
-greg k-h
-
-------------
-
- Makefile                                  |    2 +-
- drivers/media/video/em28xx/em28xx-audio.c |    5 -----
- 2 files changed, 1 insertion(+), 6 deletions(-)
-
-Greg Kroah-Hartman (2):
-      Revert "V4L/DVB (13190): em28xx: fix panic that can occur when starting audio streaming"
-      Linux 2.6.27.41
-
+diff --git a/Makefile b/Makefile
+index 4e55a63..12952ec 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 27
+-EXTRAVERSION = .40
++EXTRAVERSION = .41
+ NAME = Trembling Tortoise
+ 
+ # *DOCUMENTATION*
+diff --git a/drivers/media/video/em28xx/em28xx-audio.c b/drivers/media/video/em28xx/em28xx-audio.c
+index 95f77b6..ac3292d 100644
+--- a/drivers/media/video/em28xx/em28xx-audio.c
++++ b/drivers/media/video/em28xx/em28xx-audio.c
+@@ -365,11 +365,6 @@ static int snd_em28xx_hw_capture_free(struct snd_pcm_substream *substream)
+ 
+ static int snd_em28xx_prepare(struct snd_pcm_substream *substream)
+ {
+-	struct em28xx *dev = snd_pcm_substream_chip(substream);
+-
+-	dev->adev.hwptr_done_capture = 0;
+-	dev->adev.capture_transfer_done = 0;
+-
+ 	return 0;
+ }
+ 
