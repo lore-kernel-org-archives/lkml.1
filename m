@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbZLHOQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZLHOQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbZLHOQF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 09:16:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbZLHOQE
+	id S1755457AbZLHOQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 09:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbZLHOQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 09:16:04 -0500
+	Tue, 8 Dec 2009 09:16:14 -0500
 Received: from mail-pw0-f42.google.com ([209.85.160.42]:61371 "EHLO
 	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755074AbZLHOQC (ORCPT
+	with ESMTP id S1755389AbZLHOQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 09:16:02 -0500
+	Tue, 8 Dec 2009 09:16:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=vdu3NIsYFZZM4gqcYXUT/34fM+5JAwd/BJ+3ipN7ZTMDajrTuQESm9GmxC5PcEf09w
-         QVGoZZ8wnsIkjz86nnZ2i5xIzsRGNjjVbD5yTCuwRvy4JoVFszB4QTmzqoQls2Byi4Dp
-         B9eoXEZQquPlyPm+Lx92g6QSNOJNMaMiPTlYA=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=YyzGdWo1OKOW+a9Z5pM1757na1MOeeKW4xmmKt4WYUdn9g0yz18TLuwfNtfNk6lrWs
+         +lGd/a/xU7oASJd2LooWH4+OTUV7IkIjz0TMaACIyWIt5T/Nc5WidVWMMPNr3YKbUUyd
+         AeMb07R45oUC0lgC93K0x/yOof5Bn/fECPdaE=
 From: Wu Zhangjin <wuzhangjin@gmail.com>
 To: Ralf Baechle <ralf@linux-mips.org>
 Cc: akpm@linux-foundation.org, Wu Zhangjin <wuzhangjin@gmail.com>,
@@ -24,70 +24,73 @@ Cc: akpm@linux-foundation.org, Wu Zhangjin <wuzhangjin@gmail.com>,
        "Rafael J . Wysocki" <rjw@sisk.pl>, zhangfx@lemote.com,
        linux-laptop@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
        Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH v9 0/8] Loongson: YeeLoong: add platform drivers
-Date: Tue,  8 Dec 2009 22:15:48 +0800
-Message-Id: <cover.1260254344.git.wuzhangjin@gmail.com>
+Subject: [PATCH v9 1/8] MIPS: add subdirectory for platform extension drivers
+Date: Tue,  8 Dec 2009 22:15:49 +0800
+Message-Id: <39d232e3f8359e9c11bad7536f0162444401ec94.1260281599.git.wuzhangjin@gmail.com>
 X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <cover.1260254344.git.wuzhangjin@gmail.com>
+References: <cover.1260254344.git.wuzhangjin@gmail.com>
+In-Reply-To: <cover.1260281599.git.wuzhangjin@gmail.com>
+References: <cover.1260281599.git.wuzhangjin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Wu Zhangjin <wuzhangjin@gmail.com>
 
-Hi, Ralf and Andrew Morton
+It is really hard to split the platform specific subdrivers into
+different subsystems, which will generate lots of duplicated source
+code, break the whole support into several pieces and also will make the
+users be difficult to choose the suitable subdrivers in different
+places.
 
-Could you please queue this patchset for 2.6.33?
+So, I did like the forks have done under drivers/platform/x86, created
+the drivers/platform/mips/ for putting the future MIPS netbook/laptop/pc
+extension drivers in.
 
-Of course, any new feedbacks are welcome, thanks!
-
-Best Regards,
-        Wu Zhangjin
-
-------------------
-
-This patchset adds platform specific drivers for YeeLoong netbook. including
-the backlight, battery, hwmon, video output, suspend and hotkey(input)
-subdrivers. These drivers provide standard interfaces to the user-space
-applications to manage the related devices.
-
-Changes from v8:
-
-  o Cleanup of the get_battery_current()
-
-  We need to return the signed value directly for the current flowing
-  into and from the battery are totally different, and since the other
-  platforms use value>0 indicates the discharge, so, we return -value
-  here. (Thanks to Pavel Machek for giving this feedback!)
-
-Wu Zhangjin (8):
-  MIPS: add subdirectory for platform extension drivers
-  Loongson: YeeLoong: add platform driver
-  Loongson: YeeLoong: add backlight driver
-  Loongson: YeeLoong: add battery driver
-  Loongson: YeeLoong: add hardware monitoring driver
-  Loongson: YeeLoong: add video output driver
-  Loongson: YeeLoong: add suspend support
-  Loongson: YeeLoong: add input/hotkey driver
-
- arch/mips/include/asm/mach-loongson/ec_kb3310b.h |  191 ++++
- arch/mips/include/asm/mach-loongson/loongson.h   |    6 +
- arch/mips/loongson/common/cmdline.c              |    8 +
- arch/mips/loongson/lemote-2f/Makefile            |    2 +-
- arch/mips/loongson/lemote-2f/ec_kb3310b.c        |   12 +-
- arch/mips/loongson/lemote-2f/ec_kb3310b.h        |  188 ----
- arch/mips/loongson/lemote-2f/platform.c          |   40 +
- arch/mips/loongson/lemote-2f/pm.c                |    4 +-
- arch/mips/loongson/lemote-2f/reset.c             |    2 +-
- drivers/platform/Kconfig                         |    4 +
- drivers/platform/Makefile                        |    1 +
- drivers/platform/mips/Kconfig                    |   33 +
- drivers/platform/mips/Makefile                   |    5 +
- drivers/platform/mips/yeeloong_laptop.c          | 1035 ++++++++++++++++++++++
- 14 files changed, 1331 insertions(+), 200 deletions(-)
- create mode 100644 arch/mips/include/asm/mach-loongson/ec_kb3310b.h
- delete mode 100644 arch/mips/loongson/lemote-2f/ec_kb3310b.h
- create mode 100644 arch/mips/loongson/lemote-2f/platform.c
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+---
+ drivers/platform/Kconfig      |    4 ++++
+ drivers/platform/mips/Kconfig |   18 ++++++++++++++++++
+ 2 files changed, 22 insertions(+), 0 deletions(-)
  create mode 100644 drivers/platform/mips/Kconfig
- create mode 100644 drivers/platform/mips/Makefile
- create mode 100644 drivers/platform/mips/yeeloong_laptop.c
+
+diff --git a/drivers/platform/Kconfig b/drivers/platform/Kconfig
+index 9652c3f..2319c0b 100644
+--- a/drivers/platform/Kconfig
++++ b/drivers/platform/Kconfig
+@@ -3,3 +3,7 @@
+ if X86
+ source "drivers/platform/x86/Kconfig"
+ endif
++
++if MIPS
++source "drivers/platform/mips/Kconfig"
++endif
+diff --git a/drivers/platform/mips/Kconfig b/drivers/platform/mips/Kconfig
+new file mode 100644
+index 0000000..2f77693
+--- /dev/null
++++ b/drivers/platform/mips/Kconfig
+@@ -0,0 +1,18 @@
++#
++# MIPS Platform Specific Drivers
++#
++
++menuconfig MIPS_PLATFORM_DEVICES
++	bool "MIPS Platform Specific Device Drivers"
++	default y
++	help
++	  Say Y here to get to see options for device drivers of various
++	  MIPS platforms, including vendor-specific netbook/laptop/pc extension
++	  drivers.  This option alone does not add any kernel code.
++
++	  If you say N, all options in this submenu will be skipped and disabled.
++
++if MIPS_PLATFORM_DEVICES
++
++
++endif # MIPS_PLATFORM_DEVICES
+-- 
+1.6.2.1
 
