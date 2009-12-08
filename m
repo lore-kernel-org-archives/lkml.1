@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965031AbZLHRTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936720AbZLHRZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965031AbZLHRTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 12:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936345AbZLHRTg
+	id S936720AbZLHRZr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 12:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936708AbZLHRZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 12:19:36 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:64309 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965011AbZLHRT2 (ORCPT
+	Tue, 8 Dec 2009 12:25:44 -0500
+Received: from mail-px0-f189.google.com ([209.85.216.189]:42072 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936703AbZLHRZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 12:19:28 -0500
+	Tue, 8 Dec 2009 12:25:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=jj6niQX4pGh0aDI4qR3yBkpFIavu548EPkVU7BG3IpKaYwML1Px+AUo3okxnGI6wOX
-         Xco7L05yvuT/HYgvSVeFh42Ysd55vma27UFbdEsDy55SfITsljaJlwOIjoD0UMA1qzGT
-         Y5PCetQOjRPXOp1lorktxWL3Cv4G3SgpRTMQQ=
-Date: Tue, 8 Dec 2009 09:19:31 -0800
+        b=E4aDXMomLIOBiQ6bgHNGgnGJbIqRwGs3UL8JvcSvDJxWR3BbpnQh+tZ1Kf0Jr5XjvW
+         k0ascMvtSKpDNOfTaKLsJtWm+jkuLhl2jqfHjjgGk6c6JaxQdnOxBIKmXP1Sr71ey3Pk
+         0pZ72icoVuP6squkH2uFUVZ5kMHO0gkmVdRZo=
+Date: Tue, 8 Dec 2009 09:25:43 -0800
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Andy Walls <awalls@radix.net>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, Jon Smirl <jonsmirl@gmail.com>,
+       hermann pitton <hermann-pitton@arcor.de>,
+       Christoph Bartelmus <lirc@bartelmus.de>, awalls@radix.net, j@jannau.net,
+       jarod@redhat.com, jarod@wilsonet.com, kraxel@redhat.com,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
-	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-Message-ID: <20091208171931.GE14143@core.coreip.homeip.net>
-References: <BDRae8rZjFB@christoph> <1259024037.3871.36.camel@palomino.walls.org> <m3k4xe7dtz.fsf@intrepid.localdomain> <4B0E8B32.3020509@redhat.com> <1259264614.1781.47.camel@localhost> <6B4C84CD-F146-4B8B-A8BB-9963E0BA4C47@wilsonet.com> <1260240142.3086.14.camel@palomino.walls.org> <4B1E394A.1090807@redhat.com> <1260276412.3094.17.camel@palomino.walls.org>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
+	IR  system?
+Message-ID: <20091208172543.GA14271@core.coreip.homeip.net>
+References: <1260070593.3236.6.camel@pc07.localdom.local> <20091206065512.GA14651@core.coreip.homeip.net> <4B1B99A5.2080903@redhat.com> <m3638k6lju.fsf@intrepid.localdomain> <9e4733910912060952h4aad49dake8e8486acb6566bc@mail.gmail.com> <m3skbn6dv1.fsf@intrepid.localdomain> <9e4733910912061323x22c618ccyf6edcee5b021cbe3@mail.gmail.com> <4B1D934E.7030103@redhat.com> <20091208042340.GC11147@core.coreip.homeip.net> <m38wddva9w.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260276412.3094.17.camel@palomino.walls.org>
+In-Reply-To: <m38wddva9w.fsf@intrepid.localdomain>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 07:46:52AM -0500, Andy Walls wrote:
-> On Tue, 2009-12-08 at 09:32 -0200, Mauro Carvalho Chehab wrote:
-> > Andy Walls wrote:
-> > > On Mon, 2009-12-07 at 13:19 -0500, Jarod Wilson wrote:
+On Tue, Dec 08, 2009 at 02:57:15PM +0100, Krzysztof Halasa wrote:
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
 > 
-> > > So I'll whip up an RC-6 Mode 6A decoder for cx23885-input.c before the
-> > > end of the month.
-> > 
-> > Good! Please, try to design the decoder as an independent module that gets
-> > data from a kfifo and generate scancodes for the input API.
+> > Why woudl we want to do this? Quite often there is a need for "observer"
+> > that maybe does not act on data but allows capturing it. Single-user
+> > inetrfaces are PITA.
 > 
-> Hmmm.  Let me see how the protoype turns out keeping that design
-> objective in mind.  I've already got the current RC-5 and NEC decoding
-> state machines in cx23885-input a bit layered, but they are taking
-> advantage of specific events signaled by my v4l2_subdev implementation.
-> 
-> Strictly speaking the state machines don't have to.  All of the remote
-> protocols I have played with make framing pretty easy.
-> 
-> 
-> 
-> > > I can setup the CX2388[58] hardware to look for both RC-5 and RC-6 with
-> > > a common set of parameters, so I may be able to set up the decoders to
-> > > handle decoding from two different remote types at once.  The HVR boards
-> > > can ship with either type of remote AFAIK.
-> > > 
-> > > I wonder if I can flip the keytables on the fly or if I have to create
-> > > two different input devices?
-> > 
-> > IMO, the better is, by default, to open just one input device per IR receiver.
-> > >From what I understand from our discussions, if the user wants to filter IR
-> > commands into several input interfaces, some userspace interface will be 
-> > provided to allow the creation of other input interfaces for that purpose.
-> 
-> Hmm. That's not what I just thought I read from Dmitry....
-> 
+> Lircd can work as a multiplexer. 
 
-I am a resonable guy ;) In cases when we can certainly say that there
-are 2 separate remotes (and we know characteristics somehow) we need to
-create 2 input devices. Otherwise we can't ;)
+What this has to do with my statement? Did you mean retransmitter of sorts?
+
+Also I may explicitely not want the data stream to be multiplexed...
+
+> IMHO single-open lirc interface is ok,
+> though we obviously need simultaneous operation of in-kernel decoders.
+
+Why is the distinction?
 
 -- 
 Dmitry
