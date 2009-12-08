@@ -1,213 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbZLHG5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932466AbZLHG4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbZLHG5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 01:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbZLHG5t
+	id S932466AbZLHG4T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 01:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZLHG4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 01:57:49 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:57057 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753102AbZLHG5p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 01:57:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=NFRM90g46VJ53OOqjTxgvMZYv/le3qNpTghaRcATD6yjIEVjMHvBY6YFGLnStUIq5+
-         hc20i8CZU28cui8iR/Sly31Qvm0ak7+o5ObW82vHZ2+LEfZ0mG+Arip0r3DZ6gQX0XrI
-         ksNVzO/h4Mi1oJA3u/kTFXz6DEfcDQnPe+Mfs=
-Subject: Re: [PATCH v7 4/8] Loongson: YeeLoong: add battery driver
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Pavel Machek <pavel@ucw.cz>
-Cc: akpm@linux-foundation.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       zhangfx@lemote.com, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-laptop@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
-In-Reply-To: <059fa216d70771a6341edb2db4cc559e958273e9.1259932036.git.wuzhangjin@gmail.com>
-References: <cover.1259932036.git.wuzhangjin@gmail.com>
-	 <059fa216d70771a6341edb2db4cc559e958273e9.1259932036.git.wuzhangjin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 08 Dec 2009 14:57:17 +0800
-Message-ID: <1260255437.3315.35.camel@falcon.domain.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 8 Dec 2009 01:56:18 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:48882 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752983AbZLHG4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 01:56:17 -0500
+Message-ID: <4B1DF8D4.2010202@novell.com>
+Date: Tue, 08 Dec 2009 15:57:24 +0900
+From: Tejun Heo <teheo@novell.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Beulich <JBeulich@novell.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-mm@kvack.org, linux-ia64@vger.kernel.org,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [PATCH] m68k: don't alias VMALLOC_END to vmalloc_end
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1DA06A.1050004@kernel.org>
+In-Reply-To: <4B1DA06A.1050004@kernel.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Pavel
+On SUN3, m68k defines macro VMALLOC_END as unsigned long variable
+vmalloc_end which is adjusted from mmu_emu_init().  This becomes
+problematic if a local variables vmalloc_end is defined in some
+function (not very unlikely) and VMALLOC_END is used in the function -
+the function thinks its referencing the global VMALLOC_END value but
+would be referencing its own local vmalloc_end variable.
 
-Seems you have reviewed this patch, can I get your Acked-by:?
+There's no reason VMALLOC_END should be a macro.  Just define it as an
+unsigned long variable to avoid nasty surprises.
 
-Thanks!
-	Wu Zhangjin
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+---
+Okay, here it is.  Compile tested.  Geert, Roman, if you guys don't
+object, I'd like to push it with the rest of percpu changes to Linus.
+What do you think?
 
-On Fri, 2009-12-04 at 21:34 +0800, Wu Zhangjin wrote:
-> From: Wu Zhangjin <wuzhangjin@gmail.com>
-> 
-> This patch adds APM emulated Battery Driver, it provides standard
-> interface(/proc/apm) for user-space applications(e.g. kpowersave,
-> gnome-power-manager) to manage the battery.
-> 
-> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> ---
->  drivers/platform/mips/Kconfig           |    2 +
->  drivers/platform/mips/yeeloong_laptop.c |  104 +++++++++++++++++++++++++++++++
->  2 files changed, 106 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/platform/mips/Kconfig b/drivers/platform/mips/Kconfig
-> index f7a3705..0c6b5ad 100644
-> --- a/drivers/platform/mips/Kconfig
-> +++ b/drivers/platform/mips/Kconfig
-> @@ -18,6 +18,8 @@ config LEMOTE_YEELOONG2F
->  	tristate "Lemote YeeLoong Laptop"
->  	depends on LEMOTE_MACH2F
->  	select BACKLIGHT_CLASS_DEVICE
-> +	select SYS_SUPPORTS_APM_EMULATION
-> +	select APM_EMULATION
->  	default m
->  	help
->  	  YeeLoong netbook is a mini laptop made by Lemote, which is basically
-> diff --git a/drivers/platform/mips/yeeloong_laptop.c b/drivers/platform/mips/yeeloong_laptop.c
-> index fbc4ebb..729e368 100644
-> --- a/drivers/platform/mips/yeeloong_laptop.c
-> +++ b/drivers/platform/mips/yeeloong_laptop.c
-> @@ -13,6 +13,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/backlight.h>	/* for backlight subdriver */
->  #include <linux/fb.h>
-> +#include <linux/apm-emulation.h>/* for battery subdriver */
->  
->  #include <ec_kb3310b.h>
->  
-> @@ -83,6 +84,106 @@ static void yeeloong_backlight_exit(void)
->  	}
->  }
->  
-> +/* battery subdriver */
-> +
-> +static void get_fixed_battery_info(void)
-> +{
-> +	int design_cap, full_charged_cap, design_vol, vendor, cell_count;
-> +
-> +	design_cap = (ec_read(REG_BAT_DESIGN_CAP_HIGH) << 8)
-> +	    | ec_read(REG_BAT_DESIGN_CAP_LOW);
-> +	full_charged_cap = (ec_read(REG_BAT_FULLCHG_CAP_HIGH) << 8)
-> +	    | ec_read(REG_BAT_FULLCHG_CAP_LOW);
-> +	design_vol = (ec_read(REG_BAT_DESIGN_VOL_HIGH) << 8)
-> +	    | ec_read(REG_BAT_DESIGN_VOL_LOW);
-> +	vendor = ec_read(REG_BAT_VENDOR);
-> +	cell_count = ec_read(REG_BAT_CELL_COUNT);
-> +
-> +	if (vendor != 0) {
-> +		pr_info("battery vendor(%s), cells count(%d), "
-> +		       "with designed capacity(%d),designed voltage(%d),"
-> +		       " full charged capacity(%d)\n",
-> +		       (vendor ==
-> +			FLAG_BAT_VENDOR_SANYO) ? "SANYO" : "SIMPLO",
-> +		       (cell_count == FLAG_BAT_CELL_3S1P) ? 3 : 6,
-> +		       design_cap, design_vol,
-> +		       full_charged_cap);
-> +	}
-> +}
-> +
-> +#define APM_CRITICAL		5
-> +
-> +static void get_power_status(struct apm_power_info *info)
-> +{
-> +	unsigned char bat_status;
-> +
-> +	info->battery_status = APM_BATTERY_STATUS_UNKNOWN;
-> +	info->battery_flag = APM_BATTERY_FLAG_UNKNOWN;
-> +	info->units = APM_UNITS_MINS;
-> +
-> +	info->battery_life = (ec_read(REG_BAT_RELATIVE_CAP_HIGH) << 8) |
-> +		(ec_read(REG_BAT_RELATIVE_CAP_LOW));
-> +
-> +	info->ac_line_status = (ec_read(REG_BAT_POWER) & BIT_BAT_POWER_ACIN) ?
-> +		APM_AC_ONLINE : APM_AC_OFFLINE;
-> +
-> +	bat_status = ec_read(REG_BAT_STATUS);
-> +
-> +	if (!(bat_status & BIT_BAT_STATUS_IN)) {
-> +		/* no battery inserted */
-> +		info->battery_status = APM_BATTERY_STATUS_NOT_PRESENT;
-> +		info->battery_flag = APM_BATTERY_FLAG_NOT_PRESENT;
-> +		info->time = 0x00;
-> +		return;
-> +	}
-> +
-> +	/* adapter inserted */
-> +	if (info->ac_line_status == APM_AC_ONLINE) {
-> +		if (!(bat_status & BIT_BAT_STATUS_FULL)) {
-> +			/* battery is not fully charged */
-> +			info->battery_status = APM_BATTERY_STATUS_CHARGING;
-> +			info->battery_flag = APM_BATTERY_FLAG_CHARGING;
-> +		} else {
-> +			/* battery is fully charged */
-> +			info->battery_status = APM_BATTERY_STATUS_HIGH;
-> +			info->battery_flag = APM_BATTERY_FLAG_HIGH;
-> +			info->battery_life = 100;
-> +		}
-> +	} else {
-> +		/* battery is too low */
-> +		if (bat_status & BIT_BAT_STATUS_LOW) {
-> +			info->battery_status = APM_BATTERY_STATUS_LOW;
-> +			info->battery_flag = APM_BATTERY_FLAG_LOW;
-> +			if (info->battery_life <= APM_CRITICAL) {
-> +				/* we should power off the system now */
-> +				info->battery_status =
-> +					APM_BATTERY_STATUS_CRITICAL;
-> +				info->battery_flag = APM_BATTERY_FLAG_CRITICAL;
-> +			}
-> +		} else {
-> +			/* assume the battery is high enough. */
-> +			info->battery_status = APM_BATTERY_STATUS_HIGH;
-> +			info->battery_flag = APM_BATTERY_FLAG_HIGH;
-> +		}
-> +	}
-> +	info->time = ((info->battery_life - 3) * 54 + 142) / 60;
-> +}
-> +
-> +static int yeeloong_battery_init(void)
-> +{
-> +	get_fixed_battery_info();
-> +
-> +	apm_get_power_status = get_power_status;
-> +
-> +	return 0;
-> +}
-> +
-> +static void yeeloong_battery_exit(void)
-> +{
-> +	if (apm_get_power_status == get_power_status)
-> +		apm_get_power_status = NULL;
-> +}
-> +
->  static struct platform_device_id platform_device_ids[] = {
->  	{
->  		.name = "yeeloong_laptop",
-> @@ -120,11 +221,14 @@ static int __init yeeloong_init(void)
->  		return ret;
->  	}
->  
-> +	yeeloong_battery_init();
-> +
->  	return 0;
->  }
->  
->  static void __exit yeeloong_exit(void)
->  {
-> +	yeeloong_battery_exit();
->  	yeeloong_backlight_exit();
->  	platform_driver_unregister(&platform_driver);
->  
+Thanks.
 
+ arch/m68k/include/asm/pgtable_mm.h |    3 +--
+ arch/m68k/sun3/mmu_emu.c           |    8 ++++----
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
+diff --git a/arch/m68k/include/asm/pgtable_mm.h b/arch/m68k/include/asm/pgtable_mm.h
+index fe60e1a..0ea9f09 100644
+--- a/arch/m68k/include/asm/pgtable_mm.h
++++ b/arch/m68k/include/asm/pgtable_mm.h
+@@ -83,9 +83,8 @@
+ #define VMALLOC_START (((unsigned long) high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
+ #define VMALLOC_END KMAP_START
+ #else
+-extern unsigned long vmalloc_end;
+ #define VMALLOC_START 0x0f800000
+-#define VMALLOC_END vmalloc_end
++extern unsigned long VMALLOC_END;
+ #endif /* CONFIG_SUN3 */
+ 
+ /* zero page used for uninitialized stuff */
+diff --git a/arch/m68k/sun3/mmu_emu.c b/arch/m68k/sun3/mmu_emu.c
+index 3cd1939..25e2b14 100644
+--- a/arch/m68k/sun3/mmu_emu.c
++++ b/arch/m68k/sun3/mmu_emu.c
+@@ -45,8 +45,8 @@
+ ** Globals
+ */
+ 
+-unsigned long vmalloc_end;
+-EXPORT_SYMBOL(vmalloc_end);
++unsigned long VMALLOC_END;
++EXPORT_SYMBOL(VMALLOC_END);
+ 
+ unsigned long pmeg_vaddr[PMEGS_NUM];
+ unsigned char pmeg_alloc[PMEGS_NUM];
+@@ -172,8 +172,8 @@ void mmu_emu_init(unsigned long bootmem_end)
+ #endif
+ 			// the lowest mapping here is the end of our
+ 			// vmalloc region
+-			if(!vmalloc_end)
+-				vmalloc_end = seg;
++			if (!VMALLOC_END)
++				VMALLOC_END = seg;
+ 
+ 			// mark the segmap alloc'd, and reserve any
+ 			// of the first 0xbff pages the hardware is
