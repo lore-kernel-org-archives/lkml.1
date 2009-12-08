@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966375AbZLHVmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966473AbZLHVm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966375AbZLHVmq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbZLHVmn
+	id S966473AbZLHVm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966425AbZLHVmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:42:43 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43307 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756315AbZLHVmm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:42:42 -0500
-Date: Tue, 8 Dec 2009 22:42:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Walker <dwalker@codeaurora.org>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Brian Swetland <swetland@google.com>,
-       Iliyan Malchev <malchev@google.com>
-Subject: Re: HTC Dream: mmc compilation fixes
-Message-ID: <20091208214241.GB4164@elf.ucw.cz>
-References: <20091206195953.GA26863@elf.ucw.cz>
- <1260305123.11826.25.camel@c-dwalke-linux.qualcomm.com>
+	Tue, 8 Dec 2009 16:42:52 -0500
+Received: from kroah.org ([198.145.64.141]:49830 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756320AbZLHVmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 16:42:50 -0500
+Date: Tue, 8 Dec 2009 13:42:46 -0800
+From: Greg KH <greg@kroah.com>
+To: Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Michael Krufky <mkrufky@kernellabs.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: 2.6.27.40 build error
+Message-ID: <20091208214246.GA21857@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260305123.11826.25.camel@c-dwalke-linux.qualcomm.com>
-X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-12-08 12:45:22, Daniel Walker wrote:
-> On Sun, 2009-12-06 at 20:59 +0100, Pavel Machek wrote:
-> > +
-> > +struct embedded_sdio_data {
-> > +        struct sdio_cis cis;
-> > +        struct sdio_cccr cccr;
-> > +        struct sdio_embedded_func *funcs;
-> > +        int num_funcs;
-> > +};
-> 
-> 
-> There's some indentation problems in this block, I'll fix it prior to
-> merging it..
+It turns out that the patch below causes a build failure on the
+2.6.27.40 kernel.
 
-Thanks!
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Michael, should I just drop it, or should I take out the line with the
+"capture_transfer_done" in it, as that member is not in the structure in
+this kernel version.
+
+thanks,
+
+greg k-h
+
+On Thu, Oct 15, 2009 at 01:14:34AM -0300, Devin Heitmueller wrote:
+> From: Devin Heitmueller <dheitmueller@kernellabs.com>
+> 
+> commit 96fbf771d86a90ff006bc62ca4d4de6474b3de31 upstream.
+> 
+> Because the counters were not reset when starting up streaming, they would
+> be reused from the previous run.  This can result in cases such that when the
+> second instance of streaming starts up, the "cnt" variable in
+> em28xx_audio_isocirq() can end up being negative, resulting in attempting to
+> write to memory before the start of runtime->dma_area (as well as having a
+> negative number of bytes to copy).
+> 
+> Signed-off-by: Devin Heitmueller <dheitmueller@kernellabs.com>
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+> Signed-off-by: Michael Krufky <mkrufky@kernellabs.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  drivers/media/video/em28xx/em28xx-audio.c |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> --- a/drivers/media/video/em28xx/em28xx-audio.c
+> +++ b/drivers/media/video/em28xx/em28xx-audio.c
+> @@ -365,6 +365,11 @@ static int snd_em28xx_hw_capture_free(st
+>  
+>  static int snd_em28xx_prepare(struct snd_pcm_substream *substream)
+>  {
+> +	struct em28xx *dev = snd_pcm_substream_chip(substream);
+> +
+> +	dev->adev.hwptr_done_capture = 0;
+> +	dev->adev.capture_transfer_done = 0;
+> +
+>  	return 0;
+>  }
+>  
