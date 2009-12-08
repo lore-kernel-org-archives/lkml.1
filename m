@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZLHMLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbZLHMTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348AbZLHMLK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 07:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZLHMLH
+	id S1754377AbZLHMTk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 07:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZLHMTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 07:11:07 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44049 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753918AbZLHMLG (ORCPT
+	Tue, 8 Dec 2009 07:19:39 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:53978 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754098AbZLHMTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 07:11:06 -0500
-Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <4B1E3EE0.7030001@kernel.org>
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>
-	 <1259726212-30259-5-git-send-email-tj@kernel.org>
-	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>
-	 <4B1C85D3.3080401@kernel.org> <1260174900.8223.1159.camel@laptop>
-	 <4B1CDA1C.3000802@kernel.org> <1260183278.8223.1500.camel@laptop>
-	 <4B1CE1E8.2070803@kernel.org>  <4B1E1130.9050108@kernel.org>
-	 <1260262963.3935.1002.camel@laptop>  <4B1E189B.1070204@kernel.org>
-	 <1260268453.3935.1106.camel@laptop>  <4B1E378A.5050101@kernel.org>
-	 <1260272885.3935.1189.camel@laptop>  <4B1E3EE0.7030001@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 13:10:32 +0100
-Message-ID: <1260274232.3935.1223.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 07:19:39 -0500
+Date: Tue, 8 Dec 2009 13:19:42 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       tglx@linutronix.de, dvhltc@us.ibm.com
+Cc: stable@kernel.org
+Subject: [PATCH] futex: Take mmap_sem for get_user_pages in
+	fault_in_user_writeable
+Message-ID: <20091208121942.GA21298@basil.fritz.box>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 20:56 +0900, Tejun Heo wrote:
-> Hello,
-> 
-> On 12/08/2009 08:48 PM, Peter Zijlstra wrote:
-> > Why bother with that?
-> > 
-> > workqueue's CPU_POST_DEAD will flush the workqueue and destroy all
-> > threads under cpu_add_remove_lock, which excludes the cpu from coming
-> > back up before its fully destroyed.
-> > 
-> > So there's no remaining tasks to be migrated back.
-> > 
-> > Changing that semantics is not worthwhile.
-> 
-> It is worthwhile because the goal is to unify all worker pool
-> mechanisms.  So, slow_work or whatnot (scsi EHs, FS specific worker
-> pools, async workers used for parallel probing) will all be converted
-> to use workqueue instead and with that we can't afford to wait for all
-> works to flush to down a cpu.  All that's necessary to implement that
-> is migrating back the unbound workers which can be implemented as a
-> separate piece of code apart from regular operation.  It would even
-> benefit the current implementation as it makes cpu up/down operations
-> much more deterministic.
+futex: Take mmap_sem for get_user_pages in fault_in_user_writeable
 
-Hotplug and deterministic are not to be used in the same sentence, its
-an utter slow path and I'd much rather have simple code than clever code
-there -- there's been way too many 'interesting' hotplug problems.
+gup() requires mmap_sem, so take it before running it. The
+recent fault_in_user_writeable() didn't do that.
 
-If there is work being enqueued that takes more than a few seconds to
-complete then I'm thinking there's something seriously wrong and up to
-that point its perfectly fine to simply wait for it.
+I didn't find a good futex test case, so untested.
 
-Furthermore if it's objective is to cater to generic thread pools then I
-think its an utter fail simply because it mandates strict cpu affinity,
-that basically requires you to write a work scheduler to balance work
-load etc.. Much easier is a simple unbounded thread pool that gets
-balanced by the regular scheduler.
+Likely a stable candidate.
 
-/me liking this stuff less and less :/
+Cc: npiggin@suse.de
+Cc: tglx@linutronix.de
+Cc: dvhltc@us.ibm.com
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
+---
+ kernel/futex.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.32-ak/kernel/futex.c
+===================================================================
+--- linux-2.6.32-ak.orig/kernel/futex.c
++++ linux-2.6.32-ak/kernel/futex.c
+@@ -304,8 +304,13 @@ void put_futex_key(int fshared, union fu
+  */
+ static int fault_in_user_writeable(u32 __user *uaddr)
+ {
+-	int ret = get_user_pages(current, current->mm, (unsigned long)uaddr,
++	int ret;
++	struct mm_struct *mm = current->mm;
++
++	down_read(&mm->mmap_sem);
++	ret = get_user_pages(current, mm, (unsigned long)uaddr,
+ 				 1, 1, 0, NULL, NULL);
++	up_read(&mm->mmap_sem);
+ 	return ret < 0 ? ret : 0;
+ }
+ 
