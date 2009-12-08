@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966407AbZLHVU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966454AbZLHVVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966407AbZLHVU4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966392AbZLHVUs
+	id S966454AbZLHVVV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:21:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966373AbZLHVUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:20:48 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49526 "EHLO
+	Tue, 8 Dec 2009 16:20:45 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49535 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966261AbZLHVQX (ORCPT
+	with ESMTP id S966200AbZLHVQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:16:23 -0500
+	Tue, 8 Dec 2009 16:16:24 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200912081016.198135742@firstfloor.org>
 In-Reply-To: <200912081016.198135742@firstfloor.org>
-To: fengguang.wu@intel.com, npiggin@suse.de, mel@linux.vnet.ibm.com,
-       fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [PATCH] [13/31] HWPOISON: detect free buddy pages explicitly
-Message-Id: <20091208211629.660E2B151F@basil.firstfloor.org>
-Date: Tue,  8 Dec 2009 22:16:29 +0100 (CET)
+To: fengguang.wu@intel.com, fengguang.wu@intel.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] [14/31] HWPOISON: Add unpoisoning support
+Message-Id: <20091208211630.68D59B151F@basil.firstfloor.org>
+Date: Tue,  8 Dec 2009 22:16:30 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,80 +25,231 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Wu Fengguang <fengguang.wu@intel.com>
 
-Most free pages in the buddy system have no PG_buddy set.
-Introduce is_free_buddy_page() for detecting them reliably.
+The unpoisoning interface is useful for stress testing tools to 
+reclaim poisoned pages (to prevent OOM)
 
-CC: Nick Piggin <npiggin@suse.de> 
-CC: Mel Gorman <mel@linux.vnet.ibm.com> 
+There is no hardware level unpoisioning, so this
+cannot be used for real memory errors, only for software injected errors.
+
+Note that it may leak pages silently - those who have been removed from
+LRU cache, but not isolated from page cache/swap cache at hwpoison time.
+Especially the stress test of dirty swap cache pages shall reboot system
+before exhausting memory.
+
+AK: Fix comments, add documentation, add printks, rename symbol
+
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/internal.h       |    3 +++
- mm/memory-failure.c |    9 +++++++--
- mm/page_alloc.c     |   21 +++++++++++++++++++++
- 3 files changed, 31 insertions(+), 2 deletions(-)
+ Documentation/vm/hwpoison.txt |   16 ++++++++-
+ include/linux/mm.h            |    1 
+ include/linux/page-flags.h    |    2 -
+ mm/hwpoison-inject.c          |   36 ++++++++++++++++++----
+ mm/memory-failure.c           |   68 ++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 114 insertions(+), 9 deletions(-)
 
+Index: linux/mm/hwpoison-inject.c
+===================================================================
+--- linux.orig/mm/hwpoison-inject.c
++++ linux/mm/hwpoison-inject.c
+@@ -4,7 +4,7 @@
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
+ 
+-static struct dentry *hwpoison_dir, *corrupt_pfn;
++static struct dentry *hwpoison_dir;
+ 
+ static int hwpoison_inject(void *data, u64 val)
+ {
+@@ -14,7 +14,16 @@ static int hwpoison_inject(void *data, u
+ 	return __memory_failure(val, 18, 0);
+ }
+ 
++static int hwpoison_unpoison(void *data, u64 val)
++{
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	return unpoison_memory(val);
++}
++
+ DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
++DEFINE_SIMPLE_ATTRIBUTE(unpoison_fops, NULL, hwpoison_unpoison, "%lli\n");
+ 
+ static void pfn_inject_exit(void)
+ {
+@@ -24,16 +33,31 @@ static void pfn_inject_exit(void)
+ 
+ static int pfn_inject_init(void)
+ {
++	struct dentry *dentry;
++
+ 	hwpoison_dir = debugfs_create_dir("hwpoison", NULL);
+ 	if (hwpoison_dir == NULL)
+ 		return -ENOMEM;
+-	corrupt_pfn = debugfs_create_file("corrupt-pfn", 0600, hwpoison_dir,
++
++	/*
++	 * Note that the below poison/unpoison interfaces do not involve
++	 * hardware status change, hence do not require hardware support.
++	 * They are mainly for testing hwpoison in software level.
++	 */
++	dentry = debugfs_create_file("corrupt-pfn", 0600, hwpoison_dir,
+ 					  NULL, &hwpoison_fops);
+-	if (corrupt_pfn == NULL) {
+-		pfn_inject_exit();
+-		return -ENOMEM;
+-	}
++	if (!dentry)
++		goto fail;
++
++	dentry = debugfs_create_file("unpoison-pfn", 0600, hwpoison_dir,
++				     NULL, &unpoison_fops);
++	if (!dentry)
++		goto fail;
++
+ 	return 0;
++fail:
++	pfn_inject_exit();
++	return -ENOMEM;
+ }
+ 
+ module_init(pfn_inject_init);
+Index: linux/include/linux/mm.h
+===================================================================
+--- linux.orig/include/linux/mm.h
++++ linux/include/linux/mm.h
+@@ -1321,6 +1321,7 @@ enum mf_flags {
+ };
+ extern void memory_failure(unsigned long pfn, int trapno);
+ extern int __memory_failure(unsigned long pfn, int trapno, int flags);
++extern int unpoison_memory(unsigned long pfn);
+ extern int sysctl_memory_failure_early_kill;
+ extern int sysctl_memory_failure_recovery;
+ extern void shake_page(struct page *p);
 Index: linux/mm/memory-failure.c
 ===================================================================
 --- linux.orig/mm/memory-failure.c
 +++ linux/mm/memory-failure.c
-@@ -809,8 +809,13 @@ int __memory_failure(unsigned long pfn,
+@@ -840,6 +840,16 @@ int __memory_failure(unsigned long pfn,
+ 	 * and in many cases impossible, so we just avoid it here.
  	 */
- 	if (!(flags & MF_COUNT_INCREASED) &&
- 		!get_page_unless_zero(compound_head(p))) {
--		action_result(pfn, "free or high order kernel", IGNORED);
--		return PageBuddy(compound_head(p)) ? 0 : -EBUSY;
-+		if (is_free_buddy_page(p)) {
-+			action_result(pfn, "free buddy", DELAYED);
-+			return 0;
-+		} else {
-+			action_result(pfn, "high order kernel", IGNORED);
-+			return -EBUSY;
-+		}
- 	}
+ 	lock_page_nosync(p);
++
++	/*
++	 * unpoison always clear PG_hwpoison inside page lock
++	 */
++	if (!PageHWPoison(p)) {
++		action_result(pfn, "unpoisoned", IGNORED);
++		res = 0;
++		goto out;
++	}
++
+ 	wait_on_page_writeback(p);
  
  	/*
-Index: linux/mm/internal.h
-===================================================================
---- linux.orig/mm/internal.h
-+++ linux/mm/internal.h
-@@ -50,6 +50,9 @@ extern void putback_lru_page(struct page
-  */
- extern void __free_pages_bootmem(struct page *page, unsigned int order);
- extern void prep_compound_page(struct page *page, unsigned long order);
-+#ifdef CONFIG_MEMORY_FAILURE
-+extern bool is_free_buddy_page(struct page *page);
-+#endif
- 
- 
- /*
-Index: linux/mm/page_alloc.c
-===================================================================
---- linux.orig/mm/page_alloc.c
-+++ linux/mm/page_alloc.c
-@@ -5085,3 +5085,24 @@ __offline_isolated_pages(unsigned long s
- 	spin_unlock_irqrestore(&zone->lock, flags);
+@@ -895,3 +905,61 @@ void memory_failure(unsigned long pfn, i
+ {
+ 	__memory_failure(pfn, trapno, 0);
  }
- #endif
 +
-+#ifdef CONFIG_MEMORY_FAILURE
-+bool is_free_buddy_page(struct page *page)
++/**
++ * unpoison_memory - Unpoison a previously poisoned page
++ * @pfn: Page number of the to be unpoisoned page
++ *
++ * Software-unpoison a page that has been poisoned by
++ * memory_failure() earlier.
++ *
++ * This is only done on the software-level, so it only works
++ * for linux injected failures, not real hardware failures
++ *
++ * Returns 0 for success, otherwise -errno.
++ */
++int unpoison_memory(unsigned long pfn)
 +{
-+	struct zone *zone = page_zone(page);
-+	unsigned long pfn = page_to_pfn(page);
-+	unsigned long flags;
-+	int order;
++	struct page *page;
++	struct page *p;
++	int freeit = 0;
 +
-+	spin_lock_irqsave(&zone->lock, flags);
-+	for (order = 0; order < MAX_ORDER; order++) {
-+		struct page *page_head = page - (pfn & ((1 << order) - 1));
++	if (!pfn_valid(pfn))
++		return -ENXIO;
 +
-+		if (PageBuddy(page_head) && page_order(page_head) >= order)
-+			break;
++	p = pfn_to_page(pfn);
++	page = compound_head(p);
++
++	if (!PageHWPoison(p)) {
++		pr_debug("MCE: Page was already unpoisoned %#lx\n", pfn);
++		return 0;
 +	}
-+	spin_unlock_irqrestore(&zone->lock, flags);
 +
-+	return order < MAX_ORDER;
++	if (!get_page_unless_zero(page)) {
++		if (TestClearPageHWPoison(p))
++			atomic_long_dec(&mce_bad_pages);
++		pr_debug("MCE: Software-unpoisoned free page %#lx\n", pfn);
++		return 0;
++	}
++
++	lock_page_nosync(page);
++	/*
++	 * This test is racy because PG_hwpoison is set outside of page lock.
++	 * That's acceptable because that won't trigger kernel panic. Instead,
++	 * the PG_hwpoison page will be caught and isolated on the entrance to
++	 * the free buddy page pool.
++	 */
++	if (TestClearPageHWPoison(p)) {
++		pr_debug("MCE: Software-unpoisoned page %#lx\n", pfn);
++		atomic_long_dec(&mce_bad_pages);
++		freeit = 1;
++	}
++	unlock_page(page);
++
++	put_page(page);
++	if (freeit)
++		put_page(page);
++
++	return 0;
 +}
-+#endif
++EXPORT_SYMBOL(unpoison_memory);
+Index: linux/include/linux/page-flags.h
+===================================================================
+--- linux.orig/include/linux/page-flags.h
++++ linux/include/linux/page-flags.h
+@@ -277,7 +277,7 @@ PAGEFLAG_FALSE(Uncached)
+ 
+ #ifdef CONFIG_MEMORY_FAILURE
+ PAGEFLAG(HWPoison, hwpoison)
+-TESTSETFLAG(HWPoison, hwpoison)
++TESTSCFLAG(HWPoison, hwpoison)
+ #define __PG_HWPOISON (1UL << PG_hwpoison)
+ #else
+ PAGEFLAG_FALSE(HWPoison)
+Index: linux/Documentation/vm/hwpoison.txt
+===================================================================
+--- linux.orig/Documentation/vm/hwpoison.txt
++++ linux/Documentation/vm/hwpoison.txt
+@@ -98,10 +98,22 @@ madvise(MADV_POISON, ....)
+ 
+ 
+ hwpoison-inject module through debugfs
+-	/sys/debug/hwpoison/corrupt-pfn
+ 
+-Inject hwpoison fault at PFN echoed into this file
++/sys/debug/hwpoison/
+ 
++corrupt-pfn
++
++Inject hwpoison fault at PFN echoed into this file.
++
++unpoison-pfn
++
++Software-unpoison page at PFN echoed into this file. This
++way a page can be reused again.
++This only works for Linux injected failures, not for real
++memory failures.
++
++Note these injection interfaces are not stable and might change between
++kernel versions
+ 
+ Architecture specific MCE injector
+ 
