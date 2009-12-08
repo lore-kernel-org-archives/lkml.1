@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbZLHWjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966806AbZLHWnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756418AbZLHWjb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbZLHWja
+	id S966806AbZLHWnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbZLHWni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:39:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50352 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756368AbZLHWj3 (ORCPT
+	Tue, 8 Dec 2009 17:43:38 -0500
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:55552
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756400AbZLHWnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:39:29 -0500
-Date: Tue, 8 Dec 2009 14:39:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: n-horiguchi@ah.jp.nec.com
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       hugh.dickins@tiscali.co.uk, ak@linux.intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 0/2] mm hugetlb x86: add hugepage support to pagemap
-Message-Id: <20091208143928.f3aa0ad2.akpm@linux-foundation.org>
-In-Reply-To: <4B1CB5D6.9080007@ah.jp.nec.com>
-References: <4B1CB5D6.9080007@ah.jp.nec.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Dec 2009 17:43:37 -0500
+Message-ID: <4B1ED69F.4050609@microgate.com>
+Date: Tue, 08 Dec 2009 16:43:43 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] synclink_gt dropped transmit data bugfix
+References: <1260310010.3764.49.camel@x2.microgate.com> <20091208135510.ffd75637.akpm@linux-foundation.org>
+In-Reply-To: <20091208135510.ffd75637.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 Dec 2009 16:59:18 +0900
-Naoya Horiguchi <n-horiguchi@ah.jp.nec.com> wrote:
-
-> Most callers of pmd_none_or_clear_bad() check whether the target
-> page is in a hugepage or not, but mincore() and walk_page_range() do
-> not check it. So if we read /proc/pid/pagemap for the hugepage
-> on x86 machine, the hugepage memory is leaked as shown below.
-> This patch fixes it by extending pagemap interface to support hugepages.
+Andrew Morton wrote:
+> On Tue, 08 Dec 2009 16:06:50 -0600
+> Paul Fulghum <paulkf@microgate.com> wrote:
 > 
-> I split this fix into two patches.  The first patch just adds the check
-> for hugepages, and the second patch adds a new member to struct mm_walk
-> to handle the hugepages.
+>> +	/* check required buffer space */
+>> +	bufs_needed = (size/DMABUFSIZE);
+>> +	if (size % DMABUFSIZE)
+>> +		++bufs_needed;
+> 
+> 	bufs_needed = DIV_ROUND_UP(size, DMABUFSIZE);
 
-I kind of dislike the practice of putting all the changelog in patch
-[0/n] and then leaving the patches themselves practically
-unchangelogged.  Because
+A reasonable substitution.
 
-a) Someone (ie: me) needs to go and shuffle all the text around so
-   that the information gets itself into the git record.  We don't add
-   changelog-only commits to git!
+> That unsent_tbufs() call looks like it might be expensive.
 
-b) Someone (ie: me) might decide to backport a subset of the patches
-   into -stable.  Now someone (ie: me) needs to carve up the changelogs
-   so that the pieces which go into -stable still make standalone sense.
+unsent_tbufs() is called from isr_txeom() when the serial
+transmitter has gone idle.
 
-I'm not sure that I did this particularly well in this case.  Oh well.
+The common case is that the DMA buffers are empty
+(all count fields reset to zero by DMA controller)
+so the loop falls out on the first comparison.
+
+The second most common case will be a single
+data block added just after the DMA controller quits but
+before the serial transmitter is idle. Here you only
+need to back track the few buffers consumed by that block.
+
+The degenerate case is a large burst of write calls
+just after the DMA controller quits but before the
+serial transmitter is idle. There are only 32 total
+descriptors to iterate so worst case is still not that bad
+and won't happen often. There is a single comparison per
+descriptor and the descriptors are contained in system
+memory and not card memory behind a PCI bridge.
+
+The case of keeping the buffers full and transmitter
+constantly active (sustained heavy traffic) results
+in no calls to unsent_tbufs().
 
 
-Please confirm that
-mm-hugetlb-fix-hugepage-memory-leak-in-walk_page_range.patch is
-suitable for a -stable backport without inclusion of
-mm-hugetlb-add-hugepage-support-to-pagemap.patch.  I think it is.
-
+-- 
+Paul Fulghum
+MicroGate Systems, Ltd.
+=Customer Driven, by Design=
+(800)444-1982
+(512)345-7791 (Direct)
+(512)343-9046 (Fax)
+Central Time Zone (GMT -5h)
+www.microgate.com
