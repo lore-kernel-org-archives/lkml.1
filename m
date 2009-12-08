@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966374AbZLHVTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966400AbZLHVTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966374AbZLHVTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966394AbZLHVS4
+	id S966400AbZLHVTM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966388AbZLHVSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:18:56 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49556 "EHLO
+	Tue, 8 Dec 2009 16:18:54 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49562 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966237AbZLHVQb (ORCPT
+	with ESMTP id S966288AbZLHVQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:16:31 -0500
+	Tue, 8 Dec 2009 16:16:32 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <200912081016.198135742@firstfloor.org>
 In-Reply-To: <200912081016.198135742@firstfloor.org>
-To: fengguang.wu@intel.com, npiggin@suse.de, fengguang.wu@intel.com,
+To: fengguang.wu@intel.com, kosaki.motohiro@jp.fujitsu.com,
+       hugh.dickins@tiscali.co.uk, nishimura@mxp.nes.nec.co.jp,
+       balbir@linux.vnet.ibm.com, fengguang.wu@intel.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] [20/31] HWPOISON: add page flags filter
-Message-Id: <20091208211636.7C2E8B151F@basil.firstfloor.org>
-Date: Tue,  8 Dec 2009 22:16:36 +0100 (CET)
+Subject: [PATCH] [21/31] memcg: rename and export try_get_mem_cgroup_from_page()
+Message-Id: <20091208211637.7EF75B151F@basil.firstfloor.org>
+Date: Tue,  8 Dec 2009 22:16:37 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -25,131 +27,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Wu Fengguang <fengguang.wu@intel.com>
 
-When specified, only poison pages if ((page_flags & mask) == value).
+So that the hwpoison injector can get mem_cgroup for arbitrary page
+and thus know whether it is owned by some mem_cgroup task(s).
 
--       corrupt-filter-flags-mask
--       corrupt-filter-flags-value
-
-This allows stress testing of many kinds of pages.
-
-Strictly speaking, the buddy pages requires taking zone lock, to avoid
-setting PG_hwpoison on a "was buddy but now allocated to someone" page.
-However we can just do nothing because we set PG_locked in the beginning,
-this prevents the page allocator from allocating it to someone. (It will
-BUG() on the unexpected PG_locked, which is fine for hwpoison testing.)
-
-CC: Nick Piggin <npiggin@suse.de>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- Documentation/vm/hwpoison.txt |   10 ++++++++++
- mm/hwpoison-inject.c          |   10 ++++++++++
- mm/internal.h                 |    2 ++
- mm/memory-failure.c           |   20 ++++++++++++++++++++
- 4 files changed, 42 insertions(+)
+ include/linux/memcontrol.h |    6 ++++++
+ mm/memcontrol.c            |   11 ++++-------
+ 2 files changed, 10 insertions(+), 7 deletions(-)
 
-Index: linux/mm/hwpoison-inject.c
+Index: linux/mm/memcontrol.c
 ===================================================================
---- linux.orig/mm/hwpoison-inject.c
-+++ linux/mm/hwpoison-inject.c
-@@ -102,6 +102,16 @@ static int pfn_inject_init(void)
- 	if (!dentry)
- 		goto fail;
- 
-+	dentry = debugfs_create_u64("corrupt-filter-flags-mask", 0600,
-+				    hwpoison_dir, &hwpoison_filter_flags_mask);
-+	if (!dentry)
-+		goto fail;
-+
-+	dentry = debugfs_create_u64("corrupt-filter-flags-value", 0600,
-+				    hwpoison_dir, &hwpoison_filter_flags_value);
-+	if (!dentry)
-+		goto fail;
-+
- 	return 0;
- fail:
- 	pfn_inject_exit();
-Index: linux/mm/internal.h
-===================================================================
---- linux.orig/mm/internal.h
-+++ linux/mm/internal.h
-@@ -268,3 +268,5 @@ extern int hwpoison_filter(struct page *
- 
- extern u32 hwpoison_filter_dev_major;
- extern u32 hwpoison_filter_dev_minor;
-+extern u64 hwpoison_filter_flags_mask;
-+extern u64 hwpoison_filter_flags_value;
-Index: linux/mm/memory-failure.c
-===================================================================
---- linux.orig/mm/memory-failure.c
-+++ linux/mm/memory-failure.c
-@@ -34,6 +34,7 @@
- #include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/page-flags.h>
-+#include <linux/kernel-page-flags.h>
- #include <linux/sched.h>
- #include <linux/ksm.h>
- #include <linux/rmap.h>
-@@ -50,8 +51,12 @@ atomic_long_t mce_bad_pages __read_mostl
- 
- u32 hwpoison_filter_dev_major = ~0U;
- u32 hwpoison_filter_dev_minor = ~0U;
-+u64 hwpoison_filter_flags_mask;
-+u64 hwpoison_filter_flags_value;
- EXPORT_SYMBOL_GPL(hwpoison_filter_dev_major);
- EXPORT_SYMBOL_GPL(hwpoison_filter_dev_minor);
-+EXPORT_SYMBOL_GPL(hwpoison_filter_flags_mask);
-+EXPORT_SYMBOL_GPL(hwpoison_filter_flags_value);
- 
- static int hwpoison_filter_dev(struct page *p)
- {
-@@ -83,11 +88,26 @@ static int hwpoison_filter_dev(struct pa
- 	return 0;
+--- linux.orig/mm/memcontrol.c
++++ linux/mm/memcontrol.c
+@@ -1379,25 +1379,22 @@ static struct mem_cgroup *mem_cgroup_loo
+ 	return container_of(css, struct mem_cgroup, css);
  }
  
-+static int hwpoison_filter_flags(struct page *p)
+-static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
++struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
+ {
+-	struct mem_cgroup *mem;
++	struct mem_cgroup *mem = NULL;
+ 	struct page_cgroup *pc;
+ 	unsigned short id;
+ 	swp_entry_t ent;
+ 
+ 	VM_BUG_ON(!PageLocked(page));
+ 
+-	if (!PageSwapCache(page))
+-		return NULL;
+-
+ 	pc = lookup_page_cgroup(page);
+ 	lock_page_cgroup(pc);
+ 	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+ 		if (mem && !css_tryget(&mem->css))
+ 			mem = NULL;
+-	} else {
++	} else if (PageSwapCache(page)) {
+ 		ent.val = page_private(page);
+ 		id = lookup_swap_cgroup(ent);
+ 		rcu_read_lock();
+@@ -1742,7 +1739,7 @@ int mem_cgroup_try_charge_swapin(struct
+ 	 */
+ 	if (!PageSwapCache(page))
+ 		return 0;
+-	mem = try_get_mem_cgroup_from_swapcache(page);
++	mem = try_get_mem_cgroup_from_page(page);
+ 	if (!mem)
+ 		goto charge_cur_mm;
+ 	*ptr = mem;
+Index: linux/include/linux/memcontrol.h
+===================================================================
+--- linux.orig/include/linux/memcontrol.h
++++ linux/include/linux/memcontrol.h
+@@ -68,6 +68,7 @@ extern unsigned long mem_cgroup_isolate_
+ extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
+ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
+ 
++extern struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page);
+ extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
+ 
+ static inline
+@@ -189,6 +190,11 @@ mem_cgroup_move_lists(struct page *page,
+ {
+ }
+ 
++static inline struct mem_cgroup *try_get_mem_cgroup_from_page(struct page *page)
 +{
-+	if (!hwpoison_filter_flags_mask)
-+		return 0;
-+
-+	if ((stable_page_flags(p) & hwpoison_filter_flags_mask) ==
-+				    hwpoison_filter_flags_value)
-+		return 0;
-+	else
-+		return -EINVAL;
++	return NULL;
 +}
 +
- int hwpoison_filter(struct page *p)
+ static inline int mm_match_cgroup(struct mm_struct *mm, struct mem_cgroup *mem)
  {
- 	if (hwpoison_filter_dev(p))
- 		return -EINVAL;
- 
-+	if (hwpoison_filter_flags(p))
-+		return -EINVAL;
-+
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(hwpoison_filter);
-Index: linux/Documentation/vm/hwpoison.txt
-===================================================================
---- linux.orig/Documentation/vm/hwpoison.txt
-+++ linux/Documentation/vm/hwpoison.txt
-@@ -123,6 +123,16 @@ Only handle memory failures to pages ass
- by block device major/minor.  -1U is the wildcard value.
- This should be only used for testing with artificial injection.
- 
-+
-+corrupt-filter-flags-mask
-+corrupt-filter-flags-value
-+
-+When specified, only poison pages if ((page_flags & mask) == value).
-+This allows stress testing of many kinds of pages. The page_flags
-+are the same as in /proc/kpageflags. The flag bits are defined in
-+include/linux/kernel-page-flags.h and documented in
-+Documentation/vm/pagemap.txt
-+
- Architecture specific MCE injector
- 
- x86 has mce-inject, mce-test
+ 	return 1;
