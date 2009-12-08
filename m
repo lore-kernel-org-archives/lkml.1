@@ -1,105 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZLHNgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbZLHNiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbZLHNgd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 08:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbZLHNgc
+	id S1755043AbZLHNiR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 08:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZLHNiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 08:36:32 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54686 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754968AbZLHNgb (ORCPT
+	Tue, 8 Dec 2009 08:38:16 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:42815 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754446AbZLHNiQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 08:36:31 -0500
-Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <4B1E4548.5040408@kernel.org>
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>
-	 <1259726212-30259-5-git-send-email-tj@kernel.org>
-	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>
-	 <4B1C85D3.3080401@kernel.org> <1260174900.8223.1159.camel@laptop>
-	 <4B1CDA1C.3000802@kernel.org> <1260183278.8223.1500.camel@laptop>
-	 <4B1CE1E8.2070803@kernel.org>  <4B1E1130.9050108@kernel.org>
-	 <1260262963.3935.1002.camel@laptop>  <4B1E189B.1070204@kernel.org>
-	 <1260268453.3935.1106.camel@laptop>  <4B1E378A.5050101@kernel.org>
-	 <1260272885.3935.1189.camel@laptop>  <4B1E3EE0.7030001@kernel.org>
-	 <1260274232.3935.1223.camel@laptop>  <4B1E4548.5040408@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 14:35:51 +0100
-Message-ID: <1260279351.3935.1375.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Tue, 8 Dec 2009 08:38:16 -0500
+X-IronPort-AV: E=Sophos;i="4.47,362,1257138000"; 
+   d="scan'208";a="8524379"
+Message-ID: <4B1E568A.4020005@analog.com>
+Date: Tue, 8 Dec 2009 21:37:14 +0800
+From: Jie Zhang <jie.zhang@analog.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Lightning/1.0pre Shredder/3.0
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: Mike Frysinger <vapier@gentoo.org>, uclinux-dev@uclinux.org,
+       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
+References: <1259128503-28276-1-git-send-email-vapier@gentoo.org> <7253.1260269873@redhat.com>
+In-Reply-To: <7253.1260269873@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Dec 2009 13:37:59.0936 (UTC) FILETIME=[A86FE800:01CA780B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 21:23 +0900, Tejun Heo wrote:
-> On 12/08/2009 09:10 PM, Peter Zijlstra wrote:
-> > Hotplug and deterministic are not to be used in the same sentence, its
-> > an utter slow path and I'd much rather have simple code than clever code
-> > there -- there's been way too many 'interesting' hotplug problems.
-> 
-> Slow and indeterminism comes in different magnitudes.
+On 12/08/2009 06:57 PM, David Howells wrote:
+> Mike Frysinger<vapier@gentoo.org>  wrote:
+>
+>> +			copy_to_user_page(vma, NULL, NULL,
+>> +					  (void *) addr, buf, len);
+>> ...
+>> +			copy_from_user_page(vma, NULL, NULL,
+>> +					    buf, (void *) addr, len);
+>
+> I think this is not correct.  The third parameter in both cases (vaddr) is of
+> unsigned long type (so should be 0 not NULL), and should not be left zero in
+> any case.  I think it should be passed addr.  In fact, we should really pass
+> the second parameter too (page), though for now, I'm happy to leave that NULL.
+>
+> See attached revision of the patch.
+>
+I agree on using 0 instead of NULL. But for !MMU, I think, vaddr is 
+always as same as addr. So we don't need to pass it?
 
-Determinism does _not_ come in magnitudes, its a very binary property,
-either it is or it is not.
 
-As to the order of slowness for unplug, that is about maximal, its _the_
-slowest path in the whole kernel.
+Jie
 
-> > Furthermore if it's objective is to cater to generic thread pools then I
-> > think its an utter fail simply because it mandates strict cpu affinity,
-> > that basically requires you to write a work scheduler to balance work
-> > load etc.. Much easier is a simple unbounded thread pool that gets
-> > balanced by the regular scheduler.
-> 
-> The observation was that for most long running async jobs, most time
-> is spent sleeping instead of burning cpu cycles and long running ones
-> are relatively few compared to short ones so the strict affinity would
-> be more helpful.  That is the basis of whole design and why it has
-> scheduler callbacks to regulate concurrency instead of creating a
-> bunch of active workers and letting the scheduler take care of it.
-> Works wouldn't be competing for cpu cycles.
-> 
-> In short, the target workload is the current short works + long
-> running mostly sleeping async works, which cover most of worker pools
-> we have in kernel.
 
-Ok, maybe, but that is not what I would call a generic thread pool.
-
-So the reason we have tons of idle workqueues around are purely because
-of deadlock scenarios? Or is there other crap about?
-
-So why not start simple and only have one thread per cpu (lets call it
-events/#) and run all works there. Then when you enqueue a work and
-events/# is already busy with a work from anther wq, hand the work to a
-global event thread which will spawn a special single shot kthread for
-it, with a second exception for those reclaim wq's, for which you'll
-have this rescue thread which you'll bind to the right cpu for that
-work.
-
-That should get rid of all these gazillion threads we have, preserve the
-queue property and not be as invasive as your current thing.
-
-If they're really as idle as reported you'll never need the fork-fest
-you currently propose, simply because there's not enough work.
-
-So basically, have events/# service the first non-empty cwq, when
-there's more non empty cwqs spawn them single shot threads, or use a
-rescue thread.
-
->   I thought about adding an unbound pool of workers
-> for cpu intensive works for completeness but I really couldn't find
-> much use for that.  If enough number of users would need something
-> like that, we can add an anonymous pool but for now I really don't see
-> the need to worry about that.
-
-And I though I'd heard multiple parties express interesting in exactly
-that, btrfs, bdi and pohmelfs come to mind, also crypto looks like one
-that could actually do some work.
+> David
+> ---
+> From: Jie Zhang<jie.zhang@analog.com>
+> Subject: [PATCH] NOMMU: Use copy_*_user_page() in access_process_vm()
+>
+> The MMU code uses the copy_*_user_page() variants in access_process_vm()
+> rather than copy_*_user() as the former includes an icache flush.  This is
+> important when doing things like setting software breakpoints with gdb.
+> So switch the NOMMU code over to do the same.
+>
+> This patch makes the reasonable assumption that copy_from_user_page() won't
+> fail - which is probably fine, as we've checked the VMA from which we're
+> copying is usable, and the copy is not allowed to cross VMAs.  The one case
+> where it might go wrong is if the VMA is a device rather than RAM, and that
+> device returns an error which - in which case rubbish will be returned rather
+> than EIO.
+>
+> Signed-off-by: Jie Zhang<jie.zhang@analog.com>
+> Signed-off-by: Mike Frysinger<vapier@gentoo.org>
+> Signed-off-by: David Howells<dhowells@redhat.com>
+> ---
+>
+>   mm/nommu.c |    6 ++++--
+>   1 files changed, 4 insertions(+), 2 deletions(-)
+>
+>
+> diff --git a/mm/nommu.c b/mm/nommu.c
+> index af12270..953800f 100644
+> --- a/mm/nommu.c
+> +++ b/mm/nommu.c
+> @@ -1896,9 +1896,11 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, in
+>
+>   		/* only read or write mappings where it is permitted */
+>   		if (write&&  vma->vm_flags&  VM_MAYWRITE)
+> -			len -= copy_to_user((void *) addr, buf, len);
+> +			copy_to_user_page(vma, NULL, addr,
+> +					 (void *) addr, buf, len);
+>   		else if (!write&&  vma->vm_flags&  VM_MAYREAD)
+> -			len -= copy_from_user(buf, (void *) addr, len);
+> +			copy_from_user_page(vma, NULL, addr,
+> +					    buf, (void *) addr, len);
+>   		else
+>   			len = 0;
+>   	} else {
 
