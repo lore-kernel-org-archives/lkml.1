@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZLHFhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbZLHFiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbZLHFhU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 00:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZLHFhU
+	id S1752723AbZLHFiS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 00:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbZLHFiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 00:37:20 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54942 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752268AbZLHFhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 00:37:19 -0500
-Message-ID: <4B1DE5D4.4070805@cn.fujitsu.com>
-Date: Tue, 08 Dec 2009 13:36:20 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 8 Dec 2009 00:38:16 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:53314 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752328AbZLHFiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 00:38:15 -0500
+Date: Tue, 8 Dec 2009 06:38:19 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Michal Marek <mmarek@suse.cz>, reinette chatre <reinette.chatre@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: net/kbuild trees build failure
+Message-ID: <20091208053819.GA4604@merkur.ravnborg.org>
+References: <20091207200317.57820f0a.sfr@canb.auug.org.au> <20091207114158.GA2428@merkur.ravnborg.org> <4B1CF39A.5050806@suse.cz> <20091207160903.GB18939@tuxdriver.com> <1260209537.4653.778.camel@rc-desk> <4B1D76B1.6070601@suse.cz> <20091207222853.GE18939@tuxdriver.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 02/13] tracing: Extract calls to trace_define_common_fields()
-References: <4B1DC476.3030700@cn.fujitsu.com> <4B1DC49C.8000107@cn.fujitsu.com>
-In-Reply-To: <4B1DC49C.8000107@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091207222853.GE18939@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Call trace_define_common_fields() in event_create_dir() only.
+On Mon, Dec 07, 2009 at 05:28:53PM -0500, John W. Linville wrote:
+> On Mon, Dec 07, 2009 at 10:42:09PM +0100, Michal Marek wrote:
+> > reinette chatre napsal(a):
 > 
->    text    data     bss     dec     hex filename
-> 5346802 1961864 7103260 14411926         dbe896 vmlinux.o.old
-> 5345151 1961864 7103260 14410275         dbe223 vmlinux.o
+> > > Right - could we please use the solution that works at compile time? I
+> > > used UTS_RELEASE after learning about its use in init/version.c, would
+> > > that not make it an approved solution?
+> > 
+> > It seems there is some misunderstanding.
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Alright, if Stephen's fix is acceptable then your suggestion is fine.
+> Sam seemed to suggest that Stephen's fix was a stop-gap.
 
-I think this is a urgent patch for mainline.
+The need to use utsrelease seems very prominent in external drivers.
+But a quick grep turned up only a single staging driver in-tree that
+include utsrelease.
+So whatever problem this driver solves using utsrelease it is not shared
+with the rest of the in-tree drivers.
 
-I have found a regression at trace_kprobe, and I'm lucky to find that this
-patch can also fix this regression.
+So no - it is not a stop-gap. It is more a "is it really needed?".
 
-
-> --- a/kernel/trace/trace_kprobe.c
-> +++ b/kernel/trace/trace_kprobe.c
-> @@ -1113,10 +1113,6 @@ static int kprobe_event_define_fields(struct ftrace_event_call *event_call)
->  	struct kprobe_trace_entry field;
->  	struct trace_probe *tp = (struct trace_probe *)event_call->data;
->  
-> -	ret = trace_define_common_fields(event_call);
-> -	if (!ret)
-> -		return ret;
-> -
->  	DEFINE_FIELD(unsigned long, ip, FIELD_STRING_IP, 0);
->  	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
->  	/* Set argument names as fields */
-> @@ -1131,10 +1127,6 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
->  	struct kretprobe_trace_entry field;
->  	struct trace_probe *tp = (struct trace_probe *)event_call->data;
->  
-> -	ret = trace_define_common_fields(event_call);
-> -	if (!ret)
-> -		return ret;
-> -
->  	DEFINE_FIELD(unsigned long, func, FIELD_STRING_FUNC, 0);
->  	DEFINE_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP, 0);
->  	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
-
-"if (!ret)" is wrong. trace_define_common_fields() returns zero when success.
-So "unsigned long, func", "unsigned long, ret_ip" ...etc are NOT "defined"
-and filters can not be applied for trace_kprobe.
-
-Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-
+	Sam
