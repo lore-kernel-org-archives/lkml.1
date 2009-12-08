@@ -1,199 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964837AbZLHEbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935575AbZLHEqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964837AbZLHEbt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 23:31:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934501AbZLHEbs
+	id S935575AbZLHEqW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 23:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757821AbZLHEqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 23:31:48 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:43054 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757123AbZLHEbr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 23:31:47 -0500
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 7 Dec 2009 23:46:22 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33820 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757578AbZLHEqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 23:46:21 -0500
+Date: Tue, 8 Dec 2009 05:46:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Bryan Donlan <bdonlan@gmail.com>, Ulrich Drepper <drepper@redhat.com>,
+       Timo Sirainen <tss@iki.fi>, WANG Cong <xiyou.wangcong@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v6] Added PR_SET_PROCTITLE_AREA option for prctl()
+Message-ID: <20091208044605.GA32669@elte.hu>
+References: <20091208121145.B58D.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [RFC][PATCH 06/10] fec: fix uninitialized rx buffer usage
-Date: Mon, 7 Dec 2009 21:31:49 -0700
-Message-ID: <DE2504B3A515524BBE6934369EFDC0DA08C2AA19@az33exm20.fsl.freescale.net>
-In-Reply-To: <20091204111346.GL15126@pengutronix.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC][PATCH 06/10] fec: fix uninitialized rx buffer usage
-Thread-Index: Acp00uG0lBMdCzFnSDGEhlr4FhW/ZwC6qbFA
-References: <cover.1259893118.git.amit.kucheria@canonical.com> <7a49f4c0ea2f5030068729978c2cb173a6e15857.1259893118.git.amit.kucheria@canonical.com> <20091204111346.GL15126@pengutronix.de>
-From: "Herring Robert-RA7055" <ra7055@freescale.com>
-To: "Sascha Hauer" <s.hauer@pengutronix.de>,
-       "Amit Kucheria" <amit.kucheria@canonical.com>
-Cc: "List Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, <netdev@vger.kernel.org>,
-       <linux-arm-kernel@lists.infradead.org>, <valentin.longchamp@epfl.ch>,
-       <daniel@caiaq.de>, <grant.likely@secretlab.ca>,
-       "Nguyen Dinh-R00091" <R00091@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091208121145.B58D.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sascha,
 
-> -----Original Message-----
-> From: Sascha Hauer [mailto:s.hauer@pengutronix.de] 
-> Sent: Friday, December 04, 2009 5:14 AM
-> To: Amit Kucheria
-> Cc: List Linux Kernel; Herring Robert-RA7055; David S. 
-> Miller; netdev@vger.kernel.org; 
-> linux-arm-kernel@lists.infradead.org; 
-> valentin.longchamp@epfl.ch; daniel@caiaq.de; 
-> grant.likely@secretlab.ca; Nguyen Dinh-R00091
-> Subject: Re: [RFC][PATCH 06/10] fec: fix uninitialized rx buffer usage
-> 
-> On Fri, Dec 04, 2009 at 04:47:06AM +0200, Amit Kucheria wrote:
-> > From: Rob Herring <r.herring@freescale.com>
-> > 
-> > The fec driver was enabling receive buffer descriptor 
-> without allocating
-> > the buffers. Make sure the buffer descriptors are initialized to not
-> > start receiving packets.
-> > 
-> > Signed-off-by: Rob Herring <r.herring@freescale.com>
-> > Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
-> > Cc: David S. Miller <davem@davemloft.net>
-> > Cc: netdev@vger.kernel.org
-> > ---
-> >  drivers/net/fec.c |   57 
-> +++++++++++++++++++++++++++--------------------------
-> >  1 files changed, 29 insertions(+), 28 deletions(-)
-> > 
-> > diff --git a/drivers/net/fec.c b/drivers/net/fec.c
-> > index 16a1d58..9a8743d 100644
-> > --- a/drivers/net/fec.c
-> > +++ b/drivers/net/fec.c
-> > @@ -1658,6 +1658,7 @@ static int fec_enet_init(struct 
-> net_device *dev, int index)
-> >  {
-> >  	struct fec_enet_private *fep = netdev_priv(dev);
-> >  	struct bufdesc *cbd_base;
-> > +	struct bufdesc *bdp;
-> >  	int i;
-> >  
-> >  	/* Allocate memory for buffer descriptors. */
-> > @@ -1710,6 +1711,34 @@ static int fec_enet_init(struct 
-> net_device *dev, int index)
-> >  	/* Set MII speed to 2.5 MHz */
-> >  	fep->phy_speed = ((((clk_get_rate(fep->clk) / 2 + 4999999)
-> >  					/ 2500000) / 2) & 0x3F) << 1;
-> > +
-> > +	/* Initialize the receive buffer descriptors. */
-> > +	bdp = fep->rx_bd_base;
-> > +	for (i = 0; i < RX_RING_SIZE; i++) {
-> > +
-> > +		/* Initialize the BD for every fragment in the page. */
-> > +		bdp->cbd_sc = 0;
-> > +		bdp++;
-> > +	}
-> > +
-> > +	/* Set the last buffer to wrap */
-> > +	bdp--;
-> > +	bdp->cbd_sc |= BD_SC_WRAP;
-> > +
-> > +	/* ...and the same for transmit */
-> > +	bdp = fep->tx_bd_base;
-> > +	for (i = 0; i < TX_RING_SIZE; i++) {
-> > +
-> > +		/* Initialize the BD for every fragment in the page. */
-> > +		bdp->cbd_sc = 0;
-> > +		bdp->cbd_bufaddr = 0;
-> > +		bdp++;
-> > +	}
-> > +
-> > +	/* Set the last buffer to wrap */
-> > +	bdp--;
-> > +	bdp->cbd_sc |= BD_SC_WRAP;
-> > +
-> >  	fec_restart(dev, 0);
-> 
-> I do not really understand why this patch is needed. You move 
-> the buffer
-> initialisation from fec_restart to fec_enet_init, but fec_restart is
-> called directly after the initialisation, so this shouldn't 
-> change much.
-> 
-> I don't need this patch on my boards, so I wonder what is really going
-> wrong here.
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-It is because open also calls fec_restart after the rx buffers are
-allocated. With the code in fec_restart, it zeroes out the buffer
-descriptors that have just been setup. I can't explain how it would work
-for you.
+> +	/*
+> +	 * If argv and environ aren't continuous (i.e. the process used
+> +	 * prctl(PR_SET_PROCTITLE_AREA)), we don't care environ override.
 
-Regards,
-Rob
+s/dont't care environ override/don't care about the evironment override/
 
-> 
-> Sascha
-> 
-> 
-> >  
-> >  	/* Queue up command to detect the PHY and initialize the
-> > @@ -1730,7 +1759,6 @@ static void
-> >  fec_restart(struct net_device *dev, int duplex)
-> >  {
-> >  	struct fec_enet_private *fep = netdev_priv(dev);
-> > -	struct bufdesc *bdp;
-> >  	int i;
-> >  
-> >  	/* Whack a reset.  We should wait for this. */
-> > @@ -1768,33 +1796,6 @@ fec_restart(struct net_device *dev, 
-> int duplex)
-> >  		}
-> >  	}
-> >  
-> > -	/* Initialize the receive buffer descriptors. */
-> > -	bdp = fep->rx_bd_base;
-> > -	for (i = 0; i < RX_RING_SIZE; i++) {
-> > -
-> > -		/* Initialize the BD for every fragment in the page. */
-> > -		bdp->cbd_sc = BD_ENET_RX_EMPTY;
-> > -		bdp++;
-> > -	}
-> > -
-> > -	/* Set the last buffer to wrap */
-> > -	bdp--;
-> > -	bdp->cbd_sc |= BD_SC_WRAP;
-> > -
-> > -	/* ...and the same for transmit */
-> > -	bdp = fep->tx_bd_base;
-> > -	for (i = 0; i < TX_RING_SIZE; i++) {
-> > -
-> > -		/* Initialize the BD for every fragment in the page. */
-> > -		bdp->cbd_sc = 0;
-> > -		bdp->cbd_bufaddr = 0;
-> > -		bdp++;
-> > -	}
-> > -
-> > -	/* Set the last buffer to wrap */
-> > -	bdp--;
-> > -	bdp->cbd_sc |= BD_SC_WRAP;
-> > -
-> >  	/* Enable MII mode */
-> >  	if (duplex) {
-> >  		/* MII enable / FD enable */
-> > -- 
-> > 1.6.3.3
-> > 
-> > 
-> 
-> -- 
-> Pengutronix e.K.                           |                  
->            |
-> Industrial Linux Solutions                 | 
-> http://www.pengutronix.de/  |
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: 
-> +49-5121-206917-0    |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   
-> +49-5121-206917-5555 |
-> 
-> 
+> +		case PR_SET_PROCTITLE_AREA: {
+> +			struct mm_struct *mm = current->mm;
+> +			unsigned long addr = arg2;
+> +			unsigned long len = arg3;
+> +			unsigned long end = arg2 + arg3;
+
+would be cleaner to write the latter as 'addr + len'.
+
+> +			if (len > PAGE_SIZE)
+> +				return -EINVAL;
+> +
+> +			if (addr >= end)
+> +				return -EINVAL;
+> +
+> +			/*
+> +			 * If the process pass broken pointer, EFAULT is might better
+> +			 * than ps output zero-length proctitle. Plus if
+> +			 * the process pass kernel address (or something-else),
+> +			 * We have to block it. Oherwise, strange exploit
+> +			 * chance is there.
+> +			 */
+> +			if (!access_ok(VERIFY_READ, addr, len))
+> +				return -EFAULT;
+
+the addr >= end check looks (partly) duplicative of the access_ok() 
+check.
+
+> +
+> +			down_write(&mm->mmap_sem);
+> +			mm->arg_start = addr;
+> +			mm->arg_end = end;
+> +			up_write(&mm->mmap_sem);
+
+well we might as well name 'addr' as 'start' and have a match then here 
+too.
+
+The feature looks useful, but the choice of a prctl as an API is strange 
+- it limits us to the current task only - while the ability to set 
+arguments for another task looks a more generic (and potentially more 
+useful) solution.
+
+	Ingo
