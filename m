@@ -1,56 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZLHLs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbZLHLsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbZLHLs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 06:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZLHLsz
+	id S1754263AbZLHLsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 06:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZLHLsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 06:48:55 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48239 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018AbZLHLsz (ORCPT
+	Tue, 8 Dec 2009 06:48:17 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:58803 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753792AbZLHLsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 06:48:55 -0500
-Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <4B1E378A.5050101@kernel.org>
-References: <1259726212-30259-1-git-send-email-tj@kernel.org>
-	 <1259726212-30259-5-git-send-email-tj@kernel.org>
-	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>
-	 <4B1C85D3.3080401@kernel.org> <1260174900.8223.1159.camel@laptop>
-	 <4B1CDA1C.3000802@kernel.org> <1260183278.8223.1500.camel@laptop>
-	 <4B1CE1E8.2070803@kernel.org>  <4B1E1130.9050108@kernel.org>
-	 <1260262963.3935.1002.camel@laptop>  <4B1E189B.1070204@kernel.org>
-	 <1260268453.3935.1106.camel@laptop>  <4B1E378A.5050101@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 12:48:05 +0100
-Message-ID: <1260272885.3935.1189.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 06:48:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=pwjdTr5DM79MpOQvhvjMNnrlKbgjDEVspO2DQxwF7g/6y+Cw2XXmks7ynRU0eq930S
+         fO8G7NfGFMm+V66zOBO62iim6FjT0iDkTtLHrTImHRN3zJz4sq5arcUb+GUcNPsE7zYB
+         05zIlsMp/5GWiCt4dH5U2MGUn6Qv3u2QyDsf4=
+MIME-Version: 1.0
+Date: Tue, 8 Dec 2009 12:48:23 +0100
+Message-ID: <d3e73af70912080348q48556d5cx1e7c281da347e078@mail.gmail.com>
+Subject: SMP Kernel and SCSI problem at boot
+From: Sim <simvirus@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 20:24 +0900, Tejun Heo wrote:
-> 
-> Let me augment the above sentence.  Yes, that's all I need *during
-> CPU_DOWN*.  During CPU_UP, I need to migrate back left running workers
-> which survived from the last CPU_DOWN.  In the original patch, the
-> down path is worker_maybe_bind_and_lock() and the latter path is
-> trustee_unset_rogue(). 
+Hello,
+excuse my (old) question, but I have a big problem with kernel 2.4.21-4.EL
+and SMP+SCSI (Red Hat), in a critical running server.
 
-Why bother with that?
+Trying to boot the server with SMP version (2.4.21-4.ELsmp)
+the system sleep over "SCSI DAT detect".
 
-workqueue's CPU_POST_DEAD will flush the workqueue and destroy all
-threads under cpu_add_remove_lock, which excludes the cpu from coming
-back up before its fully destroyed.
+This is the report of dmesg in NOT SMP version:
+---------------------------------
+[..]
+PCI: Enabling device 03:0c.0 (0000 -> 0003)
+scsi2 : Adaptec AIC79XX PCI-X SCSI HBA DRIVER, Rev 1.3.10
+        <Adaptec 29320LP Ultra320 SCSI adapter>
+        aic7901A: Ultra320 Wide Channel A, SCSI Id=7, PCI-X 67-100Mhz, 512 SCBs
 
-So there's no remaining tasks to be migrated back.
+Starting timer : 0 0
+blk: queue f6d3dc14, I/O limit 4095Mb (mask 0xffffffff)
+(scsi2:A:6): 80.000MB/s transfers (40.000MHz, 16bit)
+  Vendor: IBM       Model: DDS Gen5          Rev: A060
+  Type:   Sequential-Access                  ANSI SCSI revision: 03
+Starting timer : 0 0
+blk: queue f6d3de14, I/O limit 4095Mb (mask 0xffffffff)
+Journalled Block Device driver loaded
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+Freeing unused kernel memory: 164k freed
+usb.c: registered new driver usbdevfs
+usb.c: registered new driver hub
+usb-uhci.c: $Revision: 1.275 $ time 18:21:59 Oct  3 2003
+usb-uhci.c: High bandwidth mode enabled
+PCI: Setting latency timer of device 00:1d.0 to 64
+usb-uhci.c: USB UHCI at I/O 0x2200, IRQ 5
+usb-uhci.c: Detected 2 ports
+usb.c: new USB bus registered, assigned bus number 1
+[..]
+---------------------------------
 
-Changing that semantics is not worthwhile.
 
+With SMP boot, the system stops its startup with:
+---------------------------------
+[..]
+PCI: Enabling device 03:0c.0 (0000 -> 0003)
+scsi2 : Adaptec AIC79XX PCI-X SCSI HBA DRIVER, Rev 1.3.10
+        <Adaptec 29320LP Ultra320 SCSI adapter>
+        aic7901A: Ultra320 Wide Channel A, SCSI Id=7, PCI-X 67-100Mhz, 512 SCBs
+
+Starting timer : 0 0
+blk: queue f6d3dc14, I/O limit 4095Mb (mask 0xffffffff)
+---------------------------------
+
+
+Looking around this problemsSomeone wrote:
+
+...Dumping the ahd state when probing the da and simply stopped.
+So I set the SCSI BIOS to restrict the device speed upto 80MB/s and
+the problem went away.
+After that, the machine runs flawlessly for 8 months.
+
+
+Can You help me?
+
+Best Regards
+
+---
+Sim
