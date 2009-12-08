@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965796AbZLHTGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965807AbZLHTHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965796AbZLHTGm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 14:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965787AbZLHTGg
+	id S965807AbZLHTHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 14:07:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965787AbZLHTHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 14:06:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44036 "EHLO
+	Tue, 8 Dec 2009 14:07:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33757 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965724AbZLHTGf (ORCPT
+	by vger.kernel.org with ESMTP id S965801AbZLHTHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 14:06:35 -0500
-Date: Tue, 8 Dec 2009 11:05:39 -0800
+	Tue, 8 Dec 2009 14:07:04 -0500
+Date: Tue, 8 Dec 2009 11:06:42 -0800
 From: Stephen Hemminger <shemminger@linux-foundation.org>
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: "David S. Miller" <davem@davemloft.net>,
@@ -19,7 +19,7 @@ Cc: "David S. Miller" <davem@davemloft.net>,
        "Paul E. McKenney" <paulmck@us.ibm.com>,
        Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] fib-trie: code cleanup
-Message-ID: <20091208110539.2b46e64b@nehalam>
+Message-ID: <20091208110642.1dbb53cd@nehalam>
 In-Reply-To: <20091208184839.GA31383@Krystal>
 References: <20091208184839.GA31383@Krystal>
 Organization: Linux Foundation
@@ -34,9 +34,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Tue, 8 Dec 2009 13:48:39 -0500
 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> - I moved static const that were hidden in the middle of the file to defines on
->   top.
+> -	while ( (tb_node = rcu_dereference(tb->tb_hlist.next)) ) {
+> +	while ((tb_node = rcu_dereference(tb->tb_hlist.next))) {
+>  
 
-Keep them as static const, makeing them #define's doesn't help anything
+This is clearer before with the added whitespace, ignore checkpatch natterings.
 
 -- 
