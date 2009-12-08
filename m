@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966155AbZLHVEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966174AbZLHVIC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966155AbZLHVEO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:04:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966102AbZLHVEK
+	id S966174AbZLHVIC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 16:08:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966151AbZLHVH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:04:10 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43373 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966083AbZLHVEJ (ORCPT
+	Tue, 8 Dec 2009 16:07:57 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52219
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965970AbZLHVH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:04:09 -0500
-Date: Tue, 8 Dec 2009 13:04:02 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <200912082044.52098.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0912081256310.3560@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912072225390.4179-100000@netrider.rowland.org> <200912081323.50606.rjw@sisk.pl> <alpine.LFD.2.00.0912080728590.3560@localhost.localdomain> <200912082044.52098.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 Dec 2009 16:07:56 -0500
+Date: Tue, 08 Dec 2009 13:08:02 -0800 (PST)
+Message-Id: <20091208.130802.25121122.davem@davemloft.net>
+To: hugh.dickins@tiscali.co.uk
+Cc: viro@ZenIV.linux.org.uk, viro@ftp.linux.org.uk, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCHSET] mremap/mmap mess
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0912081254500.3365@sister.anvils>
+References: <20091208060701.GM14381@ZenIV.linux.org.uk>
+	<Pine.LNX.4.64.0912081142280.31223@sister.anvils>
+	<Pine.LNX.4.64.0912081254500.3365@sister.anvils>
+X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Date: Tue, 8 Dec 2009 13:03:30 +0000 (GMT)
 
+> That would impose some (unacceptable?) limits, and require some funny
+> code to migrate the pages over to the new mm later (instead of
+> relocating within the new mm as we do now).
 
-On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
-> 
-> Anyway, if we use an rwsem, it won't be checkable from interrupt context just
-> as well.
+I think this approach would create new failure cases that don't exist
+now.  Whether that's acceptable or not is another issue.
 
-You can't do a lock() from an interrupt, but the unlocks should be 
-irq-safe. 
+The forced page table move, and TLB+cache flush that goes along with
+that, for every single compat task we get now on the other hand is not
+acceptable :-)
 
-> Suppose we use rwsem and during suspend each child uses a down_read() on a
-> parent and then the parent uses down_write() on itself.  What if, whatever the
-> reason, the parent is a bit early and does the down_write() before one of the
-> children has a chance to do the down_read()?  Aren't we toast?
-
-We're toast, but we're toast for a totally unrealted reason: it means that 
-you tried to resume a child before a parent, which would be a major bug to 
-begin with.
-
-Look, I even wrote out the comments, so let me repeat the code one more 
-time.
-
- - suspend time calling:
-        // This won't block, because we suspend nodes before parents
-        down_read(node->parent->lock);
-        // Do the part that may block asynchronously
-        async_schedule(do_usb_node_suspend, node);
-
- - resume time calling:
-        // This won't block, because we resume parents before children,
-        // and the children will take the read lock. 
-        down_write(leaf->lock);
-        // Do the blocking part asynchronously
-        async_schedule(usb_node_resume, leaf);
-
-See? So when we take the parent lock for suspend, we are guaranteed to do 
-so _before_ the parent node itself suspends. And conversely, when we take 
-the parent lock (asynchronously) for resume, we're guaranteed to do that 
-_after_ the parent node has done its own down_write.
-
-And that all depends on just one trivial thing; that the suspend and 
-resume is called in the right order (children first vs parent first 
-respectively). And that is such a _major_ correctness issue that if that 
-isn't correct, your suspend isn't going to work _anyway_.
-
-			Linus
+I also think this page table move overhead is worse than the
+non-swapability added by Al's approach.
