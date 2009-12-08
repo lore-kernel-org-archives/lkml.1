@@ -1,97 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZLHHan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbZLHHed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbZLHHan (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 02:30:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZLHHam
+	id S1753010AbZLHHed (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 02:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbZLHHea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 02:30:42 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:38798 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbZLHHal (ORCPT
+	Tue, 8 Dec 2009 02:34:30 -0500
+Received: from smurf.noris.de ([192.109.102.42]:34416 "EHLO
+	smurf.intern.smurf.noris.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751591AbZLHHea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 02:30:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WmmLAyQ8CrxX4RTanopr4xIFxeZMwrXhAmhJQ890JoTBA/lDKE6TcKcLiuelmIJcQU
-         +NZ8thTJZWS5aza1HPfjGLIWGQYRud/8BsOQukTXX2ZK0Fuj0T/7fbqSL1aPdoKDctKm
-         spZ96rfsprS6w/Aw0mUHdzAk9kvnv8wg+ZaS8=
-Date: Tue, 8 Dec 2009 08:30:44 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/13] tracing: Extract duplicate
-	ftrace_raw_init_event_foo()
-Message-ID: <20091208073042.GA4989@nowhere>
-References: <4B1DC476.3030700@cn.fujitsu.com> <4B1DC48C.7080603@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1DC48C.7080603@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 8 Dec 2009 02:34:30 -0500
+Subject: Re: [PATCH] Add support for Mobilcom Debitel USB UMTS Surf-Stick
+ to option driver
+From: Matthias Urlichs <matthias@urlichs.de>
+To: Gernot Hillier <gernot@hillier.de>
+Cc: Oliver Neukum <oliver@neukum.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4B1DF030.2070100@hillier.de>
+References: <4B08F18C.3040904@hillier.de>
+	 <200911220920.16717.oliver@neukum.org> <4B0C1F41.2060101@hillier.de>
+	 <200911241919.10895.oliver@neukum.org>  <4B0FCAD3.9000801@hillier.de>
+	 <1259328254.27675.524.camel@kiste>  <4B1DF030.2070100@hillier.de>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-H/OTg1wCqs0/JdJ63MLm"
+Organization: {M:U} IT Design
+Date: Tue, 08 Dec 2009 08:34:09 +0100
+Message-ID: <1260257649.21883.79.camel@kiste>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+X-Smurf-Spam-Score: -2.6 (--)
+X-Smurf-Whitelist: +relay_from_hosts
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 11:14:20AM +0800, Li Zefan wrote:
-> Define ftrace_raw_init_event_foo() for each event class rather
-> than for each event:
-> 
->    text    data     bss     dec     hex filename
-> 5355293 1961928 7103260 14420481         dc0a01 vmlinux.o.old
-> 5346802 1961864 7103260 14411926         dbe896 vmlinux.o
-> 
-> raw_init can't be removed, because ftrace events and kprobe events
-> use different raw_init callbacks. Though it's possible to totally
-> remove raw_init, I choose to leave it as it is for now.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  include/linux/ftrace_event.h |    1 +
->  include/linux/syscalls.h     |    4 ++--
->  include/trace/ftrace.h       |   35 ++++-------------------------------
->  kernel/trace/trace_events.c  |   14 ++++++++++++++
->  4 files changed, 21 insertions(+), 33 deletions(-)
-> 
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index 47bbdf9..cdea8a9 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -157,6 +157,7 @@ enum {
->  	FILTER_PTR_STRING,
->  };
->  
-> +extern int trace_event_raw_init(struct ftrace_event_call *call);
->  extern int trace_define_common_fields(struct ftrace_event_call *call);
->  extern int trace_define_field(struct ftrace_event_call *call, const char *type,
->  			      const char *name, int offset, int size,
-> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> index e79e2f3..55e7108 100644
-> --- a/include/linux/syscalls.h
-> +++ b/include/linux/syscalls.h
-> @@ -144,7 +144,7 @@ struct perf_event_attr;
->  		.name                   = "sys_enter"#sname,		\
->  		.system                 = "syscalls",			\
->  		.event                  = &enter_syscall_print_##sname,	\
-> -		.raw_init		= init_syscall_trace,		\
-> +		.raw_init		= trace_event_raw_init,		\
->  		.show_format		= syscall_enter_format,		\
->  		.define_fields		= syscall_enter_define_fields,	\
->  		.regfunc		= reg_event_syscall_enter,	\
-> @@ -166,7 +166,7 @@ struct perf_event_attr;
->  		.name                   = "sys_exit"#sname,		\
->  		.system                 = "syscalls",			\
->  		.event                  = &exit_syscall_print_##sname,	\
-> -		.raw_init		= init_syscall_trace,		\
-> +		.raw_init		= trace_event_raw_init,		\
 
+--=-H/OTg1wCqs0/JdJ63MLm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+Hi,
 
-Nice cleanup.
-BTW, init_syscall_trace is left unused now. Could you please
-remove it too?
+> Ok, so here's my first shot at it.
 
-And add my Acked-by. Thanks!
+Looks good so far, thanks.
+
+--=-H/OTg1wCqs0/JdJ63MLm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkseAWsACgkQSpjGQh/srZWMiwCgrBqiaqqpFcRshBCAknVXZ9Pa
+mEcAoJkWDazdMFkZy0FzP70wphHDpOMW
+=6l69
+-----END PGP SIGNATURE-----
+
+--=-H/OTg1wCqs0/JdJ63MLm--
 
