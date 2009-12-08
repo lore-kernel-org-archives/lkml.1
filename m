@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZLHIuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751405AbZLHIxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751218AbZLHIuT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 03:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbZLHIuS
+	id S1751405AbZLHIxz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 03:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZLHIxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 03:50:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:20800 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750734AbZLHIuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 03:50:17 -0500
-Message-ID: <4B1E13C8.70704@redhat.com>
-Date: Tue, 08 Dec 2009 16:52:24 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: linux-kernel@vger.kernel.org, Jiri Pirko <jpirko@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Oleg Nesterov <oleg@redhat.com>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC Patch] getrusage: fill ru_ixrss, ru_idrss and ru_isrss fields
-References: <20091208083358.4232.28469.sendpatchset@localhost.localdomain> <20091208173730.B5C3.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091208173730.B5C3.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 8 Dec 2009 03:53:54 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51025 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbZLHIxw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 03:53:52 -0500
+Subject: Re: [PATCH 7/7] sched: implement try_to_wake_up_local()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+In-Reply-To: <4B1CD89F.9000802@kernel.org>
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>
+	 <1259726212-30259-8-git-send-email-tj@kernel.org>
+	 <1259923487.3977.1940.camel@laptop>  <4B1C75F3.9080808@kernel.org>
+	 <1260175804.8223.1217.camel@laptop> <1260176199.8223.1237.camel@laptop>
+	 <4B1CD89F.9000802@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Dec 2009 09:53:14 +0100
+Message-ID: <1260262394.3935.981.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> 	The next three fields, the subject of this patch, are named ru_XXrss:
-> 	though the 80-column comment omits to say "resident set" before "size",
-> 	I believe they'd be expected to account (subdivided) resident set sizes?
+On Mon, 2009-12-07 at 19:27 +0900, Tejun Heo wrote:
 > 
+> > What happens when you run out of memory and the workqueue progress is
+> > needed to get free memory?
 > 
-> your calculation is not rss nor not integral.
-> 
+> That's when the "rescuer" workers kick in.  All workqueues which might
+> be used during allocation paths are required to have one.  When
+> manager fails to fork a new worker, it summons the rescuers.  They
+> migrate to the distressed cpu and processes only the works from their
+> specific workqueues thus guaranteeing forward progress.
 
-Hmm, I misunderstood rss here. Does it mean the memory stayed in
-physical mem? i.e. not swapped out.
-
-So, if I want to get those rss statistics, I have to add some more
-mm_counter by myself? I only find file_rss and anon_rss in mm_struct.
-
-Thanks.
+What happens if the rescue worker is tied up on another cpu in a
+deadlock avoidance game, which requires progress on this cpu in order to
+resolve it?
 
