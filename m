@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966757AbZLHWXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966799AbZLHWeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966757AbZLHWXD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 17:23:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966741AbZLHWXA
+	id S966799AbZLHWeJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:34:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966784AbZLHWeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 17:23:00 -0500
-Received: from smtp108.sbc.mail.gq1.yahoo.com ([67.195.14.111]:25872 "HELO
-	smtp108.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756398AbZLHWW7 (ORCPT
+	Tue, 8 Dec 2009 17:34:00 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:49868 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966658AbZLHWd4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 17:22:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=RFd3Qd+P1/J/WeczrHLffkJSCIIcxCsryYDGhJodrD5Kh0VThYK3KckL8RRnzsq82KnwjqtTur/qGSP9/OMKoCYRCqnhSWoykKAVm+IYRQITWLyjWBhUfCiR3WNfNL+KL2MoXo2xa6Y0rTp6L25n0fML2Oow9lYi6MVgdZTBVQE=  ;
-X-Yahoo-SMTP: 2V1ThQ.swBDh24fWwg9PZFuY7TTwFsTuVtXZ.8DKSgQ-
-X-YMail-OSG: yEa1YycVM1nJU9BAISM2km21oODlUrkGKOovK7hvFJIbWpNY6kh28Tnqf6lyAOdyUulX5IBNizUmUjbR9RZe5_0H0fCL1_noFRLvc_kmrCNqCnfd7FMYIQhIJHfK6ZXZRibJb1U.gf0y6pl6SwTKXsTXaZeHz0II0eaQTP1uNdnbxVjIBG4W55fals6_pbeGkj3jXGfu.f49FlqtMBidYNdzF59ngmKbXIPG6WDe7muH7kKe2Nj4ZMBMnJc_weFNDjM5GrYbJkaH3j9cCggzZLu5UcrTaTMtHF4lRBTA.TcwZBXLE173K2SHX9C5l4Zz
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH 4/6] docs: correct gpio.txt typos
-Date: Tue, 8 Dec 2009 14:23:05 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, "Dominik D. Geyer" <dominik.geyer@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <12601530441131@xenotime.net>
-In-Reply-To: <12601530441131@xenotime.net>
+	Tue, 8 Dec 2009 17:33:56 -0500
+Date: 08 Dec 2009 23:25:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: jonsmirl@gmail.com
+Cc: awalls@radix.net
+Cc: dmitry.torokhov@gmail.com
+Cc: hermann-pitton@arcor.de
+Cc: j@jannau.net
+Cc: jarod@redhat.com
+Cc: jarod@wilsonet.com
+Cc: khc@pm.waw.pl
+Cc: kraxel@redhat.com
+Cc: linux-input@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: mchehab@redhat.com
+Cc: superm1@ubuntu.com
+Message-ID: <BEVhz2BHqgB@lirc>
+In-Reply-To: <9e4733910912080534m1fe8c5bakb9219c6a55f0bcaa@mail.gmail.com>
+Subject: Re: [RFC] What are the goals for the architecture of an in-kernel IR  system?
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912081423.05173.david-b@pacbell.net>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-Provags-ID: V01U2FsdGVkX1/VwpdMBne9iyrSstMkM40RukdVP7M3PLRqnDY
+ 3fhgX0SJapG9XoqZQugPkPMW+nF9hV+XEqM3/xzMN7RuyErsmE
+ Rp1GHU56flvKDMUhDq3FBzFFQ6GNYSI
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 December 2009, Randy Dunlap wrote:
-> From: Dominik D. Geyer <dominik.geyer@gmx.de>
-> Subject: correct gpio.txt typos
-> 
-> Corrected sysfs gpio chip node name and fixed punctuation.
-> 
-> Signed-off-by: Dominik D. Geyer <dominik.geyer@gmx.de>
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
+Hi Jon,
 
-Ack.
+on 08 Dec 09 at 08:34, Jon Smirl wrote:
+[...]
+> The point of those design review questions was to illustrate that the
+> existing LIRC system is only partially designed. Subsystems need to be
+> fully designed before they get merged.
 
-> ---
->  Documentation/gpio.txt |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- lnx-2632-rc6.orig/Documentation/gpio.txt
-> +++ lnx-2632-rc6/Documentation/gpio.txt
-> @@ -380,7 +380,7 @@ rare; use gpiochip_remove() when it is u
->  
->  Most often a gpio_chip is part of an instance-specific structure with state
->  not exposed by the GPIO interfaces, such as addressing, power management,
-> -and more.  Chips such as codecs will have complex non-GPIO state,
-> +and more.  Chips such as codecs will have complex non-GPIO state.
->  
->  Any debugfs dump method should normally ignore signals which haven't been
->  requested as GPIOs.  They can use gpiochip_is_requested(), which returns
-> @@ -531,7 +531,7 @@ and have the following read/write attrib
->  		This file exists only if the pin can be configured as an
->  		interrupt generating input pin.
->  
-> -GPIO controllers have paths like /sys/class/gpio/chipchip42/ (for the
-> +GPIO controllers have paths like /sys/class/gpio/gpiochip42/ (for the
->  controller implementing GPIOs starting at #42) and have the following
->  read-only attributes:
->  
-> 
-> 
-> -- 
-> 
-> 
+I'd say that a system that has proven itself in real world applications  
+for >10 years, does not deserve to be called partially designed.
 
+> For example 36-40K and 56K IR signals are both in use. It is a simple
+> matter to design a receiver (or buy two receivers)  that would support
+> both these frequencies. But the current LIRC model only supports  a
+> single IR receiver. Adjusting it to support two receivers is going to
+> break the ABI.
 
+Really? When we added support for multiple transmitters, we somehow  
+managed to do without breaking the ABI. Do I miss something?
+
+Your example could even now be solved by using the LIRC_SET_REC_CARRIER  
+ioctl. The driver would have to choose the receiver that best fits the  
+requested frequency.
+
+[...]
+> We need to think about all of these use cases before designing the
+> ABI.  Only after we think we have a good ABI design should code start
+> being merged. Of course we may make mistakes and have to fix the ABI,
+> but there is nothing to be gained by merging the existing ABI if we
+> already know it has problems.
+
+The point is that we did not get up this morning and started to think  
+about how the LIRC interface should look like. That happened 10 years ago.
+
+I'm not saying that the interface is the nicest thing ever invented, but  
+it works and is extendable. If you see that something is missing please  
+bring it up.
+
+Christoph
