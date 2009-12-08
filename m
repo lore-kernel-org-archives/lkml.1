@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbZLHMTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZLHMYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754377AbZLHMTk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 07:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZLHMTj
+	id S1754455AbZLHMYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 07:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbZLHMYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 07:19:39 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:53978 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754098AbZLHMTj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 07:19:39 -0500
-Date: Tue, 8 Dec 2009 13:19:42 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       tglx@linutronix.de, dvhltc@us.ibm.com
-Cc: stable@kernel.org
-Subject: [PATCH] futex: Take mmap_sem for get_user_pages in
-	fault_in_user_writeable
-Message-ID: <20091208121942.GA21298@basil.fritz.box>
+	Tue, 8 Dec 2009 07:24:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9082 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754290AbZLHMYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 07:24:16 -0500
+Date: Tue, 8 Dec 2009 14:21:34 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Shirley Ma <mashirle@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       netdev@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [PATCH 0/1] Defer skb allocation for both mergeable buffers
+	and big packets in virtio_net
+Message-ID: <20091208122134.GA17286@redhat.com>
+References: <1258697359.7416.14.camel@localhost.localdomain> <200911231123.18898.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200911231123.18898.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-futex: Take mmap_sem for get_user_pages in fault_in_user_writeable
+On Mon, Nov 23, 2009 at 11:23:18AM +1030, Rusty Russell wrote:
+> On Fri, 20 Nov 2009 04:39:19 pm Shirley Ma wrote:
+> > Guest virtio_net receives packets from its pre-allocated vring 
+> > buffers, then it delivers these packets to upper layer protocols
+> > as skb buffs. So it's not necessary to pre-allocate skb for each
+> > mergable buffer, then frees it when it's useless. 
+> > 
+> > This patch has deferred skb allocation when receiving packets for
+> > both big packets and mergeable buffers. It reduces skb pre-allocations 
+> > and skb_frees.
+> > 
+> > Based on Mickael & Avi's suggestion. A destroy function has been created
+> > to push virtio free buffs to vring for unused pages, and used page private
+> > to maintain page list.
+> > 
+> > I didn't touch small packet skb allocation to avoid extra copies for small
+> > packets.
+> > 
+> > This patch has tested and measured against 2.6.32-rc5 git. It is built again
+> >  2.6.32-rc7 kernel. Tests have been done for small packets, big packets and
+> > mergeable buffers.
+> > 
+> > The single netperf TCP_STREAM performance improved for host to guest. 
+> > It also reduces UDP packets drop rate.
+> > 
+> > The netperf laptop results were:
+> > 
+> > mtu=1500
+> > netperf -H xxx -l 120
+> > 
+> > 		w/o patch	w/i patch (two runs)	
+> > guest to host:  3336.84Mb/s   3730.14Mb/s ~ 3582.88Mb/s
+> > 
+> > host to guest:  3165.10Mb/s   3370.39Mb/s ~ 3407.96Mb/s
+> 
+> Nice!
+> 
+> Is this using mergeable_rx_bufs?  Or just big_packets?
+> 
+> I'd like to drop big packet support from our driver, but I don't know
+> how many kvm hosts will not offer mergable rx bufs yet.
 
-gup() requires mmap_sem, so take it before running it. The
-recent fault_in_user_writeable() didn't do that.
 
-I didn't find a good futex test case, so untested.
+One issue with mergeable buffers is that they can work well with zero
+copy RX, but only if hardware merges RX buffers in the same way virtio
+does.
 
-Likely a stable candidate.
+However, I suspect that most hardware can not do this, and simply
+scatters data to a buffer you give it and then reports completion.
+For such simple hardware, RX can work without extra data copies when guest
+uses big packets (just scatter data into guest buffers), but when guest
+tries to use mergeable buffers, host will have to merge them and post a
+single big packet to hardware.  Thus host will be able to only post
+about 16 buffers to hardware, and performance will suffer.
 
-Cc: npiggin@suse.de
-Cc: tglx@linutronix.de
-Cc: dvhltc@us.ibm.com
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
----
- kernel/futex.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.32-ak/kernel/futex.c
-===================================================================
---- linux-2.6.32-ak.orig/kernel/futex.c
-+++ linux-2.6.32-ak/kernel/futex.c
-@@ -304,8 +304,13 @@ void put_futex_key(int fshared, union fu
-  */
- static int fault_in_user_writeable(u32 __user *uaddr)
- {
--	int ret = get_user_pages(current, current->mm, (unsigned long)uaddr,
-+	int ret;
-+	struct mm_struct *mm = current->mm;
-+
-+	down_read(&mm->mmap_sem);
-+	ret = get_user_pages(current, mm, (unsigned long)uaddr,
- 				 1, 1, 0, NULL, NULL);
-+	up_read(&mm->mmap_sem);
- 	return ret < 0 ? ret : 0;
- }
- 
+-- 
+MST
