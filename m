@@ -1,106 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965274AbZLHAnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965281AbZLHAoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965274AbZLHAnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 19:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965245AbZLHAnS
+	id S965281AbZLHAoD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 19:44:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965258AbZLHAoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 19:43:18 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35362 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965246AbZLHAnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 19:43:16 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: Increased Buffers due to patch 56e49d (vmscan: evict use-once pages first), but why exactly?
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Elladan <elladan@eskimo.com>, Peter Zijlstra <peterz@infradead.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, epasch@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-In-Reply-To: <4B1D46C0.4040503@redhat.com>
-References: <4B1D12E7.4070701@linux.vnet.ibm.com> <4B1D46C0.4040503@redhat.com>
-Message-Id: <20091208093533.B57B.A69D9226@jp.fujitsu.com>
+	Mon, 7 Dec 2009 19:44:03 -0500
+Received: from web50102.mail.re2.yahoo.com ([206.190.38.30]:24447 "HELO
+	web50102.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965254AbZLHAoC convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 19:44:02 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=NgptqFcponGkNYPmwfJCTHS7z/A7/4iDzc+sCv4zVGmV2DIrBrfk214LfAxyQ/jXhWhI0v7ACSS9GD+Qq9QNeTBNlUtp2ubDZYeQ9Pg941xpoVcHqlLnWvr5auYs9mHehJxnHemzvwGrJzml3mOIaf/y/2Nc2OQ0NSXHe7GvUGE=;
+Message-ID: <979363.29471.qm@web50102.mail.re2.yahoo.com>
+X-YMail-OSG: SD_o7ZIVM1kc918lKhYZo4oiqzGAgpzMNKXhpUSebwHtSlUzsXPE6GRiDmj8RHrBLIBpj6.k1KRLdcWPNOtSqL97MGF54C.c9bbAhcB_A1ed0EdpbyXCSQ6oaIsu62t4ljsazKUkenNdMWfCoSV859sHwoyMolBSXItd7lezZ2DixCDKOWcD.PsNrB4D58Sg1ZJaGLaAqtATNnwncaqxu4yE0Nthpsjlg8g38h8LP1NmH1K4N5CMtCP8XucCQAX8HTh9aBwMTXMHiPiZZpqM95DmjpTgobmJC96Q5EMIyNtbkysrdxcz2JaBIoOdmXnNVuJgYpNNdeauI5I0QWAWQLglSUCmgyMe.PRugapah4ZIhImKQhyS3got1sywgSvRb9M-
+X-Mailer: YahooMailClassic/9.0.19 YahooMailWebService/0.8.100.260964
+Date: Mon, 7 Dec 2009 16:44:06 -0800 (PST)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [PATCH 1/2] EDAC: add __init to i7core_xeon_pci_fixup
+To: Jiri Slaby <jslaby@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+In-Reply-To: <20091204155428.307e612d@jbarnes-piketon>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  8 Dec 2009 09:43:19 +0900 (JST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 12/07/2009 09:36 AM, Christian Ehrhardt wrote:
-> > Hi,
-> > commit 56e49d - "vmscan: evict use-once pages first" changed behavior of
-> > memory management quite a bit which should be fine.
-> > But while tracking down a performance regression I was on the wrong path
-> > for a while suspecting this patch is causing the regression.
-> > Fortunately this was not the case, but I got some interesting data which
-> > I couldn't explain completely and I thought maybe its worth to get it
-> > clarified publicly in case someone else looks at similar data again :-)
-> >
-> > All is about the increased amount of "Buffers" accounted as active while
-> > loosing the same portion from "Cache" accounted as inactive in
-> > /proc/meminfo.
-> > I understand that with the patch applied there will be some more
-> > pressure to file pages until the balance of active/inactive file pages
-> > is reached.
-> > But I didn't get how this prefers buffers compared to cache pages (I
-> > assume dropping inactive before active was the case all the time so that
-> > can't be the only difference between buffers/cache).
-> 
-> Well, "Buffers" is the same kind of memory as "Cached", with
-> the only difference being that "Cached" is associated with
-> files, while "Buffers" is associated with a block device.
-> 
-> This means that "Buffers" is more likely to contain filesystem
-> metadata, while "Cached" is more likely to contain file data.
-> 
-> Not putting pressure on the active file list if there are a
-> large number of inactive file pages means that pages which were
-> accessed more than once get protected more from pages that were
-> only accessed once.
-> 
-> My guess is that "Buffers" is larger because the VM now caches
-> more (frequently used) filesystem metadata, at the expense of
-> caching less (used once) file data.
-> 
-> > The scenario I'm running is a low memory system (256M total), that does
-> > sequential I/O with parallel iozone processes.
-> 
-> This indeed sounds like the kind of workload that would only
-> access the file data very infrequently, while accessing the
-> filesystem metadata all the time.
-> 
-> > But I can't really see in the code where buffers are favored in
-> > comparison to cached pages - (it very probably makes sense to do so, as
-> > they might contain e.g. the inode data about the files in cache).
-> 
-> You are right that the code does not favor Buffers or Cache
-> over the other, but treats both kinds of pages the same.
-> 
-> I believe that you are just seeing the effect of code that
-> better protects the frequently accessed metadata from the
-> infrequently accessed data.
-
-I try to explain the same thing as another word. if active list have
-lots unimportant pages, the patch makes to gurard unimportant pages.
-it might makes stream I/O benchmark score a bit because such workload
-doesn't have the pages theat should be protected. iow, it only reduce
-memory for cache.
-
-The patch's intention is to improve real workload (i.e. stream/random I/O mixed workload).
-not improve benchmark score. So, I'm interest how much decrease your
-benchmark score.
 
 
+--- On Fri, 12/4/09, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+
+> From: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Subject: Re: [PATCH 1/2] EDAC: add __init to i7core_xeon_pci_fixup
+> To: "Jiri Slaby" <jslaby@suse.cz>
+> Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org, "Mauro Carvalho Chehab" <mchehab@redhat.com>
+> Date: Friday, December 4, 2009, 4:54 PM
+> On Mon, 30 Nov 2009 21:19:41 +0100
+> Jiri Slaby <jslaby@suse.cz>
+> wrote:
+> 
+> > It's called only from an __init function and is the
+> only user
+> > of pcibios_scan_specific_bus which will be marked as
+> __devinit in
+> > the next patch.
+> > 
+> > Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> > Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+> > ---
+> >  drivers/edac/i7core_edac.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1
+> deletions(-)
+> > 
+> > diff --git a/drivers/edac/i7core_edac.c
+> b/drivers/edac/i7core_edac.c
+> > index 4de5a18..c7fc0d5 100644
+> > --- a/drivers/edac/i7core_edac.c
+> > +++ b/drivers/edac/i7core_edac.c
+> > @@ -1141,7 +1141,7 @@ static void
+> i7core_put_all_devices(void)
+> >         
+> i7core_put_devices(i7core_dev);
+> >  }
+> >  
+> > -static void i7core_xeon_pci_fixup(int dev_id)
+> > +static void __init i7core_xeon_pci_fixup(int dev_id)
+> >  {
+> >      struct pci_dev *pdev = NULL;
+> >      int i;
+> 
+> I don't know who handles EDAC patches, but I'm pretty sure
+> it's not
+> me. :)  
+
+Maruo has the i7core tree that he is building on for i7 stuff
+boris from AMD has the amd64 tree
+I handle the others and send to Andrew Morton
+
+doug thompson
 
 
-
-
+> It doesn't apply to my tree anyway, so it
+> probably needs a
+> refresh.
+> 
+> Thanks,
+> -- 
+> Jesse Barnes, Intel Open Source Technology Center
+> --
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
