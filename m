@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965333AbZLHBXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965365AbZLHBdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965333AbZLHBXP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 20:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965289AbZLHBXO
+	id S965365AbZLHBdF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 20:33:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965298AbZLHBdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 20:23:14 -0500
-Received: from kroah.org ([198.145.64.141]:55252 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965270AbZLHBXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 20:23:14 -0500
-Subject: patch staging-vt6x-depends-on-wlan.patch added to gregkh-2.6 tree
-To: randy.dunlap@oracle.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       sfr@canb.auug.org.au
-From: <gregkh@suse.de>
-Date: Mon, 07 Dec 2009 17:20:44 -0800
-In-Reply-To: <20091206100055.218cfd52.randy.dunlap@oracle.com>
-Message-ID: <12602352441028@kroah.org>
+	Mon, 7 Dec 2009 20:33:05 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52418 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S965296AbZLHBdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Dec 2009 20:33:03 -0500
+Message-ID: <4B1DAC6E.8000605@cn.fujitsu.com>
+Date: Tue, 08 Dec 2009 09:31:26 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: 8bit
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 2/2] perf lock: New subcommand "lock" to perf for	analyzing
+ lock statistics
+References: <20091115022135.GA5427@nowhere> <1260156884-8474-2-git-send-email-mitake@dcl.info.waseda.ac.jp> <20091207044125.GB5262@nowhere> <20091207072752.GG10868@elte.hu> <4B1CBEEB.3090800@cn.fujitsu.com> <20091207194802.GB5049@nowhere>
+In-Reply-To: <20091207194802.GB5049@nowhere>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Frederic,
 
-This is a note to let you know that I've just added the patch titled
+Frederic Weisbecker wrote:
 
-    Subject: Staging: vt6x depends on WLAN
+> This profile has been done using ftrace with perf right?
 
-to my gregkh-2.6 tree.  Its filename is
+We not use perf, just operate it by debugfs, the test procedure
+is like below:
 
-    staging-vt6x-depends-on-wlan.patch
+case 1: disable all trace events:
+echo nop > debugfs/tracing/current_tracer
+echo > debugfs/tracing/set_event
+run benchmarks
+...
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+case 2: enable all trace events except lockdep:
+echo nop > debugfs/tracing/current_tracer
+echo *:* > debugfs/tracing/set_event
+echo 0 >  debugfs/tracing/events/lockdep/enable
+run benchmarks
+...
 
+> In one of your previous mails, you showed us the difference
+> of the size of perf.data by capturing either scheduler events
+> or lock events.
+> 
 
->From randy.dunlap@oracle.com  Mon Dec  7 16:25:39 2009
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Sun, 6 Dec 2009 10:00:55 -0800
-Subject: Staging: vt6x depends on WLAN
-To: Stephen Rothwell <sfr@canb.auug.org.au>, gregkh@suse.de
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Message-ID: <20091206100055.218cfd52.randy.dunlap@oracle.com>
+It's not my work :-)
 
+Thanks,
+Xiao
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-The vt665[56] drivers can be built when CONFIG_NET=n &
-CONFIG_NETDEVICES=n or just when CONFIG_WLAN=n.
-This leads to build failures.
-Prevent this by making them depend on WLAN.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/staging/vt6655/Kconfig |    2 +-
- drivers/staging/vt6656/Kconfig |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
---- a/drivers/staging/vt6655/Kconfig
-+++ b/drivers/staging/vt6655/Kconfig
-@@ -1,6 +1,6 @@
- config VT6655
-    tristate "VIA Technologies VT6655 support"
--   depends on WIRELESS_EXT && PCI
-+   depends on WIRELESS_EXT && PCI && WLAN
-    ---help---
-    This is a vendor-written driver for VIA VT6655.
- 
---- a/drivers/staging/vt6656/Kconfig
-+++ b/drivers/staging/vt6656/Kconfig
-@@ -1,6 +1,6 @@
- config VT6656
- 	tristate "VIA Technologies VT6656 support"
--	depends on WIRELESS_EXT && USB
-+	depends on WIRELESS_EXT && USB && WLAN
- 	---help---
- 	This is a vendor-written driver for VIA VT6656.
- 
+> And IIRC, the case of lock events resulted in a 100 MB perf.data
+> whereas it was a small file for sched events.
+> 
+> The overhead in the pagefault and mmap latency could then
+> result in the fact we have much more events to save, walking
+> through much more pages in perf buffer, then faulting more often,
+> etc.
+> 
+> Plus the fact various locks are taken in mmap and fault path,
+> generating more lock events.
+> 
+> Just a guess...
+> 
+> 
+> 
 
