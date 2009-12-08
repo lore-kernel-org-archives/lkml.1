@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966611AbZLHV7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966632AbZLHWD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966611AbZLHV7w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 16:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966559AbZLHV7r
+	id S966632AbZLHWD3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 17:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966623AbZLHWD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 16:59:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15900 "EHLO mx1.redhat.com"
+	Tue, 8 Dec 2009 17:03:28 -0500
+Received: from mail.perches.com ([173.55.12.10]:1090 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966555AbZLHV7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 16:59:38 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 8/8] perf probe: Update perf-probe document
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Date: Tue, 08 Dec 2009 17:03:30 -0500
-Message-ID: <20091208220330.10142.73296.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20091208220232.10142.2643.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S966486AbZLHWD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 17:03:27 -0500
+Subject: Re: GPIO support for HTC Dream
+From: Joe Perches <joe@perches.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ryan Mallon <ryan@bluewatersys.com>, Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Iliyan Malchev <malchev@google.com>
+In-Reply-To: <20091208214658.GC4164@elf.ucw.cz>
+References: <20091208102842.GH12264@elf.ucw.cz>
+	 <4B1EB57D.6070408@bluewatersys.com>  <20091208214658.GC4164@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Dec 2009 14:03:32 -0800
+Message-ID: <1260309812.27677.117.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add --list and --del option descriptions to perf-probe.txt.
+On Tue, 2009-12-08 at 22:46 +0100, Pavel Machek wrote:
+> Add GPIO support for HTC Dream.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Frank Ch. Eigler <fche@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
----
+Hi Pavel.  Thanks for this.
 
- tools/perf/Documentation/perf-probe.txt |   21 ++++++++++++++++-----
- 1 files changed, 16 insertions(+), 5 deletions(-)
+Maybe it'd be nicer to use pr_<level> and add
+#define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
+?
 
-diff --git a/tools/perf/Documentation/perf-probe.txt b/tools/perf/Documentation/perf-probe.txt
-index 9270594..8fa6bf9 100644
---- a/tools/perf/Documentation/perf-probe.txt
-+++ b/tools/perf/Documentation/perf-probe.txt
-@@ -8,10 +8,13 @@ perf-probe - Define new dynamic tracepoints
- SYNOPSIS
- --------
- [verse]
--'perf probe' [options] --add 'PROBE' [--add 'PROBE' ...]
-+'perf probe' [options] --add='PROBE' [...]
- or
--'perf probe' [options] 'PROBE' ['PROBE' ...]
--
-+'perf probe' [options] PROBE
-+or
-+'perf probe' [options] --del='[GROUP:]EVENT' [...]
-+or
-+'perf probe' --list
- 
- DESCRIPTION
- -----------
-@@ -31,8 +34,16 @@ OPTIONS
-         Be more verbose (show parsed arguments, etc).
- 
- -a::
----add::
--	Define a probe point (see PROBE SYNTAX for detail)
-+--add=::
-+	Define a probe event (see PROBE SYNTAX for detail).
-+
-+-d::
-+--del=::
-+	Delete a probe event.
-+
-+-l::
-+--list::
-+	List up current probe events.
- 
- PROBE SYNTAX
- ------------
+> +++ b/arch/arm/mach-msm/board-dream-gpio.c
+> +static int dream_gpio_write(struct gpio_chip *chip, unsigned n, unsigned on)
+[]
+> +		printk(KERN_ERR "dream_gpio_write called on input %d\n", n);
+		pr_err("called on input %d\n", n);
+[]
+> +static void dream_gpio_irq_handler(unsigned int irq, struct irq_desc *desc)
+[]
+> +			printk(KERN_ERR "dream_gpio_irq_handler: got masked "
+			pr_err("got masked interrupt: %d:%02x\n"
+> +++ b/arch/arm/mach-msm/generic_gpio.c
+[]
+> +int register_gpio_chip(struct gpio_chip *new_gpio_chip)
+[]
+> +		printk(KERN_ERR "register_gpio_chip: failed to allocate state\n");
+		pr_err("failed to allocate state\n");
+> +			printk(KERN_ERR "register_gpio_chip: failed to allocate array\n");
+			pr_err("failed to allocate array\n");
+[]
+> +			printk(KERN_ERR "register_gpio_source %u-%u overlaps with %u-%u\n",
+Wrong function name?
+			pr_err("%u-%u overlaps with %u-%u\n",
 
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
