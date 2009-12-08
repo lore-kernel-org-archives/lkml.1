@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbZLHMW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZLHMXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbZLHMW7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 07:22:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbZLHMW6
+	id S1754479AbZLHMXJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 07:23:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZLHMXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 07:22:58 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:7871 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754247AbZLHMW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 07:22:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jviMKC9EMVxNKNsE5ZQDWm1/0hKwQ4cF39awYF05yQsP7N+VTBYYq+43Ddns6/KZXE
-         v/G1OjZJ9njLmbpdW2r1sutRv4e9DB7khhOZlpstHx3EmbHiYsFONj9AzW9o82V44RNG
-         /ikvYeyddOLgqlf0gOwBFCjrXtPupnYyRKadw=
-Date: Tue, 8 Dec 2009 13:23:00 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/13] tracing: various cleanups and small fixes
-	(updated)
-Message-ID: <20091208122255.GB5016@nowhere>
-References: <4B1DC476.3030700@cn.fujitsu.com>
+	Tue, 8 Dec 2009 07:23:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54797 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754448AbZLHMXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 07:23:05 -0500
+Message-ID: <4B1E4548.5040408@kernel.org>
+Date: Tue, 08 Dec 2009 21:23:36 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1DC476.3030700@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>	 <1259726212-30259-5-git-send-email-tj@kernel.org>	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>	 <4B1C85D3.3080401@kernel.org> <1260174900.8223.1159.camel@laptop>	 <4B1CDA1C.3000802@kernel.org> <1260183278.8223.1500.camel@laptop>	 <4B1CE1E8.2070803@kernel.org>  <4B1E1130.9050108@kernel.org>	 <1260262963.3935.1002.camel@laptop>  <4B1E189B.1070204@kernel.org>	 <1260268453.3935.1106.camel@laptop>  <4B1E378A.5050101@kernel.org>	 <1260272885.3935.1189.camel@laptop>  <4B1E3EE0.7030001@kernel.org> <1260274232.3935.1223.camel@laptop>
+In-Reply-To: <1260274232.3935.1223.camel@laptop>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 11:13:58AM +0800, Li Zefan wrote:
-> Updates:
-> 
-> - took a further step to save more spaces (01/13)
-> - fixed a mistake in (03/13)
-> - collected some ACKs
-> 
-> 
-> Here are some patches that I've collected. All are cleanups and
-> small fixes, no change in functionality.
-> 
-> As a result, 24K bytes are saved, and 87 lines of code are
-> reduced:
-> 
->    text    data     bss     dec     hex filename
-> 5355293 1961928 7103260 14420481         dc0a01 vmlinux.o.old
-> 5331208 1961864 7103260 14396332         dbabac vmlinux.o
-> 
-> ---
->  include/linux/ftrace_event.h       |    4 +-
->  include/linux/syscalls.h           |    6 +-
->  include/trace/ftrace.h             |   56 ++-----------
->  kernel/trace/ftrace.c              |   30 ++++---
->  kernel/trace/power-traces.c        |    2 -
->  kernel/trace/trace.c               |  166 +++++++++++++-----------------------
->  kernel/trace/trace.h               |   23 +++---
->  kernel/trace/trace_event_profile.c |    6 +-
->  kernel/trace/trace_events.c        |   38 +++++++--
->  kernel/trace/trace_export.c        |    4 -
->  kernel/trace/trace_kprobe.c        |    9 --
->  kernel/trace/trace_ksym.c          |   13 ++--
->  kernel/trace/trace_syscalls.c      |   18 +----
->  13 files changed, 144 insertions(+), 231 deletions(-)
+Hello,
 
+On 12/08/2009 09:10 PM, Peter Zijlstra wrote:
+> Hotplug and deterministic are not to be used in the same sentence, its
+> an utter slow path and I'd much rather have simple code than clever code
+> there -- there's been way too many 'interesting' hotplug problems.
 
-I'm queuing these patches.
+Slow and indeterminism comes in different magnitudes.
+
+> If there is work being enqueued that takes more than a few seconds to
+> complete then I'm thinking there's something seriously wrong and up to
+> that point its perfectly fine to simply wait for it.
+> 
+> Furthermore if it's objective is to cater to generic thread pools then I
+> think its an utter fail simply because it mandates strict cpu affinity,
+> that basically requires you to write a work scheduler to balance work
+> load etc.. Much easier is a simple unbounded thread pool that gets
+> balanced by the regular scheduler.
+
+The observation was that for most long running async jobs, most time
+is spent sleeping instead of burning cpu cycles and long running ones
+are relatively few compared to short ones so the strict affinity would
+be more helpful.  That is the basis of whole design and why it has
+scheduler callbacks to regulate concurrency instead of creating a
+bunch of active workers and letting the scheduler take care of it.
+Works wouldn't be competing for cpu cycles.
+
+In short, the target workload is the current short works + long
+running mostly sleeping async works, which cover most of worker pools
+we have in kernel.  I thought about adding an unbound pool of workers
+for cpu intensive works for completeness but I really couldn't find
+much use for that.  If enough number of users would need something
+like that, we can add an anonymous pool but for now I really don't see
+the need to worry about that.
 
 Thanks.
 
+-- 
+tejun
