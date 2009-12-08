@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZLHSwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZLHSyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbZLHSwa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 13:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbZLHSwZ
+	id S1756223AbZLHSyN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 13:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZLHSyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 13:52:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60948 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756141AbZLHSwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 13:52:24 -0500
-Date: Tue, 8 Dec 2009 10:52:08 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <alpine.LFD.2.00.0912081024530.3560@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0912081043280.3560@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912081234030.3046-100000@iolanthe.rowland.org> <alpine.LFD.2.00.0912081024530.3560@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 Dec 2009 13:54:12 -0500
+Received: from mail.perches.com ([173.55.12.10]:1080 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756155AbZLHSyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 13:54:11 -0500
+Subject: Re: [PATCH] MAINTAINERS: Update file patterns for WOLFSON
+ MICROELECTRONICS PMIC DRIVERS
+From: Joe Perches <joe@perches.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091208185132.GA2590@opensource.wolfsonmicro.com>
+References: <1260298117.27677.61.camel@Joe-Laptop.home>
+	 <20091208185132.GA2590@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Dec 2009 10:54:17 -0800
+Message-ID: <1260298457.27677.63.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-12-08 at 18:51 +0000, Mark Brown wrote:
+> On Tue, Dec 08, 2009 at 10:48:37AM -0800, Joe Perches wrote:
+> > One of the includes pointed to a non-existent directory
+> > Add Documentation/hwmon/wm8350
+> Why not Documentation/hwmon/wm831x?
+
+Beats me, it's your entry, add all the appropriate ones.
+Maybe:
+
+F:	Documentation/hwmon/wm8*
 
 
-On Tue, 8 Dec 2009, Linus Torvalds wrote:
-> 
-> [ Hint: you need a smp_mb() *before* the atomic_dec() in wait-unlock, so 
->   that anybody else who sees the new value will be guaranteed to have seen 
->   anything else the unlocker did.
-> 
->   You also need a smp_mb() in the wait_for_lock(), not a smp_rmb(). Can't 
->   allow writes to migrate up either.  'atomic_read()' does not imply any
->   barriers.
-> 
->   But most architectures can optimize these things for their particular 
->   memory ordering model, and do so in their rwsem implementation. ]
-
-Side note: if this was a real lock, you'd also needed an smp_wmb() in the 
-'wait_lock()' path after the atomic_inc(), to make sure that others see 
-the atomic lock was seen by other people before the suspend started. 
-
-In your usage scenario, I don't think it would ever be noticeable, since 
-the other users are always going to start running from the same thread 
-that did the wait_lock(), so even if they run on other CPU's, we'll have 
-scheduled _to_ those other CPU's and done enough memory ordering to 
-guarantee that they will see the thing.
-
-So it would be ok in this situation, simply because it acts as an 
-initializer and never sees any real SMP issues.
-
-But it's an example of how you now don't just depend on the locking 
-primitives themselves doing the right thing, you end up depending very 
-subtly on exactly how the lock is used.  The standard locks do have the 
-same kind of issue for initializers, but we avoid it elsewhere because 
-it's so risky.
-
-				Linus
