@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965991AbZLHULi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965999AbZLHUNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965991AbZLHULi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 15:11:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965977AbZLHULh
+	id S965999AbZLHUNQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 15:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbZLHUNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 15:11:37 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35068 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965975AbZLHULh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 15:11:37 -0500
-Message-ID: <4B1EB2B0.4000204@zytor.com>
-Date: Tue, 08 Dec 2009 12:10:24 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Tue, 8 Dec 2009 15:13:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40888 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965978AbZLHUNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 15:13:09 -0500
+Date: Tue, 8 Dec 2009 20:12:40 GMT
+From: tip-bot for Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andi@firstfloor.org, seto.hidetoshi@jp.fujitsu.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, seto.hidetoshi@jp.fujitsu.com, tglx@linutronix.de
+In-Reply-To: <4B1E05CC.4040703@jp.fujitsu.com>
+References: <4B1E05CC.4040703@jp.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, mce: fix confusion between bank attributes and mce attributes
+Message-ID: <tip-5c0e9f28da84c68ce0ae68b7a75faaf862e156e2@git.kernel.org>
+Git-Commit-ID: 5c0e9f28da84c68ce0ae68b7a75faaf862e156e2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@openvz.org>
-CC: tglx@linutronix.de, mingo@elte.hu, macro@linux-mips.org,
-       yinghai@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] x86,apic: Use logical OR in noop-write operation
-References: <20091208155316.561853924@openvz.org> <20091208155557.326359748@openvz.org>
-In-Reply-To: <20091208155557.326359748@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/08/2009 07:53 AM, Cyrill Gorcunov wrote:
-> For apic noop'ified we have to use logical OR statement,
-> otherwise any write on systems shipped with 82489DX
-> (where apic presence bit can't be retrieved via cpuid)
-> will not trigger the warning which is not desired.
-> 
-> In turn noop'ified read operation remains using logical
-> AND statement. This will catch _only_ future code bugs
-> since:
-> 
-> 1) The old 32bit systems without apic presence bit use
->    disable_apic only as a flag that chip was turned off
->    via boot option but not due to MP-table (BIOS) bug where
->    we may try to re-enable apic via MSR registers. The further
->    SMP setup code already prepared for a such situation
->    (ie it disables SMP support) and do not issue write
->    operations but still needs to issue apic_read. So instead
->    of deforming code with "if" we just allow reads until
->    SMP support gets disabled. But even then we still need
->    apic_read issued on a such machine at shutdown procedure.
-> 
-> 2) x86-64 at moment properly uses cpu_has_apic and turn
->    this feature off as only chip is disabled together
->    with disable_apic flag.
-> 
+Commit-ID:  5c0e9f28da84c68ce0ae68b7a75faaf862e156e2
+Gitweb:     http://git.kernel.org/tip/5c0e9f28da84c68ce0ae68b7a75faaf862e156e2
+Author:     Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+AuthorDate: Tue, 8 Dec 2009 16:52:44 +0900
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 8 Dec 2009 12:11:20 -0800
 
-Could you clarify the question I asked yesterday: how is the "or"
-different from just warning unconditionally (which would at least be a
-lot more clear)?  Can the situation that !cpu_has_apic && disable_apic
-actually happen and we *still* end up in apic_write?
+x86, mce: fix confusion between bank attributes and mce attributes
 
-	-hpa
+Commit cebe182033f156b430952370fb0f9dbe6e89b081 had an unnecessary,
+wrong change: &mce_banks[i].attr is equivalent to the former
+bank_attrs[i], not to mce_attrs[i].
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Acked-by: Andi Kleen <andi@firstfloor.org>
+LKML-Reference: <4B1E05CC.4040703@jp.fujitsu.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index a96e5cd..a8aacd4 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1929,7 +1929,7 @@ error2:
+ 		sysdev_remove_file(&per_cpu(mce_dev, cpu), &mce_banks[j].attr);
+ error:
+ 	while (--i >= 0)
+-		sysdev_remove_file(&per_cpu(mce_dev, cpu), &mce_banks[i].attr);
++		sysdev_remove_file(&per_cpu(mce_dev, cpu), mce_attrs[i]);
+ 
+ 	sysdev_unregister(&per_cpu(mce_dev, cpu));
+ 
