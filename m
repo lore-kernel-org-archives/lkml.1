@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965999AbZLHUNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966018AbZLHUQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965999AbZLHUNQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 15:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbZLHUNK
+	id S966018AbZLHUQm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 15:16:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966003AbZLHUQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 15:13:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40888 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965978AbZLHUNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 15:13:09 -0500
-Date: Tue, 8 Dec 2009 20:12:40 GMT
-From: tip-bot for Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       andi@firstfloor.org, seto.hidetoshi@jp.fujitsu.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, seto.hidetoshi@jp.fujitsu.com, tglx@linutronix.de
-In-Reply-To: <4B1E05CC.4040703@jp.fujitsu.com>
-References: <4B1E05CC.4040703@jp.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, mce: fix confusion between bank attributes and mce attributes
-Message-ID: <tip-5c0e9f28da84c68ce0ae68b7a75faaf862e156e2@git.kernel.org>
-Git-Commit-ID: 5c0e9f28da84c68ce0ae68b7a75faaf862e156e2
-X-Mailer: tip-git-log-daemon
+	Tue, 8 Dec 2009 15:16:39 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:57991 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965995AbZLHUQi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 15:16:38 -0500
+Date: Tue, 8 Dec 2009 15:16:44 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+In-Reply-To: <200912082044.52098.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0912081508220.3046-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5c0e9f28da84c68ce0ae68b7a75faaf862e156e2
-Gitweb:     http://git.kernel.org/tip/5c0e9f28da84c68ce0ae68b7a75faaf862e156e2
-Author:     Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-AuthorDate: Tue, 8 Dec 2009 16:52:44 +0900
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 8 Dec 2009 12:11:20 -0800
+On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
 
-x86, mce: fix confusion between bank attributes and mce attributes
+> Suppose we use rwsem and during suspend each child uses a down_read() on a
+> parent and then the parent uses down_write() on itself.  What if, whatever the
+> reason, the parent is a bit early and does the down_write() before one of the
+> children has a chance to do the down_read()?  Aren't we toast?
+> 
+> Do we need any direct protection against that or does it just work itself out
+> in a way I just don't see right now?
 
-Commit cebe182033f156b430952370fb0f9dbe6e89b081 had an unnecessary,
-wrong change: &mce_banks[i].attr is equivalent to the former
-bank_attrs[i], not to mce_attrs[i].
+That's not the way it should be done.  Linus had children taking their
+parents' locks during suspend, which is simple but leads to
+difficulties.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Acked-by: Andi Kleen <andi@firstfloor.org>
-LKML-Reference: <4B1E05CC.4040703@jp.fujitsu.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/cpu/mcheck/mce.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Instead, the PM core should do a down_write() on each device before
+starting the device's async suspend routine, and an up_write() when the
+routine finishes.  Parents should, at the start of their async routine,
+do down_read() on each of their children plus whatever other devices
+they need to wait for.  The core can do the waiting for children part 
+and the driver's suspend routine can handle any other waiting.
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index a96e5cd..a8aacd4 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1929,7 +1929,7 @@ error2:
- 		sysdev_remove_file(&per_cpu(mce_dev, cpu), &mce_banks[j].attr);
- error:
- 	while (--i >= 0)
--		sysdev_remove_file(&per_cpu(mce_dev, cpu), &mce_banks[i].attr);
-+		sysdev_remove_file(&per_cpu(mce_dev, cpu), mce_attrs[i]);
- 
- 	sysdev_unregister(&per_cpu(mce_dev, cpu));
- 
+This is a little more awkward because it requires the parent to iterate 
+through its children.  But it does solve the off-tree dependency 
+problem for suspends.
+
+Alan Stern
+
