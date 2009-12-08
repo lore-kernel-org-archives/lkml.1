@@ -1,80 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935602AbZLHEYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964837AbZLHEbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935602AbZLHEYR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Dec 2009 23:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935079AbZLHEYQ
+	id S964837AbZLHEbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Dec 2009 23:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934501AbZLHEbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Dec 2009 23:24:16 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:39298 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934929AbZLHEYP (ORCPT
+	Mon, 7 Dec 2009 23:31:48 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:43054 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757123AbZLHEbr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Dec 2009 23:24:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TiCzxptFZF35J6bMa/pPkk46fk3yo1ZH/jQB3RIfeEzN1SDptmLT59tF1Q3Dii5pxb
-         uTIo7wGFZeia75u2OsqxxiGhN4jpxbCb5JUsyV1LUduKTdfQv9U3Pg6KHlUAz3y+u0gB
-         VjagbIWNmfd8Db3Y+Y84EdSB9kyKOUT139340=
-Date: Mon, 7 Dec 2009 20:24:18 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Gary Stein <lordcnidarian@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver/input/ff-memless.c
-Message-ID: <20091208042417.GD11147@core.coreip.homeip.net>
-References: <fce72f9b0912071137i1f2d7952tf70b83d4ba5686f8@mail.gmail.com>
+	Mon, 7 Dec 2009 23:31:47 -0500
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fce72f9b0912071137i1f2d7952tf70b83d4ba5686f8@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [RFC][PATCH 06/10] fec: fix uninitialized rx buffer usage
+Date: Mon, 7 Dec 2009 21:31:49 -0700
+Message-ID: <DE2504B3A515524BBE6934369EFDC0DA08C2AA19@az33exm20.fsl.freescale.net>
+In-Reply-To: <20091204111346.GL15126@pengutronix.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC][PATCH 06/10] fec: fix uninitialized rx buffer usage
+Thread-Index: Acp00uG0lBMdCzFnSDGEhlr4FhW/ZwC6qbFA
+References: <cover.1259893118.git.amit.kucheria@canonical.com> <7a49f4c0ea2f5030068729978c2cb173a6e15857.1259893118.git.amit.kucheria@canonical.com> <20091204111346.GL15126@pengutronix.de>
+From: "Herring Robert-RA7055" <ra7055@freescale.com>
+To: "Sascha Hauer" <s.hauer@pengutronix.de>,
+       "Amit Kucheria" <amit.kucheria@canonical.com>
+Cc: "List Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, <netdev@vger.kernel.org>,
+       <linux-arm-kernel@lists.infradead.org>, <valentin.longchamp@epfl.ch>,
+       <daniel@caiaq.de>, <grant.likely@secretlab.ca>,
+       "Nguyen Dinh-R00091" <R00091@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gary,
+Sascha,
 
-On Mon, Dec 07, 2009 at 02:37:30PM -0500, Gary Stein wrote:
-> I was experiencing force feedback joystick issues in my Force 3D Pro and
-> when developing a new driver for the new Logitech G940 after I
-> recompiled my kernel.
+> -----Original Message-----
+> From: Sascha Hauer [mailto:s.hauer@pengutronix.de] 
+> Sent: Friday, December 04, 2009 5:14 AM
+> To: Amit Kucheria
+> Cc: List Linux Kernel; Herring Robert-RA7055; David S. 
+> Miller; netdev@vger.kernel.org; 
+> linux-arm-kernel@lists.infradead.org; 
+> valentin.longchamp@epfl.ch; daniel@caiaq.de; 
+> grant.likely@secretlab.ca; Nguyen Dinh-R00091
+> Subject: Re: [RFC][PATCH 06/10] fec: fix uninitialized rx buffer usage
 > 
-> I was able to track it down to a signed vs unsigned problem in
-> ff-memless.c and gcc 4.4.2.
-> The code in question did not seem to give a problem with gcc 4.2.4.
+> On Fri, Dec 04, 2009 at 04:47:06AM +0200, Amit Kucheria wrote:
+> > From: Rob Herring <r.herring@freescale.com>
+> > 
+> > The fec driver was enabling receive buffer descriptor 
+> without allocating
+> > the buffers. Make sure the buffer descriptors are initialized to not
+> > start receiving packets.
+> > 
+> > Signed-off-by: Rob Herring <r.herring@freescale.com>
+> > Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+> > Cc: David S. Miller <davem@davemloft.net>
+> > Cc: netdev@vger.kernel.org
+> > ---
+> >  drivers/net/fec.c |   57 
+> +++++++++++++++++++++++++++--------------------------
+> >  1 files changed, 29 insertions(+), 28 deletions(-)
+> > 
+> > diff --git a/drivers/net/fec.c b/drivers/net/fec.c
+> > index 16a1d58..9a8743d 100644
+> > --- a/drivers/net/fec.c
+> > +++ b/drivers/net/fec.c
+> > @@ -1658,6 +1658,7 @@ static int fec_enet_init(struct 
+> net_device *dev, int index)
+> >  {
+> >  	struct fec_enet_private *fep = netdev_priv(dev);
+> >  	struct bufdesc *cbd_base;
+> > +	struct bufdesc *bdp;
+> >  	int i;
+> >  
+> >  	/* Allocate memory for buffer descriptors. */
+> > @@ -1710,6 +1711,34 @@ static int fec_enet_init(struct 
+> net_device *dev, int index)
+> >  	/* Set MII speed to 2.5 MHz */
+> >  	fep->phy_speed = ((((clk_get_rate(fep->clk) / 2 + 4999999)
+> >  					/ 2500000) / 2) & 0x3F) << 1;
+> > +
+> > +	/* Initialize the receive buffer descriptors. */
+> > +	bdp = fep->rx_bd_base;
+> > +	for (i = 0; i < RX_RING_SIZE; i++) {
+> > +
+> > +		/* Initialize the BD for every fragment in the page. */
+> > +		bdp->cbd_sc = 0;
+> > +		bdp++;
+> > +	}
+> > +
+> > +	/* Set the last buffer to wrap */
+> > +	bdp--;
+> > +	bdp->cbd_sc |= BD_SC_WRAP;
+> > +
+> > +	/* ...and the same for transmit */
+> > +	bdp = fep->tx_bd_base;
+> > +	for (i = 0; i < TX_RING_SIZE; i++) {
+> > +
+> > +		/* Initialize the BD for every fragment in the page. */
+> > +		bdp->cbd_sc = 0;
+> > +		bdp->cbd_bufaddr = 0;
+> > +		bdp++;
+> > +	}
+> > +
+> > +	/* Set the last buffer to wrap */
+> > +	bdp--;
+> > +	bdp->cbd_sc |= BD_SC_WRAP;
+> > +
+> >  	fec_restart(dev, 0);
 > 
-> According to gitweb, a signed vs unsigned was changed on May 8th by
-> Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
-> Input: ff-memless - fix signed to unsigned bit overflow
+> I do not really understand why this patch is needed. You move 
+> the buffer
+> initialisation from fec_restart to fec_enet_init, but fec_restart is
+> called directly after the initialisation, so this shouldn't 
+> change much.
 > 
-> to change the gain from a signed to an unsigned int to fix a rumble
-> issue, but it appears to broke a the
-> constant force section of the code.
-> 
-> It is a simple, cast to fix and should not have any ill effects.
-> 
+> I don't need this patch on my boards, so I wonder what is really going
+> wrong here.
 
-Could I please have your "Signed-off-by: ..."? Thanks.
+It is because open also calls fec_restart after the rx buffers are
+allocated. With the code in fec_restart, it zeroes out the buffer
+descriptors that have just been setup. I can't explain how it would work
+for you.
 
-> gary
+Regards,
+Rob
+
+> 
+> Sascha
 > 
 > 
-> --- linux-2.6.31.orig/drivers/input/ff-memless.c	2009-09-09
-> 17:13:59.000000000 -0500
-> +++ linux-2.6.31.int/drivers/input/ff-memless.c	2009-12-07
-> 15:09:22.000000000 -0500
-> @@ -239,8 +239,8 @@
->  		level = fixp_new16(apply_envelope(state,
->  					new->u.constant.level,
->  					&new->u.constant.envelope));
-> -		x = fixp_mult(fixp_sin(i), level) * gain / 0xffff;
-> -		y = fixp_mult(-fixp_cos(i), level) * gain / 0xffff;
-> +		x = (int)(fixp_mult(fixp_sin(i), level) * gain) / 0xffff;
-> +		y = (int)(fixp_mult(-fixp_cos(i), level) * gain) / 0xffff;
->  		/*
->  		 * here we abuse ff_ramp to hold x and y of constant force
->  		 * If in future any driver wants something else than x and y
-
--- 
-Dmitry
+> >  
+> >  	/* Queue up command to detect the PHY and initialize the
+> > @@ -1730,7 +1759,6 @@ static void
+> >  fec_restart(struct net_device *dev, int duplex)
+> >  {
+> >  	struct fec_enet_private *fep = netdev_priv(dev);
+> > -	struct bufdesc *bdp;
+> >  	int i;
+> >  
+> >  	/* Whack a reset.  We should wait for this. */
+> > @@ -1768,33 +1796,6 @@ fec_restart(struct net_device *dev, 
+> int duplex)
+> >  		}
+> >  	}
+> >  
+> > -	/* Initialize the receive buffer descriptors. */
+> > -	bdp = fep->rx_bd_base;
+> > -	for (i = 0; i < RX_RING_SIZE; i++) {
+> > -
+> > -		/* Initialize the BD for every fragment in the page. */
+> > -		bdp->cbd_sc = BD_ENET_RX_EMPTY;
+> > -		bdp++;
+> > -	}
+> > -
+> > -	/* Set the last buffer to wrap */
+> > -	bdp--;
+> > -	bdp->cbd_sc |= BD_SC_WRAP;
+> > -
+> > -	/* ...and the same for transmit */
+> > -	bdp = fep->tx_bd_base;
+> > -	for (i = 0; i < TX_RING_SIZE; i++) {
+> > -
+> > -		/* Initialize the BD for every fragment in the page. */
+> > -		bdp->cbd_sc = 0;
+> > -		bdp->cbd_bufaddr = 0;
+> > -		bdp++;
+> > -	}
+> > -
+> > -	/* Set the last buffer to wrap */
+> > -	bdp--;
+> > -	bdp->cbd_sc |= BD_SC_WRAP;
+> > -
+> >  	/* Enable MII mode */
+> >  	if (duplex) {
+> >  		/* MII enable / FD enable */
+> > -- 
+> > 1.6.3.3
+> > 
+> > 
+> 
+> -- 
+> Pengutronix e.K.                           |                  
+>            |
+> Industrial Linux Solutions                 | 
+> http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: 
+> +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   
+> +49-5121-206917-5555 |
+> 
+> 
