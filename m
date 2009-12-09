@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbZLIQBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbZLIP5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbZLIQBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 11:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZLIQBU
+	id S1755720AbZLIP5K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 10:57:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZLIP5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 11:01:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37762 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752650AbZLIQBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 11:01:19 -0500
-Date: Wed, 9 Dec 2009 16:55:12 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] "fair" rw spinlocks
-Message-ID: <20091209155512.GB13192@redhat.com>
-References: <20091130174638.GA9782@elte.hu> <alpine.LFD.2.00.0911302206370.24119@localhost.localdomain> <1259616429.26472.499.camel@laptop> <alpine.LFD.2.00.0911302300550.24119@localhost.localdomain> <alpine.LFD.2.00.0911301409560.2872@localhost.localdomain> <alpine.LFD.2.00.0911302328350.24119@localhost.localdomain> <alpine.LFD.2.00.0911301443110.2872@localhost.localdomain> <m1y6lg7q3n.fsf@fess.ebiederm.org> <20091207183226.GA20139@redhat.com> <1260218320.3935.723.camel@laptop>
+	Wed, 9 Dec 2009 10:57:07 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:40653 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753391AbZLIP5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 10:57:07 -0500
+Date: Wed, 9 Dec 2009 10:57:12 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+In-Reply-To: <alpine.LFD.2.00.0912090728200.3560@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44L0.0912091051450.4120-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260218320.3935.723.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/07, Peter Zijlstra wrote:
->
-> Didn't Thomas and you also come up with a scheme to push most signal
-> processing into task context?
+On Wed, 9 Dec 2009, Linus Torvalds wrote:
 
-We discussed another case (posix timers), this doesn't involve tasklist.
-Oh, and stilll lacks a solution :/
+> That's partly why I realy did suggest that we do the async stuff purely in 
+> the USB layer, rather than try to put it deeper in the device layer. And 
+> if we do support it "natively" in the device layer like Rafael's latest 
+> patch, I still think we should be very very nervous about making devices 
+> async unless there is a measured - and very noticeable - advantage.
 
-Oleg.
+Agreed.  Arjan's measurements indicated that USB was one of the biggest
+offenders; everything else other than the PS/2 mouse was much faster.  
+Given these results there isn't much incentive to do anything else
+asynchronously.
+
+(However other devices not present on Arjan's machine may be a
+different story.  Spinning up multiple external disks is a good example 
+-- although here it may be necessary for the driver to take charge, 
+because spinning up a disk requires a lot of power and doing too many 
+of them at the same time could be bad.)
+
+Alan Stern
 
