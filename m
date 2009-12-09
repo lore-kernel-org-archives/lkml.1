@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbZLIJwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbZLIJwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753650AbZLIJwb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZLIJw1
+	id S1753560AbZLIJwf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbZLIJwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:52:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44948 "EHLO hera.kernel.org"
+	Wed, 9 Dec 2009 04:52:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44953 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753562AbZLIJwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:52:25 -0500
-Date: Wed, 9 Dec 2009 09:51:56 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, fweisbec@gmail.com, tglx@linutronix.de,
-       prasad@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, fweisbec@gmail.com, tglx@linutronix.de,
-       prasad@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <1260347148-5519-1-git-send-regression-fweisbec@gmail.com>
-References: <1260347148-5519-1-git-send-regression-fweisbec@gmail.com>
+	id S1753624AbZLIJw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:52:29 -0500
+Date: Wed, 9 Dec 2009 09:52:11 GMT
+From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, xiaoguangrong@cn.fujitsu.com,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, peterz@infradead.org,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4B1F194D.7080306@cn.fujitsu.com>
+References: <4B1F194D.7080306@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] hw-breakpoints: Modify breakpoints without unregistering them
-Message-ID: <tip-44234adcdce38f83c56e05f808ce656175b4beeb@git.kernel.org>
-Git-Commit-ID: 44234adcdce38f83c56e05f808ce656175b4beeb
+Subject: [tip:perf/urgent] perf_event: Clean up __perf_event_init_context()
+Message-ID: <tip-aa5452d70c0d559310598b243b8b1033c10056e7@git.kernel.org>
+Git-Commit-ID: aa5452d70c0d559310598b243b8b1033c10056e7
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,268 +32,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  44234adcdce38f83c56e05f808ce656175b4beeb
-Gitweb:     http://git.kernel.org/tip/44234adcdce38f83c56e05f808ce656175b4beeb
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Wed, 9 Dec 2009 09:25:48 +0100
+Commit-ID:  aa5452d70c0d559310598b243b8b1033c10056e7
+Gitweb:     http://git.kernel.org/tip/aa5452d70c0d559310598b243b8b1033c10056e7
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Wed, 9 Dec 2009 11:28:13 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 9 Dec 2009 09:48:20 +0100
+CommitDate: Wed, 9 Dec 2009 09:56:27 +0100
 
-hw-breakpoints: Modify breakpoints without unregistering them
+perf_event: Clean up __perf_event_init_context()
 
-Currently, when ptrace needs to modify a breakpoint, like disabling
-it, changing its address, type or len, it calls
-modify_user_hw_breakpoint(). This latter will perform the heavy and
-racy task of unregistering the old breakpoint and registering a new
-one.
+Clean up the code a bit:
 
-This is racy as someone else might steal the reserved breakpoint
-slot under us, which is undesired as the breakpoint is only
-supposed to be modified, sometimes in the middle of a debugging
-workflow. We don't want our slot to be stolen in the middle.
+ - define 'perf_cpu_context' variable with 'static'
+ - use kzalloc() instead of kmalloc() and memset()
 
-So instead of unregistering/registering the breakpoint, just
-disable it while we modify its breakpoint fields and re-enable it
-after if necessary.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Prasad <prasad@linux.vnet.ibm.com>
-LKML-Reference: <1260347148-5519-1-git-send-regression-fweisbec@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <4B1F194D.7080306@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/ptrace.c      |   57 ++++++++++++++++++----------------------
- include/linux/hw_breakpoint.h |    4 +-
- include/linux/perf_event.h    |    5 +++-
- kernel/hw_breakpoint.c        |   42 +++++++++++++++++++++++-------
- kernel/perf_event.c           |    4 +-
- 5 files changed, 66 insertions(+), 46 deletions(-)
+ kernel/perf_event.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index b361d28..7079dda 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -595,7 +595,7 @@ static unsigned long ptrace_get_dr7(struct perf_event *bp[])
- 	return dr7;
- }
- 
--static struct perf_event *
-+static int
- ptrace_modify_breakpoint(struct perf_event *bp, int len, int type,
- 			 struct task_struct *tsk, int disabled)
- {
-@@ -609,11 +609,11 @@ ptrace_modify_breakpoint(struct perf_event *bp, int len, int type,
- 	 * written the address register first
- 	 */
- 	if (!bp)
--		return ERR_PTR(-EINVAL);
-+		return -EINVAL;
- 
- 	err = arch_bp_generic_fields(len, type, &gen_len, &gen_type);
- 	if (err)
--		return ERR_PTR(err);
-+		return err;
- 
- 	attr = bp->attr;
- 	attr.bp_len = gen_len;
-@@ -658,28 +658,17 @@ restore:
- 				if (!second_pass)
- 					continue;
- 
--				thread->ptrace_bps[i] = NULL;
--				bp = ptrace_modify_breakpoint(bp, len, type,
-+				rc = ptrace_modify_breakpoint(bp, len, type,
- 							      tsk, 1);
--				if (IS_ERR(bp)) {
--					rc = PTR_ERR(bp);
--					thread->ptrace_bps[i] = NULL;
-+				if (rc)
- 					break;
--				}
--				thread->ptrace_bps[i] = bp;
- 			}
- 			continue;
- 		}
- 
--		bp = ptrace_modify_breakpoint(bp, len, type, tsk, 0);
--
--		/* Incorrect bp, or we have a bug in bp API */
--		if (IS_ERR(bp)) {
--			rc = PTR_ERR(bp);
--			thread->ptrace_bps[i] = NULL;
-+		rc = ptrace_modify_breakpoint(bp, len, type, tsk, 0);
-+		if (rc)
- 			break;
--		}
--		thread->ptrace_bps[i] = bp;
- 	}
- 	/*
- 	 * Make a second pass to free the remaining unused breakpoints
-@@ -737,26 +726,32 @@ static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
- 		attr.disabled = 1;
- 
- 		bp = register_user_hw_breakpoint(&attr, ptrace_triggered, tsk);
-+
-+		/*
-+		 * CHECKME: the previous code returned -EIO if the addr wasn't
-+		 * a valid task virtual addr. The new one will return -EINVAL in
-+		 *  this case.
-+		 * -EINVAL may be what we want for in-kernel breakpoints users,
-+		 * but -EIO looks better for ptrace, since we refuse a register
-+		 * writing for the user. And anyway this is the previous
-+		 * behaviour.
-+		 */
-+		if (IS_ERR(bp))
-+			return PTR_ERR(bp);
-+
-+		t->ptrace_bps[nr] = bp;
- 	} else {
-+		int err;
-+
- 		bp = t->ptrace_bps[nr];
--		t->ptrace_bps[nr] = NULL;
- 
- 		attr = bp->attr;
- 		attr.bp_addr = addr;
--		bp = modify_user_hw_breakpoint(bp, &attr);
-+		err = modify_user_hw_breakpoint(bp, &attr);
-+		if (err)
-+			return err;
- 	}
--	/*
--	 * CHECKME: the previous code returned -EIO if the addr wasn't a
--	 * valid task virtual addr. The new one will return -EINVAL in this
--	 * case.
--	 * -EINVAL may be what we want for in-kernel breakpoints users, but
--	 * -EIO looks better for ptrace, since we refuse a register writing
--	 * for the user. And anyway this is the previous behaviour.
--	 */
--	if (IS_ERR(bp))
--		return PTR_ERR(bp);
- 
--	t->ptrace_bps[nr] = bp;
- 
- 	return 0;
- }
-diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
-index 42da1ce..69f07a9 100644
---- a/include/linux/hw_breakpoint.h
-+++ b/include/linux/hw_breakpoint.h
-@@ -55,7 +55,7 @@ register_user_hw_breakpoint(struct perf_event_attr *attr,
- 			    struct task_struct *tsk);
- 
- /* FIXME: only change from the attr, and don't unregister */
--extern struct perf_event *
-+extern int
- modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr);
- 
- /*
-@@ -91,7 +91,7 @@ static inline struct perf_event *
- register_user_hw_breakpoint(struct perf_event_attr *attr,
- 			    perf_overflow_handler_t triggered,
- 			    struct task_struct *tsk)	{ return NULL; }
--static inline struct perf_event *
-+static inline int
- modify_user_hw_breakpoint(struct perf_event *bp,
- 			  struct perf_event_attr *attr)	{ return NULL; }
- static inline struct perf_event *
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index bf33294..64a53f7 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -872,6 +872,8 @@ extern void perf_output_copy(struct perf_output_handle *handle,
- 			     const void *buf, unsigned int len);
- extern int perf_swevent_get_recursion_context(void);
- extern void perf_swevent_put_recursion_context(int rctx);
-+extern void perf_event_enable(struct perf_event *event);
-+extern void perf_event_disable(struct perf_event *event);
- #else
- static inline void
- perf_event_task_sched_in(struct task_struct *task, int cpu)		{ }
-@@ -902,7 +904,8 @@ static inline void perf_event_fork(struct task_struct *tsk)		{ }
- static inline void perf_event_init(void)				{ }
- static inline int  perf_swevent_get_recursion_context(void)  { return -1; }
- static inline void perf_swevent_put_recursion_context(int rctx)		{ }
--
-+static inline void perf_event_enable(struct perf_event *event)		{ }
-+static inline void perf_event_disable(struct perf_event *event)		{ }
- #endif
- 
- #define perf_output_put(handle, x) \
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index 03a0773..366eedf 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -320,18 +320,40 @@ EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
-  * @triggered: callback to trigger when we hit the breakpoint
-  * @tsk: pointer to 'task_struct' of the process to which the address belongs
-  */
--struct perf_event *
--modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr)
-+int modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr)
- {
--	/*
--	 * FIXME: do it without unregistering
--	 * - We don't want to lose our slot
--	 * - If the new bp is incorrect, don't lose the older one
--	 */
--	unregister_hw_breakpoint(bp);
-+	u64 old_addr = bp->attr.bp_addr;
-+	int old_type = bp->attr.bp_type;
-+	int old_len = bp->attr.bp_len;
-+	int err = 0;
-+
-+	perf_event_disable(bp);
-+
-+	bp->attr.bp_addr = attr->bp_addr;
-+	bp->attr.bp_type = attr->bp_type;
-+	bp->attr.bp_len = attr->bp_len;
-+
-+	if (attr->disabled)
-+		goto end;
- 
--	return perf_event_create_kernel_counter(attr, -1, bp->ctx->task->pid,
--						bp->overflow_handler);
-+	err = arch_validate_hwbkpt_settings(bp, bp->ctx->task);
-+	if (!err)
-+		perf_event_enable(bp);
-+
-+	if (err) {
-+		bp->attr.bp_addr = old_addr;
-+		bp->attr.bp_type = old_type;
-+		bp->attr.bp_len = old_len;
-+		if (!bp->attr.disabled)
-+			perf_event_enable(bp);
-+
-+		return err;
-+	}
-+
-+end:
-+	bp->attr.disabled = attr->disabled;
-+
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint);
- 
 diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index fd43ff4..3b0cf86 100644
+index 3b0cf86..2b06c45 100644
 --- a/kernel/perf_event.c
 +++ b/kernel/perf_event.c
-@@ -567,7 +567,7 @@ static void __perf_event_disable(void *info)
-  * is the current context on this CPU and preemption is disabled,
-  * hence we can't get into perf_event_task_sched_out for this context.
+@@ -36,7 +36,7 @@
+ /*
+  * Each CPU has a list of per CPU events:
   */
--static void perf_event_disable(struct perf_event *event)
-+void perf_event_disable(struct perf_event *event)
+-DEFINE_PER_CPU(struct perf_cpu_context, perf_cpu_context);
++static DEFINE_PER_CPU(struct perf_cpu_context, perf_cpu_context);
+ 
+ int perf_max_events __read_mostly = 1;
+ static int perf_reserved_percpu __read_mostly;
+@@ -1579,7 +1579,6 @@ static void
+ __perf_event_init_context(struct perf_event_context *ctx,
+ 			    struct task_struct *task)
  {
- 	struct perf_event_context *ctx = event->ctx;
- 	struct task_struct *task = ctx->task;
-@@ -971,7 +971,7 @@ static void __perf_event_enable(void *info)
-  * perf_event_for_each_child or perf_event_for_each as described
-  * for perf_event_disable.
-  */
--static void perf_event_enable(struct perf_event *event)
-+void perf_event_enable(struct perf_event *event)
- {
- 	struct perf_event_context *ctx = event->ctx;
- 	struct task_struct *task = ctx->task;
+-	memset(ctx, 0, sizeof(*ctx));
+ 	spin_lock_init(&ctx->lock);
+ 	mutex_init(&ctx->mutex);
+ 	INIT_LIST_HEAD(&ctx->group_list);
+@@ -1654,7 +1653,7 @@ static struct perf_event_context *find_get_context(pid_t pid, int cpu)
+ 	}
+ 
+ 	if (!ctx) {
+-		ctx = kmalloc(sizeof(struct perf_event_context), GFP_KERNEL);
++		ctx = kzalloc(sizeof(struct perf_event_context), GFP_KERNEL);
+ 		err = -ENOMEM;
+ 		if (!ctx)
+ 			goto errout;
+@@ -5105,7 +5104,7 @@ int perf_event_init_task(struct task_struct *child)
+ 	 * First allocate and initialize a context for the child.
+ 	 */
+ 
+-	child_ctx = kmalloc(sizeof(struct perf_event_context), GFP_KERNEL);
++	child_ctx = kzalloc(sizeof(struct perf_event_context), GFP_KERNEL);
+ 	if (!child_ctx)
+ 		return -ENOMEM;
+ 
