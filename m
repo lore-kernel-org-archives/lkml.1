@@ -1,156 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbZLIGnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbZLIGpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbZLIGnE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 01:43:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbZLIGnD
+	id S1756724AbZLIGpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 01:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbZLIGpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 01:43:03 -0500
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:54523 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752151AbZLIGnC (ORCPT
+	Wed, 9 Dec 2009 01:45:00 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:47686 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755182AbZLIGo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 01:43:02 -0500
-Message-ID: <4B1F46FA.90902@gmail.com>
-Date: Wed, 09 Dec 2009 07:43:06 +0100
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091205 Lightning/1.0pre Shredder/3.0
+	Wed, 9 Dec 2009 01:44:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=F+hruZJT8KLPy250spK8f8Gk3pk0s10N5hsyW/8p/eLAlzd0lPPzgFGa22U7mD9dXb
+         VB5ZTAvwqX4Sf9LnBef6QJl6Gbm6r+6PKFwUQk7gvtuIHvgivfeFEpuzrIrdj/r0TQfC
+         xeD5QcwqfUa5ubJihhfVuo+ml7hYFSmAHfZB8=
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       erbrochendes@gmx.de, divinespear@gmail.com, andjelo@gmx.net,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Rt2x00 problem traced back to x86 ACPI/PCI/e820 handling.
-References: <4B1D8176.9040209@gmail.com> <4B1D8743.5090009@kernel.org>
-In-Reply-To: <4B1D8743.5090009@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Dec 2009 06:43:08.0035 (UTC) FILETIME=[DE1EFD30:01CA789A]
+In-Reply-To: <3877989d0912080425o4bf9e2beuf573e47930fd707f@mail.gmail.com>
+References: <3877989d0908272018va6ee8f7n7ab2838fdf1b26e6@mail.gmail.com>
+	 <20090828062212.GB11552@elte.hu>
+	 <3877989d0912032329u7c05a761wfdd5c7000b43218d@mail.gmail.com>
+	 <4BDB13256095B24D9644F65379E604265C12@orsmsx505.amr.corp.intel.com>
+	 <3877989d0912041919i458300d7ydce73cf77979dad3@mail.gmail.com>
+	 <3877989d0912062156v7ba2a192y726f45b550ba50e@mail.gmail.com>
+	 <12c511ca0912071335i1a805c2eudb6ecb8f726f6a80@mail.gmail.com>
+	 <3877989d0912080425o4bf9e2beuf573e47930fd707f@mail.gmail.com>
+Date: Wed, 9 Dec 2009 14:45:05 +0800
+Message-ID: <3877989d0912082245m3ee1ea14y3b3c8aca99e9f378@mail.gmail.com>
+Subject: Re: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then 
+	enable ftrace for ia64
+From: Luming Yu <luming.yu@gmail.com>
+To: Tony Luck <tony.luck@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>, Felix Blyakher <felixb@sgi.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Bob Picco <bob.picco@hp.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/07/09 23:52, Yinghai Lu wrote:
-> Gertjan van Wingerde wrote:
->> Hi Ingo, Yinghai,
->>
->> For a while now we have seen reports of the rt2x00 driver not working correctly
->> where bogus information was read from the EEPROM. This resulted in a non-functional
->> driver.
->> It has been established that the problem has introduced itself sometimes in the 2.6.31
->> development cycle.
->>
->> Lately the failures have been traced back to commit 5d423ccd7ba4285f1084e91b26805e1d0ae978ed
->> of a patch created by Yinghai and committed Ingo.
->>
->> Reverting this patch seems to fix the problems with the rt2x00 driver.
->>
->> Also, it has been established that another work-around is to supply the pci=use_crs boot parameter.
->>
->> Do any of you have any idea as to what is going on here, and if this is something where the
->> rt2x00 driver is at fault, or where the x86 ACPI/PCI/e820 code is buggy?
->>
->> So far I can establish that all the cases for which it is known what kind of HW it is that these
->> are all MSI laptops.
->>
->> The related bug reports are:
->> 	http://bugzilla.kernel.org/show_bug.cgi?id=14460
->> 	https://bugs.launchpad.net/ubuntu/+source/linux/+bug/404596
->>
-> 
-> [    0.000000] BIOS-provided physical RAM map:
-> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-> [    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000000100000 - 000000006ffd0000 (usable)
-> [    0.000000]  BIOS-e820: 000000006ffd0000 - 000000006ffde000 (ACPI data)
-> [    0.000000]  BIOS-e820: 000000006ffde000 - 0000000070000000 (ACPI NVS)
-> [    0.000000]  BIOS-e820: 00000000fff80000 - 0000000100000000 (reserved)
-> ...
-> [    0.000000] Allocating PCI resources starting at 70000000 (gap: 70000000:8ff80000)
-> ...
-> 
-> [    0.144853] node 0 link 0: io port [1000, ffffff]
-> [    0.144853] TOM: 0000000080000000 aka 2048M
-> [    0.144853] node 0 link 0: mmio [bdf00000, ddeeffff]
-> [    0.144853] node 0 link 0: mmio [80000000, bdefffff]
-> [    0.144853] node 0 link 0: mmio [e0000000, efffffff]
-> [    0.144853] node 0 link 0: mmio [ddef0000, dfffffff]
-> [    0.144853] node 0 link 0: mmio [a0000, bffff]
-> [    0.144853] node 0 link 0: mmio [f0000000, ffffffff]
-> [    0.144853] bus: [00,ff] on node 0 link 0
-> [    0.144853] bus: 00 index 0 io port: [0, ffff]
-> [    0.144853] bus: 00 index 1 mmio: [80000000, dfffffff]
-> [    0.144853] bus: 00 index 2 mmio: [e0000000, fcffffffff]
-> [    0.144853] bus: 00 index 3 mmio: [a0000, bffff]
-> ...
-> 
-> [    0.200570] pci 0000:00:14.0: reg 14 32bit mmio: [0x000000-0x0003ff]
-> ...
-> [    0.201755] pci 0000:05:04.0: reg 10 32bit mmio: [0x000000-0x000fff]
-> [    0.201765] pci 0000:05:04.0: reg 14 32bit mmio: [0x000000-0x0007ff]
-> [    0.201986] pci 0000:05:04.2: reg 10 32bit mmio: [0x000000-0x0000ff]
-> [    0.202215] pci 0000:05:04.3: reg 10 32bit mmio: [0x000000-0x000fff]
-> [    0.202865] pci 0000:05:09.0: reg 10 32bit mmio: [0x000000-0x007fff]
-> [    0.202997] pci 0000:00:14.4: transparent bridge
-> [    0.203051] pci 0000:00:14.4: bridge 32bit mmio: [0x000000-0x0fffff]
-> 
-> ..
-> 
-> [    0.283503] pci 0000:00:14.4: PCI bridge, secondary bus 0000:05
-> [    0.283547] pci 0000:00:14.4:   IO window: disabled
-> [    0.283596] pci 0000:00:14.4:   MEM window: 0x70000000-0x700fffff
-> [    0.283643] pci 0000:00:14.4:   PREFETCH window: disabled
-> 
-> 
-> [    0.283764] pci_bus 0000:05: resource 1 mem: [0x70000000-0x700fffff]
-> 
-> 
-> [    2.140079] ohci1394 0000:05:04.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-> [    2.357886] ohci1394: fw-host0: Get PHY Reg timeout [0x00000000/0x00000000/100]
-> [    2.399313] ohci1394: fw-host0: Set PHY Reg timeout [0x000044c0/0x00004000/100]
-> [    2.494572] ohci1394: fw-host0: OHCI-1394 0.0 (PCI): IRQ=[20]  MMIO=[70008000-700087ff]  Max Packet=[2]  IR/IT contexts=[32/32]
-> [    2.529013] ohci1394: fw-host0: Get PHY Reg timeout [0x00000000/0x00000000/100]
-> [    2.593817] ohci1394: fw-host0: Serial EEPROM has suspicious values, attempting to set max_packet_size to 512 bytes
-> [    3.596012] ohci1394: fw-host0: Get PHY Reg timeout [0x00008500/0x00000000/100]
-> [    3.695273] ohci1394: fw-host0: Set PHY Reg timeout [0x00004540/0x00004000/100]
-> 
-> 
-> ...
-> 
-> 
-> and 2.6.30...
-> 
-> [    0.000000] Allocating PCI resources starting at 80000000 (gap: 70000000:8ff80000)
-> 
-> 
-> looks like BIOS is using [0x70000000 - 0x80000000] 235M ram range for some purpose.
-> 
-> please try this on top of 2.6.32.
-> 
-> diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-> index 572ee97..44f7c3d 100644
-> --- a/arch/x86/pci/amd_bus.c
-> +++ b/arch/x86/pci/amd_bus.c
-> @@ -48,8 +48,8 @@ void x86_pci_root_bus_res_quirks(struct pci_bus *b)
->  	    b->resource[1] != &iomem_resource)
->  		return;
->  
-> -	/* if only one root bus, don't need to anything */
-> -	if (pci_root_num < 2)
-> +	/* if no reading for pci conf, don't need to do anything */
-> +	if (!pci_root_num)
->  		return;
->  
->  	for (i = 0; i < pci_root_num; i++) {
-> 
+>
+> But let me try more on other ia64 boxes that I can get access.
+>
+> Stay tuned.
 
-Thanks for the quick turnaround on this issue.
+I might have reproduced the problem on a HP ia64 system
+with -32 kernel as the following info. But -31 kernel with
+lockdep code enabled just works. ....debugging...
 
-I got information from one of the bug reporters that the patch indeed fixes the problem.
-Please submit patch for mainline and stable for inclusion in mainline and stable 2.6.31
-and stable 2.6.32.
+CPI: SSDT 000000003fdf66c8 000E0 (v01     HP   BL870c 00000006 INTL 20050309)
+ACPI: SSDT 000000003fdf67b8 0013C (v01     HP   BL870c 00000006 INTL 20050309)
+ACPI: SSDT 000000003fdf68f8 000E0 (v01     HP   BL870c 00000006 INTL 20050309)
+ACPI: SSDT 000000003fdf69e8 0013C (v01     HP   BL870c 00000006 INTL 20050309)
+ACPI: SSDT 000000003fdf6b28 000E0 (v01     HP   BL870c 00000006 INTL 20050309)
+ACPI: SSDT 000000003fdf6c18 0013C (v01     HP   BL870c 00000006 INTL 20050309)
+ACPI: SSDT 000000003fdf6d58 000E0 (v01     HP   BL870c 00000006 INTL 20050309)
+ACPI: Local APIC address c0000000fee00000
+SMP: Allowing 16 CPUs, 8 hotplug CPUs
+Initial ramdisk at: 0xe0000100fe9d8000 (5607915 bytes)
+SAL 3.20: HP version 3.11
+SAL Platform features: None
+SAL: AP wakeup using external interrupt vector 0xff
+ACPI: Local APIC address c0000000fee00000
+Unable to handle kernel paging request at virtual address a0000009019b0328
+swapper[0]: Oops 8813272891392 [1]
+Modules linked in:
 
----
-Gertjan.
+Pid: 0, CPU 0, comm:              swapper
+psr : 00001010084a2018 ifs : 8000000000000409 ip  :
+[<a0000001000e8ff0>]    Not tainted (2.6.32)
+ip is at save_trace+0xb0/0x1e0
+unat: 0000000000000000 pfs : 0000000000000409 rsc : 0000000000000003
+rnat: 000000001ad27480 bsps: 000000000001003e pr  : 656960155aa6a559
+ldrs: 0000000000000000 ccv : 0000000001e600f3 fpsr: 0009804c8a70433f
+csd : 0000000000000000 ssd : 0000000000000000
+b0  : a0000001000e8fc0 b6  : a000000100a6c440 b7  : e00000003f81f3a0
+f6  : 000000000000000000000 f7  : 1003e0000000000000000
+f8  : 1003e0000000000000000 f9  : 1003e0000000000000001
+f10 : 10004c3ffffffff3c0000 f11 : 1003e0000000000000031
+r1  : a00000010132c4b0 r2  : a000000100e07d60 r3  : 000000000000007c
+r8  : a0000001018f2520 r9  : a0000009019b0328 r10 : 00000000ffffffff
+r11 : a0000001019b0330 r12 : a000000100e07d60 r13 : a000000100e00000
+r14 : a0000001018f2af0 r15 : 000000000003fffe r16 : ffffffffffffffff
+r17 : 0000000000000001 r18 : 0000000000000000 r19 : 0000000000000000
+r20 : a0000001019b0330 r21 : a000000101130a00 r22 : a0000001018f2c58
+r23 : 0000000000000003 r24 : 0000000000040000 r25 : 0000000000040000
+r26 : 0000000000000000 r27 : a0000001018f2b20 r28 : 0000000000001000
+r29 : 0000000000000000 r30 : a000000100e00e00 r31 : a000000100e00dd8
+Unable to handle kernel NULL pointer dereference (address 0000000000000000)
+swapper[0]: Oops 8813272891392 [2]
+Modules linked in:
 
+Pid: 0, CPU 0, comm:              swapper
+psr : 0000101008022018 ifs : 800000000000048e ip  :
+[<a0000001001e1a60>]    Not tainted (2.6.32)
+ip is at kmem_cache_alloc+0xe0/0x3c0
+unat: 0000000000000000 pfs : 000000000000048e rsc : 0000000000000003
+rnat: 0000000000000000 bsps: 0000000000000000 pr  : 656960155aa65965
+ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c0270033f
+csd : 0000000000000000 ssd : 0000000000000000
+b0  : a0000001001e19f0 b6  : a000000100042420 b7  : a00000010000c9b0
+f6  : 1003ea877512c4d0b873a f7  : 1003e9e3779b97f4a7c16
+f8  : 1003e0a000000100015f7 f9  : 1003e0000000000000001
+f10 : 10004c3ffffffff3c0000 f11 : 1003e0000000000000031
+r1  : a00000010132c4b0 r2  : 0000000012000000 r3  : a000000100e00014
+r8  : 0000000000000002 r9  : 00000000003fff2f r10 : a000000101151a60
+r11 : a000000101151a60 r12 : a000000100e07230 r13 : a000000100e00000
+r14 : 0000000000000000 r15 : 0000000000200000 r16 : 0000000000000000
+r17 : 0000000000000000 r18 : a000000100e01984 r19 : a000000100e072ac
+r20 : a000000100e072a4 r21 : 0000000000000000 r22 : a000000100e072a0
+r23 : a000000100e072a4 r24 : 0000000000000001 r25 : 0000000000000000
+r26 : a000000100e072a0 r27 : 0000000000000000 r28 : a000000100e072a8
+r29 : 000000007fffffff r30 : a00000010110a030 r31 : 0000000000000002
