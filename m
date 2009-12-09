@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966939AbZLHXtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966942AbZLIAFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966939AbZLHXtd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 18:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937855AbZLHXtZ
+	id S966942AbZLIAFO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 19:05:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966360AbZLIAFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 18:49:25 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41014
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S937002AbZLHXtY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 18:49:24 -0500
-Date: Tue, 08 Dec 2009 15:49:30 -0800 (PST)
-Message-Id: <20091208.154930.55611259.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: IDE
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 8 Dec 2009 19:05:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26151 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966236AbZLIAFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 19:05:10 -0500
+Message-ID: <4B1EE9A7.70609@redhat.com>
+Date: Tue, 08 Dec 2009 22:04:55 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Jon Smirl <jonsmirl@gmail.com>, Andy Walls <awalls@radix.net>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@wilsonet.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+  Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph>	<1260240142.3086.14.camel@palomino.walls.org>	<20091208042210.GA11147@core.coreip.homeip.net>	<1260275743.3094.6.camel@palomino.walls.org>	<9e4733910912080452p42efa794mb7fd608fa4fbad7c@mail.gmail.com>	<4B1E5746.7010305@redhat.com>	<9e4733910912080601s1a814720qd909e47ac09f91fc@mail.gmail.com>	<4B1E5FAF.40201@redhat.com>	<9e4733910912080631r6fd306c5tdfd56482583b9bf5@mail.gmail.com>	<4B1E656F.3020507@redhat.com>	<9e4733910912080819l2ffc88fes894d02dc8b834ef@mail.gmail.com> <m3ljhdqc11.fsf@intrepid.localdomain>
+In-Reply-To: <m3ljhdqc11.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Krzysztof Halasa wrote:
+> Jon Smirl <jonsmirl@gmail.com> writes:
+> 
+>> Why do you want to pull the 1KB default mapping table out of the
+>> device driver __init section and more it to a udev script? Now we will
+>> have to maintain a parallel udev script for ever receiver's device
+>> driver.
+> 
+> Of course no. We will need a single program (script etc.) for all
+> devices. And we will need a database of the known remotes (scan and key
+> codes).
 
-Mostly minor cleanups, and an increase in WAIT_DRQ to accomodate
-CF cards, SSD drives, and other slow devices.
+The keycode database can be easily extracted from kernel drivers by script.
+I have it already at V4L/DVB development tree.
 
-Also a UDMA fix for the slc90e66 driver which came a bit late
-for 2.6.32 and I have thus queued up for -stable.
+>> You can handle that with __devinit
+> 
+> __devinit is NOP with hot-plug.
+> 
+> Fortunately we don't need the keymaps in the kernel.
+> For certain uses we may (and may not) need to have one keymap built-in,
+> perhaps something similar to the embedded initrd.
 
-Please pull, thanks a lot.
+I still think the better is to have them in kernel, but compiled only
+if selected at Kbuild.
 
-The following changes since commit a252e749f1ae17e43ccc5824f7b1b5854417c98b:
-  Linus Torvalds (1):
-        sctp: fix compile error due to sysctl mismerge
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-next-2.6.git master
-
-Bartlomiej Zolnierkiewicz (9):
-      hpt366: remove dead old timing tables
-      slc90e66: fix UDMA handling
-      cs5535: add pci id for AMD based CS5535 controllers
-      alim15x3: remove obsolete and dangerous wdc_udma parameter
-      cmd64x: remove no longer needed debugging code
-      cy82c693: remove no longer needed debugging code
-      pdc202xx_old: remove no longer needed debugging code
-      sis5513: remove stale TODO
-      sl82c105: remove no longer needed debugging code
-
-Borislav Petkov (1):
-      ide-tape: remove the BKL
-
-David S. Miller (4):
-      ide: Increase WAIT_DRQ to accomodate some CF cards and SSD drives.
-      Merge branch 'master' of master.kernel.org:/.../davem/ide-2.6
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-      Merge branch 'ide-dcr' of git://git.kernel.org/.../bart/misc
-
-H Hartley Sweeten (3):
-      drivers/ide/au1xxx-ide.c: use resource_size()
-      drivers/ide/ide_platform.c: use resource_size()
-      drivers/ide/tx4938ide.c: use resource_size()
-
-Robert Hancock (1):
-      ide: update Kconfig text to mark as deprecated
-
-Sergei Shtylyov (1):
-      hpt366: kill unused #define's
-
- drivers/ide/Kconfig        |   43 ++++++-----------------------
- drivers/ide/alim15x3.c     |   12 +-------
- drivers/ide/au1xxx-ide.c   |    7 ++---
- drivers/ide/cmd64x.c       |   17 -----------
- drivers/ide/cs5535.c       |    1 +
- drivers/ide/cy82c693.c     |   27 ------------------
- drivers/ide/hpt366.c       |   65 --------------------------------------------
- drivers/ide/ide-tape.c     |   21 ++++++++++----
- drivers/ide/ide_platform.c |    8 +++---
- drivers/ide/pdc202xx_old.c |   15 ----------
- drivers/ide/sis5513.c      |    9 ------
- drivers/ide/sl82c105.c     |   24 +---------------
- drivers/ide/slc90e66.c     |    3 +-
- drivers/ide/tx4938ide.c    |    2 +-
- include/linux/ide.h        |    4 +-
- 15 files changed, 38 insertions(+), 220 deletions(-)
+Cheers,
+Mauro.
