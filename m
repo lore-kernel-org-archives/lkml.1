@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZLICXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbZLIC0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbZLICXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 21:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbZLICXh
+	id S1756470AbZLIC0Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 21:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbZLIC0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 21:23:37 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:38831 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756466AbZLICXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 21:23:35 -0500
-Date: Tue, 8 Dec 2009 21:23:41 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <200912082330.24843.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912082111360.26994-100000@netrider.rowland.org>
+	Tue, 8 Dec 2009 21:26:23 -0500
+Received: from thunk.org ([69.25.196.29]:38426 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754852AbZLIC0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 21:26:22 -0500
+Date: Tue, 8 Dec 2009 21:26:22 -0500
+From: tytso@mit.edu
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 2/3] ext4: Fix data / filesystem corruption when write
+ fails to copy data
+Message-ID: <20091209022622.GX27692@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Jan Kara <jack@suse.cz>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-ext4@vger.kernel.org
+References: <1259781409-31318-1-git-send-email-jack@suse.cz>
+ <1259781409-31318-2-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1259781409-31318-2-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+On Wed, Dec 02, 2009 at 08:16:48PM +0100, Jan Kara wrote:
+> When ext4_write_begin fails after allocating some blocks or
+> generic_perform_write fails to copy data to write, we truncate blocks already
+> instantiated beyond i_size. Although these blocks were never inside i_size, we
+> have to truncate pagecache of these blocks so that corresponding buffers get
+> unmapped. Otherwise subsequent __block_prepare_write (called because we are
+> retrying the write) will find the buffers mapped, not call ->get_block, and
+> thus the page will be backed by already freed blocks leading to filesystem and
+> data corruption.
 
-> > Well, one difficulty.  It arises only because we are contemplating
-> > having the PM core fire up the async tasks, rather than having the
-> > drivers' suspend routines launch them (the way your original proposal
-> > did -- the difficulty does not arise there).
-> > 
-> > Suppose A and B are unrelated devices and we need to impose the
-> > off-tree constraint that A suspends after B.  With children taking
-> > their parent's lock, the way to prevent A from suspending too soon is
-> > by having B's suspend routine acquire A's lock.
-> > 
-> > But B's suspend routine runs entirely in an async task, because that
-> > task is started by the PM core and it does the method call.  Hence by
-> > the time B's suspend routine is called, A may already have begun
-> > suspending -- it's too late to take A's lock.  To make the locking
-> > work, B would have to acquire A's lock _before_ B's async task starts.  
-> > Since the PM core is unaware of the off-tree dependency, there's no
-> > simple way to make it work.
-> 
-> Do not set async_suspend for B and instead start your own async thread
-> from its suspend callback.  The parent-children synchronization is done by the
-> core anyway (at least I'd do it that way), so the only thing you need to worry
-> about is the extra dependency.
+Added to the ext4 patch queue.
 
-I don't like that because it introduces "artificial" dependencies: It 
-makes B depend on all the preceding synchronous suspends, even totally 
-unrelated ones.  But yes, it would work.
-
-> I would be slightly more comfortable using completions, but the rwsem-based
-> approach is fine with me as well.
-
-On the principle of making things as easy and foolproof as possible for 
-driver authors, I also favor completions since it makes dealing with 
-non-tree dependencies easier.
-
-However either way would be okay.  I do have to handle some non-tree
-dependencies in USB, but oddly enough they affect only resume, not
-suspend.  So this "who starts the async task" issue doesn't apply.
-
-Alan Stern
-
+						- Ted
