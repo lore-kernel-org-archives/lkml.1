@@ -1,362 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbZLIUvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbZLIUwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbZLIUvT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 15:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbZLIUvO
+	id S1757980AbZLIUwW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 15:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbZLIUwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 15:51:14 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64072 "EHLO
+	Wed, 9 Dec 2009 15:52:03 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:32990 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757925AbZLIUvI (ORCPT
+	with ESMTP id S1757929AbZLIUvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 15:51:08 -0500
-X-Authority-Analysis: v=1.0 c=1 a=bElEO-tKLpwA:10 a=20KFwNOVAAAA:8 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=nKN7m-l3YsZu2cycHdQA:9 a=mqvJZSffGfFlFQ3hNZcA:7 a=Nmf2VOfHOLISQbMF0RQxckJuGSQA:4 a=DHQQ7jDAcw4A:10 a=jEp0ucaQiEUA:10 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10
+	Wed, 9 Dec 2009 15:51:10 -0500
+X-Authority-Analysis: v=1.0 c=1 a=cn5aVtnoCi0A:10 a=D_SbEOMbAAAA:8 a=6zb38KopAAAA:8 a=meVymXHHAAAA:8 a=fmuKi8Ueh1xfsIMSKxsA:9 a=spRWfdANp4JQBh4XwQoA:7 a=FcpkzUIqyz1mDvxx_zGoUVgTc-AA:4 a=7KbvKZvEaC0A:10 a=D-PNlr3aaKoA:10 a=jeBq3FmKZ4MA:10 a=ANmMLi0tbL9kWTvV:21 a=sHwjeTmzdR6fogko:21
 X-Cloudmark-Score: 0
 X-Originating-IP: 74.67.89.75
-Message-Id: <20091209205113.558318638@goodmis.org>
+Message-Id: <20091209205113.837905785@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 09 Dec 2009 15:40:39 -0500
+Date: Wed, 09 Dec 2009 15:40:40 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Olsa <jolsa@redhat.com>
-Subject: [PATCH 4/5] [PATCH 4/5] tracing: Fix function graph trace_pipe to properly display failed entries
+       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
+       Carsten Emde <C.Emde@osadl.org>
+Subject: [PATCH 5/5] [PATCH 5/5] tracing: Remove comparing of NULL to va_list in trace_array_vprintk()
 References: <20091209204035.871524827@goodmis.org>
-Content-Disposition: inline; filename=0004-tracing-Fix-function-graph-trace_pipe-to-properly-di.patch
+Content-Disposition: inline; filename=0005-tracing-Remove-comparing-of-NULL-to-va_list-in-trace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Olsa <jolsa@redhat.com>
+From: Carsten Emde <Carsten.Emde@osadl.org>
 
-There is a case where the graph tracer might get confused and omits
-displaying of a single record.  This applies mostly with the trace_pipe
-since it is unlikely that the trace_seq buffer will overflow with the
-trace file.
+Olof Johansson stated the following:
 
-As the function_graph tracer goes through the trace entries keeping a
-pointer to the current record:
+  Comparing a va_list with NULL is bogus. It's supposed to be treated like
+  an opaque type and only be manipulated with va_* accessors.
 
-current ->  func1 ENTRY
-            func2 ENTRY
-            func2 RETURN
-            func1 RETURN
+Olof noticed that this code broke the ARM builds:
 
-When an function ENTRY is encountered, it moves the pointer to the
-next entry to check if the function is a nested or leaf function.
+    kernel/trace/trace.c: In function 'trace_array_vprintk':
+    kernel/trace/trace.c:1364: error: invalid operands to binary == (have 'va_list' and 'void *')
+    kernel/trace/trace.c: In function 'tracing_mark_write':
+    kernel/trace/trace.c:3349: error: incompatible type for argument 3 of 'trace_vprintk'
 
-            func1 ENTRY
-current ->  func2 ENTRY
-            func2 RETURN
-            func1 RETURN
+This patch partly reverts c13d2f7c3231e873f30db92b96c8caa48f100f33 and
+re-installs the original mark_printk() mechanism.
 
-If the rest of the writing of the function fills the trace_seq buffer,
-then the trace_pipe read will ignore this entry. The next read will
-Now start at the current location, but the first entry (func1) will
-be discarded.
-
-This patch keeps a copy of the current entry in the iterator private
-storage and will keep track of when the trace_seq buffer fills. When
-the trace_seq buffer fills, it will reuse the copy of the entry in the
-next iteration.
-
-[
-  This patch has been largely modified by Steven Rostedt in order to
-  clean it up and simplify it. The original idea and concept was from
-  Jirka and for that, this patch will go under his name to give him
-  the credit he deserves. But because this was modify by Steven Rostedt
-  anything wrong with the patch should be blamed on Steven.
-]
-
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1259067458-27143-1-git-send-email-jolsa@redhat.com>
+Reported-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+LKML-Reference: <4B1BAB74.104@osadl.org>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace_functions_graph.c |  165 +++++++++++++++++++++++++++-------
- 1 files changed, 131 insertions(+), 34 deletions(-)
+ kernel/trace/trace.c |   18 ++++++++++++------
+ 1 files changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 45e6c01..a43d009 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -14,9 +14,20 @@
- #include "trace.h"
- #include "trace_output.h"
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 484114d..88bd9ae 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1361,11 +1361,7 @@ int trace_array_vprintk(struct trace_array *tr,
+ 	pause_graph_tracing();
+ 	raw_local_irq_save(irq_flags);
+ 	__raw_spin_lock(&trace_buf_lock);
+-	if (args == NULL) {
+-		strncpy(trace_buf, fmt, TRACE_BUF_SIZE);
+-		len = strlen(trace_buf);
+-	} else
+-		len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
++	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
  
--struct fgraph_data {
-+struct fgraph_cpu_data {
- 	pid_t		last_pid;
- 	int		depth;
-+	int		ignore;
-+};
-+
-+struct fgraph_data {
-+	struct fgraph_cpu_data		*cpu_data;
-+
-+	/* Place to preserve last processed entry. */
-+	struct ftrace_graph_ent_entry	ent;
-+	struct ftrace_graph_ret_entry	ret;
-+	int				failed;
-+	int				cpu;
- };
- 
- #define TRACE_GRAPH_INDENT	2
-@@ -384,7 +395,7 @@ verif_pid(struct trace_seq *s, pid_t pid, int cpu, struct fgraph_data *data)
- 	if (!data)
- 		return TRACE_TYPE_HANDLED;
- 
--	last_pid = &(per_cpu_ptr(data, cpu)->last_pid);
-+	last_pid = &(per_cpu_ptr(data->cpu_data, cpu)->last_pid);
- 
- 	if (*last_pid == pid)
- 		return TRACE_TYPE_HANDLED;
-@@ -435,26 +446,49 @@ static struct ftrace_graph_ret_entry *
- get_return_for_leaf(struct trace_iterator *iter,
- 		struct ftrace_graph_ent_entry *curr)
- {
--	struct ring_buffer_iter *ring_iter;
-+	struct fgraph_data *data = iter->private;
-+	struct ring_buffer_iter *ring_iter = NULL;
- 	struct ring_buffer_event *event;
- 	struct ftrace_graph_ret_entry *next;
- 
--	ring_iter = iter->buffer_iter[iter->cpu];
-+	/*
-+	 * If the previous output failed to write to the seq buffer,
-+	 * then we just reuse the data from before.
-+	 */
-+	if (data && data->failed) {
-+		curr = &data->ent;
-+		next = &data->ret;
-+	} else {
- 
--	/* First peek to compare current entry and the next one */
--	if (ring_iter)
--		event = ring_buffer_iter_peek(ring_iter, NULL);
--	else {
--	/* We need to consume the current entry to see the next one */
--		ring_buffer_consume(iter->tr->buffer, iter->cpu, NULL);
--		event = ring_buffer_peek(iter->tr->buffer, iter->cpu,
--					NULL);
--	}
-+		ring_iter = iter->buffer_iter[iter->cpu];
-+
-+		/* First peek to compare current entry and the next one */
-+		if (ring_iter)
-+			event = ring_buffer_iter_peek(ring_iter, NULL);
-+		else {
-+			/*
-+			 * We need to consume the current entry to see
-+			 * the next one.
-+			 */
-+			ring_buffer_consume(iter->tr->buffer, iter->cpu, NULL);
-+			event = ring_buffer_peek(iter->tr->buffer, iter->cpu,
-+						 NULL);
-+		}
- 
--	if (!event)
--		return NULL;
-+		if (!event)
-+			return NULL;
-+
-+		next = ring_buffer_event_data(event);
- 
--	next = ring_buffer_event_data(event);
-+		if (data) {
-+			/*
-+			 * Save current and next entries for later reference
-+			 * if the output fails.
-+			 */
-+			data->ent = *curr;
-+			data->ret = *next;
-+		}
-+	}
- 
- 	if (next->ent.type != TRACE_GRAPH_RET)
- 		return NULL;
-@@ -640,7 +674,7 @@ print_graph_entry_leaf(struct trace_iterator *iter,
- 
- 	if (data) {
- 		int cpu = iter->cpu;
--		int *depth = &(per_cpu_ptr(data, cpu)->depth);
-+		int *depth = &(per_cpu_ptr(data->cpu_data, cpu)->depth);
- 
- 		/*
- 		 * Comments display at + 1 to depth. Since
-@@ -688,7 +722,7 @@ print_graph_entry_nested(struct trace_iterator *iter,
- 
- 	if (data) {
- 		int cpu = iter->cpu;
--		int *depth = &(per_cpu_ptr(data, cpu)->depth);
-+		int *depth = &(per_cpu_ptr(data->cpu_data, cpu)->depth);
- 
- 		*depth = call->depth;
- 	}
-@@ -782,19 +816,34 @@ static enum print_line_t
- print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
- 			struct trace_iterator *iter)
- {
--	int cpu = iter->cpu;
-+	struct fgraph_data *data = iter->private;
- 	struct ftrace_graph_ent *call = &field->graph_ent;
- 	struct ftrace_graph_ret_entry *leaf_ret;
-+	static enum print_line_t ret;
-+	int cpu = iter->cpu;
- 
- 	if (print_graph_prologue(iter, s, TRACE_GRAPH_ENT, call->func))
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	leaf_ret = get_return_for_leaf(iter, field);
- 	if (leaf_ret)
--		return print_graph_entry_leaf(iter, field, leaf_ret, s);
-+		ret = print_graph_entry_leaf(iter, field, leaf_ret, s);
- 	else
--		return print_graph_entry_nested(iter, field, s, cpu);
-+		ret = print_graph_entry_nested(iter, field, s, cpu);
- 
-+	if (data) {
-+		/*
-+		 * If we failed to write our output, then we need to make
-+		 * note of it. Because we already consumed our entry.
-+		 */
-+		if (s->full) {
-+			data->failed = 1;
-+			data->cpu = cpu;
-+		} else
-+			data->failed = 0;
-+	}
-+
-+	return ret;
+ 	size = sizeof(*entry) + len + 1;
+ 	buffer = tr->buffer;
+@@ -3353,6 +3349,16 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+ 	return cnt;
  }
  
- static enum print_line_t
-@@ -810,7 +859,7 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
- 
- 	if (data) {
- 		int cpu = iter->cpu;
--		int *depth = &(per_cpu_ptr(data, cpu)->depth);
-+		int *depth = &(per_cpu_ptr(data->cpu_data, cpu)->depth);
- 
- 		/*
- 		 * Comments display at + 1 to depth. This is the
-@@ -873,7 +922,7 @@ print_graph_comment(struct trace_seq *s,  struct trace_entry *ent,
- 	int i;
- 
- 	if (data)
--		depth = per_cpu_ptr(data, iter->cpu)->depth;
-+		depth = per_cpu_ptr(data->cpu_data, iter->cpu)->depth;
- 
- 	if (print_graph_prologue(iter, s, 0, 0))
- 		return TRACE_TYPE_PARTIAL_LINE;
-@@ -941,8 +990,33 @@ print_graph_comment(struct trace_seq *s,  struct trace_entry *ent,
- enum print_line_t
- print_graph_function(struct trace_iterator *iter)
- {
-+	struct ftrace_graph_ent_entry *field;
-+	struct fgraph_data *data = iter->private;
- 	struct trace_entry *entry = iter->ent;
- 	struct trace_seq *s = &iter->seq;
-+	int cpu = iter->cpu;
++static int mark_printk(const char *fmt, ...)
++{
 +	int ret;
++	va_list args;
++	va_start(args, fmt);
++	ret = trace_vprintk(0, fmt, args);
++	va_end(args);
++	return ret;
++}
 +
-+	if (data && per_cpu_ptr(data->cpu_data, cpu)->ignore) {
-+		per_cpu_ptr(data->cpu_data, cpu)->ignore = 0;
-+		return TRACE_TYPE_HANDLED;
-+	}
-+
-+	/*
-+	 * If the last output failed, there's a possibility we need
-+	 * to print out the missing entry which would never go out.
-+	 */
-+	if (data && data->failed) {
-+		field = &data->ent;
-+		iter->cpu = data->cpu;
-+		ret = print_graph_entry(field, s, iter);
-+		if (ret == TRACE_TYPE_HANDLED && iter->cpu != cpu) {
-+			per_cpu_ptr(data->cpu_data, iter->cpu)->ignore = 1;
-+			ret = TRACE_TYPE_NO_CONSUME;
-+		}
-+		iter->cpu = cpu;
-+		return ret;
-+	}
+ static ssize_t
+ tracing_mark_write(struct file *filp, const char __user *ubuf,
+ 					size_t cnt, loff_t *fpos)
+@@ -3379,7 +3385,7 @@ tracing_mark_write(struct file *filp, const char __user *ubuf,
+ 	} else
+ 		buf[cnt] = '\0';
  
- 	switch (entry->type) {
- 	case TRACE_GRAPH_ENT: {
-@@ -952,7 +1026,7 @@ print_graph_function(struct trace_iterator *iter)
- 		 * sizeof(struct ftrace_graph_ent_entry) is very small,
- 		 * it can be safely saved at the stack.
- 		 */
--		struct ftrace_graph_ent_entry *field, saved;
-+		struct ftrace_graph_ent_entry saved;
- 		trace_assign_type(field, entry);
- 		saved = *field;
- 		return print_graph_entry(&saved, s, iter);
-@@ -1030,31 +1104,54 @@ static void print_graph_headers(struct seq_file *s)
- static void graph_trace_open(struct trace_iterator *iter)
- {
- 	/* pid and depth on the last trace processed */
--	struct fgraph_data *data = alloc_percpu(struct fgraph_data);
-+	struct fgraph_data *data;
- 	int cpu;
+-	cnt = trace_vprintk(0, buf, NULL);
++	cnt = mark_printk("%s", buf);
+ 	kfree(buf);
+ 	*fpos += cnt;
  
-+	iter->private = NULL;
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
- 	if (!data)
--		pr_warning("function graph tracer: not enough memory\n");
--	else
--		for_each_possible_cpu(cpu) {
--			pid_t *pid = &(per_cpu_ptr(data, cpu)->last_pid);
--			int *depth = &(per_cpu_ptr(data, cpu)->depth);
--			*pid = -1;
--			*depth = 0;
--		}
-+		goto out_err;
-+
-+	data->cpu_data = alloc_percpu(struct fgraph_cpu_data);
-+	if (!data->cpu_data)
-+		goto out_err_free;
-+
-+	for_each_possible_cpu(cpu) {
-+		pid_t *pid = &(per_cpu_ptr(data->cpu_data, cpu)->last_pid);
-+		int *depth = &(per_cpu_ptr(data->cpu_data, cpu)->depth);
-+		int *ignore = &(per_cpu_ptr(data->cpu_data, cpu)->ignore);
-+		*pid = -1;
-+		*depth = 0;
-+		*ignore = 0;
-+	}
- 
- 	iter->private = data;
-+
-+	return;
-+
-+ out_err_free:
-+	kfree(data);
-+ out_err:
-+	pr_warning("function graph tracer: not enough memory\n");
- }
- 
- static void graph_trace_close(struct trace_iterator *iter)
- {
--	free_percpu(iter->private);
-+	struct fgraph_data *data = iter->private;
-+
-+	if (data) {
-+		free_percpu(data->cpu_data);
-+		kfree(data);
-+	}
- }
- 
- static struct tracer graph_trace __read_mostly = {
- 	.name		= "function_graph",
- 	.open		= graph_trace_open,
-+	.pipe_open	= graph_trace_open,
- 	.close		= graph_trace_close,
-+	.pipe_close	= graph_trace_close,
- 	.wait_pipe	= poll_wait_pipe,
- 	.init		= graph_trace_init,
- 	.reset		= graph_trace_reset,
 -- 
 1.6.5
 
