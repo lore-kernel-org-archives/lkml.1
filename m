@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZLISuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZLISzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757273AbZLISuj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbZLISuh
+	id S1757221AbZLISzP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:55:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbZLISzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:50:37 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:49446 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757115AbZLISug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:50:36 -0500
-Date: Wed, 9 Dec 2009 19:50:42 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: jmoyer@redhat.com, linux-kernel@vger.kernel.org,
-       guijianfeng@cn.fujitsu.com
-Subject: Re: [PATCH 2/2] cfq-iosched: Take care of corner cases of group
-	losing share due to deletion
-Message-ID: <20091209185042.GX8742@kernel.dk>
-References: <1260312778-4725-1-git-send-email-vgoyal@redhat.com> <1260312778-4725-2-git-send-email-vgoyal@redhat.com> <20091209135639.GW8742@kernel.dk> <20091209151723.GA8452@redhat.com>
+	Wed, 9 Dec 2009 13:55:13 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37811 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757008AbZLISzM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 13:55:12 -0500
+Message-ID: <4B1FF27E.8030701@zytor.com>
+Date: Wed, 09 Dec 2009 10:54:54 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091209151723.GA8452@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] x86/paravirt for v2.6.33
+References: <20091203210913.GA24351@elte.hu> <alpine.LFD.2.00.0912081329460.3560@localhost.localdomain> <20091209073632.GD8187@elte.hu> <4B1FED0D.7060003@goop.org> <alpine.LFD.2.00.0912091039050.3560@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912091039050.3560@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09 2009, Vivek Goyal wrote:
-> On Wed, Dec 09, 2009 at 02:56:39PM +0100, Jens Axboe wrote:
-> > On Tue, Dec 08 2009, Vivek Goyal wrote:
-> > > If there is a sequential reader running in a group, we wait for next request
-> > > to come in that group after slice expiry and once new request is in, we expire
-> > > the queue. Otherwise we delete the group from service tree and group looses
-> > > its fair share.
-> > > 
-> > > So far I was marking a queue as wait_busy if it had consumed its slice and
-> > > it was last queue in the group. But this condition did not cover following
-> > > two cases.
-> > > 
-> > > 1.If a request completed and slice has not expired yet. Next request comes
-> > >   in and is dispatched to disk. Now select_queue() hits and slice has expired.
-> > >   This group will be deleted. Because request is still in the disk, this queue
-> > >   will never get a chance to wait_busy.
-> > > 
-> > > 2.If request completed and slice has not expired yet. Before next request
-> > >   comes in (delay due to think time), select_queue() hits and expires the
-> > >   queue hence group. This queue never got a chance to wait busy.
-> > > 
-> > > Gui was hitting the boundary condition 1 and not getting fairness numbers
-> > > proportional to weight.
-> > > 
-> > > This patch puts the checks for above two conditions and improves the fairness
-> > > numbers for sequential workload on rotational media. Check in select_queue()
-> > > takes care of case 1 and additional check in should_wait_busy() takes care
-> > > of case 2.
-> > 
-> > I think this (and 1/2) look fine, just one minor comment:
-> > 
-> > > @@ -3250,6 +3264,36 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
-> > >  		cfqd->hw_tag = 0;
-> > >  }
-> > >  
-> > > +static inline bool
-> > > +cfq_should_wait_busy(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-> > > +{
-> > 
-> > That's too large to inline.
+On 12/09/2009 10:47 AM, Linus Torvalds wrote:
 > 
-> Hi Jens,
+> NOTE NOTE NOTE! Totally untested. Is the second argument even in %edx? I 
+> don't remember, I didn't check, I'm just throwing this out as a "hey, 
+> maybe something _like_ this can work" patch, and will be immediately 
+> removing it from my machine after sending this email.
 > 
-> Please find below the new version of patch. I have removed inline from
-> cfq_should_wait_busy().
-> 
-> Please let me know if you prefer a seprate posting in new mail thread.
 
-No problem, actually I just hand-edited your previous patch when
-applying it. Sorry, should have said so!
+The second argument is in %edx, but unlike 64 bits, it is not loaded
+into that register a priory ("asmlinkage" means arguments are on the stack.)
 
--- 
-Jens Axboe
+As such, we need something looking like:
 
+#define PTREGSCALL0(name)	\
+ptregs_##name:			\
+	leal	4(%esp),%eax;	\
+	jmp sys_##name
+
+#define PTREGSCALL1(name)	\
+ptregs_##name:			\
+	movl	4(%esp),%eax;	\
+	leal	4(%esp),%edx;	\
+	jmp sys_##name
+
+#define PTREGSCALL2(name)	\
+ptregs_##name:			\
+	movl	4(%esp),%eax;	\
+	movl	8(%esp),%edx;	\
+	leal	4(%esp),%ecx;	\
+	jmp sys_##name
+
+If we need more than two arguments + pt_regs, then we have to set up a
+temporary stack frame.
+
+[Sorry, I'm sitting in a meeting so I can't actually write up a real patch]
+
+	-hpa
