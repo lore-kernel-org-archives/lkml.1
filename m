@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbZLIJ2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbZLIJaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752833AbZLIJ2I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:28:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbZLIJ2G
+	id S1752859AbZLIJaY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:30:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbZLIJaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:28:06 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:42584 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbZLIJ2D convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:28:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LiVog6mxaLdY+fjQRRbgvnXGJc+sRMQitD9YyXmjDzTHI7Wn5k2oViyLge3Cv3BAnb
-         M9ffocQ8M3nAgE0SaTUUnsnwLfHuIR5qXdq3HJFQPxdF3eGrY6SEu/KG34pXatb8UzD9
-         407+yxHs/skxvsDUUYAlXm8JjXR4qrZBgFPNU=
+	Wed, 9 Dec 2009 04:30:22 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52019 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752611AbZLIJaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:30:19 -0500
+Date: Wed, 9 Dec 2009 10:29:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Chinner <david@fromorbit.com>, Lachlan McIlroy <lachlan@sgi.com>
+Subject: Re: spinlock in completion_done() (was: Re: Async resume patch (was:
+ Re: [GIT PULL] PM updates for 2.6.33))
+Message-ID: <20091209092922.GC28428@elte.hu>
+References: <Pine.LNX.4.44L0.0912081633540.3046-100000@iolanthe.rowland.org>
+ <200912082248.14138.rjw@sisk.pl>
 MIME-Version: 1.0
-In-Reply-To: <1260350401-9858-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1260350401-9858-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Date: Wed, 9 Dec 2009 17:28:09 +0800
-Message-ID: <2375c9f90912090128k70f54ee1n99421caa81c53a8f@mail.gmail.com>
-Subject: Re: [PATCH] irq: handle irq0 special only on x86
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912082248.14138.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/9 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
-> I just noticed this when digging in the irq handling.  At least for arm
-> this doesn't make sense.  Not sure if x86 is the only arch this test
-> is valid for, but probably it is.
 
-No, it is not.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Try grep -Inr 'irq0' arch/*/kernel.
+> On Tuesday 08 December 2009, Alan Stern wrote:
+> > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > > BTW, is there a good reason why completion_done() doesn't use spin_lock_irqsave
+> > > and spin_unlock_irqrestore?  complete() and complete_all() use them, so why not
+> > > here?
+> > 
+> > And likewise in try_wait_for_completion().  It looks like a bug.  Maybe 
+> > these routines were not intended to be called with interrupts disabled, 
+> > but that requirement doesn't seem to be documented.  And it isn't a 
+> > natural requirement anyway.
+> 
+> OK, let's ask Ingo about that.
+> 
+> Ingo, is there any particular reason why completion_done() and
+> try_wait_for_completion() don't use spin_lock_irqsave() and
+> spin_unlock_irqrestore()?
 
+that's a bug that should be fixed - all the wakeup side (and atomic) 
+variants of completetion API should be irq safe.
 
->
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> ---
->  kernel/irq/spurious.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-> index 22b0a6e..4996b66 100644
-> --- a/kernel/irq/spurious.c
-> +++ b/kernel/irq/spurious.c
-> @@ -199,8 +199,10 @@ try_misrouted_irq(unsigned int irq, struct irq_desc *desc,
->        if (irqfixup < 2)
->                return 0;
->
-> +#if defined(CONFIG_ARCH_X86)
->        if (!irq)
->                return 1;
-> +#endif
->
->        /*
->         * Since we don't get the descriptor lock, "action" can
+It appears that these new completion APIs were added via the XFS tree 
+about a year ago:
+
+  39d2f1a: [XFS] extend completions to provide XFS object flush requirements
+
+Please Cc: scheduler folks to all scheduler patches.
+
+	Ingo
