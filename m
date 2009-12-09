@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbZLIHIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZLIHPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756976AbZLIHIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 02:08:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZLIHIr
+	id S1757057AbZLIHPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 02:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757006AbZLIHPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 02:08:47 -0500
-Received: from gate.crashing.org ([63.228.1.57]:33425 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752162AbZLIHIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 02:08:46 -0500
-Subject: Re: Badness at arch/powerpc/mm/pgtable.c:286
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: kordex - <kordex@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <8b8dd87a0912080914h3d71ea6x3052582b662d5f73@mail.gmail.com>
-References: <8b8dd87a0912080914h3d71ea6x3052582b662d5f73@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 18:08:44 +1100
-Message-ID: <1260342524.16132.28.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 9 Dec 2009 02:15:42 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56904 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756905AbZLIHPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 02:15:42 -0500
+Message-ID: <4B1F4E73.4000206@cn.fujitsu.com>
+Date: Wed, 09 Dec 2009 15:14:59 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH V4 0/10] tracing: use defined fields to print formats
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 19:14 +0200, kordex - wrote:
-> Hello,
-> 
-> I turned some debuging options in order to trace rcutree problems but
-> after turning debugging on it began just to loop on this:
-> 
-> http://xnet.fi/opt/pics/pgtable_badness.jpg
-> 1.5M   pgtable_badness.jpg
-> 
-> I am sorry that I could not produce full dmesg.
-> 
-> Kernel config: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.debug.config.txt
+It seems that ftrace_format_##call() and ftrace_define_fields_##call()
+are duplicate more or less.
 
-Thanks for your report.
+trace_define_field() defines fields and links them into
+strcut ftrace_event_call. We reuse them to print formats
+and remove ftrace_format_##call(). It make all things simpler.
 
-Does that patch fixes it ?
+Quote(From Steven):
+"""
+I totally agree that your patch is a nice clean up, and saves space and 
+prevents more bugs. On the other hand, we are changing an API to users 
+where all tools that parse this must be able to cope.
+"""
 
-powerpc/mm: Fix a WARN_ON() with CONFIG_DEBUG_PAGEALLOC and CONFIG_DEBUG_VM
+But now, this new patchset does not change any API to userspace.
+PATCH#1 fix a mistake of trace_kprobe's format. You can
 
-Set need to call __set_pte_at() and not set_pte_at() from __change_page_attr()
-since the later will perform checks with CONFIG_DEBUG_VM that aren't suitable
-to the way we override an existing PTE. (More specifically, it doesn't let
-you write over a present PTE).
+1) apply PATCH#1, compile, reboot with new kernel,
+   add kprobe_events, save all the format files.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+2) apply PATCH#2...10 additionally, compile, reboot with new kernel,
+   add kprobe_events, save all the format files.
+
+Take diffs of these two sets of format files, there are nothing changed.
+
+So, this patchset does not change any API.
+
+And this patchset does a nice cleanup and removes hunk of codes:
+# size vmlinux.o.old vmlinux.o
+   text    data     bss     dec     hex filename
+5640127  589938 1299464 7529529  72e439 vmlinux.o.old
+5620506  589938 1298888 7509332  729554 vmlinux.o
+
+Patches are partitioned for easy to review:
+PATCH#1~5 prepare (PATCH#2 fix a regression)
+PATCH#6 add "print_fmt" field to struct ftrace_event_call and and initialization code for it.
+PATCH#7 "print_fmt" initialization code for trace_syscalls
+PATCH#8 "print_fmt" initialization code for trace_kprobe
+PATCH#9 use defined fields and "print_fmt" to print formats
+PATCH#10 remove show_format and corresponding codes.
+
+This patchset is ready for 2.6.33.
+
+This patchset is applied upon Li Zefan's patchset:
+[PATCH 00/13] tracing: various cleanups and small fixes (updated).
+Because this patchset depends on [PATCH 01/13] and [PATCH 03/13] of this patchset.
+
+But if [PATCH 01/13] of Li Zefan's is not applied, it's OK that just
+don't apply PATCH#3 of mine.
+
+If [PATCH 03/13] of Li Zefan's is not applied, you should apply Frederic's
+[GIT PULL] tracing/kprobes: Fix field creation's bad error handling
+Because my patchset rely correct fields.
+
+Lai
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
-
-Index: linux-work/arch/powerpc/mm/pgtable_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/pgtable_32.c	2009-12-09 18:06:14.000000000 +1100
-+++ linux-work/arch/powerpc/mm/pgtable_32.c	2009-12-09 18:06:16.000000000 +1100
-@@ -356,7 +356,7 @@ static int __change_page_attr(struct pag
- 		return 0;
- 	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
- 		return -EINVAL;
--	set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
-+	__set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
- 	wmb();
- #ifdef CONFIG_PPC_STD_MMU
- 	flush_hash_pages(0, address, pmd_val(*kpmd), 1);
+ include/linux/ftrace_event.h  |    3
+ include/linux/syscalls.h      |    8 --
+ include/trace/ftrace.h        |  168 +++++++++---------------------------------
+ include/trace/syscall.h       |    4 -
+ kernel/trace/trace_events.c   |   71 ++++++++---------
+ kernel/trace/trace_export.c   |   94 ++++-------------------
+ kernel/trace/trace_kprobe.c   |  100 +++++++++----------------
+ kernel/trace/trace_syscalls.c |   94 +++++++++++------------
+ 8 files changed, 176 insertions(+), 366 deletions(-)
 
 
