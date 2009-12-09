@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966993AbZLIA3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967000AbZLIAhC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966993AbZLIA3E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 19:29:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966980AbZLIA26
+	id S967000AbZLIAhC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 19:37:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966987AbZLIAhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 19:28:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:49038 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966965AbZLIA25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 19:28:57 -0500
-Message-ID: <4B1EEF40.30609@redhat.com>
-Date: Tue, 08 Dec 2009 22:28:48 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-CC: Andy Walls <awalls@radix.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, superm1@ubuntu.com
-Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
- 	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
-References: <BDRae8rZjFB@christoph>	 <20091208042210.GA11147@core.coreip.homeip.net>	 <1260275743.3094.6.camel@palomino.walls.org>	 <4B1E54FF.8060404@redhat.com>	 <9e4733910912080547j75c2c885o29664470ff5e2c6a@mail.gmail.com>	 <4B1E5BDF.7010202@redhat.com>	 <9e4733910912080619t36089c9bg5e54114844b9694a@mail.gmail.com>	 <4B1E640B.6030705@redhat.com>	 <9e4733910912080756j7e1fac32qc552c6514a307b7d@mail.gmail.com>	 <4B1E7E56.80701@redhat.com> <9e4733910912081015he8b9b63o27ee802dea7adcfc@mail.gmail.com>
-In-Reply-To: <9e4733910912081015he8b9b63o27ee802dea7adcfc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Dec 2009 19:37:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58450 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966979AbZLIAhA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 19:37:00 -0500
+Date: Tue, 8 Dec 2009 16:35:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       spi-devel-general@lists.sourceforge.net,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Sascha Hauer <s.hauer@pengutronix.de>, Daniel Mack <daniel@caiaq.de>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] spi-imx: some updates
+Message-Id: <20091208163546.3354a7f5.akpm@linux-foundation.org>
+In-Reply-To: <fa686aa40912081625y3750a7fegbac38926182e38c6@mail.gmail.com>
+References: <20091208211258.GA13706@pengutronix.de>
+	<20091208153239.af0b5bb8.akpm@linux-foundation.org>
+	<fa686aa40912081625y3750a7fegbac38926182e38c6@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Smirl wrote:
+On Tue, 8 Dec 2009 17:25:59 -0700
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
->> I don't like the idea of automatically loading 3 different keycodes at the
->> same time. You may have overlaps between different keycode tables. The
->> better is to have some userspace GUI that will allow the user to select
->> what keycode table(s) he want to be available, if he decides to not use the
->> bundled IR.
-> 
-> Of course there is going to be overlap of the keycodes, but not the
-> scancodes. There should be almost 100% overlap.
+> I'm new to the job, so I'm being cautions about which things I'm pick
+> up.  However, I'll happily merge anything that Andrew says is okay.
 
-What prevents users to create overlaps at scancodes? We might add some
-protection, but, providing that different keycode tables can be used by
-different applications, why do we need to prevent it?
+oop.  If I'm going to send a patch to a subsystem maintainer I'll usually give
+it less attention than the ones I plan to merge myself.
 
-> The three maps are there to support a non-technical user, a
-> sophisticated user will disable two of them. This works because the
-> non-technical user is only going to use one of the three IR device
-> profiles. The other two may be loaded, but the user isn't sending any
-> IR signals that match their maps.
+Oh well, at least this way people will get their patches merged easily ;)
 
-I doubt you can map all cases with just three profiles.
+> Andrew, when in the merge window do you typically send out patch
+> queues?
 
-> 
-> Where this breaks down is if they are using SciAtlanta_DVR to control
-> MythTV and they also happen to have a physical Motorola DVR in the
-> same room. 
-> The Linux box is going to pick up the commands meant for
-> the Motorola DVR and both boxes will respond.. In that cause they will
-> need to figure figure out how to disable the Motorola DVR profile.
+Late.  I stage the -mm patches after linux-next so I spend most of the
+merge window waiting for people to get their stuff into mainline.
 
-I used to have a Set Top Box that has some broken code to decode IR. So,
-sometimes, when I used to press a key on my TV IR, the STB were getting
-the code, producing a really bad result. That's really bad.
-
-A normal user is able to click on some graphical application and
-select his IR model. The app may even have some photos or pictures
-representing the most used IR's. This is better than letting him to to
-to some forum, asking his friends, etc, trying to figure out why his
-PC is doing something wrong when he changes a channel on his TV.
-
-> But is a non-technical person likely to have two DVRs in the same
-> room?
-
-Well, I know someone that has an 8 year old children with a setup like this: 
-a PC monitor that has an IR, and a PC with a TV board also with IR.
-Of course, both the monitor and the PC are at the same room.
-
-Cheers,
-Mauro.
+Often there are stragglers who I need to route around.  It's usually
+not a significant problem though.
