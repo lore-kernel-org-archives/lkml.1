@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbZLIUrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZLIUsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbZLIUrb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 15:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757700AbZLIUr2
+	id S1757911AbZLIUsL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 15:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757770AbZLIUsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 15:47:28 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:45404 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757514AbZLIUr2 (ORCPT
+	Wed, 9 Dec 2009 15:48:03 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48385 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757514AbZLIUsB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 15:47:28 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=wU1V9hYgMWlIyIlTDESY6qdJOOE5u0CGlJa4EdF9LXcsQx1k7AXXDjDka9M4oYV1J
-	1A9Wtm7L4tC2c2dGPb/1w==
+	Wed, 9 Dec 2009 15:48:01 -0500
+X-Sasl-enc: bruPsgKcr7sBN8KYP0Ymgdf0dss2ss/3/TDRqUuFfkIC 1260391687
+Date: Wed, 9 Dec 2009 18:48:03 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dan Merillat <dan.merillat@gmail.com>
+Cc: Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@gmail.com>,
+       linux-kernel@vger.kernel.org, Norbert Preining <preining@logic.at>,
+       Tomasz Chmielewski <mangoo@wpkg.org>,
+       Sven-Haegar Koch <haegar@sdinet.de>, Dave Chinner <david@fromorbit.com>
+Subject: Re: Linux 2.6.31 - very swap-happy with plenty of free RAM
+Message-ID: <20091209204803.GD29575@khazad-dum.debian.net>
+References: <c0c067900911172356n2717ce9dn8a4231345903fde6@mail.gmail.com>
+ <2f11576a0911190636vd21069bv2fe4f22a57b3d333@mail.gmail.com>
+ <c0c067900911251513v48a34b18k73fb48f0e8d43c30@mail.gmail.com>
+ <4B0DDFDA.1030905@redhat.com>
+ <c0c067900912022016u32e393cw3fe9e04ba1051253@mail.gmail.com>
+ <c0c067900912071249y68c4c2bby90202bd5f467ea2c@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20091208211639.8499FB151F@basil.firstfloor.org>
-References: <200912081016.198135742@firstfloor.org>
-	 <20091208211639.8499FB151F@basil.firstfloor.org>
-Date: Wed, 9 Dec 2009 12:47:27 -0800
-Message-ID: <6599ad830912091247v1270a86er45ea8ceeff28e727@mail.gmail.com>
-Subject: Re: [PATCH] [23/31] HWPOISON: add memory cgroup filter
-From: Paul Menage <menage@google.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: kosaki.motohiro@jp.fujitsu.com, hugh.dickins@tiscali.co.uk,
-       nishimura@mxp.nes.nec.co.jp, balbir@linux.vnet.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, npiggin@suse.de,
-       fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c0c067900912071249y68c4c2bby90202bd5f467ea2c@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 1:16 PM, Andi Kleen <andi@firstfloor.org> wrote:
->
-> The hwpoison test suite need to inject hwpoison to a collection of
-> selected task pages, and must not touch pages not owned by them and
-> thus kill important system processes such as init. (But it's OK to
-> mis-hwpoison free/unowned pages as well as shared clean pages.
-> Mis-hwpoison of shared dirty pages will kill all tasks, so the test
-> suite will target all or non of such tasks in the first place.)
+On Mon, 07 Dec 2009, Dan Merillat wrote:
+> >> Can you try out the patch from
+> >> http://lkml.org/lkml/2009/11/25/467 ?
+> 
+> After a week of testing, that seems to have been the issue, thanks!
 
-While the functionality sounds useful, the interface (passing an inode
-number) feels a bit ugly to me. Also, if that group is deleted and a
-new cgroup created, you could end up reusing the inode number.
+In that case, is that patch being considered for stable@ ?
 
-How about an approach where you write either the cgroup path (relative
-to the memcg mount) or an fd open on the desired cgroup? Then you
-could store a (counted) css reference rather than an inode number,
-which would make the filter function cleaner too, since it would just
-need to compare css objects.
-
-Paul
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
