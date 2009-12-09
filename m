@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZLIId6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZLIIoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752039AbZLIId6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 03:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZLIId5
+	id S1752073AbZLIIoK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 03:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZLIIoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 03:33:57 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50866 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbZLIId4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 03:33:56 -0500
-Subject: Re: [patch V2 sched: Protect sched_rr_get_param access to
- task->sched_class
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.0912090930120.3089@localhost.localdomain>
-References: <20091208202026.804386447@linutronix.de>
-	 <1260345648.5489.65.camel@laptop> <1260345798.5489.70.camel@laptop>
-	 <alpine.LFD.2.00.0912090905210.3089@localhost.localdomain>
-	 <alpine.LFD.2.00.0912090930120.3089@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 09:33:56 +0100
-Message-ID: <1260347636.5489.103.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Dec 2009 03:44:09 -0500
+Received: from rere.qmqm.pl ([89.167.52.164]:33293 "EHLO rere.qmqm.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750976AbZLIIoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 03:44:08 -0500
+X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Dec 2009 03:44:08 EST
+Date: Wed, 9 Dec 2009 09:34:37 +0100
+From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org
+Subject: Re: [PATCH 3/7] mtrr: Remove use_intel()
+Message-ID: <20091209083437.GA27838@rere.qmqm.pl>
+References: <1-1000-25639-1260344705-9533@rere.qmqm.pl> <4-1000-25639-1260344705-9533@rere.qmqm.pl> <86802c440912090010q3aa9c701u75fbba19d43308e0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <86802c440912090010q3aa9c701u75fbba19d43308e0@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 09:32 +0100, Thomas Gleixner wrote:
-> sched_rr_get_param calls task->sched_class->get_rr_interval(task)
-> without protection against a concurrent sched_setscheduler() call
-> which modifies task->sched_class.
-> 
-> Serialize the access with task_rq_lock(task) and hand the rq pointer
-> into get_rr_interval() as it's needed at least in the sched_fair
-> implementation.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+On Wed, Dec 09, 2009 at 12:10:50AM -0800, Yinghai Lu wrote:
+> 2009/12/8 Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>:
+> > Remove use_intel() and use is_cpu(INTEL) instead.
+> >
+> > .use_intel_if is duplicating information already found in .vendor, as
+> > the only combinations used are:
+> >    generic: use_intel_if == 1, vendor == INTEL
+> >    amd/cyrix/centaur: use_intel_if == 0, vendor != INTEL
+> >
+[...]
+> can you check it with amd64 cpu?
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Unfortunately I don't have any AMD machines right now.
 
+Anyway, just to clarify why the change is a functional no-op: use_intel()
+and is_cpu(X) don't check the detected CPU vendor ID but look into mtrr_ops
+struct. For 64BIT build this means that use_intel() / is_cpu(INTEL) == true
+when mtrr_if != NULL, and all other is_cpu() == false because no other
+implementation could be choosen (amd/cyrix/centaur special cpu features are
+possible only in 32BIT).
+
+Best Regards,
+Micha³ Miros³aw
