@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbZLIBuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbZLIBuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbZLIBuu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 20:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZLIBut
+	id S1753606AbZLIBuV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 20:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZLIBuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 20:50:49 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:48885 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752850AbZLIBus convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 20:50:48 -0500
-MIME-Version: 1.0
-In-Reply-To: <1b68c6790912081647p39f0b285q2c164ab41c673aeb@mail.gmail.com>
-References: <20091208211258.GA13706@pengutronix.de> <20091208153239.af0b5bb8.akpm@linux-foundation.org> 
-	<fa686aa40912081625y3750a7fegbac38926182e38c6@mail.gmail.com> 
-	<1b68c6790912081647p39f0b285q2c164ab41c673aeb@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 8 Dec 2009 18:50:35 -0700
-X-Google-Sender-Auth: cda9e10fdb4b485b
-Message-ID: <fa686aa40912081750l18218736red1dd633a173f594@mail.gmail.com>
-Subject: Re: [spi-devel-general] [PATCH 0/5] spi-imx: some updates
-To: jassi brar <jassisinghbrar@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, Daniel Mack <daniel@caiaq.de>,
-       =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       spi-devel-general@lists.sourceforge.net,
-       linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 8 Dec 2009 20:50:17 -0500
+Received: from mga11.intel.com ([192.55.52.93]:45032 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753112AbZLIBuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 20:50:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,365,1257148800"; 
+   d="scan'208";a="521074604"
+Subject: Re: [PATCHv2 0/2] Introducing the Ambient Light Sensor (ALS) class
+From: Zhang Rui <rui.zhang@intel.com>
+To: Amit Kucheria <amit.kucheria@verdurent.com>
+Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
+       "jic23@cam.ac.uk" <jic23@cam.ac.uk>,
+       "alan@linux.intel.com" <alan@linux.intel.com>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20091208140005.GA3125@everest.lan>
+References: <1259581514-15356-1-git-send-email-amit.kucheria@verdurent.com>
+	 <37786d4b0912070650g7ba7604bv63365a21f980501d@mail.gmail.com>
+	 <20091207160432.3108e17b@hyperion.delvare>
+	 <20091208140005.GA3125@everest.lan>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Dec 2009 09:51:37 +0800
+Message-ID: <1260323497.27069.279.camel@rzhang1-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 5:47 PM, jassi brar <jassisinghbrar@gmail.com> wrote:
-> On Wed, Dec 9, 2009 at 9:25 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
->> I'm new to the job, so I'm being cautions about which things I'm pick
->> up.  However, I'll happily merge anything that Andrew says is okay.
->> Andrew, when in the merge window do you typically send out patch
->> queues?
->>
->
-> Grant, may I know of your tree, if it's public?
+On Tue, 2009-12-08 at 22:00 +0800, Amit Kucheria wrote:
+> On Mon, Dec 7, 2009 at 5:04 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> > On Mon, 7 Dec 2009 16:50:23 +0200, Amit Kucheria wrote:
+> >> On Mon, Nov 30, 2009 at 1:45 PM, Amit Kucheria
+> >> <amit.kucheria@verdurent.com> wrote:
+> >> > Introduce a new class of devices to handle ambient light sensors. Currently
+> >> > only one sysfs inteface, 'illuminance' is introduced. More will be added as
+> >> > drivers are ported to use this new class.
+> >> >
+> >> > Amit Kucheria (1):
+> >> >  als: add unique device-ids to the als device class
+> >> >
+> >> > Zhang Rui (1):
+> >> >  introduce ALS sysfs class
+> >> >
+> >> >  Documentation/ABI/testing/sysfs-class-als |    9 ++
+> >> >  MAINTAINERS                               |    6 ++
+> >> >  drivers/Kconfig                           |    2 +
+> >> >  drivers/Makefile                          |    1 +
+> >> >  drivers/als/Kconfig                       |   10 +++
+> >> >  drivers/als/Makefile                      |    5 +
+> >> >  drivers/als/als_sys.c                     |  116 +++++++++++++++++++++++++++++
+> >> >  include/linux/als_sys.h                   |   35 +++++++++
+> >> >  8 files changed, 184 insertions(+), 0 deletions(-)
+> >> >  create mode 100644 Documentation/ABI/testing/sysfs-class-als
+> >> >  create mode 100644 drivers/als/Kconfig
+> >> >  create mode 100644 drivers/als/Makefile
+> >> >  create mode 100644 drivers/als/als_sys.c
+> >> >  create mode 100644 include/linux/als_sys.h
+> >> >
+> >>
+> >> (Bump)
+> >>
+> >> Is there any blocker to adding this for 2.6.33?
+> >
+> > As far as I am concerned, it's ready to go. And I would love to see it
+> > in 2.6.33.
+> >
+> >> Which maintainer will pick up the ALS framework?
+> >
+> > As Rui volunteered to be the maintainer of this new subsystem, it would
+> > seem fair that he takes care of the initial push as well.
+> 
+> Rui,
+> 
+> Not sure about the LKML netiquette here, but I could track this patchset to
+> get it merged. Let me know.
 
-It's the next-spi branch of:
+that would be great.
 
-git://git.secretlab.ca/git/linux-2.6.git
+thanks,
+rui
 
-g.
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
