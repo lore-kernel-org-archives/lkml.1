@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbZLIXIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZLIXNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758652AbZLIXIm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 18:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758633AbZLIXIi
+	id S1758650AbZLIXNv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 18:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758561AbZLIXNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 18:08:38 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:49372 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758626AbZLIXIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 18:08:38 -0500
-Date: Thu, 10 Dec 2009 10:08:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: linux-next: manual merge of the staging tree with Linus' tree
-Message-Id: <20091210100838.70962a79.sfr@canb.auug.org.au>
-In-Reply-To: <20091209203018.GC8222@kroah.com>
-References: <20091209163435.244f7f1f.sfr@canb.auug.org.au>
-	<20091209203018.GC8222@kroah.com>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__10_Dec_2009_10_08_38_+1100_fTSNip_Gge9tv8tS"
+	Wed, 9 Dec 2009 18:13:46 -0500
+Received: from mail.digidescorp.com ([66.244.163.200]:42296 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758458AbZLIXNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 18:13:45 -0500
+X-Spam-Processed: digidescorp.com, Wed, 09 Dec 2009 17:13:53 -0600
+X-Authenticated-Sender: steve@digidescorp.com
+X-MDRemoteIP: 99.142.25.96
+X-Return-Path: prvs=159454a256=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+From: steve@digidescorp.com
+To: microblaze-uclinux@itee.uq.edu.au
+Cc: monstr@monstr.eu, linux-kernel@vger.kernel.org,
+       "Steven J. Magnani" <steve@digidescorp.com>
+Subject: [PATCH] microblaze: nommu: Don't clobber R11 on syscalls
+Date: Wed,  9 Dec 2009 17:13:42 -0600
+Message-Id: <1260400422-2805-1-git-send-email-steve@digidescorp.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__10_Dec_2009_10_08_38_+1100_fTSNip_Gge9tv8tS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The noMMU syscall trap has a bug that causes R11 to be zero on return to 
+userland. Remove the extra "save" of R11 responsible for the bug.
 
-Hi Greg,
+Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
+---
+diff -uprN a/arch/microblaze/kernel/entry-nommu.S b/arch/microblaze/kernel/entry-nommu.S
+--- a/arch/microblaze/kernel/entry-nommu.S	2009-12-09 17:05:11.000000000 -0600
++++ b/arch/microblaze/kernel/entry-nommu.S	2009-12-09 17:07:31.000000000 -0600
+@@ -208,7 +208,6 @@ ENTRY(_user_exception)
+ 	lwi	r1, r1, TS_THREAD_INFO		/* get the thread info */
+ 	/* calculate kernel stack pointer */
+ 	addik	r1, r1, THREAD_SIZE - PT_SIZE
+-	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
+ 	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
+ 2:
+ 	swi	r11, r1, PT_MODE		/* store the mode */
 
-On Wed, 9 Dec 2009 12:30:18 -0800 Greg KH <greg@kroah.com> wrote:
->
-> Thanks, I'll fix this up when I sync up with Linus later today.
-
-Thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__10_Dec_2009_10_08_38_+1100_fTSNip_Gge9tv8tS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksgLfYACgkQjjKRsyhoI8w/DgCfdGy/IxWZC1CXv6G54q2bWBDo
-VIQAniVkT9o/SksV3wsjaWakXgCgtrRa
-=BZBM
------END PGP SIGNATURE-----
-
---Signature=_Thu__10_Dec_2009_10_08_38_+1100_fTSNip_Gge9tv8tS--
