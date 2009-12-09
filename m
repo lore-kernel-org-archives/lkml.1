@@ -1,87 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZLITZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZLITZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457AbZLITZU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbZLITZO
+	id S1757541AbZLITZs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbZLITZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:25:14 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:63324 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757510AbZLITZJ convert rfc822-to-8bit (ORCPT
+	Wed, 9 Dec 2009 14:25:43 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:14437 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757513AbZLITZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:25:09 -0500
+	Wed, 9 Dec 2009 14:25:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eVnZFs9BiRrvZmJh9Ik1r1HMdstHWdnrUzlMrHu0z0+uVffjdBvgEbRkQY0TXhpNAz
-         Fuwh1BJWpH3gJsOgPJDGuS7Cseu1mV+EO08qG0jbVVKUjJB3KIsWfdIm3hmG0UnmaaKn
-         xEROFkWobXOyVv+JSg564IxTqIVUfD+49mUvE=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=wDtKDBdG70Qyw7aUX0jmdxn32/SqRsn1hr/p0rck2jjahrsfB1YFpfalLjZsugwpTW
+         TgdR95rWZQqfBYPxobooU9SUJR955xdUJsHqBqyMP43F+3t6lkh+rdunMtTNFiGRK7w1
+         nAhQ0kwjoQfjmBQ5jxX+BwOfdO4KfntPkHQW4=
+Message-ID: <4B1FF9A1.2040305@gmail.com>
+Date: Wed, 09 Dec 2009 20:25:21 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-13.1 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4B1FF27E.8030701@zytor.com>
-References: <20091203210913.GA24351@elte.hu>
-	 <alpine.LFD.2.00.0912081329460.3560@localhost.localdomain>
-	 <20091209073632.GD8187@elte.hu> <4B1FED0D.7060003@goop.org>
-	 <alpine.LFD.2.00.0912091039050.3560@localhost.localdomain>
-	 <4B1FF27E.8030701@zytor.com>
-Date: Wed, 9 Dec 2009 14:25:14 -0500
-Message-ID: <73c1f2160912091125s166219ddl56e7cbede800ac3@mail.gmail.com>
-Subject: Re: [GIT PULL] x86/paravirt for v2.6.33
-From: Brian Gerst <brgerst@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Neil Horman <nhorman@tuxdriver.com>, Oleg Nesterov <oleg@redhat.com>
+Subject: [PULL] pull request for writable limits for 2.6.33-rc0
+References: <4B1D32D1.4090404@gmail.com>
+In-Reply-To: <4B1D32D1.4090404@gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 9, 2009 at 1:54 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> On 12/09/2009 10:47 AM, Linus Torvalds wrote:
->>
->> NOTE NOTE NOTE! Totally untested. Is the second argument even in %edx? I
->> don't remember, I didn't check, I'm just throwing this out as a "hey,
->> maybe something _like_ this can work" patch, and will be immediately
->> removing it from my machine after sending this email.
->>
->
-> The second argument is in %edx, but unlike 64 bits, it is not loaded
-> into that register a priory ("asmlinkage" means arguments are on the stack.)
->
-> As such, we need something looking like:
->
-> #define PTREGSCALL0(name)       \
-> ptregs_##name:                  \
->        leal    4(%esp),%eax;   \
->        jmp sys_##name
->
-> #define PTREGSCALL1(name)       \
-> ptregs_##name:                  \
->        movl    4(%esp),%eax;   \
->        leal    4(%esp),%edx;   \
->        jmp sys_##name
->
-> #define PTREGSCALL2(name)       \
-> ptregs_##name:                  \
->        movl    4(%esp),%eax;   \
->        movl    8(%esp),%edx;   \
->        leal    4(%esp),%ecx;   \
->        jmp sys_##name
->
-> If we need more than two arguments + pt_regs, then we have to set up a
-> temporary stack frame.
->
-> [Sorry, I'm sitting in a meeting so I can't actually write up a real patch]
->
->        -hpa
+Hi,
 
-I had started working on a patchset like this when this issue came up
-the first time.  I'll get it up to date and send it out.  It would be
-nice if this could be done for all syscalls, so that
-asmlinkage_protect() isn't needed.
+I messed up the subject last time.
 
---
-Brian Gerst
+Now I rebased the tree to resolve conflicts, please pull.
+
+---
+The following changes since commit 2588465badb648a50cd19623f0dd0063c90d4e31:
+  Linus Torvalds (1):
+        Merge branch 'bkl-arch-for-linus' of
+git://git.kernel.org/.../tip/linux-2.6-tip
+
+are available in the git repository at:
+
+  git://decibel.fi.muni.cz/~xslaby/linux writable_limits
+
+Jiri Slaby (25):
+      SECURITY: selinux, fix update_rlimit_cpu parameter
+      SECURITY: add task_struct to setrlimit
+      core: add task_struct to update_rlimit_cpu
+      core: split sys_setrlimit
+      core: allow setrlimit to non-current tasks
+      core: optimize setrlimit for current task
+      FS: proc, switch limits reading to fops
+      FS: proc, make limits writable
+      core: do security check under task_lock
+      core: rename setrlimit to do_setrlimit
+      resource: move kernel functions inside __KERNEL__
+      core: posix-cpu-timers, cleanup rlimits usage
+      resource: add helpers for fetching rlimits
+      IA64: use helpers for rlimits
+      PPC: use helpers for rlimits
+      S390: use helpers for rlimits
+      SPARC: use helpers for rlimits
+      X86: use helpers for rlimits
+      FS: use helpers for rlimits
+      MM: use helpers for rlimits
+      core: use helpers for rlimits
+      misc: use helpers for rlimits
+      core: implement getprlimit and setprlimit syscalls
+      COMPAT: add get/put_compat_rlimit
+      x86: add ia32 compat prlimit syscalls
+
+Neil Horman (1):
+      unistd: add __NR_[get|set]prlimit syscall numbers
+
+Oleg Nesterov (1):
+      sys_setrlimit: make sure ->rlim_max never grows
+
+ arch/ia64/kernel/perfmon.c                     |    2 +-
+ arch/ia64/kernel/sys_ia64.c                    |    2 +-
+ arch/ia64/mm/init.c                            |    2 +-
+ arch/powerpc/mm/mmap_64.c                      |    4 +-
+ arch/powerpc/platforms/cell/spufs/coredump.c   |    2 +-
+ arch/s390/mm/mmap.c                            |    4 +-
+ arch/sparc/kernel/sys_sparc_64.c               |    6 +-
+ arch/x86/ia32/ia32_aout.c                      |    2 +-
+ arch/x86/ia32/ia32entry.S                      |    2 +
+ arch/x86/include/asm/unistd_32.h               |    4 +-
+ arch/x86/include/asm/unistd_64.h               |    4 +
+ arch/x86/kernel/syscall_table_32.S             |    2 +
+ arch/x86/mm/mmap.c                             |    4 +-
+ drivers/infiniband/core/umem.c                 |    2 +-
+ drivers/infiniband/hw/ipath/ipath_user_pages.c |    3 +-
+ fs/attr.c                                      |    2 +-
+ fs/binfmt_aout.c                               |    2 +-
+ fs/binfmt_flat.c                               |    2 +-
+ fs/exec.c                                      |    8 +-
+ fs/fcntl.c                                     |    2 +-
+ fs/file.c                                      |    2 +-
+ fs/proc/array.c                                |    4 +-
+ fs/proc/base.c                                 |  101 ++++++++++++++--
+ fs/select.c                                    |    2 +-
+ include/asm-generic/unistd.h                   |    6 +-
+ include/linux/Kbuild                           |    2 +-
+ include/linux/posix-timers.h                   |    2 +-
+ include/linux/resource.h                       |   10 ++-
+ include/linux/sched.h                          |   22 ++++
+ include/linux/security.h                       |    9 +-
+ include/linux/syscalls.h                       |    4 +
+ ipc/mqueue.c                                   |    2 +-
+ ipc/shm.c                                      |    3 +-
+ kernel/compat.c                                |   91 +++++++++++---
+ kernel/fork.c                                  |   10 +-
+ kernel/perf_event.c                            |    2 +-
+ kernel/posix-cpu-timers.c                      |   52 ++++----
+ kernel/sched.c                                 |    4 +-
+ kernel/sched_rt.c                              |    5 +-
+ kernel/signal.c                                |    2 +-
+ kernel/sys.c                                   |  161
++++++++++++++++++++----
+ mm/filemap.c                                   |    2 +-
+ mm/mlock.c                                     |   12 +-
+ mm/mmap.c                                      |   13 +-
+ mm/mremap.c                                    |    2 +-
+ security/capability.c                          |    3 +-
+ security/security.c                            |    5 +-
+ security/selinux/hooks.c                       |   10 +-
+ 48 files changed, 451 insertions(+), 153 deletions(-)
