@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756998AbZLIShT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbZLISji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756998AbZLIShT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbZLIShP
+	id S1756989AbZLISji (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbZLISjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:37:15 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:40850 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756523AbZLIShN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:37:13 -0500
-Message-ID: <4B1FEE5C.1030303@sgi.com>
-Date: Wed, 09 Dec 2009 10:37:16 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 9 Dec 2009 13:39:32 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55209 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756843AbZLISjb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 13:39:31 -0500
+Date: Wed, 9 Dec 2009 10:38:51 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickens <hugh@veritas.com>
+Subject: Re: [GIT PULL] x86/paravirt for v2.6.33
+In-Reply-To: <wqm7jny7wc4aessgbtsgv0bw.1260383370120@email.android.com>
+Message-ID: <alpine.LFD.2.00.0912091032380.3560@localhost.localdomain>
+References: <wqm7jny7wc4aessgbtsgv0bw.1260383370120@email.android.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: tony.luck@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <JBeulich@novell.com>, Tejun Heo <tj@kernel.org>,
-       linux-mm@kvack.org, Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm/vmalloc: don't use vmalloc_end
-References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1E1B1B0200007800024345@vpn.id2.novell.com> <alpine.DEB.2.00.0912091128280.16491@router.home> <4B1FE81F.30408@sgi.com> <alpine.DEB.2.00.0912091218060.16491@router.home>
-In-Reply-To: <alpine.DEB.2.00.0912091218060.16491@router.home>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Christoph Lameter wrote:
-> On Wed, 9 Dec 2009, Mike Travis wrote:
-> 
->>> Tony: Can you confirm that the new percpu stuff works on IA64? (Or is
->>> there nobody left to care?)
->> Christoph,  I have access to a 640p system for a couple more weeks if
->> there's anything you'd like me to check out.
-> 
-> Boot with 2.6.32 and see if the per cpu allocator works. Check if there
-> are any changes to memory consumption. Create a few thousand virtual
-> ethernet devices and see if the system keels over.
+On Wed, 9 Dec 2009, H. Peter Anvin wrote:
+> "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
+> >
+> >But I'm not sure I understand the objection to task_pt_regs(); is it 
+> >considered deprecated?   This patch received quite a lot of discussion 
+> >with no mention of it.  Should we consider all its uses as suspect?
 
-Any advice on how to go about the above would be helpful... ;-)
+I personally would be much happier without ever seeing a single 
+task_pt_regs() call outside of pure ptrace() users (and quite frankly, 
+even there I'd be happier if it was basically done once, and then 'struct 
+pt_regs' being passed around as an argument as much as possible).
 
-> 
-> It may also be good to run some scheduler test. Compare AIM9 of latest
-> SLES with 2.6.32. Concurrent page fault test? Then a performance test with
-> lots of concurrency but the usual stuff wont work since HPC apps usually
-> pin.
+In the case of 'ptrace' we control the stack of the tracee. 
 
-I'm doing some aim7/9 comparisons right now between SPARSE and DISCONTIG
-memory configs using sles11 + 2.6.32.  Which other benchmarks would you
-recommend for the other tests?
+In other cases, we do _not_.
 
-> 
-> Run latencytest (available in the lldiag package) from
-> kernel.org/pub/linux/kernel/people/christoph/lldiag and see how the
-> disturbances by the OS are changed.
+For example, think about us ever implementing 'tasklets' or async system 
+calls in general. It's _very_ possible that we'd have a special stolen 
+stack for them, and run the low-level system call function from that 
+stack. Then something like task_pt_regs() migth very well do the wrong 
+thing.
 
-I'll put that on the list.
+Now, I'm not saying that 'sys_iopl()' would ever be a valid target for 
+async system calls, but I _am_ saying that system calls that depend on 
+task_pt_regs() are fundamnetally fragile and broken, and have subtle 
+interactions.
+
+In contrast, if you make it very explicit that the system call gets passed 
+a pointer to its pt_regs, then it still has all the same issues, but now 
+it's not subtle any more - now it's explicitly encoded in the call 
+sequence on both the caller and callee sides, and somebody doing tasklets 
+would hopefully see that "oh, iopl() has that same special thing that 
+fork/clone/vfork/execve has, and touches the stack frame register set 
+explicitly".
+
+			Linus
