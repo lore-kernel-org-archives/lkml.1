@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZLINif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZLINjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbZLINif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 08:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZLINid
+	id S1755978AbZLINjf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 08:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbZLINje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 08:38:33 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:51653 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755489AbZLINid (ORCPT
+	Wed, 9 Dec 2009 08:39:34 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44912 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755800AbZLINjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 08:38:33 -0500
-Date: Wed, 9 Dec 2009 13:38:30 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-Message-ID: <20091209133829.GF9018@sirena.org.uk>
-References: <alpine.LFD.2.00.0912081420220.3560@localhost.localdomain> <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
-X-Cookie: Include me out.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+	Wed, 9 Dec 2009 08:39:33 -0500
+Subject: Re: [RFC][PATCHSET] mremap/mmap mess
+From: Peter Zijlstra <peterz@infradead.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       David Miller <davem@davemloft.net>, Ollie Wild <aaw@google.com>,
+       Rik van Riel <riel@redhat.com>, viro@ftp.linux.org.uk,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20091209132436.GQ14381@ZenIV.linux.org.uk>
+References: <20091208060701.GM14381@ZenIV.linux.org.uk>
+	 <Pine.LNX.4.64.0912081142280.31223@sister.anvils>
+	 <Pine.LNX.4.64.0912081254500.3365@sister.anvils>
+	 <20091208.130802.25121122.davem@davemloft.net>
+	 <20091208220638.GN14381@ZenIV.linux.org.uk>
+	 <Pine.LNX.4.64.0912091041250.23659@sister.anvils>
+	 <1260361302.5489.372.camel@laptop>
+	 <20091209132436.GQ14381@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Dec 2009 14:39:18 +0100
+Message-ID: <1260365958.5489.546.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 09:35:59PM -0500, Alan Stern wrote:
-> On Tue, 8 Dec 2009, Linus Torvalds wrote:
+On Wed, 2009-12-09 at 13:24 +0000, Al Viro wrote:
 
-> > It's just that I think the "looping over children" is ugly, when I think 
-> > that by doing it the other way around you can make the code simpler and 
-> > only depend on the PM device list and a simple parent pointer access.
+> > That is, IIRC the problem is that you need to have the argc/env in place
+> > for the binfmt engine thing, and need to have ran the binfmt engine
+> > thing before you know the personality.
+> > 
+> > As to your idea, if that were feasible we could do without the copy and
+> > simply steal the pages directly from the old mm.
+> 
+> *raised brows*
+> Old mm may bloody well be still shared, so I'd be vary of trying that -
+> there's a lot of nasty surprises we could get on that way.
 
-> I agree that it is uglier.  The only advantage is in handling
-> asynchronous non-tree suspend dependencies, of which we probably won't
-> have very many.  In fact, I don't know of _any_ offhand.
+Good point, but I think we might be able to do the copy from old to new
+in flush_old_exec() if we can get the binfmt things to pass the right
+address along (or set it in the brpm struct). It looks like it has clue
+about personality at that point.
 
-There's some potential for this in embedded audio - it wants to bring
-down the entire embedded audio subsystem at once before the individual
-devices (and their parents) get suspended since bringing them down out
-of sync can result in audible artifacts.  Depending on the system the
-suspend may take a noticable amount of time so it'd be nice to be able
-to run it asynchronously, though we don't currently do so.
-
-At the minute we get away with this mostly through not being able to
-represent the cases that are likely to actually trip up over it.
-
-> Interestingly, this non-tree dependency problem does not affect resume.
-
-Embedded audio does potentially - the resume needs all the individual
-devices in the subsystem and can take a substantial proportion of the
-overall resume time.  Currently we get away with a combination of
-assuming that all the drivers are live when we decide to start resuming
-them and using the ALSA userspace API to deal with bringing the resume
-out of line, but it's not ideal.
