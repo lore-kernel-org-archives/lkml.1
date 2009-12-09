@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZLINzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZLIN4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbZLINzM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 08:55:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZLINzK
+	id S1756104AbZLIN4f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 08:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbZLIN4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 08:55:10 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:49954 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755987AbZLINzJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 08:55:09 -0500
-Message-ID: <4B1FABFB.8090107@gmail.com>
-Date: Wed, 09 Dec 2009 14:54:03 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Wed, 9 Dec 2009 08:56:34 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:56847 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755989AbZLIN4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 08:56:33 -0500
+Date: Wed, 9 Dec 2009 14:56:39 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: jmoyer@redhat.com, linux-kernel@vger.kernel.org,
+       guijianfeng@cn.fujitsu.com
+Subject: Re: [PATCH 2/2] cfq-iosched: Take care of corner cases of group
+	losing share due to deletion
+Message-ID: <20091209135639.GW8742@kernel.dk>
+References: <1260312778-4725-1-git-send-email-vgoyal@redhat.com> <1260312778-4725-2-git-send-email-vgoyal@redhat.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] kmemcheck: make bitfield annotations truly no-ops when
- disabled
-References: <1260121333-19642-1-git-send-email-vegard.nossum@gmail.com> <20091207141356.9e83fd5b.akpm@linux-foundation.org> <4B1FA6B6.8070701@cs.helsinki.fi>
-In-Reply-To: <4B1FA6B6.8070701@cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 09 Dec 2009 14:54:05 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260312778-4725-2-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 09/12/2009 14:31, Pekka Enberg a écrit :
-
+On Tue, Dec 08 2009, Vivek Goyal wrote:
+> If there is a sequential reader running in a group, we wait for next request
+> to come in that group after slice expiry and once new request is in, we expire
+> the queue. Otherwise we delete the group from service tree and group looses
+> its fair share.
 > 
-> I guess so. Eric, how bad is the regression?
+> So far I was marking a queue as wait_busy if it had consumed its slice and
+> it was last queue in the group. But this condition did not cover following
+> two cases.
 > 
+> 1.If a request completed and slice has not expired yet. Next request comes
+>   in and is dispatched to disk. Now select_queue() hits and slice has expired.
+>   This group will be deleted. Because request is still in the disk, this queue
+>   will never get a chance to wait_busy.
+> 
+> 2.If request completed and slice has not expired yet. Before next request
+>   comes in (delay due to think time), select_queue() hits and expires the
+>   queue hence group. This queue never got a chance to wait busy.
+> 
+> Gui was hitting the boundary condition 1 and not getting fairness numbers
+> proportional to weight.
+> 
+> This patch puts the checks for above two conditions and improves the fairness
+> numbers for sequential workload on rotational media. Check in select_queue()
+> takes care of case 1 and additional check in should_wait_busy() takes care
+> of case 2.
 
-Not too bad, skbuff one was separately addressed.
+I think this (and 1/2) look fine, just one minor comment:
 
-http://git2.kernel.org/?p=linux/kernel/git/davem/net-next-2.6.git;a=commitdiff;h=14d18a81b5171d4433e41129619c75748b4f4d26
+> @@ -3250,6 +3264,36 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
+>  		cfqd->hw_tag = 0;
+>  }
+>  
+> +static inline bool
+> +cfq_should_wait_busy(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+> +{
+
+That's too large to inline.
+
+-- 
+Jens Axboe
+
