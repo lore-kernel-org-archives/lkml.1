@@ -1,159 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZLIJ6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbZLIJ6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbZLIJ6o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZLIJ6l
+	id S1754744AbZLIJ6G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:58:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZLIJ6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:58:41 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61389 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754608AbZLIJ6i convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:58:38 -0500
-Message-ID: <4B1F746F.8040907@cn.fujitsu.com>
-Date: Wed, 09 Dec 2009 17:57:03 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 9 Dec 2009 04:58:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45780 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754663AbZLIJ5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:57:54 -0500
+Date: Wed, 9 Dec 2009 09:57:13 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       lizf@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, laijs@cn.fujitsu.com, mhiramat@redhat.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, laijs@cn.fujitsu.com, mhiramat@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <1260263815-5167-1-git-send-regression-fweisbec@gmail.com>
+References: <1260263815-5167-1-git-send-regression-fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] tracing/kprobes: Fix field creation's bad error handling
+Message-ID: <tip-822a6961112f0c9101d3359d8524604c3309ee6c@git.kernel.org>
+Git-Commit-ID: 822a6961112f0c9101d3359d8524604c3309ee6c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Xiao Guangrong <ericxiao.gr@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, T??r??k Edwin <edwintorok@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3] perf/sched: fix for getting task's execution time
-References: <4B1B8E0E.3040007@cn.fujitsu.com> <1260097512.7818.341.camel@laptop> <1260097609.7818.349.camel@laptop> <4B1BE588.8020608@gmail.com> <4B1CACC4.3030709@cn.fujitsu.com> <20091207073043.GH10868@elte.hu> <4B1F7322.80103@cn.fujitsu.com>
-In-Reply-To: <4B1F7322.80103@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In current code, task's execute time is got by reading
-'/proc/<pid>/sched' file, it's wrong if the task is created
-by pthread_create(), because every thread task has same pid.
+Commit-ID:  822a6961112f0c9101d3359d8524604c3309ee6c
+Gitweb:     http://git.kernel.org/tip/822a6961112f0c9101d3359d8524604c3309ee6c
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Tue, 8 Dec 2009 10:00:04 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 9 Dec 2009 10:32:21 +0100
 
-This way also has two demerits:
+tracing/kprobes: Fix field creation's bad error handling
 
-1: 'perf sched replay' can't work if the kernel not compile
-    with 'CONFIG_SCHED_DEBUG' option
-2: perf tool should depend on proc file system
+When we define the common event fields in kprobe, we invert the error
+handling and return immediately in case of success. Then we omit
+to define specific kprobes fields (ip and nargs), and specific
+kretprobes fields (func, ret_ip, nargs). And we only define them
+when we fail to create common fields.
 
-So, this patch use PERF_COUNT_SW_TASK_CLOCK to get task's
-execution time instead of reading /proc file
+The most visible consequence is that we can't create filter for
+k(ret)probes specific fields.
 
-Changelog v2 -> v3:
-use PERF_COUNT_SW_TASK_CLOCK instead of rusage() as Ingo's suggestion
+This patch re-invert the success/error handling to fix it.
 
-Reported-by: Török Edwin <edwintorok@gmail.com>
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Reported-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <1260263815-5167-1-git-send-regression-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/builtin-sched.c |   55 +++++++++++++++++++++----------------------
- 1 files changed, 27 insertions(+), 28 deletions(-)
+ kernel/trace/trace_kprobe.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 19f43fa..b12b23a 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -13,7 +13,6 @@
- #include "util/debug.h"
- #include "util/data_map.h"
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index bf05fb4..b52d397 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -1133,7 +1133,7 @@ static int kprobe_event_define_fields(struct ftrace_event_call *event_call)
+ 	struct trace_probe *tp = (struct trace_probe *)event_call->data;
  
--#include <sys/types.h>
- #include <sys/prctl.h>
+ 	ret = trace_define_common_fields(event_call);
+-	if (!ret)
++	if (ret)
+ 		return ret;
  
- #include <semaphore.h>
-@@ -414,34 +413,33 @@ static u64 get_cpu_usage_nsec_parent(void)
- 	return sum;
- }
+ 	DEFINE_FIELD(unsigned long, ip, FIELD_STRING_IP, 0);
+@@ -1151,7 +1151,7 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
+ 	struct trace_probe *tp = (struct trace_probe *)event_call->data;
  
--static u64 get_cpu_usage_nsec_self(void)
-+static int self_open_counters(void)
- {
--	char filename [] = "/proc/1234567890/sched";
--	unsigned long msecs, nsecs;
--	char *line = NULL;
--	u64 total = 0;
--	size_t len = 0;
--	ssize_t chars;
--	FILE *file;
--	int ret;
-+	struct perf_event_attr attr;
-+	int fd;
+ 	ret = trace_define_common_fields(event_call);
+-	if (!ret)
++	if (ret)
+ 		return ret;
  
--	sprintf(filename, "/proc/%d/sched", getpid());
--	file = fopen(filename, "r");
--	BUG_ON(!file);
-+	memset(&attr, 0, sizeof(attr));
- 
--	while ((chars = getline(&line, &len, file)) != -1) {
--		ret = sscanf(line, "se.sum_exec_runtime : %ld.%06ld\n",
--			&msecs, &nsecs);
--		if (ret == 2) {
--			total = msecs*1e6 + nsecs;
--			break;
--		}
--	}
--	if (line)
--		free(line);
--	fclose(file);
-+	attr.type = PERF_TYPE_SOFTWARE;
-+	attr.config = PERF_COUNT_SW_TASK_CLOCK;
- 
--	return total;
-+	fd = sys_perf_event_open(&attr, 0, -1, -1, 0);
-+
-+	if (fd < 0)
-+		die("Error: sys_perf_event_open() syscall returned"
-+		    "with %d (%s)\n", fd, strerror(errno));
-+	return fd;
-+}
-+
-+static u64 get_cpu_usage_nsec_self(int fd)
-+{
-+	u64 runtime;
-+	int ret;
-+
-+	ret = read(fd, &runtime, sizeof(runtime));
-+	BUG_ON(ret != sizeof(runtime));
-+
-+	return runtime;
- }
- 
- static void *thread_func(void *ctx)
-@@ -450,9 +448,11 @@ static void *thread_func(void *ctx)
- 	u64 cpu_usage_0, cpu_usage_1;
- 	unsigned long i, ret;
- 	char comm2[22];
-+	int fd;
- 
- 	sprintf(comm2, ":%s", this_task->comm);
- 	prctl(PR_SET_NAME, comm2);
-+	fd = self_open_counters();
- 
- again:
- 	ret = sem_post(&this_task->ready_for_work);
-@@ -462,16 +462,15 @@ again:
- 	ret = pthread_mutex_unlock(&start_work_mutex);
- 	BUG_ON(ret);
- 
--	cpu_usage_0 = get_cpu_usage_nsec_self();
-+	cpu_usage_0 = get_cpu_usage_nsec_self(fd);
- 
- 	for (i = 0; i < this_task->nr_events; i++) {
- 		this_task->curr_event = i;
- 		process_sched_event(this_task, this_task->atoms[i]);
- 	}
- 
--	cpu_usage_1 = get_cpu_usage_nsec_self();
-+	cpu_usage_1 = get_cpu_usage_nsec_self(fd);
- 	this_task->cpu_usage = cpu_usage_1 - cpu_usage_0;
--
- 	ret = sem_post(&this_task->work_done_sem);
- 	BUG_ON(ret);
- 
--- 
-1.6.1.2
-
-
+ 	DEFINE_FIELD(unsigned long, func, FIELD_STRING_FUNC, 0);
