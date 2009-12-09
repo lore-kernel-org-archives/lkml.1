@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbZLITE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZLITFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757236AbZLITE5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:04:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbZLITEv
+	id S1757298AbZLITFG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:05:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbZLITFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:04:51 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48503 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756948AbZLITEo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:04:44 -0500
-Message-ID: <4B1FF48B.4020202@zytor.com>
-Date: Wed, 09 Dec 2009 11:03:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Wed, 9 Dec 2009 14:05:03 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:44615 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756994AbZLITFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:05:00 -0500
+Date: Wed, 9 Dec 2009 20:05:07 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was
+	delayed
+Message-ID: <20091209190506.GY8742@kernel.dk>
+References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com> <x49hbs1fir5.fsf@segfault.boston.devel.redhat.com> <4e5e476b0912081246w32a9ae1bw7d49b0285719b22e@mail.gmail.com> <x49k4wwnhbh.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Micha? Miros?aw <mirq-linux@rere.qmqm.pl>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, x86@kernel.org
-Subject: Re: [PATCH 3/7] mtrr: Remove use_intel()
-References: <1-1000-25639-1260344705-9533@rere.qmqm.pl>	 <4-1000-25639-1260344705-9533@rere.qmqm.pl>	 <86802c440912090010q3aa9c701u75fbba19d43308e0@mail.gmail.com>	 <20091209085224.GB5129@elte.hu> <86802c440912091032q5fabe27ag9a699e484828a0e6@mail.gmail.com>
-In-Reply-To: <86802c440912091032q5fabe27ag9a699e484828a0e6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <x49k4wwnhbh.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/09/2009 10:32 AM, Yinghai Lu wrote:
-> /*
->  * Generic structure...
->  */
-> struct mtrr_ops generic_mtrr_ops = {
->         .use_intel_if           = 1,
->         .set_all                = generic_set_all,
+On Wed, Dec 09 2009, Jeff Moyer wrote:
+> Corrado Zoccolo <czoccolo@gmail.com> writes:
 > 
-> so all cpus that cpuid tell us that there is mtrr support, will all
-> have use_intel() == 1
+> > Hi Jeff,
+> > On Tue, Dec 8, 2009 at 7:00 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> >> Corrado Zoccolo <czoccolo@gmail.com> writes:
+> >>
+> >>> The introduction of ramp-up formula for async queue depths has
+> >>> slowed down dirty page reclaim, by reducing async write performance.
+> >>> This patch makes sure the formula kicks in only when sync request
+> >>> was recently delayed.
+> >>> @@ -3706,7 +3707,7 @@ static void *cfq_init_queue(struct request_queue *q)
+> >>>       cfqd->cfq_latency = 1;
+> >>>       cfqd->cfq_group_isolation = 0;
+> >>>       cfqd->hw_tag = -1;
+> >>> -     cfqd->last_end_sync_rq = jiffies;
+> >>> +     cfqd->last_delayed_sync = jiffies - HZ;
+> >>
+> >> So, umm, what's that about?
+> >
+> > Previously, when cfq started, it started in a state where writes were
+> > completely throttled. Now, we optimistically prefer to start with a
+> > reasonable max depth (10)
+> 
+> OK.  Can we put a comment in there and change the initialization to
+> cfq_slice_sync * 10?
 
-Yes, because the right thing to check isn't the CPU vendor bit but the
-CPU feature bits -- all CPUs that have the MTRR feature bit are using
-the "Intel interface" -- regardless of if they are made by Intel, AMD,
-VIA, or Transmeta.  The older AMD, Cyrix etc. interfaces use different bits.
+Agree, that would be MUCH easier to understand.
 
-	-hpa
+-- 
+Jens Axboe
 
