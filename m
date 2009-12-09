@@ -1,79 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZLIKBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbZLIKEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbZLIKBd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 05:01:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbZLIKBa
+	id S1754669AbZLIKEI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 05:04:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbZLIKEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 05:01:30 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:28907 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753239AbZLIKB2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 05:01:28 -0500
-Subject: Re: [PATCH 1/9] Squashfs: move zlib decompression wrapper code
- into a separate file
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       phillip.lougher@gmail.com, tim.bird@am.sony.com
-In-Reply-To: <4B1ED122.3040309@lougher.demon.co.uk>
-References: <E1NHTHg-0001sM-NQ@dylan.lougher.demon.co.uk>
-	 <20091207145705.cd30cae8.akpm@linux-foundation.org>
-	 <4B1ED122.3040309@lougher.demon.co.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 12:00:52 +0200
-Message-Id: <1260352852.19669.1253.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 09 Dec 2009 10:00:58.0183 (UTC) FILETIME=[8147D570:01CA78B6]
-X-Nokia-AV: Clean
+	Wed, 9 Dec 2009 05:04:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48301 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753525AbZLIKED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 05:04:03 -0500
+Date: Wed, 9 Dec 2009 10:03:32 GMT
+From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, edwintorok@gmail.com,
+       xiaoguangrong@cn.fujitsu.com, ericxiao.gr@gmail.com, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, peterz@infradead.org,
+       edwintorok@gmail.com, xiaoguangrong@cn.fujitsu.com,
+       ericxiao.gr@gmail.com, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4B1F7322.80103@cn.fujitsu.com>
+References: <4B1F7322.80103@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf sched: Fix for getting task's execution time
+Message-ID: <tip-c0c9e72150c07b4a6766cd24a6f685ec2dc9c343@git.kernel.org>
+Git-Commit-ID: c0c9e72150c07b4a6766cd24a6f685ec2dc9c343
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 22:20 +0000, Phillip Lougher wrote:
-> Andrew Morton wrote:
-> > On Mon, 07 Dec 2009 02:25:08 +0000
-> > Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
-> > 
-> >> +
-> >> +int zlib_uncompress(struct squashfs_sb_info *msblk, void **buffer,
-> >> +	struct buffer_head **bh, int b, int offset, int length, int srclength,
-> >> +	int pages)
-> > 
-> > This isn't a very good function name.  zlib_uncompress() now becomes a
-> > kernel-wide identifier, but it's part of squashfs, not part of zlib.
-> > 
-> > Maybe that gets fixed in a later patch.  If so, thwap me.
-> > 
-> 
-> Yes, they get fixed up in [PATCH 3/9] Squashfs: add a decompressor framework.
-> That patch makes the functions static, and instead exports them via a
-> suitably named decompressor ops structure.
-> 
-> +const struct squashfs_decompressor squashfs_zlib_comp_ops = {
-> +	.init = zlib_init,
-> +	.free = zlib_free,
-> +	.decompress = zlib_uncompress,
-> +	.id = ZLIB_COMPRESSION,
-> +	.name = "zlib",
-> +	.supported = 1
-> +};
-> 
-> I split the patches up to make them easier to review.  The first two patches
-> move the zlib code out to a separate file (ready for adding the framework).
-> The third patch adds the framework.  At the time of the second patch, however,
-> to not break compilation, the functions have to be global.  In hindsight
-> I should have made named the functions squashfs_xxx, and removed the squashfs_
-> when they were made static in the third patch.
+Commit-ID:  c0c9e72150c07b4a6766cd24a6f685ec2dc9c343
+Gitweb:     http://git.kernel.org/tip/c0c9e72150c07b4a6766cd24a6f685ec2dc9c343
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Wed, 9 Dec 2009 17:51:30 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 9 Dec 2009 10:59:12 +0100
 
-Did you consider using cryptoapi? UBIFS uses zlib/lzo in cryptoapi - it
-is a very clean way.
+perf sched: Fix for getting task's execution time
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+In current code, task's execute time is got by reading
+'/proc/<pid>/sched' file, it's wrong if the task is created
+by pthread_create(), because every thread task has same pid.
 
+This way also has two demerits:
+
+ 1: 'perf sched replay' can't work if the kernel is not
+    compiled with the 'CONFIG_SCHED_DEBUG' option
+
+ 2: perf tool should depend on proc file system
+
+So, this patch uses PERF_COUNT_SW_TASK_CLOCK to get task's
+execution time instead of reading /proc file.
+
+Changelog v2 -> v3:
+use PERF_COUNT_SW_TASK_CLOCK instead of rusage() as Ingo's
+suggestion
+
+Reported-by: Torok Edwin <edwintorok@gmail.com>
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Xiao Guangrong <ericxiao.gr@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <4B1F7322.80103@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/builtin-sched.c |   55 +++++++++++++++++++++----------------------
+ 1 files changed, 27 insertions(+), 28 deletions(-)
+
+diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
+index 19f43fa..b12b23a 100644
+--- a/tools/perf/builtin-sched.c
++++ b/tools/perf/builtin-sched.c
+@@ -13,7 +13,6 @@
+ #include "util/debug.h"
+ #include "util/data_map.h"
+ 
+-#include <sys/types.h>
+ #include <sys/prctl.h>
+ 
+ #include <semaphore.h>
+@@ -414,34 +413,33 @@ static u64 get_cpu_usage_nsec_parent(void)
+ 	return sum;
+ }
+ 
+-static u64 get_cpu_usage_nsec_self(void)
++static int self_open_counters(void)
+ {
+-	char filename [] = "/proc/1234567890/sched";
+-	unsigned long msecs, nsecs;
+-	char *line = NULL;
+-	u64 total = 0;
+-	size_t len = 0;
+-	ssize_t chars;
+-	FILE *file;
+-	int ret;
++	struct perf_event_attr attr;
++	int fd;
+ 
+-	sprintf(filename, "/proc/%d/sched", getpid());
+-	file = fopen(filename, "r");
+-	BUG_ON(!file);
++	memset(&attr, 0, sizeof(attr));
+ 
+-	while ((chars = getline(&line, &len, file)) != -1) {
+-		ret = sscanf(line, "se.sum_exec_runtime : %ld.%06ld\n",
+-			&msecs, &nsecs);
+-		if (ret == 2) {
+-			total = msecs*1e6 + nsecs;
+-			break;
+-		}
+-	}
+-	if (line)
+-		free(line);
+-	fclose(file);
++	attr.type = PERF_TYPE_SOFTWARE;
++	attr.config = PERF_COUNT_SW_TASK_CLOCK;
+ 
+-	return total;
++	fd = sys_perf_event_open(&attr, 0, -1, -1, 0);
++
++	if (fd < 0)
++		die("Error: sys_perf_event_open() syscall returned"
++		    "with %d (%s)\n", fd, strerror(errno));
++	return fd;
++}
++
++static u64 get_cpu_usage_nsec_self(int fd)
++{
++	u64 runtime;
++	int ret;
++
++	ret = read(fd, &runtime, sizeof(runtime));
++	BUG_ON(ret != sizeof(runtime));
++
++	return runtime;
+ }
+ 
+ static void *thread_func(void *ctx)
+@@ -450,9 +448,11 @@ static void *thread_func(void *ctx)
+ 	u64 cpu_usage_0, cpu_usage_1;
+ 	unsigned long i, ret;
+ 	char comm2[22];
++	int fd;
+ 
+ 	sprintf(comm2, ":%s", this_task->comm);
+ 	prctl(PR_SET_NAME, comm2);
++	fd = self_open_counters();
+ 
+ again:
+ 	ret = sem_post(&this_task->ready_for_work);
+@@ -462,16 +462,15 @@ again:
+ 	ret = pthread_mutex_unlock(&start_work_mutex);
+ 	BUG_ON(ret);
+ 
+-	cpu_usage_0 = get_cpu_usage_nsec_self();
++	cpu_usage_0 = get_cpu_usage_nsec_self(fd);
+ 
+ 	for (i = 0; i < this_task->nr_events; i++) {
+ 		this_task->curr_event = i;
+ 		process_sched_event(this_task, this_task->atoms[i]);
+ 	}
+ 
+-	cpu_usage_1 = get_cpu_usage_nsec_self();
++	cpu_usage_1 = get_cpu_usage_nsec_self(fd);
+ 	this_task->cpu_usage = cpu_usage_1 - cpu_usage_0;
+-
+ 	ret = sem_post(&this_task->work_done_sem);
+ 	BUG_ON(ret);
+ 
