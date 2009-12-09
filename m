@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967000AbZLIAhC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967009AbZLIAjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967000AbZLIAhC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 19:37:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966987AbZLIAhA
+	id S967009AbZLIAjJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 19:39:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966989AbZLIAjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 19:37:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58450 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966979AbZLIAhA (ORCPT
+	Tue, 8 Dec 2009 19:39:04 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:64857 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966953AbZLIAjD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 19:37:00 -0500
-Date: Tue, 8 Dec 2009 16:35:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       spi-devel-general@lists.sourceforge.net,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Sascha Hauer <s.hauer@pengutronix.de>, Daniel Mack <daniel@caiaq.de>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] spi-imx: some updates
-Message-Id: <20091208163546.3354a7f5.akpm@linux-foundation.org>
-In-Reply-To: <fa686aa40912081625y3750a7fegbac38926182e38c6@mail.gmail.com>
-References: <20091208211258.GA13706@pengutronix.de>
-	<20091208153239.af0b5bb8.akpm@linux-foundation.org>
-	<fa686aa40912081625y3750a7fegbac38926182e38c6@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 19:39:03 -0500
+MIME-Version: 1.0
+In-Reply-To: <20091208224550.GA26915@n2100.arm.linux.org.uk>
+References: <20091208102842.GH12264@elf.ucw.cz>
+	 <20091208224550.GA26915@n2100.arm.linux.org.uk>
+Date: Tue, 8 Dec 2009 16:39:09 -0800
+Message-ID: <d6200be20912081639mdd853bg4080f415116d018c@mail.gmail.com>
+Subject: Re: GPIO support for HTC Dream
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Iliyan Malchev <malchev@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Dec 2009 17:25:59 -0700
-Grant Likely <grant.likely@secretlab.ca> wrote:
+On Tue, Dec 8, 2009 at 2:45 PM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Tue, Dec 08, 2009 at 11:28:43AM +0100, Pavel Machek wrote:
+>> Add GPIO support for HTC Dream.
+>>
+>> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+>>
+>> diff --git a/arch/arm/mach-msm/Kconfig b/arch/arm/mach-msm/Kconfig
+>> index f780086..774c50e 100644
+>> --- a/arch/arm/mach-msm/Kconfig
+>> +++ b/arch/arm/mach-msm/Kconfig
+>> @@ -40,4 +40,8 @@ config MACH_TROUT
+>>       help
+>>         Support for the HTC Dream, T-Mobile G1, Android ADP1 devices.
+>>
+>> +config GENERIC_GPIO
+>> +     bool
+>> +     default y
+>
+> Please arrange for this to be handled just like every other ARM
+> platform via a 'select' statement - eg:
+>
+> config ARCH_AT91
+>        bool "Atmel AT91"
+>        select GENERIC_GPIO
+>        select ARCH_REQUIRE_GPIOLIB
+>        select HAVE_CLK
+>
+> It is not nice to have multiple definitions of the same symbol scattered
+> throughout the Kconfig files.
+>
 
-> I'm new to the job, so I'm being cautions about which things I'm pick
-> up.  However, I'll happily merge anything that Andrew says is okay.
+Why did this code get pulled into the dream gpio code? The original
+change that adds msm gpio support already selects GENERIC_GPIO
+(http://android.git.kernel.org/?p=kernel/msm.git;a=commit;h=5ae9f4403530a5782478c35d29753081750c4188).
+Since you copied half of the files from that change anyway, it would
+be better to just include that change in you patch set.
 
-oop.  If I'm going to send a patch to a subsystem maintainer I'll usually give
-it less attention than the ones I plan to merge myself.
-
-Oh well, at least this way people will get their patches merged easily ;)
-
-> Andrew, when in the merge window do you typically send out patch
-> queues?
-
-Late.  I stage the -mm patches after linux-next so I spend most of the
-merge window waiting for people to get their stuff into mainline.
-
-Often there are stragglers who I need to route around.  It's usually
-not a significant problem though.
+-- 
+Arve Hjønnevåg
