@@ -1,107 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751777AbZLII1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZLIIc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751777AbZLII1t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 03:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZLII1s
+	id S1751889AbZLIIc2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 03:32:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZLIIc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 03:27:48 -0500
-Received: from RELAY.ANDREW.CMU.EDU ([128.2.10.85]:37679 "EHLO
-	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbZLII1r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 03:27:47 -0500
-Date: Wed, 9 Dec 2009 03:27:29 -0500
-From: Ben Blum <bblum@andrew.cmu.edu>
-To: Li Zefan <lizf@cn.fujitsu.com>, bblum@andrew.cmu.edu
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, menage@google.com
-Subject: Re: [RFC] [PATCH 1/5] cgroups: revamp subsys array
-Message-ID: <20091209082729.GA14114@andrew.cmu.edu>
-Mail-Followup-To: Li Zefan <lizf@cn.fujitsu.com>,
-	linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-	akpm@linux-foundation.org, menage@google.com
-References: <20091204085349.GA18867@andrew.cmu.edu> <20091204085508.GA18912@andrew.cmu.edu> <4B1E0283.70108@cn.fujitsu.com> <20091209055016.GA12342@andrew.cmu.edu> <4B1F3EB9.6080502@cn.fujitsu.com>
+	Wed, 9 Dec 2009 03:32:28 -0500
+Received: from www.tglx.de ([62.245.132.106]:53463 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751793AbZLIIc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 03:32:27 -0500
+Date: Wed, 9 Dec 2009 09:32:03 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch V2 sched: Protect sched_rr_get_param access to
+ task->sched_class
+In-Reply-To: <alpine.LFD.2.00.0912090905210.3089@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0912090930120.3089@localhost.localdomain>
+References: <20091208202026.804386447@linutronix.de>  <1260345648.5489.65.camel@laptop> <1260345798.5489.70.camel@laptop> <alpine.LFD.2.00.0912090905210.3089@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1F3EB9.6080502@cn.fujitsu.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 02:07:53PM +0800, Li Zefan wrote:
-> Ben Blum wrote:
-> > On Tue, Dec 08, 2009 at 03:38:43PM +0800, Li Zefan wrote:
-> >>> @@ -1291,6 +1324,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
-> >>>  	struct cgroupfs_root *new_root;
-> >>>  
-> >>>  	/* First find the desired set of subsystems */
-> >>> +	down_read(&subsys_mutex);
-> >> Hmm.. this can lead to deadlock. sget() returns success with sb->s_umount
-> >> held, so here we have:
-> >>
-> >> 	down_read(&subsys_mutex);
-> >>
-> >> 	down_write(&sb->s_umount);
-> >>
-> >> On the other hand, sb->s_umount is held before calling kill_sb(),
-> >> so when umounting we have:
-> >>
-> >> 	down_write(&sb->s_umount);
-> >>
-> >> 	down_read(&subsys_mutex);
-> > 
-> > Unless I'm gravely mistaken, you can't have deadlock on an rwsem when
-> > it's being taken for reading in both cases? You would have to have at
-> > least one of the cases being down_write.
-> > 
-> 
-> lockdep will warn on this..
+sched_rr_get_param calls task->sched_class->get_rr_interval(task)
+without protection against a concurrent sched_setscheduler() call
+which modifies task->sched_class.
 
-Hm. Why did I not see this warning...?
+Serialize the access with task_rq_lock(task) and hand the rq pointer
+into get_rr_interval() as it's needed at least in the sched_fair
+implementation.
 
-> And it can really lead to deadlock, though not so obivously:
-> 
->   thread 1       thread 2        thread 3
-> -------------------------------------------
-> | read(A)        write(B)
-> |
-> |                                write(A)
-> |
-> |                read(A)
-> |
-> | write(B)
-> |
-> 
-> t3 is waiting for t1 to release the lock, then t2 tries to
-> acquire A lock to read, but it has to wait because of t3,
-> and t1 has to wait t2.
-> 
-> Note: a read lock has to wait if a write lock is already
-> waiting for the lock.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ include/linux/sched.h   |    3 ++-
+ kernel/sched.c          |    6 +++++-
+ kernel/sched_fair.c     |    6 +-----
+ kernel/sched_idletask.c |    2 +-
+ kernel/sched_rt.c       |    2 +-
+ 5 files changed, 10 insertions(+), 9 deletions(-)
 
-Okay, clever, the deadlock happens because of a behavioural optimization
-of the rwsems. Good catch on the whole issue.
-
-How does this sound as a possible solution, in cgroup_get_sb:
-
-1) Take subsys_mutex
-2) Call parse_cgroupfs_options()
-3) Drop subsys_mutex
-4) Call sget(), which gets sb->s_umount without subsys_mutex held
-5) Take subsys_mutex
-6) Call verify_cgroupfs_options()
-7) Proceed as normal
-
-In which verify_cgroupfs_options will be a new function that ensures the
-invariants that rebind_subsystems expects are still there; if not, bail
-out by jumping to drop_new_super just as if parse_cgroupfs_options had
-failed in the first place.
-
-Another question: What's the justification for having an interface of
-seemingly symmetrical "initialize" and "destroy" functions, one of which
-has to take a lock and the other gets called with the lock already held?
-Seems like it's asking for trouble.
-
--- bblum
+Index: linux-2.6-tip/include/linux/sched.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/sched.h
++++ linux-2.6-tip/include/linux/sched.h
+@@ -1111,7 +1111,8 @@ struct sched_class {
+ 	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
+ 			     int oldprio, int running);
+ 
+-	unsigned int (*get_rr_interval) (struct task_struct *task);
++	unsigned int (*get_rr_interval) (struct rq *rq,
++					 struct task_struct *task);
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	void (*moved_group) (struct task_struct *p);
+Index: linux-2.6-tip/kernel/sched.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched.c
++++ linux-2.6-tip/kernel/sched.c
+@@ -6887,6 +6887,8 @@ SYSCALL_DEFINE2(sched_rr_get_interval, p
+ {
+ 	struct task_struct *p;
+ 	unsigned int time_slice;
++	unsigned long flags;
++	struct rq *rq;
+ 	int retval;
+ 	struct timespec t;
+ 
+@@ -6903,7 +6905,9 @@ SYSCALL_DEFINE2(sched_rr_get_interval, p
+ 	if (retval)
+ 		goto out_unlock;
+ 
+-	time_slice = p->sched_class->get_rr_interval(p);
++	rq = task_rq_lock(p, &flags);
++	time_slice = p->sched_class->get_rr_interval(rq, p);
++	task_rq_unlock(rq, &flags);
+ 
+ 	read_unlock(&tasklist_lock);
+ 	jiffies_to_timespec(time_slice, &t);
+Index: linux-2.6-tip/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched_fair.c
++++ linux-2.6-tip/kernel/sched_fair.c
+@@ -2014,21 +2014,17 @@ static void moved_group_fair(struct task
+ }
+ #endif
+ 
+-unsigned int get_rr_interval_fair(struct task_struct *task)
++unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
+ {
+ 	struct sched_entity *se = &task->se;
+-	unsigned long flags;
+-	struct rq *rq;
+ 	unsigned int rr_interval = 0;
+ 
+ 	/*
+ 	 * Time slice is 0 for SCHED_OTHER tasks that are on an otherwise
+ 	 * idle runqueue:
+ 	 */
+-	rq = task_rq_lock(task, &flags);
+ 	if (rq->cfs.load.weight)
+ 		rr_interval = NS_TO_JIFFIES(sched_slice(&rq->cfs, se));
+-	task_rq_unlock(rq, &flags);
+ 
+ 	return rr_interval;
+ }
+Index: linux-2.6-tip/kernel/sched_idletask.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched_idletask.c
++++ linux-2.6-tip/kernel/sched_idletask.c
+@@ -97,7 +97,7 @@ static void prio_changed_idle(struct rq 
+ 		check_preempt_curr(rq, p, 0);
+ }
+ 
+-unsigned int get_rr_interval_idle(struct task_struct *task)
++unsigned int get_rr_interval_idle(struct rq *rq, struct task_struct *task)
+ {
+ 	return 0;
+ }
+Index: linux-2.6-tip/kernel/sched_rt.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sched_rt.c
++++ linux-2.6-tip/kernel/sched_rt.c
+@@ -1721,7 +1721,7 @@ static void set_curr_task_rt(struct rq *
+ 	dequeue_pushable_task(rq, p);
+ }
+ 
+-unsigned int get_rr_interval_rt(struct task_struct *task)
++unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
+ {
+ 	/*
+ 	 * Time slice is 0 for SCHED_FIFO tasks
