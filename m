@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZLIPYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZLIP3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbZLIPYI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 10:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZLIPYH
+	id S1755625AbZLIP3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 10:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755497AbZLIP3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 10:24:07 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:44351 "HELO
+	Wed, 9 Dec 2009 10:29:16 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:41461 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754869AbZLIPYG (ORCPT
+	with SMTP id S1753676AbZLIP3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 10:24:06 -0500
-Date: Wed, 9 Dec 2009 10:24:04 -0500 (EST)
+	Wed, 9 Dec 2009 10:29:15 -0500
+Date: Wed, 9 Dec 2009 10:29:22 -0500 (EST)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@iolanthe.rowland.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <alpine.LFD.2.00.0912081852320.3560@localhost.localdomain>
-Message-ID: <Pine.LNX.4.44L0.0912090959230.4120-100000@iolanthe.rowland.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "David S. Miller" <davem@davemloft.net>
+cc: Greg KH <greg@kroah.com>, <linux-next@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: staging tree build failure
+In-Reply-To: <20091209165646.41b9ce8a.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.44L0.0912091026210.4120-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Dec 2009, Linus Torvalds wrote:
+On Wed, 9 Dec 2009, Stephen Rothwell wrote:
 
-> On Tue, 8 Dec 2009, Alan Stern wrote:
-> > 
-> > You mean, if A comes before B in the list and A must suspend after B?  
+> Hi Greg,
 > 
-> But if they are not topologically ordered, then A wouldn't necessarily be 
-> before B on the list in the first place.
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> drivers/net/usb/kaweth.c: In function 'kaweth_open':
+> drivers/net/usb/kaweth.c:719: error: implicit declaration of function 'usb_autopm_enable'
+> 
+> Caused by commit b3f937e6ddf3e60ed9b4c26349b7b171dffdd010 ("USB: prepare
+> for changover to Runtime PM framework").
+> 
+> I have reverted that commit for today.
 
-Okay, I see what you're getting at.  Yes, this is quite true -- if A
-doesn't precede B in dpm_list then A can't safely wait for B to
-suspend.  To put it another way, only list-compatible constraints are
-feasible.
+This should have been okay because of Oliver's patch:
 
-This shouldn't be a problem.  If it were we'd be seeing it right now, 
-because A would _always_ suspend before B.
+	http://marc.info/?l=linux-netdev&m=125071045301270&w=2
 
-> Of course, if we've mucked with the list by hand and made sure the 
-> ordering is ok, then that's a different issue. But your whole point seemed 
-> to be that the device could impose its own ordering in its suspend 
-> callback, which is not true on its own without external ordering.
-
-No, sorry for not making it clearer.  I was assuming all long that the 
-non-tree constraints were compatible with the list ordering.
-
-In fact these considerations already affect the USB resume operations, 
-even without asynchronous resume.  The code relies on the fact that the 
-PCI layer registers sibling devices on a slot in order of increasing 
-function number.  There's no guarantee this will remain true in the 
-future (it may already be wrong AFAIK), so putting in some explicit 
-list manipulation is the prudent thing to do.
+which removed the offending reference.  Hasn't it been merged yet?  
+It was submitted back in August.
 
 Alan Stern
 
