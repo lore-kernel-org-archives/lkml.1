@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbZLISpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbZLISpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757106AbZLISpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:45:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757065AbZLISpb
+	id S1757141AbZLISpo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757070AbZLISpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:45:31 -0500
-Received: from mail.perches.com ([173.55.12.10]:1041 "EHLO mail.perches.com"
+	Wed, 9 Dec 2009 13:45:32 -0500
+Received: from mail.perches.com ([173.55.12.10]:1042 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757041AbZLISpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757042AbZLISpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Dec 2009 13:45:31 -0500
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/5] arch/x86: Add #define pr_fmt(fmt) and use pr_<level>
-Date: Wed,  9 Dec 2009 10:45:32 -0800
-Message-Id: <cover.1260383912.git.joe@perches.com>
+Subject: [PATCH 1/5] es7000_32.c: use pr_<level> and add pr_fmt(fmt)
+Date: Wed,  9 Dec 2009 10:45:33 -0800
+Message-Id: <3b4375af246dec5941168858910210937c110af9.1260383912.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
-In-Reply-To: <20091209072630.GA8187@elte.hu>
-References: <20091209072630.GA8187@elte.hu>
+In-Reply-To: <cover.1260383912.git.joe@perches.com>
+References: <20091209072630.GA8187@elte.hu> <cover.1260383912.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the files that primarily use embedded prefixes:
+Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+Converted a few printk(KERN_INFO to pr_info(
+Stripped "es7000_mipcfg" from pr_debug
 
-Standardize a bit on use of pr_<level>, removed embedded prefixes
-and use #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt as appropriate.
-Coalesced long format strings.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/x86/kernel/apic/es7000_32.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-Joe Perches (5):
-  es7000_32.c: use pr_<level> and add pr_fmt(fmt)
-  arch/x86/kernel/setup_percpu.c: use pr_<level> and add pr_fmt(fmt)
-  i8254.c: Add pr_fmt(fmt)
-  kmmio.c: Add and use pr_fmt(fmt)
-  arch/x86/mm/mmio-mod.c: use pr_fmt
+diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+index e85f8fb..dd2b5f2 100644
+--- a/arch/x86/kernel/apic/es7000_32.c
++++ b/arch/x86/kernel/apic/es7000_32.c
+@@ -27,6 +27,9 @@
+  *
+  * http://www.unisys.com
+  */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/notifier.h>
+ #include <linux/spinlock.h>
+ #include <linux/cpumask.h>
+@@ -223,9 +226,9 @@ static int parse_unisys_oem(char *oemptr)
+ 			mip_addr = val;
+ 			mip = (struct mip_reg *)val;
+ 			mip_reg = __va(mip);
+-			pr_debug("es7000_mipcfg: host_reg = 0x%lx \n",
++			pr_debug("host_reg = 0x%lx\n",
+ 				 (unsigned long)host_reg);
+-			pr_debug("es7000_mipcfg: mip_reg = 0x%lx \n",
++			pr_debug("mip_reg = 0x%lx\n",
+ 				 (unsigned long)mip_reg);
+ 			success++;
+ 			break;
+@@ -401,7 +404,7 @@ static void es7000_enable_apic_mode(void)
+ 	if (!es7000_plat)
+ 		return;
+ 
+-	printk(KERN_INFO "ES7000: Enabling APIC mode.\n");
++	pr_info("Enabling APIC mode.\n");
+ 	memset(&es7000_mip_reg, 0, sizeof(struct mip_reg));
+ 	es7000_mip_reg.off_0x00 = MIP_SW_APIC;
+ 	es7000_mip_reg.off_0x38 = MIP_VALID;
+@@ -514,8 +517,7 @@ static void es7000_setup_apic_routing(void)
+ {
+ 	int apic = per_cpu(x86_bios_cpu_apicid, smp_processor_id());
+ 
+-	printk(KERN_INFO
+-	  "Enabling APIC mode:  %s. Using %d I/O APICs, target cpus %lx\n",
++	pr_info("Enabling APIC mode:  %s. Using %d I/O APICs, target cpus %lx\n",
+ 		(apic_version[apic] == 0x14) ?
+ 			"Physical Cluster" : "Logical Cluster",
+ 		nr_ioapics, cpumask_bits(es7000_target_cpus())[0]);
+-- 
+1.6.6.rc0.57.gad7a
 
- arch/x86/kernel/apic/es7000_32.c |   12 ++++---
- arch/x86/kernel/setup_percpu.c   |   13 ++++---
- arch/x86/kvm/i8254.c             |   12 ++++---
- arch/x86/mm/kmmio.c              |   40 +++++++++++-----------
- arch/x86/mm/mmio-mod.c           |   71 ++++++++++++++++++-------------------
- 5 files changed, 76 insertions(+), 72 deletions(-)
