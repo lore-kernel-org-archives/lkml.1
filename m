@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZLIJ7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbZLIJ5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbZLIJ7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbZLIJ7U
+	id S1754534AbZLIJ5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbZLIJ5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:59:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45765 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754435AbZLIJ5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Dec 2009 04:57:41 -0500
-Date: Wed, 9 Dec 2009 09:55:20 GMT
+Received: from hera.kernel.org ([140.211.167.34]:45763 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754208AbZLIJ5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:57:39 -0500
+Date: Wed, 9 Dec 2009 09:55:34 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu,
+       y-goto@jp.fujitsu.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, y-goto@jp.fujitsu.com,
        mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
+In-Reply-To: <1257934048.23203.76.camel@twins>
+References: <1257934048.23203.76.camel@twins>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Remove unnecessary RCU exclusion
-Message-ID: <tip-fb58bac5c75bfff8bbf7d02071a10a62f32fe28b@git.kernel.org>
-Git-Commit-ID: fb58bac5c75bfff8bbf7d02071a10a62f32fe28b
+Subject: [tip:sched/urgent] sched: cgroup: Implement different treatment for idle shares
+Message-ID: <tip-cd8ad40de36c2fe75f3b731bd70198b385895246@git.kernel.org>
+Git-Commit-ID: cd8ad40de36c2fe75f3b731bd70198b385895246
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,62 +31,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fb58bac5c75bfff8bbf7d02071a10a62f32fe28b
-Gitweb:     http://git.kernel.org/tip/fb58bac5c75bfff8bbf7d02071a10a62f32fe28b
+Commit-ID:  cd8ad40de36c2fe75f3b731bd70198b385895246
+Gitweb:     http://git.kernel.org/tip/cd8ad40de36c2fe75f3b731bd70198b385895246
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Tue, 1 Dec 2009 12:21:47 +0100
+AuthorDate: Thu, 3 Dec 2009 18:00:07 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 9 Dec 2009 10:03:08 +0100
+CommitDate: Wed, 9 Dec 2009 10:03:09 +0100
 
-sched: Remove unnecessary RCU exclusion
+sched: cgroup: Implement different treatment for idle shares
 
-As Nick pointed out, and realized by myself when doing:
-   sched: Fix balance vs hotplug race
-the patch:
-   sched: for_each_domain() vs RCU
+When setting the weight for a per-cpu task-group, we have to put in a
+phantom weight when there is no work on that cpu, otherwise we'll not
+service that cpu when new work gets placed there until we again update
+the per-cpu weights.
 
-is wrong, sched_domains are freed after synchronize_sched(), which
-means disabling preemption is enough.
+We used to add these phantom weights to the total, so that the idle
+per-cpu shares don't get inflated, this however causes the non-idle
+parts to get deflated, causing unexpected weight distibutions.
 
-Reported-by: Nick Piggin <npiggin@suse.de>
+Reverse this, so that the non-idle shares are correct but the idle
+shares are inflated.
+
+Reported-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+Tested-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
+LKML-Reference: <1257934048.23203.76.camel@twins>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched_fair.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+ kernel/sched.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index e9f5dae..c163a28 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1403,7 +1403,6 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 		new_cpu = prev_cpu;
- 	}
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0170735..71eb062 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1614,7 +1614,7 @@ static void update_group_shares_cpu(struct task_group *tg, int cpu,
+  */
+ static int tg_shares_up(struct task_group *tg, void *data)
+ {
+-	unsigned long weight, rq_weight = 0, shares = 0;
++	unsigned long weight, rq_weight = 0, sum_weight = 0, shares = 0;
+ 	unsigned long *usd_rq_weight;
+ 	struct sched_domain *sd = data;
+ 	unsigned long flags;
+@@ -1630,6 +1630,7 @@ static int tg_shares_up(struct task_group *tg, void *data)
+ 		weight = tg->cfs_rq[i]->load.weight;
+ 		usd_rq_weight[i] = weight;
  
--	rcu_read_lock();
- 	for_each_domain(cpu, tmp) {
++		rq_weight += weight;
  		/*
- 		 * If power savings logic is enabled for a domain, see if we
-@@ -1484,10 +1483,8 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 			update_shares(tmp);
+ 		 * If there are currently no tasks on the cpu pretend there
+ 		 * is one of average load so that when a new task gets to
+@@ -1638,10 +1639,13 @@ static int tg_shares_up(struct task_group *tg, void *data)
+ 		if (!weight)
+ 			weight = NICE_0_LOAD;
+ 
+-		rq_weight += weight;
++		sum_weight += weight;
+ 		shares += tg->cfs_rq[i]->shares;
  	}
  
--	if (affine_sd && wake_affine(affine_sd, p, sync)) {
--		new_cpu = cpu;
--		goto out;
--	}
-+	if (affine_sd && wake_affine(affine_sd, p, sync))
-+		return cpu;
++	if (!rq_weight)
++		rq_weight = sum_weight;
++
+ 	if ((!shares && rq_weight) || shares > tg->shares)
+ 		shares = tg->shares;
  
- 	while (sd) {
- 		int load_idx = sd->forkexec_idx;
-@@ -1528,8 +1525,6 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 		/* while loop will break here if sd == NULL */
- 	}
- 
--out:
--	rcu_read_unlock();
- 	return new_cpu;
- }
- #endif /* CONFIG_SMP */
