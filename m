@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZLITYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbZLITYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757452AbZLITYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757420AbZLITY1
+	id S1757453AbZLITYw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757464AbZLITYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:24:27 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:54082 "EHLO mgw2.diku.dk"
+	Wed, 9 Dec 2009 14:24:47 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52758 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757341AbZLITYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:24:24 -0500
-Date: Wed, 9 Dec 2009 20:24:28 +0100 (CET)
+	id S1757420AbZLITYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:24:43 -0500
+Date: Wed, 9 Dec 2009 20:24:48 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/12] drivers/s390: Correct size given to memset
-Message-ID: <Pine.LNX.4.64.0912092024100.1870@ask.diku.dk>
+Subject: [PATCH 8/12] drivers/scsi: Correct size given to memset
+Message-ID: <Pine.LNX.4.64.0912092024300.1870@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,27 +44,31 @@ memset(x, E, sizeof(
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/s390/cio/fcx.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/scsi/fcoe/libfcoe.c              |    2 +-
+ drivers/scsi/mpt2sas/mpt2sas_transport.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -u -p a/drivers/s390/cio/fcx.c b/drivers/s390/cio/fcx.c
---- a/drivers/s390/cio/fcx.c
-+++ b/drivers/s390/cio/fcx.c
-@@ -163,7 +163,7 @@ void tcw_finalize(struct tcw *tcw, int n
- 	/* Add tcat to tccb. */
- 	tccb = tcw_get_tccb(tcw);
- 	tcat = (struct tccb_tcat *) &tccb->tca[tca_size(tccb)];
--	memset(tcat, 0, sizeof(tcat));
-+	memset(tcat, 0, sizeof(*tcat));
- 	/* Calculate tcw input/output count and tcat transport count. */
- 	count = calc_dcw_count(tccb);
- 	if (tcw->w && (tcw->flags & TCW_FLAGS_OUTPUT_TIDA))
-@@ -269,7 +269,7 @@ EXPORT_SYMBOL(tccb_init);
-  */
- void tsb_init(struct tsb *tsb)
- {
--	memset(tsb, 0, sizeof(tsb));
-+	memset(tsb, 0, sizeof(*tsb));
- }
- EXPORT_SYMBOL(tsb_init);
+diff -u -p a/drivers/scsi/fcoe/libfcoe.c b/drivers/scsi/fcoe/libfcoe.c
+--- a/drivers/scsi/fcoe/libfcoe.c
++++ b/drivers/scsi/fcoe/libfcoe.c
+@@ -444,7 +444,7 @@ static int fcoe_ctlr_encaps(struct fcoe_
+ 	cap->encaps.fd_desc.fip_dlen = dlen / FIP_BPW;
  
+ 	mac = (struct fip_mac_desc *)skb_put(skb, sizeof(*mac));
+-	memset(mac, 0, sizeof(mac));
++	memset(mac, 0, sizeof(*mac));
+ 	mac->fd_desc.fip_dtype = FIP_DT_MAC;
+ 	mac->fd_desc.fip_dlen = sizeof(*mac) / FIP_BPW;
+ 	if (dtype != FIP_DT_FLOGI && dtype != FIP_DT_FDISC)
+diff -u -p a/drivers/scsi/mpt2sas/mpt2sas_transport.c b/drivers/scsi/mpt2sas/mpt2sas_transport.c
+--- a/drivers/scsi/mpt2sas/mpt2sas_transport.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_transport.c
+@@ -162,7 +162,7 @@ _transport_set_identify(struct MPT2SAS_A
+ 		return -EIO;
+ 	}
+ 
+-	memset(identify, 0, sizeof(identify));
++	memset(identify, 0, sizeof(*identify));
+ 	device_info = le32_to_cpu(sas_device_pg0.DeviceInfo);
+ 
+ 	/* sas_address */
