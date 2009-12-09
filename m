@@ -1,110 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZLIJnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbZLIJph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502AbZLIJnf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZLIJnd
+	id S1753315AbZLIJph (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZLIJpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:43:33 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:54025 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753229AbZLIJnC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:43:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=Tb9THDsA6pRDQHwpIYvXwKtm49OJqp+7rQpRklEi17+a/gBhwoBstj+WjjgG/NYFgs
-         JTi1/3iw7Oh5SRzXxSRmh7DSr2bLgLrZInu+3hfix8PWBmPYu47yVa8KfcM59CuqQZAR
-         1ZxLSy60dDuRwtWFY0LoITWllv5yA+5UGDuCU=
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: Peter Hutterer <peter.hutterer@redhat.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HID: add multi-input quirk for NextWindow Touchscreen.
-References: <20091203050810.GA26595@barra.bne.redhat.com>
-	<87zl60s17o.fsf@macbook.be.48ers.dk> <4B1836A6.405@redhat.com>
-	<871vjasxnm.fsf@macbook.be.48ers.dk> <4B190D88.4090102@redhat.com>
-	<87ws12rh5j.fsf@macbook.be.48ers.dk> <4B1C96C4.5080709@redhat.com>
-Date: Wed, 09 Dec 2009 10:42:45 +0100
-In-Reply-To: <4B1C96C4.5080709@redhat.com> (Peter Hutterer's message of "Mon,
-	07 Dec 2009 15:46:44 +1000")
-Message-ID: <87hbs0mqju.fsf@macbook.be.48ers.dk>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+	Wed, 9 Dec 2009 04:45:36 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60859 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753091AbZLIJpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:45:35 -0500
+Message-ID: <4B1F7198.708@cn.fujitsu.com>
+Date: Wed, 09 Dec 2009 17:44:56 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 0/2][RFC] [RFC] tracing: separate out buffer from trace_seq
+References: <20091208195405.653797300@goodmis.org>
+In-Reply-To: <20091208195405.653797300@goodmis.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Peter" == Peter Hutterer <peter.hutterer@redhat.com> writes:
+Steven Rostedt wrote:
+> This is an RFC patch set. The trace_seq currently has its buffer
+> within the structure itself. But this limits its ability and efficiency.
+> 
+> This patch set separates it out, but now it requires the callers
+> to supply their own buffer. But this helps out the splice code because
+> it can now write directly into the splice pages.
+> 
+> This may be too much for 33? But it is a nice fix.
+> 
+> Thoughs?
+> 
+> The following patches are in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: rfc/tracing/core
+> 
+> 
+> Steven Rostedt (2):
+>       tracing: Change trace_seq to use separate buffer
+>       tracing: Write directly into splice page for trace_pipe
 
-Hi,
+It's great that you wrote it and trace_pipe benefit from it.
+And it show separate buffer is required.
 
- Peter> evtest output for the mouse device on kernel
- Peter> 2.6.31.6-150.fc12.x86_64, I'll spare you the keyboard device,
- Peter> it's not particularly interesting.
+But I didn't expect so much/big changes. I'm wondering that
+we can use seq file directly for some files and
+kill all kmalloc(sizeof(struct trace_seq)).
 
- Peter> Testing ... (interrupt to exit)
- Peter> Event: time 1260143900.146760, type 1 (Key), code 320 (ToolPen), value 1
- Peter> Event: time 1260143900.146775, type 3 (Absolute), code 2 (Z), value 14953
- Peter> Event: time 1260143900.146777, type 3 (Absolute), code 3 (Rx), value 19456
- Peter> Event: time 1260143900.146780, -------------- Report Sync ------------
+kernel/trace/trace.c:3720:      s = kmalloc(sizeof(*s), GFP_KERNEL);
+We can use a short buffer + simple_read_from_buffer()
+Or seq file.
 
-Sorry, it seems like the nw controller I used the other day had old
-firmware (product 0x1, firmware 2.91). With 2.92 I see the same
-list of supported events, but I get X/Y events on motion instead of Z / Rx:
+kernel/trace/trace_events.c:539:        s = kmalloc(sizeof(*s), GFP_KERNEL);
+We can use seq file after of my patchset(today) is applied.
 
-Event: time 1260344704.138808, type 3 (Absolute), code 0 (X), value 19097
-Event: time 1260344704.138814, type 3 (Absolute), code 1 (Y), value 16704
-Event: time 1260344704.138819, -------------- Report Sync ------------
-Event: time 1260344704.158801, type 3 (Absolute), code 0 (X), value 19033
-Event: time 1260344704.158808, type 3 (Absolute), code 1 (Y), value 16700
-Event: time 1260344704.158814, -------------- Report Sync ------------
-Event: time 1260344704.174803, type 4 (Misc), code 4 (ScanCode), value 90001
-Event: time 1260344704.174807, type 1 (Key), code 272 (LeftBtn), value 0
-Event: time 1260344704.174825, -------------- Report Sync ------------
+kernel/trace/trace_events.c:580:        s = kmalloc(sizeof(*s), GFP_KERNEL);
+we can use a shor buffer. "char buf[20]" + simple_read_from_buffer()
 
- Peter> [root@touchie sbin]# ./nwtool -u -i
- Peter> Version:		2.99
- Peter> Serial:			617241
- Peter> Model:			1901
- Peter> HW capabilities:	0x40
- Peter> Rightclick delay:	1000 ms
- Peter> Doubleclick time:	200 ms
- Peter> Report mode:		4
- Peter> Drag threshold:		500
- Peter> Buzzer time:		40 ms
- Peter> Buzzer tone:		40
- Peter> Calibration key:	4
- Peter> Calibration presses:	3
+kernel/trace/trace_events.c:604:        s = kmalloc(sizeof(*s), GFP_KERNEL);
+We can use a short buffer + simple_read_from_buffer()
+Or seq file.
 
-Hmm, what is report mode 4? Some kind of multi touch mode?
+kernel/trace/trace_events.c:660:        s = kmalloc(sizeof(*s), GFP_KERNEL);
+We can use a short buffer + simple_read_from_buffer()
+Or seq file.
 
-What do you see if you install the Nextwindow USB config tool under
-Windows (unfortunately doesn't work under Wine) and look in the mouse
-tab? I guess you have a 4th option here.
+kernel/trace/trace_events.c:715:        s = kmalloc(sizeof(*s), GFP_KERNEL);
+We can use seq file.
 
-I see this:  http://peter.korsgaard.com/nw.png
+kernel/trace/trace_ksym.c:230:  s = kmalloc(sizeof(*s), GFP_KERNEL);
+We should use seq! It's very bad that we use trace_seq.
 
-You can get usb config here:
-http://www.nextwindow.com/nextwindow_support/software.html
+For function_stat_show(), it uses static trace_seq. but it can also
+use a short buffer + simple_read_from_buffer().
 
- >> It's probably offtopic here, but we can move the discussion to the X
- >> list if you prefer - Last time I asked there I didn't get any reply
- >> though:
- >> 
- >> http://article.gmane.org/gmane.comp.freedesktop.xorg/40071/
+I will do this.(or you if you would like to)
 
- Peter> Ask louder :) I think I remember your email but it got flooded out of
- Peter> my inbox. In general there should be some method to do that though I
- Peter> need to check the implementation.
+So could you write a simpler version of separate-buffer-trace_seq
+with supposition that all kmalloc(sizeof(struct trace_seq)) are removed.
 
-OK, great - Let me know what you find. I did hack something up with
-evtouch, but would like to move to evdev instead.
-I'm willing to work on getting evdev to handle multi screen touchscreen
-setups better if needed, I just need a bit of guidance on how it should
-be handled.
+Lai.
 
--- 
-Bye, Peter Korsgaard
+> 
+> ----
+>  include/linux/ftrace_event.h |    6 ++++-
+>  include/linux/trace_seq.h    |   22 +++++++++++++++-
+>  include/trace/ftrace.h       |   20 +++++++++++----
+>  kernel/trace/ftrace.c        |    3 +-
+>  kernel/trace/trace.c         |   54 ++++++++++++++++-------------------------
+>  kernel/trace/trace_events.c  |   45 +++++++++++++++++++++++++++++++----
+>  kernel/trace/trace_ksym.c    |   10 +++++++-
+>  kernel/trace/trace_output.c  |   24 ++++++++++--------
+>  8 files changed, 125 insertions(+), 59 deletions(-)
+> 
+> 
+> 
+
