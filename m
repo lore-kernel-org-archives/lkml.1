@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbZLIO7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZLIO7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbZLIO7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 09:59:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZLIO7h
+	id S1753247AbZLIO7P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 09:59:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbZLIO7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 09:59:37 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:64765 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbZLIO7g (ORCPT
+	Wed, 9 Dec 2009 09:59:14 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:39396 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751189AbZLIO7O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 09:59:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UQ2O2vA7BxykWydjNg2SW2l3QwKqgFZ8KKQDjaPV2Lf8mpDG56JHWXT/eEImZoTTxM
-         UBgHobzy8bsm75w1V8GGBMCvja83yjLrcYUkrVptgw3VbkTUuPA6HWF8KGk6M/0SePok
-         0+zK1KxmRbODZKoI0o5Lo1RHOykEpWDa0JmLo=
-Date: Wed, 9 Dec 2009 15:59:05 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Anton Altaparmakov <aia21@cam.ac.uk>, John Daiker <daikerjohn@gmail.com>,
-       kernel-janitors@vger.kernel.org, aia21@cantab.net,
-       linux-ntfs-dev@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] NTFS: Change string pointers to string constants.
-Message-ID: <20091209145846.GA3562@joi.lan>
-References: <1259808806-27279-1-git-send-email-daikerjohn@gmail.com>
- <C1806924-DE57-4FBA-A67C-85C618FE6639@cam.ac.uk>
- <1260236833.3215.237.camel@Joe-Laptop.home>
+	Wed, 9 Dec 2009 09:59:14 -0500
+Date: Wed, 9 Dec 2009 14:59:19 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Cypher Wu <cypher.w@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Questions about Watch Dog Timer under Linux.
+Message-ID: <20091209145919.GH9018@sirena.org.uk>
+References: <f9f38a550912090647q5af6cb14w84ea8d9223d82bd9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260236833.3215.237.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <f9f38a550912090647q5af6cb14w84ea8d9223d82bd9@mail.gmail.com>
+X-Cookie: Include me out.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 07, 2009 at 05:47:13PM -0800, Joe Perches wrote:
-> On Tue, 2009-12-08 at 00:57 +0000, Anton Altaparmakov wrote:
-> > Can you please explain the rational for making this change?
-> 
-> Perhaps it's not worth much, but it saves a pointer reference.
-> 
-> $ cat pointer.c
-> #include <string.h>
-> #include <stdio.h>
-> 
-> int main (int argc, char** argv)
-> {
-> 	static const char *foo = "abcdefg";
-> 	printf("%s\n", foo);
-> 	return 0;
-> }
-> 
-> $ gcc -c pointer.c
-> $ size pointer.o
->    text	   data	    bss	    dec	    hex	filename
->      37	      4	      0	     41	     29	pointer.o
-> 
-> $ cat reference.c
-> #include <string.h>
-> #include <stdio.h>
-> 
-> int main (int argc, char** argv)
-> {
-> static const char foo[] = "abcdefg";
-> printf("%s\n", foo);
-> return 0;
-> }
-> 
-> $ gcc -c reference.c
-> $ size reference.o
->    text    data     bss     dec     hex filename
->      36       0       0      36      24 reference.o
+On Wed, Dec 09, 2009 at 10:47:28PM +0800, Cypher Wu wrote:
+> I'm used to work on embedded systems, the Watch Dog Timer in our
+> products is usually a seperate chip on the board wich will start to
+> work after power reset and will time out in 2 seconds. The system has
+> to start dog clearing from the very beginning and there have no way to
+> disable WDT.
 
-Yeah, for static variables it's better. But for automatic variables
-it's worse, because it now has to do a copy at runtime.
-And the patch changes both types.
+> Now I want to use WDT under Linux, while I read
+> Documentation/watchdog/watchdog-api.txt and then look though some
+> drivers of WDT under Linux, it seems WDT under Linux has to be able to
+> be disabled, and it will be disabled from the beginning, and starting
+> to work after the application open the special driver file?  The
+> sample code under Linux use a very bigger time span than our embedded
+> system:
 
-$ size pointer.o reference.o
-   text    data     bss     dec     hex filename
-    101       8       0     109      6d pointer.o
-     96       0       0      96      60 reference.o
+You don't *have* to be able to disable the watchdog - the API supports
+it but you can always fail to do so (and even where you can Linux
+watchdogs support a non-disabling mode, look for WATCHDOG_NOWAYOUT in
+existing drivers).  Similarly, there's no problem with having the
+watchdog be live at system startup - if the watchdog is already enabled
+when the driver is opened then the driver just needs to handle that
+gracefully.
 
-$ size pointer-nonstatic.o reference-nonstatic.o
-   text    data     bss     dec     hex filename
-    106       0       0     106      6a pointer-nonstatic.o
-    109       0       0     109      6d reference-nonstatic.o
+> 	while (1) {
+> 		ret = write(fd, "\0", 1);
+
+...
+
+> 		sleep(10);
+> 	}
+> 
+
+> Is this the pattern we have to follow to use WDT under Linux? We have
+
+You're free to update the watchdog as often as you like, the 10s is
+just a number that was picked which is suitable for that application.
+
+> to choose a chip as WDT, and it seems the chip we've familiar under
+> embedded systems can't be used under Linux?
+
+Nothing about your watchdog sounds particularly unusual for Linux.
