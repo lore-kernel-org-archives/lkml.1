@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbZLIW1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758207AbZLIW3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758194AbZLIW1T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 17:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZLIW1O
+	id S1758207AbZLIW3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 17:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZLIW3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 17:27:14 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:36358 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758120AbZLIW1O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 17:27:14 -0500
-Date: Wed, 9 Dec 2009 17:27:13 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <200912092256.45872.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912091722310.2672-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Dec 2009 17:29:30 -0500
+Received: from mga03.intel.com ([143.182.124.21]:33284 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758159AbZLIW33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 17:29:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="220811850"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: mingo@elte.hu, a.p.zijlstra@chello.nl, luming.yu@intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] avoid out of bounds array reference in save_trace()
+Date: Wed, 09 Dec 2009 14:29:36 -0800
+Message-Id: <4b2024d085302c2a2@agluck-desktop.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Dec 2009, Rafael J. Wysocki wrote:
+ia64 found this the hard way (because we currently have a stub for
+save_stack_trace() that does nothing). But it would be a good idea to 
+be cautious in case a real save_stack_trace() bailed out with an
+error before it set trace->nr_entries.
 
-> > I don't like that because it introduces "artificial" dependencies: It 
-> > makes B depend on all the preceding synchronous suspends, even totally 
-> > unrelated ones.  But yes, it would work.
-> 
-> Well, unfortunately, it wouldn't, because (at least in the context of my last
-> patch) the core would release the rwsems as soon as your suspend had
-> returned.  So you'd have to make your suspend wait for the async thread and
-> that would make it pointless.  So scratch that, it wasn't a good idea at all.
-> 
-> This leaves us with basically two options, where the first one is to use
-> rwsems in a way that you've proposed (with iterating over children), and the
-> second one is to use completions.  In my opinion rwsems don't give us any
-> advantage in this case, so I'd very much prefer to use completions.
+Signed-off-by: Tony Luck <tony.luck@intel.com>
 
-If you really want to add support for async suspend constraints, then 
-completions are clearer than rwsems.  If you don't care (and it's 
-unlikely that anyone will need them in the near future) then you might 
-as well stick with the current rwsem implementation and avoid iterating 
-over children.
+---
 
-Alan Stern
-
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 03c06af..429540c 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -387,7 +387,8 @@ static int save_trace(struct stack_trace *trace)
+ 	 * complete trace that maxes out the entries provided will be reported
+ 	 * as incomplete, friggin useless </rant>
+ 	 */
+-	if (trace->entries[trace->nr_entries-1] == ULONG_MAX)
++	if (trace->nr_entries != 0 &&
++	    trace->entries[trace->nr_entries-1] == ULONG_MAX)
+ 		trace->nr_entries--;
+ 
+ 	trace->max_entries = trace->nr_entries;
