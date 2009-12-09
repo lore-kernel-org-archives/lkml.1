@@ -1,63 +1,524 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751758AbZLIQ6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbZLIQCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751758AbZLIQ6X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 11:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZLIQ6W
+	id S1756148AbZLIQCc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 11:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZLIQCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 11:58:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43985 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750856AbZLIQ6V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 11:58:21 -0500
-Date: Wed, 9 Dec 2009 08:57:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-In-Reply-To: <20091209164653.GI9018@sirena.org.uk>
-Message-ID: <alpine.LFD.2.00.0912090851540.3560@localhost.localdomain>
-References: <20091209160256.GA3229@rakim.wolfsonmicro.main> <Pine.LNX.4.44L0.0912091117080.4120-100000@iolanthe.rowland.org> <20091209164653.GI9018@sirena.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Dec 2009 11:02:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:26106 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756074AbZLIQC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 11:02:27 -0500
+Date: Wed, 9 Dec 2009 10:58:54 -0600
+From: David Teigland <teigland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] dlm updates for 2.6.33
+Message-ID: <20091209165854.GA31629@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
+
+Please pull the single dlm patch below for 2.6.33 from:
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
 
 
-On Wed, 9 Dec 2009, Mark Brown wrote:
+>From 573c24c4af6664ffcd9aa7ba617a35fde2b95534 Mon Sep 17 00:00:00 2001
+From: David Teigland <teigland@redhat.com>
+Date: Mon, 30 Nov 2009 16:34:43 -0600
+Subject: [PATCH] dlm: always use GFP_NOFS
 
-> > How long does it take to bring down the entire embedded audio 
-> > subsystem?  And how critical is the timing for typical systems?
-> 
-> Worst case is about a second for both resume and suspend which means two
-> seconds total but it's very hardware dependant.  
+Replace all GFP_KERNEL and ls_allocation with GFP_NOFS.
+ls_allocation would be GFP_KERNEL for userland lockspaces
+and GFP_NOFS for file system lockspaces.
 
-I would seriously suggest just looking at the code itself.
+It was discovered that any lockspaces on the system can
+affect all others by triggering memory reclaim in the
+file system which could in turn call back into the dlm
+to acquire locks, deadlocking dlm threads that were
+shared by all lockspaces, like dlm_recv.
 
-Maybe the code is just plain sh*t? If we're talking embedded audio, we're 
-generally talking SoC chips (maybe some external audio daughtercard), and 
-quite frankly, it sounds to me like you're just wasting your own time. 
-There is no way that kind of hardware really needs that much time.
+Signed-off-by: David Teigland <teigland@redhat.com>
+---
+ fs/dlm/config.c       |   24 ++++++++++++------------
+ fs/dlm/debug_fs.c     |    2 +-
+ fs/dlm/dir.c          |    7 +++----
+ fs/dlm/dlm_internal.h |    1 -
+ fs/dlm/lock.c         |    6 +++---
+ fs/dlm/lockspace.c    |   15 +++++----------
+ fs/dlm/lowcomms.c     |    6 +++---
+ fs/dlm/member.c       |    8 ++++----
+ fs/dlm/memory.c       |    6 +++---
+ fs/dlm/netlink.c      |    2 +-
+ fs/dlm/plock.c        |    6 +++---
+ fs/dlm/rcom.c         |    2 +-
+ fs/dlm/requestqueue.c |    2 +-
+ fs/dlm/user.c         |   12 ++++++------
+ 14 files changed, 46 insertions(+), 53 deletions(-)
 
-We should not design the device infrastructure for crap coding. 
+diff --git a/fs/dlm/config.c b/fs/dlm/config.c
+index fd9859f..0df2438 100644
+--- a/fs/dlm/config.c
++++ b/fs/dlm/config.c
+@@ -410,10 +410,10 @@ static struct config_group *make_cluster(struct config_group *g,
+ 	struct dlm_comms *cms = NULL;
+ 	void *gps = NULL;
+ 
+-	cl = kzalloc(sizeof(struct dlm_cluster), GFP_KERNEL);
+-	gps = kcalloc(3, sizeof(struct config_group *), GFP_KERNEL);
+-	sps = kzalloc(sizeof(struct dlm_spaces), GFP_KERNEL);
+-	cms = kzalloc(sizeof(struct dlm_comms), GFP_KERNEL);
++	cl = kzalloc(sizeof(struct dlm_cluster), GFP_NOFS);
++	gps = kcalloc(3, sizeof(struct config_group *), GFP_NOFS);
++	sps = kzalloc(sizeof(struct dlm_spaces), GFP_NOFS);
++	cms = kzalloc(sizeof(struct dlm_comms), GFP_NOFS);
+ 
+ 	if (!cl || !gps || !sps || !cms)
+ 		goto fail;
+@@ -482,9 +482,9 @@ static struct config_group *make_space(struct config_group *g, const char *name)
+ 	struct dlm_nodes *nds = NULL;
+ 	void *gps = NULL;
+ 
+-	sp = kzalloc(sizeof(struct dlm_space), GFP_KERNEL);
+-	gps = kcalloc(2, sizeof(struct config_group *), GFP_KERNEL);
+-	nds = kzalloc(sizeof(struct dlm_nodes), GFP_KERNEL);
++	sp = kzalloc(sizeof(struct dlm_space), GFP_NOFS);
++	gps = kcalloc(2, sizeof(struct config_group *), GFP_NOFS);
++	nds = kzalloc(sizeof(struct dlm_nodes), GFP_NOFS);
+ 
+ 	if (!sp || !gps || !nds)
+ 		goto fail;
+@@ -536,7 +536,7 @@ static struct config_item *make_comm(struct config_group *g, const char *name)
+ {
+ 	struct dlm_comm *cm;
+ 
+-	cm = kzalloc(sizeof(struct dlm_comm), GFP_KERNEL);
++	cm = kzalloc(sizeof(struct dlm_comm), GFP_NOFS);
+ 	if (!cm)
+ 		return ERR_PTR(-ENOMEM);
+ 
+@@ -569,7 +569,7 @@ static struct config_item *make_node(struct config_group *g, const char *name)
+ 	struct dlm_space *sp = config_item_to_space(g->cg_item.ci_parent);
+ 	struct dlm_node *nd;
+ 
+-	nd = kzalloc(sizeof(struct dlm_node), GFP_KERNEL);
++	nd = kzalloc(sizeof(struct dlm_node), GFP_NOFS);
+ 	if (!nd)
+ 		return ERR_PTR(-ENOMEM);
+ 
+@@ -705,7 +705,7 @@ static ssize_t comm_addr_write(struct dlm_comm *cm, const char *buf, size_t len)
+ 	if (cm->addr_count >= DLM_MAX_ADDR_COUNT)
+ 		return -ENOSPC;
+ 
+-	addr = kzalloc(sizeof(*addr), GFP_KERNEL);
++	addr = kzalloc(sizeof(*addr), GFP_NOFS);
+ 	if (!addr)
+ 		return -ENOMEM;
+ 
+@@ -868,7 +868,7 @@ int dlm_nodeid_list(char *lsname, int **ids_out, int *ids_count_out,
+ 
+ 	ids_count = sp->members_count;
+ 
+-	ids = kcalloc(ids_count, sizeof(int), GFP_KERNEL);
++	ids = kcalloc(ids_count, sizeof(int), GFP_NOFS);
+ 	if (!ids) {
+ 		rv = -ENOMEM;
+ 		goto out;
+@@ -886,7 +886,7 @@ int dlm_nodeid_list(char *lsname, int **ids_out, int *ids_count_out,
+ 	if (!new_count)
+ 		goto out_ids;
+ 
+-	new = kcalloc(new_count, sizeof(int), GFP_KERNEL);
++	new = kcalloc(new_count, sizeof(int), GFP_NOFS);
+ 	if (!new) {
+ 		kfree(ids);
+ 		rv = -ENOMEM;
+diff --git a/fs/dlm/debug_fs.c b/fs/dlm/debug_fs.c
+index 1c8bb8c..375a235 100644
+--- a/fs/dlm/debug_fs.c
++++ b/fs/dlm/debug_fs.c
+@@ -404,7 +404,7 @@ static void *table_seq_start(struct seq_file *seq, loff_t *pos)
+ 	if (bucket >= ls->ls_rsbtbl_size)
+ 		return NULL;
+ 
+-	ri = kzalloc(sizeof(struct rsbtbl_iter), GFP_KERNEL);
++	ri = kzalloc(sizeof(struct rsbtbl_iter), GFP_NOFS);
+ 	if (!ri)
+ 		return NULL;
+ 	if (n == 0)
+diff --git a/fs/dlm/dir.c b/fs/dlm/dir.c
+index c4dfa1d..7b84c1d 100644
+--- a/fs/dlm/dir.c
++++ b/fs/dlm/dir.c
+@@ -49,8 +49,7 @@ static struct dlm_direntry *get_free_de(struct dlm_ls *ls, int len)
+ 	spin_unlock(&ls->ls_recover_list_lock);
+ 
+ 	if (!found)
+-		de = kzalloc(sizeof(struct dlm_direntry) + len,
+-			     ls->ls_allocation);
++		de = kzalloc(sizeof(struct dlm_direntry) + len, GFP_NOFS);
+ 	return de;
+ }
+ 
+@@ -212,7 +211,7 @@ int dlm_recover_directory(struct dlm_ls *ls)
+ 
+ 	dlm_dir_clear(ls);
+ 
+-	last_name = kmalloc(DLM_RESNAME_MAXLEN, ls->ls_allocation);
++	last_name = kmalloc(DLM_RESNAME_MAXLEN, GFP_NOFS);
+ 	if (!last_name)
+ 		goto out;
+ 
+@@ -323,7 +322,7 @@ static int get_entry(struct dlm_ls *ls, int nodeid, char *name,
+ 	if (namelen > DLM_RESNAME_MAXLEN)
+ 		return -EINVAL;
+ 
+-	de = kzalloc(sizeof(struct dlm_direntry) + namelen, ls->ls_allocation);
++	de = kzalloc(sizeof(struct dlm_direntry) + namelen, GFP_NOFS);
+ 	if (!de)
+ 		return -ENOMEM;
+ 
+diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
+index d01ca0a..826d3dc 100644
+--- a/fs/dlm/dlm_internal.h
++++ b/fs/dlm/dlm_internal.h
+@@ -473,7 +473,6 @@ struct dlm_ls {
+ 	int			ls_low_nodeid;
+ 	int			ls_total_weight;
+ 	int			*ls_node_array;
+-	gfp_t			ls_allocation;
+ 
+ 	struct dlm_rsb		ls_stub_rsb;	/* for returning errors */
+ 	struct dlm_lkb		ls_stub_lkb;	/* for returning errors */
+diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
+index eb507c4..9c0c1db 100644
+--- a/fs/dlm/lock.c
++++ b/fs/dlm/lock.c
+@@ -2689,7 +2689,7 @@ static int _create_message(struct dlm_ls *ls, int mb_len,
+ 	   pass into lowcomms_commit and a message buffer (mb) that we
+ 	   write our data into */
+ 
+-	mh = dlm_lowcomms_get_buffer(to_nodeid, mb_len, ls->ls_allocation, &mb);
++	mh = dlm_lowcomms_get_buffer(to_nodeid, mb_len, GFP_NOFS, &mb);
+ 	if (!mh)
+ 		return -ENOBUFS;
+ 
+@@ -4512,7 +4512,7 @@ int dlm_user_request(struct dlm_ls *ls, struct dlm_user_args *ua,
+ 	}
+ 
+ 	if (flags & DLM_LKF_VALBLK) {
+-		ua->lksb.sb_lvbptr = kzalloc(DLM_USER_LVB_LEN, GFP_KERNEL);
++		ua->lksb.sb_lvbptr = kzalloc(DLM_USER_LVB_LEN, GFP_NOFS);
+ 		if (!ua->lksb.sb_lvbptr) {
+ 			kfree(ua);
+ 			__put_lkb(ls, lkb);
+@@ -4582,7 +4582,7 @@ int dlm_user_convert(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+ 	ua = lkb->lkb_ua;
+ 
+ 	if (flags & DLM_LKF_VALBLK && !ua->lksb.sb_lvbptr) {
+-		ua->lksb.sb_lvbptr = kzalloc(DLM_USER_LVB_LEN, GFP_KERNEL);
++		ua->lksb.sb_lvbptr = kzalloc(DLM_USER_LVB_LEN, GFP_NOFS);
+ 		if (!ua->lksb.sb_lvbptr) {
+ 			error = -ENOMEM;
+ 			goto out_put;
+diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
+index d489fcc..c010ecf 100644
+--- a/fs/dlm/lockspace.c
++++ b/fs/dlm/lockspace.c
+@@ -430,7 +430,7 @@ static int new_lockspace(const char *name, int namelen, void **lockspace,
+ 
+ 	error = -ENOMEM;
+ 
+-	ls = kzalloc(sizeof(struct dlm_ls) + namelen, GFP_KERNEL);
++	ls = kzalloc(sizeof(struct dlm_ls) + namelen, GFP_NOFS);
+ 	if (!ls)
+ 		goto out;
+ 	memcpy(ls->ls_name, name, namelen);
+@@ -443,11 +443,6 @@ static int new_lockspace(const char *name, int namelen, void **lockspace,
+ 	if (flags & DLM_LSFL_TIMEWARN)
+ 		set_bit(LSFL_TIMEWARN, &ls->ls_flags);
+ 
+-	if (flags & DLM_LSFL_FS)
+-		ls->ls_allocation = GFP_NOFS;
+-	else
+-		ls->ls_allocation = GFP_KERNEL;
+-
+ 	/* ls_exflags are forced to match among nodes, and we don't
+ 	   need to require all nodes to have some flags set */
+ 	ls->ls_exflags = (flags & ~(DLM_LSFL_TIMEWARN | DLM_LSFL_FS |
+@@ -456,7 +451,7 @@ static int new_lockspace(const char *name, int namelen, void **lockspace,
+ 	size = dlm_config.ci_rsbtbl_size;
+ 	ls->ls_rsbtbl_size = size;
+ 
+-	ls->ls_rsbtbl = kmalloc(sizeof(struct dlm_rsbtable) * size, GFP_KERNEL);
++	ls->ls_rsbtbl = kmalloc(sizeof(struct dlm_rsbtable) * size, GFP_NOFS);
+ 	if (!ls->ls_rsbtbl)
+ 		goto out_lsfree;
+ 	for (i = 0; i < size; i++) {
+@@ -468,7 +463,7 @@ static int new_lockspace(const char *name, int namelen, void **lockspace,
+ 	size = dlm_config.ci_lkbtbl_size;
+ 	ls->ls_lkbtbl_size = size;
+ 
+-	ls->ls_lkbtbl = kmalloc(sizeof(struct dlm_lkbtable) * size, GFP_KERNEL);
++	ls->ls_lkbtbl = kmalloc(sizeof(struct dlm_lkbtable) * size, GFP_NOFS);
+ 	if (!ls->ls_lkbtbl)
+ 		goto out_rsbfree;
+ 	for (i = 0; i < size; i++) {
+@@ -480,7 +475,7 @@ static int new_lockspace(const char *name, int namelen, void **lockspace,
+ 	size = dlm_config.ci_dirtbl_size;
+ 	ls->ls_dirtbl_size = size;
+ 
+-	ls->ls_dirtbl = kmalloc(sizeof(struct dlm_dirtable) * size, GFP_KERNEL);
++	ls->ls_dirtbl = kmalloc(sizeof(struct dlm_dirtable) * size, GFP_NOFS);
+ 	if (!ls->ls_dirtbl)
+ 		goto out_lkbfree;
+ 	for (i = 0; i < size; i++) {
+@@ -527,7 +522,7 @@ static int new_lockspace(const char *name, int namelen, void **lockspace,
+ 	mutex_init(&ls->ls_requestqueue_mutex);
+ 	mutex_init(&ls->ls_clear_proc_locks);
+ 
+-	ls->ls_recover_buf = kmalloc(dlm_config.ci_buffer_size, GFP_KERNEL);
++	ls->ls_recover_buf = kmalloc(dlm_config.ci_buffer_size, GFP_NOFS);
+ 	if (!ls->ls_recover_buf)
+ 		goto out_dirfree;
+ 
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 70736eb..52cab16 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -1060,7 +1060,7 @@ static void init_local(void)
+ 		if (dlm_our_addr(&sas, i))
+ 			break;
+ 
+-		addr = kmalloc(sizeof(*addr), GFP_KERNEL);
++		addr = kmalloc(sizeof(*addr), GFP_NOFS);
+ 		if (!addr)
+ 			break;
+ 		memcpy(addr, &sas, sizeof(*addr));
+@@ -1099,7 +1099,7 @@ static int sctp_listen_for_all(void)
+ 	struct sockaddr_storage localaddr;
+ 	struct sctp_event_subscribe subscribe;
+ 	int result = -EINVAL, num = 1, i, addr_len;
+-	struct connection *con = nodeid2con(0, GFP_KERNEL);
++	struct connection *con = nodeid2con(0, GFP_NOFS);
+ 	int bufsize = NEEDED_RMEM;
+ 
+ 	if (!con)
+@@ -1171,7 +1171,7 @@ out:
+ static int tcp_listen_for_all(void)
+ {
+ 	struct socket *sock = NULL;
+-	struct connection *con = nodeid2con(0, GFP_KERNEL);
++	struct connection *con = nodeid2con(0, GFP_NOFS);
+ 	int result = -EINVAL;
+ 
+ 	if (!con)
+diff --git a/fs/dlm/member.c b/fs/dlm/member.c
+index b128775..84f70bf 100644
+--- a/fs/dlm/member.c
++++ b/fs/dlm/member.c
+@@ -48,7 +48,7 @@ static int dlm_add_member(struct dlm_ls *ls, int nodeid)
+ 	struct dlm_member *memb;
+ 	int w, error;
+ 
+-	memb = kzalloc(sizeof(struct dlm_member), ls->ls_allocation);
++	memb = kzalloc(sizeof(struct dlm_member), GFP_NOFS);
+ 	if (!memb)
+ 		return -ENOMEM;
+ 
+@@ -143,7 +143,7 @@ static void make_member_array(struct dlm_ls *ls)
+ 
+ 	ls->ls_total_weight = total;
+ 
+-	array = kmalloc(sizeof(int) * total, ls->ls_allocation);
++	array = kmalloc(sizeof(int) * total, GFP_NOFS);
+ 	if (!array)
+ 		return;
+ 
+@@ -226,7 +226,7 @@ int dlm_recover_members(struct dlm_ls *ls, struct dlm_recover *rv, int *neg_out)
+ 			continue;
+ 		log_debug(ls, "new nodeid %d is a re-added member", rv->new[i]);
+ 
+-		memb = kzalloc(sizeof(struct dlm_member), ls->ls_allocation);
++		memb = kzalloc(sizeof(struct dlm_member), GFP_NOFS);
+ 		if (!memb)
+ 			return -ENOMEM;
+ 		memb->nodeid = rv->new[i];
+@@ -341,7 +341,7 @@ int dlm_ls_start(struct dlm_ls *ls)
+ 	int *ids = NULL, *new = NULL;
+ 	int error, ids_count = 0, new_count = 0;
+ 
+-	rv = kzalloc(sizeof(struct dlm_recover), ls->ls_allocation);
++	rv = kzalloc(sizeof(struct dlm_recover), GFP_NOFS);
+ 	if (!rv)
+ 		return -ENOMEM;
+ 
+diff --git a/fs/dlm/memory.c b/fs/dlm/memory.c
+index c1775b8..8e0d00d 100644
+--- a/fs/dlm/memory.c
++++ b/fs/dlm/memory.c
+@@ -39,7 +39,7 @@ char *dlm_allocate_lvb(struct dlm_ls *ls)
+ {
+ 	char *p;
+ 
+-	p = kzalloc(ls->ls_lvblen, ls->ls_allocation);
++	p = kzalloc(ls->ls_lvblen, GFP_NOFS);
+ 	return p;
+ }
+ 
+@@ -57,7 +57,7 @@ struct dlm_rsb *dlm_allocate_rsb(struct dlm_ls *ls, int namelen)
+ 
+ 	DLM_ASSERT(namelen <= DLM_RESNAME_MAXLEN,);
+ 
+-	r = kzalloc(sizeof(*r) + namelen, ls->ls_allocation);
++	r = kzalloc(sizeof(*r) + namelen, GFP_NOFS);
+ 	return r;
+ }
+ 
+@@ -72,7 +72,7 @@ struct dlm_lkb *dlm_allocate_lkb(struct dlm_ls *ls)
+ {
+ 	struct dlm_lkb *lkb;
+ 
+-	lkb = kmem_cache_zalloc(lkb_cache, ls->ls_allocation);
++	lkb = kmem_cache_zalloc(lkb_cache, GFP_NOFS);
+ 	return lkb;
+ }
+ 
+diff --git a/fs/dlm/netlink.c b/fs/dlm/netlink.c
+index 55ea369..052095c 100644
+--- a/fs/dlm/netlink.c
++++ b/fs/dlm/netlink.c
+@@ -26,7 +26,7 @@ static int prepare_data(u8 cmd, struct sk_buff **skbp, size_t size)
+ 	struct sk_buff *skb;
+ 	void *data;
+ 
+-	skb = genlmsg_new(size, GFP_KERNEL);
++	skb = genlmsg_new(size, GFP_NOFS);
+ 	if (!skb)
+ 		return -ENOMEM;
+ 
+diff --git a/fs/dlm/plock.c b/fs/dlm/plock.c
+index 16f682e..2863deb 100644
+--- a/fs/dlm/plock.c
++++ b/fs/dlm/plock.c
+@@ -82,7 +82,7 @@ int dlm_posix_lock(dlm_lockspace_t *lockspace, u64 number, struct file *file,
+ 	if (!ls)
+ 		return -EINVAL;
+ 
+-	xop = kzalloc(sizeof(*xop), GFP_KERNEL);
++	xop = kzalloc(sizeof(*xop), GFP_NOFS);
+ 	if (!xop) {
+ 		rv = -ENOMEM;
+ 		goto out;
+@@ -211,7 +211,7 @@ int dlm_posix_unlock(dlm_lockspace_t *lockspace, u64 number, struct file *file,
+ 	if (!ls)
+ 		return -EINVAL;
+ 
+-	op = kzalloc(sizeof(*op), GFP_KERNEL);
++	op = kzalloc(sizeof(*op), GFP_NOFS);
+ 	if (!op) {
+ 		rv = -ENOMEM;
+ 		goto out;
+@@ -266,7 +266,7 @@ int dlm_posix_get(dlm_lockspace_t *lockspace, u64 number, struct file *file,
+ 	if (!ls)
+ 		return -EINVAL;
+ 
+-	op = kzalloc(sizeof(*op), GFP_KERNEL);
++	op = kzalloc(sizeof(*op), GFP_NOFS);
+ 	if (!op) {
+ 		rv = -ENOMEM;
+ 		goto out;
+diff --git a/fs/dlm/rcom.c b/fs/dlm/rcom.c
+index 67522c2..3c83a49 100644
+--- a/fs/dlm/rcom.c
++++ b/fs/dlm/rcom.c
+@@ -38,7 +38,7 @@ static int create_rcom(struct dlm_ls *ls, int to_nodeid, int type, int len,
+ 	char *mb;
+ 	int mb_len = sizeof(struct dlm_rcom) + len;
+ 
+-	mh = dlm_lowcomms_get_buffer(to_nodeid, mb_len, ls->ls_allocation, &mb);
++	mh = dlm_lowcomms_get_buffer(to_nodeid, mb_len, GFP_NOFS, &mb);
+ 	if (!mh) {
+ 		log_print("create_rcom to %d type %d len %d ENOBUFS",
+ 			  to_nodeid, type, len);
+diff --git a/fs/dlm/requestqueue.c b/fs/dlm/requestqueue.c
+index 7a2307c..a44fa22 100644
+--- a/fs/dlm/requestqueue.c
++++ b/fs/dlm/requestqueue.c
+@@ -35,7 +35,7 @@ void dlm_add_requestqueue(struct dlm_ls *ls, int nodeid, struct dlm_message *ms)
+ 	struct rq_entry *e;
+ 	int length = ms->m_header.h_length - sizeof(struct dlm_message);
+ 
+-	e = kmalloc(sizeof(struct rq_entry) + length, ls->ls_allocation);
++	e = kmalloc(sizeof(struct rq_entry) + length, GFP_NOFS);
+ 	if (!e) {
+ 		log_print("dlm_add_requestqueue: out of memory len %d", length);
+ 		return;
+diff --git a/fs/dlm/user.c b/fs/dlm/user.c
+index ebce994..e73a4bb 100644
+--- a/fs/dlm/user.c
++++ b/fs/dlm/user.c
+@@ -267,7 +267,7 @@ static int device_user_lock(struct dlm_user_proc *proc,
+ 		goto out;
+ 	}
+ 
+-	ua = kzalloc(sizeof(struct dlm_user_args), GFP_KERNEL);
++	ua = kzalloc(sizeof(struct dlm_user_args), GFP_NOFS);
+ 	if (!ua)
+ 		goto out;
+ 	ua->proc = proc;
+@@ -307,7 +307,7 @@ static int device_user_unlock(struct dlm_user_proc *proc,
+ 	if (!ls)
+ 		return -ENOENT;
+ 
+-	ua = kzalloc(sizeof(struct dlm_user_args), GFP_KERNEL);
++	ua = kzalloc(sizeof(struct dlm_user_args), GFP_NOFS);
+ 	if (!ua)
+ 		goto out;
+ 	ua->proc = proc;
+@@ -352,7 +352,7 @@ static int dlm_device_register(struct dlm_ls *ls, char *name)
+ 
+ 	error = -ENOMEM;
+ 	len = strlen(name) + strlen(name_prefix) + 2;
+-	ls->ls_device.name = kzalloc(len, GFP_KERNEL);
++	ls->ls_device.name = kzalloc(len, GFP_NOFS);
+ 	if (!ls->ls_device.name)
+ 		goto fail;
+ 
+@@ -520,7 +520,7 @@ static ssize_t device_write(struct file *file, const char __user *buf,
+ #endif
+ 		return -EINVAL;
+ 
+-	kbuf = kzalloc(count + 1, GFP_KERNEL);
++	kbuf = kzalloc(count + 1, GFP_NOFS);
+ 	if (!kbuf)
+ 		return -ENOMEM;
+ 
+@@ -546,7 +546,7 @@ static ssize_t device_write(struct file *file, const char __user *buf,
+ 
+ 		/* add 1 after namelen so that the name string is terminated */
+ 		kbuf = kzalloc(sizeof(struct dlm_write_request) + namelen + 1,
+-			       GFP_KERNEL);
++			       GFP_NOFS);
+ 		if (!kbuf) {
+ 			kfree(k32buf);
+ 			return -ENOMEM;
+@@ -648,7 +648,7 @@ static int device_open(struct inode *inode, struct file *file)
+ 	if (!ls)
+ 		return -ENOENT;
+ 
+-	proc = kzalloc(sizeof(struct dlm_user_proc), GFP_KERNEL);
++	proc = kzalloc(sizeof(struct dlm_user_proc), GFP_NOFS);
+ 	if (!proc) {
+ 		dlm_put_lockspace(ls);
+ 		return -ENOMEM;
+-- 
+1.5.5.6
 
-Now, I can easily see one-second delays in code that simply has never been 
-thought about or cared about it. We used to have things like that in the 
-serial code where just probing for non-existent serial ports took half a 
-second per port because there was a timeout. 
-
-But christ, using that as an argument for "we should do things 
-asynchronously" sounds like a crazy idea. Why not just take a hard look at 
-the driver in question, asking hard questions like "does it really need to 
-do something horrible like that"?
-
-Because bad coding is much more likely to be the real reason.
-
-			Linus
