@@ -1,160 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZLIJxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZLIJva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbZLIJxL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbZLIJxK
+	id S1753435AbZLIJva (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbZLIJv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:53:10 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61620 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753735AbZLIJxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:53:06 -0500
-Message-ID: <4B1F7322.80103@cn.fujitsu.com>
-Date: Wed, 09 Dec 2009 17:51:30 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 9 Dec 2009 04:51:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:46806 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753229AbZLIJv2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:51:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=QErtEg4UyrT1S9LnHgHKPcT+RhoIadpPgsdDiGbyYsoa5J5JrD5MGTFRjFgjvui1IQ
+         u+wV2BiGUz5l3lWTD5PqPYQ6cZgu6OQRaIWo3a/+REmsZQKkoy1AfJgcEtAqxcJke5Po
+         Py6goh/G60ccKooa9Oach9hv7U/1gd5usMSVQ=
+Message-ID: <4B1F7324.9000402@gmail.com>
+Date: Wed, 09 Dec 2009 10:51:32 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-9.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Xiao Guangrong <ericxiao.gr@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, T??r??k Edwin <edwintorok@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3] perf/sched: fix for getting task's execution time
-References: <4B1B8E0E.3040007@cn.fujitsu.com> <1260097512.7818.341.camel@laptop> <1260097609.7818.349.camel@laptop> <4B1BE588.8020608@gmail.com> <4B1CACC4.3030709@cn.fujitsu.com> <20091207073043.GH10868@elte.hu>
-In-Reply-To: <20091207073043.GH10868@elte.hu>
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, scameron@beardog.cce.hp.com,
+       James.Bottomley@HansenPartnership.com, achiang@hp.com,
+       jens.axboe@oracle.com, mikem@beardog.cce.hp.com
+Subject: Re: + hpsa-use-msleep-instead-of-schedule_timeout.patch added to
+ -mm tree
+References: <200912082204.nB8M48oL027313@imap1.linux-foundation.org>	<4B1ED241.4090803@gmail.com> <20091208144419.af6298ba.akpm@linux-foundation.org>
+In-Reply-To: <20091208144419.af6298ba.akpm@linux-foundation.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In current code, task's execute time is got by reading
-'/proc/<pid>/sched' file, it's wrong if the task is created
-by pthread_create(), because every thread task has same pid.
+On 12/08/2009 11:44 PM, Andrew Morton wrote:
+> On Tue, 08 Dec 2009 23:25:05 +0100
+> Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+>> On 12/08/2009 11:04 PM, akpm@linux-foundation.org wrote:
+>>> Subject: hpsa: use msleep() instead of schedule_timeout
+>>> From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+>>>
+>>> Use msleep() instead of schedule_timeout
+>>
+>> The patch does more than that and moreover in a wrong manner, see below.
+>>
+>>> @@ -3262,8 +3262,8 @@ static int hpsa_pci_init(struct ctlr_inf
+>>>  		if (!(readl(h->vaddr + SA5_DOORBELL) & CFGTBL_ChangeReq))
+>>>  			break;
+>>>  		/* delay and try again */
+>>> -		set_current_state(TASK_INTERRUPTIBLE);
+>>> -		schedule_timeout(10);
+>>> +		set_current_state(TASK_UNINTERRUPTIBLE);
+>>> +		msleep(10);
+>>
+>> Why do you change interruptible sleep to uninterruptible?
+> 
+> Stealth bugfix ;)
+> 
+> If the calling process (called "modprobe") has signal_pending()
+> (someone ^C'ed it) then the TASK_INTERRUPTIBLE sleep will be a no-op
+> and the driver will probably go and screw things up.
 
-This way also has two demerits:
+Ok, then it should have been in the changelog. The changelog was just
+"Use msleep() instead of schedule_timeout". Apart it doesn't mention why
+it is changed (it might be obvious for some that it's a cleanup), it
+doesn't do merely that.
 
-1: 'perf sched replay' can't work if the kernel not compile
-    with 'CONFIG_SCHED_DEBUG' option
-2: perf tool should depend on proc file system
+>>> diff -puN drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout drivers/scsi/hpsa.h
+>>> --- a/drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout
+>>> +++ a/drivers/scsi/hpsa.h
+>> ...
+>>> @@ -139,7 +139,7 @@ struct ctlr_info {
+>>>  #define HPSA_BOARD_READY_ITERATIONS \
+>>>  	((HPSA_BOARD_READY_WAIT_SECS * 1000) / \
+>>>  		HPSA_BOARD_READY_POLL_INTERVAL_MSECS)
+>>> -#define HPSA_POST_RESET_PAUSE (30 * HZ)
+>>> +#define HPSA_POST_RESET_PAUSE_MSECS (3000)
+>>
+>> Ehm?
+> 
+> 30 seconds would have sucked anyway ;)
 
-So, this patch use PERF_COUNT_SW_TASK_CLOCK to get task's
-execution time instead of reading /proc file
+Might be. But again, then it should be explained in the changelog. And
+as this is totally separate thing, also in a separate patch.
 
-Changelog v2 -> v3:
-use PERF_COUNT_SW_TASK_CLOCK instead of rusage() as Ingo's suggestion
+At least I though this is the politics.
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- tools/perf/builtin-sched.c |   55 +++++++++++++++++++++----------------------
- 1 files changed, 27 insertions(+), 28 deletions(-)
-
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 19f43fa..b12b23a 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -13,7 +13,6 @@
- #include "util/debug.h"
- #include "util/data_map.h"
- 
--#include <sys/types.h>
- #include <sys/prctl.h>
- 
- #include <semaphore.h>
-@@ -414,34 +413,33 @@ static u64 get_cpu_usage_nsec_parent(void)
- 	return sum;
- }
- 
--static u64 get_cpu_usage_nsec_self(void)
-+static int self_open_counters(void)
- {
--	char filename [] = "/proc/1234567890/sched";
--	unsigned long msecs, nsecs;
--	char *line = NULL;
--	u64 total = 0;
--	size_t len = 0;
--	ssize_t chars;
--	FILE *file;
--	int ret;
-+	struct perf_event_attr attr;
-+	int fd;
- 
--	sprintf(filename, "/proc/%d/sched", getpid());
--	file = fopen(filename, "r");
--	BUG_ON(!file);
-+	memset(&attr, 0, sizeof(attr));
- 
--	while ((chars = getline(&line, &len, file)) != -1) {
--		ret = sscanf(line, "se.sum_exec_runtime : %ld.%06ld\n",
--			&msecs, &nsecs);
--		if (ret == 2) {
--			total = msecs*1e6 + nsecs;
--			break;
--		}
--	}
--	if (line)
--		free(line);
--	fclose(file);
-+	attr.type = PERF_TYPE_SOFTWARE;
-+	attr.config = PERF_COUNT_SW_TASK_CLOCK;
- 
--	return total;
-+	fd = sys_perf_event_open(&attr, 0, -1, -1, 0);
-+
-+	if (fd < 0)
-+		die("Error: sys_perf_event_open() syscall returned"
-+		    "with %d (%s)\n", fd, strerror(errno));
-+	return fd;
-+}
-+
-+static u64 get_cpu_usage_nsec_self(int fd)
-+{
-+	u64 runtime;
-+	int ret;
-+
-+	ret = read(fd, &runtime, sizeof(runtime));
-+	BUG_ON(ret != sizeof(runtime));
-+
-+	return runtime;
- }
- 
- static void *thread_func(void *ctx)
-@@ -450,9 +448,11 @@ static void *thread_func(void *ctx)
- 	u64 cpu_usage_0, cpu_usage_1;
- 	unsigned long i, ret;
- 	char comm2[22];
-+	int fd;
- 
- 	sprintf(comm2, ":%s", this_task->comm);
- 	prctl(PR_SET_NAME, comm2);
-+	fd = self_open_counters();
- 
- again:
- 	ret = sem_post(&this_task->ready_for_work);
-@@ -462,16 +462,15 @@ again:
- 	ret = pthread_mutex_unlock(&start_work_mutex);
- 	BUG_ON(ret);
- 
--	cpu_usage_0 = get_cpu_usage_nsec_self();
-+	cpu_usage_0 = get_cpu_usage_nsec_self(fd);
- 
- 	for (i = 0; i < this_task->nr_events; i++) {
- 		this_task->curr_event = i;
- 		process_sched_event(this_task, this_task->atoms[i]);
- 	}
- 
--	cpu_usage_1 = get_cpu_usage_nsec_self();
-+	cpu_usage_1 = get_cpu_usage_nsec_self(fd);
- 	this_task->cpu_usage = cpu_usage_1 - cpu_usage_0;
--
- 	ret = sem_post(&this_task->work_done_sem);
- 	BUG_ON(ret);
- 
+thanks,
 -- 
-1.6.1.2
-
-
-
-
-
+js
