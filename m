@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZLIFkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbZLIFvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616AbZLIFkF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 00:40:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZLIFj6
+	id S1751955AbZLIFvg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 00:51:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbZLIFvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 00:39:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:18788 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbZLIFj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 00:39:57 -0500
-Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes
- when ..."
-From: Dave Airlie <airlied@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net, keithp@keithp.com, eric@anholt.net,
-       jbarnes@virtuousgeek.org
-In-Reply-To: <200912090007.45545.arnd@arndb.de>
-References: <200912071830.14697.arnd@arndb.de>
-	 <200912082259.48715.arnd@arndb.de> <1260310432.12969.0.camel@t60prh>
-	 <200912090007.45545.arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 15:38:07 +1000
-Message-Id: <1260337087.3658.1.camel@t60prh>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Dec 2009 00:51:35 -0500
+Received: from RELAY.ANDREW.CMU.EDU ([128.2.10.212]:49679 "EHLO
+	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbZLIFvf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 00:51:35 -0500
+Date: Wed, 9 Dec 2009 00:50:16 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, menage@google.com, bblum@andrew.cmu.edu
+Subject: Re: [RFC] [PATCH 1/5] cgroups: revamp subsys array
+Message-ID: <20091209055016.GA12342@andrew.cmu.edu>
+Mail-Followup-To: Li Zefan <lizf@cn.fujitsu.com>,
+	linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+	akpm@linux-foundation.org, menage@google.com
+References: <20091204085349.GA18867@andrew.cmu.edu> <20091204085508.GA18912@andrew.cmu.edu> <4B1E0283.70108@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1E0283.70108@cn.fujitsu.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 00:07 +0100, Arnd Bergmann wrote:
-> On Tuesday 08 December 2009, Dave Airlie wrote:
-> > > 
-> > > Sorry for blaming the wrong patch, especially if it already caused a lot 
-> > > of work. I'll try blaming ec2a4c3fdc8 "drm/i915: get the bridge device
-> > > once" now, that is the next-best candidate that my bisection pointed to,
-> > > but I'll do more rigorous testing.
+On Tue, Dec 08, 2009 at 03:38:43PM +0800, Li Zefan wrote:
+> > @@ -1291,6 +1324,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+> >  	struct cgroupfs_root *new_root;
+> >  
+> >  	/* First find the desired set of subsystems */
+> > +	down_read(&subsys_mutex);
 > 
-> It just crashed again with both 620f378 and ec2a4c3fdc8 reverted as well, 
-> after about an hour of uptime.
+> Hmm.. this can lead to deadlock. sget() returns success with sb->s_umount
+> held, so here we have:
 > 
-> > Btw is this just a laptop with no monitor plugged in?
-> > 
-> > just want to rule out the patch you mentioned for any sort of memory
-> > corruption.
+> 	down_read(&subsys_mutex);
 > 
-> It's a desktop machine with three outputs, Asus P5Q-EM mainboard.
-> VGA is not connected at all, DVI has an open-ended cable on it, i.e. no
-> screen on it. HDMI is connected through a cheap passive HDMI multiswitch
-> to the DVI-D input of a Lenovo screen.
+> 	down_write(&sb->s_umount);
+> 
+> On the other hand, sb->s_umount is held before calling kill_sb(),
+> so when umounting we have:
+> 
+> 	down_write(&sb->s_umount);
+> 
+> 	down_read(&subsys_mutex);
 
+Unless I'm gravely mistaken, you can't have deadlock on an rwsem when
+it's being taken for reading in both cases? You would have to have at
+least one of the cases being down_write.
 
-CC'ed the Intel ppl,
+In fairness to readability, perhaps subsys_mutex should instead be
+subsys_rwsem? It seemed to me to be that calling it "mutex" was
+conventional anyway.
 
-regression since 2.6.31 by the looks of it, bisection has found two
-false positives so far.
-
-Dave.
-
+-- bblum
