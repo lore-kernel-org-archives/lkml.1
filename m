@@ -1,65 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZLIMCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbZLIMBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbZLIMCV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 07:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbZLIMCU
+	id S1755340AbZLIMBb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 07:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZLIMBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 07:02:20 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:53481 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752914AbZLIMCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 07:02:19 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] modpost: fix asprintf warnings
-Date: Wed,  9 Dec 2009 07:02:23 -0500
-Message-Id: <1260360143-17093-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.5
+	Wed, 9 Dec 2009 07:01:30 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40470 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752876AbZLIMBa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 07:01:30 -0500
+Date: Wed, 9 Dec 2009 12:03:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ben Hutchings <ben@decadent.org.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 2/5] firmware/WHENCE: Correct filenames for ambassador,
+ bnx2x, cxgb3
+Message-ID: <20091209120334.4b7f2051@lxorguk.ukuu.org.uk>
+In-Reply-To: <1260335742.4532.246.camel@localhost>
+References: <1260335742.4532.246.camel@localhost>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On compilers with security warnings enabled by default, we get:
+On Wed, 09 Dec 2009 05:15:42 +0000
+Ben Hutchings <ben@decadent.org.uk> wrote:
 
-scripts/mod/modpost.c: In function 'get_markers':
-scripts/mod/modpost.c:1562: warning: ignoring return value of 'asprintf',
-                                     declared with attribute warn_unused_result
-scripts/mod/modpost.c: In function 'add_marker':
-scripts/mod/modpost.c:1982: warning: ignoring return value of 'asprintf',
-                                     declared with attribute warn_unused_result
+> Filenames should be the names of the installed binary files, without
+> the base directory.
 
-So check the return value and abort on errors.
-
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- scripts/mod/modpost.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 801a16a..c4df538 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1559,7 +1559,8 @@ static void get_markers(struct elf_info *info, struct module *mod)
- 			const char *name = strings + sym->st_value;
- 			const char *fmt = strchr(name, '\0') + 1;
- 			char *line = NULL;
--			asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt);
-+			if (asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt) == -1)
-+				fatal("asprintf() with %s failed", name);
- 			NOFAIL(line);
- 			mod->markers[n++] = line;
- 		}
-@@ -1979,7 +1980,8 @@ static void write_dump(const char *fname)
- static void add_marker(struct module *mod, const char *name, const char *fmt)
- {
- 	char *line = NULL;
--	asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt);
-+	if (asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt) == -1)
-+		fatal("asprintf() with %s failed", name);
- 	NOFAIL(line);
- 
- 	mod->markers = NOFAIL(realloc(mod->markers, ((mod->nmarkers + 1) *
--- 
-1.6.5.5
+Disagree - the WHENCE file says where it comes from and if it originally
+came in a hex file then thats the origin.
 
