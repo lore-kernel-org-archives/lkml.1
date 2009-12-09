@@ -1,127 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZLILoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZLILqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbZLILoG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 06:44:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZLILoF
+	id S1755276AbZLILqL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 06:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZLILqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 06:44:05 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:14850 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754598AbZLILoE (ORCPT
+	Wed, 9 Dec 2009 06:46:10 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38188 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754927AbZLILqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 06:44:04 -0500
-X-Trace: 300616225/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.111.197
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AicBABMcH0tQKW/F/2dsb2JhbAAI1iOELAQ
-X-IronPort-AV: E=Sophos;i="4.47,368,1257120000"; 
-   d="scan'208";a="300616225"
-Date: Wed, 9 Dec 2009 11:43:57 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: David Miller <davem@davemloft.net>, Ollie Wild <aaw@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Rik van Riel <riel@redhat.com>,
-       viro@ftp.linux.org.uk, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCHSET] mremap/mmap mess
-In-Reply-To: <20091208220638.GN14381@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0912091041250.23659@sister.anvils>
-References: <20091208060701.GM14381@ZenIV.linux.org.uk>
- <Pine.LNX.4.64.0912081142280.31223@sister.anvils> <Pine.LNX.4.64.0912081254500.3365@sister.anvils>
- <20091208.130802.25121122.davem@davemloft.net> <20091208220638.GN14381@ZenIV.linux.org.uk>
+	Wed, 9 Dec 2009 06:46:09 -0500
+Date: Wed, 9 Dec 2009 12:46:07 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Joe Perches <joe@perches.com>
+Cc: Ryan Mallon <ryan@bluewatersys.com>, Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Brian Swetland <swetland@google.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Iliyan Malchev <malchev@google.com>
+Subject: Re: GPIO support for HTC Dream
+Message-ID: <20091209114607.GE22752@elf.ucw.cz>
+References: <20091208102842.GH12264@elf.ucw.cz>
+ <4B1EB57D.6070408@bluewatersys.com>
+ <20091208214658.GC4164@elf.ucw.cz>
+ <1260309812.27677.117.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260309812.27677.117.camel@Joe-Laptop.home>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Peter, Ollie:
-  What started out with some nasty problems in mremap(), not checking
-  as mmap() does that it was expanding or moving into forbidden areas
-  of the address space, has now mostly morphed into a discussion of how
-  to enforce such checks when get_user_pages() has mm != current->mm: and
-  in particular, how to eliminate get_user_pages() on bprm->mm in exec().
-  Hence I've added you, with Rik, to the Cc list.]
-
-On Tue, 8 Dec 2009, Al Viro wrote:
-> On Tue, Dec 08, 2009 at 01:08:02PM -0800, David Miller wrote:
-> > From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> > Date: Tue, 8 Dec 2009 13:03:30 +0000 (GMT)
-> > 
-> > > That would impose some (unacceptable?) limits, and require some funny
-> > > code to migrate the pages over to the new mm later (instead of
-> > > relocating within the new mm as we do now).
-> > 
-> > I think this approach would create new failure cases that don't exist
-> > now.  Whether that's acceptable or not is another issue.
-
-David: Yes, that's one of my fears too - I don't think
-rlimits would pose any new problem, but building up the argv+env below
-sp on the execer's userstack would be in danger of colliding with the
-vma below if the space allowed to that userstack is too small.  We can
-say "sorry, you left too little space for your userstack", but it's
-still a regression.  My other big fear is this: that it's such a simple
-and obvious way to do it, that it has probably been ruled out for very
-good reasons in the past.
-
-> > 
-> > The forced page table move, and TLB+cache flush that goes along with
-> > that, for every single compat task we get now on the other hand is not
-> > acceptable :-)
-
-David: This seems a valid concern, but this is the first
-time I've heard such a complaint.  Perhaps I've just not noticed them;
-but I do wonder if it's been noticed as a regression in practice, or
-just causing alarm now that Al has drawn attention to how it works.
-
-> > 
-> > I also think this page table move overhead is worse than the
-> > non-swapability added by Al's approach.
-
-David: I see your point, though it may be an issue on which the "main"
-architectures win the day.  My execer's userstack approach would have
-the same overhead as at present, I think; no, worse, it would involve
-that overhead in all cases.  Hmm.
-
+On Tue 2009-12-08 14:03:32, Joe Perches wrote:
+> On Tue, 2009-12-08 at 22:46 +0100, Pavel Machek wrote:
+> > Add GPIO support for HTC Dream.
 > 
-> We should be able to make them swappable - embed an inode into bprm, use
-> a _very_ trimmed-down analog of shmem.c to handle it, then, after switch
-> to new VM, swap what's needed in, steal it from that inode and shove resulting
-> anon pages into freshly created stack vma.  At least assuming that I haven't
-> completely misunderstood Rik's answers to my questions, which is admittedly
-> quite possible ;-)
+> Hi Pavel.  Thanks for this.
 > 
-> I'll try to do it that way and see what falls out...
+> Maybe it'd be nicer to use pr_<level> and add
+> #define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
+> ?
 
-... my hair ;-)
-I have to say, Dr Frankenstein, that this idea fills me with dread.
+It included names of functions, anyway, so agreed. Incremental patch:
 
-I'm not saying it's impossible, but the resulting creature sounds like
-it's going to be special in several easily-buggy hard-to-maintain ways.
+(I'll fold them all and resubmit).
 
-I think you already realize that shmem file pages (shared) live by
-different rules from anonymous pages (COWed): they're both swappable,
-but switching a group of pages from one to the other is going to be
-weird new territory.  (In fairness, my suggestion involves some
-weird new territory too, but considerably less scary to me.)
+diff --git a/arch/arm/mach-msm/board-dream-gpio.c b/arch/arm/mach-msm/board-dream-gpio.c
+index d9201f9..221c3bd 100644
+--- a/arch/arm/mach-msm/board-dream-gpio.c
++++ b/arch/arm/mach-msm/board-dream-gpio.c
+@@ -30,6 +30,8 @@
+ #undef MODULE_PARAM_PREFIX
+ #define MODULE_PARAM_PREFIX "board_trout."
+ 
++#define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
++
+ static uint cpld_usb_h2w_sw;
+ module_param_named(usb_h2w_sw, cpld_usb_h2w_sw, uint, 0);
+ 
+@@ -83,7 +85,7 @@ static int dream_gpio_write(struct gpio_chip *chip, unsigned n, unsigned on)
+ 	uint8_t reg_val;
+ 
+ 	if ((reg >> 1) >= ARRAY_SIZE(dream_cpld_shadow)) {
+-		printk(KERN_ERR "dream_gpio_write called on input %d\n", n);
++		pr_err("called on input %d\n", n);
+ 		return -ENOTSUPP;
+ 	}
+ 
+@@ -186,7 +188,7 @@ static void dream_gpio_irq_handler(unsigned int irq, struct irq_desc *desc)
+ 
+ 		if (v & int_mask) {
+ 			writeb(v & int_mask, DREAM_CPLD_BASE + stat_reg);
+-			printk(KERN_ERR "dream_gpio_irq_handler: got masked "
++			pr_err("got masked "
+ 			       "interrupt: %d:%02x\n", bank, v & int_mask);
+ 		}
+ 
+diff --git a/arch/arm/mach-msm/generic_gpio.c b/arch/arm/mach-msm/generic_gpio.c
+index 5164c77..1175ffd 100644
+--- a/arch/arm/mach-msm/generic_gpio.c
++++ b/arch/arm/mach-msm/generic_gpio.c
+@@ -22,6 +22,8 @@
+ 
+ #include "gpio_chip.h"
+ 
++#define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
++
+ #define GPIO_NUM_TO_CHIP_INDEX(gpio) ((gpio)>>5)
+ 
+ struct gpio_state {
+@@ -47,7 +49,7 @@ int register_gpio_chip(struct gpio_chip *new_gpio_chip)
+ 
+ 	new_gpio_chip->state = kzalloc(size, GFP_KERNEL);
+ 	if (new_gpio_chip->state == NULL) {
+-		printk(KERN_ERR "register_gpio_chip: failed to allocate state\n");
++		pr_err("failed to allocate state\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -63,7 +65,7 @@ int register_gpio_chip(struct gpio_chip *new_gpio_chip)
+ 
+ 		new_array = kmalloc(array_size * sizeof(new_array[0]), GFP_ATOMIC);
+ 		if (!new_array) {
+-			printk(KERN_ERR "register_gpio_chip: failed to allocate array\n");
++			pr_err("failed to allocate array\n");
+ 			err = -ENOMEM;
+ 			goto failed;
+ 		}
+@@ -81,7 +83,7 @@ int register_gpio_chip(struct gpio_chip *new_gpio_chip)
+ 			goto added;
+ 		}
+ 		if (gpio_chip->end >= new_gpio_chip->start) {
+-			printk(KERN_ERR "register_gpio_source %u-%u overlaps with %u-%u\n",
++			pr_err("%u-%u overlaps with %u-%u\n",
+ 			       new_gpio_chip->start, new_gpio_chip->end,
+ 			       gpio_chip->start, gpio_chip->end);
+ 			err = -EBUSY;
 
-I think you'd do better to drop the idea of swappability for the moment.
-I don't like to do so at all, but I'd rather you came up with a clean
-design without it first, and swappability be added a release later
-if it can be got to work.
 
-However, if you do drop swappability for the moment, what are you left
-with?  A reversion of commit b6a2fea39318e43fee84fa7b0b90d68bed92d2ba
-"mm: variable length argument support", but putting the pages into a
-linked list instead of a MAX_ARG_PAGES array.  Well, that should be
-very easy, but would it be adequate?
-
-Hugh
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
