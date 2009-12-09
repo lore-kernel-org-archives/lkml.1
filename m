@@ -1,91 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbZLIWKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZLIWRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbZLIWKR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 17:10:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbZLIWKL
+	id S1758130AbZLIWRj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 17:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758082AbZLIWRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 17:10:11 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58203 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757458AbZLIWKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 17:10:06 -0500
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/2] perf symbols: perf_header__read_build_ids offset'n'size should be u64
-Date: Wed,  9 Dec 2009 20:09:38 -0200
-Message-Id: <1260396578-19116-2-git-send-email-acme@infradead.org>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1260396578-19116-1-git-send-email-acme@infradead.org>
-References: <1260396578-19116-1-git-send-email-acme@infradead.org>
+	Wed, 9 Dec 2009 17:17:35 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55434 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757300AbZLIWRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 17:17:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ rwsems (was: Re: [GIT PULL] PM updates for 2.6.33)
+Date: Wed, 9 Dec 2009 23:18:24 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.32-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0912091451250.4120-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912091451250.4120-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912092318.24475.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On Wednesday 09 December 2009, Alan Stern wrote:
+> On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > For completness, below is the full async suspend/resume patch with rwlocks,
+> > that has been (very slightly) tested and doesn't seem to break things.
+> > 
+> > [Note to Alan: lockdep doesn't seem to complain about the not annotated nested
+> > locks.]
+> 
+> I can't imagine why not.  And wouldn't lockdep get confused by the fact
+> that in the async case, the rwsems are released by a different process
+> from the one that acquired them?
 
-As off_t is a long, so breaking things on 32-bit land. Now buildids work
-on 32-bit land.
+/me looks at the .config
 
-[root@ana ~]# uname -a
-Linux ana.ghostprotocols.net 2.6.31.6-162.fc12.i686 #1 SMP Fri Dec 4 01:09:09 EST 2009 i686 i686 i386 GNU/Linux
-[root@ana ~]# perf buildid-list | tail -5
-136ee6792ba2ae57870ecd87369f4ae3194d5b27 /lib/libreadline.so.6.0
-d202dcb1ad48d140065783657d37ae3f2d9ab83f /usr/bin/gdb
-0a56c0c00dcc2e9e581ae9997f31957c9c4671df /usr/lib/libdwarf.so.0.0
-5f9e6ac95241cbb3227608e0ff2a2e0cbbe72439 /home/acme/bin/perf
-925d19eccc2ddb1c9d74dd178a011426f1b124a8 /bin/sleep
-[root@ana ~]#
+I have CONFIG_LOCKDEP_SUPPORT set, is there anything else I need to set
+in .config?
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/util/data_map.c |    4 ++--
- tools/perf/util/data_map.h |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+> > Index: linux-2.6/drivers/base/power/main.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/base/power/main.c
+> > +++ linux-2.6/drivers/base/power/main.c
+> 
+> Should we have an attribute under /sys/power to disable async
+> suspend/resume?  It would make testing easier and give people a way to
+> work around problems.
 
-diff --git a/tools/perf/util/data_map.c b/tools/perf/util/data_map.c
-index ca0bedf..59b65d0 100644
---- a/tools/perf/util/data_map.c
-+++ b/tools/perf/util/data_map.c
-@@ -100,11 +100,11 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
- 	}
- }
- 
--int perf_header__read_build_ids(int input, off_t offset, off_t size)
-+int perf_header__read_build_ids(int input, u64 offset, u64 size)
- {
- 	struct build_id_event bev;
- 	char filename[PATH_MAX];
--	off_t limit = offset + size;
-+	u64 limit = offset + size;
- 	int err = -1;
- 
- 	while (offset < limit) {
-diff --git a/tools/perf/util/data_map.h b/tools/perf/util/data_map.h
-index 3180ff7..258a87b 100644
---- a/tools/perf/util/data_map.h
-+++ b/tools/perf/util/data_map.h
-@@ -27,6 +27,6 @@ int mmap_dispatch_perf_file(struct perf_header **pheader,
- 			    int full_paths,
- 			    int *cwdlen,
- 			    char **cwd);
--int perf_header__read_build_ids(int input, off_t offset, off_t file_size);
-+int perf_header__read_build_ids(int input, u64 offset, u64 file_size);
- 
- #endif
--- 
-1.6.5.2
+I have a separate patch adding that, but I'd prefer to focus on the core
+feature first, if possible.
 
+> > @@ -334,25 +337,53 @@ static void pm_dev_err(struct device *de
+> >   * The driver of @dev will not receive interrupts while this function is being
+> >   * executed.
+> >   */
+> > -static int device_resume_noirq(struct device *dev, pm_message_t state)
+> > +static int __device_resume_noirq(struct device *dev, pm_message_t state)
+> >  {
+> 
+> Do you want to use async tasks in the late-suspend/early-resume stages?  
+> I know that USB won't use it, not even for the PCI host controllers --
+> not unless the PCI core specifically wants it.  Doing just the regular
+> suspend/resume stages may be enough.
+
+I guess so.  It's a leftover from the time I thought PCI might use async
+suspend, but it didn't really speed up things at all AFAICS.
+
+I think I'll remove it for now and it's going to be trivial to add it back if
+desired.
+
+> > +static int device_resume_noirq(struct device *dev)
+> > +{
+> > +	down_write(&dev->power.rwsem);
+> > +
+> > +	if (dev->power.async_suspend && !pm_trace_is_enabled()) {
+> 
+> If the sysfs attribute exists, then maybe we _should_ allow async with 
+> PM tracing enabled.  I don't know; it's your decision.
+
+I don't think it would be reliable in that case, because the RTC might be
+written to by two concurrent threads at the same time.
+
+> 			atomic_set(&async_error, error);
+> 	}
+> 
+> 
+> > @@ -683,10 +835,12 @@ static int dpm_suspend(pm_message_t stat
+> >  
+> >  	INIT_LIST_HEAD(&list);
+> >  	mutex_lock(&dpm_list_mtx);
+> > +	pm_transition = state;
+> >  	while (!list_empty(&dpm_list)) {
+> >  		struct device *dev = to_device(dpm_list.prev);
+> >  
+> >  		get_device(dev);
+> > +		dev->power.status = DPM_OFF;
+> 
+> What's that for?  dev->power.status is supposed to be DPM_SUSPENDING 
+> until the suspend method is successfully completed.
+
+If the suspend is run asynchronoysly, the main thread will always get a
+"success" from device_suspend(), so it can't change power.status on this
+basis.  I thought we could set power.status to DPM_OFF upfront and change
+it back when error is returned.
+
+The alternative would be to move the modification of power.status to
+device_suspend() and async_suspend().  Well, maybe that's better.
+
+> >  		mutex_unlock(&dpm_list_mtx);
+> >  
+> >  		error = device_suspend(dev, state);
+> > @@ -694,16 +848,22 @@ static int dpm_suspend(pm_message_t stat
+> >  		mutex_lock(&dpm_list_mtx);
+> >  		if (error) {
+> >  			pm_dev_err(dev, state, "", error);
+> > +			dev->power.status = DPM_SUSPENDING;
+> 
+> And then this isn't needed.
+> 
+> >  			put_device(dev);
+> >  			break;
+> >  		}
+> > -		dev->power.status = DPM_OFF;
+> 
+> This line has to be moved into __device_suspend(), even though it won't 
+> be protected by dpm_list_mtx.  The same sort of thing applies to 
+> dpm_suspend_noirq() (although nothing needs to be moved if you don't 
+> make it async).
+> 
+> The rest looks okay.
+
+Still, I think I'd rework it to use completions for the reason described in the
+message I've just sent (in short, because of the off-tree dependencies
+problem).
+
+> How about exporting a wait_for_device_to_resume() routine?  Drivers
+> could call it for non-tree resume constraints:
+> 
+> 	void wait_for_device_to_resume(struct device *other)
+> 	{
+> 		down_read(&other->power.rwsem);
+> 		up_read(&other->power.rwsem);
+> 	}
+> 
+> Unfortunately there is no equivalent for non-tree suspend constraints.
+
+If we use completions, it will be possible to just export something like
+
+dpm_wait(dev)
+{
+        if (dev)
+                wait_for_completion(dev->power.completion);
+}
+
+I think.  It appears that will also work for suspend, unless I'm missing
+something.
+
+Rafael
