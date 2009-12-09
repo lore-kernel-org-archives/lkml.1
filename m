@@ -1,166 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbZLITYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZLITSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbZLITYa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZLITYZ
+	id S1757067AbZLITSI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:18:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbZLITSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:24:25 -0500
-Received: from higgs.elka.pw.edu.pl ([194.29.160.5]:47645 "EHLO
-	higgs.elka.pw.edu.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756384AbZLITYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:24:24 -0500
-X-Greylist: delayed 819 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Dec 2009 14:24:24 EST
-X-Comment: RFC 2476 MSA function at elektron.elka.pw.edu.pl logged sender identity as: wzabolot
-Message-ID: <4B1FF616.8010900@ise.pw.edu.pl>
-Date: Wed, 09 Dec 2009 20:10:14 +0100
-From: wzab <wzab@ise.pw.edu.pl>
-Reply-To: wzab@ise.pw.edu.pl
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Wed, 9 Dec 2009 14:18:06 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49135 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756804AbZLITSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:18:05 -0500
+Date: Wed, 9 Dec 2009 11:18:07 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: kordex - <kordex@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Badness at kernel/rcutree.c:1228
+Message-ID: <20091209191807.GA16422@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091208200657.GA12990@linux.vnet.ibm.com> <8b8dd87a0912081741q24177e1bt3f624eded1590ca6@mail.gmail.com> <20091209020834.GK6779@linux.vnet.ibm.com> <8b8dd87a0912090115i3c4877b8s2e47f84f9c66ff7@mail.gmail.com> <20091209140334.GB6812@linux.vnet.ibm.com> <8b8dd87a0912090657y2702ecd7x5f41beb3ab785ccf@mail.gmail.com> <20091209165304.GB6938@linux.vnet.ibm.com> <8b8dd87a0912090935s75de7011s905c3007311a6b6b@mail.gmail.com> <20091209183042.GD6938@linux.vnet.ibm.com> <8b8dd87a0912091036t3a3499c4p67be783252d80dc@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: "Zabolotny, Wojciech" <wzab@ise.pw.edu.pl>
-Subject: Driver snd-hrtimer - causing system freeze with Rosegarden 
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------010809070109030206060208"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8b8dd87a0912091036t3a3499c4p67be783252d80dc@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010809070109030206060208
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wed, Dec 09, 2009 at 08:36:33PM +0200, kordex - wrote:
+> I will turn debugging options on after
+> http://lkml.org/lkml/2009/12/9/44 gets traced down so I can do that.
 
-When I try to use the "HR timer" as a MIDI sequencer timer in the
-Rosegarden (http://www.rosegardenmusic.com) application, the system
-freezes. Another people also reported similar problems with other
-sequencer - OpenOctave (
-https://linuxmusicians.com/viewtopic.php?f=27&p=8917 )
+Hmmm...  You have recently run a memory test on your system, right?
 
-I have tested the problem on two SMP machines with diffrent kernels
-(2.6.30, 2.6.31.6, 2.6.32).
-The problem seems to be associated with the "snd-hrtimer" module.
-I've tried to run the application vie remote X session, while having the
-text console active.
-Before the machine froze, the following messages have been displayed in
-the console:
+							Thanx, Paul
 
-System 1 (Intel(R) Pentium(R) 4 CPU 2.80GHz HT)
-
-hrtimer: interrupt too slow, forcing clock min delta to 3568 ns
-
-System 2 (Intel(R) Core(TM)2 CPU         T5500  @ 1.66GHz)
-hrtimer: interrupt too slow, forcing clock min delta to 11103 ns
-CE: hpet increasing min_delta_ns to 15000 nsec
-CE: hpet increasing min_delta_ns to 22500 nsec
-CE: hpet increasing min_delta_ns to 33750 nsec
-
-Analyzing the problem, I had an idea, that maybe the snd-hrtimer should
-be rewritten to call
-the callback via tasklet (I attach my patch only as an ilustration, my
-code doesn't work either),
- however then I got the message "BUG: scheduling while atomic" or
-something like this
- from the snd_hrtimer_stop function called from _snd_timer_stop.
-Therefore I've tried to investigate the snd_hrtimer_stop more thoroughly.
-
-Looking further into the code, I have found, that snd_hrtimer_stop may
-be called
-from the callback routine (e.g.:
-http://lxr.linux.no/linux+v2.6.32/sound/core/timer.c#L709 or
-http://lxr.linux.no/linux+v2.6.32/sound/core/timer.c#L719 )
-
-It seems to me, that calling hrtimer_cancel (in the original code),
-which waits for the handler to finish,
-from that handler  may lock the machine...
-(snd_hrtimer_callback calls the snd_timer_interrupt:
-http://lxr.linux.no/linux+v2.6.32/sound/core/hrtimer.c#L47
-which in turn calls snd_hrtimer_stop (as above) which calls hrtimer_cancel).
-
-
-Unfortunately currently I have no idea how to fix this problem. Maybe
-snd_hrtimer_stop shouldn't try to cancel the timer,
-instead setting a flag causing callback to return immediately without
-rearming of the timer?
-
--- 
-Best regards,
-Wojtek Zabolotny
-wzab@ise.pw.edu.pl
-
-
---------------010809070109030206060208
-Content-Type: text/x-patch;
- name="hrtimer.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="hrtimer.patch"
-
---- hrtimer.c	2009-11-10 01:32:31.000000000 +0100
-+++ /tmp/hrtimer.c	2009-12-09 19:10:34.000000000 +0100
-@@ -36,12 +36,13 @@
- 
- struct snd_hrtimer {
- 	struct snd_timer *timer;
--	struct hrtimer hrt;
-+	struct tasklet_hrtimer thrt;
- };
- 
- static enum hrtimer_restart snd_hrtimer_callback(struct hrtimer *hrt)
- {
--	struct snd_hrtimer *stime = container_of(hrt, struct snd_hrtimer, hrt);
-+	struct tasklet_hrtimer *thrt = container_of(hrt, struct tasklet_hrtimer, timer);
-+	struct snd_hrtimer *stime = container_of(thrt, struct snd_hrtimer, thrt);
- 	struct snd_timer *t = stime->timer;
- 	hrtimer_forward_now(hrt, ns_to_ktime(t->sticks * resolution));
- 	snd_timer_interrupt(stime->timer, t->sticks);
-@@ -55,9 +56,8 @@
- 	stime = kmalloc(sizeof(*stime), GFP_KERNEL);
- 	if (!stime)
- 		return -ENOMEM;
--	hrtimer_init(&stime->hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+	tasklet_hrtimer_init(&stime->thrt, snd_hrtimer_callback, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
- 	stime->timer = t;
--	stime->hrt.function = snd_hrtimer_callback;
- 	t->private_data = stime;
- 	return 0;
- }
-@@ -67,7 +67,7 @@
- 	struct snd_hrtimer *stime = t->private_data;
- 
- 	if (stime) {
--		hrtimer_cancel(&stime->hrt);
-+		tasklet_hrtimer_cancel(&stime->thrt);
- 		kfree(stime);
- 		t->private_data = NULL;
- 	}
-@@ -78,7 +78,7 @@
- {
- 	struct snd_hrtimer *stime = t->private_data;
- 
--	hrtimer_start(&stime->hrt, ns_to_ktime(t->sticks * resolution),
-+	tasklet_hrtimer_start(&stime->thrt, ns_to_ktime(t->sticks * resolution),
- 		      HRTIMER_MODE_REL);
- 	return 0;
- }
-@@ -87,12 +87,14 @@
- {
- 	struct snd_hrtimer *stime = t->private_data;
- 
--	hrtimer_cancel(&stime->hrt);
-+	tasklet_hrtimer_cancel(&stime->thrt);
- 	return 0;
- }
- 
- static struct snd_timer_hardware hrtimer_hw = {
--	.flags =	SNDRV_TIMER_HW_AUTO,
-+	.flags =	SNDRV_TIMER_HW_AUTO |\
-+	                SNDRV_TIMER_HW_FIRST |\
-+	                SNDRV_TIMER_HW_TASKLET,
- 	.open =		snd_hrtimer_open,
- 	.close =	snd_hrtimer_close,
- 	.start =	snd_hrtimer_start,
-
---------------010809070109030206060208--
+> --Mikko Kortelainen
+> 
+> 2009/12/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> > In that case, the best thing would be to drop the warning into the
+> > beginnings and ends of processing for system calls used by your workload.
+> > The hope would be to find it triggering at the end of a given syscall,
+> > permitting you to binary search the intervening code.
+> >
+> > Given that I cannot reproduce this, I cannot do much more than to offer
+> > random hints.
+> >
+> >                                                        Thanx, Paul
+> >
+> > On Wed, Dec 09, 2009 at 07:35:44PM +0200, kordex - wrote:
+> >> It did actually show the Badness after system had been running a long
+> >> time. And this cut from it shows that system was fully done kernel
+> >> init routines as there is ntpd running:
+> >>
+> >> warning: `ntpd' uses 32-bit capabilities (legacy support in use)
+> >> ------------[ cut here ]------------
+> >> Badness at kernel/rcutree.c:1228
+> >> NIP: c004ecbc LR: c004f14c CTR: c007bd70
+> >> REGS: df34dde0 TRAP: 0700   Not tainted  (2.6.32)
+> >>
+> >> --Mikko Kortelainen
+> >>
+> >> 2009/12/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> >> > Hmmm...  Didn't the first console output you sent me show the beenonline
+> >> > WARN_ON_ONCE() triggering during late boot?  Yes, you had other failures
+> >> > later, but it might be that whatever is triggering this warning is
+> >> > related to those failures, right?
+> >> >
+> >> >                                                        Thanx, Paul
+> >> >
+> >> > On Wed, Dec 09, 2009 at 04:57:54PM +0200, kordex - wrote:
+> >> >> Sorry but,
+> >> >>
+> >> >> Where actually this "down nearer to the point in the boot-up sequence"
+> >> >> would be as I encountered the errors while the system was running (had
+> >> >> been for days).
+> >> >>
+> >> >> --Mikko Kortelainen
+> >> >>
+> >> >> 2009/12/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> >> >> > On Wed, Dec 09, 2009 at 11:15:17AM +0200, kordex - wrote:
+> >> >> >> Hey,
+> >> >> >>
+> >> >> >> I hope it's in the right place.
+> >> >> >
+> >> >> > Looks fine to me.
+> >> >> >
+> >> >> > And the fact that you did -not- see anything in your dmesg indicates
+> >> >> > that the beenonline fields are set correctly at that point, as expected.
+> >> >> > You will only see a complaint if the beenonline fields have been
+> >> >> > corrupted.
+> >> >> >
+> >> >> > Please move them down nearer to the point in the boot-up sequence where
+> >> >> > you were seeing the failure.  Please note that interrupts had been on
+> >> >> > for one good long time when your original kernel complained, so there
+> >> >> > had been a very large number of executions with beenonline set
+> >> >> > correctly.
+> >> >> >
+> >> >> > So it will probably be faster to start at the original failure
+> >> >> > and move towards boot rather than vice versa.
+> >> >> >
+> >> >> >                                                        Thanx, Paul
+> >> >> >
+> >> >> >> --Mikko Kortelainen
+> >> >> >>
+> >> >> >> navi:/usr/src# diff -Naur a/init/main.c b/init/main.c
+> >> >> >> --- a/init/main.c       2009-12-03 05:51:21.000000000 +0200
+> >> >> >> +++ b/init/main.c       2009-12-09 03:22:15.000000000 +0200
+> >> >> >> @@ -81,6 +81,9 @@
+> >> >> >>  #include <asm/smp.h>
+> >> >> >>  #endif
+> >> >> >>
+> >> >> >> +/* DEBUG STATEMENT 2009/12/08 */
+> >> >> >> +#include <linux/rcutree.h>
+> >> >> >> +
+> >> >> >>  static int kernel_init(void *);
+> >> >> >>
+> >> >> >>  extern void init_IRQ(void);
+> >> >> >> @@ -589,6 +592,10 @@
+> >> >> >>                 local_irq_disable();
+> >> >> >>         }
+> >> >> >>         rcu_init();
+> >> >> >> +
+> >> >> >> +       /* DEBUG STATEMENT 2009/12/08 */
+> >> >> >> +       WARN_ON_ONCE(rcu_check_beenonline());
+> >> >> >> +
+> >> >> >>         /* init some links before init_ISA_irqs() */
+> >> >> >>         early_irq_init();
+> >> >> >>         init_IRQ();
+> >> >> >>
+> >> >> >>
+> >> >> >>
+> >> >> >> 2009/12/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> >> >> >> > On Wed, Dec 09, 2009 at 03:41:00AM +0200, kordex - wrote:
+> >> >> >> >> Hey,
+> >> >> >> >>
+> >> >> >> >> I put the debug function under init/main.c after rcu_init(); but there
+> >> >> >> >> is no output on dmesg which means that it receives zero value.
+> >> >> >> >>
+> >> >> >> >> Full dmesg: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.dmesg.rcu-init.txt
+> >> >> >> >
+> >> >> >> > Could you please send the patch you applied to, as you said, put the
+> >> >> >> > debug function under init/main.c after rcu_init()?
+> >> >> >> >
+> >> >> >> >                                                        Thanx, Paul
+> >> >> >> >
+> >> >> >> >> --Mikko Kortelainen
+> >> >> >> >>
+> >> >> >> >> 2009/12/8 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> >> >> >> >> > On Tue, Dec 08, 2009 at 11:22:07AM -0800, Paul E. McKenney wrote:
+> >> >> >> >> >> At this point, I must defer to those more skilled than I at diagnosing
+> >> >> >> >> >> early-boot problems.
+> >> >> >> >> >
+> >> >> >> >> > Well, that is silly on my part -- the problem seems to appear late in
+> >> >> >> >> > boot, and you had no problem capturing that portion of the boot log.
+> >> >> >> >> >
+> >> >> >> >> > So please see below for a patch providing a rcu_check_beenonline()
+> >> >> >> >> > function that, when called after rcu_init(), returns non-zero if the
+> >> >> >> >> > beenonline fields have become corrupted.  So put calls of the form:
+> >> >> >> >> >
+> >> >> >> >> >        WARN_ON_ONCE(rcu_check_beenonline());
+> >> >> >> >> >
+> >> >> >> >> > in the initialization code path preceding the problem.  Either #include
+> >> >> >> >> > rcupdate.h or explicitly declare the function as appropriate.
+> >> >> >> >> >
+> >> >> >> >> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> >> >> >> >> > ---
+> >> >> >> >> >
+> >> >> >> >> > diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+> >> >> >> >> > index 9642c6b..190a687 100644
+> >> >> >> >> > --- a/include/linux/rcutree.h
+> >> >> >> >> > +++ b/include/linux/rcutree.h
+> >> >> >> >> > @@ -39,6 +39,8 @@ extern int rcu_cpu_notify(struct notifier_block *self,
+> >> >> >> >> >  extern int rcu_needs_cpu(int cpu);
+> >> >> >> >> >  extern int rcu_expedited_torture_stats(char *page);
+> >> >> >> >> >
+> >> >> >> >> > +extern int rcu_check_beenonline(void);
+> >> >> >> >> > +
+> >> >> >> >> >  #ifdef CONFIG_TREE_PREEMPT_RCU
+> >> >> >> >> >
+> >> >> >> >> >  extern void __rcu_read_lock(void);
+> >> >> >> >> > diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+> >> >> >> >> > index 207125b..27d3722 100644
+> >> >> >> >> > --- a/kernel/rcutree.c
+> >> >> >> >> > +++ b/kernel/rcutree.c
+> >> >> >> >> > @@ -77,6 +77,17 @@ DEFINE_PER_CPU(struct rcu_data, rcu_sched_data);
+> >> >> >> >> >  struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
+> >> >> >> >> >  DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
+> >> >> >> >> >
+> >> >> >> >> > +/*
+> >> >> >> >> > + * Ad-hoc diagnostic function, for use only after rcu_init() has
+> >> >> >> >> > + * returned.  Assumes that the boot CPU is CPU 0.  Assumes that
+> >> >> >> >> > + * the kernel has been built with CONFIG_TREE_RCU.  Not for inclusion.
+> >> >> >> >> > + * Usage: "WARN_ON_ONCE(rcu_check_beenonline());"
+> >> >> >> >> > + */
+> >> >> >> >> > +int rcu_check_beenonline(void)
+> >> >> >> >> > +{
+> >> >> >> >> > +       return !per_cpu(rcu_sched_data, 0).beenonline ||
+> >> >> >> >> > +              !per_cpu(rcu_bh_data, 0).beenonline;
+> >> >> >> >> > +}
+> >> >> >> >> >
+> >> >> >> >> >  /*
+> >> >> >> >> >  * Return true if an RCU grace period is in progress.  The ACCESS_ONCE()s
+> >> >> >> >> >
+> >> >> >> >
+> >> >> >
+> >> >
+> >
