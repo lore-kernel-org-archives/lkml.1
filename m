@@ -1,135 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZLIIc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbZLIIdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751889AbZLIIc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 03:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZLIIc2
+	id S1751970AbZLIIdc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 03:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZLIIdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 03:32:28 -0500
-Received: from www.tglx.de ([62.245.132.106]:53463 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751793AbZLIIc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 03:32:27 -0500
-Date: Wed, 9 Dec 2009 09:32:03 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch V2 sched: Protect sched_rr_get_param access to
- task->sched_class
-In-Reply-To: <alpine.LFD.2.00.0912090905210.3089@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0912090930120.3089@localhost.localdomain>
-References: <20091208202026.804386447@linutronix.de>  <1260345648.5489.65.camel@laptop> <1260345798.5489.70.camel@laptop> <alpine.LFD.2.00.0912090905210.3089@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 9 Dec 2009 03:33:31 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:39422 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbZLIIda (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 03:33:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=IM+kGmo8hLF5MBflj619B/qsOn2MUW2vow1eMeoRz5qGlcy96JcL+kbJ+dCyppkKsP
+         IvTylz7rrsyxTepn7YdaHMCubkHCRX5a3BFv/8mGrgGDMBLf1xxxIgZ6rJ6uuJp07c5t
+         BGfLWIpfP2IyxV9r9Mfe6QHxmBrvlS6z0iCLQ=
+Date: Wed, 9 Dec 2009 09:33:34 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] perf_event: cleanup for __perf_event_init_context()
+Message-ID: <20091209083332.GA5152@nowhere>
+References: <4B1F194D.7080306@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B1F194D.7080306@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched_rr_get_param calls task->sched_class->get_rr_interval(task)
-without protection against a concurrent sched_setscheduler() call
-which modifies task->sched_class.
+On Wed, Dec 09, 2009 at 11:28:13AM +0800, Xiao Guangrong wrote:
+> This is a cleanup patch and does:
+> - define 'perf_cpu_context' variable with 'static'
+> - using kzalloc() instead of kmalloc() and memset()
+> 
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
 
-Serialize the access with task_rq_lock(task) and hand the rq pointer
-into get_rr_interval() as it's needed at least in the sched_fair
-implementation.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/linux/sched.h   |    3 ++-
- kernel/sched.c          |    6 +++++-
- kernel/sched_fair.c     |    6 +-----
- kernel/sched_idletask.c |    2 +-
- kernel/sched_rt.c       |    2 +-
- 5 files changed, 10 insertions(+), 9 deletions(-)
+And perf_event_init_cpu() doesn't need it as it's supposed
+to be statically zeroed already.
 
-Index: linux-2.6-tip/include/linux/sched.h
-===================================================================
---- linux-2.6-tip.orig/include/linux/sched.h
-+++ linux-2.6-tip/include/linux/sched.h
-@@ -1111,7 +1111,8 @@ struct sched_class {
- 	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
- 			     int oldprio, int running);
- 
--	unsigned int (*get_rr_interval) (struct task_struct *task);
-+	unsigned int (*get_rr_interval) (struct rq *rq,
-+					 struct task_struct *task);
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 	void (*moved_group) (struct task_struct *p);
-Index: linux-2.6-tip/kernel/sched.c
-===================================================================
---- linux-2.6-tip.orig/kernel/sched.c
-+++ linux-2.6-tip/kernel/sched.c
-@@ -6887,6 +6887,8 @@ SYSCALL_DEFINE2(sched_rr_get_interval, p
- {
- 	struct task_struct *p;
- 	unsigned int time_slice;
-+	unsigned long flags;
-+	struct rq *rq;
- 	int retval;
- 	struct timespec t;
- 
-@@ -6903,7 +6905,9 @@ SYSCALL_DEFINE2(sched_rr_get_interval, p
- 	if (retval)
- 		goto out_unlock;
- 
--	time_slice = p->sched_class->get_rr_interval(p);
-+	rq = task_rq_lock(p, &flags);
-+	time_slice = p->sched_class->get_rr_interval(rq, p);
-+	task_rq_unlock(rq, &flags);
- 
- 	read_unlock(&tasklist_lock);
- 	jiffies_to_timespec(time_slice, &t);
-Index: linux-2.6-tip/kernel/sched_fair.c
-===================================================================
---- linux-2.6-tip.orig/kernel/sched_fair.c
-+++ linux-2.6-tip/kernel/sched_fair.c
-@@ -2014,21 +2014,17 @@ static void moved_group_fair(struct task
- }
- #endif
- 
--unsigned int get_rr_interval_fair(struct task_struct *task)
-+unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
- {
- 	struct sched_entity *se = &task->se;
--	unsigned long flags;
--	struct rq *rq;
- 	unsigned int rr_interval = 0;
- 
- 	/*
- 	 * Time slice is 0 for SCHED_OTHER tasks that are on an otherwise
- 	 * idle runqueue:
- 	 */
--	rq = task_rq_lock(task, &flags);
- 	if (rq->cfs.load.weight)
- 		rr_interval = NS_TO_JIFFIES(sched_slice(&rq->cfs, se));
--	task_rq_unlock(rq, &flags);
- 
- 	return rr_interval;
- }
-Index: linux-2.6-tip/kernel/sched_idletask.c
-===================================================================
---- linux-2.6-tip.orig/kernel/sched_idletask.c
-+++ linux-2.6-tip/kernel/sched_idletask.c
-@@ -97,7 +97,7 @@ static void prio_changed_idle(struct rq 
- 		check_preempt_curr(rq, p, 0);
- }
- 
--unsigned int get_rr_interval_idle(struct task_struct *task)
-+unsigned int get_rr_interval_idle(struct rq *rq, struct task_struct *task)
- {
- 	return 0;
- }
-Index: linux-2.6-tip/kernel/sched_rt.c
-===================================================================
---- linux-2.6-tip.orig/kernel/sched_rt.c
-+++ linux-2.6-tip/kernel/sched_rt.c
-@@ -1721,7 +1721,7 @@ static void set_curr_task_rt(struct rq *
- 	dequeue_pushable_task(rq, p);
- }
- 
--unsigned int get_rr_interval_rt(struct task_struct *task)
-+unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
- {
- 	/*
- 	 * Time slice is 0 for SCHED_FIFO tasks
+Looks good to me.
+
+Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
+
