@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758207AbZLIW3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbZLIWbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758207AbZLIW3g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 17:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZLIW3a
+	id S1758220AbZLIWbA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 17:31:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbZLIWay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 17:29:30 -0500
-Received: from mga03.intel.com ([143.182.124.21]:33284 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758159AbZLIW33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 17:29:29 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="220811850"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl, luming.yu@intel.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] avoid out of bounds array reference in save_trace()
-Date: Wed, 09 Dec 2009 14:29:36 -0800
-Message-Id: <4b2024d085302c2a2@agluck-desktop.sc.intel.com>
+	Wed, 9 Dec 2009 17:30:54 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:26957 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756054AbZLIWax (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 17:30:53 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-AV: E=Sophos;i="4.47,370,1257120000"; 
+   d="scan'208";a="447297740"
+From: Roland Dreier <rdreier@cisco.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] IB/uverbs: PTR_ERR return of wrong pointer in ib_uverbs_get_context()
+References: <4B1CFFBA.8060407@gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 09 Dec 2009 14:30:59 -0800
+In-Reply-To: <4B1CFFBA.8060407@gmail.com> (Roel Kluin's message of "Mon, 07
+	Dec 2009 14:14:34 +0100")
+Message-ID: <ada7hsvrd98.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Dec 2009 22:30:59.0325 (UTC) FILETIME=[480D2AD0:01CA791F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ia64 found this the hard way (because we currently have a stub for
-save_stack_trace() that does nothing). But it would be a good idea to 
-be cautious in case a real save_stack_trace() bailed out with an
-error before it set trace->nr_entries.
-
-Signed-off-by: Tony Luck <tony.luck@intel.com>
-
----
-
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 03c06af..429540c 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -387,7 +387,8 @@ static int save_trace(struct stack_trace *trace)
- 	 * complete trace that maxes out the entries provided will be reported
- 	 * as incomplete, friggin useless </rant>
- 	 */
--	if (trace->entries[trace->nr_entries-1] == ULONG_MAX)
-+	if (trace->nr_entries != 0 &&
-+	    trace->entries[trace->nr_entries-1] == ULONG_MAX)
- 		trace->nr_entries--;
- 
- 	trace->max_entries = trace->nr_entries;
+Well spotted, applied thanks.
