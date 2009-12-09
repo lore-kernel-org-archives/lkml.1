@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZLIJwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbZLIJwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbZLIJwT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZLIJwP
+	id S1753650AbZLIJwb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZLIJw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:52:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44939 "EHLO hera.kernel.org"
+	Wed, 9 Dec 2009 04:52:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44948 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753239AbZLIJwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:52:13 -0500
-Date: Wed, 9 Dec 2009 09:51:40 GMT
-From: tip-bot for Joe Perches <joe@perches.com>
+	id S1753562AbZLIJwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:52:25 -0500
+Date: Wed, 9 Dec 2009 09:51:56 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       joe@perches.com, apw@canonical.com, herrmann.der.user@googlemail.com,
-       tglx@linutronix.de, mingo@elte.hu
+       peterz@infradead.org, fweisbec@gmail.com, tglx@linutronix.de,
+       prasad@linux.vnet.ibm.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       joe@perches.com, apw@canonical.com, herrmann.der.user@googlemail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1260340250.27677.191.camel@Joe-Laptop.home>
-References: <1260340250.27677.191.camel@Joe-Laptop.home>
+       peterz@infradead.org, fweisbec@gmail.com, tglx@linutronix.de,
+       prasad@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <1260347148-5519-1-git-send-regression-fweisbec@gmail.com>
+References: <1260347148-5519-1-git-send-regression-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] arch/x86/kernel/microcode*: Use pr_fmt() and remove duplicated KERN_ERR prefix
-Message-ID: <tip-f58e1f53de52a70391b6478617311207c7203363@git.kernel.org>
-Git-Commit-ID: f58e1f53de52a70391b6478617311207c7203363
+Subject: [tip:perf/urgent] hw-breakpoints: Modify breakpoints without unregistering them
+Message-ID: <tip-44234adcdce38f83c56e05f808ce656175b4beeb@git.kernel.org>
+Git-Commit-ID: 44234adcdce38f83c56e05f808ce656175b4beeb
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,421 +31,268 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f58e1f53de52a70391b6478617311207c7203363
-Gitweb:     http://git.kernel.org/tip/f58e1f53de52a70391b6478617311207c7203363
-Author:     Joe Perches <joe@perches.com>
-AuthorDate: Tue, 8 Dec 2009 22:30:50 -0800
+Commit-ID:  44234adcdce38f83c56e05f808ce656175b4beeb
+Gitweb:     http://git.kernel.org/tip/44234adcdce38f83c56e05f808ce656175b4beeb
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Wed, 9 Dec 2009 09:25:48 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 9 Dec 2009 08:25:57 +0100
+CommitDate: Wed, 9 Dec 2009 09:48:20 +0100
 
-arch/x86/kernel/microcode*: Use pr_fmt() and remove duplicated KERN_ERR prefix
+hw-breakpoints: Modify breakpoints without unregistering them
 
-- Use #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-- Remove "microcode: " prefix from each pr_<level>
-- Fix duplicated KERN_ERR prefix
-- Coalesce pr_<level> format strings
-- Add a space after an exclamation point
+Currently, when ptrace needs to modify a breakpoint, like disabling
+it, changing its address, type or len, it calls
+modify_user_hw_breakpoint(). This latter will perform the heavy and
+racy task of unregistering the old breakpoint and registering a new
+one.
 
-No other change in output.
+This is racy as someone else might steal the reserved breakpoint
+slot under us, which is undesired as the breakpoint is only
+supposed to be modified, sometimes in the middle of a debugging
+workflow. We don't want our slot to be stolen in the middle.
 
-Signed-off-by: Joe Perches <joe@perches.com>
-Cc: Andy Whitcroft <apw@canonical.com>
-Cc: Andreas Herrmann <herrmann.der.user@googlemail.com>
-LKML-Reference: <1260340250.27677.191.camel@Joe-Laptop.home>
+So instead of unregistering/registering the breakpoint, just
+disable it while we modify its breakpoint fields and re-enable it
+after if necessary.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Prasad <prasad@linux.vnet.ibm.com>
+LKML-Reference: <1260347148-5519-1-git-send-regression-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/microcode_amd.c   |   40 +++++++++++++++----------------
- arch/x86/kernel/microcode_core.c  |   26 +++++++++++---------
- arch/x86/kernel/microcode_intel.c |   47 +++++++++++++++---------------------
- 3 files changed, 53 insertions(+), 60 deletions(-)
+ arch/x86/kernel/ptrace.c      |   57 ++++++++++++++++++----------------------
+ include/linux/hw_breakpoint.h |    4 +-
+ include/linux/perf_event.h    |    5 +++-
+ kernel/hw_breakpoint.c        |   42 +++++++++++++++++++++++-------
+ kernel/perf_event.c           |    4 +-
+ 5 files changed, 66 insertions(+), 46 deletions(-)
 
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 63123d9..37542b6 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -13,6 +13,9 @@
-  *  Licensed under the terms of the GNU General Public
-  *  License version 2. See file COPYING for details.
-  */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/firmware.h>
- #include <linux/pci_ids.h>
- #include <linux/uaccess.h>
-@@ -81,7 +84,7 @@ static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
- 
- 	memset(csig, 0, sizeof(*csig));
- 	rdmsr(MSR_AMD64_PATCH_LEVEL, csig->rev, dummy);
--	pr_info("microcode: CPU%d: patch_level=0x%x\n", cpu, csig->rev);
-+	pr_info("CPU%d: patch_level=0x%x\n", cpu, csig->rev);
- 	return 0;
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index b361d28..7079dda 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -595,7 +595,7 @@ static unsigned long ptrace_get_dr7(struct perf_event *bp[])
+ 	return dr7;
  }
  
-@@ -111,8 +114,8 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
- 
- 	/* ucode might be chipset specific -- currently we don't support this */
- 	if (mc_header->nb_dev_id || mc_header->sb_dev_id) {
--		pr_err(KERN_ERR "microcode: CPU%d: loading of chipset "
--		       "specific code not yet supported\n", cpu);
-+		pr_err("CPU%d: loading of chipset specific code not yet supported\n",
-+		       cpu);
- 		return 0;
- 	}
- 
-@@ -141,12 +144,12 @@ static int apply_microcode_amd(int cpu)
- 
- 	/* check current patch id and patch's id for match */
- 	if (rev != mc_amd->hdr.patch_id) {
--		pr_err("microcode: CPU%d: update failed "
--		       "(for patch_level=0x%x)\n", cpu, mc_amd->hdr.patch_id);
-+		pr_err("CPU%d: update failed (for patch_level=0x%x)\n",
-+		       cpu, mc_amd->hdr.patch_id);
- 		return -1;
- 	}
- 
--	pr_info("microcode: CPU%d: updated (new patch_level=0x%x)\n", cpu, rev);
-+	pr_info("CPU%d: updated (new patch_level=0x%x)\n", cpu, rev);
- 	uci->cpu_sig.rev = rev;
- 
- 	return 0;
-@@ -169,15 +172,14 @@ get_next_ucode(const u8 *buf, unsigned int size, unsigned int *mc_size)
- 		return NULL;
- 
- 	if (section_hdr[0] != UCODE_UCODE_TYPE) {
--		pr_err("microcode: error: invalid type field in "
--		       "container file section header\n");
-+		pr_err("error: invalid type field in container file section header\n");
- 		return NULL;
- 	}
- 
- 	total_size = (unsigned long) (section_hdr[4] + (section_hdr[5] << 8));
- 
- 	if (total_size > size || total_size > UCODE_MAX_SIZE) {
--		pr_err("microcode: error: size mismatch\n");
-+		pr_err("error: size mismatch\n");
- 		return NULL;
- 	}
- 
-@@ -206,14 +208,13 @@ static int install_equiv_cpu_table(const u8 *buf)
- 	size = buf_pos[2];
- 
- 	if (buf_pos[1] != UCODE_EQUIV_CPU_TABLE_TYPE || !size) {
--		pr_err("microcode: error: invalid type field in "
--		       "container file section header\n");
-+		pr_err("error: invalid type field in container file section header\n");
- 		return 0;
- 	}
- 
- 	equiv_cpu_table = (struct equiv_cpu_entry *) vmalloc(size);
- 	if (!equiv_cpu_table) {
--		pr_err("microcode: failed to allocate equivalent CPU table\n");
-+		pr_err("failed to allocate equivalent CPU table\n");
- 		return 0;
- 	}
- 
-@@ -246,7 +247,7 @@ generic_load_microcode(int cpu, const u8 *data, size_t size)
- 
- 	offset = install_equiv_cpu_table(ucode_ptr);
- 	if (!offset) {
--		pr_err("microcode: failed to create equivalent cpu table\n");
-+		pr_err("failed to create equivalent cpu table\n");
- 		return UCODE_ERROR;
- 	}
- 
-@@ -277,8 +278,7 @@ generic_load_microcode(int cpu, const u8 *data, size_t size)
- 		if (!leftover) {
- 			vfree(uci->mc);
- 			uci->mc = new_mc;
--			pr_debug("microcode: CPU%d found a matching microcode "
--				 "update with version 0x%x (current=0x%x)\n",
-+			pr_debug("CPU%d found a matching microcode update with version 0x%x (current=0x%x)\n",
- 				 cpu, new_rev, uci->cpu_sig.rev);
- 		} else {
- 			vfree(new_mc);
-@@ -300,7 +300,7 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- 		return UCODE_NFOUND;
- 
- 	if (*(u32 *)firmware->data != UCODE_MAGIC) {
--		pr_err("microcode: invalid UCODE_MAGIC (0x%08x)\n",
-+		pr_err("invalid UCODE_MAGIC (0x%08x)\n",
- 		       *(u32 *)firmware->data);
- 		return UCODE_ERROR;
- 	}
-@@ -313,8 +313,7 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- static enum ucode_state
- request_microcode_user(int cpu, const void __user *buf, size_t size)
+-static struct perf_event *
++static int
+ ptrace_modify_breakpoint(struct perf_event *bp, int len, int type,
+ 			 struct task_struct *tsk, int disabled)
  {
--	pr_info("microcode: AMD microcode update via "
--		"/dev/cpu/microcode not supported\n");
-+	pr_info("AMD microcode update via /dev/cpu/microcode not supported\n");
- 	return UCODE_ERROR;
- }
+@@ -609,11 +609,11 @@ ptrace_modify_breakpoint(struct perf_event *bp, int len, int type,
+ 	 * written the address register first
+ 	 */
+ 	if (!bp)
+-		return ERR_PTR(-EINVAL);
++		return -EINVAL;
  
-@@ -334,14 +333,13 @@ void init_microcode_amd(struct device *device)
- 	WARN_ON(c->x86_vendor != X86_VENDOR_AMD);
- 
- 	if (c->x86 < 0x10) {
--		pr_warning("microcode: AMD CPU family 0x%x not supported\n",
--			   c->x86);
-+		pr_warning("AMD CPU family 0x%x not supported\n", c->x86);
- 		return;
- 	}
- 	supported_cpu = 1;
- 
- 	if (request_firmware(&firmware, fw_name, device))
--		pr_err("microcode: failed to load file %s\n", fw_name);
-+		pr_err("failed to load file %s\n", fw_name);
- }
- 
- void fini_microcode_amd(void)
-diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
-index e68aae3..844c02c 100644
---- a/arch/x86/kernel/microcode_core.c
-+++ b/arch/x86/kernel/microcode_core.c
-@@ -70,6 +70,9 @@
-  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
-  *		Thanks to Stuart Swales for pointing out this bug.
-  */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/platform_device.h>
- #include <linux/miscdevice.h>
- #include <linux/capability.h>
-@@ -209,7 +212,7 @@ static ssize_t microcode_write(struct file *file, const char __user *buf,
- 	ssize_t ret = -EINVAL;
- 
- 	if ((len >> PAGE_SHIFT) > totalram_pages) {
--		pr_err("microcode: too much data (max %ld pages)\n", totalram_pages);
-+		pr_err("too much data (max %ld pages)\n", totalram_pages);
- 		return ret;
- 	}
- 
-@@ -244,7 +247,7 @@ static int __init microcode_dev_init(void)
- 
- 	error = misc_register(&microcode_dev);
- 	if (error) {
--		pr_err("microcode: can't misc_register on minor=%d\n", MICROCODE_MINOR);
-+		pr_err("can't misc_register on minor=%d\n", MICROCODE_MINOR);
- 		return error;
- 	}
- 
-@@ -359,7 +362,7 @@ static enum ucode_state microcode_resume_cpu(int cpu)
- 	if (!uci->mc)
- 		return UCODE_NFOUND;
- 
--	pr_debug("microcode: CPU%d updated upon resume\n", cpu);
-+	pr_debug("CPU%d updated upon resume\n", cpu);
- 	apply_microcode_on_target(cpu);
- 
- 	return UCODE_OK;
-@@ -379,7 +382,7 @@ static enum ucode_state microcode_init_cpu(int cpu)
- 	ustate = microcode_ops->request_microcode_fw(cpu, &microcode_pdev->dev);
- 
- 	if (ustate == UCODE_OK) {
--		pr_debug("microcode: CPU%d updated upon init\n", cpu);
-+		pr_debug("CPU%d updated upon init\n", cpu);
- 		apply_microcode_on_target(cpu);
- 	}
- 
-@@ -406,7 +409,7 @@ static int mc_sysdev_add(struct sys_device *sys_dev)
- 	if (!cpu_online(cpu))
- 		return 0;
- 
--	pr_debug("microcode: CPU%d added\n", cpu);
-+	pr_debug("CPU%d added\n", cpu);
- 
- 	err = sysfs_create_group(&sys_dev->kobj, &mc_attr_group);
+ 	err = arch_bp_generic_fields(len, type, &gen_len, &gen_type);
  	if (err)
-@@ -425,7 +428,7 @@ static int mc_sysdev_remove(struct sys_device *sys_dev)
- 	if (!cpu_online(cpu))
- 		return 0;
+-		return ERR_PTR(err);
++		return err;
  
--	pr_debug("microcode: CPU%d removed\n", cpu);
-+	pr_debug("CPU%d removed\n", cpu);
- 	microcode_fini_cpu(cpu);
- 	sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
- 	return 0;
-@@ -473,15 +476,15 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
- 		microcode_update_cpu(cpu);
- 	case CPU_DOWN_FAILED:
- 	case CPU_DOWN_FAILED_FROZEN:
--		pr_debug("microcode: CPU%d added\n", cpu);
-+		pr_debug("CPU%d added\n", cpu);
- 		if (sysfs_create_group(&sys_dev->kobj, &mc_attr_group))
--			pr_err("microcode: Failed to create group for CPU%d\n", cpu);
-+			pr_err("Failed to create group for CPU%d\n", cpu);
- 		break;
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		/* Suspend is in progress, only remove the interface */
- 		sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
--		pr_debug("microcode: CPU%d removed\n", cpu);
-+		pr_debug("CPU%d removed\n", cpu);
- 		break;
- 	case CPU_DEAD:
- 	case CPU_UP_CANCELED_FROZEN:
-@@ -507,7 +510,7 @@ static int __init microcode_init(void)
- 		microcode_ops = init_amd_microcode();
+ 	attr = bp->attr;
+ 	attr.bp_len = gen_len;
+@@ -658,28 +658,17 @@ restore:
+ 				if (!second_pass)
+ 					continue;
  
- 	if (!microcode_ops) {
--		pr_err("microcode: no support for this CPU vendor\n");
-+		pr_err("no support for this CPU vendor\n");
- 		return -ENODEV;
- 	}
- 
-@@ -541,8 +544,7 @@ static int __init microcode_init(void)
- 	register_hotcpu_notifier(&mc_cpu_notifier);
- 
- 	pr_info("Microcode Update Driver: v" MICROCODE_VERSION
--	       " <tigran@aivazian.fsnet.co.uk>,"
--	       " Peter Oruba\n");
-+		" <tigran@aivazian.fsnet.co.uk>, Peter Oruba\n");
- 
- 	return 0;
- }
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index 0d334dd..ebd193e 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -70,6 +70,9 @@
-  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
-  *		Thanks to Stuart Swales for pointing out this bug.
-  */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/firmware.h>
- #include <linux/uaccess.h>
- #include <linux/kernel.h>
-@@ -146,8 +149,7 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- 
- 	if (c->x86_vendor != X86_VENDOR_INTEL || c->x86 < 6 ||
- 	    cpu_has(c, X86_FEATURE_IA64)) {
--		printk(KERN_ERR "microcode: CPU%d not a capable Intel "
--			"processor\n", cpu_num);
-+		pr_err("CPU%d not a capable Intel processor\n", cpu_num);
- 		return -1;
- 	}
- 
-@@ -165,8 +167,8 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- 	/* get the current revision from MSR 0x8B */
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], csig->rev);
- 
--	printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
--			cpu_num, csig->sig, csig->pf, csig->rev);
-+	pr_info("CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
-+		cpu_num, csig->sig, csig->pf, csig->rev);
- 
- 	return 0;
- }
-@@ -194,28 +196,24 @@ static int microcode_sanity_check(void *mc)
- 	data_size = get_datasize(mc_header);
- 
- 	if (data_size + MC_HEADER_SIZE > total_size) {
--		printk(KERN_ERR "microcode: error! "
--				"Bad data size in microcode data file\n");
-+		pr_err("error! Bad data size in microcode data file\n");
- 		return -EINVAL;
- 	}
- 
- 	if (mc_header->ldrver != 1 || mc_header->hdrver != 1) {
--		printk(KERN_ERR "microcode: error! "
--				"Unknown microcode update format\n");
-+		pr_err("error! Unknown microcode update format\n");
- 		return -EINVAL;
- 	}
- 	ext_table_size = total_size - (MC_HEADER_SIZE + data_size);
- 	if (ext_table_size) {
- 		if ((ext_table_size < EXT_HEADER_SIZE)
- 		 || ((ext_table_size - EXT_HEADER_SIZE) % EXT_SIGNATURE_SIZE)) {
--			printk(KERN_ERR "microcode: error! "
--				"Small exttable size in microcode data file\n");
-+			pr_err("error! Small exttable size in microcode data file\n");
- 			return -EINVAL;
+-				thread->ptrace_bps[i] = NULL;
+-				bp = ptrace_modify_breakpoint(bp, len, type,
++				rc = ptrace_modify_breakpoint(bp, len, type,
+ 							      tsk, 1);
+-				if (IS_ERR(bp)) {
+-					rc = PTR_ERR(bp);
+-					thread->ptrace_bps[i] = NULL;
++				if (rc)
+ 					break;
+-				}
+-				thread->ptrace_bps[i] = bp;
+ 			}
+ 			continue;
  		}
- 		ext_header = mc + MC_HEADER_SIZE + data_size;
- 		if (ext_table_size != exttable_size(ext_header)) {
--			printk(KERN_ERR "microcode: error! "
--				"Bad exttable size in microcode data file\n");
-+			pr_err("error! Bad exttable size in microcode data file\n");
- 			return -EFAULT;
- 		}
- 		ext_sigcount = ext_header->count;
-@@ -230,8 +228,7 @@ static int microcode_sanity_check(void *mc)
- 		while (i--)
- 			ext_table_sum += ext_tablep[i];
- 		if (ext_table_sum) {
--			printk(KERN_WARNING "microcode: aborting, "
--				"bad extended signature table checksum\n");
-+			pr_warning("aborting, bad extended signature table checksum\n");
- 			return -EINVAL;
- 		}
- 	}
-@@ -242,7 +239,7 @@ static int microcode_sanity_check(void *mc)
- 	while (i--)
- 		orig_sum += ((int *)mc)[i];
- 	if (orig_sum) {
--		printk(KERN_ERR "microcode: aborting, bad checksum\n");
-+		pr_err("aborting, bad checksum\n");
- 		return -EINVAL;
- 	}
- 	if (!ext_table_size)
-@@ -255,7 +252,7 @@ static int microcode_sanity_check(void *mc)
- 			- (mc_header->sig + mc_header->pf + mc_header->cksum)
- 			+ (ext_sig->sig + ext_sig->pf + ext_sig->cksum);
- 		if (sum) {
--			printk(KERN_ERR "microcode: aborting, bad checksum\n");
-+			pr_err("aborting, bad checksum\n");
- 			return -EINVAL;
- 		}
- 	}
-@@ -327,13 +324,11 @@ static int apply_microcode(int cpu)
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], val[1]);
  
- 	if (val[1] != mc_intel->hdr.rev) {
--		printk(KERN_ERR "microcode: CPU%d update "
--				"to revision 0x%x failed\n",
--			cpu_num, mc_intel->hdr.rev);
-+		pr_err("CPU%d update to revision 0x%x failed\n",
-+		       cpu_num, mc_intel->hdr.rev);
- 		return -1;
- 	}
--	printk(KERN_INFO "microcode: CPU%d updated to revision "
--			 "0x%x, date = %04x-%02x-%02x \n",
-+	pr_info("CPU%d updated to revision 0x%x, date = %04x-%02x-%02x \n",
- 		cpu_num, val[1],
- 		mc_intel->hdr.date & 0xffff,
- 		mc_intel->hdr.date >> 24,
-@@ -362,8 +357,7 @@ static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
- 
- 		mc_size = get_totalsize(&mc_header);
- 		if (!mc_size || mc_size > leftover) {
--			printk(KERN_ERR "microcode: error!"
--					"Bad data in microcode data file\n");
-+			pr_err("error! Bad data in microcode data file\n");
+-		bp = ptrace_modify_breakpoint(bp, len, type, tsk, 0);
+-
+-		/* Incorrect bp, or we have a bug in bp API */
+-		if (IS_ERR(bp)) {
+-			rc = PTR_ERR(bp);
+-			thread->ptrace_bps[i] = NULL;
++		rc = ptrace_modify_breakpoint(bp, len, type, tsk, 0);
++		if (rc)
  			break;
- 		}
- 
-@@ -405,9 +399,8 @@ static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
- 		vfree(uci->mc);
- 	uci->mc = (struct microcode_intel *)new_mc;
- 
--	pr_debug("microcode: CPU%d found a matching microcode update with"
--		 " version 0x%x (current=0x%x)\n",
--			cpu, new_rev, uci->cpu_sig.rev);
-+	pr_debug("CPU%d found a matching microcode update with version 0x%x (current=0x%x)\n",
-+		 cpu, new_rev, uci->cpu_sig.rev);
- out:
- 	return state;
- }
-@@ -429,7 +422,7 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- 		c->x86, c->x86_model, c->x86_mask);
- 
- 	if (request_firmware(&firmware, name, device)) {
--		pr_debug("microcode: data file %s load failed\n", name);
-+		pr_debug("data file %s load failed\n", name);
- 		return UCODE_NFOUND;
+-		}
+-		thread->ptrace_bps[i] = bp;
  	}
+ 	/*
+ 	 * Make a second pass to free the remaining unused breakpoints
+@@ -737,26 +726,32 @@ static int ptrace_set_breakpoint_addr(struct task_struct *tsk, int nr,
+ 		attr.disabled = 1;
  
+ 		bp = register_user_hw_breakpoint(&attr, ptrace_triggered, tsk);
++
++		/*
++		 * CHECKME: the previous code returned -EIO if the addr wasn't
++		 * a valid task virtual addr. The new one will return -EINVAL in
++		 *  this case.
++		 * -EINVAL may be what we want for in-kernel breakpoints users,
++		 * but -EIO looks better for ptrace, since we refuse a register
++		 * writing for the user. And anyway this is the previous
++		 * behaviour.
++		 */
++		if (IS_ERR(bp))
++			return PTR_ERR(bp);
++
++		t->ptrace_bps[nr] = bp;
+ 	} else {
++		int err;
++
+ 		bp = t->ptrace_bps[nr];
+-		t->ptrace_bps[nr] = NULL;
+ 
+ 		attr = bp->attr;
+ 		attr.bp_addr = addr;
+-		bp = modify_user_hw_breakpoint(bp, &attr);
++		err = modify_user_hw_breakpoint(bp, &attr);
++		if (err)
++			return err;
+ 	}
+-	/*
+-	 * CHECKME: the previous code returned -EIO if the addr wasn't a
+-	 * valid task virtual addr. The new one will return -EINVAL in this
+-	 * case.
+-	 * -EINVAL may be what we want for in-kernel breakpoints users, but
+-	 * -EIO looks better for ptrace, since we refuse a register writing
+-	 * for the user. And anyway this is the previous behaviour.
+-	 */
+-	if (IS_ERR(bp))
+-		return PTR_ERR(bp);
+ 
+-	t->ptrace_bps[nr] = bp;
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 42da1ce..69f07a9 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -55,7 +55,7 @@ register_user_hw_breakpoint(struct perf_event_attr *attr,
+ 			    struct task_struct *tsk);
+ 
+ /* FIXME: only change from the attr, and don't unregister */
+-extern struct perf_event *
++extern int
+ modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr);
+ 
+ /*
+@@ -91,7 +91,7 @@ static inline struct perf_event *
+ register_user_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered,
+ 			    struct task_struct *tsk)	{ return NULL; }
+-static inline struct perf_event *
++static inline int
+ modify_user_hw_breakpoint(struct perf_event *bp,
+ 			  struct perf_event_attr *attr)	{ return NULL; }
+ static inline struct perf_event *
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index bf33294..64a53f7 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -872,6 +872,8 @@ extern void perf_output_copy(struct perf_output_handle *handle,
+ 			     const void *buf, unsigned int len);
+ extern int perf_swevent_get_recursion_context(void);
+ extern void perf_swevent_put_recursion_context(int rctx);
++extern void perf_event_enable(struct perf_event *event);
++extern void perf_event_disable(struct perf_event *event);
+ #else
+ static inline void
+ perf_event_task_sched_in(struct task_struct *task, int cpu)		{ }
+@@ -902,7 +904,8 @@ static inline void perf_event_fork(struct task_struct *tsk)		{ }
+ static inline void perf_event_init(void)				{ }
+ static inline int  perf_swevent_get_recursion_context(void)  { return -1; }
+ static inline void perf_swevent_put_recursion_context(int rctx)		{ }
+-
++static inline void perf_event_enable(struct perf_event *event)		{ }
++static inline void perf_event_disable(struct perf_event *event)		{ }
+ #endif
+ 
+ #define perf_output_put(handle, x) \
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index 03a0773..366eedf 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -320,18 +320,40 @@ EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
+  * @triggered: callback to trigger when we hit the breakpoint
+  * @tsk: pointer to 'task_struct' of the process to which the address belongs
+  */
+-struct perf_event *
+-modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr)
++int modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr)
+ {
+-	/*
+-	 * FIXME: do it without unregistering
+-	 * - We don't want to lose our slot
+-	 * - If the new bp is incorrect, don't lose the older one
+-	 */
+-	unregister_hw_breakpoint(bp);
++	u64 old_addr = bp->attr.bp_addr;
++	int old_type = bp->attr.bp_type;
++	int old_len = bp->attr.bp_len;
++	int err = 0;
++
++	perf_event_disable(bp);
++
++	bp->attr.bp_addr = attr->bp_addr;
++	bp->attr.bp_type = attr->bp_type;
++	bp->attr.bp_len = attr->bp_len;
++
++	if (attr->disabled)
++		goto end;
+ 
+-	return perf_event_create_kernel_counter(attr, -1, bp->ctx->task->pid,
+-						bp->overflow_handler);
++	err = arch_validate_hwbkpt_settings(bp, bp->ctx->task);
++	if (!err)
++		perf_event_enable(bp);
++
++	if (err) {
++		bp->attr.bp_addr = old_addr;
++		bp->attr.bp_type = old_type;
++		bp->attr.bp_len = old_len;
++		if (!bp->attr.disabled)
++			perf_event_enable(bp);
++
++		return err;
++	}
++
++end:
++	bp->attr.disabled = attr->disabled;
++
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint);
+ 
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index fd43ff4..3b0cf86 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -567,7 +567,7 @@ static void __perf_event_disable(void *info)
+  * is the current context on this CPU and preemption is disabled,
+  * hence we can't get into perf_event_task_sched_out for this context.
+  */
+-static void perf_event_disable(struct perf_event *event)
++void perf_event_disable(struct perf_event *event)
+ {
+ 	struct perf_event_context *ctx = event->ctx;
+ 	struct task_struct *task = ctx->task;
+@@ -971,7 +971,7 @@ static void __perf_event_enable(void *info)
+  * perf_event_for_each_child or perf_event_for_each as described
+  * for perf_event_disable.
+  */
+-static void perf_event_enable(struct perf_event *event)
++void perf_event_enable(struct perf_event *event)
+ {
+ 	struct perf_event_context *ctx = event->ctx;
+ 	struct task_struct *task = ctx->task;
