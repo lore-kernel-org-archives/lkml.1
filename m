@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967083AbZLIBLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967088AbZLIBP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967083AbZLIBLi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 20:11:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967058AbZLIBLf
+	id S967088AbZLIBP3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 20:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967061AbZLIBP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 20:11:35 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:45502 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967059AbZLIBLf (ORCPT
+	Tue, 8 Dec 2009 20:15:27 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:46393 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967036AbZLIBP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 20:11:35 -0500
-Message-ID: <4B1EF8AB.6010806@ah.jp.nec.com>
-Date: Wed, 09 Dec 2009 10:08:59 +0900
-From: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-Reply-To: n-horiguchi@ah.jp.nec.com
-Organization: NEC Corporation
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       hugh.dickins@tiscali.co.uk, ak@linux.intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 0/2] mm hugetlb x86: add hugepage support to pagemap
-References: <4B1CB5D6.9080007@ah.jp.nec.com> <20091208143928.f3aa0ad2.akpm@linux-foundation.org>
-In-Reply-To: <20091208143928.f3aa0ad2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Dec 2009 20:15:27 -0500
+Date: Tue, 8 Dec 2009 17:14:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: asm/hw_breakpoint.h header check failures...
+Message-Id: <20091208171435.f43ad37b.randy.dunlap@oracle.com>
+In-Reply-To: <20091208.153722.15444835.davem@davemloft.net>
+References: <20091208.153722.15444835.davem@davemloft.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt358.oracle.com [141.146.40.158]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B1EFA30.003A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I kind of dislike the practice of putting all the changelog in patch
-> [0/n] and then leaving the patches themselves practically
-> unchangelogged.  Because
-
-Sorry, I agree.
+On Tue, 08 Dec 2009 15:37:22 -0800 (PST) David Miller wrote:
 
 > 
-> a) Someone (ie: me) needs to go and shuffle all the text around so
->    that the information gets itself into the git record.  We don't add
->    changelog-only commits to git!
+> This is very strange, I never saw this error reported against
+> -next all these past weeks yet I know they do build testing
+> with this check enabled :-)
 > 
-> b) Someone (ie: me) might decide to backport a subset of the patches
->    into -stable.  Now someone (ie: me) needs to carve up the changelogs
->    so that the pieces which go into -stable still make standalone sense.
-> 
-> I'm not sure that I did this particularly well in this case.  Oh well.
-> 
-> 
-> Please confirm that
-> mm-hugetlb-fix-hugepage-memory-leak-in-walk_page_range.patch is
-> suitable for a -stable backport without inclusion of
-> mm-hugetlb-add-hugepage-support-to-pagemap.patch.  I think it is.
-> 
+> /home/davem/src/GIT/sparc-2.6/usr/include/linux/perf_event.h:22: included file 'asm-sparc/hw_breakpoint.h' is not exported
+> make[3]: *** [/home/davem/src/GIT/sparc-2.6/usr/include/linux/.check] Error 123
+> make[2]: *** [linux] Error 2
+> make[1]: *** [headers_check] Error 2
+> make: *** [vmlinux] Error 2
+> --
 
-I think that's OK.
+Patch was posted yesterday:
+http://lkml.org/lkml/2009/12/7/286
 
-Thanks,
-Naoya Horiguchi
+---
+~Randy
