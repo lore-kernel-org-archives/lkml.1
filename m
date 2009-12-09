@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbZLISXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZLIRRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756752AbZLISXP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbZLISXM
+	id S1754293AbZLIRRr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 12:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbZLIRRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:23:12 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:47399 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756597AbZLISXL (ORCPT
+	Wed, 9 Dec 2009 12:17:46 -0500
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:56035
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753291AbZLIRRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:23:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=o4NoTb0kYuV93A/vDLRI6vxKHgYLrlCuJs3aJSp/+9LZhAeMAq3ZXgarbbIOqk+rl3
-         mOJOw0/rCmT1HOEBLZBaLmVAias5uhNap4NZsC3QPq5iJoOiucqeegPYJK94Gbl71Evg
-         PmVuHQO/o/8yk87yPMxq+qS1odusPUt+XcTKo=
-Message-ID: <4B1FE99C.9070205@gmail.com>
-Date: Wed, 09 Dec 2009 13:17:00 -0500
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
-MIME-Version: 1.0
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-CC: alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Alacrityvm-devel] alacrityvm-next: clearly specify ioq endianness
-References: <1260305854-31472-1-git-send-email-iws@ovro.caltech.edu>
-In-Reply-To: <1260305854-31472-1-git-send-email-iws@ovro.caltech.edu>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig50B33921B572F5A6A3D0B17D"
+	Wed, 9 Dec 2009 12:17:46 -0500
+Subject: [PATCH] synclink_gt use div_round_up macro
+From: Paul Fulghum <paulkf@microgate.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 09 Dec 2009 12:17:55 -0600
+Message-Id: <1260382676.11494.4.camel@x2.microgate.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig50B33921B572F5A6A3D0B17D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Use DIV_ROUND_UP macro to simplify code.
 
-On 12/8/09 3:57 PM, Ira W. Snyder wrote:
->=20
-> This is a respin of the previous patch series against alacrityvm.git's
-> linux-next branch, to facilitate easier merging with the linux-next tre=
-e.
->=20
-> The SHM_SIGNAL and IOQ code is meant to be used for communication chann=
-els
-> between systems with different bit widths and operating systems.
-> Conceivably, this could include systems with different endianness as we=
-ll,
-> for example, using QEMU on x86 to emulate a powerpc.
->=20
-> This patch series annotates all shared structures as little endian, and=
+Signed-off-by: Paul Fulghum <paulkf@microgate.com>
 
-> fixes up all users. This means that there is no overhead in the most co=
-mmon
-> case, x86-on-x86. The byteswaps compile out.
->=20
-> [RESEND: added LKML to CC per Greg Haskins' request]
-
-Applied, thanks!
-
--Greg
+--- a/drivers/char/synclink_gt.c	2009-12-09 12:09:25.000000000 -0600
++++ b/drivers/char/synclink_gt.c	2009-12-09 12:10:00.000000000 -0600
+@@ -4779,13 +4779,9 @@ static bool tx_load(struct slgt_info *in
+ 	unsigned short count;
+ 	unsigned int i;
+ 	struct slgt_desc *d;
+-	unsigned int bufs_needed;
+ 
+ 	/* check required buffer space */
+-	bufs_needed = (size/DMABUFSIZE);
+-	if (size % DMABUFSIZE)
+-		++bufs_needed;
+-	if (bufs_needed > free_tbuf_count(info))
++	if (DIV_ROUND_UP(size, DMABUFSIZE) > free_tbuf_count(info))
+ 		return false;
+ 
+ 	DBGDATA(info, buf, size, "tx");
 
 
---------------enig50B33921B572F5A6A3D0B17D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAksf6ZwACgkQP5K2CMvXmqGjBQCfVt04XLVZuKS5Eizlr4yVEf4c
-ps8AoITRzWt1dcRnqWWK1kXt7iBrmRYi
-=CaN0
------END PGP SIGNATURE-----
-
---------------enig50B33921B572F5A6A3D0B17D--
