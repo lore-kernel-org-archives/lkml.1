@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZLIReW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZLIRed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbZLIReW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 12:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbZLIReU
+	id S1755924AbZLIRed (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 12:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbZLIReW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 12:34:20 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:52269 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754242AbZLIReR (ORCPT
+	Wed, 9 Dec 2009 12:34:22 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:47810 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754587AbZLIReS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 12:34:17 -0500
+	Wed, 9 Dec 2009 12:34:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=HH8QU6nDJYpnYw/9AenOHCq1YmejkEgZyBVQQU4oJC8VJK3JVNlXO5eL4rd4XGg5Gp
-         On8Cg1cMebchzMf1mdnOzFn3uaDB6St5Pou6e+OAy+9I4lmFB6PAhDl7Af29x1SFZZuE
-         12ASIpy/84uSoHfR2Yfk00Zx0/T1imMNrS9j4=
+        b=BUicGnlul4+gu/67LSxXekTxAXGvNsqooAzI1/P2cUXsqTw4L8ZPcZRSlN3fvCRl7L
+         iBzRLtnPG/X1AfqusXL7rz0YhGO8YtxZJrFblefCSUxyGd9QcvdYcgLMR9R/aR/bhpZi
+         IChYc6VASPYMCmMxy7D0fK+DaIGTxWScZUgiM=
 From: Brian Gerst <brgerst@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] x86, 64-bit: Use user_mode() to determine new stack pointer in copy_thread()
-Date: Wed,  9 Dec 2009 12:34:41 -0500
-Message-Id: <1260380084-3707-3-git-send-email-brgerst@gmail.com>
+Subject: [PATCH 3/5] x86, 32-bit: Use same regs as 64-bit for kernel_thread_helper
+Date: Wed,  9 Dec 2009 12:34:42 -0500
+Message-Id: <1260380084-3707-4-git-send-email-brgerst@gmail.com>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1260380084-3707-1-git-send-email-brgerst@gmail.com>
 References: <1260380084-3707-1-git-send-email-brgerst@gmail.com>
@@ -29,39 +29,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use user_mode() instead of a magic value for sp to determine when returning
-to kernel mode.
+The arg should be in %eax, but that is clobbered by the return value
+of clone.  The function pointer can be in any register.  Also, don't
+push args onto the stack, since regparm(3) is the normal calling
+convention now.
 
 Signed-off-by: Brian Gerst <brgerst@gmail.com>
 ---
- arch/x86/kernel/process_64.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ arch/x86/kernel/entry_32.S   |    8 ++------
+ arch/x86/kernel/process_32.c |    8 ++++----
+ 2 files changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 866b4b4..1d8b03d 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -254,7 +254,7 @@ int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
- 	regs.flags = X86_EFLAGS_IF;
- 
- 	/* Ok, create the new process.. */
--	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, ~0UL, &regs, 0, NULL, NULL);
-+	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index 50b9c22..0507b02 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -1008,12 +1008,8 @@ END(spurious_interrupt_bug)
+ ENTRY(kernel_thread_helper)
+ 	pushl $0		# fake return address for unwinder
+ 	CFI_STARTPROC
+-	movl %edx,%eax
+-	push %edx
+-	CFI_ADJUST_CFA_OFFSET 4
+-	call *%ebx
+-	push %eax
+-	CFI_ADJUST_CFA_OFFSET 4
++	movl %edi,%eax
++	call *%esi
+ 	call do_exit
+ 	ud2			# padding for call trace
+ 	CFI_ENDPROC
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 075580b..ee0d4bc 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -193,8 +193,8 @@ void show_regs(struct pt_regs *regs)
  }
- EXPORT_SYMBOL(kernel_thread);
  
-@@ -312,8 +312,9 @@ int copy_thread(unsigned long clone_flags, unsigned long sp,
- 	*childregs = *regs;
+ /*
+- * This gets run with %bx containing the
+- * function to call, and %dx containing
++ * This gets run with %si containing the
++ * function to call, and %di containing
+  * the "args".
+  */
+ extern void kernel_thread_helper(void);
+@@ -208,8 +208,8 @@ int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
  
- 	childregs->ax = 0;
--	childregs->sp = sp;
--	if (sp == ~0UL)
-+	if (user_mode(regs))
-+		childregs->sp = sp;
-+	else
- 		childregs->sp = (unsigned long)childregs;
+ 	memset(&regs, 0, sizeof(regs));
  
- 	p->thread.sp = (unsigned long) childregs;
+-	regs.bx = (unsigned long) fn;
+-	regs.dx = (unsigned long) arg;
++	regs.si = (unsigned long) fn;
++	regs.di = (unsigned long) arg;
+ 
+ 	regs.ds = __USER_DS;
+ 	regs.es = __USER_DS;
 -- 
 1.6.5.2
 
