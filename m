@@ -1,97 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZLINhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZLINif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbZLINhq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 08:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZLINhp
+	id S1755939AbZLINif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 08:38:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZLINid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 08:37:45 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44861 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755878AbZLINho (ORCPT
+	Wed, 9 Dec 2009 08:38:33 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:51653 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755489AbZLINid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 08:37:44 -0500
-Subject: Re: [RFC][PATCHSET] mremap/mmap mess
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, David Miller <davem@davemloft.net>,
-       Ollie Wild <aaw@google.com>, Rik van Riel <riel@redhat.com>,
-       viro@ftp.linux.org.uk, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0912091242010.26035@sister.anvils>
-References: <20091208060701.GM14381@ZenIV.linux.org.uk>
-	 <Pine.LNX.4.64.0912081142280.31223@sister.anvils>
-	 <Pine.LNX.4.64.0912081254500.3365@sister.anvils>
-	 <20091208.130802.25121122.davem@davemloft.net>
-	 <20091208220638.GN14381@ZenIV.linux.org.uk>
-	 <Pine.LNX.4.64.0912091041250.23659@sister.anvils>
-	 <1260361302.5489.372.camel@laptop>
-	 <Pine.LNX.4.64.0912091242010.26035@sister.anvils>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Dec 2009 14:37:42 +0100
-Message-ID: <1260365863.5489.540.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Dec 2009 08:38:33 -0500
+Date: Wed, 9 Dec 2009 13:38:30 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+Message-ID: <20091209133829.GF9018@sirena.org.uk>
+References: <alpine.LFD.2.00.0912081420220.3560@localhost.localdomain> <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
+X-Cookie: Include me out.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 13:12 +0000, Hugh Dickins wrote:
-> On Wed, 9 Dec 2009, Peter Zijlstra wrote:
+On Tue, Dec 08, 2009 at 09:35:59PM -0500, Alan Stern wrote:
+> On Tue, 8 Dec 2009, Linus Torvalds wrote:
 
-> > /me ponders.. doesn't the binfmt engine cruft need the args in place in
-> > order to execute?
-> 
-> Hardly looked, Al will be more up to date with all the grisly details.
-> 
-> The "binfmt engine cruft" being search_binary_handler()?  I think the
-> args have to be "ready to go" before that, but that's different from
-> the new mm actually being used as an mm before that.  It used not to
-> be used early, but from 2.6.23 on it is used early, via get_user_pages.
+> > It's just that I think the "looping over children" is ugly, when I think 
+> > that by doing it the other way around you can make the code simpler and 
+> > only depend on the PM device list and a simple parent pointer access.
 
-Yeah, explicitly the fn() call in there which will mostly land you
-load_elf_binary(). After that I loose track.
+> I agree that it is uglier.  The only advantage is in handling
+> asynchronous non-tree suspend dependencies, of which we probably won't
+> have very many.  In fact, I don't know of _any_ offhand.
 
-> > That is, IIRC the problem is that you need to have the argc/env in place
-> > for the binfmt engine thing, and need to have ran the binfmt engine
-> > thing before you know the personality.
-> 
-> It is a problem that personality is discovered late in the sequence,
-> and that is a considerable part of what Al is up against.
-> 
-> > 
-> > As to your idea, if that were feasible we could do without the copy and
-> > simply steal the pages directly from the old mm.
-> 
-> Perhaps, but I think that would lead to a gradual accumulation
-> of more and more pages pinned in memory by scattered references.
+There's some potential for this in embedded audio - it wants to bring
+down the entire embedded audio subsystem at once before the individual
+devices (and their parents) get suspended since bringing them down out
+of sync can result in audible artifacts.  Depending on the system the
+suspend may take a noticable amount of time so it'd be nice to be able
+to run it asynchronously, though we don't currently do so.
 
-Well, IF the binfmt stuff can deal with the arrays being in the old mm
-then it doesn't need to pin them I think, but I really don't know how
-all this binfmt stuff works.
+At the minute we get away with this mostly through not being able to
+represent the cases that are likely to actually trip up over it.
 
-Reading fs/binfmt_elf.c:load_elf_binary() it looks like there might be a
-spot where the personality is know and we still have the old mm around,
-maybe we can hook in there -- we'd need to visit all binfmt though..
+> Interestingly, this non-tree dependency problem does not affect resume.
 
-If we can make the binfmt stuff pass the correct location to
-flush_old_exec() we could do the copy there.
-
-> I Cc'ed you really because I wasn't much involved in the variable
-> length arg discussions, and don't remember how important swappability
-> was viewed at the time.  It is a significant feature of what you and
-> Ollie ended up with, so I'm guessing it was then viewed as essential.
-> That would be my view.
-> 
-> But now it's suggested that the TLB+cache effects of using an mm there
-> are counter-productive, and better to forget swappability: well, I want
-> to keep it, and Al is making a brave effort to hold on to it, but I'm
-> wary of the weirdness involved.
-
-Right, the swappability is key, without that you can easily run the
-kernel into the ground if you don't have a limit on the argv/env arrays.
-And not having a limit was the whole point.
-
-
-
+Embedded audio does potentially - the resume needs all the individual
+devices in the subsystem and can take a substantial proportion of the
+overall resume time.  Currently we get away with a combination of
+assuming that all the drivers are live when we decide to start resuming
+them and using the ALSA userspace API to deal with bringing the resume
+out of line, but it's not ideal.
