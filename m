@@ -1,73 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751435AbZLIFJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbZLIHyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751435AbZLIFJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 00:09:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZLIFJ2
+	id S1757550AbZLIHyi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 02:54:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757406AbZLIHyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 00:09:28 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43184 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbZLIFJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 00:09:27 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 9 Dec 2009 14:06:20 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>, kosaki.motohiro@jp.fujitsu.com,
-       hugh.dickins@tiscali.co.uk, nishimura@mxp.nes.nec.co.jp,
-       balbir@linux.vnet.ibm.com, menage@google.com, npiggin@suse.de,
-       fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] [23/31] HWPOISON: add memory cgroup filter
-Message-Id: <20091209140620.79785cf9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4B1F2FC6.7040406@cn.fujitsu.com>
-References: <200912081016.198135742@firstfloor.org>
-	<20091208211639.8499FB151F@basil.firstfloor.org>
-	<4B1F2FC6.7040406@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Dec 2009 02:54:11 -0500
+Received: from rere.qmqm.pl ([89.167.52.164]:44281 "EHLO rere.qmqm.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752357AbZLIHyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 02:54:09 -0500
+From: =?UTF-8?Q?Micha=C5=82=20Miros=C5=82aw=20?= 
+	<mirq-linux@rere.qmqm.pl>
+To: linux-kernel@vger.kernel.org
+Message-ID: <6-1000-25639-1260344705-9533@rere.qmqm.pl>
+In-Reply-To: <1-1000-25639-1260344705-9533@rere.qmqm.pl>
+Date: Wed, 9 Dec 2009 06:10:43 +0100
+Subject: [PATCH 5/7] mtrr: use CONFIG_CPU_SUP_* to select MTRR implementations
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 Dec 2009 13:04:06 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+Use CONFIG_CPU_SUP_* to select MTRR implementations. We let gcc
+optimize out the empty switch statement if only generic implementation
+is wanted.
 
-> > +#ifdef	CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> > +u64 hwpoison_filter_memcg;
-> > +EXPORT_SYMBOL_GPL(hwpoison_filter_memcg);
-> > +static int hwpoison_filter_task(struct page *p)
-> > +{
-> > +	struct mem_cgroup *mem;
-> > +	struct cgroup_subsys_state *css;
-> > +	unsigned long ino;
-> > +
-> > +	if (!hwpoison_filter_memcg)
-> > +		return 0;
-> > +
-> > +	mem = try_get_mem_cgroup_from_page(p);
-> > +	if (!mem)
-> > +		return -EINVAL;
-> > +
-> > +	css = mem_cgroup_css(mem);
-> > +	ino = css->cgroup->dentry->d_inode->i_ino;
-> 
-> I have a question, can try_get_mem_cgroup_from_page() return
-> root_mem_cgroup?
-> 
-yes.
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/x86/kernel/cpu/mtrr/Makefile |    4 +++-
+ arch/x86/kernel/cpu/mtrr/main.c   |   10 ++++++++--
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
-> if it can, then css->cgroup->dentry is NULL, if memcg is
-> not mounted and there is no subdir in memcg. Because the root
-> cgroup of an inactive subsystem has no dentry.
-> 
-
-Nice catch. It sounds possible. That should be handled.
-
-Regards,
--Kame
+diff --git a/arch/x86/kernel/cpu/mtrr/Makefile b/arch/x86/kernel/cpu/mtrr/Makefile
+index f4361b5..d6e8a92 100644
+--- a/arch/x86/kernel/cpu/mtrr/Makefile
++++ b/arch/x86/kernel/cpu/mtrr/Makefile
+@@ -1,3 +1,5 @@
+ obj-y		:= main.o if.o generic.o state.o cleanup.o
+-obj-$(CONFIG_X86_32) += amd.o cyrix.o centaur.o
++obj-$(CONFIG_CPU_SUP_AMD_32) += amd.o
++obj-$(CONFIG_CPU_SUP_CENTAUR_32) += centaur.o
++obj-$(CONFIG_CPU_SUP_CYRIX_32) += cyrix.o
+ 
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index bc3436e..737780a 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -648,6 +648,7 @@ void __init mtrr_bp_init(void)
+ 
+ 			size_or_mask = ~((1ULL << (phys_addr - PAGE_SHIFT)) - 1);
+ 			size_and_mask = ~size_or_mask & 0xfffff00000ULL;
++#ifdef CONFIG_CPU_SUP_CENTAUR
+ 		} else if (boot_cpu_data.x86_vendor == X86_VENDOR_CENTAUR &&
+ 			   boot_cpu_data.x86 == 6) {
+ 			/*
+@@ -657,10 +658,11 @@ void __init mtrr_bp_init(void)
+ 			size_or_mask = 0xfff00000;		/* 32 bits */
+ 			size_and_mask = 0;
+ 			phys_addr = 32;
++#endif
+ 		}
+ 	} else {
+-#ifdef CONFIG_X86_32
+ 		switch (boot_cpu_data.x86_vendor) {
++#ifdef CONFIG_CPU_SUP_AMD_32
+ 		case X86_VENDOR_AMD:
+ 			if (cpu_has_k6_mtrr) {
+ 				/* Pre-Athlon (K6) AMD CPU MTRRs */
+@@ -669,6 +671,8 @@ void __init mtrr_bp_init(void)
+ 				size_and_mask = 0;
+ 			}
+ 			break;
++#endif
++#ifdef CONFIG_CPU_SUP_CENTAUR_32
+ 		case X86_VENDOR_CENTAUR:
+ 			if (cpu_has_centaur_mcr) {
+ 				mtrr_if = &centaur_mtrr_ops;
+@@ -676,6 +680,8 @@ void __init mtrr_bp_init(void)
+ 				size_and_mask = 0;
+ 			}
+ 			break;
++#endif
++#ifdef CONFIG_CPU_SUP_CYRIX_32
+ 		case X86_VENDOR_CYRIX:
+ 			if (cpu_has_cyrix_arr) {
+ 				mtrr_if = &cyrix_mtrr_ops;
+@@ -683,10 +689,10 @@ void __init mtrr_bp_init(void)
+ 				size_and_mask = 0;
+ 			}
+ 			break;
++#endif
+ 		default:
+ 			break;
+ 		}
+-#endif
+ 	}
+ 
+ 	if (mtrr_if) {
+-- 
+1.6.4.4
 
