@@ -1,209 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZLITSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbZLITUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757067AbZLITSI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:18:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbZLITSG
+	id S1757277AbZLITUj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:20:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbZLITUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:18:06 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:49135 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756804AbZLITSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:18:05 -0500
-Date: Wed, 9 Dec 2009 11:18:07 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: kordex - <kordex@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Badness at kernel/rcutree.c:1228
-Message-ID: <20091209191807.GA16422@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091208200657.GA12990@linux.vnet.ibm.com> <8b8dd87a0912081741q24177e1bt3f624eded1590ca6@mail.gmail.com> <20091209020834.GK6779@linux.vnet.ibm.com> <8b8dd87a0912090115i3c4877b8s2e47f84f9c66ff7@mail.gmail.com> <20091209140334.GB6812@linux.vnet.ibm.com> <8b8dd87a0912090657y2702ecd7x5f41beb3ab785ccf@mail.gmail.com> <20091209165304.GB6938@linux.vnet.ibm.com> <8b8dd87a0912090935s75de7011s905c3007311a6b6b@mail.gmail.com> <20091209183042.GD6938@linux.vnet.ibm.com> <8b8dd87a0912091036t3a3499c4p67be783252d80dc@mail.gmail.com>
+	Wed, 9 Dec 2009 14:20:34 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:53691 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757026AbZLITUe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:20:34 -0500
+Date: Wed, 9 Dec 2009 20:20:38 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Michal Marek <mmarek@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [GIT PULL] kbuild updates for 2.6.33
+Message-ID: <20091209192038.GA7827@merkur.ravnborg.org>
+References: <20091208133004.GA22750@sepie.suse.cz> <20091209093349.GA11837@sepie.suse.cz> <20091209093108.387b2736.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8b8dd87a0912091036t3a3499c4p67be783252d80dc@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20091209093108.387b2736.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 08:36:33PM +0200, kordex - wrote:
-> I will turn debugging options on after
-> http://lkml.org/lkml/2009/12/9/44 gets traced down so I can do that.
-
-Hmmm...  You have recently run a memory test on your system, right?
-
-							Thanx, Paul
-
-> --Mikko Kortelainen
+On Wed, Dec 09, 2009 at 09:31:08AM -0800, Randy Dunlap wrote:
+> On Wed, 9 Dec 2009 10:33:49 +0100 Michal Marek wrote:
 > 
-> 2009/12/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
-> > In that case, the best thing would be to drop the warning into the
-> > beginnings and ends of processing for system calls used by your workload.
-> > The hope would be to find it triggering at the end of a given syscall,
-> > permitting you to binary search the intervening code.
-> >
-> > Given that I cannot reproduce this, I cannot do much more than to offer
-> > random hints.
-> >
-> >                                                        Thanx, Paul
-> >
-> > On Wed, Dec 09, 2009 at 07:35:44PM +0200, kordex - wrote:
-> >> It did actually show the Badness after system had been running a long
-> >> time. And this cut from it shows that system was fully done kernel
-> >> init routines as there is ntpd running:
-> >>
-> >> warning: `ntpd' uses 32-bit capabilities (legacy support in use)
-> >> ------------[ cut here ]------------
-> >> Badness at kernel/rcutree.c:1228
-> >> NIP: c004ecbc LR: c004f14c CTR: c007bd70
-> >> REGS: df34dde0 TRAP: 0700   Not tainted  (2.6.32)
-> >>
-> >> --Mikko Kortelainen
-> >>
-> >> 2009/12/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
-> >> > Hmmm...  Didn't the first console output you sent me show the beenonline
-> >> > WARN_ON_ONCE() triggering during late boot?  Yes, you had other failures
-> >> > later, but it might be that whatever is triggering this warning is
-> >> > related to those failures, right?
-> >> >
-> >> >                                                        Thanx, Paul
-> >> >
-> >> > On Wed, Dec 09, 2009 at 04:57:54PM +0200, kordex - wrote:
-> >> >> Sorry but,
-> >> >>
-> >> >> Where actually this "down nearer to the point in the boot-up sequence"
-> >> >> would be as I encountered the errors while the system was running (had
-> >> >> been for days).
-> >> >>
-> >> >> --Mikko Kortelainen
-> >> >>
-> >> >> 2009/12/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
-> >> >> > On Wed, Dec 09, 2009 at 11:15:17AM +0200, kordex - wrote:
-> >> >> >> Hey,
-> >> >> >>
-> >> >> >> I hope it's in the right place.
-> >> >> >
-> >> >> > Looks fine to me.
-> >> >> >
-> >> >> > And the fact that you did -not- see anything in your dmesg indicates
-> >> >> > that the beenonline fields are set correctly at that point, as expected.
-> >> >> > You will only see a complaint if the beenonline fields have been
-> >> >> > corrupted.
-> >> >> >
-> >> >> > Please move them down nearer to the point in the boot-up sequence where
-> >> >> > you were seeing the failure.  Please note that interrupts had been on
-> >> >> > for one good long time when your original kernel complained, so there
-> >> >> > had been a very large number of executions with beenonline set
-> >> >> > correctly.
-> >> >> >
-> >> >> > So it will probably be faster to start at the original failure
-> >> >> > and move towards boot rather than vice versa.
-> >> >> >
-> >> >> >                                                        Thanx, Paul
-> >> >> >
-> >> >> >> --Mikko Kortelainen
-> >> >> >>
-> >> >> >> navi:/usr/src# diff -Naur a/init/main.c b/init/main.c
-> >> >> >> --- a/init/main.c       2009-12-03 05:51:21.000000000 +0200
-> >> >> >> +++ b/init/main.c       2009-12-09 03:22:15.000000000 +0200
-> >> >> >> @@ -81,6 +81,9 @@
-> >> >> >>  #include <asm/smp.h>
-> >> >> >>  #endif
-> >> >> >>
-> >> >> >> +/* DEBUG STATEMENT 2009/12/08 */
-> >> >> >> +#include <linux/rcutree.h>
-> >> >> >> +
-> >> >> >>  static int kernel_init(void *);
-> >> >> >>
-> >> >> >>  extern void init_IRQ(void);
-> >> >> >> @@ -589,6 +592,10 @@
-> >> >> >>                 local_irq_disable();
-> >> >> >>         }
-> >> >> >>         rcu_init();
-> >> >> >> +
-> >> >> >> +       /* DEBUG STATEMENT 2009/12/08 */
-> >> >> >> +       WARN_ON_ONCE(rcu_check_beenonline());
-> >> >> >> +
-> >> >> >>         /* init some links before init_ISA_irqs() */
-> >> >> >>         early_irq_init();
-> >> >> >>         init_IRQ();
-> >> >> >>
-> >> >> >>
-> >> >> >>
-> >> >> >> 2009/12/9 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
-> >> >> >> > On Wed, Dec 09, 2009 at 03:41:00AM +0200, kordex - wrote:
-> >> >> >> >> Hey,
-> >> >> >> >>
-> >> >> >> >> I put the debug function under init/main.c after rcu_init(); but there
-> >> >> >> >> is no output on dmesg which means that it receives zero value.
-> >> >> >> >>
-> >> >> >> >> Full dmesg: http://xnet.fi/opt/apps/lkml-2.6.32-vanilla.dmesg.rcu-init.txt
-> >> >> >> >
-> >> >> >> > Could you please send the patch you applied to, as you said, put the
-> >> >> >> > debug function under init/main.c after rcu_init()?
-> >> >> >> >
-> >> >> >> >                                                        Thanx, Paul
-> >> >> >> >
-> >> >> >> >> --Mikko Kortelainen
-> >> >> >> >>
-> >> >> >> >> 2009/12/8 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
-> >> >> >> >> > On Tue, Dec 08, 2009 at 11:22:07AM -0800, Paul E. McKenney wrote:
-> >> >> >> >> >> At this point, I must defer to those more skilled than I at diagnosing
-> >> >> >> >> >> early-boot problems.
-> >> >> >> >> >
-> >> >> >> >> > Well, that is silly on my part -- the problem seems to appear late in
-> >> >> >> >> > boot, and you had no problem capturing that portion of the boot log.
-> >> >> >> >> >
-> >> >> >> >> > So please see below for a patch providing a rcu_check_beenonline()
-> >> >> >> >> > function that, when called after rcu_init(), returns non-zero if the
-> >> >> >> >> > beenonline fields have become corrupted.  So put calls of the form:
-> >> >> >> >> >
-> >> >> >> >> >        WARN_ON_ONCE(rcu_check_beenonline());
-> >> >> >> >> >
-> >> >> >> >> > in the initialization code path preceding the problem.  Either #include
-> >> >> >> >> > rcupdate.h or explicitly declare the function as appropriate.
-> >> >> >> >> >
-> >> >> >> >> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> >> >> >> >> > ---
-> >> >> >> >> >
-> >> >> >> >> > diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
-> >> >> >> >> > index 9642c6b..190a687 100644
-> >> >> >> >> > --- a/include/linux/rcutree.h
-> >> >> >> >> > +++ b/include/linux/rcutree.h
-> >> >> >> >> > @@ -39,6 +39,8 @@ extern int rcu_cpu_notify(struct notifier_block *self,
-> >> >> >> >> >  extern int rcu_needs_cpu(int cpu);
-> >> >> >> >> >  extern int rcu_expedited_torture_stats(char *page);
-> >> >> >> >> >
-> >> >> >> >> > +extern int rcu_check_beenonline(void);
-> >> >> >> >> > +
-> >> >> >> >> >  #ifdef CONFIG_TREE_PREEMPT_RCU
-> >> >> >> >> >
-> >> >> >> >> >  extern void __rcu_read_lock(void);
-> >> >> >> >> > diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> >> >> >> >> > index 207125b..27d3722 100644
-> >> >> >> >> > --- a/kernel/rcutree.c
-> >> >> >> >> > +++ b/kernel/rcutree.c
-> >> >> >> >> > @@ -77,6 +77,17 @@ DEFINE_PER_CPU(struct rcu_data, rcu_sched_data);
-> >> >> >> >> >  struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
-> >> >> >> >> >  DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
-> >> >> >> >> >
-> >> >> >> >> > +/*
-> >> >> >> >> > + * Ad-hoc diagnostic function, for use only after rcu_init() has
-> >> >> >> >> > + * returned.  Assumes that the boot CPU is CPU 0.  Assumes that
-> >> >> >> >> > + * the kernel has been built with CONFIG_TREE_RCU.  Not for inclusion.
-> >> >> >> >> > + * Usage: "WARN_ON_ONCE(rcu_check_beenonline());"
-> >> >> >> >> > + */
-> >> >> >> >> > +int rcu_check_beenonline(void)
-> >> >> >> >> > +{
-> >> >> >> >> > +       return !per_cpu(rcu_sched_data, 0).beenonline ||
-> >> >> >> >> > +              !per_cpu(rcu_bh_data, 0).beenonline;
-> >> >> >> >> > +}
-> >> >> >> >> >
-> >> >> >> >> >  /*
-> >> >> >> >> >  * Return true if an RCU grace period is in progress.  The ACCESS_ONCE()s
-> >> >> >> >> >
-> >> >> >> >
-> >> >> >
-> >> >
-> >
+> > On Tue, Dec 08, 2009 at 02:30:04PM +0100, Michal Marek wrote:
+> > > Hi Linus,
+> > > 
+> > > these are the kbuild patches I collected for 2.6.33. There might be a few
+> > > more later, but this is the main part.
+> > > 
+> > > Thanks,
+> > > Michal
+> > > 
+> > > The following changes since commit 6ec22f9b037fc0c2e00ddb7023fad279c365324d:
+> > >   Linus Torvalds (1):
+> > >         Merge branch 'x86-debug-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+> > > 
+> > > are available in the git repository at:
+> > > 
+> > >   git://repo.or.cz/linux-kbuild.git for-next
+> > 
+> > Hi Linus,
+> > 
+> > The kbuild tree now breaks with 250cce26 ("iwlwifi: driver version
+> > track kernel version") which you merged yesterday. Stephen Rothwell
+> > kindly provided a fix, which I would normally apply to the kbuild tree,
+> > but I don't want to rebase it as I already sent the pull request. Could
+> > you please apply the following one-liner when merging the kbuild tree?
+> > Thanks!
+> 
+> Hi > Michal,
+> 
+> Is there anything that tells us when we should/must use
+> <generated/*.h> ?
+
+The original idea was that include/generated/ should
+be used for all generated header files.
+
+I once had a patch applied that used it for other
+generated files - this was a bad idea. Said patch
+was reverted as it had much bigger issues.
+
+So think of it as a place for generated header files only.
+This also warrants the location in include/
+
+But only for 'global' header files. For drivers
+and the like that needs the header file only locally the
+header file should not be located n include/generated,
+as it is only for the global headers.
+
+asm-offsets.h is a good example here.
+
+	Sam
