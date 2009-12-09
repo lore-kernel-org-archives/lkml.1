@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZLIQ1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZLIQlC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbZLIQ1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 11:27:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZLIQ1r
+	id S1756232AbZLIQlC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 11:41:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbZLIQlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 11:27:47 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36505 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753344AbZLIQ1r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 11:27:47 -0500
-Date: Wed, 9 Dec 2009 16:29:58 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Cypher Wu <cypher.w@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Questions about Watch Dog Timer under Linux.
-Message-ID: <20091209162958.3b98c077@lxorguk.ukuu.org.uk>
-In-Reply-To: <f9f38a550912090647q5af6cb14w84ea8d9223d82bd9@mail.gmail.com>
-References: <f9f38a550912090647q5af6cb14w84ea8d9223d82bd9@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Dec 2009 11:41:01 -0500
+Received: from khc.piap.pl ([195.187.100.11]:42190 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756162AbZLIQlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 11:41:00 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Rudy Matela <rudy.matela@gmail.com>
+Cc: Jan Yenya Kasprzak <kas@fi.muni.cz>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Coding style correction on some drivers that use Generic HDLC
+References: <20091209143540.GA9620@vacuum.larces.uece.br>
+Date: Wed, 09 Dec 2009 17:41:04 +0100
+In-Reply-To: <20091209143540.GA9620@vacuum.larces.uece.br> (Rudy Matela's
+	message of "Wed, 9 Dec 2009 11:35:40 -0300")
+Message-ID: <m33a3k9k2n.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> products is usually a seperate chip on the board wich will start to
-> work after power reset and will time out in 2 seconds. The system has
-> to start dog clearing from the very beginning and there have no way to
-> disable WDT.
+Rudy Matela <rudy.matela@gmail.com> writes:
 
-That will be fun as you will probably need to start some kind of kernel
-task refereshing it early in boot unless your boot is very quick.
+> Added a space separating some if/switch/while keywords from the following
+> parenthesis to conform to the CodingStyle.
+>
+> Signed-off-by: Rudy Matela <rudy.matela@gmail.com>
+> ---
+>
+>  drivers/net/wan/cosa.c       |   10 +++++-----
+>  drivers/net/wan/hdlc_cisco.c |    8 ++++----
+>  drivers/net/wan/hdlc_x25.c   |    4 ++--
 
-If it cannot be disabled then you don't need to support the disable
-option. The watchdog API is a range of features designed to cover all
-watchdogs. Many only have a few of the features. A large number of the
-supported watchdogs only support a single timeout rate.
+Ack from me, though a subset may already be in David Miller's tree.
+Git merge can handle it without problems I guess.
 
-> Is this the pattern we have to follow to use WDT under Linux? We have
-> to choose a chip as WDT, and it seems the chip we've familiar under
-> embedded systems can't be used under Linux?
-
-There are two ways to handle this depending on your needs and what the
-applications require. The first is to provide the real hardware interface
-- 2 second fixed timeout, no disable. That's perfectly sufficient.
-
-The other (which some devices do) is to create a kernel thread that
-refreshes the watchdog each second but *only* if a user application has
-made a watchdog call within the last [whatever] seconds. That also allows
-you to provide a disableable watchdog. More flexible but extra work and
-if your embedded system doesn't need the extra facilities - why bother 8)
-
+Who is to commit this?
+-- 
+Krzysztof Halasa
