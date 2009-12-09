@@ -1,147 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbZLICXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZLICXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbZLICXK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 21:23:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbZLICXJ
+	id S1756483AbZLICXj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 21:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbZLICXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 21:23:09 -0500
-Received: from mail1.radix.net ([207.192.128.31]:39969 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754843AbZLICXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 21:23:07 -0500
-Subject: Re: [RFC] What are the goals for the architecture of an in-kernel
- IR  system?
-From: Andy Walls <awalls@radix.net>
-To: Christoph Bartelmus <lirc@bartelmus.de>
-Cc: dmitry.torokhov@gmail.com, hermann-pitton@arcor.de, j@jannau.net,
-       jarod@redhat.com, jarod@wilsonet.com, jonsmirl@gmail.com, khc@pm.waw.pl,
-       kraxel@redhat.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       mchehab@redhat.com, superm1@ubuntu.com
-In-Reply-To: <BEVi56a1qgB@lirc>
-References: <BEVi56a1qgB@lirc>
-Content-Type: text/plain
-Date: Tue, 08 Dec 2009 21:21:30 -0500
-Message-Id: <1260325290.3091.40.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Dec 2009 21:23:37 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:38831 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756466AbZLICXf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 21:23:35 -0500
+Date: Tue, 8 Dec 2009 21:23:41 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+In-Reply-To: <200912082330.24843.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0912082111360.26994-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-08 at 23:30 +0100, Christoph Bartelmus wrote:
-> Hi Andy,
+On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+
+> > Well, one difficulty.  It arises only because we are contemplating
+> > having the PM core fire up the async tasks, rather than having the
+> > drivers' suspend routines launch them (the way your original proposal
+> > did -- the difficulty does not arise there).
+> > 
+> > Suppose A and B are unrelated devices and we need to impose the
+> > off-tree constraint that A suspends after B.  With children taking
+> > their parent's lock, the way to prevent A from suspending too soon is
+> > by having B's suspend routine acquire A's lock.
+> > 
+> > But B's suspend routine runs entirely in an async task, because that
+> > task is started by the PM core and it does the method call.  Hence by
+> > the time B's suspend routine is called, A may already have begun
+> > suspending -- it's too late to take A's lock.  To make the locking
+> > work, B would have to acquire A's lock _before_ B's async task starts.  
+> > Since the PM core is unaware of the off-tree dependency, there's no
+> > simple way to make it work.
 > 
-> on 07 Dec 09 at 23:10, Andy Walls wrote:
-> [...]
-> > (Christoph can correct me if I get anything wrong.)
-> 
-> Just a few additions.
+> Do not set async_suspend for B and instead start your own async thread
+> from its suspend callback.  The parent-children synchronization is done by the
+> core anyway (at least I'd do it that way), so the only thing you need to worry
+> about is the extra dependency.
 
-Christoph,
+I don't like that because it introduces "artificial" dependencies: It 
+makes B depend on all the preceding synchronous suspends, even totally 
+unrelated ones.  But yes, it would work.
 
-Thanks for the corrections and additions. :)
+> I would be slightly more comfortable using completions, but the rwsem-based
+> approach is fine with me as well.
 
-> [...]
+On the principle of making things as easy and foolproof as possible for 
+driver authors, I also favor completions since it makes dealing with 
+non-tree dependencies easier.
 
-> > I know that the hardware I work with has sub 100 ns resolution,
-> 
-> Highest IR carrier frequency I know is 500kHz. usec resolution is enough  
-> even for raw modulated IR pulses. But you only look at the signal after it  
-> has been demodulated by the IR chip, so higher resolution would be  
-> overkill.
+However either way would be okay.  I do have to handle some non-tree
+dependencies in USB, but oddly enough they affect only resume, not
+suspend.  So this "who starts the async task" issue doesn't apply.
 
-Yes, it's overkill.  It is more of a side effect of how I set up the
-hardware to uses as much of the bits in the pulse width measurement
-counter as possible for the longest expected valid measurment width.
-The LSB of the hardware pulse width measurement counter can convey a
-time change of as little as 74 ns depending on the setup of the Conexant
-integrated IR controller.
-
-
-> [...]
-> >> How do you define the start and stop of sequences?
-> 
-> > For the end of Rx signalling:
-> >
-> > Well with the Conexant hardware I can set a maximum pulse (mark or
-> > space) width, and the hardware will generate an Rx Timeout interrupt to
-> > signal the end of Rx when a space ends up longer than that max pulse
-> > width.  The hardware also puts a special marker in the hardware pulse
-> > widht measurement FIFO (in band signalling essentially).
-> >
-> > I'm not sure anything like that gets communicated to userspace via
-> > lirc_dev, and I'm too tired to doublecheck right now.
-> 
-> There is no such thing in the protocol. Some devices cannot provide any  
-> end of signal marker, so lircd handles this using timers.
-> 
-> If there is some interest, the MODE2 protocol can be extended. We still  
-> have 7 bits unused...
-
-As I thought about this more, I could just pass up a space the length of
-the pulse width measurment timeout from the kernel up to LIRC.  LIRC's
-decoders should know that the space is too long as well.  No changes
-needed - I think.
-
-
-
-
-> [...]
-> >> Is transmitting synchronous or queued?
-> 
-> > kfifo's IIRC.
-> 
-> No, it's synchronous.
-> 
-> >> How big is the transmit queue?
-> 
-> No queue.
-
-Oops, thanks for the correction.
-
-
-
-> [...]
-> > My particular gripes about the current LIRC interface:
-
-> > 2. I have hardware where I can set max_pulse_width so I can optimize
-> > pulse timer resolution and have the hardware time out rapidly on end of
-> > RX.  I also have hardware where I can set a min_pulse_width to set a
-> > hardware low-pass/glitch filter.  Currently LIRC doesn't have any way to
-> > set these, but it would be nice to have.
-> 
-> Should be really easy to add these. The actual values could be derived  
-> from the config files easily.
-
-Good.  I thought it would be so.
-
-> > In band signalling of a
-> > hardware detected "end of Rx" may also make sense then too.
-> 
-> See above.
-> 
-> > 3. As I mentioned before, it would be nice if LIRC could set a batch of
-> > parameters atomically somehow, instead of with a series of ioctl()s.  I
-> > can work around this in kernel though.
-> 
-> Is there any particular sequence that you are concerned about?
-> Setting carrier frequency and then duty cycle is a bit problematic.
-> Currently it's solved by resetting the duty cycle to 50% each time you  
-> change the carrier frequency.
-> But as the LIRC interface is "one user only", I don't see a real problem.
-
-The case I worry about is enabling the IR Rx hardware without the low
-pass filter properly set up to be consistent with the minimum expected
-Rx pulse width and the desired Rx carrier window or maximum expected Rx
-pulse width.  The result could be a lot of useless interrupts from IR
-"glitch" measurements in bad ambient light conditions until all the
-parameters are consistent.
-
-Regards,
-Andy
-
-> Christoph
-
+Alan Stern
 
