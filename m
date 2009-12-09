@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbZLITXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZLITYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757398AbZLITXv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbZLITXq
+	id S1757410AbZLITYK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:24:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbZLITYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:23:46 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:52731 "EHLO mgw1.diku.dk"
+	Wed, 9 Dec 2009 14:24:06 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:54067 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757216AbZLITXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:23:44 -0500
-Date: Wed, 9 Dec 2009 20:23:49 +0100 (CET)
+	id S1754071AbZLITYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:24:04 -0500
+Date: Wed, 9 Dec 2009 20:24:09 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Laurent Pinchart <laurent.pinchart@skynet.be>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/12] drivers/media/video/uvc: Correct size given to memset
-Message-ID: <Pine.LNX.4.64.0912092023310.1870@ask.diku.dk>
+To: Alessandro Zummo <a.zummo@towertech.it>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 6/12] drivers/rtc: Correct size given to memset
+Message-ID: <Pine.LNX.4.64.0912092023500.1870@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,18 +44,18 @@ memset(x, E, sizeof(
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/media/video/uvc/uvc_video.c |    2 +-
+ drivers/rtc/rtc-at91sam9.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
---- a/drivers/media/video/uvc/uvc_video.c
-+++ b/drivers/media/video/uvc/uvc_video.c
-@@ -145,7 +145,7 @@ static int uvc_get_video_ctrl(struct uvc
- 		uvc_warn_once(stream->dev, UVC_WARN_MINMAX, "UVC non "
- 			"compliance - GET_MIN/MAX(PROBE) incorrectly "
- 			"supported. Enabling workaround.\n");
--		memset(ctrl, 0, sizeof ctrl);
-+		memset(ctrl, 0, sizeof *ctrl);
- 		ctrl->wCompQuality = le16_to_cpup((__le16 *)data);
- 		ret = 0;
- 		goto out;
+diff -u -p a/drivers/rtc/rtc-at91sam9.c b/drivers/rtc/rtc-at91sam9.c
+--- a/drivers/rtc/rtc-at91sam9.c
++++ b/drivers/rtc/rtc-at91sam9.c
+@@ -161,7 +161,7 @@ static int at91_rtc_readalarm(struct dev
+ 	if (offset == 0)
+ 		return -EILSEQ;
+ 
+-	memset(alrm, 0, sizeof(alrm));
++	memset(alrm, 0, sizeof(*alrm));
+ 	if (alarm != ALARM_DISABLED && offset != 0) {
+ 		rtc_time_to_tm(offset + alarm, tm);
+ 
