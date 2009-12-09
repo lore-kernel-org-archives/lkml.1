@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZLIJ5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZLIJ7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673AbZLIJ5z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:57:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZLIJ5u
+	id S1754576AbZLIJ7A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:59:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbZLIJ5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:57:50 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45770 "EHLO hera.kernel.org"
+	Wed, 9 Dec 2009 04:57:48 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45771 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754551AbZLIJ5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754556AbZLIJ5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Dec 2009 04:57:44 -0500
-Date: Wed, 9 Dec 2009 09:55:48 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Wed, 9 Dec 2009 09:56:02 GMT
+From: tip-bot for Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       a.p.zijlstra@chello.nl, ehrhardt@linux.vnet.ibm.com, tglx@linutronix.de,
        mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       a.p.zijlstra@chello.nl, ehrhardt@linux.vnet.ibm.com, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <1259754383.4003.610.camel@laptop>
-References: <1259754383.4003.610.camel@laptop>
+In-Reply-To: <1259579808-11357-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
+References: <1259579808-11357-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Fix task priority bug
-Message-ID: <tip-57785df5ac53c70da9fb53696130f3c551bfe1f9@git.kernel.org>
-Git-Commit-ID: 57785df5ac53c70da9fb53696130f3c551bfe1f9
+Subject: [tip:sched/urgent] sched: Fix missing sched tunable recalculation on cpu add/remove
+Message-ID: <tip-0bcdcf28c979869f44e05121b96ff2cfb05bd8e6@git.kernel.org>
+Git-Commit-ID: 0bcdcf28c979869f44e05121b96ff2cfb05bd8e6
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,60 +31,136 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  57785df5ac53c70da9fb53696130f3c551bfe1f9
-Gitweb:     http://git.kernel.org/tip/57785df5ac53c70da9fb53696130f3c551bfe1f9
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 4 Dec 2009 09:59:02 +0100
+Commit-ID:  0bcdcf28c979869f44e05121b96ff2cfb05bd8e6
+Gitweb:     http://git.kernel.org/tip/0bcdcf28c979869f44e05121b96ff2cfb05bd8e6
+Author:     Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+AuthorDate: Mon, 30 Nov 2009 12:16:46 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 9 Dec 2009 10:03:10 +0100
+CommitDate: Wed, 9 Dec 2009 10:03:58 +0100
 
-sched: Fix task priority bug
+sched: Fix missing sched tunable recalculation on cpu add/remove
 
-83f9ac removed a call to effective_prio() in wake_up_new_task(), which
-leads to tasks running at MAX_PRIO.
+Based on Peter Zijlstras patch suggestion this enables recalculation of
+the scheduler tunables in response of a change in the number of cpus. It
+also adds a max of eight cpus that are considered in that scaling.
 
-This is caused by the idle thread being set to MAX_PRIO before forking
-off init. O(1) used that to make sure idle was always preempted, CFS
-uses check_preempt_curr_idle() for that so we can savely remove this bit
-of legacy code.
-
-Reported-by: Mike Galbraith <efault@gmx.de>
-Tested-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1259754383.4003.610.camel@laptop>
+LKML-Reference: <1259579808-11357-2-git-send-email-ehrhardt@linux.vnet.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+ kernel/sched.c      |   29 ++++++++++++++++-------------
+ kernel/sched_fair.c |   16 ++++++++++++++++
+ 2 files changed, 32 insertions(+), 13 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 71eb062..3878f50 100644
+index 3878f50..b54ecf8 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -3158,10 +3158,6 @@ static void pull_task(struct rq *src_rq, struct task_struct *p,
- 	deactivate_task(src_rq, p, 0);
- 	set_task_cpu(p, this_cpu);
- 	activate_task(this_rq, p, 0);
--	/*
--	 * Note that idle threads have a prio of MAX_PRIO, for this test
--	 * to be always true for them.
--	 */
- 	check_preempt_curr(this_rq, p, 0);
+@@ -814,6 +814,7 @@ const_debug unsigned int sysctl_sched_nr_migrate = 32;
+  * default: 0.25ms
+  */
+ unsigned int sysctl_sched_shares_ratelimit = 250000;
++unsigned int normalized_sysctl_sched_shares_ratelimit = 250000;
+ 
+ /*
+  * Inject some fuzzyness into changing the per-cpu group shares
+@@ -1814,6 +1815,7 @@ static void cfs_rq_set_shares(struct cfs_rq *cfs_rq, unsigned long shares)
+ #endif
+ 
+ static void calc_load_account_active(struct rq *this_rq);
++static void update_sysctl(void);
+ 
+ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
+ {
+@@ -7028,22 +7030,23 @@ cpumask_var_t nohz_cpu_mask;
+  *
+  * This idea comes from the SD scheduler of Con Kolivas:
+  */
+-static inline void sched_init_granularity(void)
++static void update_sysctl(void)
+ {
+-	unsigned int factor = 1 + ilog2(num_online_cpus());
+-	const unsigned long limit = 200000000;
+-
+-	sysctl_sched_min_granularity *= factor;
+-	if (sysctl_sched_min_granularity > limit)
+-		sysctl_sched_min_granularity = limit;
+-
+-	sysctl_sched_latency *= factor;
+-	if (sysctl_sched_latency > limit)
+-		sysctl_sched_latency = limit;
++	unsigned int cpus = min(num_online_cpus(), 8U);
++	unsigned int factor = 1 + ilog2(cpus);
+ 
+-	sysctl_sched_wakeup_granularity *= factor;
++#define SET_SYSCTL(name) \
++	(sysctl_##name = (factor) * normalized_sysctl_##name)
++	SET_SYSCTL(sched_min_granularity);
++	SET_SYSCTL(sched_latency);
++	SET_SYSCTL(sched_wakeup_granularity);
++	SET_SYSCTL(sched_shares_ratelimit);
++#undef SET_SYSCTL
++}
+ 
+-	sysctl_sched_shares_ratelimit *= factor;
++static inline void sched_init_granularity(void)
++{
++	update_sysctl();
  }
  
-@@ -6992,7 +6988,6 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
- 	__sched_fork(idle);
- 	idle->se.exec_start = sched_clock();
+ #ifdef CONFIG_SMP
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index c163a28..71b3458 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -35,12 +35,14 @@
+  *  run vmstat and monitor the context-switches (cs) field)
+  */
+ unsigned int sysctl_sched_latency = 5000000ULL;
++unsigned int normalized_sysctl_sched_latency = 5000000ULL;
  
--	idle->prio = idle->normal_prio = MAX_PRIO;
- 	cpumask_copy(&idle->cpus_allowed, cpumask_of(cpu));
- 	__set_task_cpu(idle, cpu);
+ /*
+  * Minimal preemption granularity for CPU-bound tasks:
+  * (default: 1 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  */
+ unsigned int sysctl_sched_min_granularity = 1000000ULL;
++unsigned int normalized_sysctl_sched_min_granularity = 1000000ULL;
  
-@@ -7696,7 +7691,6 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		spin_lock_irq(&rq->lock);
- 		update_rq_clock(rq);
- 		deactivate_task(rq, rq->idle, 0);
--		rq->idle->static_prio = MAX_PRIO;
- 		__setscheduler(rq, rq->idle, SCHED_NORMAL, 0);
- 		rq->idle->sched_class = &idle_sched_class;
- 		migrate_dead_tasks(cpu);
+ /*
+  * is kept at sysctl_sched_latency / sysctl_sched_min_granularity
+@@ -70,6 +72,7 @@ unsigned int __read_mostly sysctl_sched_compat_yield;
+  * have immediate wakeup/sleep latencies.
+  */
+ unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
++unsigned int normalized_sysctl_sched_wakeup_granularity = 1000000UL;
+ 
+ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
+ 
+@@ -1890,6 +1893,17 @@ move_one_task_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
+ 
+ 	return 0;
+ }
++
++static void rq_online_fair(struct rq *rq)
++{
++	update_sysctl();
++}
++
++static void rq_offline_fair(struct rq *rq)
++{
++	update_sysctl();
++}
++
+ #endif /* CONFIG_SMP */
+ 
+ /*
+@@ -2035,6 +2049,8 @@ static const struct sched_class fair_sched_class = {
+ 
+ 	.load_balance		= load_balance_fair,
+ 	.move_one_task		= move_one_task_fair,
++	.rq_online		= rq_online_fair,
++	.rq_offline		= rq_offline_fair,
+ #endif
+ 
+ 	.set_curr_task          = set_curr_task_fair,
