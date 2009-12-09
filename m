@@ -1,93 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZLIPIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZLIPLC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbZLIPIZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 10:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZLIPIX
+	id S1753967AbZLIPLC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 10:11:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbZLIPLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 10:08:23 -0500
-Received: from mx.sz.bfs.de ([194.94.69.70]:43165 "EHLO mx.sz.bfs.de"
+	Wed, 9 Dec 2009 10:11:01 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40976 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752099AbZLIPIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 10:08:22 -0500
-Message-ID: <4B1FBD46.1050204@bfs.de>
-Date: Wed, 09 Dec 2009 16:07:50 +0100
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Joe Perches <joe@perches.com>, Anton Altaparmakov <aia21@cam.ac.uk>,
-       John Daiker <daikerjohn@gmail.com>, kernel-janitors@vger.kernel.org,
-       aia21@cantab.net, linux-ntfs-dev@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] NTFS: Change string pointers to string constants.
-References: <1259808806-27279-1-git-send-email-daikerjohn@gmail.com> <C1806924-DE57-4FBA-A67C-85C618FE6639@cam.ac.uk> <1260236833.3215.237.camel@Joe-Laptop.home> <20091209145846.GA3562@joi.lan>
-In-Reply-To: <20091209145846.GA3562@joi.lan>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1752869AbZLIPLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 10:11:00 -0500
+Date: Thu, 10 Dec 2009 02:11:00 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Greg KH <greg@kroah.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: Re: linux-next: manual merge of the tty tree with the trivial tree
+Message-Id: <20091210021100.b606b224.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LNX.2.00.0912091536230.3755@pobox.suse.cz>
+References: <20091209162826.a28c6c68.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.0912091536230.3755@pobox.suse.cz>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__10_Dec_2009_02_11_00_+1100_5QTr2fKH/oaeGSYe"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__10_Dec_2009_02_11_00_+1100_5QTr2fKH/oaeGSYe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Jiri,
 
-Marcin Slusarz schrieb:
-> On Mon, Dec 07, 2009 at 05:47:13PM -0800, Joe Perches wrote:
->> On Tue, 2009-12-08 at 00:57 +0000, Anton Altaparmakov wrote:
->>> Can you please explain the rational for making this change?
->> Perhaps it's not worth much, but it saves a pointer reference.
->>
->> $ cat pointer.c
->> #include <string.h>
->> #include <stdio.h>
->>
->> int main (int argc, char** argv)
->> {
->> 	static const char *foo = "abcdefg";
->> 	printf("%s\n", foo);
->> 	return 0;
->> }
->>
->> $ gcc -c pointer.c
->> $ size pointer.o
->>    text	   data	    bss	    dec	    hex	filename
->>      37	      4	      0	     41	     29	pointer.o
->>
->> $ cat reference.c
->> #include <string.h>
->> #include <stdio.h>
->>
->> int main (int argc, char** argv)
->> {
->> static const char foo[] = "abcdefg";
->> printf("%s\n", foo);
->> return 0;
->> }
->>
->> $ gcc -c reference.c
->> $ size reference.o
->>    text    data     bss     dec     hex filename
->>      36       0       0      36      24 reference.o
-> 
-> Yeah, for static variables it's better. But for automatic variables
-> it's worse, because it now has to do a copy at runtime.
-> And the patch changes both types.
-> 
-> $ size pointer.o reference.o
->    text    data     bss     dec     hex filename
->     101       8       0     109      6d pointer.o
->      96       0       0      96      60 reference.o
-> 
-> $ size pointer-nonstatic.o reference-nonstatic.o
->    text    data     bss     dec     hex filename
->     106       0       0     106      6a pointer-nonstatic.o
->     109       0       0     109      6d reference-nonstatic.o
-> --
+On Wed, 9 Dec 2009 15:38:19 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrote:
+>
+> On Wed, 9 Dec 2009, Stephen Rothwell wrote:
+>=20
+> > I just used the tty tree version where they clashed.  Jiri, you might
+> > consider sending that patch to Greg for the tty tree.
+>=20
+> the trivial tree pull request has already been sent to Linus a day ago. I=
+=20
+> am now waiting whether it will be merged or missed.
+>=20
+> In the latter case, I will split the tty hunk out and send to Greg. In th=
+e=20
+> former case the conflict would have to be solved either by Greg or Linus.
 
+OK, that's fine, thanks.
 
-nobody should spend to much time on this. gcc <what ever next version>
-will have different results. It is better to spend time improving
-the compiler and make it generate shorter/faster code.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-just my 2 cents,
- wh
+--Signature=_Thu__10_Dec_2009_02_11_00_+1100_5QTr2fKH/oaeGSYe
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksfvgQACgkQjjKRsyhoI8z5iwCeLSa7JO+y9xvws7q2gcjRTj4m
+XoAAn2k2of/8E+Y9ol5ALVlRBJ0jJ/R5
+=qkMl
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_Dec_2009_02_11_00_+1100_5QTr2fKH/oaeGSYe--
