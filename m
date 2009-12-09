@@ -1,43 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbZLION4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZLIOQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754948AbZLION4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 09:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZLIONz
+	id S1755461AbZLIOQe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 09:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZLIOQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 09:13:55 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:43486 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754025AbZLIONy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 09:13:54 -0500
-Date: Wed, 9 Dec 2009 14:13:58 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Joe Perches <joe@perches.com>
-Cc: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: pass upstream rev to scripts/get_maintainer.pl
-Message-ID: <20091209141357.GG9018@sirena.org.uk>
-References: <20091209090639.GA23236@pengutronix.de> <1260367667.27319.11.camel@Joe-Laptop.home>
+	Wed, 9 Dec 2009 09:16:32 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37704 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754834AbZLIOQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 09:16:31 -0500
+Date: Wed, 9 Dec 2009 15:16:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
+       srostedt@redhat.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/urgent] tracing: Add pipe_close interface
+Message-ID: <20091209141619.GA21862@elte.hu>
+References: <tip-c521efd1700a8c0f7ce26f011f5eaecca17fabfa@git.kernel.org>
+ <20091209153204.F4CD.A69D9226@jp.fujitsu.com>
+ <1260367720.2146.71.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260367667.27319.11.camel@Joe-Laptop.home>
-X-Cookie: Include me out.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <1260367720.2146.71.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 06:07:47AM -0800, Joe Perches wrote:
-> On Wed, 2009-12-09 at 10:06 +0100, Uwe Kleine-K??nig wrote:
-> > I often face the "problem" that get_maintainer.pl yields my name, too,
-> > as the commits I want to send are included in HEAD.
 
-> Why is this a problem?
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-With the limit on the number of people returned it's possible that
-authors of the patch series being posted (there may be more than one)
-will push out folks that it'd be good to include.
+> On Wed, 2009-12-09 at 15:35 +0900, KOSAKI Motohiro wrote:
+> 
+> > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> > > index 874f289..f804b40 100644
+> > > --- a/kernel/trace/trace.c
+> > > +++ b/kernel/trace/trace.c
+> > > @@ -2898,6 +2898,10 @@ static int tracing_release_pipe(struct inode *inode, struct file *file)
+> > >  	else
+> > >  		cpumask_clear_cpu(iter->cpu_file, tracing_reader_cpumask);
+> > >  
+> > > +
+> > > +	if (iter->trace->pipe_open)
+> > > +		iter->trace->pipe_close(iter);
+> > > +
+> > 
+> > What's happen if pipe_close is NULL? Wny following straightforward check
+> > is wrong?
+> > I mean the above description explain pipe_close is only useful if plugin
+> > allocate something at pipe_open. then allowing NULL seems natural.
+> > 
+> > 	if (iter->trace->pipe_close)
+> > 		iter->trace->pipe_close(iter);
+> 
+> Ug, good point (stupid cut & paste should be illegal).
+> 
+> Ingo, I'll fix this up too in the next patch set. Want me to rebase it 
+> or just start with this fix?
+
+I'd suggest to start with a fix. Thanks,
+
+	Ingo
