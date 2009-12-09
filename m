@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966970AbZLIAUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966961AbZLIAT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966970AbZLIAUX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 19:20:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966900AbZLIAUV
+	id S966961AbZLIAT7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 19:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966900AbZLIATz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 19:20:21 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:46932 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966774AbZLIAUT convert rfc822-to-8bit (ORCPT
+	Tue, 8 Dec 2009 19:19:55 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:59172 "EHLO
+	teyla.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966710AbZLIATy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 19:20:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Q6IwCgXACQ0QOBh5SAP73bQ8D0dyeVfaCnAfUAphFWdjbBzewnVMP81hUX1awQAj6C
-         +q60P8UXO2Z/+AFMdpSJ0LK/kLG4DFNq+ebKyrxt/jxiu9cNR0Cch04l8exeAm34JtF3
-         /Jb5ejqBYtsR26bLqA2Xn8x7WiGOLP3B67Rus=
-MIME-Version: 1.0
-In-Reply-To: <829197380912081511k2ad53053t1a1f73b6e8571f75@mail.gmail.com>
-References: <20091208214246.GA21857@kroah.com>
-	 <829197380912081349q32b554acob7055431d65fc26f@mail.gmail.com>
-	 <37219a840912081502v3fdf1879xdb28e867eb82884c@mail.gmail.com>
-	 <829197380912081511k2ad53053t1a1f73b6e8571f75@mail.gmail.com>
-Date: Tue, 8 Dec 2009 19:20:24 -0500
-X-Google-Sender-Auth: 6040e34295bdf10d
-Message-ID: <37219a840912081620r1d34a13dpf3a36f83f82c9a67@mail.gmail.com>
-Subject: Re: 2.6.27.40 build error
-From: Michael Krufky <mkrufky@kernellabs.com>
-To: Devin Heitmueller <dheitmueller@kernellabs.com>
-Cc: Greg KH <greg@kroah.com>, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 8 Dec 2009 19:19:54 -0500
+To: apkm@linux-foundation.org, khali@linux-fr.org, linux-i2c@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Please pull bjdooks' i2c tree
+From: Ben Dooks <ben-linux@fluff.org>
+Message-Id: <E1NIAIw-0008IA-3S@teyla.home.fluff.org>
+Date: Wed, 09 Dec 2009 00:21:18 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 6:11 PM, Devin Heitmueller
-<dheitmueller@kernellabs.com> wrote:
-> On Tue, Dec 8, 2009 at 6:02 PM, Michael Krufky <mkrufky@kernellabs.com> wrote:
->> Yes -- please drop it for now.  I didn't actually send this for
->> 2.6.27.y anyway -- it must have gotten to you some other way.
->>
->> Devin, if 2.6.27.y needs this fix, can you please generate the
->> appropriate backport and test it before we resubmit?
->
-> We would have to decide whether it's worth the effort to get a 2.6.27
-> environment setup to do the necessary regression testing.  At this
-> point, I would argue that driver was screwed up enough in 2.6.27 that
-> I wouldn't be inclined to tell users it worked even with this one fix.
->
-> Devin
+The following changes since commit 6035ccd8e9e40bb654fbfdef325902ab531679a5:
+  Linus Torvalds (1):
+        Merge branch 'for-2.6.33' of git://git.kernel.dk/linux-2.6-block
 
-Fine with me -- I'm glad the v4l-dvb development repositories hosted
-on both linuxtv.org and kernellabs.com are backwards compatible with
-recent kernels... :-)
+are available in the git repository at:
 
-I think all the crucial fixes (except for the pvrusb2 16k firmware
-patch) are all merged into 2.6.31.y as of now... So, now we can focus
-on new driver support for 2.6.32 :-)
+  git://git.fluff.org/bjdooks/linux.git next-i2c
 
-Cheers,
+Kevin Wells (1):
+      i2c-pnx: Map I2C adapter number to platform ID number
 
-Mike
+Rajendra Nayak (1):
+      i2c-omap: OMAP3: PM: (re)init for every transfer to support off-mode
+
+Shinya Kuribayashi (23):
+      i2c-designware: Consolidate to use 32-bit word accesses
+      i2c-designware: Don't use the IC_CLR_INTR register to clear interrupts
+      i2c-designware: Use platform_get_irq helper
+      i2c-designware: i2c_dw_read: Use "struct dw_i2c_dev" pointer
+      i2c-designware: i2c_dw_xfer_msg: Use "struct dw_i2c_dev" pointer
+      i2c-designware: Remove an useless local variable "num"
+      i2c-designware: Improved _HCNT/_LCNT calculation
+      i2c-designware: i2c_dw_xfer_msg: Fix i2c_msg search bug
+      i2c-designware: Process i2c_msg messages in the interrupt handler
+      i2c-designware: Set Tx/Rx FIFO threshold levels
+      i2c-designware: Enable RX_FULL interrupt
+      i2c-designware: Divide i2c_dw_xfer_msg into two functions
+      i2c-designware: i2c_dw_xfer_msg: Introduce a local "buf" pointer
+      i2c-designware: Initialize byte count variables just prior to being used
+      i2c-designware: i2c_dw_func: Set I2C_FUNC_SMBUS_foo bits
+      i2c-designware: i2c_dw_read: Remove redundant target address checker
+      i2c-designware: Process all i2c_msg messages in the interrupt handler
+      i2c-designware: Disable TX_EMPTY when all i2c_msg msgs has been processed
+      i2c-designware: i2c_dw_xfer_msg: Fix error handling procedures
+      i2c-designware: Skip RX_FULL and TX_EMPTY bits on tx abort errors
+      i2c-designware: Tx abort cleanups
+      i2c-designware: Cosmetic cleanups
+      i2c-designware: i2c_dw_handle_tx_abort: Use dev_dbg() for NOACK cases
+
+ drivers/i2c/busses/i2c-designware.c |  488 +++++++++++++++++++++++++----------
+ drivers/i2c/busses/i2c-omap.c       |   64 +++--
+ drivers/i2c/busses/i2c-pnx.c        |    3 +-
+ 3 files changed, 398 insertions(+), 157 deletions(-)
