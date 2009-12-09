@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbZLIFep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZLIFkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071AbZLIFep (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 00:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZLIFen
+	id S1752616AbZLIFkF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 00:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZLIFj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 00:34:43 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55796 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753942AbZLIFem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 00:34:42 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH v3] [RFC] tracepoint: Add signal coredump tracepoint
-Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Jason Baron <jbaron@redhat.com>
-In-Reply-To: <20091208204007.31287.62096.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20091208104324.B589.A69D9226@jp.fujitsu.com> <20091208204007.31287.62096.stgit@dhcp-100-2-132.bos.redhat.com>
-Message-Id: <20091209142322.F4C8.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
+	Wed, 9 Dec 2009 00:39:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:18788 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751375AbZLIFj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 00:39:57 -0500
+Subject: Re: [BISECTED] drm: random hang since 620f378 "drm: prune modes
+ when ..."
+From: Dave Airlie <airlied@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Adam Jackson <ajax@redhat.com>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, keithp@keithp.com, eric@anholt.net,
+       jbarnes@virtuousgeek.org
+In-Reply-To: <200912090007.45545.arnd@arndb.de>
+References: <200912071830.14697.arnd@arndb.de>
+	 <200912082259.48715.arnd@arndb.de> <1260310432.12969.0.camel@t60prh>
+	 <200912090007.45545.arnd@arndb.de>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  9 Dec 2009 14:34:46 +0900 (JST)
+Date: Wed, 09 Dec 2009 15:38:07 +1000
+Message-Id: <1260337087.3658.1.camel@t60prh>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	TP_fast_assign(
-> +		__entry->sig	= (int)cprm->signr;
-> +		__entry->limit	= cprm->limit;
-> +		__entry->flags	= cprm->mm_flags;
-> +		__entry->retval	= retval;
-> +		__assign_str(name,	core_name);
-> +	),
-> +
-> +	TP_printk("sig=%d limit=%lu dumpable=0x%lx dump_filter=0x%lx "
-> +		  "corename=\"%s\" retval=%d",
-> +		  __entry->sig, __entry->limit,
-> +		  __entry->flags & MMF_DUMPABLE_MASK,
-> +		  (__entry->flags & MMF_DUMP_FILTER_MASK) >>
-> +		  MMF_DUMP_FILTER_SHIFT,
-> +		  __get_str(name), __entry->retval)
-> +);
->  #endif /* _TRACE_SIGNAL_H */
-
-I don't think "limit" is userfriendly name, core_limit or core_size_limit is better?
-plus, we have core_pipe_limit sysctl too. (it's similar but different concept limit).
-
-other parts looks good to me.
+On Wed, 2009-12-09 at 00:07 +0100, Arnd Bergmann wrote:
+> On Tuesday 08 December 2009, Dave Airlie wrote:
+> > > 
+> > > Sorry for blaming the wrong patch, especially if it already caused a lot 
+> > > of work. I'll try blaming ec2a4c3fdc8 "drm/i915: get the bridge device
+> > > once" now, that is the next-best candidate that my bisection pointed to,
+> > > but I'll do more rigorous testing.
+> 
+> It just crashed again with both 620f378 and ec2a4c3fdc8 reverted as well, 
+> after about an hour of uptime.
+> 
+> > Btw is this just a laptop with no monitor plugged in?
+> > 
+> > just want to rule out the patch you mentioned for any sort of memory
+> > corruption.
+> 
+> It's a desktop machine with three outputs, Asus P5Q-EM mainboard.
+> VGA is not connected at all, DVI has an open-ended cable on it, i.e. no
+> screen on it. HDMI is connected through a cheap passive HDMI multiswitch
+> to the DVI-D input of a Lenovo screen.
 
 
+CC'ed the Intel ppl,
+
+regression since 2.6.31 by the looks of it, bisection has found two
+false positives so far.
+
+Dave.
 
