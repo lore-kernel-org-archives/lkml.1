@@ -1,145 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbZLIOie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbZLIOgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334AbZLIOie (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 09:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbZLIOic
+	id S1753222AbZLIOgs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 09:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZLIOgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 09:38:32 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:33117 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753812AbZLIOib (ORCPT
+	Wed, 9 Dec 2009 09:36:46 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:49226 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750936AbZLIOgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 09:38:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=GB+C6am9QasCyVmOemm26bc9hYgBEDFt9zQK+tAVhM9yLQMOjpiGfmlT6F9MhYwqxF
-         1p2k5t11e/dqf73I3bxc0Nb4dGk82v4Mt7k3kXZOT4ON4T7cls3XBt/NzDwarGvwoaN/
-         sZel6G2KqQ7XIXzagr/TzfFoyqbbJdiURwIJw=
-Date: Wed, 9 Dec 2009 11:35:40 -0300
-From: Rudy Matela <rudy.matela@gmail.com>
-To: Jan Yenya Kasprzak <kas@fi.muni.cz>, Krzysztof Halasa <khc@pm.waw.pl>,
-       trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] Coding style correction on some drivers that use Generic
- HDLC
-Message-ID: <20091209143540.GA9620@vacuum.larces.uece.br>
+	Wed, 9 Dec 2009 09:36:45 -0500
+X-Trace: 303573987/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.111.197/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.111.197
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ai4BAKNEH0tQKW/F/2dsb2JhbAAI10mELAQ
+X-IronPort-AV: E=Sophos;i="4.47,368,1257120000"; 
+   d="scan'208";a="303573987"
+Date: Wed, 9 Dec 2009 14:36:42 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: David Miller <davem@davemloft.net>, Ollie Wild <aaw@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Rik van Riel <riel@redhat.com>,
+       viro@ftp.linux.org.uk, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCHSET] mremap/mmap mess
+In-Reply-To: <20091209134620.GR14381@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0912091434490.30748@sister.anvils>
+References: <20091208060701.GM14381@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0912081142280.31223@sister.anvils> <Pine.LNX.4.64.0912081254500.3365@sister.anvils>
+ <20091208.130802.25121122.davem@davemloft.net> <20091208220638.GN14381@ZenIV.linux.org.uk>
+ <Pine.LNX.4.64.0912091041250.23659@sister.anvils> <20091209134620.GR14381@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added a space separating some if/switch/while keywords from the following
-parenthesis to conform to the CodingStyle.
+On Wed, 9 Dec 2009, Al Viro wrote:
+> 
+> Anyway, it's obviously *not* -rc1 fodder at the moment.  So what I'm going
+> to do is to leave that one as it is in mainline, push the rest of mmap/mremap
+> stuff to Linus later today
 
-Signed-off-by: Rudy Matela <rudy.matela@gmail.com>
----
+Phew, yes, agreed!
 
- drivers/net/wan/cosa.c       |   10 +++++-----
- drivers/net/wan/hdlc_cisco.c |    8 ++++----
- drivers/net/wan/hdlc_x25.c   |    4 ++--
- 3 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/wan/cosa.c b/drivers/net/wan/cosa.c
-index b36bf96..f0bd70f 100644
---- a/drivers/net/wan/cosa.c
-+++ b/drivers/net/wan/cosa.c
-@@ -811,7 +811,7 @@ static ssize_t cosa_read(struct file *file,
- 	cosa_enable_rx(chan);
- 	spin_lock_irqsave(&cosa->lock, flags);
- 	add_wait_queue(&chan->rxwaitq, &wait);
--	while(!chan->rx_status) {
-+	while (!chan->rx_status) {
- 		current->state = TASK_INTERRUPTIBLE;
- 		spin_unlock_irqrestore(&cosa->lock, flags);
- 		schedule();
-@@ -896,7 +896,7 @@ static ssize_t cosa_write(struct file *file,
- 
- 	spin_lock_irqsave(&cosa->lock, flags);
- 	add_wait_queue(&chan->txwaitq, &wait);
--	while(!chan->tx_status) {
-+	while (!chan->tx_status) {
- 		current->state = TASK_INTERRUPTIBLE;
- 		spin_unlock_irqrestore(&cosa->lock, flags);
- 		schedule();
-@@ -1153,7 +1153,7 @@ static int cosa_ioctl_common(struct cosa_data *cosa,
- 	struct channel_data *channel, unsigned int cmd, unsigned long arg)
- {
- 	void __user *argp = (void __user *)arg;
--	switch(cmd) {
-+	switch (cmd) {
- 	case COSAIORSET:	/* Reset the device */
- 		if (!capable(CAP_NET_ADMIN))
- 			return -EACCES;
-@@ -1704,7 +1704,7 @@ static inline void tx_interrupt(struct cosa_data *cosa, int status)
- 			spin_unlock_irqrestore(&cosa->lock, flags);
- 			return;
- 		}
--		while(1) {
-+		while (1) {
- 			cosa->txchan++;
- 			i++;
- 			if (cosa->txchan >= cosa->nchannels)
-@@ -2010,7 +2010,7 @@ again:
- static void debug_status_in(struct cosa_data *cosa, int status)
- {
- 	char *s;
--	switch(status & SR_CMD_FROM_SRP_MASK) {
-+	switch (status & SR_CMD_FROM_SRP_MASK) {
- 	case SR_UP_REQUEST:
- 		s = "RX_REQ";
- 		break;
-diff --git a/drivers/net/wan/hdlc_cisco.c b/drivers/net/wan/hdlc_cisco.c
-index f1bff98..1ceccf1 100644
---- a/drivers/net/wan/hdlc_cisco.c
-+++ b/drivers/net/wan/hdlc_cisco.c
-@@ -141,7 +141,7 @@ static __be16 cisco_type_trans(struct sk_buff *skb, struct net_device *dev)
- 	    data->address != CISCO_UNICAST)
- 		return cpu_to_be16(ETH_P_HDLC);
- 
--	switch(data->protocol) {
-+	switch (data->protocol) {
- 	case cpu_to_be16(ETH_P_IP):
- 	case cpu_to_be16(ETH_P_IPX):
- 	case cpu_to_be16(ETH_P_IPV6):
-@@ -190,7 +190,7 @@ static int cisco_rx(struct sk_buff *skb)
- 		cisco_data = (struct cisco_packet*)(skb->data + sizeof
- 						    (struct hdlc_header));
- 
--		switch(ntohl (cisco_data->type)) {
-+		switch (ntohl (cisco_data->type)) {
- 		case CISCO_ADDR_REQ: /* Stolen from syncppp.c :-) */
- 			in_dev = dev->ip_ptr;
- 			addr = 0;
-@@ -245,8 +245,8 @@ static int cisco_rx(struct sk_buff *skb)
- 
- 			dev_kfree_skb_any(skb);
- 			return NET_RX_SUCCESS;
--		} /* switch(keepalive type) */
--	} /* switch(protocol) */
-+		} /* switch (keepalive type) */
-+	} /* switch (protocol) */
- 
- 	printk(KERN_INFO "%s: Unsupported protocol %x\n", dev->name,
- 	       ntohs(data->protocol));
-diff --git a/drivers/net/wan/hdlc_x25.c b/drivers/net/wan/hdlc_x25.c
-index aa9248f..6e1ca25 100644
---- a/drivers/net/wan/hdlc_x25.c
-+++ b/drivers/net/wan/hdlc_x25.c
-@@ -202,10 +202,10 @@ static int x25_ioctl(struct net_device *dev, struct ifreq *ifr)
- 		return 0; /* return protocol only, no settable parameters */
- 
- 	case IF_PROTO_X25:
--		if(!capable(CAP_NET_ADMIN))
-+		if (!capable(CAP_NET_ADMIN))
- 			return -EPERM;
- 
--		if(dev->flags & IFF_UP)
-+		if (dev->flags & IFF_UP)
- 			return -EBUSY;
- 
- 		result=hdlc->attach(dev, ENCODING_NRZ,PARITY_CRC16_PR1_CCITT);
+Hugh
