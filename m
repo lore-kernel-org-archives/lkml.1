@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZLITFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbZLITGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbZLITFG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbZLITFD
+	id S1757066AbZLITGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756652AbZLITGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:05:03 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:44615 "EHLO kernel.dk"
+	Wed, 9 Dec 2009 14:06:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39011 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756994AbZLITFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:05:00 -0500
-Date: Wed, 9 Dec 2009 20:05:07 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was
-	delayed
-Message-ID: <20091209190506.GY8742@kernel.dk>
-References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com> <x49hbs1fir5.fsf@segfault.boston.devel.redhat.com> <4e5e476b0912081246w32a9ae1bw7d49b0285719b22e@mail.gmail.com> <x49k4wwnhbh.fsf@segfault.boston.devel.redhat.com>
+	id S1756470AbZLITGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:06:09 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       guijianfeng@cn.fujitsu.com
+Subject: Re: [PATCH 2/2] cfq-iosched: Take care of corner cases of group losing share due to deletion
+References: <1260312778-4725-1-git-send-email-vgoyal@redhat.com>
+	<1260312778-4725-2-git-send-email-vgoyal@redhat.com>
+	<20091209135639.GW8742@kernel.dk> <20091209151723.GA8452@redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 09 Dec 2009 14:06:10 -0500
+In-Reply-To: <20091209151723.GA8452@redhat.com> (Vivek Goyal's message of
+	"Wed, 9 Dec 2009 10:17:23 -0500")
+Message-ID: <x49bpi8nf19.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <x49k4wwnhbh.fsf@segfault.boston.devel.redhat.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09 2009, Jeff Moyer wrote:
-> Corrado Zoccolo <czoccolo@gmail.com> writes:
-> 
-> > Hi Jeff,
-> > On Tue, Dec 8, 2009 at 7:00 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
-> >> Corrado Zoccolo <czoccolo@gmail.com> writes:
-> >>
-> >>> The introduction of ramp-up formula for async queue depths has
-> >>> slowed down dirty page reclaim, by reducing async write performance.
-> >>> This patch makes sure the formula kicks in only when sync request
-> >>> was recently delayed.
-> >>> @@ -3706,7 +3707,7 @@ static void *cfq_init_queue(struct request_queue *q)
-> >>>       cfqd->cfq_latency = 1;
-> >>>       cfqd->cfq_group_isolation = 0;
-> >>>       cfqd->hw_tag = -1;
-> >>> -     cfqd->last_end_sync_rq = jiffies;
-> >>> +     cfqd->last_delayed_sync = jiffies - HZ;
-> >>
-> >> So, umm, what's that about?
-> >
-> > Previously, when cfq started, it started in a state where writes were
-> > completely throttled. Now, we optimistically prefer to start with a
-> > reasonable max depth (10)
-> 
-> OK.  Can we put a comment in there and change the initialization to
-> cfq_slice_sync * 10?
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-Agree, that would be MUCH easier to understand.
+> Reported-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com> 
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
--- 
-Jens Axboe
+> +	/*
+> +	 * If think times is less than a jiffy than ttime_mean=0 and above
+> +	 * will not be true. It might happen that slice has not expired yet
+> +	 * but will expire soon (4-5 ns) during select_queue(). To cover the
 
+4-5ns?  I'm not sure why you chose these numbers.  Is that what you saw
+in testing?  Anyway, I'm ok with the change, I dislike the reference to
+time when a single jiffy could be up to 10ms.
+
+Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
