@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZLIGPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbZLIGPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbZLIGPg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 01:15:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbZLIGPa
+	id S1755011AbZLIGPm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 01:15:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbZLIGPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 01:15:30 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:60235 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbZLIGPa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 01:15:30 -0500
+	Wed, 9 Dec 2009 01:15:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57367 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754531AbZLIGPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 01:15:35 -0500
+Date: Wed, 9 Dec 2009 07:15:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Carsten Emde <Carsten.Emde@osadl.org>,
+       Olof Johansson <olof@lixom.net>, hpa@zytor.com, tglx@linutronix.de
+Subject: Re: [PATCH][GIT PULL][v2.6.33] tracing: Remove comparing of NULL to
+ va_list in trace_array_vprintk()
+Message-ID: <20091209061528.GA26687@elte.hu>
+References: <4B01AE5D.1010801@osadl.org>
+ <tip-c13d2f7c3231e873f30db92b96c8caa48f100f33@git.kernel.org>
+ <20091206051352.GA4628@lixom.net>
+ <4B1BAB74.104@osadl.org>
+ <1260332397.2146.38.camel@gandalf.stny.rr.com>
+ <20091209055602.GB2512@elte.hu>
+ <20091209061148.GA14010@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20091208163546.3354a7f5.akpm@linux-foundation.org>
-References: <20091208211258.GA13706@pengutronix.de> <20091208153239.af0b5bb8.akpm@linux-foundation.org> 
-	<fa686aa40912081625y3750a7fegbac38926182e38c6@mail.gmail.com> 
-	<20091208163546.3354a7f5.akpm@linux-foundation.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 8 Dec 2009 23:15:12 -0700
-X-Google-Sender-Auth: fd4cb4ec622e87dd
-Message-ID: <fa686aa40912082215l30f0b843ve891d27648c24526@mail.gmail.com>
-Subject: Re: [PATCH 0/5] spi-imx: some updates
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org,
-       Daniel Mack <daniel@caiaq.de>,
-       =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       spi-devel-general@lists.sourceforge.net,
-       linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091209061148.GA14010@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 8, 2009 at 5:35 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 8 Dec 2009 17:25:59 -0700
-> Grant Likely <grant.likely@secretlab.ca> wrote:
->
->> I'm new to the job, so I'm being cautions about which things I'm pick
->> up.  However, I'll happily merge anything that Andrew says is okay.
->
-> oop.  If I'm going to send a patch to a subsystem maintainer I'll usually give
-> it less attention than the ones I plan to merge myself.
->
-> Oh well, at least this way people will get their patches merged easily ;)
 
-Hmmm... maybe I'll be more selective then.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-I've also got JH to set up a patchwork page for SPI so that I won't
-drop anything on the floor.  I could certainly use some help with
-triaging & acking the stuff in there.  Anyone want to volunteer?
+>  efcf61a: tracing: Remove comparing of NULL to va_list in trace_array_vprintk()
 
->> Andrew, when in the merge window do you typically send out patch
->> queues?
->
-> Late.  I stage the -mm patches after linux-next so I spend most of the
-> merge window waiting for people to get their stuff into mainline.
+the real culprit was:
 
-Okay, thanks.
+  6e0573f: tracing: Buffer the output of seq_file in case of filled buffer
 
-> Often there are stragglers who I need to route around.  It's usually
-> not a significant problem though.
+so i kept this commit:
 
-g.
+  c521efd: tracing: Add pipe_close interface
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+and skipped the rest for now - please resend if this is fixed.
+
+	Ingo
