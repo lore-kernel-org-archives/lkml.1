@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbZLISuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZLISuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757186AbZLISuK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbZLISuJ
+	id S1757273AbZLISuj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbZLISuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:50:09 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60484 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757112AbZLISuI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:50:08 -0500
-Message-ID: <4B1FF139.2090108@zytor.com>
-Date: Wed, 09 Dec 2009 10:49:29 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+	Wed, 9 Dec 2009 13:50:37 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:49446 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757115AbZLISug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 13:50:36 -0500
+Date: Wed, 9 Dec 2009 19:50:42 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: jmoyer@redhat.com, linux-kernel@vger.kernel.org,
+       guijianfeng@cn.fujitsu.com
+Subject: Re: [PATCH 2/2] cfq-iosched: Take care of corner cases of group
+	losing share due to deletion
+Message-ID: <20091209185042.GX8742@kernel.dk>
+References: <1260312778-4725-1-git-send-email-vgoyal@redhat.com> <1260312778-4725-2-git-send-email-vgoyal@redhat.com> <20091209135639.GW8742@kernel.dk> <20091209151723.GA8452@redhat.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] x86/paravirt for v2.6.33
-References: <20091203210913.GA24351@elte.hu> <alpine.LFD.2.00.0912081329460.3560@localhost.localdomain> <20091209073632.GD8187@elte.hu> <4B1FED0D.7060003@goop.org>
-In-Reply-To: <4B1FED0D.7060003@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091209151723.GA8452@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/09/2009 10:31 AM, Jeremy Fitzhardinge wrote:
+On Wed, Dec 09 2009, Vivek Goyal wrote:
+> On Wed, Dec 09, 2009 at 02:56:39PM +0100, Jens Axboe wrote:
+> > On Tue, Dec 08 2009, Vivek Goyal wrote:
+> > > If there is a sequential reader running in a group, we wait for next request
+> > > to come in that group after slice expiry and once new request is in, we expire
+> > > the queue. Otherwise we delete the group from service tree and group looses
+> > > its fair share.
+> > > 
+> > > So far I was marking a queue as wait_busy if it had consumed its slice and
+> > > it was last queue in the group. But this condition did not cover following
+> > > two cases.
+> > > 
+> > > 1.If a request completed and slice has not expired yet. Next request comes
+> > >   in and is dispatched to disk. Now select_queue() hits and slice has expired.
+> > >   This group will be deleted. Because request is still in the disk, this queue
+> > >   will never get a chance to wait_busy.
+> > > 
+> > > 2.If request completed and slice has not expired yet. Before next request
+> > >   comes in (delay due to think time), select_queue() hits and expires the
+> > >   queue hence group. This queue never got a chance to wait busy.
+> > > 
+> > > Gui was hitting the boundary condition 1 and not getting fairness numbers
+> > > proportional to weight.
+> > > 
+> > > This patch puts the checks for above two conditions and improves the fairness
+> > > numbers for sequential workload on rotational media. Check in select_queue()
+> > > takes care of case 1 and additional check in should_wait_busy() takes care
+> > > of case 2.
+> > 
+> > I think this (and 1/2) look fine, just one minor comment:
+> > 
+> > > @@ -3250,6 +3264,36 @@ static void cfq_update_hw_tag(struct cfq_data *cfqd)
+> > >  		cfqd->hw_tag = 0;
+> > >  }
+> > >  
+> > > +static inline bool
+> > > +cfq_should_wait_busy(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+> > > +{
+> > 
+> > That's too large to inline.
 > 
-> How does this look?
+> Hi Jens,
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git fix-iopl
+> Please find below the new version of patch. I have removed inline from
+> cfq_should_wait_busy().
 > 
-> From: Jeremy Fitzhardinge<jeremy.fitzhardinge@citrix.com>
-> Date: Wed, 9 Dec 2009 10:26:59 -0800
-> Subject: [PATCH] x86: Make sys_iopl use passed-in pt_regs
-> 
-> Rather than using task_pt_regs, use the pt_regs * passed into the syscall.
-> The ABI differences are handled in small 32/64-bit specific functions,
-> and everything else is handled in the common do_iopl().
-> 
-> Signed-off-by: Jeremy Fitzhardinge<jeremy.fitzhardinge@citrix.com>
-> 
-> diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
-> index 5336ce2..70497f0 100644
-> --- a/arch/x86/include/asm/syscalls.h
-> +++ b/arch/x86/include/asm/syscalls.h
-> @@ -33,11 +33,11 @@ long sys_rt_sigreturn(struct pt_regs *);
->   asmlinkage int sys_set_thread_area(struct user_desc __user *);
->   asmlinkage int sys_get_thread_area(struct user_desc __user *);
-> 
-> -/* kernel/ioport.c */
-> -asmlinkage long sys_iopl(unsigned int);
-> -
->   /* X86_32 only */
->   #ifdef CONFIG_X86_32
-> +/* kernel/ioport.c */
-> +asmlinkage long sys_iopl(struct pt_regs *);
-> +
->   /* kernel/process_32.c */
+> Please let me know if you prefer a seprate posting in new mail thread.
 
-This is the main ugliness that led me to pass up on this in the first
-place.  What it really comes down to is that on 32 bits we need the
-analogue with what 64 bits have with different stubs for different
-number of arguments.
+No problem, actually I just hand-edited your previous patch when
+applying it. Sorry, should have said so!
 
-	-hpa
+-- 
+Jens Axboe
+
