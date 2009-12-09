@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966983AbZLIA1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966993AbZLIA3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966983AbZLIA1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 19:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966952AbZLIA1Q
+	id S966993AbZLIA3E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 19:29:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966980AbZLIA26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 19:27:16 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:46141 "EHLO smtp.gentoo.org"
+	Tue, 8 Dec 2009 19:28:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49038 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966786AbZLIA1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 19:27:15 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] NOMMU: use copy_*_user_page() in access_process_vm()
-Date: Tue, 8 Dec 2009 19:27:36 -0500
-User-Agent: KMail/1.12.4 (Linux/2.6.31.4; KDE/4.3.4; x86_64; ; )
-Cc: Jie Zhang <jie.zhang@analog.com>, uclinux-dev@uclinux.org,
-       David McCullough <davidm@snapgear.com>, Greg Ungerer <gerg@uclinux.org>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-References: <4B1E568A.4020005@analog.com> <7253.1260269873@redhat.com> <9984.1260281967@redhat.com>
-In-Reply-To: <9984.1260281967@redhat.com>
+	id S966965AbZLIA25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Dec 2009 19:28:57 -0500
+Message-ID: <4B1EEF40.30609@redhat.com>
+Date: Tue, 08 Dec 2009 22:28:48 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1285252.mDxeCYaWsz";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Andy Walls <awalls@radix.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jarod Wilson <jarod@wilsonet.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Bartelmus <lirc@bartelmus.de>, j@jannau.net, jarod@redhat.com,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, superm1@ubuntu.com
+Subject: Re: [RFC] Should we create a raw input interface for IR's ? - Was:
+ 	Re: [PATCH 1/3 v2] lirc core device driver infrastructure
+References: <BDRae8rZjFB@christoph>	 <20091208042210.GA11147@core.coreip.homeip.net>	 <1260275743.3094.6.camel@palomino.walls.org>	 <4B1E54FF.8060404@redhat.com>	 <9e4733910912080547j75c2c885o29664470ff5e2c6a@mail.gmail.com>	 <4B1E5BDF.7010202@redhat.com>	 <9e4733910912080619t36089c9bg5e54114844b9694a@mail.gmail.com>	 <4B1E640B.6030705@redhat.com>	 <9e4733910912080756j7e1fac32qc552c6514a307b7d@mail.gmail.com>	 <4B1E7E56.80701@redhat.com> <9e4733910912081015he8b9b63o27ee802dea7adcfc@mail.gmail.com>
+In-Reply-To: <9e4733910912081015he8b9b63o27ee802dea7adcfc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912081927.37940.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1285252.mDxeCYaWsz
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Jon Smirl wrote:
 
-On Tuesday 08 December 2009 09:19:27 David Howells wrote:
-> Jie Zhang <jie.zhang@analog.com> wrote:
-> > I agree on using 0 instead of NULL. But for !MMU, I think, vaddr is
-> > always as same as addr. So we don't need to pass it?
->=20
-> FRV flushes the vaddr because in MMU mode the cache flush instructions ta=
-ke
-> virtual addresses, so if we pass addr as vaddr, I can use the same cache
->  flush code for both modes.  I suspect it makes little difference to the
->  amount of code if we pass that rather than 0, as the value is already
->  computed, and either way, it's going to take one instruction to set up t=
-he
->  argument.
->=20
-> Note that Blackfin assumes that it may use the dst address for flushing -
->  an assumption that isn't valid in MMU mode with a VIVT cache (which I
->  presume Blackfin isn't, but other CPUs are).
+>> I don't like the idea of automatically loading 3 different keycodes at the
+>> same time. You may have overlaps between different keycode tables. The
+>> better is to have some userspace GUI that will allow the user to select
+>> what keycode table(s) he want to be available, if he decides to not use the
+>> bundled IR.
+> 
+> Of course there is going to be overlap of the keycodes, but not the
+> scancodes. There should be almost 100% overlap.
 
-the Blackfin cpu currently does not have virtual memory support at all, so =
-i=20
-imagine there's a bunch of things that'll need updating when that day comes
+What prevents users to create overlaps at scancodes? We might add some
+protection, but, providing that different keycode tables can be used by
+different applications, why do we need to prevent it?
 
-the new patch is of course fine; thanks
-=2Dmike
+> The three maps are there to support a non-technical user, a
+> sophisticated user will disable two of them. This works because the
+> non-technical user is only going to use one of the three IR device
+> profiles. The other two may be loaded, but the user isn't sending any
+> IR signals that match their maps.
 
---nextPart1285252.mDxeCYaWsz
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I doubt you can map all cases with just three profiles.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
+> 
+> Where this breaks down is if they are using SciAtlanta_DVR to control
+> MythTV and they also happen to have a physical Motorola DVR in the
+> same room. 
+> The Linux box is going to pick up the commands meant for
+> the Motorola DVR and both boxes will respond.. In that cause they will
+> need to figure figure out how to disable the Motorola DVR profile.
 
-iQIcBAABAgAGBQJLHu75AAoJEEFjO5/oN/WBPbIQAJRgiXyAXzm9C1oYk39fpmkj
-hwrBmYw8yOPNsI+t3tJREp9LvnYWtW/1VuHdjkk5LxHzLYq5gvM1W/3aX3belAh0
-5mPiOoBIR2MzAI6dYbO83qIw99CTkK9wdg+vkhkCMXstRYgPZ3hPL+Q3Cs173E6h
-UALATmFanjbIcW+OviMJoRsnWQY1FPwVCt2Om4elFohU8FK3G1KVYB5aOBy/BUNw
-hNO9Yv+Ljcnm4zr0T6GjbWqpLB7abVVoBAW9T8obnxQclVQ9jbaw6kZ0cp1xB8n/
-R5dplIAWJNVtUmAmGbA7IB4cuEQFKbdwO7nyKVuxm9mluphJ3y/uc2e1tbwb8Pf1
-pDRJrcx+FcsfwgtdPBE1LBVJMQkO0/bRZQ2dQtvYjNbgtRIWkqld8g3iyACQltCj
-bXJKbtlz0rZXNbB6qAWQUhDV2bAJRmCP4Ik0rRsJd4OyZ1Jhzzqi16eeYqdDnIAr
-MaFICSG5WpmNol8saLENHPzALcdhurnkgf+wyQgcVwawVS4Rn+XsHgFLD8laGQGW
-UD9eZ9vAjAyl+IuSW4v+rTDnGy3wtLlnlOKV/G9kIPnrbTjHwPaTthkKe0h0I75T
-fQQBy/SCUYa2Buf2fpczGIwJq1vyMUvgBxK7lkGLIf9aO7RH3hLdzdsKiykiNidE
-gW4uLZTzOhd/2UHyU0f4
-=hwQo
------END PGP SIGNATURE-----
+I used to have a Set Top Box that has some broken code to decode IR. So,
+sometimes, when I used to press a key on my TV IR, the STB were getting
+the code, producing a really bad result. That's really bad.
 
---nextPart1285252.mDxeCYaWsz--
+A normal user is able to click on some graphical application and
+select his IR model. The app may even have some photos or pictures
+representing the most used IR's. This is better than letting him to to
+to some forum, asking his friends, etc, trying to figure out why his
+PC is doing something wrong when he changes a channel on his TV.
+
+> But is a non-technical person likely to have two DVRs in the same
+> room?
+
+Well, I know someone that has an 8 year old children with a setup like this: 
+a PC monitor that has an IR, and a PC with a TV board also with IR.
+Of course, both the monitor and the PC are at the same room.
+
+Cheers,
+Mauro.
