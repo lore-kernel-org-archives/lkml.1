@@ -1,71 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZLISFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbZLISFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbZLISFc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:05:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756500AbZLISF3
+	id S1756573AbZLISFu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbZLISFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:05:29 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40566 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756488AbZLISF1 (ORCPT
+	Wed, 9 Dec 2009 13:05:45 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:37246 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756499AbZLISFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:05:27 -0500
-X-Authority-Analysis: v=1.0 c=1 a=sHHlHcWDpqoA:10 a=7U3hwN5JcxgA:10 a=in-ESPKl4uUPddIV0mwA:9 a=tWxkKKHgAJd9_6GkF7YA:7 a=XAb_2VObXJVJCZa2cyJ4RJPY8IEA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH][GIT PULL][v2.6.33] tracing: Remove comparing of NULL
- to va_list in trace_array_vprintk()
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Carsten Emde <Carsten.Emde@osadl.org>,
-       Olof Johansson <olof@lixom.net>, hpa@zytor.com, tglx@linutronix.de
-In-Reply-To: <20091209061148.GA14010@elte.hu>
-References: <4B01AE5D.1010801@osadl.org>
-	 <tip-c13d2f7c3231e873f30db92b96c8caa48f100f33@git.kernel.org>
-	 <20091206051352.GA4628@lixom.net> <4B1BAB74.104@osadl.org>
-	 <1260332397.2146.38.camel@gandalf.stny.rr.com>
-	 <20091209055602.GB2512@elte.hu>  <20091209061148.GA14010@elte.hu>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 09 Dec 2009 13:05:32 -0500
-Message-ID: <1260381932.2146.122.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Dec 2009 13:05:44 -0500
+Authentication-Results: sj-iport-5.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-AV: E=Sophos;i="4.47,369,1257120000"; 
+   d="scan'208";a="116887794"
+From: Roland Dreier <rdreier@cisco.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Ralph Campbell <infinipath@qlogic.com>,
+       Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org
+Subject: Re: [PATCH] ipath: Use bitmap_weight
+References: <1258340880-28269-1-git-send-email-akinobu.mita@gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 09 Dec 2009 10:05:49 -0800
+In-Reply-To: <1258340880-28269-1-git-send-email-akinobu.mita@gmail.com>
+	(Akinobu Mita's message of "Mon, 16 Nov 2009 12:08:00 +0900")
+Message-ID: <ada638gt43m.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Dec 2009 18:05:50.0119 (UTC) FILETIME=[3D6CFB70:01CA78FA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 07:11 +0100, Ingo Molnar wrote:
-> -tip testing found that the Alpha defconfig fails to build. (error log 
-> attached below)
-> 
-> To fix this bug i have unpulled this commit for now:
-> 
->  efcf61a: tracing: Remove comparing of NULL to va_list in trace_array_vprintk()
-> 
-> Thanks,
-> 
-> 	Ingo
-> 
-> ---------------->
-> In file included from /home/mingo/tip/include/linux/ftrace_event.h:5,
->                  from /home/mingo/tip/include/trace/syscall.h:6,
->                  from /home/mingo/tip/include/linux/syscalls.h:71,
->                  from /home/mingo/tip/init/noinitramfs.c:23:
-
-Ah, this was caused by the !CONFIG_TRACING path:
-
--static inline void trace_print_seq(struct seq_file *m, struct trace_seq *s)
-+static inline int trace_print_seq(struct seq_file *m, struct trace_seq *s)
-{
-}
-
-Will fix.
-
-Thanks,
-
--- Steve
-
-
+thanks, applied.
