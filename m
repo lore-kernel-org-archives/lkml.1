@@ -1,126 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZLIPnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbZLIPfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZLIPnb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 10:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZLIPna
+	id S1754680AbZLIPfp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 10:35:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZLIPfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 10:43:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28089 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbZLIPna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 10:43:30 -0500
-Date: Wed, 9 Dec 2009 16:37:09 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [rfc] "fair" rw spinlocks
-Message-ID: <20091209153709.GA13192@redhat.com>
-References: <20091130174638.GA9782@elte.hu> <alpine.LFD.2.00.0911302206370.24119@localhost.localdomain> <1259616429.26472.499.camel@laptop> <alpine.LFD.2.00.0911302300550.24119@localhost.localdomain> <alpine.LFD.2.00.0911301409560.2872@localhost.localdomain> <alpine.LFD.2.00.0911302328350.24119@localhost.localdomain> <alpine.LFD.2.00.0911301443110.2872@localhost.localdomain> <m1y6lg7q3n.fsf@fess.ebiederm.org> <20091207183226.GA20139@redhat.com> <m1aaxu305x.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
+	Wed, 9 Dec 2009 10:35:43 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:35663 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752099AbZLIPfn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 10:35:43 -0500
+Date: Wed, 9 Dec 2009 09:37:40 -0600
+From: scameron@beardog.cce.hp.com
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, achiang@hp.com,
+       jens.axboe@oracle.com, mikem@beardog.cce.hp.com
+Subject: Re: + hpsa-use-msleep-instead-of-schedule_timeout.patch added to -mm tree
+Message-ID: <20091209153740.GG6940@beardog.cce.hp.com>
+References: <200912082204.nB8M48oL027313@imap1.linux-foundation.org> <4B1ED241.4090803@gmail.com> <20091208144419.af6298ba.akpm@linux-foundation.org> <4B1F7324.9000402@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1aaxu305x.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B1F7324.9000402@gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/07, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@redhat.com> writes:
->
-> > On 12/05, Eric W. Biederman wrote:
+On Wed, Dec 09, 2009 at 10:51:32AM +0100, Jiri Slaby wrote:
+> On 12/08/2009 11:44 PM, Andrew Morton wrote:
+> > On Tue, 08 Dec 2009 23:25:05 +0100
+> > Jiri Slaby <jirislaby@gmail.com> wrote:
+> > 
+> >> On 12/08/2009 11:04 PM, akpm@linux-foundation.org wrote:
+> >>> Subject: hpsa: use msleep() instead of schedule_timeout
+> >>> From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+> >>>
+> >>> Use msleep() instead of schedule_timeout
 > >>
-> >> Atomically sending signal to every member of a process group, is the
-> >> big fly in the ointment I am aware of.  Last time I looked I could
-> >> not see how to convert it rcu.
-> >
-> > I am not sure, but iirc we can do this lockless (under rcu_lock).
-> > We need to modify pid_link to use list_entry and attach_pid() should
-> > add the new task to the end. Of course we need more changes, but
-> > (again iirc) this is not too hard.
->
-> The problem is that even adding to the end of the list, we could run
-> into a deleted entry and not see the new end of the list.
->
-> Suppose when we start iterating the list we have:
->
->   A -> B -> C -> D
->
-> Then someone deletes some of the entries while we are iterating the list.
->
-> A ->
->  B' -> C' -> D'
->
-> We will continue on traversing through the deleted entries.
->
-> Then someone adds a new entry to the end of the list.
->
-> A-> N
->
-> Since we are at B', C' or D' we will never see the new entry on the
-> end of the list.
+> >> The patch does more than that and moreover in a wrong manner, see below.
+> >>
+> >>> @@ -3262,8 +3262,8 @@ static int hpsa_pci_init(struct ctlr_inf
+> >>>  		if (!(readl(h->vaddr + SA5_DOORBELL) & CFGTBL_ChangeReq))
+> >>>  			break;
+> >>>  		/* delay and try again */
+> >>> -		set_current_state(TASK_INTERRUPTIBLE);
+> >>> -		schedule_timeout(10);
+> >>> +		set_current_state(TASK_UNINTERRUPTIBLE);
+> >>> +		msleep(10);
+> >>
+> >> Why do you change interruptible sleep to uninterruptible?
+> > 
+> > Stealth bugfix ;)
+> > 
+> > If the calling process (called "modprobe") has signal_pending()
+> > (someone ^C'ed it) then the TASK_INTERRUPTIBLE sleep will be a no-op
+> > and the driver will probably go and screw things up.
+> 
+> Ok, then it should have been in the changelog. The changelog was just
+> "Use msleep() instead of schedule_timeout". Apart it doesn't mention why
+> it is changed (it might be obvious for some that it's a cleanup), it
+> doesn't do merely that.
 
-Yes, but who can add the new entry?
+Sorry.  I'll try to do better.  FWIW, these all get rolled up into one
+big patch on account of this being a new driver not yet in Linus's
+tree, so those change log entries wouldn't go into git anyway, so
+far as I know.
 
-Let's forget about setpgrp/etc for the moment, I think we have "races"
-with or without tasklist. Say, setpgrp() can add the new process to the
-already "killed" pgrp.
+> 
+> >>> diff -puN drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout drivers/scsi/hpsa.h
+> >>> --- a/drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout
+> >>> +++ a/drivers/scsi/hpsa.h
+> >> ...
+> >>> @@ -139,7 +139,7 @@ struct ctlr_info {
+> >>>  #define HPSA_BOARD_READY_ITERATIONS \
+> >>>  	((HPSA_BOARD_READY_WAIT_SECS * 1000) / \
+> >>>  		HPSA_BOARD_READY_POLL_INTERVAL_MSECS)
+> >>> -#define HPSA_POST_RESET_PAUSE (30 * HZ)
+> >>> +#define HPSA_POST_RESET_PAUSE_MSECS (3000)
+> >>
+> >> Ehm?
+> > 
+> > 30 seconds would have sucked anyway ;)
+> 
 
-Then, I think the only important case is SIGKILL/SIGSTOP (or other
-signals which can't be blockes/ignored). We must kill/stop the entire
-pgrp, we must not race with fork() and miss a child.
+BTW, I talked to a firmware guy familiar with the original problem
+and he looked through the firmware code for the the controllers this
+driver supports and said he couldn't see any reason it should take more
+than a couple seconds, so, three seconds in the driver seems reasonable.
+If it turns out that people start complaining that the boards aren't
+getting initialized in time, we can revisit it.  It's also my own
+experience that this section takes next to no time at all.
 
-In this case I _think_ rcu_read_lock() is enough,
-
-	rcu_read_lock()
-
-	list_for_each_entry_rcu(task, pid->tasks[PIDTYPE_PGID)
-		group_send_sig_info(sig, task);
-
-	rcu_read_unlock();
-
-except group_send_sig_info() can race with mt-exec, but this is simple
-to fix.
-
-If we send a signal (not necessary SIGKILL) to a process P, we must see
-all childs which were forked by P, both send_signal() and copy_process()
-take the same ->siglock, we must see the result of list_add_tail_rcu().
-And, after we sent SIGKILL/SIGSTOP, it can't fork the new child.
-
-If list_for_each_entry() does not see the exited process P, this means
-we see the result of list_del_rcu(). But this also means we must the
-the result of the previous list_add_rcu().
-
-IOW, fork+exit means list_add_rcu() + wmb() + list_del_rcu(), if we
-don't see the new entry on list, we must see the new one, right?
-
-(I am ignoring the case when list_for_each_entry_rcu() sees a process
- P but lock_task_sighand(P) fails, I think this is the same as if we
- we missed P)
-
-Now suppose a signal is blocked/ignored or has a handler. In this case
-we can miss a child, but I think this is OK, we can pretend the new
-child was forked after kill_pgrp() completes. Say, this child C was
-forked by some process P. We can miss C only if it was forked after
-we already sent the signal to P.
-
-However. I do not pretend the reasoning above is "complete", and
-perhaps I missed something else.
-
-> Additionally we have the other possibility that if a child is forking
-> we send the signal to the parent after the child forks away but before
-> the child joins whichever list we are walking, and we complete our
-> traversal without seeing the child.
-
-Not sure I understand... But afaics this case is covered above.
-->siglock should serialize this, copy_process() does attach_pid()
-under this lock.
-
-Oleg.
-
+> Might be. But again, then it should be explained in the changelog. And
+> as this is totally separate thing, also in a separate patch.
+> 
+> At least I though this is the politics.
+> 
+> thanks,
+> -- 
+> js
