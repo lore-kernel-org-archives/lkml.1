@@ -1,28 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbZLIGvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbZLIGwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756741AbZLIGvR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 01:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbZLIGvO
+	id S1756801AbZLIGwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 01:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756688AbZLIGwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 01:51:14 -0500
-Received: from mail.perches.com ([173.55.12.10]:1029 "EHLO mail.perches.com"
+	Wed, 9 Dec 2009 01:52:18 -0500
+Received: from gate.crashing.org ([63.228.1.57]:57065 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755784AbZLIGvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 01:51:13 -0500
-Subject: [PATCH] checkpatch.pl: Warn on pr_<level> or dev_<level> with
- KERN_<level>
-From: Joe Perches <joe@perches.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andy Whitcroft <apw@canonical.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Herrmann <herrmann.der.user@googlemail.com>
-In-Reply-To: <20091209060538.GD2512@elte.hu>
-References: <200912082259.nB8Mx2ih008207@hera.kernel.org>
-	 <1260313613.27677.169.camel@Joe-Laptop.home>
-	 <20091209060538.GD2512@elte.hu>
+	id S1756066AbZLIGwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 01:52:17 -0500
+Subject: [PATCH] cardbus: Add a fixup hook and fix powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-pci@vger.kernel.org
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, blofeldus@yahoo.com,
+       Olof Johansson <olof@lixom.net>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Dec 2009 22:51:19 -0800
-Message-ID: <1260341479.27677.193.camel@Joe-Laptop.home>
+Date: Wed, 09 Dec 2009 17:52:13 +1100
+Message-ID: <1260341533.16132.20.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -30,29 +26,116 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-09 at 07:05 +0100, Ingo Molnar wrote:
-> ( Andy: i suspect checkpatch could also grow a new warning perhaps, the
->   '\<pr_.*(KERN_.*' pattern will i suspect pinpoint something fishy in 
->   most cases. )
+The cardbus code creates PCI devices without ever going through the
+necessary fixup bits and pieces that normal PCI devices go through.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+There's in fact a commented out call to pcibios_fixup_bus() in there,
+it's commented because ... it doesn't work.
+
+I could make pcibios_fixup_bus() do the right thing on powerpc easily
+but I felt it cleaner instead to provide a specific hook pci_fixup_cardbus
+for which a weak empty implementation is provided by the PCI core.
+
+This fixes cardbus on powerbooks and probably all other PowerPC
+platforms which was broken completely for ever on some platforms and
+since 2.6.31 on others such as PowerBooks when we made the DMA ops
+mandatory (since those are setup by the fixups).
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index bc4114f..ffd8210 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1832,6 +1832,12 @@ sub process {
- 			}
- 		}
+
+Note: In the long run we might want to streamline the hooks for fixing
+up new devices vs. new busses and make some stuff common between cardbus
+and PCI hotplug which is actually a mess.
+
+This is a quick fix that makes it work again in the meantime, and that
+I would like to see in 2.6.31 and 2.6.32 stable at least. 
+
+Another option if you prefer is I can make my pcibios_fixup_bus() do the
+right thing in all cases I believe (by testing bus->is_added to skip
+stuff that must not be done twice) and we can remove the comment and
+stick the call in #ifdef CONFIG_PPC but I felt that solution was a tad
+cleaner.
+
+Olof, once that's in you should be able to remove the hack you have in
+the PA-Semi code to work around this.
+
+Cheers,
+Ben.
+
+Index: linux-work/drivers/pcmcia/cardbus.c
+===================================================================
+--- linux-work.orig/drivers/pcmcia/cardbus.c	2009-12-09 17:16:10.000000000 +1100
++++ linux-work/drivers/pcmcia/cardbus.c	2009-12-09 17:34:58.000000000 +1100
+@@ -214,7 +214,7 @@ int __ref cb_alloc(struct pcmcia_socket 
+ 	unsigned int max, pass;
  
-+# pr_<level> and dev_<level> should not use KERN_* levels
+ 	s->functions = pci_scan_slot(bus, PCI_DEVFN(0, 0));
+-//	pcibios_fixup_bus(bus);
++	pci_fixup_cardbus(bus);
+ 
+ 	max = bus->secondary;
+ 	for (pass = 0; pass < 2; pass++)
+Index: linux-work/include/linux/pci.h
+===================================================================
+--- linux-work.orig/include/linux/pci.h	2009-12-09 17:16:10.000000000 +1100
++++ linux-work/include/linux/pci.h	2009-12-09 17:34:47.000000000 +1100
+@@ -564,6 +564,9 @@ void pcibios_align_resource(void *, stru
+ 				resource_size_t);
+ void pcibios_update_irq(struct pci_dev *, int irq);
+ 
++/* Weak but can be overriden by arch */
++void pci_fixup_cardbus(struct pci_bus *);
 +
-+		if ($line =~ /\b(pr_|dev_)[a-z]+.*KERN_/) {
-+			WARN("pr_<level>() and dev_<level> should not include KERN_ facility level\n" . $herecurr);
-+		}
+ /* Generic PCI functions used internally */
+ 
+ extern struct pci_bus *pci_find_bus(int domain, int busnr);
+Index: linux-work/arch/powerpc/kernel/pci-common.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2009-12-09 17:16:10.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci-common.c	2009-12-09 17:35:19.000000000 +1100
+@@ -1107,6 +1107,12 @@ void __devinit pcibios_setup_bus_devices
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		struct dev_archdata *sd = &dev->dev.archdata;
+ 
++		/* Cardbus can call us to add new devices to a bus, so ignore
++		 * those who are already fully discovered
++		 */
++		if (dev->is_added)
++			continue;
 +
- # function brace can't be on same line, except for #defines of do while,
- # or if closed on same line
- 		if (($line=~/$Type\s*$Ident\(.*\).*\s{/) and
+ 		/* Setup OF node pointer in archdata */
+ 		sd->of_node = pci_device_to_OF_node(dev);
+ 
+@@ -1147,6 +1153,13 @@ void __devinit pcibios_fixup_bus(struct 
+ }
+ EXPORT_SYMBOL(pcibios_fixup_bus);
+ 
++void __devinit pci_fixup_cardbus(struct pci_bus *bus)
++{
++	/* Now fixup devices on that bus */
++	pcibios_setup_bus_devices(bus);
++}
++
++
+ static int skip_isa_ioresource_align(struct pci_dev *dev)
+ {
+ 	if ((ppc_pci_flags & PPC_PCI_CAN_SKIP_ISA_ALIGN) &&
+Index: linux-work/drivers/pci/pci.c
+===================================================================
+--- linux-work.orig/drivers/pci/pci.c	2009-12-09 17:33:24.000000000 +1100
++++ linux-work/drivers/pci/pci.c	2009-12-09 17:34:16.000000000 +1100
+@@ -2723,6 +2723,11 @@ int __attribute__ ((weak)) pci_ext_cfg_a
+ 	return 1;
+ }
+ 
++void __weak pci_fixup_cardbus(struct pci_bus *bus)
++{
++}
++EXPORT_SYMBOL(pci_fixup_cardbus);
++
+ static int __init pci_setup(char *str)
+ {
+ 	while (str) {
 
 
