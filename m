@@ -1,813 +1,485 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbZLIWmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbZLIWmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbZLIWmW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 17:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758444AbZLIWmQ
+	id S1758646AbZLIWmq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 17:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758550AbZLIWmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 17:42:16 -0500
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:33070
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758184AbZLIWmN (ORCPT
+	Wed, 9 Dec 2009 17:42:38 -0500
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:33850 "EHLO
+	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758582AbZLIWm2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 17:42:13 -0500
-X-SpamScore: -11
-X-BigFish: VPS-11(zz154dM541I936eMab9bhzz1202hzzz2fh6bh61h)
+	Wed, 9 Dec 2009 17:42:28 -0500
+X-SpamScore: -5
+X-BigFish: VPS-5(zz936eMab9bhzz1202hzzz2fh6bh61h)
 X-Spam-TCS-SCL: 0:0
-Message-ID: <4B2027AA.6010703@am.sony.com>
-Date: Wed, 9 Dec 2009 14:41:46 -0800
+Message-ID: <4B2027C7.9010509@am.sony.com>
+Date: Wed, 9 Dec 2009 14:42:15 -0800
 From: Tim Bird <tim.bird@am.sony.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+To: linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 3/4] ftrace - add fdd script
+Subject: [PATCH 4/4] ftrace - function_duration Documentation
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Dec 2009 22:41:47.0653 (UTC) FILETIME=[CA7C2B50:01CA7920]
+X-OriginalArrivalTime: 09 Dec 2009 22:42:16.0919 (UTC) FILETIME=[DBEDCE70:01CA7920]
 X-SEL-encryption-scan: scanned
 X-Reverse-DNS: mail8.fw-sd.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add fdd (Function Duration Dump) program to scripts directory.
-
-The script should be 'chmod a+x'-ed.
+Documentation for function_duration tracer.
 
 Signed-off-by: Tim Bird <tim.bird@am.sony.com>
 ---
- scripts/fdd |  766 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 766 insertions(+)
+ Documentation/trace/func-duration.txt |  439 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 439 insertions(+)
 
 --- /dev/null
-+++ b/scripts/fdd
-@@ -0,0 +1,766 @@
-+#!/usr/bin/env python
++++ b/Documentation/trace/func-duration.txt
+@@ -0,0 +1,439 @@
++               Function Duration Tracing
++
++          Documentation written by Tim Bird
++
++       1 ... Introduction
++       2 ... Preparation
++       3 ... Usage
++       3.1 ... Usage Quick Reference
++       3.2 ... Usage Details
++       3.2.1 ... Filtering by duration
++       3.3 ... Early-boot Quick Reference
++       3.4 ... Early boot details and tips
++       4 ... How function duration tracing works
++       5 ... Trace Log Format and Display Options
++       5.1 ... Trace Display Options
++       6 ... Generalized event filtering
++       6.1 ... Filtering by depth
++       6.2 ... Filtering by pid
++       6.3 ... Resetting the filter
++       7 ... fdd Analysis Tool
++       8 ... Tutorial and Samples
++
++====================
++
++1. Introduction
++===============
++
++The purpose of the function duration tracer is to help find the
++longest-running, most time-consuming functions in the Linux kernel.
++This is especially important for early initialization, to reduce
++kernel boot time.
++
++Function duration tracing uses the ftrace ability to hook both the
++entry and exit of a function, to record duration information for
++kernel functions.  This is similar to the function_graph tracer, but
++the function_duration tracer is specially written to support filtering
++by duration and decreased tracer overhead while filtering.
++
++This extends the amount of time that a trace can cover, and reduces
++interference with the timing of the traced activity.
++
++2. Preparation
++==============
++
++The function duration tracing feature is compiled into the kernel
++using the CONFIG_FUNCTION_DURATION_TRACER option. Tracing is disabled
++by default, so it is safe to have this set to yes, although it will
++have an effect on performance. On platforms without dynamic tracing
++capability (e.g. ARM in 2.6.30), function tracing adds significant
++overhead to function execution in the Linux kernel.  On these
++platforms it would be unwise to leave function_duration tracing turned
++on in production environments.
++
++3. Usage
++========
++
++3.1 Usage Quick Reference
++-------------------------
++Here is an example of some steps to use the function_duration
++tracer:
++
++ $ mount -t debugfs debugfs /debug
++ $ cd /debug/tracing
++ $ echo function_duration >current_tracer
++ $ echo 100 >tracing_thresh
++ $ echo 1 >tracing_enabled ; <do something> ; echo 0 >tracing_enabled
++ $ cat trace >/tmp/something-trace.txt
++ $ echo nop >current_tracer
++ $ cat /tmp/something-trace.txt | sort -k2
++ $ <kernel-dir>/scripts/fdd /tmp/something-trace.txt
++
++3.2 Usage Details
++-----------------
++Make sure debugfs is mounted at /debug. If not (with root privileges)
++do:
++ $ mount -t debugfs debugfs /debug
++
++Activate function graph tracing (requires root privileges):
++ $ echo function_duration > /debug/tracing/current_tracer
++
++3.2.1 Filtering by duration
++---------------------------
++You can optionally set a minimum duration threshhold.  The value is
++in microseconds.  Any functions that execute in less time
++than specified will be omitted from the trace.
++
++Filtering by duration is useful to see only the long-running functions
++in the kernel.  Using a filter can significantly extend the amount of
++time you can trace, by eliminating many short-duration functions from
++the trace.  However, you need to remember when analyzing the data that
++many functions have been omitted.  Be careful interpreting the timing
++results from such a trace.
++
++To capture only functions taking 500 microseconds or longer, use this:
++ $ echo 500 >/debug/tracing/tracing_thresh
++
++Enable tracing (if not already enabled)
++ $ echo 1 >/debug/tracing/tracing_enabled
++
++Do something, and quickly disable tracing, to avoid overrunning the
++interesting events in the trace log.  Note that the trace log uses a
++ring buffer, which overwrites older events in the log until tracing is
++disabled.
++
++ $ <do something> ; echo 0 >/debug/tracing/tracing_enabled
++
++Store the trace:
++ $ cat /debug/tracing/trace > /tmp/something-trace.txt
++
++Sort the trace:
++ $ cat /tmp/something-trace.txt | sort -k2
++
++The trace entries are recorded in the log in the order of
++function exit.  In order to see the trace entries in order
++of function entry, sort the file by the CALLTIME, which is
++the second field by default.  If you have changed the trace
++display options, CALLTIME may be a different field number.
++
++Extra Tip:
++During tracing you can place comments (markers) into the trace with:
++
++ $ echo "foo happened" > /debug/tracing/trace_marker
++
++This makes it easier to see which part of the (possibly huge) trace
++corresponds to which action.  Note that unless you are filtering, the
++trace buffer fills so quickly that any comment made in "human time"
++will likely get overrun in the trace buffer before you have a
++chance to stop the trace.
++
++Shut down function graph tracing (requires root privileges):
++ $ echo nop > /debug/tracing/current_tracer
++
++If it doesn't look like sufficient data was captured, you can enlarge
++the buffers or use a larger filter value, and try again.
++
++Buffers are enlarged by first seeing how large the current buffers
++are:
++
++ $ cat /debug/tracing/buffer_size_kb
++
++This gives you the current trace buffer size. Approximately double
++this number and write it back.
++
++For instance:
++ $ echo 128000 > /debug/tracing/buffer_size_kb
++
++Then start again from the top.
++
++3.3 Early-boot Quick Reference
++------------------------------
++Here is an example of how to use the function_duration
++tracer during early kernel boot:
++
++On kernel command-line, specify the tracer to use ('function_duration'
++in this case), and, if desired, a tracing_threshhold and stop trigger:
++... ftrace=function_duration tracing_thresh=100 trace_stop_fn=pty_init
++
++After booting, retrieve the trace
++ $ mount -t debugfs debugfs /debug
++ $ cd /debug/tracing
++ $ cat trace > /tmp/boot-trace.txt
++ $ echo nop > current_tracer
++
++3.4 Early boot details and tips
++-------------------------------
++To use a tracer during early kernel boot, specify the name
++of the tracer on the kernel command line:
++   ftrace=function_duration
++
++For many platforms, the kernel boot arguments are specified
++in the bootloader.  For some platforms, they may alternatively
++(or additionally) be compiled into the kernel in CONFIG_CMDLINE.
++
++You can also set the tracing_thresh value at boot time, on
++the kernel command line:
++   tracing_thresh=100
++
++To stop tracing during bootup, you can specify a stop trigger, which
++is the name of a function to stop tracing at.  When the duration
++tracers sees the function entry for the named function, it will stop
++the tracer.  Also, a message including the string "hit stop trigger"
++is printed (logged to the kernel log buffer).
++
++Here is an example stopping at function 'pty_init':
++   trace_stop_fn=pty_init
++
++Using a stop trigger is useful to prevent interesting data from being
++overwritten in case the trace runs too long.
++
++You may need to experiment in order to find a good function to use to
++stop the trace.  One way to find a list of high-level functions called
++during boot is with 'initcall_debug'.  Use this on the kernel command
++line, and print out the list with 'dmesg' after booting.  Find the
++routine that runs just AFTER the routine you are interested in, and
++use its init function as the stop trigger.
++
++If you are using a tracing_thresh, and want to see all of the kernel
++boot, a good function to use that is close to the end of kernel boot
++is "run_init_process".  (See init/main.c)
++
++4. How function duration tracing works
++======================================
++
++The function tracer (upon which the function graph tracer is
++dependent) works by having the compiler put a call to a special
++instrumentation routine (called 'mcount') in the prologue of every
++kernel function.  (Well, almost every kernel function - some functions
++can not be traced for one reason or another.) The function duration
++tracer records the entry time for each function traced.  Then, it
++arranges to capture the function exit, by setting up a return
++trampoline.  This is done by recording the real return address, and
++substituting the trampoline address for the return address in the
++process stack.  When the function returns to the tracer, the time is
++recorded again, and the real caller is returned to.
++
++Unlike the function_graph tracer, the function_duration tracer only
++records a trace event function exit, when the event is over the
++tracing_thresh (and meets the other filtering criteria).  This results
++in the trace log recording the events in exit order, which is harder
++to interpret unless you sort the data.
++
++5. Trace Log Format and Display Options
++=======================================
++
++The log format for the function duration tracer is text and is easily
++filtered with sort, grep and awk.  The output is easily read by a
++human, and is useful for showing how functions nest within other
++functions.
++
++The function duration tracer consists of a header showing the tracer
++name, and the fields that are configured for display on each line.
++Then lines are shown for function entry and exit events.
++
++Here is a sample showing the log header and a few sample trace lines.
++(slightly edited for column width):
++
++# tracer: function_duration
 +#
-+# fdd (function duration dump):
-+# Read data from an ftrace duration dump, and format various ways.
-+#
-+# Based on kd (kft dump).
-+#
-+# Written by Tim Bird
-+#
-+# Copyright 2009 Sony Corporation of America
-+#
-+# GPL 2.0 applies
-+#
-+# ChangeLog:
-+#  0.7.2 - 2009/09/22 - add option to specify interrupt routine (int_func)
-+#      adjust stack handling for int functions, add support for 'Ms time'
-+#  0.7.1 - 2009/09/17 - add --fields option
-+#  0.7.0 - 2009/07/28 - handle cpu, add filtering, and commmand line
-+#    option for dump_list, fix func_stack management
-+#
-+# ToDo:
-+#
-+
-+MAJOR_VERSION = 0
-+MINOR_VERSION = 7
-+SUBMINOR_VERSION = 2
-+
-+# define some constants
-+UNKNOWN = "-1"
-+PROGNAME_UNKNOWN = "unknown_progname"
-+PID_UNKNOWN = "-2"
-+TIME_UNKNOWN = "0.000000"
-+
-+import sys, os
-+import time
-+import re
-+
-+debug = 0
-+
-+class stats_class:
-+       def __init__(self):
-+               self.missing_callers = 0
-+               self.total_functions = 0
-+
-+def dprint(msg):
-+       global debug
-+       if debug:
-+               print msg
-+
-+def usage():
-+       print """Usage: %s [<options>] <trace-filename>
-+This program parses the output from a set of function duration trace lines
-+
-+Options:
-+  -d            Show a list of functions, sorted by calltime and filtered
-+                an expressions (if any).
-+  -n <num>     Only show the <num> most time-consuming functions.
-+  -t <time>     Only show functions with time greater than <time>.
-+  -i <int_func> Recognize <int_func> as an interrupt function.  This
-+               results in special handling of that function.
-+  -e <expr>     Filter data by given expression.  Currently supported
-+                expressions are: 'cpu==x' and 'pid==y'
-+  -f <format>   Show columns indicated by <format> string.  Each field is
-+                represented by a single character. See '--fields'.
-+               The default format string is "fctal", which shows
-+               "function, count, time, average, local time" in that order.
-+  --fields      Show available fields and their format chars.
-+  -l            Show long listing (format string is "fctalrsmnx").
-+                Use a wide terminal window for this, if possible.
-+  -s <col-ID>   Sort by the column with the specified ID.  Can be one
-+                of: f,c,t,a,s,l.  Default is to sort by total time, 't'.
-+  -w            Show warnings while reading log data, including warnings
-+               about functions dropped due to missing trace information.
-+  -z            Show some statistics about the data and parse warnings.
-+  -h, --help    Show this usage help.
-+  -V, --version Show version information.
-+""" % os.path.basename(sys.argv[0])
-+       sys.exit(1)
-+
-+def show_output_fields():
-+       print """Field help for %s:
-+Available fields, identified by format character, are:
-+  f = Function name
-+  c = Count - number of times function was called
-+  t = Time - total time spent in this function
-+  a = Average - average time per function call
-+  l = Local time - time not spent in sub-routines
-+       This is the total time of the function, minus the sub-time,
-+       and usually gives a good indication of how long a function
-+       takes to do its own work.  Be careful interpreting this value
-+       when using filters, since sub-functions (and their time) may
-+       be omitted from the trace.
-+  r = Range - minimum and maximum times for a single call
-+  s = Sub-time - time spent in sub-routines
-+  m = Max sub-routine - name of sub-routine with max time
-+  n = Max sub-routine count - # of times max sub-routine was called
-+  x = Max sub-routine cost - time spent in calls to max sub-routines
-+  u = Sub-routine list - this feature is experimental
-+""" % os.path.basename(sys.argv[0])
-+       sys.exit(1)
-+
-+class func_node:
-+       sort_order = "t"
-+       def __init__(self, name, pid):
-+               self.name = name
-+               self.callers = []
-+               # times are int(nanoseconds)
-+               self.total_time = 0
-+               self.min = 99999999999
-+               self.max = 0
-+               self.subs = []
-+               self.sub_time = 0
-+               self.sub_list = {}
-+
-+       def get_name(self):
-+               return self.name
-+
-+       def add_call(self, caller, fc):
-+               dur = int(fc.duration * 1000000000)
-+               dprint("in add_call: func: %s, caller: %s, pid: %s, dur: %s" % \
-+                       (self.name, caller, fc.pid, dur))
-+               self.callers.append((caller, fc.pid, dur))
-+               self.total_time += dur
-+               dprint("%s total_time=%d" % (self.name, self.time()))
-+               if dur < self.min:
-+                       self.min = dur
-+               if dur > self.max:
-+                       self.max = dur
-+               dprint("%s local_time=%d" % (self.name, self.local_time()))
-+
-+       def add_sub(self, fc):
-+               dprint("func: %s, sub: %s, pid: %s, dur: %s" % \
-+                       (fc.name, self.name, fc.pid, fc.duration))
-+               dur = int(fc.duration * 1000000000)
-+               self.subs.append((fc.name, fc.pid, dur))
-+               self.sub_list[fc.name] = 1
-+               self.sub_time += dur
-+               dprint("new %s sub_time=%1.3f" % (self.name, self.get_sub_time()))
-+               dprint("%s local_time=%d" % (self.name, self.local_time()))
-+
-+       def time(self):
-+               return self.total_time/1000
-+
-+       def call_count(self):
-+               return len(self.callers)
-+
-+       def avg_time(self):
-+               count = len(self.callers)
-+               if self.total_time==0:
-+                       return 0
-+               else:
-+                       return ((self.total_time)/1000)/count
-+
-+       def time_range(self):
-+               count = self.call_count()
-+               if count >= 1:
-+                       return "(%d-%d)" % (self.min/1000, self.max/1000)
-+               else:
-+                       return ""
-+
-+       def get_sub_time(self):
-+               return float(self.sub_time)/1000
-+
-+       def local_time(self):
-+               if self.total_time!=0:
-+                       return (self.total_time - self.sub_time)/1000
-+               else:
-+                       return 0
-+
-+       def sub_list(self):
-+               return str(self.sub_list.keys())
-+
-+       def __cmp__(self, other):
-+               if self.sort_order == "t":
-+                       return cmp(self.total_time, other.total_time)
-+               if self.sort_order == "f":
-+                       return cmp(self.name, other.name)
-+               if self.sort_order == "c":
-+                       return cmp(self.call_count(), other.call_count())
-+               if self.sort_order == "a":
-+                       return cmp(self.avg_time(), other.avg_time())
-+               if self.sort_order == "s":
-+                       return cmp(self.sub_time, other.sub_time)
-+               if self.sort_order == "l":
-+                       return cmp(self.local_time(), other.local_time())
-+               # huh? no match, sort by total time
-+               return cmp(self.total_time, other.total_time)
-+
-+class func_call:
-+       def __init__(self, name, depth, calltime, duration, endtime,
-+                       cpu,  prog_name, pid, line_no):
-+               self.name = name
-+               self.depth = depth
-+               # times are in float(seconds)
-+               self.calltime = float(calltime)
-+               self.duration = float(duration)/1000000
-+               if endtime==TIME_UNKNOWN:
-+                       self.endtime = self.calltime + self.duration
-+               else:
-+                       self.endtime = float(endtime)
-+
-+               self.cpu = cpu
-+               self.prog_name = prog_name
-+               self.pid = pid
-+               self.line_no = line_no
-+       def __repr__(self):
-+               return "func_call: %f:%s" % (self.calltime, self.name)
-+
-+def cmp_func_calls(a, b):
-+       return cmp(a.calltime, b.calltime)
-+
-+def dump_funcs(funcs):
-+       test_keys = ["free_pid", "free_pidmap", "call_rcu", "__call_rcu"]
-+       for (key, value) in funcs.items():
-+               if key not in test_keys:
-+                       continue
-+               print "func:%s" % key
-+               print "   time: %s, call_count: %s, avg_time: %s, local_time: %s, sub_time: %s" % (value.time(), value.call_count(), value.avg_time(), value.local_time(), value.sub_time)
-+
-+
-+def get_max_sub(parent_func):
-+       global funcs_for_max_sub
-+
-+       # stupid kludge for passing funcs here through a global
-+       funcs = funcs_for_max_sub
-+       max_sub = None
-+       for (name, pid, duration) in parent_func.subs:
-+               if funcs.has_key(name):
-+                       sub_func = funcs[name]
-+                       if not max_sub:
-+                               max_sub = sub_func
-+                       else:
-+                               if sub_func.time() > max_sub.time():
-+                                       max_sub = sub_func
-+
-+       return max_sub
-+
-+def max_sub_name(parent_func):
-+       max_sub = get_max_sub(parent_func)
-+       if max_sub:
-+               return max_sub.get_name()
-+       else:
-+               return ""
-+
-+def max_sub_count(parent_func):
-+       global funcs_for_max_sub
-+
-+       max_sub = get_max_sub(parent_func)
-+
-+       funcs = funcs_for_max_sub
-+       if max_sub:
-+               ms_name = max_sub.get_name()
-+               ms_count = 0
-+               for (name, pid, duration) in parent_func.subs:
-+                       if funcs.has_key(name):
-+                               if name == ms_name:
-+                                       ms_count = ms_count + 1
-+               return ms_count
-+       else:
-+               return 0
-+
-+def max_sub_time(parent_func):
-+       max_sub = get_max_sub(parent_func)
-+       if max_sub:
-+               return max_sub.time()
-+       else:
-+               return 0
-+
-+class display_flags:
-+       pass
-+
-+# print errors or warnings for missing fields
-+def check_fields(fields):
-+       global show_warnings
-+
-+       if "TASK/PID" not in fields and show_warnings:
-+               print "Warning: trace log is missing TASK/PID field"
-+               print "Using this field helps with some calculations"
-+               print "Try: echo duration-proc >/debug/tracing/trace_options"
-+
-+# parse lines from ftrace output
-+# by default, each line consists of:
-+# CPU  CALLTIME | DURATION |  FUNCTION CALLS
-+# the 3rd commented line may be a key to the printed fields
-+#
-+# Here's a sample line, with default options (cpu, duration):
-+# 0) 100.123456789 | 10.167 us   |                mem_serial_in();
-+#
-+# here's a sample line with proc turned on:
-+# 0)    tail-585    |   706.541604750 |  13.834 us   |   kmem_cache_alloc
-+#
-+# Here's a sample line, with abstime turned on:
-+# note cpu is with calltime!!
-+#   582.159156 | 0) 100.123456789 | 576.000 us  |        }
-+#
-+# Here's a sample line, with abstime and proc turned on:
-+# note cpu is with proc info!!
-+#  582.159156 |   0)  ash-547     |   9.833 us    |      fd_install();
-+#
-+# NOTE: Handling this variable format is a big pain!
-+
-+def parse_funcduration_lines(lines):
-+       global stats
-+
-+       func_list = {}
-+       pids = {}
-+
-+
-+       fields = ["CPU", "CALLTIME", "DURATION", "FUNCTION", "CALLS"]
-+
-+       non_white_pat = re.compile("[^ ]")
-+       progname = PROGNAME_UNKNOWN
-+       pid = PID_UNKNOWN
-+       abstime = TIME_UNKNOWN
-+       cpu = "0"
-+
-+       # find start line:
-+       line_no = 0
-+       for line in lines:
-+               line_no += 1
-+
-+               # skip blank lines
-+               if not line.strip():
-+                       continue
-+
-+               # scan comment lines for the field key
-+               if line.startswith("#"):
-+                       # see if it's the key
-+                       if line.find("FUNCTION")!=-1:
-+                               fields = line[1:].split()
-+                               dprint("fields=%s" % fields)
-+                               check_fields(fields)
-+                       continue
-+
-+               line = line.strip()
-+               dprint("%d: line=%s" % (line_no, line))
-+
-+               # skip comment lines
-+               if line.find("/*") != -1:
-+                       continue
-+
-+               # possible line formats are:
-+               # 1: cpu) calltime | duration units | function
-+               # 2: abstime | cpu) calltime | duration units | function
-+               # 3: abstime | cpu) task-pid | calltime | duration units | function
-+               # 4: calltime | duration units | function
-+               # 5: abstime | calltime | duration units | function
-+               # 6: task-pid | calltime | duration units | function
-+
-+               # parse CPU separately, because it doesn't use a
-+               # regular delimiter
-+
-+               if "CPU" in fields:
-+                       # last item prior to first ')' is cpu number
-+                       items = line.split(")")
-+                       front_part = items[0]
-+                       front_list = front_part.split()
-+                       cpu = int(front_list[-1])
-+                       # remake string without cpu
-+                       del(front_list[-1])
-+                       front_part = " ".join(front_list)
-+                       line = front_part+")".join(items[1:])
-+
-+               parts = line.split("|")
-+               if "TIME" in fields:
-+                       time_part = parts[0]
-+                       del(parts[0])
-+                       prev_time = abstime
-+                       abstime = time_part.strip()
-+
-+               if "TASK/PID" in fields:
-+                       proc_part = parts[0]
-+                       del(parts[0])
-+
-+                       # get progname and pid
-+                       last_dash = proc_part.rfind("-")
-+                       progname = proc_part[:last_dash]
-+                       pid = proc_part[last_dash+1:].strip()
-+
-+               calltime = parts[0].strip()
-+               dur_info = parts[1].split()
-+               func_part = parts[2]
-+
-+               # parse duration information
-+               overhead = ""
-+               duration = UNKNOWN
-+               units = "us"
-+               # check for overhead
-+               if dur_info[0]=="+" or dur_info[0]=="!":
-+                       overhead = dur_info[0]
-+                       dur_info = dur_info[1:]
-+               # now get duration
-+               duration = dur_info[0]
-+               units = dur_info[1]
-+
-+               # parse function and depth
-+               try:
-+                       m = non_white_pat.search(func_part)
-+                       func_depth = m.start()/2
-+               except:
-+                       func_depth = 0
-+               func_name = func_part.split()[0]
-+
-+               dprint("task=%s, pid=%s, func_name=%s, func_depth=%s" % \
-+                       (progname, pid, func_name, func_depth))
-+
-+               if func_name.startswith("/*"):
-+                       # skip trace_marker comments
-+                       continue
-+
-+               # record function in list
-+               fc = func_call(func_name, func_depth, calltime, \
-+                       duration, abstime, cpu, progname, pid, line_no)
-+               if func_list.has_key(cpu):
-+                       func_list[cpu].append(fc)
-+               else:
-+                       func_list[cpu] = [fc]
-+
-+       return (func_list)
-+
-+# func_list is the list of functions, sorted by call entry time
-+def generate_stat_info(func_list):
-+       funcs = {}
-+       root_list = []
-+
-+       for fl in func_list.values():
-+               generate_stat_info_for_cpu(fl, funcs, root_list)
-+
-+       return(funcs, root_list)
-+
-+def generate_stat_info_for_cpu(func_list, funcs, root_list):
-+       global int_func
-+
-+       NO_PID = "-1"
-+
-+       cur_pid = NO_PID
-+       # func_stacks[pid] = [list of active funcs]
-+       func_stack_for_pid = {}
-+       func_stack = []
-+
-+       for fc in func_list:
-+               stats.total_functions += 1
-+
-+               # determine caller here, using active func_stack
-+               caller = UNKNOWN
-+
-+               # First, detect pid change and change stacks
-+               if cur_pid != fc.pid:
-+                       # save old stack
-+                       func_stack_for_pid[cur_pid] = func_stack
-+                       cur_pid = fc.pid
-+                       # get new stack
-+                       try:
-+                               func_stack = func_stack_for_pid[cur_pid]
-+                       except:
-+                               func_stack = []
-+
-+
-+               # manage the active function stack
-+               # remove expired functions
-+               # function is expired if it's depth is greater than current
-+               #         function depth
-+               # function is expired if it's endtime is less than current
-+               #         function calltime
-+               while func_stack and func_stack[-1].depth > fc.depth:
-+                       dprint("expiring %s from func_stack due to depth" % func_stack[-1])
-+                       func_stack.pop()
-+               while func_stack and func_stack[-1].endtime < fc.calltime:
-+                       dprint("expiring %s from func_stack due to endtime" % func_stack[-1])
-+                       func_stack.pop()
-+
-+               if fc.depth==1 or fc.name==int_func:
-+                       root_list.append(fc)
-+               else:
-+                       # find caller in active func stack
-+                       # cc = caller_candidate
-+                       if func_stack:
-+                               cc = func_stack[-1]
-+                               if cc.calltime < fc.calltime and \
-+                                       cc.endtime >= cc.endtime and \
-+                                       cc.depth == fc.depth-1:
-+                                       caller = cc.name
-+                                       dprint("found caller=%s" % caller)
-+                               else:
-+                                       print "Warning: %s (line %d) is not caller of %s (at line %d)" % \
-+                                               (cc.name, cc.line_no, fc.name, fc.line_no)
-+                       else:
-+                               if show_warnings:
-+                                       print "Warning: empty func_stack for func %s at depth %d" % (fc, fc.depth)
-+
-+               # FIXTHIS - track stats by CPU?
-+               if not funcs.has_key(fc.name):
-+                       funcs[fc.name] = func_node(fc.name, fc.pid)
-+
-+               funcs[fc.name].add_call(caller, fc)
-+
-+               if caller != UNKNOWN:
-+                       if not funcs.has_key(caller):
-+                               funcs[caller] = func_node(caller, fd.pid)
-+                       funcs[caller].add_sub(fc)
-+               else:
-+                       if fc.depth != 1:
-+                               stats.missing_callers += 1
-+                               if show_warnings:
-+                                       print "Warning: Could not find caller for %s at depth %d" % (fc, fc.depth)
-+
-+               # add this function to bottom of stack
-+               func_stack.append(fc)
-+               dprint("cur_pid=%s, func_stack = %s" % (cur_pid, func_stack))
-+
-+       if (debug):
-+               dump_funcs(funcs)
-+
-+       return(funcs, root_list)
-+
-+class column:
-+       def __init__(self, id, name, len, format, data_func):
-+               self.id = id
-+               self.name = name
-+               self.format = format
-+               self.tlen = len
-+               self.data_func = data_func
-+       def show_title(self):
-+               format = "%-"+"%ss" % self.tlen
-+               print format % self.name,
-+       def show_bar(self):
-+               print "-"*self.tlen,
-+       def show_data(self, arg):
-+               print self.format % self.data_func(arg),
-+
-+def init_columns():
-+       global columns
-+
-+       columns = {}
-+       columns['f'] = column('f', "Function", 30, "%-30s", func_node.get_name)
-+       columns['c'] = column('c', "Count", 5, "%5d", func_node.call_count)
-+       columns['t'] = column('t', "Time", 8, "%8d", func_node.time)
-+       columns['a'] = column('a', "Average", 8, "%8d", func_node.avg_time)
-+       columns['r'] = column('r', "Range", 18, "%18s", func_node.time_range)
-+       columns['s'] = column('s', "Sub-time", 8, "%8d", func_node.get_sub_time)
-+       columns['l'] = column('l', "Local", 8, "%8d", func_node.local_time)
-+       columns['m'] = column('m', "Max-sub", 30, "%30s", max_sub_name)
-+       columns['n'] = column('n', "Ms cnt", 6, "%6d", max_sub_count)
-+       columns['u'] = column('u', "Sub list", 20, "%s", func_node.sub_list)
-+       columns['x'] = column('x', "Ms time", 8, "%8d", max_sub_time)
-+
-+
-+def show_func_stats(funcs, show_count, show_time, col_list):
-+       global columns, funcs_for_max_sub
-+
-+       funcs_for_max_sub = funcs
-+       funclist = funcs.values()
-+       funclist.sort()
-+       funclist.reverse()
-+
-+       if not col_list:
-+               col_list = "fctal"
-+
-+       # filter the col_list to only valid columns
-+       col_list_old = col_list
-+       col_list = ""
-+       for col_id in col_list_old:
-+               if not columns.has_key(col_id):
-+                       print "Invalid column id: %s" % col_id
-+               else:
-+                       col_list = col_list + col_id
-+
-+       # show titles
-+       for col_id in col_list:
-+               col = columns[col_id]
-+               col.show_title()
-+       print
-+
-+       # show bar underneath title
-+       for col_id in col_list:
-+               col = columns[col_id]
-+               col.show_bar()
-+       print
-+
-+       # show data
-+       i = 0
-+       for func in funclist:
-+               if show_time and func.total_time < show_time:
-+                       continue
-+               if show_count:
-+                       i = i+1
-+                       if i>show_count:
-+                               continue
-+               for col_id in col_list:
-+                       col = columns[col_id]
-+                       col.show_data(func)
-+               print
-+
-+def dump_list(func_list):
-+       print "#   CALLTIME    DURATION          FUNCTION CALLS"
-+       print "#      |          |   |             |   |   |   |"
-+
-+       cpu_list = func_list.keys()
-+       cpu_list.sort()
-+
-+       for cpu in cpu_list:
-+               for fc in func_list[cpu]:
-+                       print "%d) %15.9f | %9.3f |%s%s" %  (fc.cpu, fc.calltime, \
-+                               fc.duration*1000000, "  "*fc.depth, fc.name)
-+
-+filter_warning_emitted = 0
-+
-+def filter_match(filter_expr, fc):
-+       global filter_warning_emitted
-+
-+       if filter_expr.startswith("cpu=="):
-+               match_cpu = int(filter_expr[5:])
-+               if fc.cpu == match_cpu:
-+                       return 1
-+               else:
-+                       return 0
-+
-+       if filter_expr.startswith("pid=="):
-+               match_pid = filter_expr[5:]
-+               if fc.pid == match_pid:
-+                       return 1
-+               else:
-+                       return 0
-+
-+       if not filter_warning_emitted:
-+               filter_warning_emitted = 1
-+               print "Warning: unknown filter: '%s' - unable to process" % filter_expr
-+               # raise an error here?
-+       return 1
-+
-+
-+def filter_list(func_list, filter_expr):
-+       for cpu in func_list.keys():
-+               fl = func_list[cpu]
-+               new_fl = []
-+               for fc in func_list[cpu]:
-+                       if filter_match(filter_expr, fc):
-+                               new_fl.append(fc)
-+               func_list[cpu] = new_fl
-+
-+def main():
-+       global debug, show_warnings
-+       global show_fdd_stats, stats
-+       global int_func
-+
-+       filein = ""
-+       show_count = 0
-+       show_time = 0
-+       debug = 0
-+       col_list = ""
-+       sort_order = "t"
-+       show_warnings = 0
-+       filter_expr = ""
-+       show_stats = 1
-+       show_dump_list = 0
-+       int_func = ""
-+
-+       stats = stats_class()
-+       show_fdd_stats = 0
-+
-+       args = sys.argv[1:]
-+       if "-h" in args or "--help" in args:
-+               usage()
-+       if "--fields" in args:
-+               show_output_fields()
-+       if "-V" in args or "--version" in args:
-+               print "Function Duration Dump - version %s.%s.%s" % \
-+                       (MAJOR_VERSION, MINOR_VERSION, SUBMINOR_VERSION)
-+               sys.exit(0)
-+       if "-l" in args:
-+               col_list = "fctalrsmnx"
-+               args.remove("-l")
-+       if "-d" in args:
-+               show_stats = 0
-+               show_dump_list = 1
-+               args.remove("-d")
-+       if "-n" in args:
-+               i = args.index("-n")
-+               show_count = int(args[i+1])
-+               del(args[i+1])
-+               del(args[i])
-+       if "-i" in args:
-+               i = args.index("-i")
-+               int_func = args[i+1]
-+               del(args[i+1])
-+               del(args[i])
-+       if "-t" in args:
-+               i = args.index("-t")
-+               show_time = int(args[i+1])
-+               del(args[i+1])
-+               del(args[i])
-+       if "-f" in args:
-+               i = args.index("-f")
-+               col_list = args[i+1]
-+               del(args[i+1])
-+               del(args[i])
-+       if "-e" in args:
-+               i = args.index("-e")
-+               filter_expr = args[i+1]
-+               del(args[i+1])
-+               del(args[i])
-+       if "-s" in args:
-+               i = args.index("-s")
-+               sort_order = args[i+1]
-+               del(args[i+1])
-+               del(args[i])
-+               if sort_order not in ["f", "c", "t", "a", "s", "l"]:
-+                       print "Invalid sort order. Use '-h' for help."
-+                       sys.exit(1)
-+       if "-w" in args:
-+               show_warnings = 1
-+               args.remove("-w")
-+       if "-z" in args:
-+               show_fdd_stats = 1
-+               args.remove("-z")
-+       if "--debug" in args:
-+               debug = 1
-+               args.remove("--debug")
-+
-+       if len(args)==1:
-+               filein = args[0]
-+
-+       if not filein:
-+               print "No filename specified. See usage for help. (Use -h)"
-+               sys.exit(1)
-+
-+       try:
-+               lines = open(filein,"r").readlines()
-+       except:
-+               print "Problem opening file: %s" % filein
-+               sys.exit(1)
-+
-+       func_list = parse_funcduration_lines(lines)
-+
-+       if filter_expr:
-+               filter_list(func_list, filter_expr)
-+
-+       # sort call list by start time
-+       for cpu in func_list.keys():
-+               func_list[cpu].sort(cmp_func_calls)
-+
-+       # show functions sorted by call-time
-+       # this can be used in place of cat <file> | sort -k2
-+       if show_dump_list:
-+               dump_list(func_list)
-+
-+       if show_stats:
-+               (funcs, root_list) = generate_stat_info(func_list)
-+
-+               init_columns()
-+               func_node.sort_order = sort_order
-+               show_func_stats(funcs, show_count, show_time, col_list)
-+
-+       if show_fdd_stats:
-+               print "Trace stats:"
-+               print "   %d total functions" % stats.total_functions
-+               print "   missing callers: %d" % stats.missing_callers
-+
-+if __name__ == "__main__":
-+       try:
-+               main()
-+       except IOError:
-+               # skip broken pipe errors (from e.g. "kd foo | head")
-+               (exc_type, exc_value, exc_trace) = sys.exc_info()
-+               if str(exc_value)!="[Errno 32] Broken pipe":
-+                       raise
++# CPU  TASK/PID     CALLTIME      DURATION         FUNCTION CALLS
++# |    |   |          |             |   |           |   |   |   |
++ 0)   ls-546  |  68.854653008 |   373.833 us  |  do_DataAbort
++ 0)   ls-546  |  68.854660674 |   8.167 us    |    down_read_trylock
++ 0)   ls-546  |  68.854690174 |   4.334 us    |    find_vma
++ 0)   ls-546  |  68.854705841 |   292.500 us  |    handle_mm_fault
++ 0)   ls-546  |  68.854714674 |   17.334 us   |      anon_vma_prepare
++ 0)   ls-546  |  68.854718174 |   2.500 us    |      __might_sleep
++ 0)   ls-546  |  68.854740674 |   125.500 us  |    __alloc_pages_internal
++
++You can configure the items displayed for each trace element, by
++setting /debug/tracing/trace_options.  (See Trace Display Options below)
++
++The following elements are available for display:
++
++  TIME - this is the time since the machine started in seconds, until
++  the function completes, with a decimal portion showing resolution
++  to microseconds.  This option is off by default.
++
++  CPU - indicates the CPU on which the function was executed
++
++  CALLTIME - this is the (absolute) time since the machine started to
++  when the function was entered.
++
++  TASK/PID - shows the task name and PID (process ID) for each trace
++  entry.  The entry has the format <task>-<pid> (e.g. "sh-443"). This
++  option is off by default.
++
++  DURATION - shows the time in microseconds that the function executed.
++  This is "wall time" for the function, and includes the time spent in
++  any sub-routines or with the CPU scheduled away from this routine
++
++  FUNCTION CALLS - this shows the name of the function
++
++5.1 Trace Display Options
++-------------------------
++
++The following display options are available for customizing the function
++graph trace output:
++
++   abstime - show TIME
++   cpu - show CPU
++   proc - show TASK and PID
++   duration - show DURATION
++   overrun - shows if the trace had an overrun (used to debug the tracer)
++
++To set an option echo a string to /debug/tracing/trace_options, using
++the format: "duration-<opt_name>".
++
++To unset a particular option, use the format: "noduration-<opt_name>".
++
++ $ echo duration-abstime >/debug/tracing/trace_options
++ $ echo noduration-cpu >/debug/tracing/trace_options
++ $ cat trace
++
++6. Generalized event filtering
++==============================
++The function duration tracer supports a few filtering options which are
++useful for analyzing a subset of function events in the system.  These
++are set by writing an expression into the pseudo-file
++       /debug/tracing/events/ftrace/funcgraph_exit/filter
++
++6.1 Filtering by depth
++----------------------
++Filtering by depth==0 allows you to see only the functions where the
++kernel was called directly from user space.  This is useful to see
++syscalls and page faults (only).  This can be used like a system-wide
++strace - except it shows faults as well as system calls.
++
++To do this, set a function exit filter for a depth of 0.
++
++ $ echo "ret.depth == 0" >/debug/tracing/events/ftrace/funcgraph_exit/filter
++
++Then capture your trace as usual.
++
++6.2 Filtering by pid
++--------------------
++Also, "common_pid == 609" can be used as a filtering expression for
++filtering by pid (in this example, pid 609).
++
++ $ echo "common_pid == 609" >/debug/tracing/events/ftrace/funcgraph_exit/filter
++
++6.3 Resetting the filter
++------------------------
++To reset the filter, echo a '0' to the filter pseudo-file.
++
++ $ echo 0 >/debug/tracing/events/ftrace/funcgraph_exit/filter
++ $ cat /debug/tracing/events/ftrace/funcgraph_exit/filter
++none
++
++7. fdd Analysis Tool
++====================
++The tool 'scripts/fdd' includes capabilities for:
++
++ * sorting the information by time spent in each routine
++ * filtering the information by cpu, process, call count,
++    and execution time
++ * showing minimum and maximum time spent in a routine
++
++See 'fdd --help' for usage help.  Here is an example of
++output:
++
++ $ fdd trace1.txt -n 10
++Function                       Count Time     Average  Local
++------------------------------ ----- -------- -------- --------
++schedule                          38  2939244    77348  2934758
++schedule_timeout                   3  1001947   333982      100
++interruptible_sleep_on_timeout     1  1001002  1001002       11
++sleep_on_common                    1  1000991  1000991       15
++sys_wait4                          2   789792   394896       42
++do_wait                            2   789745   394872      147
++__nfs_revalidate_inode            75   377785     5037     2715
++nfs_proc_getattr                  75   371310     4950     2075
++rpc_call_sync                     75   368975     4919     1557
++vfs_read                          22   341156    15507     1113
++
++This shows the 10 functions with the longest total execution time.
++
++The fdd '-l' (long listing) option is particularly useful.  It
++produces a very wide output.  You should expand your terminal window
++horizontally before using it.
++
++It shows:
++ * the function name, count, time average time and local time
++ * the range of durations for the function (minimum and maximum durations)
++ * the time spent in all sub-routines (sub-time)
++ * the sub-routine in which the most time was spent (max-sub)
++ * the number of times that the function called it's max-sub.
++   (max-subroutine count, or 'ms cnt')
++ * the time spent in calls to the max-sub.
++
++This listing can sometimes let you see at a glance where the flow
++of execution went for long-duration functions.
++
++8. Tutorial and Samples
++=======================
++
++For an interesting first trace, try the following:
++Make sure no other processes are active, if you can, then
++follow these steps:
++
++ $ mount -t debugfs debugfs /debug
++ $ cd /debug/tracing
++ # echo 0 >tracing_enabled
++ $ echo function_duration >current_tracer
++ $ echo 10000 >buffer_size_kb
++ $ echo 1 >tracing_enabled ; ls /bin | sed s/a/z/g ; \
++       echo "marker test!" >trace_marker ; echo 0 >tracing_enabled
++ $ echo duration-proc >trace_options
++ $ cat trace >/tmp/trace1.txt
++
++You might need to change the buffer size to 20000 (20 M) if
++you don't capture the entire trace (if the top of the buffer
++starts in the middle of ls or sed execution).
++
++Now examine the data:
++ $ ls -l /tmp/trace1.txt
++ $ cat /tmp/trace1.txt | sort -k3 >/tmp/trace1.txt.sorted
++ $ vi /tmp/trace1.txt.sorted
++
++Note that the trace data is quite large, but probably only covers one
++or two seconds of execution time.
++
++You can grep for specific functions:
++ $ grep sys_read /tmp/trace1.txt.sorted
++ 0)     ls-544     |   123.525830514 |  ! 189.500 us  |  sys_read
++ 0)    sed-545     |   123.535939681 |  ! 188.667 us  |  sys_read
++ 0)    sed-545     |   123.549917181 |  ! 20959.33 us |  sys_read
++ 0)     ls-544     |   123.557459514 |  ! 188.667 us  |  sys_read
++ 0)     ls-544     |   123.573200181 |  ! 196.333 us  |  sys_read
++ 0)    sed-545     |   123.594238014 |  ! 190.667 us  |  sys_read
++ 0)     ls-544     |   123.598459014 |  ! 192.500 us  |  sys_read
++ 0)     ls-544     |   123.613054681 |  ! 189.333 us  |  sys_read
++ 0)    sed-545     |   123.623398848 |  ! 193.000 us  |  sys_read
++ 0)    sed-545     |   123.627919514 |  ! 196.334 us  |  sys_read
++ 0)    sed-545     |   123.663768681 |  ! 224659.3 us |  sys_read
++
++This trace was obtained on an ARM 192 MHZ processor.  The kernel
++filled most reads from cache, taking about 200 microseconds
++per read. But one read took over 20 milliseconds and another
++took over 224 milliseconds!  Looking at your own trace, you will
++likely see that some reads slept waiting for disk I/O, or that
++the time-slice for the program expired (a timer interrupt
++occured, and the program executing the sys_read was scheduled
++out).
++
++Here are some things to look for in the trace:
++
++ * Watch as the shell forks and execs ls and sed.
++ * Watch for timer interrupts which cause context switches between
++   the three processes (sh, ls and sed).
++ * Watch for page faults during ls and sed startup, as the processes
++   are paged into memory.
++ * Look for routines starting with "sys_" which are at the top level
++   of the call graphs. These are system calls.
++ * Look for the duration value for the system calls You can see how
++   long different system calls took to execute, and what sub-routines
++   were called internally in the kernel.  Also, you can determine if
++   a long-running system call was interrupted (and the process
++   scheduled out, before returning)
++ * Look for the comment "marker test!" near the end of the trace.
+
 
 
