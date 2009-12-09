@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZLIWdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbZLIWeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758317AbZLIWdL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 17:33:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbZLIWdF
+	id S1758313AbZLIWeW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 17:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbZLIWeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 17:33:05 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:41556 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758270AbZLIWdD (ORCPT
+	Wed, 9 Dec 2009 17:34:17 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56942 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758190AbZLIWeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 17:33:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=CVkYeUwRH4gjqn24dRx0tbs2O937wUH8E++iTmn7KZjqNa0N7HJSL+UfkIUHMQEL5b
-         JAdWaK1Kxw7qPqiU+oHLyVDCSyrvV/lqlK5xPAOA2s0fJIjrRfdMbiTc+dXzdfzx7HMM
-         ga8Ew1h3iEqfHcwO5HTKTpIRlOpwh/6DRVOPU=
-MIME-Version: 1.0
-In-Reply-To: <4B201D67.8000607@gmail.com>
-References: <Pine.LNX.4.44L0.0912090940030.4120-100000@iolanthe.rowland.org>
-	 <4B201D67.8000607@gmail.com>
-Date: Wed, 9 Dec 2009 20:33:08 -0200
-X-Google-Sender-Auth: 706a05449143ec81
-Message-ID: <be7a9f3d0912091433s437859a4k873fb147e1763c46@mail.gmail.com>
-Subject: Re: REGRESSION for RT2561/RT61 in 2.6.32
-From: Otavio Salvador <otavio@ossystems.com.br>
-To: Gertjan van Wingerde <gwingerde@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Ivo van Doorn <IvDoorn@gmail.com>,
-       linux-wireless@vger.kernel.org,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Dec 2009 17:34:17 -0500
+Subject: Re: [PATCH] avoid out of bounds array reference in save_trace()
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: mingo@elte.hu, luming.yu@intel.com, linux-kernel@vger.kernel.org
+In-Reply-To: <4b2024d085302c2a2@agluck-desktop.sc.intel.com>
+References: <4b2024d085302c2a2@agluck-desktop.sc.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Dec 2009 23:34:18 +0100
+Message-ID: <1260398058.5489.1623.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 2009-12-09 at 14:29 -0800, Luck, Tony wrote:
+> ia64 found this the hard way (because we currently have a stub for
+> save_stack_trace() that does nothing). But it would be a good idea to 
+> be cautious in case a real save_stack_trace() bailed out with an
+> error before it set trace->nr_entries.
+> 
+> Signed-off-by: Tony Luck <tony.luck@intel.com>
 
-On Wed, Dec 9, 2009 at 7:57 PM, Gertjan van Wingerde
-<gwingerde@gmail.com> wrote:
-> Thanks for testing and confirming.
->
-> I'll disable powersaving for rt2x00 for now.
+Thanks Tony,
 
-It would be nice to have it in 2.6.32.y and 2.6.31.y when it is done.
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
--- 
-Otavio Salvador                  O.S. Systems
-E-mail: otavio@ossystems.com.br  http://www.ossystems.com.br
-Mobile: +55 53 9981-7854         http://projetos.ossystems.com.br
+> ---
+> 
+> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+> index 03c06af..429540c 100644
+> --- a/kernel/lockdep.c
+> +++ b/kernel/lockdep.c
+> @@ -387,7 +387,8 @@ static int save_trace(struct stack_trace *trace)
+>  	 * complete trace that maxes out the entries provided will be reported
+>  	 * as incomplete, friggin useless </rant>
+>  	 */
+> -	if (trace->entries[trace->nr_entries-1] == ULONG_MAX)
+> +	if (trace->nr_entries != 0 &&
+> +	    trace->entries[trace->nr_entries-1] == ULONG_MAX)
+>  		trace->nr_entries--;
+>  
+>  	trace->max_entries = trace->nr_entries;
+
+
