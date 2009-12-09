@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZLIJ46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbZLIJ5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbZLIJ46 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZLIJ4z
+	id S1754505AbZLIJ5I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:57:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZLIJ5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:56:55 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45711 "EHLO hera.kernel.org"
+	Wed, 9 Dec 2009 04:57:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45723 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753520AbZLIJ4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:56:53 -0500
-Date: Wed, 9 Dec 2009 09:56:16 GMT
+	id S1754305AbZLIJ5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:57:01 -0500
+Date: Wed, 9 Dec 2009 09:56:30 GMT
 From: tip-bot for Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, ehrhardt@linux.vnet.ibm.com, tglx@linutronix.de,
@@ -17,12 +17,12 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        a.p.zijlstra@chello.nl, ehrhardt@linux.vnet.ibm.com, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <1259579808-11357-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
-References: <1259579808-11357-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
+In-Reply-To: <1259579808-11357-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
+References: <1259579808-11357-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Make tunable scaling style configurable
-Message-ID: <tip-1983a922a1bc843806b9a36cf3a370b242783140@git.kernel.org>
-Git-Commit-ID: 1983a922a1bc843806b9a36cf3a370b242783140
+Subject: [tip:sched/urgent] sched: Update normalized values on user updates via proc
+Message-ID: <tip-acb4a848da821a095ae9e4d8b22ae2d9633ba5cd@git.kernel.org>
+Git-Commit-ID: acb4a848da821a095ae9e4d8b22ae2d9633ba5cd
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,179 +31,163 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1983a922a1bc843806b9a36cf3a370b242783140
-Gitweb:     http://git.kernel.org/tip/1983a922a1bc843806b9a36cf3a370b242783140
+Commit-ID:  acb4a848da821a095ae9e4d8b22ae2d9633ba5cd
+Gitweb:     http://git.kernel.org/tip/acb4a848da821a095ae9e4d8b22ae2d9633ba5cd
 Author:     Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-AuthorDate: Mon, 30 Nov 2009 12:16:47 +0100
+AuthorDate: Mon, 30 Nov 2009 12:16:48 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 9 Dec 2009 10:04:01 +0100
+CommitDate: Wed, 9 Dec 2009 10:04:02 +0100
 
-sched: Make tunable scaling style configurable
+sched: Update normalized values on user updates via proc
 
-As scaling now takes place on all kind of cpu add/remove events a user
-that configures values via proc should be able to configure if his set
-values are still rescaled or kept whatever happens.
+The normalized values are also recalculated in case the scaling factor
+changes.
 
-As the comments state that log2 was just a second guess that worked the
-interface is not just designed for on/off, but to choose a scaling type.
-Currently this allows none, log and linear, but more important it allwos
-us to keep the interface even if someone has an even better idea how to
-scale the values.
+This patch updates the internally used scheduler tuning values that are
+normalized to one cpu in case a user sets new values via sysfs.
+
+Together with patch 2 of this series this allows to let user configured
+values scale (or not) to cpu add/remove events taking place later.
 
 Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1259579808-11357-3-git-send-email-ehrhardt@linux.vnet.ibm.com>
+LKML-Reference: <1259579808-11357-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
+[ v2: fix warning ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/sched.h |   11 ++++++++++-
- kernel/sched.c        |   15 ++++++++++++++-
- kernel/sched_debug.c  |   10 ++++++++++
- kernel/sched_fair.c   |   13 +++++++++++++
- kernel/sysctl.c       |   14 ++++++++++++++
- 5 files changed, 61 insertions(+), 2 deletions(-)
+ kernel/sched.c      |   12 ++++++++++--
+ kernel/sched_fair.c |   11 ++++++++++-
+ kernel/sysctl.c     |   14 +++++++++-----
+ 3 files changed, 29 insertions(+), 8 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4b1ebd3..ee9f200 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1902,13 +1902,22 @@ extern unsigned int sysctl_sched_wakeup_granularity;
- extern unsigned int sysctl_sched_shares_ratelimit;
- extern unsigned int sysctl_sched_shares_thresh;
- extern unsigned int sysctl_sched_child_runs_first;
-+
-+enum sched_tunable_scaling {
-+	SCHED_TUNABLESCALING_NONE,
-+	SCHED_TUNABLESCALING_LOG,
-+	SCHED_TUNABLESCALING_LINEAR,
-+	SCHED_TUNABLESCALING_END,
-+};
-+extern enum sched_tunable_scaling sysctl_sched_tunable_scaling;
-+
- #ifdef CONFIG_SCHED_DEBUG
- extern unsigned int sysctl_sched_migration_cost;
- extern unsigned int sysctl_sched_nr_migrate;
- extern unsigned int sysctl_sched_time_avg;
- extern unsigned int sysctl_timer_migration;
- 
--int sched_nr_latency_handler(struct ctl_table *table, int write,
-+int sched_proc_update_handler(struct ctl_table *table, int write,
- 		void __user *buffer, size_t *length,
- 		loff_t *ppos);
- #endif
 diff --git a/kernel/sched.c b/kernel/sched.c
-index b54ecf8..116efed 100644
+index 116efed..0a60e8e 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -7033,7 +7033,20 @@ cpumask_var_t nohz_cpu_mask;
- static void update_sysctl(void)
- {
- 	unsigned int cpus = min(num_online_cpus(), 8U);
--	unsigned int factor = 1 + ilog2(cpus);
-+	unsigned int factor;
-+
-+	switch (sysctl_sched_tunable_scaling) {
-+	case SCHED_TUNABLESCALING_NONE:
-+		factor = 1;
-+		break;
-+	case SCHED_TUNABLESCALING_LINEAR:
-+		factor = cpus;
-+		break;
-+	case SCHED_TUNABLESCALING_LOG:
-+	default:
-+		factor = 1 + ilog2(cpus);
-+		break;
-+	}
+@@ -1816,6 +1816,7 @@ static void cfs_rq_set_shares(struct cfs_rq *cfs_rq, unsigned long shares)
  
+ static void calc_load_account_active(struct rq *this_rq);
+ static void update_sysctl(void);
++static int get_update_sysctl_factor(void);
+ 
+ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
+ {
+@@ -7030,9 +7031,9 @@ cpumask_var_t nohz_cpu_mask;
+  *
+  * This idea comes from the SD scheduler of Con Kolivas:
+  */
+-static void update_sysctl(void)
++static int get_update_sysctl_factor(void)
+ {
+-	unsigned int cpus = min(num_online_cpus(), 8U);
++	unsigned int cpus = min(num_online_cpus(), 8);
+ 	unsigned int factor;
+ 
+ 	switch (sysctl_sched_tunable_scaling) {
+@@ -7048,6 +7049,13 @@ static void update_sysctl(void)
+ 		break;
+ 	}
+ 
++	return factor;
++}
++
++static void update_sysctl(void)
++{
++	unsigned int factor = get_update_sysctl_factor();
++
  #define SET_SYSCTL(name) \
  	(sysctl_##name = (factor) * normalized_sysctl_##name)
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 5fda666..0fc5287 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -309,6 +309,12 @@ static void print_cpu(struct seq_file *m, int cpu)
- 	print_rq(m, rq, cpu);
- }
- 
-+static const char *sched_tunable_scaling_names[] = {
-+	"none",
-+	"logaritmic",
-+	"linear"
-+};
-+
- static int sched_debug_show(struct seq_file *m, void *v)
- {
- 	u64 now = ktime_to_ns(ktime_get());
-@@ -334,6 +340,10 @@ static int sched_debug_show(struct seq_file *m, void *v)
- #undef PN
- #undef P
- 
-+	SEQ_printf(m, "  .%-40s: %d (%s)\n", "sysctl_sched_tunable_scaling",
-+		sysctl_sched_tunable_scaling,
-+		sched_tunable_scaling_names[sysctl_sched_tunable_scaling]);
-+
- 	for_each_online_cpu(cpu)
- 		print_cpu(m, cpu);
- 
+ 	SET_SYSCTL(sched_min_granularity);
 diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 71b3458..455106d 100644
+index 455106d..804a411 100644
 --- a/kernel/sched_fair.c
 +++ b/kernel/sched_fair.c
-@@ -21,6 +21,7 @@
+@@ -399,11 +399,12 @@ static struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq)
   */
  
- #include <linux/latencytop.h>
-+#include <linux/sched.h>
+ #ifdef CONFIG_SCHED_DEBUG
+-int sched_nr_latency_handler(struct ctl_table *table, int write,
++int sched_proc_update_handler(struct ctl_table *table, int write,
+ 		void __user *buffer, size_t *lenp,
+ 		loff_t *ppos)
+ {
+ 	int ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
++	int factor = get_update_sysctl_factor();
  
- /*
-  * Targeted preemption latency for CPU-bound tasks:
-@@ -38,6 +39,18 @@ unsigned int sysctl_sched_latency = 5000000ULL;
- unsigned int normalized_sysctl_sched_latency = 5000000ULL;
+ 	if (ret || !write)
+ 		return ret;
+@@ -411,6 +412,14 @@ int sched_nr_latency_handler(struct ctl_table *table, int write,
+ 	sched_nr_latency = DIV_ROUND_UP(sysctl_sched_latency,
+ 					sysctl_sched_min_granularity);
  
- /*
-+ * The initial- and re-scaling of tunables is configurable
-+ * (default SCHED_TUNABLESCALING_LOG = *(1+ilog(ncpus))
-+ *
-+ * Options are:
-+ * SCHED_TUNABLESCALING_NONE - unscaled, always *1
-+ * SCHED_TUNABLESCALING_LOG - scaled logarithmical, *1+ilog(ncpus)
-+ * SCHED_TUNABLESCALING_LINEAR - scaled linear, *ncpus
-+ */
-+enum sched_tunable_scaling sysctl_sched_tunable_scaling
-+	= SCHED_TUNABLESCALING_LOG;
++#define WRT_SYSCTL(name) \
++	(normalized_sysctl_##name = sysctl_##name / (factor))
++	WRT_SYSCTL(sched_min_granularity);
++	WRT_SYSCTL(sched_latency);
++	WRT_SYSCTL(sched_wakeup_granularity);
++	WRT_SYSCTL(sched_shares_ratelimit);
++#undef WRT_SYSCTL
 +
-+/*
-  * Minimal preemption granularity for CPU-bound tasks:
-  * (default: 1 msec * (1 + ilog(ncpus)), units: nanoseconds)
-  */
+ 	return 0;
+ }
+ #endif
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index e5cc535..d10406e 100644
+index d10406e..b9e5a45 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -251,6 +251,8 @@ static int min_sched_granularity_ns = 100000;		/* 100 usecs */
- static int max_sched_granularity_ns = NSEC_PER_SEC;	/* 1 second */
- static int min_wakeup_granularity_ns;			/* 0 usecs */
+@@ -253,6 +253,8 @@ static int min_wakeup_granularity_ns;			/* 0 usecs */
  static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
-+static int min_sched_tunable_scaling = SCHED_TUNABLESCALING_NONE;
-+static int max_sched_tunable_scaling = SCHED_TUNABLESCALING_END-1;
+ static int min_sched_tunable_scaling = SCHED_TUNABLESCALING_NONE;
+ static int max_sched_tunable_scaling = SCHED_TUNABLESCALING_END-1;
++static int min_sched_shares_ratelimit = 100000; /* 100 usec */
++static int max_sched_shares_ratelimit = NSEC_PER_SEC; /* 1 second */
  #endif
  
  static struct ctl_table kern_table[] = {
-@@ -306,6 +308,18 @@ static struct ctl_table kern_table[] = {
+@@ -271,7 +273,7 @@ static struct ctl_table kern_table[] = {
+ 		.data		= &sysctl_sched_min_granularity,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+-		.proc_handler	= &sched_nr_latency_handler,
++		.proc_handler	= &sched_proc_update_handler,
+ 		.strategy	= &sysctl_intvec,
+ 		.extra1		= &min_sched_granularity_ns,
+ 		.extra2		= &max_sched_granularity_ns,
+@@ -282,7 +284,7 @@ static struct ctl_table kern_table[] = {
+ 		.data		= &sysctl_sched_latency,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+-		.proc_handler	= &sched_nr_latency_handler,
++		.proc_handler	= &sched_proc_update_handler,
+ 		.strategy	= &sysctl_intvec,
+ 		.extra1		= &min_sched_granularity_ns,
+ 		.extra2		= &max_sched_granularity_ns,
+@@ -293,7 +295,7 @@ static struct ctl_table kern_table[] = {
+ 		.data		= &sysctl_sched_wakeup_granularity,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec_minmax,
++		.proc_handler	= &sched_proc_update_handler,
+ 		.strategy	= &sysctl_intvec,
+ 		.extra1		= &min_wakeup_granularity_ns,
+ 		.extra2		= &max_wakeup_granularity_ns,
+@@ -304,7 +306,9 @@ static struct ctl_table kern_table[] = {
+ 		.data		= &sysctl_sched_shares_ratelimit,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec,
++		.proc_handler	= &sched_proc_update_handler,
++		.extra1		= &min_sched_shares_ratelimit,
++		.extra2		= &max_sched_shares_ratelimit,
  	},
  	{
  		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "sched_tunable_scaling",
-+		.data		= &sysctl_sched_tunable_scaling,
-+		.maxlen		= sizeof(enum sched_tunable_scaling),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &min_sched_tunable_scaling,
-+		.extra2		= &max_sched_tunable_scaling,
-+	},
-+
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "sched_shares_thresh",
- 		.data		= &sysctl_sched_shares_thresh,
- 		.maxlen		= sizeof(unsigned int),
+@@ -312,7 +316,7 @@ static struct ctl_table kern_table[] = {
+ 		.data		= &sysctl_sched_tunable_scaling,
+ 		.maxlen		= sizeof(enum sched_tunable_scaling),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec_minmax,
++		.proc_handler	= &sched_proc_update_handler,
+ 		.strategy	= &sysctl_intvec,
+ 		.extra1		= &min_sched_tunable_scaling,
+ 		.extra2		= &max_sched_tunable_scaling,
