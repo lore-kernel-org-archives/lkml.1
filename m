@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbZLIHri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750911AbZLIH6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbZLIHri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 02:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbZLIHrg
+	id S1750911AbZLIH6l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 02:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbZLIH6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 02:47:36 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:52391 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbZLIHrf convert rfc822-to-8bit (ORCPT
+	Wed, 9 Dec 2009 02:58:40 -0500
+Received: from rex.securecomputing.com ([203.24.151.4]:34268 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750707AbZLIH6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 02:47:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KvcK1gq6LXyQLnH26/MGrIqfIF9rZOC+OF6JA9qxqnstwQ+fVw3c25aWHn2Hkd4QnE
-         fp5ASOl4paVmpx8Fob18woeudiVb1GOqmj0tzKRZZtWMGvmptosuGnA2vomXaNfNy8OP
-         R2sm4+uYqp6eNTLWIJiw9w+PWWx0DsBKr2wqc=
-MIME-Version: 1.0
-In-Reply-To: <4B1F4963.3070405@canonical.com>
-References: <1260257829-7343-1-git-send-email-ike.pan@canonical.com>
-	 <20091208154154.GA26435@srcf.ucam.org>
-	 <71cd59b00912080932nf334ba7uf65c70178fec41a5@mail.gmail.com>
-	 <4B1F4963.3070405@canonical.com>
-Date: Wed, 9 Dec 2009 08:47:41 +0100
-Message-ID: <71cd59b00912082347m34dc023ds6004ca68e0bb184d@mail.gmail.com>
-Subject: Re: [Resend] [PATCH] asus-laptop: add Lenovo SL LenovoCare LED 
-	support
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Ike Panhc <ike.pan@canonical.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
-       Alexandre Rostovtsev <tetromino@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 9 Dec 2009 02:58:39 -0500
+Date: Wed, 9 Dec 2009 17:58:25 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200912090758.nB97wPok013748@goober.internal.moreton.com.au>
+CC: <gerg@uclinux.org>, <linux-kernel@vger.kernel.org>,
+       <linux-m68k@vger.kernel.org>
+Subject: [git pull] m68knommu arch updates
+To: <torvalds@linux-foundation.org>
+X-Mailer: mail (GNU Mailutils 2.0)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 9, 2009 at 7:53 AM, Ike Panhc <ike.pan@canonical.com> wrote:
-> Corentin Chary wrote:
->> On Tue, Dec 8, 2009 at 4:41 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->>> On Tue, Dec 08, 2009 at 03:37:09PM +0800, Ike Panhc wrote:
->>>
->>>>  ASUS_HANDLE(rled_set, ASUS_HOTK_PREFIX "RLED");      /* W1JC */
->>>>  ASUS_HANDLE(pled_set, ASUS_HOTK_PREFIX "PLED");      /* A7J */
->>>>  ASUS_HANDLE(gled_set, ASUS_HOTK_PREFIX "GLED");      /* G1, G2 (probably) */
->>> The driver is controlling the ATKD device, which has a HID of ATK0101.
->>> These devices are all underneath it...
->>>
->>>> +ASUS_HANDLE(lled_set, "\\_SB_.PCI0.SBRG.EC0_.HKEY.TVLS"); /* LenovoCare */
->>> And this one isn't, which is a bit jarring. Looking closer, it's under
->>> the LEN0014 device, which means that you're trying to touch a method
->>> that belongs to a device other than the one this driver is bound to.
->>> That's wrong. You want a separate ACPI driver for the LEN0014 device,
->>> and this should be called for there. Looking at it, you seem to get
->>> rfkill as well (the GWAN/SWAN, GBDC/SBDF and GUWB/SUWB methods) and
->>> maybe some other stuff.
->>>
->>> So this shouldn't go in asus-laptop. You'll need to add another separate
->>> driver for the SL-specific functionality.
->>
->> That means asus-laptop and sl-laptop will be both needed for a SL
->> laptop, but I don't think this is a problem.
->>
-> I think your suggestion is that one acpi driver for one acpi device.
-> It makes sense to me. I will build a new driver.
->
->
+Hi Linus,
 
-You should take a look at the new eeepc-laptop driver in
-http://git.iksaif.net/?p=acpi4asus.git;a=summary
-Alan Jenkins cleaned it a lot so it can be an example for new drivers :)
+Please pull to get the latest m68knommu arch fixes. Not a lot in here,
+mostly small fixes. The biggest change is Tim Abbott's linker script
+cleanups.
 
--- 
-Corentin Chary
-http://xf.iksaif.net
+git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
+
+Thanks
+Greg
+
+
+
+
+The following changes since commit 22763c5cf3690a681551162c15d34d935308c8d7:
+  Linus Torvalds (1):
+        Linux 2.6.32
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
+
+Greg Ungerer (3):
+      m68knommu: define arch_has_single_step() and friends
+      m68knommu: add a task_pt_regs() macro
+      m68knommu: rename BSS define in linker script
+
+Lennart Sorensen (1):
+      m68knommu: add uboot commandline argument passing support
+
+Steven King (2):
+      m68knommu: Coldfire GPIO corrections
+      m68knommu: export clk_* symbols in clk.c
+
+Tim Abbott (7):
+      m68knommu: Don't hardcode the value of PAGE_SIZE in the linker script.
+      m68knommu: Make THREAD_SIZE available to assembly files.
+      m68knommu: Use INIT_TASK_DATA and CACHELINE_ALIGNED_DATA.
+      m68knommu: Use more macros inside the .init section.
+      m68knommu: Move __init_begin out of the .init section.
+      m68knommu: Move __init_end out of the .init section.
+      m68knommu: Split the .init section into INIT_TEXT_SECTION and INIT_DATA_SECTION.
+
+Uwe Kleine-KÃ¶nig (1):
+      m68knommu: move mcf_remove to .devexit.text
+
+ arch/m68k/include/asm/processor.h       |    2 +
+ arch/m68k/include/asm/ptrace.h          |   12 ++++
+ arch/m68k/include/asm/thread_info_no.h  |    4 +-
+ arch/m68knommu/Kconfig                  |    7 ++
+ arch/m68knommu/kernel/ptrace.c          |   18 +++++-
+ arch/m68knommu/kernel/setup.c           |   92 ++++++++++++++++++++++++++++++-
+ arch/m68knommu/kernel/vmlinux.lds.S     |   47 +++++-----------
+ arch/m68knommu/platform/523x/gpio.c     |    5 +-
+ arch/m68knommu/platform/527x/gpio.c     |    6 +-
+ arch/m68knommu/platform/528x/gpio.c     |    2 +-
+ arch/m68knommu/platform/coldfire/clk.c  |    7 ++-
+ arch/m68knommu/platform/coldfire/head.S |   10 +++
+ drivers/serial/mcf.c                    |    2 +-
+ 13 files changed, 167 insertions(+), 47 deletions(-)
