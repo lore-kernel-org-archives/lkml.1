@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbZLIJwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZLIJxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753560AbZLIJwf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbZLIJwd
+	id S1753824AbZLIJxA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:53:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZLIJw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:52:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44953 "EHLO hera.kernel.org"
+	Wed, 9 Dec 2009 04:52:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44988 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753624AbZLIJw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:52:29 -0500
-Date: Wed, 9 Dec 2009 09:52:11 GMT
+	id S1753640AbZLIJw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:52:57 -0500
+Date: Wed, 9 Dec 2009 09:52:25 GMT
 From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
        mingo@redhat.com, peterz@infradead.org, xiaoguangrong@cn.fujitsu.com,
@@ -18,12 +18,12 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, peterz@infradead.org,
        xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <4B1F194D.7080306@cn.fujitsu.com>
-References: <4B1F194D.7080306@cn.fujitsu.com>
+In-Reply-To: <4B1F19A8.5040805@cn.fujitsu.com>
+References: <4B1F19A8.5040805@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf_event: Clean up __perf_event_init_context()
-Message-ID: <tip-aa5452d70c0d559310598b243b8b1033c10056e7@git.kernel.org>
-Git-Commit-ID: aa5452d70c0d559310598b243b8b1033c10056e7
+Subject: [tip:perf/urgent] perf_event: Allocate children's perf_event_ctxp at the right time
+Message-ID: <tip-b93f7978ad6b46133e9453b90ccc057dc2429e75@git.kernel.org>
+Git-Commit-ID: b93f7978ad6b46133e9453b90ccc057dc2429e75
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -32,66 +32,97 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  aa5452d70c0d559310598b243b8b1033c10056e7
-Gitweb:     http://git.kernel.org/tip/aa5452d70c0d559310598b243b8b1033c10056e7
+Commit-ID:  b93f7978ad6b46133e9453b90ccc057dc2429e75
+Gitweb:     http://git.kernel.org/tip/b93f7978ad6b46133e9453b90ccc057dc2429e75
 Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Wed, 9 Dec 2009 11:28:13 +0800
+AuthorDate: Wed, 9 Dec 2009 11:29:44 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 9 Dec 2009 09:56:27 +0100
 
-perf_event: Clean up __perf_event_init_context()
+perf_event: Allocate children's perf_event_ctxp at the right time
 
-Clean up the code a bit:
+In current code, children task will allocate memory for
+'child->perf_event_ctxp' if the parent is counted, we can
+do it only if the parent allowed children inherit it.
 
- - define 'perf_cpu_context' variable with 'static'
- - use kzalloc() instead of kmalloc() and memset()
+It can save memory and reduce overhead.
 
 Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <4B1F194D.7080306@cn.fujitsu.com>
+LKML-Reference: <4B1F19A8.5040805@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/perf_event.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ kernel/perf_event.c |   37 ++++++++++++++++++++++---------------
+ 1 files changed, 22 insertions(+), 15 deletions(-)
 
 diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 3b0cf86..2b06c45 100644
+index 2b06c45..77641ae 100644
 --- a/kernel/perf_event.c
 +++ b/kernel/perf_event.c
-@@ -36,7 +36,7 @@
- /*
-  * Each CPU has a list of per CPU events:
+@@ -5083,7 +5083,7 @@ again:
   */
--DEFINE_PER_CPU(struct perf_cpu_context, perf_cpu_context);
-+static DEFINE_PER_CPU(struct perf_cpu_context, perf_cpu_context);
- 
- int perf_max_events __read_mostly = 1;
- static int perf_reserved_percpu __read_mostly;
-@@ -1579,7 +1579,6 @@ static void
- __perf_event_init_context(struct perf_event_context *ctx,
- 			    struct task_struct *task)
+ int perf_event_init_task(struct task_struct *child)
  {
--	memset(ctx, 0, sizeof(*ctx));
- 	spin_lock_init(&ctx->lock);
- 	mutex_init(&ctx->mutex);
- 	INIT_LIST_HEAD(&ctx->group_list);
-@@ -1654,7 +1653,7 @@ static struct perf_event_context *find_get_context(pid_t pid, int cpu)
+-	struct perf_event_context *child_ctx, *parent_ctx;
++	struct perf_event_context *child_ctx = NULL, *parent_ctx;
+ 	struct perf_event_context *cloned_ctx;
+ 	struct perf_event *event;
+ 	struct task_struct *parent = current;
+@@ -5099,20 +5099,6 @@ int perf_event_init_task(struct task_struct *child)
+ 		return 0;
+ 
+ 	/*
+-	 * This is executed from the parent task context, so inherit
+-	 * events that have been marked for cloning.
+-	 * First allocate and initialize a context for the child.
+-	 */
+-
+-	child_ctx = kzalloc(sizeof(struct perf_event_context), GFP_KERNEL);
+-	if (!child_ctx)
+-		return -ENOMEM;
+-
+-	__perf_event_init_context(child_ctx, child);
+-	child->perf_event_ctxp = child_ctx;
+-	get_task_struct(child);
+-
+-	/*
+ 	 * If the parent's context is a clone, pin it so it won't get
+ 	 * swapped under us.
+ 	 */
+@@ -5142,6 +5128,26 @@ int perf_event_init_task(struct task_struct *child)
+ 			continue;
+ 		}
+ 
++		if (!child->perf_event_ctxp) {
++			/*
++			 * This is executed from the parent task context, so
++			 * inherit events that have been marked for cloning.
++			 * First allocate and initialize a context for the
++			 * child.
++			 */
++
++			child_ctx = kzalloc(sizeof(struct perf_event_context),
++					    GFP_KERNEL);
++			if (!child_ctx) {
++				ret = -ENOMEM;
++				goto exit;
++			}
++
++			__perf_event_init_context(child_ctx, child);
++			child->perf_event_ctxp = child_ctx;
++			get_task_struct(child);
++		}
++
+ 		ret = inherit_group(event, parent, parent_ctx,
+ 					     child, child_ctx);
+ 		if (ret) {
+@@ -5170,6 +5176,7 @@ int perf_event_init_task(struct task_struct *child)
+ 		get_ctx(child_ctx->parent_ctx);
  	}
  
- 	if (!ctx) {
--		ctx = kmalloc(sizeof(struct perf_event_context), GFP_KERNEL);
-+		ctx = kzalloc(sizeof(struct perf_event_context), GFP_KERNEL);
- 		err = -ENOMEM;
- 		if (!ctx)
- 			goto errout;
-@@ -5105,7 +5104,7 @@ int perf_event_init_task(struct task_struct *child)
- 	 * First allocate and initialize a context for the child.
- 	 */
++exit:
+ 	mutex_unlock(&parent_ctx->mutex);
  
--	child_ctx = kmalloc(sizeof(struct perf_event_context), GFP_KERNEL);
-+	child_ctx = kzalloc(sizeof(struct perf_event_context), GFP_KERNEL);
- 	if (!child_ctx)
- 		return -ENOMEM;
- 
+ 	perf_unpin_context(parent_ctx);
