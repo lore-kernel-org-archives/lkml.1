@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbZLIS1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbZLISaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756802AbZLIS1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbZLIS13
+	id S1756852AbZLISaj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbZLISaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:27:29 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:54194 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756730AbZLIS12 (ORCPT
+	Wed, 9 Dec 2009 13:30:35 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47159 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756379AbZLISaf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:27:28 -0500
-Date: Wed, 9 Dec 2009 18:27:32 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
-Message-ID: <20091209182731.GL9018@sirena.org.uk>
-References: <20091209160256.GA3229@rakim.wolfsonmicro.main> <Pine.LNX.4.44L0.0912091117080.4120-100000@iolanthe.rowland.org> <20091209164653.GI9018@sirena.org.uk> <alpine.LFD.2.00.0912090851540.3560@localhost.localdomain> <20091209174537.GJ9018@sirena.org.uk> <alpine.LFD.2.00.0912090953200.3560@localhost.localdomain>
+	Wed, 9 Dec 2009 13:30:35 -0500
+Subject: Re: [GIT PULL] x86/paravirt for v2.6.33
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Wed, 09 Dec 2009 10:29:30 -0800
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickens <hugh@veritas.com>
+Message-ID: <wqm7jny7wc4aessgbtsgv0bw.1260383370120@email.android.com>
+Content-Type: multipart/mixed; boundary="----OMTATXO0YP9DINRBYHTKTTLP62DLCP"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912090953200.3560@localhost.localdomain>
-X-Cookie: Include me out.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 09:57:22AM -0800, Linus Torvalds wrote:
-> On Wed, 9 Dec 2009, Mark Brown wrote:
+------OMTATXO0YP9DINRBYHTKTTLP62DLCP
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: base64
 
-> > The problem comes when you've got audio outputs referenced to something
-> > other than ground which used to happen because no negative supplies were
-> > available in these systems.  To bring these up from cold you need to
-> > bring the outputs up to the reference level but if you do that by just
-> > turning on the power you get an audible (often loud) noise in the output
-> > from the square(ish) waveform that results which users don't find
-> > acceptable.
+TGludXMgY2xlYXJseSBwcmVmZXJzIHRoZSBzdHlsZSB3aXRoIHB0X3JlZ3MgcGFzc2VkIG9uIHRo
+ZSBzdGFjayBhcyB0aGUgc29sZSBmb3JtLiAgU2luY2Ugd2UgKmhhdmUqIHRvIHVzZSB0aGF0IGZv
+cm0gZm9yIHRoaW5ncyBsaWtlIGNsb25lKCksIGl0IG1ha2VzIHNlbnNlIHRvIHVzZSBpdCBhcyB0
+aGUgb25seSBmb3JtLgoKRm9yIHdoYXQgaXQncyB3b3J0aCBJIGRpZCBsb29rIGF0IHRoaXMgd2hl
+biB0aGUgcGF0Y2ggZmlyc3QgY2FtZSB1cDsgaXQgZG9lcyBtYWtlIHRoZSBpbmRpdmlkdWFsIHBh
+dGNoIGEgZmFpciBiaXQgdWdsaWVyLCBidXQgSSBjYW4gdW5kZXJzdGFuZCBMaW51cycgY29uc2lz
+dGVuY3kgYXJndW1lbnQuCgpBcyBmYXIgYXMgSSBrbm93LCB3ZSBkb24ndCBhbGxvdyBhbnkgc3lz
+dGVtIGNhbGxzIGZyb20gaW5zaWRlIHY4NiBtb2RlLgoKCgktaHBhCgoiSmVyZW15IEZpdHpoYXJk
+aW5nZSIgPGplcmVteUBnb29wLm9yZz4gd3JvdGU6Cgo+T24gMTIvMDgvMDkgMjM6MzYsIEluZ28g
+TW9sbmFyIHdyb3RlOg0KPj4+IFRoZSBvbGQgdmVyc2lvbiB0aGF0IGFjdHVhbGx5IHBhc3NlZCB0
+aGUgc3RhY2sgZnJhbWUgd2FzIGJldHRlci4gV2h5DQo+Pj4gcGljayB0aGUgaW5mZXJpb3IgdmVy
+c2lvbj8NCj4+PiAgICAgIA0KPj4gWWVhaCwgYWdyZWVkLiBJIG1pc3NlZCB0aGF0IGRldGFpbC4N
+Cj4+ICAgIA0KPg0KPldoaWNoIGRldGFpbCBpcyB0aGF0PyAgVGhlIHdob2xlIHBhdGNoPyA7KQ0K
+Pg0KPj4gSmVyZW15LCBtaW5kIHNlbmRpbmcgYSBwYXRjaCB0aGF0IHVwZGF0ZXMgdGhpcyBjb2Rl
+IHRvIHVzZSB0aGUgbGVzcw0KPj4gb2JmdXNjYXRlZCAzMi1iaXQgdmVyc2lvbiwgbm90IHRoZSA2
+NC1iaXQgdmVyc2lvbj8gKGEgZGVsdGEgcGF0Y2gNCj4+IGFnYWluc3QgdGlwOm1hc3RlciB3b3Vs
+ZCBiZSBuaWNlLCBhcyB0aGVyZSdzIGEgZmFpciBhbW91bnQgb2YgdGVzdGluZyBpbg0KPj4gdGhl
+IHVuaWZpY2F0aW9uIGNoYW5nZSBpdHNlbGYgYWxyZWFkeSwgd2hpY2ggd2UgZG9udCB3YW50IHRv
+IGRpc2NhcmQuKQ0KPj4gICAgDQo+DQo+U3VyZS4NCj4NCj5CdXQgSSdtIG5vdCBzdXJlIEkgdW5k
+ZXJzdGFuZCB0aGUgb2JqZWN0aW9uIHRvIHRhc2tfcHRfcmVncygpOyBpcyBpdCANCj5jb25zaWRl
+cmVkIGRlcHJlY2F0ZWQ/ICAgVGhpcyBwYXRjaCByZWNlaXZlZCBxdWl0ZSBhIGxvdCBvZiBkaXNj
+dXNzaW9uIA0KPndpdGggbm8gbWVudGlvbiBvZiBpdC4gIFNob3VsZCB3ZSBjb25zaWRlciBhbGwg
+aXRzIHVzZXMgYXMgc3VzcGVjdD8NCj4NCj5Xb3VsZCBpdCBiZSBiZXR0ZXIgdG8gaGF2ZSBzb21l
+dGhpbmcgc2ltaWxhciB3aGljaCBqdXN0IHJldHVybnMgYSANCj5wb2ludGVyIHRvIHRoZSBzYXZl
+ZCBbcmVdZmxhZ3MsIHNpbmNlIHRoYXQncyBhbGwgd2UgY2FyZSBhYm91dD8gIFRoYXQgDQo+c2hv
+dWxkIGJlIGVhc2llciB0byBtYWtlIHJvYnVzdCBhZ2FpbnN0DQo+DQo+ICAgICBKDQoKLS0KU2Vu
+dCBmcm9tIG15IG1vYmlsZSBwaG9uZS4gUGxlYXNlIGV4Y3VzZSBhbnkgbGFjayBvZiBmb3JtYXR0
+aW5nLg==
 
-> Ouch. A second still sounds way too long - but whatever.
+------OMTATXO0YP9DINRBYHTKTTLP62DLCP--
 
-Yes, I think there's pretty much universal agreement on that :)
-
-Hardware that needs a few hundred miliseconds is much more common at the
-minute (and like I say current generation hardware is basically
-unaffected), but it's the number I keep in mind when considering how bad
-things might be.
-
-> However, it sounds like the nice way to do that isn't by doing it 
-> synchronously in the suspend/resume code itself, but simply ramping it 
-> down (and up) from a timer. It would be asynchronous, but not because the 
-> suspend itself is in any way asynchronous.
-
-We don't actually need a timer for most of this - generally the ramp is
-done by charging or discharging a capacitor through a resistor so you
-just set it going then wait, possibly in several stages with a little
-bit twiddling in the middle to speed things up which could be done off a
-timer.
-
-> Done right, it might even result in a nice volume fade of the sound (ie if 
-> the hw allows for it, stop the actual sound engine late on suspend, and 
-> start it early on resume, so that sound works _while_ the whole reference 
-> volume rampdown/up is going on)
-
-The big issue with running off a partially ramped supply is that it can
-upset the analogue components - for example, if an amplifier is trying
-to handle a signal with an amplitude outside the supply range then it'll
-clip.  But sometimes that approach does work and it does get used.
-
-For resume we're pretty much taking care of it already by moving the
-resume out of the main device resume and using ALSA-specific stuff to
-keep audio streams stopped until we're done but for suspend we don't
-know the system is going down until the suspend starts and we do want to
-make sure we got the analogue into a known poweroff state so that we can
-control powerup properly.
