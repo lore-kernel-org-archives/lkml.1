@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbZLIBp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbZLIBuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435AbZLIBp5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Dec 2009 20:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbZLIBpz
+	id S1753910AbZLIBuu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Dec 2009 20:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZLIBut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Dec 2009 20:45:55 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55404 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752041AbZLIBpy (ORCPT
+	Tue, 8 Dec 2009 20:50:49 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:48885 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752850AbZLIBus convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Dec 2009 20:45:54 -0500
-Date: Wed, 9 Dec 2009 01:45:59 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, re.emese@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 28/31] Constify struct super_operations for 2.6.32 v1
-Message-ID: <20091209014559.GP14381@ZenIV.linux.org.uk>
-References: <b6fcc0a0912052114v790f04c9h9a7367ff74d12426@mail.gmail.com> <20091209013109.GA18448@linux-mips.org>
+	Tue, 8 Dec 2009 20:50:48 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091209013109.GA18448@linux-mips.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1b68c6790912081647p39f0b285q2c164ab41c673aeb@mail.gmail.com>
+References: <20091208211258.GA13706@pengutronix.de> <20091208153239.af0b5bb8.akpm@linux-foundation.org> 
+	<fa686aa40912081625y3750a7fegbac38926182e38c6@mail.gmail.com> 
+	<1b68c6790912081647p39f0b285q2c164ab41c673aeb@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 8 Dec 2009 18:50:35 -0700
+X-Google-Sender-Auth: cda9e10fdb4b485b
+Message-ID: <fa686aa40912081750l18218736red1dd633a173f594@mail.gmail.com>
+Subject: Re: [spi-devel-general] [PATCH 0/5] spi-imx: some updates
+To: jassi brar <jassisinghbrar@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org, Daniel Mack <daniel@caiaq.de>,
+       =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       spi-devel-general@lists.sourceforge.net,
+       linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 01:31:10AM +0000, Ralf Baechle wrote:
-> On Sun, Dec 06, 2009 at 08:14:46AM +0300, Alexey Dobriyan wrote:
-> 
-> > Subject: Re: [PATCH 28/31] Constify struct super_operations for 2.6.32 v1
-> > Content-Type: text/plain; charset=ISO-8859-1
-> > 
-> > > -   	struct inode *(*alloc_inode)(struct super_block *sb);
-> > > +   	struct inode *(* const alloc_inode)(struct super_block *sb);
-> > 
-> > Good rule is if adding const doesn't move object from one section
-> > to another, it isn't worth it.
-> 
-> On MIPS I've changed a few pointer arguments that frequently were abused
-> by platform-specific code to const just to make sure such code blows up
-> at compile time and not later in my mail folder at review time.
+On Tue, Dec 8, 2009 at 5:47 PM, jassi brar <jassisinghbrar@gmail.com> wrote:
+> On Wed, Dec 9, 2009 at 9:25 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+>> I'm new to the job, so I'm being cautions about which things I'm pick
+>> up.  However, I'll happily merge anything that Andrew says is okay.
+>> Andrew, when in the merge window do you typically send out patch
+>> queues?
+>>
+>
+> Grant, may I know of your tree, if it's public?
 
-Seriously, folks, that looks like a fun sparse project: new type attribute
-that makes pointer conversions complain (inherited by aggregates containing
-one of such things) + one that restricts storage classes (again, inherited
-the same way).  Another fun attribute: "no embedding into other objects".
-__force casts would suppress complaints in places where e.g. noconvert
-objects get allocated.
+It's the next-spi branch of:
+
+git://git.secretlab.ca/git/linux-2.6.git
+
+g.
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
