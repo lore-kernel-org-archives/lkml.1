@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZLIIoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbZLIIhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752073AbZLIIoK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 03:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZLIIoJ
+	id S1751881AbZLIIhN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 03:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZLIIhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 03:44:09 -0500
-Received: from rere.qmqm.pl ([89.167.52.164]:33293 "EHLO rere.qmqm.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750976AbZLIIoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 03:44:08 -0500
-X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Dec 2009 03:44:08 EST
-Date: Wed, 9 Dec 2009 09:34:37 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org
-Subject: Re: [PATCH 3/7] mtrr: Remove use_intel()
-Message-ID: <20091209083437.GA27838@rere.qmqm.pl>
-References: <1-1000-25639-1260344705-9533@rere.qmqm.pl> <4-1000-25639-1260344705-9533@rere.qmqm.pl> <86802c440912090010q3aa9c701u75fbba19d43308e0@mail.gmail.com>
+	Wed, 9 Dec 2009 03:37:13 -0500
+Received: from RELAY.ANDREW.CMU.EDU ([128.2.10.212]:53528 "EHLO
+	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbZLIIhM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 03:37:12 -0500
+Date: Wed, 9 Dec 2009 03:36:56 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, menage@google.com, bblum@andrew.cmu.edu
+Subject: Re: [RFC] [PATCH 1/5] cgroups: revamp subsys array
+Message-ID: <20091209083656.GB14114@andrew.cmu.edu>
+Mail-Followup-To: Li Zefan <lizf@cn.fujitsu.com>,
+	linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+	akpm@linux-foundation.org, menage@google.com
+References: <20091204085349.GA18867@andrew.cmu.edu> <20091204085508.GA18912@andrew.cmu.edu> <4B1E0283.70108@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <86802c440912090010q3aa9c701u75fbba19d43308e0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B1E0283.70108@cn.fujitsu.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 12:10:50AM -0800, Yinghai Lu wrote:
-> 2009/12/8 Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>:
-> > Remove use_intel() and use is_cpu(INTEL) instead.
-> >
-> > .use_intel_if is duplicating information already found in .vendor, as
-> > the only combinations used are:
-> >    generic: use_intel_if == 1, vendor == INTEL
-> >    amd/cyrix/centaur: use_intel_if == 0, vendor != INTEL
-> >
-[...]
-> can you check it with amd64 cpu?
+On Tue, Dec 08, 2009 at 03:38:43PM +0800, Li Zefan wrote:
+> > @@ -1291,6 +1324,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+> >  	struct cgroupfs_root *new_root;
+> >  
+> >  	/* First find the desired set of subsystems */
+> > +	down_read(&subsys_mutex);
+> 
+> Hmm.. this can lead to deadlock. sget() returns success with sb->s_umount
+> held, so here we have:
+> 
+> 	down_read(&subsys_mutex);
+> 
+> 	down_write(&sb->s_umount);
+> 
+> On the other hand, sb->s_umount is held before calling kill_sb(),
+> so when umounting we have:
+> 
+> 	down_write(&sb->s_umount);
+> 
+> 	down_read(&subsys_mutex);
+> 
+> >  	ret = parse_cgroupfs_options(data, &opts);
+> >  	if (ret)
+> >  		goto out_err;
+> > @@ -1367,6 +1401,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+> >  			free_cg_links(&tmp_cg_links);
+> >  			goto drop_new_super;
+> >  		}
+> > +		/* done with subsys stuff and no other failure case */
+> > +		up_read(&subsys_mutex);
+> >  
+> >  		/* EBUSY should be the only error here */
+> >  		BUG_ON(ret);
+> > @@ -1415,6 +1451,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+> >   drop_new_super:
+> >  	deactivate_locked_super(sb);
+> >   out_err:
+> > +	up_read(&subsys_mutex);
+> >  	kfree(opts.release_agent);
+> >  	kfree(opts.name);
 
-Unfortunately I don't have any AMD machines right now.
+There's another problem here. deactivate_locked_super() calls kill_sb(),
+which tries to down_read(&subsys_mutex), and rwsems can't recurse. This
+can be fixed by just moving the up_read(&subsys_mutex); at the end to
+before each 'goto' in each error case, though, so not a big deal.
 
-Anyway, just to clarify why the change is a functional no-op: use_intel()
-and is_cpu(X) don't check the detected CPU vendor ID but look into mtrr_ops
-struct. For 64BIT build this means that use_intel() / is_cpu(INTEL) == true
-when mtrr_if != NULL, and all other is_cpu() == false because no other
-implementation could be choosen (amd/cyrix/centaur special cpu features are
-possible only in 32BIT).
-
-Best Regards,
-Micha³ Miros³aw
+-- bblum
