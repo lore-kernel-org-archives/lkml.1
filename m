@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbZLIJPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbZLIJUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752679AbZLIJPG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:15:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZLIJPF
+	id S1752742AbZLIJUQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:20:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZLIJUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:15:05 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48304 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbZLIJPD (ORCPT
+	Wed, 9 Dec 2009 04:20:16 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50187 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752615AbZLIJUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:15:03 -0500
-Date: Wed, 9 Dec 2009 10:15:10 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>, kosaki.motohiro@jp.fujitsu.com,
-       hugh.dickins@tiscali.co.uk, nishimura@mxp.nes.nec.co.jp,
-       balbir@linux.vnet.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-       menage@google.com, npiggin@suse.de, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] [23/31] HWPOISON: add memory cgroup filter
-Message-ID: <20091209091510.GE18989@one.firstfloor.org>
-References: <200912081016.198135742@firstfloor.org> <20091208211639.8499FB151F@basil.firstfloor.org> <4B1F2FC6.7040406@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1F2FC6.7040406@cn.fujitsu.com>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 9 Dec 2009 04:20:14 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] irq: handle irq0 special only on x86
+Date: Wed,  9 Dec 2009 10:20:01 +0100
+Message-Id: <1260350401-9858-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.5.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have a question, can try_get_mem_cgroup_from_page() return
-> root_mem_cgroup?
+I just noticed this when digging in the irq handling.  At least for arm
+this doesn't make sense.  Not sure if x86 is the only arch this test
+is valid for, but probably it is.
 
-It could be called for any page.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+---
+ kernel/irq/spurious.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-
-> if it can, then css->cgroup->dentry is NULL, if memcg is
-> not mounted and there is no subdir in memcg. Because the root
-> cgroup of an inactive subsystem has no dentry.
-
-Thanks. I'll just add an return -EINVAL for this case, sounds good?
-
--Andi
-
+diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
+index 22b0a6e..4996b66 100644
+--- a/kernel/irq/spurious.c
++++ b/kernel/irq/spurious.c
+@@ -199,8 +199,10 @@ try_misrouted_irq(unsigned int irq, struct irq_desc *desc,
+ 	if (irqfixup < 2)
+ 		return 0;
+ 
++#if defined(CONFIG_ARCH_X86)
+ 	if (!irq)
+ 		return 1;
++#endif
+ 
+ 	/*
+ 	 * Since we don't get the descriptor lock, "action" can
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.5.2
+
