@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbZLIOGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbZLIOGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbZLIOGG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 09:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbZLIOGG
+	id S1755049AbZLIOGi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 09:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbZLIOGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 09:06:06 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:57093 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754707AbZLIOGF (ORCPT
+	Wed, 9 Dec 2009 09:06:37 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36878 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754833AbZLIOGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 09:06:05 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20091209131021.23789494@lxorguk.ukuu.org.uk>
-References: <1260335777.4532.248.camel@localhost>
-	 <20091209120215.2c120e58@lxorguk.ukuu.org.uk>
-	 <1260363108.4532.254.camel@localhost>
-	 <20091209131021.23789494@lxorguk.ukuu.org.uk>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-3eJ+PVB1AulQUlOrSV2E"
-Date: Wed, 09 Dec 2009 14:06:07 +0000
-Message-ID: <1260367567.4532.266.camel@localhost>
+	Wed, 9 Dec 2009 09:06:36 -0500
+X-Authority-Analysis: v=1.0 c=1 a=sHHlHcWDpqoA:10 a=7U3hwN5JcxgA:10 a=3ZxrLodb3BXVXqoVcZUA:9 a=-CL_Veea-WmgSoNexZAA:7 a=FxiPLT8fH3J_ZUSixXJ-ZZSvQ1EA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH][GIT PULL][v2.6.33] tracing: Remove comparing of NULL
+ to va_list in trace_array_vprintk()
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Carsten Emde <Carsten.Emde@osadl.org>,
+       Olof Johansson <olof@lixom.net>, hpa@zytor.com, tglx@linutronix.de
+In-Reply-To: <20091209061528.GA26687@elte.hu>
+References: <4B01AE5D.1010801@osadl.org>
+	 <tip-c13d2f7c3231e873f30db92b96c8caa48f100f33@git.kernel.org>
+	 <20091206051352.GA4628@lixom.net> <4B1BAB74.104@osadl.org>
+	 <1260332397.2146.38.camel@gandalf.stny.rr.com>
+	 <20091209055602.GB2512@elte.hu> <20091209061148.GA14010@elte.hu>
+	 <20091209061528.GA26687@elte.hu>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 09 Dec 2009 09:06:40 -0500
+Message-ID: <1260367600.2146.69.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: Re: [PATCH 4/5] firmware/WHENCE: Use consistent field name for
- licence information
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-12-09 at 07:15 +0100, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> >  efcf61a: tracing: Remove comparing of NULL to va_list in trace_array_vprintk()
+> 
+> the real culprit was:
+> 
+>   6e0573f: tracing: Buffer the output of seq_file in case of filled buffer
+> 
+> so i kept this commit:
+> 
+>   c521efd: tracing: Add pipe_close interface
+> 
+> and skipped the rest for now - please resend if this is fixed.
+> 
 
---=-3eJ+PVB1AulQUlOrSV2E
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I'll get this fixed today.
 
-On Wed, 2009-12-09 at 13:10 +0000, Alan Cox wrote:
-> > The file currently uses both spellings in different places.
->=20
-> So does lots of the kernel. It hardly matters.
+Thanks!
 
-This is supposed to be structured information.  You might as well say
-that mail headers can be spelt according to local convention.
+-- Steve
 
-Ben.
 
---=20
-Ben Hutchings
-Beware of programmers who carry screwdrivers. - Leonard Brandwein
-
---=-3eJ+PVB1AulQUlOrSV2E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUASx+uyue/yOyVhhEJAQJfOBAAg5LlTr2anz4xtDaIT9UQL8NnxA/1+LDf
-cbAKPBKnp1lqYkkPQYgvHQX2UvF1M7jrB0CL4c6nqikXfwmU1kZATbnkyG/gV2QV
-pupezHxoE9xlBqNdyoR9RyZ/MW1I3jb/z9JY3FjkNiNVjfIyOrxnzw+G+BdGRMi2
-6qHYiOvQv0geKYYBFbyCLuZEFF+KrpzYPNg86jvGeiqbAsGvx3uESyHLa2jR0idd
-PpOcZBo/exWPUPXvr266KcIFADCOGeycUDeLyy/ATrPbrwFRNGJbi1QiwqiUEC/7
-oZMWMs6nuQWckjFzMYhSrkxGR8HLc+6EWw79dvX+k3KE13jzb3nKkEWm4IgLfUzP
-V5tsXqVm+Kdh1xGixvB6BbzXgGtyTJp9Fculbml+JJgBJTxYmZ9HDlq2b8oRuu/6
-wFhSNXTsB+tuPv7AkDESBqQ3oWjJRX/kiJ5OSyzt0tKtxKwcIFfIyApQ70U4Drw5
-toqe1Jl8LI/PraCY/IzkgC9YgWaLscfs8WVpLClB6iE6rbCmIpV40SDIQV6l48KU
-SMHs/n/6i4yN6S10TF680Wg2FyudsYJTUmbs5gZ/57ElUsNZsWtoS8juFFC99p7N
-/fLQPZO8CpD0qbu/WeFS6rBpPCmVv0Uc227biJI8QUikl0zxAVfkC1lsYiD0m2PF
-CMAvzJKRDho=
-=Ey/v
------END PGP SIGNATURE-----
-
---=-3eJ+PVB1AulQUlOrSV2E--
