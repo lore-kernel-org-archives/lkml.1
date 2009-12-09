@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbZLITUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbZLITW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbZLITUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbZLITUe
+	id S1757110AbZLITW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbZLITWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:20:34 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:53691 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757026AbZLITUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:20:34 -0500
-Date: Wed, 9 Dec 2009 20:20:38 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Michal Marek <mmarek@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [GIT PULL] kbuild updates for 2.6.33
-Message-ID: <20091209192038.GA7827@merkur.ravnborg.org>
-References: <20091208133004.GA22750@sepie.suse.cz> <20091209093349.GA11837@sepie.suse.cz> <20091209093108.387b2736.randy.dunlap@oracle.com>
+	Wed, 9 Dec 2009 14:22:22 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52683 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753733AbZLITWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:22:21 -0500
+Date: Wed, 9 Dec 2009 20:22:26 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Sascha Hauer <kernel@pengutronix.de>,
+       Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/12] arch/arm: Correct size given to memset
+Message-ID: <Pine.LNX.4.64.0912092022040.1870@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091209093108.387b2736.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 09:31:08AM -0800, Randy Dunlap wrote:
-> On Wed, 9 Dec 2009 10:33:49 +0100 Michal Marek wrote:
-> 
-> > On Tue, Dec 08, 2009 at 02:30:04PM +0100, Michal Marek wrote:
-> > > Hi Linus,
-> > > 
-> > > these are the kbuild patches I collected for 2.6.33. There might be a few
-> > > more later, but this is the main part.
-> > > 
-> > > Thanks,
-> > > Michal
-> > > 
-> > > The following changes since commit 6ec22f9b037fc0c2e00ddb7023fad279c365324d:
-> > >   Linus Torvalds (1):
-> > >         Merge branch 'x86-debug-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-> > > 
-> > > are available in the git repository at:
-> > > 
-> > >   git://repo.or.cz/linux-kbuild.git for-next
-> > 
-> > Hi Linus,
-> > 
-> > The kbuild tree now breaks with 250cce26 ("iwlwifi: driver version
-> > track kernel version") which you merged yesterday. Stephen Rothwell
-> > kindly provided a fix, which I would normally apply to the kbuild tree,
-> > but I don't want to rebase it as I already sent the pull request. Could
-> > you please apply the following one-liner when merging the kbuild tree?
-> > Thanks!
-> 
-> Hi > Michal,
-> 
-> Is there anything that tells us when we should/must use
-> <generated/*.h> ?
+From: Julia Lawall <julia@diku.dk>
 
-The original idea was that include/generated/ should
-be used for all generated header files.
+Memset should be given the size of the structure, not the size of the pointer.
 
-I once had a patch applied that used it for other
-generated files - this was a bad idea. Said patch
-was reverted as it had much bigger issues.
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-So think of it as a place for generated header files only.
-This also warrants the location in include/
+// <smpl>
+@@
+type T;
+T *x;
+expression E;
+@@
 
-But only for 'global' header files. For drivers
-and the like that needs the header file only locally the
-header file should not be located n include/generated,
-as it is only for the global headers.
+memset(x, E, sizeof(
++ *
+ x))
+// </smpl>
 
-asm-offsets.h is a good example here.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-	Sam
+---
+ arch/arm/plat-mxc/dma-mx1-mx2.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -u -p a/arch/arm/plat-mxc/dma-mx1-mx2.c b/arch/arm/plat-mxc/dma-mx1-mx2.c
+--- a/arch/arm/plat-mxc/dma-mx1-mx2.c
++++ b/arch/arm/plat-mxc/dma-mx1-mx2.c
+@@ -694,7 +694,7 @@ int imx_dma_request(int channel, const c
+ 		local_irq_restore(flags);
+ 		return -EBUSY;
+ 	}
+-	memset(imxdma, 0, sizeof(imxdma));
++	memset(imxdma, 0, sizeof(*imxdma));
+ 	imxdma->name = name;
+ 	local_irq_restore(flags); /* request_irq() can block */
+ 
