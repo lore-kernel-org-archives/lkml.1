@@ -1,123 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757469AbZLIHzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZLIFYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757469AbZLIHzb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 02:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbZLIHy2
+	id S1752898AbZLIFYv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 00:24:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbZLIFYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 02:54:28 -0500
-Received: from rere.qmqm.pl ([89.167.52.164]:44283 "EHLO rere.qmqm.pl"
+	Wed, 9 Dec 2009 00:24:47 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33391 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757399AbZLIHyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 02:54:10 -0500
-From: =?UTF-8?Q?Micha=C5=82=20Miros=C5=82aw=20?= 
-	<mirq-linux@rere.qmqm.pl>
-To: linux-kernel@vger.kernel.org
-Message-ID: <7-1000-25639-1260344705-9533@rere.qmqm.pl>
-In-Reply-To: <1-1000-25639-1260344705-9533@rere.qmqm.pl>
-Date: Wed, 9 Dec 2009 06:17:52 +0100
-Subject: [PATCH 6/7] mtrr: introduce HAVE_MTRR_VENDOR_SPECIFIC
+	id S1750986AbZLIFYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 00:24:46 -0500
+Message-ID: <4B1F34B6.3090107@kernel.org>
+Date: Wed, 09 Dec 2009 14:25:10 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: tglx@linutronix.de, mingo@elte.hu, avi@redhat.com, efault@gmx.de,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 4/7] sched: implement force_cpus_allowed()
+References: <1259726212-30259-1-git-send-email-tj@kernel.org>	 <1259726212-30259-5-git-send-email-tj@kernel.org>	 <1259923259.3977.1928.camel@laptop> <1259923381.3977.1934.camel@laptop>	 <4B1C85D3.3080401@kernel.org> <1260174900.8223.1159.camel@laptop>	 <4B1CDA1C.3000802@kernel.org> <1260183278.8223.1500.camel@laptop>	 <4B1CE1E8.2070803@kernel.org>  <4B1E1130.9050108@kernel.org>	 <1260262963.3935.1002.camel@laptop>  <4B1E189B.1070204@kernel.org>	 <1260268453.3935.1106.camel@laptop>  <4B1E378A.5050101@kernel.org>	 <1260272885.3935.1189.camel@laptop>  <4B1E3EE0.7030001@kernel.org>	 <1260274232.3935.1223.camel@laptop>  <4B1E4548.5040408@kernel.org> <1260279351.3935.1375.camel@laptop>
+In-Reply-To: <1260279351.3935.1375.camel@laptop>
+X-Enigmail-Version: 0.97a
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In case that only generic MTRR implementation is needed, tell gcc
-to optimize out tests for other implementations. Also remove .vendor
-from mtrr_ops in this configuration.
+Hello,
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
----
- arch/x86/Kconfig                |    3 +++
- arch/x86/Kconfig.cpu            |    3 +++
- arch/x86/kernel/cpu/mtrr/mtrr.h |   12 +++++++++++-
- 3 files changed, 17 insertions(+), 1 deletions(-)
+On 12/08/2009 10:35 PM, Peter Zijlstra wrote:
+>> Slow and indeterminism comes in different magnitudes.
+> 
+> Determinism does _not_ come in magnitudes, its a very binary property,
+> either it is or it is not.
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 32a1918..91422d0 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1367,6 +1367,9 @@ config MTRR
- 
- 	  See <file:Documentation/x86/mtrr.txt> for more information.
- 
-+config HAVE_MTRR_VENDOR_SPECIFIC
-+	def_bool n
-+
- config MTRR_SANITIZER
- 	def_bool y
- 	prompt "MTRR cleanup support"
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index bae1193..d7a6838 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -439,6 +439,7 @@ config CPU_SUP_CYRIX_32
- 	default y
- 	bool "Support Cyrix processors" if PROCESSOR_SELECT
- 	depends on !64BIT
-+	select HAVE_MTRR_VENDOR_SPECIFIC
- 	---help---
- 	  This enables detection, tunings and quirks for Cyrix processors
- 
-@@ -464,6 +465,7 @@ config CPU_SUP_AMD
- 
- config CPU_SUP_AMD_32
- 	def_bool y if CPU_SUP_AMD && !64BIT
-+	select HAVE_MTRR_VENDOR_SPECIFIC
- 
- config CPU_SUP_CENTAUR
- 	default y
-@@ -480,6 +482,7 @@ config CPU_SUP_CENTAUR
- 
- config CPU_SUP_CENTAUR_32
- 	def_bool y if CPU_SUP_CENTAUR && !64BIT
-+	select HAVE_MTRR_VENDOR_SPECIFIC
- 
- config CPU_SUP_TRANSMETA_32
- 	default y
-diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
-index 562e2e3..7a87e65 100644
---- a/arch/x86/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
-@@ -12,7 +12,9 @@
- extern unsigned int mtrr_usage_table[MTRR_MAX_VAR_RANGES];
- 
- struct mtrr_ops {
-+#ifdef CONFIG_HAVE_MTRR_VENDOR_SPECIFIC
- 	u32	vendor;
-+#endif
- 	void	(*set)(unsigned int reg, unsigned long base,
- 		       unsigned long size, mtrr_type type);
- 	void	(*set_all)(void);
-@@ -32,7 +34,7 @@ extern int generic_validate_add_page(unsigned long base, unsigned long size,
- 				     unsigned int type);
- 
- extern const struct mtrr_ops generic_mtrr_ops;
--#ifdef CONFIG_X86_32
-+#ifdef CONFIG_HAVE_MTRR_VENDOR_SPECIFIC
- extern const struct mtrr_ops amd_mtrr_ops;
- extern const struct mtrr_ops centaur_mtrr_ops;
- extern const struct mtrr_ops cyrix_mtrr_ops;
-@@ -60,8 +62,16 @@ void get_mtrr_state(void);
- extern u64 size_or_mask, size_and_mask;
- extern const struct mtrr_ops *mtrr_if;
- 
-+#ifdef CONFIG_HAVE_MTRR_VENDOR_SPECIFIC
-+
- #define is_cpu(vnd)	(mtrr_if && mtrr_if->vendor == X86_VENDOR_##vnd)
- 
-+#else
-+
-+#define is_cpu(vnd)	(mtrr_if && 0 == X86_VENDOR_##vnd)
-+
-+#endif
-+
- extern unsigned int num_var_ranges;
- extern u64 mtrr_tom2;
- extern struct mtrr_state_type mtrr_state;
+It's semantics, right?  The whole process is made closer to being
+deterministic by making each component deterministic, so in that way
+"more deterministic" is a meaningful expression or it also can
+describe how deterministic it feels to human perception.
+
+> As to the order of slowness for unplug, that is about maximal, its _the_
+> slowest path in the whole kernel.
+
+Long running works may run for minutes.  They're slow to wait for as
+perceived by human beings, so we're talking about pretty different
+scales.
+
+> Ok, maybe, but that is not what I would call a generic thread pool.
+
+Sure, it's not completely generic, not yet anyway.  The main focus is
+to solve concurrency issues with the current workqueue implementation.
+With concurrency issues solved, accomodating long running works
+becomes quite easy - all we need to do is to migrate back unbound
+workers during cup up - and as we have considerable number of users
+which require such usage, it's reasonable to implement it.
+
+> So the reason we have tons of idle workqueues around are purely because
+> of deadlock scenarios? Or is there other crap about?
+
+No, that's part of concurrency issues.  Works don't devour and compete
+for CPU cycles but they overlap each other frequently.  Works are
+often used to provide task context so that the users can use sleeping
+synchronization constructs or wait for events.
+
+> So why not start simple and only have one thread per cpu (lets call it
+> events/#) and run all works there. Then when you enqueue a work and
+> events/# is already busy with a work from anther wq, hand the work to a
+> global event thread which will spawn a special single shot kthread for
+> it, with a second exception for those reclaim wq's, for which you'll
+> have this rescue thread which you'll bind to the right cpu for that
+> work.
+>
+> That should get rid of all these gazillion threads we have, preserve the
+> queue property and not be as invasive as your current thing.
+
+That doesn't solve concurrency problem at all and we'll be ending up
+bouncing around a LOT of works.
+
+> If they're really as idle as reported you'll never need the fork-fest
+> you currently propose, simply because there's not enough work.
+>
+> So basically, have events/# service the first non-empty cwq, when
+> there's more non empty cwqs spawn them single shot threads, or use a
+> rescue thread.
+
+Idle doesn't mean they don't overlap.  They aren't cpu cycle hungry
+but are context hungry.
+
+It just isn't possible to implement shared worker pool which can scale
+according to necessary level of concurrency without doing some sort of
+dynamic worker management which necessarily involves forking new ones
+when in need and killing some of them off when there are more than
+enough.
+
+As for the force_cpus_allowed() bit, I think it's a rather natural
+interface to have and maybe we can replace kthread_bind() with it or
+make kthread_bind() in terms of it.  It's the basic migration function
+which adheres to the cpu hot plug/unplug synchronization rules.
+
+>>   I thought about adding an unbound pool of workers
+>> for cpu intensive works for completeness but I really couldn't find
+>> much use for that.  If enough number of users would need something
+>> like that, we can add an anonymous pool but for now I really don't see
+>> the need to worry about that.
+> 
+> And I though I'd heard multiple parties express interesting in exactly
+> that, btrfs, bdi and pohmelfs come to mind, also crypto looks like one
+> that could actually do some work.
+
+Yeah, anything cryptography related or crunches large chunk of data
+would be a good candidate but still compared to the works and kthreads
+we have just to have context and be able to wait for things, they're
+minority.  Plus, it's something we can continue to work on if there
+are enough reasons to do so.  If accomodating long running works there
+makes more sense, we'll do that but for most of them whether bound to
+certain cpu or not just isn't intersting at all and all we need to
+serve them is the ability to migrate back the threads during CPU UP.
+It's pretty isolated path.
+
+Thanks.
+
 -- 
-1.6.4.4
-
+tejun
