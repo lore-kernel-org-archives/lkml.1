@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbZLISsC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbZLISuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbZLISsC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:48:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147AbZLISrz
+	id S1757186AbZLISuK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:50:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbZLISuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:47:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34761 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757042AbZLISrx (ORCPT
+	Wed, 9 Dec 2009 13:50:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60484 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757112AbZLISuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:47:53 -0500
-Date: Wed, 9 Dec 2009 10:47:12 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
+	Wed, 9 Dec 2009 13:50:08 -0500
+Message-ID: <4B1FF139.2090108@zytor.com>
+Date: Wed, 09 Dec 2009 10:49:29 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
+MIME-Version: 1.0
 To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [GIT PULL] x86/paravirt for v2.6.33
-In-Reply-To: <4B1FED0D.7060003@goop.org>
-Message-ID: <alpine.LFD.2.00.0912091039050.3560@localhost.localdomain>
 References: <20091203210913.GA24351@elte.hu> <alpine.LFD.2.00.0912081329460.3560@localhost.localdomain> <20091209073632.GD8187@elte.hu> <4B1FED0D.7060003@goop.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4B1FED0D.7060003@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 9 Dec 2009, Jeremy Fitzhardinge wrote:
+On 12/09/2009 10:31 AM, Jeremy Fitzhardinge wrote:
 > 
 > How does this look?
-
-I would actually prefer it if the calling convention was just made to 
-match on both x86 and x86-64. Wouldn't it be nice if they both just had
-
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git fix-iopl
+> 
+> From: Jeremy Fitzhardinge<jeremy.fitzhardinge@citrix.com>
+> Date: Wed, 9 Dec 2009 10:26:59 -0800
+> Subject: [PATCH] x86: Make sys_iopl use passed-in pt_regs
+> 
+> Rather than using task_pt_regs, use the pt_regs * passed into the syscall.
+> The ABI differences are handled in small 32/64-bit specific functions,
+> and everything else is handled in the common do_iopl().
+> 
+> Signed-off-by: Jeremy Fitzhardinge<jeremy.fitzhardinge@citrix.com>
+> 
+> diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+> index 5336ce2..70497f0 100644
+> --- a/arch/x86/include/asm/syscalls.h
+> +++ b/arch/x86/include/asm/syscalls.h
+> @@ -33,11 +33,11 @@ long sys_rt_sigreturn(struct pt_regs *);
+>   asmlinkage int sys_set_thread_area(struct user_desc __user *);
+>   asmlinkage int sys_get_thread_area(struct user_desc __user *);
+> 
+> -/* kernel/ioport.c */
+> -asmlinkage long sys_iopl(unsigned int);
+> -
+>   /* X86_32 only */
+>   #ifdef CONFIG_X86_32
 > +/* kernel/ioport.c */
-> +asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
+> +asmlinkage long sys_iopl(struct pt_regs *);
+> +
+>   /* kernel/process_32.c */
 
-as the prototype, and looked the same?
+This is the main ugliness that led me to pass up on this in the first
+place.  What it really comes down to is that on 32 bits we need the
+analogue with what 64 bits have with different stubs for different
+number of arguments.
 
-I realize that right now the 32-bit PTREGSCALL() thing doesn't support 
-that (very different macros for entry.S x86-32 and -64), but isn't that 
-just another thing we should try to fix too?
-
-IOW, maybe something like this would be good, and would change the x86-32 
-calling convention to match the x86-64 one?
-
-NOTE NOTE NOTE! Totally untested. Is the second argument even in %edx? I 
-don't remember, I didn't check, I'm just throwing this out as a "hey, 
-maybe something _like_ this can work" patch, and will be immediately 
-removing it from my machine after sending this email.
-
-		Linus
-
----
- arch/x86/kernel/entry_32.S |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index 50b9c22..22b4431 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -725,22 +725,22 @@ END(syscall_badsys)
- /*
-  * System calls that need a pt_regs pointer.
-  */
--#define PTREGSCALL(name) \
-+#define PTREGSCALL(name, reg) \
- 	ALIGN; \
- ptregs_##name: \
--	leal 4(%esp),%eax; \
-+	leal 4(%esp),reg; \
- 	jmp sys_##name;
- 
--PTREGSCALL(iopl)
--PTREGSCALL(fork)
--PTREGSCALL(clone)
--PTREGSCALL(vfork)
--PTREGSCALL(execve)
--PTREGSCALL(sigaltstack)
--PTREGSCALL(sigreturn)
--PTREGSCALL(rt_sigreturn)
--PTREGSCALL(vm86)
--PTREGSCALL(vm86old)
-+PTREGSCALL(iopl,%edx)
-+PTREGSCALL(fork,%eax)
-+PTREGSCALL(clone,%eax)
-+PTREGSCALL(vfork,%eax)
-+PTREGSCALL(execve,%eax)
-+PTREGSCALL(sigaltstack,%eax)
-+PTREGSCALL(sigreturn,%eax)
-+PTREGSCALL(rt_sigreturn,%eax)
-+PTREGSCALL(vm86,%eax)
-+PTREGSCALL(vm86old,%eax)
- 
- .macro FIXUP_ESPFIX_STACK
- /*
+	-hpa
