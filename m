@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756910AbZLIHB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZLIHB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756910AbZLIHB4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 02:01:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbZLIHBy
+	id S1757017AbZLIHB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 02:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbZLIHB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 02:01:54 -0500
+	Wed, 9 Dec 2009 02:01:57 -0500
 Received: from zfrontend2.aha.ru ([195.2.83.148]:42001 "EHLO aha.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752705AbZLIHBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 02:01:49 -0500
+	id S1756821AbZLIHBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 02:01:54 -0500
 From: "werner" <w.landgraf@ru.ru>
 Subject: kernel problem
 To: linux-kernel@vger.kernel.org
 X-Mailer: CommuniGate Pro WebUser Interface v.4.3.12
-Date: Wed, 09 Dec 2009 03:01:51 -0400
-Message-ID: <web-106742710@zbackend1.aha.ru>
+Date: Wed, 09 Dec 2009 03:01:54 -0400
+Message-ID: <web-106742765@zbackend1.aha.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format="flowed"
 Content-Transfer-Encoding: 8bit
