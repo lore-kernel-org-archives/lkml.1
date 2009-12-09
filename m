@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbZLISpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbZLISps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbZLISpo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757070AbZLISpc
+	id S1757175AbZLISps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbZLISpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:45:32 -0500
-Received: from mail.perches.com ([173.55.12.10]:1042 "EHLO mail.perches.com"
+	Wed, 9 Dec 2009 13:45:35 -0500
+Received: from mail.perches.com ([173.55.12.10]:1043 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757042AbZLISpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757043AbZLISpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 Dec 2009 13:45:31 -0500
 From: Joe Perches <joe@perches.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] es7000_32.c: use pr_<level> and add pr_fmt(fmt)
-Date: Wed,  9 Dec 2009 10:45:33 -0800
-Message-Id: <3b4375af246dec5941168858910210937c110af9.1260383912.git.joe@perches.com>
+Subject: [PATCH 2/5] arch/x86/kernel/setup_percpu.c: use pr_<level> and add pr_fmt(fmt)
+Date: Wed,  9 Dec 2009 10:45:34 -0800
+Message-Id: <7ead24eccbea8f2b11795abad3e2893a98e1e111.1260383912.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1260383912.git.joe@perches.com>
 References: <20091209072630.GA8187@elte.hu> <cover.1260383912.git.joe@perches.com>
@@ -23,59 +23,56 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-Converted a few printk(KERN_INFO to pr_info(
-Stripped "es7000_mipcfg" from pr_debug
+Stripped PERCPU: from a pr_warning
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/x86/kernel/apic/es7000_32.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ arch/x86/kernel/setup_percpu.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
-index e85f8fb..dd2b5f2 100644
---- a/arch/x86/kernel/apic/es7000_32.c
-+++ b/arch/x86/kernel/apic/es7000_32.c
-@@ -27,6 +27,9 @@
-  *
-  * http://www.unisys.com
-  */
-+
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index d559af9..35abcb8 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -1,3 +1,5 @@
 +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
- #include <linux/notifier.h>
- #include <linux/spinlock.h>
- #include <linux/cpumask.h>
-@@ -223,9 +226,9 @@ static int parse_unisys_oem(char *oemptr)
- 			mip_addr = val;
- 			mip = (struct mip_reg *)val;
- 			mip_reg = __va(mip);
--			pr_debug("es7000_mipcfg: host_reg = 0x%lx \n",
-+			pr_debug("host_reg = 0x%lx\n",
- 				 (unsigned long)host_reg);
--			pr_debug("es7000_mipcfg: mip_reg = 0x%lx \n",
-+			pr_debug("mip_reg = 0x%lx\n",
- 				 (unsigned long)mip_reg);
- 			success++;
- 			break;
-@@ -401,7 +404,7 @@ static void es7000_enable_apic_mode(void)
- 	if (!es7000_plat)
- 		return;
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+@@ -20,9 +22,9 @@
+ #include <asm/stackprotector.h>
  
--	printk(KERN_INFO "ES7000: Enabling APIC mode.\n");
-+	pr_info("Enabling APIC mode.\n");
- 	memset(&es7000_mip_reg, 0, sizeof(struct mip_reg));
- 	es7000_mip_reg.off_0x00 = MIP_SW_APIC;
- 	es7000_mip_reg.off_0x38 = MIP_VALID;
-@@ -514,8 +517,7 @@ static void es7000_setup_apic_routing(void)
- {
- 	int apic = per_cpu(x86_bios_cpu_apicid, smp_processor_id());
+ #ifdef CONFIG_DEBUG_PER_CPU_MAPS
+-# define DBG(x...) printk(KERN_DEBUG x)
++# define DBG(fmt, ...) pr_dbg(fmt, ##__VA_ARGS__)
+ #else
+-# define DBG(x...)
++# define DBG(fmt, ...) do { if (0) pr_dbg(fmt, ##__VA_ARGS__); } while (0)
+ #endif
  
--	printk(KERN_INFO
--	  "Enabling APIC mode:  %s. Using %d I/O APICs, target cpus %lx\n",
-+	pr_info("Enabling APIC mode:  %s. Using %d I/O APICs, target cpus %lx\n",
- 		(apic_version[apic] == 0x14) ?
- 			"Physical Cluster" : "Logical Cluster",
- 		nr_ioapics, cpumask_bits(es7000_target_cpus())[0]);
+ DEFINE_PER_CPU(int, cpu_number);
+@@ -116,8 +118,8 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
+ 	} else {
+ 		ptr = __alloc_bootmem_node_nopanic(NODE_DATA(node),
+ 						   size, align, goal);
+-		pr_debug("per cpu data for cpu%d %lu bytes on node%d at "
+-			 "%016lx\n", cpu, size, node, __pa(ptr));
++		pr_debug("per cpu data for cpu%d %lu bytes on node%d at %016lx\n",
++			 cpu, size, node, __pa(ptr));
+ 	}
+ 	return ptr;
+ #else
+@@ -198,8 +200,7 @@ void __init setup_per_cpu_areas(void)
+ 					    pcpu_cpu_distance,
+ 					    pcpu_fc_alloc, pcpu_fc_free);
+ 		if (rc < 0)
+-			pr_warning("PERCPU: %s allocator failed (%d), "
+-				   "falling back to page size\n",
++			pr_warning("%s allocator failed (%d), falling back to page size\n",
+ 				   pcpu_fc_names[pcpu_chosen_fc], rc);
+ 	}
+ 	if (rc < 0)
 -- 
 1.6.6.rc0.57.gad7a
 
