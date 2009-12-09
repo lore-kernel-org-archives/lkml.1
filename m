@@ -1,97 +1,451 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZLIJva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZLIJwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbZLIJva (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbZLIJv3
+	id S1753543AbZLIJwT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZLIJwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:51:29 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:46806 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753229AbZLIJv2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:51:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=QErtEg4UyrT1S9LnHgHKPcT+RhoIadpPgsdDiGbyYsoa5J5JrD5MGTFRjFgjvui1IQ
-         u+wV2BiGUz5l3lWTD5PqPYQ6cZgu6OQRaIWo3a/+REmsZQKkoy1AfJgcEtAqxcJke5Po
-         Py6goh/G60ccKooa9Oach9hv7U/1gd5usMSVQ=
-Message-ID: <4B1F7324.9000402@gmail.com>
-Date: Wed, 09 Dec 2009 10:51:32 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091122 SUSE/3.0.0-9.1 Thunderbird/3.0
+	Wed, 9 Dec 2009 04:52:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44939 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753239AbZLIJwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:52:13 -0500
+Date: Wed, 9 Dec 2009 09:51:40 GMT
+From: tip-bot for Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       joe@perches.com, apw@canonical.com, herrmann.der.user@googlemail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       joe@perches.com, apw@canonical.com, herrmann.der.user@googlemail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1260340250.27677.191.camel@Joe-Laptop.home>
+References: <1260340250.27677.191.camel@Joe-Laptop.home>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] arch/x86/kernel/microcode*: Use pr_fmt() and remove duplicated KERN_ERR prefix
+Message-ID: <tip-f58e1f53de52a70391b6478617311207c7203363@git.kernel.org>
+Git-Commit-ID: f58e1f53de52a70391b6478617311207c7203363
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, scameron@beardog.cce.hp.com,
-       James.Bottomley@HansenPartnership.com, achiang@hp.com,
-       jens.axboe@oracle.com, mikem@beardog.cce.hp.com
-Subject: Re: + hpsa-use-msleep-instead-of-schedule_timeout.patch added to
- -mm tree
-References: <200912082204.nB8M48oL027313@imap1.linux-foundation.org>	<4B1ED241.4090803@gmail.com> <20091208144419.af6298ba.akpm@linux-foundation.org>
-In-Reply-To: <20091208144419.af6298ba.akpm@linux-foundation.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/08/2009 11:44 PM, Andrew Morton wrote:
-> On Tue, 08 Dec 2009 23:25:05 +0100
-> Jiri Slaby <jirislaby@gmail.com> wrote:
-> 
->> On 12/08/2009 11:04 PM, akpm@linux-foundation.org wrote:
->>> Subject: hpsa: use msleep() instead of schedule_timeout
->>> From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
->>>
->>> Use msleep() instead of schedule_timeout
->>
->> The patch does more than that and moreover in a wrong manner, see below.
->>
->>> @@ -3262,8 +3262,8 @@ static int hpsa_pci_init(struct ctlr_inf
->>>  		if (!(readl(h->vaddr + SA5_DOORBELL) & CFGTBL_ChangeReq))
->>>  			break;
->>>  		/* delay and try again */
->>> -		set_current_state(TASK_INTERRUPTIBLE);
->>> -		schedule_timeout(10);
->>> +		set_current_state(TASK_UNINTERRUPTIBLE);
->>> +		msleep(10);
->>
->> Why do you change interruptible sleep to uninterruptible?
-> 
-> Stealth bugfix ;)
-> 
-> If the calling process (called "modprobe") has signal_pending()
-> (someone ^C'ed it) then the TASK_INTERRUPTIBLE sleep will be a no-op
-> and the driver will probably go and screw things up.
+Commit-ID:  f58e1f53de52a70391b6478617311207c7203363
+Gitweb:     http://git.kernel.org/tip/f58e1f53de52a70391b6478617311207c7203363
+Author:     Joe Perches <joe@perches.com>
+AuthorDate: Tue, 8 Dec 2009 22:30:50 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 9 Dec 2009 08:25:57 +0100
 
-Ok, then it should have been in the changelog. The changelog was just
-"Use msleep() instead of schedule_timeout". Apart it doesn't mention why
-it is changed (it might be obvious for some that it's a cleanup), it
-doesn't do merely that.
+arch/x86/kernel/microcode*: Use pr_fmt() and remove duplicated KERN_ERR prefix
 
->>> diff -puN drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout drivers/scsi/hpsa.h
->>> --- a/drivers/scsi/hpsa.h~hpsa-use-msleep-instead-of-schedule_timeout
->>> +++ a/drivers/scsi/hpsa.h
->> ...
->>> @@ -139,7 +139,7 @@ struct ctlr_info {
->>>  #define HPSA_BOARD_READY_ITERATIONS \
->>>  	((HPSA_BOARD_READY_WAIT_SECS * 1000) / \
->>>  		HPSA_BOARD_READY_POLL_INTERVAL_MSECS)
->>> -#define HPSA_POST_RESET_PAUSE (30 * HZ)
->>> +#define HPSA_POST_RESET_PAUSE_MSECS (3000)
->>
->> Ehm?
-> 
-> 30 seconds would have sucked anyway ;)
+- Use #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+- Remove "microcode: " prefix from each pr_<level>
+- Fix duplicated KERN_ERR prefix
+- Coalesce pr_<level> format strings
+- Add a space after an exclamation point
 
-Might be. But again, then it should be explained in the changelog. And
-as this is totally separate thing, also in a separate patch.
+No other change in output.
 
-At least I though this is the politics.
+Signed-off-by: Joe Perches <joe@perches.com>
+Cc: Andy Whitcroft <apw@canonical.com>
+Cc: Andreas Herrmann <herrmann.der.user@googlemail.com>
+LKML-Reference: <1260340250.27677.191.camel@Joe-Laptop.home>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/microcode_amd.c   |   40 +++++++++++++++----------------
+ arch/x86/kernel/microcode_core.c  |   26 +++++++++++---------
+ arch/x86/kernel/microcode_intel.c |   47 +++++++++++++++---------------------
+ 3 files changed, 53 insertions(+), 60 deletions(-)
 
-thanks,
--- 
-js
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 63123d9..37542b6 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -13,6 +13,9 @@
+  *  Licensed under the terms of the GNU General Public
+  *  License version 2. See file COPYING for details.
+  */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/firmware.h>
+ #include <linux/pci_ids.h>
+ #include <linux/uaccess.h>
+@@ -81,7 +84,7 @@ static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
+ 
+ 	memset(csig, 0, sizeof(*csig));
+ 	rdmsr(MSR_AMD64_PATCH_LEVEL, csig->rev, dummy);
+-	pr_info("microcode: CPU%d: patch_level=0x%x\n", cpu, csig->rev);
++	pr_info("CPU%d: patch_level=0x%x\n", cpu, csig->rev);
+ 	return 0;
+ }
+ 
+@@ -111,8 +114,8 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+ 
+ 	/* ucode might be chipset specific -- currently we don't support this */
+ 	if (mc_header->nb_dev_id || mc_header->sb_dev_id) {
+-		pr_err(KERN_ERR "microcode: CPU%d: loading of chipset "
+-		       "specific code not yet supported\n", cpu);
++		pr_err("CPU%d: loading of chipset specific code not yet supported\n",
++		       cpu);
+ 		return 0;
+ 	}
+ 
+@@ -141,12 +144,12 @@ static int apply_microcode_amd(int cpu)
+ 
+ 	/* check current patch id and patch's id for match */
+ 	if (rev != mc_amd->hdr.patch_id) {
+-		pr_err("microcode: CPU%d: update failed "
+-		       "(for patch_level=0x%x)\n", cpu, mc_amd->hdr.patch_id);
++		pr_err("CPU%d: update failed (for patch_level=0x%x)\n",
++		       cpu, mc_amd->hdr.patch_id);
+ 		return -1;
+ 	}
+ 
+-	pr_info("microcode: CPU%d: updated (new patch_level=0x%x)\n", cpu, rev);
++	pr_info("CPU%d: updated (new patch_level=0x%x)\n", cpu, rev);
+ 	uci->cpu_sig.rev = rev;
+ 
+ 	return 0;
+@@ -169,15 +172,14 @@ get_next_ucode(const u8 *buf, unsigned int size, unsigned int *mc_size)
+ 		return NULL;
+ 
+ 	if (section_hdr[0] != UCODE_UCODE_TYPE) {
+-		pr_err("microcode: error: invalid type field in "
+-		       "container file section header\n");
++		pr_err("error: invalid type field in container file section header\n");
+ 		return NULL;
+ 	}
+ 
+ 	total_size = (unsigned long) (section_hdr[4] + (section_hdr[5] << 8));
+ 
+ 	if (total_size > size || total_size > UCODE_MAX_SIZE) {
+-		pr_err("microcode: error: size mismatch\n");
++		pr_err("error: size mismatch\n");
+ 		return NULL;
+ 	}
+ 
+@@ -206,14 +208,13 @@ static int install_equiv_cpu_table(const u8 *buf)
+ 	size = buf_pos[2];
+ 
+ 	if (buf_pos[1] != UCODE_EQUIV_CPU_TABLE_TYPE || !size) {
+-		pr_err("microcode: error: invalid type field in "
+-		       "container file section header\n");
++		pr_err("error: invalid type field in container file section header\n");
+ 		return 0;
+ 	}
+ 
+ 	equiv_cpu_table = (struct equiv_cpu_entry *) vmalloc(size);
+ 	if (!equiv_cpu_table) {
+-		pr_err("microcode: failed to allocate equivalent CPU table\n");
++		pr_err("failed to allocate equivalent CPU table\n");
+ 		return 0;
+ 	}
+ 
+@@ -246,7 +247,7 @@ generic_load_microcode(int cpu, const u8 *data, size_t size)
+ 
+ 	offset = install_equiv_cpu_table(ucode_ptr);
+ 	if (!offset) {
+-		pr_err("microcode: failed to create equivalent cpu table\n");
++		pr_err("failed to create equivalent cpu table\n");
+ 		return UCODE_ERROR;
+ 	}
+ 
+@@ -277,8 +278,7 @@ generic_load_microcode(int cpu, const u8 *data, size_t size)
+ 		if (!leftover) {
+ 			vfree(uci->mc);
+ 			uci->mc = new_mc;
+-			pr_debug("microcode: CPU%d found a matching microcode "
+-				 "update with version 0x%x (current=0x%x)\n",
++			pr_debug("CPU%d found a matching microcode update with version 0x%x (current=0x%x)\n",
+ 				 cpu, new_rev, uci->cpu_sig.rev);
+ 		} else {
+ 			vfree(new_mc);
+@@ -300,7 +300,7 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
+ 		return UCODE_NFOUND;
+ 
+ 	if (*(u32 *)firmware->data != UCODE_MAGIC) {
+-		pr_err("microcode: invalid UCODE_MAGIC (0x%08x)\n",
++		pr_err("invalid UCODE_MAGIC (0x%08x)\n",
+ 		       *(u32 *)firmware->data);
+ 		return UCODE_ERROR;
+ 	}
+@@ -313,8 +313,7 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
+ static enum ucode_state
+ request_microcode_user(int cpu, const void __user *buf, size_t size)
+ {
+-	pr_info("microcode: AMD microcode update via "
+-		"/dev/cpu/microcode not supported\n");
++	pr_info("AMD microcode update via /dev/cpu/microcode not supported\n");
+ 	return UCODE_ERROR;
+ }
+ 
+@@ -334,14 +333,13 @@ void init_microcode_amd(struct device *device)
+ 	WARN_ON(c->x86_vendor != X86_VENDOR_AMD);
+ 
+ 	if (c->x86 < 0x10) {
+-		pr_warning("microcode: AMD CPU family 0x%x not supported\n",
+-			   c->x86);
++		pr_warning("AMD CPU family 0x%x not supported\n", c->x86);
+ 		return;
+ 	}
+ 	supported_cpu = 1;
+ 
+ 	if (request_firmware(&firmware, fw_name, device))
+-		pr_err("microcode: failed to load file %s\n", fw_name);
++		pr_err("failed to load file %s\n", fw_name);
+ }
+ 
+ void fini_microcode_amd(void)
+diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+index e68aae3..844c02c 100644
+--- a/arch/x86/kernel/microcode_core.c
++++ b/arch/x86/kernel/microcode_core.c
+@@ -70,6 +70,9 @@
+  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
+  *		Thanks to Stuart Swales for pointing out this bug.
+  */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/platform_device.h>
+ #include <linux/miscdevice.h>
+ #include <linux/capability.h>
+@@ -209,7 +212,7 @@ static ssize_t microcode_write(struct file *file, const char __user *buf,
+ 	ssize_t ret = -EINVAL;
+ 
+ 	if ((len >> PAGE_SHIFT) > totalram_pages) {
+-		pr_err("microcode: too much data (max %ld pages)\n", totalram_pages);
++		pr_err("too much data (max %ld pages)\n", totalram_pages);
+ 		return ret;
+ 	}
+ 
+@@ -244,7 +247,7 @@ static int __init microcode_dev_init(void)
+ 
+ 	error = misc_register(&microcode_dev);
+ 	if (error) {
+-		pr_err("microcode: can't misc_register on minor=%d\n", MICROCODE_MINOR);
++		pr_err("can't misc_register on minor=%d\n", MICROCODE_MINOR);
+ 		return error;
+ 	}
+ 
+@@ -359,7 +362,7 @@ static enum ucode_state microcode_resume_cpu(int cpu)
+ 	if (!uci->mc)
+ 		return UCODE_NFOUND;
+ 
+-	pr_debug("microcode: CPU%d updated upon resume\n", cpu);
++	pr_debug("CPU%d updated upon resume\n", cpu);
+ 	apply_microcode_on_target(cpu);
+ 
+ 	return UCODE_OK;
+@@ -379,7 +382,7 @@ static enum ucode_state microcode_init_cpu(int cpu)
+ 	ustate = microcode_ops->request_microcode_fw(cpu, &microcode_pdev->dev);
+ 
+ 	if (ustate == UCODE_OK) {
+-		pr_debug("microcode: CPU%d updated upon init\n", cpu);
++		pr_debug("CPU%d updated upon init\n", cpu);
+ 		apply_microcode_on_target(cpu);
+ 	}
+ 
+@@ -406,7 +409,7 @@ static int mc_sysdev_add(struct sys_device *sys_dev)
+ 	if (!cpu_online(cpu))
+ 		return 0;
+ 
+-	pr_debug("microcode: CPU%d added\n", cpu);
++	pr_debug("CPU%d added\n", cpu);
+ 
+ 	err = sysfs_create_group(&sys_dev->kobj, &mc_attr_group);
+ 	if (err)
+@@ -425,7 +428,7 @@ static int mc_sysdev_remove(struct sys_device *sys_dev)
+ 	if (!cpu_online(cpu))
+ 		return 0;
+ 
+-	pr_debug("microcode: CPU%d removed\n", cpu);
++	pr_debug("CPU%d removed\n", cpu);
+ 	microcode_fini_cpu(cpu);
+ 	sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
+ 	return 0;
+@@ -473,15 +476,15 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
+ 		microcode_update_cpu(cpu);
+ 	case CPU_DOWN_FAILED:
+ 	case CPU_DOWN_FAILED_FROZEN:
+-		pr_debug("microcode: CPU%d added\n", cpu);
++		pr_debug("CPU%d added\n", cpu);
+ 		if (sysfs_create_group(&sys_dev->kobj, &mc_attr_group))
+-			pr_err("microcode: Failed to create group for CPU%d\n", cpu);
++			pr_err("Failed to create group for CPU%d\n", cpu);
+ 		break;
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
+ 		/* Suspend is in progress, only remove the interface */
+ 		sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
+-		pr_debug("microcode: CPU%d removed\n", cpu);
++		pr_debug("CPU%d removed\n", cpu);
+ 		break;
+ 	case CPU_DEAD:
+ 	case CPU_UP_CANCELED_FROZEN:
+@@ -507,7 +510,7 @@ static int __init microcode_init(void)
+ 		microcode_ops = init_amd_microcode();
+ 
+ 	if (!microcode_ops) {
+-		pr_err("microcode: no support for this CPU vendor\n");
++		pr_err("no support for this CPU vendor\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -541,8 +544,7 @@ static int __init microcode_init(void)
+ 	register_hotcpu_notifier(&mc_cpu_notifier);
+ 
+ 	pr_info("Microcode Update Driver: v" MICROCODE_VERSION
+-	       " <tigran@aivazian.fsnet.co.uk>,"
+-	       " Peter Oruba\n");
++		" <tigran@aivazian.fsnet.co.uk>, Peter Oruba\n");
+ 
+ 	return 0;
+ }
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index 0d334dd..ebd193e 100644
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -70,6 +70,9 @@
+  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
+  *		Thanks to Stuart Swales for pointing out this bug.
+  */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/firmware.h>
+ #include <linux/uaccess.h>
+ #include <linux/kernel.h>
+@@ -146,8 +149,7 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
+ 
+ 	if (c->x86_vendor != X86_VENDOR_INTEL || c->x86 < 6 ||
+ 	    cpu_has(c, X86_FEATURE_IA64)) {
+-		printk(KERN_ERR "microcode: CPU%d not a capable Intel "
+-			"processor\n", cpu_num);
++		pr_err("CPU%d not a capable Intel processor\n", cpu_num);
+ 		return -1;
+ 	}
+ 
+@@ -165,8 +167,8 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
+ 	/* get the current revision from MSR 0x8B */
+ 	rdmsr(MSR_IA32_UCODE_REV, val[0], csig->rev);
+ 
+-	printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
+-			cpu_num, csig->sig, csig->pf, csig->rev);
++	pr_info("CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
++		cpu_num, csig->sig, csig->pf, csig->rev);
+ 
+ 	return 0;
+ }
+@@ -194,28 +196,24 @@ static int microcode_sanity_check(void *mc)
+ 	data_size = get_datasize(mc_header);
+ 
+ 	if (data_size + MC_HEADER_SIZE > total_size) {
+-		printk(KERN_ERR "microcode: error! "
+-				"Bad data size in microcode data file\n");
++		pr_err("error! Bad data size in microcode data file\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (mc_header->ldrver != 1 || mc_header->hdrver != 1) {
+-		printk(KERN_ERR "microcode: error! "
+-				"Unknown microcode update format\n");
++		pr_err("error! Unknown microcode update format\n");
+ 		return -EINVAL;
+ 	}
+ 	ext_table_size = total_size - (MC_HEADER_SIZE + data_size);
+ 	if (ext_table_size) {
+ 		if ((ext_table_size < EXT_HEADER_SIZE)
+ 		 || ((ext_table_size - EXT_HEADER_SIZE) % EXT_SIGNATURE_SIZE)) {
+-			printk(KERN_ERR "microcode: error! "
+-				"Small exttable size in microcode data file\n");
++			pr_err("error! Small exttable size in microcode data file\n");
+ 			return -EINVAL;
+ 		}
+ 		ext_header = mc + MC_HEADER_SIZE + data_size;
+ 		if (ext_table_size != exttable_size(ext_header)) {
+-			printk(KERN_ERR "microcode: error! "
+-				"Bad exttable size in microcode data file\n");
++			pr_err("error! Bad exttable size in microcode data file\n");
+ 			return -EFAULT;
+ 		}
+ 		ext_sigcount = ext_header->count;
+@@ -230,8 +228,7 @@ static int microcode_sanity_check(void *mc)
+ 		while (i--)
+ 			ext_table_sum += ext_tablep[i];
+ 		if (ext_table_sum) {
+-			printk(KERN_WARNING "microcode: aborting, "
+-				"bad extended signature table checksum\n");
++			pr_warning("aborting, bad extended signature table checksum\n");
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -242,7 +239,7 @@ static int microcode_sanity_check(void *mc)
+ 	while (i--)
+ 		orig_sum += ((int *)mc)[i];
+ 	if (orig_sum) {
+-		printk(KERN_ERR "microcode: aborting, bad checksum\n");
++		pr_err("aborting, bad checksum\n");
+ 		return -EINVAL;
+ 	}
+ 	if (!ext_table_size)
+@@ -255,7 +252,7 @@ static int microcode_sanity_check(void *mc)
+ 			- (mc_header->sig + mc_header->pf + mc_header->cksum)
+ 			+ (ext_sig->sig + ext_sig->pf + ext_sig->cksum);
+ 		if (sum) {
+-			printk(KERN_ERR "microcode: aborting, bad checksum\n");
++			pr_err("aborting, bad checksum\n");
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -327,13 +324,11 @@ static int apply_microcode(int cpu)
+ 	rdmsr(MSR_IA32_UCODE_REV, val[0], val[1]);
+ 
+ 	if (val[1] != mc_intel->hdr.rev) {
+-		printk(KERN_ERR "microcode: CPU%d update "
+-				"to revision 0x%x failed\n",
+-			cpu_num, mc_intel->hdr.rev);
++		pr_err("CPU%d update to revision 0x%x failed\n",
++		       cpu_num, mc_intel->hdr.rev);
+ 		return -1;
+ 	}
+-	printk(KERN_INFO "microcode: CPU%d updated to revision "
+-			 "0x%x, date = %04x-%02x-%02x \n",
++	pr_info("CPU%d updated to revision 0x%x, date = %04x-%02x-%02x \n",
+ 		cpu_num, val[1],
+ 		mc_intel->hdr.date & 0xffff,
+ 		mc_intel->hdr.date >> 24,
+@@ -362,8 +357,7 @@ static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
+ 
+ 		mc_size = get_totalsize(&mc_header);
+ 		if (!mc_size || mc_size > leftover) {
+-			printk(KERN_ERR "microcode: error!"
+-					"Bad data in microcode data file\n");
++			pr_err("error! Bad data in microcode data file\n");
+ 			break;
+ 		}
+ 
+@@ -405,9 +399,8 @@ static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
+ 		vfree(uci->mc);
+ 	uci->mc = (struct microcode_intel *)new_mc;
+ 
+-	pr_debug("microcode: CPU%d found a matching microcode update with"
+-		 " version 0x%x (current=0x%x)\n",
+-			cpu, new_rev, uci->cpu_sig.rev);
++	pr_debug("CPU%d found a matching microcode update with version 0x%x (current=0x%x)\n",
++		 cpu, new_rev, uci->cpu_sig.rev);
+ out:
+ 	return state;
+ }
+@@ -429,7 +422,7 @@ static enum ucode_state request_microcode_fw(int cpu, struct device *device)
+ 		c->x86, c->x86_model, c->x86_mask);
+ 
+ 	if (request_firmware(&firmware, name, device)) {
+-		pr_debug("microcode: data file %s load failed\n", name);
++		pr_debug("data file %s load failed\n", name);
+ 		return UCODE_NFOUND;
+ 	}
+ 
