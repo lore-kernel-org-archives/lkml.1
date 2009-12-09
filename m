@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZLIF5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZLIF4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbZLIF5A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 00:57:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbZLIF45
+	id S1753955AbZLIF4t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 00:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbZLIF4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 00:56:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44113 "EHLO mx3.mail.elte.hu"
+	Wed, 9 Dec 2009 00:56:46 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38341 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754086AbZLIF44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 00:56:56 -0500
-Date: Wed, 9 Dec 2009 06:56:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Carsten Emde <Carsten.Emde@osadl.org>,
-       Olof Johansson <olof@lixom.net>, hpa@zytor.com, tglx@linutronix.de
-Subject: Re: [PATCH][GIT PULL][v2.6.33] tracing: Remove comparing of NULL to
- va_list in trace_array_vprintk()
-Message-ID: <20091209055602.GB2512@elte.hu>
-References: <4B01AE5D.1010801@osadl.org>
- <tip-c13d2f7c3231e873f30db92b96c8caa48f100f33@git.kernel.org>
- <20091206051352.GA4628@lixom.net>
- <4B1BAB74.104@osadl.org>
- <1260332397.2146.38.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260332397.2146.38.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1751317AbZLIF4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 00:56:45 -0500
+Date: Wed, 9 Dec 2009 16:56:46 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: linux-next: staging tree build failure
+Message-Id: <20091209165646.41b9ce8a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__9_Dec_2009_16_56_46_+1100_5QP5zI3ZS5/QwUvd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__9_Dec_2009_16_56_46_+1100_5QP5zI3ZS5/QwUvd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Hi Greg,
 
-> Hi Ingo,
-> 
-> This is an urgent fix that fixes a ARM build breakage. It is based on
-> the last pull request I had that fixes the function graph tracer output.
-> 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/core2 tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/core2
-> 
-> 
-> Carsten Emde (1):
->       tracing: Remove comparing of NULL to va_list in trace_array_vprintk()
-> 
-> ----
->  kernel/trace/trace.c |   18 ++++++++++++------
->  1 files changed, 12 insertions(+), 6 deletions(-)
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-Pulled, thanks Steve!
+drivers/net/usb/kaweth.c: In function 'kaweth_open':
+drivers/net/usb/kaweth.c:719: error: implicit declaration of function 'usb_=
+autopm_enable'
 
-	Ingo
+Caused by commit b3f937e6ddf3e60ed9b4c26349b7b171dffdd010 ("USB: prepare
+for changover to Runtime PM framework").
+
+I have reverted that commit for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__9_Dec_2009_16_56_46_+1100_5QP5zI3ZS5/QwUvd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksfPB4ACgkQjjKRsyhoI8zBHQCgj4mBPNx8aH5MRFmZDonLlmqa
+OOEAmwQOVrU42FHRlIFLylCnJ8hffygC
+=1QoI
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Dec_2009_16_56_46_+1100_5QP5zI3ZS5/QwUvd--
