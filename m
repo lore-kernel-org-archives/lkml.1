@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZLIT0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbZLIT0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578AbZLIT0A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbZLITZ5
+	id S1757543AbZLIT0W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbZLIT0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:25:57 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:54119 "EHLO mgw2.diku.dk"
+	Wed, 9 Dec 2009 14:26:17 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:54126 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757371AbZLITZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:25:55 -0500
-Date: Wed, 9 Dec 2009 20:25:59 +0100 (CET)
+	id S1757493AbZLIT0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:26:13 -0500
+Date: Wed, 9 Dec 2009 20:26:18 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: "John W. Linville" <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "David S. Miller" <davem@davemloft.net>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 11/12] net/mac80211: Correct size given to memset
-Message-ID: <Pine.LNX.4.64.0912092025240.1870@ask.diku.dk>
+Subject: [PATCH 12/12] tools/perf: Correct size given to memset
+Message-ID: <Pine.LNX.4.64.0912092026000.1870@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -46,18 +44,31 @@ memset(x, E, sizeof(
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- net/mac80211/mesh.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/perf/util/probe-event.c       |    2 +-
+ tools/perf/util/trace-event-parse.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -u -p a/net/mac80211/mesh.c b/Net/mac80211/mesh.c
---- a/net/mac80211/mesh.c
-+++ b/net/mac80211/mesh.c
-@@ -427,7 +427,7 @@ int ieee80211_new_mesh_header(struct iee
- 		char *addr5, char *addr6)
- {
- 	int aelen = 0;
--	memset(meshhdr, 0, sizeof(meshhdr));
-+	memset(meshhdr, 0, sizeof(*meshhdr));
- 	meshhdr->ttl = sdata->u.mesh.mshcfg.dot11MeshTTL;
- 	put_unaligned(cpu_to_le32(sdata->u.mesh.mesh_seqnum), &meshhdr->seqnum);
- 	sdata->u.mesh.mesh_seqnum++;
+diff -u -p a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -376,7 +376,7 @@ static void clear_probe_point(struct pro
+ 		free(pp->args);
+ 	for (i = 0; i < pp->found; i++)
+ 		free(pp->probes[i]);
+-	memset(pp, 0, sizeof(pp));
++	memset(pp, 0, sizeof(*pp));
+ }
+ 
+ /* List up current perf-probe events */
+diff -u -p a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+--- a/tools/perf/util/trace-event-parse.c
++++ b/tools/perf/util/trace-event-parse.c
+@@ -1477,7 +1477,7 @@ process_fields(struct event *event, stru
+ 			goto out_free;
+ 
+ 		field = malloc_or_die(sizeof(*field));
+-		memset(field, 0, sizeof(field));
++		memset(field, 0, sizeof(*field));
+ 
+ 		value = arg_eval(arg);
+ 		field->value = strdup(value);
