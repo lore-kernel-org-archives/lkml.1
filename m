@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbZLIX5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbZLIX7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758822AbZLIX5G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 18:57:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbZLIX46
+	id S1758885AbZLIX7R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 18:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbZLIX7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 18:56:58 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:35668 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758706AbZLIX46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 18:56:58 -0500
-Date: Thu, 10 Dec 2009 10:57:03 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: linux-next: origin tree build failure
-Message-Id: <20091210105703.3e62245d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Dec 2009 18:59:14 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:26800 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758862AbZLIX7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 18:59:12 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-AV: E=Sophos;i="4.47,371,1257120000"; 
+   d="scan'208";a="447352004"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: jirislaby@gmail.com, mingo@elte.hu, nhorman@tuxdriver.com,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, torvalds@linux-foundation.org,
+       oleg@redhat.com, James Morris <jmorris@namei.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
+       Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org
+Subject: Re: [PATCH v3 23/27] misc: use helpers for rlimits
+References: <1259363167-9347-1-git-send-email-jslaby@suse.cz>
+	<1259363167-9347-23-git-send-email-jslaby@suse.cz>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 09 Dec 2009 15:59:18 -0800
+In-Reply-To: <1259363167-9347-23-git-send-email-jslaby@suse.cz> (Jiri Slaby's
+	message of "Sat, 28 Nov 2009 00:06:03 +0100")
+Message-ID: <adapr6nog15.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Dec 2009 23:59:18.0354 (UTC) FILETIME=[9E84D320:01CA792B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Not sure it matters at this part, but for the drivers/infiniband part,
+you can add:
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+Acked-by: Roland Dreier <rolandd@cisco.com>
 
-drivers/char/nvram.c: In function 'nvram_open':
-drivers/char/nvram.c:332: error: implicit declaration of function 'lock_kernel'
-drivers/char/nvram.c:339: error: implicit declaration of function 'unlock_kernel'
+wrapping all the current->signal->rlim[] stuff in a helper function
+looks like a nice cleanup independent of the writable limit stuff.
 
-Caused by commit 9e8ab74ddaa591575f599248080a1f0d917a56ee ("nvram: Drop
-the bkl from non-generic nvram_llseek()").
-
-I do wonder why I never saw this commit in linux-next ...
-
-I have added this the patch you posted to lkml:
-
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Date: Wed, 9 Dec 2009 18:31:53 +0100
-Subject: [PATCH] nvram: Fix missing smp_lock.h in nvram
-
-The bkl has been removed from nvram_llseek() and smp_lock.h was
-removed because another patch in the same tree zapped the remaining
-usage of bkl in the same file. But this patch must have been excluded
-later, then we still need the smp_lock.h headers for the bkl use
-in nvram_open().
-
-This fixes the following build error:
-
-drivers/char/nvram.c: In function _nvram_open_:
-drivers/char/nvram.c:332: erreur: implicit declaration of function _lock_kernel_
-drivers/char/nvram.c:339: erreur: implicit declaration of function
-_unlock_kernel_
-make[2]: *** [drivers/char/nvram.o] Erreur 1
-make[1]: *** [drivers/char] Erreur 2
-make: *** [drivers] Erreur 2
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- drivers/char/nvram.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-index 2100a8f..4008e2c 100644
---- a/drivers/char/nvram.c
-+++ b/drivers/char/nvram.c
-@@ -110,6 +110,7 @@
- #include <linux/spinlock.h>
- #include <linux/io.h>
- #include <linux/uaccess.h>
-+#include <linux/smp_lock.h>
-
- #include <asm/system.h>
-
--- 
-1.6.2.3
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ - R.
