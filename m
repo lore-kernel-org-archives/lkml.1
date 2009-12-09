@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965610AbZLIHQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbZLIHRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965610AbZLIHQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 02:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965003AbZLIHQi
+	id S1757257AbZLIHRU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 02:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757144AbZLIHRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 02:16:38 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50527 "EHLO song.cn.fujitsu.com"
+	Wed, 9 Dec 2009 02:17:17 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63050 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S965045AbZLIHQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 02:16:34 -0500
-Message-ID: <4B1F4EAB.9020403@cn.fujitsu.com>
-Date: Wed, 09 Dec 2009 15:15:55 +0800
+	id S1757047AbZLIHQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 02:16:40 -0500
+Message-ID: <4B1F4EB0.7080406@cn.fujitsu.com>
+Date: Wed, 09 Dec 2009 15:16:00 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -18,108 +18,84 @@ To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Masami Hiramatsu <mhiramat@redhat.com>, Jason Baron <jbaron@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 08/10] trace_kprobe: init print_fmt
+Subject: [PATCH 09/10] use defined fields and print_fmt to print formats
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Init print_fmt for trace_kprobe.
-It will be used for replacing ->show_format().
+It seems that ftrace_format_##call() and ftrace_define_fields_##call()
+are duplicate more or less.
+
+trace_define_field() defines fields and links them into
+strcut ftrace_event_call. We reuse them to print formats
+and remove ftrace_format_##call(). It make all things simpler.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 3ef66d4..a12d39b 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -1212,6 +1212,55 @@ static int kretprobe_event_show_format(struct ftrace_event_call *call,
- 					 ", REC->" FIELD_STRING_RETIP);
- }
- 
-+static int __set_print_fmt(struct trace_probe *tp, char *buf, int len)
-+{
-+	int i;
-+	int pos = 0;
-+
-+	const char *fmt, *arg;
-+
-+	if (!probe_is_return(tp)) {
-+		fmt = "(%lx)";
-+		arg = "REC->" FIELD_STRING_IP;
-+	} else {
-+		fmt = "(%lx <- %lx)";
-+		arg = "REC->" FIELD_STRING_FUNC ", REC->" FIELD_STRING_RETIP;
-+	}
-+
-+	pos += snprintf(buf + pos, len > pos ? len - pos : 0, "\"%s", fmt);
-+
-+	for (i = 0; i < tp->nr_args; i++) {
-+		pos += snprintf(buf + pos, len > pos ? len - pos : 0,
-+				" %s=%%lx", tp->args[i].name);
-+	}
-+
-+	pos += snprintf(buf + pos, len > pos ? len - pos : 0, "\", %s", arg);
-+
-+	for (i = 0; i < tp->nr_args; i++) {
-+		pos += snprintf(buf + pos, len > pos ? len - pos : 0,
-+				", REC->%s", tp->args[i].name);
-+	}
-+
-+	/* return the length of print_fmt */
-+	return pos;
-+}
-+
-+static int set_print_fmt(struct trace_probe *tp)
-+{
-+	int len;
-+	char *print_fmt;
-+
-+	len = __set_print_fmt(tp, NULL, 0);
-+	print_fmt = kmalloc(len + 1, GFP_KERNEL);
-+	if (!print_fmt)
-+		return -ENOMEM;
-+
-+	__set_print_fmt(tp, print_fmt, len + 1);
-+	tp->call.print_fmt = print_fmt;
-+
-+	return 0;
-+}
-+
- #ifdef CONFIG_EVENT_PROFILE
- 
- /* Kprobe profile handler */
-@@ -1418,10 +1467,14 @@ static int register_probe_event(struct trace_probe *tp)
- 		call->show_format = kprobe_event_show_format;
- 		call->define_fields = kprobe_event_define_fields;
- 	}
-+	if (set_print_fmt(tp) < 0)
-+		return -ENOMEM;
- 	call->event = &tp->event;
- 	call->id = register_ftrace_event(&tp->event);
--	if (!call->id)
-+	if (!call->id) {
-+		kfree(call->print_fmt);
- 		return -ENODEV;
-+	}
- 	call->enabled = 0;
- 	call->regfunc = probe_event_enable;
- 	call->unregfunc = probe_event_disable;
-@@ -1435,6 +1488,7 @@ static int register_probe_event(struct trace_probe *tp)
- 	ret = trace_add_event_call(call);
- 	if (ret) {
- 		pr_info("Failed to register kprobe event: %s\n", call->name);
-+		kfree(call->print_fmt);
- 		unregister_ftrace_event(&tp->event);
- 	}
- 	return ret;
-@@ -1444,6 +1498,7 @@ static void unregister_probe_event(struct trace_probe *tp)
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index bf2f1b9..d12e75c 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -551,9 +551,11 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 		  loff_t *ppos)
  {
- 	/* tp->event is unregistered in trace_remove_event_call() */
- 	trace_remove_event_call(&tp->call);
-+	kfree(tp->call.print_fmt);
- }
+ 	struct ftrace_event_call *call = filp->private_data;
++	struct ftrace_event_field *field;
+ 	struct trace_seq *s;
++	int common_field_count = 5;
+ 	char *buf;
+-	int r;
++	int r = 0;
  
- /* Make a debugfs interface for controling probe points */
+ 	if (*ppos)
+ 		return 0;
+@@ -564,14 +566,42 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 
+ 	trace_seq_init(s);
+ 
+-	/* If any of the first writes fail, so will the show_format. */
+-
+ 	trace_seq_printf(s, "name: %s\n", call->name);
+ 	trace_seq_printf(s, "ID: %d\n", call->id);
+ 	trace_seq_printf(s, "format:\n");
+-	trace_write_header(s);
+ 
+-	r = call->show_format(call, s);
++	list_for_each_entry_reverse(field, &call->fields, link) {
++		const char *array_descriptor = strchr(field->type, '[');
++
++		if (!strncmp(field->type, "__data_loc", 10))
++			array_descriptor = NULL;
++
++		if (!array_descriptor) {
++			r = trace_seq_printf(s, "\tfield:%s %s;\toffset:%u;"
++					"\tsize:%u;\tsigned:%d;\n",
++					field->type, field->name, field->offset,
++					field->size, !!field->is_signed);
++		} else {
++			r = trace_seq_printf(s, "\tfield:%.*s %s%s;\toffset:%u;"
++					"\tsize:%u;\tsigned:%d;\n",
++					array_descriptor - field->type,
++					field->type, field->name,
++					array_descriptor, field->offset,
++					field->size, !!field->is_signed);
++		}
++
++		if (--common_field_count == 0)
++			r = trace_seq_printf(s, "\n");
++
++		if (!r)
++			break;
++	}
++
++	if (r) {
++		r = trace_seq_printf(s, "\nprint fmt: %s\n",
++				call->print_fmt);
++	}
++
+ 	if (!r) {
+ 		/*
+ 		 * ug!  The format output is bigger than a PAGE!!
 
