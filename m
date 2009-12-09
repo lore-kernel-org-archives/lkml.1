@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZLIQCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbZLIQCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756041AbZLIQCV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 11:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZLIQCU
+	id S1756152AbZLIQCx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 11:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZLIQCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 11:02:20 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:37956 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752620AbZLIQCT (ORCPT
+	Wed, 9 Dec 2009 11:02:52 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:56172 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752620AbZLIQCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 11:02:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=GxFQ4HHOjvOjKjD3q5ul7JJBu2iD61Fel4z3tnmJnPU2/8R502HI5ejV1jpygQNBbF
-         sswpbu5uC7S5/YVa4bZug0nl/5qfM/MzJgdER6t2HE39qp2ZBKT4VQ+FDd5scJuUQMIY
-         GWpXKqWWP4QHiKU8PNkuz37orD7Qd1jgHsmLc=
+	Wed, 9 Dec 2009 11:02:51 -0500
+Date: Wed, 9 Dec 2009 16:02:56 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Rui <rui.zhang@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+Message-ID: <20091209160256.GA3229@rakim.wolfsonmicro.main>
+References: <20091209133829.GF9018@sirena.org.uk>
+ <Pine.LNX.4.44L0.0912091044340.4120-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Date: Wed, 9 Dec 2009 18:02:25 +0200
-Message-ID: <82cfbe860912090802q34b6aa84yc69b32bb7b0c435f@mail.gmail.com>
-Subject: CPUfreq deosn't change the current frequency
-From: tarek attia <tarek.m.attia@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0912091044340.4120-100000@iolanthe.rowland.org>
+X-Cookie: Ignore previous fortune.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, Dec 09, 2009 at 10:49:56AM -0500, Alan Stern wrote:
+> On Wed, 9 Dec 2009, Mark Brown wrote:
 
-CPUfreq doesn't work,,I downloaded the PM Linux kernel ,and enabled
-the CPUFREQ driver before compilation .
+> > There's some potential for this in embedded audio - it wants to bring
+> > down the entire embedded audio subsystem at once before the individual
+> > devices (and their parents) get suspended since bringing them down out
 
-However every writting in the scaling_setspeed doesn't get any
-return,,doesn't change the frequency however without errors .
+> For something like bringing down the entire embedded audio subsystem, 
+> which isn't directly tied to a single device, you would probably be 
+> better off doing it when the PM core broadcasts a suspend notification
+> (see register_pm_notifier() in include/linux/suspend.h).  This occurs 
+> before any devices are suspended, so synchronization isn't an issue.
 
-Any Idea??
+I'm not convinced that helps with the fact that the suspend may take a
+long time - ideally we'd be able to start the suspend process off but
+let other things carry on while it completes without having to worry
+about something we're relying on getting suspended underneath us.
 
--- 
-tarek
+> > Embedded audio does potentially - the resume needs all the individual
+> > overall resume time.  Currently we get away with a combination of
+
+> You can do the same thing with the resume notifier.
+
+Similarly, the length of time the resume may take to complete means it'd
+be nice to start as soon as we've got the devices and complete it at our
+leisure.  This is less pressing since we can tell the PM core we've
+resumed but still block userspace.
