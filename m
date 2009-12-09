@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbZLIFvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbZLIFv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751955AbZLIFvg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 00:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbZLIFvf
+	id S1753528AbZLIFv6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 00:51:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZLIFv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 00:51:35 -0500
-Received: from RELAY.ANDREW.CMU.EDU ([128.2.10.212]:49679 "EHLO
-	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750804AbZLIFvf (ORCPT
+	Wed, 9 Dec 2009 00:51:56 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50366 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbZLIFvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 00:51:35 -0500
-Date: Wed, 9 Dec 2009 00:50:16 -0500
-From: Ben Blum <bblum@andrew.cmu.edu>
+	Wed, 9 Dec 2009 00:51:55 -0500
+X-Authority-Analysis: v=1.0 c=1 a=EJ3mDL9EkcAA:10 a=7U3hwN5JcxgA:10 a=KV5Y6eEFBC5jRWrvKVEA:9 a=a8aXp20dvJW_DNFF_w6w17WBmdsA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 05/13] ftrace: Call trace_parser_clear() properly
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
 To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, menage@google.com, bblum@andrew.cmu.edu
-Subject: Re: [RFC] [PATCH 1/5] cgroups: revamp subsys array
-Message-ID: <20091209055016.GA12342@andrew.cmu.edu>
-Mail-Followup-To: Li Zefan <lizf@cn.fujitsu.com>,
-	linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-	akpm@linux-foundation.org, menage@google.com
-References: <20091204085349.GA18867@andrew.cmu.edu> <20091204085508.GA18912@andrew.cmu.edu> <4B1E0283.70108@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1E0283.70108@cn.fujitsu.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B1DC4D2.3000406@cn.fujitsu.com>
+References: <4B1DC476.3030700@cn.fujitsu.com>
+	 <4B1DC4D2.3000406@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 09 Dec 2009 00:52:00 -0500
+Message-ID: <1260337920.2146.66.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 03:38:43PM +0800, Li Zefan wrote:
-> > @@ -1291,6 +1324,7 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
-> >  	struct cgroupfs_root *new_root;
-> >  
-> >  	/* First find the desired set of subsystems */
-> > +	down_read(&subsys_mutex);
+On Tue, 2009-12-08 at 11:15 +0800, Li Zefan wrote:
+> I found a weird behavior:
 > 
-> Hmm.. this can lead to deadlock. sget() returns success with sb->s_umount
-> held, so here we have:
+>   # echo 'fuse:*' > set_ftrace_filter
+>   bash: echo: write error: Invalid argument
+>   # cat set_ftrace_filter
+>   fuse_dev_fasync
+>   fuse_dev_poll
+>   fuse_copy_do
 > 
-> 	down_read(&subsys_mutex);
-> 
-> 	down_write(&sb->s_umount);
-> 
-> On the other hand, sb->s_umount is held before calling kill_sb(),
-> so when umounting we have:
-> 
-> 	down_write(&sb->s_umount);
-> 
-> 	down_read(&subsys_mutex);
+> We should call trace_parser_clear() no matter ftrace_process_regex()
+> returns 0 or -errno.
 
-Unless I'm gravely mistaken, you can't have deadlock on an rwsem when
-it's being taken for reading in both cases? You would have to have at
-least one of the cases being down_write.
+This confused me at first. I applied this patch and I saw that I still
+got the warning, but the functions did not got through. Then I realized
+that there was no ":mod:" in that filtering.
 
-In fairness to readability, perhaps subsys_mutex should instead be
-subsys_rwsem? It seemed to me to be that calling it "mutex" was
-conventional anyway.
+Yeah, that was a weird side effect. Good catch!
 
--- bblum
+-- Steve
+
+
