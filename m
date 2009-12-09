@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbZLIWij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbZLIWlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758398AbZLIWij (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 17:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758306AbZLIWid
+	id S1758524AbZLIWlV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 17:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758506AbZLIWlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 17:38:33 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:35257 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758195AbZLIWid (ORCPT
+	Wed, 9 Dec 2009 17:41:14 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:32354
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758404AbZLIWlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 17:38:33 -0500
-Date: Wed, 9 Dec 2009 17:38:39 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ rwsems (was: Re: [GIT PULL] PM
- updates for 2.6.33)
-In-Reply-To: <200912092318.24475.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	Wed, 9 Dec 2009 17:41:08 -0500
+X-SpamScore: -12
+X-BigFish: VPS-12(zzzz1202hzz5eeeTz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B202753.4010108@am.sony.com>
+Date: Wed, 9 Dec 2009 14:40:19 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/4] ftrace - Add function duration tracer to ftrace
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Dec 2009 22:40:20.0700 (UTC) FILETIME=[96A831C0:01CA7920]
+X-SEL-encryption-scan: scanned
+X-Reverse-DNS: mail8.fw-sd.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Dec 2009, Rafael J. Wysocki wrote:
+I've created a new tracer, called the "function duration" tracer,
+which is derived from the existing function graph tracer.  The
+new feature of this tracer, relative to the function graph tracer,
+is that it allows filtering by duration.
 
-> On Wednesday 09 December 2009, Alan Stern wrote:
-> > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
-> > 
-> > > For completness, below is the full async suspend/resume patch with rwlocks,
-> > > that has been (very slightly) tested and doesn't seem to break things.
-> > > 
-> > > [Note to Alan: lockdep doesn't seem to complain about the not annotated nested
-> > > locks.]
-> > 
-> > I can't imagine why not.  And wouldn't lockdep get confused by the fact
-> > that in the async case, the rwsems are released by a different process
-> > from the one that acquired them?
-> 
-> /me looks at the .config
-> 
-> I have CONFIG_LOCKDEP_SUPPORT set, is there anything else I need to set
-> in .config?
+The rationale for creating a separate tracer is that some of the
+optimizations used for the duration tracer were incompatible with
+the function graph tracer.  Specifically, I avoid superfluous
+calls to the ring_buffer code, avoiding substantial overhead
+penalties.  Also, this tracer is more suitable for use at
+bootup time (I have a set of patches pending which adds support
+for that, on ARM).
 
-How about CONFIG_PROVE_LOCKING?  If lockdep really does start 
-complaining then switching to completions would be a simple way to 
-appease it.
+The output format for the tracer is amenable to grep-ing.
+That is, the duration is on the same line as the function name.
 
-> > > @@ -683,10 +835,12 @@ static int dpm_suspend(pm_message_t stat
-> > >  
-> > >  	INIT_LIST_HEAD(&list);
-> > >  	mutex_lock(&dpm_list_mtx);
-> > > +	pm_transition = state;
-> > >  	while (!list_empty(&dpm_list)) {
-> > >  		struct device *dev = to_device(dpm_list.prev);
-> > >  
-> > >  		get_device(dev);
-> > > +		dev->power.status = DPM_OFF;
-> > 
-> > What's that for?  dev->power.status is supposed to be DPM_SUSPENDING 
-> > until the suspend method is successfully completed.
-> 
-> If the suspend is run asynchronoysly, the main thread will always get a
-> "success" from device_suspend(), so it can't change power.status on this
-> basis.  I thought we could set power.status to DPM_OFF upfront and change
-> it back when error is returned.
-> 
-> The alternative would be to move the modification of power.status to
-> device_suspend() and async_suspend().  Well, maybe that's better.
+For details about this, see my presentation from the Japan Linux
+Symposium:
+http://elinux.org/images/7/70/Measuring-function-duration-with-ftrace-oct-2009.pdf
 
-Yes, I think so.  Or into __device_suspend().  And the same thing in 
-dpm_suspend_noirq().
+with more information available at the elinux wiki page:
+http://elinux.org/Ftrace_Function_Graph_ARM
 
-> > How about exporting a wait_for_device_to_resume() routine?  Drivers
-> > could call it for non-tree resume constraints:
-> > 
-> > 	void wait_for_device_to_resume(struct device *other)
-> > 	{
-> > 		down_read(&other->power.rwsem);
-> > 		up_read(&other->power.rwsem);
-> > 	}
-> > 
-> > Unfortunately there is no equivalent for non-tree suspend constraints.
-> 
-> If we use completions, it will be possible to just export something like
-> 
-> dpm_wait(dev)
-> {
->         if (dev)
->                 wait_for_completion(dev->power.completion);
-> }
-> 
-> I think.  It appears that will also work for suspend, unless I'm missing
-> something.
+Patches to follow.  Thanks.
+ -- Tim
 
-It will.
-
-Alan Stern
 
