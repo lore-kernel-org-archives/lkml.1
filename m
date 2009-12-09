@@ -1,102 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZLIR4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZLIR5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbZLIR4K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 12:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZLIR4J
+	id S1756324AbZLIR5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 12:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbZLIR5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 12:56:09 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52004 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753617AbZLIR4J (ORCPT
+	Wed, 9 Dec 2009 12:57:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60706 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754136AbZLIR5X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 12:56:09 -0500
-Date: Wed, 9 Dec 2009 18:55:53 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, daniel@caiaq.de,
-       dbrownell@users.sourceforge.net, s.hauer@pengutronix.de,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: + spi-imx-correct-check-for-platform_get_irq-failing.patch
-	added to -mm tree
-Message-ID: <20091209175553.GA25451@pengutronix.de>
-References: <200912082330.nB8NU4IO016215@imap1.linux-foundation.org> <fa686aa40912081638m734e97c3r2c3f412898d293b@mail.gmail.com> <20091209074533.GB8136@pengutronix.de> <fa686aa40912090708g45879802l6cea7b401b1434e3@mail.gmail.com> <20091209153241.GB1389@pengutronix.de>
+	Wed, 9 Dec 2009 12:57:23 -0500
+Date: Wed, 9 Dec 2009 09:57:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates for 2.6.33)
+In-Reply-To: <20091209174537.GJ9018@sirena.org.uk>
+Message-ID: <alpine.LFD.2.00.0912090953200.3560@localhost.localdomain>
+References: <20091209160256.GA3229@rakim.wolfsonmicro.main> <Pine.LNX.4.44L0.0912091117080.4120-100000@iolanthe.rowland.org> <20091209164653.GI9018@sirena.org.uk> <alpine.LFD.2.00.0912090851540.3560@localhost.localdomain>
+ <20091209174537.GJ9018@sirena.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091209153241.GB1389@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 04:32:41PM +0100, Uwe Kleine-König wrote:
-> On Wed, Dec 09, 2009 at 08:08:19AM -0700, Grant Likely wrote:
-> > (resend because I forgot to cc the mailing list)
-> > 
-> > 2009/12/9 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
-> > > Hello Grant,
-> > >
-> > > On Tue, Dec 08, 2009 at 05:38:57PM -0700, Grant Likely wrote:
-> > >> > diff -puN drivers/spi/spi_imx.c~spi-imx-correct-check-for-platform_get_irq-failing drivers/spi/spi_imx.c
-> > >> > --- a/drivers/spi/spi_imx.c~spi-imx-correct-check-for-platform_get_irq-failing
-> > >> > +++ a/drivers/spi/spi_imx.c
-> > >> > @@ -554,7 +554,7 @@ static int __init spi_imx_probe(struct p
-> > >> >        }
-> > >> >
-> > >> >        spi_imx->irq = platform_get_irq(pdev, 0);
-> > >> > -       if (!spi_imx->irq) {
-> > >> > +       if (spi_imx->irq < 0) {
-> > >>
-> > >> This changes the old behaviour.  Is that what you intended?  '<= 0' perhaps?
-> > > Yes, the old check was wrong.  What if the irq to use is 0?  I thought
-> > > the commit log to be understandable.  platform_get_irq returns -ENXIO on
-> > > error and an irq number on success.  So 0 has to be interpreted as valid
-> > > irq, not an error.
-> > 
-> > 0 is not a valid IRQ
-> Hmm, on my x86 I have:
+
+
+On Wed, 9 Dec 2009, Mark Brown wrote:
 > 
-> 	$ grep '\<0:' /proc/interrupts 
-> 	   0:      24330   IO-APIC-edge      timer
-> 
-> arm/davinci starts at 0, too.  As does arm/ns9xxx.  arm/pxa seems to
-> start at 1.  realview starts at 1, too.  So four out of five make are
-> wrong?  Seems like a big area for cleanup.
-I've read a bit and I think the best for a driver writer (i.e. the role
-I have when changing drivers/spi/spi_imx.c) is to accept what
-platform_get_irq returns to me.  If the platform specified 
+> The problem comes when you've got audio outputs referenced to something
+> other than ground which used to happen because no negative supplies were
+> available in these systems.  To bring these up from cold you need to
+> bring the outputs up to the reference level but if you do that by just
+> turning on the power you get an audible (often loud) noise in the output
+> from the square(ish) waveform that results which users don't find
+> acceptable.
 
-	struct resource mydevicesresources[] = {
-		...
-		{
-			.start = 0,
-			.end = 0,
-			.flags = IORESOURCE_IRQ,
-		},
-		...
-	};
+Ouch. A second still sounds way too long - but whatever.
 
-then the best thing to do is to take irq0, isn't it.  So as
-platform_get_irq is implemented as
+However, it sounds like the nice way to do that isn't by doing it 
+synchronously in the suspend/resume code itself, but simply ramping it 
+down (and up) from a timer. It would be asynchronous, but not because the 
+suspend itself is in any way asynchronous.
 
-	int platform_get_irq(struct platform_device *dev, unsigned int num)
-	{
-	        struct resource *r = platform_get_resource(dev, IORESOURCE_IRQ, num);
+Done right, it might even result in a nice volume fade of the sound (ie if 
+the hw allows for it, stop the actual sound engine late on suspend, and 
+start it early on resume, so that sound works _while_ the whole reference 
+volume rampdown/up is going on)
 
-        	return r ? r->start : -ENXIO;
-	}
-
-testing for <0 seems right to me.
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+			Linus
