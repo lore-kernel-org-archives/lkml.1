@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbZLIJ5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZLIJ6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754505AbZLIJ5I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:57:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZLIJ5G
+	id S1754808AbZLIJ6K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:58:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZLIJ6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:57:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45723 "EHLO hera.kernel.org"
+	Wed, 9 Dec 2009 04:58:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45779 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754305AbZLIJ5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:57:01 -0500
-Date: Wed, 9 Dec 2009 09:56:30 GMT
-From: tip-bot for Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+	id S1754649AbZLIJ5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:57:53 -0500
+Date: Wed, 9 Dec 2009 09:56:44 GMT
+From: tip-bot for Andy Isaacson <adi@hexapodia.org>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, ehrhardt@linux.vnet.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
+       hancockrwd@gmail.com, arjan@linux.intel.com, rz@linux-m68k.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
+       adi@hexapodia.org
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, ehrhardt@linux.vnet.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1259579808-11357-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
-References: <1259579808-11357-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
+       arjan@linux.intel.com, hancockrwd@gmail.com, rz@linux-m68k.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
+       adi@hexapodia.org
+In-Reply-To: <20091208082942.GA27174@hexapodia.org>
+References: <20091208082942.GA27174@hexapodia.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Update normalized values on user updates via proc
-Message-ID: <tip-acb4a848da821a095ae9e4d8b22ae2d9633ba5cd@git.kernel.org>
-Git-Commit-ID: acb4a848da821a095ae9e4d8b22ae2d9633ba5cd
+Subject: [tip:x86/urgent] x86: Factor duplicated code out of __show_regs() into show_regs_common()
+Message-ID: <tip-814e2c84a722c45650a9b8f52285d7ba6874f63b@git.kernel.org>
+Git-Commit-ID: 814e2c84a722c45650a9b8f52285d7ba6874f63b
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,163 +33,166 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  acb4a848da821a095ae9e4d8b22ae2d9633ba5cd
-Gitweb:     http://git.kernel.org/tip/acb4a848da821a095ae9e4d8b22ae2d9633ba5cd
-Author:     Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-AuthorDate: Mon, 30 Nov 2009 12:16:48 +0100
+Commit-ID:  814e2c84a722c45650a9b8f52285d7ba6874f63b
+Gitweb:     http://git.kernel.org/tip/814e2c84a722c45650a9b8f52285d7ba6874f63b
+Author:     Andy Isaacson <adi@hexapodia.org>
+AuthorDate: Tue, 8 Dec 2009 00:29:42 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 9 Dec 2009 10:04:02 +0100
+CommitDate: Wed, 9 Dec 2009 10:17:58 +0100
 
-sched: Update normalized values on user updates via proc
+x86: Factor duplicated code out of __show_regs() into show_regs_common()
 
-The normalized values are also recalculated in case the scaling factor
-changes.
+Unify x86_32 and x86_64 implementations of __show_regs() header,
+standardizing on the x86_64 format string in the process. Also,
+32-bit will now call print_modules.
 
-This patch updates the internally used scheduler tuning values that are
-normalized to one cpu in case a user sets new values via sysfs.
-
-Together with patch 2 of this series this allows to let user configured
-values scale (or not) to cpu add/remove events taking place later.
-
-Signed-off-by: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1259579808-11357-4-git-send-email-ehrhardt@linux.vnet.ibm.com>
-[ v2: fix warning ]
+Signed-off-by: Andy Isaacson <adi@hexapodia.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>
+Cc: Richard Zidlicky <rz@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <20091208082942.GA27174@hexapodia.org>
+[ v2: resolved conflict ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched.c      |   12 ++++++++++--
- kernel/sched_fair.c |   11 ++++++++++-
- kernel/sysctl.c     |   14 +++++++++-----
- 3 files changed, 29 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/system.h |    1 +
+ arch/x86/kernel/process.c     |   18 ++++++++++++++++++
+ arch/x86/kernel/process_32.c  |   14 +-------------
+ arch/x86/kernel/process_64.c  |   16 ++--------------
+ 4 files changed, 22 insertions(+), 27 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 116efed..0a60e8e 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1816,6 +1816,7 @@ static void cfs_rq_set_shares(struct cfs_rq *cfs_rq, unsigned long shares)
+diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
+index 022a843..ecb544e 100644
+--- a/arch/x86/include/asm/system.h
++++ b/arch/x86/include/asm/system.h
+@@ -23,6 +23,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ struct tss_struct;
+ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+ 		      struct tss_struct *tss);
++extern void show_regs_common(void);
  
- static void calc_load_account_active(struct rq *this_rq);
- static void update_sysctl(void);
-+static int get_update_sysctl_factor(void);
+ #ifdef CONFIG_X86_32
  
- static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
- {
-@@ -7030,9 +7031,9 @@ cpumask_var_t nohz_cpu_mask;
-  *
-  * This idea comes from the SD scheduler of Con Kolivas:
-  */
--static void update_sysctl(void)
-+static int get_update_sysctl_factor(void)
- {
--	unsigned int cpus = min(num_online_cpus(), 8U);
-+	unsigned int cpus = min(num_online_cpus(), 8);
- 	unsigned int factor;
- 
- 	switch (sysctl_sched_tunable_scaling) {
-@@ -7048,6 +7049,13 @@ static void update_sysctl(void)
- 		break;
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 5e2ba63..90cf125 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -10,6 +10,8 @@
+ #include <linux/clockchips.h>
+ #include <linux/random.h>
+ #include <linux/user-return-notifier.h>
++#include <linux/dmi.h>
++#include <linux/utsname.h>
+ #include <trace/events/power.h>
+ #include <linux/hw_breakpoint.h>
+ #include <asm/system.h>
+@@ -90,6 +92,22 @@ void exit_thread(void)
  	}
+ }
  
-+	return factor;
++void show_regs_common(void)
++{
++	const char *board;
++
++	board = dmi_get_system_info(DMI_PRODUCT_NAME);
++	if (!board)
++		board = "";
++
++	printk("\n");
++	printk(KERN_INFO "Pid: %d, comm: %.20s %s %s %.*s %s\n",
++		current->pid, current->comm, print_tainted(),
++		init_utsname()->release,
++		(int)strcspn(init_utsname()->version, " "),
++		init_utsname()->version, board);
 +}
 +
-+static void update_sysctl(void)
-+{
-+	unsigned int factor = get_update_sysctl_factor();
-+
- #define SET_SYSCTL(name) \
- 	(sysctl_##name = (factor) * normalized_sysctl_##name)
- 	SET_SYSCTL(sched_min_granularity);
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 455106d..804a411 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -399,11 +399,12 @@ static struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq)
-  */
- 
- #ifdef CONFIG_SCHED_DEBUG
--int sched_nr_latency_handler(struct ctl_table *table, int write,
-+int sched_proc_update_handler(struct ctl_table *table, int write,
- 		void __user *buffer, size_t *lenp,
- 		loff_t *ppos)
+ void flush_thread(void)
  {
- 	int ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-+	int factor = get_update_sysctl_factor();
+ 	struct task_struct *tsk = current;
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 075580b..120b887 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -23,7 +23,6 @@
+ #include <linux/vmalloc.h>
+ #include <linux/user.h>
+ #include <linux/interrupt.h>
+-#include <linux/utsname.h>
+ #include <linux/delay.h>
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+@@ -35,7 +34,6 @@
+ #include <linux/tick.h>
+ #include <linux/percpu.h>
+ #include <linux/prctl.h>
+-#include <linux/dmi.h>
+ #include <linux/ftrace.h>
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
+@@ -128,7 +126,6 @@ void __show_regs(struct pt_regs *regs, int all)
+ 	unsigned long d0, d1, d2, d3, d6, d7;
+ 	unsigned long sp;
+ 	unsigned short ss, gs;
+-	const char *board;
  
- 	if (ret || !write)
- 		return ret;
-@@ -411,6 +412,14 @@ int sched_nr_latency_handler(struct ctl_table *table, int write,
- 	sched_nr_latency = DIV_ROUND_UP(sysctl_sched_latency,
- 					sysctl_sched_min_granularity);
+ 	if (user_mode_vm(regs)) {
+ 		sp = regs->sp;
+@@ -140,16 +137,7 @@ void __show_regs(struct pt_regs *regs, int all)
+ 		savesegment(gs, gs);
+ 	}
  
-+#define WRT_SYSCTL(name) \
-+	(normalized_sysctl_##name = sysctl_##name / (factor))
-+	WRT_SYSCTL(sched_min_granularity);
-+	WRT_SYSCTL(sched_latency);
-+	WRT_SYSCTL(sched_wakeup_granularity);
-+	WRT_SYSCTL(sched_shares_ratelimit);
-+#undef WRT_SYSCTL
+-	printk("\n");
+-
+-	board = dmi_get_system_info(DMI_PRODUCT_NAME);
+-	if (!board)
+-		board = "";
+-	printk("Pid: %d, comm: %s %s (%s %.*s) %s\n",
+-			task_pid_nr(current), current->comm,
+-			print_tainted(), init_utsname()->release,
+-			(int)strcspn(init_utsname()->version, " "),
+-			init_utsname()->version, board);
++	show_regs_common();
+ 
+ 	printk("EIP: %04x:[<%08lx>] EFLAGS: %08lx CPU: %d\n",
+ 			(u16)regs->cs, regs->ip, regs->flags,
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index c95c8f4..e5ab0cd 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -26,7 +26,6 @@
+ #include <linux/slab.h>
+ #include <linux/user.h>
+ #include <linux/interrupt.h>
+-#include <linux/utsname.h>
+ #include <linux/delay.h>
+ #include <linux/module.h>
+ #include <linux/ptrace.h>
+@@ -38,7 +37,6 @@
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
+ #include <linux/ftrace.h>
+-#include <linux/dmi.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+@@ -163,18 +161,8 @@ void __show_regs(struct pt_regs *regs, int all)
+ 	unsigned long d0, d1, d2, d3, d6, d7;
+ 	unsigned int fsindex, gsindex;
+ 	unsigned int ds, cs, es;
+-	const char *board;
+-
+-	printk("\n");
+-	print_modules();
+-	board = dmi_get_system_info(DMI_PRODUCT_NAME);
+-	if (!board)
+-		board = "";
+-	printk(KERN_INFO "Pid: %d, comm: %.20s %s %s %.*s %s\n",
+-		current->pid, current->comm, print_tainted(),
+-		init_utsname()->release,
+-		(int)strcspn(init_utsname()->version, " "),
+-		init_utsname()->version, board);
 +
- 	return 0;
- }
- #endif
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index d10406e..b9e5a45 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -253,6 +253,8 @@ static int min_wakeup_granularity_ns;			/* 0 usecs */
- static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
- static int min_sched_tunable_scaling = SCHED_TUNABLESCALING_NONE;
- static int max_sched_tunable_scaling = SCHED_TUNABLESCALING_END-1;
-+static int min_sched_shares_ratelimit = 100000; /* 100 usec */
-+static int max_sched_shares_ratelimit = NSEC_PER_SEC; /* 1 second */
- #endif
- 
- static struct ctl_table kern_table[] = {
-@@ -271,7 +273,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_min_granularity,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &sched_nr_latency_handler,
-+		.proc_handler	= &sched_proc_update_handler,
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &min_sched_granularity_ns,
- 		.extra2		= &max_sched_granularity_ns,
-@@ -282,7 +284,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_latency,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &sched_nr_latency_handler,
-+		.proc_handler	= &sched_proc_update_handler,
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &min_sched_granularity_ns,
- 		.extra2		= &max_sched_granularity_ns,
-@@ -293,7 +295,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_wakeup_granularity,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
-+		.proc_handler	= &sched_proc_update_handler,
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &min_wakeup_granularity_ns,
- 		.extra2		= &max_wakeup_granularity_ns,
-@@ -304,7 +306,9 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_shares_ratelimit,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
-+		.proc_handler	= &sched_proc_update_handler,
-+		.extra1		= &min_sched_shares_ratelimit,
-+		.extra2		= &max_sched_shares_ratelimit,
- 	},
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-@@ -312,7 +316,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_sched_tunable_scaling,
- 		.maxlen		= sizeof(enum sched_tunable_scaling),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
-+		.proc_handler	= &sched_proc_update_handler,
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &min_sched_tunable_scaling,
- 		.extra2		= &max_sched_tunable_scaling,
++	show_regs_common();
+ 	printk(KERN_INFO "RIP: %04lx:[<%016lx>] ", regs->cs & 0xffff, regs->ip);
+ 	printk_address(regs->ip, 1);
+ 	printk(KERN_INFO "RSP: %04lx:%016lx  EFLAGS: %08lx\n", regs->ss,
