@@ -1,249 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbZLISqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbZLISr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757182AbZLISqI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:46:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757138AbZLISpo
+	id S1757168AbZLISr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbZLISru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:45:44 -0500
-Received: from mail.perches.com ([173.55.12.10]:1050 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757056AbZLISpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:45:31 -0500
-From: Joe Perches <joe@perches.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] arch/x86/mm/mmio-mod.c: use pr_fmt
-Date: Wed,  9 Dec 2009 10:45:37 -0800
-Message-Id: <009cb214c45ef932df0242856228f4739cc91408.1260383912.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
-In-Reply-To: <cover.1260383912.git.joe@perches.com>
-References: <20091209072630.GA8187@elte.hu> <cover.1260383912.git.joe@perches.com>
+	Wed, 9 Dec 2009 13:47:50 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:35959 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756932AbZLISrt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 13:47:49 -0500
+Date: Wed, 9 Dec 2009 12:46:24 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Mike Travis <travis@sgi.com>
+cc: tony.luck@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <JBeulich@novell.com>, Tejun Heo <tj@kernel.org>,
+       linux-mm@kvack.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm/vmalloc: don't use vmalloc_end
+In-Reply-To: <4B1FEE5C.1030303@sgi.com>
+Message-ID: <alpine.DEB.2.00.0912091241370.16491@router.home>
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1E1B1B0200007800024345@vpn.id2.novell.com> <alpine.DEB.2.00.0912091128280.16491@router.home> <4B1FE81F.30408@sgi.com> <alpine.DEB.2.00.0912091218060.16491@router.home>
+ <4B1FEE5C.1030303@sgi.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-Remove #define NAME
-Remove NAME from pr_<level>
+On Wed, 9 Dec 2009, Mike Travis wrote:
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- arch/x86/mm/mmio-mod.c |   71 +++++++++++++++++++++++------------------------
- 1 files changed, 35 insertions(+), 36 deletions(-)
+> > Boot with 2.6.32 and see if the per cpu allocator works. Check if there
+> > are any changes to memory consumption. Create a few thousand virtual
+> > ethernet devices and see if the system keels over.
+>
+> Any advice on how to go about the above would be helpful... ;-)
 
-diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
-index 132772a..4c765e9 100644
---- a/arch/x86/mm/mmio-mod.c
-+++ b/arch/x86/mm/mmio-mod.c
-@@ -19,6 +19,9 @@
-  *
-  * Derived from the read-mod example from relay-examples by Tom Zanussi.
-  */
-+
-+#define pr_fmt(fmt) "mmiotrace: "
-+
- #define DEBUG 1
- 
- #include <linux/module.h>
-@@ -36,8 +39,6 @@
- 
- #include "pf_in.h"
- 
--#define NAME "mmiotrace: "
--
- struct trap_reason {
- 	unsigned long addr;
- 	unsigned long ip;
-@@ -96,17 +97,18 @@ static void print_pte(unsigned long address)
- 	pte_t *pte = lookup_address(address, &level);
- 
- 	if (!pte) {
--		pr_err(NAME "Error in %s: no pte for page 0x%08lx\n",
--							__func__, address);
-+		pr_err("Error in %s: no pte for page 0x%08lx\n",
-+		       __func__, address);
- 		return;
- 	}
- 
- 	if (level == PG_LEVEL_2M) {
--		pr_emerg(NAME "4MB pages are not currently supported: "
--							"0x%08lx\n", address);
-+		pr_emerg("4MB pages are not currently supported: 0x%08lx\n",
-+			 address);
- 		BUG();
- 	}
--	pr_info(NAME "pte for 0x%lx: 0x%llx 0x%llx\n", address,
-+	pr_info("pte for 0x%lx: 0x%llx 0x%llx\n",
-+		address,
- 		(unsigned long long)pte_val(*pte),
- 		(unsigned long long)pte_val(*pte) & _PAGE_PRESENT);
- }
-@@ -118,22 +120,21 @@ static void print_pte(unsigned long address)
- static void die_kmmio_nesting_error(struct pt_regs *regs, unsigned long addr)
- {
- 	const struct trap_reason *my_reason = &get_cpu_var(pf_reason);
--	pr_emerg(NAME "unexpected fault for address: 0x%08lx, "
--					"last fault for address: 0x%08lx\n",
--					addr, my_reason->addr);
-+	pr_emerg("unexpected fault for address: 0x%08lx, last fault for address: 0x%08lx\n",
-+		 addr, my_reason->addr);
- 	print_pte(addr);
- 	print_symbol(KERN_EMERG "faulting IP is at %s\n", regs->ip);
- 	print_symbol(KERN_EMERG "last faulting IP was at %s\n", my_reason->ip);
- #ifdef __i386__
- 	pr_emerg("eax: %08lx   ebx: %08lx   ecx: %08lx   edx: %08lx\n",
--			regs->ax, regs->bx, regs->cx, regs->dx);
-+		 regs->ax, regs->bx, regs->cx, regs->dx);
- 	pr_emerg("esi: %08lx   edi: %08lx   ebp: %08lx   esp: %08lx\n",
--			regs->si, regs->di, regs->bp, regs->sp);
-+		 regs->si, regs->di, regs->bp, regs->sp);
- #else
- 	pr_emerg("rax: %016lx   rcx: %016lx   rdx: %016lx\n",
--					regs->ax, regs->cx, regs->dx);
-+		 regs->ax, regs->cx, regs->dx);
- 	pr_emerg("rsi: %016lx   rdi: %016lx   rbp: %016lx   rsp: %016lx\n",
--				regs->si, regs->di, regs->bp, regs->sp);
-+		 regs->si, regs->di, regs->bp, regs->sp);
- #endif
- 	put_cpu_var(pf_reason);
- 	BUG();
-@@ -213,7 +214,7 @@ static void post(struct kmmio_probe *p, unsigned long condition,
- 	/* this should always return the active_trace count to 0 */
- 	my_reason->active_traces--;
- 	if (my_reason->active_traces) {
--		pr_emerg(NAME "unexpected post handler");
-+		pr_emerg("unexpected post handler");
- 		BUG();
- 	}
- 
-@@ -244,7 +245,7 @@ static void ioremap_trace_core(resource_size_t offset, unsigned long size,
- 	};
- 
- 	if (!trace) {
--		pr_err(NAME "kmalloc failed in ioremap\n");
-+		pr_err("kmalloc failed in ioremap\n");
- 		return;
- 	}
- 
-@@ -282,8 +283,8 @@ void mmiotrace_ioremap(resource_size_t offset, unsigned long size,
- 	if (!is_enabled()) /* recheck and proper locking in *_core() */
- 		return;
- 
--	pr_debug(NAME "ioremap_*(0x%llx, 0x%lx) = %p\n",
--				(unsigned long long)offset, size, addr);
-+	pr_debug("ioremap_*(0x%llx, 0x%lx) = %p\n",
-+		 (unsigned long long)offset, size, addr);
- 	if ((filter_offset) && (offset != filter_offset))
- 		return;
- 	ioremap_trace_core(offset, size, addr);
-@@ -301,7 +302,7 @@ static void iounmap_trace_core(volatile void __iomem *addr)
- 	struct remap_trace *tmp;
- 	struct remap_trace *found_trace = NULL;
- 
--	pr_debug(NAME "Unmapping %p.\n", addr);
-+	pr_debug("Unmapping %p.\n", addr);
- 
- 	spin_lock_irq(&trace_lock);
- 	if (!is_enabled())
-@@ -363,9 +364,8 @@ static void clear_trace_list(void)
- 	 * Caller also ensures is_enabled() cannot change.
- 	 */
- 	list_for_each_entry(trace, &trace_list, list) {
--		pr_notice(NAME "purging non-iounmapped "
--					"trace @0x%08lx, size 0x%lx.\n",
--					trace->probe.addr, trace->probe.len);
-+		pr_notice("purging non-iounmapped trace @0x%08lx, size 0x%lx.\n",
-+			  trace->probe.addr, trace->probe.len);
- 		if (!nommiotrace)
- 			unregister_kmmio_probe(&trace->probe);
- 	}
-@@ -387,7 +387,7 @@ static void enter_uniprocessor(void)
- 
- 	if (downed_cpus == NULL &&
- 	    !alloc_cpumask_var(&downed_cpus, GFP_KERNEL)) {
--		pr_notice(NAME "Failed to allocate mask\n");
-+		pr_notice("Failed to allocate mask\n");
- 		goto out;
- 	}
- 
-@@ -395,20 +395,19 @@ static void enter_uniprocessor(void)
- 	cpumask_copy(downed_cpus, cpu_online_mask);
- 	cpumask_clear_cpu(cpumask_first(cpu_online_mask), downed_cpus);
- 	if (num_online_cpus() > 1)
--		pr_notice(NAME "Disabling non-boot CPUs...\n");
-+		pr_notice("Disabling non-boot CPUs...\n");
- 	put_online_cpus();
- 
- 	for_each_cpu(cpu, downed_cpus) {
- 		err = cpu_down(cpu);
- 		if (!err)
--			pr_info(NAME "CPU%d is down.\n", cpu);
-+			pr_info("CPU%d is down.\n", cpu);
- 		else
--			pr_err(NAME "Error taking CPU%d down: %d\n", cpu, err);
-+			pr_err("Error taking CPU%d down: %d\n", cpu, err);
- 	}
- out:
- 	if (num_online_cpus() > 1)
--		pr_warning(NAME "multiple CPUs still online, "
--						"may miss events.\n");
-+		pr_warning("multiple CPUs still online, may miss events.\n");
- }
- 
- /* __ref because leave_uniprocessor calls cpu_up which is __cpuinit,
-@@ -420,13 +419,13 @@ static void __ref leave_uniprocessor(void)
- 
- 	if (downed_cpus == NULL || cpumask_weight(downed_cpus) == 0)
- 		return;
--	pr_notice(NAME "Re-enabling CPUs...\n");
-+	pr_notice("Re-enabling CPUs...\n");
- 	for_each_cpu(cpu, downed_cpus) {
- 		err = cpu_up(cpu);
- 		if (!err)
--			pr_info(NAME "enabled CPU%d.\n", cpu);
-+			pr_info("enabled CPU%d.\n", cpu);
- 		else
--			pr_err(NAME "cannot re-enable CPU%d: %d\n", cpu, err);
-+			pr_err("cannot re-enable CPU%d: %d\n", cpu, err);
- 	}
- }
- 
-@@ -434,8 +433,8 @@ static void __ref leave_uniprocessor(void)
- static void enter_uniprocessor(void)
- {
- 	if (num_online_cpus() > 1)
--		pr_warning(NAME "multiple CPUs are online, may miss events. "
--			"Suggest booting with maxcpus=1 kernel argument.\n");
-+		pr_warning("multiple CPUs are online, may miss events. "
-+			   "Suggest booting with maxcpus=1 kernel argument.\n");
- }
- 
- static void leave_uniprocessor(void)
-@@ -450,13 +449,13 @@ void enable_mmiotrace(void)
- 		goto out;
- 
- 	if (nommiotrace)
--		pr_info(NAME "MMIO tracing disabled.\n");
-+		pr_info("MMIO tracing disabled.\n");
- 	kmmio_init();
- 	enter_uniprocessor();
- 	spin_lock_irq(&trace_lock);
- 	atomic_inc(&mmiotrace_enabled);
- 	spin_unlock_irq(&trace_lock);
--	pr_info(NAME "enabled.\n");
-+	pr_info("enabled.\n");
- out:
- 	mutex_unlock(&mmiotrace_mutex);
- }
-@@ -475,7 +474,7 @@ void disable_mmiotrace(void)
- 	clear_trace_list(); /* guarantees: no more kmmio callbacks */
- 	leave_uniprocessor();
- 	kmmio_cleanup();
--	pr_info(NAME "disabled.\n");
-+	pr_info("disabled.\n");
- out:
- 	mutex_unlock(&mmiotrace_mutex);
- }
--- 
-1.6.6.rc0.57.gad7a
+I believe you can create an additional alias device with
+
+ifconfig eth0:<N>
+
+or so.
+
+> I'm doing some aim7/9 comparisons right now between SPARSE and DISCONTIG
+> memory configs using sles11 + 2.6.32.  Which other benchmarks would you
+> recommend for the other tests?
+
+See f.e. http://kernel-perf.sourceforge.net/about_tests.php
+
+lmbench?
 
