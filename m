@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbZLIIdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZLIId6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751970AbZLIIdc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 03:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZLIIdb
+	id S1752039AbZLIId6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 03:33:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZLIId5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 03:33:31 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:39422 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbZLIIda (ORCPT
+	Wed, 9 Dec 2009 03:33:57 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50866 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbZLIId4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 03:33:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=IM+kGmo8hLF5MBflj619B/qsOn2MUW2vow1eMeoRz5qGlcy96JcL+kbJ+dCyppkKsP
-         IvTylz7rrsyxTepn7YdaHMCubkHCRX5a3BFv/8mGrgGDMBLf1xxxIgZ6rJ6uuJp07c5t
-         BGfLWIpfP2IyxV9r9Mfe6QHxmBrvlS6z0iCLQ=
-Date: Wed, 9 Dec 2009 09:33:34 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] perf_event: cleanup for __perf_event_init_context()
-Message-ID: <20091209083332.GA5152@nowhere>
-References: <4B1F194D.7080306@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B1F194D.7080306@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 9 Dec 2009 03:33:56 -0500
+Subject: Re: [patch V2 sched: Protect sched_rr_get_param access to
+ task->sched_class
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.2.00.0912090930120.3089@localhost.localdomain>
+References: <20091208202026.804386447@linutronix.de>
+	 <1260345648.5489.65.camel@laptop> <1260345798.5489.70.camel@laptop>
+	 <alpine.LFD.2.00.0912090905210.3089@localhost.localdomain>
+	 <alpine.LFD.2.00.0912090930120.3089@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 09 Dec 2009 09:33:56 +0100
+Message-ID: <1260347636.5489.103.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 11:28:13AM +0800, Xiao Guangrong wrote:
-> This is a cleanup patch and does:
-> - define 'perf_cpu_context' variable with 'static'
-> - using kzalloc() instead of kmalloc() and memset()
+On Wed, 2009-12-09 at 09:32 +0100, Thomas Gleixner wrote:
+> sched_rr_get_param calls task->sched_class->get_rr_interval(task)
+> without protection against a concurrent sched_setscheduler() call
+> which modifies task->sched_class.
 > 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> ---
+> Serialize the access with task_rq_lock(task) and hand the rq pointer
+> into get_rr_interval() as it's needed at least in the sched_fair
+> implementation.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-
-And perf_event_init_cpu() doesn't need it as it's supposed
-to be statically zeroed already.
-
-Looks good to me.
-
-Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
