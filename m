@@ -1,119 +1,369 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbZLIGpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZLIGrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724AbZLIGpA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 01:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbZLIGpA
+	id S1756745AbZLIGrn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 01:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbZLIGrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 01:45:00 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:47686 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755182AbZLIGo6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 01:44:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=F+hruZJT8KLPy250spK8f8Gk3pk0s10N5hsyW/8p/eLAlzd0lPPzgFGa22U7mD9dXb
-         VB5ZTAvwqX4Sf9LnBef6QJl6Gbm6r+6PKFwUQk7gvtuIHvgivfeFEpuzrIrdj/r0TQfC
-         xeD5QcwqfUa5ubJihhfVuo+ml7hYFSmAHfZB8=
-MIME-Version: 1.0
-In-Reply-To: <3877989d0912080425o4bf9e2beuf573e47930fd707f@mail.gmail.com>
-References: <3877989d0908272018va6ee8f7n7ab2838fdf1b26e6@mail.gmail.com>
-	 <20090828062212.GB11552@elte.hu>
-	 <3877989d0912032329u7c05a761wfdd5c7000b43218d@mail.gmail.com>
-	 <4BDB13256095B24D9644F65379E604265C12@orsmsx505.amr.corp.intel.com>
-	 <3877989d0912041919i458300d7ydce73cf77979dad3@mail.gmail.com>
-	 <3877989d0912062156v7ba2a192y726f45b550ba50e@mail.gmail.com>
-	 <12c511ca0912071335i1a805c2eudb6ecb8f726f6a80@mail.gmail.com>
-	 <3877989d0912080425o4bf9e2beuf573e47930fd707f@mail.gmail.com>
-Date: Wed, 9 Dec 2009 14:45:05 +0800
-Message-ID: <3877989d0912082245m3ee1ea14y3b3c8aca99e9f378@mail.gmail.com>
-Subject: Re: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then 
-	enable ftrace for ia64
-From: Luming Yu <luming.yu@gmail.com>
-To: Tony Luck <tony.luck@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>, Felix Blyakher <felixb@sgi.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Bob Picco <bob.picco@hp.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 9 Dec 2009 01:47:40 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:59886 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756688AbZLIGrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 01:47:39 -0500
+Date: Wed, 9 Dec 2009 17:47:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for December 9
+Message-Id: <20091209174738.3b8c28a6.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__9_Dec_2009_17_47_38_+1100_pqJXxw+HG=KnQ=_a"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> But let me try more on other ia64 boxes that I can get access.
->
-> Stay tuned.
+--Signature=_Wed__9_Dec_2009_17_47_38_+1100_pqJXxw+HG=KnQ=_a
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I might have reproduced the problem on a HP ia64 system
-with -32 kernel as the following info. But -31 kernel with
-lockdep code enabled just works. ....debugging...
+Hi all,
 
-CPI: SSDT 000000003fdf66c8 000E0 (v01     HP   BL870c 00000006 INTL 20050309)
-ACPI: SSDT 000000003fdf67b8 0013C (v01     HP   BL870c 00000006 INTL 20050309)
-ACPI: SSDT 000000003fdf68f8 000E0 (v01     HP   BL870c 00000006 INTL 20050309)
-ACPI: SSDT 000000003fdf69e8 0013C (v01     HP   BL870c 00000006 INTL 20050309)
-ACPI: SSDT 000000003fdf6b28 000E0 (v01     HP   BL870c 00000006 INTL 20050309)
-ACPI: SSDT 000000003fdf6c18 0013C (v01     HP   BL870c 00000006 INTL 20050309)
-ACPI: SSDT 000000003fdf6d58 000E0 (v01     HP   BL870c 00000006 INTL 20050309)
-ACPI: Local APIC address c0000000fee00000
-SMP: Allowing 16 CPUs, 8 hotplug CPUs
-Initial ramdisk at: 0xe0000100fe9d8000 (5607915 bytes)
-SAL 3.20: HP version 3.11
-SAL Platform features: None
-SAL: AP wakeup using external interrupt vector 0xff
-ACPI: Local APIC address c0000000fee00000
-Unable to handle kernel paging request at virtual address a0000009019b0328
-swapper[0]: Oops 8813272891392 [1]
-Modules linked in:
+My usual call for calm: please do not put stuff destined for 2.6.34 into
+linux-next trees until after 2.6.33-rc1.
 
-Pid: 0, CPU 0, comm:              swapper
-psr : 00001010084a2018 ifs : 8000000000000409 ip  :
-[<a0000001000e8ff0>]    Not tainted (2.6.32)
-ip is at save_trace+0xb0/0x1e0
-unat: 0000000000000000 pfs : 0000000000000409 rsc : 0000000000000003
-rnat: 000000001ad27480 bsps: 000000000001003e pr  : 656960155aa6a559
-ldrs: 0000000000000000 ccv : 0000000001e600f3 fpsr: 0009804c8a70433f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a0000001000e8fc0 b6  : a000000100a6c440 b7  : e00000003f81f3a0
-f6  : 000000000000000000000 f7  : 1003e0000000000000000
-f8  : 1003e0000000000000000 f9  : 1003e0000000000000001
-f10 : 10004c3ffffffff3c0000 f11 : 1003e0000000000000031
-r1  : a00000010132c4b0 r2  : a000000100e07d60 r3  : 000000000000007c
-r8  : a0000001018f2520 r9  : a0000009019b0328 r10 : 00000000ffffffff
-r11 : a0000001019b0330 r12 : a000000100e07d60 r13 : a000000100e00000
-r14 : a0000001018f2af0 r15 : 000000000003fffe r16 : ffffffffffffffff
-r17 : 0000000000000001 r18 : 0000000000000000 r19 : 0000000000000000
-r20 : a0000001019b0330 r21 : a000000101130a00 r22 : a0000001018f2c58
-r23 : 0000000000000003 r24 : 0000000000040000 r25 : 0000000000040000
-r26 : 0000000000000000 r27 : a0000001018f2b20 r28 : 0000000000001000
-r29 : 0000000000000000 r30 : a000000100e00e00 r31 : a000000100e00dd8
-Unable to handle kernel NULL pointer dereference (address 0000000000000000)
-swapper[0]: Oops 8813272891392 [2]
-Modules linked in:
+Changes since 20091208:
 
-Pid: 0, CPU 0, comm:              swapper
-psr : 0000101008022018 ifs : 800000000000048e ip  :
-[<a0000001001e1a60>]    Not tainted (2.6.32)
-ip is at kmem_cache_alloc+0xe0/0x3c0
-unat: 0000000000000000 pfs : 000000000000048e rsc : 0000000000000003
-rnat: 0000000000000000 bsps: 0000000000000000 pr  : 656960155aa65965
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c0270033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a0000001001e19f0 b6  : a000000100042420 b7  : a00000010000c9b0
-f6  : 1003ea877512c4d0b873a f7  : 1003e9e3779b97f4a7c16
-f8  : 1003e0a000000100015f7 f9  : 1003e0000000000000001
-f10 : 10004c3ffffffff3c0000 f11 : 1003e0000000000000031
-r1  : a00000010132c4b0 r2  : 0000000012000000 r3  : a000000100e00014
-r8  : 0000000000000002 r9  : 00000000003fff2f r10 : a000000101151a60
-r11 : a000000101151a60 r12 : a000000100e07230 r13 : a000000100e00000
-r14 : 0000000000000000 r15 : 0000000000200000 r16 : 0000000000000000
-r17 : 0000000000000000 r18 : a000000100e01984 r19 : a000000100e072ac
-r20 : a000000100e072a4 r21 : 0000000000000000 r22 : a000000100e072a0
-r23 : a000000100e072a4 r24 : 0000000000000001 r25 : 0000000000000000
-r26 : a000000100e072a0 r27 : 0000000000000000 r28 : a000000100e072a8
-r29 : 000000007fffffff r30 : a00000010110a030 r31 : 0000000000000002
+Since Linus is now merging trees into his, various conflicts move from
+tree to tree.
+
+The omap tree lost its conflict.
+
+The samsung tree no longer needed a fixup and lost all its conflicts.
+
+The powerpc tree gained a conflict against Linus' tree.
+
+The ext3 tree lost its conflict.
+
+The kbuild tree inherited a merge fixup from the net tree.
+
+The kvm tree lost its conflicts.
+
+The net tree lost its merge fixups.
+
+The kgdb tree lost its conflict.
+
+The slab tree lost its build failure.
+
+The omap_dss2 tree gained a conflict against the omap tree.
+
+The tip tree gained a conflict against Linus' tree.
+
+The percpu tree lost 2 conflicts and its merge fixup (due to changes in
+the kgdb and tip trees).
+
+The hwpoison tree lost its build failure.
+
+The sysctl tree lost its conflicts.
+
+The tty tree gained a conflict agains the trivial tree.
+
+The usb tree gained a build failure for which I reverted a commit.
+
+The staging tree gained a conflict against Linus' tree.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 155 trees (counting Linus' and 22 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/for-linus
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging samsung/next-samsung
+Merging avr32/avr32-arch
+CONFLICT (content): Merge conflict in arch/avr32/mach-at32ap/include/mach/c=
+pu.h
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+CONFLICT (content): Merge conflict in arch/m68k/include/asm/ptrace.h
+Merging microblaze/next
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/Kconfig
+CONFLICT (content): Merge conflict in arch/mips/Makefile
+CONFLICT (content): Merge conflict in arch/mips/include/asm/ftrace.h
+CONFLICT (add/add): Merge conflict in arch/mips/kernel/ftrace.c
+CONFLICT (add/add): Merge conflict in arch/mips/kernel/mcount.S
+CONFLICT (content): Merge conflict in drivers/pcmcia/Makefile
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging parisc/next
+Merging powerpc/next
+CONFLICT (content): Merge conflict in include/linux/kvm.h
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging logfs/master
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+CONFLICT (add/add): Merge conflict in fs/9p/cache.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/amd_iommu_init.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging kbuild/for-next
+Applying: net: fix for utsrelease.h moving to generated
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in drivers/pci/hotplug/acpiphp_glue.c
+Merging ieee1394/for-next
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-13=
+94.c
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv-av=
+c.c
+CONFLICT (add/add): Merge conflict in drivers/media/dvb/firewire/firedtv-fw=
+.c
+CONFLICT (content): Merge conflict in drivers/media/dvb/firewire/firedtv.h
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+CONFLICT (content): Merge conflict in drivers/mtd/devices/m25p80.c
+CONFLICT (content): Merge conflict in drivers/mtd/maps/pcmciamtd.c
+CONFLICT (delete/modify): drivers/mtd/nand/excite_nandflash.c deleted in HE=
+AD and modified in mtd/master. Version mtd/master of drivers/mtd/nand/excit=
+e_nandflash.c left in tree.
+CONFLICT (content): Merge conflict in drivers/mtd/nand/pxa3xx_nand.c
+CONFLICT (content): Merge conflict in kernel/printk.c
+$ git rm -f drivers/mtd/nand/excite_nandflash.c
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+CONFLICT (content): Merge conflict in include/acpi/processor.h
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/arm/kernel/vmlinux.lds.S
+Applying: modpost: autoconf.h has moved to include/generated
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+CONFLICT (content): Merge conflict in drivers/platform/x86/thinkpad_acpi.c
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/Kconfig
+CONFLICT (content): Merge conflict in drivers/mfd/Makefile
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+CONFLICT (content): Merge conflict in Documentation/video4linux/gspca.txt
+CONFLICT (content): Merge conflict in drivers/md/dm-crypt.c
+CONFLICT (content): Merge conflict in drivers/media/video/cx18/cx18-mailbox=
+.h
+CONFLICT (content): Merge conflict in kernel/irq/chip.c
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+CONFLICT (content): Merge conflict in fs/afs/write.c
+CONFLICT (content): Merge conflict in fs/cifs/dir.c
+CONFLICT (content): Merge conflict in fs/ubifs/file.c
+CONFLICT (content): Merge conflict in include/asm-generic/fcntl.h
+CONFLICT (content): Merge conflict in net/compat.c
+CONFLICT (content): Merge conflict in net/socket.c
+Merging irda/for-next
+CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in include/linux/Kbuild
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+Merging limits/writable_limits
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+Merging omap_dss2/for-next
+CONFLICT (content): Merge conflict in arch/arm/mach-omap2/io.c
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/Kconfig
+CONFLICT (content): Merge conflict in arch/x86/include/asm/x86_init.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/x86_init.c
+CONFLICT (content): Merge conflict in kernel/Makefile
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/x86/kvm/svm.c
+CONFLICT (content): Merge conflict in mm/slab.c
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging sysctl/master
+Merging quilt/driver-core
+Merging quilt/tty
+CONFLICT (content): Merge conflict in drivers/mmc/card/sdio_uart.c
+Merging quilt/usb
+CONFLICT (content): Merge conflict in arch/arm/plat-mxc/Makefile
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/staging/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/Makefile
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_lab=
+pc_cs.c
+CONFLICT (content): Merge conflict in drivers/staging/comedi/drivers/ni_mio=
+_cs.c
+CONFLICT (content): Merge conflict in drivers/staging/vt6655/Kconfig
+CONFLICT (content): Merge conflict in drivers/staging/vt6656/Kconfig
+[master c435540] Revert "USB: prepare for changover to Runtime PM framework"
+Merging scsi-post-merge/master
+
+--Signature=_Wed__9_Dec_2009_17_47_38_+1100_pqJXxw+HG=KnQ=_a
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAksfSAsACgkQjjKRsyhoI8xrKQCfchHV+fsUK5TyPr1ClG8UgKcB
+RIoAn3Wougp9ruDFIevnGdGl8wdxso73
+=cK2U
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Dec_2009_17_47_38_+1100_pqJXxw+HG=KnQ=_a--
