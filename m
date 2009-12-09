@@ -1,143 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbZLIXkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbZLIXl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758781AbZLIXkt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 18:40:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbZLIXkp
+	id S1758783AbZLIXl7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 18:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758721AbZLIXlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 18:40:45 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48002
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758705AbZLIXko (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 18:40:44 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Michal Marek <mmarek@suse.cz>
-Subject: Re: [PATCH 1/3] Replace kernel/timeconst.pl with kernel/timeconst.sh
-Date: Wed, 9 Dec 2009 17:40:41 -0600
-User-Agent: KMail/1.11.2 (Linux/2.6.28-16-generic; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kbuild@vger.kernel.org
-References: <200912080317.08254.rob@landley.net> <200912080319.30679.rob@landley.net> <4B1FC621.8060500@suse.cz>
-In-Reply-To: <4B1FC621.8060500@suse.cz>
+	Wed, 9 Dec 2009 18:41:55 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45864 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758676AbZLIXly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 18:41:54 -0500
+Message-ID: <4B203614.1010907@novell.com>
+Date: Thu, 10 Dec 2009 08:43:16 +0900
+From: Tejun Heo <teheo@novell.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: stable@kernel.org
+Cc: tony.luck@intel.com, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jan Beulich <JBeulich@novell.com>
+Subject: [PATCH -stable] vmalloc: conditionalize build of pcpu_get_vm_areas()
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1E1B1B0200007800024345@vpn.id2.novell.com> <4B1E0E56.8020003@kernel.org> <4B1E1EE60200007800024364@vpn.id2.novell.com> <4B1E1513.3020000@kernel.org>
+In-Reply-To: <4B1E1513.3020000@kernel.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200912091740.43147.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 December 2009 09:45:37 Michal Marek wrote:
-> [CC hpa who wrote the timeconst.pl script]
->
-> On 8.12.2009 10:19, Rob Landley wrote:
-> > From: Rob Landley <rob@landley.net>
-> >
-> > Replace kernel/timeconst.pl with kernel/timeconst.sh. The new shell
-> > script is much simpler, about 1/4 the size, and runs on Red Hat 9 from
-> > 2003.
->
-> I tried the shell script with the precomputed values in timeconst.pl and
-> it gave me different results than the perl version for 250 and 1000:
+pcpu_get_vm_areas() is used only when dynamic percpu allocator is used
+by the architecture.  In 2.6.32, ia64 doesn't use dynamic percpu
+allocator and has a macro which makes pcpu_get_vm_areas() buggy via
+local/global variable aliasing and triggers compile warning.
 
-You're right.
+The problem is fixed in upstream and ia64 uses dynamic percpu
+allocators, so the only left issue is inclusion of unnecessary code
+and compile warning on ia64 on 2.6.32.
 
-They're functionally equivalent (due to the relationship between MUL32 and 
-SHR32), which is why this code has worked for me and other people for a year 
-now.  The difference is the possibility of an integer overflow if you try to 
-convert a time period of "0xffffffff".
+Don't build pcpu_get_vm_areas() if legacy percpu allocator is in use.
 
-Trivial fix:
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Jan Beulich <JBeulich@novell.com>
+Cc: stable@kernel.org
+---
+Please note that this commit won't appear on upstream.
 
---- a/sources/patches/linux-2.6.25-rc1-noperl.patch	Tue Dec 08 20:22:53 2009 
--0600
-+++ b/sources/patches/linux-2.6.25-rc1-noperl.patch	Wed Dec 09 17:28:26 2009 
--0600
-@@ -507,7 +507,7 @@
- +
- +			# Keep increasing $SHIFT until we've got 32 bits.
- +
--+			[ $MUL32 -gt $(( 1 << 31 )) ] && break
-++			[ $MUL32 -ge $(( 1 << 31 )) ] && break
- +			SHIFT=$(( $SHIFT + 1 ))
- +		done
- +		MUL32=$( printf %x $MUL32 )
+Thanks.
 
-As long as MUL32 fits in 32 bits than you can multiply it by another 32 bit 
-number without overflow, and that's probably all the kernel's enforcing.
+ include/linux/vmalloc.h |    2 ++
+ mm/vmalloc.c            |    2 ++
+ 2 files changed, 4 insertions(+)
 
->  #define HZ_TO_MSEC_NUM          U64_C(4)
->  #define HZ_TO_MSEC_DEN          U64_C(1)
-> -#define MSEC_TO_HZ_MUL32        U64_C(0x80000000)
-> -#define MSEC_TO_HZ_ADJ32        U64_C(0x180000000)
-> -#define MSEC_TO_HZ_SHR32        33
-> +#define MSEC_TO_HZ_MUL32       U64_C(0x100000000)
-> +#define MSEC_TO_HZ_ADJ32       U64_C(0x300000000)
-> +#define MSEC_TO_HZ_SHR32       34
->  #define MSEC_TO_HZ_NUM          U64_C(1)
->  #define MSEC_TO_HZ_DEN          U64_C(4)
->  #define HZ_TO_USEC_MUL32        U64_C(0xfa000000)
-
-The same.
-
-> and with HZ=1000:
-> --- perl
-> +++ bash
-> @@ -8,14 +8,14 @@
->  #error "kernel/timeconst.h has the wrong HZ value!"
->  #endif
->
-> -#define HZ_TO_MSEC_MUL32        U64_C(0x80000000)
-> +#define HZ_TO_MSEC_MUL32       U64_C(0x100000000)
->  #define HZ_TO_MSEC_ADJ32        U64_C(0x0)
-> -#define HZ_TO_MSEC_SHR32        31
-> +#define HZ_TO_MSEC_SHR32       32
-
-And again.
-
->  #define HZ_TO_MSEC_NUM          U64_C(1)
->  #define HZ_TO_MSEC_DEN          U64_C(1)
-> -#define MSEC_TO_HZ_MUL32        U64_C(0x80000000)
-> +#define MSEC_TO_HZ_MUL32       U64_C(0x100000000)
->  #define MSEC_TO_HZ_ADJ32        U64_C(0x0)
-> -#define MSEC_TO_HZ_SHR32        31
-> +#define MSEC_TO_HZ_SHR32       32
-
-Same thing.
-
-> You're trying to avoid the build dependency on Perl. What about adding a
-> timeconst.h_shipped with the precomputed values from timeconst.pl:
-
-Been there, done that.  My first patch (way back for 2.6.25) took that 
-approach:
-
-http://landley.net/hg/hgwebdir.cgi/firmware/file/a791ca629d9c/sources/patches/linux-2.6.25-
-rc1-noperl.patch
-
-But it turns out various non-x86 targets (such as ARM OMAP) allow HZ to be 
-specified by an entry field in the config file, into which the user can type a 
-range of numbers.  See this post from last year for details:
-
-http://lists.impactlinux.com/pipermail/firmware-impactlinux.com/2008-
-December/000022.html
-
-This is why reducing the perl version to just the precomputed constants 
-wouldn't work either.  (They're there so that you only need to install a 
-random cpan library when surprised by a build break on non-x86 machines.)
-
-> > +	echo
-> > +	echo "#endif /* __KERNEL_TIMECHONST_H */"
->
->                                       ^
->
-> Should be "__KERNEL_TIMECONST_H".
-
-Yeah, Joe Perches pointed that out to me off-list.  It's just a comment so I 
-didn't resubmit the patch for that, but I've fixed my local version already.
-
-Rob
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+index 227c2a5..3c123c3 100644
+--- a/include/linux/vmalloc.h
++++ b/include/linux/vmalloc.h
+@@ -115,9 +115,11 @@ extern rwlock_t vmlist_lock;
+ extern struct vm_struct *vmlist;
+ extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
+ 
++#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
+ struct vm_struct **pcpu_get_vm_areas(const unsigned long *offsets,
+ 				     const size_t *sizes, int nr_vms,
+ 				     size_t align, gfp_t gfp_mask);
++#endif
+ 
+ void pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms);
+ 
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index 0f551a4..7758726 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -1993,6 +1993,7 @@ void free_vm_area(struct vm_struct *area)
+ }
+ EXPORT_SYMBOL_GPL(free_vm_area);
+ 
++#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
+ static struct vmap_area *node_to_va(struct rb_node *n)
+ {
+ 	return n ? rb_entry(n, struct vmap_area, rb_node) : NULL;
+@@ -2257,6 +2258,7 @@ err_free:
+ 	kfree(vms);
+ 	return NULL;
+ }
++#endif
+ 
+ /**
+  * pcpu_free_vm_areas - free vmalloc areas for percpu allocator
