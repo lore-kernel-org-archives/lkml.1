@@ -1,89 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbZLIJ6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbZLIJ5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754774AbZLIJ6b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 04:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZLIJ62
+	id S1754454AbZLIJ5F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 04:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbZLIJ5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 04:58:28 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45802 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754408AbZLIJ6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 04:58:25 -0500
-Date: Wed, 9 Dec 2009 09:56:59 GMT
-From: tip-bot for Andy Isaacson <adi@hexapodia.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       hancockrwd@gmail.com, arjan@linux.intel.com, rz@linux-m68k.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       adi@hexapodia.org
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, hancockrwd@gmail.com, rz@linux-m68k.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       adi@hexapodia.org
-In-Reply-To: <20091208083021.GB27174@hexapodia.org>
-References: <20091208083021.GB27174@hexapodia.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Print DMI_BOARD_NAME as well as DMI_PRODUCT_NAME from __show_regs()
-Message-ID: <tip-a1884b8e558ef6395f6033f9e1b69b332dd040e0@git.kernel.org>
-Git-Commit-ID: a1884b8e558ef6395f6033f9e1b69b332dd040e0
-X-Mailer: tip-git-log-daemon
+	Wed, 9 Dec 2009 04:57:01 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:52455 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbZLIJ46 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 04:56:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=upAZ9jU4cQKzxxbrrzdLFQJhPjElEc3NcgLN0luW2d7J5VZ0uZZcH8mNp9DKQCTtMm
+         xUA16bFgBNFC9+Z0Qbtx+YnSwqdgMJADX2DXpC7x75YQaw8GF5R5Mhm4h+VqZf0zZZRy
+         O+mHgCdcG8jlkxWwa6s7vkpgQUg9xA8L50xH4=
+Date: Wed, 9 Dec 2009 11:57:00 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: Justin Madru <jdm64@gawab.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: s5k3e2fx.c: reduce complexity by factoring
+Message-ID: <20091209095700.GA19355@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Justin Madru <jdm64@gawab.com>, gregkh@suse.de,
+	linux-kernel@vger.kernel.org
+References: <1260065000-5573-1-git-send-email-jdm64@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1260065000-5573-1-git-send-email-jdm64@gawab.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a1884b8e558ef6395f6033f9e1b69b332dd040e0
-Gitweb:     http://git.kernel.org/tip/a1884b8e558ef6395f6033f9e1b69b332dd040e0
-Author:     Andy Isaacson <adi@hexapodia.org>
-AuthorDate: Tue, 8 Dec 2009 00:30:21 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 9 Dec 2009 10:17:59 +0100
+On Sat, Dec 05, 2009 at 06:03:20PM -0800, Justin Madru wrote:
+> I was style fixing some code when I ran into this code.
+> It seems like the code could be reduced, by factoring the expression.
+> But this results in a very simple expression.
+> 
+> Am I assuming something wrong? Or is this a bug in the original code?
+> This doesn't look right because the assignment of s_move[i] has no mention
+> of the loop counter.
+> 
+> Justin
+> 
+> ------
+> 
+> the code was looping, seting s_move[i] to the following calculations
+> 
+> if (actual_step >= 0)
+>         s_move[i] = ((((i + 1) * gain + 0x200) - (i * gain + 0x200)) / 0x400);
+> else
+>         s_move[i] = ((((i + 1) * gain - 0x200) - (i * gain - 0x200)) / 0x400);
+> 
+> but, by factoring the expression, it can be shown that they both reduce
+> to a very simple expression:
+> 
+>         s_move[i] = gain / 0x400;
+> 
 
-x86: Print DMI_BOARD_NAME as well as DMI_PRODUCT_NAME from __show_regs()
+Heh.
 
-Robert Hancock observes that DMI_BOARD_NAME is often more useful
-than DMI_PRODUCT_NAME, especially on standalone motherboards.
-So, print both.
+Looks like an improvement to me.
 
-Signed-off-by: Andy Isaacson <adi@hexapodia.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>
-Cc: Richard Zidlicky <rz@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <20091208083021.GB27174@hexapodia.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/process.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+If gain were 16 bits instead of 32 I would think the "* 0x400 / 0x400" was 
+designed to mask out the highest 10 bits.
 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 90cf125..7a7bd4e 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -94,18 +94,21 @@ void exit_thread(void)
- 
- void show_regs_common(void)
- {
--	const char *board;
-+	const char *board, *product;
- 
--	board = dmi_get_system_info(DMI_PRODUCT_NAME);
-+	board = dmi_get_system_info(DMI_BOARD_NAME);
- 	if (!board)
- 		board = "";
-+	product = dmi_get_system_info(DMI_PRODUCT_NAME);
-+	if (!product)
-+		product = "";
- 
- 	printk("\n");
--	printk(KERN_INFO "Pid: %d, comm: %.20s %s %s %.*s %s\n",
-+	printk(KERN_INFO "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
- 		current->pid, current->comm, print_tainted(),
- 		init_utsname()->release,
- 		(int)strcspn(init_utsname()->version, " "),
--		init_utsname()->version, board);
-+		init_utsname()->version, board, product);
- }
- 
- void flush_thread(void)
+Acked-by:  Dan Carpenter <error27@gmail.com>
+
+regards,
+dan carpenter
+
+> Signed-off-by: Justin Madru <jdm64@gawab.com>
+> ---
+>  drivers/staging/dream/camera/s5k3e2fx.c |   10 +++-------
+>  1 files changed, 3 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/staging/dream/camera/s5k3e2fx.c b/drivers/staging/dream/camera/s5k3e2fx.c
+> index f0e49be..d205a2d 100644
+> --- a/drivers/staging/dream/camera/s5k3e2fx.c
+> +++ b/drivers/staging/dream/camera/s5k3e2fx.c
+> @@ -1092,14 +1092,10 @@ static int32_t s5k3e2fx_move_focus(int direction, int32_t num_steps)
+>  
+>  	actual_step = step_direction * (int16_t)num_steps;
+>  	pos_offset = init_code + s5k3e2fx_ctrl->curr_lens_pos;
+> -	gain = actual_step * 0x400 / 5;
+> +	gain = actual_step / 5;
+>  
+> -	for (i = 0; i <= 4; i++) {
+> -		if (actual_step >= 0)
+> -			s_move[i] = ((((i+1)*gain+0x200) - (i*gain+0x200))/0x400);
+> -		else
+> -			s_move[i] = ((((i+1)*gain-0x200) - (i*gain-0x200))/0x400);
+> -	}
+> +	for (i = 0; i <= 4; i++)
+> +		s_move[i] = gain;
+>  
+>  	/* Ring Damping Code */
+>  	for (i = 0; i <= 4; i++) {
+> -- 
+> 1.6.5.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
