@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZLISJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbZLISKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756563AbZLISJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 13:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZLISJv
+	id S1756520AbZLISKr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 13:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756557AbZLISKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 13:09:51 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:6886 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751175AbZLISJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 13:09:50 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH] cfq-iosched: reduce write depth only if sync was delayed
-References: <4b1a3d84.0d0db80a.39d0.ffff814a@mx.google.com>
-	<4e5e476b0912050313k280caa8bjf7c2cf1c5d19c88c@mail.gmail.com>
-	<4e5e476b0912060245x4d64300hb9689243bd712f2c@mail.gmail.com>
-	<x49ein6nx9k.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b0912081243ra071947if9a3edae77fb3861@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 09 Dec 2009 13:09:49 -0500
-In-Reply-To: <4e5e476b0912081243ra071947if9a3edae77fb3861@mail.gmail.com>
-	(Corrado Zoccolo's message of "Tue, 8 Dec 2009 21:43:05 +0100")
-Message-ID: <x49ocm8nhn6.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	Wed, 9 Dec 2009 13:10:41 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:37202 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756414AbZLISKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 13:10:41 -0500
+Message-ID: <4B1FE81F.30408@sgi.com>
+Date: Wed, 09 Dec 2009 10:10:39 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: tony.luck@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <JBeulich@novell.com>, Tejun Heo <tj@kernel.org>,
+       linux-mm@kvack.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm/vmalloc: don't use vmalloc_end
+References: <4B1D3A3302000078000241CD@vpn.id2.novell.com> <20091207153552.0fadf335.akpm@linux-foundation.org> <4B1E1B1B0200007800024345@vpn.id2.novell.com> <alpine.DEB.2.00.0912091128280.16491@router.home>
+In-Reply-To: <alpine.DEB.2.00.0912091128280.16491@router.home>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
 
-> The numbers look good. Now, there is no penalty in having low_latency
-> set for sequential writes, and just a small penalty for random ones.
-> The fact that random reads are faster with low_latency set is interesting.
-> Is the test is running with your patched tiobench (so that the number
-> of random operations is comparable with sequential ones)?
 
-No, I forgot all about that.  The number of random operations defaults
-to 4000, which is pretty low.  I'll re-run the tests with a number
-comparable to the sequential runs.  Sorry about that.
+Christoph Lameter wrote:
+> On Tue, 8 Dec 2009, Jan Beulich wrote:
+> 
+>> According to Tejun the problem is just cosmetic (i.e. causes build
+>> warnings), since the functions affected aren't being used (yet) on
+>> ia64. So feel free to drop the patch again, given that he has a patch
+>> queued to address the issue by renaming the arch variable.
+> 
+> I thought the new code must be used in order for the new percpu allocator
+> to work? Or is this referring to other code?
+> 
+>> I wonder though why that code is being built on ia64 at all if it's not
+>> being used (i.e. why it doesn't depend on a CONFIG_*, HAVE_*, or
+>> NEED_* manifest constant).
+> 
+> Tony: Can you confirm that the new percpu stuff works on IA64? (Or is
+> there nobody left to care?)
 
-Cheers,
-Jeff
+Christoph,  I have access to a 640p system for a couple more weeks if
+there's anything you'd like me to check out.
+
+Thanks,
+Mike
