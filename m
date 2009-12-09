@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbZLITXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbZLITXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbZLITXc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 14:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbZLITX1
+	id S1757398AbZLITXv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 14:23:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbZLITXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 14:23:27 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:52722 "EHLO mgw1.diku.dk"
+	Wed, 9 Dec 2009 14:23:46 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52731 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757064AbZLITXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 14:23:25 -0500
-Date: Wed, 9 Dec 2009 20:23:30 +0100 (CET)
+	id S1757216AbZLITXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 14:23:44 -0500
+Date: Wed, 9 Dec 2009 20:23:49 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/12] drivers/media/radio: Correct size given to memset
-Message-ID: <Pine.LNX.4.64.0912092023100.1870@ask.diku.dk>
+To: Laurent Pinchart <laurent.pinchart@skynet.be>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 5/12] drivers/media/video/uvc: Correct size given to memset
+Message-ID: <Pine.LNX.4.64.0912092023310.1870@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,27 +45,18 @@ memset(x, E, sizeof(
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/media/radio/radio-tea5764.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/media/video/uvc/uvc_video.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/media/radio/radio-tea5764.c b/drivers/media/radio/radio-tea5764.c
---- a/drivers/media/radio/radio-tea5764.c
-+++ b/drivers/media/radio/radio-tea5764.c
-@@ -314,7 +314,7 @@ static int vidioc_g_tuner(struct file *f
- 	if (v->index > 0)
- 		return -EINVAL;
- 
--	memset(v, 0, sizeof(v));
-+	memset(v, 0, sizeof(*v));
- 	strcpy(v->name, "FM");
- 	v->type = V4L2_TUNER_RADIO;
- 	tea5764_i2c_read(radio);
-@@ -371,7 +371,7 @@ static int vidioc_g_frequency(struct fil
- 	struct tea5764_regs *r = &radio->regs;
- 
- 	tea5764_i2c_read(radio);
--	memset(f, 0, sizeof(f));
-+	memset(f, 0, sizeof(*f));
- 	f->type = V4L2_TUNER_RADIO;
- 	if (r->tnctrl & TEA5764_TNCTRL_PUPD0)
- 		f->frequency = (tea5764_get_freq(radio) * 2) / 125;
+diff -u -p a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -145,7 +145,7 @@ static int uvc_get_video_ctrl(struct uvc
+ 		uvc_warn_once(stream->dev, UVC_WARN_MINMAX, "UVC non "
+ 			"compliance - GET_MIN/MAX(PROBE) incorrectly "
+ 			"supported. Enabling workaround.\n");
+-		memset(ctrl, 0, sizeof ctrl);
++		memset(ctrl, 0, sizeof *ctrl);
+ 		ctrl->wCompQuality = le16_to_cpup((__le16 *)data);
+ 		ret = 0;
+ 		goto out;
