@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbZLINXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbZLINYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbZLINXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 08:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbZLINX3
+	id S1755841AbZLINYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 08:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZLINYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 08:23:29 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:58645 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755539AbZLINX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 08:23:28 -0500
-Date: Wed, 9 Dec 2009 14:23:32 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/usb/gadget: Use ERR_PTR/IS_ERR
-Message-ID: <Pine.LNX.4.64.0912091422350.27028@ask.diku.dk>
+	Wed, 9 Dec 2009 08:24:39 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52935 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755578AbZLINYj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 08:24:39 -0500
+Date: Wed, 9 Dec 2009 13:24:36 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       David Miller <davem@davemloft.net>, Ollie Wild <aaw@google.com>,
+       Rik van Riel <riel@redhat.com>, viro@ftp.linux.org.uk,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCHSET] mremap/mmap mess
+Message-ID: <20091209132436.GQ14381@ZenIV.linux.org.uk>
+References: <20091208060701.GM14381@ZenIV.linux.org.uk> <Pine.LNX.4.64.0912081142280.31223@sister.anvils> <Pine.LNX.4.64.0912081254500.3365@sister.anvils> <20091208.130802.25121122.davem@davemloft.net> <20091208220638.GN14381@ZenIV.linux.org.uk> <Pine.LNX.4.64.0912091041250.23659@sister.anvils> <1260361302.5489.372.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260361302.5489.372.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Wed, Dec 09, 2009 at 01:21:42PM +0100, Peter Zijlstra wrote:
 
-Use ERR_PTR and IS_ERR rather than mixing integers and pointers.
+> /me ponders.. doesn't the binfmt engine cruft need the args in place in
+> order to execute?
 
-The semantic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
+Needs to modify them in case #! and a few other.  But that's generally
+a matter of "drop argv[0], push several arguments in its place"
 
-// <smpl>
-@@
-expression *E;
-@@
+> That is, IIRC the problem is that you need to have the argc/env in place
+> for the binfmt engine thing, and need to have ran the binfmt engine
+> thing before you know the personality.
+> 
+> As to your idea, if that were feasible we could do without the copy and
+> simply steal the pages directly from the old mm.
 
-* E < 0
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/usb/gadget/f_audio.c        |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/usb/gadget/f_audio.c b/drivers/usb/gadget/f_audio.c
-index c43c89f..0f2eee1 100644
---- a/drivers/usb/gadget/f_audio.c
-+++ b/drivers/usb/gadget/f_audio.c
-@@ -252,12 +252,12 @@ static struct f_audio_buf *f_audio_buffer_alloc(int buf_size)
- 
- 	copy_buf = kzalloc(sizeof *copy_buf, GFP_ATOMIC);
- 	if (!copy_buf)
--		return (struct f_audio_buf *)-ENOMEM;
-+		return ERR_PTR(-ENOMEM);
- 
- 	copy_buf->buf = kzalloc(buf_size, GFP_ATOMIC);
- 	if (!copy_buf->buf) {
- 		kfree(copy_buf);
--		return (struct f_audio_buf *)-ENOMEM;
-+		return ERR_PTR(-ENOMEM);
- 	}
- 
- 	return copy_buf;
-@@ -332,7 +332,7 @@ static int f_audio_out_ep_complete(struct usb_ep *ep, struct usb_request *req)
- 		list_add_tail(&copy_buf->list, &audio->play_queue);
- 		schedule_work(&audio->playback_work);
- 		copy_buf = f_audio_buffer_alloc(audio_buf_size);
--		if (copy_buf < 0)
-+		if (IS_ERR(copy_buf))
- 			return -ENOMEM;
- 	}
- 
-@@ -576,6 +576,8 @@ static int f_audio_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
- 			usb_ep_enable(out_ep, audio->out_desc);
- 			out_ep->driver_data = audio;
- 			audio->copy_buf = f_audio_buffer_alloc(audio_buf_size);
-+			if (IS_ERR(audio->copy_buf))
-+				return -ENOMEM;
- 
- 			/*
- 			 * allocate a bunch of read buffers
+*raised brows*
+Old mm may bloody well be still shared, so I'd be vary of trying that -
+there's a lot of nasty surprises we could get on that way.
