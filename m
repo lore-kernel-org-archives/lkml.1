@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbZLIV6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbZLIWHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757793AbZLIV6v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 16:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbZLIV6u
+	id S1758096AbZLIWHu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 17:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbZLIWHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 16:58:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51089 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757077AbZLIV6t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 16:58:49 -0500
-Date: Wed, 9 Dec 2009 13:58:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickens <hugh@veritas.com>
-Subject: Re: [GIT PULL] x86/paravirt for v2.6.33
-In-Reply-To: <4B1FE9FD.3030407@goop.org>
-Message-ID: <alpine.LFD.2.00.0912091354190.3560@localhost.localdomain>
-References: <20091203210913.GA24351@elte.hu> <alpine.LFD.2.00.0912081329460.3560@localhost.localdomain> <4B1FE9FD.3030407@goop.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 9 Dec 2009 17:07:44 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:45353 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753815AbZLIWHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 17:07:44 -0500
+Date: Wed, 9 Dec 2009 23:07:49 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Heinz Diehl <htd@fancy-poultry.org>
+Cc: linux-kernel@vger.kernel.org, martin.petersen@oracle.com
+Subject: Re: todays git regression (2.6.32-04008.g3ff6a46): lot of device
+	mapper warnings
+Message-ID: <20091209220749.GD8742@kernel.dk>
+References: <200912091049.12604.borntraeger@de.ibm.com> <20091209212516.GA6206@fancy-poultry.org> <20091209214501.GC8742@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091209214501.GC8742@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 9 Dec 2009, Jeremy Fitzhardinge wrote:
-
-> On 12/08/09 13:34, Linus Torvalds wrote:
-> > I do _not_ want to add any more task_pt_regs() crap, please.
+On Wed, Dec 09 2009, Jens Axboe wrote:
+> On Wed, Dec 09 2009, Heinz Diehl wrote:
+> > On 09.12.2009, Christian Borntraeger wrote: 
 > > 
-> > Why? It's wrong for at least vm86 mode (and from kernel system calls).
-> >    
+> > > with todays git I got a huge amount of warnings for device mapper:
+> > > device-mapper: uevent: version 1.0.3                                                                              
+> > > device-mapper: ioctl: 4.15.0-ioctl (2009-04-01) initialised: dm-devel@redhat.com                                  
+> > > device-mapper: table: 252:0: target device dasdf1 is misaligned: physical_block_size=4096, logical_block_size=4096, alignment_offset=0, start=196608                                                                                
+> > [...]
+> >  
+> > > The same devices produce no warning with a 2.6.32 vanilla kernel.
+> > 
+> > I have exactly the same here...
 > 
-> Would the stack frame version work in these cases?
+> Can either one of you try and bisect it? I've cc'ed Martin, it's likely
+> one of the io stacking patches that causes this.
 
-It would "work" in the sense that at least it wouldn't corrupt the "outer" 
-stack frame - it would only change the inner one. For vm86 mode, that 
-would actually matter (iopl is meaningful), but as Peter also said, I 
-don't think we actually allow direct system calls from vm86 mode.
+Does this work?
 
-For me it's actually more of a conceptual complaint: I really think 
-'task_pt_regs()' is only reliable for ptrace and is simply _wrong_ in 
-other situations. On other architectures, you literally need to set up the 
-stack _differently_ on the signal handling path - which is what ptrace 
-does - than on regular system call paths.
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index dd1f1e0..0116d29 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -554,11 +554,13 @@ int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
+ 		ret = -1;
+ 	}
+ 
++#if 0
+ 	if (offset &&
+ 	    (offset & (b->discard_granularity - 1)) != b->discard_alignment) {
+ 		t->discard_misaligned = 1;
+ 		ret = -1;
+ 	}
++#endif
+ 
+ 	/* If top has no alignment offset, inherit from bottom */
+ 	if (!t->alignment_offset)
 
-So conceptually, the system call stack layout is simply _different_ than 
-the ptrace stack. And I'd hate to have x86 code that teaches people to do 
-things that really don't work in general.
+-- 
+Jens Axboe
 
-			Linus
