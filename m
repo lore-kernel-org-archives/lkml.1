@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbZLJI20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbZLJI2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbZLJI20 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 03:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbZLJI2U
+	id S1757352AbZLJI2m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 03:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbZLJI2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 03:28:20 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:59001 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755186AbZLJI2U (ORCPT
+	Thu, 10 Dec 2009 03:28:35 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:57875 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756372AbZLJI2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 03:28:20 -0500
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 10 Dec 2009 10:27:40 +0200
-Message-Id: <20091210082740.6403.22787.sendpatchset@localhost.localdomain>
-Subject: [GIT PULL] UBIFS changes for 2.6.33
-X-OriginalArrivalTime: 10 Dec 2009 08:28:11.0590 (UTC) FILETIME=[B5BEE660:01CA7972]
-X-Nokia-AV: Clean
+	Thu, 10 Dec 2009 03:28:34 -0500
+Date: Thu, 10 Dec 2009 09:28:03 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Julia Lawall <julia@diku.dk>
+Cc: Sascha Hauer <kernel@pengutronix.de>,
+       Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/12] arch/arm: Correct size given to memset
+Message-ID: <20091210082803.GA6255@pengutronix.de>
+References: <Pine.LNX.4.64.0912092022040.1870@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0912092022040.1870@ask.diku.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hello,
 
-please, pull from UBIFS tree. Since there are dependencies between few
-UBI and UBIFS patches, I combined all the UBI and UBIFS stuff, so you
-will effectively pull all UBI and UBIFS updates for this merge window.
+On Wed, Dec 09, 2009 at 08:22:26PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> Memset should be given the size of the structure, not the size of the pointer.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> type T;
+> T *x;
+> expression E;
+> @@
+> 
+> memset(x, E, sizeof(
+> + *
+>  x))
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  arch/arm/plat-mxc/dma-mx1-mx2.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -u -p a/arch/arm/plat-mxc/dma-mx1-mx2.c b/arch/arm/plat-mxc/dma-mx1-mx2.c
+> --- a/arch/arm/plat-mxc/dma-mx1-mx2.c
+> +++ b/arch/arm/plat-mxc/dma-mx1-mx2.c
+> @@ -694,7 +694,7 @@ int imx_dma_request(int channel, const c
+>  		local_irq_restore(flags);
+>  		return -EBUSY;
+>  	}
+> -	memset(imxdma, 0, sizeof(imxdma));
+> +	memset(imxdma, 0, sizeof(*imxdma));
+>  	imxdma->name = name;
+>  	local_irq_restore(flags); /* request_irq() can block */
+Patch is OK, Sascha, if you take it you can add my Ack, if not I can
+take care of it in my cleanup series.
 
-The following changes since commit 648f4e3e50c4793d9dbf9a09afa193631f76fa26:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc8
+Best regards
+Uwe
 
-are available in the git repository at:
-
-  git://git.infradead.org/ubifs-2.6.git master
-
-Artem Bityutskiy (1):
-      MAINTAINERS: change e-mail of Artem Bityutskiy
-
-Christoph Hellwig (1):
-      UBIFS: remove manual O_SYNC handling
-
-Corentin Chary (2):
-      UBI: Add ubi_open_volume_path
-      UBIFS: support mounting of UBI volume character devices
-
-Roel Kluin (1):
-      UBIFS: fix return code in check_leaf
-
-Sebastian Andrzej Siewior (1):
-      UBI: flush wl before clearing update marker
-
- MAINTAINERS             |    4 ++--
- drivers/mtd/ubi/kapi.c  |   40 ++++++++++++++++++++++++++++++++++++++++
- drivers/mtd/ubi/upd.c   |   20 +++++++++++---------
- fs/ubifs/debug.c        |    2 +-
- fs/ubifs/file.c         |   13 +------------
- fs/ubifs/super.c        |   20 +++++++++++++++-----
- include/linux/mtd/ubi.h |    2 ++
- 7 files changed, 72 insertions(+), 29 deletions(-)
-
-Thanks,
-Artem.
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
