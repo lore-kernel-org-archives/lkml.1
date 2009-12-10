@@ -1,134 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbZLJJ4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760478AbZLJJ4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbZLJJ4b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 04:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759451AbZLJJ4Z
+	id S1760478AbZLJJ4o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 04:56:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759467AbZLJJ4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 04:56:25 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:48982 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759437AbZLJJ4Y (ORCPT
+	Thu, 10 Dec 2009 04:56:40 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:26433 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759436AbZLJJ4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 04:56:24 -0500
-Date: Thu, 10 Dec 2009 10:56:29 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] hrtimer: move timer stats helper functions to hrtimer.c
-Message-ID: <20091210095629.GC4144@osiris.boeblingen.de.ibm.com>
+	Thu, 10 Dec 2009 04:56:38 -0500
+X-Trace: 304048899/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.50.63/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.50.63
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhYBAH5UIEtPRTI//2dsb2JhbAAIhB3BIJAag1lTBA
+X-IronPort-AV: E=Sophos;i="4.47,374,1257120000"; 
+   d="scan'208";a="304048899"
+Date: Thu, 10 Dec 2009 09:56:36 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: An mm bug in today's 2.6.32 git tree
+In-Reply-To: <2375c9f90912092259pe86356cvb716232ba7a4d604@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0912100951130.31654@sister.anvils>
+References: <2375c9f90912090238u7487019eq2458210aac4b602@mail.gmail.com> 
+ <Pine.LNX.4.64.0912091442360.30748@sister.anvils>
+ <2375c9f90912092259pe86356cvb716232ba7a4d604@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1357647399-1260438996=:31654"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-There is no reason to make timer_stats_hrtimer_set_start_info and friends
-visible to the rest of the kernel. So move all of them to hrtimer.c.
-Also make timer_stats_hrtimer_set_start_info a static inline function
-so it gets inlined and we avoid another function call.
-Based on a patch by Thomas Gleixner.
+--8323584-1357647399-1260438996=:31654
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- include/linux/hrtimer.h |   43 -------------------------------------------
- kernel/hrtimer.c        |   24 ++++++++++++++++++++----
- 2 files changed, 20 insertions(+), 47 deletions(-)
+On Thu, 10 Dec 2009, Am=C3=A9rico Wang wrote:
+> On Wed, Dec 9, 2009 at 10:49 PM, Hugh Dickins
+> >
+> > Thanks for the report. =C2=A0Not known to me.
+> > It looks like something has corrupted the start of a pagetable.
+                                  no, not the start
+> > No idea what that something might be, but probably not bad RAM.
+> >
+> >>
+> >> Please feel free to let me know if you need more info.
+> >
+> > You say you saw it twice: please post what the other occasion
+> > showed (unless the first six lines were identical to this and it
+> > occurred around the same time i.e. separate report of the same).
+> >
+>=20
+> Yes, the rest are almost the same, the only difference is the 'addr'
+> shows different addresses.
 
-Index: linux-2.6/include/linux/hrtimer.h
-===================================================================
---- linux-2.6.orig/include/linux/hrtimer.h
-+++ linux-2.6/include/linux/hrtimer.h
-@@ -435,47 +435,4 @@ extern u64 ktime_divns(const ktime_t kt,
- /* Show pending timers: */
- extern void sysrq_timer_list_show(void);
- 
--/*
-- * Timer-statistics info:
-- */
--#ifdef CONFIG_TIMER_STATS
--
--extern void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
--				     void *timerf, char *comm,
--				     unsigned int timer_flag);
--
--static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
--{
--	if (likely(!timer_stats_active))
--		return;
--	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
--				 timer->function, timer->start_comm, 0);
--}
--
--extern void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer,
--						 void *addr);
--
--static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
--{
--	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
--}
--
--static inline void timer_stats_hrtimer_clear_start_info(struct hrtimer *timer)
--{
--	timer->start_site = NULL;
--}
--#else
--static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
--{
--}
--
--static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
--{
--}
--
--static inline void timer_stats_hrtimer_clear_start_info(struct hrtimer *timer)
--{
--}
--#endif
--
- #endif
-Index: linux-2.6/kernel/hrtimer.c
-===================================================================
---- linux-2.6.orig/kernel/hrtimer.c
-+++ linux-2.6/kernel/hrtimer.c
-@@ -747,17 +747,33 @@ static inline void hrtimer_init_timer_hr
- 
- #endif /* CONFIG_HIGH_RES_TIMERS */
- 
--#ifdef CONFIG_TIMER_STATS
--void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer, void *addr)
-+static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
- {
-+#ifdef CONFIG_TIMER_STATS
- 	if (timer->start_site)
- 		return;
--
--	timer->start_site = addr;
-+	timer->start_site = __builtin_return_address(0);
- 	memcpy(timer->start_comm, current->comm, TASK_COMM_LEN);
- 	timer->start_pid = current->pid;
-+#endif
- }
-+
-+static inline void timer_stats_hrtimer_clear_start_info(struct hrtimer *timer)
-+{
-+#ifdef CONFIG_TIMER_STATS
-+	timer->start_site = NULL;
- #endif
-+}
-+
-+static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
-+{
-+#ifdef CONFIG_TIMER_STATS
-+	if (likely(!timer_stats_active))
-+		return;
-+	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
-+				 timer->function, timer->start_comm, 0);
-+#endif
-+}
- 
- /*
-  * Counterpart to lock_hrtimer_base above:
+Please post what this other occasion showed, if you still have the log.
+
+Hugh
+--8323584-1357647399-1260438996=:31654--
