@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbZLJCKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbZLJCVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbZLJCKk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 21:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759460AbZLJCKh
+	id S1759463AbZLJCVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 21:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZLJCVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 21:10:37 -0500
-Received: from thunk.org ([69.25.196.29]:42818 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759447AbZLJCKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 21:10:36 -0500
-Date: Wed, 9 Dec 2009 21:10:40 -0500
-From: tytso@mit.edu
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>
-Subject: Re: linux-next: ext4 tree build failure
-Message-ID: <20091210021040.GB4735@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Jan Kara <jack@suse.cz>
-References: <20091210113812.9d1e4bb4.sfr@canb.auug.org.au>
+	Wed, 9 Dec 2009 21:21:18 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:56905 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759207AbZLJCVR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 21:21:17 -0500
+Date: Thu, 10 Dec 2009 07:51:13 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Paul Menage <menage@google.com>, kosaki.motohiro@jp.fujitsu.com,
+       hugh.dickins@tiscali.co.uk, nishimura@mxp.nes.nec.co.jp,
+       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, npiggin@suse.de,
+       fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] [23/31] HWPOISON: add memory cgroup filter
+Message-ID: <20091210022113.GJ3722@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <200912081016.198135742@firstfloor.org>
+ <20091208211639.8499FB151F@basil.firstfloor.org>
+ <6599ad830912091247v1270a86er45ea8ceeff28e727@mail.gmail.com>
+ <20091210014212.GI18989@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091210113812.9d1e4bb4.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20091210014212.GI18989@one.firstfloor.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 11:38:12AM +1100, Stephen Rothwell wrote:
-> Hi Ted,
-> 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> ERROR: "jbd2_log_start_commit" [fs/ext4/ext4.ko] undefined!
-> 
-> Caused by commit b436b9bef84de6893e86346d8fbf7104bc520645 ("ext4: Wait
-> for proper transaction commit on fsync") which I have reverted for today.
+* Andi Kleen <andi@firstfloor.org> [2009-12-10 02:42:12]:
 
-Thanks for pointing this out.  I've fixed this for tomorrow's build.
+> > While the functionality sounds useful, the interface (passing an inode
+> > number) feels a bit ugly to me. Also, if that group is deleted and a
+> > new cgroup created, you could end up reusing the inode number.
+> 
+> Please note this is just a testing interface, doesn't need to be
+> 100% fool-proof. It'll never be used in production.
+> 
+> > 
+> > How about an approach where you write either the cgroup path (relative
+> > to the memcg mount) or an fd open on the desired cgroup? Then you
+> > could store a (counted) css reference rather than an inode number,
+> > which would make the filter function cleaner too, since it would just
+> > need to compare css objects.
+> 
+> Sounds complicated, I assume it would be much more code?
+> I would prefer to keep the testing interfaces as simple as possible.
+>
 
-       	   	    	       	    	       - Ted
+We do this for cgroupstats and the code is not very complicated. In
+case you want to look, the user space code is at
+Documentation/accounting/getdelays.c and the kernel code is in
+kernel/taskstats.c 
+
+-- 
+	Balbir
