@@ -1,337 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbZLJHiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933492AbZLJHfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760623AbZLJHiP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 02:38:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760566AbZLJHiH
+	id S933492AbZLJHfU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 02:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933303AbZLJHfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 02:38:07 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57078 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760565AbZLJHiF (ORCPT
+	Thu, 10 Dec 2009 02:35:16 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:61806 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933292AbZLJHfO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 02:38:05 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 10 Dec 2009 16:34:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com, mingo@elte.hu
-Subject: [RFC mm][PATCH 2/5] percpu cached mm counter
-Message-Id: <20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Dec 2009 02:35:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent;
+        b=ZuhvjQ5QR9DwgjDl2GaW7A6IOups9XfntPu8Hkp2Kj2Dl5wb/yBtNuASjPuJ4wRS36
+         y7Knt++bUYHF5ft5TbT9HVp5JmJD1kjyhrQlacl2ZPYAU3v32rAijlUdESn9JhCd6pR/
+         3GhE3bJCq2MJgijF71zna8HKgzt07XF+k2aM0=
+Date: Thu, 10 Dec 2009 08:35:14 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: borislav.petkov@amd.com, Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Aristeu Rozanski <aris@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
+       x86 <x86@kernel.org>
+Subject: Re: [PATCH] x86, msr: add support for non-contiguous cpumasks
+Message-ID: <20091210073514.GA7088@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, borislav.petkov@amd.com,
+	Mauro Carvalho Chehab <mchehab@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Aristeu Rozanski <aris@redhat.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
+	x86 <x86@kernel.org>
+References: <20091207122133.GA24877@aftab>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091207122133.GA24877@aftab>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Hi Peter,
 
-Now, mm's counter information is updated by atomic_long_xxx() functions if
-USE_SPLIT_PTLOCKS is defined. This causes cache-miss when page faults happens
-simultaneously in prural cpus. (Almost all process-shared objects is...)
+any nacks/acks on the fix below? Because we really need some version of
+it to go in now.
 
-Considering accounting per-mm page usage more, one of problems is cost of
-this counter.
+Thanks.
 
-This patch implements per-cpu mm cache. This per-cpu cache is loosely
-synchronized with mm's counter. Current design is..
+On Mon, Dec 07, 2009 at 01:21:33PM +0100, Borislav Petkov wrote:
+> Hi Peter,
+> 
+> can you please take a look at the following patch which fixes a problem
+> with non-contiguous cpumasks submitted to rd/wrmsr_on_cpus() (see URL in
+> the commit message below) and let me know whether this approach looks
+> ok. If yes, I could submit it with my patchqueue along with the rest of
+> amd64_edac updates for it'll be very convenient if we could get it in
+> now so that it could be backported to .32.
+> 
+> Thanks.
+> 
+> ---
+> The current rd/wrmsr_on_cpus helpers assume that the supplied
+> cpumasks are contiguous. However, there are machines out there
+> like some K8 multinode Opterons which have a non-contiguous core
+> enumeration on each node (e.g. cores 0,2 on node 0 instead of 0,1), see
+> http://www.gossamer-threads.com/lists/linux/kernel/1160268.
+> 
+> This patch fixes out-of-bounds writes (see URL above) by making sure we
+> stay inbounds by using an msr->cpu field which tells us which CPU's MSRs
+> to access.
+> 
+> Additionally, this patch adds msrs_{alloc,free} helpers for preparing
+> the array of MSRs to access.
+> 
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+> Cc: Aristeu Rozanski <aris@redhat.com>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Doug Thompson <dougthompson@xmission.com>
+> Not-yet-signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> ---
+>  arch/x86/include/asm/msr.h |   11 ++++++
+>  arch/x86/lib/msr.c         |   81 +++++++++++++++++++++++++++++++++++++------
+>  drivers/edac/amd64_edac.c  |   17 ++++-----
+>  3 files changed, 87 insertions(+), 22 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+> index 9a00219..4f528f8 100644
+> --- a/arch/x86/include/asm/msr.h
+> +++ b/arch/x86/include/asm/msr.h
+> @@ -18,6 +18,7 @@
+>  #include <asm/cpumask.h>
+>  
+>  struct msr {
+> +	int cpu;
+>  	union {
+>  		struct {
+>  			u32 l;
+> @@ -247,6 +248,8 @@ do {                                                            \
+>  #ifdef CONFIG_SMP
+>  int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+>  int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
+> +struct msr *msrs_alloc(const struct cpumask *mask);
+> +void msrs_free(struct msr *msrs);
+>  void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs);
+>  void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs);
+>  int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+> @@ -264,6 +267,14 @@ static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+>  	wrmsr(msr_no, l, h);
+>  	return 0;
+>  }
+> +struct msr *msrs_alloc(const struct cpumask *mask)
+> +{
+> +	return kzalloc(sizeof(struct msr), GFP_KERNEL);
+> +}
+> +void msrs_free(struct msr *msrs)
+> +{
+> +	kfree(msrs);
+> +}
+>  static inline void rdmsr_on_cpus(const cpumask_t *m, u32 msr_no,
+>  				struct msr *msrs)
+>  {
+> diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
+> index 41628b1..e2213de 100644
+> --- a/arch/x86/lib/msr.c
+> +++ b/arch/x86/lib/msr.c
+> @@ -7,20 +7,40 @@ struct msr_info {
+>  	u32 msr_no;
+>  	struct msr reg;
+>  	struct msr *msrs;
+> -	int off;
+> +	unsigned msrs_len;
+>  	int err;
+>  };
+>  
+> +static inline struct msr *scroll_to_cpu(struct msr_info *rv, int this_cpu,
+> +					const char *caller)
+> +{
+> +	int i = 0;
+> +
+> +	if (!rv->msrs)
+> +		return &rv->reg;
+> +
+> +	while (i < rv->msrs_len &&
+> +		rv->msrs[i].cpu != this_cpu)
+> +		i++;
+> +
+> +	if (rv->msrs[i].cpu != this_cpu) {
+> +		pr_err("%s: called on a wrong cpu (%d vs %d)?\n",
+> +			caller, rv->msrs[i].cpu, this_cpu);
+> +		return NULL;
+> +	}
+> +
+> +	return &rv->msrs[i];
+> +}
+> +
+>  static void __rdmsr_on_cpu(void *info)
+>  {
+>  	struct msr_info *rv = info;
+>  	struct msr *reg;
+>  	int this_cpu = raw_smp_processor_id();
+>  
+> -	if (rv->msrs)
+> -		reg = &rv->msrs[this_cpu - rv->off];
+> -	else
+> -		reg = &rv->reg;
+> +	reg = scroll_to_cpu(rv, this_cpu, __func__);
+> +	if (!reg)
+> +		return;
+>  
+>  	rdmsr(rv->msr_no, reg->l, reg->h);
+>  }
+> @@ -31,10 +51,9 @@ static void __wrmsr_on_cpu(void *info)
+>  	struct msr *reg;
+>  	int this_cpu = raw_smp_processor_id();
+>  
+> -	if (rv->msrs)
+> -		reg = &rv->msrs[this_cpu - rv->off];
+> -	else
+> -		reg = &rv->reg;
+> +	reg = scroll_to_cpu(rv, this_cpu, __func__);
+> +	if (!reg)
+> +		return;
+>  
+>  	wrmsr(rv->msr_no, reg->l, reg->h);
+>  }
+> @@ -80,9 +99,9 @@ static void __rwmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
+>  
+>  	memset(&rv, 0, sizeof(rv));
+>  
+> -	rv.off    = cpumask_first(mask);
+> -	rv.msrs	  = msrs;
+> -	rv.msr_no = msr_no;
+> +	rv.msr_no   = msr_no;
+> +	rv.msrs	    = msrs;
+> +	rv.msrs_len = cpumask_weight(mask);
+>  
+>  	this_cpu = get_cpu();
+>  
+> @@ -120,6 +139,44 @@ void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
+>  }
+>  EXPORT_SYMBOL(wrmsr_on_cpus);
+>  
+> +/*
+> + * Allocate enough msr structs for the supplied cpumask. Also, take care of
+> + * non-contigious bitmasks.
+> + */
+> +struct msr *msrs_alloc(const struct cpumask *mask)
+> +{
+> +	struct msr *msrs;
+> +	int i, cpu = -1;
+> +	unsigned msrs_len;
+> +
+> +	if (cpumask_empty(mask)) {
+> +		pr_warning("%s: empty cpumask!\n", __func__);
+> +		return NULL;
+> +	}
+> +
+> +	msrs_len = cpumask_weight(mask);
+> +
+> +	msrs = kzalloc(sizeof(struct msr) * msrs_len, GFP_KERNEL);
+> +	if (!msrs) {
+> +		pr_warning("%s: error allocating msrs\n", __func__);
+> +		return NULL;
+> +	}
+> +
+> +	for (i = 0; i < msrs_len; i++) {
+> +		cpu = cpumask_next(cpu, mask);
+> +		msrs[i].cpu = cpu;
+> +	}
+> +
+> +	return msrs;
+> +}
+> +EXPORT_SYMBOL(msrs_alloc);
+> +
+> +void msrs_free(struct msr *msrs)
+> +{
+> +	kfree(msrs);
+> +}
+> +EXPORT_SYMBOL(msrs_free);
+> +
+>  /* These "safe" variants are slower and should be used when the target MSR
+>     may not actually exist. */
+>  static void __rdmsr_safe_on_cpu(void *info)
+> diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+> index 533f5ff..784c968 100644
+> --- a/drivers/edac/amd64_edac.c
+> +++ b/drivers/edac/amd64_edac.c
+> @@ -2507,10 +2507,8 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
+>  
+>  	get_cpus_on_this_dct_cpumask(mask, nid);
+>  
+> -	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(mask), GFP_KERNEL);
+> +	msrs = msrs_alloc(mask);
+>  	if (!msrs) {
+> -		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+> -			      __func__);
+>  		free_cpumask_var(mask);
+>  		 return false;
+>  	}
+> @@ -2532,7 +2530,7 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
+>  	ret = true;
+>  
+>  out:
+> -	kfree(msrs);
+> +	msrs_free(msrs);
+>  	free_cpumask_var(mask);
+>  	return ret;
+>  }
+> @@ -2551,17 +2549,16 @@ static int amd64_toggle_ecc_err_reporting(struct amd64_pvt *pvt, bool on)
+>  
+>  	get_cpus_on_this_dct_cpumask(cmask, pvt->mc_node_id);
+>  
+> -	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(cmask), GFP_KERNEL);
+> -	if (!msrs) {
+> -		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+> -			     __func__);
+> +	msrs = msrs_alloc(cmask);
+> +	if (!msrs)
+>  		return -ENOMEM;
+> -	}
+>  
+>  	rdmsr_on_cpus(cmask, MSR_IA32_MCG_CTL, msrs);
+>  
+>  	for_each_cpu(cpu, cmask) {
+>  
+> +		WARN_ON(cpu != msrs[idx].cpu);
+> +
+>  		if (on) {
+>  			if (msrs[idx].l & K8_MSR_MCGCTL_NBE)
+>  				pvt->flags.ecc_report = 1;
+> @@ -2578,7 +2575,7 @@ static int amd64_toggle_ecc_err_reporting(struct amd64_pvt *pvt, bool on)
+>  	}
+>  	wrmsr_on_cpus(cmask, MSR_IA32_MCG_CTL, msrs);
+>  
+> -	kfree(msrs);
+> +	msrs_free(msrs);
+>  	free_cpumask_var(cmask);
+>  
+>  	return 0;
+> -- 
+> 1.6.5.3
+> 
+> 
+> -- 
+> Regards/Gruss,
+> Boris.
+> 
+> Operating | Advanced Micro Devices GmbH
+>   System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+>  Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+>   Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+>   (OSRC)  | Registergericht München, HRB Nr. 43632
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-  - prepare per-cpu object curr_mmc. curr_mmc containes pointer to mm and
-    array of counters.
-  - At page fault,
-     * if curr_mmc.mm != NULL, update curr_mmc.mm counter.
-     * if curr_mmc.mm == NULL, fill curr_mmc.mm = current->mm and account 1.
-  - At schedule()
-     * if curr_mm.mm != NULL, synchronize and invalidate cached information.
-     * if curr_mmc.mm == NULL, nothing to do.
-
-By this.
-  - no atomic ops, which tends to cache-miss, under page table lock.
-  - mm->counters are synchronized when schedule() is called.
-  - No bad thing to read-side.
-
-Concern:
-  - added cost to schedule().
-
-Micro Benchmark:
-  measured the number of page faults with 2 threads on 2 sockets.
-
- Before:
-   Performance counter stats for './multi-fault 2' (5 runs):
-
-       45122351  page-faults                ( +-   1.125% )
-      989608571  cache-references           ( +-   1.198% )
-      205308558  cache-misses               ( +-   0.159% )
-   29263096648639268  bus-cycles                 ( +-   0.004% )
-
-   60.003427500  seconds time elapsed   ( +-   0.003% )
-
- After:
-    Performance counter stats for './multi-fault 2' (5 runs):
-
-       46997471  page-faults                ( +-   0.720% )
-     1004100076  cache-references           ( +-   0.734% )
-      180959964  cache-misses               ( +-   0.374% )
-   29263437363580464  bus-cycles                 ( +-   0.002% )
-
-   60.003315683  seconds time elapsed   ( +-   0.004% )
-
-   cachemiss/page faults is reduced from 4.55 miss/faults to be 3.85miss/faults
-
-   This microbencmark doesn't do usual behavior (page fault ->madvise(DONTNEED)
-   but reducing cache-miss cost sounds good to me even if it's very small.
-
-Changelog 2009/12/09:
- - loosely update curr_mmc.mm at the 1st page fault.
- - removed hooks in tick.(update_process_times)
- - exported curr_mmc and check curr_mmc.mm directly.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- include/linux/mm.h       |   37 ++++++++++++++++++++++++++++
- include/linux/mm_types.h |   12 +++++++++
- kernel/exit.c            |    3 +-
- kernel/sched.c           |    6 ++++
- mm/memory.c              |   60 ++++++++++++++++++++++++++++++++++++++++-------
- 5 files changed, 108 insertions(+), 10 deletions(-)
-
-Index: mmotm-2.6.32-Dec8/include/linux/mm_types.h
-===================================================================
---- mmotm-2.6.32-Dec8.orig/include/linux/mm_types.h
-+++ mmotm-2.6.32-Dec8/include/linux/mm_types.h
-@@ -297,4 +297,16 @@ struct mm_struct {
- /* Future-safe accessor for struct mm_struct's cpu_vm_mask. */
- #define mm_cpumask(mm) (&(mm)->cpu_vm_mask)
- 
-+#if USE_SPLIT_PTLOCKS
-+/*
-+ * percpu object used for caching thread->mm information.
-+ */
-+struct pcp_mm_cache {
-+	struct mm_struct *mm;
-+	unsigned long counters[NR_MM_COUNTERS];
-+};
-+
-+DECLARE_PER_CPU(struct pcp_mm_cache, curr_mmc);
-+#endif
-+
- #endif /* _LINUX_MM_TYPES_H */
-Index: mmotm-2.6.32-Dec8/include/linux/mm.h
-===================================================================
---- mmotm-2.6.32-Dec8.orig/include/linux/mm.h
-+++ mmotm-2.6.32-Dec8/include/linux/mm.h
-@@ -883,7 +883,16 @@ static inline void set_mm_counter(struct
- 
- static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
- {
--	return (unsigned long)atomic_long_read(&(mm)->counters[member]);
-+	long ret;
-+	/*
-+	 * Because this counter is loosely synchronized with percpu cached
-+ 	 * information, it's possible that value gets to be minus. For user's
-+ 	 * convenience/sanity, avoid returning minus.
-+ 	 */
-+	ret = atomic_long_read(&(mm)->counters[member]);
-+	if (unlikely(ret < 0))
-+		return 0;
-+	return (unsigned long)ret;
- }
- 
- static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
-@@ -900,6 +909,25 @@ static inline void dec_mm_counter(struct
- {
- 	atomic_long_dec(&(mm)->counters[member]);
- }
-+extern void __sync_mm_counters(struct mm_struct *mm);
-+/* Called under non-preemptable context, for syncing cached information */
-+static inline void sync_mm_counters_atomic(void)
-+{
-+	struct mm_struct *mm;
-+
-+	mm = percpu_read(curr_mmc.mm);
-+	if (mm) {
-+		__sync_mm_counters(mm);
-+		percpu_write(curr_mmc.mm, NULL);
-+	}
-+}
-+/* called at thread exit */
-+static inline void exit_mm_counters(void)
-+{
-+	preempt_disable();
-+	sync_mm_counters_atomic();
-+	preempt_enable();
-+}
- 
- #else  /* !USE_SPLIT_PTLOCKS */
- /*
-@@ -931,6 +959,13 @@ static inline void dec_mm_counter(struct
- 	mm->counters[member]--;
- }
- 
-+static inline void sync_mm_counters_atomic(void)
-+{
-+}
-+
-+static inline void exit_mm_counters(void)
-+{
-+}
- #endif /* !USE_SPLIT_PTLOCKS */
- 
- #define get_mm_rss(mm)					\
-Index: mmotm-2.6.32-Dec8/mm/memory.c
-===================================================================
---- mmotm-2.6.32-Dec8.orig/mm/memory.c
-+++ mmotm-2.6.32-Dec8/mm/memory.c
-@@ -121,6 +121,50 @@ static int __init init_zero_pfn(void)
- }
- core_initcall(init_zero_pfn);
- 
-+#if USE_SPLIT_PTLOCKS
-+
-+DEFINE_PER_CPU(struct pcp_mm_cache, curr_mmc);
-+
-+void __sync_mm_counters(struct mm_struct *mm)
-+{
-+	struct pcp_mm_cache *mmc = &per_cpu(curr_mmc, smp_processor_id());
-+	int i;
-+
-+	for (i = 0; i < NR_MM_COUNTERS; i++) {
-+		if (mmc->counters[i] != 0) {
-+			atomic_long_add(mmc->counters[i], &mm->counters[i]);
-+			mmc->counters[i] = 0;
-+		}
-+	}
-+	return;
-+}
-+/*
-+ * This add_mm_counter_fast() works well only when it's expexted that
-+ * mm == current->mm. So, use of this function is limited under memory.c
-+ * This add_mm_counter_fast() is called under page table lock.
-+ */
-+static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
-+{
-+	struct mm_struct *cached = percpu_read(curr_mmc.mm);
-+
-+	if (likely(cached == mm)) { /* fast path */
-+		percpu_add(curr_mmc.counters[member], val);
-+	} else if (mm == current->mm) { /* 1st page fault in this period */
-+		percpu_write(curr_mmc.mm, mm);
-+		percpu_write(curr_mmc.counters[member], val);
-+	} else /* page fault via side-path context (get_user_pages()) */
-+		add_mm_counter(mm, member, val);
-+}
-+
-+#define inc_mm_counter_fast(mm, member)	add_mm_counter_fast(mm, member, 1)
-+#define dec_mm_counter_fast(mm, member)	add_mm_counter_fast(mm, member, -1)
-+#else
-+
-+#define inc_mm_counter_fast(mm, member)	inc_mm_counter(mm, member)
-+#define dec_mm_counter_fast(mm, member)	dec_mm_counter(mm, member)
-+
-+#endif
-+
- /*
-  * If a p?d_bad entry is found while walking page tables, report
-  * the error, before resetting entry to p?d_none.  Usually (but
-@@ -1541,7 +1585,7 @@ static int insert_page(struct vm_area_st
- 
- 	/* Ok, finally just insert the thing.. */
- 	get_page(page);
--	inc_mm_counter(mm, MM_FILEPAGES);
-+	inc_mm_counter_fast(mm, MM_FILEPAGES);
- 	page_add_file_rmap(page);
- 	set_pte_at(mm, addr, pte, mk_pte(page, prot));
- 
-@@ -2177,11 +2221,11 @@ gotten:
- 	if (likely(pte_same(*page_table, orig_pte))) {
- 		if (old_page) {
- 			if (!PageAnon(old_page)) {
--				dec_mm_counter(mm, MM_FILEPAGES);
--				inc_mm_counter(mm, MM_ANONPAGES);
-+				dec_mm_counter_fast(mm, MM_FILEPAGES);
-+				inc_mm_counter_fast(mm, MM_ANONPAGES);
- 			}
- 		} else
--			inc_mm_counter(mm, MM_ANONPAGES);
-+			inc_mm_counter_fast(mm, MM_ANONPAGES);
- 		flush_cache_page(vma, address, pte_pfn(orig_pte));
- 		entry = mk_pte(new_page, vma->vm_page_prot);
- 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-@@ -2614,7 +2658,7 @@ static int do_swap_page(struct mm_struct
- 	 * discarded at swap_free().
- 	 */
- 
--	inc_mm_counter(mm, MM_ANONPAGES);
-+	inc_mm_counter_fast(mm, MM_ANONPAGES);
- 	pte = mk_pte(page, vma->vm_page_prot);
- 	if ((flags & FAULT_FLAG_WRITE) && reuse_swap_page(page)) {
- 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
-@@ -2698,7 +2742,7 @@ static int do_anonymous_page(struct mm_s
- 	if (!pte_none(*page_table))
- 		goto release;
- 
--	inc_mm_counter(mm, MM_ANONPAGES);
-+	inc_mm_counter_fast(mm, MM_ANONPAGES);
- 	page_add_new_anon_rmap(page, vma, address);
- setpte:
- 	set_pte_at(mm, address, page_table, entry);
-@@ -2852,10 +2896,10 @@ static int __do_fault(struct mm_struct *
- 		if (flags & FAULT_FLAG_WRITE)
- 			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 		if (anon) {
--			inc_mm_counter(mm, MM_ANONPAGES);
-+			inc_mm_counter_fast(mm, MM_ANONPAGES);
- 			page_add_new_anon_rmap(page, vma, address);
- 		} else {
--			inc_mm_counter(mm, MM_FILEPAGES);
-+			inc_mm_counter_fast(mm, MM_FILEPAGES);
- 			page_add_file_rmap(page);
- 			if (flags & FAULT_FLAG_WRITE) {
- 				dirty_page = page;
-Index: mmotm-2.6.32-Dec8/kernel/sched.c
-===================================================================
---- mmotm-2.6.32-Dec8.orig/kernel/sched.c
-+++ mmotm-2.6.32-Dec8/kernel/sched.c
-@@ -2858,6 +2858,7 @@ context_switch(struct rq *rq, struct tas
- 	trace_sched_switch(rq, prev, next);
- 	mm = next->mm;
- 	oldmm = prev->active_mm;
-+
- 	/*
- 	 * For paravirt, this is coupled with an exit in switch_to to
- 	 * combine the page table reload and the switch backend into
-@@ -5477,6 +5478,11 @@ need_resched_nonpreemptible:
- 
- 	if (sched_feat(HRTICK))
- 		hrtick_clear(rq);
-+	/*
-+	 * sync/invaldidate per-cpu cached mm related information
-+	 * before taling rq->lock. (see include/linux/mm.h)
-+	 */
-+	sync_mm_counters_atomic();
- 
- 	spin_lock_irq(&rq->lock);
- 	update_rq_clock(rq);
-Index: mmotm-2.6.32-Dec8/kernel/exit.c
-===================================================================
---- mmotm-2.6.32-Dec8.orig/kernel/exit.c
-+++ mmotm-2.6.32-Dec8/kernel/exit.c
-@@ -942,7 +942,8 @@ NORET_TYPE void do_exit(long code)
- 		printk(KERN_INFO "note: %s[%d] exited with preempt_count %d\n",
- 				current->comm, task_pid_nr(current),
- 				preempt_count());
--
-+	/* synchronize per-cpu cached mm related information before account */
-+	exit_mm_counters();
- 	acct_update_integrals(tsk);
- 
- 	group_dead = atomic_dec_and_test(&tsk->signal->live);
-
+-- 
+Regards/Gruss,
+    Boris.
