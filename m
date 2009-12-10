@@ -1,131 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932775AbZLJFOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932871AbZLJFYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932775AbZLJFOq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 00:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932704AbZLJFOl
+	id S932871AbZLJFYp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 00:24:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932828AbZLJFYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 00:14:41 -0500
-Received: from stargate.chelsio.com ([67.207.112.58]:32180 "EHLO
+	Thu, 10 Dec 2009 00:24:39 -0500
+Received: from stargate.chelsio.com ([67.207.112.58]:4306 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932703AbZLJFOk (ORCPT
+	with ESMTP id S932823AbZLJFYd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 00:14:40 -0500
-From: kxie@chelsio.com
-Message-Id: <200912100525.nBA5PaUn000384@localhost.localdomain>
-Date: Wed, 09 Dec 2009 21:25:36 -0800
-To: linux-scsi@vger.kernel.org, open-iscsi@googlegroups.com
-Subject: [PATCH 1/1]: fixed cxgb3i to always use negative errno in case of error
-Cc: rakesh@chelsio.com, kxie@chelsio.com,
-       James.Bottomley@HansenPartnership.com, michaelc@cs.wisc.edu,
-       linux-kernel@vger.kernel.org
-User-Agent: Heirloom mailx 12.4 7/29/08
+	Thu, 10 Dec 2009 00:24:33 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 1/1] cxgb3i: Fix a login over vlan issue
+Date: Wed, 9 Dec 2009 21:26:49 -0800
+Message-ID: <8A71B368A89016469F72CD08050AD33403F4B0DF@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] cxgb3i: Fix a login over vlan issue
+Thread-Index: Acp3W25mNTt5sbANR6W9xP5LN60wTwB/KQlD
+References: <1259924665-2301-1-git-send-email-rakesh@chelsio.com> <4B1D2E79.4000405@cs.wisc.edu>
+From: "Karen Xie" <kxie@chelsio.com>
+To: "Mike Christie" <michaelc@cs.wisc.edu>, <open-iscsi@googlegroups.com>
+Cc: <James.Bottomley@hansenpartnership.com>, <davem@davemloft.net>,
+       "Steve Wise" <swise@opengridcomputing.com>,
+       <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <linux-netdev@vger.kernel.org>, "Rakesh Ranjan" <rakesh@chelsio.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 1/1]: fixed cxgb3i to always use negative errno in case of error
 
-From: Karen Xie <kxie@chelsio.com>
+Hi, thanks, Mike.
 
-Fixed cxgb3i to use negative errno in case of error.
+It looks like the original patch somehow did not make into the linux-scsi list at all for some reason: tried to search for it but could not find it.
 
-Signed-off-by: Karen Xie <kxie@chelsio.com>
----
+We are re-submitting it just to make sure.
 
- drivers/scsi/cxgb3i/cxgb3i_offload.c |   24 ++++++++++++------------
- drivers/scsi/cxgb3i/cxgb3i_pdu.c     |    4 ++--
- 2 files changed, 14 insertions(+), 14 deletions(-)
+Best regards,
+Karen
+
+-----Original Message-----
+From: Mike Christie [mailto:michaelc@cs.wisc.edu]
+Sent: Mon 12/7/2009 8:34 AM
+To: open-iscsi@googlegroups.com
+Cc: James.Bottomley@hansenpartnership.com; davem@davemloft.net; Steve Wise; Karen Xie; linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; netdev@vger.kernel.org; Rakesh Ranjan
+Subject: Re: [PATCH 1/1] cxgb3i: Fix a login over vlan issue
+ 
+Rakesh Ranjan wrote:
+> Fix a login over vlan issue, when parent interface is vlan and we are using cxgb3i sepecific
+> private ip address in '/etc/iscsi/ifaces/' iface file.
+> 
+> Acked-by: Karen Xie <kxie@chelsio.com>
+> Signed-off-by: Rakesh Ranjan <rakesh@chelsio.com>
+> ---
+>  drivers/scsi/cxgb3i/cxgb3i_offload.c |   34 +++++++++++++++++++++++++++++++++-
+>  1 files changed, 33 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+> index c1d5be4..66d52e4 100644
+> --- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
+> +++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
+> @@ -1440,6 +1440,10 @@ void cxgb3i_c3cn_release(struct s3_conn *c3cn)
+>  static int is_cxgb3_dev(struct net_device *dev)
+>  {
+>  	struct cxgb3i_sdev_data *cdata;
+> +	struct net_device *ndev = dev;
+> +
+> +	if (dev->priv_flags & IFF_802_1Q_VLAN)
+> +		ndev = vlan_dev_real_dev(dev);
+>  
+>  	write_lock(&cdata_rwlock);
+>  	list_for_each_entry(cdata, &cdata_list, list) {
+> @@ -1447,7 +1451,7 @@ static int is_cxgb3_dev(struct net_device *dev)
+>  		int i;
+>  
+>  		for (i = 0; i < ports->nports; i++)
+> -			if (dev == ports->lldevs[i]) {
+> +			if (ndev == ports->lldevs[i]) {
+>  				write_unlock(&cdata_rwlock);
+>  				return 1;
+>  			}
+> @@ -1566,6 +1570,26 @@ out_err:
+>  	return -1;
+>  }
+>  
+> +/**
+> + * cxgb3i_find_dev - find the interface associated with the given address
+> + * @ipaddr: ip address
+> + */
+> +static struct net_device *
+> +cxgb3i_find_dev(__be32 ipaddr)
+> +{
+> +	struct flowi fl;
+> +	int err;
+> +	struct rtable *rt;
+> +
+> +	memset(&fl, 0, sizeof(fl));
+> +	fl.nl_u.ip4_u.daddr = ipaddr;
+> +
+> +	err = ip_route_output_key(&init_net, &rt, &fl);
+> +	if (!err)
+> +		return (&rt->u.dst)->dev;
+> +
+> +	return NULL;
+> +}
+>  
+>  /**
+>   * cxgb3i_c3cn_connect - initiates an iscsi tcp connection to a given address
+> @@ -1581,6 +1605,7 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
+>  	struct cxgb3i_sdev_data *cdata;
+>  	struct t3cdev *cdev;
+>  	__be32 sipv4;
+> +	struct net_device *dstdev;
+>  	int err;
+>  
+>  	c3cn_conn_debug("c3cn 0x%p, dev 0x%p.\n", c3cn, dev);
+> @@ -1591,6 +1616,13 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
+>  	c3cn->daddr.sin_port = usin->sin_port;
+>  	c3cn->daddr.sin_addr.s_addr = usin->sin_addr.s_addr;
+>  
+> +	dstdev = cxgb3i_find_dev(usin->sin_addr.s_addr);
+> +	if (!dstdev || !is_cxgb3_dev(dstdev))
+> +		return -ENETUNREACH;
+> +
+> +	if (dstdev->priv_flags & IFF_802_1Q_VLAN)
+> +		dev = dstdev;
+> +
+>  	rt = find_route(dev, c3cn->saddr.sin_addr.s_addr,
+>  			c3cn->daddr.sin_addr.s_addr,
+>  			c3cn->saddr.sin_port,
 
 
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-index c1d5be4..26ffdcd 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-@@ -291,7 +291,7 @@ static void act_open_req_arp_failure(struct t3cdev *dev, struct sk_buff *skb)
- 	c3cn_hold(c3cn);
- 	spin_lock_bh(&c3cn->lock);
- 	if (c3cn->state == C3CN_STATE_CONNECTING)
--		fail_act_open(c3cn, EHOSTUNREACH);
-+		fail_act_open(c3cn, -EHOSTUNREACH);
- 	spin_unlock_bh(&c3cn->lock);
- 	c3cn_put(c3cn);
- 	__kfree_skb(skb);
-@@ -792,18 +792,18 @@ static int act_open_rpl_status_to_errno(int status)
- {
- 	switch (status) {
- 	case CPL_ERR_CONN_RESET:
--		return ECONNREFUSED;
-+		return -ECONNREFUSED;
- 	case CPL_ERR_ARP_MISS:
--		return EHOSTUNREACH;
-+		return -EHOSTUNREACH;
- 	case CPL_ERR_CONN_TIMEDOUT:
--		return ETIMEDOUT;
-+		return -ETIMEDOUT;
- 	case CPL_ERR_TCAM_FULL:
--		return ENOMEM;
-+		return -ENOMEM;
- 	case CPL_ERR_CONN_EXIST:
- 		cxgb3i_log_error("ACTIVE_OPEN_RPL: 4-tuple in use\n");
--		return EADDRINUSE;
-+		return -EADDRINUSE;
- 	default:
--		return EIO;
-+		return -EIO;
- 	}
- }
- 
-@@ -817,7 +817,7 @@ static void act_open_retry_timer(unsigned long data)
- 	spin_lock_bh(&c3cn->lock);
- 	skb = alloc_skb(sizeof(struct cpl_act_open_req), GFP_ATOMIC);
- 	if (!skb)
--		fail_act_open(c3cn, ENOMEM);
-+		fail_act_open(c3cn, -ENOMEM);
- 	else {
- 		skb->sk = (struct sock *)c3cn;
- 		set_arp_failure_handler(skb, act_open_req_arp_failure);
-@@ -966,14 +966,14 @@ static int abort_status_to_errno(struct s3_conn *c3cn, int abort_reason,
- 	case CPL_ERR_BAD_SYN: /* fall through */
- 	case CPL_ERR_CONN_RESET:
- 		return c3cn->state > C3CN_STATE_ESTABLISHED ?
--			EPIPE : ECONNRESET;
-+			-EPIPE : -ECONNRESET;
- 	case CPL_ERR_XMIT_TIMEDOUT:
- 	case CPL_ERR_PERSIST_TIMEDOUT:
- 	case CPL_ERR_FINWAIT2_TIMEDOUT:
- 	case CPL_ERR_KEEPALIVE_TIMEDOUT:
--		return ETIMEDOUT;
-+		return -ETIMEDOUT;
- 	default:
--		return EIO;
-+		return -EIO;
- 	}
- }
- 
-@@ -1563,7 +1563,7 @@ free_tid:
- 	s3_free_atid(cdev, c3cn->tid);
- 	c3cn->tid = 0;
- out_err:
--	return -1;
-+	return -EINVAL;
- }
- 
- 
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_pdu.c b/drivers/scsi/cxgb3i/cxgb3i_pdu.c
-index 7091050..1fe3b0f 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_pdu.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_pdu.c
-@@ -388,8 +388,8 @@ int cxgb3i_conn_xmit_pdu(struct iscsi_task *task)
- 	if (err > 0) {
- 		int pdulen = err;
- 
--	cxgb3i_tx_debug("task 0x%p, skb 0x%p, len %u/%u, rv %d.\n",
--			task, skb, skb->len, skb->data_len, err);
-+		cxgb3i_tx_debug("task 0x%p, skb 0x%p, len %u/%u, rv %d.\n",
-+				task, skb, skb->len, skb->data_len, err);
- 
- 		if (task->conn->hdrdgst_en)
- 			pdulen += ISCSI_DIGEST_SIZE;
+Looks sane. I am not a expert on the networks apis being used though.
+
+
