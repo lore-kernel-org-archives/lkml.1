@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbZLJBzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbZLJB5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759432AbZLJBzM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 20:55:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbZLJBzJ
+	id S1759444AbZLJB5w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 20:57:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759403AbZLJB5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 20:55:09 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:36471 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759205AbZLJBzH (ORCPT
+	Wed, 9 Dec 2009 20:57:47 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43254 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759418AbZLJB5q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 20:55:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=ZJjzTMbSSU1LUROMl554+IwHL7F8ZpuB1/h0PExfSjJ6Ix1ETq9kGjm2sOwofk11Si
-         LuczT5Tob9QjvcblLjfrQOy4XItuIv6Z4XjeCYAC+FRcQ+RqVeOvRnSpwjVbT43sfsLJ
-         Ga8rhSq+mkkiCE6ioifivnJQgK2dCcJGIlGHs=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] sched: Fix rq lock use through wrong spinlock api
-Date: Thu, 10 Dec 2009 02:55:10 +0100
-Message-Id: <1260410110-15267-1-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Wed, 9 Dec 2009 20:57:46 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 4/9] oom: Add missing rcu protection of __task_cred() in dump_tasks
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org
+In-Reply-To: <20091210004703.148689096@linutronix.de>
+References: <20091210001308.247025548@linutronix.de> <20091210004703.148689096@linutronix.de>
+Message-Id: <20091210104500.F500.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 10 Dec 2009 10:57:49 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that rq lock is a raw spinlock, it needs to be manipulated
-using appropriate helpers.
+> dump_tasks accesses __task_cred() without being in a RCU read side
+> critical section. tasklist_lock is not protecting that when
+> CONFIG_TREE_PREEMPT_RCU=y.
+> 
+> Add a rcu_read_lock/unlock() section around the code which accesses
+> __task_cred().
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: linux-mm@kvack.org
+> ---
+>  mm/oom_kill.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6-tip/mm/oom_kill.c
+> ===================================================================
+> --- linux-2.6-tip.orig/mm/oom_kill.c
+> +++ linux-2.6-tip/mm/oom_kill.c
+> @@ -329,10 +329,13 @@ static void dump_tasks(const struct mem_
+>  			task_unlock(p);
+>  			continue;
+>  		}
+> +		/* Protect __task_cred() access */
+> +		rcu_read_lock();
+>  		printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d     %3d %s\n",
+>  		       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
+>  		       get_mm_rss(mm), (int)task_cpu(p), p->signal->oom_adj,
+>  		       p->comm);
+> +		rcu_read_unlock();
+>  		task_unlock(p);
+>  	} while_each_thread(g, p);
+>  }
 
-This fixes the following warning:
+Looks straight forward and correct to me.
 
-kernel/sched_fair.c: In function ‘task_fork_fair’:
-kernel/sched_fair.c:1958: attention : passing argument 1 of ‘spinlock_check’ from incompatible pointer type
-kernel/sched_fair.c:1978: attention : passing argument 1 of ‘spin_unlock_irqrestore’ from incompatible pointer type
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/sched_fair.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 804a411..5bedf6e 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1955,7 +1955,7 @@ static void task_fork_fair(struct task_struct *p)
- 	struct rq *rq = this_rq();
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&rq->lock, flags);
-+	raw_spin_lock_irqsave(&rq->lock, flags);
- 
- 	if (unlikely(task_cpu(p) != this_cpu))
- 		__set_task_cpu(p, this_cpu);
-@@ -1975,7 +1975,7 @@ static void task_fork_fair(struct task_struct *p)
- 		resched_task(rq->curr);
- 	}
- 
--	spin_unlock_irqrestore(&rq->lock, flags);
-+	raw_spin_unlock_irqrestore(&rq->lock, flags);
- }
- 
- /*
--- 
-1.6.2.3
 
