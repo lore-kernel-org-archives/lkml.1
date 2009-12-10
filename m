@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbZLJOjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZLJOjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760843AbZLJOjr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 09:39:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbZLJOjm
+	id S1754551AbZLJOjO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 09:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZLJOjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 09:39:42 -0500
-Received: from www.tglx.de ([62.245.132.106]:40523 "EHLO www.tglx.de"
+	Thu, 10 Dec 2009 09:39:11 -0500
+Received: from kroah.org ([198.145.64.141]:46891 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754041AbZLJOjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 09:39:41 -0500
-Date: Thu, 10 Dec 2009 15:38:35 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Oleg Nesterov <oleg@redhat.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [patch 1/9] sys: Fix missing rcu protection for __task_cred()
- access
-In-Reply-To: <20091210142036.GA8226@redhat.com>
-Message-ID: <alpine.LFD.2.00.0912101535560.3089@localhost.localdomain>
-References: <20091210001308.247025548@linutronix.de> <20091210004703.029784964@linutronix.de> <20091210142036.GA8226@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753731AbZLJOjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 09:39:10 -0500
+Date: Thu, 10 Dec 2009 06:39:17 -0800
+From: Greg KH <greg@kroah.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: Re: linux-next: manual merge of the tty tree with the trivial tree
+Message-ID: <20091210143917.GA27161@kroah.com>
+References: <20091209162826.a28c6c68.sfr@canb.auug.org.au> <alpine.LNX.2.00.0912091536230.3755@pobox.suse.cz> <20091210021100.b606b224.sfr@canb.auug.org.au> <20091209202854.GA8222@kroah.com> <alpine.LNX.2.00.0912101220310.3755@pobox.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0912101220310.3755@pobox.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Dec 2009, Oleg Nesterov wrote:
-> On 12/10, Thomas Gleixner wrote:
-> >
-> > commit c69e8d9 (CRED: Use RCU to access another task's creds and to
-> > release a task's own creds) added non rcu_read_lock() protected access
-> > to task creds of the target task in set_prio_one().
-> >
-> > The comment above the function says:
-> >  * - the caller must hold the RCU read lock
-> >
-> > The calling code in sys_setpriority does read_lock(&tasklist_lock) but
-> > not rcu_read_lock(). This works only when CONFIG_TREE_PREEMPT_RCU=n.
-> > With CONFIG_TREE_PREEMPT_RCU=y the rcu_callbacks can run in the tick
-> > interrupt when they see no read side critical section.
-> > ...
-> > --- linux-2.6-tip.orig/kernel/sys.c
-> > +++ linux-2.6-tip/kernel/sys.c
-> > @@ -163,6 +163,7 @@ SYSCALL_DEFINE3(setpriority, int, which,
-> >  	if (niceval > 19)
-> >  		niceval = 19;
-> >
-> > +	rcu_read_lock();
-> >  	read_lock(&tasklist_lock);
+On Thu, Dec 10, 2009 at 12:21:00PM +0100, Jiri Kosina wrote:
+> On Wed, 9 Dec 2009, Greg KH wrote:
 > 
-> Off-topic, but can't resist...
+> > > > > I just used the tty tree version where they clashed.  Jiri, you might
+> > > > > consider sending that patch to Greg for the tty tree.
+> > > > 
+> > > > the trivial tree pull request has already been sent to Linus a day ago. I 
+> > > > am now waiting whether it will be merged or missed.
+> > > > 
+> > > > In the latter case, I will split the tty hunk out and send to Greg. In the 
+> > > > former case the conflict would have to be solved either by Greg or Linus.
+> > > 
+> > > OK, that's fine, thanks.
+> > 
+> > Sounds good to me as well.
 > 
-> This also fixes another bug here. find_task_by_vpid() is not safe
-> without rcu_read_lock(). I do not mean it is not safe to use the
-> result, just find_pid_ns() by itself is not safe.
-> 
-> Usually tasklist gives enough protection, but if copy_process() fails
-> it calls free_pid() lockless and does call_rcu(delayed_put_pid().
-> This means, without rcu lock find_pid_ns() can't scan the hash table
-> safely.
+> Linus has merged my tree, so either you or Linus will have to fix the 
+> conflict.
 
-I guess we have whole bunch of auditing to do all over the place. And
-we definitely need some debugging aid (preferrably a lockdep
-extension) which allows us to detect such nasty details.
+Thanks, I'll fix it up in my tree.
 
-Thanks,
-
-	tglx
+greg k-h
