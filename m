@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761809AbZLJVvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761846AbZLJVyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761809AbZLJVvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 16:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761713AbZLJVvc
+	id S1761846AbZLJVyl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 16:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761836AbZLJVyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 16:51:32 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34226
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761561AbZLJVvb (ORCPT
+	Thu, 10 Dec 2009 16:54:39 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49794 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761831AbZLJVyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 16:51:31 -0500
-Date: Thu, 10 Dec 2009 13:51:38 -0800 (PST)
-Message-Id: <20091210.135138.263963420.davem@davemloft.net>
-To: randy.dunlap@oracle.com
-Cc: sfr@canb.auug.org.au, netdev@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -next] net: niu uses crc32, so select CRC32
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091210093103.eda05dfe.randy.dunlap@oracle.com>
-References: <20091210175919.340b4c0c.sfr@canb.auug.org.au>
-	<20091210093103.eda05dfe.randy.dunlap@oracle.com>
-X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Dec 2009 16:54:38 -0500
+Date: Thu, 10 Dec 2009 16:54:42 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       Kyle McMartin <kyle@mcmartin.ca>, Helge Deller <deller@gmx.de>,
+       linux-parisc@vger.kernel.org
+Subject: Re: [PATCH 2/5] parisc: Convert BUG() to use unreachable()
+Message-ID: <20091210215442.GB28962@bombadil.infradead.org>
+References: <4B212EEC.3060808@caviumnetworks.com> <1260466101-17545-2-git-send-email-ddaney@caviumnetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260466101-17545-2-git-send-email-ddaney@caviumnetworks.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Thu, 10 Dec 2009 09:31:03 -0800
-
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Thu, Dec 10, 2009 at 09:28:18AM -0800, David Daney wrote:
+> Use the new unreachable() macro instead of for(;;);
 > 
-> niu drivers uses crc32 functions, so it needs to select CRC32.
-> 
-> niu.c:(.text+0x18a7f8): undefined reference to `crc32_le'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+> CC: Kyle McMartin <kyle@mcmartin.ca>
+> CC: Helge Deller <deller@gmx.de>
+> CC: linux-parisc@vger.kernel.org
+> ---
 
-Applied, thanks Randy.
+Thanks David, I'll bash this into my tree now that the macro is
+upstream.
 
-That dependency is quite indirect, it's due to ether_crc_*().
-I bet a quick grep for that will find several other drivers
-missing this Kconfig bit.
+regards, Kyle
