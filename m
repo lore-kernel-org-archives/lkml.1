@@ -1,137 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761333AbZLJRvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbZLJSBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761333AbZLJRvj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 12:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761298AbZLJRvi
+	id S1761370AbZLJSBX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 13:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761284AbZLJSBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 12:51:38 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:42820 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761203AbZLJRvh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 12:51:37 -0500
-Date: Thu, 10 Dec 2009 11:51:24 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com, mingo@elte.hu
-Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
-In-Reply-To: <20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0912101136110.5481@router.home>
-References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com> <20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 10 Dec 2009 13:01:22 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:50930 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761275AbZLJSBW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 13:01:22 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Dec 2009 13:01:22 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=cS7T0xQoNsPgvjkvuFGIlYJ4erh3ioc6RQdsx8l+6xxp5ofIoQBUCBDfMeWGk3ZPpp/d/OvhzwSNyqZb1k5cBvEgyxWnoDfo0izUeYPePr/v6s2q9LDPfGSjcdq54PFW;
+Date: Thu, 10 Dec 2009 09:54:22 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Emmanuel Benisty <benisty.e@gmail.com>
+Cc: Darren Salt <linux@youmustbejoking.demon.co.uk>,
+       linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+       luto@myrealbox.com, eric@anholt.net
+Subject: Re: 2.6.31 -> 2.6.32 Sound and video regressions
+Message-ID: <20091210095422.3c5a75d1@jbarnes-piketon>
+In-Reply-To: <c1f41c620912080520o7e0a69bdg7b885b4a17c6dbc@mail.gmail.com>
+References: <4B1A6F78.8010408@myrealbox.com>
+	<50CA8D92EC%linux@youmustbejoking.demon.co.uk>
+	<20091206173222.4c2d5aaa@jbarnes-piketon>
+	<c1f41c620912061952k4945a7c8j4567ab17424e4d91@mail.gmail.com>
+	<c1f41c620912070538y4f865cechf21d2802ab237510@mail.gmail.com>
+	<c1f41c620912080520o7e0a69bdg7b885b4a17c6dbc@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Dec 2009, KAMEZAWA Hiroyuki wrote:
+On Tue, 8 Dec 2009 20:20:07 +0700
+Emmanuel Benisty <benisty.e@gmail.com> wrote:
 
-> Now, mm's counter information is updated by atomic_long_xxx() functions if
-> USE_SPLIT_PTLOCKS is defined. This causes cache-miss when page faults happens
-> simultaneously in prural cpus. (Almost all process-shared objects is...)
+> On Mon, Dec 7, 2009 at 8:38 PM, Emmanuel Benisty
+> <benisty.e@gmail.com> wrote:
+> > On Mon, Dec 7, 2009 at 10:52 AM, Emmanuel Benisty
+> > <benisty.e@gmail.com> wrote:
+> >> On Mon, Dec 7, 2009 at 8:32 AM, Jesse Barnes
+> >> <jbarnes@virtuousgeek.org> wrote:
+> >>> On Sat, 05 Dec 2009 23:44:55 +0000
+> >>> Darren Salt <linux@youmustbejoking.demon.co.uk> wrote:
+> >>>
+> >>>> I demand that Andy Lutomirski may or may not have written...
+> >>>>
+> >>>> > Emmanuel Benisty wrote:
+> >>>> [snip]
+> >>>> >> I just wanted to report 2 regressions I am having now with
+> >>>> >> 2.6.32. Video
+> >>>> >> Screen is flickering/glitching like crazy in X. It happens
+> >>>> >> whether randomly or when conky is refreshed, when the mouse
+> >>>> >> cursor moves and like hell when a page is loading in the
+> >>>> >> browser. Not so easy to describe this issue.
+> >>>> [snip]
+> >>>>
+> >>>> > That sounds like FIFO underruns, which (I think) were
+> >>>> > introduced when self-refresh was enabled but should have been
+> >>>> > fixed. I personally have no clue how to fix them, but if you
+> >>>> > told the Intel people what kind of chip you have (lspci
+> >>>> > output), they can probably fix it.
+> >>>>
+> >>>> It also sounds like what I'm seeing on my EeePC 901. It only
+> >>>> happens after resume, which makes STR a little less than useful;
+> >>>> the display will, sooner or later, show a single colour (which
+> >>>> is, presumably, the result of a display engine hang, as
+> >>>> described in the comment immediately before intel_calculate_wm)
+> >>>> and, seemingly, be stuck like that until power-off or reboot.
+> >>>>
+> >>>> Whether it *is* the same problem, I couldn't say.
+> >>>>
+> >>>> Needless to say, this problem goes away if I disable KMS.
+> >>>
+> >>> Arg, there are a few reports of this now, but I haven't been able
+> >>> to reproduce it.  I'll try harder...  (FYI the upstream
+> >>> bugs.freedesktop.org # for it is 24314).
+> >>
+> >> It *seems* that we are facing two different issues here (I don't
+> >> even use S2R and the problem is there since the very first second
+> >> I start X). Anyway, I have bisected the problem on my box, it
+> >> turns out to be this one:
+> >>
+> >> drm/i915: Fix render reclock availability detection
+> >>
+> >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=181a5336d6cc836f05507410d66988c483ad0154
+> >>
+> > So, I have reverted this commit and rebuilt 2.6.32. It completely
+> > solved the issue described in my first post.
+> >
+> 
+> just FTR, it looks like I'm not alone:
+> http://forums.gentoo.org/viewtopic-p-6087556.html#6087556
 
-s/prural cpus/multiple cpus simultaneously/?
+Great, thanks for narrowing it down.  I'll see if I can come up with a
+fix.
 
-> This patch implements per-cpu mm cache. This per-cpu cache is loosely
-> synchronized with mm's counter. Current design is..
-
-Some more explanation about the role of the per cpu data would be useful.
-
-For each cpu we keep a set of counters that can be incremented using per
-cpu operations. curr_mc points to the mm struct that is currently using
-the per cpu counters on a specific cpu?
-
->   - prepare per-cpu object curr_mmc. curr_mmc containes pointer to mm and
->     array of counters.
->   - At page fault,
->      * if curr_mmc.mm != NULL, update curr_mmc.mm counter.
->      * if curr_mmc.mm == NULL, fill curr_mmc.mm = current->mm and account 1.
->   - At schedule()
->      * if curr_mm.mm != NULL, synchronize and invalidate cached information.
->      * if curr_mmc.mm == NULL, nothing to do.
-
-Sounds like a very good idea that could be expanded and used for other
-things like tracking the amount of memory used on a specific NUMA node in
-the future. Through that we may get to a schedule that can schedule with
-an awareness where the memory of a process is actually located.
-
- > By this.
->   - no atomic ops, which tends to cache-miss, under page table lock.
->   - mm->counters are synchronized when schedule() is called.
->   - No bad thing to read-side.
->
-> Concern:
->   - added cost to schedule().
-
-That is only a simple check right? Are we already touching that cacheline
-in schedule? Or place that structure near other stuff touched by the
-scheduer?
-
->
-> +#if USE_SPLIT_PTLOCKS
-> +
-> +DEFINE_PER_CPU(struct pcp_mm_cache, curr_mmc);
-> +
-> +void __sync_mm_counters(struct mm_struct *mm)
-> +{
-> +	struct pcp_mm_cache *mmc = &per_cpu(curr_mmc, smp_processor_id());
-> +	int i;
-> +
-> +	for (i = 0; i < NR_MM_COUNTERS; i++) {
-> +		if (mmc->counters[i] != 0) {
-
-Omit != 0?
-
-if you change mmc->curr_mc then there is no need to set mmc->counters[0]
-to zero right? add_mm_counter_fast will set the counter to 1 next?
-
-> +static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
-> +{
-> +	struct mm_struct *cached = percpu_read(curr_mmc.mm);
-> +
-> +	if (likely(cached == mm)) { /* fast path */
-> +		percpu_add(curr_mmc.counters[member], val);
-> +	} else if (mm == current->mm) { /* 1st page fault in this period */
-> +		percpu_write(curr_mmc.mm, mm);
-> +		percpu_write(curr_mmc.counters[member], val);
-> +	} else /* page fault via side-path context (get_user_pages()) */
-> +		add_mm_counter(mm, member, val);
-
-So get_user pages will not be accellerated.
-
-> Index: mmotm-2.6.32-Dec8/kernel/sched.c
-> ===================================================================
-> --- mmotm-2.6.32-Dec8.orig/kernel/sched.c
-> +++ mmotm-2.6.32-Dec8/kernel/sched.c
-> @@ -2858,6 +2858,7 @@ context_switch(struct rq *rq, struct tas
->  	trace_sched_switch(rq, prev, next);
->  	mm = next->mm;
->  	oldmm = prev->active_mm;
-> +
->  	/*
->  	 * For paravirt, this is coupled with an exit in switch_to to
->  	 * combine the page table reload and the switch backend into
-
-Extraneous new line.
-
-> @@ -5477,6 +5478,11 @@ need_resched_nonpreemptible:
->
->  	if (sched_feat(HRTICK))
->  		hrtick_clear(rq);
-> +	/*
-> +	 * sync/invaldidate per-cpu cached mm related information
-> +	 * before taling rq->lock. (see include/linux/mm.h)
-> +	 */
-> +	sync_mm_counters_atomic();
->
->  	spin_lock_irq(&rq->lock);
->  	update_rq_clock(rq);
-
-Could the per cpu counter stuff be placed into rq to avoid
-touching another cacheline?
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
