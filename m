@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbZLJBQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbZLJBOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759332AbZLJBQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 20:16:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZLJBQv
+	id S1759320AbZLJBOw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 20:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbZLJBOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 20:16:51 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57304 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752833AbZLJBQu (ORCPT
+	Wed, 9 Dec 2009 20:14:49 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:38594 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbZLJBOs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 20:16:50 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 10 Dec 2009 10:13:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, linux-mm@kvack.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH] [TRIVIAL] memcg: fix memory.memsw.usage_in_bytes for
- root cgroup
-Message-Id: <20091210101355.d94988cf.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091209162109.567ff5fa.akpm@linux-foundation.org>
-References: <1260373738-17179-1-git-send-email-kirill@shutemov.name>
-	<20091210085929.56c63eb2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091209162109.567ff5fa.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Dec 2009 20:14:48 -0500
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Heinz Diehl <htd@fancy-poultry.org>,
+       linux-kernel@vger.kernel.org, martin.petersen@oracle.com,
+       Christian Borntraeger <borntraeger@de.ibm.com>, dm-devel@redhat.com
+Subject: Re: todays git regression (2.6.32-04008.g3ff6a46): lot of device  mapper warnings
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <200912091049.12604.borntraeger@de.ibm.com>
+	<20091209212516.GA6206@fancy-poultry.org>
+	<20091209214501.GC8742@kernel.dk> <20091209220749.GD8742@kernel.dk>
+	<170fa0d20912091656s31575d0cneaf899e1781bdc16@mail.gmail.com>
+Date: Wed, 09 Dec 2009 20:14:03 -0500
+In-Reply-To: <170fa0d20912091656s31575d0cneaf899e1781bdc16@mail.gmail.com>
+	(Mike Snitzer's message of "Wed, 9 Dec 2009 19:56:46 -0500")
+Message-ID: <yq1bpi7vdes.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B204B74.01C8:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Dec 2009 16:21:09 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+>>>>> "Mike" == Mike Snitzer <snitzer@gmail.com> writes:
 
-> On Thu, 10 Dec 2009 08:59:29 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > On Wed,  9 Dec 2009 17:48:58 +0200
-> > "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
-> > 
-> > > We really want to take MEM_CGROUP_STAT_SWAPOUT into account.
-> > > 
-> > > Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-> > > Cc: stable@kernel.org
-> > 
-> > Thanks.
-> > 
-> > Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> 
-> Is this bug sufficiently serious to justify a -stable backport?
-> 
-I think so.
+Mike> On the surface I thought this might be the reason for the
+Mike> warnings, but Martin's lcm() looks perfectly fine; can't see why
+Mike> it would cause these warnings to appear all of a sudden... but I
+Mike> figured I'd share.
 
-> If so, why?
-> 
+The warning is caused by an error in stacking discard granularity.  I
+have a fix but I'd like to run verify all my oddball alignment combos
+before submitting.
 
-memory cgroup has a file memory.memsw.usage_in_bytes file. It shows sum of
-the usage of pages and swapents in the cgroup.  Now, root cgroup's 
-memsw.usage_in_bytes shows wrong value....the number of swapents are not
-added. This patch fixesi it.
-
-Thanks,
--Kame
-
+-- 
+Martin K. Petersen	Oracle Linux Engineering
