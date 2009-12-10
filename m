@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZLJHIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760493AbZLJHRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754938AbZLJHIN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 02:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZLJHIM
+	id S1760493AbZLJHRL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 02:17:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760454AbZLJHQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 02:08:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40772 "EHLO mx2.mail.elte.hu"
+	Thu, 10 Dec 2009 02:16:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36257 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753636AbZLJHIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 02:08:12 -0500
-Date: Thu, 10 Dec 2009 08:08:00 +0100
+	id S1755750AbZLJHQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 02:16:51 -0500
+Date: Thu, 10 Dec 2009 08:16:49 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Tim Bird <tim.bird@am.sony.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-Message-ID: <20091210070800.GB16874@elte.hu>
-References: <4B202778.4030801@am.sony.com>
+To: "David T. L. Wong" <davidtlwong@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [GIT PULL for 2.6.33] V4L/DVB updates
+Message-ID: <20091210071649.GC16874@elte.hu>
+References: <20091209021639.14f08856@pedra>
+ <20091210062015.GA29594@elte.hu>
+ <4B209D90.6080404@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B202778.4030801@am.sony.com>
+In-Reply-To: <4B209D90.6080404@gmail.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
@@ -38,37 +38,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Tim Bird <tim.bird@am.sony.com> wrote:
+* David T. L. Wong <davidtlwong@gmail.com> wrote:
 
-> Add function duration tracer.
+> Ingo Molnar wrote:
+> >Hi,
+> >
+> >FYI, there's a new build failure on 32-bit x86 caused by the new
+> >max2165 tuner driver:
+> >
+> >drivers/built-in.o: In function `max2165_set_params':
+> >max2165.c:(.text+0x486293): undefined reference to `__floatunsidf'
+> >max2165.c:(.text+0x4862bc): undefined reference to `__floatunsidf'
+> >max2165.c:(.text+0x4862c5): undefined reference to `__adddf3'
+> >max2165.c:(.text+0x4862cf): undefined reference to `__fixunsdfsi'
+> >
+> >	Ingo
 > 
-> Signed-off-by: Tim Bird <tim.bird@am.sony.com>
-> ---
->  kernel/trace/Kconfig          |    8
->  kernel/trace/Makefile         |    1
->  kernel/trace/trace.c          |   32 ++
->  kernel/trace/trace_duration.c |  527 ++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 568 insertions(+)
+> 
+> A patch is already submitted to v4l mailing list:
+> http://patchwork.kernel.org/patch/64538/
 
-Please do it in a cleaner an more generic fashion: add a "function 
-event" that perf can see and process, so all the output embellishment 
-can be done outside of the kernel, in tools/perf/.
+That patch you posted a week ago solves the build problem, thanks.
 
-We want to wind down the current maze of ftrace plugins, not extend 
-them. We already obsoleted the following ftrace plugins: scheduler, 
-sysprof, blktrace, kmem, scheduler, etc. There's more work ongoing and 
-broad agreement between folks developing it that this is the way 
-forward.
-
-The function tracer / function graph tracer is a holdout due to its 
-complexity - but that by no means weakens the argument and the necessity 
-to migrate it.
-
-ftrace plugins were a nice idea originally and a clear improvement over 
-existing alternatives, but now that we've got a technicaly superior, 
-unified event framework that can do what the old plugins did and much 
-more, we want to improve that and not look back ...
-
-Thanks,
-
-	ingo
+	Ingo
