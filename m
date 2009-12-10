@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760723AbZLJNrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbZLJNxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760723AbZLJNrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 08:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759117AbZLJNrN
+	id S1758680AbZLJNxx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 08:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbZLJNxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 08:47:13 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:61839 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758860AbZLJNrL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 08:47:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=GDmjVtG5Zb5bGuEgkRDSjJGhI8ke5vgTm3wHap56EiRvwt8CyazpKVqa2GGqeZfbcL
-         ij6O5b7ZhyLo0b3tafkzbJmzE+E2vfGCGGGmCT+wWQEueUrrWxwpppj7qzYHNjWbiieF
-         ZxFC5ICbYVh55Gi6L3azMbUq1WM0DRpbOONQA=
+	Thu, 10 Dec 2009 08:53:47 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46016 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750802AbZLJNxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 08:53:46 -0500
+Message-ID: <4B20FD2C.1010804@suse.cz>
+Date: Thu, 10 Dec 2009 14:52:44 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.9 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091210132744.GB25664@bicker>
-References: <4B192D08.9080608@gmail.com>
-	 <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com>
-	 <4B1E85A9.3030005@gmail.com>
-	 <9b2b86520912090517l458bc21cobbb138d460e11f53@mail.gmail.com>
-	 <20091210132744.GB25664@bicker>
-Date: Thu, 10 Dec 2009 13:47:16 +0000
-Message-ID: <9b2b86520912100547v7feb34dbj8e94e6bcd3a0a49e@mail.gmail.com>
-Subject: Re: Toshiba Bluetooth enabler (v2) (was: Re: [PATCH] Toshiba 
-	Bluetooth enabler (rfkill))
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Dan Carpenter <error27@gmail.com>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Jes Sorensen <jes.sorensen@gmail.com>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH 1/3] Replace kernel/timeconst.pl with kernel/timeconst.sh
+References: <200912080317.08254.rob@landley.net> <200912080319.30679.rob@landley.net> <4B1FC621.8060500@suse.cz> <200912091740.43147.rob@landley.net>
+In-Reply-To: <200912091740.43147.rob@landley.net>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/10/09, Dan Carpenter <error27@gmail.com> wrote:
-> On Wed, Dec 09, 2009 at 01:17:48PM +0000, Alan Jenkins wrote:
->> On 12/8/09, Jes Sorensen <jes.sorensen@gmail.com> wrote:
->> > On 12/08/2009 11:05 AM, Alan Jenkins wrote:
->> >> Cool.  This must be the shortest ACPI driver :-).
->> >
->> > Hi Alan,
->> >
->> > Here's an updated version that addresses most of your comments.
->>
->> Hi again
->>
->> >> Try to send patches inline if possible, it makes them easier to review.
->> >
->> > Not possible with Thunderbug, sorry.
->>
->> I'm guessing you mean Thunderbird.  I manage in Thunderbird by
->>
->> a) composing in HTML
->> b) selecting "preformat" from the drop-down menu (the default is "body
->> text"
->> c) copy+pasting the patch
->>
->> I seem to have word wrap disabled as well (under
->> prefs->composition->general), but I think "Preformat" is enough on its
->> own.
->>
->
-> There is a Thunderbird section under Documentation/email-clients.txt
+On 10.12.2009 00:40, Rob Landley wrote:
+> On Wednesday 09 December 2009 09:45:37 Michal Marek wrote:
+>> You're trying to avoid the build dependency on Perl. What about adding a
+>> timeconst.h_shipped with the precomputed values from timeconst.pl:
+> 
+> Been there, done that.  My first patch (way back for 2.6.25) took that 
+> approach:
+> 
+> http://landley.net/hg/hgwebdir.cgi/firmware/file/a791ca629d9c/sources/patches/linux-2.6.25-
+> rc1-noperl.patch
+> 
+> But it turns out various non-x86 targets (such as ARM OMAP) allow HZ to be 
+> specified by an entry field in the config file, into which the user can type a 
+> range of numbers.  See this post from last year for details:
+> 
+> http://lists.impactlinux.com/pipermail/firmware-impactlinux.com/2008-
+> December/000022.html
+> 
+> This is why reducing the perl version to just the precomputed constants 
+> wouldn't work either.  (They're there so that you only need to install a 
+> random cpan library when surprised by a build break on non-x86 machines.)
 
-Yes.  I found it and then didn't mention it.
+That's why I wrote
 
-"
-- Under account settings, composition and addressing, uncheck "Compose
-  messages in HTML format".
+>> plus some makefile automagic to run the script iff the HZ value isn't
+>> precomputed. Then you would only need Perl for exotic HZ configurations.
+
+E.g. make it
 ...
-- You need to get Thunderbird into preformat mode:
-. If you compose HTML messages by default, it's not too hard.
-"
+#elif HZ == 1200
+...
+#else
+#include "timeconst_custom.h"
+#endif
 
-The conflicting suggestions make sense if you know it's describing
-three different alternatives, but that's not immediately obvious.  So
-it's was easier for me to explain the specific method I use.
+and the makefile would run timeconst.pl to generate timeconst_custom.h
+iff HZ is set to something arbitrary. I don't have a patch for that, but
+I don't see a fundamental problem with such approach.
 
-Alan
+Michal
