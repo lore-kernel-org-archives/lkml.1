@@ -1,108 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbZLJHRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760475AbZLJHWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760572AbZLJHRe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 02:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760547AbZLJHRY
+	id S1760475AbZLJHWM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 02:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbZLJHWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 02:17:24 -0500
-Received: from mga03.intel.com ([143.182.124.21]:37362 "EHLO mga03.intel.com"
+	Thu, 10 Dec 2009 02:22:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57460 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760464AbZLJHRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 02:17:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="220956273"
-Subject: [PATCH 5/5 -v2] acpi, apei, Document for APEI
-From: Huang Ying <ying.huang@intel.com>
-To: lenb@kernel.org
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Dec 2009 15:17:04 +0800
-Message-ID: <1260429424.15264.397.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1755752AbZLJHWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 02:22:08 -0500
+Date: Thu, 10 Dec 2009 08:20:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Olsa <jolsa@redhat.com>
+Subject: Re: [PATCH 0/5] [GIT PULL] tracing: Fixes for function graph and
+ trace_printk
+Message-ID: <20091210072059.GD16874@elte.hu>
+References: <20091209204035.871524827@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091209204035.871524827@goodmis.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add document for APEI, including kernel parameters and EINJ debug file
-sytem interface.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
----
- Documentation/acpi/apei/einj.txt    |   49 ++++++++++++++++++++++++++++++++++++
- Documentation/kernel-parameters.txt |    5 +++
- 2 files changed, 54 insertions(+)
- create mode 100644 Documentation/acpi/apei/einj.txt
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
---- /dev/null
-+++ b/Documentation/acpi/apei/einj.txt
-@@ -0,0 +1,49 @@
-+			APEI Error INJection
-+			~~~~~~~~~~~~~~~~~~~~
-+
-+EINJ provides a hardware error injection mechanism, it is very useful
-+for debugging and testing of other APEI and RAS features.
-+
-+To use EINJ, make the following is enabled in your kernel
-+configuration:
-+
-+CONFIG_DEBUG_FS
-+CONFIG_ACPI_APEI
-+CONFIG_ACPI_APEI_EINJ
-+
-+The user interface of EINJ is in debug file system, under the
-+directory apei/einj. The following files are provided.
-+
-+- available_error_type
-+  Read this file will return the error injection capability of the
-+  platform, that is, which error types are supported. The error type
-+  definition is as follow, the left field is the error type value, the
-+  right field is error description.
-+
-+    0x00000001	Processor Correctable
-+    0x00000002	Processor Uncorrectable non-fatal
-+    0x00000004	Processor Uncorrectable fatal
-+    0x00000008  Memory Correctable
-+    0x00000010  Memory Uncorrectable non-fatal
-+    0x00000020  Memory Uncorrectable fatal
-+    0x00000040	PCI Express Correctable
-+    0x00000080	PCI Express Uncorrectable fatal
-+    0x00000100	PCI Express Uncorrectable non-fatal
-+    0x00000200	Platform Correctable
-+    0x00000400	Platform Uncorrectable non-fatal
-+    0x00000800	Platform Uncorrectable fatal
-+
-+  The format of file contents are as above, except there are only the
-+  available error type lines.
-+
-+- error_type
-+  This file is used to set the error type value. The error type value
-+  is defined in "available_error_type" description.
-+
-+- error_inject
-+  Write any integer to this file to trigger the error
-+  injection. Before this, please specify all necessary error
-+  parameters.
-+
-+For more information about EINJ, please refer to ACPI specification
-+version 4.0, section 17.5.
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -338,6 +338,11 @@ and is between 256 and 4096 characters. 
- 			not play well with APC CPU idle - disable it if you have
- 			APC and your system crashes randomly.
- 
-+	apei.hest_disable= [ACPI]
-+			Disable Hardware Error Source Table (HEST) support,
-+			corresponding firmware-first mode error processing
-+			logic will be disabled.
-+
- 	apic=		[APIC,X86-32] Advanced Programmable Interrupt Controller
- 			Change the output verbosity whilst booting
- 			Format: { quiet (default) | verbose | debug }
+> Ingo,
+> 
+> This is a rework of the patches last sent. It is based on commit:
+> 
+>   c521efd1700a8c0f7ce26f011f5eaecca17fabfa
+>   tracing: Add pipe_close interface
+> 
+> and starts with a fix to the cut and paste bug. I compiled each patch
+> with and without CONFIG_TRACING enabled.
+> 
+> Please pull the latest tip/tracing/core3 tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/core3
+> 
+> 
+> Carsten Emde (1):
+>       tracing: Remove comparing of NULL to va_list in trace_array_vprintk()
+> 
+> Jiri Olsa (1):
+>       tracing: Fix function graph trace_pipe to properly display failed entries
+> 
+> Johannes Berg (1):
+>       tracing: Add full state to trace_seq
+> 
+> Steven Rostedt (2):
+>       tracing: Only call pipe_close if pipe_close is defined
+>       tracing: Buffer the output of seq_file in case of filled buffer
+> 
+> ----
+>  include/linux/ftrace_event.h         |    1 +
+>  include/linux/trace_seq.h            |    7 +-
+>  kernel/trace/trace.c                 |   55 +++++++++--
+>  kernel/trace/trace_functions_graph.c |  165 +++++++++++++++++++++++++++-------
+>  kernel/trace/trace_output.c          |   75 +++++++++++++---
+>  5 files changed, 243 insertions(+), 60 deletions(-)
 
+Pulled, thanks Steve!
 
+	Ingo
