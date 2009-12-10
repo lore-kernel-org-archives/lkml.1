@@ -1,89 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761446AbZLJSvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761474AbZLJSzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761446AbZLJSvI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 13:51:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761318AbZLJSvH
+	id S1761474AbZLJSzK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 13:55:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761465AbZLJSzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 13:51:07 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43646 "EHLO mx1.redhat.com"
+	Thu, 10 Dec 2009 13:55:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50777 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760986AbZLJSvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 13:51:06 -0500
-Date: Thu, 10 Dec 2009 13:50:44 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	id S1761441AbZLJSzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 13:55:07 -0500
+Date: Thu, 10 Dec 2009 19:54:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-Message-ID: <20091210185044.GC30999@redhat.com>
-References: <4B202778.4030801@am.sony.com> <20091210070800.GB16874@elte.hu> <20091210120332.GA5042@nowhere> <20091210141121.GB1436@elte.hu> <1260456803.2146.167.camel@gandalf.stny.rr.com> <20091210153845.GA28230@elte.hu> <y0md42magc1.fsf@fche.csb> <20091210175737.GB5256@elte.hu> <20091210180412.GB30999@redhat.com> <20091210183508.GB17986@elte.hu>
-Mime-Version: 1.0
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com
+Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
+Message-ID: <20091210185459.GA8697@elte.hu>
+References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091210075454.GB25549@elte.hu>
+ <20091210172040.37d259d3.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091210083310.GB6834@elte.hu>
+ <alpine.DEB.2.00.0912101134220.5481@router.home>
+ <20091210173819.GA5256@elte.hu>
+ <alpine.DEB.2.00.0912101203320.5481@router.home>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091210183508.GB17986@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <alpine.DEB.2.00.0912101203320.5481@router.home>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
 
+* Christoph Lameter <cl@linux-foundation.org> wrote:
 
-On Thu, Dec 10, 2009 at 07:35:08PM +0100, Ingo Molnar wrote:
-> [...]
-> target_set.stp is not really adequate. Have you actually _tried_ to use 
-> it on something real like hackbench, which runs thousands (or tens of 
-> thousands) of tasks? You'll soon find that associative arrays are not 
-> really adequate for that ... [...]
-
-A few thousand entries in a hash table is really not that big a deal.
-
-
-> > > Also, i dont think stap supports proper separation of per workload 
-> > > measurements either. I.e. can you write a script that will work 
-> > > properly even if multiple monitoring tools are running, each trying 
-> > > to measure latencies?
-> > 
-> > Sure, always has.  You can run many scripts concurrently, each with 
-> > its own internal state.  (Overheads accumulate, sadly & naturally.)
+> On Thu, 10 Dec 2009, Ingo Molnar wrote:
 > 
-> To measure latencies you need two probes, a start and a stop one. How do 
-> you define a local variable that is visible to those two probes? You 
-> have to create a global variable - but that will/can clash with other 
-> instances.
-
-You misunderstand systemtap "global" values.  They are global to that
-particular execution of that particular script.  They are not shared
-between scripts that may be concurrently running.
-
-
-> ( Also, you dont offer per application channels/state from the same 
->   script. Each app has to define their own probes, duplicating the 
->   script and increasing probe chaining overhead. )
-
-Please elaborate what you mean.
-
-
-> > > Also, i personally find built-in kernel functionality more trustable 
-> > > than dynamically built stap kernel modules that get inserted.
-> > 
-> > I understand.  In the absence of a suitable bytecode engine in the 
-> > kernel, this was the only practical way to do everything we needed.
+> >
+> > * Christoph Lameter <cl@linux-foundation.org> wrote:
+> >
+> > > On Thu, 10 Dec 2009, Ingo Molnar wrote:
+> > >
+> > > > No, i'm not suggesting that - i'm just suggesting that right now 
+> > > > MM stats are not very well suited to be exposed via perf. If we 
+> > > > wanted to measure/sample the information in /proc/<pid>/statm it 
+> > > > just wouldnt be possible. We have a few events like pagefaults 
+> > > > and a few tracepoints as well - but more would be possible IMO.
+> > >
+> > > vital MM stats are exposed via /proc/<pid> interfaces. Performance 
+> > > monitoring is something optional MM VM stats are used for VM 
+> > > decision on memory and process handling.
+> >
+> > You list a few facts here but what is your point?
 > 
-> You seem to be under the mistaken assumption that your course of action 
-> with SystemTap is somehow limited by what is available (or not) in the 
-> upstream kernel. In reality you can implement anything you want [...]
+> The stats are exposed already in a well defined way. [...]
 
-The message we have received time, after time, after time was
-stronger: that a suitable interpreter was not going to be welcome in
-tree.  If this is relaxed (and perhaps even if not), we may prototype
-such a thing in the new year.
+They are exposed in a well defined but limited way: you cannot profile 
+based on those stats, you cannot measure them across a workload 
+transparently at precise task boundaries and you cannot trace based on 
+those stats.
 
+For example, just via the simple page fault events we can today do 
+things like:
 
-- FChE
+ aldebaran:~> perf stat -e minor-faults /bin/bash -c "echo hello"
+ hello
+
+  Performance counter stats for '/bin/bash -c echo hello':
+
+             292  minor-faults            
+
+     0.000884744  seconds time elapsed
+
+ aldebaran:~> perf record -e minor-faults -c 1 -f -g firefox                  
+ Error: cannot open display: :0
+ [ perf record: Woken up 3 times to write data ]
+ [ perf record: Captured and wrote 0.324 MB perf.data (~14135 samples) ]
+
+ aldebaran:~> perf report
+ no symbols found in /bin/sed, maybe install a debug package?
+ # Samples: 5312
+ #
+ # Overhead         Command                             Shared Object  Symbol
+ # ........  ..............  ........................................  ......
+ #
+     12.54%         firefox  ld-2.10.90.so                             
+ [.] _dl_relocate_object
+                   |
+                   --- _dl_relocate_object
+                       dl_open_worker
+                       _dl_catch_error
+                       dlopen_doit
+                       0x7fffdf8c6562
+                       0x68733d54524f5053
+
+     4.95%         firefox  libc-2.10.90.so                           
+ [.] __GI_memset
+                   |
+                   --- __GI_memset
+ ...
+
+I.e. 12.54% of the pagefaults in the firefox startup occur in 
+dlopen_doit()->_dl_catch_error()->dl_open_worker()->_dl_relocate_object()-> 
+_dl_relocate_object() call path. 4.95% happen in __GI_memset() - etc.
+
+> [...] Exposing via perf is outside of the scope of his work.
+
+Please make thoughts about intelligent instrumentation solutions, and 
+please think "outside of the scope" of your usual routine.
+
+Thanks,
+
+	Ingo
