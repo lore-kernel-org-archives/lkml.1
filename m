@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760557AbZLJHR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbZLJHRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760557AbZLJHR1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 02:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760459AbZLJHRU
+	id S1760572AbZLJHRe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 02:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760547AbZLJHRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 02:17:20 -0500
-Received: from mga09.intel.com ([134.134.136.24]:5330 "EHLO mga09.intel.com"
+	Thu, 10 Dec 2009 02:17:24 -0500
+Received: from mga03.intel.com ([143.182.124.21]:37362 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760458AbZLJHQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 02:16:58 -0500
+	id S1760464AbZLJHRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 02:17:00 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,373,1257148800"; 
-   d="scan'208";a="577359312"
-Subject: [PATCH 4/5 -v2] acpi, apei, EINJ support
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="220956273"
+Subject: [PATCH 5/5 -v2] acpi, apei, Document for APEI
 From: Huang Ying <ying.huang@intel.com>
 To: lenb@kernel.org
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
        Andi Kleen <ak@linux.intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Dec 2009 15:17:02 +0800
-Message-ID: <1260429422.15264.396.camel@yhuang-dev.sh.intel.com>
+Date: Thu, 10 Dec 2009 15:17:04 +0800
+Message-ID: <1260429424.15264.397.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -28,510 +28,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-EINJ provides a hardware error injection mechanism, this is useful for
-debugging and testing of other APEI and RAS features.
+Add document for APEI, including kernel parameters and EINJ debug file
+sytem interface.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 ---
- drivers/acpi/apei/Kconfig  |    7 
- drivers/acpi/apei/Makefile |    1 
- drivers/acpi/apei/einj.c   |  471 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 479 insertions(+)
- create mode 100644 drivers/acpi/apei/einj.c
+ Documentation/acpi/apei/einj.txt    |   49 ++++++++++++++++++++++++++++++++++++
+ Documentation/kernel-parameters.txt |    5 +++
+ 2 files changed, 54 insertions(+)
+ create mode 100644 Documentation/acpi/apei/einj.txt
 
---- a/drivers/acpi/apei/Kconfig
-+++ b/drivers/acpi/apei/Kconfig
-@@ -7,3 +7,10 @@ config ACPI_APEI
- 	  especially. In addition it supports error serialization and
- 	  error injection.
- 
-+config ACPI_APEI_EINJ
-+	tristate "APEI Error INJection (EINJ)"
-+	depends on ACPI_APEI && DEBUG_FS
-+	help
-+	  EINJ provides a hardware error injection mechanism, it is
-+	  mainly used for debugging and testing the other parts of
-+	  APEI and some other RAS features.
---- a/drivers/acpi/apei/Makefile
-+++ b/drivers/acpi/apei/Makefile
-@@ -1,3 +1,4 @@
- obj-$(CONFIG_ACPI_APEI)		+= apei.o
-+obj-$(CONFIG_ACPI_APEI_EINJ)	+= einj.o
- 
- apei-y := apei-base.o hest.o
 --- /dev/null
-+++ b/drivers/acpi/apei/einj.c
-@@ -0,0 +1,471 @@
-+/*
-+ * APEI Error INJection support
-+ *
-+ * EINJ provides a hardware error injection mechanism, this is useful
-+ * for debugging and testing of other APEI and RAS features.
-+ *
-+ * For more information about EINJ, please refer to ACPI Specification
-+ * version 4.0, section 17.5.
-+ *
-+ * Copyright 2009 Intel Corp.
-+ *   Author: Huang Ying <ying.huang@intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version
-+ * 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
++++ b/Documentation/acpi/apei/einj.txt
+@@ -0,0 +1,49 @@
++			APEI Error INJection
++			~~~~~~~~~~~~~~~~~~~~
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+#include <acpi/acpi.h>
++EINJ provides a hardware error injection mechanism, it is very useful
++for debugging and testing of other APEI and RAS features.
 +
-+#include "apei-internal.h"
++To use EINJ, make the following is enabled in your kernel
++configuration:
 +
-+#define EINJ_PFX "EINJ: "
++CONFIG_DEBUG_FS
++CONFIG_ACPI_APEI
++CONFIG_ACPI_APEI_EINJ
 +
-+#define EINJ_OP_BUSY			0x1
-+#define EINJ_STATUS_SUCCESS		0x0
-+#define EINJ_STATUS_FAIL		0x1
-+#define EINJ_STATUS_INVAL		0x2
++The user interface of EINJ is in debug file system, under the
++directory apei/einj. The following files are provided.
 +
-+#define EINJ_TAB_ENTRY(tab)						\
-+	((struct acpi_whea_header *)((char *)(tab) +			\
-+				    sizeof(struct acpi_table_einj)))
++- available_error_type
++  Read this file will return the error injection capability of the
++  platform, that is, which error types are supported. The error type
++  definition is as follow, the left field is the error type value, the
++  right field is error description.
 +
-+static struct acpi_table_einj *einj_tab;
++    0x00000001	Processor Correctable
++    0x00000002	Processor Uncorrectable non-fatal
++    0x00000004	Processor Uncorrectable fatal
++    0x00000008  Memory Correctable
++    0x00000010  Memory Uncorrectable non-fatal
++    0x00000020  Memory Uncorrectable fatal
++    0x00000040	PCI Express Correctable
++    0x00000080	PCI Express Uncorrectable fatal
++    0x00000100	PCI Express Uncorrectable non-fatal
++    0x00000200	Platform Correctable
++    0x00000400	Platform Uncorrectable non-fatal
++    0x00000800	Platform Uncorrectable fatal
 +
-+static struct apei_resources einj_resources;
++  The format of file contents are as above, except there are only the
++  available error type lines.
 +
-+static struct apei_exec_ins_type einj_ins_type[] = {
-+	[ACPI_EINJ_READ_REGISTER] = {
-+		.flags = APEI_EXEC_INS_ACCESS_REGISTER,
-+		.run   = apei_exec_read_register,
-+	},
-+	[ACPI_EINJ_READ_REGISTER_VALUE] = {
-+		.flags = APEI_EXEC_INS_ACCESS_REGISTER,
-+		.run   = apei_exec_read_register_value,
-+	},
-+	[ACPI_EINJ_WRITE_REGISTER] = {
-+		.flags = APEI_EXEC_INS_ACCESS_REGISTER,
-+		.run   = apei_exec_write_register,
-+	},
-+	[ACPI_EINJ_WRITE_REGISTER_VALUE] = {
-+		.flags = APEI_EXEC_INS_ACCESS_REGISTER,
-+		.run   = apei_exec_write_register_value,
-+	},
-+	[ACPI_EINJ_NOOP] = {
-+		.flags = 0,
-+		.run   = apei_exec_noop,
-+	},
-+};
++- error_type
++  This file is used to set the error type value. The error type value
++  is defined in "available_error_type" description.
 +
-+/*
-+ * Prevent EINJ interpreter to run simultaneously, because the
-+ * corresponding firmware implementation may not work properly when
-+ * invoked simultaneously.
-+ */
-+static DEFINE_MUTEX(einj_mutex);
++- error_inject
++  Write any integer to this file to trigger the error
++  injection. Before this, please specify all necessary error
++  parameters.
 +
-+static void einj_exec_ctx_init(struct apei_exec_context *ctx)
-+{
-+	apei_exec_ctx_init(ctx, einj_ins_type, ARRAY_SIZE(einj_ins_type),
-+			   EINJ_TAB_ENTRY(einj_tab), einj_tab->entries);
-+}
++For more information about EINJ, please refer to ACPI specification
++version 4.0, section 17.5.
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -338,6 +338,11 @@ and is between 256 and 4096 characters. 
+ 			not play well with APC CPU idle - disable it if you have
+ 			APC and your system crashes randomly.
+ 
++	apei.hest_disable= [ACPI]
++			Disable Hardware Error Source Table (HEST) support,
++			corresponding firmware-first mode error processing
++			logic will be disabled.
 +
-+static int __einj_get_available_error_type(u32 *type)
-+{
-+	struct apei_exec_context ctx;
-+	int rc;
-+
-+	einj_exec_ctx_init(&ctx);
-+	rc = apei_exec_run(&ctx, ACPI_EINJ_GET_ERROR_TYPE);
-+	if (rc)
-+		return rc;
-+	*type = apei_exec_ctx_get_output(&ctx);
-+
-+	return 0;
-+}
-+
-+/* Get error injection capabilities of the platform */
-+static int einj_get_available_error_type(u32 *type)
-+{
-+	int rc;
-+
-+	mutex_lock(&einj_mutex);
-+	rc = __einj_get_available_error_type(type);
-+	mutex_unlock(&einj_mutex);
-+
-+	return rc;
-+}
-+
-+/* do sanity check to trigger table */
-+static int einj_check_trigger_header(struct acpi_einj_trigger *trigger_tab)
-+{
-+	if (trigger_tab->header_size != sizeof(struct acpi_einj_trigger))
-+		return -EINVAL;
-+	if (trigger_tab->table_size > PAGE_SIZE ||
-+	    trigger_tab->table_size <= trigger_tab->header_size)
-+		return -EINVAL;
-+	if (trigger_tab->entry_count !=
-+	    (trigger_tab->table_size - trigger_tab->header_size) /
-+	    sizeof(struct acpi_einj_entry))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+/* Execute instructions in trigger error action table */
-+static int __einj_error_trigger(u64 trigger_paddr)
-+{
-+	struct acpi_einj_trigger *trigger_tab = NULL;
-+	struct apei_exec_context trigger_ctx;
-+	struct apei_resources trigger_resources;
-+	struct acpi_whea_header *trigger_entry;
-+	struct resource *r;
-+	u32 table_size;
-+	int rc = -EIO;
-+
-+	r = request_mem_region(trigger_paddr, sizeof(*trigger_tab),
-+			       "APEI EINJ Trigger Table");
-+	if (!r) {
-+		pr_info(EINJ_PFX
-+	"Can not request iomem region <%016llx-%016llx> for Trigger table.\n",
-+			(unsigned long long)trigger_paddr,
-+			(unsigned long long)trigger_paddr+sizeof(*trigger_tab));
-+		goto out;
-+	}
-+	trigger_tab = ioremap(trigger_paddr, sizeof(*trigger_tab));
-+	if (!trigger_tab) {
-+		pr_info(EINJ_PFX "Failed to map trigger table!\n");
-+		goto out_rel_header;
-+	}
-+	rc = einj_check_trigger_header(trigger_tab);
-+	if (rc) {
-+		pr_info(EINJ_PFX
-+	"The trigger error action table is invalid, firmware bug?\n");
-+		goto out_rel_header;
-+	}
-+	rc = -EIO;
-+	table_size = trigger_tab->table_size;
-+	r = request_mem_region(trigger_paddr + sizeof(*trigger_tab),
-+			       table_size - sizeof(*trigger_tab),
-+			       "APEI EINJ Trigger Table");
-+	if (!r) {
-+		pr_info(EINJ_PFX
-+"Can not request iomem region <%016llx-%016llx> for Trigger Table Entry.\n",
-+			(unsigned long long)trigger_paddr+sizeof(*trigger_tab),
-+			(unsigned long long)trigger_paddr + table_size);
-+		goto out_rel_header;
-+	}
-+	iounmap(trigger_tab);
-+	trigger_tab = ioremap(trigger_paddr, table_size);
-+	if (!trigger_tab) {
-+		pr_info(EINJ_PFX "Failed to map trigger table!\n");
-+		goto out_rel_entry;
-+	}
-+	trigger_entry = (struct acpi_whea_header *)
-+		((char *)trigger_tab + sizeof(struct acpi_einj_trigger));
-+	apei_resources_init(&trigger_resources);
-+	apei_exec_ctx_init(&trigger_ctx, einj_ins_type,
-+			   ARRAY_SIZE(einj_ins_type),
-+			   trigger_entry, trigger_tab->entry_count);
-+	rc = apei_exec_collect_resources(&trigger_ctx, &trigger_resources);
-+	if (rc)
-+		goto out_fini;
-+	rc = apei_resources_sub(&trigger_resources, &einj_resources);
-+	if (rc)
-+		goto out_fini;
-+	rc = apei_resources_request(&trigger_resources, "APEI EINJ Trigger");
-+	if (rc)
-+		goto out_fini;
-+	rc = apei_exec_pre_map_gars(&trigger_ctx);
-+	if (rc)
-+		goto out_release;
-+
-+	rc = apei_exec_run(&trigger_ctx, ACPI_EINJ_TRIGGER_ERROR);
-+
-+	apei_exec_post_unmap_gars(&trigger_ctx);
-+out_release:
-+	apei_resources_release(&trigger_resources);
-+out_fini:
-+	apei_resources_fini(&trigger_resources);
-+out_rel_entry:
-+	release_mem_region(trigger_paddr + sizeof(*trigger_tab),
-+			   table_size - sizeof(*trigger_tab));
-+out_rel_header:
-+	release_mem_region(trigger_paddr, sizeof(*trigger_tab));
-+out:
-+	if (trigger_tab)
-+		iounmap(trigger_tab);
-+
-+	return rc;
-+}
-+
-+static int __einj_error_inject(u32 type)
-+{
-+	struct apei_exec_context ctx;
-+	unsigned long start;
-+	u64 val, trigger_paddr;
-+	int rc;
-+
-+	einj_exec_ctx_init(&ctx);
-+
-+	rc = apei_exec_run(&ctx, ACPI_EINJ_BEGIN_OPERATION);
-+	if (rc)
-+		return rc;
-+	apei_exec_ctx_set_input(&ctx, type);
-+	rc = apei_exec_run(&ctx, ACPI_EINJ_SET_ERROR_TYPE);
-+	if (rc)
-+		return rc;
-+	rc = apei_exec_run(&ctx, ACPI_EINJ_EXECUTE_OPERATION);
-+	if (rc)
-+		return rc;
-+	/* Firmware should respond within 5 jiffies */
-+	start = jiffies;
-+	do {
-+		if (time_after_eq(jiffies, start + 5)) {
-+			pr_info(EINJ_PFX
-+			"Firmware does not respond in time, firmware bug?\n");
-+			return -EIO;
-+		}
-+		rc = apei_exec_run(&ctx, ACPI_EINJ_CHECK_BUSY_STATUS);
-+		if (rc)
-+			return rc;
-+		val = apei_exec_ctx_get_output(&ctx);
-+	} while (val & EINJ_OP_BUSY);
-+	rc = apei_exec_run(&ctx, ACPI_EINJ_GET_COMMAND_STATUS);
-+	if (rc)
-+		return rc;
-+	val = apei_exec_ctx_get_output(&ctx);
-+	if (val != EINJ_STATUS_SUCCESS)
-+		return -EBUSY;
-+
-+	rc = apei_exec_run(&ctx, ACPI_EINJ_GET_TRIGGER_TABLE);
-+	if (rc)
-+		return rc;
-+	trigger_paddr = apei_exec_ctx_get_output(&ctx);
-+	rc = __einj_error_trigger(trigger_paddr);
-+	if (rc)
-+		return rc;
-+	rc = apei_exec_run(&ctx, ACPI_EINJ_END_OPERATION);
-+
-+	return rc;
-+}
-+
-+/* Inject the specified hardware error */
-+static int einj_error_inject(u32 type)
-+{
-+	int rc;
-+
-+	mutex_lock(&einj_mutex);
-+	rc = __einj_error_inject(type);
-+	mutex_unlock(&einj_mutex);
-+
-+	return rc;
-+}
-+
-+static u32 error_type;
-+static struct dentry *einj_debug_dir;
-+
-+static int available_error_type_show(struct seq_file *m, void *v)
-+{
-+	int rc;
-+	u32 available_error_type = 0;
-+
-+	rc = einj_get_available_error_type(&available_error_type);
-+	if (rc)
-+		return rc;
-+	if (available_error_type & 0x0001)
-+		seq_printf(m, "0x00000001\tProcessor Correctable\n");
-+	if (available_error_type & 0x0002)
-+		seq_printf(m, "0x00000002\tProcessor Uncorrectable non-fatal\n");
-+	if (available_error_type & 0x0004)
-+		seq_printf(m, "0x00000004\tProcessor Uncorrectable fatal\n");
-+	if (available_error_type & 0x0008)
-+		seq_printf(m, "0x00000008\tMemory Correctable\n");
-+	if (available_error_type & 0x0010)
-+		seq_printf(m, "0x00000010\tMemory Uncorrectable non-fatal\n");
-+	if (available_error_type & 0x0020)
-+		seq_printf(m, "0x00000020\tMemory Uncorrectable fatal\n");
-+	if (available_error_type & 0x0040)
-+		seq_printf(m, "0x00000040\tPCI Express Correctable\n");
-+	if (available_error_type & 0x0080)
-+		seq_printf(m, "0x00000080\tPCI Express Uncorrectable non-fatal\n");
-+	if (available_error_type & 0x0100)
-+		seq_printf(m, "0x00000100\tPCI Express Uncorrectable fatal\n");
-+	if (available_error_type & 0x0200)
-+		seq_printf(m, "0x00000200\tPlatform Correctable\n");
-+	if (available_error_type & 0x0400)
-+		seq_printf(m, "0x00000400\tPlatform Uncorrectable non-fatal\n");
-+	if (available_error_type & 0x0800)
-+		seq_printf(m, "0x00000800\tPlatform Uncorrectable fatal\n");
-+
-+	return 0;
-+}
-+
-+static int available_error_type_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, available_error_type_show, NULL);
-+}
-+
-+static const struct file_operations available_error_type_fops = {
-+	.open		= available_error_type_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int error_type_get(void *data, u64 *val)
-+{
-+	*val = error_type;
-+
-+	return 0;
-+}
-+
-+static int error_type_set(void *data, u64 val)
-+{
-+	int rc;
-+	u32 available_error_type = 0;
-+
-+	/* Only one error type can be specified */
-+	if (val & (val - 1))
-+		return -EINVAL;
-+	rc = einj_get_available_error_type(&available_error_type);
-+	if (rc)
-+		return rc;
-+	if (!(val & available_error_type))
-+		return -EINVAL;
-+	error_type = val;
-+
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(error_type_fops, error_type_get,
-+			error_type_set, "0x%llx\n");
-+
-+static int error_inject_set(void *data, u64 val)
-+{
-+	if (!error_type)
-+		return -EINVAL;
-+
-+	return einj_error_inject(error_type);
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(error_inject_fops, NULL,
-+			error_inject_set, "%llu\n");
-+
-+static int einj_check_table(struct acpi_table_einj *einj_tab)
-+{
-+	if (einj_tab->header_length != sizeof(struct acpi_table_einj))
-+		return -EINVAL;
-+	if (einj_tab->header.length < sizeof(struct acpi_table_einj))
-+		return -EINVAL;
-+	if (einj_tab->entries !=
-+	    (einj_tab->header.length - sizeof(struct acpi_table_einj)) /
-+	    sizeof(struct acpi_einj_entry))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int __init einj_init(void)
-+{
-+	int rc;
-+	acpi_status status;
-+	struct dentry *fentry;
-+	struct apei_exec_context ctx;
-+
-+	if (acpi_disabled)
-+		return -ENODEV;
-+
-+	status = acpi_get_table(ACPI_SIG_EINJ, 0,
-+				(struct acpi_table_header **)&einj_tab);
-+	if (status == AE_NOT_FOUND) {
-+		pr_info(EINJ_PFX "Table is not found!\n");
-+		return -ENODEV;
-+	} else if (ACPI_FAILURE(status)) {
-+		const char *msg = acpi_format_exception(status);
-+		pr_info(EINJ_PFX "Failed to get table, %s\n", msg);
-+		return -EINVAL;
-+	}
-+
-+	rc = einj_check_table(einj_tab);
-+	if (rc) {
-+		pr_info(EINJ_PFX "EINJ table is invalid, firmware bug?\n");
-+		return -EINVAL;
-+	}
-+
-+	rc = -ENOMEM;
-+	einj_debug_dir = debugfs_create_dir("einj", apei_debug_dir);
-+	if (!einj_debug_dir)
-+		goto err_cleanup;
-+	fentry = debugfs_create_file("available_error_type", S_IRUSR,
-+				     einj_debug_dir, NULL,
-+				     &available_error_type_fops);
-+	if (!fentry)
-+		goto err_cleanup;
-+	fentry = debugfs_create_file("error_type", S_IRUSR | S_IWUSR,
-+				     einj_debug_dir, NULL, &error_type_fops);
-+	if (!fentry)
-+		goto err_cleanup;
-+	fentry = debugfs_create_file("error_inject", S_IWUSR,
-+				     einj_debug_dir, NULL, &error_inject_fops);
-+	if (!fentry)
-+		goto err_cleanup;
-+
-+	apei_resources_init(&einj_resources);
-+	einj_exec_ctx_init(&ctx);
-+	rc = apei_exec_collect_resources(&ctx, &einj_resources);
-+	if (rc)
-+		goto err_fini;
-+	rc = apei_resources_request(&einj_resources, "APEI EINJ");
-+	if (rc)
-+		goto err_fini;
-+	rc = apei_exec_pre_map_gars(&ctx);
-+	if (rc)
-+		goto err_release;
-+
-+	pr_info(EINJ_PFX "Error INJection is initialized.\n");
-+
-+	return 0;
-+
-+err_release:
-+	apei_resources_release(&einj_resources);
-+err_fini:
-+	apei_resources_fini(&einj_resources);
-+err_cleanup:
-+	debugfs_remove_recursive(einj_debug_dir);
-+
-+	return rc;
-+}
-+
-+static void __exit einj_exit(void)
-+{
-+	struct apei_exec_context ctx;
-+
-+	einj_exec_ctx_init(&ctx);
-+	apei_exec_post_unmap_gars(&ctx);
-+	apei_resources_release(&einj_resources);
-+	apei_resources_fini(&einj_resources);
-+	debugfs_remove_recursive(einj_debug_dir);
-+}
-+
-+module_init(einj_init);
-+module_exit(einj_exit);
-+
-+MODULE_AUTHOR("Huang Ying");
-+MODULE_DESCRIPTION("APEI Error INJection support");
-+MODULE_LICENSE("GPL");
+ 	apic=		[APIC,X86-32] Advanced Programmable Interrupt Controller
+ 			Change the output verbosity whilst booting
+ 			Format: { quiet (default) | verbose | debug }
 
 
