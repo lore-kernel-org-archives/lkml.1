@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbZLJUXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbZLJUfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757722AbZLJUXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 15:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZLJUXU
+	id S1757942AbZLJUfF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 15:35:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbZLJUfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 15:23:20 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60073 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754948AbZLJUXT (ORCPT
+	Thu, 10 Dec 2009 15:35:04 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:56520 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754429AbZLJUfC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 15:23:19 -0500
+	Thu, 10 Dec 2009 15:35:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kN3oGAWwoIEWWsCPmGWqFvONC/Tl+vUaQrZZTn6AAnNofNDALzxNbVnhPlKjSdm6s/
-         FUD+CMNorHz797pWZcVSRUNm2hSLsZET+qoSqaYCYUew8l7svPIyt3BuQN9CphEvpIF5
-         c/RXACXD2Vy8B0QEr0ze5ZzsQqJyLo9nRLnLg=
-Date: Thu, 10 Dec 2009 21:23:20 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Tim Bird <tim.bird@am.sony.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-Message-ID: <20091210202317.GA6135@nowhere>
-References: <4B202778.4030801@am.sony.com> <20091210070800.GB16874@elte.hu> <20091210120332.GA5042@nowhere> <1260455367.2146.143.camel@gandalf.stny.rr.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ifl1sJfxm2WetoHAilUdpQNkk4K0twHO4KiLvxu/mVZi4KeaXuWEIJ3GsMxFmQ7FAx
+         +egVymyEU4HJrPeIitfG8JCcfecEwLFqDFDsMOZn0H19CnALmsgCbvY5becPiCgT128z
+         OmUWQ9BSm+R9LYeP0unKDZueWNICGQeLWEwm8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260455367.2146.143.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091210214948.3d3c958c@daedalus.pq.iki.fi>
+References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>
+	 <alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>
+	 <1260459601.18520.26.camel@skunk>
+	 <alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>
+	 <6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>
+	 <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>
+	 <20091210214948.3d3c958c@daedalus.pq.iki.fi>
+Date: Thu, 10 Dec 2009 15:35:08 -0500
+Message-ID: <8e6f94720912101235l30d05c03m54b769d9fd6ac35d@mail.gmail.com>
+Subject: Re: [git pull] drm
+From: Will Dyson <will.dyson@gmail.com>
+To: Pekka Paalanen <pq@iki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>, Xavier Bestel <xavier.bestel@free.fr>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 09:29:27AM -0500, Steven Rostedt wrote:
-> On Thu, 2009-12-10 at 13:03 +0100, Frederic Weisbecker wrote:
-> 
-> > This makes me feel I'm going to try converting the function graph tracer
-> > into an event during the next cycle. It does not mean I could make it
-> > usable as a perf event right away in the same shot that said, as you can
-> > guess this is not a trivial plug. The current perf fast path is not yet
-> > adapted for that.
-> 
-> I curious how you plan on doing this. The current event system shows one
-> event per trace point. A straight forward approach would make every
-> entry and exit of a function a trace point and that would lead to a very
-> large kernel to handle that.
+On Thu, Dec 10, 2009 at 2:49 PM, Pekka Paalanen <pq@iki.fi> wrote:
 
+> The big question is what we call ctxprogs: binary blobs that are
+> clearly executable, running somewhere in the GPU. No-one seems
+> to know, if those are copyrightable, or if they can be redistributed.
+> In their current form, they have been recorded from the nvidia
+> proprietary driver using mmiotrace, and copied verbatim for each
+> card type.
+>
+> Would you be willing to pull that kind of stuff into Linux?
+>
+> I would not even dare sending them to the Linux firmware
+> repository, since they have some license requirements, too.
 
-Oh no, I'm not planning to use tracepoints for that.
+This seems similar to the unfortunate situation with the b43 wireless
+card firmware. Broadcom refuses to provide the firmware under a
+redistributable license (or even as files separate from their
+proprietary drivers). This did not stop b43 from being included in
+Linux. Distributions have dealt with it by providing a script that
+downloads the proprietary driver and extracts the firmware from it to
+files in /lib/firmware.
 
+Do you think that a similar solution for nouveau would be legally
+problematic? Or is the issue technical, since you mention that the
+ctxprogs were obtained by mmiotrace, instead of a more straightforward
+extraction from the binary driver blobs?
 
-> Perhaps we could abstract out all entries and exits. We need to be able
-> to link to a single point (entry or exit) not all.  This also has the
-> added issue of using the ftrace infrastructure of nop the mcount call.
-> We also need a way to enable a set of functions.
-> 
-> We may be able to abstract this out, but I'm hesitant on making this the
-> only interface.
-
-
-Hmm, yeah. The idea was just to move the use the struct trace to struct
-trace_event. This would be about straightforward. A bit like kprobes: by
-not using the TRACE_EVENT macros (would be impossible anyway) but
-specific callbacks.
-
-It would be one event.
-
-set_ftrace_filter and set_graph_function can still be used to further
-control dynamic patching. That's what I intended for a first conversion.
-
-Another idea would be to abstract it through one trace event subsystem
-that has one event per function. But that sounds a bit too much in term
-of memory footprint. Also it's perhaps sufficient to abstract the
-dynamic patching, but not enough to abstract set_graph_function.
-
-But later on, a full trace event integration would probably imply
-dicossiating dynamic tracing from the two function tracers.
-For example if the function graph tracer asks to nop a function,
-this shouldn't be propagated to a parallel function tracer user.
-That's even worse once we get a perf integration, we can have
-multiple parallel users of the function tracer. And patching
-should probably adapt to parallel uses, maintaining a kind of
-refcounting, extending the current function hashlist we have
-for function profiling could probably help for that.
-
+-- 
+Will Dyson
