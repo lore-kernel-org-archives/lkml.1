@@ -1,85 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760889AbZLJPZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbZLJO2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760889AbZLJPZZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 10:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760744AbZLJPZO
+	id S1752998AbZLJO2I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 09:28:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZLJO2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 10:25:14 -0500
-Received: from cantor.suse.de ([195.135.220.2]:46627 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbZLJPZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 10:25:10 -0500
-Date: Thu, 10 Dec 2009 07:24:52 -0800
-From: Greg KH <gregkh@suse.de>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Jani Nikula <ext-jani.1.nikula@nokia.com>,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dsilvers@simtec.co.uk" <dsilvers@simtec.co.uk>,
-       "ben@simtec.co.uk" <ben@simtec.co.uk>,
-       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] gpiolib: add support for having symlinks under
- gpio class directory
-Message-ID: <20091210152452.GA13519@suse.de>
-References: <cover.1260364108.git.ext-jani.1.nikula@nokia.com>
- <71eff9c88d3fec3daa218341c83c19a106ee1f62.1260364108.git.ext-jani.1.nikula@nokia.com>
- <20091210024834.GB20410@suse.de>
- <1260455537.25352.1762.camel@jani-desktop>
- <20091210144920.GA27237@suse.de>
- <ac3eb2510912100717p11e3c515l2d9155a764befc71@mail.gmail.com>
+	Thu, 10 Dec 2009 09:28:03 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:47347 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751830AbZLJO2B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 09:28:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=pTbKsk9aF+JPsw0ggtOzh3fyuinORv0OV58FcNx+1hRsgp/mOKP4ihJJtB/PXBh9u9
+         JHNdIkb0nm7VnmqcQxHHzhd9nSagrjFha8Kw9Jkg0AhnzuuHlucN8uUpn0QXzithQthG
+         8q8pgKoBUWLEJ6djXpTJKgIgm+EGRkhSbeS70=
+Message-ID: <4B211346.2000205@gmail.com>
+Date: Thu, 10 Dec 2009 16:27:02 +0100
+From: Jes Sorensen <jes.sorensen@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ac3eb2510912100717p11e3c515l2d9155a764befc71@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: PATCH: Toshiba Bluetooth enabler (v3)
+References: <4B192D08.9080608@gmail.com>	 <9b2b86520912080205x478b47eek2377dacdbe44a522@mail.gmail.com>	 <4B1E85A9.3030005@gmail.com> <9b2b86520912090517l458bc21cobbb138d460e11f53@mail.gmail.com>
+In-Reply-To: <9b2b86520912090517l458bc21cobbb138d460e11f53@mail.gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------070903030003000409060408"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 04:17:00PM +0100, Kay Sievers wrote:
-> On Thu, Dec 10, 2009 at 15:49, Greg KH <gregkh@suse.de> wrote:
-> > On Thu, Dec 10, 2009 at 04:32:17PM +0200, Jani Nikula wrote:
-> >> We simply decided to extend gpio_export_link(). When it is called
-> >> with 'dev == NULL' (no driver), it creates an additional symlink
-> >> in /sys/class/gpio/
-> >>
-> >> # ls -l /sys/class/gpio/
-> >> --w-------    1 root     0            4096 Jan  1 00:00 export
-> >> lrwxrwxrwx    1 root     0               0 Jan  1 00:00 power_button -> ../../devices/virtual/gpio/gpio25
-> >> lrwxrwxrwx    1 root     0               0 Jan  1 00:00 gpio25 -> ../../devices/virtual/gpio/gpio25
-> >> lrwxrwxrwx    1 root     0               0 Jan  1 00:00 gpio38 -> ../../devices/virtual/gpio/gpio38
-> >> ...
-> >>
-> >> This is exactly what our patchset allows to do.
-> >>
-> >> An alternative would be a dummy driver just to create a home in sysfs
-> >> for the standalone GPIOs and use the gpio_export_link() to make the
-> >> links there.
-> >>
-> >> Any other suggestions?
-> 
-> We can not do anything like that. The symlink name must always match
-> the name in /sys/devices/, and it must be a 1:1 relation. We can not
-> allow anything else, it confuses tools which rightfully expect this.
-> 
-> You could convert the class to a "bus", the /sys/class layout is
-> pretty much broken by design, and should better be avoided. It's not
-> extensible, flat in its layout, and today just a too dumb version of
-> the "bus" subsystem which does not have all these limitations.
-> 
-> All the device links would show up in /sys/bus/gpio/devices/, here you
-> have the same rules as in /sys/class/: no additional symlinks, the
-> same names as in /sys/devices -- but you could add a custom folder to
-> the  /sys/bus/gpio/ directory where you could do whatever fits your
-> needs. :)
+This is a multi-part message in MIME format.
+--------------070903030003000409060408
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Ah, yeah, good point, the pci "slots" directory does something like this
-today, with symlinks pointing out of that directory to other devices.
+On 12/09/2009 02:17 PM, Alan Jenkins wrote:
+>> Fixed, this version only calls the enabler if the switch is at ON at
+>> resume time.
+>
+> Ah... I think add() has the same problem as well though?  I.e. the
+> driver will not work if the switch is disabled at load time.
+>
+> I would change it in enable() (and then try to think of a new name for
+> it, maybe try_enable()).
 
-It's messy, but it somehow works...
+Sorta did that, it should do the right thing in all those cases now.
 
-thanks,
+Otherwise I am pretty pleased with it now. Unless there's strong
+objections, I'd say it's good to go.
 
-greg k-h
+Cheers,
+Jes
+
+
+
+--------------070903030003000409060408
+Content-Type: text/plain;
+ name="0002-toshiba-bluetooth-v3.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="0002-toshiba-bluetooth-v3.patch"
+
+Toshiba Bluetooth Enabling driver (RFKill handler)
+
+This patch adds support for the ACPI events generated by the RFKill
+switch on modern Toshiba laptops, and re-enables the Bluetooth USB
+device when the switch is flipped back to the 'on' position.
+
+The RFKill switch brute force pulls out the USB device when flipped to
+'off', but it doesn't automatically re-enable it. Without this driver,
+the Bluetooth is gone until after a reboot on my Portege R500.
+
+Signed-off-by: Jes Sorensen <Jes.Sorensen@gmail.com>
+---
+
+Index: linux-2.6.31.5/drivers/platform/x86/toshiba_bluetooth.c
+===================================================================
+--- /dev/null
++++ linux-2.6.31.5/drivers/platform/x86/toshiba_bluetooth.c
+@@ -0,0 +1,144 @@
++/*
++ * Toshiba Bluetooth Enable Driver
++ *
++ * Copyright (C) 2009 Jes Sorensen <Jes.Sorensen@gmail.com>
++ *
++ * Thanks to Matthew Garrett for background info on ACPI innards which
++ * normal people aren't meant to understand :-)
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Note the Toshiba Bluetooth RFKill switch seems to be a strange
++ * fish. It only provides a BT event when the switch is flipped to
++ * the 'on' position. When flipping it to 'off', the USB device is
++ * simply pulled away underneath us, without any BT event being
++ * delivered.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/types.h>
++#include <acpi/acpi_bus.h>
++#include <acpi/acpi_drivers.h>
++
++MODULE_AUTHOR("Jes Sorensen <Jes.Sorensen@gmail.com>");
++MODULE_DESCRIPTION("Toshiba Laptop ACPI Bluetooth Enable Driver");
++MODULE_LICENSE("GPL");
++
++
++static int toshiba_bt_rfkill_add(struct acpi_device *device);
++static int toshiba_bt_rfkill_remove(struct acpi_device *device, int type);
++static void toshiba_bt_rfkill_notify(struct acpi_device *device, u32 event);
++static int toshiba_bt_resume(struct acpi_device *device);
++
++static const struct acpi_device_id bt_device_ids[] = {
++	{ "TOS6205", 0},
++	{ "", 0},
++};
++MODULE_DEVICE_TABLE(acpi, bt_device_ids);
++
++static struct acpi_driver toshiba_bt_rfkill_driver = {
++	.name =		"Toshiba BT",
++	.class =	"Toshiba",
++	.ids =		bt_device_ids,
++	.ops =		{
++				.add =		toshiba_bt_rfkill_add,
++				.remove =	toshiba_bt_rfkill_remove,
++				.notify =	toshiba_bt_rfkill_notify,
++				.resume =	toshiba_bt_resume,
++			},
++	.owner = 	THIS_MODULE,
++};
++
++
++static int toshiba_bluetooth_enable(acpi_handle handle)
++{
++	acpi_status res1, res2;
++	acpi_integer result;
++
++	/*
++	 * Query ACPI to verify RFKill switch is set to 'on'.
++	 * If not, we return silently, no need to report it as
++	 * an error.
++	 */
++	res1 = acpi_evaluate_integer(handle, "BTST", NULL, &result);
++	if (ACPI_FAILURE(res1))
++		return res1;
++	if (!(result & 0x01))
++		return 0;
++
++	printk(KERN_INFO "toshiba_bluetooth: Re-enabling Toshiba Bluetooth\n");
++	res1 = acpi_evaluate_object(handle, "AUSB", NULL, NULL);
++	res2 = acpi_evaluate_object(handle, "BTPO", NULL, NULL);
++	if (!ACPI_FAILURE(res1) || !ACPI_FAILURE(res2)) {
++		return 0;
++	}
++	printk(KERN_WARNING "toshiba_bluetooth: Failed to re-enable "
++	       "Toshiba Bluetooth\n");
++
++	return -ENODEV;
++}
++
++static void toshiba_bt_rfkill_notify(struct acpi_device *device, u32 event)
++{
++	toshiba_bluetooth_enable(device->handle);
++}
++
++static int toshiba_bt_resume(struct acpi_device *device)
++{
++	return toshiba_bluetooth_enable(device->handle);
++}
++
++static int toshiba_bt_rfkill_add(struct acpi_device *device)
++{
++	acpi_status status;
++	acpi_integer bt_present;
++	int result = -ENODEV;
++
++	/*
++	 * Some Toshiba laptops may have a fake TOS6205 device in
++	 * their ACPI BIOS, so query the _STA method to see if there
++	 * is really anything there, before trying to enable it.
++	 */
++	status = acpi_evaluate_integer(device->handle, "_STA", NULL,
++				       &bt_present);
++
++	if (!ACPI_FAILURE(status) && bt_present) {
++		printk(KERN_INFO "Detected Toshiba ACPI Bluetooth device - "
++		      "installing RFKill handler\n");
++		result = toshiba_bluetooth_enable(device->handle);
++	}
++
++	return result;
++}
++
++static int __init toshiba_bt_rfkill_init(void)
++{
++	int result;
++
++	result = acpi_bus_register_driver(&toshiba_bt_rfkill_driver);
++	if (result < 0) {
++		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
++				  "Error registering driver\n"));
++		return result;
++	}
++
++	return 0;
++}
++
++static int toshiba_bt_rfkill_remove(struct acpi_device *device, int type)
++{
++	/* clean up */
++	return 0;
++}
++
++static void __exit toshiba_bt_rfkill_exit(void)
++{
++	acpi_bus_unregister_driver(&toshiba_bt_rfkill_driver);
++}
++
++module_init(toshiba_bt_rfkill_init);
++module_exit(toshiba_bt_rfkill_exit);
+Index: linux-2.6.31.5/drivers/platform/x86/Makefile
+===================================================================
+--- linux-2.6.31.5.orig/drivers/platform/x86/Makefile
++++ linux-2.6.31.5/drivers/platform/x86/Makefile
+@@ -20,3 +20,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
+ obj-$(CONFIG_ACPI_WMI)		+= wmi.o
+ obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
+ obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
++obj-$(CONFIG_TOSHIBA_BT_RFKILL)	+= toshiba_bluetooth.o
+Index: linux-2.6.31.5/drivers/platform/x86/Kconfig
+===================================================================
+--- linux-2.6.31.5.orig/drivers/platform/x86/Kconfig
++++ linux-2.6.31.5/drivers/platform/x86/Kconfig
+@@ -425,4 +425,20 @@ config ACPI_TOSHIBA
+ 
+ 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
+ 	  series), say Y.
++
++config TOSHIBA_BT_RFKILL
++	tristate "Toshiba Bluetooth RFKill switch support"
++	depends on ACPI
++	depends on RFKILL
++	---help---
++	  This driver adds support for Bluetooth events for the RFKill
++	  switch on modern Toshiba laptops with full ACPI support and
++	  an RFKill switch.
++
++	  This driver handles RFKill events for the TOS6205 Bluetooth,
++	  and re-enables it when the switch is set back to the 'on'
++	  position.
++
++	  If you have a modern Toshiba laptop with a Bluetooth and an
++	  RFKill switch (such as the Portege R500), say Y.
+ endif # X86_PLATFORM_DEVICES
+
+--------------070903030003000409060408--
