@@ -1,53 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZLJPJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760934AbZLJPRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbZLJPJJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 10:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZLJPJI
+	id S1760934AbZLJPRW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 10:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760885AbZLJPRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 10:09:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34698 "EHLO mx1.redhat.com"
+	Thu, 10 Dec 2009 10:17:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24307 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbZLJPJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 10:09:07 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       utrace-devel <utrace-devel@redhat.com>
-Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
-References: <1259588232.20516.307.camel@laptop>
-	<20091130150314.GA10331@redhat.com> <20091130151650.GA24316@elte.hu>
-	<20091130152910.GB10331@redhat.com> <20091201161132.GA24897@elte.hu>
-	<20091201170002.GD10331@redhat.com> <20091201170954.GA4699@elte.hu>
-	<20091201174534.GE10331@redhat.com> <20091201211518.GA32376@elte.hu>
-	<20091208215829.GA19793@redhat.com> <20091210074158.GI16874@elte.hu>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Thu, 10 Dec 2009 10:08:57 -0500
-In-Reply-To: <20091210074158.GI16874@elte.hu> (Ingo Molnar's message of "Thu, 10 Dec 2009 08:41:58 +0100")
-Message-ID: <y0mhbryamt2.fsf@fche.csb>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	id S1760917AbZLJPRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 10:17:13 -0500
+Date: Thu, 10 Dec 2009 16:11:21 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 6/9] signal: Fix racy access to __task_cred in
+	kill_pid_info_as_uid()
+Message-ID: <20091210151121.GA10804@redhat.com>
+References: <20091210001308.247025548@linutronix.de> <20091210004703.232302055@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091210004703.232302055@linutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/10, Thomas Gleixner wrote:
+>
+> kill_pid_info_as_uid() accesses __task_cred() without being in a RCU
+> read side critical section. tasklist_lock is not protecting that when
+> CONFIG_TREE_PREEMPT_RCU=y.
+>
+> Convert the whole tasklist_lock section to rcu and use
+> lock_task_sighand to prevent the exit race.
+>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> ---
+>  kernel/signal.c |   17 ++++++++++-------
+>  1 file changed, 10 insertions(+), 7 deletions(-)
 
-Ingo Molnar <mingo@elte.hu> writes:
+Acked-by: Oleg Nesterov <oleg@redhat.com>
 
-> [...]  Since the speed of development in this area is truly glacial
-> at the moment and the practical advantages that i can experience
-> personally (directly as a Linux user and indirectly as a maintainer)
-> are miniscule so far, caution is warranted IMO. [...]
+> Index: linux-2.6-tip/kernel/signal.c
+> ===================================================================
+> --- linux-2.6-tip.orig/kernel/signal.c
+> +++ linux-2.6-tip/kernel/signal.c
+> @@ -1175,11 +1175,12 @@ int kill_pid_info_as_uid(int sig, struct
+>  	int ret = -EINVAL;
+>  	struct task_struct *p;
+>  	const struct cred *pcred;
+> +	unsigned long flags;
+>  
+>  	if (!valid_signal(sig))
+>  		return ret;
+>  
+> -	read_lock(&tasklist_lock);
+> +	rcu_read_lock();
+>  	p = pid_task(pid, PIDTYPE_PID);
+>  	if (!p) {
+>  		ret = -ESRCH;
+> @@ -1196,14 +1197,16 @@ int kill_pid_info_as_uid(int sig, struct
+>  	ret = security_task_kill(p, info, sig, secid);
+>  	if (ret)
+>  		goto out_unlock;
+> -	if (sig && p->sighand) {
+> -		unsigned long flags;
+> -		spin_lock_irqsave(&p->sighand->siglock, flags);
+> -		ret = __send_signal(sig, info, p, 1, 0);
+> -		spin_unlock_irqrestore(&p->sighand->siglock, flags);
+> +
+> +	if (sig) {
+> +		if (lock_task_sighand(p, &flags)) {
+> +			ret = __send_signal(sig, info, p, 1, 0);
+> +			unlock_task_sighand(p, &flags);
+> +		} else
+> +			ret = -ESRCH;
+>  	}
+>  out_unlock:
+> -	read_unlock(&tasklist_lock);
+> +	rcu_read_unlock();
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(kill_pid_info_as_uid);
+> 
+> 
 
-If the "caution" you suggest is operationally equivalent to
-discouraging even miniscule improvements, is it any wonder that
-progress is glacial?
-
-The gdbstub prototype was constructed for two reasons: to demonstrate
-utrace usage now, and in the future to be incrementally useful (over
-ptrace, by moving into fast kernel-space operations like
-multithreading control, gdb-tracepoint support, other stuff).  #1 is
-about done.  With respect to #2, we can certainly commit to ongoing
-work on improvements, provided the community shows interest and
-goodwill.
-
-- FChE
