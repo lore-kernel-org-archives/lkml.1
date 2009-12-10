@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbZLJBQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbZLJBbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343AbZLJBQU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 20:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZLJBQP
+	id S1759365AbZLJBbG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 20:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759335AbZLJBbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 20:16:15 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:43524 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751412AbZLJBQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 20:16:14 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] modpost: fix asprintf warnings
-Date: Wed,  9 Dec 2009 20:16:19 -0500
-Message-Id: <1260407779-12517-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.5
-In-Reply-To: <20091209155903.GB3247@hack>
-References: <20091209155903.GB3247@hack>
+	Wed, 9 Dec 2009 20:31:04 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:43994 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755616AbZLJBbD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 20:31:03 -0500
+Date: Thu, 10 Dec 2009 10:16:27 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: nishimura@mxp.nes.nec.co.jp,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>, linux-mm@kvack.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] [TRIVIAL] memcg: fix memory.memsw.usage_in_bytes for
+ root cgroup
+Message-Id: <20091210101627.1a9bd484.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20091209162109.567ff5fa.akpm@linux-foundation.org>
+References: <1260373738-17179-1-git-send-email-kirill@shutemov.name>
+	<20091210085929.56c63eb2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091209162109.567ff5fa.akpm@linux-foundation.org>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On compilers with security warnings enabled by default, we get:
+On Wed, 9 Dec 2009 16:21:09 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 10 Dec 2009 08:59:29 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > On Wed,  9 Dec 2009 17:48:58 +0200
+> > "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+> > 
+> > > We really want to take MEM_CGROUP_STAT_SWAPOUT into account.
+> > > 
+> > > Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> > > Cc: stable@kernel.org
+> > 
+> > Thanks.
+> > 
+> > Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> 
+> Is this bug sufficiently serious to justify a -stable backport?
+> 
+> If so, why?
+> 
+Well, the value of <root cgroup>/memory.memsw.usage_in_bytes would be incorrect
+(swap usage would not be counted) without this patch. So the impact of this bug
+depends on how the value is used.
 
-scripts/mod/modpost.c: In function 'get_markers':
-scripts/mod/modpost.c:1562: warning: ignoring return value of 'asprintf',
-                                     declared with attribute warn_unused_result
-scripts/mod/modpost.c: In function 'add_marker':
-scripts/mod/modpost.c:1982: warning: ignoring return value of 'asprintf',
-                                     declared with attribute warn_unused_result
+Anyway, this bug exists only in 2.6.32 and this patch can be applied onto it
+without any change.
 
-So check the return value and abort on errors.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-v2
-	- add missing newline pointed out by Américo Wang
-
- scripts/mod/modpost.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 801a16a..6608ebd 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1559,7 +1559,8 @@ static void get_markers(struct elf_info *info, struct module *mod)
- 			const char *name = strings + sym->st_value;
- 			const char *fmt = strchr(name, '\0') + 1;
- 			char *line = NULL;
--			asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt);
-+			if (asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt) == -1)
-+				fatal("asprintf() with %s failed\n", name);
- 			NOFAIL(line);
- 			mod->markers[n++] = line;
- 		}
-@@ -1979,7 +1980,8 @@ static void write_dump(const char *fname)
- static void add_marker(struct module *mod, const char *name, const char *fmt)
- {
- 	char *line = NULL;
--	asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt);
-+	if (asprintf(&line, "%s\t%s\t%s\n", name, mod->name, fmt) == -1)
-+		fatal("asprintf() with %s failed\n", name);
- 	NOFAIL(line);
- 
- 	mod->markers = NOFAIL(realloc(mod->markers, ((mod->nmarkers + 1) *
--- 
-1.6.5.5
-
+Thanks,
+Daisuke Nishimura.
