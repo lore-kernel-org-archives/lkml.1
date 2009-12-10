@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759020AbZLJAJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbZLJAMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759020AbZLJAJd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 19:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbZLJAJ1
+	id S1758972AbZLJAMo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 19:12:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758817AbZLJAMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 19:09:27 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53982 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758870AbZLJAJ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 19:09:26 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH v4] [RFC] tracepoint: Add signal coredump tracepoint
-Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Jason Baron <jbaron@redhat.com>
-In-Reply-To: <20091209203835.12767.42778.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <4B1FCD74.8020302@redhat.com> <20091209203835.12767.42778.stgit@dhcp-100-2-132.bos.redhat.com>
-Message-Id: <20091210090852.F4F1.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
+	Wed, 9 Dec 2009 19:12:39 -0500
+Received: from mail.perches.com ([173.55.12.10]:1062 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758700AbZLJAMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 19:12:39 -0500
+Subject: MAINTAINERS: What's the correct mailing address?
+From: Joe Perches <joe@perches.com>
+To: devel@driverdev.osuosl.org
+Cc: devel <devel@driverdev.osuosl.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1259690373-12508-4-git-send-email-gregkh@suse.de>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 10 Dec 2009 09:09:31 +0900 (JST)
+Date: Wed, 09 Dec 2009 16:12:45 -0800
+Message-ID: <1260403965.5351.63.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Add signal coredump tracepoint which shows signal number,
-> mm->flags, core file size limitation, the result of
-> coredump, and core file name.
-> 
-> This tracepoint requirement comes mainly from the viewpoint of
-> administrators. Since now we have introduced many coredump
-> configurations (e.g. dumpable, coredump_filter, core_pattern,
-> etc) and some of them can be modified by users, it will be hard
-> to know what was actually dumped (or not dumped) after some
-> problem happened on the system. For example, a process didn't
-> generated core, coredump doesn't have some sections, etc.
-> In those cases, the coredump tracepoint can help us to know
-> why the core file is so big or small, or not generated, by
-> recording all configurations for all processes on the system.
-> That will reduce system-administration cost.
-> 
-> Changes in v4:
->  - Rename limit trace-argument to core_size_limit, because
->    of user friendly output.
+I submitted patches to devel@driverdev.osuosl.org
+on Sunday which are apparently still being held
+for moderator approval.
 
-Looks good to me.
+Is that still the correct address or should
+devel@linuxdriverproject.org be used instead?
+
+If so, perhaps this is appropriate:
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ea781c1..5ad7830 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5061,8 +5061,9 @@ S:	Maintained
+ 
+ STAGING SUBSYSTEM
+ M:	Greg Kroah-Hartman <gregkh@suse.de>
++L:	devel@linuxdriverproject.org
++W:	http://linuxdriverproject.org/
+ T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+-L:	devel@driverdev.osuosl.org
+ S:	Maintained
+ F:	drivers/staging/
+ 
+
 
 
