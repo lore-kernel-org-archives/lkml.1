@@ -1,131 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbZLJTsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZLJTts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756976AbZLJTsg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 14:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbZLJTsg
+	id S1757214AbZLJTts (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 14:49:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbZLJTtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 14:48:36 -0500
-Received: from mail.bluewatersys.com ([202.124.120.130]:56017 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752307AbZLJTsf (ORCPT
+	Thu, 10 Dec 2009 14:49:47 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:35977 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755841AbZLJTtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 14:48:35 -0500
-Message-ID: <4B2150B7.3040207@bluewatersys.com>
-Date: Fri, 11 Dec 2009 08:49:11 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Daniel Walker <dwalker@codeaurora.org>,
-       Iliyan Malchev <malchev@google.com>,
-       Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Arve Hj?nnev?g <arve@android.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: GPIO support for HTC Dream
-References: <20091208102842.GH12264@elf.ucw.cz> <4B1EB57D.6070408@bluewatersys.com> <20091208214658.GC4164@elf.ucw.cz> <4B1ECEEE.3000209@bluewatersys.com> <4B203575.6050407@bluewatersys.com> <20091210172458.GJ19454@elf.ucw.cz>
-In-Reply-To: <20091210172458.GJ19454@elf.ucw.cz>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Dec 2009 14:49:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
+         :x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=uvTS0yEI96BrNoJudvB4Lf5+wXG79bl29zEKXnmFC66gC9YVJNbyltlTl2oLSQW6m/
+         Whw4knkafvvIggjYRqbt2HNIXml3QjqwDrztUisxeIjA3UO50WQvLSyG9jxQIt6A+Fl4
+         IubDl+8zoBdOEKsDjBAWXOxVURwmA08Kt/hKA=
+Date: Thu, 10 Dec 2009 21:49:48 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Maarten Maathuis <madman2003@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Xavier Bestel <xavier.bestel@free.fr>
+Subject: Re: [git pull] drm
+Message-ID: <20091210214948.3d3c958c@daedalus.pq.iki.fi>
+In-Reply-To: <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>
+References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>
+	<alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>
+	<1260459601.18520.26.camel@skunk>
+	<alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>
+	<6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>
+	<alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
+On Thu, 10 Dec 2009 10:42:46 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Thu, 10 Dec 2009, Maarten Maathuis wrote:
+> > 
+> > You assume that Red Hat has full control over the project,
+> > which i don't think is the case. The reason it isn't in staging
+> > yet (as far as i know) is because of some questions over the
+> > copyright of some (essential) microcode. Either the question
+> > needs to be answered, or it has to be reverse engineered to the
+> > point that it's possible to generate it.
 > 
->>> This is still really screwy. Why are you creating your own version of
->>> struct gpio_chip in addition to the one in include/asm-generic/gpio.h
->>> (which you also appear to include in some places). It makes the code
->>> extremely confusing. Other architectures use wrapper structures. Can you
->>> have something like this instead:
->>>
->>> 	struct dream_gpio_chip {
->>> 		struct gpio_chip chip;
->>>
->>> 		/* Dream specific bits */
->>> 	};
->>>
->>> The name of this function also needs to be changed to something less
->>> generic since it is being exported globally.
->>>
->>> I also think this function is doing way to much work for what it is.
->>> Does it really need to be this complicated?
->> Further to this, I think it is worth doing the work to make this gpiolib
->> now. Most of the other ARM chips now support gpiolib, so it would seem a
->> bit of a step backwards to start adding new chips which don't. I think
->> that adding the gpiolib support will also cleanup the mess that is
->> register_gpio_chip, since this is all already handled by the gpiolib core.
-> 
-> I tried going through drivers/gpio/gpiolib.c and it seems to be a lot
-> of code -- mostly sysrq interface to userland. I'm not sure how much
-> code could be shared... 
+> I think people are just making up excuses, as evidenced by the
+> fact that you're quoting a different excuse than I've heard
+> before.
 
-Its not much work to go from generic gpio (which you have now) to
-gpiolib, and in the end it will make the code simpler, more extensible,
-you get sysfs access for free, etc. You will need to wrap up your
-gpio_chip struct as I suggested:
+That is because priorities change. The ABI has not seen changes
+for some time now, so it's probably not an issue anymore. And it
+is not an issue for staging. The other issue has become more
+important. That said, there are features that likely require
+revising the ABI at some point, and we know about those already.
 
-struct msm_gpio_chip {
-	struct gpio_chip;
-	
-	/* MSM/Dream/Trout(?) bits */
-};
-#define to_msm_gpio_chip(c, container_of(c, struct msm_gpio_chip, chip)
+> The fact is, if there are license questions, then Fedora had
+> better not be distributing the code either. And they clearly are.
 
-As an aside, I don't quite understand the naming conventions here. Is
-the gpio stuff generic to the MSM chip, or specific to the Dream/Trout
-board? It would be good if the gpio implementation could be completely
-generic to the chip, and all the board specific bits be kept in the
-board specific files.
+I've no idea how they pulled that, but I have not heard anyone
+say that there are *no* legal issues at all.
 
-You gpio_set, get, direction, etc functions become static:
+> I've heard the "but it's hard to merge" excuse too - which I also
+> know is bullshit, because I can look at the git tree Fedora
+> apparently uses, and it merges without any conflicts what-so-ever.
 
-static gpio_set_value(struct gpio_chip *chip, unsigned offset, int val)
-{
-	struct msm_gpio_chip *msm_chip = to_msm_gpio_chip(chip);
-	
-	...
-}
+No-one has said that about Nouveau, have they?
 
-and you have a descriptor for your chip (or an array of these if you
-want multiple banks of gpios):
+> The most common excuse is the "oh, but it might change" crap. But
+> that's not even a very good excuse to start with, and it's what
+> staging is for anyway.
 
-static struct msm_gpios = {
-	.chip = {
-		.label		= "msm_gpio",
-		.set		= gpio_set_value,
-		...
-	},
-	/* MSM specific bits */
-};
+Yes, and to my understanding Nouveau is past that excuse. People
+just like to quote what they heard last.
 
-void __init msm_init_gpio(void)
-{
-	gpiochip_add(&msm_gpios);
+The big question is what we call ctxprogs: binary blobs that are
+clearly executable, running somewhere in the GPU. No-one seems
+to know, if those are copyrightable, or if they can be redistributed.
+In their current form, they have been recorded from the nvidia
+proprietary driver using mmiotrace, and copied verbatim for each
+card type.
 
-	/* Other setup, gpio irqs, etc */
-}
+Would you be willing to pull that kind of stuff into Linux?
 
-Your msm_register_gpio_chip function should disappear and your
-gpio_request and gpio_free functions can either be removed, or at least
-become much simpler since gpiolib already handles most of what those
-functions are doing.
-
-Have a look at the other ARM chips which have gpiolib support for a
-guide. The ep93xx and at91 ones which I did are reasonably simple to
-follow, and also demonstrate how to use the debugfs hooks which you may
-find useful. Also look at Documentation/gpio.txt which has some more
-detailed information on gpiolib.
-
-~Ryan
+I would not even dare sending them to the Linux firmware
+repository, since they have some license requirements, too.
 
 -- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
-
-Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
-ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
-http://www.bluewatersys.com	New Zealand
-Phone: +64 3 3779127		Freecall: Australia 1800 148 751
-Fax:   +64 3 3779135			  USA 1800 261 2934
+Pekka Paalanen
+http://www.iki.fi/pq/
