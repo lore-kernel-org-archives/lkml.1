@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761181AbZLJR3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761296AbZLJRcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761181AbZLJR3M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 12:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761048AbZLJR3M
+	id S1761296AbZLJRcF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 12:32:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761285AbZLJRcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 12:29:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61507 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754000AbZLJR3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 12:29:11 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-References: <4B202778.4030801@am.sony.com> <20091210070800.GB16874@elte.hu>
-	<20091210120332.GA5042@nowhere> <20091210141121.GB1436@elte.hu>
-	<1260456803.2146.167.camel@gandalf.stny.rr.com>
-	<20091210153845.GA28230@elte.hu>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Thu, 10 Dec 2009 12:28:46 -0500
-In-Reply-To: <20091210153845.GA28230@elte.hu> (Ingo Molnar's message of "Thu, 10 Dec 2009 16:38:45 +0100")
-Message-ID: <y0md42magc1.fsf@fche.csb>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Thu, 10 Dec 2009 12:32:03 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:51210 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761053AbZLJRcB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 12:32:01 -0500
+Date: Thu, 10 Dec 2009 11:30:46 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com, mingo@elte.hu
+Subject: Re: [RFC mm][PATCH 1/5] mm counter cleanup
+In-Reply-To: <20091210163326.28bb7eb8.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0912101126480.5481@router.home>
+References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com> <20091210163326.28bb7eb8.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Thu, 10 Dec 2009, KAMEZAWA Hiroyuki wrote:
 
-> [...]
-> Just off the top of my head we want to be able to trace:
->
->  - max irq service latencies for a given IRQ
->  - max block IO completion latencies for a app
->  - max TLB flush latencies in the system
->  - max sys_open() latencies in a task
->  - max fork()/exit() latencies in a workload
->  - max scheduling latencies on a given CPU
->  - max page fault latencies
->  - max wakeup latencies for a given task
->  - max memory allocation latencies
->
->  - ... and dozens and dozens of other things where there's a "start"
->    and a "stop" event and where we want to measure the time between
->    them.
-> [...]
+> This patch modifies it to
+>   - Define them in mm.h as inline functions
+>   - Use array instead of macro's name creation. For making easier to add
+>     new coutners.
 
-FWIW, those who want to collect such measurements today can do so with
-a few lines of systemtap script for each of the above.
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+
+> @@ -454,8 +456,8 @@ static struct mm_struct * mm_init(struct
+>  		(current->mm->flags & MMF_INIT_MASK) : default_dump_filter;
+>  	mm->core_state = NULL;
+>  	mm->nr_ptes = 0;
+> -	set_mm_counter(mm, file_rss, 0);
+> -	set_mm_counter(mm, anon_rss, 0);
+> +	for (i = 0; i < NR_MM_COUNTERS; i++)
+> +		set_mm_counter(mm, i, 0);
 
 
-- FChE
+memset? Or add a clear_mm_counter function? This also occurred earlier in
+init_rss_vec().
+
