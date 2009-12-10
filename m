@@ -1,77 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761584AbZLJTSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbZLJTUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761584AbZLJTSb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 14:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761428AbZLJTSb
+	id S1761588AbZLJTUb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 14:20:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761434AbZLJTU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 14:18:31 -0500
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:28384 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761300AbZLJTSa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 14:18:30 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5828"; a="29580695"
-Subject: [GIT PULL] msm updates for v2.6.33
-From: Daniel Walker <dwalker@codeaurora.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Brian Swetland <swetland@google.com>, Pavel Machek <pavel@ucw.cz>,
-       David Brown <davidb@codeaurora.org>,
-       Bryan Huntsman <bryanh@codeaurora.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Dec 2009 11:18:35 -0800
-Message-ID: <1260472715.11877.103.camel@c-dwalke-linux.qualcomm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 10 Dec 2009 14:20:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51096 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751757AbZLJTU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 14:20:29 -0500
+Message-ID: <4B2149B4.9060900@kernel.org>
+Date: Thu, 10 Dec 2009 11:19:16 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Bisected regression (Was Re: current -git fails to boot on	nehalem-ex)
+References: <20091210091040.GG8742@kernel.dk> <20091210103945.GI8742@kernel.dk> <20091210160640.GB27794@elte.hu> <67EA4830-231F-45C9-A1A6-CE1C6CD9493D@kernel.org> <20091210180727.GK8742@kernel.dk> <4B213F1F.2020305@kernel.org> <4B2140F8.3020201@kernel.org> <20091210184506.GP8742@kernel.dk> <20091210190742.GS8742@kernel.dk>
+In-Reply-To: <20091210190742.GS8742@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens Axboe wrote:
+> On Thu, Dec 10 2009, Jens Axboe wrote:
+>>>>> [    0.000000] Kernel panic - not syncing: Overlapping early reservations 12-f011 MP-table mpc to 0-fff BIOS data page
+>>>> mptable mpc is [12 - f011]
+>>>>
+>>>> what a BIOS !
+>>>>
+>>>> can you check if it works with 2.6.32 + "acpi=off"?
+>> I'll try that.
+> 
+> Yes, 2.6.32 boots fine with acpi=off passed.
+> 
+>>> please check if this one could workaround it.
+>>>
+>>> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+>>> index d17d482..f60acec 100644
+>>> --- a/arch/x86/kernel/e820.c
+>>> +++ b/arch/x86/kernel/e820.c
+>>> @@ -732,7 +732,7 @@ struct early_res {
+>>>  	char overlap_ok;
+>>>  };
+>>>  static struct early_res early_res[MAX_EARLY_RES] __initdata = {
+>>> -	{ 0, PAGE_SIZE, "BIOS data page" },	/* BIOS data page */
+>>> +	{ 0, PAGE_SIZE, "BIOS data page", 1 },	/* BIOS data page */
+>>>  	{}
+>>>  };
+>> And then this. Results in 10-15min.
+> 
+> Doesn't work, it just complains about a different overlap:
+> 
+> [    0.000000] Kernel panic - not syncing: Overlapping early
+> reservations 12-f011 MP-table mpc to 6000-7fff TRAMPOLINE
+> [    0.000000] 
+> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.32 #51
+> [    0.000000] Call Trace:
+> [    0.000000]  [<ffffffff813c709b>] panic+0xa0/0x16a
+> [    0.000000]  [<ffffffff8167d280>] ?
+> reserve_early_overlap_ok+0x2e/0x39
+> [    0.000000]  [<ffffffff8167d24a>] ?
+> drop_overlaps_that_are_ok+0x117/0x11f
+> [    0.000000]  [<ffffffff8167d133>] drop_overlaps_that_are_ok+0x0/0x11f
+> [    0.000000]  [<ffffffff8167d2c6>] reserve_early+0x3b/0x3d
+> [    0.000000]  [<ffffffff81683248>] smp_scan_config+0xe7/0x10e
+> [    0.000000]  [<ffffffff816832a9>] default_find_smp_config+0x3a/0x60
+> [    0.000000]  [<ffffffff8167b0be>] setup_arch+0x6ae/0xa88
+> [    0.000000]  [<ffffffff816789ff>] start_kernel+0x82/0x412
+> [    0.000000]  [<ffffffff81678289>] x86_64_start_reservations+0x99/0xb9
+> [    0.000000]  [<ffffffff81678389>] x86_64_start_kernel+0xe0/0xf2
+> 
+> 
 
-Please pull these updates for the arm MSM sub-architecture. The biggest
-change here is support for the HTC Dream/Google G1 phone, and a few
-small Kconfig/compile fixes. There is also the addition of a maintainer
-entry that covers this sub-architecture and it's drivers which are
-currently unmaintained.
+that is funny. we may need to use find early for our TRAMPOLINE...?
 
-Daniel
+otherwise your mptable is corrupted....
 
---
-The following changes since commit 333a07437c31ea8c16a2b82071629a540ae1e50f:
-  Linus Torvalds (1):
-        Merge branch 'release' of git://git.kernel.org/.../aegl/linux-2.6
-
-are available in the git repository at:
-
-  git://codeaurora.org/quic/kernel/dwalker/linux-msm.git for-linus
-
-Daniel Walker (1):
-      Add arm msm maintainer entry
-
-Pavel Machek (5):
-      msm: make debugging UART (for DEBUG_LL) configurable
-      msm: add minimal board file for HTC Dream device
-      msm: Add memory map for HTC Dream
-      video: Allow selecting MSM framebuffer in Kconfig
-      HTC Dream: mmc compilation fixes
-
- MAINTAINERS                                  |   13 ++++
- arch/arm/mach-msm/Kconfig                    |   30 ++++++++
- arch/arm/mach-msm/Makefile                   |    1 +
- arch/arm/mach-msm/board-dream.c              |   93 ++++++++++++++++++++++++++
- arch/arm/mach-msm/board-dream.h              |    5 ++
- arch/arm/mach-msm/include/mach/debug-macro.S |   24 +++++--
- arch/arm/mach-msm/include/mach/mmc.h         |   26 +++++++
- arch/arm/mach-msm/include/mach/msm_iomap.h   |   12 +++
- arch/arm/mach-msm/include/mach/uncompress.h  |    7 ++
- arch/arm/mach-msm/io.c                       |    3 +
- drivers/mmc/host/msm_sdcc.c                  |    5 +-
- drivers/video/Kconfig                        |    2 +-
- 12 files changed, 209 insertions(+), 12 deletions(-)
- create mode 100644 arch/arm/mach-msm/board-dream.c
- create mode 100644 arch/arm/mach-msm/board-dream.h
- create mode 100644 arch/arm/mach-msm/include/mach/mmc.h
-
-
+YH
