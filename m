@@ -1,126 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761474AbZLJSzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761558AbZLJTBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761474AbZLJSzK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 13:55:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761465AbZLJSzJ
+	id S1761558AbZLJTBS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 14:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761548AbZLJTBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 13:55:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50777 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761441AbZLJSzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 13:55:07 -0500
-Date: Thu, 10 Dec 2009 19:54:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com
-Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
-Message-ID: <20091210185459.GA8697@elte.hu>
-References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
- <20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
- <20091210075454.GB25549@elte.hu>
- <20091210172040.37d259d3.kamezawa.hiroyu@jp.fujitsu.com>
- <20091210083310.GB6834@elte.hu>
- <alpine.DEB.2.00.0912101134220.5481@router.home>
- <20091210173819.GA5256@elte.hu>
- <alpine.DEB.2.00.0912101203320.5481@router.home>
+	Thu, 10 Dec 2009 14:01:16 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:54235 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761206AbZLJTBP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 14:01:15 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0912101203320.5481@router.home>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20091210162805.5e1b6319@pedra>
+References: <20091210162805.5e1b6319@pedra>
+Date: Thu, 10 Dec 2009 14:01:15 -0500
+Message-ID: <829197380912101101t39079ebal54b437ea11ffdb34@mail.gmail.com>
+Subject: Re: Firmware for dib0700
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 10, 2009 at 1:28 PM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+> Hi David,
+>
+> Please pull from:
+>
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-firmware.git master
+>
+> For dib0700 firmware.
 
-* Christoph Lameter <cl@linux-foundation.org> wrote:
+Mauro,
 
-> On Thu, 10 Dec 2009, Ingo Molnar wrote:
-> 
-> >
-> > * Christoph Lameter <cl@linux-foundation.org> wrote:
-> >
-> > > On Thu, 10 Dec 2009, Ingo Molnar wrote:
-> > >
-> > > > No, i'm not suggesting that - i'm just suggesting that right now 
-> > > > MM stats are not very well suited to be exposed via perf. If we 
-> > > > wanted to measure/sample the information in /proc/<pid>/statm it 
-> > > > just wouldnt be possible. We have a few events like pagefaults 
-> > > > and a few tracepoints as well - but more would be possible IMO.
-> > >
-> > > vital MM stats are exposed via /proc/<pid> interfaces. Performance 
-> > > monitoring is something optional MM VM stats are used for VM 
-> > > decision on memory and process handling.
-> >
-> > You list a few facts here but what is your point?
-> 
-> The stats are exposed already in a well defined way. [...]
+I had David pull in this firmware months ago (so it could be included
+in time for the release of Ubuntu Karmic):
 
-They are exposed in a well defined but limited way: you cannot profile 
-based on those stats, you cannot measure them across a workload 
-transparently at precise task boundaries and you cannot trace based on 
-those stats.
+http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=commit;h=f20b0674534a444ae74239843cac19f72c64912b
 
-For example, just via the simple page fault events we can today do 
-things like:
+Am I missing something?
 
- aldebaran:~> perf stat -e minor-faults /bin/bash -c "echo hello"
- hello
+Devin
 
-  Performance counter stats for '/bin/bash -c echo hello':
-
-             292  minor-faults            
-
-     0.000884744  seconds time elapsed
-
- aldebaran:~> perf record -e minor-faults -c 1 -f -g firefox                  
- Error: cannot open display: :0
- [ perf record: Woken up 3 times to write data ]
- [ perf record: Captured and wrote 0.324 MB perf.data (~14135 samples) ]
-
- aldebaran:~> perf report
- no symbols found in /bin/sed, maybe install a debug package?
- # Samples: 5312
- #
- # Overhead         Command                             Shared Object  Symbol
- # ........  ..............  ........................................  ......
- #
-     12.54%         firefox  ld-2.10.90.so                             
- [.] _dl_relocate_object
-                   |
-                   --- _dl_relocate_object
-                       dl_open_worker
-                       _dl_catch_error
-                       dlopen_doit
-                       0x7fffdf8c6562
-                       0x68733d54524f5053
-
-     4.95%         firefox  libc-2.10.90.so                           
- [.] __GI_memset
-                   |
-                   --- __GI_memset
- ...
-
-I.e. 12.54% of the pagefaults in the firefox startup occur in 
-dlopen_doit()->_dl_catch_error()->dl_open_worker()->_dl_relocate_object()-> 
-_dl_relocate_object() call path. 4.95% happen in __GI_memset() - etc.
-
-> [...] Exposing via perf is outside of the scope of his work.
-
-Please make thoughts about intelligent instrumentation solutions, and 
-please think "outside of the scope" of your usual routine.
-
-Thanks,
-
-	Ingo
+-- 
+Devin J. Heitmueller - Kernel Labs
+http://www.kernellabs.com
