@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761345AbZLJRfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761322AbZLJRfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761345AbZLJRfL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 12:35:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761324AbZLJRez
+	id S1761322AbZLJRfo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 12:35:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761292AbZLJRfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 12:34:55 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39867 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761325AbZLJRet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 12:34:49 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/rUHVhtYDrMFc+j9pmqd1259WVV0YdJ6NhLokfih
-	8c/COW4VHKU1d+
-Date: Thu, 10 Dec 2009 18:35:15 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linux-kernel@vger.kernel.org
-cc: Dan Williams <dan.j.williams@intel.com>, linux-sh@vger.kernel.org
-Subject: [PATCH 3/3] dmaengine: clarify the meaning of the DMA_CTRL_ACK flag
-In-Reply-To: <Pine.LNX.4.64.0912101826010.4487@axis700.grange>
-Message-ID: <Pine.LNX.4.64.0912101833520.4487@axis700.grange>
-References: <Pine.LNX.4.64.0912101826010.4487@axis700.grange>
+	Thu, 10 Dec 2009 12:35:43 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:53978 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761268AbZLJRfl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 12:35:41 -0500
+Date: Thu, 10 Dec 2009 11:35:27 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com
+Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
+In-Reply-To: <20091210083310.GB6834@elte.hu>
+Message-ID: <alpine.DEB.2.00.0912101134220.5481@router.home>
+References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com> <20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com> <20091210075454.GB25549@elte.hu> <20091210172040.37d259d3.kamezawa.hiroyu@jp.fujitsu.com> <20091210083310.GB6834@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DMA_CTRL_ACK's description applies to its clear state, not to its set state.
+On Thu, 10 Dec 2009, Ingo Molnar wrote:
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
- include/linux/dmaengine.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> No, i'm not suggesting that - i'm just suggesting that right now MM
+> stats are not very well suited to be exposed via perf. If we wanted to
+> measure/sample the information in /proc/<pid>/statm it just wouldnt be
+> possible. We have a few events like pagefaults and a few tracepoints as
+> well - but more would be possible IMO.
 
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 2b9f2ac..7878498 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -74,7 +74,7 @@ enum dma_transaction_type {
-  *  control completion, and communicate status.
-  * @DMA_PREP_INTERRUPT - trigger an interrupt (callback) upon completion of
-  *  this transaction
-- * @DMA_CTRL_ACK - the descriptor cannot be reused until the client
-+ * @DMA_CTRL_ACK - if clear, the descriptor cannot be reused until the client
-  *  acknowledges receipt, i.e. has has a chance to establish any dependency
-  *  chains
-  * @DMA_COMPL_SKIP_SRC_UNMAP - set to disable dma-unmapping the source buffer(s)
--- 
-1.6.2.4
+vital MM stats are exposed via /proc/<pid> interfaces. Performance
+monitoring is something optional MM VM stats are used for VM decision on
+memory and process handling.
 
