@@ -1,122 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbZLJQwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761161AbZLJQ4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761140AbZLJQwv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 11:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760945AbZLJQwv
+	id S1761161AbZLJQ4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 11:56:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761129AbZLJQ4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 11:52:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49469 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758514AbZLJQwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 11:52:50 -0500
-Date: Thu, 10 Dec 2009 17:52:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tim Bird <tim.bird@am.sony.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-Message-ID: <20091210165238.GA13775@elte.hu>
-References: <4B202778.4030801@am.sony.com>
- <20091210070800.GB16874@elte.hu>
- <20091210120332.GA5042@nowhere>
- <20091210141121.GB1436@elte.hu>
- <1260456803.2146.167.camel@gandalf.stny.rr.com>
- <20091210153845.GA28230@elte.hu>
- <1260462132.2146.198.camel@gandalf.stny.rr.com>
+	Thu, 10 Dec 2009 11:56:31 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:42904 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761004AbZLJQ4a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 11:56:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AlsTBA5OnIPEFUTLL0AAh3SX9SU26T77vp4oRbRuHuaGXcr0HqVJ5hLQtsfmfTGYF/
+         LfL+HNJjJPKNCmJ1OgxBTqpAngIdhQ2jaO03xzxiePeywbdZdYImJyXhQh28S40H6X4O
+         BryvZUnj7+JEs9VXwo73etwr4ZnDQfbwKm8L8=
+Date: Thu, 10 Dec 2009 19:56:34 +0300
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>,
+       Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>,
+       linux-kernel@vger.kernel.org, x86team <x86@kernel.org>
+Subject: Re: [2.6.32] WARNING: at arch/x86/kernel/apic/apic.c:249
+	native_apic_write_dummy+0x30/0x3c()
+Message-ID: <20091210165634.GF5086@lenovo>
+References: <20091210154837.GT30903@charite.de> <20091210161335.GC5086@lenovo> <20091210163055.GD5086@lenovo> <20091210163745.GA32563@elte.hu> <20091210164904.GE5086@lenovo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1260462132.2146.198.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091210164904.GE5086@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> On Thu, 2009-12-10 at 16:38 +0100, Ingo Molnar wrote:
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+On Thu, Dec 10, 2009 at 07:49:04PM +0300, Cyrill Gorcunov wrote:
+...
 > 
-> > The correctly designed way to express latency tracing is via a new 
-> > generic event primitive: connecting two events to a maximum value.
-> > 
-> > That can be done without forcibly tying it and limiting it to a specific 
-> > 'latency tracing' variant as the /debug/tracing/ bits of ftrace do it 
-> > right now.
+> OK, will update and resend. Thanks for comments!
 > 
-> Sure, when we have that, then we can remove the plugin (and then all 
-> plugins when there are superior alternatives).
+> 	-- Cyrill
 
-Ok, that's good to hear.
+Here is it, please review.
 
-> > Just off the top of my head we want to be able to trace:
-> > 
-> >  - max irq service latencies for a given IRQ
-> >  - max block IO completion latencies for a app
-> >  - max TLB flush latencies in the system
-> >  - max sys_open() latencies in a task
-> >  - max fork()/exit() latencies in a workload
-> >  - max scheduling latencies on a given CPU
-> >  - max page fault latencies
-> >  - max wakeup latencies for a given task
-> >  - max memory allocation latencies
-> > 
-> >  - ... and dozens and dozens of other things where there's a "start"
-> >    and a "stop" event and where we want to measure the time between
-> >    them.
-> 
-> Note, we also need a way to "store" the max. The fly recorder method 
-> is not good enough.
+	-- Cyrill
+---
+x86,pmu: check if we have APIC enabled
 
-Yeah. What we want in the larger scheme of things is to have operations 
-connected to events. One such operation would be "start measuring max", 
-another would be "stop measuring the max".
+Ralf Hildebrandt reported:
 
-[ Whether the max is intrinsic to the context structure, or is perhaps 
-  some _third_ event (so the max can be recovered by observing that 
-  event) is a detail. ]
+|
+| Running a vanilla 2.6.32 as Xen DomU, I'm getting:
+|
+| [    0.000999] CPU: Physical Processor ID: 0
+| [    0.000999] CPU: Processor Core ID: 1
+| [    0.000999] Performance Events: AMD PMU driver.
+| [    0.000999] ------------[ cut here ]------------
+| [    0.000999] WARNING: at arch/x86/kernel/apic/apic.c:249 native_apic_write_dummy+0x30/0x3c()
+| [    0.000999] Modules linked in:
+| [    0.000999] Pid: 0, comm: swapper Not tainted 2.6.32 #3
+| [    0.000999] Call Trace:
+| [    0.000999]  [<ffffffff8102611a>] ? native_apic_write_dummy+0x30/0x3c
+| [    0.000999]  [<ffffffff8104c5a2>] warn_slowpath_common+0x77/0x8f
+| [    0.000999]  [<ffffffff8104c5c9>] warn_slowpath_null+0xf/0x11
+| [    0.000999]  [<ffffffff8102611a>] native_apic_write_dummy+0x30/0x3c
+| [    0.000999]  [<ffffffff8101bf49>] perf_events_lapic_init+0x2e/0x30
+| [    0.000999]  [<ffffffff818cc6fe>] init_hw_perf_events+0x300/0x39d
+| [    0.000999]  [<ffffffff818cc25a>] identify_boot_cpu+0x3c/0x3e
+| [    0.000999]  [<ffffffff818cc3da>] check_bugs+0x9/0x2d
+| [    0.000999]  [<ffffffff818c4cae>] start_kernel+0x37a/0x38f
+| [    0.000999]  [<ffffffff818c42c1>] x86_64_start_reservations+0xac/0xb0
+| [    0.000999]  [<ffffffff818c7b79>] xen_start_kernel+0x530/0x534
+| [    0.000999] ---[ end trace 4eaa2a86a8e2da22 ]---
+|
 
-Note that other operations make sense as well, such as:
+So we need to check if APIC has a proper state (ie enabled).
 
- - if event X happens then enable event Y
- - if event X happens then disable event Y
+Reported-by: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+---
+ arch/x86/kernel/cpu/perf_event.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-A popular use of that would be to enable the function events on the 
-'start' event of a latency measurement, and disable function events on 
-the 'stop' event.
-
-Yet another use would be to enable cache miss events when 'entering' a 
-specific function event, and disable cache miss counting on 'exiting' 
-that function. (this would be an event of the function graph tracer)
+Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event.c
++++ linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
+@@ -2062,12 +2062,6 @@ static __init int p6_pmu_init(void)
  
-This would allow the precise cache miss profiling of a given function 
-and all its sub-functions - and only of that function.
-
-Note that the existing filter engine functionality connects in a natural 
-way here as well: it can already be used to limit events and thus can be 
-used to further shape the behavior of tracing, runtime.
-
-Other interesting event operations are possible as well. Key is to 
-expose this via the unified interface and to stop adding new 
-functionality-limited crap via the ftrace plugin infrastructure - it's 
-clearly not suitable for this purpose. We now have found how to do these 
-things properly and cleanly.
-
-And the thing is, _you_ implemented unified ftrace events, all i'm 
-asking you is to realize the power of them and to stop adding new 
-ftrace-plugins [which are crap in comparison] and contcentrate on 
-exposing new tracing functionality via unified ftrace events, ok? ;-)
-
-	Ingo
+ 	x86_pmu = p6_pmu;
+ 
+-	if (!cpu_has_apic) {
+-		pr_info("no APIC, boot with the \"lapic\" boot parameter to force-enable it.\n");
+-		pr_info("no hardware sampling interrupt available.\n");
+-		x86_pmu.apic = 0;
+-	}
+-
+ 	return 0;
+ }
+ 
+@@ -2159,6 +2153,16 @@ static __init int amd_pmu_init(void)
+ 	return 0;
+ }
+ 
++static void __init pmu_check_apic(void)
++{
++	if (cpu_has_apic)
++		return;
++
++	x86_pmu.apic = 0;
++	pr_info("no APIC, boot with the \"lapic\" boot parameter to force-enable it.\n");
++	pr_info("no hardware sampling interrupt available.\n");
++}
++
+ void __init init_hw_perf_events(void)
+ {
+ 	int err;
+@@ -2180,6 +2184,8 @@ void __init init_hw_perf_events(void)
+ 		return;
+ 	}
+ 
++	pmu_check_apic();
++
+ 	pr_cont("%s PMU driver.\n", x86_pmu.name);
+ 
+ 	if (x86_pmu.num_events > X86_PMC_MAX_GENERIC) {
