@@ -1,51 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933023AbZLJGBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932944AbZLJGAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933023AbZLJGBz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 01:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932884AbZLJGBv
+	id S932944AbZLJGAv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 01:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932856AbZLJGAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 01:01:51 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61050 "EHLO song.cn.fujitsu.com"
+	Thu, 10 Dec 2009 01:00:45 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51685 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932858AbZLJGBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 01:01:50 -0500
-Message-ID: <4B208DD3.8040500@cn.fujitsu.com>
-Date: Thu, 10 Dec 2009 13:57:39 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S932844AbZLJGAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 01:00:45 -0500
+Message-ID: <4B208E7D.8020306@cn.fujitsu.com>
+Date: Thu, 10 Dec 2009 14:00:29 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] cfq: Remove wait_request flag when idle time is being deleted
-Content-Type: text/plain; charset=UTF-8
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, Paul Menage <menage@google.com>,
+       Ben Blum <bblum@andrew.cmu.edu>
+Subject: Re: [RFC] [PATCH 1/5] cgroups: revamp subsys array
+References: <20091204085349.GA18867@andrew.cmu.edu> <20091204085508.GA18912@andrew.cmu.edu> <4B1E0283.70108@cn.fujitsu.com> <20091209055016.GA12342@andrew.cmu.edu> <4B1F3EB9.6080502@cn.fujitsu.com> <20091209082729.GA14114@andrew.cmu.edu> <4B20686E.3070907@cn.fujitsu.com> <20091210051912.GA11893@andrew.cmu.edu>
+In-Reply-To: <20091210051912.GA11893@andrew.cmu.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+>>> How does this sound as a possible solution, in cgroup_get_sb:
+>>>
+>>> 1) Take subsys_mutex
+>>> 2) Call parse_cgroupfs_options()
+>>> 3) Drop subsys_mutex
+>>> 4) Call sget(), which gets sb->s_umount without subsys_mutex held
+>>> 5) Take subsys_mutex
+>>> 6) Call verify_cgroupfs_options()
+>>> 7) Proceed as normal
+>>>
+>>> In which verify_cgroupfs_options will be a new function that ensures the
+>>> invariants that rebind_subsystems expects are still there; if not, bail
+>>> out by jumping to drop_new_super just as if parse_cgroupfs_options had
+>>> failed in the first place.
+>>>
+>> The current code doesn't need this verify_cgroupfs_options, so why it
+>> will become necessary? I think what we need is grab module refcnt in
+>> parse_cgroupfs_options, and then we can drop subsys_mutex.
+> 
+> Oh, good point. I thought pinning the modules had to happen in rebinding
+> since there's a case where rebind_subsystems is called without parsing,
+> but that's just in kill_sb where no new subsystems are added. So, better
+> would be to make sure we can't get owned while we drop the lock instead
+> of checking afterwards if we got owned and bailing if so.
+> 
+>> But why you are using a rw semaphore? I think a mutex is fine.
+> 
+> The "most of cgroups wants to look at the subsys array" versus "module
+> loading/unloading modifies the array" is clearly a readers/writers case.
+> 
 
-I post this patch a few month ago, it seems to get missing, repost again.
+Yes, but it doesn't mean we should use rw lock or rw semaphore is
+preferable than plain mutex.
 
-Remove wait_request flag when idle time is being deleted.
+- the read side of subsys_mutex is mainly at mount/remount/umount,
+  the write side is in cgroup_load_subsys() and cgroup_unload_subsys().
+  None is in critical path.
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/cfq-iosched.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+- In most callsites, cgroup_mutex is held just after acquiring
+  subsys_mutex.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 69ecee7..96f59ae 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -3202,6 +3202,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 			if (blk_rq_bytes(rq) > PAGE_CACHE_SIZE ||
- 			    cfqd->busy_queues > 1) {
- 				del_timer(&cfqd->idle_slice_timer);
-+				cfq_clear_cfqq_wait_request(cfqq);
- 				__blk_run_queue(cfqd->queue);
- 			} else
- 				cfq_mark_cfqq_must_dispatch(cfqq);
--- 
-1.5.4.rc3
+So what does it gain us to use this rw_sem?
+
+>> And why not just use cgroup_mutex to protect the subsys[] array?
+>> The adding and spreading of subsys_mutex looks ugly to me.
+> 
+> The reasoning for this is that there are various chunks of code that
+> need to be protected by a mutex guarding subsys[] that aren't already
+> under cgroup_mutex - like parse_cgroupfs_options, or the first stage
+> of cgroup_load_subsys. Do you think those critical sections are small
+> enough that sacrificing reentrancy for simplicity of code is worth it?
+> 
+
+Except parse_cgroupfs_options() which is called without cgroup_mutex
+held, in all other callsites, cgroup_mutex is held right after acquiring
+subsys_mutex.
+
+So yes, I don't think use cgroup_mutex will harm scalibility.
+
+In contrast, this subsys_mutex is quite ugly and deadlock-prone.
+For example, see this:
+
+static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+{
+	...
+        lock_kernel();
+        mutex_lock(&cgrp->dentry->d_inode->i_mutex);
+        down_read(&subsys_mutex);
+        mutex_lock(&cgroup_mutex);
+	...
+}
+
+Four locks here!
 
