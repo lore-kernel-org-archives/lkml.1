@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbZLJAkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932116AbZLJAkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbZLJAkx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 19:40:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759166AbZLJAkr
+	id S932116AbZLJAkb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 19:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759145AbZLJAkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 19:40:47 -0500
-Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:60519 "EHLO
-	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759145AbZLJAkp (ORCPT
+	Wed, 9 Dec 2009 19:40:25 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46406
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759097AbZLJAkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 19:40:45 -0500
-Message-ID: <4B2042FA.8080406@lougher.demon.co.uk>
-Date: Thu, 10 Dec 2009 00:38:18 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: dedekind1@gmail.com
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-embedded@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: Re: [PATCH 1/9] Squashfs: move zlib decompression wrapper code into
- a separate file
-References: <E1NHTHg-0001sM-NQ@dylan.lougher.demon.co.uk>	 <20091207145705.cd30cae8.akpm@linux-foundation.org>	 <4B1ED122.3040309@lougher.demon.co.uk> <1260352852.19669.1253.camel@localhost>
-In-Reply-To: <1260352852.19669.1253.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 9 Dec 2009 19:40:24 -0500
+Date: Wed, 09 Dec 2009 16:40:29 -0800 (PST)
+Message-Id: <20091209.164029.112221779.davem@davemloft.net>
+To: jkosina@suse.cz
+Cc: rudy.matela@gmail.com, wharms@bfs.de, kas@fi.muni.cz, khc@pm.waw.pl,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Coding style correction on some drivers that use
+ Generic HDLC
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LNX.2.00.0912100025190.3755@pobox.suse.cz>
+References: <4B1FC5A4.9030300@bfs.de>
+	<235c15c10912091309q6c20b417y3f80dbac0be2a073@mail.gmail.com>
+	<alpine.LNX.2.00.0912100025190.3755@pobox.suse.cz>
+X-Mailer: Mew version 6.2 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Thu, 10 Dec 2009 00:26:57 +0100 (CET)
+
+> On Wed, 9 Dec 2009, Rudy Matela wrote:
 > 
-> Did you consider using cryptoapi? UBIFS uses zlib/lzo in cryptoapi - it
-> is a very clean way.
+>> > It is ok until the driver is removed, if this "issue" is not fixed it 
+>> > will trigger any check-coding-style and generate new patches. Since it 
+>> > involves no code changes it is harmless.
+>>   Sould I keep sending coding style corrections to the Linux Kernel?
+>> I'm trying to help, but if i'm just being annoying, please tell me and
+>> I can try to contribute in a better way.  :-)
 > 
+> Coding style corrections (if they really improve readability of the code), 
+> comment fixes (if they really make grepping for things better or make the 
+> whole text more understandable) are welcome and I will happily merge them.
+> 
+> What I usually don't merge are purely whitespace "fixes", which don't 
+> really fix anything in fact.
 
-Yes I did consider using the cryptoapi, but this doesn't have support for
-lzma in mainline.
+I think the whitespace ones here are extremely valuable, the code is
+amazingly annoying to read as it is.
 
-My aim is add lzma filesystem support to Squashfs using the existing kernel
-lzma iplementation, and to make as few changes to that as necessary.
+It boils down to this:
 
-Phillip
+	foo() is a C function call
+
+	foo () is a C operation like 'if', 'while' etc.
+
+and people's brains are wired to this association.
