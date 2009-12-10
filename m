@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZLJO0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752046AbZLJOVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbZLJO0y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 09:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZLJO0t
+	id S1752046AbZLJOVu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 09:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZLJOVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 09:26:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55845 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751830AbZLJO0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 09:26:49 -0500
-Date: Thu, 10 Dec 2009 15:20:36 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [patch 1/9] sys: Fix missing rcu protection for __task_cred()
-	access
-Message-ID: <20091210142036.GA8226@redhat.com>
-References: <20091210001308.247025548@linutronix.de> <20091210004703.029784964@linutronix.de>
+	Thu, 10 Dec 2009 09:21:45 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:56313 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbZLJOVo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 09:21:44 -0500
+Date: Thu, 10 Dec 2009 16:21:27 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Grazvydas Ignotas <notasas@gmail.com>,
+       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+ charger
+Message-ID: <20091210142127.GB12526@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <20091202204946.GB25682@nokia.com>
+ <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
+ <20091202215442.GA30658@oksana.dev.rtsoft.ru>
+ <20091202223156.GA14921@nokia.com>
+ <20091202225922.GA15568@oksana.dev.rtsoft.ru>
+ <20091203083958.GB31110@nokia.com>
+ <6ed0b2680912030255o57d7c46qb5ae1cfcb82e9976@mail.gmail.com>
+ <20091203110332.GO1361@nokia.com>
+ <6ed0b2680912100609g11706296qdbcea887dc3a5733@mail.gmail.com>
+ <20091210141830.GA10687@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
-In-Reply-To: <20091210004703.029784964@linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091210141830.GA10687@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 10 Dec 2009 14:21:30.0586 (UTC) FILETIME=[1154FBA0:01CA79A4]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/10, Thomas Gleixner wrote:
+Hi,
+
+On Thu, Dec 10, 2009 at 03:18:30PM +0100, ext Anton Vorontsov wrote:
+>> Ok since it doesn't look like this will resolve soon, what about
+>> adding some DEVICE_ATTR for the time being and requiring userspace to
+>> write charge current here to start actual charging?
 >
-> commit c69e8d9 (CRED: Use RCU to access another task's creds and to
-> release a task's own creds) added non rcu_read_lock() protected access
-> to task creds of the target task in set_prio_one().
->
-> The comment above the function says:
->  * - the caller must hold the RCU read lock
->
-> The calling code in sys_setpriority does read_lock(&tasklist_lock) but
-> not rcu_read_lock(). This works only when CONFIG_TREE_PREEMPT_RCU=n.
-> With CONFIG_TREE_PREEMPT_RCU=y the rcu_callbacks can run in the tick
-> interrupt when they see no read side critical section.
-> ...
-> --- linux-2.6-tip.orig/kernel/sys.c
-> +++ linux-2.6-tip/kernel/sys.c
-> @@ -163,6 +163,7 @@ SYSCALL_DEFINE3(setpriority, int, which,
->  	if (niceval > 19)
->  		niceval = 19;
->
-> +	rcu_read_lock();
->  	read_lock(&tasklist_lock);
+>Works for me. Let's think of the kernel charging support as an
+>yet unimplemented feature.
 
-Off-topic, but can't resist...
+but if you guys are ok with this one for now. It can always be changed 
+later :-)
 
-This also fixes another bug here. find_task_by_vpid() is not safe
-without rcu_read_lock(). I do not mean it is not safe to use the
-result, just find_pid_ns() by itself is not safe.
-
-Usually tasklist gives enough protection, but if copy_process() fails
-it calls free_pid() lockless and does call_rcu(delayed_put_pid().
-This means, without rcu lock find_pid_ns() can't scan the hash table
-safely.
-
-Oleg.
-
+-- 
+balbi
