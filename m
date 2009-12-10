@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZLJC35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbZLJCdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbZLJC35 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 21:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZLJC3y
+	id S1755011AbZLJCdq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 21:33:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZLJCdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 21:29:54 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:51643 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752595AbZLJC3x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 21:29:53 -0500
-Message-Id: <200912100229.nBA2TfTH008226@www262.sakura.ne.jp>
-Subject: Re: [patch 1/9] sys: Fix missing rcu protection for __task_cred() access
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       tglx@linutronix.de
+	Wed, 9 Dec 2009 21:33:40 -0500
+Received: from kroah.org ([198.145.64.141]:35256 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753383AbZLJCdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 21:33:40 -0500
+Date: Wed, 9 Dec 2009 18:33:39 -0800
+From: Greg KH <greg@kroah.com>
+To: Joe Perches <joe@perches.com>
+Cc: devel@driverdev.osuosl.org, devel <devel@driverdev.osuosl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: MAINTAINERS: What's the correct mailing address?
+Message-ID: <20091210023339.GA20104@kroah.com>
+References: <1259690373-12508-4-git-send-email-gregkh@suse.de> <1260403965.5351.63.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Thu, 10 Dec 2009 11:29:41 +0900
-References: <20091210001308.247025548@linutronix.de> <20091210004703.029784964@linutronix.de> <20091210012517.GF6938@linux.vnet.ibm.com>
-In-Reply-To: <20091210012517.GF6938@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 09122009 #3107263, status: clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260403965.5351.63.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As a rough rule of thumb, any dereference of an RCU-protected
-> pointer must be covered by rcu_read_lock() or rcu_read_lock_bh()
-> or by the appropriate update-side lock.
+On Wed, Dec 09, 2009 at 04:12:45PM -0800, Joe Perches wrote:
+> I submitted patches to devel@driverdev.osuosl.org
+> on Sunday which are apparently still being held
+> for moderator approval.
 
-Does this mean that we need both rcu_read_lock() *and*
-read_lock(&tasklist_lock) when calling find_task_by_vpid() because pid_task()
-uses rcu_dereference() and find_pid_ns() uses hlist_for_each_entry_rcu ?
+They are?  I see no patches from you in the mailmain queue.  The only
+way you get caught by mailman is if you send patches that are very
+large.
 
-378 /*
-379  * Must be called under rcu_read_lock() or with tasklist_lock read-held.
-380  */
-381 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
-382 {
-383         return pid_task(find_pid_ns(nr, ns), PIDTYPE_PID);
-384 }
-385 
-386 struct task_struct *find_task_by_vpid(pid_t vnr)
-387 {
-388         return find_task_by_pid_ns(vnr, current->nsproxy->pid_ns);
-389 }
+> Is that still the correct address or should
+> devel@linuxdriverproject.org be used instead?
+
+Hopefully they both resolve to the same place, but I wouldn't count on
+it due to osuosl.org's hosting structure.  Please stick with the
+original one.
+
+thanks,
+
+greg k-h
