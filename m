@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760950AbZLJQHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbZLJQO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760950AbZLJQHA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 11:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZLJQG6
+	id S1757138AbZLJQO7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 11:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZLJQO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 11:06:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50841 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbZLJQG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 11:06:58 -0500
-Date: Thu, 10 Dec 2009 17:06:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, yinghai@kernel.org
-Subject: Re: Bisected regression (Was Re: current -git fails to boot on
- nehalem-ex)
-Message-ID: <20091210160640.GB27794@elte.hu>
-References: <20091210091040.GG8742@kernel.dk>
- <20091210103945.GI8742@kernel.dk>
+	Thu, 10 Dec 2009 11:14:58 -0500
+Received: from bzq-179-83-110.static.bezeqint.net ([212.179.83.110]:51589 "EHLO
+	imaginecommunications.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751450AbZLJQO5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 11:14:57 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Dec 2009 11:14:56 EST
+From: Jacob Avraham <jacob@imaginecommunications.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Thu, 10 Dec 2009 18:09:17 +0200
+Subject: kernel memory allocation limit
+Thread-Topic: kernel memory allocation limit
+Thread-Index: Acp5sx/thvgNTegdTx+N01W7s5yROg==
+Message-ID: <FF584854D6FFE547AB2F7515A798AC3A0AF9C98A66@venus.imagineil.tv>
+Accept-Language: en-US, he-IL
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-cr-puzzleid: {CF3192AC-8BB6-4CE7-A537-2ED6FF555ACE}
+x-cr-hashedpuzzle: Ae1I Ay5y BQKR CRbz C5TQ C9G8 EhGu Fefa Gfqa Hnb5 H5A+
+	KGv7 Kp89 K/MX LU05
+	LX2l;1;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA=;Sosha1_v1;7;{CF3192AC-8BB6-4CE7-A537-2ED6FF555ACE};agBhAGMAbwBiAEAAaQBtAGEAZwBpAG4AZQBjAG8AbQBtAHUAbgBpAGMAYQB0AGkAbwBuAHMALgBjAG8AbQA=;Thu,
+	10 Dec 2009 16:09:17
+	GMT;awBlAHIAbgBlAGwAIABtAGUAbQBvAHIAeQAgAGEAbABsAG8AYwBhAHQAaQBvAG4AIABsAGkAbQBpAHQA
+acceptlanguage: en-US, he-IL
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091210103945.GI8742@kernel.dk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+I'm trying to allocation in my module a bunch of contiguous memory segments using __get_free_pages(), 128k at a time, from the NORMAL zone on a x86-64 machine with 24G ram. Kernel is 2.6.18 from CentOS5.3. I ran into a hard limit of 2G.
+Where is this limitation coming from and is it changeable?
 
-> On Thu, Dec 10 2009, Jens Axboe wrote:
-> > Hi,
-> > 
-> > As written in the subject, it just hard hangs before writing anything on
-> > the console. With earlyprintk, I captured the failure, see below.
-> > 
-> > I'll try and bisect this, but it takes some time (since the bios and
-> > post process takes forever). I just updated the firmware on the box as
-> > well, but it did boot 2.6.32 (and RHEL5 boots fine too). Of course that
-> > doesn't rule out a BIOS bug.
-> 
-> Results are persistent, git bisect points to:
-> 
-> commit b24c2a925a9837cccf54d50aeac22ba0cbc15455
-> Author: Yinghai Lu <yinghai@kernel.org>
-> Date:   Tue Nov 24 02:48:18 2009 -0800
-> 
->     x86: Move find_smp_config() earlier and avoid bootmem usage
-> 
-> which appears consistent with the panic(). Reverting that does indeed
-> make current -git boot properly.
+Thanks,
+Jacob Avraham
 
-Thanks. Yinghai, do you have any ideas, or should we revert it?
 
-	Ingo
+ 
+ 
+************************************************************************************
+This footnote confirms that this email message has been scanned by
+PineApp Mail-SeCure for the presence of malicious code, vandals & computer viruses.
+************************************************************************************
+
+
+
