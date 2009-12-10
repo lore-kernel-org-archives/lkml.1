@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760506AbZLJXzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760761AbZLJX4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760506AbZLJXzQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 18:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758313AbZLJXzP
+	id S1760761AbZLJX4E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 18:56:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759126AbZLJX4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 18:55:15 -0500
-Received: from mail-fx0-f221.google.com ([209.85.220.221]:36189 "EHLO
-	mail-fx0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757712AbZLJXzN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 18:55:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=U0zFcDoWwVdv+uV06ealQqtxy1SlZtkTjpseJsYR/dpzbBvh6fy7LKZfU8Ilx5T9kw
-         APw7hw6o0ayWulNd7wk5cohAEfbGZrjQ8pJurunFS+5Zao7tIr0ZuobPTlD6+k1EOMih
-         mxYkVpKb6o2H58MB0Dg9Uj9VB5mXGvjtjKnAg=
-MIME-Version: 1.0
-In-Reply-To: <20091210004703.308396881@linutronix.de>
-References: <20091210001308.247025548@linutronix.de>
-	 <20091210004703.308396881@linutronix.de>
-Date: Fri, 11 Dec 2009 00:55:18 +0100
-Message-ID: <19f34abd0912101555l659e96eal666f9876bd57f177@mail.gmail.com>
-Subject: Re: [patch 8/9] Documentation: Fix invalid rcu assumptions
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Randy Dunlap <rdunlap@xenotime.net>,
-       Vegard Nossum <vegardno@ifi.uio.no>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 10 Dec 2009 18:56:03 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19583 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758016AbZLJX4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 18:56:01 -0500
+Date: Thu, 10 Dec 2009 21:55:50 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Problems with serial interrupts with IPMI 2.0 SoL
+Message-ID: <20091210215550.7f092006@pedra>
+In-Reply-To: <4B216C12.1020001@goop.org>
+References: <4B216C12.1020001@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[trimmed Cc]
+Em Thu, 10 Dec 2009 13:45:54 -0800
+Jeremy Fitzhardinge <jeremy@goop.org> escreveu:
 
->2) remove the stale signal code snippet
-...
-2009/12/10 Thomas Gleixner <tglx@linutronix.de>:
-> Index: linux-2.6-tip/Documentation/kmemcheck.txt
-> ===================================================================
-> --- linux-2.6-tip.orig/Documentation/kmemcheck.txt
-> +++ linux-2.6-tip/Documentation/kmemcheck.txt
-> @@ -429,8 +429,7 @@ Let's take a look at it:
->  193         /*
->  194          * We won't get problems with the target's UID changing under us
->  195          * because changing it requires RCU be used, and if t != current, the
-> -196          * caller must be holding the RCU readlock (by way of a spinlock) and
-> -197          * we use RCU protection here
-> +196          * caller must be holding the RCU readlocke
->  198          */
->  199         user = get_uid(__task_cred(t)->user);
->  200         atomic_inc(&user->sigpending);
+> Hi,
+> 
+> I'm using a system with an embedded IPMI 2.0 BMC which provides SoL 
+> (Supermicro X8SIL-F).  This works fine under Linux (fully interrupt 
+> driven), but fails for Xen as it appears to not be sending interrupts; 
+> it works OK if I set the driver to polling mode.
+> 
+> I'm assuming the Xen is tickling some bug in the emulated 16550.  The 
+> Linux driver has a couple of pieces of code to explicitly work around 
+> bugs in the Intel AMT SoL implementation, but I don't think they're 
+> coming into play here (because there are no Intel SoL PCI devices on 
+> this system to trigger the NO_TXEN_TEST flag).
+> 
+> I'm wondering if you have any pointers or suggestions about more subtle 
+> problems?
 
-I am not sure that I really agree with this change. This is not a code
-example for the sake of showing how to do a particular thing, it's an
-example of real code from the tree.
+If you don't hit NO_TXEN_TEST flag, you'll be loosing interrupts, as the
+emulation of 16550 is not perfect.
 
-I don't remember if the document is referring to a particular git
-version of the code, but I think it might not, in which case it
-doesn't REALLY matter even on the microscopic level.
+As far as I remember, interrupts take too long to happen with the emulated
+16550, when comparing with a normal serial.
 
-But I won't make a big fuss about it :-)
+-- 
 
-
-Vegard
-
-PS: Upon closer inspection, I noticed that one line (line 197) goes
-completely missing, there seems to be a typo there too, "readlocke".
-Still it's not a huge deal, I admit.
+Cheers,
+Mauro
