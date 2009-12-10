@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbZLJInJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758436AbZLJInS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbZLJInJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 03:43:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbZLJInF
+	id S1758436AbZLJInS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 03:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758242AbZLJInR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 03:43:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51672 "EHLO hera.kernel.org"
+	Thu, 10 Dec 2009 03:43:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51681 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755340AbZLJInE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 03:43:04 -0500
-Date: Thu, 10 Dec 2009 08:42:34 GMT
+	id S1756749AbZLJInL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 03:43:11 -0500
+Date: Thu, 10 Dec 2009 08:42:49 GMT
 From: tip-bot for Joe Perches <joe@perches.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        joe@perches.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        joe@perches.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <3b4375af246dec5941168858910210937c110af9.1260383912.git.joe@perches.com>
-References: <3b4375af246dec5941168858910210937c110af9.1260383912.git.joe@perches.com>
+In-Reply-To: <7ead24eccbea8f2b11795abad3e2893a98e1e111.1260383912.git.joe@perches.com>
+References: <7ead24eccbea8f2b11795abad3e2893a98e1e111.1260383912.git.joe@perches.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: es7000_32.c: Use pr_<level> and add pr_fmt(fmt)
-Message-ID: <tip-5cd476effe9570d2e520cf904d51f5c992972647@git.kernel.org>
-Git-Commit-ID: 5cd476effe9570d2e520cf904d51f5c992972647
+Subject: [tip:x86/urgent] x86: setup_percpu.c: Use pr_<level> and add pr_fmt(fmt)
+Message-ID: <tip-40685236b3161b80030a4df34bcbc5941ea59876@git.kernel.org>
+Git-Commit-ID: 40685236b3161b80030a4df34bcbc5941ea59876
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -29,68 +29,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5cd476effe9570d2e520cf904d51f5c992972647
-Gitweb:     http://git.kernel.org/tip/5cd476effe9570d2e520cf904d51f5c992972647
+Commit-ID:  40685236b3161b80030a4df34bcbc5941ea59876
+Gitweb:     http://git.kernel.org/tip/40685236b3161b80030a4df34bcbc5941ea59876
 Author:     Joe Perches <joe@perches.com>
-AuthorDate: Wed, 9 Dec 2009 10:45:33 -0800
+AuthorDate: Wed, 9 Dec 2009 10:45:34 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 10 Dec 2009 08:57:49 +0100
+CommitDate: Thu, 10 Dec 2009 08:57:50 +0100
 
-x86: es7000_32.c: Use pr_<level> and add pr_fmt(fmt)
+x86: setup_percpu.c: Use pr_<level> and add pr_fmt(fmt)
 
 - Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- - Converted a few printk(KERN_INFO to pr_info(
- - Stripped "es7000_mipcfg" from pr_debug
+ - Stripped PERCPU: from a pr_warning
 
 Signed-off-by: Joe Perches <joe@perches.com>
-LKML-Reference: <3b4375af246dec5941168858910210937c110af9.1260383912.git.joe@perches.com>
+LKML-Reference: <7ead24eccbea8f2b11795abad3e2893a98e1e111.1260383912.git.joe@perches.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/apic/es7000_32.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ arch/x86/kernel/setup_percpu.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
-index e85f8fb..dd2b5f2 100644
---- a/arch/x86/kernel/apic/es7000_32.c
-+++ b/arch/x86/kernel/apic/es7000_32.c
-@@ -27,6 +27,9 @@
-  *
-  * http://www.unisys.com
-  */
-+
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index d559af9..35abcb8 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -1,3 +1,5 @@
 +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
- #include <linux/notifier.h>
- #include <linux/spinlock.h>
- #include <linux/cpumask.h>
-@@ -223,9 +226,9 @@ static int parse_unisys_oem(char *oemptr)
- 			mip_addr = val;
- 			mip = (struct mip_reg *)val;
- 			mip_reg = __va(mip);
--			pr_debug("es7000_mipcfg: host_reg = 0x%lx \n",
-+			pr_debug("host_reg = 0x%lx\n",
- 				 (unsigned long)host_reg);
--			pr_debug("es7000_mipcfg: mip_reg = 0x%lx \n",
-+			pr_debug("mip_reg = 0x%lx\n",
- 				 (unsigned long)mip_reg);
- 			success++;
- 			break;
-@@ -401,7 +404,7 @@ static void es7000_enable_apic_mode(void)
- 	if (!es7000_plat)
- 		return;
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+@@ -20,9 +22,9 @@
+ #include <asm/stackprotector.h>
  
--	printk(KERN_INFO "ES7000: Enabling APIC mode.\n");
-+	pr_info("Enabling APIC mode.\n");
- 	memset(&es7000_mip_reg, 0, sizeof(struct mip_reg));
- 	es7000_mip_reg.off_0x00 = MIP_SW_APIC;
- 	es7000_mip_reg.off_0x38 = MIP_VALID;
-@@ -514,8 +517,7 @@ static void es7000_setup_apic_routing(void)
- {
- 	int apic = per_cpu(x86_bios_cpu_apicid, smp_processor_id());
+ #ifdef CONFIG_DEBUG_PER_CPU_MAPS
+-# define DBG(x...) printk(KERN_DEBUG x)
++# define DBG(fmt, ...) pr_dbg(fmt, ##__VA_ARGS__)
+ #else
+-# define DBG(x...)
++# define DBG(fmt, ...) do { if (0) pr_dbg(fmt, ##__VA_ARGS__); } while (0)
+ #endif
  
--	printk(KERN_INFO
--	  "Enabling APIC mode:  %s. Using %d I/O APICs, target cpus %lx\n",
-+	pr_info("Enabling APIC mode:  %s. Using %d I/O APICs, target cpus %lx\n",
- 		(apic_version[apic] == 0x14) ?
- 			"Physical Cluster" : "Logical Cluster",
- 		nr_ioapics, cpumask_bits(es7000_target_cpus())[0]);
+ DEFINE_PER_CPU(int, cpu_number);
+@@ -116,8 +118,8 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
+ 	} else {
+ 		ptr = __alloc_bootmem_node_nopanic(NODE_DATA(node),
+ 						   size, align, goal);
+-		pr_debug("per cpu data for cpu%d %lu bytes on node%d at "
+-			 "%016lx\n", cpu, size, node, __pa(ptr));
++		pr_debug("per cpu data for cpu%d %lu bytes on node%d at %016lx\n",
++			 cpu, size, node, __pa(ptr));
+ 	}
+ 	return ptr;
+ #else
+@@ -198,8 +200,7 @@ void __init setup_per_cpu_areas(void)
+ 					    pcpu_cpu_distance,
+ 					    pcpu_fc_alloc, pcpu_fc_free);
+ 		if (rc < 0)
+-			pr_warning("PERCPU: %s allocator failed (%d), "
+-				   "falling back to page size\n",
++			pr_warning("%s allocator failed (%d), falling back to page size\n",
+ 				   pcpu_fc_names[pcpu_chosen_fc], rc);
+ 	}
+ 	if (rc < 0)
