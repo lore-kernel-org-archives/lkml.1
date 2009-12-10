@@ -1,170 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbZLJUia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758396AbZLJUjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758194AbZLJUia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 15:38:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbZLJUia
+	id S1758396AbZLJUjI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 15:39:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbZLJUjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 15:38:30 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:45108 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757041AbZLJUi3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 15:38:29 -0500
-Date: Thu, 10 Dec 2009 15:38:35 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ondrej Zary <linux@rainbow-software.org>
-cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
-Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
-In-Reply-To: <200912101640.02897.linux@rainbow-software.org>
-Message-ID: <Pine.LNX.4.44L0.0912101525230.2680-100000@iolanthe.rowland.org>
+	Thu, 10 Dec 2009 15:39:07 -0500
+Received: from mail.klingt.org ([86.59.21.178]:54131 "EHLO klingt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757365AbZLJUjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 15:39:06 -0500
+Message-ID: <4B215C64.8050206@klingt.org>
+Date: Thu, 10 Dec 2009 21:39:00 +0100
+From: Tim Blechmann <tim@klingt.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7pre) Gecko/20091209 Shredder/3.0.1pre
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+CC: dieb13 <dieb13@klingt.org>
+Subject: WARNING: at fs/notify/inotify/inotify_fsnotify.c:129
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2EC76720E6AFA038BC6AE198"
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.3.4 (klingt.org [86.59.21.178]); Thu, 10 Dec 2009 21:39:01 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Dec 2009, Ondrej Zary wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2EC76720E6AFA038BC6AE198
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> Narrowed down the code to this 170-line module which reproduces my
-> "rmmod usbtouchscreen" problem. Loading this module causes EHCI to fail.
-> Looks like it fails after calling usb_kill_urb(). Can a buggy device cause
-> this?
+running 2.6.31.6 or 2.6.32 on a server machine, i see the following=20
+warning in my logs:
 
-I don't think so.  But I am getting an idea of what the problem might 
-be.  Try applying the patch below and see if it makes any difference 
-(make sure that CONFIG_USB_DEBUG is enabled).
+Dec  9 00:37:37 es kernel: ------------[ cut here ]------------
+Dec  9 00:37:37 es kernel: WARNING: at fs/notify/inotify/inotify_fsnotify=
+=2Ec:129 idr_callback+0x2a/0x4b()
+Dec  9 00:37:37 es kernel: Hardware name:
+Dec  9 00:37:37 es kernel: inotify closing but id=3D0 for entry=3Df4582be=
+0 in group=3De9811f40 still in idr.  Probably leaking memory
+Dec  9 00:37:37 es kernel: Modules linked in: xt_multiport ipt_REJECT xt_=
+tcpudp iptable_filter ip_tables x_tables dm_mod coretemp fan i2c_i801 i2c=
+_core uhci_hcd e1000e psmouse intel_agp pcspkr serio_raw ehci_hcd button =
+rtc_cmos evdev processor thermal ata_generic
+Dec  9 00:37:37 es kernel: Pid: 10623, comm: imap Tainted: G        W  2.=
+6.31.6 #2
+Dec  9 00:37:37 es kernel: Call Trace:
+Dec  9 00:37:37 es kernel:  [<c0229095>] ? warn_slowpath_common+0x5e/0x8a=
 
-If the module stops messing up EHCI, try changing the source code:
+Dec  9 00:37:37 es kernel:  [<c02290f3>] ? warn_slowpath_fmt+0x26/0x2a
+Dec  9 00:37:37 es kernel:  [<c02be26c>] ? idr_callback+0x2a/0x4b
+Dec  9 00:37:37 es kernel:  [<c032b219>] ? idr_for_each+0x5a/0x91
+Dec  9 00:37:37 es kernel:  [<c02be242>] ? idr_callback+0x0/0x4b
+Dec  9 00:37:37 es kernel:  [<c02bc7cb>] ? fsnotify_remove_notify_event+0=
+x27/0x60
+Dec  9 00:37:37 es kernel:  [<c02be233>] ? inotify_free_group_priv+0x12/0=
+x21
+Dec  9 00:37:37 es kernel:  [<c02bcae1>] ? fsnotify_final_destroy_group+0=
+x16/0x1e
+Dec  9 00:37:37 es kernel:  [<c02be3a8>] ? inotify_release+0x16/0x22
+Dec  9 00:37:37 es kernel:  [<c029b567>] ? __fput+0xc0/0x16a
+Dec  9 00:37:37 es kernel:  [<c0298c50>] ? filp_close+0x4e/0x54
+Dec  9 00:37:37 es kernel:  [<c0298cb0>] ? sys_close+0x5a/0x8d
+Dec  9 00:37:37 es kernel:  [<c0202844>] ? sysenter_do_call+0x12/0x22
+Dec  9 00:37:37 es kernel: ---[ end trace 4eaa2a86a8e2da27 ]---
+Dec  9 00:37:37 es kernel: entry->group=3D(null) inode=3D(null) wd=3D1024=
 
-> static int crashnexio_probe(struct usb_interface *intf,
-> 			  const struct usb_device_id *id)
-> {
+Dec  9 00:37:37 es kernel: ------------[ cut here ]------------
+Dec  9 00:37:37 es kernel: WARNING: at fs/notify/inotify/inotify_fsnotify=
+=2Ec:129 idr_callback+0x2a/0x4b()
+Dec  9 00:37:37 es kernel: Hardware name:
+Dec  9 00:37:37 es kernel: inotify closing but id=3D0 for entry=3Df54ef3a=
+c in group=3Df59681c0 still in idr.  Probably leaking memory
+Dec  9 00:37:37 es kernel: Modules linked in: xt_multiport ipt_REJECT xt_=
+tcpudp iptable_filter ip_tables x_tables dm_mod coretemp fan i2c_i801 i2c=
+_core uhci_hcd e1000e psmouse intel_agp pcspkr serio_raw ehci_hcd button =
+rtc_cmos evdev processor thermal ata_generic
+Dec  9 00:37:37 es kernel: Pid: 11453, comm: imap Tainted: G        W  2.=
+6.31.6 #2
+Dec  9 00:37:37 es kernel: Call Trace:
+Dec  9 00:37:37 es kernel:  [<c0229095>] ? warn_slowpath_common+0x5e/0x8a=
 
-...
-
-> 	interface = intf->cur_altsetting;
-> 	/* find first input endpoint */
-> 	for (i = 0; i < interface->desc.bNumEndpoints; i++)
-> 		if (usb_endpoint_dir_in(&interface->endpoint[i].desc)) {
-> 			endpoint = &interface->endpoint[i].desc;
-> 			break;
-> 		}
-
-Does the interface have more than one input endpoint?  (What does
-"lsusb -v" show for the Nexio?)  If it does, how do you know the 
-endpoint you want is the first one?
-
-...
-
-> 	usb_fill_bulk_urb(crashnexio->irq, udev,
-> 			 usb_rcvintpipe(udev, endpoint->bEndpointAddress),
-
-Either change this to usb_fill_int_urb() or else use usb_rcvbulkpipe().
-
-...
-
-> static int __init crashnexio_init(void)
-> {
-> 	return usb_register(&crashnexio_driver);
-> }
-
-You should also have an __exit routine.
-
-Alan Stern
+Dec  9 00:37:37 es kernel:  [<c02290f3>] ? warn_slowpath_fmt+0x26/0x2a
+Dec  9 00:37:37 es kernel:  [<c02be26c>] ? idr_callback+0x2a/0x4b
+Dec  9 00:37:37 es kernel:  [<c032b219>] ? idr_for_each+0x5a/0x91
+Dec  9 00:37:37 es kernel:  [<c02be242>] ? idr_callback+0x0/0x4b
+Dec  9 00:37:37 es kernel:  [<c02be233>] ? inotify_free_group_priv+0x12/0=
+x21
+Dec  9 00:37:37 es kernel:  [<c02bcae1>] ? fsnotify_final_destroy_group+0=
+x16/0x1e
+Dec  9 00:37:37 es kernel:  [<c02be3a8>] ? inotify_release+0x16/0x22
+Dec  9 00:37:37 es kernel:  [<c029b567>] ? __fput+0xc0/0x16a
+Dec  9 00:37:37 es kernel:  [<c0298c50>] ? filp_close+0x4e/0x54
+Dec  9 00:37:37 es kernel:  [<c0298cb0>] ? sys_close+0x5a/0x8d
+Dec  9 00:37:37 es kernel:  [<c0202844>] ? sysenter_do_call+0x12/0x22
+Dec  9 00:37:37 es kernel: ---[ end trace 4eaa2a86a8e2da28 ]---
+Dec  9 00:37:37 es kernel: entry->group=3D(null) inode=3D(null) wd=3D1024=
 
 
 
+Dec 10 00:32:10 es kernel: ------------[ cut here ]------------
+Dec 10 00:32:10 es kernel: WARNING: at fs/notify/inotify/inotify_fsnotify=
+=2Ec:129 idr_callback+0x2a/0x4b()
+Dec 10 00:32:10 es kernel: Hardware name:
+Dec 10 00:32:10 es kernel: inotify closing but id=3D0 for entry=3Dee6d47e=
+4 in group=3Df585fe40 still in idr.  Probably leaking memory
+Dec 10 00:32:10 es kernel: Modules linked in: xt_multiport ipt_REJECT xt_=
+tcpudp iptable_filter ip_tables x_tables dm_mod coretemp fan uhci_hcd i2c=
+_i801 pcspkr psmouse i2c_core serio_raw thermal ehci_hcd intel_agp rtc_cm=
+os evdev e1000e processor ata_generic button
+Dec 10 00:32:10 es kernel: Pid: 11428, comm: imap Tainted: G        W  2.=
+6.32 #1
+Dec 10 00:32:10 es kernel: Call Trace:
+Dec 10 00:32:10 es kernel:  [<c022af3d>] ? warn_slowpath_common+0x5e/0x8a=
 
-Index: 2.6.31/Documentation/usb/error-codes.txt
-===================================================================
---- 2.6.31.orig/Documentation/usb/error-codes.txt
-+++ 2.6.31/Documentation/usb/error-codes.txt
-@@ -41,8 +41,8 @@ USB-specific:
- 
- -EFBIG		Host controller driver can't schedule that many ISO frames.
- 
---EPIPE		Specified endpoint is stalled.  For non-control endpoints,
--		reset this status with usb_clear_halt().
-+-EPIPE		The pipe type specified in the URB doesn't match the
-+		endpoint's actual type.
- 
- -EMSGSIZE	(a) endpoint maxpacket size is zero; it is not usable
- 		    in the current interface altsetting.
-@@ -60,6 +60,8 @@ USB-specific:
- 
- -EHOSTUNREACH	URB was rejected because the device is suspended.
- 
-+-ENOEXEC	A control URB doesn't contain a Setup packet.
-+
- 
- **************************************************************************
- *                   Error codes returned by in urb->status               *
-Index: 2.6.31/drivers/usb/core/devio.c
-===================================================================
---- 2.6.31.orig/drivers/usb/core/devio.c
-+++ 2.6.31/drivers/usb/core/devio.c
-@@ -1065,7 +1065,10 @@ static int proc_do_submiturb(struct dev_
- 		case USB_ENDPOINT_XFER_CONTROL:
- 		case USB_ENDPOINT_XFER_ISOC:
- 			return -EINVAL;
--		/* allow single-shot interrupt transfers, at bogus rates */
-+		case USB_ENDPOINT_XFER_INT:
-+			/* allow single-shot interrupt transfers */
-+			uurb->type = USBDEVFS_URB_TYPE_INTERRUPT;
-+			goto interrupt_urb;
- 		}
- 		uurb->number_of_packets = 0;
- 		if (uurb->buffer_length > MAX_USBFS_BUFFER_SIZE)
-@@ -1073,6 +1076,16 @@ static int proc_do_submiturb(struct dev_
- 		snoop(&ps->dev->dev, "bulk urb\n");
- 		break;
- 
-+	case USBDEVFS_URB_TYPE_INTERRUPT:
-+		if (!usb_endpoint_xfer_int(&ep->desc))
-+			return -EINVAL;
-+ interrupt_urb:
-+		uurb->number_of_packets = 0;
-+		if (uurb->buffer_length > MAX_USBFS_BUFFER_SIZE)
-+			return -EINVAL;
-+		snoop(&ps->dev->dev, "interrupt urb\n");
-+		break;
-+
- 	case USBDEVFS_URB_TYPE_ISO:
- 		/* arbitrary limit */
- 		if (uurb->number_of_packets < 1 ||
-@@ -1105,15 +1118,6 @@ static int proc_do_submiturb(struct dev_
- 		snoop(&ps->dev->dev, "iso urb\n");
- 		break;
- 
--	case USBDEVFS_URB_TYPE_INTERRUPT:
--		uurb->number_of_packets = 0;
--		if (!usb_endpoint_xfer_int(&ep->desc))
--			return -EINVAL;
--		if (uurb->buffer_length > MAX_USBFS_BUFFER_SIZE)
--			return -EINVAL;
--		snoop(&ps->dev->dev, "interrupt urb\n");
--		break;
--
- 	default:
- 		return -EINVAL;
- 	}
-Index: 2.6.31/drivers/usb/core/urb.c
-===================================================================
---- 2.6.31.orig/drivers/usb/core/urb.c
-+++ 2.6.31/drivers/usb/core/urb.c
-@@ -387,6 +387,13 @@ int usb_submit_urb(struct urb *urb, gfp_
- 	{
- 	unsigned int	orig_flags = urb->transfer_flags;
- 	unsigned int	allowed;
-+	static int pipetypes[4] = {
-+		PIPE_CONTROL, PIPE_ISOCHRONOUS, PIPE_BULK, PIPE_INTERRUPT
-+	};
-+
-+	/* Check that pipe's type matches the endpoint's type */
-+	if (usb_pipetype(urb->pipe) != pipetypes[xfertype])
-+		return -EPIPE;
- 
- 	/* enforce simple/standard policy */
- 	allowed = (URB_NO_TRANSFER_DMA_MAP | URB_NO_SETUP_DMA_MAP |
+Dec 10 00:32:10 es kernel:  [<c022af9b>] ? warn_slowpath_fmt+0x26/0x2a
+Dec 10 00:32:10 es kernel:  [<c02c86c0>] ? idr_callback+0x2a/0x4b
+Dec 10 00:32:10 es kernel:  [<c0336711>] ? idr_for_each+0x5a/0x91
+Dec 10 00:32:10 es kernel:  [<c02c8696>] ? idr_callback+0x0/0x4b
+Dec 10 00:32:10 es kernel:  [<c02c8687>] ? inotify_free_group_priv+0x12/0=
+x21
+Dec 10 00:32:10 es kernel:  [<c02c6f39>] ? fsnotify_final_destroy_group+0=
+x16/0x1e
+Dec 10 00:32:10 es kernel:  [<c02c87fc>] ? inotify_release+0x16/0x22
+Dec 10 00:32:10 es kernel:  [<c02a4e06>] ? __fput+0xc0/0x16a
+Dec 10 00:32:10 es kernel:  [<c02a24dc>] ? filp_close+0x4e/0x54
+Dec 10 00:32:10 es kernel:  [<c02a253c>] ? sys_close+0x5a/0x8d
+Dec 10 00:32:10 es kernel:  [<c0202844>] ? sysenter_do_call+0x12/0x22
+Dec 10 00:32:10 es kernel: ---[ end trace 4eaa2a86a8e2da24 ]---
+Dec 10 00:32:10 es kernel: entry->group=3D(null) inode=3D(null) wd=3D1024=
 
+
+hth, tim
+
+--=20
+tim@klingt.org
+http://tim.klingt.org
+
+Our products just aren't engineered for security.
+  Brian Valentine, Microsoft's vice president of Windows development
+
+
+
+--------------enig2EC76720E6AFA038BC6AE198
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkshXGQACgkQdL+4qsZfVss2pwCgio5B/bulpi1UqUa7mn/z52vb
+TkEAnjOx2xl3d5MTYsDEdmMdY4qSi0ak
+=qMJc
+-----END PGP SIGNATURE-----
+
+--------------enig2EC76720E6AFA038BC6AE198--
