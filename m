@@ -1,146 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbZLJHag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZLJHa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760614AbZLJHag (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 02:30:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760462AbZLJHaf
+	id S1760628AbZLJHa7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 02:30:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760462AbZLJHa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 02:30:35 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44021 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753515AbZLJHae (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 02:30:34 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH v2  2/8] Introduce __page_check_address
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Larry Woodman <lwoodman@redhat.com>
-In-Reply-To: <20091210154822.2550.A69D9226@jp.fujitsu.com>
-References: <20091210154822.2550.A69D9226@jp.fujitsu.com>
-Message-Id: <20091210162947.2556.A69D9226@jp.fujitsu.com>
+	Thu, 10 Dec 2009 02:30:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58222 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760606AbZLJHa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 02:30:57 -0500
+Date: Thu, 10 Dec 2009 08:30:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] perf kmem: Show usage if no option is specified
+Message-ID: <20091210073059.GG16874@elte.hu>
+References: <4B20A195.8030106@cn.fujitsu.com>
+ <4B20A1EF.9080300@cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 10 Dec 2009 16:30:38 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B20A1EF.9080300@cs.helsinki.fi>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-page_check_address() need to take ptelock. but it might be contended.
-Then we need trylock version and this patch introduce new helper function.
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-it will be used latter patch.
+> Li Zefan kirjoitti:
+> >As Ingo suggested, make "perf kmem" show help information.
+> >"perf kmem stat [--caller] [--alloc] .." will show memory
+> >statistics.
+> >
+> >Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Reviewed-by: Rik van Riel <riel@redhat.com>
----
- mm/rmap.c |   62 ++++++++++++++++++++++++++++++++++++++++++++++++------------
- 1 files changed, 49 insertions(+), 13 deletions(-)
+Applied, thanks!
 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 278cd27..1b50425 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -268,44 +268,80 @@ unsigned long page_address_in_vma(struct page *page, struct vm_area_struct *vma)
-  * the page table lock when the pte is not present (helpful when reclaiming
-  * highly shared pages).
-  *
-- * On success returns with pte mapped and locked.
-+ * if @noblock is true, page_check_address may return -EAGAIN if lock is
-+ * contended.
-+ *
-+ * Returns valid pte pointer if success.
-+ * Returns -EFAULT if address seems invalid.
-+ * Returns -EAGAIN if trylock failed.
-  */
--pte_t *page_check_address(struct page *page, struct mm_struct *mm,
--			  unsigned long address, spinlock_t **ptlp, int sync)
-+static pte_t *__page_check_address(struct page *page, struct mm_struct *mm,
-+				   unsigned long address, spinlock_t **ptlp,
-+				   int sync, int noblock)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
- 	spinlock_t *ptl;
-+	int err = -EFAULT;
- 
- 	pgd = pgd_offset(mm, address);
- 	if (!pgd_present(*pgd))
--		return NULL;
-+		goto out;
- 
- 	pud = pud_offset(pgd, address);
- 	if (!pud_present(*pud))
--		return NULL;
-+		goto out;
- 
- 	pmd = pmd_offset(pud, address);
- 	if (!pmd_present(*pmd))
--		return NULL;
-+		goto out;
- 
- 	pte = pte_offset_map(pmd, address);
- 	/* Make a quick check before getting the lock */
--	if (!sync && !pte_present(*pte)) {
--		pte_unmap(pte);
--		return NULL;
--	}
-+	if (!sync && !pte_present(*pte))
-+		goto out_unmap;
- 
- 	ptl = pte_lockptr(mm, pmd);
--	spin_lock(ptl);
-+	if (noblock) {
-+		if (!spin_trylock(ptl)) {
-+			err = -EAGAIN;
-+			goto out_unmap;
-+		}
-+	} else
-+		spin_lock(ptl);
-+
- 	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
- 		*ptlp = ptl;
- 		return pte;
- 	}
--	pte_unmap_unlock(pte, ptl);
--	return NULL;
-+
-+	spin_unlock(ptl);
-+ out_unmap:
-+	pte_unmap(pte);
-+ out:
-+	return ERR_PTR(err);
-+}
-+
-+/*
-+ * Check that @page is mapped at @address into @mm.
-+ *
-+ * If @sync is false, page_check_address may perform a racy check to avoid
-+ * the page table lock when the pte is not present (helpful when reclaiming
-+ * highly shared pages).
-+ *
-+ * On success returns with pte mapped and locked.
-+ */
-+pte_t *page_check_address(struct page *page, struct mm_struct *mm,
-+			  unsigned long address, spinlock_t **ptlp, int sync)
-+{
-+	pte_t *pte;
-+
-+	pte = __page_check_address(page, mm, address, ptlp, sync, 0);
-+	if (IS_ERR(pte))
-+		return NULL;
-+	return pte;
- }
- 
- /**
--- 
-1.6.5.2
-
-
-
+	Ingo
