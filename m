@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbZLJUVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbZLJUWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbZLJUVB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 15:21:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757023AbZLJUU7
+	id S1757283AbZLJUWc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 15:22:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZLJUWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 15:20:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35198 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756672AbZLJUU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 15:20:58 -0500
-Date: Thu, 10 Dec 2009 15:20:20 -0500
-From: Valerie Aurora <vaurora@redhat.com>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/41] VFS: BUG() if somebody tries to rehash an already hashed dentry
-Message-ID: <20091210202020.GA10388@shell>
-References: <1256152779-10054-2-git-send-email-vaurora@redhat.com> <200911300143.nAU1hwav006906@agora.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911300143.nAU1hwav006906@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 10 Dec 2009 15:22:32 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:55080 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752307AbZLJUWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 15:22:31 -0500
+X-SpamScore: -33
+X-BigFish: VPS-33(zz1432R98dN936eMzz1202hz4fhz5eeeTz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B21584B.6010405@am.sony.com>
+Date: Thu, 10 Dec 2009 12:21:31 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "rostedt@goodmis.org" <rostedt@goodmis.org>
+CC: "Bird, Tim" <Timothy.Bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/4] ftrace - Add function duration tracer to ftrace
+References: <4B202753.4010108@am.sony.com> <1260416495.2146.130.camel@gandalf.stny.rr.com>
+In-Reply-To: <1260416495.2146.130.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Dec 2009 20:21:33.0044 (UTC) FILETIME=[5D667B40:01CA79D6]
+X-Reverse-DNS: mail7.fw-bc.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 08:43:58PM -0500, Erez Zadok wrote:
-> In message <1256152779-10054-2-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
-> > From: Jan Blunck <jblunck@suse.de>
-> > 
-> > Break early when somebody tries to rehash an already hashed dentry.
-> > Otherwise this leads to interesting corruptions in the dcache hash table
-> > later on.
-> > 
-> > Signed-off-by: Jan Blunck <jblunck@suse.de>
-> > Signed-off-by: Valerie Aurora <vaurora@redhat.com>
-> > ---
-> >  fs/dcache.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/fs/dcache.c b/fs/dcache.c
-> > index 9e5cd3c..38bf982 100644
-> > --- a/fs/dcache.c
-> > +++ b/fs/dcache.c
-> > @@ -1550,6 +1550,7 @@ void d_rehash(struct dentry * entry)
-> >  {
-> >  	spin_lock(&dcache_lock);
-> >  	spin_lock(&entry->d_lock);
-> > +	BUG_ON(!d_unhashed(entry));
-> >  	_d_rehash(entry);
-> >  	spin_unlock(&entry->d_lock);
-> >  	spin_unlock(&dcache_lock);
+Steven Rostedt wrote:
+> On Wed, 2009-12-09 at 14:40 -0800, Tim Bird wrote:
 > 
-> This patch seems unrelated to union mounts.  If so, can you get it pushed
-> upstream sooner?  Or is this a debugging patch useful only when developing
-> union mounts?
->
-> You also said that it can lead to "ineresting corruptions".  What kind of
-> corruptions exactly?  Also, would it make more sense to allow _d_rehash() to
-> hash in an unhashed dentry for the first time?
+>> For details about this, see my presentation from the Japan Linux
+>> Symposium:
+>> http://elinux.org/images/7/70/Measuring-function-duration-with-ftrace-oct-2009.pdf
+> 
+> This document seems to be corrupted.
 
-Hi Erez,
+Indeed so.  Sorry.
 
-Thanks for your great review!  I am working my way through your
-comments one by one.
+It may be moot, given the ensuing discussion (which I'll respond to
+shortly), but here's a link to an uncorrupted version:
 
-This is a trivial patch which happened to be useful during our
-development and seems like it might be useful for other VFS-related
-development.  I will submit it as part of our VFS patch set and drop
-it if the maintainers don't want it.
+http://elinux.org/images/3/3e/Measuring-function-duration-with-ftrace-october-2009.pdf
 
-I don't have an opinion on _d_rehash(), I'm afraid.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
--VAL
