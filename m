@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761906AbZLJWIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbZLJWJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761906AbZLJWIe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 17:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761882AbZLJWId
+	id S1761918AbZLJWJx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 17:09:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761882AbZLJWJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 17:08:33 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:45941 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761777AbZLJWIc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 17:08:32 -0500
-Message-ID: <4B2170BB.2070001@nortel.com>
-Date: Thu, 10 Dec 2009 16:05:47 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Thu, 10 Dec 2009 17:09:50 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41290 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761858AbZLJWJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 17:09:49 -0500
+Date: Thu, 10 Dec 2009 22:09:31 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       oleg@redhat.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, oleg@redhat.com
+In-Reply-To: <20091210004703.232302055@linutronix.de>
+References: <20091210004703.232302055@linutronix.de>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/urgent] signal: Fix racy access to __task_cred in kill_pid_info_as_uid()
+Message-ID: <tip-14d8c9f3c09e7fd7b9af80904289fe204f5b93c6@git.kernel.org>
+Git-Commit-ID: 14d8c9f3c09e7fd7b9af80904289fe204f5b93c6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: jim owens <jowens@hp.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       linux-doc@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Dan Carpenter <error27@gmail.com>,
-       Jes Sorensen <jes.sorensen@gmail.com>
-Subject: Re: [PATCH] Documentation/email-clients.txt: clarify Thunderbird
- section
-References: <4B210C6C.3060103@tuffmail.co.uk> <4B2110E3.8010508@hp.com> <4B2120F2.3090301@tuffmail.co.uk>
-In-Reply-To: <4B2120F2.3090301@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Dec 2009 22:08:27.0063 (UTC) FILETIME=[4C741C70:01CA79E5]
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/10/2009 10:25 AM, Alan Jenkins wrote:
+Commit-ID:  14d8c9f3c09e7fd7b9af80904289fe204f5b93c6
+Gitweb:     http://git.kernel.org/tip/14d8c9f3c09e7fd7b9af80904289fe204f5b93c6
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Thu, 10 Dec 2009 00:53:17 +0000
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Thu, 10 Dec 2009 23:04:11 +0100
 
-> The RFC for format=flowed says that it should escape lines which start 
-> with a space (by "space stuffing" - prepending an additional space).  So 
-> in theory it should completely break patches.   And indeed it does 
-> <http://gcc.gnu.org/ml/java-patches/2003-q2/msg00315.html>
-> 
-> Using HTML preformat in current versions of Thunderbird appears to send 
-> with a format=flowed content-type, and then violates the RFC by not 
-> performing any space-stuffing.
-> 
-> So if I look at format=flowed patch in my Sent email folder, I see that 
-> the message viewer correctly strips the first leading space in each 
-> line.  I.e. it breaks if you use copy+paste to get the patch out of 
-> Thunderbird (or any other format=flowed aware client).  File->Save As 
-> preserves the spaces though, allowing the patch to be applied.
+signal: Fix racy access to __task_cred in kill_pid_info_as_uid()
 
-Hmm...I'm using Thunderbird 3 beta4, and it appears that when sending
-via the "preformat" mechanism it actually does perform space-stuffing.
-This is visible as an extra leading space when looking at the raw source
-of the sent (or received) email via ctrl-U.
+kill_pid_info_as_uid() accesses __task_cred() without being in a RCU
+read side critical section. tasklist_lock is not protecting that when
+CONFIG_TREE_PREEMPT_RCU=y.
 
-However, if one turns off format=flowed, but leaves wrap set to 72, then
-the html preformat works without having to set the wrap to 0.
+Convert the whole tasklist_lock section to rcu and use
+lock_task_sighand to prevent the exit race.
 
-Thanks,
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <20091210004703.232302055@linutronix.de>
+Acked-by: Oleg Nesterov <oleg@redhat.com>
+---
+ kernel/signal.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-Chris
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 6b982f2..7331656 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1175,11 +1175,12 @@ int kill_pid_info_as_uid(int sig, struct siginfo *info, struct pid *pid,
+ 	int ret = -EINVAL;
+ 	struct task_struct *p;
+ 	const struct cred *pcred;
++	unsigned long flags;
+ 
+ 	if (!valid_signal(sig))
+ 		return ret;
+ 
+-	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 	p = pid_task(pid, PIDTYPE_PID);
+ 	if (!p) {
+ 		ret = -ESRCH;
+@@ -1196,14 +1197,16 @@ int kill_pid_info_as_uid(int sig, struct siginfo *info, struct pid *pid,
+ 	ret = security_task_kill(p, info, sig, secid);
+ 	if (ret)
+ 		goto out_unlock;
+-	if (sig && p->sighand) {
+-		unsigned long flags;
+-		spin_lock_irqsave(&p->sighand->siglock, flags);
+-		ret = __send_signal(sig, info, p, 1, 0);
+-		spin_unlock_irqrestore(&p->sighand->siglock, flags);
++
++	if (sig) {
++		if (lock_task_sighand(p, &flags)) {
++			ret = __send_signal(sig, info, p, 1, 0);
++			unlock_task_sighand(p, &flags);
++		} else
++			ret = -ESRCH;
+ 	}
+ out_unlock:
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(kill_pid_info_as_uid);
