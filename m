@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZLJOOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbZLJOS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbZLJOOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 09:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760851AbZLJOOL
+	id S1760862AbZLJOS1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 09:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760676AbZLJOSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 09:14:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16794 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760830AbZLJOOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 09:14:10 -0500
-Message-ID: <4B210212.8090008@redhat.com>
-Date: Thu, 10 Dec 2009 12:13:38 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Thu, 10 Dec 2009 09:18:25 -0500
+Received: from imap.ru.mvista.com ([213.79.90.228]:53840 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1760622AbZLJOSY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 09:18:24 -0500
+Date: Thu, 10 Dec 2009 17:18:30 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: felipe.balbi@nokia.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI
+ charger
+Message-ID: <20091210141830.GA10687@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
+ <20091202204946.GB25682@nokia.com>
+ <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
+ <20091202215442.GA30658@oksana.dev.rtsoft.ru>
+ <20091202223156.GA14921@nokia.com>
+ <20091202225922.GA15568@oksana.dev.rtsoft.ru>
+ <20091203083958.GB31110@nokia.com>
+ <6ed0b2680912030255o57d7c46qb5ae1cfcb82e9976@mail.gmail.com>
+ <20091203110332.GO1361@nokia.com>
+ <6ed0b2680912100609g11706296qdbcea887dc3a5733@mail.gmail.com>
 MIME-Version: 1.0
-To: "David T. L. Wong" <davidtlwong@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, Douglas Landgraf <dougsland@gmail.com>
-Subject: Re: [GIT PULL for 2.6.33] V4L/DVB updates
-References: <20091209021639.14f08856@pedra> <20091210062015.GA29594@elte.hu> <4B209D90.6080404@gmail.com>
-In-Reply-To: <4B209D90.6080404@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <6ed0b2680912100609g11706296qdbcea887dc3a5733@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David T. L. Wong wrote:
-> Ingo Molnar wrote:
->> Hi,
->>
->> FYI, there's a new build failure on 32-bit x86 caused by the new
->> max2165 tuner driver:
->>
->> drivers/built-in.o: In function `max2165_set_params':
->> max2165.c:(.text+0x486293): undefined reference to `__floatunsidf'
->> max2165.c:(.text+0x4862bc): undefined reference to `__floatunsidf'
->> max2165.c:(.text+0x4862c5): undefined reference to `__adddf3'
->> max2165.c:(.text+0x4862cf): undefined reference to `__fixunsdfsi'
->>
->>     Ingo
+On Thu, Dec 10, 2009 at 04:09:08PM +0200, Grazvydas Ignotas wrote:
+[...]
+> > dedicated chargers are simple. You kick the charger detection according to
+> > USB BC 1.x and if it returns true, you configure high current charging.
+> > Host/Hub chargers are also simple, after kicking charger detection, you
+> > enable Data pullups (e.g. SOFTCONN bit in musb's power register) and see if
+> > the host sends a setup packet...
+> >
+> > the complicated part is passing the information of which configuration you
+> > were enumerated with to the charger chip.
 > 
-> 
-> A patch is already submitted to v4l mailing list:
-> http://patchwork.kernel.org/patch/64538/
+> Ok since it doesn't look like this will resolve soon, what about
+> adding some DEVICE_ATTR for the time being and requiring userspace to
+> write charge current here to start actual charging?
 
-Hmm... Douglas put this patch on his tree, but didn't submit me a pull
-request yet.
+Works for me. Let's think of the kernel charging support as an
+yet unimplemented feature.
 
-I'll merge it right now and make it available for -git push soon.
+Thanks,
 
-Mauro.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
