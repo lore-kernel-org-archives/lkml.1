@@ -1,72 +1,375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbZLJTqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761671AbZLJTrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761661AbZLJTqL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 14:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761570AbZLJTqK
+	id S1761671AbZLJTrb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 14:47:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761627AbZLJTr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 14:46:10 -0500
-Received: from mx2.compro.net ([12.186.155.4]:15495 "EHLO mx2.compro.net"
+	Thu, 10 Dec 2009 14:47:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54003 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761568AbZLJTqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 14:46:09 -0500
-X-IronPort-AV: E=Sophos;i="4.47,376,1257138000"; 
-   d="scan'208";a="4764941"
-Message-ID: <4B215007.4030703@compro.net>
-Date: Thu, 10 Dec 2009 14:46:15 -0500
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
+	id S1755841AbZLJTr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 14:47:28 -0500
+Date: Thu, 10 Dec 2009 20:47:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] timers fixes
+Message-ID: <20091210194723.GA19512@elte.hu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Unable to format or use floppies since 2.6.28
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have many boxes. They all do the same thing. Running different versions of SuSE, 10.3-11.2. Any kernel at or above 2.6.28 fails to fdformat a floppy. These same machines, using the same floppies and drives, running kernels older than 2.6.28 work just fine. I googled and found other such reports but no solution. I know better than to just assume it's a kernel bug but it sure looks like it could be so I'm inquiring about it here. 
+Linus,
+
+Please pull the latest timers-fixes-for-linus git tree from:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Heiko Carstens (1):
+      hrtimer: move timer stats helper functions to hrtimer.c
+
+Thomas Gleixner (2):
+      hrtimer: Tune hrtimer_interrupt hang logic
+      itimer: Fix the itimer trace print format
 
 
-# fdformat /dev/fd0u1440
-Double-sided, 80 tracks, 18 sec/track. Total capacity 1440 kB.
-Formatting ... done
-Verifying ... Problem reading cylinder 1, expected 18432, read 2048
+ include/linux/hrtimer.h      |   56 +++----------------
+ include/trace/events/timer.h |    8 ++--
+ kernel/hrtimer.c             |  121 ++++++++++++++++++++++++++---------------
+ kernel/time/timer_list.c     |    5 ++-
+ 4 files changed, 94 insertions(+), 96 deletions(-)
 
-
-dmesg from 2.6.32:
-
-Dec 10 14:24:21 harley kernel: end_request: I/O error, dev fd0, sector 45
-Dec 10 14:24:21 harley kernel: Buffer I/O error on device fd0, logical block 5
-Dec 10 14:24:23 harley kernel: end_request: I/O error, dev fd0, sector 72
-Dec 10 14:24:23 harley kernel: Buffer I/O error on device fd0, logical block 9
-Dec 10 14:24:26 harley kernel: end_request: I/O error, dev fd0, sector 117
-Dec 10 14:24:26 harley kernel: Buffer I/O error on device fd0, logical block 14
-Dec 10 14:24:28 harley kernel: end_request: I/O error, dev fd0, sector 127
-Dec 10 14:24:28 harley kernel: Buffer I/O error on device fd0, logical block 15
-Dec 10 14:24:30 harley kernel: end_request: I/O error, dev fd0, sector 45
-Dec 10 14:24:30 harley kernel: Buffer I/O error on device fd0, logical block 5
-Dec 10 14:24:32 harley kernel: end_request: I/O error, dev fd0, sector 144
-Dec 10 14:24:32 harley kernel: Buffer I/O error on device fd0, logical block 18
-Dec 10 14:24:34 harley kernel: end_request: I/O error, dev fd0, sector 189
-Dec 10 14:24:34 harley kernel: Buffer I/O error on device fd0, logical block 23
-Dec 10 14:24:36 harley kernel: end_request: I/O error, dev fd0, sector 216
-Dec 10 14:24:36 harley kernel: Buffer I/O error on device fd0, logical block 27
-Dec 10 14:24:39 harley kernel: end_request: I/O error, dev fd0, sector 261
-Dec 10 14:24:39 harley kernel: Buffer I/O error on device fd0, logical block 32
-Dec 10 14:24:41 harley kernel: end_request: I/O error, dev fd0, sector 288
-Dec 10 14:24:41 harley kernel: Buffer I/O error on device fd0, logical block 36
-Dec 10 14:24:43 harley kernel: end_request: I/O error, dev fd0, sector 333
-Dec 10 14:24:43 harley kernel: Buffer I/O error on device fd0, logical block 41
-Dec 10 14:24:45 harley kernel: end_request: I/O error, dev fd0, sector 360
-Dec 10 14:24:45 harley kernel: Buffer I/O error on device fd0, logical block 45
-
-
-# rpm -qf /usr/sbin/fdformat
-util-linux-2.16-4.5.1.i586
-
-Again, on this very machine, running 2.6.27.41 all is fine....
-
-Thanks in advance
-Mark
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 9bace4b..af634e9 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -162,10 +162,11 @@ struct hrtimer_clock_base {
+  * @expires_next:	absolute time of the next event which was scheduled
+  *			via clock_set_next_event()
+  * @hres_active:	State of high resolution mode
+- * @check_clocks:	Indictator, when set evaluate time source and clock
+- *			event devices whether high resolution mode can be
+- *			activated.
+- * @nr_events:		Total number of timer interrupt events
++ * @hang_detected:	The last hrtimer interrupt detected a hang
++ * @nr_events:		Total number of hrtimer interrupt events
++ * @nr_retries:		Total number of hrtimer interrupt retries
++ * @nr_hangs:		Total number of hrtimer interrupt hangs
++ * @max_hang_time:	Maximum time spent in hrtimer_interrupt
+  */
+ struct hrtimer_cpu_base {
+ 	spinlock_t			lock;
+@@ -173,7 +174,11 @@ struct hrtimer_cpu_base {
+ #ifdef CONFIG_HIGH_RES_TIMERS
+ 	ktime_t				expires_next;
+ 	int				hres_active;
++	int				hang_detected;
+ 	unsigned long			nr_events;
++	unsigned long			nr_retries;
++	unsigned long			nr_hangs;
++	ktime_t				max_hang_time;
+ #endif
+ };
+ 
+@@ -435,47 +440,4 @@ extern u64 ktime_divns(const ktime_t kt, s64 div);
+ /* Show pending timers: */
+ extern void sysrq_timer_list_show(void);
+ 
+-/*
+- * Timer-statistics info:
+- */
+-#ifdef CONFIG_TIMER_STATS
+-
+-extern void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
+-				     void *timerf, char *comm,
+-				     unsigned int timer_flag);
+-
+-static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
+-{
+-	if (likely(!timer_stats_active))
+-		return;
+-	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
+-				 timer->function, timer->start_comm, 0);
+-}
+-
+-extern void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer,
+-						 void *addr);
+-
+-static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
+-{
+-	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
+-}
+-
+-static inline void timer_stats_hrtimer_clear_start_info(struct hrtimer *timer)
+-{
+-	timer->start_site = NULL;
+-}
+-#else
+-static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
+-{
+-}
+-
+-static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
+-{
+-}
+-
+-static inline void timer_stats_hrtimer_clear_start_info(struct hrtimer *timer)
+-{
+-}
+-#endif
+-
+ #endif
+diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
+index e5ce87a..9496b96 100644
+--- a/include/trace/events/timer.h
++++ b/include/trace/events/timer.h
+@@ -301,8 +301,8 @@ TRACE_EVENT(itimer_state,
+ 		__entry->interval_usec	= value->it_interval.tv_usec;
+ 	),
+ 
+-	TP_printk("which=%d expires=%lu it_value=%lu.%lu it_interval=%lu.%lu",
+-		  __entry->which, __entry->expires,
++	TP_printk("which=%d expires=%llu it_value=%ld.%ld it_interval=%ld.%ld",
++		  __entry->which, (unsigned long long)__entry->expires,
+ 		  __entry->value_sec, __entry->value_usec,
+ 		  __entry->interval_sec, __entry->interval_usec)
+ );
+@@ -331,8 +331,8 @@ TRACE_EVENT(itimer_expire,
+ 		__entry->pid	= pid_nr(pid);
+ 	),
+ 
+-	    TP_printk("which=%d pid=%d now=%lu", __entry->which,
+-		      (int) __entry->pid, __entry->now)
++	TP_printk("which=%d pid=%d now=%llu", __entry->which,
++		  (int) __entry->pid, (unsigned long long)__entry->now)
+ );
+ 
+ #endif /*  _TRACE_TIMER_H */
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index ede5277..d2f9239 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -557,7 +557,7 @@ hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base, int skip_equal)
+ static int hrtimer_reprogram(struct hrtimer *timer,
+ 			     struct hrtimer_clock_base *base)
+ {
+-	ktime_t *expires_next = &__get_cpu_var(hrtimer_bases).expires_next;
++	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
+ 	ktime_t expires = ktime_sub(hrtimer_get_expires(timer), base->offset);
+ 	int res;
+ 
+@@ -582,7 +582,16 @@ static int hrtimer_reprogram(struct hrtimer *timer,
+ 	if (expires.tv64 < 0)
+ 		return -ETIME;
+ 
+-	if (expires.tv64 >= expires_next->tv64)
++	if (expires.tv64 >= cpu_base->expires_next.tv64)
++		return 0;
++
++	/*
++	 * If a hang was detected in the last timer interrupt then we
++	 * do not schedule a timer which is earlier than the expiry
++	 * which we enforced in the hang detection. We want the system
++	 * to make progress.
++	 */
++	if (cpu_base->hang_detected)
+ 		return 0;
+ 
+ 	/*
+@@ -590,7 +599,7 @@ static int hrtimer_reprogram(struct hrtimer *timer,
+ 	 */
+ 	res = tick_program_event(expires, 0);
+ 	if (!IS_ERR_VALUE(res))
+-		*expires_next = expires;
++		cpu_base->expires_next = expires;
+ 	return res;
+ }
+ 
+@@ -747,17 +756,33 @@ static inline void hrtimer_init_timer_hres(struct hrtimer *timer) { }
+ 
+ #endif /* CONFIG_HIGH_RES_TIMERS */
+ 
+-#ifdef CONFIG_TIMER_STATS
+-void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer, void *addr)
++static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
+ {
++#ifdef CONFIG_TIMER_STATS
+ 	if (timer->start_site)
+ 		return;
+-
+-	timer->start_site = addr;
++	timer->start_site = __builtin_return_address(0);
+ 	memcpy(timer->start_comm, current->comm, TASK_COMM_LEN);
+ 	timer->start_pid = current->pid;
++#endif
+ }
++
++static inline void timer_stats_hrtimer_clear_start_info(struct hrtimer *timer)
++{
++#ifdef CONFIG_TIMER_STATS
++	timer->start_site = NULL;
++#endif
++}
++
++static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
++{
++#ifdef CONFIG_TIMER_STATS
++	if (likely(!timer_stats_active))
++		return;
++	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
++				 timer->function, timer->start_comm, 0);
+ #endif
++}
+ 
+ /*
+  * Counterpart to lock_hrtimer_base above:
+@@ -1217,30 +1242,6 @@ static void __run_hrtimer(struct hrtimer *timer, ktime_t *now)
+ 
+ #ifdef CONFIG_HIGH_RES_TIMERS
+ 
+-static int force_clock_reprogram;
+-
+-/*
+- * After 5 iteration's attempts, we consider that hrtimer_interrupt()
+- * is hanging, which could happen with something that slows the interrupt
+- * such as the tracing. Then we force the clock reprogramming for each future
+- * hrtimer interrupts to avoid infinite loops and use the min_delta_ns
+- * threshold that we will overwrite.
+- * The next tick event will be scheduled to 3 times we currently spend on
+- * hrtimer_interrupt(). This gives a good compromise, the cpus will spend
+- * 1/4 of their time to process the hrtimer interrupts. This is enough to
+- * let it running without serious starvation.
+- */
+-
+-static inline void
+-hrtimer_interrupt_hanging(struct clock_event_device *dev,
+-			ktime_t try_time)
+-{
+-	force_clock_reprogram = 1;
+-	dev->min_delta_ns = (unsigned long)try_time.tv64 * 3;
+-	printk(KERN_WARNING "hrtimer: interrupt too slow, "
+-	       "forcing clock min delta to %llu ns\n",
+-	       (unsigned long long) dev->min_delta_ns);
+-}
+ /*
+  * High resolution timer interrupt
+  * Called with interrupts disabled
+@@ -1249,21 +1250,15 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+ {
+ 	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
+ 	struct hrtimer_clock_base *base;
+-	ktime_t expires_next, now;
+-	int nr_retries = 0;
+-	int i;
++	ktime_t expires_next, now, entry_time, delta;
++	int i, retries = 0;
+ 
+ 	BUG_ON(!cpu_base->hres_active);
+ 	cpu_base->nr_events++;
+ 	dev->next_event.tv64 = KTIME_MAX;
+ 
+- retry:
+-	/* 5 retries is enough to notice a hang */
+-	if (!(++nr_retries % 5))
+-		hrtimer_interrupt_hanging(dev, ktime_sub(ktime_get(), now));
+-
+-	now = ktime_get();
+-
++	entry_time = now = ktime_get();
++retry:
+ 	expires_next.tv64 = KTIME_MAX;
+ 
+ 	spin_lock(&cpu_base->lock);
+@@ -1325,10 +1320,48 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+ 	spin_unlock(&cpu_base->lock);
+ 
+ 	/* Reprogramming necessary ? */
+-	if (expires_next.tv64 != KTIME_MAX) {
+-		if (tick_program_event(expires_next, force_clock_reprogram))
+-			goto retry;
++	if (expires_next.tv64 == KTIME_MAX ||
++	    !tick_program_event(expires_next, 0)) {
++		cpu_base->hang_detected = 0;
++		return;
+ 	}
++
++	/*
++	 * The next timer was already expired due to:
++	 * - tracing
++	 * - long lasting callbacks
++	 * - being scheduled away when running in a VM
++	 *
++	 * We need to prevent that we loop forever in the hrtimer
++	 * interrupt routine. We give it 3 attempts to avoid
++	 * overreacting on some spurious event.
++	 */
++	now = ktime_get();
++	cpu_base->nr_retries++;
++	if (++retries < 3)
++		goto retry;
++	/*
++	 * Give the system a chance to do something else than looping
++	 * here. We stored the entry time, so we know exactly how long
++	 * we spent here. We schedule the next event this amount of
++	 * time away.
++	 */
++	cpu_base->nr_hangs++;
++	cpu_base->hang_detected = 1;
++	delta = ktime_sub(now, entry_time);
++	if (delta.tv64 > cpu_base->max_hang_time.tv64)
++		cpu_base->max_hang_time = delta;
++	/*
++	 * Limit it to a sensible value as we enforce a longer
++	 * delay. Give the CPU at least 100ms to catch up.
++	 */
++	if (delta.tv64 > 100 * NSEC_PER_MSEC)
++		expires_next = ktime_add_ns(now, 100 * NSEC_PER_MSEC);
++	else
++		expires_next = ktime_add(now, delta);
++	tick_program_event(expires_next, 1);
++	printk_once(KERN_WARNING "hrtimer: interrupt took %llu ns\n",
++		    ktime_to_ns(delta));
+ }
+ 
+ /*
+diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+index 665c76e..9d80db4 100644
+--- a/kernel/time/timer_list.c
++++ b/kernel/time/timer_list.c
+@@ -150,6 +150,9 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
+ 	P_ns(expires_next);
+ 	P(hres_active);
+ 	P(nr_events);
++	P(nr_retries);
++	P(nr_hangs);
++	P_ns(max_hang_time);
+ #endif
+ #undef P
+ #undef P_ns
+@@ -254,7 +257,7 @@ static int timer_list_show(struct seq_file *m, void *v)
+ 	u64 now = ktime_to_ns(ktime_get());
+ 	int cpu;
+ 
+-	SEQ_printf(m, "Timer List Version: v0.4\n");
++	SEQ_printf(m, "Timer List Version: v0.5\n");
+ 	SEQ_printf(m, "HRTIMER_MAX_CLOCK_BASES: %d\n", HRTIMER_MAX_CLOCK_BASES);
+ 	SEQ_printf(m, "now at %Ld nsecs\n", (unsigned long long)now);
+ 
