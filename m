@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbZLJR5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbZLJR6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761309AbZLJR5v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 12:57:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761038AbZLJR5s
+	id S1761283AbZLJR6o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 12:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761092AbZLJR6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 12:57:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36318 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760962AbZLJR5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 12:57:47 -0500
-Date: Thu, 10 Dec 2009 18:57:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-Message-ID: <20091210175737.GB5256@elte.hu>
-References: <4B202778.4030801@am.sony.com>
- <20091210070800.GB16874@elte.hu>
- <20091210120332.GA5042@nowhere>
- <20091210141121.GB1436@elte.hu>
- <1260456803.2146.167.camel@gandalf.stny.rr.com>
- <20091210153845.GA28230@elte.hu>
- <y0md42magc1.fsf@fche.csb>
+	Thu, 10 Dec 2009 12:58:43 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:53007 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761059AbZLJR6l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 12:58:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=IFD6TVP1RNKUPn8xUwhCc8tRN24TSErPgJP/umR9t0TVQNhf8axQ6GmABFB3YzcLhj
+         eV5ipp3t1MLC53cIhaAcClb9z9REo7ZiAbpEqVA5hnaO/IZqPsotWoEuZ+u/pOcOnrcB
+         femlGkhFHecmmMPw+ZIMsv+agYZ3H/7GR6CwY=
+Message-ID: <4B2136D5.1030402@gmail.com>
+Date: Thu, 10 Dec 2009 20:58:45 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <y0md42magc1.fsf@fche.csb>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Pavel Machek <pavel@ucw.cz>
+CC: Xiaotian Feng <dfeng@redhat.com>, lenb@kernel.org, ming.m.lin@intel.com,
+       robert.moore@intel.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPICA: don't cond_resched() when irq_disabled or in_atomic
+References: <1259900760-6424-1-git-send-email-dfeng@redhat.com> <20091210100907.GA2446@ucw.cz>
+In-Reply-To: <20091210100907.GA2446@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Pavel,
 
-* Frank Ch. Eigler <fche@redhat.com> wrote:
+Please elaborate... Your comments "ugly as hell" are too often to be
+specific...
+There is only one use of ACPI_PREEMPTION_POINT(), and it is in the
+ACPICA code,
+which we all agreed to keep OS independent, thus the need for #define.
+Do you see any other way to add preemption point without introducing
+Linux-specific
+code into ACPICA?
 
-> Ingo Molnar <mingo@elte.hu> writes:
-> 
-> > [...]
-> > Just off the top of my head we want to be able to trace:
-> >
-> >  - max irq service latencies for a given IRQ
-> >  - max block IO completion latencies for a app
-> >  - max TLB flush latencies in the system
-> >  - max sys_open() latencies in a task
-> >  - max fork()/exit() latencies in a workload
-> >  - max scheduling latencies on a given CPU
-> >  - max page fault latencies
-> >  - max wakeup latencies for a given task
-> >  - max memory allocation latencies
-> >
-> >  - ... and dozens and dozens of other things where there's a "start"
-> >    and a "stop" event and where we want to measure the time between
-> >    them.
-> > [...]
-> 
-> FWIW, those who want to collect such measurements today can do so with 
-> a few lines of systemtap script for each of the above.
+Thanks,
+Alex.
 
-Well, i dont think stap can do workload instrumentation. It can do 
-system-wide (and user local / task local) - but can it do per task 
-hierarchies?
 
-Also, i dont think stap supports proper separation of per workload 
-measurements either. I.e. can you write a script that will work properly 
-even if multiple monitoring tools are running, each trying to measure 
-latencies?
+Pavel Machek пишет:
+> On Fri 2009-12-04 12:26:00, Xiaotian Feng wrote:
+>   
+>> commit 8bd108d adds preemption point after each opcode parse, then
+>> a sleeping function called from invalid context bug was founded
+>> during suspend/resume stage. this was fixed in commit abe1dfa by
+>> don't cond_resched when irq_disabled. But recent commit 138d156 changes
+>> the behaviour to don't cond_resched when in_atomic. This makes the
+>> sleeping function called from invalid context bug happen again, which
+>> is reported in http://lkml.org/lkml/2009/12/1/371.
+>>
+>> The fix is to cond_sched() only when preemptible, which means not in
+>> irq_disabled or in_atomic.
+>>
+>> @@ -152,7 +152,7 @@ static inline void *acpi_os_acquire_object(acpi_cache_t * cache)
+>>  #include <linux/hardirq.h>
+>>  #define ACPI_PREEMPTION_POINT() \
+>>  	do { \
+>> -		if (!in_atomic_preempt_off()) \
+>> +		if (preemptible()) \
+>>  			cond_resched(); \
+>>  	} while (0)
+>>     
+>
+> Note that this is ugly as hell. It means we have two acpi
+> interpretters in kernel, one for preemptible, one for non-preemptible,
+> with very different behaviour.
+>
+> It would be slightly nicer to pass the "preemptible" info explicitely,
+> as function parameters.
+>
+> It would be even better not to need that difference.
+>
+> 									Pavel
+>   
 
-Also, i personally find built-in kernel functionality more trustable 
-than dynamically built stap kernel modules that get inserted.
-
-	Ingo
