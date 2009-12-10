@@ -1,123 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761635AbZLJTh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761607AbZLJTgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761635AbZLJTh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 14:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761623AbZLJThY
+	id S1761607AbZLJTgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 14:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761436AbZLJTgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 14:37:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59295 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761620AbZLJThV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 14:37:21 -0500
-Date: Thu, 10 Dec 2009 19:36:32 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Remove forced2_migrations stats
-Message-ID: <tip-b9889ed1ddeca5a3f3569c8de7354e9e97d803ae@git.kernel.org>
-Git-Commit-ID: b9889ed1ddeca5a3f3569c8de7354e9e97d803ae
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Thu, 10 Dec 2009 14:36:42 -0500
+Received: from outbound-mail-32.bluehost.com ([69.89.18.152]:49493 "HELO
+	outbound-mail-32.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761318AbZLJTgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 14:36:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=XER3lboiCjwa7fV1eWeyPJ/CdpyHLwLNW4ZuHTw2H4DwhNLU3BfgAoQVNFoli2GP5/F6KRG+V0SKdjrapFTO6a13w6ud0UklRbLB1TAiZdySEFuaH6YAXXHHsnsI79F7;
+Date: Thu, 10 Dec 2009 11:36:43 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Maarten Maathuis <madman2003@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Xavier Bestel <xavier.bestel@free.fr>
+Subject: Re: [git pull] drm
+Message-ID: <20091210113643.26c25b05@jbarnes-piketon>
+In-Reply-To: <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>
+References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>
+	<alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>
+	<1260459601.18520.26.camel@skunk>
+	<alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>
+	<6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>
+	<alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b9889ed1ddeca5a3f3569c8de7354e9e97d803ae
-Gitweb:     http://git.kernel.org/tip/b9889ed1ddeca5a3f3569c8de7354e9e97d803ae
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 10 Dec 2009 20:32:39 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 10 Dec 2009 20:32:39 +0100
+On Thu, 10 Dec 2009 10:42:46 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> I _think_ that last one was meant as a joke. But it's damn hard to
+> tell, because the ones that are apparently sincere are equally crazy.
+> People just seem to make up total crap to make excuses for something
+> that everybody knows is wrong.
 
-sched: Remove forced2_migrations stats
+Heh.  I was only half-kidding.  My point was that Fedora (for the
+purposes of graphics at least) is more like an individual developer's
+(or small group's) work tree that just happens to be available
+publicly.  If you think of it that way, it kind of makes sense that
+some changes it includes aren't pushed upstream right away.
 
-This build warning:
+But I fully admit it's a bogus excuse and a fairly cheap shot at
+Fedora. :)
 
- kernel/sched.c: In function 'set_task_cpu':
- kernel/sched.c:2070: warning: unused variable 'old_rq'
-
-Made me realize that the forced2_migrations stat looks pretty
-pointless (and a misnomer) - remove it.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/sched.h |    1 -
- kernel/sched.c        |    6 ------
- kernel/sched_debug.c  |    2 --
- 3 files changed, 0 insertions(+), 9 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index ee9f200..87b89a8 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1174,7 +1174,6 @@ struct sched_entity {
- 	u64			nr_failed_migrations_running;
- 	u64			nr_failed_migrations_hot;
- 	u64			nr_forced_migrations;
--	u64			nr_forced2_migrations;
- 
- 	u64			nr_wakeups;
- 	u64			nr_wakeups_sync;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 36cc05a..bc68037 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2067,7 +2067,6 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
- void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- {
- 	int old_cpu = task_cpu(p);
--	struct rq *old_rq = cpu_rq(old_cpu);
- 	struct cfs_rq *old_cfsrq = task_cfs_rq(p),
- 		      *new_cfsrq = cpu_cfs_rq(old_cfsrq, new_cpu);
- 
-@@ -2075,10 +2074,6 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- 
- 	if (old_cpu != new_cpu) {
- 		p->se.nr_migrations++;
--#ifdef CONFIG_SCHEDSTATS
--		if (task_hot(p, old_rq->clock, NULL))
--			schedstat_inc(p, se.nr_forced2_migrations);
--#endif
- 		perf_sw_event(PERF_COUNT_SW_CPU_MIGRATIONS,
- 				     1, 1, NULL, 0);
- 	}
-@@ -2521,7 +2516,6 @@ static void __sched_fork(struct task_struct *p)
- 	p->se.nr_failed_migrations_running	= 0;
- 	p->se.nr_failed_migrations_hot		= 0;
- 	p->se.nr_forced_migrations		= 0;
--	p->se.nr_forced2_migrations		= 0;
- 
- 	p->se.nr_wakeups			= 0;
- 	p->se.nr_wakeups_sync			= 0;
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 0fc5287..5ae24fc 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -432,7 +432,6 @@ void proc_sched_show_task(struct task_struct *p, struct seq_file *m)
- 	P(se.nr_failed_migrations_running);
- 	P(se.nr_failed_migrations_hot);
- 	P(se.nr_forced_migrations);
--	P(se.nr_forced2_migrations);
- 	P(se.nr_wakeups);
- 	P(se.nr_wakeups_sync);
- 	P(se.nr_wakeups_migrate);
-@@ -508,7 +507,6 @@ void proc_sched_set_task(struct task_struct *p)
- 	p->se.nr_failed_migrations_running	= 0;
- 	p->se.nr_failed_migrations_hot		= 0;
- 	p->se.nr_forced_migrations		= 0;
--	p->se.nr_forced2_migrations		= 0;
- 	p->se.nr_wakeups			= 0;
- 	p->se.nr_wakeups_sync			= 0;
- 	p->se.nr_wakeups_migrate		= 0;
+-- 
+Jesse Barnes, Intel Open Source Technology Center
