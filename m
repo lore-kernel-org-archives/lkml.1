@@ -1,53 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbZLJSNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761373AbZLJSPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761349AbZLJSNJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 13:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761215AbZLJSNI
+	id S1761373AbZLJSPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 13:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761101AbZLJSPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 13:13:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30887 "EHLO mx1.redhat.com"
+	Thu, 10 Dec 2009 13:15:21 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:37322 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761206AbZLJSNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 13:13:07 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
+	id S1760896AbZLJSPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 13:15:20 -0500
+Date: Thu, 10 Dec 2009 19:15:26 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
 To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Moyer Jeff Moyer <jmoyer@redhat.com>,
        Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Subject: Re: [PATCH] Fix a CFQ crash in "for-2.6.33" branch of block tree
+Message-ID: <20091210181525.GL8742@kernel.dk>
 References: <20091210170845.GA8327@redhat.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 10 Dec 2009 13:13:07 -0500
-In-Reply-To: <20091210170845.GA8327@redhat.com> (Vivek Goyal's message of
-	"Thu, 10 Dec 2009 12:08:45 -0500")
-Message-ID: <x49ljhalmto.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091210170845.GA8327@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@redhat.com> writes:
-
+On Thu, Dec 10 2009, Vivek Goyal wrote:
+> Hi Jens,
+> 
+> I think my previous patch introduced a bug which can lead to CFQ hitting
+> BUG_ON().
+> 
+> The offending commit in for-2.6.33 branch is.
+> 
+> commit 7667aa0630407bc07dc38dcc79d29cc0a65553c1
+> Author: Vivek Goyal <vgoyal@redhat.com>
+> Date:   Tue Dec 8 17:52:58 2009 -0500
+> 
+>     cfq-iosched: Take care of corner cases of group losing share due to deletion
+> 
+> While doing some stress testing on my box, I enountered following.
+> 
+> login: [ 3165.148841] BUG: scheduling while
+> atomic: swapper/0/0x10000100
+> [ 3165.149821] Modules linked in: cfq_iosched dm_multipath qla2xxx igb
+> scsi_transport_fc dm_snapshot [last unloaded: scsi_wait_scan]
+> [ 3165.149821] Pid: 0, comm: swapper Not tainted
+> 2.6.32-block-for-33-merged-new #3
+> [ 3165.149821] Call Trace:
+> [ 3165.149821]  <IRQ>  [<ffffffff8103fab8>] __schedule_bug+0x5c/0x60
+> [ 3165.149821]  [<ffffffff8103afd7>] ? __wake_up+0x44/0x4d
+> [ 3165.149821]  [<ffffffff8153a979>] schedule+0xe3/0x7bc
+> [ 3165.149821]  [<ffffffff8103a796>] ? cpumask_next+0x1d/0x1f
+> [ 3165.149821]  [<ffffffffa000b21d>] ? cfq_dispatch_requests+0x6ba/0x93e
+> [cfq_iosched]
+> [ 3165.149821]  [<ffffffff810422d8>] __cond_resched+0x2a/0x35
+> [ 3165.149821]  [<ffffffffa000b21d>] ? cfq_dispatch_requests+0x6ba/0x93e
+> [cfq_iosched]
+> [ 3165.149821]  [<ffffffff8153b1ee>] _cond_resched+0x2c/0x37
+> [ 3165.149821]  [<ffffffff8100e2db>] is_valid_bugaddr+0x16/0x2f
+> [ 3165.149821]  [<ffffffff811e4161>] report_bug+0x18/0xac
+> [ 3165.149821]  [<ffffffff8100f1fc>] die+0x39/0x63
+> [ 3165.149821]  [<ffffffff8153cde1>] do_trap+0x11a/0x129
+> [ 3165.149821]  [<ffffffff8100d470>] do_invalid_op+0x96/0x9f
+> [ 3165.149821]  [<ffffffffa000b21d>] ? cfq_dispatch_requests+0x6ba/0x93e
+> [cfq_iosched]
+> [ 3165.149821]  [<ffffffff81034b4d>] ? enqueue_task+0x5c/0x67
+> [ 3165.149821]  [<ffffffff8103ae83>] ? task_rq_unlock+0x11/0x13
+> [ 3165.149821]  [<ffffffff81041aae>] ? try_to_wake_up+0x292/0x2a4
+> [ 3165.149821]  [<ffffffff8100c935>] invalid_op+0x15/0x20
+> [ 3165.149821]  [<ffffffffa000b21d>] ? cfq_dispatch_requests+0x6ba/0x93e
+> [cfq_iosched]
+> [ 3165.149821]  [<ffffffff810df5a6>] ? virt_to_head_page+0xe/0x2f
+> [ 3165.149821]  [<ffffffff811d8c2a>] blk_peek_request+0x191/0x1a7
+> [ 3165.149821]  [<ffffffff811e5b8d>] ? kobject_get+0x1a/0x21
+> [ 3165.149821]  [<ffffffff812c8d4c>] scsi_request_fn+0x82/0x3df
+> [ 3165.149821]  [<ffffffff8110b2de>] ? bio_fs_destructor+0x15/0x17
+> [ 3165.149821]  [<ffffffff810df5a6>] ? virt_to_head_page+0xe/0x2f
+> [ 3165.149821]  [<ffffffff811d931f>] __blk_run_queue+0x42/0x71
+> [ 3165.149821]  [<ffffffff811d9403>] blk_run_queue+0x26/0x3a
+> [ 3165.149821]  [<ffffffff812c8761>] scsi_run_queue+0x2de/0x375
+> [ 3165.149821]  [<ffffffff812b60ac>] ? put_device+0x17/0x19
+> [ 3165.149821]  [<ffffffff812c92d7>] scsi_next_command+0x3b/0x4b
+> [ 3165.149821]  [<ffffffff812c9b9f>] scsi_io_completion+0x1c9/0x3f5
+> [ 3165.149821]  [<ffffffff812c3c36>] scsi_finish_command+0xb5/0xbe
+> 
 > I think I have hit following BUG_ON() in cfq_dispatch_request().
->
+> 
 > BUG_ON(RB_EMPTY_ROOT(&cfqq->sort_list));
->
+> 
 > Please find attached the patch to fix it. I have done some stress testing
 > with it and have not seen it happening again.
->
->
+> 
+> 
 > o We should wait on a queue even after slice expiry only if it is empty. If
 >   queue is not empty then continue to expire it.
->
+> 
 > o If we decide to keep the queue then make cfqq=NULL. Otherwise select_queue()
 >   will return a valid cfqq and cfq_dispatch_request() can hit following
 >   BUG_ON().
->
+> 
 >   BUG_ON(RB_EMPTY_ROOT(&cfqq->sort_list))
->
+> 
 > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
+
+Oops indeed, thanks. I will apply asasp.
+
+-- 
+Jens Axboe
+
