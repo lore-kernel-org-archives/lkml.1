@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934198AbZLJLzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934322AbZLJL4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934198AbZLJLzu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 06:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934093AbZLJLzq
+	id S934322AbZLJL4F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 06:56:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934216AbZLJLz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 06:55:46 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:51201 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934090AbZLJLzp (ORCPT
+	Thu, 10 Dec 2009 06:55:57 -0500
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:52508
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934206AbZLJLzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 06:55:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=hT2ZiaxDqYEbmU6czR0xo79rmv/LaZGD1q7wkzU0NljXh4WASu7Xz3wFPp/Jq9Xpb1
-         uYugyB52jH8ydVBUEaY829tU3Nw/qKgnAdxjvwBjfM/ewXQ4pC+MMILnrVhSu2l+dGOo
-         PPRPmcKtOcl7pb0dP3uALzp1+jZxtjZBRxKsY=
+	Thu, 10 Dec 2009 06:55:54 -0500
+X-SpamScore: -14
+X-BigFish: VPS-14(z21eWzzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KUFQGZ-02-41N-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [git pull] AMD IOMMU fixes for 2.6.33
+Date: Thu, 10 Dec 2009 12:55:33 +0100
+Message-ID: <1260446135-16460-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.5.4
+X-OriginalArrivalTime: 10 Dec 2009 11:55:46.0951 (UTC) FILETIME=[B5B82970:01CA798F]
 MIME-Version: 1.0
-In-Reply-To: <200912102222.04822.rusty@rustcorp.com.au>
-References: <20091209155903.GB3247@hack> <1260407779-12517-1-git-send-email-vapier@gentoo.org> 
-	<200912102137.52347.rusty@rustcorp.com.au> <200912102222.04822.rusty@rustcorp.com.au>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 10 Dec 2009 06:55:32 -0500
-Message-ID: <8bd0f97a0912100355i72a4181anb14d6d618b82ceca@mail.gmail.com>
-Subject: Re: [PATCH v2] modpost: fix asprintf warnings
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 06:52, Rusty Russell wrote:
-> On Thu, 10 Dec 2009 09:37:52 pm Rusty Russell wrote:
->> On Thu, 10 Dec 2009 11:46:19 am Mike Frysinger wrote:
->> > On compilers with security warnings enabled by default, we get:
->> >
->> > scripts/mod/modpost.c: In function 'get_markers':
->> > scripts/mod/modpost.c:1562: warning: ignoring return value of 'asprintf',
-> ...
->> Applied,
->> Rusty.
->
-> Actually, not applied since another patch in my queue deletes that obsolete
-> code altogether.
+Hi Ingo,
 
-WFM.  hopefully new code doesnt trigger warnings too, but i guess i'll
-post another patch if it does ;).
--mike
+The following changes since commit 4528752f49c1f4025473d12bc5fa9181085c3f22:
+  Darrick J. Wong (1):
+        x86, Calgary IOMMU quirk: Find nearest matching Calgary while walking up the PCI tree
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
+
+Joerg Roedel (2):
+      x86/amd-iommu: Fix passthrough mode
+      x86/amd-iommu: Fix PCI hotplug with passthrough mode
+
+ arch/x86/include/asm/amd_iommu_proto.h |    4 ++-
+ arch/x86/kernel/amd_iommu.c            |   46 +++++++++++++++++++++++++++++---
+ arch/x86/kernel/amd_iommu_init.c       |    9 ++++++
+ 3 files changed, 54 insertions(+), 5 deletions(-)
+
+The data structure changes introduced a regression when the IOMMU runs in
+passthrough mode. These updates fix these regressions. Please pull.
+
+	Joerg
+
+
