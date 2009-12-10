@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757698AbZLJIp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbZLJInJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757698AbZLJIp3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 03:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757967AbZLJIpW
+	id S1758103AbZLJInJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 03:43:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbZLJInF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 03:45:22 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48857 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757469AbZLJIpV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 03:45:21 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 10 Dec 2009 17:42:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       cl@linux-foundation.org,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com
-Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
-Message-Id: <20091210174230.8367a46c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091210083310.GB6834@elte.hu>
-References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210075454.GB25549@elte.hu>
-	<20091210172040.37d259d3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210083310.GB6834@elte.hu>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Dec 2009 03:43:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51672 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755340AbZLJInE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 03:43:04 -0500
+Date: Thu, 10 Dec 2009 08:42:34 GMT
+From: tip-bot for Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       joe@perches.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       joe@perches.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <3b4375af246dec5941168858910210937c110af9.1260383912.git.joe@perches.com>
+References: <3b4375af246dec5941168858910210937c110af9.1260383912.git.joe@perches.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: es7000_32.c: Use pr_<level> and add pr_fmt(fmt)
+Message-ID: <tip-5cd476effe9570d2e520cf904d51f5c992972647@git.kernel.org>
+Git-Commit-ID: 5cd476effe9570d2e520cf904d51f5c992972647
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Dec 2009 09:33:10 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Commit-ID:  5cd476effe9570d2e520cf904d51f5c992972647
+Gitweb:     http://git.kernel.org/tip/5cd476effe9570d2e520cf904d51f5c992972647
+Author:     Joe Perches <joe@perches.com>
+AuthorDate: Wed, 9 Dec 2009 10:45:33 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 10 Dec 2009 08:57:49 +0100
 
-> 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > I'm sorry If I miss your point...are you saying remove all mm_counter 
-> > completely and remake them under perf ? If so, some proc file 
-> > (/proc/<pid>/statm etc) will be corrupted ?
-> 
-> No, i'm not suggesting that - i'm just suggesting that right now MM 
-> stats are not very well suited to be exposed via perf. If we wanted to 
-> measure/sample the information in /proc/<pid>/statm it just wouldnt be 
-> possible. We have a few events like pagefaults and a few tracepoints as 
-> well - but more would be possible IMO.
-> 
+x86: es7000_32.c: Use pr_<level> and add pr_fmt(fmt)
 
-Ah, ok. More events will be useful.
+- Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ - Converted a few printk(KERN_INFO to pr_info(
+ - Stripped "es7000_mipcfg" from pr_debug
 
-This patch itself is for reduce(not increase) cache miss in page fault pass..
-And counters I'll add is for task monitoring, like ps or top, and for improving
-OOM killer. Not for counting events but for showing current _usage_ to users
-via procfs or to oom killer.
+Signed-off-by: Joe Perches <joe@perches.com>
+LKML-Reference: <3b4375af246dec5941168858910210937c110af9.1260383912.git.joe@perches.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/apic/es7000_32.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-I'll continue to make an efforts to find better synchronization scheme
-rather than adding hook to schedule() but...
-
-Thanks,
--Kame
-
+diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+index e85f8fb..dd2b5f2 100644
+--- a/arch/x86/kernel/apic/es7000_32.c
++++ b/arch/x86/kernel/apic/es7000_32.c
+@@ -27,6 +27,9 @@
+  *
+  * http://www.unisys.com
+  */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/notifier.h>
+ #include <linux/spinlock.h>
+ #include <linux/cpumask.h>
+@@ -223,9 +226,9 @@ static int parse_unisys_oem(char *oemptr)
+ 			mip_addr = val;
+ 			mip = (struct mip_reg *)val;
+ 			mip_reg = __va(mip);
+-			pr_debug("es7000_mipcfg: host_reg = 0x%lx \n",
++			pr_debug("host_reg = 0x%lx\n",
+ 				 (unsigned long)host_reg);
+-			pr_debug("es7000_mipcfg: mip_reg = 0x%lx \n",
++			pr_debug("mip_reg = 0x%lx\n",
+ 				 (unsigned long)mip_reg);
+ 			success++;
+ 			break;
+@@ -401,7 +404,7 @@ static void es7000_enable_apic_mode(void)
+ 	if (!es7000_plat)
+ 		return;
+ 
+-	printk(KERN_INFO "ES7000: Enabling APIC mode.\n");
++	pr_info("Enabling APIC mode.\n");
+ 	memset(&es7000_mip_reg, 0, sizeof(struct mip_reg));
+ 	es7000_mip_reg.off_0x00 = MIP_SW_APIC;
+ 	es7000_mip_reg.off_0x38 = MIP_VALID;
+@@ -514,8 +517,7 @@ static void es7000_setup_apic_routing(void)
+ {
+ 	int apic = per_cpu(x86_bios_cpu_apicid, smp_processor_id());
+ 
+-	printk(KERN_INFO
+-	  "Enabling APIC mode:  %s. Using %d I/O APICs, target cpus %lx\n",
++	pr_info("Enabling APIC mode:  %s. Using %d I/O APICs, target cpus %lx\n",
+ 		(apic_version[apic] == 0x14) ?
+ 			"Physical Cluster" : "Logical Cluster",
+ 		nr_ioapics, cpumask_bits(es7000_target_cpus())[0]);
