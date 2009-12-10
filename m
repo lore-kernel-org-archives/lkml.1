@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761726AbZLJVSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZLJVWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761726AbZLJVSF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 16:18:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761715AbZLJVSD
+	id S1756104AbZLJVWQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 16:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbZLJVWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 16:18:03 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:44502 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761711AbZLJVR7 convert rfc822-to-8bit (ORCPT
+	Thu, 10 Dec 2009 16:22:14 -0500
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:26210
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750963AbZLJVWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 16:17:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=ibC1V5QEdkwk41a/PrB6j7upKLGIHDRZ4tyMHxdpBeEiJjXrrQsOWTFYvXIVpKiubr
-         c1m9kmFxH7nE3egL1hW6bZtvnLkuORxnVMZ8c0ayEGq95uTHHr2rgZ2L8HqamBlGJvUP
-         knVAy/19IGoCjqZCm9qEmqws5vegYzrCjR8os=
+	Thu, 10 Dec 2009 16:22:13 -0500
+X-SpamScore: -21
+X-BigFish: VPS-21(zz1432R98dN936eMzz1202hz4fhzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B216670.60807@am.sony.com>
+Date: Thu, 10 Dec 2009 13:21:52 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-In-Reply-To: <200912102210.12124.arnd@arndb.de>
-References: <OF24184D8B.2F7F8AA9-ON48257685.002069EF-48257685.00207E45@sunplusct.com> 
-	<200912071614.46166.arnd@arndb.de> <200912102210.12124.arnd@arndb.de>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 10 Dec 2009 16:17:44 -0500
-Message-ID: <8bd0f97a0912101317v8143e67w9e2f1224111ac0d7@mail.gmail.com>
-Subject: Re: What's in asm-generic.git
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: liqin.chen@sunplusct.com, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: "rostedt@goodmis.org" <rostedt@goodmis.org>
+CC: "Bird, Tim" <Timothy.Bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 4/4] ftrace - function_duration Documentation
+References: <4B2027C7.9010509@am.sony.com> <1260416840.2146.134.camel@gandalf.stny.rr.com>
+In-Reply-To: <1260416840.2146.134.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Dec 2009 21:21:53.0756 (UTC) FILETIME=[CB8349C0:01CA79DE]
+X-SEL-encryption-scan: scanned
+X-Reverse-DNS: mail8.fw-sd.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/10 Arnd Bergmann:
-> On Monday 07 December 2009, Arnd Bergmann wrote:
->> On Monday 07 December 2009, liqin.chen@sunplusct.com wrote:
->> > Arnd Bergmann <arnd@arndb.de> 写于 2009-12-04 03:14:08:
->> >
->> > Maybe you can add a __NR_set_thread_area define in asm-generic/unsitd.h
->> > for tls used.
->>
->> Yes, good point. I'll update the syscall list with this, and also check if more
->> syscalls have been addded.
->
-> I have found now that sys_accept4 was missing. sys_set_thread_area however
-> is only defined on x86 and mips. Since you don't currently implement this
-> on score, maybe it would be more appropriate to handle it like the other
-> architectures do, rather than adding it to asm-generic/unistd.h?
+Steven Rostedt wrote:
+> On Wed, 2009-12-09 at 14:42 -0800, Tim Bird wrote:
+>> Documentation for function_duration tracer.
+> 
+>> +The purpose of the function duration tracer is to help find the
+>> +longest-running, most time-consuming functions in the Linux kernel.
+>> +This is especially important for early initialization, to reduce
+>> +kernel boot time.
+>> +
+>> +Function duration tracing uses the ftrace ability to hook both the
+>> +entry and exit of a function, to record duration information for
+>> +kernel functions.  This is similar to the function_graph tracer, but
+>> +the function_duration tracer is specially written to support filtering
+>> +by duration and decreased tracer overhead while filtering.
+>> +
+>> +This extends the amount of time that a trace can cover, and reduces
+>> +interference with the timing of the traced activity.
+> 
+> BTW, have you taken a look at the function profiler? It also keeps track
+> of all durations without using the ring buffer. It just adds them up and
+> gives an average time.
 
-isnt the point of asm-generic/unistd.h to collect all common syscalls
-?  if there's syscalls that ideally should be handled by everyone but
-currently doesnt, then it's easy to define it in the header but have
-the actual entry.S leave it as a hole ...
+I haven't, but I should.  However, my tool has some other options
+(like subtracting time spent in interrupts) that I don't
+think the profile approach currently supports.
+ -- Tim
 
-or maybe i'm missing what's going on
--mike
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
