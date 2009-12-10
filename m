@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbZLJShz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761438AbZLJSli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761353AbZLJShz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 13:37:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761311AbZLJShy
+	id S1761438AbZLJSli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 13:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761413AbZLJSlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 13:37:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:16408 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761300AbZLJShx (ORCPT
+	Thu, 10 Dec 2009 13:41:37 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:27384 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761428AbZLJSlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 13:37:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=qeE9bKXK9s6jeUNq79pfJlMP06rQyRwG9lAQVWamSblCw8zj+gZOvIc87Mn42jdxQy
-         dYnt1OZXUolAg3ycplwze7dTLcsVbDfhpS9+9ynR50d1wUHW3oLll4oTxT4W5D6qpfFR
-         ANj56BbYmSTNpGNwTz6tWsKj2tmUTvo5rAA5c=
-Message-ID: <4B214007.2080409@gmail.com>
-Date: Thu, 10 Dec 2009 21:37:59 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 10 Dec 2009 13:41:36 -0500
+Authentication-Results: sj-iport-2.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEABLQIEurR7Ht/2dsb2JhbADAUZcPhCsE
+X-IronPort-AV: E=Sophos;i="4.47,376,1257120000"; 
+   d="scan'208";a="228213105"
+From: Roland Dreier <rdreier@cisco.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Bisected regression
+References: <20091210091040.GG8742@kernel.dk>
+	<20091210103945.GI8742@kernel.dk> <20091210160640.GB27794@elte.hu>
+	<67EA4830-231F-45C9-A1A6-CE1C6CD9493D@kernel.org>
+	<20091210180727.GK8742@kernel.dk> <4B213F1F.2020305@kernel.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 10 Dec 2009 10:41:42 -0800
+In-Reply-To: <4B213F1F.2020305@kernel.org> (Yinghai Lu's message of "Thu, 10
+	Dec 2009 10:34:07 -0800")
+Message-ID: <adaocm6n02h.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Xiaotian Feng <dfeng@redhat.com>, lenb@kernel.org, ming.m.lin@intel.com,
-       robert.moore@intel.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ACPICA: don't cond_resched() when irq_disabled or in_atomic
-References: <1259900760-6424-1-git-send-email-dfeng@redhat.com> <20091210100907.GA2446@ucw.cz> <4B2136D5.1030402@gmail.com> <20091210181800.GM19454@elf.ucw.cz>
-In-Reply-To: <20091210181800.GM19454@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 10 Dec 2009 18:41:43.0015 (UTC) FILETIME=[6B109770:01CA79C8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek пишет:
-> On Thu 2009-12-10 20:58:45, Alexey Starikovskiy wrote:
->   
->> Hi Pavel,
->>
->> Please elaborate... Your comments "ugly as hell" are too often to be
->> specific...
->> There is only one use of ACPI_PREEMPTION_POINT(), and it is in the
->> ACPICA code,
->> which we all agreed to keep OS independent, thus the need for #define.
->> Do you see any other way to add preemption point without introducing
->> Linux-specific
->> code into ACPICA?
->>     
->
-> I believe we want linux-specific code in acpica at this point.
->
->   
-The point there we call cond_resched() in ACPICA is an interpreter parse
-loop. This parse loop may be executed from within atomic context and even
-with interrupts off. In this case, cond_resched() should not be called
-to not make
-might_sleep() guards angry.
 
-Please post the code, which will do the above and will not look "ugly as
-hell".
-I still don't follow your vague comments.
-> (Or maybe... I guess other systems have concept of preemption and not
-> all actions are permitted from all contexts, so maybe something like
-> that would be important for them, too?)
->   
-None of them cared about it up to this point.
-With the macro above we allowed them to follow Linux, but to go or not
-is their call.
+ > mptable mpc is [12 - f011]
 
-Regards,
-Alex.
+ > what a BIOS !
+
+Can you be more explicit about what the BIOS is doing wrong?  
+
+Jens, can you say what BIOS version (18, 19, 20, ...?) you're using?  I
+think I know exactly what box you have.
+
+I have a pretty good pipeline to the BIOS guys and I can try to get this
+cleaned up if I know the details.
+
+Thanks,
+  Roland
