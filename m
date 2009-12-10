@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbZLJN6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbZLJN6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760821AbZLJN6n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 08:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760810AbZLJN6f
+	id S1760826AbZLJN6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 08:58:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760817AbZLJN6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 08:58:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55362 "EHLO mx1.redhat.com"
+	Thu, 10 Dec 2009 08:58:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11594 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760608AbZLJN6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 08:58:24 -0500
+	id S1760809AbZLJN6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 08:58:34 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 4/7] FDPIC: Respect PT_GNU_STACK exec protection markings when
-	creating NOMMU stack
+Subject: [PATCH 5/7] NOMMU: Avoiding duplicate icache flushes of shared maps
 To: vapier.adi@gmail.com, lethal@linux-sh.org, jie.zhang@analog.com,
        stefani@seibold.net, gerg@snapgear.com
 Cc: dhowells@redhat.com, uclinux-dev@uclinux.org, linux-kernel@vger.kernel.org
-Date: Thu, 10 Dec 2009 13:58:11 +0000
-Message-ID: <20091210135811.6325.28303.stgit@warthog.procyon.org.uk>
+Date: Thu, 10 Dec 2009 13:58:16 +0000
+Message-ID: <20091210135816.6325.37536.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20091210135755.6325.78149.stgit@warthog.procyon.org.uk>
 References: <20091210135755.6325.78149.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
@@ -31,107 +30,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier@gentoo.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
 
-The current code will load the stack size and protection markings, but then
-only use the markings in the MMU code path.  The NOMMU code path always passes
-PROT_EXEC to the mmap() call.  While this doesn't matter to most people whilst
-the code is running, it will cause a pointless icache flush when starting every
-FDPIC application.  Typically this icache flush will be of a region on the
-order of 128KB in size, or may be the entire icache, depending on the
-facilities available on the CPU.
+When working with FDPIC, there are many shared mappings of read-only code
+regions between applications (the C library, applet packages like busybox,
+etc.), but the current do_mmap_pgoff() function will issue an icache flush
+whenever a VMA is added to an MM instead of only doing it when the map is
+initially created.
 
-In the case where the arch default behaviour seems to be desired
-(EXSTACK_DEFAULT), we probe VM_STACK_FLAGS for VM_EXEC to determine whether we
-should be setting PROT_EXEC or not.
+The flush can instead be done when a region is first mmapped PROT_EXEC.  Note
+that we may not rely on the first mapping of a region being executable - it's
+possible for it to be PROT_READ only, so we have to remember whether we've
+flushed the region or not, and then flush the entire region when a bit of it is
+made executable.
 
-For arches that support an MPU (Memory Protection Unit - an MMU without the
-virtual mapping capability), setting PROT_EXEC or not will make an important
-difference.
+However, this also affects the brk area.  That will no longer be executable.
+We can mprotect() it to PROT_EXEC on MPU-mode kernels, but for NOMMU mode
+kernels, when it increases the brk allocation, making sys_brk() flush the extra
+from the icache should suffice.  The brk area probably isn't used by NOMMU
+programs since the brk area can only use up the leavings from the stack
+allocation, where the stack allocation is larger than requested.
 
-It should be noted that this change also affects the executability of the brk
-region, since ELF-FDPIC has that share with the stack.  However, this is
-probably irrelevant as NOMMU programs aren't likely to use the brk region,
-preferring instead allocation via mmap().
-
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- arch/blackfin/include/asm/page.h |    5 +++++
- arch/frv/include/asm/page.h      |    2 --
- fs/binfmt_elf_fdpic.c            |   13 +++++++++++--
- 3 files changed, 16 insertions(+), 4 deletions(-)
+ include/linux/mm_types.h |    2 ++
+ mm/nommu.c               |   11 ++++++++---
+ 2 files changed, 10 insertions(+), 3 deletions(-)
 
 
-diff --git a/arch/blackfin/include/asm/page.h b/arch/blackfin/include/asm/page.h
-index 944a07c..1d04e40 100644
---- a/arch/blackfin/include/asm/page.h
-+++ b/arch/blackfin/include/asm/page.h
-@@ -10,4 +10,9 @@
- #include <asm-generic/page.h>
- #define MAP_NR(addr) (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 84a524a..84d020b 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -123,6 +123,8 @@ struct vm_region {
+ 	struct file	*vm_file;	/* the backing file or NULL */
  
-+#define VM_DATA_DEFAULT_FLAGS \
-+	(VM_READ | VM_WRITE | \
-+	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
-+		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
-+
- #endif
-diff --git a/arch/frv/include/asm/page.h b/arch/frv/include/asm/page.h
-index 25c6a50..8c97068 100644
---- a/arch/frv/include/asm/page.h
-+++ b/arch/frv/include/asm/page.h
-@@ -63,12 +63,10 @@ extern unsigned long max_pfn;
- #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+ 	atomic_t	vm_usage;	/* region usage count */
++	bool		vm_icache_flushed : 1; /* true if the icache has been flushed for
++						* this region */
+ };
  
+ /*
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 1544a65..bffbdfc 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -432,6 +432,7 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
+ 	/*
+ 	 * Ok, looks good - let it rip.
+ 	 */
++	flush_icache_range(mm->brk, brk);
+ 	return mm->brk = brk;
+ }
  
--#ifdef CONFIG_MMU
- #define VM_DATA_DEFAULT_FLAGS \
- 	(VM_READ | VM_WRITE | \
- 	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
- 		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
--#endif
+@@ -1354,10 +1355,14 @@ unsigned long do_mmap_pgoff(struct file *file,
+ share:
+ 	add_vma_to_mm(current->mm, vma);
  
- #endif /* __ASSEMBLY__ */
+-	up_write(&nommu_region_sem);
++	/* we flush the region from the icache only when the first executable
++	 * mapping of it is made  */
++	if (vma->vm_flags & VM_EXEC && !region->vm_icache_flushed) {
++		flush_icache_range(region->vm_start, region->vm_end);
++		region->vm_icache_flushed = true;
++	}
  
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 79d2b1a..db85b42 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -171,6 +171,9 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- #ifdef ELF_FDPIC_PLAT_INIT
- 	unsigned long dynaddr;
- #endif
-+#ifndef CONFIG_MMU
-+	unsigned long stack_prot;
-+#endif
- 	struct file *interpreter = NULL; /* to shut gcc up */
- 	char *interpreter_name = NULL;
- 	int executable_stack;
-@@ -316,6 +319,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 	 * defunct, deceased, etc. after this point we have to exit via
- 	 * error_kill */
- 	set_personality(PER_LINUX_FDPIC);
-+	if (elf_read_implies_exec(&exec_params.hdr, executable_stack))
-+		current->personality |= READ_IMPLIES_EXEC;
- 	set_binfmt(&elf_fdpic_format);
+-	if (prot & PROT_EXEC)
+-		flush_icache_range(result, result + len);
++	up_write(&nommu_region_sem);
  
- 	current->mm->start_code = 0;
-@@ -377,9 +382,13 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 	if (stack_size < PAGE_SIZE * 2)
- 		stack_size = PAGE_SIZE * 2;
- 
-+	stack_prot = PROT_READ | PROT_WRITE;
-+	if (executable_stack == EXSTACK_ENABLE_X ||
-+	    (executable_stack == EXSTACK_DEFAULT && VM_STACK_FLAGS & VM_EXEC))
-+		stack_prot |= PROT_EXEC;
-+
- 	down_write(&current->mm->mmap_sem);
--	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
--					 PROT_READ | PROT_WRITE | PROT_EXEC,
-+	current->mm->start_brk = do_mmap(NULL, 0, stack_size, stack_prot,
- 					 MAP_PRIVATE | MAP_ANONYMOUS |
- 					 MAP_UNINITIALIZED | MAP_GROWSDOWN,
- 					 0);
+ 	kleave(" = %lx", result);
+ 	return result;
 
