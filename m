@@ -1,102 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760988AbZLJQZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbZLJQYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760988AbZLJQZM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 11:25:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbZLJQZK
+	id S1760975AbZLJQYy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 11:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbZLJQYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 11:25:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56974 "EHLO hera.kernel.org"
+	Thu, 10 Dec 2009 11:24:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46513 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757291AbZLJQZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 11:25:09 -0500
-Date: Thu, 10 Dec 2009 16:24:32 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, xiaoguangrong@cn.fujitsu.com,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, peterz@infradead.org,
-       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <4B20BAA6.7010609@cn.fujitsu.com>
-References: <4B20BAA6.7010609@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf_event: Fix variable initialization in other codepaths
-Message-ID: <tip-5e855db5d8fec44e6604eb245aa9077bbd3f0d05@git.kernel.org>
-Git-Commit-ID: 5e855db5d8fec44e6604eb245aa9077bbd3f0d05
-X-Mailer: tip-git-log-daemon
+	id S1757081AbZLJQYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 11:24:51 -0500
+Date: Thu, 10 Dec 2009 17:24:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: upstream regression: slob hang
+Message-ID: <20091210162451.GA7761@elte.hu>
+References: <20091210084949.GA18015@elte.hu>
+ <1260462133.24459.1006.camel@calx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1260462133.24459.1006.camel@calx>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5e855db5d8fec44e6604eb245aa9077bbd3f0d05
-Gitweb:     http://git.kernel.org/tip/5e855db5d8fec44e6604eb245aa9077bbd3f0d05
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Thu, 10 Dec 2009 17:08:54 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 10 Dec 2009 17:23:02 +0100
 
-perf_event: Fix variable initialization in other codepaths
+* Matt Mackall <mpm@selenic.com> wrote:
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <4B20BAA6.7010609@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/cpu/perf_event.c |    4 ++++
- kernel/perf_event.c              |    1 +
- 2 files changed, 5 insertions(+), 0 deletions(-)
+> On Thu, 2009-12-10 at 09:49 +0100, Ingo Molnar wrote:
+>
+> > FYI, the attached config hangs in the SLOB code, on 32-bit x86 
+> > laptop (dual core). No log available from that box.
+> 
+> Is this one of your randconfigs? [...]
 
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index d35f260..1342f23 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -1632,6 +1632,7 @@ static void intel_pmu_drain_bts_buffer(struct cpu_hw_events *cpuc)
- 
- 	data.period	= event->hw.last_period;
- 	data.addr	= 0;
-+	data.raw	= NULL;
- 	regs.ip		= 0;
- 
- 	/*
-@@ -1749,6 +1750,7 @@ static int p6_pmu_handle_irq(struct pt_regs *regs)
- 	u64 val;
- 
- 	data.addr = 0;
-+	data.raw = NULL;
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 
-@@ -1794,6 +1796,7 @@ static int intel_pmu_handle_irq(struct pt_regs *regs)
- 	u64 ack, status;
- 
- 	data.addr = 0;
-+	data.raw = NULL;
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 
-@@ -1857,6 +1860,7 @@ static int amd_pmu_handle_irq(struct pt_regs *regs)
- 	u64 val;
- 
- 	data.addr = 0;
-+	data.raw = NULL;
- 
- 	cpuc = &__get_cpu_var(cpu_hw_events);
- 
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 3a5d6c4..d891ec4 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -4300,6 +4300,7 @@ void perf_bp_event(struct perf_event *bp, void *data)
- 	struct perf_sample_data sample;
- 	struct pt_regs *regs = data;
- 
-+	sample.raw = NULL;
- 	sample.addr = bp->attr.bp_addr;
- 
- 	if (!perf_exclude_event(bp, regs))
+Yeah, a bootable one.
+
+> [...] I take it switching from SLOB to SLUB fixes it?
+
+havent tried it. If you cannot reproduce it with the config i sent i can 
+try to dig deeper. That box is not particularly easy to debug.
+
+	Ingo
