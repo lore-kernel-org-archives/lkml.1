@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761279AbZLJRbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761302AbZLJReZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761279AbZLJRbm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 12:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761053AbZLJRbm
+	id S1761302AbZLJReZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 12:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761266AbZLJReY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 12:31:42 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:46474 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756781AbZLJRbk (ORCPT
+	Thu, 10 Dec 2009 12:34:24 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:53012 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761259AbZLJReY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 12:31:40 -0500
-Date: Thu, 10 Dec 2009 09:31:03 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       davem@davemloft.net
-Subject: [PATCH -next] net: niu uses crc32, so select CRC32
-Message-Id: <20091210093103.eda05dfe.randy.dunlap@oracle.com>
-In-Reply-To: <20091210175919.340b4c0c.sfr@canb.auug.org.au>
-References: <20091210175919.340b4c0c.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B213079.0152:SCFMA4539814,ss=1,fgs=0
+	Thu, 10 Dec 2009 12:34:24 -0500
+Date: Thu, 10 Dec 2009 11:34:03 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com
+Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
+In-Reply-To: <20091210075454.GB25549@elte.hu>
+Message-ID: <alpine.DEB.2.00.0912101131200.5481@router.home>
+References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com> <20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com> <20091210075454.GB25549@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Thu, 10 Dec 2009, Ingo Molnar wrote:
 
-niu drivers uses crc32 functions, so it needs to select CRC32.
+> I.e. why not expose these stats via perf events and counts as well,
+> beyond the current (rather minimal) set of MM stats perf supports
+> currently?
 
-niu.c:(.text+0x18a7f8): undefined reference to `crc32_le'
+Certainly one can write perf events that do a simular thing but that is
+beyond the scope of the work here. This is the result of a test program.
+The point here is to avoid fault regressions while introducing new process
+specific counters that are then used by other VM code to make decisions
+about a process.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
 
---- linux-next-20091210.orig/drivers/net/Kconfig
-+++ linux-next-20091210/drivers/net/Kconfig
-@@ -2698,6 +2698,7 @@ config NETXEN_NIC
- config NIU
- 	tristate "Sun Neptune 10Gbit Ethernet support"
- 	depends on PCI
-+	select CRC32
- 	help
- 	  This enables support for cards based upon Sun's
- 	  Neptune chipset.
----
-~Randy
