@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934269AbZLJMlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934391AbZLJM0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934269AbZLJMlI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 07:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758524AbZLJMlF
+	id S934391AbZLJM0N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 07:26:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934186AbZLJM0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 07:41:05 -0500
-Received: from nat.nue.novell.com ([195.135.221.3]:49903 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757986AbZLJMlE (ORCPT
+	Thu, 10 Dec 2009 07:26:12 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:30786 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934184AbZLJM0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 07:41:04 -0500
-X-Greylist: delayed 1202 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Dec 2009 07:41:04 EST
-Message-ID: <4B20E7B2.1010208@suse.de>
-Date: Thu, 10 Dec 2009 15:21:06 +0300
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Xiaotian Feng <dfeng@redhat.com>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Bob Moore <robert.moore@intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -V2] acpi: don't cond_resched if irq is disabled
-References: <20091210100907.GA2446@ucw.cz> <1260446205-16868-1-git-send-email-dfeng@redhat.com>
-In-Reply-To: <1260446205-16868-1-git-send-email-dfeng@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 10 Dec 2009 07:26:11 -0500
+From: Phil Carmody <ext-phil.2.carmody@nokia.com>
+To: mingo@elte.hu
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [v2] sched: Memory leak in two error corner cases
+Date: Thu, 10 Dec 2009 14:29:37 +0200
+Message-Id: <1260448177-28448-1-git-send-email-ext-phil.2.carmody@nokia.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <20091210080240.GE25549@elte.hu>
+References: <20091210080240.GE25549@elte.hu>
+X-OriginalArrivalTime: 10 Dec 2009 12:25:58.0626 (UTC) FILETIME=[ED8FD420:01CA7993]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Xiaotian,
+If the second in each of these pairs of allocations fails, then
+the first one will not be freed in the error route out.
 
-I think, this is another round of "armor vs. bullet" race... It will hold until
-might_sleep() logic changes again.
+Found by a static code analysis tool.
 
-Please consider using preemptible() -- IMHO this is the check we should perform 
-in our case of voluntary preemption.
+Signed-off-by: Phil Carmody <ext-phil.2.carmody@nokia.com>
+---
+ kernel/sched.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-Regards,
-Alex.
-
-
-Xiaotian Feng пишет:
-> commit 8bd108d adds preemption point after each opcode parse, then
-> a sleeping function called from invalid context bug was founded
-> during suspend/resume stage. this was fixed in commit abe1dfa by
-> don't cond_resched when irq_disabled. But recent commit 138d156 changes
-> the behaviour to don't cond_resched when in_atomic. This makes the
-> sleeping function called from invalid context bug happen again, which
-> is reported in http://lkml.org/lkml/2009/12/1/371.
-> 
-> This patch also fixes http://bugzilla.kernel.org/show_bug.cgi?id=14483
-> 
-> Reported-and-bisected-by: Larry Finger <Larry.Finger@lwfinger.net>
-> Reported-and-bisected-by: Justin P. Mattock <justinmattock@gmail.com>
-> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Bob Moore <robert.moore@intel.com>
-> Cc: Lin Ming <ming.m.lin@intel.com>
-> Cc: Alexey Starikovskiy <astarikovskiy@suse.de>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> ---
->  include/acpi/platform/aclinux.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/acpi/platform/aclinux.h b/include/acpi/platform/aclinux.h
-> index 9d7febd..0946997 100644
-> --- a/include/acpi/platform/aclinux.h
-> +++ b/include/acpi/platform/aclinux.h
-> @@ -152,7 +152,7 @@ static inline void *acpi_os_acquire_object(acpi_cache_t * cache)
->  #include <linux/hardirq.h>
->  #define ACPI_PREEMPTION_POINT() \
->  	do { \
-> -		if (!in_atomic_preempt_off()) \
-> +		if (!in_atomic_preempt_off() && !irqs_disabled()) \
->  			cond_resched(); \
->  	} while (0)
->  
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3c11ae0..ee8046f 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9765,13 +9765,15 @@ int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
+ 		se = kzalloc_node(sizeof(struct sched_entity),
+ 				  GFP_KERNEL, cpu_to_node(i));
+ 		if (!se)
+-			goto err;
++			goto err_free_rq;
+ 
+ 		init_tg_cfs_entry(tg, cfs_rq, se, i, 0, parent->se[i]);
+ 	}
+ 
+ 	return 1;
+ 
++ err_free_rq:
++	kfree(cfs_rq);
+  err:
+ 	return 0;
+ }
+@@ -9853,13 +9855,15 @@ int alloc_rt_sched_group(struct task_group *tg, struct task_group *parent)
+ 		rt_se = kzalloc_node(sizeof(struct sched_rt_entity),
+ 				     GFP_KERNEL, cpu_to_node(i));
+ 		if (!rt_se)
+-			goto err;
++			goto err_free_rq;
+ 
+ 		init_tg_rt_entry(tg, rt_rq, rt_se, i, 0, parent->rt_se[i]);
+ 	}
+ 
+ 	return 1;
+ 
++ err_free_rq:
++	kfree(rt_rq);
+  err:
+ 	return 0;
+ }
+-- 
+1.6.0.4
 
