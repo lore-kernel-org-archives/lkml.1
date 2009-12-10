@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZLJXqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932844AbZLJXoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757452AbZLJXqL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 18:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756690AbZLJXqJ
+	id S932844AbZLJXoy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 18:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbZLJXoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 18:46:09 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38928 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755092AbZLJXqI (ORCPT
+	Thu, 10 Dec 2009 18:44:54 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:27982 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757246AbZLJXox (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 18:46:08 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 11 Dec 2009 08:42:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       minchan.kim@gmail.com, mingo@elte.hu
-Subject: Re: [RFC mm][PATCH 1/5] mm counter cleanup
-Message-Id: <20091211084255.ec7d3f49.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0912101126480.5481@router.home>
-References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091210163326.28bb7eb8.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0912101126480.5481@router.home>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Dec 2009 18:44:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ZJ+Vr/QEm7tZAlSF6EPIqZ9rNgp6L1CL5P3DguTenIKF8IowYSsET3awLkKYiGNlx0
+         SJ9kcwrLCLV7+6kS8IScNhFKjBig+CD2q5piBljx3zu3LD2+szr1/UmU2sSxfOVd1/7E
+         6ODwJimYxjDeFNeimYp/O3r7dgpSEBVI15H7Y=
+Message-ID: <4B2187F7.10301@gmail.com>
+Date: Fri, 11 Dec 2009 00:44:55 +0100
+From: Xose Vazquez Perez <xose.vazquez@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091203 Fedora/3.0-3.13.rc2.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: phoronix test,  openssl bad performance
+References: <4B213ADD.6010200@gmail.com> <877hsumqpj.fsf@basil.nowhere.org>
+In-Reply-To: <877hsumqpj.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Dec 2009 11:30:46 -0600 (CST)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+On 12/10/2009 11:03 PM, Andi Kleen wrote:
 
-> On Thu, 10 Dec 2009, KAMEZAWA Hiroyuki wrote:
-> 
-> > This patch modifies it to
-> >   - Define them in mm.h as inline functions
-> >   - Use array instead of macro's name creation. For making easier to add
-> >     new coutners.
-> 
-> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-> 
-> > @@ -454,8 +456,8 @@ static struct mm_struct * mm_init(struct
-> >  		(current->mm->flags & MMF_INIT_MASK) : default_dump_filter;
-> >  	mm->core_state = NULL;
-> >  	mm->nr_ptes = 0;
-> > -	set_mm_counter(mm, file_rss, 0);
-> > -	set_mm_counter(mm, anon_rss, 0);
-> > +	for (i = 0; i < NR_MM_COUNTERS; i++)
-> > +		set_mm_counter(mm, i, 0);
-> 
-> 
-> memset? Or add a clear_mm_counter function? This also occurred earlier in
-> init_rss_vec().
-> 
-Ok, I'll try some cleaner codes.
+> You should probably report that to Fedora through their bugzilla, 
+> it's unlikely to be a linux kernel problem.
 
-Thanks,
--Kame
-
+I got *same* results with Fedora kernel as with a _clean_ 2.6.32-kernel.org
+Not a Fedora-kernel problem!
