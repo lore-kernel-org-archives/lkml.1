@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934386AbZLJME0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934269AbZLJMlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934386AbZLJME0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 07:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934190AbZLJMEU
+	id S934269AbZLJMlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 07:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758524AbZLJMlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 07:04:20 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:53250 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934188AbZLJMET (ORCPT
+	Thu, 10 Dec 2009 07:41:05 -0500
+Received: from nat.nue.novell.com ([195.135.221.3]:49903 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757986AbZLJMlE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 07:04:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=OnKxOLWHFS9e5iCFVge+k69Fv6MjSGPjqehpJwJPISDAvQKM2SKStS95buj0z/srDg
-         fNx3VKWmmnTxyp1um5coAKFyQbuKJ4/imFukW5+H1CtJRFsf7HmansiYtEualH0PcdtJ
-         +SSpVGiIGGCLFELNyrK1AsDbRLd6sJVZm2Lr4=
+	Thu, 10 Dec 2009 07:41:04 -0500
+X-Greylist: delayed 1202 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Dec 2009 07:41:04 EST
+Message-ID: <4B20E7B2.1010208@suse.de>
+Date: Thu, 10 Dec 2009 15:21:06 +0300
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <200912090728.10135.a.miskiewicz@gmail.com>
-References: <1260276751-19501-1-git-send-email-mmarek@suse.cz>
-	 <4B1EB5E9.3010506@suse.cz>
-	 <9b2db90b0912082222x5287d452pf9e55d6ff44e511c@mail.gmail.com>
-	 <200912090728.10135.a.miskiewicz@gmail.com>
-Date: Thu, 10 Dec 2009 14:04:23 +0200
-Message-ID: <9b2db90b0912100404s5e97d9ddk181aed1990e36208@mail.gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: new kbuild maintainer
-From: Nir Tzachar <nir.tzachar@gmail.com>
-To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-Cc: Michal Marek <mmarek@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Xiaotian Feng <dfeng@redhat.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>, Bob Moore <robert.moore@intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -V2] acpi: don't cond_resched if irq is disabled
+References: <20091210100907.GA2446@ucw.cz> <1260446205-16868-1-git-send-email-dfeng@redhat.com>
+In-Reply-To: <1260446205-16868-1-git-send-email-dfeng@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> On my disto it works but it won't on a distro where /usr/include/ncurses
-> contains wide version of headers.
+Hi Xiaotian,
 
-ncurses does not support a proper pkg-config scheme, hence the
-difficulty with finding the correct flags. Regarding the wideness of
-the library, I would presume that any distro which mismatches
-/usr/include/ncurses.h and libncurses.so is in itself broken. Taking
-this into consideration, I think that including /usr/include/ncurses.h
-and linking against -lncurses should work. We should entirely ignore
-the wide version of the library, and use the default installation
-provided.
+I think, this is another round of "armor vs. bullet" race... It will hold until
+might_sleep() logic changes again.
 
->
->>
->> Moreover, currently nconfig does not use this check.
->
-> I was testing on linus git and this flags from this check were used in nconfig
-> build, too (that's why there were ncurses and ncursesw at the same time in
-> linking command).
+Please consider using preemptible() -- IMHO this is the check we should perform 
+in our case of voluntary preemption.
 
-Well, I do not know why, by the check changed the flags for _all_
-targets in the scripts/kconfig dir, such that even qconfig got copiled
-with -lncursesw. Strange. The change I made in the Makefile in the
-previous mail fixes that.
+Regards,
+Alex.
 
-Cheers,
-Nir.
+
+Xiaotian Feng пишет:
+> commit 8bd108d adds preemption point after each opcode parse, then
+> a sleeping function called from invalid context bug was founded
+> during suspend/resume stage. this was fixed in commit abe1dfa by
+> don't cond_resched when irq_disabled. But recent commit 138d156 changes
+> the behaviour to don't cond_resched when in_atomic. This makes the
+> sleeping function called from invalid context bug happen again, which
+> is reported in http://lkml.org/lkml/2009/12/1/371.
+> 
+> This patch also fixes http://bugzilla.kernel.org/show_bug.cgi?id=14483
+> 
+> Reported-and-bisected-by: Larry Finger <Larry.Finger@lwfinger.net>
+> Reported-and-bisected-by: Justin P. Mattock <justinmattock@gmail.com>
+> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Bob Moore <robert.moore@intel.com>
+> Cc: Lin Ming <ming.m.lin@intel.com>
+> Cc: Alexey Starikovskiy <astarikovskiy@suse.de>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> ---
+>  include/acpi/platform/aclinux.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/acpi/platform/aclinux.h b/include/acpi/platform/aclinux.h
+> index 9d7febd..0946997 100644
+> --- a/include/acpi/platform/aclinux.h
+> +++ b/include/acpi/platform/aclinux.h
+> @@ -152,7 +152,7 @@ static inline void *acpi_os_acquire_object(acpi_cache_t * cache)
+>  #include <linux/hardirq.h>
+>  #define ACPI_PREEMPTION_POINT() \
+>  	do { \
+> -		if (!in_atomic_preempt_off()) \
+> +		if (!in_atomic_preempt_off() && !irqs_disabled()) \
+>  			cond_resched(); \
+>  	} while (0)
+>  
+
