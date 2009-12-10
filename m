@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760676AbZLJPIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZLJPJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760676AbZLJPIN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 10:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZLJPIL
+	id S1760882AbZLJPJJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 10:09:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZLJPJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 10:08:11 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:55424 "EHLO smtp.wine.ocn.ne.jp"
+	Thu, 10 Dec 2009 10:09:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:34698 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbZLJPIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 10:08:10 -0500
-To: oleg@redhat.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
-       linux-security-module@vger.kernel.org
-Subject: Re: [patch 1/9] sys: Fix missing rcu protection for __task_cred()access
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20091210001308.247025548@linutronix.de>
-	<20091210004703.029784964@linutronix.de>
-	<20091210142036.GA8226@redhat.com>
-In-Reply-To: <20091210142036.GA8226@redhat.com>
-Message-Id: <200912110008.BEJ00511.FVOJLtSMOFHOQF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Fri, 11 Dec 2009 00:08:14 +0900
-Mime-Version: 1.0
+	id S1751122AbZLJPJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 10:09:07 -0500
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       utrace-devel <utrace-devel@redhat.com>
+Subject: Re: [RFC] [PATCH] In-kernel gdbstub based on utrace Infrastructure.
+References: <1259588232.20516.307.camel@laptop>
+	<20091130150314.GA10331@redhat.com> <20091130151650.GA24316@elte.hu>
+	<20091130152910.GB10331@redhat.com> <20091201161132.GA24897@elte.hu>
+	<20091201170002.GD10331@redhat.com> <20091201170954.GA4699@elte.hu>
+	<20091201174534.GE10331@redhat.com> <20091201211518.GA32376@elte.hu>
+	<20091208215829.GA19793@redhat.com> <20091210074158.GI16874@elte.hu>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Thu, 10 Dec 2009 10:08:57 -0500
+In-Reply-To: <20091210074158.GI16874@elte.hu> (Ingo Molnar's message of "Thu, 10 Dec 2009 08:41:58 +0100")
+Message-ID: <y0mhbryamt2.fsf@fche.csb>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 12/10, Thomas Gleixner wrote:
-> >
-> > commit c69e8d9 (CRED: Use RCU to access another task's creds and to
-> > release a task's own creds) added non rcu_read_lock() protected access
-> > to task creds of the target task in set_prio_one().
-> >
-> > The comment above the function says:
-> >  * - the caller must hold the RCU read lock
-> >
-> > The calling code in sys_setpriority does read_lock(&tasklist_lock) but
-> > not rcu_read_lock(). This works only when CONFIG_TREE_PREEMPT_RCU=n.
-> > With CONFIG_TREE_PREEMPT_RCU=y the rcu_callbacks can run in the tick
-> > interrupt when they see no read side critical section.
-> > ...
-> > --- linux-2.6-tip.orig/kernel/sys.c
-> > +++ linux-2.6-tip/kernel/sys.c
-> > @@ -163,6 +163,7 @@ SYSCALL_DEFINE3(setpriority, int, which,
-> >  	if (niceval > 19)
-> >  		niceval = 19;
-> >
-> > +	rcu_read_lock();
-> >  	read_lock(&tasklist_lock);
-> 
-> Off-topic, but can't resist...
-> 
-> This also fixes another bug here. find_task_by_vpid() is not safe
-> without rcu_read_lock(). I do not mean it is not safe to use the
-> result, just find_pid_ns() by itself is not safe.
-> 
-> Usually tasklist gives enough protection, but if copy_process() fails
-> it calls free_pid() lockless and does call_rcu(delayed_put_pid().
-> This means, without rcu lock find_pid_ns() can't scan the hash table
-> safely.
 
-So, we need to change below comment from "or" to "and" ?
+Ingo Molnar <mingo@elte.hu> writes:
 
-378 /*
-379  * Must be called under rcu_read_lock() or with tasklist_lock read-held.
-380  */
-381 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
-382 {
-383         return pid_task(find_pid_ns(nr, ns), PIDTYPE_PID);
-384 }
-385
-386 struct task_struct *find_task_by_vpid(pid_t vnr)
-387 {
-388         return find_task_by_pid_ns(vnr, current->nsproxy->pid_ns);
-389 }
+> [...]  Since the speed of development in this area is truly glacial
+> at the moment and the practical advantages that i can experience
+> personally (directly as a Linux user and indirectly as a maintainer)
+> are miniscule so far, caution is warranted IMO. [...]
+
+If the "caution" you suggest is operationally equivalent to
+discouraging even miniscule improvements, is it any wonder that
+progress is glacial?
+
+The gdbstub prototype was constructed for two reasons: to demonstrate
+utrace usage now, and in the future to be incrementally useful (over
+ptrace, by moving into fast kernel-space operations like
+multithreading control, gdb-tracepoint support, other stuff).  #1 is
+about done.  With respect to #2, we can certainly commit to ongoing
+work on improvements, provided the community shows interest and
+goodwill.
+
+- FChE
