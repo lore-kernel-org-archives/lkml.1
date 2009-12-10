@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760478AbZLJJ4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932954AbZLJKBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760478AbZLJJ4o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 04:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759467AbZLJJ4k
+	id S932954AbZLJKBX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 05:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759368AbZLJKBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 04:56:40 -0500
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:26433 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759436AbZLJJ4i (ORCPT
+	Thu, 10 Dec 2009 05:01:20 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:42842 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753985AbZLJKBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 04:56:38 -0500
-X-Trace: 304048899/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.50.63/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.50.63
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhYBAH5UIEtPRTI//2dsb2JhbAAIhB3BIJAag1lTBA
-X-IronPort-AV: E=Sophos;i="4.47,374,1257120000"; 
-   d="scan'208";a="304048899"
-Date: Thu, 10 Dec 2009 09:56:36 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: An mm bug in today's 2.6.32 git tree
-In-Reply-To: <2375c9f90912092259pe86356cvb716232ba7a4d604@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0912100951130.31654@sister.anvils>
-References: <2375c9f90912090238u7487019eq2458210aac4b602@mail.gmail.com> 
- <Pine.LNX.4.64.0912091442360.30748@sister.anvils>
- <2375c9f90912092259pe86356cvb716232ba7a4d604@mail.gmail.com>
+	Thu, 10 Dec 2009 05:01:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=cA/1Jf2+TEnE/BTjKMnF+vckR9vRR3+9MTSKlo87ExmZrZ9ZRAlZ3Ovs+b22g1TQZ/
+         SACJAqcIlE70DS85Bz3fMp0im/F0YwutGXhXEXo+atoIPaz74iBzX0C4TZfkUzTMbt+P
+         Z6Mz4VKj/j5RyFQ6t99cmT/Pu1TrBjjr4lXG0=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1357647399-1260438996=:31654"
+In-Reply-To: <4B2042FA.8080406@lougher.demon.co.uk>
+References: <E1NHTHg-0001sM-NQ@dylan.lougher.demon.co.uk>
+	 <20091207145705.cd30cae8.akpm@linux-foundation.org>
+	 <4B1ED122.3040309@lougher.demon.co.uk>
+	 <1260352852.19669.1253.camel@localhost>
+	 <4B2042FA.8080406@lougher.demon.co.uk>
+Date: Thu, 10 Dec 2009 11:01:23 +0100
+X-Google-Sender-Auth: aa466dcc522785af
+Message-ID: <10f740e80912100201l6d83588evff46e95ec96d0aed@mail.gmail.com>
+Subject: Re: [PATCH 1/9] Squashfs: move zlib decompression wrapper code into a 
+	separate file
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: dedekind1@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, phillip.lougher@gmail.com,
+       Tim Bird <tim.bird@am.sony.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Felix Fietkau <nbd@openwrt.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Phillip,
 
---8323584-1357647399-1260438996=:31654
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+On Thu, Dec 10, 2009 at 01:38, Phillip Lougher
+<phillip@lougher.demon.co.uk> wrote:
+> Artem Bityutskiy wrote:
+>>
+>> Did you consider using cryptoapi? UBIFS uses zlib/lzo in cryptoapi - it
+>> is a very clean way.
 
-On Thu, 10 Dec 2009, Am=C3=A9rico Wang wrote:
-> On Wed, Dec 9, 2009 at 10:49 PM, Hugh Dickins
-> >
-> > Thanks for the report. =C2=A0Not known to me.
-> > It looks like something has corrupted the start of a pagetable.
-                                  no, not the start
-> > No idea what that something might be, but probably not bad RAM.
-> >
-> >>
-> >> Please feel free to let me know if you need more info.
-> >
-> > You say you saw it twice: please post what the other occasion
-> > showed (unless the first six lines were identical to this and it
-> > occurred around the same time i.e. separate report of the same).
-> >
->=20
-> Yes, the rest are almost the same, the only difference is the 'addr'
-> shows different addresses.
+Exactly my question, as that's why the Crypto API was extended with
+support for partial (de)compression in the first place ;-)
 
-Please post what this other occasion showed, if you still have the log.
+In addition, using the Crypto API has the advantage that Squashfs will
+use hardware decompression if/when available.
 
-Hugh
---8323584-1357647399-1260438996=:31654--
+> Yes I did consider using the cryptoapi, but this doesn't have support for
+> lzma in mainline.
+
+IIRC, Felix Fietkau added support for that for OpenWRT...
+
+> My aim is add lzma filesystem support to Squashfs using the existing kernel
+> lzma iplementation, and to make as few changes to that as necessary.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
