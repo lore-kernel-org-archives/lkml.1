@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761943AbZLJWQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761958AbZLJWRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761943AbZLJWQo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 17:16:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761927AbZLJWQn
+	id S1761958AbZLJWRB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 17:17:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761949AbZLJWQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 17:16:43 -0500
-Received: from xenotime.net ([72.52.64.118]:50399 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761924AbZLJWQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 17:16:43 -0500
-Date: Thu, 10 Dec 2009 14:16:48 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, jim owens <jowens@hp.com>,
-       linux-doc@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Dan Carpenter <error27@gmail.com>,
-       Jes Sorensen <jes.sorensen@gmail.com>
-Subject: Re: [PATCH] Documentation/email-clients.txt: clarify Thunderbird
- section
-Message-Id: <20091210141648.4b0483a6.rdunlap@xenotime.net>
-In-Reply-To: <4B2170BB.2070001@nortel.com>
-References: <4B210C6C.3060103@tuffmail.co.uk>
-	<4B2110E3.8010508@hp.com>
-	<4B2120F2.3090301@tuffmail.co.uk>
-	<4B2170BB.2070001@nortel.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Dec 2009 17:16:57 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:41674 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761948AbZLJWQ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 17:16:56 -0500
+Date: Thu, 10 Dec 2009 17:17:00 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
+ suspend-resume patch w/ rwsems)
+In-Reply-To: <200912102214.40310.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0912101653120.2680-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Dec 2009 16:05:47 -0600 Chris Friesen wrote:
+On Thu, 10 Dec 2009, Rafael J. Wysocki wrote:
 
-> On 12/10/2009 10:25 AM, Alan Jenkins wrote:
+> > You should see how badly lockdep complains about the rwsems.  If it 
+> > really doesn't like them then using completions makes sense.
 > 
-> > The RFC for format=flowed says that it should escape lines which start 
-> > with a space (by "space stuffing" - prepending an additional space).  So 
-> > in theory it should completely break patches.   And indeed it does 
-> > <http://gcc.gnu.org/ml/java-patches/2003-q2/msg00315.html>
-> > 
-> > Using HTML preformat in current versions of Thunderbird appears to send 
-> > with a format=flowed content-type, and then violates the RFC by not 
-> > performing any space-stuffing.
-> > 
-> > So if I look at format=flowed patch in my Sent email folder, I see that 
-> > the message viewer correctly strips the first leading space in each 
-> > line.  I.e. it breaks if you use copy+paste to get the patch out of 
-> > Thunderbird (or any other format=flowed aware client).  File->Save As 
-> > preserves the spaces though, allowing the patch to be applied.
-> 
-> Hmm...I'm using Thunderbird 3 beta4, and it appears that when sending
-> via the "preformat" mechanism it actually does perform space-stuffing.
-> This is visible as an extra leading space when looking at the raw source
-> of the sent (or received) email via ctrl-U.
-> 
-> However, if one turns off format=flowed, but leaves wrap set to 72, then
-> the html preformat works without having to set the wrap to 0.
+> It does complain about them, but when the nested _down operations are marked
+> as nested, it stops complaining (that's in the version where there's no async
+> in the _noirq phases).
 
-Surely this help text needs to be updated. It's most likely
-a moving target (how thunderbird acts, that is), but anything that
-helps is good.
+Did you set the async_suspend flag for any devices during the test?  
+And did you run more than one suspend/resume cycle?
 
----
-~Randy
+> +extern int __dpm_wait(struct device *dev, void *ign);
+> +
+> +static inline void dpm_wait(struct device *dev)
+> +{
+> +	__dpm_wait(dev, NULL);
+> +}
+
+Sorry, I intended to mention this before but forgot.  This design is
+inelegant.  You shouldn't have inlines calling functions with extra
+unused arguments; they just waste code space.  Make dpm_wait() be a
+real routine and add a shim to the device_for_each_child() loop.
+
+> @@ -366,7 +388,7 @@ void dpm_resume_noirq(pm_message_t state
+>  
+>  	mutex_lock(&dpm_list_mtx);
+>  	transition_started = false;
+> -	list_for_each_entry(dev, &dpm_list, power.entry)
+> +	list_for_each_entry(dev, &dpm_list, power.entry) {
+>  		if (dev->power.status > DPM_OFF) {
+>  			int error;
+>  
+> @@ -375,23 +397,27 @@ void dpm_resume_noirq(pm_message_t state
+>  			if (error)
+>  				pm_dev_err(dev, state, " early", error);
+>  		}
+> +		/* Needed by the subsequent dpm_resume(). */
+> +		INIT_COMPLETION(dev->power.completion);
+
+You're still doing it.  Don't initialize the completions in a totally
+different phase!  Initialize them directly before they are used.  
+Namely, at the start of device_resume() and device_suspend().
+
+One more thing.  A logical time to check for errors is just after
+waiting for the children in __device_suspend(), instead of beforehand 
+in async_suspend().  After all, if an error occurs then it's likely to 
+happen while we are waiting.
+
+Alan Stern
+
