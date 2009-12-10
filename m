@@ -1,85 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbZLJOJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbZLJOLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760829AbZLJOJL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 09:09:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760812AbZLJOJF
+	id S1760836AbZLJOLk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 09:11:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760708AbZLJOLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 09:09:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:49743 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759310AbZLJOJD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 09:09:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Aow8Rbe8YjRbWisfDw5KFBDOm7vdT34XoHe6xBKEQ0WFiOwxaIMWlPufNLJqSKbwMZ
-         KJX9+vyWRtEdlGHTF4dRNb0hqNKWdyA8RyYudKS/ek4FzvdCK0W3us5jE694nqukaI6e
-         Fdt4k6nLlHQg1ijoCZbb6quCaVMDeS521toXs=
+	Thu, 10 Dec 2009 09:11:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49218 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760608AbZLJOLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 09:11:34 -0500
+Date: Thu, 10 Dec 2009 15:11:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Tim Bird <tim.bird@am.sony.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
+Message-ID: <20091210141121.GB1436@elte.hu>
+References: <4B202778.4030801@am.sony.com>
+ <20091210070800.GB16874@elte.hu>
+ <20091210120332.GA5042@nowhere>
 MIME-Version: 1.0
-In-Reply-To: <20091203110332.GO1361@nokia.com>
-References: <1259333060-24277-1-git-send-email-notasas@gmail.com>
-	 <6ed0b2680912021234x6b5e6058p6d50d5cd20ecf019@mail.gmail.com>
-	 <20091202204946.GB25682@nokia.com>
-	 <6ed0b2680912021329g372bd0a4vb5b4a80244960f95@mail.gmail.com>
-	 <20091202215442.GA30658@oksana.dev.rtsoft.ru>
-	 <20091202223156.GA14921@nokia.com>
-	 <20091202225922.GA15568@oksana.dev.rtsoft.ru>
-	 <20091203083958.GB31110@nokia.com>
-	 <6ed0b2680912030255o57d7c46qb5ae1cfcb82e9976@mail.gmail.com>
-	 <20091203110332.GO1361@nokia.com>
-Date: Thu, 10 Dec 2009 16:09:08 +0200
-Message-ID: <6ed0b2680912100609g11706296qdbcea887dc3a5733@mail.gmail.com>
-Subject: Re: [PATCH] power_supply: Add driver for TWL4030/TPS65950 BCI charger
-From: Grazvydas Ignotas <notasas@gmail.com>
-To: felipe.balbi@nokia.com
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091210120332.GA5042@nowhere>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 3, 2009 at 1:03 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
-> Hi,
->
-> On Thu, Dec 03, 2009 at 11:55:12AM +0100, ext Grazvydas Ignotas wrote:
->>
->> TPS65950 is catalog part of TWL4030 and has documentation here:
->>
->> http://focus.ti.com/docs/prod/folders/print/tps65950.html#technicaldocuments
->>
->> It says that it is software's responsibility to detect the device and
->> set the right charge mode/current..
->
-> yes, the BCI (or bq24xxx) will never be able to know which configuration we
-> were enumerated with...
->
->>> yes, that'll work. But how about start charging always with 100mA and if
->>> userland sees that we were enumerated it reconfigures charging as
->>> necessary.
->>> But this would mean that we have the EM daemon started up just after the
->>> driver itself is loaded to avoid the problem with 100ms no enumeration.
->>> How
->>> does that sound ? Do we start making some writeable power_supply sysfs
->>> ???
->>
->> There are also USB chargers that don't enumerate and have D+ and D-
->> shorted with a resistor (see "dedicated charger port" in the charging
->> spec), how do we support those?
->
-> dedicated chargers are simple. You kick the charger detection according to
-> USB BC 1.x and if it returns true, you configure high current charging.
-> Host/Hub chargers are also simple, after kicking charger detection, you
-> enable Data pullups (e.g. SOFTCONN bit in musb's power register) and see if
-> the host sends a setup packet...
->
-> the complicated part is passing the information of which configuration you
-> were enumerated with to the charger chip.
 
-Ok since it doesn't look like this will resolve soon, what about
-adding some DEVICE_ATTR for the time being and requiring userspace to
-write charge current here to start actual charging?
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> On Thu, Dec 10, 2009 at 08:08:00AM +0100, Ingo Molnar wrote:
+> > 
+> > * Tim Bird <tim.bird@am.sony.com> wrote:
+> > 
+> > > Add function duration tracer.
+> > > 
+> > > Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+> > > ---
+> > >  kernel/trace/Kconfig          |    8
+> > >  kernel/trace/Makefile         |    1
+> > >  kernel/trace/trace.c          |   32 ++
+> > >  kernel/trace/trace_duration.c |  527 ++++++++++++++++++++++++++++++++++++++++++
+> > >  4 files changed, 568 insertions(+)
+> > 
+> > Please do it in a cleaner an more generic fashion: add a "function 
+> > event" that perf can see and process, so all the output embellishment 
+> > can be done outside of the kernel, in tools/perf/.
+> > 
+> > We want to wind down the current maze of ftrace plugins, not extend 
+> > them. We already obsoleted the following ftrace plugins: scheduler, 
+> > sysprof, blktrace, kmem, scheduler, etc. There's more work ongoing and 
+> > broad agreement between folks developing it that this is the way 
+> > forward.
+> > 
+> > The function tracer / function graph tracer is a holdout due to its 
+> > complexity - but that by no means weakens the argument and the necessity 
+> > to migrate it.
+> > 
+> > ftrace plugins were a nice idea originally and a clear improvement over 
+> > existing alternatives, but now that we've got a technicaly superior, 
+> > unified event framework that can do what the old plugins did and much 
+> > more, we want to improve that and not look back ...
+> 
+> 
+> I agree. If we can abstract it out in a struct trace_event rather than 
+> a struct tracer, then please try. I doubt we can't.
+> 
+> The trace events are more unified.
+> 
+> This makes me feel I'm going to try converting the function graph 
+> tracer into an event during the next cycle. [...]
+
+Great!
+
+> [...] It does not mean I could make it usable as a perf event right 
+> away in the same shot that said, as you can guess this is not a 
+> trivial plug. The current perf fast path is not yet adapted for that.
+
+Yeah, definitely so. I'd guess it would be slower out of box - it hasnt 
+gone through nearly as many refinements yet.
+
+> But at least this will be a good step forward.
+
+Yeah.
+
+Also, i'd suggest we call unified events 'ftrace events', as that is 
+what they really are: the whole TRACE_EVENT() infrastructure is the 
+crown jewel of ftrace and IMO it worked out pretty well.
+
+I hope there wont be any significant culture clash between ftrace and 
+perf - we want a single, unified piece of instrumentation 
+infrastructure, we want to keep the best of both worlds, and want to 
+eliminate any weaknesses and duplications. As long as we keep all that 
+in mind it will be all fine.
+
+	Ingo
