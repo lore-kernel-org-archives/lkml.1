@@ -1,70 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbZLJUfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbZLJUia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757942AbZLJUfF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 15:35:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbZLJUfE
+	id S1758194AbZLJUia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 15:38:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbZLJUia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 15:35:04 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:56520 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754429AbZLJUfC (ORCPT
+	Thu, 10 Dec 2009 15:38:30 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:45108 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757041AbZLJUi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 15:35:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ifl1sJfxm2WetoHAilUdpQNkk4K0twHO4KiLvxu/mVZi4KeaXuWEIJ3GsMxFmQ7FAx
-         +egVymyEU4HJrPeIitfG8JCcfecEwLFqDFDsMOZn0H19CnALmsgCbvY5becPiCgT128z
-         OmUWQ9BSm+R9LYeP0unKDZueWNICGQeLWEwm8=
+	Thu, 10 Dec 2009 15:38:29 -0500
+Date: Thu, 10 Dec 2009 15:38:35 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ondrej Zary <linux@rainbow-software.org>
+cc: linux-usb@vger.kernel.org, <linux-kernel@vger.kernel.org>
+Subject: Re: debugging oops after disconnecting Nexio USB touchscreen
+In-Reply-To: <200912101640.02897.linux@rainbow-software.org>
+Message-ID: <Pine.LNX.4.44L0.0912101525230.2680-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <20091210214948.3d3c958c@daedalus.pq.iki.fi>
-References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>
-	 <alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>
-	 <1260459601.18520.26.camel@skunk>
-	 <alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>
-	 <6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>
-	 <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain>
-	 <20091210214948.3d3c958c@daedalus.pq.iki.fi>
-Date: Thu, 10 Dec 2009 15:35:08 -0500
-Message-ID: <8e6f94720912101235l30d05c03m54b769d9fd6ac35d@mail.gmail.com>
-Subject: Re: [git pull] drm
-From: Will Dyson <will.dyson@gmail.com>
-To: Pekka Paalanen <pq@iki.fi>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Airlie <airlied@linux.ie>, Xavier Bestel <xavier.bestel@free.fr>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 2:49 PM, Pekka Paalanen <pq@iki.fi> wrote:
+On Thu, 10 Dec 2009, Ondrej Zary wrote:
 
-> The big question is what we call ctxprogs: binary blobs that are
-> clearly executable, running somewhere in the GPU. No-one seems
-> to know, if those are copyrightable, or if they can be redistributed.
-> In their current form, they have been recorded from the nvidia
-> proprietary driver using mmiotrace, and copied verbatim for each
-> card type.
->
-> Would you be willing to pull that kind of stuff into Linux?
->
-> I would not even dare sending them to the Linux firmware
-> repository, since they have some license requirements, too.
+> Narrowed down the code to this 170-line module which reproduces my
+> "rmmod usbtouchscreen" problem. Loading this module causes EHCI to fail.
+> Looks like it fails after calling usb_kill_urb(). Can a buggy device cause
+> this?
 
-This seems similar to the unfortunate situation with the b43 wireless
-card firmware. Broadcom refuses to provide the firmware under a
-redistributable license (or even as files separate from their
-proprietary drivers). This did not stop b43 from being included in
-Linux. Distributions have dealt with it by providing a script that
-downloads the proprietary driver and extracts the firmware from it to
-files in /lib/firmware.
+I don't think so.  But I am getting an idea of what the problem might 
+be.  Try applying the patch below and see if it makes any difference 
+(make sure that CONFIG_USB_DEBUG is enabled).
 
-Do you think that a similar solution for nouveau would be legally
-problematic? Or is the issue technical, since you mention that the
-ctxprogs were obtained by mmiotrace, instead of a more straightforward
-extraction from the binary driver blobs?
+If the module stops messing up EHCI, try changing the source code:
 
--- 
-Will Dyson
+> static int crashnexio_probe(struct usb_interface *intf,
+> 			  const struct usb_device_id *id)
+> {
+
+...
+
+> 	interface = intf->cur_altsetting;
+> 	/* find first input endpoint */
+> 	for (i = 0; i < interface->desc.bNumEndpoints; i++)
+> 		if (usb_endpoint_dir_in(&interface->endpoint[i].desc)) {
+> 			endpoint = &interface->endpoint[i].desc;
+> 			break;
+> 		}
+
+Does the interface have more than one input endpoint?  (What does
+"lsusb -v" show for the Nexio?)  If it does, how do you know the 
+endpoint you want is the first one?
+
+...
+
+> 	usb_fill_bulk_urb(crashnexio->irq, udev,
+> 			 usb_rcvintpipe(udev, endpoint->bEndpointAddress),
+
+Either change this to usb_fill_int_urb() or else use usb_rcvbulkpipe().
+
+...
+
+> static int __init crashnexio_init(void)
+> {
+> 	return usb_register(&crashnexio_driver);
+> }
+
+You should also have an __exit routine.
+
+Alan Stern
+
+
+
+
+Index: 2.6.31/Documentation/usb/error-codes.txt
+===================================================================
+--- 2.6.31.orig/Documentation/usb/error-codes.txt
++++ 2.6.31/Documentation/usb/error-codes.txt
+@@ -41,8 +41,8 @@ USB-specific:
+ 
+ -EFBIG		Host controller driver can't schedule that many ISO frames.
+ 
+--EPIPE		Specified endpoint is stalled.  For non-control endpoints,
+-		reset this status with usb_clear_halt().
++-EPIPE		The pipe type specified in the URB doesn't match the
++		endpoint's actual type.
+ 
+ -EMSGSIZE	(a) endpoint maxpacket size is zero; it is not usable
+ 		    in the current interface altsetting.
+@@ -60,6 +60,8 @@ USB-specific:
+ 
+ -EHOSTUNREACH	URB was rejected because the device is suspended.
+ 
++-ENOEXEC	A control URB doesn't contain a Setup packet.
++
+ 
+ **************************************************************************
+ *                   Error codes returned by in urb->status               *
+Index: 2.6.31/drivers/usb/core/devio.c
+===================================================================
+--- 2.6.31.orig/drivers/usb/core/devio.c
++++ 2.6.31/drivers/usb/core/devio.c
+@@ -1065,7 +1065,10 @@ static int proc_do_submiturb(struct dev_
+ 		case USB_ENDPOINT_XFER_CONTROL:
+ 		case USB_ENDPOINT_XFER_ISOC:
+ 			return -EINVAL;
+-		/* allow single-shot interrupt transfers, at bogus rates */
++		case USB_ENDPOINT_XFER_INT:
++			/* allow single-shot interrupt transfers */
++			uurb->type = USBDEVFS_URB_TYPE_INTERRUPT;
++			goto interrupt_urb;
+ 		}
+ 		uurb->number_of_packets = 0;
+ 		if (uurb->buffer_length > MAX_USBFS_BUFFER_SIZE)
+@@ -1073,6 +1076,16 @@ static int proc_do_submiturb(struct dev_
+ 		snoop(&ps->dev->dev, "bulk urb\n");
+ 		break;
+ 
++	case USBDEVFS_URB_TYPE_INTERRUPT:
++		if (!usb_endpoint_xfer_int(&ep->desc))
++			return -EINVAL;
++ interrupt_urb:
++		uurb->number_of_packets = 0;
++		if (uurb->buffer_length > MAX_USBFS_BUFFER_SIZE)
++			return -EINVAL;
++		snoop(&ps->dev->dev, "interrupt urb\n");
++		break;
++
+ 	case USBDEVFS_URB_TYPE_ISO:
+ 		/* arbitrary limit */
+ 		if (uurb->number_of_packets < 1 ||
+@@ -1105,15 +1118,6 @@ static int proc_do_submiturb(struct dev_
+ 		snoop(&ps->dev->dev, "iso urb\n");
+ 		break;
+ 
+-	case USBDEVFS_URB_TYPE_INTERRUPT:
+-		uurb->number_of_packets = 0;
+-		if (!usb_endpoint_xfer_int(&ep->desc))
+-			return -EINVAL;
+-		if (uurb->buffer_length > MAX_USBFS_BUFFER_SIZE)
+-			return -EINVAL;
+-		snoop(&ps->dev->dev, "interrupt urb\n");
+-		break;
+-
+ 	default:
+ 		return -EINVAL;
+ 	}
+Index: 2.6.31/drivers/usb/core/urb.c
+===================================================================
+--- 2.6.31.orig/drivers/usb/core/urb.c
++++ 2.6.31/drivers/usb/core/urb.c
+@@ -387,6 +387,13 @@ int usb_submit_urb(struct urb *urb, gfp_
+ 	{
+ 	unsigned int	orig_flags = urb->transfer_flags;
+ 	unsigned int	allowed;
++	static int pipetypes[4] = {
++		PIPE_CONTROL, PIPE_ISOCHRONOUS, PIPE_BULK, PIPE_INTERRUPT
++	};
++
++	/* Check that pipe's type matches the endpoint's type */
++	if (usb_pipetype(urb->pipe) != pipetypes[xfertype])
++		return -EPIPE;
+ 
+ 	/* enforce simple/standard policy */
+ 	allowed = (URB_NO_TRANSFER_DMA_MAP | URB_NO_SETUP_DMA_MAP |
+
