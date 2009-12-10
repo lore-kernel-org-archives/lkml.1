@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932328AbZLJIzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbZLJJKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932328AbZLJIzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 03:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbZLJIzv
+	id S1758855AbZLJJKj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 04:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbZLJJKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 03:55:51 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:55180 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757712AbZLJIzu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 03:55:50 -0500
-Date: Thu, 10 Dec 2009 09:55:54 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Julia Lawall <julia@diku.dk>
-Cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org,
-       David Vrabel <dvrabel@arcom.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: return value of platform_get_irq
-Message-ID: <20091210085554.GB6255@pengutronix.de>
+	Thu, 10 Dec 2009 04:10:33 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52663 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757926AbZLJJKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 04:10:32 -0500
+Message-ID: <4B20BAA6.7010609@cn.fujitsu.com>
+Date: Thu, 10 Dec 2009 17:08:54 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] perf_event: fix variable initialization in other path
+References: <4B2075B0.10805@cn.fujitsu.com> <1260422135.4165.3.camel@twins>
+In-Reply-To: <1260422135.4165.3.camel@twins>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Julia,
+fix variable initialization in other path
+[Commit-ID:  21140f4d3387aa2213f1deea0128df1dbf924379 is not clean]
 
-in commit 305b3228 the return value indicating failure in
-platform_get_irq was changed.
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ arch/x86/kernel/cpu/perf_event.c |    4 ++++
+ kernel/perf_event.c              |    1 +
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-I tried to create a semantic patch for that, but I have failed as spatch
-always says something like:
-
-	Fatal error: exception Failure("minus: parse error: ...
-
-Actually what is needed is that (probably) all usages of:
-
-	ret = platform_get_irq(dev, num);
-	if (!ret) {
-		...
-
-and equivalent are converted to
-
-	ret = platform_get_irq(dev, num);
-	if (ret <= 0) {
-		...
-
-(Actually I think "ret < 0" would be more correct in most situations,
-but as 0 was handled as error before it's more conservative to keep it
-this way.)
-
-I assume it's easy for you to come up with a patch.
-
-Best regards
-Uwe
-
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index d35f260..1342f23 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -1632,6 +1632,7 @@ static void intel_pmu_drain_bts_buffer(struct cpu_hw_events *cpuc)
+ 
+ 	data.period	= event->hw.last_period;
+ 	data.addr	= 0;
++	data.raw	= NULL;
+ 	regs.ip		= 0;
+ 
+ 	/*
+@@ -1749,6 +1750,7 @@ static int p6_pmu_handle_irq(struct pt_regs *regs)
+ 	u64 val;
+ 
+ 	data.addr = 0;
++	data.raw = NULL;
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 
+@@ -1794,6 +1796,7 @@ static int intel_pmu_handle_irq(struct pt_regs *regs)
+ 	u64 ack, status;
+ 
+ 	data.addr = 0;
++	data.raw = NULL;
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 
+@@ -1857,6 +1860,7 @@ static int amd_pmu_handle_irq(struct pt_regs *regs)
+ 	u64 val;
+ 
+ 	data.addr = 0;
++	data.raw = NULL;
+ 
+ 	cpuc = &__get_cpu_var(cpu_hw_events);
+ 
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 41c2dde..6e2888d 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -4299,6 +4299,7 @@ void perf_bp_event(struct perf_event *bp, void *data)
+ 	struct perf_sample_data sample;
+ 	struct pt_regs *regs = data;
+ 
++	sample.raw = NULL;
+ 	sample.addr = bp->attr.bp_addr;
+ 
+ 	if (!perf_exclude_event(bp, regs))
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+1.6.1.2
+
