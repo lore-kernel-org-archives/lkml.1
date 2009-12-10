@@ -1,114 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760887AbZLJO60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbZLJOuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760887AbZLJO60 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 09:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760870AbZLJO6Z
+	id S1760608AbZLJOuJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 09:50:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZLJOuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 09:58:25 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45441 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760845AbZLJO6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 09:58:24 -0500
-Date: Thu, 10 Dec 2009 06:49:20 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Cc: "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dsilvers@simtec.co.uk" <dsilvers@simtec.co.uk>,
-       "ben@simtec.co.uk" <ben@simtec.co.uk>,
-       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] gpiolib: add support for having symlinks under
-	gpio class directory
-Message-ID: <20091210144920.GA27237@suse.de>
-References: <cover.1260364108.git.ext-jani.1.nikula@nokia.com> <71eff9c88d3fec3daa218341c83c19a106ee1f62.1260364108.git.ext-jani.1.nikula@nokia.com> <20091210024834.GB20410@suse.de> <1260455537.25352.1762.camel@jani-desktop>
+	Thu, 10 Dec 2009 09:50:05 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:59406 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752364AbZLJOuE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 09:50:04 -0500
+From: Karsten Keil <isdn@linux-pingi.de>
+Reply-To: isdn@linux-pingi.de
+To: Jerry Leo <jerryleo860202@gmail.com>
+Subject: Re: [PATCH]about eicon: array subscript is above array bounds
+Date: Thu, 10 Dec 2009 15:49:52 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.27.37-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
+       i4ldeveloper@listserv.isdn4linux.de, Armin Schindler <armin@melware.de>
+References: <6304b52b0912092004t646569bdm2a6bbc9bb2440aba@mail.gmail.com>
+In-Reply-To: <6304b52b0912092004t646569bdm2a6bbc9bb2440aba@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1260455537.25352.1762.camel@jani-desktop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200912101549.52797.isdn@linux-pingi.de>
+X-Provags-ID: V01U2FsdGVkX19QsS8OW7ekBTDVJIjWwHfSqsX4qHzCZg0km9k
+ HCxoCCVOujLHvCihhgVRVHRdXPYpv1ERfaWjiCc8xJzXjsn5lZ
+ 5RQtUbWX7letJqT5xT9NP+5rYDjtcms
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 04:32:17PM +0200, Jani Nikula wrote:
-> On Thu, 2009-12-10 at 03:48 +0100, ext Greg KH wrote:
-> > On Wed, Dec 09, 2009 at 03:49:03PM +0200, Jani Nikula wrote:
-> > > Extend the functionality of gpio_export_link() to allow exported GPIOs
-> > > to have names using sysfs links under /sys/class/gpio.
-> > 
-> > No, please don't create symlinks under a class, that is not something
-> > that any userspace tool is expecting.
-> > 
-> > I don't understand what you are trying to do here, why do you need a
-> > symlink?  What is wrong with the original device names?
+On Donnerstag, 10. Dezember 2009 05:04:35 Jerry Leo wrote:
+> Hi, Karsten Keil,
 > 
-> The problem
-> ~~~~~~~~~~~
-> 
-> GPIOs can be exported to gpiolib sysfs at /sys/class/gpio/ like this:
-> 
-> # ls -l /sys/class/gpio/
-> --w-------    1 root     0            4096 Jan  1 00:00 export
-> lrwxrwxrwx    1 root     0               0 Jan  1 00:00 gpio25 -> ../../devices/virtual/gpio/gpio25
-> lrwxrwxrwx    1 root     0               0 Jan  1 00:00 gpio38 -> ../../devices/virtual/gpio/gpio38
-> ...
-> 
-> The GPIO lines may and do change from board revision to another. For
-> example a power button's GPIO number might be 25 in board rev 1.0 but 66
-> in board rev 1.1.
-> 
-> We want to assign symbolic names to GPIO lines and hide the numbering
-> changes from userspace, because it is very painful to amend userspace
-> for every board revision.
+>         When i compile eicon,there have some waning look like this:
 
-True, just like it is hard to change the kernel for every type of
-configuration as well :)
+This looks wrong, but I do not know this part so well.
 
-This is the problem that udev solves, from usersapce, but you don't have
-device nodes for it to manage, right?
+Armin ?
 
-> Existing solution
-> ~~~~~~~~~~~~~~~~~
 > 
-> gpio_export_link() can be used to create symlinks from drivers' sysfs
-> to gpiolib, but this obviously requires a driver. For example:
+>            CC [M]  drivers/isdn/hardware/eicon/message.o
+> drivers/isdn/hardware/eicon/message.c: In function ‘add_b23’:
+> drivers/isdn/hardware/eicon/message.c:8426: warning: array subscript
+> is above array bounds
+> drivers/isdn/hardware/eicon/message.c:8427: warning: array subscript
+> is above array bounds
+> drivers/isdn/hardware/eicon/message.c:8434: warning: array subscript
+> is above array bounds
+> drivers/isdn/hardware/eicon/message.c:8435: warning: array subscript
+> is above array bounds
+> drivers/isdn/hardware/eicon/message.c:8436: warning: array subscript
+> is above array bounds
+> drivers/isdn/hardware/eicon/message.c:8447: warning: array subscript
+> is above array bounds
 > 
-> # ls -l /sys/devices/platform/foo/
-> lrwxrwxrwx    1 root     0               0 Jan  2 00:31 power_button -> ../../virtual/gpio/gpio25
-> ...
+> I think the array is short then be used,because the array's max length
+> is 20, then it will use long than this, the code is in
+> "drivers/isdn/hardware/eicon/divacapi.h" 1360L, 50994C  :
 > 
-> This doesn't really work for GPIO lines not associated with any driver.
+> 
+> #define T30_MAX_STATION_ID_LENGTH       20
+> #define T30_MAX_SUBADDRESS_LENGTH       20
+> #define T30_MAX_PASSWORD_LENGTH         20
+> 
+> typedef struct t30_info_s T30_INFO;
+> struct t30_info_s {
+>   byte          code;
+>   byte          rate_div_2400;
+>   byte          resolution;
+>   byte          data_format;
+>   byte          pages_low;
+>   byte          pages_high;
+>   byte          operating_mode;
+>   byte          control_bits_low;
+>   byte          control_bits_high;
+>   byte          feature_bits_low;
+>   byte          feature_bits_high;
+>   byte          recording_properties;
+>   byte          universal_6;
+>   byte          universal_7;
+>   byte          station_id_len;
+>   byte          head_line_len;
+>   byte          station_id[T30_MAX_STATION_ID_LENGTH];
+> /* byte          head_line[];      */
+> /* byte          sub_sep_length;   */
+> /* byte          sub_sep_field[];  */
+> /* byte          pwd_length;       */
+> /* byte          pwd_field[];      */
+> /* byte          nsf_info_length;   */
+> /* byte          nsf_info_field[];  */
+> };
+> 
+> "drivers/isdn/hardware/eicon/message.c" 15071L, 487328C
+> 
+>         if (pos != 0)
+>         {
+>           if (CAPI_MAX_DATE_TIME_LENGTH + 2 +
+> b3_config_parms[3].length > CAPI_MAX_HEAD_LINE_SPACE)
+>             pos = 0;
+>           else
+>           {
+>             ((T30_INFO *)&nlc[1])->station_id[20 + pos++] = ' ';
+>             ((T30_INFO *)&nlc[1])->station_id[20 + pos++] = ' ';
+>             len = (byte)b3_config_parms[2].length;
+>             if (len > 20)
+>               len = 20;
+>             if (CAPI_MAX_DATE_TIME_LENGTH + 2 + len + 2 +
+> b3_config_parms[3].length <= CAPI_MAX_HEAD_LINE_SPACE)
+>             {
+>               for (i = 0; i < len; i++)
+>                 ((T30_INFO *)&nlc[1])->station_id[20 + pos++] = ((byte
+>   *)b3_config_parms[2].info)[1+i];
+>               ((T30_INFO *)&nlc[1])->station_id[20 + pos++] = ' ';
+>               ((T30_INFO *)&nlc[1])->station_id[20 + pos++] = ' ';
+>             }
+>           }
+>         }
+> 
+> 
+> 
+> can this patch commit?
+> 
 
-Understood
+Wrong fileorder, this is a reverse patch.
+But I  think the code should be fixed.
 
-> How we addressed the problem
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 > 
-> We simply decided to extend gpio_export_link(). When it is called
-> with 'dev == NULL' (no driver), it creates an additional symlink
-> in /sys/class/gpio/
+> diff -up linux-2.6/drivers/isdn/hardware/eicon/divacapi.h
+> linux-2.6/drivers/isdn/hardware/eicon/divacapi.h.orig
+> --- linux-2.6/drivers/isdn/hardware/eicon/divacapi.h	2009-12-10
+> 12:02:46.000000000 +0800
+> +++ linux-2.6/drivers/isdn/hardware/eicon/divacapi.h.orig	2009-12-10
+> 11:04:07.000000000 +0800
+> @@ -445,7 +445,7 @@ struct _DIVA_CAPI_ADAPTER {
+>  #define CAPI_MAX_HEAD_LINE_SPACE        89
+>  #define CAPI_MAX_DATE_TIME_LENGTH       18
 > 
-> # ls -l /sys/class/gpio/
-> --w-------    1 root     0            4096 Jan  1 00:00 export
-> lrwxrwxrwx    1 root     0               0 Jan  1 00:00 power_button -> ../../devices/virtual/gpio/gpio25
-> lrwxrwxrwx    1 root     0               0 Jan  1 00:00 gpio25 -> ../../devices/virtual/gpio/gpio25
-> lrwxrwxrwx    1 root     0               0 Jan  1 00:00 gpio38 -> ../../devices/virtual/gpio/gpio38
-> ...
+> -#define T30_MAX_STATION_ID_LENGTH       30
+> +#define T30_MAX_STATION_ID_LENGTH       20
+>  #define T30_MAX_SUBADDRESS_LENGTH       20
+>  #define T30_MAX_PASSWORD_LENGTH         20
 > 
-> This is exactly what our patchset allows to do.
-> 
-> An alternative would be a dummy driver just to create a home in sysfs
-> for the standalone GPIOs and use the gpio_export_link() to make the
-> links there.
-> 
-> Any other suggestions?
-
-This type of "policy" should be better off done in userspace whereever
-possible.  Can't you just have a udev rule to create symlinks from
-somewhere else, into /sys/class/gpio/ that show this type of information
-that you are wanting to have?
-
-thanks,
-
-greg k-h
