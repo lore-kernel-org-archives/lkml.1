@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbZLJMzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbZLJNIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636AbZLJMzt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 07:55:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZLJMzn
+	id S1759413AbZLJNIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 08:08:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758652AbZLJNIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 07:55:43 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:54443 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbZLJMzn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 07:55:43 -0500
-Subject: [PATCH] Fix a typo in the vgaarbiter Documentation
-From: Detlef Riekenberg <wine.dev@web.de>
-To: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Tiago Vignatti <tiago.vignatti@nokia.com>
-Content-Type: text/plain
-Date: Thu, 10 Dec 2009 13:55:48 +0100
-Message-Id: <1260449748.7265.7.camel@p4.lan>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19Em260Q3Q131WnZekRoPnpbpV5OueOaiuOH4lX
-	ZJPG3jm+i68GabH/wnpJE0CFLAMCScLPmeU+3ZdAn3scikqBUR
-	bwyAakPmw=
+	Thu, 10 Dec 2009 08:08:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55707 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758043AbZLJNID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 08:08:03 -0500
+From: Xiaotian Feng <dfeng@redhat.com>
+To: tglx@linutronix.de, damm@igel.co.jp, hsweeten@visionengravers.com,
+       akpm@linux-foundation.org, venkatesh.pallipadi@intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 0/4] clockevents: fix clockevent_devices list corruption after cpu hotplug
+Date: Thu, 10 Dec 2009 21:07:35 +0800
+Message-Id: <1260450459-18072-1-git-send-email-dfeng@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+I've met a list_del corruption, which was reported in
+http://lkml.org/lkml/2009/11/27/45. But no response, so I try to debug it
+by myself.
 
-I detected a typo, while reading "Documentation/vgaarbiter.txt".
+After I added some printks to show all elements in clockevent_devices, I
+found kernel hangs when I tried to resume from s2ram.
 
-Please CC me on any reply. Thanks
+In clockevents_register_device, clockevents_do_notify ADD is always followed
+by clockevents_notify_released. Although clockevents_do_notify ADD will use
+tick_check_new_device to add new devices and replace old devices to the
+clockevents_released list, clockevents_notify_released add them back to
+clockevent_devices list.
 
--- 
-By by ... Detlef
+My system is Quad-Core x86_64, with apic and hpet enables, after boot up,
+the elements in clockevent_devices list is :
+clockevent_device->lapic(3)->hpet5(3)->lapic(2)->hpet4(2)->lapic(1)->hpet3(1)-
+  ->lapic(0)->hpet2(0)->hpet(0)
+* () means cpu id
 
+But active clock_event_device is hpet2,hpet3,hpet4,hpet5. Then at s2ram stage,
+cpu 1,2,3 is down, then notify CLOCK_EVT_NOTIFY_CPU_DEAD will calls tick_shutdown,
+then hpet2,hpet3,hpet4,hpet5 was deleted from clockevent_device list.
+So after s2ram, elements in clockevent_device list is:
+clockevent_device->lapic(3)->lapic(2)->lapic(1)->lapic(0)->hpet2(0)->hpet(0)
 
+Then at resume stage, cpu 1,2,3 is up, it will register lapic again, and then
+perform list_add lapic on clockevent_device list, e.g. list_add lapic(1) on
+above list, lapic will move to the clockevent_device->next, but lapic(2)->next
+is still point to lapic(1), the list is circular and corrupted then. 
 
->From 84db53ffacb278312de6e374928247c360dcbced Mon Sep 17 00:00:00 2001
-From: Detlef Riekenberg <wine.dev@web.de>
-Date: Thu, 10 Dec 2009 13:39:15 +0100
-Subject: [PATCH] Fix a typo in the vgaarbiter Documentation
+This patchset aims to fixes above behaviour by:
+       - on clockevents_register_device, if notify ADD success, move new devices
+         to the clockevent_devices list, otherwise move to clockevents_released
+         list.
+       - on clockevents_notify_released, same behaviour as above.
+       - on clockevents_notify CPU_DEAD, remove related devices on dead cpu from
+         clockevents_released list.
 
-Signed-off-by: Detlef Riekenberg <wine.dev@web.de>
----
- Documentation/vgaarbiter.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/vgaarbiter.txt b/Documentation/vgaarbiter.txt
-index 987f9b0..43a9b06 100644
---- a/Documentation/vgaarbiter.txt
-+++ b/Documentation/vgaarbiter.txt
-@@ -103,7 +103,7 @@ I.2 libpciaccess
- ----------------
- 
- To use the vga arbiter char device it was implemented an API inside the
--libpciaccess library. One fieldd was added to struct pci_device (each
-device
-+libpciaccess library. One field was added to struct pci_device (each
-device
- on the system):
- 
-     /* the type of resource decoded by the device */
--- 
-1.5.4.3
-
-
-
-
+It makes sure that only active devices on each cpu is on clockevent_devices list.
+With this patchset, the list_del corruption disappeared, and suspend/resume, cpu
+hotplug works fine on my system. 
