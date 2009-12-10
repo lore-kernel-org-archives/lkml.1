@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933941AbZLJK61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbZLJLH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933941AbZLJK61 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 05:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933861AbZLJK6Y
+	id S933970AbZLJLH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 06:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760371AbZLJLHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 05:58:24 -0500
-Received: from mail-qy0-f202.google.com ([209.85.221.202]:55383 "EHLO
-	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933751AbZLJK6X convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 05:58:23 -0500
-X-Greylist: delayed 1229 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Dec 2009 05:58:23 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sfBdZloTxGApW0EjMPl9M1U1n8cyNgXVIdVkP96NpjfHIbxGZE9pG/nWXbSa4hgBqb
-         WLhWaWlkXqk+V6214voHWHersn8lp/ua6CRgxa/qjRCeNT8HLizzfTLMoLbcth6pCD/8
-         0EdmHe/+y5+A2HyKbgnayrfZpGwHu19RxBg4A=
+	Thu, 10 Dec 2009 06:07:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:33095 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751684AbZLJLHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 06:07:53 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH v2] modpost: fix asprintf warnings
+Date: Thu, 10 Dec 2009 21:37:52 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <20091209155903.GB3247@hack> <1260407779-12517-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1260407779-12517-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
-In-Reply-To: <20091210101423.GF2446@ucw.cz>
-References: <1260257169-7227-1-git-send-email-ike.pan@canonical.com>
-	 <20091210100935.GB2446@ucw.cz>
-	 <71cd59b00912100238l7fe78abcrd07328c15b65971d@mail.gmail.com>
-	 <20091210101423.GF2446@ucw.cz>
-Date: Thu, 10 Dec 2009 11:58:29 +0100
-Message-ID: <71cd59b00912100258l1230f5e6p3e81e9c716f32987@mail.gmail.com>
-Subject: Re: [PATCH] asus-laptop: add Lenovo SL LenovoCare LED support
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ike Panhc <ike.pan@canonical.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
-       Alexandre Rostovtsev <tetromino@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912102137.52347.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 11:14 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Thu 2009-12-10 11:38:00, Corentin Chary wrote:
->> On Thu, Dec 10, 2009 at 11:09 AM, Pavel Machek <pavel@ucw.cz> wrote:
->> > On Tue 2009-12-08 15:26:09, Ike Panhc wrote:
->> >> From: Ike Panhc <ikepanhc@canonical.com>
->> >>
->> >> This patch is to enable the LenovoCare LED support on Lenovo SL laptop. Based
->> >> on the found of the control interface by Alexandre Rostovtsev
->> >>
->> >> Turn on the LenovoCare LED:
->> >>  (As root privileges) echo 1 > /sys/class/leds/asus\:\:LenovoCare/brightness
->> >> Trun off the LenovoCare LED:
->> >>  (As root privileges) echo 0 > /sys/class/leds/asus\:\:LenovoCare/brightness
->> >>
->> >> The patch against current checkout of acpi4asus is below.
->> >
->> > Is the driver severely misnamed by now? I believe Lenovo and ASUS are
->> > pretty different firms...
->> >
->>
->> Lenovo ship DSDT with similar ATKD interace.
->> See http://git.iksaif.net/?p=acpi4asus.git;a=commitdiff;h=31a38147625c283b58137db45e7507cd1e49aa05
->>
->
-> So what? Rename the driver... having Asus::lenovocare led is just wrong.
+On Thu, 10 Dec 2009 11:46:19 am Mike Frysinger wrote:
+> On compilers with security warnings enabled by default, we get:
+> 
+> scripts/mod/modpost.c: In function 'get_markers':
+> scripts/mod/modpost.c:1562: warning: ignoring return value of 'asprintf',
+>                                      declared with attribute warn_unused_result
+> scripts/mod/modpost.c: In function 'add_marker':
+> scripts/mod/modpost.c:1982: warning: ignoring return value of 'asprintf',
+>                                      declared with attribute warn_unused_result
 
-asus::lenovocare led won't be in asus-laptop (see the whole discussion).
+Actually I think these warnings only occur with -DFORTIFY_SOURCE.  This is
+turned on by Ubuntu at least.
 
-All specific lenovo things will be in a new lenevo specific driver.
-asus-laptop also support some MEDION, JVC or VICTOR laptops, but these
-are only exceptions.
+I think they're a bad idea (if you really don't care, suppressing them is
+really painful), but that's a separate battle...
 
--- 
-Corentin Chary
-http://xf.iksaif.net
+Applied,
+Rusty.
