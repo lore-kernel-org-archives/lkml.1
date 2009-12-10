@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933659AbZLJKe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760532AbZLJNar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933659AbZLJKe7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 05:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933626AbZLJKex
+	id S1760532AbZLJNar (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 08:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759357AbZLJNan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 05:34:53 -0500
-Received: from isp.kiev.ua ([193.17.216.226]:63677 "EHLO isp.kiev.ua"
+	Thu, 10 Dec 2009 08:30:43 -0500
+Received: from isp.kiev.ua ([193.17.216.226]:64504 "EHLO isp.kiev.ua"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933616AbZLJKet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 05:34:49 -0500
-X-Greylist: delayed 481 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Dec 2009 05:34:48 EST
-Message-ID: <3856.82.128.16.155.1260440074.squirrel@mail.isp.kiev.ua>
-Date: Thu, 10 Dec 2009 12:14:34 +0200 (EET)
+	id S1759199AbZLJNan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 08:30:43 -0500
+Message-ID: <4076.82.128.16.155.1260440345.squirrel@mail.isp.kiev.ua>
+Date: Thu, 10 Dec 2009 12:19:05 +0200 (EET)
 Subject: Important: Email Account Verification Update!! !
 From: "Web Administrator" <upgrade@webmaster.org>
 Reply-To: box4sale@live.com
