@@ -1,132 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761191AbZLJRQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761071AbZLJRT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761191AbZLJRQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 12:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760974AbZLJRQ0
+	id S1761071AbZLJRT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 12:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760963AbZLJRT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 12:16:26 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41473 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760972AbZLJRQ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 12:16:26 -0500
-X-Authority-Analysis: v=1.0 c=1 a=0ZecOPpkQPkA:10 a=7U3hwN5JcxgA:10 a=6rwbAIvUBEH4o4Ec5SAA:9 a=JihFW5UbCuvvXS6r4zxTohzDEqUA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tim Bird <tim.bird@am.sony.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091210165238.GA13775@elte.hu>
-References: <4B202778.4030801@am.sony.com> <20091210070800.GB16874@elte.hu>
-	 <20091210120332.GA5042@nowhere> <20091210141121.GB1436@elte.hu>
-	 <1260456803.2146.167.camel@gandalf.stny.rr.com>
-	 <20091210153845.GA28230@elte.hu>
-	 <1260462132.2146.198.camel@gandalf.stny.rr.com>
-	 <20091210165238.GA13775@elte.hu>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 10 Dec 2009 12:16:29 -0500
-Message-ID: <1260465389.2146.212.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Dec 2009 12:19:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47008 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751692AbZLJRT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 12:19:58 -0500
+Date: Thu, 10 Dec 2009 17:18:32 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, gorcunov@openvz.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       Ralf.Hildebrandt@charite.de, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, gorcunov@openvz.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       Ralf.Hildebrandt@charite.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20091210165634.GF5086@lenovo>
+References: <20091210165634.GF5086@lenovo>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] x86, perf events: Check if we have APIC enabled
+Message-ID: <tip-125580380f418000b1a06d9a54700f1191b6e561@git.kernel.org>
+Git-Commit-ID: 125580380f418000b1a06d9a54700f1191b6e561
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-10 at 17:52 +0100, Ingo Molnar wrote:
+Commit-ID:  125580380f418000b1a06d9a54700f1191b6e561
+Gitweb:     http://git.kernel.org/tip/125580380f418000b1a06d9a54700f1191b6e561
+Author:     Cyrill Gorcunov <gorcunov@openvz.org>
+AuthorDate: Thu, 10 Dec 2009 19:56:34 +0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 10 Dec 2009 18:00:30 +0100
 
-> > Note, we also need a way to "store" the max. The fly recorder method 
-> > is not good enough.
-> 
-> Yeah. What we want in the larger scheme of things is to have operations 
-> connected to events. One such operation would be "start measuring max", 
-> another would be "stop measuring the max".
-> 
-> [ Whether the max is intrinsic to the context structure, or is perhaps 
->   some _third_ event (so the max can be recovered by observing that 
->   event) is a detail. ]
-> 
-> Note that other operations make sense as well, such as:
-> 
->  - if event X happens then enable event Y
->  - if event X happens then disable event Y
+x86, perf events: Check if we have APIC enabled
 
-This is exactly what I was implementing, but I got pulled off to do
-other things before I completed it. The idea is to use the filtering
-infrastructure to be able to start or stop other events.
+Ralf Hildebrandt reported this boot warning:
 
-> 
-> A popular use of that would be to enable the function events on the 
-> 'start' event of a latency measurement, and disable function events on 
-> the 'stop' event.
+| Running a vanilla 2.6.32 as Xen DomU, I'm getting:
+|
+| [    0.000999] CPU: Physical Processor ID: 0
+| [    0.000999] CPU: Processor Core ID: 1
+| [    0.000999] Performance Events: AMD PMU driver.
+| [    0.000999] ------------[ cut here ]------------
+| [    0.000999] WARNING: at arch/x86/kernel/apic/apic.c:249 native_apic_write_dummy
 
-Function events will need to be start and stopped via a variable. It's
-too much overhead and risk to do the full patching.
+So we need to check if APIC functionality is available, and
+not just in the P6 driver but elsewhere as well.
 
-Code already exists that is like this. It is done in the function graph
-tracer with set_graph_function, and the function tracer set_ftrace_pid.
+Reported-by: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20091210165634.GF5086@lenovo>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/cpu/perf_event.c |   18 ++++++++++++------
+ 1 files changed, 12 insertions(+), 6 deletions(-)
 
-> 
-> Yet another use would be to enable cache miss events when 'entering' a 
-> specific function event, and disable cache miss counting on 'exiting' 
-> that function. (this would be an event of the function graph tracer)
-
-This could tap into the "set_ftrace_filter" infrastructure. I'm not
-saying that it needs to use that file. But that file supports setting
-specific actions to a particular function. We could extend the interface
-(if it isn't already there) to allow a perf ioctl or whatever to do the
-same thing.
-
-
->  
-> This would allow the precise cache miss profiling of a given function 
-> and all its sub-functions - and only of that function.
-> 
-> Note that the existing filter engine functionality connects in a natural 
-> way here as well: it can already be used to limit events and thus can be 
-> used to further shape the behavior of tracing, runtime.
-
-Yep.
-
-> 
-> Other interesting event operations are possible as well. Key is to 
-> expose this via the unified interface and to stop adding new 
-> functionality-limited crap via the ftrace plugin infrastructure - it's 
-> clearly not suitable for this purpose. We now have found how to do these 
-> things properly and cleanly.
-
-Yes, I agree that we should not add any new plugins. But I will still
-maintain the ones that are there until we have a replacement. I can
-continue my work on getting the events to pass data, and also add a
-kernel API to access hooks to functions.
-
-> 
-> And the thing is, _you_ implemented unified ftrace events, all i'm 
-> asking you is to realize the power of them and to stop adding new 
-> ftrace-plugins [which are crap in comparison] and contcentrate on 
-> exposing new tracing functionality via unified ftrace events, ok? ;-)
-
-Ah, I think we had a misunderstanding here. I was defending the current
-plugins and that they still needed to be supported (I'm working on some
-enhancements now). But I agree that no new plugins should be introduced,
-and that work should happen on finding alternatives. But until
-alternatives are ready, I'll still maintain the current plugins that are
-there. If anything, they help us understand what needs to be done with
-whatever replaces them.
-
-I think you thought I was pushing to extend plugins. That wasn't my
-argument. I was just arguing that the plugins still serve a purpose and
-I'll support and maintain the current plugins until they become
-obsolete.
-
--- Steve
-
-
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index 1342f23..18f05ec 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -2066,12 +2066,6 @@ static __init int p6_pmu_init(void)
+ 
+ 	x86_pmu = p6_pmu;
+ 
+-	if (!cpu_has_apic) {
+-		pr_info("no APIC, boot with the \"lapic\" boot parameter to force-enable it.\n");
+-		pr_info("no hardware sampling interrupt available.\n");
+-		x86_pmu.apic = 0;
+-	}
+-
+ 	return 0;
+ }
+ 
+@@ -2163,6 +2157,16 @@ static __init int amd_pmu_init(void)
+ 	return 0;
+ }
+ 
++static void __init pmu_check_apic(void)
++{
++	if (cpu_has_apic)
++		return;
++
++	x86_pmu.apic = 0;
++	pr_info("no APIC, boot with the \"lapic\" boot parameter to force-enable it.\n");
++	pr_info("no hardware sampling interrupt available.\n");
++}
++
+ void __init init_hw_perf_events(void)
+ {
+ 	int err;
+@@ -2184,6 +2188,8 @@ void __init init_hw_perf_events(void)
+ 		return;
+ 	}
+ 
++	pmu_check_apic();
++
+ 	pr_cont("%s PMU driver.\n", x86_pmu.name);
+ 
+ 	if (x86_pmu.num_events > X86_PMC_MAX_GENERIC) {
