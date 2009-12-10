@@ -1,110 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbZLJOLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760856AbZLJONU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760836AbZLJOLk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 09:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760708AbZLJOLe
+	id S1760856AbZLJONU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 09:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760844AbZLJONP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 09:11:34 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49218 "EHLO mx3.mail.elte.hu"
+	Thu, 10 Dec 2009 09:13:15 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43989 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760608AbZLJOLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 09:11:34 -0500
-Date: Thu, 10 Dec 2009 15:11:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Tim Bird <tim.bird@am.sony.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-Message-ID: <20091210141121.GB1436@elte.hu>
-References: <4B202778.4030801@am.sony.com>
- <20091210070800.GB16874@elte.hu>
- <20091210120332.GA5042@nowhere>
+	id S1760819AbZLJONO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 09:13:14 -0500
+Message-ID: <4B2101BB.1010803@suse.cz>
+Date: Thu, 10 Dec 2009 15:12:11 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-5.9 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091210120332.GA5042@nowhere>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [GIT PULL] kbuild updates for 2.6.33
+References: <20091208133004.GA22750@sepie.suse.cz> <20091209093349.GA11837@sepie.suse.cz> <20091209093108.387b2736.randy.dunlap@oracle.com> <20091209192038.GA7827@merkur.ravnborg.org>
+In-Reply-To: <20091209192038.GA7827@merkur.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Thu, Dec 10, 2009 at 08:08:00AM +0100, Ingo Molnar wrote:
-> > 
-> > * Tim Bird <tim.bird@am.sony.com> wrote:
-> > 
-> > > Add function duration tracer.
-> > > 
-> > > Signed-off-by: Tim Bird <tim.bird@am.sony.com>
-> > > ---
-> > >  kernel/trace/Kconfig          |    8
-> > >  kernel/trace/Makefile         |    1
-> > >  kernel/trace/trace.c          |   32 ++
-> > >  kernel/trace/trace_duration.c |  527 ++++++++++++++++++++++++++++++++++++++++++
-> > >  4 files changed, 568 insertions(+)
-> > 
-> > Please do it in a cleaner an more generic fashion: add a "function 
-> > event" that perf can see and process, so all the output embellishment 
-> > can be done outside of the kernel, in tools/perf/.
-> > 
-> > We want to wind down the current maze of ftrace plugins, not extend 
-> > them. We already obsoleted the following ftrace plugins: scheduler, 
-> > sysprof, blktrace, kmem, scheduler, etc. There's more work ongoing and 
-> > broad agreement between folks developing it that this is the way 
-> > forward.
-> > 
-> > The function tracer / function graph tracer is a holdout due to its 
-> > complexity - but that by no means weakens the argument and the necessity 
-> > to migrate it.
-> > 
-> > ftrace plugins were a nice idea originally and a clear improvement over 
-> > existing alternatives, but now that we've got a technicaly superior, 
-> > unified event framework that can do what the old plugins did and much 
-> > more, we want to improve that and not look back ...
+On 9.12.2009 20:20, Sam Ravnborg wrote:
+> On Wed, Dec 09, 2009 at 09:31:08AM -0800, Randy Dunlap wrote:
+>> Hi > Michal,
+>>
+>> Is there anything that tells us when we should/must use
+>> <generated/*.h> ?
 > 
+> The original idea was that include/generated/ should
+> be used for all generated header files.
 > 
-> I agree. If we can abstract it out in a struct trace_event rather than 
-> a struct tracer, then please try. I doubt we can't.
+> I once had a patch applied that used it for other
+> generated files - this was a bad idea. Said patch
+> was reverted as it had much bigger issues.
 > 
-> The trace events are more unified.
+> So think of it as a place for generated header files only.
+> This also warrants the location in include/
 > 
-> This makes me feel I'm going to try converting the function graph 
-> tracer into an event during the next cycle. [...]
+> But only for 'global' header files. For drivers
+> and the like that needs the header file only locally the
+> header file should not be located n include/generated,
+> as it is only for the global headers.
 
-Great!
+... and if the question was rather "which #include lines need to be
+fixed to use generated/": Most of the "global" generated headers are
+used only in a handful of places mostly in arch and a bit in core kernel
+code. The only drivers that needed updating were four staging drivers
+that included <linux/autoconf.h> explicitely (dropping these includes
+was a worthwhile cleanup on it's own) and one staging driver and said
+iwlwifi which included <linux/utsrelease.h>. Also the rest of the series
+is quite non-intrusive, it affects about 25 source files in arch/,
+kernel/ and init/ + makefile cleanups. The most often included
+asm/asm-offsets.h header is solved by a wrapper in arch/*/include/asm to
+avoid unnecessary conflicts. The win is that we can get rid of the
+include/asm symlink and the include2 thing in O= builds.
 
-> [...] It does not mean I could make it usable as a perf event right 
-> away in the same shot that said, as you can guess this is not a 
-> trivial plug. The current perf fast path is not yet adapted for that.
-
-Yeah, definitely so. I'd guess it would be slower out of box - it hasnt 
-gone through nearly as many refinements yet.
-
-> But at least this will be a good step forward.
-
-Yeah.
-
-Also, i'd suggest we call unified events 'ftrace events', as that is 
-what they really are: the whole TRACE_EVENT() infrastructure is the 
-crown jewel of ftrace and IMO it worked out pretty well.
-
-I hope there wont be any significant culture clash between ftrace and 
-perf - we want a single, unified piece of instrumentation 
-infrastructure, we want to keep the best of both worlds, and want to 
-eliminate any weaknesses and duplications. As long as we keep all that 
-in mind it will be all fine.
-
-	Ingo
+Michal
