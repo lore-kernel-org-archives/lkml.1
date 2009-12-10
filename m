@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759231AbZLJArl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZLJAsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759231AbZLJArl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 19:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbZLJArc
+	id S1754567AbZLJAsn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 19:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbZLJAsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 19:47:32 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52116 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754230AbZLJAra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 19:47:30 -0500
-Date: Thu, 10 Dec 2009 00:47:12 GMT
-From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       brgerst@gmail.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       brgerst@gmail.com, tglx@linutronix.de
-In-Reply-To: <1260403316-5679-2-git-send-email-brgerst@gmail.com>
-References: <1260403316-5679-2-git-send-email-brgerst@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/asm] x86-32: Avoid pipeline serialization in PTREGSCALL1 and 2
-Message-ID: <tip-ce9119ad90b1caba550447bfcc0a21850558ca49@git.kernel.org>
-Git-Commit-ID: ce9119ad90b1caba550447bfcc0a21850558ca49
-X-Mailer: tip-git-log-daemon
+	Wed, 9 Dec 2009 19:48:37 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39580 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbZLJAsg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 19:48:36 -0500
+Message-ID: <4B204521.7030204@zytor.com>
+Date: Wed, 09 Dec 2009 16:47:29 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: Brian Gerst <brgerst@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, x86@kernel.org, torvalds@linux-foundation.org,
+       jeremy@goop.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] x86: Merge pt_regs using syscalls
+References: <1260403316-5679-1-git-send-email-brgerst@gmail.com>
+In-Reply-To: <1260403316-5679-1-git-send-email-brgerst@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ce9119ad90b1caba550447bfcc0a21850558ca49
-Gitweb:     http://git.kernel.org/tip/ce9119ad90b1caba550447bfcc0a21850558ca49
-Author:     H. Peter Anvin <hpa@zytor.com>
-AuthorDate: Wed, 9 Dec 2009 16:33:44 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Wed, 9 Dec 2009 16:33:44 -0800
+On 12/09/2009 04:01 PM, Brian Gerst wrote:
+> This patch set converts the 32-bit syscalls that need pt_regs to
+> match the same prototype as 64-bit, using regparm(3) and adding 
+> the pt_regs pointer as an extra argument.  This allows these
+> syscalls to be merged.
+> 
+> [PATCH 1/6] x86, 32-bit: Add new pt_regs stubs
+> [PATCH 2/6] x86: Merge sys_iopl
+> [PATCH 3/6] x86: Merge sys_execve
+> [PATCH 4/6] x86: Merge sys_sigaltstack
+> [PATCH 5/6] x86, 32-bit: Convert sys_vm86 & sys_vm86old
+> [PATCH 6/6] x86: Merge sys_clone
 
-x86-32: Avoid pipeline serialization in PTREGSCALL1 and 2
+I have applied this series to tip:x86/asm with the addition of avoiding
+the extra pipeline serialization; assuming it doesn't break anything we
+can consider if we can push it for .33.  I really like the series,
+though; it is very clean and does the right thing.
 
-In the PTREGSCALL1 and 2 macros, we can trivially avoid an unnecessary
-pipeline serialization, so do so.
-
-In PTREGSCALLS3 this is much less clear-cut since we have to push a
-new value to the stack.  Leave it alone for now assuming it is as good
-as it is going to be; may want to check on Atom or another in-order
-x86 to see if we can do better.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Brian Gerst <brgerst@gmail.com>
-LKML-Reference: <1260403316-5679-2-git-send-email-brgerst@gmail.com>
----
- arch/x86/kernel/entry_32.S |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index 6492555..cb12b9b 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -735,15 +735,15 @@ ptregs_##name: \
- 	ALIGN; \
- ptregs_##name: \
- 	leal 4(%esp),%edx; \
--	movl PT_EBX(%edx),%eax; \
-+	movl (PT_EBX+4)(%esp),%eax; \
- 	jmp sys_##name;
- 
- #define PTREGSCALL2(name) \
- 	ALIGN; \
- ptregs_##name: \
- 	leal 4(%esp),%ecx; \
--	movl PT_ECX(%ecx),%edx; \
--	movl PT_EBX(%ecx),%eax; \
-+	movl (PT_ECX+4)(%esp),%edx; \
-+	movl (PT_EBX+4)(%esp),%eax; \
- 	jmp sys_##name;
- 
- #define PTREGSCALL3(name) \
+	-hpa
