@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbZLJVY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbZLJVZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761106AbZLJVY4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 16:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbZLJVYy
+	id S1761435AbZLJVZK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 16:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLJVZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 16:24:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4395 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755457AbZLJVYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 16:24:53 -0500
-Date: Thu, 10 Dec 2009 16:24:35 -0500
-From: Valerie Aurora <vaurora@redhat.com>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+	Thu, 10 Dec 2009 16:25:08 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:56141 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761250AbZLJVZG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 16:25:06 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: What's in asm-generic.git
+Date: Thu, 10 Dec 2009 22:25:05 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: liqin.chen@sunplusct.com, linux-arch@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/41] VFS: Make lookup_hash() return a struct path
-Message-ID: <20091210212434.GC10388@shell>
-References: <1256152779-10054-4-git-send-email-vaurora@redhat.com> <200911300604.nAU64D0s021921@agora.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200911300604.nAU64D0s021921@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.4.2.2i
+References: <OF24184D8B.2F7F8AA9-ON48257685.002069EF-48257685.00207E45@sunplusct.com> <200912102210.12124.arnd@arndb.de> <8bd0f97a0912101317v8143e67w9e2f1224111ac0d7@mail.gmail.com>
+In-Reply-To: <8bd0f97a0912101317v8143e67w9e2f1224111ac0d7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912102225.05280.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18B/qsCHqlfIzED7+SK/0+eKNA5TRkM+A6z05Y
+ isjOWaL3aj//s41IeAPLeyMU/SfjoL+tQsG3hFHgv6vypV3sIh
+ 6IME3V5zsLflGoKSifHEw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 30, 2009 at 01:04:13AM -0500, Erez Zadok wrote:
-> In message <1256152779-10054-4-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+On Thursday 10 December 2009, Mike Frysinger wrote:
+> > I have found now that sys_accept4 was missing. sys_set_thread_area however
+> > is only defined on x86 and mips. Since you don't currently implement this
+> > on score, maybe it would be more appropriate to handle it like the other
+> > architectures do, rather than adding it to asm-generic/unistd.h?
 > 
-> > @@ -1937,7 +1942,8 @@ EXPORT_SYMBOL(filp_open);
-> >   */
-> >  struct dentry *lookup_create(struct nameidata *nd, int is_dir)
-> >  {
-> > -	struct dentry *dentry = ERR_PTR(-EEXIST);
-> > +	struct path path = { .dentry = ERR_PTR(-EEXIST) } ;
-> 
-> I assume the compiler will initialize path.mnt to NULL.  Is NULL what you
-> want?  Even if the compiler guarantees it, I think you should either
-> explicitly init .mnt to NULL or leave a comment explaining what's going on
-> -- so no future code reader will think that this was omitted; a comment can
-> clarify your intentions more explicitly.
+> isnt the point of asm-generic/unistd.h to collect all common syscalls
+> ?  if there's syscalls that ideally should be handled by everyone but
+> currently doesnt, then it's easy to define it in the header but have
+> the actual entry.S leave it as a hole ...
 
-That is an unpleasant thing to look at.  I rewrote the exit paths so
-that this initialization was unnecessary.
+Well, sys_thread_area is not a common syscall but rather an exception.
+I haven't looked at how glibc does implents TLS on different architectures,
+but I think this is commonly done purely in user space without the
+need for a syscall.
 
-Thanks,
-
--VAL
+	Arnd
