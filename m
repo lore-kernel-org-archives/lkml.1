@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761801AbZLJVu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761776AbZLJVt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761801AbZLJVu2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 16:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761792AbZLJVu1
+	id S1761776AbZLJVt5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 16:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761703AbZLJVt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 16:50:27 -0500
-Received: from cantor.suse.de ([195.135.220.2]:33083 "EHLO mx1.suse.de"
+	Thu, 10 Dec 2009 16:49:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59580 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761782AbZLJVu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 16:50:26 -0500
-Date: Thu, 10 Dec 2009 13:49:34 -0800
-From: Greg KH <gregkh@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [patch] drivers: Fix bogus 0 error return in device_add()
-Message-ID: <20091210214934.GA30843@suse.de>
-References: <20091210193057.799393067@linutronix.de> <20091210205623.GA29097@suse.de> <alpine.LFD.2.00.0912102158590.3089@localhost.localdomain>
+	id S1761143AbZLJVt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 16:49:56 -0500
+Date: Thu, 10 Dec 2009 22:49:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Xavier Bestel <xavier.bestel@free.fr>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: [git pull] drm
+Message-ID: <20091210214948.GA14185@elte.hu>
+References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>
+ <alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>
+ <1260459601.18520.26.camel@skunk>
+ <20091210164718.6b0acb59@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912102158590.3089@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20091210164718.6b0acb59@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 10:01:10PM +0100, Thomas Gleixner wrote:
-> On Thu, 10 Dec 2009, Greg KH wrote:
-> > On Thu, Dec 10, 2009 at 07:32:49PM -0000, Thomas Gleixner wrote:
-> > > If device_add() is called with a device which does not have dev->p set
-> > > up, then device_private_init() is called. If that succeeds, then the
-> > > error variable is set to 0. Now if the dev_name(dev) check further
-> > > down fails, then device_add() correctly terminates, but returns 0.
-> > > That of course lets the driver progress. If later another driver uses
-> > > this half set up device as parent then device_add() of the child
-> > > device explodes and renders sysfs completely unusable.
-> > > 
-> > > Set the error to -EINVAL if dev_name() check fails.
-> > 
-> > That's a good catch, thanks.
-> > 
-> > Is anything currently triggering this?  Or did you just find it by
-> > reading the code?
+
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> > Last time they were asked that, they wanted to be free of changing their
+> > kernel/userspace interface before upstreaming.
 > 
-> Hans-Juergen had a buggy vendor driver where init_name was not
-> initialized. So the driver probing succeeded and after that a
-> depending driver crashed somewhere in device_add().
+> So put it in staging with a note to that effect. That'll also get it 
+> more exposure and review.
 
-Ick, bad code :(
+Well, arguably that particular idea should have come from the people 
+maintaining that area of code. There's this one missing driver which 
+covers (more or less) like 40%-50% of the PC market, that's a glaringly 
+significant issue, isnt it? It doesnt get any more significant, does it?
 
-Good to know it's not a problem with in-tree drivers, so I don't have to
-add this to the -stable trees.
-
-thanks,
-
-greg k-h
+	Ingo
