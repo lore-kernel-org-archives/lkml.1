@@ -1,129 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbZLJPbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbZLJPjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760914AbZLJPbH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 10:31:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760801AbZLJPbG
+	id S1760926AbZLJPjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 10:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbZLJPjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 10:31:06 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:54646 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754000AbZLJPbE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 10:31:04 -0500
-Date: Thu, 10 Dec 2009 10:31:10 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912100018.19723.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0912101010090.2825-100000@iolanthe.rowland.org>
+	Thu, 10 Dec 2009 10:39:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34919 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752125AbZLJPjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 10:39:15 -0500
+Date: Thu, 10 Dec 2009 16:38:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tim Bird <tim.bird@am.sony.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
+Message-ID: <20091210153845.GA28230@elte.hu>
+References: <4B202778.4030801@am.sony.com>
+ <20091210070800.GB16874@elte.hu>
+ <20091210120332.GA5042@nowhere>
+ <20091210141121.GB1436@elte.hu>
+ <1260456803.2146.167.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260456803.2146.167.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Dec 2009, Rafael J. Wysocki wrote:
 
-> > How about CONFIG_PROVE_LOCKING?  If lockdep really does start 
-> > complaining then switching to completions would be a simple way to 
-> > appease it.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> On Thu, 2009-12-10 at 15:11 +0100, Ingo Molnar wrote:
 > 
-> Ah, that one is not set.  I guess I'll try it later, although I've already
-> decided to use completions anyway.
+> > > > ftrace plugins were a nice idea originally and a clear 
+> > > > improvement over existing alternatives, but now that we've got a 
+> > > > technicaly superior, unified event framework that can do what 
+> > > > the old plugins did and much more, we want to improve that and 
+> > > > not look back ...
+> 
+> Well to me the ftrace plugins still serve a purpose. The event 
+> structures are very powerful for showing events. The plugins purpose 
+> is to show functionality.
+> 
+> The latency tracers are a perfect example. Because they do not 
+> concentrate on just events. But we must hit a maximum to save off the 
+> trace. Just watching the events is not good enough. A separate buffer 
+> to keep trace of the biggest latency is still needed.
 
-You should see how badly lockdep complains about the rwsems.  If it 
-really doesn't like them then using completions makes sense.
+The correctly designed way to express latency tracing is via a new 
+generic event primitive: connecting two events to a maximum value.
 
-> Index: linux-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/main.c
-> +++ linux-2.6/drivers/base/power/main.c
-> @@ -56,6 +58,7 @@ static bool transition_started;
->  void device_pm_init(struct device *dev)
->  {
->  	dev->power.status = DPM_ON;
-> +	init_completion(&dev->power.completion);
->  	pm_runtime_init(dev);
->  }
+That can be done without forcibly tying it and limiting it to a specific 
+'latency tracing' variant as the /debug/tracing/ bits of ftrace do it 
+right now.
 
-You need a matching complete_all() in device_pm_remove(), in case 
-someone else is waiting for the device when it gets unregistered.
+Just off the top of my head we want to be able to trace:
 
-> +/**
-> + * dpm_synchronize - Wait for PM callbacks of all devices to complete.
-> + */
-> +static void dpm_synchronize(void)
-> +{
-> +	struct device *dev;
-> +
-> +	async_synchronize_full();
-> +
-> +	mutex_lock(&dpm_list_mtx);
-> +	list_for_each_entry(dev, &dpm_list, power.entry)
-> +		INIT_COMPLETION(dev->power.completion);
-> +	mutex_unlock(&dpm_list_mtx);
-> +}
+ - max irq service latencies for a given IRQ
+ - max block IO completion latencies for a app
+ - max TLB flush latencies in the system
+ - max sys_open() latencies in a task
+ - max fork()/exit() latencies in a workload
+ - max scheduling latencies on a given CPU
+ - max page fault latencies
+ - max wakeup latencies for a given task
+ - max memory allocation latencies
 
-I agree with Linus, initializing the completions here is weird.  You
-should initialize them just before using them.
+ - ... and dozens and dozens of other things where there's a "start"
+   and a "stop" event and where we want to measure the time between
+   them.
 
-> @@ -683,6 +786,7 @@ static int dpm_suspend(pm_message_t stat
->  
->  	INIT_LIST_HEAD(&list);
->  	mutex_lock(&dpm_list_mtx);
-> +	pm_transition = state;
->  	while (!list_empty(&dpm_list)) {
->  		struct device *dev = to_device(dpm_list.prev);
->  
-> @@ -697,13 +801,18 @@ static int dpm_suspend(pm_message_t stat
->  			put_device(dev);
->  			break;
->  		}
-> -		dev->power.status = DPM_OFF;
->  		if (!list_empty(&dev->power.entry))
->  			list_move(&dev->power.entry, &list);
->  		put_device(dev);
-> +		error = atomic_read(&async_error);
-> +		if (error)
-> +			break;
->  	}
->  	list_splice(&list, dpm_list.prev);
+Your design of tying latency tracing to some hardcoded 'ftrace plugin' 
+abstraction is shortsighted and just does not scale to many of the items 
+above.
 
-Here's something you might want to do in a later patch.  These awkward 
-list-pointer manipulations can be simplified as follows:
+> > > I agree. If we can abstract it out in a struct trace_event rather 
+> > > than a struct tracer, then please try. I doubt we can't.
+> > > 
+> > > The trace events are more unified.
+> 
+> Yes because the trace events all pretty much do the same thing.
+> 
+> > > 
+> > > This makes me feel I'm going to try converting the function graph 
+> > > tracer into an event during the next cycle. [...]
+> > 
+> > Great!
+> > 
+> > > [...] It does not mean I could make it usable as a perf event right 
+> > > away in the same shot that said, as you can guess this is not a 
+> > > trivial plug. The current perf fast path is not yet adapted for that.
+> > 
+> > Yeah, definitely so. I'd guess it would be slower out of box - it hasnt 
+> > gone through nearly as many refinements yet.
+> > 
+> > > But at least this will be a good step forward.
+> > 
+> > Yeah.
+> > 
+> > Also, i'd suggest we call unified events 'ftrace events', as that is 
+> > what they really are: the whole TRACE_EVENT() infrastructure is the 
+> > crown jewel of ftrace and IMO it worked out pretty well.
+> 
+> For recording events, yes I totally agree. But for logic that needs to 
+> pass data from one event to another, it is still a bit lacking.
 
-static bool dpm_iterate_forward;
-static struct device *dpm_next;
+Expressing latency tracing in form of an 'ftrace plugin' is a pretty 
+inefficient way of doing it: it's very limiting and its utility is much 
+lower than what it could be.
 
-In device_pm_remove():
+> > I hope there wont be any significant culture clash between ftrace 
+> > and perf - we want a single, unified piece of instrumentation 
+> > infrastructure, we want to keep the best of both worlds, and want to 
+> > eliminate any weaknesses and duplications. As long as we keep all 
+> > that in mind it will be all fine.
+> 
+> I'm just not from the mind set that one product fits all needs. I 
+> never was and that was the reason that I joined the Linux community in 
+> the first place. I liked the old Unix philosophy of "Do one thing, and 
+> do it well, and let all others interact, and interact with all 
+> others". Ftrace itself never was one product. It just seemed that 
+> anything to do with tracing was called ftrace. It started as just the 
+> function tracer. Then it had plugins, then it got events, but these 
+> are separate entities all together.
+> 
+> I designed the ftrace plugins as a way to plug in new features that I 
+> could never dream of.
+> 
+> I wrote the ring buffer not for ftrace, but as a separate entity, that 
+> is also used by the hard ware latency detector.
+> 
+> I designed the ftrace function tracer to not just work with ftrace but 
+> to allow all others to hook to functions. This created the function 
+> graph tracer, the stack tracer, and even LTTng hooks into it (not to 
+> mention my own logdev).
+> 
+> I see that perf at the user level has ways to interact with it nicely, 
+> although I don't know how well it interacts with other utilites. But 
+> the perf kernel code seems to be a one way street. You can add 
+> features to perf, but it is hard to use the perf infrastructure for 
+> something other than perf (with the exception of the hardware perf 
+> events, that part has a nice interface).
 
-	mutex_lock(&dpm_list_mtx);
-	if (dev == dpm_next)
-		dpm_next = to_device(dpm_iterate_forward ?
-			dev->power.entry.next : dev->power.entry.prev);
-	list_del_init(&dev->power.entry);
-	mutex_unlock(&dpm_list_mtx);
+I see ftrace plugins as a step of evolution. If you see it as some 
+ground to 'protect' then that's going to cause significant disagreement 
+between us. I prefer to reimplement functionality in a better way and 
+throw away the old version, and the whole premise of /debug is that we 
+can throw away old versions of code.
 
-In dpm_resume():
+If you want to keep inferior concepts under the guise of 'choice' then 
+i'm very much against that. In the kernel we make up our minds about 
+what the best technical solution is for a given range of problems, and 
+then we go for it. Having a zillion mediocre xterms (and not a single 
+good one) is not a development model i find too convincing.
 
-	dpm_iterate_forward = true;
-	list_for_each_entry_safe(dev, dpm_next, dpm_list, power.entry) {
-		...
-
-In dpm_suspend():
-
-	dpm_iterate_forward = false;
-	list_for_each_entry_safe_reverse(dev, dpm_next, dpm_list, 
-			power.entry) {
-		...
-
-Whether this really is better is a matter of opinion; I like it.
-
-Alan Stern
-
+	Ingo
