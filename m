@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752007AbZLJAzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbZLJAzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752007AbZLJAzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 19:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZLJAzA
+	id S1759197AbZLJAzF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 19:55:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759293AbZLJAy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 19:55:00 -0500
-Received: from www.tglx.de ([62.245.132.106]:54095 "EHLO www.tglx.de"
+	Wed, 9 Dec 2009 19:54:58 -0500
+Received: from www.tglx.de ([62.245.132.106]:53891 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759211AbZLJAyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 19:54:24 -0500
-Message-Id: <20091210004703.308396881@linutronix.de>
+	id S1750959AbZLJAyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 19:54:46 -0500
+Message-Id: <20091210004703.348209762@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 10 Dec 2009 00:53:26 -0000
+Date: Thu, 10 Dec 2009 00:53:31 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
@@ -21,55 +21,54 @@ Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        David Howells <dhowells@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Vegard Nossum <vegardno@ifi.uio.no>
-Subject: [patch 8/9] Documentation: Fix invalid rcu assumptions
+       linux-security-module@vger.kernel.org
+Subject: [patch 9/9] security: Fix invalid rcu assumptions in comments
 References: <20091210001308.247025548@linutronix.de>
-Content-Disposition: inline; filename=documentation-fix-rcu-assumptions.patch
+Content-Disposition: inline; filename=security-fix-rcu-assumptions.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1) spinlock held is not equivalent to rcu_read_lock()
+1) held spinlocks are not equivalent to rcu_read_lock
 
-2) remove the stale signal code snippet
+2) access to current_cred() is safe as only current can modify its
+   own credentials.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Vegard Nossum <vegardno@ifi.uio.no>
 Cc: James Morris <jmorris@namei.org>
----
- Documentation/credentials.txt |    3 ---
- Documentation/kmemcheck.txt   |    3 +--
- 2 files changed, 1 insertion(+), 5 deletions(-)
+Cc: linux-security-module@vger.kernel.org
 
-Index: linux-2.6-tip/Documentation/credentials.txt
+---
+ security/keys/permission.c |    3 +--
+ security/keys/proc.c       |    2 --
+ 2 files changed, 1 insertion(+), 4 deletions(-)
+
+Index: linux-2.6-tip/security/keys/permission.c
 ===================================================================
---- linux-2.6-tip.orig/Documentation/credentials.txt
-+++ linux-2.6-tip/Documentation/credentials.txt
-@@ -408,9 +408,6 @@ This should be used inside the RCU read 
- 		...
- 	}
+--- linux-2.6-tip.orig/security/keys/permission.c
++++ linux-2.6-tip/security/keys/permission.c
+@@ -23,8 +23,7 @@
+  * Check to see whether permission is granted to use a key in the desired way,
+  * but permit the security modules to override.
+  *
+- * The caller must hold either a ref on cred or must hold the RCU readlock or a
+- * spinlock.
++ * The caller must hold either a ref on cred or must hold the RCU readlock.
+  */
+ int key_task_permission(const key_ref_t key_ref, const struct cred *cred,
+ 			key_perm_t perm)
+Index: linux-2.6-tip/security/keys/proc.c
+===================================================================
+--- linux-2.6-tip.orig/security/keys/proc.c
++++ linux-2.6-tip/security/keys/proc.c
+@@ -194,8 +194,6 @@ static int proc_keys_show(struct seq_fil
  
--A function need not get RCU read lock to use __task_cred() if it is holding a
--spinlock at the time as this implicitly holds the RCU read lock.
--
- Should it be necessary to hold another task's credentials for a long period of
- time, and possibly to sleep whilst doing so, then the caller should get a
- reference on them using:
-Index: linux-2.6-tip/Documentation/kmemcheck.txt
-===================================================================
---- linux-2.6-tip.orig/Documentation/kmemcheck.txt
-+++ linux-2.6-tip/Documentation/kmemcheck.txt
-@@ -429,8 +429,7 @@ Let's take a look at it:
- 193         /*
- 194          * We won't get problems with the target's UID changing under us
- 195          * because changing it requires RCU be used, and if t != current, the
--196          * caller must be holding the RCU readlock (by way of a spinlock) and
--197          * we use RCU protection here
-+196          * caller must be holding the RCU readlocke
- 198          */
- 199         user = get_uid(__task_cred(t)->user);
- 200         atomic_inc(&user->sigpending);
+ 	/* check whether the current task is allowed to view the key (assuming
+ 	 * non-possession)
+-	 * - the caller holds a spinlock, and thus the RCU read lock, making our
+-	 *   access to __current_cred() safe
+ 	 */
+ 	rc = key_task_permission(make_key_ref(key, 0), current_cred(),
+ 				 KEY_VIEW);
 
 
