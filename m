@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbZLJA4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759298AbZLJAy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941AbZLJA4B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 19:56:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZLJAz5
+	id S1759298AbZLJAy2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 19:54:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbZLJAyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 19:55:57 -0500
-Received: from www.tglx.de ([62.245.132.106]:54072 "EHLO www.tglx.de"
+	Wed, 9 Dec 2009 19:54:25 -0500
+Received: from www.tglx.de ([62.245.132.106]:54074 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755164AbZLJAyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 19:54:16 -0500
-Message-Id: <20091210001308.247025548@linutronix.de>
+	id S1755330AbZLJAyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 19:54:17 -0500
+Message-Id: <20091210004703.029784964@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 10 Dec 2009 00:52:46 -0000
+Date: Thu, 10 Dec 2009 00:52:51 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
@@ -20,52 +20,63 @@ Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
        David Howells <dhowells@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [patch 0/9] Fix various __task_cred related invalid RCU assumptions
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-security-module@vger.kernel.org
+Subject: [patch 1/9] sys: Fix missing rcu protection for __task_cred() access
+References: <20091210001308.247025548@linutronix.de>
+Content-Disposition: inline; filename=sys-add-missing-rcu-protection.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While auditing the read_lock(&tasklist_lock) sites for a possible
-conversion to rcu-read_lock() I stumbled over an unprotected user of
-__task_cred in kernel/sys.c
+commit c69e8d9 (CRED: Use RCU to access another task's creds and to
+release a task's own creds) added non rcu_read_lock() protected access
+to task creds of the target task in set_prio_one().
 
-That caused me to audit all the __task_cred usage sites except in
-kernel/exit.c.
+The comment above the function says:
+ * - the caller must hold the RCU read lock
 
-Most of the usage sites are correct, but some of them trip over
-invalid assumptions about the protection which is given by RCU.
+The calling code in sys_setpriority does read_lock(&tasklist_lock) but
+not rcu_read_lock(). This works only when CONFIG_TREE_PREEMPT_RCU=n.
+With CONFIG_TREE_PREEMPT_RCU=y the rcu_callbacks can run in the tick
+interrupt when they see no read side critical section.
 
-- spinlocked/preempt_disabled regions are equivalent to rcu_read_lock():
+There is another instance of __task_cred() in sys_setpriority() itself
+which is equally unprotected.
 
-   That's wrong. RCU does not guarantee that. 
+Wrap the whole code section into a rcu read side critical section to
+fix this quick and dirty.
 
-   It has been that way due to implementation details and it still is
-   valid for CONFIG_TREE_PREEMPT_RCU=n, but there is no guarantee that
-   this will be the case forever.
+Will be revisited in course of the read_lock(&tasklist_lock) -> rcu
+crusade.
 
-- interrupt disabled regions are equivalent to rcu_read_lock():
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: David Howells <dhowells@redhat.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: linux-security-module@vger.kernel.org
+---
+ kernel/sys.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-  Wrong again. RCU does not guarantee that.
+Index: linux-2.6-tip/kernel/sys.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sys.c
++++ linux-2.6-tip/kernel/sys.c
+@@ -163,6 +163,7 @@ SYSCALL_DEFINE3(setpriority, int, which,
+ 	if (niceval > 19)
+ 		niceval = 19;
+ 
++	rcu_read_lock();
+ 	read_lock(&tasklist_lock);
+ 	switch (which) {
+ 		case PRIO_PROCESS:
+@@ -200,6 +201,7 @@ SYSCALL_DEFINE3(setpriority, int, which,
+ 	}
+ out_unlock:
+ 	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ out:
+ 	return error;
+ }
 
-  It's true for current mainline, but again this is an implementation
-  detail and there is no guarantee by the RCU semantics.
-
-  Indeed we want to get rid of that to avoid scalability issues on
-  large systems and preempt-rt got already rid of it to a certain
-  extent.
-
-I'm sure we are lucky that CONFIG_TREE_PREEMPT_RCU=y is not yet wide
-spread and the code pathes are esoteric enough not to trigger that
-subtle races (some of them might just error out silently).
-
-Nevertheless we need to fix all invalid assumptions about RCU
-protection.
-
-The following patch series fixes all yet known affected __task_cred()
-sites, but there is more auditing of all other rcu users necessary.
-
-Thanks,
-
-	tglx
 
