@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934005AbZLJL0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934170AbZLJLtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934005AbZLJL0u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 06:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933773AbZLJL0q
+	id S934170AbZLJLtu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 06:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934079AbZLJLtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 06:26:46 -0500
-Received: from smtpauth.net4india.com ([202.71.129.41]:53233 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933737AbZLJL0p (ORCPT
+	Thu, 10 Dec 2009 06:49:46 -0500
+Received: from stinky.trash.net ([213.144.137.162]:36357 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934019AbZLJLtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 06:26:45 -0500
-Message-ID: <4B20DB2C.5040404@xenontk.org>
-Date: Thu, 10 Dec 2009 16:57:40 +0530
-From: David John <davidjon@xenontk.org>
-Reply-To: davidjon@xenontk.org
-User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.4pre) Gecko/20091014 Thunderbird/3.0b4
+	Thu, 10 Dec 2009 06:49:45 -0500
+Message-ID: <4B20E05C.1010604@trash.net>
+Date: Thu, 10 Dec 2009 12:49:48 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-To: chris@chris-wilson.co.uk
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, eric@anholt.net,
-       airlied@gmail.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       hohndel@infradead.org
-Subject: Re: [Regression 2] i915: Commit 0d9c778978 causes flickering in 2.6.32
-References: <4B1FDAE3.9050602@xenontk.org>
-In-Reply-To: <4B1FDAE3.9050602@xenontk.org>
-Content-Type: text/plain; charset=UTF-8
+To: kxie@chelsio.com
+CC: linux-scsi@vger.kernel.org, open-iscsi@googlegroups.com,
+       netdev@vger.kernel.org, davem@davemloft.net, rakesh@chelsio.com,
+       James.Bottomley@HansenPartnership.com, michaelc@cs.wisc.edu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] cxgb3i: Fix a login over vlan issue
+References: <200912100535.nBA5ZM0L000413@localhost.localdomain>
+In-Reply-To: <200912100535.nBA5ZM0L000413@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/09/2009 10:44 PM, David John wrote:
-> Hi All,
+kxie@chelsio.com wrote:
+> [PATCH 1/1] cxgb3i: Fix a login over vlan issue
 > 
-> I have a Dell Inspiron with a GM45 Express chipset and an Acer 23"
-> display connected to the VGA out. I switch off the internal LVDS LCD
-> on X start-up with xrandr. X works fine but if I switch to a console,
-> it flickers horribly with the text all pushed to the right. Switching
-> back to X causes X to start flickering as well. Turning the internal
-> LVDS back _on_ solves the issue. It works like a switch so it is easily
-> reproducible. Reverting commit 0e442c60 also fixes the problem.
+> From: Karen Xie <kxie@chelsio.com>
 > 
-> There isn't anything unusual in the kernel or X logs that I could see,
-> but they're attached.
+> Fix a login over vlan issue, when parent interface is vlan and we are using
 > 
-> Regards,
-> David.
+> cxgb3i sepecific private ip address in '/etc/iscsi/ifaces/' iface file.
+> 
+> +/**
+> + * cxgb3i_find_dev - find the interface associated with the given address
+> + * @ipaddr: ip address
+> + */
+> +static struct net_device *cxgb3i_find_dev(__be32 ipaddr)
+> +{
+> +	struct flowi fl;
+> +	int err;
+> +	struct rtable *rt;
+> +
+> +	memset(&fl, 0, sizeof(fl));
+> +	fl.nl_u.ip4_u.daddr = ipaddr;
+> +
+> +	err = ip_route_output_key(&init_net, &rt, &fl);
+> +	if (!err)
+> +		return (&rt->u.dst)->dev;
+> +
+> +	return NULL;
+> +}
 
-Hi,
-
-Reverting the above commit fixes 95% of the problem, the console no
-longer flickers. However, the same sequence: Switch off LVDS->
-Switch to console->Switch back to X causes slight flicker in X with
-the commit 0d9c778978. Turning the internal LVDS back on solves the
-issue. Reverting commit 0d9c778978 fixes the problem completely (Both
-commits have to be reverted).
-
-Regards,
-David.
-
+This probably shouldn't be using init_net but the current namespace.
