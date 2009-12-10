@@ -1,330 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933492AbZLJHfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933512AbZLJHfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933492AbZLJHfU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 02:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933303AbZLJHfQ
+	id S933512AbZLJHfx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 02:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760566AbZLJHft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 02:35:16 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:61806 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933292AbZLJHfO (ORCPT
+	Thu, 10 Dec 2009 02:35:49 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44218 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760519AbZLJHfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 02:35:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent;
-        b=ZuhvjQ5QR9DwgjDl2GaW7A6IOups9XfntPu8Hkp2Kj2Dl5wb/yBtNuASjPuJ4wRS36
-         y7Knt++bUYHF5ft5TbT9HVp5JmJD1kjyhrQlacl2ZPYAU3v32rAijlUdESn9JhCd6pR/
-         3GhE3bJCq2MJgijF71zna8HKgzt07XF+k2aM0=
-Date: Thu, 10 Dec 2009 08:35:14 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: borislav.petkov@amd.com, Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Aristeu Rozanski <aris@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
-       x86 <x86@kernel.org>
-Subject: Re: [PATCH] x86, msr: add support for non-contiguous cpumasks
-Message-ID: <20091210073514.GA7088@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, borislav.petkov@amd.com,
-	Mauro Carvalho Chehab <mchehab@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, Aristeu Rozanski <aris@redhat.com>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
-	x86 <x86@kernel.org>
-References: <20091207122133.GA24877@aftab>
+	Thu, 10 Dec 2009 02:35:48 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH v2  8/8] Don't deactivate many touched page
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Larry Woodman <lwoodman@redhat.com>
+In-Reply-To: <20091210154822.2550.A69D9226@jp.fujitsu.com>
+References: <20091210154822.2550.A69D9226@jp.fujitsu.com>
+Message-Id: <20091210163429.2568.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091207122133.GA24877@aftab>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 10 Dec 2009 16:35:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Changelog
+ o from v1
+   - Fix comments.
+   - Rename too_many_young_bit_found() with too_many_referenced()
+     [as Rik's mention].
+ o from andrea's original patch
+   - Rebase topon my patches.
+   - Use list_cut_position/list_splice_tail pair instead
+     list_del/list_add to make pte scan fairness.
+   - Only use max young threshold when soft_try is true.
+     It avoid wrong OOM sideeffect.
+   - Return SWAP_AGAIN instead successful result if max
+     young threshold exceed. It prevent the pages without clear
+     pte young bit will be deactivated wrongly.
+   - Add to treat ksm page logic
 
-any nacks/acks on the fix below? Because we really need some version of
-it to go in now.
+Many shared and frequently used page don't need deactivate and
+try_to_unamp(). It's pointless while VM pressure is low, the page
+might reactivate soon. it's only makes cpu wasting.
 
-Thanks.
+Then, This patch makes to stop pte scan if wipe_page_reference()
+found lots young pte bit.
 
-On Mon, Dec 07, 2009 at 01:21:33PM +0100, Borislav Petkov wrote:
-> Hi Peter,
-> 
-> can you please take a look at the following patch which fixes a problem
-> with non-contiguous cpumasks submitted to rd/wrmsr_on_cpus() (see URL in
-> the commit message below) and let me know whether this approach looks
-> ok. If yes, I could submit it with my patchqueue along with the rest of
-> amd64_edac updates for it'll be very convenient if we could get it in
-> now so that it could be backported to .32.
-> 
-> Thanks.
-> 
-> ---
-> The current rd/wrmsr_on_cpus helpers assume that the supplied
-> cpumasks are contiguous. However, there are machines out there
-> like some K8 multinode Opterons which have a non-contiguous core
-> enumeration on each node (e.g. cores 0,2 on node 0 instead of 0,1), see
-> http://www.gossamer-threads.com/lists/linux/kernel/1160268.
-> 
-> This patch fixes out-of-bounds writes (see URL above) by making sure we
-> stay inbounds by using an msr->cpu field which tells us which CPU's MSRs
-> to access.
-> 
-> Additionally, this patch adds msrs_{alloc,free} helpers for preparing
-> the array of MSRs to access.
-> 
-> Cc: H. Peter Anvin <hpa@zytor.com>
-> Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-> Cc: Aristeu Rozanski <aris@redhat.com>
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Doug Thompson <dougthompson@xmission.com>
-> Not-yet-signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> ---
->  arch/x86/include/asm/msr.h |   11 ++++++
->  arch/x86/lib/msr.c         |   81 +++++++++++++++++++++++++++++++++++++------
->  drivers/edac/amd64_edac.c  |   17 ++++-----
->  3 files changed, 87 insertions(+), 22 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
-> index 9a00219..4f528f8 100644
-> --- a/arch/x86/include/asm/msr.h
-> +++ b/arch/x86/include/asm/msr.h
-> @@ -18,6 +18,7 @@
->  #include <asm/cpumask.h>
->  
->  struct msr {
-> +	int cpu;
->  	union {
->  		struct {
->  			u32 l;
-> @@ -247,6 +248,8 @@ do {                                                            \
->  #ifdef CONFIG_SMP
->  int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
->  int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-> +struct msr *msrs_alloc(const struct cpumask *mask);
-> +void msrs_free(struct msr *msrs);
->  void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs);
->  void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs);
->  int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
-> @@ -264,6 +267,14 @@ static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
->  	wrmsr(msr_no, l, h);
->  	return 0;
->  }
-> +struct msr *msrs_alloc(const struct cpumask *mask)
-> +{
-> +	return kzalloc(sizeof(struct msr), GFP_KERNEL);
-> +}
-> +void msrs_free(struct msr *msrs)
-> +{
-> +	kfree(msrs);
-> +}
->  static inline void rdmsr_on_cpus(const cpumask_t *m, u32 msr_no,
->  				struct msr *msrs)
->  {
-> diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
-> index 41628b1..e2213de 100644
-> --- a/arch/x86/lib/msr.c
-> +++ b/arch/x86/lib/msr.c
-> @@ -7,20 +7,40 @@ struct msr_info {
->  	u32 msr_no;
->  	struct msr reg;
->  	struct msr *msrs;
-> -	int off;
-> +	unsigned msrs_len;
->  	int err;
->  };
->  
-> +static inline struct msr *scroll_to_cpu(struct msr_info *rv, int this_cpu,
-> +					const char *caller)
-> +{
-> +	int i = 0;
-> +
-> +	if (!rv->msrs)
-> +		return &rv->reg;
-> +
-> +	while (i < rv->msrs_len &&
-> +		rv->msrs[i].cpu != this_cpu)
-> +		i++;
-> +
-> +	if (rv->msrs[i].cpu != this_cpu) {
-> +		pr_err("%s: called on a wrong cpu (%d vs %d)?\n",
-> +			caller, rv->msrs[i].cpu, this_cpu);
-> +		return NULL;
-> +	}
-> +
-> +	return &rv->msrs[i];
-> +}
-> +
->  static void __rdmsr_on_cpu(void *info)
->  {
->  	struct msr_info *rv = info;
->  	struct msr *reg;
->  	int this_cpu = raw_smp_processor_id();
->  
-> -	if (rv->msrs)
-> -		reg = &rv->msrs[this_cpu - rv->off];
-> -	else
-> -		reg = &rv->reg;
-> +	reg = scroll_to_cpu(rv, this_cpu, __func__);
-> +	if (!reg)
-> +		return;
->  
->  	rdmsr(rv->msr_no, reg->l, reg->h);
->  }
-> @@ -31,10 +51,9 @@ static void __wrmsr_on_cpu(void *info)
->  	struct msr *reg;
->  	int this_cpu = raw_smp_processor_id();
->  
-> -	if (rv->msrs)
-> -		reg = &rv->msrs[this_cpu - rv->off];
-> -	else
-> -		reg = &rv->reg;
-> +	reg = scroll_to_cpu(rv, this_cpu, __func__);
-> +	if (!reg)
-> +		return;
->  
->  	wrmsr(rv->msr_no, reg->l, reg->h);
->  }
-> @@ -80,9 +99,9 @@ static void __rwmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
->  
->  	memset(&rv, 0, sizeof(rv));
->  
-> -	rv.off    = cpumask_first(mask);
-> -	rv.msrs	  = msrs;
-> -	rv.msr_no = msr_no;
-> +	rv.msr_no   = msr_no;
-> +	rv.msrs	    = msrs;
-> +	rv.msrs_len = cpumask_weight(mask);
->  
->  	this_cpu = get_cpu();
->  
-> @@ -120,6 +139,44 @@ void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
->  }
->  EXPORT_SYMBOL(wrmsr_on_cpus);
->  
-> +/*
-> + * Allocate enough msr structs for the supplied cpumask. Also, take care of
-> + * non-contigious bitmasks.
-> + */
-> +struct msr *msrs_alloc(const struct cpumask *mask)
-> +{
-> +	struct msr *msrs;
-> +	int i, cpu = -1;
-> +	unsigned msrs_len;
-> +
-> +	if (cpumask_empty(mask)) {
-> +		pr_warning("%s: empty cpumask!\n", __func__);
-> +		return NULL;
-> +	}
-> +
-> +	msrs_len = cpumask_weight(mask);
-> +
-> +	msrs = kzalloc(sizeof(struct msr) * msrs_len, GFP_KERNEL);
-> +	if (!msrs) {
-> +		pr_warning("%s: error allocating msrs\n", __func__);
-> +		return NULL;
-> +	}
-> +
-> +	for (i = 0; i < msrs_len; i++) {
-> +		cpu = cpumask_next(cpu, mask);
-> +		msrs[i].cpu = cpu;
-> +	}
-> +
-> +	return msrs;
-> +}
-> +EXPORT_SYMBOL(msrs_alloc);
-> +
-> +void msrs_free(struct msr *msrs)
-> +{
-> +	kfree(msrs);
-> +}
-> +EXPORT_SYMBOL(msrs_free);
-> +
->  /* These "safe" variants are slower and should be used when the target MSR
->     may not actually exist. */
->  static void __rdmsr_safe_on_cpu(void *info)
-> diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-> index 533f5ff..784c968 100644
-> --- a/drivers/edac/amd64_edac.c
-> +++ b/drivers/edac/amd64_edac.c
-> @@ -2507,10 +2507,8 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
->  
->  	get_cpus_on_this_dct_cpumask(mask, nid);
->  
-> -	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(mask), GFP_KERNEL);
-> +	msrs = msrs_alloc(mask);
->  	if (!msrs) {
-> -		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
-> -			      __func__);
->  		free_cpumask_var(mask);
->  		 return false;
->  	}
-> @@ -2532,7 +2530,7 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
->  	ret = true;
->  
->  out:
-> -	kfree(msrs);
-> +	msrs_free(msrs);
->  	free_cpumask_var(mask);
->  	return ret;
->  }
-> @@ -2551,17 +2549,16 @@ static int amd64_toggle_ecc_err_reporting(struct amd64_pvt *pvt, bool on)
->  
->  	get_cpus_on_this_dct_cpumask(cmask, pvt->mc_node_id);
->  
-> -	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(cmask), GFP_KERNEL);
-> -	if (!msrs) {
-> -		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
-> -			     __func__);
-> +	msrs = msrs_alloc(cmask);
-> +	if (!msrs)
->  		return -ENOMEM;
-> -	}
->  
->  	rdmsr_on_cpus(cmask, MSR_IA32_MCG_CTL, msrs);
->  
->  	for_each_cpu(cpu, cmask) {
->  
-> +		WARN_ON(cpu != msrs[idx].cpu);
-> +
->  		if (on) {
->  			if (msrs[idx].l & K8_MSR_MCGCTL_NBE)
->  				pvt->flags.ecc_report = 1;
-> @@ -2578,7 +2575,7 @@ static int amd64_toggle_ecc_err_reporting(struct amd64_pvt *pvt, bool on)
->  	}
->  	wrmsr_on_cpus(cmask, MSR_IA32_MCG_CTL, msrs);
->  
-> -	kfree(msrs);
-> +	msrs_free(msrs);
->  	free_cpumask_var(cmask);
->  
->  	return 0;
-> -- 
-> 1.6.5.3
-> 
-> 
-> -- 
-> Regards/Gruss,
-> Boris.
-> 
-> Operating | Advanced Micro Devices GmbH
->   System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
->  Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
->   Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
->   (OSRC)  | Registergericht München, HRB Nr. 43632
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Reviewed-by: Rik van Riel <riel@redhat.com>
+---
+ include/linux/rmap.h |   18 ++++++++++++++++++
+ mm/ksm.c             |    4 ++++
+ mm/rmap.c            |   19 +++++++++++++++++++
+ 3 files changed, 41 insertions(+), 0 deletions(-)
 
+diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+index 499972e..ddf2578 100644
+--- a/include/linux/rmap.h
++++ b/include/linux/rmap.h
+@@ -128,6 +128,24 @@ int wipe_page_reference_one(struct page *page,
+ 			    struct page_reference_context *refctx,
+ 			    struct vm_area_struct *vma, unsigned long address);
+ 
++#define MAX_YOUNG_BIT_CLEARED 64
++/*
++ * If VM pressure is low and the page has lots of active users, we only
++ * clear up to MAX_YOUNG_BIT_CLEARED accessed bits at a time.  Clearing
++ * accessed bits takes CPU time, needs TLB invalidate IPIs and could
++ * cause lock contention.  Since a heavily shared page is very likely
++ * to be used again soon, the cost outweighs the benefit of making such
++ * a heavily shared page a candidate for eviction.
++ */
++static inline
++int too_many_referenced(struct page_reference_context *refctx)
++{
++	if (refctx->soft_try &&
++	    refctx->referenced >= MAX_YOUNG_BIT_CLEARED)
++		return 1;
++	return 0;
++}
++
+ enum ttu_flags {
+ 	TTU_UNMAP = 0,			/* unmap mode */
+ 	TTU_MIGRATION = 1,		/* migration mode */
+diff --git a/mm/ksm.c b/mm/ksm.c
+index 19559ae..e959c41 100644
+--- a/mm/ksm.c
++++ b/mm/ksm.c
+@@ -1586,6 +1586,10 @@ again:
+ 						      rmap_item->address);
+ 			if (ret != SWAP_SUCCESS)
+ 				goto out;
++			if (too_many_referenced(refctx)) {
++				ret = SWAP_AGAIN;
++				goto out;
++			}
+ 			mapcount--;
+ 			if (!search_new_forks || !mapcount)
+ 				break;
+diff --git a/mm/rmap.c b/mm/rmap.c
+index cfda0a0..d66b8dc 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -473,6 +473,21 @@ static int wipe_page_reference_anon(struct page *page,
+ 		ret = wipe_page_reference_one(page, refctx, vma, address);
+ 		if (ret != SWAP_SUCCESS)
+ 			break;
++		if (too_many_referenced(refctx)) {
++			LIST_HEAD(tmp_list);
++
++			/*
++			 * Rotating the anon vmas around help spread out lock
++			 * pressure in the VM. It help to reduce heavy lock
++			 * contention.
++			 */
++			list_cut_position(&tmp_list,
++					  &vma->anon_vma_node,
++					  &anon_vma->head);
++			list_splice_tail(&tmp_list, &vma->anon_vma_node);
++			ret = SWAP_AGAIN;
++			break;
++		}
+ 		mapcount--;
+ 		if (!mapcount || refctx->maybe_mlocked)
+ 			break;
+@@ -543,6 +558,10 @@ static int wipe_page_reference_file(struct page *page,
+ 		ret = wipe_page_reference_one(page, refctx, vma, address);
+ 		if (ret != SWAP_SUCCESS)
+ 			break;
++		if (too_many_referenced(refctx)) {
++			ret = SWAP_AGAIN;
++			break;
++		}
+ 		mapcount--;
+ 		if (!mapcount || refctx->maybe_mlocked)
+ 			break;
 -- 
-Regards/Gruss,
-    Boris.
+1.6.5.2
+
+
+
