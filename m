@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760083AbZLJHQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760512AbZLJHRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760083AbZLJHQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 02:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbZLJHQu
+	id S1760512AbZLJHRP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 02:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760463AbZLJHRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 02:16:50 -0500
-Received: from mga03.intel.com ([143.182.124.21]:20356 "EHLO mga03.intel.com"
+	Thu, 10 Dec 2009 02:17:06 -0500
+Received: from mga01.intel.com ([192.55.52.88]:48078 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755240AbZLJHQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 02:16:49 -0500
+	id S1755948AbZLJHQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 02:16:52 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="220956219"
-Subject: [PATH 1/5 -v2] acpi, IO memory pre-mapping and atomic accessing
+X-IronPort-AV: E=Sophos;i="4.47,373,1257148800"; 
+   d="scan'208";a="521525530"
+Subject: [PATCH 2/5 -v2] acpi, apei, APEI supporting infrastructure
 From: Huang Ying <ying.huang@intel.com>
 To: lenb@kernel.org
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
        Andi Kleen <ak@linux.intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Dec 2009 15:16:53 +0800
-Message-ID: <1260429413.15264.393.camel@yhuang-dev.sh.intel.com>
+Date: Thu, 10 Dec 2009 15:16:57 +0800
+Message-ID: <1260429417.15264.394.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -28,36 +28,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some ACPI IO accessing need to be done in atomic context. For example,
-APEI ERST operations may be used for permanent storage in hardware
-error handler. That is, it may be called in atomic contexts such as
-IRQ or NMI, etc. And, ERST/EINJ implement their operations via IO
-memory/port accessing.  But the IO memory accessing method provided by
-ACPI (acpi_read/acpi_write) maps the IO memory during it is accessed,
-so it can not be used in atomic context. To solve the issue, the IO
-memory should be pre-mapped during EINJ/ERST initializing. A linked
-list is used to record which memory area has been mapped, when memory
-is accessed in hardware error handler, search the linked list for the
-mapped virtual address from the given physical address.
+APEI stands for ACPI Platform Error Interface, which allows to report
+errors (for example from the chipset) to the operating system. This
+improves NMI handling especially. In addition it supports error
+serialization and error injection.
+
+For more information about APEI, please refer to ACPI Specification
+version 4.0, chapter 17.
+
+This patch provides some common functions used by more than one APEI
+tables, mainly framework of interpreter for EINJ and ERST.
+
+A machine readable language is defined for EINJ and ERST for OS to
+execute, and so to drive the firmware to fulfill the corresponding
+functions. The machine language for EINJ and ERST is compatible, so a
+common framework is defined for them.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
-
 ---
- drivers/acpi/Makefile   |    2 
- drivers/acpi/atomicio.c |  392 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/acpi/atomicio.h |   10 +
- 3 files changed, 403 insertions(+), 1 deletion(-)
+ drivers/acpi/Kconfig              |    2 
+ drivers/acpi/Makefile             |    2 
+ drivers/acpi/apei/Kconfig         |    9 
+ drivers/acpi/apei/Makefile        |    3 
+ drivers/acpi/apei/apei-base.c     |  566 ++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/apei/apei-internal.h |   95 ++++++
+ 6 files changed, 677 insertions(+)
+ create mode 100644 drivers/acpi/apei/Kconfig
+ create mode 100644 drivers/acpi/apei/Makefile
+ create mode 100644 drivers/acpi/apei/apei-base.c
+ create mode 100644 drivers/acpi/apei/apei-internal.h
 
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -360,4 +360,6 @@ config ACPI_SBS
+ 	  To compile this driver as a module, choose M here:
+ 	  the modules will be called sbs and sbshc.
+ 
++source "drivers/acpi/apei/Kconfig"
++
+ endif	# ACPI
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -64,3 +64,5 @@ processor-y			+= processor_idle.o proces
+ processor-$(CONFIG_CPU_FREQ)	+= processor_perflib.o
+ 
+ obj-$(CONFIG_ACPI_PROCESSOR_AGGREGATOR) += acpi_pad.o
++
++obj-$(CONFIG_ACPI_APEI)		+= apei/
 --- /dev/null
-+++ b/drivers/acpi/atomicio.c
-@@ -0,0 +1,392 @@
++++ b/drivers/acpi/apei/Kconfig
+@@ -0,0 +1,9 @@
++config ACPI_APEI
++	tristate "ACPI Platform Error Interface (APEI)"
++	depends on X86
++	help
++	  APEI allows to report errors (for example from the chipset)
++	  to the operating system. This improves NMI handling
++	  especially. In addition it supports error serialization and
++	  error injection.
++
+--- /dev/null
++++ b/drivers/acpi/apei/Makefile
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_ACPI_APEI)		+= apei.o
++
++apei-y := apei-base.o
+--- /dev/null
++++ b/drivers/acpi/apei/apei-base.c
+@@ -0,0 +1,566 @@
 +/*
-+ * atomicio.c - ACPI IO memory pre-mapping/post-unmapping, then
-+ * accessing in atomic context.
++ * apei-base.c - ACPI Platform Error Interface (APEI) supporting
++ * infrastructure
 + *
-+ * This is used for NMI handler to access IO memory area, because
-+ * ioremap/iounmap can not be used in NMI handler. The IO memory area
-+ * is pre-mapped in process context and accessed in NMI handler.
++ * APEI allows to report errors (for example from the chipset) to the
++ * the operating system. This improves NMI handling especially. In
++ * addition it supports error serialization and error injection.
++ *
++ * For more information about APEI, please refer to ACPI Specification
++ * version 4.0, chapter 17.
++ *
++ * This file has Common functions used by more than one APEI tables,
++ * including framework of interpreter for ERST and EINJ; resource
++ * management for APEI registers.
 + *
 + * Copyright (C) 2009, Intel Corp.
 + *	Author: Huang Ying <ying.huang@intel.com>
@@ -84,180 +136,464 @@ Signed-off-by: Huang Ying <ying.huang@intel.com>
 +#include <linux/kref.h>
 +#include <linux/rculist.h>
 +#include <linux/interrupt.h>
++#include <linux/debugfs.h>
 +#include <acpi/atomicio.h>
 +
-+static LIST_HEAD(acpi_iomaps);
-+/*
-+ * Used for mutual exclusion between writers of acpi_iomaps list, for
-+ * synchronization between readers and writer, RCU is used.
-+ */
-+static DEFINE_SPINLOCK(acpi_iomaps_lock);
++#include "apei-internal.h"
 +
-+struct acpi_iomap {
++#define APEI_PFX "APEI: "
++
++struct dentry *apei_debug_dir;
++EXPORT_SYMBOL_GPL(apei_debug_dir);
++
++/*
++ * APEI ERST (Error Record Serialization Table) and EINJ (Error
++ * INJection) interpreter framework.
++ */
++
++#define APEI_EXEC_PRESERVE_REGISTER	0x1
++
++void apei_exec_ctx_init(struct apei_exec_context *ctx,
++			struct apei_exec_ins_type *ins_table,
++			u32 instructions,
++			struct acpi_whea_header *action_table,
++			u32 entries)
++{
++	ctx->ins_table = ins_table;
++	ctx->instructions = instructions;
++	ctx->action_table = action_table;
++	ctx->entries = entries;
++}
++EXPORT_SYMBOL_GPL(apei_exec_ctx_init);
++
++int __apei_exec_read_register(struct acpi_whea_header *entry, u64 *val)
++{
++	int rc;
++
++	rc = acpi_atomic_read(val, &entry->register_region);
++	if (rc)
++		return rc;
++	*val >>= entry->register_region.bit_offset;
++	*val &= entry->mask;
++
++	return 0;
++}
++
++int apei_exec_read_register(struct apei_exec_context *ctx,
++			    struct acpi_whea_header *entry)
++{
++	int rc;
++	u64 val = 0;
++
++	rc = __apei_exec_read_register(entry, &val);
++	if (rc)
++		return rc;
++	ctx->value = val;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(apei_exec_read_register);
++
++int apei_exec_read_register_value(struct apei_exec_context *ctx,
++				  struct acpi_whea_header *entry)
++{
++	int rc;
++
++	rc = apei_exec_read_register(ctx, entry);
++	if (rc)
++		return rc;
++	ctx->value = (ctx->value == entry->value);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(apei_exec_read_register_value);
++
++int __apei_exec_write_register(struct acpi_whea_header *entry, u64 val)
++{
++	int rc;
++
++	val &= entry->mask;
++	val <<= entry->register_region.bit_offset;
++	if (entry->flags & APEI_EXEC_PRESERVE_REGISTER) {
++		u64 valr = 0;
++		rc = acpi_atomic_read(&valr, &entry->register_region);
++		if (rc)
++			return rc;
++		valr &= ~(entry->mask << entry->register_region.bit_offset);
++		val |= valr;
++	}
++	rc = acpi_atomic_write(val, &entry->register_region);
++
++	return rc;
++}
++
++int apei_exec_write_register(struct apei_exec_context *ctx,
++			     struct acpi_whea_header *entry)
++{
++	return __apei_exec_write_register(entry, ctx->value);
++}
++EXPORT_SYMBOL_GPL(apei_exec_write_register);
++
++int apei_exec_write_register_value(struct apei_exec_context *ctx,
++				   struct acpi_whea_header *entry)
++{
++	int rc;
++
++	ctx->value = entry->value;
++	rc = apei_exec_write_register(ctx, entry);
++
++	return rc;
++}
++EXPORT_SYMBOL_GPL(apei_exec_write_register_value);
++
++int apei_exec_noop(struct apei_exec_context *ctx,
++		   struct acpi_whea_header *entry)
++{
++	return 0;
++}
++EXPORT_SYMBOL_GPL(apei_exec_noop);
++
++/*
++ * Interpret the specified action. Go through whole action table,
++ * execute all instructions belong to the action.
++ */
++int apei_exec_run(struct apei_exec_context *ctx, u8 action)
++{
++	int rc;
++	u32 i, ip;
++	struct acpi_whea_header *entry;
++	apei_exec_ins_func_t run;
++
++	ctx->ip = 0;
++
++	/*
++	 * "ip" is the instruction pointer of current instruction,
++	 * "ctx->ip" specifies the next instruction to executed,
++	 * instruction "run" function may change the "ctx->ip" to
++	 * implement "goto" semantics.
++	 */
++rewind:
++	ip = 0;
++	for (i = 0; i < ctx->entries; i++) {
++		entry = &ctx->action_table[i];
++		if (entry->action != action)
++			continue;
++		if (ip == ctx->ip) {
++			if (entry->instruction >= ctx->instructions ||
++			    !ctx->ins_table[entry->instruction].run) {
++				pr_info(APEI_PFX
++			"Invalid action table, unknown instruction type!\n");
++				return -EINVAL;
++			}
++			run = ctx->ins_table[entry->instruction].run;
++			rc = run(ctx, entry);
++			if (rc < 0)
++				return rc;
++			else if (rc != APEI_EXEC_SET_IP)
++				ctx->ip++;
++		}
++		ip++;
++		if (ctx->ip < ip)
++			goto rewind;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(apei_exec_run);
++
++typedef int (*apei_exec_entry_func_t)(struct apei_exec_context *ctx,
++				      struct acpi_whea_header *entry,
++				      void *data);
++
++static int apei_exec_for_each_entry(struct apei_exec_context *ctx,
++				    apei_exec_entry_func_t func,
++				    void *data,
++				    int *end)
++{
++	u8 ins;
++	int i, rc;
++	struct acpi_whea_header *entry;
++	struct apei_exec_ins_type *ins_table = ctx->ins_table;
++
++	for (i = 0; i < ctx->entries; i++) {
++		entry = ctx->action_table + i;
++		ins = entry->instruction;
++		if (end)
++			*end = i;
++		if (ins >= ctx->instructions || !ins_table[ins].run) {
++			pr_info(APEI_PFX
++			"Invalid action table, unknown instruction type!\n");
++			return -EINVAL;
++		}
++		rc = func(ctx, entry, data);
++		if (rc)
++			return rc;
++	}
++
++	return 0;
++}
++
++static int pre_map_gar_callback(struct apei_exec_context *ctx,
++				struct acpi_whea_header *entry,
++				void *data)
++{
++	u8 ins = entry->instruction;
++
++	if (ctx->ins_table[ins].flags & APEI_EXEC_INS_ACCESS_REGISTER)
++		return acpi_pre_map_gar(&entry->register_region);
++
++	return 0;
++}
++
++/*
++ * Pre-map all GARs in action table to make it possible to access them
++ * in NMI handler.
++ */
++int apei_exec_pre_map_gars(struct apei_exec_context *ctx)
++{
++	int rc, end;
++
++	rc = apei_exec_for_each_entry(ctx, pre_map_gar_callback,
++				      NULL, &end);
++	if (rc) {
++		struct apei_exec_context ctx_unmap;
++		memcpy(&ctx_unmap, ctx, sizeof(*ctx));
++		ctx_unmap.entries = end;
++		apei_exec_post_unmap_gars(&ctx_unmap);
++	}
++
++	return rc;
++}
++EXPORT_SYMBOL_GPL(apei_exec_pre_map_gars);
++
++static int post_unmap_gar_callback(struct apei_exec_context *ctx,
++				   struct acpi_whea_header *entry,
++				   void *data)
++{
++	u8 ins = entry->instruction;
++
++	if (ctx->ins_table[ins].flags & APEI_EXEC_INS_ACCESS_REGISTER)
++		acpi_post_unmap_gar(&entry->register_region);
++
++	return 0;
++}
++
++/* Post-unmap all GAR in action table. */
++int apei_exec_post_unmap_gars(struct apei_exec_context *ctx)
++{
++	return apei_exec_for_each_entry(ctx, post_unmap_gar_callback,
++					NULL, NULL);
++}
++EXPORT_SYMBOL_GPL(apei_exec_post_unmap_gars);
++
++/*
++ * Resource management for GARs in APEI
++ */
++struct apei_res {
 +	struct list_head list;
-+	void __iomem *vaddr;
-+	unsigned long size;
-+	phys_addr_t paddr;
-+	struct kref ref;
++	unsigned long start;
++	unsigned long end;
 +};
 +
-+/* acpi_iomaps_lock or RCU read lock must be held before calling */
-+static struct acpi_iomap *__acpi_find_iomap(phys_addr_t paddr,
-+					    unsigned long size)
++static int apei_res_add(struct list_head *res_list,
++			unsigned long start, unsigned long size)
 +{
-+	struct acpi_iomap *map;
++	struct apei_res *res, *resn, *res_ins = NULL;
++	unsigned long end = start + size;
 +
-+	list_for_each_entry_rcu(map, &acpi_iomaps, list) {
-+		if (map->paddr + map->size >= paddr + size &&
-+		    map->paddr <= paddr)
-+			return map;
++	if (end <= start)
++		return 0;
++repeat:
++	list_for_each_entry_safe(res, resn, res_list, list) {
++		if (res->start > end || res->end < start)
++			continue;
++		else if (end <= res->end && start >= res->start) {
++			kfree(res_ins);
++			return 0;
++		}
++		list_del(&res->list);
++		res->start = start = min(res->start, start);
++		res->end = end = max(res->end, end);
++		kfree(res_ins);
++		res_ins = res;
++		goto repeat;
 +	}
-+	return NULL;
-+}
 +
-+/*
-+ * Atomic "ioremap" used by NMI handler, if the specified IO memory
-+ * area is not pre-mapped, NULL will be returned.
-+ *
-+ * acpi_iomaps_lock or RCU read lock must be held before calling
-+ */
-+static void __iomem *__acpi_ioremap_fast(phys_addr_t paddr,
-+					 unsigned long size)
-+{
-+	struct acpi_iomap *map;
-+
-+	map = __acpi_find_iomap(paddr, size);
-+	if (map)
-+		return map->vaddr + (paddr - map->paddr);
-+	else
-+		return NULL;
-+}
-+
-+/* acpi_iomaps_lock must be held before calling */
-+static void __iomem *__acpi_try_ioremap(phys_addr_t paddr,
-+					unsigned long size)
-+{
-+	struct acpi_iomap *map;
-+
-+	map = __acpi_find_iomap(paddr, size);
-+	if (map) {
-+		kref_get(&map->ref);
-+		return map->vaddr + (paddr - map->paddr);
-+	} else
-+		return NULL;
-+}
-+
-+/*
-+ * Used to pre-map the specified IO memory area. First try to find
-+ * whether the area is already pre-mapped, if it is, increase the
-+ * reference count (in __acpi_try_ioremap) and return; otherwise, do
-+ * the real ioremap, and add the mapping into acpi_iomaps list.
-+ */
-+static void __iomem *acpi_pre_map(phys_addr_t paddr,
-+				  unsigned long size)
-+{
-+	void __iomem *vaddr;
-+	struct acpi_iomap *map;
-+	unsigned long pg_sz, flags;
-+	phys_addr_t pg_off;
-+
-+	spin_lock_irqsave(&acpi_iomaps_lock, flags);
-+	vaddr = __acpi_try_ioremap(paddr, size);
-+	spin_unlock_irqrestore(&acpi_iomaps_lock, flags);
-+	if (vaddr)
-+		return vaddr;
-+
-+	pg_off = paddr & PAGE_MASK;
-+	pg_sz = ((paddr + size + PAGE_SIZE - 1) & PAGE_MASK) - pg_off;
-+	vaddr = ioremap(pg_off, pg_sz);
-+	if (!vaddr)
-+		return NULL;
-+	map = kmalloc(sizeof(*map), GFP_KERNEL);
-+	if (!map)
-+		goto err_unmap;
-+	INIT_LIST_HEAD(&map->list);
-+	map->paddr = pg_off;
-+	map->size = pg_sz;
-+	map->vaddr = vaddr;
-+	kref_init(&map->ref);
-+
-+	spin_lock_irqsave(&acpi_iomaps_lock, flags);
-+	vaddr = __acpi_try_ioremap(paddr, size);
-+	if (vaddr) {
-+		spin_unlock_irqrestore(&acpi_iomaps_lock, flags);
-+		iounmap(map->vaddr);
-+		kfree(map);
-+		return vaddr;
++	if (res_ins)
++		list_add(&res_ins->list, res_list);
++	else {
++		res_ins = kmalloc(sizeof(*res), GFP_KERNEL);
++		if (!res_ins)
++			return -ENOMEM;
++		res_ins->start = start;
++		res_ins->end = end;
++		list_add(&res_ins->list, res_list);
 +	}
-+	list_add_tail_rcu(&map->list, &acpi_iomaps);
-+	spin_unlock_irqrestore(&acpi_iomaps_lock, flags);
 +
-+	return vaddr + (paddr - pg_off);
-+err_unmap:
-+	iounmap(vaddr);
-+	return NULL;
++	return 0;
 +}
 +
-+/* acpi_iomaps_lock must be held before calling */
-+static void __acpi_kref_del_iomap(struct kref *ref)
++static int apei_res_sub(struct list_head *res_list1,
++			struct list_head *res_list2)
 +{
-+	struct acpi_iomap *map;
++	struct apei_res *res1, *resn1, *res2, *res;
++	res1 = list_entry(res_list1->next, struct apei_res, list);
++	resn1 = list_entry(res1->list.next, struct apei_res, list);
++	while (&res1->list != res_list1) {
++		list_for_each_entry(res2, res_list2, list) {
++			if (res1->start >= res2->end ||
++			    res1->end <= res2->start)
++				continue;
++			else if (res1->end <= res2->end &&
++				 res1->start >= res2->start) {
++				list_del(&res1->list);
++				kfree(res1);
++				break;
++			} else if (res1->end > res2->end &&
++				   res1->start < res2->start) {
++				res = kmalloc(sizeof(*res), GFP_KERNEL);
++				if (!res)
++					return -ENOMEM;
++				res->start = res2->end;
++				res->end = res1->end;
++				res1->end = res2->start;
++				list_add(&res->list, &res1->list);
++				resn1 = res;
++			} else {
++				if (res1->start < res2->start)
++					res1->end = res2->start;
++				else
++					res1->start = res2->end;
++			}
++		}
++		res1 = resn1;
++		resn1 = list_entry(resn1->list.next, struct apei_res, list);
++	}
 +
-+	map = container_of(ref, struct acpi_iomap, ref);
-+	list_del_rcu(&map->list);
++	return 0;
 +}
++
++static void apei_res_clean(struct list_head *res_list)
++{
++	struct apei_res *res, *resn;
++
++	list_for_each_entry_safe(res, resn, res_list, list) {
++		list_del(&res->list);
++		kfree(res);
++	}
++}
++
++void apei_resources_fini(struct apei_resources *resources)
++{
++	apei_res_clean(&resources->iomem);
++	apei_res_clean(&resources->ioport);
++}
++EXPORT_SYMBOL_GPL(apei_resources_fini);
 +
 +/*
-+ * Used to post-unmap the specified IO memory area. The iounmap is
-+ * done only if the reference count goes zero.
++ * EINJ has two groups of GARs (EINJ table entry and trigger table
++ * entry), so common resources are subtracted from the trigger table
++ * resources before the second requesting.
 + */
-+static void acpi_post_unmap(phys_addr_t paddr, unsigned long size)
++int apei_resources_sub(struct apei_resources *resources1,
++		       struct apei_resources *resources2)
 +{
-+	struct acpi_iomap *map;
-+	unsigned long flags;
-+	int del;
++	int rc;
 +
-+	spin_lock_irqsave(&acpi_iomaps_lock, flags);
-+	map = __acpi_find_iomap(paddr, size);
-+	BUG_ON(!map);
-+	del = kref_put(&map->ref, __acpi_kref_del_iomap);
-+	spin_unlock_irqrestore(&acpi_iomaps_lock, flags);
-+
-+	if (!del)
-+		return;
-+
-+	synchronize_rcu();
-+	iounmap(map->vaddr);
-+	kfree(map);
++	rc = apei_res_sub(&resources1->iomem, &resources2->iomem);
++	if (rc)
++		return rc;
++	return apei_res_sub(&resources1->ioport, &resources2->ioport);
 +}
++EXPORT_SYMBOL_GPL(apei_resources_sub);
 +
-+/* In NMI handler, should set silent = 1 */
-+static int acpi_check_gar(struct acpi_generic_address *reg,
-+			  u64 *paddr, int silent)
++/*
++ * IO memory/port rersource management mechanism is used to check
++ * whether memory/port area used by GARs conflicts with normal memory
++ * or IO memory/port of devices.
++ */
++int apei_resources_request(struct apei_resources *resources,
++			   const char *desc)
++{
++	struct apei_res *res, *res_bak;
++	struct resource *r;
++
++	list_for_each_entry(res, &resources->iomem, list) {
++		r = request_mem_region(res->start, res->end - res->start,
++				       desc);
++		if (!r) {
++			pr_info(APEI_PFX
++		"Can not request iomem region <%016llx-%016llx> for GARs.\n",
++				(unsigned long long)res->start,
++				(unsigned long long)res->end);
++			res_bak = res;
++			goto err_unmap_iomem;
++		}
++	}
++
++	list_for_each_entry(res, &resources->ioport, list) {
++		r = request_region(res->start, res->end - res->start, desc);
++		if (!r) {
++			pr_info(APEI_PFX
++		"Can not request ioport region <%016llx-%016llx> for GARs.\n",
++				(unsigned long long)res->start,
++				(unsigned long long)res->end);
++			res_bak = res;
++			goto err_unmap_ioport;
++		}
++	}
++
++	return 0;
++err_unmap_ioport:
++	list_for_each_entry(res, &resources->ioport, list) {
++		if (res == res_bak)
++			break;
++		release_mem_region(res->start, res->end - res->start);
++	}
++	res_bak = NULL;
++err_unmap_iomem:
++	list_for_each_entry(res, &resources->iomem, list) {
++		if (res == res_bak)
++			break;
++		release_region(res->start, res->end - res->start);
++	}
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(apei_resources_request);
++
++void apei_resources_release(struct apei_resources *resources)
++{
++	struct apei_res *res;
++
++	list_for_each_entry(res, &resources->iomem, list)
++		release_mem_region(res->start, res->end - res->start);
++	list_for_each_entry(res, &resources->ioport, list)
++		release_region(res->start, res->end - res->start);
++}
++EXPORT_SYMBOL_GPL(apei_resources_release);
++
++static int apei_check_gar(struct acpi_generic_address *reg, u64 *paddr)
 +{
 +	u32 width;
 +
 +	/* Handle possible alignment issues */
 +	memcpy(paddr, &reg->address, sizeof(*paddr));
 +	if (!*paddr) {
-+		if (!silent)
-+			pr_info(
++		pr_info(APEI_PFX
 +			"Invalid physical address in GAR, firmware bug?\n");
 +		return -EINVAL;
 +	}
 +
 +	width = reg->bit_width;
 +	if ((width != 8) && (width != 16) && (width != 32) && (width != 64)) {
-+		if (!silent)
-+			pr_info(
++		pr_info(APEI_PFX
 +			"Invalid bit width in GAR, firmware bug?\n");
 +		return -EINVAL;
 +	}
 +
 +	if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY &&
 +	    reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO) {
-+		if (!silent)
-+			pr_info(
++		pr_info(APEI_PFX
 +			"Invalid address space type in GAR, firmware bug?\n");
 +		return -EINVAL;
 +	}
@@ -265,207 +601,164 @@ Signed-off-by: Huang Ying <ying.huang@intel.com>
 +	return 0;
 +}
 +
-+/* Pre-map, working on GAR */
-+int acpi_pre_map_gar(struct acpi_generic_address *reg)
++static int collect_res_callback(struct apei_exec_context *ctx,
++				struct acpi_whea_header *entry,
++				void *data)
 +{
-+	u64 paddr;
-+	void __iomem *vaddr;
-+	int rc;
-+
-+	if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY)
-+		return 0;
-+
-+	rc = acpi_check_gar(reg, &paddr, 0);
-+	if (rc)
-+		return rc;
-+
-+	vaddr = acpi_pre_map(paddr, reg->bit_width / 8);
-+	if (!vaddr)
-+		return -EIO;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(acpi_pre_map_gar);
-+
-+/* Post-unmap, working on GAR */
-+int acpi_post_unmap_gar(struct acpi_generic_address *reg)
-+{
++	struct apei_resources *resources = data;
++	struct acpi_generic_address *reg = &entry->register_region;
++	u8 ins = entry->instruction;
 +	u64 paddr;
 +	int rc;
 +
-+	if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY)
++	if (!(ctx->ins_table[ins].flags & APEI_EXEC_INS_ACCESS_REGISTER))
 +		return 0;
 +
-+	rc = acpi_check_gar(reg, &paddr, 0);
++	rc = apei_check_gar(reg, &paddr);
 +	if (rc)
 +		return rc;
 +
-+	acpi_post_unmap(paddr, reg->bit_width / 8);
-+
-+	return 0;
++	switch (reg->space_id) {
++	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
++		return apei_res_add(&resources->iomem, paddr,
++				    reg->bit_width / 8);
++	case ACPI_ADR_SPACE_SYSTEM_IO:
++		return apei_res_add(&resources->ioport, paddr,
++				    reg->bit_width / 8);
++	default:
++		return -EINVAL;
++	}
 +}
-+EXPORT_SYMBOL_GPL(acpi_post_unmap_gar);
 +
 +/*
-+ * Can be used in atomic (including NMI) or process context. RCU read
-+ * lock can only be released after the IO memory area accessing.
++ * Same register may be used by multiple instructions in GARs, so
++ * resources are collected before requesting.
 + */
-+static int acpi_atomic_read_mem(u64 paddr, u64 *val, u32 width)
++int apei_exec_collect_resources(struct apei_exec_context *ctx,
++				struct apei_resources *resources)
 +{
-+	void __iomem *addr;
++	return apei_exec_for_each_entry(ctx, collect_res_callback,
++					resources, NULL);
++}
++EXPORT_SYMBOL_GPL(apei_exec_collect_resources);
 +
-+	rcu_read_lock();
-+	addr = __acpi_ioremap_fast(paddr, width);
-+	switch (width) {
-+	case 8:
-+		*val = readb(addr);
-+		break;
-+	case 16:
-+		*val = readw(addr);
-+		break;
-+	case 32:
-+		*val = readl(addr);
-+		break;
-+	case 64:
-+		*val = readq(addr);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	rcu_read_unlock();
++static int __init apei_init(void)
++{
++	apei_debug_dir = debugfs_create_dir("apei", NULL);
++	if (!apei_debug_dir)
++		return -ENOMEM;
 +
 +	return 0;
 +}
 +
-+static int acpi_atomic_write_mem(u64 paddr, u64 val, u32 width)
++static void __exit apei_exit(void)
 +{
-+	void __iomem *addr;
-+
-+	rcu_read_lock();
-+	addr = __acpi_ioremap_fast(paddr, width);
-+	switch (width) {
-+	case 8:
-+		writeb(val, addr);
-+		break;
-+	case 16:
-+		writew(val, addr);
-+		break;
-+	case 32:
-+		writel(val, addr);
-+		break;
-+	case 64:
-+		writeq(val, addr);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	rcu_read_unlock();
-+
-+	return 0;
++	debugfs_remove_recursive(apei_debug_dir);
 +}
 +
-+static int acpi_atomic_read_port(u64 port, u32 *val, u32 width)
-+{
-+	switch (width) {
-+	case 8:
-+		*val = inb(port);
-+		break;
-+	case 16:
-+		*val = inw(port);
-+		break;
-+	case 32:
-+		*val = inl(port);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
++module_init(apei_init);
++module_exit(apei_exit);
 +
-+	return 0;
-+}
-+
-+static int acpi_atomic_write_port(u64 port, u32 val, u32 width)
-+{
-+	switch (width) {
-+	case 8:
-+		outb(val, port);
-+		break;
-+	case 16:
-+		outw(val, port);
-+		break;
-+	case 32:
-+		outl(val, port);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/* GAR accessing in atomic (including NMI) or process context */
-+int acpi_atomic_read(u64 *val, struct acpi_generic_address *reg)
-+{
-+	u64 paddr;
-+	int rc;
-+
-+	rc = acpi_check_gar(reg, &paddr, 1);
-+	if (rc)
-+		return rc;
-+
-+	*val = 0;
-+	switch (reg->space_id) {
-+	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
-+		return acpi_atomic_read_mem(paddr, val, reg->bit_width);
-+	case ACPI_ADR_SPACE_SYSTEM_IO:
-+		return acpi_atomic_read_port(paddr, (u32 *)val, reg->bit_width);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(acpi_atomic_read);
-+
-+int acpi_atomic_write(u64 val, struct acpi_generic_address *reg)
-+{
-+	u64 paddr;
-+	int rc;
-+
-+	rc = acpi_check_gar(reg, &paddr, 1);
-+	if (rc)
-+		return rc;
-+
-+	switch (reg->space_id) {
-+	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
-+		return acpi_atomic_write_mem(paddr, val, reg->bit_width);
-+	case ACPI_ADR_SPACE_SYSTEM_IO:
-+		return acpi_atomic_write_port(paddr, val, reg->bit_width);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(acpi_atomic_write);
++MODULE_AUTHOR("Huang Ying");
++MODULE_DESCRIPTION("ACPI Platform Error Interface support");
++MODULE_LICENSE("GPL");
 --- /dev/null
-+++ b/include/acpi/atomicio.h
-@@ -0,0 +1,10 @@
-+#ifndef ACPI_ATOMIC_IO_H
-+#define ACPI_ATOMIC_IO_H
++++ b/drivers/acpi/apei/apei-internal.h
+@@ -0,0 +1,95 @@
++/*
++ * apei-internal.h - ACPI Platform Error Interface internal
++ * definations.
++ */
 +
-+int acpi_pre_map_gar(struct acpi_generic_address *reg);
-+int acpi_post_unmap_gar(struct acpi_generic_address *reg);
++#ifndef APEI_INTERNAL_H
++#define APEI_INTERNAL_H
 +
-+int acpi_atomic_read(u64 *val, struct acpi_generic_address *reg);
-+int acpi_atomic_write(u64 val, struct acpi_generic_address *reg);
++struct apei_exec_context;
 +
++typedef int (*apei_exec_ins_func_t)(struct apei_exec_context *ctx,
++				    struct acpi_whea_header *entry);
++
++#define APEI_EXEC_INS_ACCESS_REGISTER	0x0001
++
++struct apei_exec_ins_type {
++	u32 flags;
++	apei_exec_ins_func_t run;
++};
++
++struct apei_exec_context {
++	u32 ip;
++	u64 value;
++	u64 var1;
++	u64 var2;
++	u64 src_base;
++	u64 dst_base;
++	struct apei_exec_ins_type *ins_table;
++	u32 instructions;
++	struct acpi_whea_header *action_table;
++	u32 entries;
++};
++
++void apei_exec_ctx_init(struct apei_exec_context *ctx,
++			struct apei_exec_ins_type *ins_table,
++			u32 instructions,
++			struct acpi_whea_header *action_table,
++			u32 entries);
++
++static inline void apei_exec_ctx_set_input(struct apei_exec_context *ctx,
++					   u64 input)
++{
++	ctx->value = input;
++}
++
++static inline u64 apei_exec_ctx_get_output(struct apei_exec_context *ctx)
++{
++	return ctx->value;
++}
++
++int apei_exec_run(struct apei_exec_context *ctx, u8 action);
++
++/* Common instruction implementation */
++
++/* IP has been set in instruction function */
++#define APEI_EXEC_SET_IP	1
++
++int __apei_exec_read_register(struct acpi_whea_header *entry, u64 *val);
++int __apei_exec_write_register(struct acpi_whea_header *entry, u64 val);
++int apei_exec_read_register(struct apei_exec_context *ctx,
++			    struct acpi_whea_header *entry);
++int apei_exec_read_register_value(struct apei_exec_context *ctx,
++				  struct acpi_whea_header *entry);
++int apei_exec_write_register(struct apei_exec_context *ctx,
++			     struct acpi_whea_header *entry);
++int apei_exec_write_register_value(struct apei_exec_context *ctx,
++				   struct acpi_whea_header *entry);
++int apei_exec_noop(struct apei_exec_context *ctx,
++		   struct acpi_whea_header *entry);
++int apei_exec_pre_map_gars(struct apei_exec_context *ctx);
++int apei_exec_post_unmap_gars(struct apei_exec_context *ctx);
++
++struct apei_resources {
++	struct list_head iomem;
++	struct list_head ioport;
++};
++
++static inline void apei_resources_init(struct apei_resources *resources)
++{
++	INIT_LIST_HEAD(&resources->iomem);
++	INIT_LIST_HEAD(&resources->ioport);
++}
++
++void apei_resources_fini(struct apei_resources *resources);
++int apei_resources_sub(struct apei_resources *resources1,
++		       struct apei_resources *resources2);
++int apei_resources_request(struct apei_resources *resources,
++			   const char *desc);
++void apei_resources_release(struct apei_resources *resources);
++int apei_exec_collect_resources(struct apei_exec_context *ctx,
++				struct apei_resources *resources);
++
++struct dentry;
++extern struct dentry *apei_debug_dir;
 +#endif
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -18,7 +18,7 @@ obj-y				+= acpi.o \
- 					acpica/
- 
- # All the builtin files are in the "acpi." module_param namespace.
--acpi-y				+= osl.o utils.o reboot.o
-+acpi-y				+= osl.o utils.o reboot.o atomicio.o
- 
- # sleep related files
- acpi-y				+= wakeup.o
 
 
