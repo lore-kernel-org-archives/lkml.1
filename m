@@ -1,136 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbZLKUpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbZLJOIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534AbZLKUpU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 15:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbZLKUpO
+	id S1760790AbZLJOIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 09:08:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbZLJOIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 15:45:14 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58698 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753055AbZLKUpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 15:45:12 -0500
-Date: Thu, 10 Dec 2009 15:08:27 +0100
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: [PULL REQUEST] Quota, ext2, ext3 and some other changes for
- 2.6.33-rc1
-Message-ID: <20091210140826.GB3696@quack.suse.cz>
+	Thu, 10 Dec 2009 09:08:39 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:55448 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753502AbZLJOIi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 09:08:38 -0500
+Date: Thu, 10 Dec 2009 15:08:42 +0100
+From: Heinz Diehl <htd@fancy-poultry.org>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       martin.petersen@oracle.com
+Subject: Re: todays git regression (2.6.32-04008.g3ff6a46): lot of device
+ mapper warnings
+Message-ID: <20091210140842.GA6168@fancy-poultry.org>
+References: <200912091049.12604.borntraeger@de.ibm.com>
+ <20091209214501.GC8742@kernel.dk>
+ <20091209220749.GD8742@kernel.dk>
+ <200912101208.26510.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <200912101208.26510.borntraeger@de.ibm.com>
+X-Accept-Language: no,dk,se,en,de
+Organization: private site
+X-OpenPGP-KeyID: 0x3FAF957D
+X-OpenPGP-Fingerprint: 0BAE BB83 8B8A 3DE4 08F3  CEB9 DA0F CCBB 3FAF 957D
+X-OpenPGP-URL: http://www.fritha.org/htd.asc
+User-Agent: Mutt/1.5.20+20091108 (GNU/Linux)
+X-Provags-ID: V01U2FsdGVkX18zk5EirQl08HgMYz8V/aKLz5/7mbW1l6U2HoM
+ 3Dszy3mrHB6F7vd94IXlQ4HGfhnUbgQRv1JUvNBq52It+rLLgX
+ 55Jd+hEDzX2ehnRlfL17Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10.12.2009, Christian Borntraeger wrote: 
 
-  Hello Linus,
+> Yes it does. 
 
-  could you please pull from
+Yes, that fixes it for me too.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs-2.6.git for_linus
-
-  to get:
-
-Alexey Dobriyan (1):
-      const: struct quota_format_ops
-
-Alexey Fisher (2):
-      ext2: Unify log messages in ext2
-      ext3: Unify log messages in ext3
-
-Christoph Hellwig (4):
-      vfs: Implement proper O_SYNC semantics
-      kill wait_on_page_writeback_range
-      afs: remove manual O_SYNC handling
-      ubifs: remove manual O_SYNC handling
-
-Eric Sandeen (3):
-      ext3: journal all modifications in ext3_xattr_set_handle
-      ext3: Don't update the superblock in ext3_statfs()
-      ext3: make "norecovery" an alias for "noload"
-
-Jan Blunck (1):
-      ext2: Explicitly assign values to on-disk enum of filetypes
-
-Jan Kara (7):
-      zisofs: Implement reading of compressed files when PAGE_CACHE_SIZE > compress block size
-      quota: Fix WARN_ON in lookup_one_len
-      quota: Move definition of QFMT_OCFS2 to linux/quota.h
-      quota: Implement quota format with 64-bit space and inode limits
-      ext3: Support for vfsv1 quota format
-      ext4: Support for 64-bit quota format
-      ext3: Fix data / filesystem corruption when write fails to copy data
-
-Jérémy Cochoy (1):
-      ext2: fix comment in ext2_find_entry about return values
-
-Roel Kluin (1):
-      ext3: PTR_ERR return of wrong pointer in setup_new_group_blocks()
-
-Stephen Hemminger (1):
-      ext2: clear uptodate flag on super block I/O error
-
-The diffstat is
-
- Documentation/filesystems/ext3.txt |    4 +-
- Documentation/filesystems/vfs.txt  |    2 +-
- arch/alpha/include/asm/fcntl.h     |   19 +-
- arch/blackfin/include/asm/fcntl.h  |    2 -
- arch/mips/include/asm/fcntl.h      |   17 +-
- arch/mips/kernel/kspd.c            |    1 +
- arch/mips/loongson/common/mem.c    |    2 +-
- arch/mips/mm/cache.c               |    2 +-
- arch/parisc/include/asm/fcntl.h    |    5 +-
- arch/sparc/include/asm/fcntl.h     |   19 +-
- arch/x86/mm/pat.c                  |    3 +-
- drivers/char/mem.c                 |    6 +-
- drivers/usb/gadget/file_storage.c  |    2 +-
- fs/afs/write.c                     |    8 -
- fs/btrfs/file.c                    |    4 +-
- fs/cifs/dir.c                      |    3 +-
- fs/cifs/file.c                     |    6 +-
- fs/ext2/dir.c                      |    4 +-
- fs/ext2/ext2.h                     |    2 +-
- fs/ext2/inode.c                    |    6 +-
- fs/ext2/super.c                    |  184 ++++++++-----
- fs/ext2/xip.c                      |    5 +-
- fs/ext3/inode.c                    |   18 +-
- fs/ext3/resize.c                   |    2 +-
- fs/ext3/super.c                    |  468 +++++++++++++++++--------------
- fs/ext3/xattr.c                    |    7 +-
- fs/ext4/super.c                    |   30 ++-
- fs/isofs/compress.c                |  533 +++++++++++++++++++-----------------
- fs/isofs/rock.c                    |    3 +-
- fs/jbd2/commit.c                   |    2 +-
- fs/namei.c                         |    9 +
- fs/nfs/file.c                      |    4 +-
- fs/nfs/write.c                     |    2 +-
- fs/ocfs2/file.c                    |    2 +-
- fs/ocfs2/quota.h                   |    4 -
- fs/ocfs2/quota_local.c             |    2 +-
- fs/quota/Kconfig                   |    8 +-
- fs/quota/dquot.c                   |    2 +
- fs/quota/quota_v1.c                |    2 +-
- fs/quota/quota_v2.c                |  167 +++++++++---
- fs/quota/quotaio_v2.h              |   19 +-
- fs/sync.c                          |   13 +-
- fs/ubifs/file.c                    |   13 +-
- fs/xfs/linux-2.6/xfs_lrw.c         |    2 +-
- include/asm-generic/fcntl.h        |   25 ++-
- include/linux/ext2_fs.h            |   16 +-
- include/linux/ext3_fs.h            |    2 +
- include/linux/fs.h                 |    2 -
- include/linux/quota.h              |    6 +-
- mm/filemap.c                       |   49 +---
- sound/core/rawmidi.c               |    2 +-
- 51 files changed, 1001 insertions(+), 719 deletions(-)
-
-							Thanks
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Thanks,
+Heinz.
