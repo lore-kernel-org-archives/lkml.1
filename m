@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933693AbZLJKjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933771AbZLJKpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933693AbZLJKjq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 05:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933648AbZLJKjk
+	id S933771AbZLJKpQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 05:45:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933726AbZLJKpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 05:39:40 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:35736 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933625AbZLJKjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 05:39:39 -0500
-Date: Thu, 10 Dec 2009 11:39:45 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, yinghai@kernel.org
-Subject: Bisected regression (Was Re: current -git fails to boot on
-	nehalem-ex)
-Message-ID: <20091210103945.GI8742@kernel.dk>
-References: <20091210091040.GG8742@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091210091040.GG8742@kernel.dk>
+	Thu, 10 Dec 2009 05:45:13 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50346 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933502AbZLJKpM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 05:45:12 -0500
+Date: Thu, 10 Dec 2009 10:46:57 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "kiros" <kiros@korenix.com>
+Cc: <linux-serial@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] serial: add support for Korenix JetCard
+Message-ID: <20091210104657.5c3b60f4@lxorguk.ukuu.org.uk>
+In-Reply-To: <81g07q$fe36t@hb2-smtpclt02.hibox.hinet.net>
+References: <81g07q$fe36t@hb2-smtpclt02.hibox.hinet.net>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10 2009, Jens Axboe wrote:
-> Hi,
-> 
-> As written in the subject, it just hard hangs before writing anything on
-> the console. With earlyprintk, I captured the failure, see below.
-> 
-> I'll try and bisect this, but it takes some time (since the bios and
-> post process takes forever). I just updated the firmware on the box as
-> well, but it did boot 2.6.32 (and RHEL5 boots fine too). Of course that
-> doesn't rule out a BIOS bug.
+On Thu, 10 Dec 2009 17:49:07 +0800
+"kiros" <kiros@korenix.com> wrote:
 
-Results are persistent, git bisect points to:
+> Add different model (with a different PCI ID) to support Korenix JetCard.
+>  
+> Signed-off-by: Kiros Yeh <kiros@www.korenix.com>
 
-commit b24c2a925a9837cccf54d50aeac22ba0cbc15455
-Author: Yinghai Lu <yinghai@kernel.org>
-Date:   Tue Nov 24 02:48:18 2009 -0800
+Acked-by: Alan Cox <alan@linux.intel.com>
 
-    x86: Move find_smp_config() earlier and avoid bootmem usage
-
-which appears consistent with the panic(). Reverting that does indeed
-make current -git boot properly.
-
--- 
-Jens Axboe
-
+Looks good to me
