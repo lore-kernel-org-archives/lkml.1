@@ -1,103 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbZLJIZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbZLJI1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760794AbZLJIZA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 03:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760782AbZLJIYz
+	id S1757755AbZLJI1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 03:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757371AbZLJI13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 03:24:55 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57826 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760790AbZLJIYy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 03:24:54 -0500
-Date: Thu, 10 Dec 2009 09:24:52 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: David Miller <davem@davemloft.net>
-Cc: xiyou.wangcong@gmail.com, x86@kernel.org, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Subject: Re: [PATCH] irq: handle irq0 special only on x86
-Message-ID: <20091210082452.GA2420@pengutronix.de>
-References: <1260350401-9858-1-git-send-email-u.kleine-koenig@pengutronix.de> <2375c9f90912090128k70f54ee1n99421caa81c53a8f@mail.gmail.com> <20091209.014151.140337246.davem@davemloft.net>
+	Thu, 10 Dec 2009 03:27:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41286 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757331AbZLJI12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 03:27:28 -0500
+Date: Thu, 10 Dec 2009 09:27:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] perf sched: Add max delay time snapshot
+Message-ID: <20091210082719.GA6834@elte.hu>
+References: <1260391208-6808-1-git-send-regression-fweisbec@gmail.com>
+ <4B206A18.2030607@cn.fujitsu.com>
+ <20091210072351.GF16874@elte.hu>
+ <4B20AE32.1090602@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20091209.014151.140337246.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <4B20AE32.1090602@cn.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
 
-On Wed, Dec 09, 2009 at 01:41:51AM -0800, David Miller wrote:
-> From: Américo Wang <xiyou.wangcong@gmail.com>
-> Date: Wed, 9 Dec 2009 17:28:09 +0800
+* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+
 > 
-> > 2009/12/9 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
-> >> I just noticed this when digging in the irq handling. ,A At least for arm
-> >> this doesn't make sense. ,A Not sure if x86 is the only arch this test
-> >> is valid for, but probably it is.
-> > 
-> > No, it is not.
-> > 
-> > Try grep -Inr 'irq0' arch/*/kernel.
 > 
-> The edict was sent down long ago that IRQ number zero is
-> special across the entire kernel tree.
-This doesn't help here.  x86 uses irq0 for timing and AFAIK it's some
-kind of catch-it-all interrupt---I don't know the exact details though.
+> Ingo Molnar wrote:
+> > * Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+> > 
+> >> Frederic Weisbecker wrote:
+> >>
+> >>> When we have a maximum latency reported for a task, we need a 
+> >>> convenient way to find the matching location to the raw traces or to 
+> >>> perf sched map that shows where the task has been eventually 
+> >>> scheduled in. This gives a pointer to retrieve the events that 
+> >>> occured during this max latency.
+> >> Then, we can cooperate with ftrace's data to know what the cpu is 
+> >> doing at that time.
+> > 
+> > What do you mean by mixing it with ftrace data? These events ought to be 
+> > a full replacement for the sched and wakeup tracers. In the long run we 
+> > want a single stream of events and phase out most of the pretty-printing 
+> > ftrace plugins.
+> 
+> Hi Ingo,
+> 
+> I think sometimes perf tool cooperate with ftrace can do more useful 
+> things, take this case for example:
+> 
+> By 'perf sched latency' we can get the schedule latency time, if the 
+> time is abnormal, then we can run this command and enable function 
+> tracer.
+> 
+> After running, 'perf sched latency' can show us the timestamps when 
+> the maximum latency(the worst case) occurs, then we can find what the 
+> cpu is doing at this timestamps by reading function tracer's output.
 
-> If IRQ zero can happen, you should offset the IRQ values you publish
-> to the rest of the kernel, and translate them back when you process
-> them internally.
-Even if x86 will do that the problem remains.  After it does an offset
-of 1 (say) the code will read as follows after adaption:
+Actually, i think the natural solution here is not any ugly interaction 
+between two largely disjunct sets of APIs, but a new feature: to turn 
+the function tracer into an event.
 
-	/*
-	 * But for 'irqfixup == 2' we also do it for handled interrupts if
-	 * they are marked as IRQF_IRQPOLL (or for irq zero, which is the
-	 * traditional PC timer interrupt.. Legacy)
-	 */
-	if (irqfixup < 2)
-		return 0;
+That would allow perf sched to also record function traces if so 
+desired. And it would also allow a whole lot of other things - mixing 
+function tracer events and other events.
 
-	if (irq == 1)
-		return 1;
+As a starter we could create a new function tracer event. A crude 
+prototype hack is attached below - via that it should already be 
+possible to 'count' function calls via:
 
-So try_misrouted_irq hard codes the value of the timer irq (be it zero
-or one) and this is wrong for other archs like ARM where irq0 is used on
-some machines, too.  There it's just an ordinary irq.
+  perf stat -a --repeat 3 -e context-switches sleep 1
 
-BTW I don't see a reason to forbid irq0 if you don't need to doubt of
-it's validity even in driver code.
+( obviously the real patch would introduce PERF_COUNT_SW_FUNCTION_CALLS, 
+  but you get the point. )
 
-So if the resources of a platform device specify:
+	Ingo
 
-	struct resource mydevicesresources[] = {
-		...
-		{
-			.start = 0,
-			.end = 0,
-			.flags = IORESOURCE_IRQ,
-		},
-		...
-	};
+---
+ include/trace/events/function.h |   33 +++++++++++++++++++++++++++++++++
+ kernel/trace/ftrace.c           |   15 +++++++++++++++
+ 2 files changed, 48 insertions(+)
 
-I'd like to use the returned value by platform_get_irq for this device.
-
-Note, I fully agree to use 0 for NO_IRQ if you have an int-sized value
-that holds either NO_IRQ or a valid irq number.  But in practise I'd not
-recommend to use this idiom.
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Index: linux/include/trace/events/function.h
+===================================================================
+--- /dev/null
++++ linux/include/trace/events/function.h
+@@ -0,0 +1,33 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM function
++
++#if !defined(_TRACE_FUNCTION_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_FUNCTION_H
++
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(function_call,
++
++	TP_PROTO(unsigned long ip, unsigned long parent_ip),
++
++	TP_ARGS(ip, parent_ip),
++
++	TP_STRUCT__entry(
++		__field(	u64,		ip		)
++		__field(	u64,		parent_ip	)
++	),
++
++	TP_fast_assign(
++		__entry->ip		= ip;
++		__entry->parent_ip	= parent_ip;
++	),
++
++	TP_printk("IP: %016Lx, parent IP: %016Lx",
++		__entry->ip,
++		__entry->parent_ip)
++);
++
++#endif /* _TRACE_FUNCTION_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+Index: linux/kernel/trace/ftrace.c
+===================================================================
+--- linux.orig/kernel/trace/ftrace.c
++++ linux/kernel/trace/ftrace.c
+@@ -2769,9 +2769,24 @@ void __init ftrace_init(void)
+ 
+ #else
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/function.h>
++
++static void perf_ftrace_func(unsigned long ip, unsigned long parent_ip)
++{
++	struct pt_regs *regs = task_pt_regs(current);
++
++	perf_sw_event(PERF_COUNT_SW_CONTEXT_SWITCHES, 1, 1, regs, 0);
++}
++
+ static int __init ftrace_nodyn_init(void)
+ {
+ 	ftrace_enabled = 1;
++
++	printk("enabling function tracer test\n");
++
++	ftrace_trace_function = perf_ftrace_func;
++
+ 	return 0;
+ }
+ device_initcall(ftrace_nodyn_init);
