@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbZLJBuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbZLJBu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759412AbZLJBuK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 20:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759375AbZLJBuI
+	id S1759434AbZLJBu7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 20:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759387AbZLJBuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 20:50:08 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49215 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759374AbZLJBuH (ORCPT
+	Wed, 9 Dec 2009 20:50:55 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38005
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759380AbZLJBuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 20:50:07 -0500
-Date: Thu, 10 Dec 2009 02:50:14 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Matt Mackall <mpm@selenic.com>, Andi Kleen <andi@firstfloor.org>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [19/31] mm: export stable page flags
-Message-ID: <20091210015014.GK18989@one.firstfloor.org>
-References: <200912081016.198135742@firstfloor.org> <20091208211635.7965AB151F@basil.firstfloor.org> <1260311251.31323.129.camel@calx> <20091209020042.GA7751@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 9 Dec 2009 20:50:55 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/3] Replace kernel/timeconst.pl with kernel/timeconst.sh
+Date: Wed, 9 Dec 2009 19:50:58 -0600
+User-Agent: KMail/1.11.2 (Linux/2.6.28-16-generic; KDE/4.2.2; x86_64; ; )
+Cc: Michal Marek <mmarek@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+References: <200912080317.08254.rob@landley.net> <200912091740.43147.rob@landley.net> <4B203691.7020203@zytor.com>
+In-Reply-To: <4B203691.7020203@zytor.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091209020042.GA7751@localhost>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200912091950.58950.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sorry the stable_page_flags() will be undefined on
-> !CONFIG_PROC_PAGE_MONITOR (it is almost always on,
-> except for some embedded systems).
-> 
-> Currently the easy solution is to add a Kconfig dependency to
-> CONFIG_PROC_PAGE_MONITOR.  When there comes more users (ie. some
-> ftrace event), we can then always compile in stable_page_flags().
+On Wednesday 09 December 2009 17:45:21 H. Peter Anvin wrote:
+> On 12/09/2009 03:40 PM, Rob Landley wrote:
+> > This is why reducing the perl version to just the precomputed constants
+> > wouldn't work either.  (They're there so that you only need to install a
+> > random cpan library when surprised by a build break on non-x86 machines.)
+>
+> It's not "a random CPAN library" - it's a core module.
 
-I decided to turn it into select instead.
+Then why cache large quantities of its output and test for its existence?
 
-Your original patch didn't handle hwpoison as module btw.
-
--Andi
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
