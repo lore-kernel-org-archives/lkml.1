@@ -1,122 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760663AbZLJHcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760683AbZLJHdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760663AbZLJHcu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 02:32:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760508AbZLJHcp
+	id S1760683AbZLJHdj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 02:33:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760567AbZLJHdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 02:32:45 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45225 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760468AbZLJHco (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 02:32:44 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH v2  5/8] Don't deactivate the page if trylock_page() is failed.
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Larry Woodman <lwoodman@redhat.com>
-In-Reply-To: <20091210154822.2550.A69D9226@jp.fujitsu.com>
-References: <20091210154822.2550.A69D9226@jp.fujitsu.com>
-Message-Id: <20091210163204.255F.A69D9226@jp.fujitsu.com>
+	Thu, 10 Dec 2009 02:33:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58098 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760508AbZLJHd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 02:33:27 -0500
+Date: Thu, 10 Dec 2009 08:33:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Suresh Jayaraman <sjayaraman@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: nfs broken in net-next? -- now in mainline
+Message-ID: <20091210073325.GH16874@elte.hu>
+References: <86802c440912091234t74fd2311t33c85379c06dd55c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 10 Dec 2009 16:32:48 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440912091234t74fd2311t33c85379c06dd55c@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, wipe_page_reference() increment refctx->referenced variable
-if trylock_page() is failed. but it is meaningless at all.
-shrink_active_list() deactivate the page although the page was
-referenced. The page shouldn't be deactivated with young bit. it
-break reclaim basic theory and decrease reclaim throughput.
 
-This patch introduce new SWAP_AGAIN return value to
-wipe_page_reference().
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Reviewed-by: Rik van Riel <riel@redhat.com>
----
- mm/rmap.c   |    5 ++++-
- mm/vmscan.c |   15 +++++++++++++--
- 2 files changed, 17 insertions(+), 3 deletions(-)
+> On Thu, Oct 29, 2009 at 2:03 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > On Thu, Oct 29, 2009 at 12:23 AM, Suresh Jayaraman <sjayaraman@suse.de> wrote:
+> >> On 10/29/2009 01:43 AM, Yinghai Lu wrote:
+> >>> pk12-3214-189-102:~ # mount -t nfs 10.6.75.100:/data/shared/pxeboot /x
+> >>> mount.nfs: rpc.statd is not running but is required for remote locking.
+> >>> mount.nfs: Either use '-o nolock' to keep locks local, or start statd.
+> >>
+> >> rpc.statd on client should have be started by mount.nfs when a nfs
+> >> filesystem is mounted. Is this not happening for some reason or do you
+> >> see any errors in syslog?
+> >>
+> >>>
+> >>> using opensuse11.1
+> >>>
+> >>
+> >> Are you using 11.1 betas? I know of a problem where non-root user mounts
+> >> fail to start rpc.statd in betas that got fixed later:
+> >>
+> >> http://marc.info/?l=linux-nfs&m=122748525624094&w=2
+> >>
+> >> Is the problem seen only recently (after updating to net-next)?
+> >>
+> >
+> > only happen with net-next.
+> >
+> > linus tree and tip tree are ok.
+> >
+> 
+> Finally it reached linus tree and tip.
 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 2f4451b..b84f350 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -539,6 +539,9 @@ static int wipe_page_reference_file(struct page *page,
-  *
-  * Quick test_and_clear_referenced for all mappings to a page,
-  * returns the number of ptes which referenced the page.
-+ *
-+ * SWAP_SUCCESS  - success to wipe all ptes
-+ * SWAP_AGAIN    - temporary busy, try again later
-  */
- int wipe_page_reference(struct page *page,
- 			struct mem_cgroup *memcg,
-@@ -555,7 +558,7 @@ int wipe_page_reference(struct page *page,
- 		    (!PageAnon(page) || PageKsm(page))) {
- 			we_locked = trylock_page(page);
- 			if (!we_locked) {
--				refctx->referenced++;
-+				ret = SWAP_AGAIN;
- 				goto out;
- 			}
- 		}
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index c59baa9..a01cf5e 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -577,6 +577,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		struct address_space *mapping;
- 		struct page *page;
- 		int may_enter_fs;
-+		int ret;
- 		struct page_reference_context refctx = {
- 			.is_page_locked = 1,
- 		};
-@@ -621,7 +622,11 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 				goto keep_locked;
- 		}
- 
--		wipe_page_reference(page, sc->mem_cgroup, &refctx);
-+		ret = wipe_page_reference(page, sc->mem_cgroup, &refctx);
-+		if (ret == SWAP_AGAIN)
-+			goto keep_locked;
-+		VM_BUG_ON(ret != SWAP_SUCCESS);
-+
- 		/*
- 		 * In active use or really unfreeable?  Activate it.
- 		 * If page which have PG_mlocked lost isoltation race,
-@@ -1321,6 +1326,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
- 	spin_unlock_irq(&zone->lru_lock);
- 
- 	while (!list_empty(&l_hold)) {
-+		int ret;
- 		struct page_reference_context refctx = {
- 			.is_page_locked = 0,
- 		};
-@@ -1340,7 +1346,12 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
- 			continue;
- 		}
- 
--		wipe_page_reference(page, sc->mem_cgroup, &refctx);
-+		ret = wipe_page_reference(page, sc->mem_cgroup, &refctx);
-+		if (ret == SWAP_AGAIN) {
-+			list_add(&page->lru, &l_active);
-+			continue;
-+		}
-+		VM_BUG_ON(ret != SWAP_SUCCESS);
- 
- 		if (refctx.referenced)
- 			nr_rotated++;
--- 
-1.6.5.2
+In the quoted text above it's being disputed that it's a kernel 
+regression so i guess your best option is to bisect it (if you can).
 
-
-
+	Ingo
