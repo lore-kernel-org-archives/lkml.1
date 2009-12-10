@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933082AbZLJWqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761978AbZLJW0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933082AbZLJWqP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 17:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762047AbZLJWqO
+	id S1761978AbZLJW0w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 17:26:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761968AbZLJW0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 17:46:14 -0500
-Received: from nbd.name ([88.198.39.176]:33683 "EHLO ds10.nbd.name"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762034AbZLJWqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 17:46:12 -0500
-X-Greylist: delayed 1534 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Dec 2009 17:46:11 EST
-Message-ID: <4B217421.5000802@openwrt.org>
-Date: Thu, 10 Dec 2009 23:20:17 +0100
-From: Felix Fietkau <nbd@openwrt.org>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Thu, 10 Dec 2009 17:26:49 -0500
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:49213
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761937AbZLJW0s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 17:26:48 -0500
+X-SpamScore: -26
+X-BigFish: VPS-26(zz1432R98dN936eM1419Mzz1202hz4fhzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B217586.5070700@am.sony.com>
+Date: Thu, 10 Dec 2009 14:26:14 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>, dedekind1@gmail.com,
+To: "rostedt@goodmis.org" <rostedt@goodmis.org>
+CC: "Bird, Tim" <Timothy.Bird@am.sony.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, phillip.lougher@gmail.com,
-       Tim Bird <tim.bird@am.sony.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 1/9] Squashfs: move zlib decompression wrapper code into
- a 	separate file
-References: <E1NHTHg-0001sM-NQ@dylan.lougher.demon.co.uk>	 <20091207145705.cd30cae8.akpm@linux-foundation.org>	 <4B1ED122.3040309@lougher.demon.co.uk>	 <1260352852.19669.1253.camel@localhost>	 <4B2042FA.8080406@lougher.demon.co.uk> <10f740e80912100201l6d83588evff46e95ec96d0aed@mail.gmail.com> <4B21656B.1090607@lougher.demon.co.uk>
-In-Reply-To: <4B21656B.1090607@lougher.demon.co.uk>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
+References: <4B202778.4030801@am.sony.com> <20091210070800.GB16874@elte.hu>	 <4B216478.3080601@am.sony.com> <1260482698.2146.234.camel@gandalf.stny.rr.com>
+In-Reply-To: <1260482698.2146.234.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Dec 2009 22:26:16.0491 (UTC) FILETIME=[C9E1DFB0:01CA79E7]
+X-SEL-encryption-scan: scanned
+X-Reverse-DNS: mail8.fw-sd.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-12-10 10:17 PM, Phillip Lougher wrote:
-> Geert Uytterhoeven wrote:
->> 
->>> Yes I did consider using the cryptoapi, but this doesn't have support for
->>> lzma in mainline.
->> 
->> IIRC, Felix Fietkau added support for that for OpenWRT...
->> 
+Steven Rostedt wrote:
+> On Thu, 2009-12-10 at 13:13 -0800, Tim Bird wrote:
+>> I have some patches ...
+>>  to make it possible to use arbitrary ftrace plugins
+>> at boot time.  (There are issues with the current code for
+>> anything other than the bootgraph plugin).
 > 
-> Yes, but it isn't in mainline, and OpenWRT don't appear to have tried to submit
-> it.  IMHO the major problem with their patch is it uses a second private copy
-> of lzma, rather than being a wrapper around the pre-existing lzma implementation.
-> I don't think it's going to be easy to get a second lzma implementation accepted
-> into mainline, when it took so long to get one accepted.  I have nothing against
-> the cryptoapi, but it doesn't seem likely to be getting lzma support anytime soon.
+> We already have a way to enable arbitrary ftrace plugins at boot time:
 > 
-> As I previously said my aim is to use the pre-existing lzma implementation.  Unless
-> it is stupendously bad (which it isn't), that seems to be the quickest, easiest and
-> best way to get lzma support into Squashfs.
-The main reason why my implementation couldn't be done as a simple
-wrapper around the existing implementation is that it reuses the
-caller's split output buffers instead wasting precious RAM by allocating
-a contiguous buffer big enough to cover the entire block.
-Especially at bigger block sizes (which provide better compression),
-this probably has noticeable effects on tiny embedded systems with
-little RAM.
+> Try ftrace=function on the command line.
 
-- Felix
+That's what I'm using, but my function_duration tracer didn't
+work, because of an issue initializing the trace-option files.
+The problem was that the debugfs wasn't initialized yet.
+I worked up a simple fix to defer initializing the
+trace-option files in debugfs until later in the boot
+sequence.
+
+Maybe you've already fixed this.  I'll check out the
+latest code and see if I still have problems with it.
+If so, I'll send the patches (which are quite small)
+for consideration.
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
