@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbZLJIlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757698AbZLJIp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757867AbZLJIlw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 03:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbZLJIls
+	id S1757698AbZLJIp3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 03:45:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757967AbZLJIpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 03:41:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46897 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753255AbZLJIlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 03:41:47 -0500
-From: Xiaotian Feng <dfeng@redhat.com>
-To: netdev@vger.kernel.org, lvs-devel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>,
-       Wensong Zhang <wensong@linux-vs.org>, Simon Horman <horms@verge.net.au>,
-       Julian Anastasov <ja@ssi.bg>, "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] ipvs: fix synchronization on connection close
-Date: Thu, 10 Dec 2009 16:41:42 +0800
-Message-Id: <1260434502-14166-1-git-send-email-dfeng@redhat.com>
+	Thu, 10 Dec 2009 03:45:22 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48857 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757469AbZLJIpV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 03:45:21 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 10 Dec 2009 17:42:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       cl@linux-foundation.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com
+Subject: Re: [RFC mm][PATCH 2/5] percpu cached mm counter
+Message-Id: <20091210174230.8367a46c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091210083310.GB6834@elte.hu>
+References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091210163448.338a0bd2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091210075454.GB25549@elte.hu>
+	<20091210172040.37d259d3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091210083310.GB6834@elte.hu>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 9d3a0de makes slaves expire as they would do on the master
-with much shorter timeouts. But it introduces another problem:
-When we close a connection, on master server the connection became
-CLOSE_WAIT/TIME_WAIT, it was synced to slaves, but if master is
-finished within it's timeouts (CLOSE), it will not be synced to
-slaves. Then slaves will be kept on CLOSE_WAIT/TIME_WAIT until
-timeout reaches. Thus we should also sync with CLOSE.
+On Thu, 10 Dec 2009 09:33:10 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-Cc: Wensong Zhang <wensong@linux-vs.org>
-Cc: Simon Horman <horms@verge.net.au>
-Cc: Julian Anastasov <ja@ssi.bg>
-Cc: David S. Miller <davem@davemloft.net>
----
- net/netfilter/ipvs/ip_vs_core.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > I'm sorry If I miss your point...are you saying remove all mm_counter 
+> > completely and remake them under perf ? If so, some proc file 
+> > (/proc/<pid>/statm etc) will be corrupted ?
+> 
+> No, i'm not suggesting that - i'm just suggesting that right now MM 
+> stats are not very well suited to be exposed via perf. If we wanted to 
+> measure/sample the information in /proc/<pid>/statm it just wouldnt be 
+> possible. We have a few events like pagefaults and a few tracepoints as 
+> well - but more would be possible IMO.
+> 
 
-diff --git a/net/netfilter/ipvs/ip_vs_core.c b/net/netfilter/ipvs/ip_vs_core.c
-index b95699f..847ffca 100644
---- a/net/netfilter/ipvs/ip_vs_core.c
-+++ b/net/netfilter/ipvs/ip_vs_core.c
-@@ -1366,6 +1366,7 @@ ip_vs_in(unsigned int hooknum, struct sk_buff *skb,
- 	       == sysctl_ip_vs_sync_threshold[0])) ||
- 	     ((cp->protocol == IPPROTO_TCP) && (cp->old_state != cp->state) &&
- 	      ((cp->state == IP_VS_TCP_S_FIN_WAIT) ||
-+	       (cp->state == IP_VS_TCP_S_CLOSE) ||
- 	       (cp->state == IP_VS_TCP_S_CLOSE_WAIT) ||
- 	       (cp->state == IP_VS_TCP_S_TIME_WAIT)))))
- 		ip_vs_sync_conn(cp);
--- 
-1.6.5.2
+Ah, ok. More events will be useful.
+
+This patch itself is for reduce(not increase) cache miss in page fault pass..
+And counters I'll add is for task monitoring, like ps or top, and for improving
+OOM killer. Not for counting events but for showing current _usage_ to users
+via procfs or to oom killer.
+
+I'll continue to make an efforts to find better synchronization scheme
+rather than adding hook to schedule() but...
+
+Thanks,
+-Kame
 
