@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762037AbZLJWpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbZLJWra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762037AbZLJWpp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 17:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762021AbZLJWpm
+	id S1762063AbZLJWra (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 17:47:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762042AbZLJWr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 17:45:42 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:63012 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755456AbZLJWpk (ORCPT
+	Thu, 10 Dec 2009 17:47:29 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:26877 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762028AbZLJWr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 17:45:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kUBy7K/zWewTKm1A075DUYfRkW+txUKNDQ/Dr7gT2O5zLINwc8GvOY0wmX0hy7hWJi
-         i3tEzvKvk2OBcwb9H7ziZreT18uAwL7T9svSJMtTU39TRDXTJfoGNwkJeZxOJHN8v8u3
-         N/QCxfaA/5KAKQdwZhr4aUBrT7PboOwKiP5FU=
-Message-ID: <4B217A2A.2040708@gmail.com>
-Date: Thu, 10 Dec 2009 14:46:02 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+	Thu, 10 Dec 2009 17:47:28 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAKoJIUurR7Hu/2dsb2JhbADANJcShCsE
+X-IronPort-AV: E=Sophos;i="4.47,377,1257120000"; 
+   d="scan'208";a="447853288"
+From: Roland Dreier <rdreier@cisco.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: Bisected regression
+References: <20091210091040.GG8742@kernel.dk>
+	<20091210103945.GI8742@kernel.dk> <20091210160640.GB27794@elte.hu>
+	<67EA4830-231F-45C9-A1A6-CE1C6CD9493D@kernel.org>
+	<20091210180727.GK8742@kernel.dk> <4B213F1F.2020305@kernel.org>
+	<4B2140F8.3020201@kernel.org> <20091210184506.GP8742@kernel.dk>
+	<20091210190742.GS8742@kernel.dk> <4B2149B4.9060900@kernel.org>
+	<20091210192659.GV8742@kernel.dk> <4B21630A.6000308@kernel.org>
+	<4B21789F.4030707@zytor.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 10 Dec 2009 14:47:34 -0800
+In-Reply-To: <4B21789F.4030707@zytor.com> (H. Peter Anvin's message of "Thu,
+	10 Dec 2009 14:39:27 -0800")
+Message-ID: <adaaaxqla49.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Alexey Starikovskiy <aystarik@gmail.com>
-CC: Pavel Machek <pavel@ucw.cz>, Xiaotian Feng <dfeng@redhat.com>,
-       lenb@kernel.org, ming.m.lin@intel.com, robert.moore@intel.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ACPICA: don't cond_resched() when irq_disabled or in_atomic
-References: <1259900760-6424-1-git-send-email-dfeng@redhat.com> <20091210100907.GA2446@ucw.cz> <4B2136D5.1030402@gmail.com> <20091210181800.GM19454@elf.ucw.cz> <4B214007.2080409@gmail.com>
-In-Reply-To: <4B214007.2080409@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 10 Dec 2009 22:47:34.0947 (UTC) FILETIME=[C3E6C730:01CA79EA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/10/09 10:37, Alexey Starikovskiy wrote:
-> Pavel Machek пишет:
->> On Thu 2009-12-10 20:58:45, Alexey Starikovskiy wrote:
->>
->>> Hi Pavel,
->>>
->>> Please elaborate... Your comments "ugly as hell" are too often to be
->>> specific...
->>> There is only one use of ACPI_PREEMPTION_POINT(), and it is in the
->>> ACPICA code,
->>> which we all agreed to keep OS independent, thus the need for #define.
->>> Do you see any other way to add preemption point without introducing
->>> Linux-specific
->>> code into ACPICA?
->>>
->>
->> I believe we want linux-specific code in acpica at this point.
->>
->>
-> The point there we call cond_resched() in ACPICA is an interpreter parse
-> loop. This parse loop may be executed from within atomic context and even
-> with interrupts off. In this case, cond_resched() should not be called
-> to not make
-> might_sleep() guards angry.
->
-> Please post the code, which will do the above and will not look "ugly as
-> hell".
-> I still don't follow your vague comments.
->> (Or maybe... I guess other systems have concept of preemption and not
->> all actions are permitted from all contexts, so maybe something like
->> that would be important for them, too?)
->>
-> None of them cared about it up to this point.
-> With the macro above we allowed them to follow Linux, but to go or not
-> is their call.
->
-> Regards,
-> Alex.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
 
-o.k. I went did a pull to update
-the kernel, and then changed
-aclinux.h to the above post.
+ > Is this an EFI BIOS?  Otherwise, the first 64K would be clobbered anyway
+ > by the boot loader, so it is invalid anyway...  If it is EFI, it is
+ > theoretically possible.
 
-I'm am not seeing this warning message
-upon wake-up.
-but with the acpi merge stuff with
-acpi_walk_namespace seems to break nvidia
-(nvidia's problem now)
+Yes, EFI BIOS on an pre-release NHM EX box.
 
-there is also some thing where the machine
-takes a good 30 secs or so to wake up
-(not sure if this is from the updated patch)
-in dmesg I see:
-
-platform microcode: firmware requesting intel-ucode/06-17-0a
-firmware microcode: parent mocrocode should not be sleeping.
-
-I'm thinking I need something in /lib/firmare
-
-Justin P. Mattock
+ - R.
