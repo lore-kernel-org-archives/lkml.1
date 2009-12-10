@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbZLJVZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbZLJVaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761435AbZLJVZK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 16:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZLJVZI
+	id S1761262AbZLJVaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 16:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761030AbZLJVaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 16:25:08 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:56141 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761250AbZLJVZG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 16:25:06 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: What's in asm-generic.git
-Date: Thu, 10 Dec 2009 22:25:05 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: liqin.chen@sunplusct.com, linux-arch@vger.kernel.org,
+	Thu, 10 Dec 2009 16:30:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60544 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760945AbZLJVaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 16:30:09 -0500
+Date: Thu, 10 Dec 2009 16:25:33 -0500
+From: Valerie Aurora <vaurora@redhat.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-References: <OF24184D8B.2F7F8AA9-ON48257685.002069EF-48257685.00207E45@sunplusct.com> <200912102210.12124.arnd@arndb.de> <8bd0f97a0912101317v8143e67w9e2f1224111ac0d7@mail.gmail.com>
-In-Reply-To: <8bd0f97a0912101317v8143e67w9e2f1224111ac0d7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912102225.05280.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18B/qsCHqlfIzED7+SK/0+eKNA5TRkM+A6z05Y
- isjOWaL3aj//s41IeAPLeyMU/SfjoL+tQsG3hFHgv6vypV3sIh
- 6IME3V5zsLflGoKSifHEw==
+Subject: Re: [PATCH 04/41] VFS: Remove unnecessary micro-optimization in cached_lookup()
+Message-ID: <20091210212533.GD10388@shell>
+References: <1256152779-10054-5-git-send-email-vaurora@redhat.com> <200911300207.nAU27duL007220@agora.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200911300207.nAU27duL007220@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 December 2009, Mike Frysinger wrote:
-> > I have found now that sys_accept4 was missing. sys_set_thread_area however
-> > is only defined on x86 and mips. Since you don't currently implement this
-> > on score, maybe it would be more appropriate to handle it like the other
-> > architectures do, rather than adding it to asm-generic/unistd.h?
+On Sun, Nov 29, 2009 at 09:07:39PM -0500, Erez Zadok wrote:
+> In message <1256152779-10054-5-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> > From: Jan Blunck <jblunck@suse.de>
+> > 
+> > d_lookup() takes rename_lock which is a seq_lock.  This is so cheap
+> > it's not worth calling lockless __d_lookup() first from
+> > cache_lookup().  Rename cached_lookup() to cache_lookup() while we're
+> > there.
 > 
-> isnt the point of asm-generic/unistd.h to collect all common syscalls
-> ?  if there's syscalls that ideally should be handled by everyone but
-> currently doesnt, then it's easy to define it in the header but have
-> the actual entry.S leave it as a hole ...
+> Val, this is another patch unrelated to union mounts, an
+> optimization/simplification of the VFS code.  I think you need to try and
+> push such VFS patches upstream more quickly, so as to reduce the set of UM
+> patches you have to maintain.
 
-Well, sys_thread_area is not a common syscall but rather an exception.
-I haven't looked at how glibc does implents TLS on different architectures,
-but I think this is commonly done purely in user space without the
-need for a syscall.
+I agree.  We posted them separately once and will do so again.
 
-	Arnd
+-VAL
