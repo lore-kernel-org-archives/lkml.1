@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933088AbZLJXhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZLJXqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933088AbZLJXhv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 18:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758313AbZLJXht
+	id S1757452AbZLJXqL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 18:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756690AbZLJXqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 18:37:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48210 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757343AbZLJXhs (ORCPT
+	Thu, 10 Dec 2009 18:46:09 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38928 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755092AbZLJXqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 18:37:48 -0500
-Date: Thu, 10 Dec 2009 15:37:07 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephane Marchesin <stephane.marchesin@gmail.com>
-cc: Maarten Maathuis <madman2003@gmail.com>,
-       Xavier Bestel <xavier.bestel@free.fr>, Dave Airlie <airlied@linux.ie>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm
-In-Reply-To: <6a89f9d50912101153l2b58b07fudf6965b2f5172f7f@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0912101531180.3560@localhost.localdomain>
-References: <alpine.DEB.2.00.0912100603070.24701@skynet.skynet.ie>  <alpine.LFD.2.00.0912100716470.3560@localhost.localdomain>  <1260459601.18520.26.camel@skunk>  <alpine.LFD.2.00.0912100823220.3560@localhost.localdomain>  <6d4bc9fc0912100940l1d2954d0k187ae54bf44a23f5@mail.gmail.com>
-  <alpine.LFD.2.00.0912101035140.3560@localhost.localdomain> <6a89f9d50912101153l2b58b07fudf6965b2f5172f7f@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 10 Dec 2009 18:46:08 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 11 Dec 2009 08:42:55 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       minchan.kim@gmail.com, mingo@elte.hu
+Subject: Re: [RFC mm][PATCH 1/5] mm counter cleanup
+Message-Id: <20091211084255.ec7d3f49.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0912101126480.5481@router.home>
+References: <20091210163115.463d96a3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091210163326.28bb7eb8.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0912101126480.5481@router.home>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 Dec 2009 11:30:46 -0600 (CST)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-
-On Thu, 10 Dec 2009, Stephane Marchesin wrote:
+> On Thu, 10 Dec 2009, KAMEZAWA Hiroyuki wrote:
 > 
-> I'm not sure why people are arguing so much over this, given that no
-> nouveau devs were at the kernel summit, and we only heard rumours
-> afterwards that there were complaints about us not being ready for
-> merging.
+> > This patch modifies it to
+> >   - Define them in mm.h as inline functions
+> >   - Use array instead of macro's name creation. For making easier to add
+> >     new coutners.
+> 
+> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> > @@ -454,8 +456,8 @@ static struct mm_struct * mm_init(struct
+> >  		(current->mm->flags & MMF_INIT_MASK) : default_dump_filter;
+> >  	mm->core_state = NULL;
+> >  	mm->nr_ptes = 0;
+> > -	set_mm_counter(mm, file_rss, 0);
+> > -	set_mm_counter(mm, anon_rss, 0);
+> > +	for (i = 0; i < NR_MM_COUNTERS; i++)
+> > +		set_mm_counter(mm, i, 0);
+> 
+> 
+> memset? Or add a clear_mm_counter function? This also occurred earlier in
+> init_rss_vec().
+> 
+Ok, I'll try some cleaner codes.
 
-The thing is, my complaint is not about whatever external driver project.
+Thanks,
+-Kame
 
-We have those all the time. I'm not complaining about Nouveau people.
-
-I'm pissed off at distribution people. For years now, distributions have 
-talked about "upstream first", because of the disaster and fragmentation 
-that was Linux-2.4. And most of them do it, and have been fairly good 
-about it.
-
-But not only is Fedora not following the rules, I know that Fedora people 
-are actively making excuses about not following the rules. I know Red Hat 
-actually employs (full-time or part-time I have no idea) some Nouveau 
-dveloper, and by that point Red Hat should also man up and admit that they 
-need to make "merge upstream" be a priority for them.
-
-See? I'm not complaining about _you_. I'm complaining about Fedora and Red 
-Hat.
-
-> If you have issues to raise about nouveau, please raise them on the
-> nouveau, mesa or dri lists, at least some time before starting to
-> complain. I must say I didn't think such a big issue was going on
-> here, that's the problem with rumours.
-
-See above. It's not you. It's Fedora. If Fedora hadn't merged Nouveau and 
-shipped it, I wouldn't care.
-
-Or rather, I probably still -would- care, but I would care because nVidia 
-hardware is common, and I like open source drivers. But I wouldn't be 
-disappointed and pissed off.
-
-And this has been going on for a _loong_ time now. Fedora has been 
-shipping Nouveau for about a year now, I think.
-
-			Linus
