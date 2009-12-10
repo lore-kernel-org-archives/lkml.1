@@ -1,63 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbZLJCVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbZLJC21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759463AbZLJCVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 21:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZLJCVS
+	id S1759477AbZLJC21 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 21:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZLJC2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 21:21:18 -0500
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:56905 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759207AbZLJCVR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 21:21:17 -0500
-Date: Thu, 10 Dec 2009 07:51:13 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Paul Menage <menage@google.com>, kosaki.motohiro@jp.fujitsu.com,
-       hugh.dickins@tiscali.co.uk, nishimura@mxp.nes.nec.co.jp,
-       kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com, npiggin@suse.de,
-       fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] [23/31] HWPOISON: add memory cgroup filter
-Message-ID: <20091210022113.GJ3722@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <200912081016.198135742@firstfloor.org>
- <20091208211639.8499FB151F@basil.firstfloor.org>
- <6599ad830912091247v1270a86er45ea8ceeff28e727@mail.gmail.com>
- <20091210014212.GI18989@one.firstfloor.org>
+	Wed, 9 Dec 2009 21:28:23 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35347 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759217AbZLJC2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 21:28:22 -0500
+Date: Wed, 9 Dec 2009 18:28:25 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Al Viro <viro@zeniv.linux.org.uk>,
+       James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/9] Fix various __task_cred related invalid RCU
+	assumptions
+Message-ID: <20091210022825.GG6938@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091210001308.247025548@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091210014212.GI18989@one.firstfloor.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20091210001308.247025548@linutronix.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen <andi@firstfloor.org> [2009-12-10 02:42:12]:
-
-> > While the functionality sounds useful, the interface (passing an inode
-> > number) feels a bit ugly to me. Also, if that group is deleted and a
-> > new cgroup created, you could end up reusing the inode number.
+On Thu, Dec 10, 2009 at 12:52:46AM -0000, Thomas Gleixner wrote:
+> While auditing the read_lock(&tasklist_lock) sites for a possible
+> conversion to rcu-read_lock() I stumbled over an unprotected user of
+> __task_cred in kernel/sys.c
 > 
-> Please note this is just a testing interface, doesn't need to be
-> 100% fool-proof. It'll never be used in production.
+> That caused me to audit all the __task_cred usage sites except in
+> kernel/exit.c.
 > 
-> > 
-> > How about an approach where you write either the cgroup path (relative
-> > to the memcg mount) or an fd open on the desired cgroup? Then you
-> > could store a (counted) css reference rather than an inode number,
-> > which would make the filter function cleaner too, since it would just
-> > need to compare css objects.
+> Most of the usage sites are correct, but some of them trip over
+> invalid assumptions about the protection which is given by RCU.
 > 
-> Sounds complicated, I assume it would be much more code?
-> I would prefer to keep the testing interfaces as simple as possible.
->
+> - spinlocked/preempt_disabled regions are equivalent to rcu_read_lock():
+> 
+>    That's wrong. RCU does not guarantee that. 
+> 
+>    It has been that way due to implementation details and it still is
+>    valid for CONFIG_TREE_PREEMPT_RCU=n, but there is no guarantee that
+>    this will be the case forever.
 
-We do this for cgroupstats and the code is not very complicated. In
-case you want to look, the user space code is at
-Documentation/accounting/getdelays.c and the kernel code is in
-kernel/taskstats.c 
+To back this up, item #2 from Documentation/RCU/checklist.txt says:
 
--- 
-	Balbir
+2.	Do the RCU read-side critical sections make proper use of
+	rcu_read_lock() and friends?  These primitives are needed
+	to prevent grace periods from ending prematurely, which
+	could result in data being unceremoniously freed out from
+	under your read-side code, which can greatly increase the
+	actuarial risk of your kernel.
+
+	As a rough rule of thumb, any dereference of an RCU-protected
+	pointer must be covered by rcu_read_lock() or rcu_read_lock_bh()
+	or by the appropriate update-side lock.
+
+> - interrupt disabled regions are equivalent to rcu_read_lock():
+> 
+>   Wrong again. RCU does not guarantee that.
+> 
+>   It's true for current mainline, but again this is an implementation
+>   detail and there is no guarantee by the RCU semantics.
+> 
+>   Indeed we want to get rid of that to avoid scalability issues on
+>   large systems and preempt-rt got already rid of it to a certain
+>   extent.
+
+Same item #2 above covers this.
+
+The only exception is when you use synchronize_sched(), as described
+in the "Defer"/"Protect" list near line 323 of the 2.6.32 version of
+Documentation/RCU/whatisRCU.txt:
+
+	Defer			Protect
+
+a.	synchronize_rcu()	rcu_read_lock() / rcu_read_unlock()
+	call_rcu()
+
+b.	call_rcu_bh()		rcu_read_lock_bh() / rcu_read_unlock_bh()
+
+c.	synchronize_sched()	preempt_disable() / preempt_enable()
+				local_irq_save() / local_irq_restore()
+				hardirq enter / hardirq exit
+				NMI enter / NMI exit
+
+And yes, I need to update this based on the addition of
+rcu_read_lock_sched() and friends.  I will be doing another
+documentation update soon.
+
+> I'm sure we are lucky that CONFIG_TREE_PREEMPT_RCU=y is not yet wide
+> spread and the code pathes are esoteric enough not to trigger that
+> subtle races (some of them might just error out silently).
+> 
+> Nevertheless we need to fix all invalid assumptions about RCU
+> protection.
+
+Agreed!!!
+
+> The following patch series fixes all yet known affected __task_cred()
+> sites, but there is more auditing of all other rcu users necessary.
+
+Thank you very much for putting this series together -- I will take
+a quick look at them.
+
+							Thanx, Paul
