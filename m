@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934257AbZLJMDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934386AbZLJME0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934257AbZLJMDl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 07:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934186AbZLJMDg
+	id S934386AbZLJME0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 07:04:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934190AbZLJMEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 07:03:36 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:59414 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934125AbZLJMDf (ORCPT
+	Thu, 10 Dec 2009 07:04:20 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:53250 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934188AbZLJMET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 07:03:35 -0500
+	Thu, 10 Dec 2009 07:04:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VBc8nx/fO5cQmqeS6wa1VPkaPE0LyJRTLUY18KE+tF55ZRFg3Vop5yFGEoxsvQz9/h
-         MidShUS/ft++UzOA3cFnQxm9PT0qX2y1vXVWoqMtqYaVl941DhYbYSrokfCrY809+Hz/
-         U9vLV0xj9lPpVrRhplti+LsXNcdtLG2ckY9xY=
-Date: Thu, 10 Dec 2009 13:03:36 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tim Bird <tim.bird@am.sony.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-Message-ID: <20091210120332.GA5042@nowhere>
-References: <4B202778.4030801@am.sony.com> <20091210070800.GB16874@elte.hu>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=OnKxOLWHFS9e5iCFVge+k69Fv6MjSGPjqehpJwJPISDAvQKM2SKStS95buj0z/srDg
+         fNx3VKWmmnTxyp1um5coAKFyQbuKJ4/imFukW5+H1CtJRFsf7HmansiYtEualH0PcdtJ
+         +SSpVGiIGGCLFELNyrK1AsDbRLd6sJVZm2Lr4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091210070800.GB16874@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200912090728.10135.a.miskiewicz@gmail.com>
+References: <1260276751-19501-1-git-send-email-mmarek@suse.cz>
+	 <4B1EB5E9.3010506@suse.cz>
+	 <9b2db90b0912082222x5287d452pf9e55d6ff44e511c@mail.gmail.com>
+	 <200912090728.10135.a.miskiewicz@gmail.com>
+Date: Thu, 10 Dec 2009 14:04:23 +0200
+Message-ID: <9b2db90b0912100404s5e97d9ddk181aed1990e36208@mail.gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: new kbuild maintainer
+From: Nir Tzachar <nir.tzachar@gmail.com>
+To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+Cc: Michal Marek <mmarek@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 08:08:00AM +0100, Ingo Molnar wrote:
-> 
-> * Tim Bird <tim.bird@am.sony.com> wrote:
-> 
-> > Add function duration tracer.
-> > 
-> > Signed-off-by: Tim Bird <tim.bird@am.sony.com>
-> > ---
-> >  kernel/trace/Kconfig          |    8
-> >  kernel/trace/Makefile         |    1
-> >  kernel/trace/trace.c          |   32 ++
-> >  kernel/trace/trace_duration.c |  527 ++++++++++++++++++++++++++++++++++++++++++
-> >  4 files changed, 568 insertions(+)
-> 
-> Please do it in a cleaner an more generic fashion: add a "function 
-> event" that perf can see and process, so all the output embellishment 
-> can be done outside of the kernel, in tools/perf/.
-> 
-> We want to wind down the current maze of ftrace plugins, not extend 
-> them. We already obsoleted the following ftrace plugins: scheduler, 
-> sysprof, blktrace, kmem, scheduler, etc. There's more work ongoing and 
-> broad agreement between folks developing it that this is the way 
-> forward.
-> 
-> The function tracer / function graph tracer is a holdout due to its 
-> complexity - but that by no means weakens the argument and the necessity 
-> to migrate it.
-> 
-> ftrace plugins were a nice idea originally and a clear improvement over 
-> existing alternatives, but now that we've got a technicaly superior, 
-> unified event framework that can do what the old plugins did and much 
-> more, we want to improve that and not look back ...
+>
+> On my disto it works but it won't on a distro where /usr/include/ncurses
+> contains wide version of headers.
 
+ncurses does not support a proper pkg-config scheme, hence the
+difficulty with finding the correct flags. Regarding the wideness of
+the library, I would presume that any distro which mismatches
+/usr/include/ncurses.h and libncurses.so is in itself broken. Taking
+this into consideration, I think that including /usr/include/ncurses.h
+and linking against -lncurses should work. We should entirely ignore
+the wide version of the library, and use the default installation
+provided.
 
-I agree. If we can abstract it out in a struct trace_event rather than a
-struct tracer, then please try. I doubt we can't.
+>
+>>
+>> Moreover, currently nconfig does not use this check.
+>
+> I was testing on linus git and this flags from this check were used in nconfig
+> build, too (that's why there were ncurses and ncursesw at the same time in
+> linking command).
 
-The trace events are more unified.
+Well, I do not know why, by the check changed the flags for _all_
+targets in the scripts/kconfig dir, such that even qconfig got copiled
+with -lncursesw. Strange. The change I made in the Makefile in the
+previous mail fixes that.
 
-This makes me feel I'm going to try converting the function graph tracer
-into an event during the next cycle. It does not mean I could make it
-usable as a perf event right away in the same shot that said, as you can
-guess this is not a trivial plug. The current perf fast path is not yet
-adapted for that.
-
-But at least this will be a good step forward.
-
+Cheers,
+Nir.
