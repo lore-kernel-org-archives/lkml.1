@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761600AbZLJTVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbZLJTY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761600AbZLJTVh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 14:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761581AbZLJTVf
+	id S1761596AbZLJTY1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 14:24:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761405AbZLJTYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 14:21:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:13752 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761449AbZLJTVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 14:21:34 -0500
-Message-ID: <4B214A38.1050000@redhat.com>
-Date: Thu, 10 Dec 2009 17:21:28 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Thu, 10 Dec 2009 14:24:25 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:63562 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761393AbZLJTYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 14:24:24 -0500
 MIME-Version: 1.0
-To: Devin Heitmueller <dheitmueller@kernellabs.com>
-CC: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>
+In-Reply-To: <4B214A38.1050000@redhat.com>
+References: <20091210162805.5e1b6319@pedra>
+	 <829197380912101101t39079ebal54b437ea11ffdb34@mail.gmail.com>
+	 <4B214A38.1050000@redhat.com>
+Date: Thu, 10 Dec 2009 14:24:24 -0500
+Message-ID: <829197380912101124k4449330t270553d990750be7@mail.gmail.com>
 Subject: Re: Firmware for dib0700
-References: <20091210162805.5e1b6319@pedra> <829197380912101101t39079ebal54b437ea11ffdb34@mail.gmail.com>
-In-Reply-To: <829197380912101101t39079ebal54b437ea11ffdb34@mail.gmail.com>
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Devin Heitmueller wrote:
-> On Thu, Dec 10, 2009 at 1:28 PM, Mauro Carvalho Chehab
-> <mchehab@redhat.com> wrote:
->> Hi David,
+On Thu, Dec 10, 2009 at 2:21 PM, Mauro Carvalho Chehab
+<mchehab@redhat.com> wrote:
+>> Devin
 >>
->> Please pull from:
->>
->> ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-firmware.git master
->>
->> For dib0700 firmware.
-> 
-> Mauro,
-> 
-> I had David pull in this firmware months ago (so it could be included
-> in time for the release of Ubuntu Karmic):
-> 
-> http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=commit;h=f20b0674534a444ae74239843cac19f72c64912b
-> 
-> Am I missing something?
-> 
-> Devin
-> 
-Hmm... sorry, it seems I missed your pull request.
+> Hmm... sorry, it seems I missed your pull request.
+>
+> I'll need to re-check my git update script here... I should have been able to notice it.
 
-I'll need to re-check my git update script here... I should have been able to notice it.
+Because of the timeliness for Karmic (they actually moved it from
+their linux-firmware to their linux-firmware-nonfree package a couple
+of weeks before their release), I dealt with David directly rather
+than submitting it as a patch to the linux-media mailing list.
+
+Devin
+
+-- 
+Devin J. Heitmueller - Kernel Labs
+http://www.kernellabs.com
