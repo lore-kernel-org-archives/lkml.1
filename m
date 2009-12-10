@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbZLJDh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbZLJDiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759460AbZLJDh7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 22:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759490AbZLJDh5
+	id S1759512AbZLJDiy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 22:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759496AbZLJDis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 22:37:57 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55892 "EHLO smtps.tip.net.au"
+	Wed, 9 Dec 2009 22:38:48 -0500
+Received: from thunk.org ([69.25.196.29]:52311 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759277AbZLJDh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 22:37:56 -0500
-Date: Thu, 10 Dec 2009 14:37:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Damian Lukowski <damian@tvk.rwth-aachen.de>,
-       David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>,
-       =?UTF-8?B?IkFuZHLDqSBHb2RkYXJkIFJvc2Ei?= <andre.goddard@gmail.com>
-Subject: linux-next: manual merge of the trivial tree with the net-current
- tree
-Message-Id: <20091210143756.5a236829.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__10_Dec_2009_14_37_56_+1100_CMTkHqMk8yQZ9WnF"
+	id S1759490AbZLJDir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 22:38:47 -0500
+Date: Wed, 9 Dec 2009 22:38:53 -0500
+From: tytso@mit.edu
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 updates for v2.6.33
+Message-ID: <20091210033853.GA7215@thunk.org>
+Mail-Followup-To: tytso@mit.edu,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1NIP7h-0002Tv-AP@closure.thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1NIP7h-0002Tv-AP@closure.thunk.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__10_Dec_2009_14_37_56_+1100_CMTkHqMk8yQZ9WnF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Dec 09, 2009 at 11:10:41AM -0500, Theodore Ts'o wrote:
+> Hi Linus,
+> 
+> Please pull from:
+> 
+>         git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+> 
+> to grab the following changes for v2.6.33.
+> 
+> Lots of bug fixes, plus some cleanup work.
+> 
 
-Hi Jiri,
+Hi Linus, it looks like you haven't pulled from the ext4 tree yet.
 
-Today's linux-next merge of the trivial tree got a conflict in
-include/net/tcp.h between commit 2f7de5710a4d394920405febc2a9937c69e16dda
-("tcp: Stalling connections: Move timeout calculation routine") from the
-net-current tree and commit af901ca181d92aac3a7dc265144a9081a86d8f39
-("tree-wide: fix assorted typos all over the place") from the trivial
-tree.
+FYI, I've since added three more patches to the for_linus branch to
+fix a few more bugs:
 
-The former moves the comment that the latter corrects to
-net/ipv4/tcp_timer.c.  I just used the net-current version and didn't
-bother fixing it up in its new location.
+Theodore Ts'o (3):
+      jbd2: Export jbd2_log_start_commit to fix ext4 build
+      ext4: Do not override ext2 or ext3 if built they are built as modules
+      ext4: Fix potential fiemap deadlock (mmap_sem vs. i_data_sem)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ fs/ext4/Kconfig   |    2 +-
+ fs/ext4/extents.c |    4 ++--
+ fs/ext4/super.c   |    4 ++--
+ fs/jbd2/journal.c |    1 +
+ 4 files changed, 6 insertions(+), 5 deletions(-)
 
---Signature=_Thu__10_Dec_2009_14_37_56_+1100_CMTkHqMk8yQZ9WnF
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAksgbRQACgkQjjKRsyhoI8yG7ACfceolhrv9JxlGbpgdrIBMiKqv
-ZhkAn3nlKsXyEQrIHIt7IkhpQ3E0cFph
-=fvjq
------END PGP SIGNATURE-----
-
---Signature=_Thu__10_Dec_2009_14_37_56_+1100_CMTkHqMk8yQZ9WnF--
+							- Ted
