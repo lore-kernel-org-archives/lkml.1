@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbZLJNX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759436AbZLJNZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759018AbZLJNX5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 08:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758659AbZLJNXz
+	id S1759436AbZLJNZw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 08:25:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759310AbZLJNZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 08:23:55 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:56291 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753804AbZLJNXz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 08:23:55 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: dwmw2@infradead.org
-Cc: linux-mtd@lists.infradead.org, jirislaby@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] MTD: cfi chip, fix lock imbalance
-Date: Thu, 10 Dec 2009 14:23:57 +0100
-Message-Id: <1260451437-29645-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.5
+	Thu, 10 Dec 2009 08:25:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33090 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759203AbZLJNZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 08:25:48 -0500
+Date: Thu, 10 Dec 2009 14:25:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] AMD IOMMU fixes for 2.6.33
+Message-ID: <20091210132546.GA2952@elte.hu>
+References: <1260446135-16460-1-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1260446135-16460-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanse found a double unlock in get_chip. get_chip is called with
-chip->mutex held and caller is responsible for unlocking it too.
 
-Do not unlock the lock in get_chip on a fail path. This would mean
-a double unlock.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
----
- drivers/mtd/chips/cfi_cmdset_0002.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+> Hi Ingo,
+> 
+> The following changes since commit 4528752f49c1f4025473d12bc5fa9181085c3f22:
+>   Darrick J. Wong (1):
+>         x86, Calgary IOMMU quirk: Find nearest matching Calgary while walking up the PCI tree
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
+> 
+> Joerg Roedel (2):
+>       x86/amd-iommu: Fix passthrough mode
+>       x86/amd-iommu: Fix PCI hotplug with passthrough mode
+> 
+>  arch/x86/include/asm/amd_iommu_proto.h |    4 ++-
+>  arch/x86/kernel/amd_iommu.c            |   46 +++++++++++++++++++++++++++++---
+>  arch/x86/kernel/amd_iommu_init.c       |    9 ++++++
+>  3 files changed, 54 insertions(+), 5 deletions(-)
+> 
+> The data structure changes introduced a regression when the IOMMU runs in
+> passthrough mode. These updates fix these regressions. Please pull.
 
-diff --git a/drivers/mtd/chips/cfi_cmdset_0002.c b/drivers/mtd/chips/cfi_cmdset_0002.c
-index 1d49e18..f3600e8 100644
---- a/drivers/mtd/chips/cfi_cmdset_0002.c
-+++ b/drivers/mtd/chips/cfi_cmdset_0002.c
-@@ -569,7 +569,6 @@ static int get_chip(struct map_info *map, struct flchip *chip, unsigned long adr
- 
- 			if (time_after(jiffies, timeo)) {
- 				printk(KERN_ERR "Waiting for chip to be ready timed out.\n");
--				spin_unlock(chip->mutex);
- 				return -EIO;
- 			}
- 			spin_unlock(chip->mutex);
--- 
-1.6.5.5
+Pulled, thanks a lot Joerg!
 
+	Ingo
