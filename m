@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbZLJFAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbZLJFBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752589AbZLJFAW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 00:00:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZLJFAU
+	id S1760151AbZLJFBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 00:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760130AbZLJFBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 00:00:20 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:36172 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752065AbZLJFAS (ORCPT
+	Thu, 10 Dec 2009 00:01:17 -0500
+Received: from vms173019pub.verizon.net ([206.46.173.19]:35518 "EHLO
+	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760022AbZLJFBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 00:00:18 -0500
-Date: Thu, 10 Dec 2009 00:00:16 -0500 (EST)
+	Thu, 10 Dec 2009 00:01:09 -0500
+Date: Thu, 10 Dec 2009 00:01:14 -0500 (EST)
 From: Len Brown <lenb@kernel.org>
 X-X-Sender: lenb@localhost.localdomain
 To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 Cc: mjg@redhat.com, marcel@holtmann.org, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 1/5] dell-laptop: fix a use-after-free error on the failure
- path
-In-reply-to: <1250690811-21203-1-git-send-email-alan-jenkins@tuffmail.co.uk>
-Message-id: <alpine.LFD.2.00.0912100000130.24891@localhost.localdomain>
+Subject: Re: [PATCH 2/5] dell-laptop: fix rfkill memory leak on unload and
+ failure paths
+In-reply-to: <1250690811-21203-2-git-send-email-alan-jenkins@tuffmail.co.uk>
+Message-id: <alpine.LFD.2.00.0912100001090.24891@localhost.localdomain>
 References: <4A8C0623.8030808@tuffmail.co.uk>
- <1250690811-21203-1-git-send-email-alan-jenkins@tuffmail.co.uk>
+ <1250690811-21203-2-git-send-email-alan-jenkins@tuffmail.co.uk>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-version: 1.0
 Content-type: TEXT/PLAIN; charset=US-ASCII
