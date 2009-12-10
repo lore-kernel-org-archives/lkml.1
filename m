@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761558AbZLJTBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761574AbZLJTHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761558AbZLJTBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 14:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761548AbZLJTBQ
+	id S1761574AbZLJTHi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 14:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761312AbZLJTHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 14:01:16 -0500
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:54235 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761206AbZLJTBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 14:01:15 -0500
+	Thu, 10 Dec 2009 14:07:37 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:51633 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761101AbZLJTHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 14:07:36 -0500
+Date: Thu, 10 Dec 2009 20:07:42 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Bisected regression (Was Re: current -git fails to boot on
+	nehalem-ex)
+Message-ID: <20091210190742.GS8742@kernel.dk>
+References: <20091210091040.GG8742@kernel.dk> <20091210103945.GI8742@kernel.dk> <20091210160640.GB27794@elte.hu> <67EA4830-231F-45C9-A1A6-CE1C6CD9493D@kernel.org> <20091210180727.GK8742@kernel.dk> <4B213F1F.2020305@kernel.org> <4B2140F8.3020201@kernel.org> <20091210184506.GP8742@kernel.dk>
 MIME-Version: 1.0
-In-Reply-To: <20091210162805.5e1b6319@pedra>
-References: <20091210162805.5e1b6319@pedra>
-Date: Thu, 10 Dec 2009 14:01:15 -0500
-Message-ID: <829197380912101101t39079ebal54b437ea11ffdb34@mail.gmail.com>
-Subject: Re: Firmware for dib0700
-From: Devin Heitmueller <dheitmueller@kernellabs.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091210184506.GP8742@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 10, 2009 at 1:28 PM, Mauro Carvalho Chehab
-<mchehab@redhat.com> wrote:
-> Hi David,
->
-> Please pull from:
->
-> ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-firmware.git master
->
-> For dib0700 firmware.
+On Thu, Dec 10 2009, Jens Axboe wrote:
+> > >> [    0.000000] Kernel panic - not syncing: Overlapping early reservations 12-f011 MP-table mpc to 0-fff BIOS data page
+> > > 
+> > > mptable mpc is [12 - f011]
+> > > 
+> > > what a BIOS !
+> > > 
+> > > can you check if it works with 2.6.32 + "acpi=off"?
+> 
+> I'll try that.
 
-Mauro,
+Yes, 2.6.32 boots fine with acpi=off passed.
 
-I had David pull in this firmware months ago (so it could be included
-in time for the release of Ubuntu Karmic):
+> > please check if this one could workaround it.
+> > 
+> > diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+> > index d17d482..f60acec 100644
+> > --- a/arch/x86/kernel/e820.c
+> > +++ b/arch/x86/kernel/e820.c
+> > @@ -732,7 +732,7 @@ struct early_res {
+> >  	char overlap_ok;
+> >  };
+> >  static struct early_res early_res[MAX_EARLY_RES] __initdata = {
+> > -	{ 0, PAGE_SIZE, "BIOS data page" },	/* BIOS data page */
+> > +	{ 0, PAGE_SIZE, "BIOS data page", 1 },	/* BIOS data page */
+> >  	{}
+> >  };
+> 
+> And then this. Results in 10-15min.
 
-http://git.kernel.org/?p=linux/kernel/git/dwmw2/linux-firmware.git;a=commit;h=f20b0674534a444ae74239843cac19f72c64912b
+Doesn't work, it just complains about a different overlap:
 
-Am I missing something?
+[    0.000000] Kernel panic - not syncing: Overlapping early
+reservations 12-f011 MP-table mpc to 6000-7fff TRAMPOLINE
+[    0.000000] 
+[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.32 #51
+[    0.000000] Call Trace:
+[    0.000000]  [<ffffffff813c709b>] panic+0xa0/0x16a
+[    0.000000]  [<ffffffff8167d280>] ?
+reserve_early_overlap_ok+0x2e/0x39
+[    0.000000]  [<ffffffff8167d24a>] ?
+drop_overlaps_that_are_ok+0x117/0x11f
+[    0.000000]  [<ffffffff8167d133>] drop_overlaps_that_are_ok+0x0/0x11f
+[    0.000000]  [<ffffffff8167d2c6>] reserve_early+0x3b/0x3d
+[    0.000000]  [<ffffffff81683248>] smp_scan_config+0xe7/0x10e
+[    0.000000]  [<ffffffff816832a9>] default_find_smp_config+0x3a/0x60
+[    0.000000]  [<ffffffff8167b0be>] setup_arch+0x6ae/0xa88
+[    0.000000]  [<ffffffff816789ff>] start_kernel+0x82/0x412
+[    0.000000]  [<ffffffff81678289>] x86_64_start_reservations+0x99/0xb9
+[    0.000000]  [<ffffffff81678389>] x86_64_start_kernel+0xe0/0xf2
 
-Devin
 
 -- 
-Devin J. Heitmueller - Kernel Labs
-http://www.kernellabs.com
+Jens Axboe
+
