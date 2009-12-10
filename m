@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbZLJLVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934005AbZLJL0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbZLJLVE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 06:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760679AbZLJLU6
+	id S934005AbZLJL0u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 06:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933773AbZLJL0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 06:20:58 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40273 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760622AbZLJLU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 06:20:57 -0500
-Date: Thu, 10 Dec 2009 12:21:00 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: linux-next: manual merge of the tty tree with the trivial tree
-In-Reply-To: <20091209202854.GA8222@kroah.com>
-Message-ID: <alpine.LNX.2.00.0912101220310.3755@pobox.suse.cz>
-References: <20091209162826.a28c6c68.sfr@canb.auug.org.au> <alpine.LNX.2.00.0912091536230.3755@pobox.suse.cz> <20091210021100.b606b224.sfr@canb.auug.org.au> <20091209202854.GA8222@kroah.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Thu, 10 Dec 2009 06:26:46 -0500
+Received: from smtpauth.net4india.com ([202.71.129.41]:53233 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933737AbZLJL0p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 06:26:45 -0500
+Message-ID: <4B20DB2C.5040404@xenontk.org>
+Date: Thu, 10 Dec 2009 16:57:40 +0530
+From: David John <davidjon@xenontk.org>
+Reply-To: davidjon@xenontk.org
+User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.4pre) Gecko/20091014 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: chris@chris-wilson.co.uk
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, eric@anholt.net,
+       airlied@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       hohndel@infradead.org
+Subject: Re: [Regression 2] i915: Commit 0d9c778978 causes flickering in 2.6.32
+References: <4B1FDAE3.9050602@xenontk.org>
+In-Reply-To: <4B1FDAE3.9050602@xenontk.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Dec 2009, Greg KH wrote:
-
-> > > > I just used the tty tree version where they clashed.  Jiri, you might
-> > > > consider sending that patch to Greg for the tty tree.
-> > > 
-> > > the trivial tree pull request has already been sent to Linus a day ago. I 
-> > > am now waiting whether it will be merged or missed.
-> > > 
-> > > In the latter case, I will split the tty hunk out and send to Greg. In the 
-> > > former case the conflict would have to be solved either by Greg or Linus.
-> > 
-> > OK, that's fine, thanks.
+On 12/09/2009 10:44 PM, David John wrote:
+> Hi All,
 > 
-> Sounds good to me as well.
+> I have a Dell Inspiron with a GM45 Express chipset and an Acer 23"
+> display connected to the VGA out. I switch off the internal LVDS LCD
+> on X start-up with xrandr. X works fine but if I switch to a console,
+> it flickers horribly with the text all pushed to the right. Switching
+> back to X causes X to start flickering as well. Turning the internal
+> LVDS back _on_ solves the issue. It works like a switch so it is easily
+> reproducible. Reverting commit 0e442c60 also fixes the problem.
+> 
+> There isn't anything unusual in the kernel or X logs that I could see,
+> but they're attached.
+> 
+> Regards,
+> David.
 
-Linus has merged my tree, so either you or Linus will have to fix the 
-conflict.
+Hi,
 
-Thanks,
+Reverting the above commit fixes 95% of the problem, the console no
+longer flickers. However, the same sequence: Switch off LVDS->
+Switch to console->Switch back to X causes slight flicker in X with
+the commit 0d9c778978. Turning the internal LVDS back on solves the
+issue. Reverting commit 0d9c778978 fixes the problem completely (Both
+commits have to be reverted).
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Regards,
+David.
+
