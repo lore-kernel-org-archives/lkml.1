@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZLJAyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbZLJAzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZLJAyQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 19:54:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZLJAyN
+	id S1752368AbZLJAzN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 19:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbZLJAzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 19:54:13 -0500
-Received: from www.tglx.de ([62.245.132.106]:54065 "EHLO www.tglx.de"
+	Wed, 9 Dec 2009 19:55:04 -0500
+Received: from www.tglx.de ([62.245.132.106]:54093 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754611AbZLJAyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 19:54:13 -0500
-Message-Id: <20091210004703.111906707@linutronix.de>
+	id S1759197AbZLJAyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 19:54:24 -0500
+Message-Id: <20091210004703.148689096@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 10 Dec 2009 00:53:03 -0000
+Date: Thu, 10 Dec 2009 00:53:07 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
@@ -20,18 +20,17 @@ Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
        David Howells <dhowells@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-security-module@vger.kernel.org
-Subject: [patch 3/9] proc: Add missing rcu protection for __task_cred() in
-	task_sig()
+       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org
+Subject: [patch 4/9] oom: Add missing rcu protection of __task_cred() in
+	dump_tasks
 References: <20091210001308.247025548@linutronix.de>
 Content-Disposition: inline;
-	filename=proc-fix-missing-rcu-protection-of-__task_cred.patch
+	filename=oom-fix-missing-rcu-protection-of-__task_cred.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-task_sig() accesses __task_cred() without being in a RCU read side
+dump_tasks accesses __task_cred() without being in a RCU read side
 critical section. tasklist_lock is not protecting that when
 CONFIG_TREE_PREEMPT_RCU=y.
 
@@ -39,28 +38,28 @@ Add a rcu_read_lock/unlock() section around the code which accesses
 __task_cred().
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: David Howells <dhowells@redhat.com>
-Cc: James Morris <jmorris@namei.org>
-Cc: linux-security-module@vger.kernel.org
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-
+Cc: linux-mm@kvack.org
 ---
- fs/proc/array.c |    2 ++
- 1 file changed, 2 insertions(+)
+ mm/oom_kill.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Index: linux-2.6-tip/fs/proc/array.c
+Index: linux-2.6-tip/mm/oom_kill.c
 ===================================================================
---- linux-2.6-tip.orig/fs/proc/array.c
-+++ linux-2.6-tip/fs/proc/array.c
-@@ -265,7 +265,9 @@ static inline void task_sig(struct seq_f
- 		blocked = p->blocked;
- 		collect_sigign_sigcatch(p, &ignored, &caught);
- 		num_threads = atomic_read(&p->signal->count);
+--- linux-2.6-tip.orig/mm/oom_kill.c
++++ linux-2.6-tip/mm/oom_kill.c
+@@ -329,10 +329,13 @@ static void dump_tasks(const struct mem_
+ 			task_unlock(p);
+ 			continue;
+ 		}
++		/* Protect __task_cred() access */
 +		rcu_read_lock();
- 		qsize = atomic_read(&__task_cred(p)->user->sigpending);
+ 		printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d     %3d %s\n",
+ 		       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
+ 		       get_mm_rss(mm), (int)task_cpu(p), p->signal->oom_adj,
+ 		       p->comm);
 +		rcu_read_unlock();
- 		qlim = p->signal->rlim[RLIMIT_SIGPENDING].rlim_cur;
- 		unlock_task_sighand(p, &flags);
- 	}
+ 		task_unlock(p);
+ 	} while_each_thread(g, p);
+ }
 
 
