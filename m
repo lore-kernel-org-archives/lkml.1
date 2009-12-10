@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbZLJB5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbZLJCnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759444AbZLJB5w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 20:57:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759403AbZLJB5r
+	id S1754962AbZLJCnY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 21:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbZLJCnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 20:57:47 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43254 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759418AbZLJB5q (ORCPT
+	Wed, 9 Dec 2009 21:43:18 -0500
+Received: from lemon.ertos.nicta.com.au ([203.143.174.143]:57663 "EHLO
+	lemon.ken.nicta.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754392AbZLJCnS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 20:57:46 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 4/9] oom: Add missing rcu protection of __task_cred() in dump_tasks
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Al Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org
-In-Reply-To: <20091210004703.148689096@linutronix.de>
-References: <20091210001308.247025548@linutronix.de> <20091210004703.148689096@linutronix.de>
-Message-Id: <20091210104500.F500.A69D9226@jp.fujitsu.com>
+	Wed, 9 Dec 2009 21:43:18 -0500
+X-Greylist: delayed 2307 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Dec 2009 21:43:18 EST
+Message-ID: <4B205745.7060704@cse.unsw.edu.au>
+Date: Thu, 10 Dec 2009 13:04:53 +1100
+From: Etienne Le Sueur <elesueur@cse.unsw.edu.au>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 10 Dec 2009 10:57:49 +0900 (JST)
+X-SA-Exim-Connect-IP: 203.143.161.65
+X-SA-Exim-Mail-From: elesueur@cse.unsw.edu.au
+Subject: [PATCH] drivers/char/nvram.c: Undo removal of duplicated include
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:20:11 +0000)
+X-SA-Exim-Scanned: Yes (on lemon.ken.nicta.com.au)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> dump_tasks accesses __task_cred() without being in a RCU read side
-> critical section. tasklist_lock is not protecting that when
-> CONFIG_TREE_PREEMPT_RCU=y.
-> 
-> Add a rcu_read_lock/unlock() section around the code which accesses
-> __task_cred().
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: linux-mm@kvack.org
-> ---
->  mm/oom_kill.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: linux-2.6-tip/mm/oom_kill.c
-> ===================================================================
-> --- linux-2.6-tip.orig/mm/oom_kill.c
-> +++ linux-2.6-tip/mm/oom_kill.c
-> @@ -329,10 +329,13 @@ static void dump_tasks(const struct mem_
->  			task_unlock(p);
->  			continue;
->  		}
-> +		/* Protect __task_cred() access */
-> +		rcu_read_lock();
->  		printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d     %3d %s\n",
->  		       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
->  		       get_mm_rss(mm), (int)task_cpu(p), p->signal->oom_adj,
->  		       p->comm);
-> +		rcu_read_unlock();
->  		task_unlock(p);
->  	} while_each_thread(g, p);
->  }
+elesueur@bitburger:/usr/src/linux-2.6-git$ make
+   CHK     include/linux/version.h
+   CHK     include/linux/utsrelease.h
+   SYMLINK include/asm -> include/asm-x86
+   CALL    scripts/checksyscalls.sh
+   CHK     include/linux/compile.h
+   CC      drivers/char/consolemap_deftbl.o
+   CC      drivers/char/defkeymap.o
+   LD      drivers/char/built-in.o
+   CC [M]  drivers/char/nvram.o
+drivers/char/nvram.c: In function 'nvram_open':
+drivers/char/nvram.c:332: error: implicit declaration of function 
+'lock_kernel'
+drivers/char/nvram.c:339: error: implicit declaration of function 
+'unlock_kernel'
+make[2]: *** [drivers/char/nvram.o] Error 1
+make[1]: *** [drivers/char] Error 2
+make: *** [drivers] Error 2
 
-Looks straight forward and correct to me.
-
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+a check shows commit id: 4d8f54d9e4323baae8c8ca753db91563f4b34ddb 
+removed a 'duplicated include' which I believe is erroneous.
 
 
+
+
+diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+index 2100a8f..3cfa0f6 100644
+--- a/drivers/char/nvram.c
++++ b/drivers/char/nvram.c
+@@ -38,6 +38,7 @@
+  #define NVRAM_VERSION  "1.3"
+
+  #include <linux/module.h>
++#include <linux/smp_lock.h>
+  #include <linux/nvram.h>
+
+  #define PC             1
+
+
+Regards,
+Etienne Le Sueur
+www.ertos.nicta.com.au
