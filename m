@@ -1,121 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbZLJUP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbZLJUVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757112AbZLJUP1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 15:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbZLJUPZ
+	id S1757395AbZLJUVB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 15:21:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757023AbZLJUU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 15:15:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47549 "EHLO mx2.mail.elte.hu"
+	Thu, 10 Dec 2009 15:20:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35198 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756222AbZLJUPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 15:15:25 -0500
-Date: Thu, 10 Dec 2009 21:14:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] ftrace - add function_duration tracer
-Message-ID: <20091210201454.GA31461@elte.hu>
-References: <20091210070800.GB16874@elte.hu>
- <20091210120332.GA5042@nowhere>
- <20091210141121.GB1436@elte.hu>
- <1260456803.2146.167.camel@gandalf.stny.rr.com>
- <20091210153845.GA28230@elte.hu>
- <y0md42magc1.fsf@fche.csb>
- <20091210175737.GB5256@elte.hu>
- <20091210180412.GB30999@redhat.com>
- <20091210183508.GB17986@elte.hu>
- <20091210185044.GC30999@redhat.com>
-MIME-Version: 1.0
+	id S1756672AbZLJUU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 15:20:58 -0500
+Date: Thu, 10 Dec 2009 15:20:20 -0500
+From: Valerie Aurora <vaurora@redhat.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/41] VFS: BUG() if somebody tries to rehash an already hashed dentry
+Message-ID: <20091210202020.GA10388@shell>
+References: <1256152779-10054-2-git-send-email-vaurora@redhat.com> <200911300143.nAU1hwav006906@agora.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091210185044.GC30999@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200911300143.nAU1hwav006906@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frank Ch. Eigler <fche@redhat.com> wrote:
-
-> Hi -
-> 
-> 
-> On Thu, Dec 10, 2009 at 07:35:08PM +0100, Ingo Molnar wrote:
-> > [...]
-> > target_set.stp is not really adequate. Have you actually _tried_ to use 
-> > it on something real like hackbench, which runs thousands (or tens of 
-> > thousands) of tasks? You'll soon find that associative arrays are not 
-> > really adequate for that ... [...]
-> 
-> A few thousand entries in a hash table is really not that big a deal.
-
-Except if it's a high-freq event and the huge hash table is kept in the 
-CPU cache all the time.
-
-> > > > Also, i dont think stap supports proper separation of per 
-> > > > workload measurements either. I.e. can you write a script that 
-> > > > will work properly even if multiple monitoring tools are 
-> > > > running, each trying to measure latencies?
-> > > 
-> > > Sure, always has.  You can run many scripts concurrently, each 
-> > > with its own internal state.  (Overheads accumulate, sadly & 
-> > > naturally.)
+On Sun, Nov 29, 2009 at 08:43:58PM -0500, Erez Zadok wrote:
+> In message <1256152779-10054-2-git-send-email-vaurora@redhat.com>, Valerie Aurora writes:
+> > From: Jan Blunck <jblunck@suse.de>
 > > 
-> > To measure latencies you need two probes, a start and a stop one. 
-> > How do you define a local variable that is visible to those two 
-> > probes? You have to create a global variable - but that will/can 
-> > clash with other instances.
-> 
-> You misunderstand systemtap "global" values.  They are global to that 
-> particular execution of that particular script.  They are not shared 
-> between scripts that may be concurrently running.
-
-Ok.
-
-> > ( Also, you dont offer per application channels/state from the same 
-> >   script. Each app has to define their own probes, duplicating the 
-> >   script and increasing probe chaining overhead. )
-> 
-> Please elaborate what you mean.
-
-Firstly, AFAICS each subsequent systemtap probe for the same event adds 
-chaining overhead - and then you have to disambiguate back to the 
-originating script. Secondly, is there a way for a single probe to 
-multiplex its output to multiple apps? AFAICS that's only possible by 
-running multiple scripts.
-
-> > > > Also, i personally find built-in kernel functionality more 
-> > > > trustable than dynamically built stap kernel modules that get 
-> > > > inserted.
-> > > 
-> > > I understand.  In the absence of a suitable bytecode engine in the 
-> > > kernel, this was the only practical way to do everything we 
-> > > needed.
+> > Break early when somebody tries to rehash an already hashed dentry.
+> > Otherwise this leads to interesting corruptions in the dcache hash table
+> > later on.
 > > 
-> > You seem to be under the mistaken assumption that your course of 
-> > action with SystemTap is somehow limited by what is available (or 
-> > not) in the upstream kernel. In reality you can implement anything 
-> > you want [...]
+> > Signed-off-by: Jan Blunck <jblunck@suse.de>
+> > Signed-off-by: Valerie Aurora <vaurora@redhat.com>
+> > ---
+> >  fs/dcache.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/fs/dcache.c b/fs/dcache.c
+> > index 9e5cd3c..38bf982 100644
+> > --- a/fs/dcache.c
+> > +++ b/fs/dcache.c
+> > @@ -1550,6 +1550,7 @@ void d_rehash(struct dentry * entry)
+> >  {
+> >  	spin_lock(&dcache_lock);
+> >  	spin_lock(&entry->d_lock);
+> > +	BUG_ON(!d_unhashed(entry));
+> >  	_d_rehash(entry);
+> >  	spin_unlock(&entry->d_lock);
+> >  	spin_unlock(&dcache_lock);
 > 
-> The message we have received time, after time, after time was 
-> stronger: that a suitable interpreter was not going to be welcome in 
-> tree.  If this is relaxed (and perhaps even if not), we may prototype 
-> such a thing in the new year.
+> This patch seems unrelated to union mounts.  If so, can you get it pushed
+> upstream sooner?  Or is this a debugging patch useful only when developing
+> union mounts?
+>
+> You also said that it can lead to "ineresting corruptions".  What kind of
+> corruptions exactly?  Also, would it make more sense to allow _d_rehash() to
+> hash in an unhashed dentry for the first time?
 
-FYI, i suggested this to you 2-3 years ago.
+Hi Erez,
 
-	Ingo
+Thanks for your great review!  I am working my way through your
+comments one by one.
+
+This is a trivial patch which happened to be useful during our
+development and seems like it might be useful for other VFS-related
+development.  I will submit it as part of our VFS patch set and drop
+it if the maintainers don't want it.
+
+I don't have an opinion on _d_rehash(), I'm afraid.
+
+-VAL
