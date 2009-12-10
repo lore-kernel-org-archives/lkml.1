@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbZLJBCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbZLJBDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbZLJBCh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Dec 2009 20:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbZLJBCd
+	id S1759315AbZLJBDE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Dec 2009 20:03:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZLJBC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Dec 2009 20:02:33 -0500
-Received: from claw.goop.org ([74.207.240.146]:60979 "EHLO claw.goop.org"
+	Wed, 9 Dec 2009 20:02:57 -0500
+Received: from claw.goop.org ([74.207.240.146]:60987 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759097AbZLJBCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Dec 2009 20:02:33 -0500
-Message-ID: <4B2048AE.4030000@goop.org>
-Date: Wed, 09 Dec 2009 17:02:38 -0800
+	id S1755330AbZLJBC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Dec 2009 20:02:56 -0500
+Message-ID: <4B2048C6.6030307@goop.org>
+Date: Wed, 09 Dec 2009 17:03:02 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091125 Fedora/3.0-3.12.rc1.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stable Kernel <stable@kernel.org>
-Subject: [GIT PULL] Xen bugfixes (resend)
+CC: Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] Xen fbdev fixups
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,58 +28,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Linus,
 
-Please pull this set of bugfixes, mostly to do with Xen domain 
-save/restore.  They're all stable material as well.
+Here are some small updates to fbdev to make the Xen fbdev driver work 
+properly.  The bulk of the change is to make sure we only set VM_IO on 
+vmas which actually map device memory, and not set it on plain old 
+vmalloc memory.  This is necessary in Xen, because we end up using that 
+flag to determine whether the ptes are mapping real machine physical 
+memory or guest pseudo-physical memory.
 
-(Note, if you pull quickly from git.kernel.org, you may pick up some 
-more changes that I rolled back pending maintainer approval; pulling 
-from master might be safer.)
+We also do this on the other fbdev drivers which allocate vmalloc 
+framebuffers for consistency.
 
 Thanks,
      J
 
-The following changes since commit 82d6469916c6fcfa345636a49004c9d1753905d1:
-   Jeremy Fitzhardinge (1):
-         xen: mask extended topology info in cpuid
+The following changes since commit 74fca6a42863ffacaf7ba6f1936a9f228950f657:
+   Linus Torvalds (1):
+         Linux 2.6.31
 
 are available in the git repository at:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git bugfix
+   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git xen/fbdev
 
-Ian Campbell (8):
-       xen: re-register runstate area earlier on resume.
-       xen: correctly restore pfn_to_mfn_list_list after resume
-       xen: register timer interrupt with IRQF_TIMER
-       xen: register runstate on secondary CPUs
-       xen: call clock resume notifier on all CPUs
-       xen: don't leak IRQs over suspend/resume.
-       xen: improve error handling in do_suspend.
-       xen: explicitly create/destroy stop_machine workqueues outside 
-suspend/resume region.
+Konrad Rzeszutek Wilk (4):
+       Fix toogle whether xenbus driver should be built as module or part of kernel.
+       fb-defio: If FBINFO_VIRTFB is defined, do not set VM_IO flag.
+       fb-defio: Inhibit VM_IO flag to be set on vmalloc-ed framebuffers.
+       xen pvfb: Inhibit VM_IO flag to be set on vmalloc-ed framebuffers.
 
-Jeremy Fitzhardinge (5):
-       xen/xenbus: make DEVICE_ATTR()s static
-       xen: restore runstate_info even if !have_vcpu_info_placement
-       xen: register runstate info for boot CPU early
-       xen: don't call dpm_resume_noirq() with interrupts disabled.
-       xen: use iret for return from 64b kernel to 32b usermode
-
-Paolo Bonzini (3):
-       xen: fix is_disconnected_device/exists_disconnected_device
-       xen: improvement to wait_for_devices()
-       xen: wait up to 5 minutes for device connetion
-
-  arch/x86/xen/enlighten.c          |   27 ++++++++++----------
-  arch/x86/xen/mmu.c                |    2 +-
-  arch/x86/xen/smp.c                |    1 +
-  arch/x86/xen/suspend.c            |   17 ++++++++++++-
-  arch/x86/xen/time.c               |    7 ++---
-  arch/x86/xen/xen-asm_64.S         |    4 +-
-  arch/x86/xen/xen-ops.h            |    2 +
-  drivers/xen/events.c              |    3 ++
-  drivers/xen/manage.c              |   37 ++++++++++++++++++----------
-  drivers/xen/xenbus/xenbus_probe.c |   48 
-++++++++++++++++++++++++------------
-  10 files changed, 98 insertions(+), 50 deletions(-)
+  drivers/input/Kconfig        |    1 +
+  drivers/video/Kconfig        |    1 +
+  drivers/video/broadsheetfb.c |    2 +-
+  drivers/video/fb_defio.c     |    4 +++-
+  drivers/video/hecubafb.c     |    2 +-
+  drivers/video/metronomefb.c  |    2 +-
+  drivers/video/xen-fbfront.c  |    2 +-
+  include/linux/fb.h           |    1 +
+  8 files changed, 10 insertions(+), 5 deletions(-)
 
 
