@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759149AbZLKSgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbZLKSmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759149AbZLKSgk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 13:36:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758863AbZLKSgg
+	id S1760760AbZLKSmU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 13:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758832AbZLKSmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 13:36:36 -0500
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:5947 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758502AbZLKSgf convert rfc822-to-8bit (ORCPT
+	Fri, 11 Dec 2009 13:42:10 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58113 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758717AbZLKSmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 13:36:35 -0500
-X-SpamScore: -31
-X-BigFish: VPS-31(zz1432R98dN936eM9371P103dKzz1202hzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KUI3OT-02-HAA-02
-X-M-MSG: 
-Date: Fri, 11 Dec 2009 19:36:35 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Mauro Carvalho Chehab <mchehab@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Aristeu Rozanski <aris@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org,
-       x86 <x86@kernel.org>
-Subject: Re: [PATCH v2] x86, msr: add support for non-contiguous cpumasks
-Message-ID: <20091211183635.GE31998@aftab>
-References: <20091207122133.GA24877@aftab>
- <4B21A50E.5090801@zytor.com>
- <20091211171440.GD31998@aftab>
- <4B228902.7010609@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <4B228902.7010609@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 11 Dec 2009 18:36:31.0770 (UTC) FILETIME=[DBF61FA0:01CA7A90]
-X-Reverse-DNS: ausb3extmailp02.amd.com
+	Fri, 11 Dec 2009 13:42:08 -0500
+X-Authority-Analysis: v=1.0 c=1 a=18Sr5wuH8ZcA:10 a=VwQbUJbxAAAA:8 a=LPR37ZagT-IT8Xb1F48A:9 a=tguR37NDbfwXAK5nBBBcqJrkX_YA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Message-Id: <20091211184018.738768739@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 11 Dec 2009 13:40:18 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/2] [GIT PULL] tracing: stack tracing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 11, 2009 at 10:01:38AM -0800, H. Peter Anvin wrote:
-> On 12/11/2009 09:14 AM, Borislav Petkov wrote:
-> > Ok, here's a second (and much leaner, removing a bunch of code) version.
-> > Tested on K8 and F10h machines here.
-> 
-> Much better, thanks!
 
-Ok, cool. Should I send it to Linus or would you like to do it?
+Ingo,
 
--- 
-Regards/Gruss,
-Boris.
+I based this on top of my last tip/tracing/urgent request. These are
+enhancements and not fixes. But since the merge window is still open
+and these are very small patches, I figured we try to get them in for
+2.6.33.
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+Please pull the latest tip/tracing/core tree, which can be found at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core
+
+
+Steven Rostedt (2):
+      tracing: Add trace_dump_stack()
+      tracing: Add stack trace to irqsoff tracer
+
+----
+ include/linux/kernel.h       |    2 ++
+ kernel/trace/trace.c         |   16 ++++++++++++++++
+ kernel/trace/trace_irqsoff.c |    2 ++
+ 3 files changed, 20 insertions(+), 0 deletions(-)
