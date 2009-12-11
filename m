@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934864AbZLKHPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934839AbZLKHGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934864AbZLKHPu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 02:15:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933619AbZLKHPo
+	id S934839AbZLKHGh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 02:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934820AbZLKHGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 02:15:44 -0500
-Received: from quoll.daa.com.au ([203.17.251.1]:54399 "EHLO quoll.daa.com.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933386AbZLKHPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 02:15:43 -0500
-X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Dec 2009 02:15:43 EST
-Message-ID: <4B21EF54.9070609@daa.com.au>
-Date: Fri, 11 Dec 2009 15:05:56 +0800
-From: James Andrewartha <jamesa@daa.com.au>
-Organization: Data Analysis Australia
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 11 Dec 2009 02:06:34 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62431 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S934815AbZLKHGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Dec 2009 02:06:33 -0500
+Message-ID: <4B21EF6D.4070207@cn.fujitsu.com>
+Date: Fri, 11 Dec 2009 15:06:21 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-CC: Matthew Wilcox <matthew@wil.cx>, Theodore Tso <tytso@mit.edu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sandeen@redhat.com
-Subject: Re: ATA support for 4k sector size
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx>	<49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>	<20090226025043.GJ1363@mit.edu>	<20090226030735.GA16891@parisc-linux.org> <yq1myc9g9ua.fsf@sermon.lab.mkp.net>
-In-Reply-To: <yq1myc9g9ua.fsf@sermon.lab.mkp.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH 1/2] tracing: Define kmem_trace_alloc_notrace unconditionally
+References: <4B21DD88.7080806@cn.fujitsu.com> <4B21DF33.7010906@cs.helsinki.fi> <4B21E07B.9040301@cn.fujitsu.com> <4B21E806.6070207@cs.helsinki.fi>
+In-Reply-To: <4B21E806.6070207@cs.helsinki.fi>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin K. Petersen wrote:
->>>>>> "Matthew" == Matthew Wilcox <matthew@wil.cx> writes:
+>>>> Always define kmem_trace_alloc_{,node}_notrace(), otherwise
+>>>> perf-kmem will show wrong stats ifndef CONFIG_KMEMTRACE,
+>>>> because a kmalloc() memory allocation may be traced by
+>>>> both trace_kmalloc() and trace_kmem_cache_alloc().
+>>>>
+>>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>>> Did you check how much this will make kernel text bigger because of the
+>>> inlining happening in kmem_cache_alloc_notrace()?
+>>>
+>>
+>> I'm not sure I understood what you meant, but I'm not inlining
+>> kmem_cache_alloc_notrace(), and instead I'm removing the inline
+>> version in !CONFIG_KMEMTRACE case.
 > 
-> Matthew> Lowest aligned logical block address=0
+> In SLUB, slab_alloc() will be inlined to kmem_cache_alloc_notrace()
+> increasing mm/slub.o size so we don't want to define
+> kmem_cache_alloc_notrace() unconditionally.
 > 
-> Matthew> This disagrees with Martin's assertion.
-> 
-> The original roadmap was to transition to 4KB sectors in 2006,
-> coinciding with the Vista release.
-> 
-> Given how long this has taken (we're now talking ~2011 for GA) it may
-> very well be that the alignment knobs will be unused because everybody
-> will be using Vista or 7 by then.
 
-The plan does seem to have changed - WD's shipping 4k sector drives that are 
-sane and require a drive jumper or tool for WinXP and old cloning utilities.
+I got your point. I'll make a new patch based on your suggestion.
 
-http://techreport.com/discussions.x/18115
-http://wdc.com/en/products/advancedformat/
-http://www.wdc.com/wdproducts/library/whitepapers/en/2579-771430-A00.pdf
-
--- 
-James Andrewartha
+Thanks!
