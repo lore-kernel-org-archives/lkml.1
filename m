@@ -1,63 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbZLKBeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbZLKBeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762195AbZLKBeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 20:34:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762181AbZLKBeF
+	id S1762214AbZLKBeP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 20:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762199AbZLKBeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 20:34:05 -0500
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:52568 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757287AbZLKBeE (ORCPT
+	Thu, 10 Dec 2009 20:34:12 -0500
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:47336 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762096AbZLKBeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 Dec 2009 20:34:04 -0500
 To: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        phillip.lougher@gmail.com, tim.bird@am.sony.com
-Subject: [PATCH V2 0/9] Squashfs: Add support for LZMA compressed filesystems 
-Message-Id: <E1NIuOW-0001oE-7h@dylan.lougher.demon.co.uk>
+Subject: [PATCH V2 6/8] lzma: Make lzma available to non initramfs/initrd code
+Message-Id: <E1NIuOW-0001ol-RC@dylan.lougher.demon.co.uk>
 From: Phillip Lougher <phillip@lougher.demon.co.uk>
 Date: Fri, 11 Dec 2009 01:34:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-This a respin of my LZMA decompression support patches, taking into
-account Andrew Morton's comments regarding poorly named globals:
+Add a config option DECOMPRESS_LZMA_NEEDED which allows subsystems to
+specify they need the unlzma code.  Normally decompress_unlzma.c is
+compiled with __init and unlzma is not exported to modules.
 
-Changes:
-	1. zlib_uncompress() renamed to squashfs_zlib_uncompress() (patch 1)
-	2. zlib_init() and zlib_free() renamed to squashfs_zlib_init() and
-	   squashfs_zlib_free() (patch 2)
-	3. Merged patch 7 (make decompressor init function pass superblock
-	   info) into patch 3.  This was a development commit which
-	   should not have been a separate patch for review
+Move INIT definition into separate header files for bzip2/lzma/inflate
+so it can be defined differently for each decompressor.
 
-Original patch series info:
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ include/linux/decompress/bunzip2_mm.h |   12 ++++++++++++
+ include/linux/decompress/inflate_mm.h |   12 ++++++++++++
+ include/linux/decompress/mm.h         |    3 ---
+ include/linux/decompress/unlzma_mm.h  |   20 ++++++++++++++++++++
+ lib/Kconfig                           |    3 +++
+ lib/decompress_bunzip2.c              |    1 +
+ lib/decompress_inflate.c              |    1 +
+ lib/decompress_unlzma.c               |    6 +++++-
+ 8 files changed, 54 insertions(+), 4 deletions(-)
+ create mode 100644 include/linux/decompress/bunzip2_mm.h
+ create mode 100644 include/linux/decompress/inflate_mm.h
+ create mode 100644 include/linux/decompress/unlzma_mm.h
 
-The following patches add LZMA decompression support to Squashfs, using the
-in-kernel LZMA decompression library.
-
-The patches also add a decompression framework to Squashfs.
-This allows LZMA decompression to be added cleanly, and it allows
-additional decompressors to be easily added in the future.
-
-To enable the in-kernel LZMA decompression code to be used by Squashfs,
-there are two patches to the lzma code itself: one to make lzma available
-to non-init code, and one to make lzma reentrant.  These are obviously
-not restricted to Squashfs, but are needed by any non-init code that
-may wish to use lzma compression.
-
-These patches are available in my squashfs-devel git tree in a slightly
-different format (these patches have been refactored for posting, they'll
-be put into a git tree ASAP).
-
-http://git.kernel.org/?p=linux/kernel/git/pkl/squashfs-devel.git;a=summary
-
-I would like to thank the CE Linux Forum (CELF) for supporting this work.
-
-Thanks
-
-Phillip
+diff --git a/include/linux/decompress/bunzip2_mm.h b/include/linux/decompress/bunzip2_mm.h
+new file mode 100644
+index 0000000..cac6fef
+--- /dev/null
++++ b/include/linux/decompress/bunzip2_mm.h
+@@ -0,0 +1,12 @@
++#ifndef BUNZIP2_MM_H
++#define BUNZIP2_MM_H
++
++#ifdef STATIC
++/* Code active when included from pre-boot environment: */
++#define INIT
++#else
++/* Compile for initramfs/initrd code only */
++#define INIT __init
++#endif
++
++#endif
+diff --git a/include/linux/decompress/inflate_mm.h b/include/linux/decompress/inflate_mm.h
+new file mode 100644
+index 0000000..ca4a2ae
+--- /dev/null
++++ b/include/linux/decompress/inflate_mm.h
+@@ -0,0 +1,12 @@
++#ifndef INFLATE_MM_H
++#define INFLATE_MM_H
++
++#ifdef STATIC
++/* Code active when included from pre-boot environment: */
++#define INIT
++#else
++/* Compile for initramfs/initrd code only */
++#define INIT __init
++#endif
++
++#endif
+diff --git a/include/linux/decompress/mm.h b/include/linux/decompress/mm.h
+index 12ff8c3..80f5ba4 100644
+--- a/include/linux/decompress/mm.h
++++ b/include/linux/decompress/mm.h
+@@ -53,8 +53,6 @@ static void free(void *where)
+ 
+ #define set_error_fn(x)
+ 
+-#define INIT
+-
+ #else /* STATIC */
+ 
+ /* Code active when compiled standalone for use when loading ramdisk: */
+@@ -77,7 +75,6 @@ static void free(void *where)
+ static void(*error)(char *m);
+ #define set_error_fn(x) error = x;
+ 
+-#define INIT __init
+ #define STATIC
+ 
+ #include <linux/init.h>
+diff --git a/include/linux/decompress/unlzma_mm.h b/include/linux/decompress/unlzma_mm.h
+new file mode 100644
+index 0000000..859287e
+--- /dev/null
++++ b/include/linux/decompress/unlzma_mm.h
+@@ -0,0 +1,20 @@
++#ifndef UNLZMA_MM_H
++#define UNLZMA_MM_H
++
++#ifdef STATIC
++
++/* Code active when included from pre-boot environment: */
++#define INIT
++
++#elif defined(CONFIG_DECOMPRESS_LZMA_NEEDED)
++
++/* Make it available to non initramfs/initrd code */
++#define INIT
++#include <linux/module.h>
++#else
++
++/* Compile for initramfs/initrd code only */
++#define INIT __init
++#endif
++
++#endif
+diff --git a/lib/Kconfig b/lib/Kconfig
+index bb1326d..25e7f28 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -117,6 +117,9 @@ config DECOMPRESS_BZIP2
+ config DECOMPRESS_LZMA
+ 	tristate
+ 
++config DECOMPRESS_LZMA_NEEDED
++	 boolean
++
+ #
+ # Generic allocator support is selected if needed
+ #
+diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
+index 600f473..6eb6433 100644
+--- a/lib/decompress_bunzip2.c
++++ b/lib/decompress_bunzip2.c
+@@ -52,6 +52,7 @@
+ #include <linux/slab.h>
+ #endif /* STATIC */
+ 
++#include <linux/decompress/bunzip2_mm.h>
+ #include <linux/decompress/mm.h>
+ 
+ #ifndef INT_MAX
+diff --git a/lib/decompress_inflate.c b/lib/decompress_inflate.c
+index fc686c7..cb6bcab 100644
+--- a/lib/decompress_inflate.c
++++ b/lib/decompress_inflate.c
+@@ -23,6 +23,7 @@
+ 
+ #endif /* STATIC */
+ 
++#include <linux/decompress/inflate_mm.h>
+ #include <linux/decompress/mm.h>
+ 
+ #define GZIP_IOBUF_SIZE (16*1024)
+diff --git a/lib/decompress_unlzma.c b/lib/decompress_unlzma.c
+index ca82fde..a614b26 100644
+--- a/lib/decompress_unlzma.c
++++ b/lib/decompress_unlzma.c
+@@ -36,6 +36,7 @@
+ #include <linux/slab.h>
+ #endif /* STATIC */
+ 
++#include <linux/decompress/unlzma_mm.h>
+ #include <linux/decompress/mm.h>
+ 
+ #define	MIN(a, b) (((a) < (b)) ? (a) : (b))
+@@ -531,7 +532,7 @@ static inline void INIT process_bit1(struct writer *wr, struct rc *rc,
+ 
+ 
+ 
+-STATIC inline int INIT unlzma(unsigned char *buf, int in_len,
++STATIC int INIT unlzma(unsigned char *buf, int in_len,
+ 			      int(*fill)(void*, unsigned int),
+ 			      int(*flush)(void*, unsigned int),
+ 			      unsigned char *output,
+@@ -652,6 +653,9 @@ exit_1:
+ exit_0:
+ 	return ret;
+ }
++#if defined(CONFIG_DECOMPRESS_LZMA_NEEDED) && !defined(PREBOOT)
++EXPORT_SYMBOL(unlzma);
++#endif
+ 
+ #ifdef PREBOOT
+ STATIC int INIT decompress(unsigned char *buf, int in_len,
+-- 
+1.6.3.3
 
