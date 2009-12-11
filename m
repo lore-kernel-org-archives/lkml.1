@@ -1,93 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbZLKEkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762461AbZLKEig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762498AbZLKEkq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Dec 2009 23:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbZLKEkn
+	id S1762461AbZLKEig (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Dec 2009 23:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762423AbZLKEid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Dec 2009 23:40:43 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58604 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762329AbZLKEhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Dec 2009 23:37:07 -0500
-X-Authority-Analysis: v=1.0 c=1 a=7U3hwN5JcxgA:10 a=_cG03E38plRnBDtgQpoA:9 a=0dO0sVypdoL8blQtEaZTvRfsGckA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: dynamic ftrace - graph
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: monstr@monstr.eu
-Cc: wuzhangjin@gmail.com, linux-kernel@vger.kernel.org,
-       John Williams <john.williams@petalogix.com>
-In-Reply-To: <4AF848C0.7010807@monstr.eu>
-References: <4AF848C0.7010807@monstr.eu>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 10 Dec 2009 23:37:05 -0500
-Message-ID: <1260506225.2146.347.camel@gandalf.stny.rr.com>
+	Thu, 10 Dec 2009 23:38:33 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60179 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762420AbZLKEi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Dec 2009 23:38:29 -0500
+Date: Fri, 11 Dec 2009 15:38:28 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: linux-next: tip tree build warning
+Message-Id: <20091211153828.6ba80bc4.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta3 (GTK+ 2.18.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__11_Dec_2009_15_38_28_+1100_TlUkrjYEk7ISW749"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michal,
+--Signature=_Fri__11_Dec_2009_15_38_28_+1100_TlUkrjYEk7ISW749
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sorry for such a late reply, you sent this email to me at the worst
-time. My wife was having shoulder surgery and I heading for a
-conference. I fell very far behind in email and I only now just noticed
-this.
+Hi all,
 
+Today's linux-next build (powerpc allyesconfig) produced this warning:
 
-I'll answer these ever though you may already figured it out.
+In file included from kernel/trace/trace.h:14,
+                 from kernel/trace/trace_selftest_dynamic.c:1:
+include/linux/hw_breakpoint.h: In function 'modify_user_hw_breakpoint':
+include/linux/hw_breakpoint.h:96: warning: return makes integer from pointe=
+r without a cast
 
-On Mon, 2009-11-09 at 17:52 +0100, Michal Simek wrote:
-> Hi Steve and others,
-> 
-> I have working dynamic ftrace function. :-)
-> 
-> I look at __ftrace_modify_code function and I have one question about.
-> Below are function which are called when I enable function_graph.
-> 
-> I personally think that make more sense to call 
-> ftrace_enable_ftrace_graph_caller before ftrace_update_ftrace_func.
-> The reason for it is that graph_caller enable calling graph tracing 
-> which should be setup before ftrace_update_ftrace_func which enable 
-> whole tracing function.
+Introduced by commit 44234adcdce38f83c56e05f808ce656175b4beeb
+("hw-breakpoints: Modify breakpoints without unregistering them") from
+the tip tree.
 
-Have you seen any difference in output with this?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I never thought about this order too much.
+--Signature=_Fri__11_Dec_2009_15_38_28_+1100_TlUkrjYEk7ISW749
+Content-Type: application/pgp-signature
 
--- Steve
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> 
-> 
-> 
-> # cd ; mkdir /debug; mount -t debugfs none /debug; cat 
-> /debug/tracing/available_tracers; echo function_graph > 
-> /debug/tracing/current_tracer;echo 0 > /debug/tra
-> cing/tracing_enabled;cat /debug/tracing/trace | head -n 10
-> function_graph function sched_switch nop
-> 
-> ftrace_update_ftrace_func 0xc0009100 0xc00091c4, 0xb000c000, 0x32809100
-> ftrace_enable_ftrace_graph_caller
-> # tracer: function_graph
-> 
-> 
-> For disabling graph trace is sequence ok I think.
-> 
-> # echo function > /debug/tracing/current_tracer
-> ftrace_disable_ftrace_graph_caller
-> ftrace_update_ftrace_func 0xc006afe4 0xc00091c4, 0xb000c006, 0x3280afe4
-> 
-> 
-> What do you think?
-> 
-> Thanks,
-> Michal
-> 
-> 
+iEYEARECAAYFAkshzMQACgkQjjKRsyhoI8x1mgCfTGeYMKU68amkpuNHEX0UwDTf
+8PEAniU+geOGaJpfosTCietByRtdOnuQ
+=865L
+-----END PGP SIGNATURE-----
 
-
+--Signature=_Fri__11_Dec_2009_15_38_28_+1100_TlUkrjYEk7ISW749--
