@@ -1,116 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934314AbZLKWbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbZLKWhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934314AbZLKWbt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Dec 2009 17:31:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934293AbZLKWbm
+	id S1761435AbZLKWhP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Dec 2009 17:37:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761345AbZLKWhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Dec 2009 17:31:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49562 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934274AbZLKWbh (ORCPT
+	Fri, 11 Dec 2009 17:37:10 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:34314 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761309AbZLKWhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Dec 2009 17:31:37 -0500
-Date: Fri, 11 Dec 2009 14:31:17 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Alan Stern <stern@rowland.harvard.edu>, Zhang Rui <rui.zhang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re: Async
- suspend-resume patch w/ rwsems)
-In-Reply-To: <200912112311.08548.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0912111415160.3922@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org> <200912110202.28536.rjw@sisk.pl> <alpine.LFD.2.00.0912101713440.3560@localhost.localdomain> <200912112311.08548.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Dec 2009 17:37:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=gibqH9t9yEAnMtQxay1ZSQ9UobWMcwuScP6RhsKxR0YWgBeJQWKcqlmMEDSdg07qCJ
+         zHhO+TOEZTZCAEMtTYKuF2ATiY2r/bQBA3zTIWHJDFY94/9HfR28Wd2MHhSYXvJ1t9re
+         B5yYYBFJPfUSn8E5che24LW/RPF9puGQwuA8c=
+Date: Fri, 11 Dec 2009 23:37:09 +0100
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: Dan Williams <dcbw@redhat.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Add support for Sphairon Homelink 1202 USB WLAN
+Message-ID: <20091211233709.29fc5312@strolchi.home.s3e.de>
+In-Reply-To: <1260559270.6254.2.camel@localhost.localdomain>
+References: <1260282095-17042-1-git-send-email-stefan.seyfried@googlemail.com>
+	<20091211133603.46bec686@strolchi.home.s3e.de>
+	<20091211144221.GA6663@tuxdriver.com>
+	<20091211160124.4db2da76@strolchi.home.s3e.de>
+	<1260559270.6254.2.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.1; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 11 Dec 2009 11:21:10 -0800
+Dan Williams <dcbw@redhat.com> wrote:
 
-
-On Fri, 11 Dec 2009, Rafael J. Wysocki wrote:
+> On Fri, 2009-12-11 at 16:01 +0100, Stefan Seyfried wrote:
+> > Maybe a separate driver that is ejecting all those fake storage
+> > devices, be it 3G modems or wireless LAN might be a good idea, but I am
+> > probably not the right one to code that ;)
+> > Or maybe we decide that userspace should handle it for all devices...
 > 
-> But fine, say we use the approach based on rwsems and consider suspend and
-> the inner lock.  We acquire it using down_write(), because we want to wait for
-> multiple other dirvers.  Now, in fact we could do literally
-> 
-> down_write(dev->power.rwsem);
-> up_write(dev->power.rwsem);
-> 
-> because the lock doesn't really protect anything from anyone.  What it does is
-> to prevent _us_ from doing something too early.  To me, personally, it's not a
-> usual use of locks.
+> If the device actually changes USB IDs after the switch, then the right
 
-I agree that it's fairly unusual, but on the other hand, it's unusual only 
-because you contrieved it to be.
+Yes, it does.
 
-If you instead do
+> place to put this code is probably unusual_devs instead of
+> touching /two/ drivers.  I'd say extract the code from zd1211rw and put
+> the new code that works for both zd1211rw/ar9170 into unusual_devs.  In
+> fact, people might be happier if you posted two patches, (1) move the
+> code to unusual_devs unchanged, and (2) fix up the moved code to support
+> the new device's behavior.
 
-	down_write(dev->power.rwsem);
-	.. do the actual suspend ..
-	up_write(dev->power.rwsem);
+Ok, I'll do this next week (might take some time, since I need to get
+familiar with the usb / unusual_devs code). I guess this will mostly go
+through Greg then?
 
-it doesn't look odd any more, does it? And while you don't _need_ to hold 
-the power lock over the suspend call, it actually does make sense, and 
-gives you some nicer guarantees.
+John, please take the patch 1, that adds the USB ID to ar9170usb. It is
+useful on its own since the device can also be switched with
+usb_modeswitch from userspace, and it is really trivial.
 
-For an example of the kinds of guarantees it would give you - I think that 
-you might actually be able to do a partial suspend and then a resume 
-without any other locks, and you'd know that just the per-device locking 
-would already guarantee that no device is ever tried to resume before it 
-has finished its asynchronous suspend.
+Thanks,
 
-Think about it.
+	Stefan
+-- 
+Stefan Seyfried
 
-In the completion model, the "async_synchronize_full()" will synchronize 
-all async work, and as a result you think that you don't need that level 
-of robustness from the locking itself.
-
-But think about it this way: if you could abort a failed suspend, and 
-start resuming devices immediately, without doing that 
-"async_synchronize_full()" in between - simply because you know that the 
-node locking itself will just "do the right thing".
-
-To me, that's a sign of a _good_ design. Using a rwsem is simply just more 
-robust and natural for the problem in question. Exactly because it's a 
-real lock.
-
-> > Don't try to make up problems. The _only_ subsystem we know wants this is 
-> > USB, and we know USB is purely a tree.
-> 
-> Not really.
-> 
-> I've already said it once, but let me repeat.  Some device objects have those
-> ACPI "shadow" device objects that represent the ACPI view of given "physical"
-> device and have their own suspend and resume routines.  It turns out that
-> these ACPI "shadow" devices have to be suspended after their "physical"
-> counterparts and resumed before them, or else things beak really badly.
-> I don't know the reason for that, I only verified it experimentally (I also
-> don't like that design, but I didn't invent it and I have to live with it at
-> least for now).  So if we don't enforce these constraints doing async
-> suspend and resume, we won't be able to handle _any_ devices with those
-> ACPI "shadow" things asynchronously.  Ever.  [That includes the majority
-> PCI devices, at least the "planar" ones (which is unfortunate, but that's how
-> it goes).]
-
-So?
-
-First off, you're wrong. It's not "ever". I'm happy to add complexity 
-later, I just don't want to start out with a complex model. Adding 
-complexity too early "just because we migth need it" is the wrong thing to 
-do.
-
-Secondly, I repeat: we don't want to do those PCI devices asynchronously 
-anyway. You're again digging yourself deeper by just continually bringing 
-up this total non-issue. I realize you did it for testing, but I'm serious 
-when I say that we should limit these things as much as possible, rather 
-than see it as an opportunity to do crazy things.
-
-Solve the problem at hand _first_. Solve it as simply as you can. And hope 
-that you never ever will need anything more complex.
-
-				Linus
+"Any ideas, John?"
+"Well, surrounding them's out."
